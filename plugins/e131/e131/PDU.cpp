@@ -119,13 +119,12 @@ void PDU::Write(OutputStream *stream) const {
   unsigned int size = Size();
 
   if (size <= TWOB_LENGTH_LIMIT) {
-    uint16_t flags_and_length = (
-        static_cast<uint16_t>(size) |
-        ((VFLAG_MASK | HFLAG_MASK | DFLAG_MASK) << 8u));
+    uint16_t flags_and_length = static_cast<uint16_t>(size);
+    flags_and_length |= (VFLAG_MASK | HFLAG_MASK | DFLAG_MASK) << 8u;
     *stream << HostToNetwork(flags_and_length);
   } else {
-    uint8_t vhl_flags = (VFLAG_MASK | HFLAG_MASK | DFLAG_MASK |
-                         static_cast<uint8_t>((size & 0x0f0000) >> 16));
+    uint8_t vhl_flags = static_cast<uint8_t>((size & 0x0f0000) >> 16);
+    vhl_flags |= VFLAG_MASK | HFLAG_MASK | DFLAG_MASK;
     *stream << vhl_flags;
     *stream << (uint8_t) ((size & 0xff00) >> 8);
     *stream << (uint8_t) (size & 0xff);
@@ -149,7 +148,7 @@ void PDU::Write(OutputStream *stream) const {
 
 
 /**
- * Prepend the flags and lenth to an OutputBufferInterface.
+ * Prepend the flags and length to an OutputBufferInterface.
  */
 void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
                                 uint8_t flags) {
@@ -158,24 +157,23 @@ void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
 
 
 /**
- * Prepend the flags and lenth to an OutputBufferInterface.
+ * Prepend the flags and length to an OutputBufferInterface.
  */
 void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
                                 unsigned int size,
                                 uint8_t flags) {
   if (size + 2 <= TWOB_LENGTH_LIMIT) {
     size += 2;
-    uint16_t flags_and_length = (
-        static_cast<uint16_t>(size) |
-        static_cast<uint16_t>(flags << 8u));
+    uint16_t flags_and_length = static_cast<uint16_t>(size);
+    flags_and_length |= static_cast<uint16_t>(flags << 8u);
     flags_and_length = HostToNetwork(flags_and_length);
     output->Write(reinterpret_cast<uint8_t*>(&flags_and_length),
                   sizeof(flags_and_length));
   } else {
     size += 3;
     uint8_t flags_and_length[3];
-    flags_and_length[0] = (flags |
-                           static_cast<uint8_t>((size & 0x0f0000) >> 16));
+    flags_and_length[0] = static_cast<uint8_t>((size & 0x0f0000) >> 16);
+    flags_and_length[0] |= flags;
     flags_and_length[1] = static_cast<uint8_t>((size & 0xff00) >> 8);
     flags_and_length[2] = static_cast<uint8_t>(size & 0xff);
     output->Write(flags_and_length, sizeof(flags_and_length));

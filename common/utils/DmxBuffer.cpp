@@ -276,10 +276,11 @@ void DmxBuffer::GetRange(unsigned int slot, uint8_t *data,
 
 
 uint8_t DmxBuffer::Get(unsigned int channel) const {
-  if (m_data && channel < m_length)
+  if (m_data && channel < m_length) {
     return m_data[channel];
-  else
+  } else {
     return 0;
+  }
 }
 
 
@@ -291,11 +292,14 @@ string DmxBuffer::Get() const {
 
 
 bool DmxBuffer::Blackout() {
-  if (m_copy_on_write)
+  if (m_copy_on_write) {
     CleanupMemory();
-  if (!m_data)
-    if (!Init())
+  }
+  if (!m_data) {
+    if (!Init()) {
       return false;
+    }
+  }
   memset(m_data, DMX_MIN_SLOT_VALUE, DMX_UNIVERSE_SIZE);
   m_length = DMX_UNIVERSE_SIZE;
   return true;
@@ -303,19 +307,23 @@ bool DmxBuffer::Blackout() {
 
 
 void DmxBuffer::Reset() {
-  if (m_data)
+  if (m_data) {
     m_length = 0;
+  }
 }
 
 
 string DmxBuffer::ToString() const {
-  if (!m_data)
+  if (!m_data) {
     return "";
+  }
 
+  // TODO(Peter): Change to the uint8_t version of StringJoin
   std::ostringstream str;
   for (unsigned int i = 0; i < Size(); i++) {
-    if (i)
+    if (i) {
       str << ",";
+    }
     str << static_cast<int>(m_data[i]);
   }
   return str.str();
@@ -340,8 +348,9 @@ bool DmxBuffer::Init() {
  * @return true on Duplication, and false it duplication was not needed
  */
 bool DmxBuffer::DuplicateIfNeeded() {
-  if (m_copy_on_write && *m_ref_count == 1)
+  if (m_copy_on_write && *m_ref_count == 1) {
     m_copy_on_write = false;
+  }
 
   if (m_copy_on_write && *m_ref_count > 1) {
     unsigned int *old_ref_count = m_ref_count;
