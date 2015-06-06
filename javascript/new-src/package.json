@@ -2,7 +2,7 @@
   "name": "OLA",
   "repository": "OpenLightingProject/ola",
   "devDependencies": {
-    "OLP-JSCS": "daveol/OLP-jscs",
+    "OLP-JSCS": "OpenLightingProject/OLP-jscs",
     "grunt": "~0.4.5",
     "grunt-bower-task": "^0.4.0",
     "grunt-contrib-cssmin": "^0.11.0",
