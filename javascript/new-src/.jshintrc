@@ -5,7 +5,7 @@
   "latedef": true,
   "unused": true,
   "noarg": true,
-  "indent": 1,
+  "indent": 2,
   "trailing": true,
   "white": true,
   "forin": true,
