@@ -1,5 +1,8 @@
 language: cpp
 
+python:
+ - "2.7"
+
 script:
  - "bash -ex .travis-ci.sh"
 
@@ -46,6 +49,7 @@ cache: apt
 
 before_install:
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+ - sudo add-apt-repository ppa:h-rayflood/gcc-upper -y
  - sudo add-apt-repository ppa:h-rayflood/llvm-upper -y
  - sudo add-apt-repository ppa:ubuntu-cloud-archive/icehouse-staging -y
  - sudo apt-get update -qq
@@ -67,6 +71,7 @@ before_install:
  - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen graphviz; fi
 #Install grunt if required
  - if [ "$TASK" = "jshint"]; then sudo npm install -g grunt-cli; fi
+ - sudo pip install virtualenv
 
 after_success:
   - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
