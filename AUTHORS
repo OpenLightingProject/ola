@@ -12,6 +12,7 @@ Contributors:
   Harry F, for the Eurolite USB Pro code
   Heikki Junnila, bug fixes for the debian packaging files
   Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
+  Lukas Erlinghagen, win32 port.
   Joshua Moyerman, ArtNet fixes.
   Masaki Muranaka, various patches
   Nicolas, for the win32 port of libartnet
