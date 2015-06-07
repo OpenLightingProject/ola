@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='ola',
-    version='0.9.5',
+    version='@VERSION@',
     author='Simon Newton',
     author_email='nomis52@gmail.com',
     description='OLA Python client bindings.',

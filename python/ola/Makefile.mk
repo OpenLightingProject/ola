@@ -14,7 +14,7 @@ usbpro_path = ${top_srcdir}/plugins/usbpro/messages
 usbpro_proto = $(usbpro_path)/UsbProConfigMessages.proto
 
 if BUILD_PYTHON_LIBS
-built_sources = \
+built_sources += \
     python/ola/ArtNetConfigMessages_pb2.py \
     python/ola/Ola_pb2.py \
     python/ola/UsbProConfigMessages_pb2.py \

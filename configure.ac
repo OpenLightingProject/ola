@@ -728,8 +728,7 @@ fi
 # the non-generated files $srcdir/python/ols/PidStore.py). To build a complete
 # module, we symlink the files from the builddir to the srcdir and set
 # PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
-AC_CONFIG_LINKS([python/setup.py:python/setup.py
-                 python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
+AC_CONFIG_LINKS([python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
                  python/ola/DMXConstants.py:python/ola/DMXConstants.py
                  python/ola/DUBDecoder.py:python/ola/DUBDecoder.py
                  python/ola/DUBDecoderTest.py:python/ola/DUBDecoderTest.py
@@ -755,6 +754,7 @@ AC_CONFIG_FILES([include/ola/base/Version.h
                  plugins/e131/e131/libolaacn.pc
                  plugins/e131/messages/libolae131conf.pc
                  plugins/usbpro/messages/libolausbproconf.pc
+                 python/setup.py
                  tools/e133/libolae133common.pc
                  tools/e133/libolae133controller.pc
                  ])
