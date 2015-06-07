@@ -1,4 +1,5 @@
-module.exports = function (grunt) {
+/*jshint node: true*/
+module.exports = function(grunt) {
   'use strict';
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -32,10 +33,17 @@ module.exports = function (grunt) {
         jshintrc: true
       }
     },
+    jscs: {
+      src: ['Gruntfile.js', 'src/js/app.js'],
+      options: {
+        config: true,
+        verbose: true
+      }
+    },
     watch: {
       build: {
         files: ['Gruntfile.js', 'src/js/app.js', 'src/css/style.css'],
-        tasks: ['jshint:dev', 'uglify:build', 'cssmin:build'],
+        tasks: ['test', 'uglify:build', 'cssmin:build'],
         options: {
           atBegin: true
         }
@@ -55,6 +63,8 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-bower-task');
+  grunt.loadNpmTasks('grunt-jscs');
   grunt.registerTask('dev', ['watch:build']);
-  grunt.registerTask('build', ['jshint:dev', 'uglify:build', 'cssmin:build']);
+  grunt.registerTask('test', ['jshint:dev', 'jscs']);
+  grunt.registerTask('build', ['test', 'uglify:build', 'cssmin:build']);
 };
