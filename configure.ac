@@ -480,6 +480,10 @@ have_microhttpd="no"
 AS_IF([test "x$enable_http" != xno],
       [PKG_CHECK_MODULES([libmicrohttpd], [libmicrohttpd],
                          [have_microhttpd="yes"], [true])])
+
+AS_IF([test "x$enable_http" = xyes && test "x$have_microhttpd" != xyes],
+      AC_MSG_ERROR([--enable-http was given but libmicrohttpd was not found.]))
+
 AM_CONDITIONAL([HAVE_LIBMICROHTTPD], [test "x$have_microhttpd" = xyes])
 AS_IF([test "x$have_microhttpd" = xyes],
       [AC_DEFINE([HAVE_LIBMICROHTTPD], [1],
