@@ -532,12 +532,14 @@ int OladHTTPServer::SetPluginState(const HTTPRequest *request,
 
   bool state;
   if (!StringToBoolTolerant(state_string, &state)) {
+    OLA_INFO << "Invalid state " << state_string;
     return ServeHelpRedirect(response);
   }
 
-  string plugin_id_string = request->GetParameter("plugin_ids");
+  string plugin_id_string = request->GetPostParameter("plugin_ids");
   unsigned int plugin_id;
   if (!StringToInt(plugin_id_string, &plugin_id)) {
+    OLA_INFO << "Invalid plugin id " << plugin_id_string;
     return ServeHelpRedirect(response);
   }
 
