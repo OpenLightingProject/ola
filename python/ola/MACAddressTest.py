@@ -20,6 +20,7 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import sys
 import unittest
 from ola.MACAddress import MACAddress
 
@@ -31,7 +32,10 @@ class MACAddressTest(unittest.TestCase):
     self.assertEqual(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
     self.assertEqual('01:23:45:67:89:ab', str(mac))
 
-    self.assertTrue(mac > None)
+    # Python 3 does not allow sorting of incompatible types.
+    if sys.version_info.major == 2:
+        self.assertTrue(mac > None)
+
     mac2 = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x89, 0xcd]))
     self.assertTrue(mac2 > mac)
     mac3 = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x88, 0xab]))
@@ -63,6 +67,11 @@ class MACAddressTest(unittest.TestCase):
     m4 = MACAddress(bytearray([0x48, 0x46, 0x00, 0x00, 0x02, 0x2e]))
     macs = sorted([m1, m2, m3, m4])
     self.assertEqual([m3, m2, m1, m4], macs)
+
+  def testEquals(self):
+    m1 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
+    m2 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
+    self.assertEqual(m1, m2)
 
 if __name__ == '__main__':
   unittest.main()

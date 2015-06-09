@@ -56,6 +56,15 @@ class MACAddress(object):
       return 1
     return cmp(self.mac_address, other.mac_address)
 
+  def __lt__(self, other):
+    return self.mac_address < other.mac_address
+
+  def __eq__(self, other):
+    if other is None:
+      return False
+
+    return self.mac_address == other.mac_address
+
   @staticmethod
   def FromString(mac_address_str):
     """Create a new MAC Address from a string.
