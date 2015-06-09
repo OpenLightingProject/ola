@@ -669,7 +669,7 @@ PLUGINS=""
 
 # Force enable_usbdmx to yes when Ja Rule is explicitly requested.
 AS_IF([test "x$enable_ja_rule" = xyes],
-      [AS_ECHO(["Ja Rule is enable, enabling the usbdmx plugin."])]
+      [AS_ECHO(["Ja Rule is enabled, enabling the usbdmx plugin."])]
       [enable_usbdmx="yes"])
 
 PLUGIN_SUPPORT(artnet, USE_ARTNET)
