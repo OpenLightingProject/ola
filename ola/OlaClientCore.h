@@ -142,7 +142,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
 
   /**
    * @brief Set the state of a plugin.
-   * @param plugin_id the plugin's state to change
+   * @param plugin_ids the plugin's state to change
    * @param state the state to change to.
    * @param callback the SetCallback to invoke upon completion.
    */
