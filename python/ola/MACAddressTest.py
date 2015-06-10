@@ -33,7 +33,8 @@ class MACAddressTest(unittest.TestCase):
     self.assertEqual('01:23:45:67:89:ab', str(mac))
 
     # Python 3 does not allow sorting of incompatible types.
-    if sys.version_info.major == 2:
+    # We don't use sys.version_info.major to support Python 2.6.
+    if sys.version_info[0] == 2:
         self.assertTrue(mac > None)
 
     mac2 = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x89, 0xcd]))
