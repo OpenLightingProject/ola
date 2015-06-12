@@ -252,18 +252,14 @@ void OlaClientCore::ConfigureDevice(
   }
 }
 
-void OlaClientCore::SetPluginState(const vector<ola_plugin_id> plugin_ids,
+void OlaClientCore::SetPluginState(ola_plugin_id plugin_id,
                                    bool state,
                                    SetCallback *callback) {
   ola::proto::PluginStateChangeRequest request;
   RpcController *controller = new RpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
-  for (vector<ola_plugin_id>::const_iterator iter = plugin_ids.begin();
-       iter != plugin_ids.end();
-       ++iter) {
-    request.add_plugin_id(*iter);
-  }
+  request.set_plugin_id(plugin_id);
   request.set_enabled(state);
 
   if (m_connected) {

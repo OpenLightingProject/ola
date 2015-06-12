@@ -197,7 +197,7 @@ message PluginStateReply {
 }
 
 message PluginStateChangeRequest {
-  repeated int32 plugin_id = 1;
+  required int32 plugin_id = 1;
   required bool enabled = 2;
 }
 

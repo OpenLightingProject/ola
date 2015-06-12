@@ -132,11 +132,11 @@ class OlaClient {
 
   /**
    * @brief Set the state of a plugin.
-   * @param plugin_ids the ids of the plugins to set the state of.
+   * @param plugin_id the id of the plugin to set the state of.
    * @param state the state to set the plugin to
    * @param callback the SetCallback to invoke upon completion.
    */
-  void SetPluginState(const std::vector<ola_plugin_id> &plugin_ids,
+  void SetPluginState(ola_plugin_id plugin_id,
                       bool state,
                       SetCallback *callback);
 

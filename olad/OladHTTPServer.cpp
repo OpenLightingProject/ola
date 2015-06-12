@@ -524,8 +524,7 @@ int OladHTTPServer::SetPluginState(const HTTPRequest *request,
   if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response,
                       "POST state=[enable|disable], "
-                      // "plugin_ids=[a comma separated list of plugin ids]");
-                      "plugin_ids=[a plugin id]");
+                      "plugin_id=[a plugin id]");
   }
 
   string state_string = request->GetPostParameter("state");
@@ -536,7 +535,7 @@ int OladHTTPServer::SetPluginState(const HTTPRequest *request,
     return ServeHelpRedirect(response);
   }
 
-  string plugin_id_string = request->GetPostParameter("plugin_ids");
+  string plugin_id_string = request->GetPostParameter("plugin_id");
   unsigned int plugin_id;
   if (!StringToInt(plugin_id_string, &plugin_id)) {
     OLA_INFO << "Invalid plugin id " << plugin_id_string;
@@ -544,7 +543,7 @@ int OladHTTPServer::SetPluginState(const HTTPRequest *request,
   }
 
   m_client.SetPluginState(
-      vector<ola::ola_plugin_id>(1, (ola_plugin_id) plugin_id),
+      (ola_plugin_id) plugin_id,
       state,
       NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
 

@@ -152,7 +152,7 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
    * @brief Reload the plugins.
    */
   void ReloadPlugins(ola::rpc::RpcController* controller,
-                     const ::ola::proto::PluginReloadRequest* request,
+                     const ola::proto::PluginReloadRequest* request,
                      ola::proto::Ack* response,
                      ola::rpc::RpcService::CompletionCallback* done);
 

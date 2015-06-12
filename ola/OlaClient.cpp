@@ -100,10 +100,10 @@ void OlaClient::ConfigureDevice(unsigned int device_alias,
   m_core->ConfigureDevice(device_alias, msg, callback);
 }
 
-void OlaClient::SetPluginState(const vector<ola_plugin_id> &plugin_ids,
+void OlaClient::SetPluginState(ola_plugin_id plugin_id,
                                bool state,
                                SetCallback *callback) {
-  m_core->SetPluginState(plugin_ids, state, callback);
+  m_core->SetPluginState(plugin_id, state, callback);
 }
 
 void OlaClient::SetPortPriorityInherit(unsigned int device_alias,

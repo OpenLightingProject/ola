@@ -431,7 +431,7 @@ void OlaServerServiceImpl::GetPlugins(
 void OlaServerServiceImpl::ReloadPlugins(
     RpcController*,
     const ::ola::proto::PluginReloadRequest*,
-    ola::proto::Ack*,
+    Ack*,
     ola::rpc::RpcService::CompletionCallback* done) {
   ClosureRunner runner(done);
   if (m_reload_plugins_callback.get()) {
@@ -485,20 +485,18 @@ void OlaServerServiceImpl::GetPluginState(
 }
 
 void OlaServerServiceImpl::SetPluginState(
-    OLA_UNUSED RpcController* controller,
+    RpcController*,
     const ola::proto::PluginStateChangeRequest* request,
-    OLA_UNUSED Ack* response,
+    Ack*,
     ola::rpc::RpcService::CompletionCallback* done) {
   ClosureRunner runner(done);
-  for (int i = 0; i < request->plugin_id_size(); ++i) {
-    ola_plugin_id plugin_id = (ola_plugin_id) request->plugin_id(i);
-    AbstractPlugin *plugin = m_plugin_manager->GetPlugin(plugin_id);
+  ola_plugin_id plugin_id = (ola_plugin_id) request->plugin_id();
+  AbstractPlugin *plugin = m_plugin_manager->GetPlugin(plugin_id);
 
-    if (plugin) {
-      OLA_DEBUG << "SetPluginState to " << request->enabled()
-                << " for plugin " << plugin->Name();
-      plugin->SetEnabledState(request->enabled());
-    }
+  if (plugin) {
+    OLA_DEBUG << "SetPluginState to " << request->enabled()
+              << " for plugin " << plugin->Name();
+    plugin->SetEnabledState(request->enabled());
   }
 }
 
@@ -803,7 +801,7 @@ void OlaServerServiceImpl::RDMDiscoveryCommand(
 void OlaServerServiceImpl::SetSourceUID(
     RpcController *controller,
     const ola::proto::UID* request,
-    ola::proto::Ack*,
+    Ack*,
     ola::rpc::RpcService::CompletionCallback* done) {
   ClosureRunner runner(done);
 
@@ -814,7 +812,7 @@ void OlaServerServiceImpl::SetSourceUID(
 void OlaServerServiceImpl::SendTimeCode(
     RpcController* controller,
     const ola::proto::TimeCode* request,
-    ola::proto::Ack*,
+    Ack*,
     ola::rpc::RpcService::CompletionCallback* done) {
   ClosureRunner runner(done);
   ola::timecode::TimeCode time_code(
