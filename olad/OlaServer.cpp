@@ -124,7 +124,7 @@ OlaServer::~OlaServer() {
   // Shutdown the RPC server first since it depends on almost everything else.
   m_rpc_server.reset();
 
-  if (m_housekeeping_timeout != ola::thread::INVALID_TIMEOUT){
+  if (m_housekeeping_timeout != ola::thread::INVALID_TIMEOUT) {
     m_ss->RemoveTimeout(m_housekeeping_timeout);
   }
 

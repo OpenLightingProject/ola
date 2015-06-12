@@ -83,7 +83,7 @@ string UartDmxDevice::DeviceBreakKey() const {
  */
 void UartDmxDevice::SetDefaults() {
   if (!m_preferences) {
-    return false;
+    return;
   }
 
   bool save = false;
