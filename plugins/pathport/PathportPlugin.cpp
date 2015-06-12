@@ -37,7 +37,7 @@ using std::string;
 
 const char PathportPlugin::PLUGIN_NAME[] = "Pathport";
 const char PathportPlugin::PLUGIN_PREFIX[] = "pathport";
-const unsigned int PathportPlugin::DEFAULT_DSCP_VALUE = "0";
+const unsigned int PathportPlugin::DEFAULT_DSCP_VALUE = 0;
 
 
 /*
