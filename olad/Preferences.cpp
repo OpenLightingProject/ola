@@ -262,6 +262,12 @@ bool MemoryPreferences::SetDefaultValue(const string &key,
 
 bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
+                                        const char value[]) {
+  return SetDefaultValue(key, validator, string(value));
+}
+
+bool MemoryPreferences::SetDefaultValue(const string &key,
+                                        const Validator &validator,
                                         unsigned int value) {
   return SetDefaultValue(key, validator, IntToString(value));
 }
@@ -269,8 +275,18 @@ bool MemoryPreferences::SetDefaultValue(const string &key,
 
 bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
-                                        const int value) {
+                                        int value) {
   return SetDefaultValue(key, validator, IntToString(value));
+}
+
+
+bool MemoryPreferences::SetDefaultValue(const string &key,
+                                        const Validator &validator,
+                                        const bool value) {
+  return SetDefaultValue(
+      key,
+      validator,
+      value ? BoolValidator::ENABLED : BoolValidator::DISABLED);
 }
 
 

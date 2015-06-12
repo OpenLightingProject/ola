@@ -51,7 +51,7 @@ bool Plugin::LoadPreferences() {
   bool save = m_preferences->SetDefaultValue(
       ENABLED_KEY,
       BoolValidator(),
-      DefaultMode() ? "true" : "false");
+      DefaultMode());
   if (save) {
     m_preferences->Save();
   }
@@ -68,7 +68,7 @@ string Plugin::PreferenceConfigLocation() const {
 }
 
 bool Plugin::IsEnabled() const {
-  return !(m_preferences->GetValue(ENABLED_KEY) == "false");
+  return m_preferences->GetValueAsBool(ENABLED_KEY);
 }
 
 bool Plugin::Start() {
