@@ -100,9 +100,30 @@ AM_CONDITIONAL(BUILD_OLA_PROTOC_PLUGIN, test "${with_ola_protoc_plugin}" == "no"
 ])
 
 
-# PLUGIN_SUPPORT(plugin, conditional, prerequisites_found)
-# Build the specified plugin, unless it was disabled at configure time.
-# -----------------------------------------------------------------------------
+# PLUGIN_SUPPORT(plugin_key, conditional, prerequisites_found)
+#
+# Build the specified plugin if requested and its dependencies are met.
+#
+# Each plugin specified with PLUGIN_SUPPORT gets its own configure switch named
+# --enable_${plugin_key}. The three acceptable values the user can give are:
+#
+#  - auto (default): Build the plugin if its dependencies are met, otherwise
+#    don't.
+#  - yes: Build the plugin and error out if its dependencies are not met.
+#  - no: Never build the plugin.
+#
+# If the input value of enable_${plugin_key} is "auto" and EITHER of the
+# following is true:
+#
+#  - --disable-all-plugins is specified
+#  - the plugin's dependencies are not met
+#
+# then PLUGIN_SUPPORT will overwrite the value of enable_${plugin_key} to "no".
+# In all other cases, its original value is preserved.
+#
+# This means that after PLUGIN_SUPPORT has "ran" for a particular plugin, a value
+# of "auto" or "yes" means that the plugin will get built, while a value of "no"
+# means that it won't.
 AC_DEFUN([PLUGIN_SUPPORT],
 [
   plugin_key=$1
@@ -110,19 +131,36 @@ AC_DEFUN([PLUGIN_SUPPORT],
 
   AC_ARG_ENABLE(
     [$1],
-    AS_HELP_STRING([--disable-$1], [Disable the $1 plugin]))
+    AS_HELP_STRING([--disable-$1], [Disable the $1 plugin]),
+    [],
+    [eval $enable_arg=auto])
 
   eval enable_plugin=\$$enable_arg;
+
+  # Input validation.
+  if test "${enable_plugin}" != "yes" -a \
+          "${enable_plugin}" != "no" -a \
+          "${enable_plugin}" != "auto"; then
+    AC_MSG_ERROR([Invalid value for --enable-${plugin_key}/\
+--disable-${plugin_key}. Valid values are yes, no and auto.])
+  fi
+
+  # If dependencies are not met...
   if test "$3" == "no"; then
+    # ...and the user has explicitely requested this plugin to be enabled,
+    # error out.
+    if test "${enable_plugin}" = "yes"; then
+      AC_MSG_ERROR([Dependencies for plugin ${plugin_key} are not met.])
+    fi
+
+    # Otherwise, force the plugin disabled silently.
     enable_plugin="no";
   fi
 
   # If we've disabled all plugins, disable this one unless it has been
-  # explicitly enabled
-  if test "${enable_all_plugins}" == "no"; then
-    if test "${enable_plugin}" != "yes"; then
-      enable_plugin="no";
-    fi
+  # explicitly enabled.
+  if test "${enable_all_plugins}" = "no" -a "${enable_plugin}" != "yes"; then
+    enable_plugin="no";
   fi
 
   if test "${enable_plugin}" != "no"; then
