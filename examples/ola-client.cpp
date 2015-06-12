@@ -279,50 +279,10 @@ void DisplayDevices(SelectServer *ss,
   ss->Terminate();
 }
 
-void SetPluginStateComplete(SelectServer *ss, const Result &result) {
-  if (!result.Success()) {
-    cerr << result.Error() << endl;
-  }
-  ss->Terminate();
-}
-
 /*
- * Called when the patch command completes.
+ * Called when a generic set command completes
  */
-void PatchComplete(SelectServer *ss, const Result &result) {
-  if (!result.Success()) {
-    cerr << result.Error() << endl;
-  }
-  ss->Terminate();
-}
-
-/*
- * Called when the name command completes.
- */
-void UniverseNameComplete(SelectServer *ss, const Result &result) {
-  if (!result.Success()) {
-    cerr << result.Error() << endl;
-  }
-  ss->Terminate();
-}
-
-
-void UniverseMergeModeComplete(SelectServer *ss, const Result &result) {
-  if (!result.Success()) {
-    cerr << result.Error() << endl;
-  }
-  ss->Terminate();
-}
-
-
-void SendDmxComplete(SelectServer *ss, const Result &result) {
-  if (!result.Success()) {
-    cerr << result.Error() << endl;
-  }
-  ss->Terminate();
-}
-
-void SetPortPriorityComplete(SelectServer *ss, const Result &result) {
+void HandleAck(SelectServer *ss, const Result &result) {
   if (!result.Success()) {
     cerr << result.Error() << endl;
   }
@@ -794,7 +754,7 @@ void Patch(OlaClientWrapper *wrapper, const options &opts) {
                 opts.port_id,
                 opts.port_direction,
                 opts.patch_action, opts.uni,
-                NewSingleCallback(&PatchComplete, ss));
+                NewSingleCallback(&HandleAck, ss));
 }
 
 
@@ -833,7 +793,7 @@ int FetchPluginState(OlaClientWrapper *wrapper, const options &opts) {
       client->SetPluginState(
           (ola::ola_plugin_id) opts.plugin_id,
           state,
-          NewSingleCallback(&SetPluginStateComplete, ss));
+          NewSingleCallback(&HandleAck, ss));
     } else {
       cerr << "Invalid state: " << opts.state << endl;
       DisplayPluginStateHelp(opts);
@@ -861,7 +821,7 @@ int SetUniverseName(OlaClientWrapper *wrapper, const options &opts) {
     exit(1);
   }
   client->SetUniverseName(opts.uni, opts.uni_name,
-                          NewSingleCallback(&UniverseNameComplete, ss));
+                          NewSingleCallback(&HandleAck, ss));
   return 0;
 }
 
@@ -881,7 +841,7 @@ int SetUniverseMergeMode(OlaClientWrapper *wrapper,
   }
   client->SetUniverseMergeMode(
       opts.uni, opts.merge_mode,
-      NewSingleCallback(&UniverseMergeModeComplete, ss));
+      NewSingleCallback(&HandleAck, ss));
   return 0;
 }
 
@@ -902,7 +862,7 @@ int SendDmx(OlaClientWrapper *wrapper, const options &opts) {
     exit(1);
   }
 
-  ola::client::SendDMXArgs args(NewSingleCallback(&SendDmxComplete, ss));
+  ola::client::SendDMXArgs args(NewSingleCallback(&HandleAck, ss));
   client->SendDMX(opts.uni, buffer, args);
   return 0;
 }
@@ -923,11 +883,11 @@ void SetPortPriority(OlaClientWrapper *wrapper, const options &opts) {
   if (opts.priority_mode == ola::PRIORITY_MODE_INHERIT) {
     client->SetPortPriorityInherit(
         opts.device_id, opts.port_id, opts.port_direction,
-        NewSingleCallback(&SetPortPriorityComplete, ss));
+        NewSingleCallback(&HandleAck, ss));
   } else if (opts.priority_mode == ola::PRIORITY_MODE_STATIC) {
     client->SetPortPriorityOverride(
         opts.device_id, opts.port_id, opts.port_direction, opts.priority_value,
-        NewSingleCallback(&SetPortPriorityComplete, ss));
+        NewSingleCallback(&HandleAck, ss));
   } else {
     DisplaySetPriorityHelp(opts);
   }
