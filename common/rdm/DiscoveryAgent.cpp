@@ -123,6 +123,11 @@ void DiscoveryAgent::InitDiscovery(
  * devices (incremental only).
  */
 void DiscoveryAgent::UnMuteComplete() {
+  if (m_uid_ranges.empty()) {
+    // Abort() was called
+    return;
+  }
+
   m_unmute_count++;
   if (m_unmute_count < BROADCAST_UNMUTE_REPEATS) {
     m_target->UnMuteAll(m_unmute_callback.get());
