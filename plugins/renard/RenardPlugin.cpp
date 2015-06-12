@@ -137,8 +137,9 @@ int RenardPlugin::SocketClosed(ConnectedDescriptor *socket) {
   vector<RenardDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    if ((*iter)->GetSocket() == socket)
+    if ((*iter)->GetSocket() == socket) {
       break;
+    }
   }
 
   if (iter == m_devices.end()) {
@@ -157,20 +158,23 @@ int RenardPlugin::SocketClosed(ConnectedDescriptor *socket) {
  *
  */
 bool RenardPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
                                          RENARD_DEVICE_PATH);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   // Just check key exists, as we've set it to ""
-  if (!m_preferences->HasKey(DEVICE_KEY))
+  if (!m_preferences->HasKey(DEVICE_KEY)) {
     return false;
+  }
   return true;
 }
 

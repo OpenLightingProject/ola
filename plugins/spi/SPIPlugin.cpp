@@ -78,8 +78,9 @@ bool SPIPlugin::StartHook() {
     SPIDevice *device = new SPIDevice(this, m_preferences, m_plugin_adaptor,
                                       *iter, &uid_allocator);
 
-    if (!device)
+    if (!device) {
       continue;
+    }
 
     if (!device->Start()) {
       delete device;
@@ -187,8 +188,9 @@ string SPIPlugin::Description() const {
 bool SPIPlugin::SetDefaultPreferences() {
   bool save = false;
 
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   save |= m_preferences->SetDefaultValue(SPI_DEVICE_PREFIX_KEY,
                                          StringValidator(),
@@ -196,11 +198,13 @@ bool SPIPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(SPI_BASE_UID_KEY,
                                          StringValidator(),
                                          DEFAULT_BASE_UID);
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
-  if (m_preferences->GetValue(SPI_DEVICE_PREFIX_KEY).empty())
+  if (m_preferences->GetValue(SPI_DEVICE_PREFIX_KEY).empty()) {
     return false;
+  }
 
   return true;
 }

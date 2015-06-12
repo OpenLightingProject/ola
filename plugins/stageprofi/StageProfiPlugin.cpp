@@ -97,8 +97,9 @@ string StageProfiPlugin::Description() const {
 }
 
 bool StageProfiPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
 

@@ -73,8 +73,9 @@ bool MilInstWidget1553::Connect() {
 
   int fd = ConnectToWidget(m_path, baudrate);
 
-  if (fd < 0)
+  if (fd < 0) {
     return false;
+  }
 
   m_socket = new ola::io::DeviceDescriptor(fd);
   m_socket->SetOnData(
@@ -195,8 +196,9 @@ void MilInstWidget1553::SetWidgetDefaults() {
       SetValidator<unsigned int>(valid_channels),
       DEFAULT_CHANNELS);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 }
 }  // namespace milinst
 }  // namespace plugin
