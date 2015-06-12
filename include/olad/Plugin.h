@@ -60,6 +60,13 @@ class AbstractPlugin {
   virtual bool IsEnabled() const = 0;
 
   /**
+   * @brief Set the plugin's enabled state.
+   * @param enable The new enabled state
+   * @return true if this plugin is enabled
+   */
+  virtual void SetEnabledState(bool enable) = 0;
+
+  /**
    * @brief Start the plugin
    *
    * Calls start_hook() which can be over-ridden by the derrived classes.
@@ -121,6 +128,7 @@ class Plugin: public AbstractPlugin {
   bool LoadPreferences();
   std::string PreferenceConfigLocation() const;
   bool IsEnabled() const;
+  void SetEnabledState(bool enable);
   virtual bool Start();
   virtual bool Stop();
   // return true if this plugin is enabled by default

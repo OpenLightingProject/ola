@@ -71,6 +71,11 @@ bool Plugin::IsEnabled() const {
   return m_preferences->GetValueAsBool(ENABLED_KEY);
 }
 
+void Plugin::SetEnabledState(bool enable) {
+  m_preferences->SetValueAsBool(ENABLED_KEY, enable);
+  m_preferences->Save();
+}
+
 bool Plugin::Start() {
   string enabled;
 

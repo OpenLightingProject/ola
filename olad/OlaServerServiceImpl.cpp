@@ -489,16 +489,17 @@ void OlaServerServiceImpl::SetPluginState(
     const ola::proto::PluginStateChangeRequest* request,
     OLA_UNUSED Ack* response,
     ola::rpc::RpcService::CompletionCallback* done) {
-  OLA_DEBUG << "SetPluginState: " << request->enabled();
   ClosureRunner runner(done);
   for (int i = 0; i < request->plugin_id_size(); ++i) {
-    OLA_DEBUG << "SPS Plugin " << request->plugin_id(i);
-  }
-  //Universe *universe = m_universe_store->GetUniverse(request->universe());
-  //if (!universe)
-  //  return MissingUniverseError(controller);
+    ola_plugin_id plugin_id = (ola_plugin_id) request->plugin_id(i);
+    AbstractPlugin *plugin = m_plugin_manager->GetPlugin(plugin_id);
 
-  //universe->SetName(request->name());
+    if (plugin) {
+      OLA_DEBUG << "SetPluginState to " << request->enabled()
+                << " for plugin " << plugin->Name();
+      plugin->SetEnabledState(request->enabled());
+    }
+  }
 }
 
 void OlaServerServiceImpl::GetDeviceInfo(
