@@ -122,14 +122,16 @@ string KiNetPlugin::Description() const {
 bool KiNetPlugin::SetDefaultPreferences() {
   bool save = false;
 
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   save |= m_preferences->SetDefaultValue(POWER_SUPPLY_KEY,
                                          StringValidator(true), "");
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
   return true;
 }
 }  // namespace kinet

@@ -98,8 +98,9 @@ string ShowNetPlugin::Description() const {
  * Set default preferences
  */
 bool ShowNetPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
 
@@ -108,11 +109,13 @@ bool ShowNetPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(SHOWNET_NAME_KEY, StringValidator(),
                                          SHOWNET_NODE_NAME);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
-  if (m_preferences->GetValue(SHOWNET_NAME_KEY).empty())
+  if (m_preferences->GetValue(SHOWNET_NAME_KEY).empty()) {
     return false;
+  }
   return true;
 }
 }  // namespace shownet

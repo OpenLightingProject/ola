@@ -124,8 +124,9 @@ OlaServer::~OlaServer() {
   // Shutdown the RPC server first since it depends on almost everything else.
   m_rpc_server.reset();
 
-  if (m_housekeeping_timeout != ola::thread::INVALID_TIMEOUT)
+  if (m_housekeeping_timeout != ola::thread::INVALID_TIMEOUT){
     m_ss->RemoveTimeout(m_housekeeping_timeout);
+  }
 
   StopPlugins();
 
@@ -153,15 +154,18 @@ OlaServer::~OlaServer() {
 }
 
 bool OlaServer::Init() {
-  if (m_service_impl.get())
+  if (m_service_impl.get()) {
     return false;
+  }
 
-  if (!m_ss)
+  if (!m_ss) {
     return false;
+  }
 
   // TODO(simon): run without preferences & PluginLoader
-  if (m_plugin_loaders.empty() || !m_preferences_factory)
+  if (m_plugin_loaders.empty() || !m_preferences_factory) {
     return false;
+  }
 
   auto_ptr<const RootPidStore> pid_store(
       RootPidStore::LoadFromDirectory(m_options.pid_data_dir));
@@ -324,19 +328,21 @@ void OlaServer::ReloadPlugins() {
 }
 
 void OlaServer::ReloadPidStore() {
-  // We load the pids in this thread, and then hand the RootPidStore over to
+  // We load the PIDs in this thread, and then hand the RootPidStore over to
   // the main thread. This avoids doing disk I/O in the network thread.
   const RootPidStore* pid_store = RootPidStore::LoadFromDirectory(
       m_options.pid_data_dir);
-  if (!pid_store)
+  if (!pid_store) {
     return;
+  }
 
   m_ss->Execute(NewCallback(this, &OlaServer::UpdatePidStore, pid_store));
 }
 
 void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
-  if (!descriptor)
+  if (!descriptor) {
     return;
+  }
   InternalNewConnection(m_rpc_server.get(), descriptor);
 }
 
@@ -400,10 +406,11 @@ bool OlaServer::RunHousekeeping() {
 #ifdef HAVE_LIBMICROHTTPD
 bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
                                 const ola::network::Interface &iface) {
-  if (!m_options.http_enable)
+  if (!m_options.http_enable) {
     return true;
+  }
 
-  // create a pipe for the http server to communicate with the main
+  // create a pipe for the HTTP server to communicate with the main
   // server on.
   auto_ptr<ola::io::PipeDescriptor> pipe_descriptor(
       new ola::io::PipeDescriptor());
@@ -437,8 +444,9 @@ bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
 #endif
 
 void OlaServer::StopPlugins() {
-  if (m_plugin_manager.get())
+  if (m_plugin_manager.get()) {
     m_plugin_manager->UnloadAll();
+  }
   if (m_device_manager.get()) {
     if (m_device_manager->DeviceCount()) {
       OLA_WARN << "Some devices failed to unload, we're probably leaking "

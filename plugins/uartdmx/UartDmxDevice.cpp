@@ -50,17 +50,20 @@ UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
   SetDefaults();
   // now read per-device configuration
   // Break time in microseconds
-  if (!StringToInt(m_preferences->GetValue(DeviceBreakKey()), &m_breakt))
+  if (!StringToInt(m_preferences->GetValue(DeviceBreakKey()), &m_breakt)) {
     m_breakt = DEFAULT_BREAK;
+  }
   // Mark After Last Frame in microseconds
-  if (!StringToInt(m_preferences->GetValue(DeviceMalfKey()), &m_malft))
+  if (!StringToInt(m_preferences->GetValue(DeviceMalfKey()), &m_malft)) {
     m_malft = DEFAULT_MALF;
+  }
   m_widget.reset(new UartWidget(path));
 }
 
 UartDmxDevice::~UartDmxDevice() {
-  if (m_widget->IsOpen())
+  if (m_widget->IsOpen()) {
     m_widget->Close();
+  }
 }
 
 bool UartDmxDevice::StartHook() {
@@ -79,6 +82,10 @@ string UartDmxDevice::DeviceBreakKey() const {
  * Set the default preferences for this one Device
  */
 void UartDmxDevice::SetDefaults() {
+  if (!m_preferences) {
+    return false;
+  }
+
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(DeviceBreakKey(),
@@ -87,8 +94,9 @@ void UartDmxDevice::SetDefaults() {
   save |= m_preferences->SetDefaultValue(DeviceMalfKey(),
                                          UIntValidator(8, 1000000),
                                          DEFAULT_MALF);
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 }
 }  // namespace uartdmx
 }  // namespace plugin

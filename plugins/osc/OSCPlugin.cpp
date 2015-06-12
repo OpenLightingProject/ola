@@ -90,8 +90,9 @@ bool OSCPlugin::StartHook() {
     vector<string>::const_iterator iter = tokens.begin();
     for (; iter != tokens.end(); ++iter) {
       OSCTarget target;
-      if (ExtractOSCTarget(*iter, &target))
+      if (ExtractOSCTarget(*iter, &target)) {
         port_config.targets.push_back(target);
+      }
     }
 
     port_configs.push_back(port_config);
@@ -169,8 +170,9 @@ string OSCPlugin::Description() const {
  * Set the default preferences for the OSC plugin.
  */
 bool OSCPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
 
@@ -203,8 +205,9 @@ bool OSCPlugin::SetDefaultPreferences() {
         StringValidator(true), BLOB_FORMAT);
   }
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   return true;
 }

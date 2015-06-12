@@ -149,6 +149,8 @@ void PreferencesTest::testGetSetRemove() {
   unsigned int value4 = 2;
   int value5 = 3;
   int value6 = 4;
+  const char value7[] = "bar";
+  const char value8[] = "baz";
 
   // test get/set/has single values string
   OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
@@ -258,6 +260,24 @@ void PreferencesTest::testGetSetRemove() {
   OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, int_validator,
                                                 value6));
   OLA_ASSERT_EQ(IntToString(value5), preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
+  preferences->RemoveValue(key1);
+
+  // test SetDefaultValue char[]
+  OLA_ASSERT(preferences->SetDefaultValue(key1, StringValidator(), value7));
+  OLA_ASSERT_EQ(string(value7), preferences->GetValue(key1));
+  OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, StringValidator(),
+                                                value8));
+  OLA_ASSERT_EQ(string(value7), preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
+  preferences->RemoveValue(key1);
+
+  // test SetDefaultValue bool
+  OLA_ASSERT(preferences->SetDefaultValue(key1, BoolValidator(), true));
+  OLA_ASSERT_EQ(string(BoolValidator::ENABLED), preferences->GetValue(key1));
+  OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, BoolValidator(),
+                                                false));
+  OLA_ASSERT_EQ(string(BoolValidator::ENABLED), preferences->GetValue(key1));
   OLA_ASSERT(preferences->HasKey(key1));
   preferences->RemoveValue(key1);
 }
