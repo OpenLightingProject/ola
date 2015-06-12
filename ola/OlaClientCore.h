@@ -23,7 +23,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"

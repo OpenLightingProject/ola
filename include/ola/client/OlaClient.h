@@ -34,7 +34,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 namespace ola {
 namespace client {
