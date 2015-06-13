@@ -148,13 +148,13 @@ AC_DEFUN([PLUGIN_SUPPORT],
 
   # If dependencies are not met...
   if test "$3" == "no"; then
-    # ...and the user has explicitely requested this plugin to be enabled,
+    # ...and the user has explicitly requested this plugin to be enabled,
     # error out.
     if test "${enable_plugin}" = "yes"; then
       AC_MSG_ERROR([Dependencies for plugin ${plugin_key} are not met.])
     fi
 
-    # Otherwise, force the plugin disabled silently.
+    # Otherwise, silently force disable the plugin.
     enable_plugin="no";
   fi
 
