@@ -725,7 +725,7 @@ fi
 # Python modules can't be split over two directories. This is a problem when
 # doing VPATH builds since the generated files like
 # ${builddir}/python/ola/Ola_pb.py will be in a separate path ( $builddir ) from
-# the non-generated files $srcdir/python/ols/PidStore.py). To build a complete
+# the non-generated files $srcdir/python/ola/PidStore.py). To build a complete
 # module, we symlink the files from the builddir to the srcdir and set
 # PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
 AC_CONFIG_LINKS([python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
