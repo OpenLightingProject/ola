@@ -160,7 +160,7 @@ AC_DEFUN([PLUGIN_SUPPORT],
 
   # If we've disabled all plugins, disable this one unless it has been
   # explicitly enabled.
-  if test "${enable_all_plugins}" = "no" -a "${enable_plugin}" != "yes"; then
+  if test "${enable_all_plugins}" = "no" -a "${enable_plugin}" = "auto"; then
     enable_plugin="no";
   fi
 
