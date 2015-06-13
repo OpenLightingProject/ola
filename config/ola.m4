@@ -122,7 +122,7 @@ AM_CONDITIONAL(BUILD_OLA_PROTOC_PLUGIN, test "${with_ola_protoc_plugin}" == "no"
 # then PLUGIN_SUPPORT will overwrite the value of enable_X to "no". In all
 # other cases, the original value is preserved.
 #
-# This means that after PLUGIN_SUPPORT has "ran" for a particular plugin, a value
+# This means that after PLUGIN_SUPPORT has "run" for a particular plugin, a value
 # of "auto" or "yes" means that the plugin will get built, while a value of "no"
 # means that it won't.
 AC_DEFUN([PLUGIN_SUPPORT],
