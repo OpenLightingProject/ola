@@ -104,22 +104,23 @@ AM_CONDITIONAL(BUILD_OLA_PROTOC_PLUGIN, test "${with_ola_protoc_plugin}" == "no"
 #
 # Build the specified plugin if requested and its dependencies are met.
 #
-# Each plugin specified with PLUGIN_SUPPORT gets its own configure switch named
-# --enable_${plugin_key}. The three acceptable values the user can give are:
+# Each plugin specified with PLUGIN_SUPPORT gets its own configure switches
+# --enable-X/--disable-X, which translate to the enable_X variable. The three
+# acceptable states for this variable are:
 #
-#  - auto (default): Build the plugin if its dependencies are met, otherwise
-#    don't.
+#  - auto: Build the plugin if its dependencies are met, otherwise
+#    don't. This is the default state used when the user does not specify
+#    anything regarding this plugin.
 #  - yes: Build the plugin and error out if its dependencies are not met.
 #  - no: Never build the plugin.
 #
-# If the input value of enable_${plugin_key} is "auto" and EITHER of the
-# following is true:
+# If the input value of enable_X is "auto" and EITHER of the following is true:
 #
 #  - --disable-all-plugins is specified
 #  - the plugin's dependencies are not met
 #
-# then PLUGIN_SUPPORT will overwrite the value of enable_${plugin_key} to "no".
-# In all other cases, its original value is preserved.
+# then PLUGIN_SUPPORT will overwrite the value of enable_X to "no". In all
+# other cases, the original value is preserved.
 #
 # This means that after PLUGIN_SUPPORT has "ran" for a particular plugin, a value
 # of "auto" or "yes" means that the plugin will get built, while a value of "no"
