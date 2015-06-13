@@ -69,5 +69,8 @@ elif [[ $TASK = 'jshint' ]]; then
   grunt test
 else
   # Otherwise compile and check as normal
+  virtualenv python-env && source python-env/bin/activate
+  which python
+  echo "VIRTUAL_ENV: $VIRTUAL_ENV"
   autoreconf -i && ./configure --enable-rdm-tests --enable-ja-rule && make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
 fi
