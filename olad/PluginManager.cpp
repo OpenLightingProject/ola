@@ -93,7 +93,7 @@ void PluginManager::LoadAll() {
                  << " because it conflicts with "
                  << (conflicting_plugin ?
                      conflicting_plugin->Name() :
-                     "plugin id " + *set_iter)
+                     "plugin id " + IntToString(*set_iter))
                  << " which is also enabled";
         conflict = true;
         break;
