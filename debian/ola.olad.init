@@ -57,7 +57,7 @@ case "$1" in
     status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
     ;;
   *)
-    echo "Usage: /etc/init.d/$NAME {start|stop|restart|status}" >&2
+    echo "Usage: /etc/init.d/$NAME {start|stop|reload|restart|force-reload|status}" >&2
     exit 1
     ;;
 esac
