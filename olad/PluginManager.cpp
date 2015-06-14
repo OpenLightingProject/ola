@@ -92,8 +92,8 @@ void PluginManager::LoadAll() {
         OLA_WARN << "Skipping " << plugin->Name()
                  << " because it conflicts with "
                  << (conflicting_plugin ?
-                    conflicting_plugin->Name() :
-                    "plugin id " + *set_iter)
+                     conflicting_plugin->Name() :
+                     "plugin id " + *set_iter)
                  << " which is also enabled";
         conflict = true;
         break;
