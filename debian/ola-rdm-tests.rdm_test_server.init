@@ -49,7 +49,7 @@ case "$1" in
       log_end_msg $?
     fi
     ;;
-  reload|restart)
+  force-reload|reload|restart)
     $0 stop && $0 start
     ;;
   status)
