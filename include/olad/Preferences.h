@@ -234,6 +234,20 @@ class Preferences {
 
   /**
    * @brief Set a preference value if it doesn't already exist, or if it exists
+   * and doesn't pass the validator. This helper accepts a char array to force
+   * it to a string.
+   * @note Note this only checks the first value's validity.
+   * @param key the key to check/set
+   * @param validator A Validator object
+   * @param value the new value
+   * @return true if we set the value, false if it already existed
+   */
+  virtual bool SetDefaultValue(const std::string &key,
+                               const Validator &validator,
+                               const char value[]) = 0;
+
+  /**
+   * @brief Set a preference value if it doesn't already exist, or if it exists
    * and doesn't pass the validator. This helper accepts an unsigned int value
    * @note Note this only checks the first value's validity.
    * @param key the key to check/set
@@ -257,6 +271,19 @@ class Preferences {
   virtual bool SetDefaultValue(const std::string &key,
                                const Validator &validator,
                                int value) = 0;
+
+  /**
+   * @brief Set a preference value if it doesn't already exist, or if it exists
+   * and doesn't pass the validator. This helper accepts a bool value
+   * @note Note this only checks the first value's validity.
+   * @param key the key to check/set
+   * @param validator A Validator object
+   * @param value the new value
+   * @return true if we set the value, false if it already existed
+   */
+  virtual bool SetDefaultValue(const std::string &key,
+                               const Validator &validator,
+                               bool value) = 0;
 
   /**
    * @brief Get a preference value
@@ -364,10 +391,16 @@ class MemoryPreferences: public Preferences {
                                const std::string &value);
   virtual bool SetDefaultValue(const std::string &key,
                                const Validator &validator,
+                               const char value[]);
+  virtual bool SetDefaultValue(const std::string &key,
+                               const Validator &validator,
                                unsigned int value);
   virtual bool SetDefaultValue(const std::string &key,
                                const Validator &validator,
                                int value);
+  virtual bool SetDefaultValue(const std::string &key,
+                               const Validator &validator,
+                               bool value);
 
   virtual std::string GetValue(const std::string &key) const;
   virtual std::vector<std::string> GetMultipleValue(

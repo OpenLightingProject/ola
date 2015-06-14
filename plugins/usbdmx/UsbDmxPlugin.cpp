@@ -102,16 +102,18 @@ string UsbDmxPlugin::Description() const {
 }
 
 bool UsbDmxPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = m_preferences->SetDefaultValue(
       LIBUSB_DEBUG_LEVEL_KEY,
       UIntValidator(LIBUSB_DEFAULT_DEBUG_LEVEL, LIBUSB_MAX_DEBUG_LEVEL),
       LIBUSB_DEFAULT_DEBUG_LEVEL);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   return true;
 }

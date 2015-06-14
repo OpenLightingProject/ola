@@ -165,8 +165,9 @@ void UsbSerialPlugin::NewWidget(
     EnttecUsbProWidget *widget,
     const UsbProWidgetInformation &information) {
   string device_name = GetDeviceName(information);
-  if (device_name.empty())
+  if (device_name.empty()) {
     device_name = USBPRO_DEVICE_NAME;
+  }
 
   AddDevice(new UsbProDevice(m_plugin_adaptor, this, device_name, widget,
                              information.serial, information.firmware_version,
@@ -287,8 +288,9 @@ bool UsbSerialPlugin::StartHook() {
  */
 bool UsbSerialPlugin::StopHook() {
   vector<UsbSerialDevice*>::iterator iter;
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter)
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     DeleteDevice(*iter);
+  }
   m_detector_thread.Join(NULL);
   m_devices.clear();
   return true;
@@ -299,8 +301,9 @@ bool UsbSerialPlugin::StopHook() {
  * Default to sensible values
  */
 bool UsbSerialPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
 
@@ -334,14 +337,16 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(TRI_USE_RAW_RDM_KEY,
                                          BoolValidator(),
-                                         BoolValidator::DISABLED);
+                                         false);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   device_prefixes = m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY);
-  if (device_prefixes.empty())
+  if (device_prefixes.empty()) {
     return false;
+  }
   return true;
 }
 
@@ -362,8 +367,9 @@ string UsbSerialPlugin::GetDeviceName(
     const UsbProWidgetInformation &information) {
   string device_name = information.manufacturer;
   if (!(information.manufacturer.empty() ||
-        information.device.empty()))
+        information.device.empty())) {
     device_name += " - ";
+  }
   device_name += information.device;
   return device_name;
 }

@@ -1,13 +1,11 @@
 {
   "nonew": true,
-  "jquery": true,
   "curly": true,
   "latedef": true,
   "unused": true,
   "noarg": true,
-  "indent": 1,
+  "indent": 2,
   "trailing": true,
-  "white": true,
   "forin": true,
   "noempty": true,
   "quotmark": "single",
@@ -17,14 +15,8 @@
   "bitwise": true,
   "newcap": true,
   "immed": true,
-  "browser": true,
   "es3": true,
   "maxlen": 80,
   "nonbsp": true,
-  "freeze": true,
-  "globals": {
-    "grunt": true,
-    "node": true,
-    "module": true
-  }
+  "freeze": true
 }

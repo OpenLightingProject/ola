@@ -147,18 +147,21 @@ string UartDmxPlugin::Description() const {
  * Set the default preferences
  */
 bool UartDmxPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   // only insert default device name, no others at this stage
   bool save = m_preferences->SetDefaultValue(K_DEVICE, StringValidator(),
                                              DEFAULT_DEVICE);
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   // Just check key exists, as we've set it to ""
-  if (!m_preferences->HasKey(K_DEVICE))
+  if (!m_preferences->HasKey(K_DEVICE)) {
     return false;
+  }
   return true;
 }
 }  // namespace uartdmx

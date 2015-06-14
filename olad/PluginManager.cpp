@@ -88,9 +88,12 @@ void PluginManager::LoadAll() {
     set<ola_plugin_id>::const_iterator set_iter = conflict_list.begin();
     for (; set_iter != conflict_list.end(); ++set_iter) {
       if (STLContains(m_enabled_plugins, *set_iter)) {
+        AbstractPlugin *conflicting_plugin = GetPlugin(*set_iter);
         OLA_WARN << "Skipping " << plugin->Name()
                  << " because it conflicts with "
-                 << GetPlugin(*set_iter)->Name()
+                 << (conflicting_plugin ?
+                     conflicting_plugin->Name() :
+                     "plugin id " + IntToString(*set_iter))
                  << " which is also enabled";
         conflict = true;
         break;

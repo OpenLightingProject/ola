@@ -66,16 +66,20 @@ RenardDevice::RenardDevice(AbstractPlugin *owner,
   SetDefaults();
 
   uint32_t dmxOffset;
-  if (!StringToInt(m_preferences->GetValue(DeviceDmxOffsetKey()), &dmxOffset))
+  if (!StringToInt(m_preferences->GetValue(DeviceDmxOffsetKey()),
+                                           &dmxOffset)) {
     dmxOffset = DEFAULT_DMX_OFFSET;
+  }
 
   uint32_t channels;
-  if (!StringToInt(m_preferences->GetValue(DeviceChannelsKey()), &channels))
+  if (!StringToInt(m_preferences->GetValue(DeviceChannelsKey()), &channels)) {
     channels = DEFAULT_NUM_CHANNELS;
+  }
 
   uint32_t baudrate;
-  if (!StringToInt(m_preferences->GetValue(DeviceBaudrateKey()), &baudrate))
+  if (!StringToInt(m_preferences->GetValue(DeviceBaudrateKey()), &baudrate)) {
     baudrate = DEFAULT_BAUDRATE;
+  }
 
   m_widget.reset(new RenardWidget(m_dev_path, dmxOffset, channels, baudrate,
                                   RENARD_START_ADDRESS));
@@ -98,8 +102,9 @@ RenardDevice::~RenardDevice() {
  * Start this device
  */
 bool RenardDevice::StartHook() {
-  if (!m_widget.get())
+  if (!m_widget.get()) {
     return false;
+  }
 
   if (!m_widget->Connect()) {
     OLA_WARN << "Failed to connect to " << m_dev_path;

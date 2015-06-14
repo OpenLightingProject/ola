@@ -176,17 +176,19 @@ int8_t HostToLittleEndian(int8_t value) {
 }
 
 uint16_t HostToLittleEndian(uint16_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return ((value & 0xff) << 8) | (value >> 8);
-  else
+  } else {
     return value;
+  }
 }
 
 int16_t HostToLittleEndian(int16_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return ((value & 0xff) << 8) | (value >> 8);
-  else
+  } else {
     return value;
+  }
 }
 
 uint32_t _ByteSwap(uint32_t value) {
@@ -197,18 +199,20 @@ uint32_t _ByteSwap(uint32_t value) {
 }
 
 uint32_t HostToLittleEndian(uint32_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return _ByteSwap(value);
-  else
+  } else {
     return value;
+  }
 }
 
 
 int32_t HostToLittleEndian(int32_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return _ByteSwap(value);
-  else
+  } else {
     return value;
+  }
 }
 
 
@@ -223,41 +227,46 @@ int8_t LittleEndianToHost(int8_t value) {
 
 
 uint16_t LittleEndianToHost(uint16_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return ((value & 0xff) << 8) | (value >> 8);
-  else
+  } else {
     return value;
+  }
 }
 
 
 int16_t LittleEndianToHost(int16_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return ((value & 0xff) << 8) | (value >> 8);
-  else
+  } else {
     return value;
+  }
 }
 
 
 uint32_t LittleEndianToHost(uint32_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return _ByteSwap(value);
-  else
+  } else {
     return value;
+  }
 }
 
 
 int32_t LittleEndianToHost(int32_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return _ByteSwap(value);
-  else
+  } else {
     return value;
+  }
 }
 
 
 string HostnameFromFQDN(const string &fqdn) {
   string::size_type first_dot = fqdn.find_first_of(".");
-  if (first_dot == string::npos)
+  if (first_dot == string::npos) {
     return fqdn;
+  }
   return fqdn.substr(0, first_dot);  // Don't return the dot itself
 }
 
@@ -265,8 +274,9 @@ string HostnameFromFQDN(const string &fqdn) {
 string DomainNameFromFQDN(const string &fqdn) {
   string::size_type first_dot = string::npos;
   first_dot = fqdn.find_first_of(".");
-  if (first_dot == string::npos)
+  if (first_dot == string::npos) {
     return "";
+  }
   return fqdn.substr(first_dot + 1);  // Don't return the dot itself
 }
 
@@ -327,8 +337,9 @@ bool NameServers(vector<IPV4Address> *name_servers) {
   while (1) {
     fixed_info = reinterpret_cast<PFIXED_INFO>(new uint8_t[size]);
     DWORD result = GetNetworkParams(fixed_info, &size);
-    if (result == ERROR_SUCCESS)
+    if (result == ERROR_SUCCESS) {
       break;
+    }
 
     if (result != ERROR_BUFFER_OVERFLOW) {
       OLA_WARN << "GetNetworkParams failed with: " << GetLastError();

@@ -92,6 +92,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   RegisterHandler("/reload_pids", &OladHTTPServer::ReloadPidStore);
   RegisterHandler("/new_universe", &OladHTTPServer::CreateNewUniverse);
   RegisterHandler("/modify_universe", &OladHTTPServer::ModifyUniverse);
+  RegisterHandler("/set_plugin_state", &OladHTTPServer::SetPluginState);
   RegisterHandler("/set_dmx", &OladHTTPServer::HandleSetDmx);
   RegisterHandler("/get_dmx", &OladHTTPServer::GetDmx);
 
@@ -416,7 +417,9 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
 int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
                                       HTTPResponse *response) {
   if (request->CheckParameterExists(HELP_PARAMETER)) {
-    return ServeUsage(response, "POST id=[universe], name=[name]");
+    return ServeUsage(response,
+                      "POST id=[universe], name=[name], add_ports=[a comma "
+                      "separated list of port ids]");
   }
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
@@ -461,7 +464,9 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
                                    HTTPResponse *response) {
   if (request->CheckParameterExists(HELP_PARAMETER)) {
     return ServeUsage(response,
-                      "POST id=[universe], name=[name], merge_mode=[HTP|LTP]");
+                      "POST id=[universe], name=[name], merge_mode=[HTP|LTP], "
+                      "add_ports=[a comma separated list of port ids], "
+                      "remove_ports=[a comma separated list of port ids]");
   }
 
   string uni_id = request->GetPostParameter("id");
@@ -505,6 +510,43 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
   AddPriorityActions(action_queue, request);
 
   action_queue->NextAction();
+  return MHD_YES;
+}
+
+/**
+ * @brief Set plugin state.
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OladHTTPServer::SetPluginState(const HTTPRequest *request,
+                                   HTTPResponse *response) {
+  if (request->CheckParameterExists(HELP_PARAMETER)) {
+    return ServeUsage(response,
+                      "POST state=[enable|disable], "
+                      "plugin_id=[a plugin id]");
+  }
+
+  string state_string = request->GetPostParameter("state");
+
+  bool state;
+  if (!StringToBoolTolerant(state_string, &state)) {
+    OLA_INFO << "Invalid state " << state_string;
+    return ServeHelpRedirect(response);
+  }
+
+  string plugin_id_string = request->GetPostParameter("plugin_id");
+  unsigned int plugin_id;
+  if (!StringToInt(plugin_id_string, &plugin_id)) {
+    OLA_INFO << "Invalid plugin id " << plugin_id_string;
+    return ServeHelpRedirect(response);
+  }
+
+  m_client.SetPluginState(
+      (ola_plugin_id) plugin_id,
+      state,
+      NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
+
   return MHD_YES;
 }
 

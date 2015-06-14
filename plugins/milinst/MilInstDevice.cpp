@@ -81,8 +81,9 @@ MilInstDevice::~MilInstDevice() {
  * Start this device
  */
 bool MilInstDevice::StartHook() {
-  if (!m_widget.get())
+  if (!m_widget.get()) {
     return false;
+  }
 
   if (!m_widget->Connect()) {
     OLA_WARN << "Failed to connect to " << m_path;
@@ -132,8 +133,9 @@ void MilInstDevice::SetDeviceDefaults() {
                                          SetValidator<string>(valid_types),
                                          TYPE_1463);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 }
 }  // namespace milinst
 }  // namespace plugin

@@ -21,6 +21,7 @@
 #include "ola/client/OlaClient.h"
 
 #include <string>
+#include <vector>
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
@@ -34,6 +35,7 @@ namespace ola {
 namespace client {
 
 using std::string;
+using std::vector;
 using ola::rdm::RDMAPIImplInterface;
 using ola::io::ConnectedDescriptor;
 
@@ -96,6 +98,12 @@ void OlaClient::ConfigureDevice(unsigned int device_alias,
                                 const string &msg,
                                 ConfigureDeviceCallback *callback) {
   m_core->ConfigureDevice(device_alias, msg, callback);
+}
+
+void OlaClient::SetPluginState(ola_plugin_id plugin_id,
+                               bool state,
+                               SetCallback *callback) {
+  m_core->SetPluginState(plugin_id, state, callback);
 }
 
 void OlaClient::SetPortPriorityInherit(unsigned int device_alias,
