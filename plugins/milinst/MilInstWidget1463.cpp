@@ -58,7 +58,7 @@ bool MilInstWidget1463::DetectDevice() {
 /*
  * Send a DMX msg.
   */
-bool MilInstWidget1463::SendDmx(const DmxBuffer &buffer) const {
+bool MilInstWidget1463::SendDmx(const DmxBuffer &buffer) {
   // TODO(Peter): Probably add offset in here to send higher channels shifted
   // down
   int bytes_sent = Send112(buffer);
@@ -73,7 +73,7 @@ bool MilInstWidget1463::SendDmx(const DmxBuffer &buffer) const {
 /*
  * Set a single channel
  */
-int MilInstWidget1463::SetChannel(unsigned int chan, uint8_t val) const {
+int MilInstWidget1463::SetChannel(unsigned int chan, uint8_t val) {
   uint8_t msg[2];
 
   msg[0] = chan;

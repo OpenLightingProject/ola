@@ -36,11 +36,11 @@ class MilInstWidget1463: public MilInstWidget {
 
   bool Connect();
   bool DetectDevice();
-  bool SendDmx(const DmxBuffer &buffer) const;
+  bool SendDmx(const DmxBuffer &buffer);
   std::string Type() { return "Milford Instruments 1-463 Widget"; }
 
  protected:
-  int SetChannel(unsigned int chan, uint8_t val) const;
+  int SetChannel(unsigned int chan, uint8_t val);
   int Send112(const DmxBuffer &buffer) const;
 
   // This interface can only transmit 112 channels
