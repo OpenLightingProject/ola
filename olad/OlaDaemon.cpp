@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaDaemon.cpp
  * This is the main ola daemon
@@ -50,8 +50,6 @@
 DEFINE_s_string(config_dir, c, "",
                 "The path to the config directory, Defaults to ~/.ola/ " \
                 "on *nix and %LOCALAPPDATA%\\.ola\\ on Windows.");
-DEFINE_s_uint16(rpc_port, r, ola::OlaDaemon::DEFAULT_RPC_PORT,
-                "The port to listen for RPCs on. Defaults to 9010.");
 
 namespace ola {
 
@@ -63,36 +61,44 @@ using ola::thread::MutexLocker;
 using std::auto_ptr;
 using std::string;
 
-const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";
 const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";
+const char OlaDaemon::CONFIG_DIR_KEY[] = "config-dir";
+const char OlaDaemon::UID_KEY[] = "uid";
+const char OlaDaemon::GID_KEY[] = "gid";
+const char OlaDaemon::USER_NAME_KEY[] = "user";
+const char OlaDaemon::GROUP_NAME_KEY[] = "group";
 
-/*
- * Create a new OlaDaemon
- */
 OlaDaemon::OlaDaemon(const OlaServer::Options &options,
                      ExportMap *export_map)
     : m_options(options),
       m_export_map(export_map),
       m_ss(m_export_map) {
   if (m_export_map) {
-    IntegerVariable *var = m_export_map->GetIntegerVar(K_RPC_PORT_VAR);
-    var->Set(FLAGS_rpc_port);
+    uid_t uid;
+    if (GetUID(&uid)) {
+      m_export_map->GetIntegerVar(UID_KEY)->Set(uid);
+      PasswdEntry passwd;
+      if (GetPasswdUID(uid, &passwd)) {
+        m_export_map->GetStringVar(USER_NAME_KEY)->Set(passwd.pw_name);
+      }
+    }
+
+    gid_t gid;
+    if (GetGID(&gid)) {
+      m_export_map->GetIntegerVar(GID_KEY)->Set(gid);
+      GroupEntry group;
+      if (GetGroupGID(gid, &group)) {
+        m_export_map->GetStringVar(GROUP_NAME_KEY)->Set(group.gr_name);
+      }
+    }
   }
 }
 
 
-/*
- * Destroy this object
- *
- */
 OlaDaemon::~OlaDaemon() {
   Shutdown();
 }
 
-/*
- * Initialise this object
- * @return true on success, false on failure
- */
 bool OlaDaemon::Init() {
   if (m_server.get()) {
     return false;
@@ -108,41 +114,29 @@ bool OlaDaemon::Init() {
       config_dir = default_dir;
     }
   }
-  // ignore the return code so this isn't fatal
+
+  // Ignore the return code so this isn't fatal
   // in macports the home directory isn't writeable
   InitConfigDir(config_dir);
   OLA_INFO << "Using configs in " << config_dir;
+  if (m_export_map) {
+    m_export_map->GetStringVar(CONFIG_DIR_KEY)->Set(config_dir);
+  }
   auto_ptr<PreferencesFactory> preferences_factory(
       new FileBackedPreferencesFactory(config_dir));
-
-  auto_ptr<SelectServer> ss(new SelectServer(m_export_map));
-  auto_ptr<OlaClientServiceFactory> service_factory(
-      new OlaClientServiceFactory());
-
-  auto_ptr<TCPAcceptingSocket> accepting_socket(
-      new TCPAcceptingSocket(NULL));  // factory is added later
-
-  if (!accepting_socket->Listen(
-        IPV4SocketAddress(IPV4Address::Loopback(), FLAGS_rpc_port))) {
-    OLA_FATAL << "Could not listen on the RPC port, you probably have " <<
-      "another instance of olad running";
-    return false;
-  }
 
   // Order is important here as we won't load the same plugin twice.
   m_plugin_loaders.push_back(new DynamicPluginLoader());
 
   auto_ptr<OlaServer> server(
-      new OlaServer(service_factory.get(), m_plugin_loaders,
+      new OlaServer(m_plugin_loaders,
                     preferences_factory.get(), &m_ss, m_options,
-                    accepting_socket.get(), m_export_map));
+                    NULL, m_export_map));
 
   bool ok = server->Init();
   if (ok) {
-    // setup all the members;
+    // Set the members
     m_preferences_factory.reset(preferences_factory.release());
-    m_service_factory.reset(service_factory.release());
-    m_accepting_socket.reset(accepting_socket.release());
     m_server.reset(server.release());
   } else {
     STLDeleteElements(&m_plugin_loaders);
@@ -150,36 +144,25 @@ bool OlaDaemon::Init() {
   return ok;
 }
 
-/*
- * Shutdown the daemon
- */
 void OlaDaemon::Shutdown() {
   m_server.reset();
-  m_service_factory.reset();
   m_preferences_factory.reset();
-  m_accepting_socket.reset();
   STLDeleteElements(&m_plugin_loaders);
 }
 
-/*
- * Run the daemon
- */
 void OlaDaemon::Run() {
   m_ss.Run();
 }
 
-/**
- * Return the address the RPC server is listening on
- */
 ola::network::GenericSocketAddress OlaDaemon::RPCAddress() const {
-  if (m_accepting_socket.get()) {
-    return m_accepting_socket->GetLocalAddress();
+  if (m_server.get()) {
+    return m_server->LocalRPCAddress();
   } else {
     return ola::network::GenericSocketAddress();
   }
 }
 
-/**
+/*
  * Return the home directory for the current user
  */
 string OlaDaemon::DefaultConfigDir() {
@@ -206,7 +189,7 @@ string OlaDaemon::DefaultConfigDir() {
   }
 }
 
-/**
+/*
  * Create the config dir if it doesn't exist. This doesn't create parent
  * directories.
  */

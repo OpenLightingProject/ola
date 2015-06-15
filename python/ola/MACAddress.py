@@ -1,4 +1,3 @@
-#  This program is free software; you can redistribute it and/or modify
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +10,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # MACAddress.py
 # Copyright (C) 2013 Peter Newman
@@ -20,7 +19,8 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-MAC_ADDRESS_LENGTH = 6;
+MAC_ADDRESS_LENGTH = 6
+
 
 class Error(Exception):
   """Base Error Class."""
@@ -55,6 +55,15 @@ class MACAddress(object):
     if other is None:
       return 1
     return cmp(self.mac_address, other.mac_address)
+
+  def __lt__(self, other):
+    return self.mac_address < other.mac_address
+
+  def __eq__(self, other):
+    if other is None:
+      return False
+
+    return self.mac_address == other.mac_address
 
   @staticmethod
   def FromString(mac_address_str):

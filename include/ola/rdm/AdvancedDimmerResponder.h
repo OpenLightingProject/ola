@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * AdvancedDimmerResponder_h
  * Copyright (C) 2013 Simon Newton
@@ -28,6 +28,7 @@
 #ifndef INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 
+#include <ola/base/Macro.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/ResponderOps.h>
 #include <ola/rdm/ResponderPersonality.h>
@@ -47,7 +48,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
  public:
   explicit AdvancedDimmerResponder(const UID &uid);
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
   /**
@@ -87,34 +88,38 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
         : BasicSettingManager(settings) {
     }
 
-    const RDMResponse *SetWithPin(const RDMRequest *request, uint16_t pin);
+    RDMResponse *SetWithPin(const RDMRequest *request, uint16_t pin);
   };
 
+  PACK(
   struct min_level_s {
     uint16_t min_level_increasing;
     uint16_t min_level_decreasing;
     uint8_t on_below_min;
-  } __attribute__((packed));
+  });
 
+  PACK(
   struct preset_playback_s {
     uint16_t mode;
     uint8_t level;
-  } __attribute__((packed));
+  });
 
+  PACK(
   struct preset_status_s {
     uint16_t scene;
     uint16_t fade_up_time;
     uint16_t fade_down_time;
     uint16_t wait_time;
     uint8_t programmed;
-  } __attribute__((packed));
+  });
 
+  PACK(
   struct fail_mode_s {
     uint16_t scene;
     uint16_t delay;
     uint16_t hold_time;
     uint8_t level;
-  } __attribute__((packed));
+  });
 
   typedef fail_mode_s startup_mode_s;
 
@@ -164,56 +169,56 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
                          const uint16_t upper);
 
   // Pids
-  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-  const RDMResponse *GetProductDetailList(const RDMRequest *request);
-  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-  const RDMResponse *GetPersonality(const RDMRequest *request);
-  const RDMResponse *SetPersonality(const RDMRequest *request);
-  const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
-  const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *GetDimmerInfo(const RDMRequest *request);
-  const RDMResponse *GetMinimumLevel(const RDMRequest *request);
-  const RDMResponse *SetMinimumLevel(const RDMRequest *request);
-  const RDMResponse *GetMaximumLevel(const RDMRequest *request);
-  const RDMResponse *SetMaximumLevel(const RDMRequest *request);
-  const RDMResponse *GetIdentify(const RDMRequest *request);
-  const RDMResponse *SetIdentify(const RDMRequest *request);
-  const RDMResponse *SetCapturePreset(const RDMRequest *request);
-  const RDMResponse *GetPresetPlayback(const RDMRequest *request);
-  const RDMResponse *SetPresetPlayback(const RDMRequest *request);
-  const RDMResponse *GetPresetStatus(const RDMRequest *request);
-  const RDMResponse *SetPresetStatus(const RDMRequest *request);
-  const RDMResponse *GetPresetMergeMode(const RDMRequest *request);
-  const RDMResponse *SetPresetMergeMode(const RDMRequest *request);
-  const RDMResponse *GetPresetInfo(const RDMRequest *request);
-  const RDMResponse *GetFailMode(const RDMRequest *request);
-  const RDMResponse *SetFailMode(const RDMRequest *request);
-  const RDMResponse *GetStartUpMode(const RDMRequest *request);
-  const RDMResponse *SetStartUpMode(const RDMRequest *request);
-  const RDMResponse *GetIdentifyMode(const RDMRequest *request);
-  const RDMResponse *SetIdentifyMode(const RDMRequest *request);
-  const RDMResponse *GetBurnIn(const RDMRequest *request);
-  const RDMResponse *SetBurnIn(const RDMRequest *request);
-  const RDMResponse *GetCurve(const RDMRequest *request);
-  const RDMResponse *SetCurve(const RDMRequest *request);
-  const RDMResponse *GetCurveDescription(const RDMRequest *request);
-  const RDMResponse *GetResponseTime(const RDMRequest *request);
-  const RDMResponse *SetResponseTime(const RDMRequest *request);
-  const RDMResponse *GetResponseTimeDescription(const RDMRequest *request);
-  const RDMResponse *GetPWMFrequency(const RDMRequest *request);
-  const RDMResponse *SetPWMFrequency(const RDMRequest *request);
-  const RDMResponse *GetPWMFrequencyDescription(const RDMRequest *request);
-  const RDMResponse *GetLockState(const RDMRequest *request);
-  const RDMResponse *SetLockState(const RDMRequest *request);
-  const RDMResponse *GetLockStateDescription(const RDMRequest *request);
-  const RDMResponse *GetLockPin(const RDMRequest *request);
-  const RDMResponse *SetLockPin(const RDMRequest *request);
-  const RDMResponse *GetPowerOnSelfTest(const RDMRequest *request);
-  const RDMResponse *SetPowerOnSelfTest(const RDMRequest *request);
+  RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  RDMResponse *GetProductDetailList(const RDMRequest *request);
+  RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  RDMResponse *GetPersonality(const RDMRequest *request);
+  RDMResponse *SetPersonality(const RDMRequest *request);
+  RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+  RDMResponse *GetDmxStartAddress(const RDMRequest *request);
+  RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+  RDMResponse *GetDimmerInfo(const RDMRequest *request);
+  RDMResponse *GetMinimumLevel(const RDMRequest *request);
+  RDMResponse *SetMinimumLevel(const RDMRequest *request);
+  RDMResponse *GetMaximumLevel(const RDMRequest *request);
+  RDMResponse *SetMaximumLevel(const RDMRequest *request);
+  RDMResponse *GetIdentify(const RDMRequest *request);
+  RDMResponse *SetIdentify(const RDMRequest *request);
+  RDMResponse *SetCapturePreset(const RDMRequest *request);
+  RDMResponse *GetPresetPlayback(const RDMRequest *request);
+  RDMResponse *SetPresetPlayback(const RDMRequest *request);
+  RDMResponse *GetPresetStatus(const RDMRequest *request);
+  RDMResponse *SetPresetStatus(const RDMRequest *request);
+  RDMResponse *GetPresetMergeMode(const RDMRequest *request);
+  RDMResponse *SetPresetMergeMode(const RDMRequest *request);
+  RDMResponse *GetPresetInfo(const RDMRequest *request);
+  RDMResponse *GetFailMode(const RDMRequest *request);
+  RDMResponse *SetFailMode(const RDMRequest *request);
+  RDMResponse *GetStartUpMode(const RDMRequest *request);
+  RDMResponse *SetStartUpMode(const RDMRequest *request);
+  RDMResponse *GetIdentifyMode(const RDMRequest *request);
+  RDMResponse *SetIdentifyMode(const RDMRequest *request);
+  RDMResponse *GetBurnIn(const RDMRequest *request);
+  RDMResponse *SetBurnIn(const RDMRequest *request);
+  RDMResponse *GetCurve(const RDMRequest *request);
+  RDMResponse *SetCurve(const RDMRequest *request);
+  RDMResponse *GetCurveDescription(const RDMRequest *request);
+  RDMResponse *GetResponseTime(const RDMRequest *request);
+  RDMResponse *SetResponseTime(const RDMRequest *request);
+  RDMResponse *GetResponseTimeDescription(const RDMRequest *request);
+  RDMResponse *GetPWMFrequency(const RDMRequest *request);
+  RDMResponse *SetPWMFrequency(const RDMRequest *request);
+  RDMResponse *GetPWMFrequencyDescription(const RDMRequest *request);
+  RDMResponse *GetLockState(const RDMRequest *request);
+  RDMResponse *SetLockState(const RDMRequest *request);
+  RDMResponse *GetLockStateDescription(const RDMRequest *request);
+  RDMResponse *GetLockPin(const RDMRequest *request);
+  RDMResponse *SetLockPin(const RDMRequest *request);
+  RDMResponse *GetPowerOnSelfTest(const RDMRequest *request);
+  RDMResponse *SetPowerOnSelfTest(const RDMRequest *request);
 
   static const uint8_t DIMMER_RESOLUTION;
   static const uint16_t LOWER_MIN_LEVEL;

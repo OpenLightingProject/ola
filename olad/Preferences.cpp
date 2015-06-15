@@ -11,16 +11,19 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Preferences.cpp
  * This class stores preferences in files
  * Copyright (C) 2005 Simon Newton
  */
+
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 #include <dirent.h>
 #include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -36,6 +39,7 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/file/Util.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/thread/Thread.h"
 #include "olad/Preferences.h"
@@ -50,6 +54,30 @@ using std::map;
 using std::pair;
 using std::string;
 using std::vector;
+
+namespace {
+void SavePreferencesToFile(
+    const string *filename_ptr,
+    const FilePreferenceSaverThread::PreferencesMap *pref_map_ptr) {
+  std::auto_ptr<const string> filename(filename_ptr);
+  std::auto_ptr<const FilePreferenceSaverThread::PreferencesMap> pref_map(
+      pref_map_ptr);
+
+  FilePreferenceSaverThread::PreferencesMap::const_iterator iter;
+  ofstream pref_file(filename->data());
+
+  if (!pref_file.is_open()) {
+    OLA_WARN << "Could not open " << *filename_ptr << ": " << strerror(errno);
+    return;
+  }
+
+  for (iter = pref_map->begin(); iter != pref_map->end(); ++iter) {
+    pref_file << iter->first << " = " << iter->second << std::endl;
+  }
+  pref_file.flush();
+  pref_file.close();
+}
+}  // namespace
 
 const char BoolValidator::ENABLED[] = "true";
 const char BoolValidator::DISABLED[] = "false";
@@ -72,8 +100,9 @@ bool BoolValidator::IsValid(const string &value) const {
 
 bool UIntValidator::IsValid(const string &value) const {
   unsigned int output;
-  if (!StringToInt(value, &output))
+  if (!StringToInt(value, &output)) {
     return false;
+  }
 
   return (output >= m_gt && output <= m_lt);
 }
@@ -81,8 +110,9 @@ bool UIntValidator::IsValid(const string &value) const {
 
 bool IntValidator::IsValid(const string &value) const {
   int output;
-  if (!StringToInt(value, &output))
+  if (!StringToInt(value, &output)) {
     return false;
+  }
 
   return (output >= m_gt && output <= m_lt);
 }
@@ -99,8 +129,9 @@ bool SetValidator<unsigned int>::IsValid(const string &value) const {
   unsigned int output;
   // It's an integer based set validator, so if we can't parse it to an
   // integer, it can't possibly match an integer and be valid
-  if (!StringToInt(value, &output))
+  if (!StringToInt(value, &output)) {
     return false;
+  }
 
   return STLContains(m_values, output);
 }
@@ -111,28 +142,33 @@ bool SetValidator<int>::IsValid(const string &value) const {
   int output;
   // It's an integer based set validator, so if we can't parse it to an
   // integer, it can't possibly match an integer and be valid
-  if (!StringToInt(value, &output))
+  if (!StringToInt(value, &output)) {
     return false;
+  }
 
   return STLContains(m_values, output);
 }
 
 
 bool IPv4Validator::IsValid(const string &value) const {
-  if (value.empty())
+  if (value.empty()) {
     return m_empty_ok;
+  }
 
   vector<string> tokens;
-  StringSplit(value, tokens, ".");
-  if (tokens.size() != 4)
+  StringSplit(value, &tokens, ".");
+  if (tokens.size() != ola::network::IPV4Address::LENGTH) {
     return false;
+  }
 
   for (unsigned int i = 0 ; i < 4; i++) {
     unsigned int octet;
-    if (!StringToInt(tokens[i], &octet))
+    if (!StringToInt(tokens[i], &octet)) {
       return false;
-    if (octet > 255)
+    }
+    if (octet > UINT8_MAX) {
       return false;
+    }
   }
   return true;
 }
@@ -176,43 +212,43 @@ void MemoryPreferences::Clear() {
 }
 
 
-void MemoryPreferences::SetValue(const std::string &key,
-                                 const std::string &value) {
+void MemoryPreferences::SetValue(const string &key,
+                                 const string &value) {
   m_pref_map.erase(key);
   m_pref_map.insert(make_pair(key, value));
 }
 
 
-void MemoryPreferences::SetValue(const std::string &key, unsigned int value) {
+void MemoryPreferences::SetValue(const string &key, unsigned int value) {
   SetValue(key, IntToString(value));
 }
 
 
-void MemoryPreferences::SetValue(const std::string &key, int value) {
+void MemoryPreferences::SetValue(const string &key, int value) {
   SetValue(key, IntToString(value));
 }
 
 
-void MemoryPreferences::SetMultipleValue(const std::string &key,
-                                         const std::string &value) {
+void MemoryPreferences::SetMultipleValue(const string &key,
+                                         const string &value) {
   m_pref_map.insert(make_pair(key, value));
 }
 
 
-void MemoryPreferences::SetMultipleValue(const std::string &key,
+void MemoryPreferences::SetMultipleValue(const string &key,
                                          unsigned int value) {
   SetMultipleValue(key, IntToString(value));
 }
 
 
-void MemoryPreferences::SetMultipleValue(const std::string &key, int value) {
+void MemoryPreferences::SetMultipleValue(const string &key, int value) {
   SetMultipleValue(key, IntToString(value));
 }
 
 
-bool MemoryPreferences::SetDefaultValue(const std::string &key,
+bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
-                                        const std::string &value) {
+                                        const string &value) {
   PreferencesMap::const_iterator iter;
   iter = m_pref_map.find(key);
 
@@ -224,17 +260,33 @@ bool MemoryPreferences::SetDefaultValue(const std::string &key,
 }
 
 
-bool MemoryPreferences::SetDefaultValue(const std::string &key,
+bool MemoryPreferences::SetDefaultValue(const string &key,
+                                        const Validator &validator,
+                                        const char value[]) {
+  return SetDefaultValue(key, validator, string(value));
+}
+
+bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
                                         unsigned int value) {
   return SetDefaultValue(key, validator, IntToString(value));
 }
 
 
-bool MemoryPreferences::SetDefaultValue(const std::string &key,
+bool MemoryPreferences::SetDefaultValue(const string &key,
                                         const Validator &validator,
-                                        const int value) {
+                                        int value) {
   return SetDefaultValue(key, validator, IntToString(value));
+}
+
+
+bool MemoryPreferences::SetDefaultValue(const string &key,
+                                        const Validator &validator,
+                                        const bool value) {
+  return SetDefaultValue(
+      key,
+      validator,
+      value ? BoolValidator::ENABLED : BoolValidator::DISABLED);
 }
 
 
@@ -292,22 +344,19 @@ void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
 // FilePreferenceSaverThread
 //-----------------------------------------------------------------------------
 
-FilePreferenceSaverThread::FilePreferenceSaverThread() {
+FilePreferenceSaverThread::FilePreferenceSaverThread()
+    : Thread(Thread::Options("pref-saver")) {
   // set a long poll interval so we don't spin
   m_ss.SetDefaultInterval(TimeInterval(60, 0));
 }
-
 
 void FilePreferenceSaverThread::SavePreferences(
     const string &file_name,
     const PreferencesMap &preferences) {
   const string *file_name_ptr = new string(file_name);
   const PreferencesMap *save_map = new PreferencesMap(preferences);
-  SingleUseCallback0<void> *cb = NewSingleCallback(
-                                 this,
-                                 &FilePreferenceSaverThread::SaveToFile,
-                                 file_name_ptr,
-                                 save_map);
+  SingleUseCallback0<void> *cb =
+      NewSingleCallback(SavePreferencesToFile, file_name_ptr, save_map);
   m_ss.Execute(cb);
 }
 
@@ -334,27 +383,6 @@ void FilePreferenceSaverThread::Syncronize() {
         &condition_var,
         &syncronize_mutex));
   condition_var.Wait(&syncronize_mutex);
-}
-
-
-void FilePreferenceSaverThread::SaveToFile(
-    const string *filename_ptr,
-    const PreferencesMap *pref_map_ptr) {
-  std::auto_ptr<const string> filename(filename_ptr);
-  std::auto_ptr<const PreferencesMap> pref_map(pref_map_ptr);
-
-  PreferencesMap::const_iterator iter;
-  ofstream pref_file(filename->data());
-
-  if (!pref_file.is_open()) {
-    OLA_WARN << "Could not open " << *filename_ptr << ": " << strerror(errno);
-    return;
-  }
-
-  for (iter = pref_map->begin(); iter != pref_map->end(); ++iter) {
-    pref_file << iter->first << " = " << iter->second << std::endl;
-  }
-  pref_file.close();
 }
 
 
@@ -403,11 +431,12 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
   while (getline(pref_file, line)) {
     StringTrim(&line);
 
-    if (line.empty() || line.at(0) == '#')
+    if (line.empty() || line.at(0) == '#') {
       continue;
+    }
 
     vector<string> tokens;
-    StringSplit(line, tokens, "=");
+    StringSplit(line, &tokens, "=");
 
     if (tokens.size() != 2) {
       OLA_INFO << "Skipping line: " << line;

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderPersonality.h
  * Manages personalities for a RDM responder.
@@ -88,7 +88,7 @@ class PersonalityCollection {
  */
 class PersonalityManager {
  public:
-    explicit PersonalityManager() : m_active_personality(0) {}
+    PersonalityManager() : m_active_personality(0) {}
     explicit PersonalityManager(const PersonalityCollection *personalities);
 
     uint8_t PersonalityCount() const;

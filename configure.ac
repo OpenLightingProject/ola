@@ -2,14 +2,25 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT([OLA], m4_esyscmd([./version.sh | tr -d '\n']),
-        [open-lighting@googlegroups.com])
+m4_include([config/ola_version.m4])
+AC_INIT([OLA], [ola_version], [open-lighting@googlegroups.com])
 AC_CONFIG_SRCDIR([libola.pc.in])
 AC_CONFIG_AUX_DIR([config])
 AC_SUBST([ac_aux_dir])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
-AM_INIT_AUTOMAKE()
+AM_INIT_AUTOMAKE([subdir-objects])
+
+# OLA version variables
+AC_SUBST([ola_major_version])
+OLA_MAJOR_VERSION=ola_major_version
+AC_SUBST(OLA_MAJOR_VERSION)
+AC_SUBST([ola_minor_version])
+OLA_MINOR_VERSION=ola_minor_version
+AC_SUBST(OLA_MINOR_VERSION)
+AC_SUBST([ola_revision_version])
+OLA_REVISION_VERSION=ola_revision_version
+AC_SUBST(OLA_REVISION_VERSION)
 
 # Checks for programs.
 AC_LANG([C++])
@@ -28,8 +39,8 @@ AC_HEADER_DIRENT
 AC_HEADER_RESOLV
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
-AC_CHECK_HEADERS([assert.h endian.h errno.h execinfo.h \
-                  linux/if_packet.h math.h net/ethernet.h \
+AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h errno.h execinfo.h \
+                  linux/if_packet.h math.h net/ethernet.h stropts.h \
                   sys/param.h sys/types.h sys/uio.h sysexits.h])
 AC_CHECK_HEADERS([winsock2.h])
 AC_CHECK_HEADERS([random])
@@ -115,19 +126,22 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_aton select socket strerror \
                 getifaddrs getloadavg getpwnam_r getpwuid_r getgrnam_r \
-                getgrgid_r])
-AX_HAVE_EPOLL([AC_DEFINE([HAVE_EPOLL], [1], [Defined if epoll exists])]) # epoll
+                getgrgid_r secure_getenv])
 
 LT_INIT
 AC_PROG_LIBTOOL
 
-# Doxygen
-DX_PDF_FEATURE(OFF)
-DX_PS_FEATURE(OFF)
-DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
-
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
+
+# Epoll
+AX_HAVE_EPOLL(
+  [AC_DEFINE(HAVE_EPOLL, 1, [Defined if epoll exists])], [])
+AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
+
+# kqueue
+AC_CHECK_FUNCS([kqueue])
+AM_CONDITIONAL(HAVE_KQUEUE, test "${ac_cv_func_kqueue}" = "yes")
 
 # check if the compiler supports -rdyanmic
 AC_MSG_CHECKING(for -rdynamic support)
@@ -209,6 +223,11 @@ AC_CHECK_DECLS(NET_RT_DUMP, , ,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
+AC_CHECK_DECLS(RLIMIT_RTPRIO, , ,
+               [#include <sys/resource.h>])
+
+AC_CHECK_DECLS(RLIMIT_RTTIME, , ,
+               [#include <sys/resource.h>])
 
 AC_CHECK_DECLS(SO_REUSEADDR, , ,
                [#include <sys/types.h>
@@ -250,6 +269,10 @@ AS_IF([test -z "$PKG_CONFIG"],
 # Libraries.
 #####################################################
 
+# dlopen
+AC_SEARCH_LIBS([dlopen], [dl], [have_dlopen="yes"])
+AM_CONDITIONAL([HAVE_DLOPEN], [test "x$have_dlopen" = xyes])
+
 # dmx4linux
 have_dmx4linux="no"
 AC_CHECK_LIB(dmx4linux, DMXdev, [have_dmx4linux="yes"])
@@ -284,6 +307,9 @@ ACX_PTHREAD([
              CC="$PTHREAD_CC"
              CXX="$PTHREAD_CXX"],
             [AC_MSG_ERROR([Missing pthread, please install it])])
+
+# pthread_setname_np can take either 1 or 2 arguments.
+PTHREAD_SET_NAME()
 
 # resolv
 AS_IF([test -z "${USING_WIN32_FALSE}"],
@@ -416,7 +442,7 @@ AM_CONDITIONAL([BUILD_TESTS], [test "x$enable_unittests" != xno])
 # Optionally install the E1.33 library.
 AC_ARG_ENABLE(
   [e133],
-  [AS_HELP_STRING([--install-e133], [Install the E1.33 library])])
+  [AS_HELP_STRING([--enable-e133], [Install the E1.33 library])])
 # For now we install the ACN lib if the E1.33 lib is requested
 AM_CONDITIONAL([INSTALL_ACN], [test "x$enable_e133" = xyes])
 AM_CONDITIONAL([INSTALL_E133], [test "x$enable_e133" = xyes])
@@ -440,9 +466,10 @@ AM_CONDITIONAL([FATAL_WARNINGS], [test "x$enable_fatal_warnings" != xno])
 AC_ARG_ENABLE(
   [gcov],
   [AS_HELP_STRING([--enable-gcov], [Turn on code coverage analysis tools])])
-AS_IF([test "x$enable_gov" = xyes],
+AS_IF([test "x$enable_gcov" = xyes],
       [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-       CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"])
+       CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
+       LIBS="$LIBS -lgcov"])
 
 # Enable HTTP support. This requires libmicrohttpd.
 AC_ARG_ENABLE(
@@ -469,6 +496,11 @@ AS_IF([test "x$enable_java_libs" = xyes],
        MAVEN_SUPPORT([2.2.1])])
 AM_CONDITIONAL([BUILD_JAVA_LIBS], [test "x$enable_java_libs" = xyes])
 
+# Optionally build the Ja Rule tool
+AC_ARG_ENABLE(
+  [ja-rule],
+  [AS_HELP_STRING([--enable-ja-rule], [Build the Ja Rule test tool])])
+
 # libftdi: this requires libusb-0.1.4+ don't know if I should also
 # check for it, since the libusb check above is not for 0.1.4 but for libusb-1
 AC_ARG_ENABLE(
@@ -494,6 +526,36 @@ AS_IF([test "x$enable_libusb" != xno],
                          [true])])
 AS_IF([test "x$have_libusb" = xyes],
       [AC_DEFINE([HAVE_LIBUSB], [1], [define if libusb is installed])])
+
+have_libusb_error_name="no"
+AS_IF([test "x$enable_libusb" != xno],
+      [PKG_CHECK_MODULES([libusb_error_name], [libusb-1.0 >= 1.0.9],
+                         [have_libusb_error_name="yes"], [true])])
+AS_IF([test "x$have_libusb_error_name" = xyes],
+      [AC_DEFINE([HAVE_LIBUSB_ERROR_NAME], [1],
+                 [define if libusb is installed and has libusb_error_name])])
+
+have_libusb_hotplug_api="no"
+AS_IF([test "x$enable_libusb" != xno],
+      [PKG_CHECK_MODULES([libusb_hotplug_api], [libusb-1.0 >= 1.0.16],
+                         [have_libusb_hotplug_api="yes"], [true])])
+AS_IF([test "x$have_libusb_hotplug_api" = xyes],
+      [AC_DEFINE([HAVE_LIBUSB_HOTPLUG_API], [1],
+                 [define if libusb is installed and the libusb])])
+AM_CONDITIONAL([HAVE_LIBUSB_HOTPLUG_API], [test "x$have_libusb_hotplug_api" = xyes])
+
+# UART direct plugin
+AC_ARG_ENABLE(
+  [uart],
+  [AS_HELP_STRING([--disable-uart],
+                  [Avoid using native uart support even if it exists])])
+
+have_uart="no"
+AS_IF([test "x$enable_uart" != xno],
+      [AC_CHECK_HEADERS([asm/termios.h], [have_uart="yes"], [true])])
+AS_IF([test "x$have_uart" = xyes],
+      [AC_DEFINE([HAVE_UART], [1], [define if native UART support exists])])
+
 
 # OSC Support.
 # look for liblo if the user asked us to
@@ -536,25 +598,6 @@ AS_IF([test "x$enable_root_check" = xno],
       [AC_DEFINE([OLAD_SKIP_ROOT_CHECK], [1],
                  [Defined if olad is allowed to run as root])])
 
-# OpenSLP is used for E1.33 support
-# This should be removed if we decide that E1.33 is going to use DNS-SD.
-# Openslp doesn't use pkg-config, so the users may need to pass CPPFLAGS
-# & LDFLAGS so we can find it.
-AC_ARG_ENABLE(
-  [slp],
-  AS_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
-
-openslp_LIBS=""
-have_slp=no
-AS_IF([test "x$enable_slp" != xno],
-      [AC_CHECK_LIB([slp], [SLPOpen],
-                    [have_slp="yes" openslp_LIBS="-lslp"])])
-
-AM_CONDITIONAL([HAVE_SLP], [test "x$have_slp" = xyes])
-AS_IF([test "x$have_slp" = xyes],
-      [AC_DEFINE([HAVE_LIBSLP], [1], [define if libslp is installed])])
-AC_SUBST(openslp_LIBS)
-
 # Use tcmalloc. This is used by the buildbot leak checks.
 AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 AS_IF([test "x$enable_tcmalloc" = xyes],
@@ -562,14 +605,10 @@ AS_IF([test "x$enable_tcmalloc" = xyes],
 
 # Optionally set the Doxygen version to "Latest Git" for website latest
 # version.
-DOXYGEN_VERSION=$PACKAGE_VERSION
 AC_ARG_ENABLE(
   [doxygen-version],
   [AS_HELP_STRING([--disable-doxygen-version],
   [Substitute the Doxygen version with latest, for the website])])
-AS_IF([test "x$enable_doxygen_version" = xno],
-      [DOXYGEN_VERSION="\"Latest Git\""])
-AC_SUBST(DOXYGEN_VERSION)
 
 # Python wrappers & RDM Responder tests.
 #####################################################
@@ -595,8 +634,30 @@ AS_IF([test "x$build_java_libs" = xyes],
       [PROTOBUF_SUPPORT([2.3.0])])
 
 
+# Doxygen
+#####################################################
+DX_PDF_FEATURE(OFF)
+DX_PS_FEATURE(OFF)
+
+DX_ARG_ABLE(verbose, [Verbose doxygen output],
+            [], [], [],
+            [DX_ENV_APPEND(QUIET, NO)],
+            [DX_ENV_APPEND(QUIET, YES)])
+doxygen_project_number=$PACKAGE_VERSION
+AS_IF([test "x$enable_doxygen_version" = xno],
+      [doxygen_project_number="Latest Git"])
+DX_ENV_APPEND(PROJECT_NUMBER, $doxygen_project_number)
+
+DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
+
 # Plugins
 #####################################################
+
+AC_ARG_ENABLE(
+  [all-plugins],
+  AS_HELP_STRING(
+      [--disable-all-plugins],
+      [Disable all plugins, then enable the specific ones you want]))
 
 # We build a list of plugins that we're going to compile here so the olad
 # knows what to link against.
@@ -608,6 +669,7 @@ PLUGIN_SUPPORT(dummy, USE_DUMMY)
 PLUGIN_SUPPORT(e131, USE_E131)
 PLUGIN_SUPPORT(espnet, USE_ESPNET)
 PLUGIN_SUPPORT(ftdidmx, USE_FTDI, [$have_libftdi])
+PLUGIN_SUPPORT(gpio, USE_GPIO)
 PLUGIN_SUPPORT(karate, USE_KARATE)
 PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(milinst, USE_MILINST)
@@ -619,6 +681,8 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(openpixelcontrol, USE_OPENPIXELCONTROL)
+PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_uart])
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
 
@@ -626,21 +690,42 @@ PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
 PLUGIN_LIBS=''
 OLA_SERVER_LIBS=''
 for p in $PLUGINS; do
-  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/${p}/libola${p}.la"
+  PLUGIN_LIBS="$PLUGIN_LIBS plugins/${p}/libola${p}.la"
   OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lola${p}"
 done
+
+if test -z "${USING_WIN32_TRUE}"; then
+  OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lWs2_32 -lIphlpapi -lpthread"
+fi
 
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
-# plugin & html data directories
-plugindir=$libdir/olad
+# html & data directories
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
-AC_SUBST(plugindir)
 AC_SUBST(www_datadir)
 AC_SUBST(piddatadir)
+
+# Additional libraries needed by Windows clients
+OLA_CLIENT_LIBS=''
+if test -z "${USING_WIN32_TRUE}"; then
+  OLA_CLIENT_LIBS="-lWs2_32 -lIphlpapi -lpthread"
+fi
+AC_SUBST(OLA_CLIENT_LIBS)
+
+# Extra tools
+#####################################################
+AM_CONDITIONAL([BUILD_JA_RULE],
+               [test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xyes \
+                && test "x$have_libusb_hotplug_api" = xyes])
+
+# Status just for configure
+BUILDING_JA_RULE='no'
+if test -z "${BUILD_JA_RULE_TRUE}"; then
+  BUILDING_JA_RULE='yes'
+fi
 
 # Output
 #####################################################
@@ -657,114 +742,19 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
                  python/ola/UID.py:python/ola/UID.py
                  python/ola/__init__.py:python/ola/__init__.py])
 
-# Non-makefile generted files.
-AC_CONFIG_FILES([Doxyfile
+# Non-makefile generated files.
+AC_CONFIG_FILES([include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
                  plugins/artnet/messages/libolaartnetconf.pc
                  plugins/e131/e131/libolaacn.pc
                  plugins/e131/messages/libolae131conf.pc
                  plugins/usbpro/messages/libolausbproconf.pc
-                 slp/libolaslpclient.pc
-                 slp/libolaslpserver.pc
                  tools/e133/libolae133common.pc
                  tools/e133/libolae133controller.pc
-                 tools/e133/libolae133slp.pc
                  ])
 # Makefiles
-AC_CONFIG_FILES([Makefile
-                 common/Makefile
-                 common/base/Makefile
-                 common/dmx/Makefile
-                 common/export_map/Makefile
-                 common/file/Makefile
-                 common/http/Makefile
-                 common/io/Makefile
-                 common/math/Makefile
-                 common/messaging/Makefile
-                 common/network/Makefile
-                 common/protocol/Makefile
-                 common/rdm/Makefile
-                 common/rdm/testdata/Makefile
-                 common/rdm/testdata/pids/Makefile
-                 common/rpc/Makefile
-                 common/system/Makefile
-                 common/testing/Makefile
-                 common/thread/Makefile
-                 common/timecode/Makefile
-                 common/utils/Makefile
-                 common/web/Makefile
-                 data/Makefile
-                 data/rdm/Makefile
-                 debian/Makefile
-                 doxygen/Makefile
-                 doxygen/examples/Makefile
-                 examples/Makefile
-                 include/Makefile
-                 include/ola/Makefile
-                 include/ola/acn/Makefile
-                 include/ola/base/Makefile
-                 include/ola/client/Makefile
-                 include/ola/dmx/Makefile
-                 include/ola/e133/Makefile
-                 include/ola/file/Makefile
-                 include/ola/http/Makefile
-                 include/ola/io/Makefile
-                 include/ola/math/Makefile
-                 include/ola/messaging/Makefile
-                 include/ola/network/Makefile
-                 include/ola/rdm/Makefile
-                 include/ola/slp/Makefile
-                 include/ola/stl/Makefile
-                 include/ola/system/Makefile
-                 include/ola/testing/Makefile
-                 include/ola/thread/Makefile
-                 include/ola/timecode/Makefile
-                 include/ola/util/Makefile
-                 include/ola/web/Makefile
-                 include/olad/Makefile
-                 java/Makefile
-                 man/Makefile
-                 ola/Makefile
-                 olad/Makefile
-                 olad/www/Makefile
-                 plugins/Makefile
-                 plugins/artnet/Makefile
-                 plugins/artnet/messages/Makefile
-                 plugins/dmx4linux/Makefile
-                 plugins/dummy/Makefile
-                 plugins/e131/Makefile
-                 plugins/e131/e131/Makefile
-                 plugins/e131/messages/Makefile
-                 plugins/espnet/Makefile
-                 plugins/ftdidmx/Makefile
-                 plugins/karate/Makefile
-                 plugins/kinet/Makefile
-                 plugins/milinst/Makefile
-                 plugins/opendmx/Makefile
-                 plugins/osc/Makefile
-                 plugins/pathport/Makefile
-                 plugins/renard/Makefile
-                 plugins/sandnet/Makefile
-                 plugins/shownet/Makefile
-                 plugins/spi/Makefile
-                 plugins/stageprofi/Makefile
-                 plugins/usbdmx/Makefile
-                 plugins/usbpro/Makefile
-                 plugins/usbpro/messages/Makefile
-                 protoc/Makefile
-                 python/Makefile
-                 python/examples/Makefile
-                 python/ola/Makefile
-                 python/ola/rpc/Makefile
-                 slp/Makefile
-                 tools/Makefile
-                 tools/e133/Makefile
-                 tools/logic/Makefile
-                 tools/ola_trigger/Makefile
-                 tools/rdm/Makefile
-                 tools/rdmpro/Makefile
-                 tools/usbpro/Makefile])
+AC_CONFIG_FILES([Makefile java/Makefile])
 AC_OUTPUT
 
 echo \
@@ -780,6 +770,8 @@ Python API: ${enable_python_libs}
 Java API: ${enable_java_libs}
 Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
+Ja Rule: ${BUILDING_JA_RULE}
+Enabled Plugins:${PLUGINS}
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * CallbackThread.h
  * A thread which executes a Callback.
@@ -24,6 +24,8 @@
 #include <ola/Callback.h>
 #include <ola/base/Macro.h>
 #include <ola/thread/Thread.h>
+
+#include <string>
 
 namespace ola {
 namespace thread {
@@ -38,9 +40,12 @@ class CallbackThread : public Thread {
     /**
      * Create a new CallbackThread.
      * @param callback the callback to run in the new thread.
+     * @param options the thread's options.
      */
-    explicit CallbackThread(VoidThreadCallback *callback)
-        : m_callback(callback) {
+    explicit CallbackThread(VoidThreadCallback *callback,
+                            const Options &options = Options())
+        : Thread(options),
+          m_callback(callback) {
     }
 
  protected:

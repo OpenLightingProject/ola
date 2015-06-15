@@ -11,13 +11,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UniverseStore.cpp
  * The universe store class. This maintains the set of all active universes and
  * saves the settings.
  * Copyright (C) 2005 Simon Newton
  */
+
+#include "olad/UniverseStore.h"
 
 #include <iostream>
 #include <set>
@@ -26,13 +28,13 @@
 #include <utility>
 #include <vector>
 
-
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
-#include "olad/UniverseStore.h"
+
 namespace ola {
 
 using std::pair;
@@ -59,76 +61,44 @@ UniverseStore::UniverseStore(Preferences *preferences,
       Universe::K_UNIVERSE_UID_COUNT_VAR,
     };
 
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i)
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i) {
       export_map->GetUIntMapVar(string(vars[i]), "universe");
+    }
   }
 }
 
-
-/*
- * Cleanup
- */
 UniverseStore::~UniverseStore() {
   DeleteAll();
 }
 
-
-/*
- * Lookup a universe from its universe_id
- * @param uid the uid of the required universe
- */
 Universe *UniverseStore::GetUniverse(unsigned int universe_id) const {
-  universe_map::const_iterator iter = m_universe_map.find(universe_id);
-  if (iter != m_universe_map.end())
-     return iter->second;
-  return NULL;
+  return STLFindOrNull(m_universe_map, universe_id);
 }
 
-
-/*
- * Lookup a universe, or create it if it does not exist
- * @param uid the universe id
- * @return the universe, or NULL on error
- */
 Universe *UniverseStore::GetUniverseOrCreate(unsigned int universe_id) {
-  Universe *universe = GetUniverse(universe_id);
+  UniverseMap::iterator iter = STLLookupOrInsertNull(
+      &m_universe_map, universe_id);
 
-  if (!universe) {
-    universe = new Universe(universe_id, this, m_export_map, &m_clock);
+  if (!iter->second) {
+    iter->second = new Universe(universe_id, this, m_export_map, &m_clock);
 
-    if (universe) {
-      pair<unsigned int, Universe*> pair(universe_id, universe);
-      m_universe_map.insert(pair);
-
-      if (m_preferences)
-        RestoreUniverseSettings(universe);
+    if (iter->second) {
+      if (m_preferences) {
+        RestoreUniverseSettings(iter->second);
+      }
     } else {
       OLA_WARN << "Failed to create universe " << universe_id;
     }
   }
-  return universe;
+  return iter->second;
 }
 
-
-/*
- * Returns a list of universes. This must be freed when you're
- * done with it.
- * @return a pointer to a vector of Universe*
- */
-void UniverseStore::GetList(std::vector<Universe*> *universes) const {
-  universes->reserve(UniverseCount());
-
-  universe_map::const_iterator iter;
-  for (iter = m_universe_map.begin(); iter != m_universe_map.end(); ++iter)
-    universes->push_back(iter->second);
+void UniverseStore::GetList(vector<Universe*> *universes) const {
+  STLValues(m_universe_map, universes);
 }
 
-
-/*
- * Delete all universes
- */
 void UniverseStore::DeleteAll() {
-  universe_map::iterator iter;
+  UniverseMap::iterator iter;
 
   for (iter = m_universe_map.begin(); iter != m_universe_map.end(); iter++) {
     SaveUniverseSettings(iter->second);
@@ -138,23 +108,13 @@ void UniverseStore::DeleteAll() {
   m_universe_map.clear();
 }
 
-
-/*
- * Mark a universe as a candiate for garbage collection.
- * @param universe the universe which has no clients or ports bound
- */
 void UniverseStore::AddUniverseGarbageCollection(Universe *universe) {
   m_deletion_candiates.insert(universe);
 }
 
-
-/*
- * Check all the garbage collection candiates and delete the ones that aren't
- * needed.
- */
 void UniverseStore::GarbageCollectUniverses() {
   set<Universe*>::iterator iter;
-  universe_map::iterator map_iter;
+  UniverseMap::iterator map_iter;
 
   for (iter = m_deletion_candiates.begin();
        iter != m_deletion_candiates.end(); iter++) {
@@ -249,6 +209,8 @@ bool UniverseStore::SaveUniverseSettings(Universe *universe) const {
 
   // We don't save the RDM Discovery interval since it can only be set in the
   // config files for now.
+
+  m_preferences->Save();
 
   return 0;
 }

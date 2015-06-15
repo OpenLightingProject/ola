@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ThreadPool.cpp
  * An executor which farms work out to a bunch of threads.
@@ -51,8 +51,8 @@ bool ThreadPool::Init() {
         &m_mutex,
         &m_condition_var);
     if (!thread->Start()) {
-      OLA_WARN << "Failed to start thread " << i <<
-        ", aborting ThreadPool::Init()";
+      OLA_WARN << "Failed to start thread " << i
+               << ", aborting ThreadPool::Init()";
       JoinAllThreads();
       return false;
     }
@@ -78,9 +78,8 @@ void ThreadPool::JoinAll() {
 void ThreadPool::Execute(ola::BaseCallback0<void> *closure) {
   MutexLocker locker(&m_mutex);
   if (m_shutdown) {
-    OLA_WARN <<
-      "Adding actions to a ThreadPool while it's shutting down, this "
-      "will leak!";
+    OLA_WARN << "Adding actions to a ThreadPool while it's shutting down, "
+                "this will leak!";
   }
   m_callback_queue.push(closure);
   m_condition_var.Signal();

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UDPTransport.h
  * Interface for the UDPTransport class
@@ -42,8 +42,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
                          const ola::network::IPV4Address &destination,
                          uint16_t port = ola::acn::ACN_PORT)
         : m_impl(impl),
-          m_destination(destination),
-          m_port(port) {
+          m_destination(destination, port) {
     }
     ~OutgoingUDPTransport() {}
 
@@ -51,8 +50,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
 
  private:
     class OutgoingUDPTransportImpl *m_impl;
-    ola::network::IPV4Address m_destination;
-    uint16_t m_port;
+    ola::network::IPV4SocketAddress m_destination;
 
     OutgoingUDPTransport(const OutgoingUDPTransport&);
     OutgoingUDPTransport& operator=(const OutgoingUDPTransport&);
@@ -80,8 +78,7 @@ class OutgoingUDPTransportImpl {
     }
 
     bool Send(const PDUBlock<PDU> &pdu_block,
-              const ola::network::IPV4Address &destination,
-              uint16_t port);
+              const ola::network::IPV4SocketAddress &destination);
 
  private:
     ola::network::UDPSocket *m_socket;

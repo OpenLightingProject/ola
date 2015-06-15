@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * FakeNetworkManager.cpp
  * A NetworkManager which uses a simulated network config.
@@ -35,12 +35,14 @@ using std::vector;
 
 FakeNetworkManager::FakeNetworkManager(
     const vector<Interface> &interfaces,
+    const int32_t ipv4_default_route_if_index,
     const IPV4Address ipv4_default_route,
     const string &hostname,
     const string &domain_name,
     const vector<IPV4Address> &name_servers)
     : NetworkManagerInterface(),
       m_interface_picker(interfaces),
+      m_ipv4_default_route_if_index(ipv4_default_route_if_index),
       m_ipv4_default_route(ipv4_default_route),
       m_hostname(hostname),
       m_domain_name(domain_name),
@@ -58,7 +60,9 @@ rdm_dhcp_status FakeNetworkManager::GetDHCPStatus(
 }
 
 bool FakeNetworkManager::GetIPV4DefaultRoute(
+    int32_t *if_index,
     IPV4Address *default_route) const {
+  *if_index = m_ipv4_default_route_if_index;
   *default_route = m_ipv4_default_route;
   return true;
 }

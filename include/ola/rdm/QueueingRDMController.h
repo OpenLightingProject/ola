@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * QueueingRDMController.h
  * A RDM Controller that sends a single message at a time.
@@ -52,7 +52,7 @@ class QueueingRDMController: public RDMControllerInterface {
     void Resume();
 
     // This can be called multiple times and the requests will be queued.
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
+    void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete);
 
  protected:
     typedef struct {
@@ -65,18 +65,17 @@ class QueueingRDMController: public RDMControllerInterface {
     std::queue<outstanding_rdm_request> m_pending_requests;
     bool m_rdm_request_pending;  // true if a request is in progress
     bool m_active;  // true if the controller is active
-    RDMCallback *m_callback;
-    const ola::rdm::RDMResponse *m_response;
-    std::vector<std::string> m_packets;
+    std::auto_ptr<RDMCallback> m_callback;
+    std::auto_ptr<ola::rdm::RDMResponse> m_response;
+    std::vector<RDMFrame> m_frames;
 
     virtual void TakeNextAction();
     virtual bool CheckForBlockingCondition();
     void MaybeSendRDMRequest();
     void DispatchNextRequest();
 
-    void HandleRDMResponse(rdm_response_code status,
-                           const ola::rdm::RDMResponse *response,
-                           const std::vector<std::string> &packets);
+    void HandleRDMResponse(RDMReply *reply);
+    void RunCallback(RDMReply *reply);
 };
 
 
@@ -84,7 +83,7 @@ class QueueingRDMController: public RDMControllerInterface {
  * The DiscoverableQueueingRDMController also handles discovery, and ensures
  * that only a single discovery or RDM request sequence occurs at once.
  *
- * In this model discovery has a higher precedence that RDM messages.
+ * In this model, discovery has a higher precedence than RDM messages.
  */
 class DiscoverableQueueingRDMController: public QueueingRDMController {
  public:

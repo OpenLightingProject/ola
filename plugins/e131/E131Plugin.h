@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Plugin.h
  * Interface for the E1.131 plugin class
@@ -48,8 +48,9 @@ class E131Plugin: public ola::Plugin {
 
     class E131Device *m_device;
     static const char CID_KEY[];
-    static const char DEFAULT_DSCP_VALUE[];
-    static const char DEFAULT_PORT_COUNT[];
+    static const unsigned int DEFAULT_DSCP_VALUE;
+    static const unsigned int DEFAULT_PORT_COUNT;
+    static const char DRAFT_DISCOVERY_KEY[];
     static const char DSCP_KEY[];
     static const char IGNORE_PREVIEW_DATA_KEY[];
     static const char INPUT_PORT_COUNT_KEY[];

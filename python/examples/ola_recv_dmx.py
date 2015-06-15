@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ola_recv_dmx.py
 # Copyright (C) 2005 Simon Newton
@@ -26,22 +26,22 @@ import sys
 from ola.ClientWrapper import ClientWrapper
 
 def NewData(data):
-  print data
+  print(data)
 
 def Usage():
-  print textwrap.dedent("""
+  print(textwrap.dedent("""
   Usage: ola_recv_dmx.py --universe <universe>
 
   Display the DXM512 data for the universe.
 
   -h, --help                Display this help message and exit.
-  -u, --universe <universe> Universe number.""")
+  -u, --universe <universe> Universe number."""))
 
 def main():
   try:
       opts, args = getopt.getopt(sys.argv[1:], "hu:", ["help", "universe="])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

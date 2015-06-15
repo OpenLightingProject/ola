@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DesignatedControllerConnection.cpp
  * Copyright (C) 2013 Simon Newton
@@ -153,7 +153,8 @@ bool DesignatedControllerConnection::SendStatusMessage(
   auto_ptr<const RDMResponse> response(raw_response);
 
   if (m_unacked_messages.size() == m_max_queue_size) {
-    OLA_WARN << "MessageQueue limit reached, no further messages will be held";
+    OLA_WARN << "NonBlockingSender limit reached, no further messages will "
+             << "be held";
     return false;
   }
 
@@ -212,10 +213,11 @@ void DesignatedControllerConnection::NewTCPConnection(
   }
 
   m_tcp_socket = socket.release();
-  if (m_message_queue)
-    OLA_WARN << "Already have a MessageQueue";
-  m_message_queue = new MessageQueue(m_tcp_socket, m_ss,
-                                     m_message_builder->pool());
+  if (m_message_queue) {
+    OLA_WARN << "Already have a NonBlockingSender";
+  }
+  m_message_queue = new ola::io::NonBlockingSender(m_tcp_socket, m_ss,
+                                                   m_message_builder->pool());
 
   if (m_health_checked_connection) {
     OLA_WARN << "Already have a E133HealthCheckedConnection";

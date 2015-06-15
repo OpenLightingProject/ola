@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * GenericUsbProWidget.h
  * This class implements a generic Usb Pro style widget, which can send and
@@ -20,8 +20,9 @@
  */
 
 #include <string.h>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/strings/Format.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/GenericUsbProWidget.h"
 
@@ -53,8 +54,9 @@ GenericUsbProWidget::~GenericUsbProWidget() {
  * Set the callback to run when new DMX data arrives
  */
 void GenericUsbProWidget::SetDMXCallback(ola::Callback0<void> *callback) {
-  if (m_dmx_callback)
+  if (m_dmx_callback) {
     delete m_dmx_callback;
+  }
   m_dmx_callback = callback;
 }
 
@@ -85,8 +87,9 @@ void GenericUsbProWidget::GenericStop() {
  * @returns true if we sent ok, false otherwise
  */
 bool GenericUsbProWidget::SendDMX(const DmxBuffer &buffer) {
-  if (!m_active)
+  if (!m_active) {
     return false;
+  }
   return BaseUsbProWidget::SendDMX(buffer);
 }
 
@@ -96,14 +99,16 @@ bool GenericUsbProWidget::SendDMX(const DmxBuffer &buffer) {
  * @return true on success, false on failure
  */
 bool GenericUsbProWidget::ChangeToReceiveMode(bool change_only) {
-  if (!m_active)
+  if (!m_active) {
     return false;
+  }
 
   uint8_t mode = change_only;
   bool status = SendMessage(DMX_RX_MODE_LABEL, &mode, sizeof(mode));
 
-  if (status && change_only)
+  if (status && change_only) {
     m_input_buffer.Blackout();
+  }
   return status;
 }
 
@@ -144,12 +149,13 @@ void GenericUsbProWidget::GetParameters(usb_pro_params_callback *callback) {
 bool GenericUsbProWidget::SetParameters(uint8_t break_time,
                                         uint8_t mab_time,
                                         uint8_t rate) {
+  PACK(
   struct widget_params_s {
     uint16_t length;
     uint8_t break_time;
     uint8_t mab_time;
     uint8_t rate;
-  } __attribute__((packed));
+  });
 
   widget_params_s widget_parameters = {
     0,
@@ -162,8 +168,9 @@ bool GenericUsbProWidget::SetParameters(uint8_t break_time,
       reinterpret_cast<uint8_t*>(&widget_parameters),
       sizeof(widget_parameters));
 
-  if (!ret)
+  if (!ret) {
     OLA_WARN << "Failed to send a set params message";
+  }
   return ret;
 }
 
@@ -189,8 +196,8 @@ void GenericUsbProWidget::HandleMessage(uint8_t label,
     case BaseUsbProWidget::SERIAL_LABEL:
       break;
     default:
-      OLA_WARN << "Unknown message type 0x" << std::hex <<
-        static_cast<int>(label) << ", length " << length;
+      OLA_WARN << "Unknown message type " << ola::strings::ToHex(label)
+               << ", length " << length;
   }
 }
 
@@ -205,23 +212,25 @@ void GenericUsbProWidget::HandleDMX(const uint8_t *data,
     uint8_t dmx[DMX_UNIVERSE_SIZE + 1];
   } widget_dmx;
 
-  if (length < 2)
+  if (length < 2) {
     return;
+  }
 
   const widget_dmx *widget_reply =
-    reinterpret_cast<const widget_dmx*>(data);
+      reinterpret_cast<const widget_dmx*>(data);
 
   if (widget_reply->status) {
-    OLA_WARN << "UsbPro got corrupted packet, status: " <<
-      static_cast<int>(widget_reply->status);
+    OLA_WARN << "UsbPro got corrupted packet, status: "
+             << static_cast<int>(widget_reply->status);
     return;
   }
 
   // only handle start code = 0
   if (length > 2 && widget_reply->dmx[0] == 0) {
     m_input_buffer.Set(widget_reply->dmx + 1, length - 2);
-    if (m_dmx_callback)
+    if (m_dmx_callback) {
       m_dmx_callback->Run();
+    }
   }
   return;
 }
@@ -232,20 +241,13 @@ void GenericUsbProWidget::HandleDMX(const uint8_t *data,
  */
 void GenericUsbProWidget::HandleParameters(const uint8_t *data,
                                            unsigned int length) {
-  if (m_outstanding_param_callbacks.empty())
+  if (m_outstanding_param_callbacks.empty()) {
     return;
+  }
 
-  // parameters
-  typedef struct {
-    uint8_t firmware;
-    uint8_t firmware_high;
-    uint8_t break_time;
-    uint8_t mab_time;
-    uint8_t rate;
-  } widget_parameters_reply;
-
-  if (length < sizeof(usb_pro_parameters))
+  if (length < sizeof(usb_pro_parameters)) {
     return;
+  }
 
   usb_pro_parameters params;
   memcpy(&params, data, sizeof(usb_pro_parameters));
@@ -283,12 +285,14 @@ void GenericUsbProWidget::HandleDMXDiff(const uint8_t *data,
   // doesn't seem to provide a guarantee on the ordering of packets. Packets
   // with non-0 start codes are almost certainly going to cause problems.
   if (start_channel == 0 && (widget_reply->changed[0] & 0x01) &&
-      widget_reply->data[offset])
+      widget_reply->data[offset]) {
     return;
+  }
 
   for (int i = 0; i < 40; i++) {
-    if (start_channel + i > DMX_UNIVERSE_SIZE + 1 || offset + 6 >= length)
+    if (start_channel + i > DMX_UNIVERSE_SIZE + 1 || offset + 6 >= length) {
       break;
+    }
 
     if (widget_reply->changed[i/8] & (1 << (i % 8)) && start_channel + i != 0) {
       m_input_buffer.SetChannel(start_channel + i - 1,
@@ -297,8 +301,9 @@ void GenericUsbProWidget::HandleDMXDiff(const uint8_t *data,
     }
   }
 
-  if (m_dmx_callback)
+  if (m_dmx_callback) {
     m_dmx_callback->Run();
+  }
 }
 }  // namespace usbpro
 }  // namespace plugin

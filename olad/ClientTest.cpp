@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ClientTest.cpp
  * Test fixture for the Client class
@@ -26,7 +26,9 @@
 #include "common/rpc/RpcController.h"
 #include "common/rpc/RpcService.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/UID.h"
 #include "ola/testing/TestUtils.h"
 #include "olad/Client.h"
 #include "olad/DmxSource.h"
@@ -41,7 +43,6 @@ using ola::Client;
 using ola::DmxBuffer;
 using std::string;
 
-
 class ClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClientTest);
   CPPUNIT_TEST(testSendDMX);
@@ -49,45 +50,42 @@ class ClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testSendDMX();
-    void testGetSetDMX();
+  ClientTest() : m_test_uid(ola::OPEN_LIGHTING_ESTA_CODE, 0) {}
+  void testSendDMX();
+  void testGetSetDMX();
 
  private:
-    ola::Clock m_clock;
+  ola::Clock m_clock;
+  ola::rdm::UID m_test_uid;
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ClientTest);
-
 
 /*
  * Mock out the ClientStub for testing
  */
 class MockClientStub: public ola::proto::OlaClientService_Stub {
  public:
-    MockClientStub(): ola::proto::OlaClientService_Stub(NULL) {}
+  MockClientStub(): ola::proto::OlaClientService_Stub(NULL) {}
 
-    void UpdateDmxData(ola::rpc::RpcController *controller,
-                       const ola::proto::DmxData *request,
-                       ola::proto::Ack *response,
-                       ola::rpc::RpcService::CompletionCallback *done);
+  void UpdateDmxData(ola::rpc::RpcController *controller,
+                     const ola::proto::DmxData *request,
+                     ola::proto::Ack *response,
+                     ola::rpc::RpcService::CompletionCallback *done);
 };
-
-
 
 void MockClientStub::UpdateDmxData(
     ola::rpc::RpcController* controller,
     const ola::proto::DmxData *request,
-    ola::proto::Ack *response,
+    OLA_UNUSED ola::proto::Ack *response,
     ola::rpc::RpcService::CompletionCallback *done) {
   OLA_ASSERT(controller);
   OLA_ASSERT_FALSE(controller->Failed());
   OLA_ASSERT_EQ(TEST_UNIVERSE, (unsigned int) request->universe());
   OLA_ASSERT(TEST_DATA == request->data());
   done->Run();
-  (void) response;
 }
-
 
 /*
  * Check that the SendDMX method works correctly.
@@ -96,17 +94,13 @@ void ClientTest::testSendDMX() {
   // check we survive a null pointer
   const DmxBuffer buffer(TEST_DATA);
   uint8_t priority = 100;
-  Client client(NULL);
-  OLA_ASSERT(NULL == client.Stub());
+  Client client(NULL, m_test_uid);
   client.SendDMX(TEST_UNIVERSE, priority, buffer);
 
   // check the stub is called correctly
-  MockClientStub client_stub;
-  Client client2(&client_stub);
-  OLA_ASSERT(&client_stub == client2.Stub());
+  Client client2(new MockClientStub(), m_test_uid);
   client2.SendDMX(TEST_UNIVERSE, priority, buffer);
 }
-
 
 /*
  * Check that the DMX get/set works correctly.
@@ -114,7 +108,7 @@ void ClientTest::testSendDMX() {
 void ClientTest::testGetSetDMX() {
   DmxBuffer buffer(TEST_DATA);
   const DmxBuffer empty;
-  Client client(NULL);
+  Client client(NULL, m_test_uid);
 
   ola::TimeStamp timestamp;
   m_clock.CurrentTime(&timestamp);

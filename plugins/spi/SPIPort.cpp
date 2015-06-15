@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIPort.h
  * The SPI plugin for ola
@@ -19,7 +19,7 @@
  */
 
 #include <string>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
 
@@ -43,6 +43,14 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackendInterface *backend,
       m_spi_output(uid, backend, options) {
 }
 
+
+string SPIOutputPort::GetDeviceLabel() const {
+  return m_spi_output.GetDeviceLabel();
+}
+
+bool SPIOutputPort::SetDeviceLabel(const string &device_label) {
+  return m_spi_output.SetDeviceLabel(device_label);
+}
 
 uint8_t SPIOutputPort::GetPersonality() const {
   return m_spi_output.GetPersonality();
@@ -80,7 +88,7 @@ void SPIOutputPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
   return m_spi_output.RunIncrementalDiscovery(callback);
 }
 
-void SPIOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void SPIOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                    ola::rdm::RDMCallback *callback) {
   return m_spi_output.SendRDMRequest(request, callback);
 }

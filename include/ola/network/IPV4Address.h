@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IPV4Address.h
  * Represents a IPv4 Address
@@ -113,21 +113,13 @@ class IPV4Address {
 
     /**
      * @brief Less than operator for partial ordering.
-     * @note This sorts in network-byte order, so the ordering won't match
-     * human's expectations.
      */
-    bool operator<(const IPV4Address &other) const {
-      return m_address < other.m_address;
-    }
+    bool operator<(const IPV4Address &other) const;
 
     /**
      * @brief Greater than operator.
-     * @note This sorts in network-byte order, so the ordering won't match
-     * human's expectations.
      */
-    bool operator>(const IPV4Address &other) const {
-      return m_address > other.m_address;
-    }
+    bool operator>(const IPV4Address &other) const;
 
     /**
      * @brief Return the IPV4Address as an int in network-byte order.

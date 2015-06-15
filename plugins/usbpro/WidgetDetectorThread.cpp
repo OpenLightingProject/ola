@@ -11,10 +11,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * WidgetDetectorThread.cpp
- * A thread that periodically looks for usb pro devices, and runs the callback
+ * A thread that periodically looks for USB Pro devices, and runs the callback
  * if they are valid widgets.
  * Copyright (C) 2011 Simon Newton
  */
@@ -24,12 +24,14 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/file/Util.h"
 #include "ola/io/Descriptor.h"
+#include "ola/io/Serial.h"
+#include "ola/stl/STLUtils.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
@@ -56,6 +58,8 @@ using std::vector;
  * @param ss the SelectServer to use when calling the handler object. This is
  * also used by some of the widgets so it should be the same SelectServer that
  * you intend to use the Widgets with.
+ * @param usb_pro_timeout the time in ms between each USB Pro discovery message.
+ * @param robe_timeout the time in ms between each Robe discovery message.
  */
 WidgetDetectorThread::WidgetDetectorThread(
   NewWidgetHandler *handler,
@@ -105,6 +109,15 @@ void WidgetDetectorThread::SetIgnoredDevices(const vector<string> &devices) {
   }
 }
 
+/**
+ * @brief Set the directories to check for UUCP lock files.
+ * @param paths a list of paths to check for lock files.
+ */
+void WidgetDetectorThread::SetUUCPLockFilePaths(
+    const std::vector<std::string> &paths) {
+  m_uucp_lock_paths = paths;
+}
+
 
 /**
  * Run the discovery thread.
@@ -131,19 +144,17 @@ void *WidgetDetectorThread::Run() {
   m_ss.Execute(
       ola::NewSingleCallback(this, &WidgetDetectorThread::MarkAsRunning));
   m_ss.Run();
+  m_ss.DrainCallbacks();
 
-  vector<WidgetDetectorInterface*>::const_iterator iter =
-  m_widget_detectors.begin();
-  for (; iter != m_widget_detectors.end(); ++iter)
-    // this will trigger a call to InternalFreeWidget for any remaining widgets
-    delete *iter;
+  // This will trigger a call to InternalFreeWidget for any remaining widgets
+  STLDeleteElements(&m_widget_detectors);
 
   if (!m_active_descriptors.empty())
     OLA_WARN << m_active_descriptors.size() << " are still active";
 
-  ActiveDescriptors::const_iterator iter2 = m_active_descriptors.begin();
-  for (; iter2 != m_active_descriptors.end(); ++iter2) {
-    OLA_INFO  << iter2->first;
+  ActiveDescriptors::const_iterator iter = m_active_descriptors.begin();
+  for (; iter != m_active_descriptors.end(); ++iter) {
+    OLA_INFO  << iter->first;
   }
   m_widget_detectors.clear();
   return NULL;
@@ -161,10 +172,12 @@ bool WidgetDetectorThread::Join(void *ptr) {
 
 /**
  * Indicate that this widget is no longer is use and can be deleted.
- * This can be called from any thread.
  */
 void WidgetDetectorThread::FreeWidget(SerialWidgetInterface *widget) {
+  // We have to remove the descriptor from the ss before closing.
   m_other_ss->RemoveReadDescriptor(widget->GetDescriptor());
+  widget->GetDescriptor()->Close();
+
   m_ss.Execute(
       ola::NewSingleCallback(this,
                              &WidgetDetectorThread::InternalFreeWidget,
@@ -189,7 +202,10 @@ void WidgetDetectorThread::WaitUntilRunning() {
  */
 bool WidgetDetectorThread::RunScan() {
   vector<string> device_paths;
-  ola::file::FindMatchingFiles(m_directory, m_prefixes, &device_paths);
+  if (!ola::file::FindMatchingFiles(m_directory, m_prefixes, &device_paths)) {
+    // We want to run the scan next time in case the problem is resolved.
+    return true;
+  }
 
   vector<string>::iterator it;
   for (it = device_paths.begin(); it != device_paths.end(); ++it) {
@@ -201,11 +217,18 @@ bool WidgetDetectorThread::RunScan() {
     if (StringEndsWith(*it, ".init") || StringEndsWith(*it, ".lock"))
       continue;
 
-    OLA_INFO << "Found potential USB Serial device at " << *it;
-    ConnectedDescriptor *descriptor =
-      BaseUsbProWidget::OpenDevice(*it);
-    if (!descriptor)
+    const string base_name = ola::file::FilenameFromPath(*it);
+    if (!base_name.empty() &&
+        ola::io::CheckForUUCPLockFile(m_uucp_lock_paths, base_name)) {
+      OLA_INFO << "Locked USB Serial device at " << *it;
       continue;
+    }
+
+    OLA_INFO << "Found potential USB Serial device at " << *it;
+    ConnectedDescriptor *descriptor = BaseUsbProWidget::OpenDevice(*it);
+    if (!descriptor) {
+      continue;
+    }
 
     OLA_INFO << "new descriptor @ " << descriptor << " for " << *it;
     PerformDiscovery(*it, descriptor);
@@ -213,9 +236,8 @@ bool WidgetDetectorThread::RunScan() {
   return true;
 }
 
-
 /**
- * Start the discovery sequence for a descriptor.
+ * Start the discovery sequence for a widget.
  */
 void WidgetDetectorThread::PerformDiscovery(const string &path,
                                             ConnectedDescriptor *descriptor) {
@@ -223,7 +245,6 @@ void WidgetDetectorThread::PerformDiscovery(const string &path,
   m_active_paths.insert(path);
   PerformNextDiscoveryStep(descriptor);
 }
-
 
 /**
  * Called when a new widget becomes ready. Ownership of both objects transferrs
@@ -258,7 +279,7 @@ void WidgetDetectorThread::UsbProWidgetReady(
           options.enable_rdm = true;
         }
         DispatchWidget(
-            new EnttecUsbProWidget(descriptor, options),
+            new EnttecUsbProWidget(m_other_ss, descriptor, options),
             information);
         return;
       }
@@ -317,7 +338,8 @@ void WidgetDetectorThread::UsbProWidgetReady(
                << "." << (information->firmware_version & 0xff);
     }
   }
-  DispatchWidget(new EnttecUsbProWidget(descriptor, options), information);
+  DispatchWidget(
+      new EnttecUsbProWidget(m_other_ss, descriptor, options), information);
 }
 
 
@@ -387,8 +409,10 @@ void WidgetDetectorThread::PerformNextDiscoveryStep(
  */
 void WidgetDetectorThread::InternalFreeWidget(SerialWidgetInterface *widget) {
   ConnectedDescriptor *descriptor = widget->GetDescriptor();
-  // remove descriptor from our ss if it's there
-  m_ss.RemoveReadDescriptor(descriptor);
+  // remove descriptor from our ss if it's still there
+  if (descriptor->ValidReadDescriptor()) {
+    m_ss.RemoveReadDescriptor(descriptor);
+  }
   delete widget;
   FreeDescriptor(descriptor);
 }

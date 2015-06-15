@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaServerServiceImplTest.cpp
  * Test fixture for the OlaServerServiceImpl class
@@ -26,9 +26,10 @@
 #include <string>
 
 #include "common/rpc/RpcController.h"
-#include "ola/BaseTypes.h"
+#include "common/rpc/RpcSession.h"
 #include "ola/Callback.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
@@ -41,16 +42,16 @@
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
 
+using ola::Client;
 using ola::NewSingleCallback;
 using ola::SingleUseCallback0;
 using ola::DmxBuffer;
-using ola::OlaClientService;
 using ola::OlaServerServiceImpl;
 using ola::Universe;
 using ola::UniverseStore;
 using ola::rpc::RpcController;
+using ola::rpc::RpcSession;
 using std::string;
-
 
 class OlaServerServiceImplTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(OlaServerServiceImplTest);
@@ -63,7 +64,7 @@ class OlaServerServiceImplTest: public CppUnit::TestFixture {
 
  public:
     OlaServerServiceImplTest():
-      m_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
+      m_uid(ola::OPEN_LIGHTING_ESTA_CODE, 0) {
     }
 
     void setUp() {
@@ -80,22 +81,23 @@ class OlaServerServiceImplTest: public CppUnit::TestFixture {
     ola::rdm::UID m_uid;
     ola::Clock m_clock;
 
-    void CallGetDmx(OlaServerServiceImpl *impl,
+    void CallGetDmx(OlaServerServiceImpl *service,
                     int universe_id,
                     class GetDmxCheck *check);
-    void CallRegisterForDmx(OlaClientService *service,
+    void CallRegisterForDmx(OlaServerServiceImpl *service,
                             int universe_id,
                             ola::proto::RegisterAction action,
                             class RegisterForDmxCheck *check);
-    void CallUpdateDmxData(OlaClientService *service,
+    void CallUpdateDmxData(OlaServerServiceImpl *service,
+                           Client *client,
                            int universe_id,
                            const DmxBuffer &data,
                            class UpdateDmxDataCheck *check);
-    void CallSetUniverseName(OlaClientService *service,
+    void CallSetUniverseName(OlaServerServiceImpl *service,
                              int universe_id,
                              const string &name,
                              class SetUniverseNameCheck *check);
-    void CallSetMergeMode(OlaClientService *service,
+    void CallSetMergeMode(OlaServerServiceImpl *service,
                           int universe_id,
                           ola::proto::MergeMode merge_mode,
                           class SetMergeModeCheck *check);
@@ -110,9 +112,9 @@ static const uint8_t SAMPLE_DMX_DATA[] = {1, 2, 3, 4, 5};
  */
 class GetDmxCheck {
  public:
-    virtual ~GetDmxCheck() {}
-    virtual void Check(RpcController *controller,
-                       ola::proto::DmxData *reply) = 0;
+  virtual ~GetDmxCheck() {}
+  virtual void Check(RpcController *controller,
+                     ola::proto::DmxData *reply) = 0;
 };
 
 
@@ -121,12 +123,12 @@ class GetDmxCheck {
  */
 class GetDmxNoDataCheck: public GetDmxCheck {
  public:
-    void Check(RpcController *controller,
-               ola::proto::DmxData *reply) {
-      DmxBuffer empty_buffer;
-      OLA_ASSERT_FALSE(controller->Failed());
-      OLA_ASSERT(empty_buffer == DmxBuffer(reply->data()));
-    }
+  void Check(RpcController *controller,
+             ola::proto::DmxData *reply) {
+    DmxBuffer empty_buffer;
+    OLA_ASSERT_FALSE(controller->Failed());
+    OLA_ASSERT_EQ(empty_buffer, DmxBuffer(reply->data()));
+  }
 };
 
 
@@ -135,12 +137,13 @@ class GetDmxNoDataCheck: public GetDmxCheck {
  */
 class GetDmxValidDataCheck: public GetDmxCheck {
  public:
-    void Check(RpcController *controller,
-               ola::proto::DmxData *reply) {
-      OLA_ASSERT_FALSE(controller->Failed());
-      OLA_ASSERT(DmxBuffer(SAMPLE_DMX_DATA, sizeof(SAMPLE_DMX_DATA)) ==
-                     DmxBuffer(reply->data()));
-    }
+  void Check(RpcController *controller,
+             ola::proto::DmxData *reply) {
+    OLA_ASSERT_FALSE(controller->Failed());
+    OLA_ASSERT_EQ(
+        DmxBuffer(SAMPLE_DMX_DATA, sizeof(SAMPLE_DMX_DATA)),
+        DmxBuffer(reply->data()));
+  }
 };
 
 
@@ -149,9 +152,8 @@ class GetDmxValidDataCheck: public GetDmxCheck {
  */
 class RegisterForDmxCheck {
  public:
-    virtual ~RegisterForDmxCheck() {}
-    virtual void Check(RpcController *controller,
-                       ola::proto::Ack *reply) = 0;
+  virtual ~RegisterForDmxCheck() {}
+  virtual void Check(RpcController *controller, ola::proto::Ack *reply) = 0;
 };
 
 
@@ -160,9 +162,8 @@ class RegisterForDmxCheck {
  */
 class UpdateDmxDataCheck {
  public:
-    virtual ~UpdateDmxDataCheck() {}
-    virtual void Check(RpcController *controller,
-                       ola::proto::Ack *reply) = 0;
+  virtual ~UpdateDmxDataCheck() {}
+  virtual void Check(RpcController *controller, ola::proto::Ack *reply) = 0;
 };
 
 
@@ -171,9 +172,8 @@ class UpdateDmxDataCheck {
  */
 class SetUniverseNameCheck {
  public:
-    virtual ~SetUniverseNameCheck() {}
-    virtual void Check(RpcController *controller,
-                       ola::proto::Ack *reply) = 0;
+  virtual ~SetUniverseNameCheck() {}
+  virtual void Check(RpcController *controller, ola::proto::Ack *reply) = 0;
 };
 
 
@@ -182,9 +182,8 @@ class SetUniverseNameCheck {
  */
 class SetMergeModeCheck {
  public:
-    virtual ~SetMergeModeCheck() {}
-    virtual void Check(RpcController *controller,
-                       ola::proto::Ack *reply) = 0;
+  virtual ~SetMergeModeCheck() {}
+  virtual void Check(RpcController *controller, ola::proto::Ack *reply) = 0;
 };
 
 
@@ -194,13 +193,10 @@ class SetMergeModeCheck {
 template<typename parent, typename reply>
 class GenericMissingUniverseCheck: public parent {
  public:
-    void Check(RpcController *controller,
-               reply *r) {
-      OLA_ASSERT(controller->Failed());
-      OLA_ASSERT_EQ(string("Universe doesn't exist"),
-                           controller->ErrorText());
-      (void) r;
-    }
+  void Check(RpcController *controller, OLA_UNUSED reply *r) {
+    OLA_ASSERT(controller->Failed());
+    OLA_ASSERT_EQ(string("Universe doesn't exist"), controller->ErrorText());
+  }
 };
 
 
@@ -210,11 +206,9 @@ class GenericMissingUniverseCheck: public parent {
 template<typename parent>
 class GenericAckCheck: public parent {
  public:
-    void Check(RpcController *controller,
-               ola::proto::Ack *r) {
-      OLA_ASSERT_FALSE(controller->Failed());
-      (void) r;
-    }
+  void Check(RpcController *controller, OLA_UNUSED ola::proto::Ack *r) {
+    OLA_ASSERT_FALSE(controller->Failed());
+  }
 };
 
 
@@ -223,15 +217,7 @@ class GenericAckCheck: public parent {
  */
 void OlaServerServiceImplTest::testGetDmx() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            m_uid);
-  OlaClientService service(NULL, &impl);
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL, NULL);
 
   GenericMissingUniverseCheck<GetDmxCheck, ola::proto::DmxData>
     missing_universe_check;
@@ -240,24 +226,23 @@ void OlaServerServiceImplTest::testGetDmx() {
 
   // test a universe that doesn't exist
   unsigned int universe_id = 0;
-  CallGetDmx(&impl, universe_id, &missing_universe_check);
+  CallGetDmx(&service, universe_id, &missing_universe_check);
 
   // test a new universe
   Universe *universe = store.GetUniverseOrCreate(universe_id);
-  OLA_ASSERT(universe);
-  CallGetDmx(&impl, universe_id, &empty_data_check);
+  OLA_ASSERT_NOT_NULL(universe);
+  CallGetDmx(&service, universe_id, &empty_data_check);
 
   // Set the universe data
   DmxBuffer buffer(SAMPLE_DMX_DATA, sizeof(SAMPLE_DMX_DATA));
   universe->SetDMX(buffer);
-  CallGetDmx(&impl, universe_id, &valid_data_check);
+  CallGetDmx(&service, universe_id, &valid_data_check);
 
   // remove the universe and try again
   store.AddUniverseGarbageCollection(universe);
   store.GarbageCollectUniverses();
-  CallGetDmx(&impl, universe_id, &missing_universe_check);
+  CallGetDmx(&service, universe_id, &missing_universe_check);
 }
-
 
 /*
  * Call the GetDmx method
@@ -265,23 +250,22 @@ void OlaServerServiceImplTest::testGetDmx() {
  * @param universe_id the universe_id in the request
  * @param check the GetDmxCheck class to use for the callback check
  */
-void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
+void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *service,
                                           int universe_id,
                                           GetDmxCheck *check) {
-  RpcController *controller = new RpcController();
-  ola::proto::UniverseRequest *request = new ola::proto::UniverseRequest();
-  ola::proto::DmxData *response = new ola::proto::DmxData();
+  RpcSession session(NULL);
+  RpcController controller(&session);
+  ola::proto::UniverseRequest request;
+  ola::proto::DmxData response;
+
   SingleUseCallback0<void> *closure = NewSingleCallback(
       check,
       &GetDmxCheck::Check,
-      controller,
-      response);
+      &controller,
+      &response);
 
-  request->set_universe(universe_id);
-  impl->GetDmx(controller, request, response, closure);
-  delete controller;
-  delete request;
-  delete response;
+  request.set_universe(universe_id);
+  service->GetDmx(&controller, &request, &response, closure);
 }
 
 
@@ -290,15 +274,7 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
  */
 void OlaServerServiceImplTest::testRegisterForDmx() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            m_uid);
-  OlaClientService service(NULL, &impl);
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL, NULL);
 
   // Register for a universe that doesn't exist
   unsigned int universe_id = 0;
@@ -308,7 +284,7 @@ void OlaServerServiceImplTest::testRegisterForDmx() {
 
   // The universe should exist now and the client should be bound
   Universe *universe = store.GetUniverse(universe_id);
-  OLA_ASSERT(universe);
+  OLA_ASSERT_NOT_NULL(universe);
   OLA_ASSERT(universe->ContainsSinkClient(NULL));
   OLA_ASSERT_EQ((unsigned int) 1, universe->SinkClientCount());
 
@@ -350,26 +326,24 @@ void OlaServerServiceImplTest::testRegisterForDmx() {
  * @param check the RegisterForDmxCheck to use for the callback check
  */
 void OlaServerServiceImplTest::CallRegisterForDmx(
-    OlaClientService *service,
+    OlaServerServiceImpl *service,
     int universe_id,
     ola::proto::RegisterAction action,
     RegisterForDmxCheck *check) {
-  RpcController *controller = new RpcController();
-  ola::proto::RegisterDmxRequest *request = (
-      new ola::proto::RegisterDmxRequest());
-  ola::proto::Ack *response = new ola::proto::Ack();
+  RpcSession session(NULL);
+  RpcController controller(&session);
+  ola::proto::RegisterDmxRequest request;
+  ola::proto::Ack response;
+
   SingleUseCallback0<void> *closure = NewSingleCallback(
       check,
       &RegisterForDmxCheck::Check,
-      controller,
-      response);
+      &controller,
+      &response);
 
-  request->set_universe(universe_id);
-  request->set_action(action);
-  service->RegisterForDmx(controller, request, response, closure);
-  delete controller;
-  delete request;
-  delete response;
+  request.set_universe(universe_id);
+  request.set_action(action);
+  service->RegisterForDmx(&controller, &request, &response, closure);
 }
 
 
@@ -379,18 +353,10 @@ void OlaServerServiceImplTest::CallRegisterForDmx(
 void OlaServerServiceImplTest::testUpdateDmxData() {
   UniverseStore store(NULL, NULL);
   ola::TimeStamp time1;
-  ola::Client client(NULL);
-  ola::Client client2(NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            &time1,
-                            m_uid);
-  OlaClientService service1(&client, &impl);
-  OlaClientService service2(&client2, &impl);
+  ola::Client client1(NULL, m_uid);
+  ola::Client client2(NULL, m_uid);
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL,
+                               &time1, NULL);
 
   GenericMissingUniverseCheck<UpdateDmxDataCheck, ola::proto::Ack>
     missing_universe_check;
@@ -401,31 +367,31 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
 
   // Update a universe that doesn't exist
   m_clock.CurrentTime(&time1);
-  CallUpdateDmxData(&service1, universe_id, dmx_data, &missing_universe_check);
+  CallUpdateDmxData(&service, &client1, universe_id, dmx_data,
+                    &missing_universe_check);
   Universe *universe = store.GetUniverse(universe_id);
   OLA_ASSERT_FALSE(universe);
 
   // Update a universe that exists
   m_clock.CurrentTime(&time1);
   universe = store.GetUniverseOrCreate(universe_id);
-  CallUpdateDmxData(&service1, universe_id, dmx_data, &ack_check);
-  OLA_ASSERT(dmx_data == universe->GetDMX());
+  CallUpdateDmxData(&service, &client1, universe_id, dmx_data, &ack_check);
+  OLA_ASSERT_EQ(dmx_data, universe->GetDMX());
 
   // Update a second client with an older timestamp
   // make sure we're in ltp mode
   OLA_ASSERT_EQ(universe->MergeMode(), Universe::MERGE_LTP);
   time1 = time1 - ola::TimeInterval(1000000);
-  CallUpdateDmxData(&service2, universe_id, dmx_data2, &ack_check);
+  CallUpdateDmxData(&service, &client2, universe_id, dmx_data2, &ack_check);
   OLA_ASSERT_EQ(dmx_data.Size(), universe->GetDMX().Size());
   // Should continue to hold the old data
-  OLA_ASSERT(dmx_data == universe->GetDMX());
+  OLA_ASSERT_EQ(dmx_data, universe->GetDMX());
 
   // Now send a new update
   m_clock.CurrentTime(&time1);
-  CallUpdateDmxData(&service2, universe_id, dmx_data2, &ack_check);
-  OLA_ASSERT(dmx_data2 == universe->GetDMX());
+  CallUpdateDmxData(&service, &client2, universe_id, dmx_data2, &ack_check);
+  OLA_ASSERT_EQ(dmx_data2, universe->GetDMX());
 }
-
 
 /*
  * Call the UpdateDmxDataCheck method
@@ -435,43 +401,33 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
  * @param check the SetUniverseNameCheck to use for the callback check
  */
 void OlaServerServiceImplTest::CallUpdateDmxData(
-    OlaClientService *service,
+    OlaServerServiceImpl *service,
+    Client *client,
     int universe_id,
     const DmxBuffer &data,
     UpdateDmxDataCheck *check) {
-  RpcController *controller = new RpcController();
-  ola::proto::DmxData *request = new
-    ola::proto::DmxData();
-  ola::proto::Ack *response = new ola::proto::Ack();
+  RpcSession session(NULL);
+  session.SetData(client);
+  RpcController controller(&session);
+  ola::proto::DmxData request;
+  ola::proto::Ack response;
   SingleUseCallback0<void> *closure = NewSingleCallback(
       check,
       &UpdateDmxDataCheck::Check,
-      controller,
-      response);
+      &controller,
+      &response);
 
-  request->set_universe(universe_id);
-  request->set_data(data.Get());
-  service->UpdateDmxData(controller, request, response, closure);
-  delete controller;
-  delete request;
-  delete response;
+  request.set_universe(universe_id);
+  request.set_data(data.Get());
+  service->UpdateDmxData(&controller, &request, &response, closure);
 }
-
 
 /*
  * Check the SetUniverseName method works
  */
 void OlaServerServiceImplTest::testSetUniverseName() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            m_uid);
-  OlaClientService service(NULL, &impl);
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL, NULL);
 
   unsigned int universe_id = 0;
   string universe_name = "test 1";
@@ -487,7 +443,7 @@ void OlaServerServiceImplTest::testSetUniverseName() {
   Universe *universe = store.GetUniverse(universe_id);
   OLA_ASSERT_FALSE(universe);
 
-  // Check SetUniverseName works on an existing univserse
+  // Check SetUniverseName works on an existing universe
   universe = store.GetUniverseOrCreate(universe_id);
   CallSetUniverseName(&service, universe_id, universe_name, &ack_check);
   OLA_ASSERT_EQ(universe_name, universe->Name());
@@ -497,7 +453,6 @@ void OlaServerServiceImplTest::testSetUniverseName() {
   OLA_ASSERT_EQ(universe_name2, universe->Name());
 }
 
-
 /*
  * Call the SetUniverseName method
  * @param impl the OlaServerServiceImpl to use
@@ -506,44 +461,31 @@ void OlaServerServiceImplTest::testSetUniverseName() {
  * @param check the SetUniverseNameCheck to use for the callback check
  */
 void OlaServerServiceImplTest::CallSetUniverseName(
-    OlaClientService *service,
+    OlaServerServiceImpl *service,
     int universe_id,
     const string &name,
     SetUniverseNameCheck *check) {
-  RpcController *controller = new RpcController();
-  ola::proto::UniverseNameRequest *request = new
-    ola::proto::UniverseNameRequest();
-  ola::proto::Ack *response = new ola::proto::Ack();
+  RpcSession session(NULL);
+  RpcController controller(&session);
+  ola::proto::UniverseNameRequest request;
+  ola::proto::Ack response;
   SingleUseCallback0<void> *closure = NewSingleCallback(
       check,
       &SetUniverseNameCheck::Check,
-      controller,
-      response);
+      &controller,
+      &response);
 
-  request->set_universe(universe_id);
-  request->set_name(name);
-  service->SetUniverseName(controller, request, response, closure);
-
-  delete controller;
-  delete request;
-  delete response;
+  request.set_universe(universe_id);
+  request.set_name(name);
+  service->SetUniverseName(&controller, &request, &response, closure);
 }
-
 
 /*
  * Check the SetMergeMode method works
  */
 void OlaServerServiceImplTest::testSetMergeMode() {
   UniverseStore store(NULL, NULL);
-  OlaServerServiceImpl impl(&store,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            NULL,
-                            m_uid);
-  OlaClientService service(NULL, &impl);
+  OlaServerServiceImpl service(&store, NULL, NULL, NULL, NULL, NULL, NULL);
 
   unsigned int universe_id = 0;
 
@@ -560,13 +502,12 @@ void OlaServerServiceImplTest::testSetMergeMode() {
   // Check SetUniverseName works
   universe = store.GetUniverseOrCreate(universe_id);
   CallSetMergeMode(&service, universe_id, ola::proto::HTP, &ack_check);
-  OLA_ASSERT(Universe::MERGE_HTP == universe->MergeMode());
+  OLA_ASSERT_EQ(Universe::MERGE_HTP, universe->MergeMode());
 
   // Run it again
   CallSetMergeMode(&service, universe_id, ola::proto::LTP, &ack_check);
-  OLA_ASSERT(Universe::MERGE_LTP == universe->MergeMode());
+  OLA_ASSERT_EQ(Universe::MERGE_LTP, universe->MergeMode());
 }
-
 
 /*
  * Call the SetMergeMode method
@@ -574,27 +515,23 @@ void OlaServerServiceImplTest::testSetMergeMode() {
  * @param universe_id the universe_id in the request
  * @param mode the merge_mode to use
  * @param check the SetMergeModeCheck to use for the callback check
- */
+*/
 void OlaServerServiceImplTest::CallSetMergeMode(
-    OlaClientService *service,
+    OlaServerServiceImpl *service,
     int universe_id,
     ola::proto::MergeMode merge_mode,
     SetMergeModeCheck *check) {
-  RpcController *controller = new RpcController();
-  ola::proto::MergeModeRequest *request = new
-    ola::proto::MergeModeRequest();
-  ola::proto::Ack *response = new ola::proto::Ack();
+  RpcSession session(NULL);
+  RpcController controller(&session);
+  ola::proto::MergeModeRequest request;
+  ola::proto::Ack response;
   ola::SingleUseCallback0<void> *closure = NewSingleCallback(
       check,
       &SetMergeModeCheck::Check,
-      controller,
-      response);
+      &controller,
+      &response);
 
-  request->set_universe(universe_id);
-  request->set_merge_mode(merge_mode);
-  service->SetMergeMode(controller, request, response, closure);
-
-  delete controller;
-  delete request;
-  delete response;
+  request.set_universe(universe_id);
+  request.set_merge_mode(merge_mode);
+  service->SetMergeMode(&controller, &request, &response, closure);
 }

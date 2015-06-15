@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StreamingClient.cpp
  * Implementation of Streaming Client
@@ -19,8 +19,8 @@
  */
 
 #include <ola/AutoStart.h>
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/client/StreamingClient.h>
@@ -32,6 +32,7 @@
 #include "common/protocol/Ola.pb.h"
 #include "common/protocol/OlaService.pb.h"
 #include "common/rpc/RpcChannel.h"
+#include "common/rpc/RpcSession.h"
 
 namespace ola {
 namespace client {
@@ -145,7 +146,7 @@ bool StreamingClient::Send(unsigned int universe, uint8_t priority,
   // connection. We could skip this and rely on the EPIPE delivered by the
   // write() below, but that introduces a race condition in the unittests.
   m_socket_closed = false;
-  m_ss->RunOnce(0, 0);
+  m_ss->RunOnce();
 
   if (m_socket_closed) {
     Stop();
@@ -165,7 +166,7 @@ bool StreamingClient::Send(unsigned int universe, uint8_t priority,
   return true;
 }
 
-void StreamingClient::ChannelClosed() {
+void StreamingClient::ChannelClosed(OLA_UNUSED ola::rpc::RpcSession *session) {
   m_socket_closed = true;
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"
     << " to a framing error, perhaps you're sending too fast?";

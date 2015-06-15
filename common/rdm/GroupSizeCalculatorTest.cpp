@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * GroupSizeCalculatorTest.cpp
  * Test fixture for the GroupSizeCalculator and StaticGroupTokenCalculator
@@ -61,10 +61,6 @@ class GroupSizeCalculatorTest: public CppUnit::TestFixture {
     void testSingleVariableSizedGroup();
     void testMultipleVariableSizedGroups();
     void testNestedVariableSizedGroups();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
 
  private:
     ola::rdm::GroupSizeCalculator m_calculator;

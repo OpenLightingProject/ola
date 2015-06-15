@@ -11,18 +11,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * artnetdevice.cpp
+ * ArtNetDevice.cpp
  * Art-Net device
  * Copyright (C) 2005 Simon Newton
- *
- * An Art-Net device is an instance of libartnet bound to a single IP address
- * Art-Net is limited to four ports per direction per IP, so in this case
- * our device has 8 ports :
- *
- * Ids 0-3 : Input ports (recv dmx)
- * Ids 4-7 : Output ports (send dmx)
  */
 
 #include <google/protobuf/service.h>
@@ -73,10 +66,10 @@ const char ArtNetDevice::K_NET_KEY[] = "net";
 const char ArtNetDevice::K_OUTPUT_PORT_KEY[] = "output_ports";
 const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
 const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
+const unsigned int ArtNetDevice::K_ARTNET_NET = 0;
+const unsigned int ArtNetDevice::K_ARTNET_SUBNET = 0;
+const unsigned int ArtNetDevice::K_DEFAULT_OUTPUT_PORT_COUNT = 4;
 
-/*
- * Create a new Artnet Device
- */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            ola::Preferences *preferences,
                            PluginAdaptor *plugin_adaptor)
@@ -87,25 +80,20 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
       m_timeout_id(ola::thread::INVALID_TIMEOUT) {
 }
 
-
-/*
- * Start this device
- * @return true on success, false on failure
- */
 bool ArtNetDevice::StartHook() {
-  unsigned int subnet = 0;
-  StringToInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet);
+  unsigned int subnet = StringToIntOrDefault(
+      m_preferences->GetValue(K_SUBNET_KEY), K_ARTNET_SUBNET);
 
-  unsigned int net;
-  StringToInt(m_preferences->GetValue(K_NET_KEY), &net);
+  unsigned int net = StringToIntOrDefault(
+      m_preferences->GetValue(K_NET_KEY), K_ARTNET_NET);
 
-  ola::network::Interface interface;
+  ola::network::Interface iface;
   auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
   ola::network::InterfacePicker::Options options;
   options.include_loopback = m_preferences->GetValueAsBool(K_LOOPBACK_KEY);
   if (!picker->ChooseInterface(
-          &interface,
+          &iface,
           m_preferences->GetValue(K_IP_KEY),
           options)) {
     OLA_INFO << "Failed to find an interface";
@@ -118,10 +106,11 @@ bool ArtNetDevice::StartHook() {
   node_options.use_limited_broadcast_address = m_preferences->GetValueAsBool(
       K_LIMITED_BROADCAST_KEY);
   // OLA Output ports are ArtNet input ports
-  StringToInt(m_preferences->GetValue(K_OUTPUT_PORT_KEY),
-              &node_options.input_port_count);
+  node_options.input_port_count = StringToIntOrDefault(
+      m_preferences->GetValue(K_OUTPUT_PORT_KEY),
+      K_DEFAULT_OUTPUT_PORT_COUNT);
 
-  m_node = new ArtNetNode(interface, m_plugin_adaptor, node_options);
+  m_node = new ArtNetNode(iface, m_plugin_adaptor, node_options);
   m_node->SetNetAddress(net);
   m_node->SetSubnetAddress(subnet);
   m_node->SetShortName(m_preferences->GetValue(K_SHORT_NAME_KEY));
@@ -143,7 +132,7 @@ bool ArtNetDevice::StartHook() {
   }
 
   ostringstream str;
-  str << K_DEVICE_NAME << " [" << interface.ip_address << "]";
+  str << K_DEVICE_NAME << " [" << iface.ip_address << "]";
   SetName(str.str());
 
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
@@ -152,10 +141,6 @@ bool ArtNetDevice::StartHook() {
   return true;
 }
 
-
-/**
- * Stop this device. This is called before the ports are deleted
- */
 void ArtNetDevice::PrePortStop() {
   if (m_timeout_id != ola::thread::INVALID_TIMEOUT) {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);
@@ -164,23 +149,11 @@ void ArtNetDevice::PrePortStop() {
   m_node->Stop();
 }
 
-
-/*
- * Stop this device
- */
 void ArtNetDevice::PostPortStop() {
   delete m_node;
   m_node = NULL;
 }
 
-
-/*
- * Handle device config messages
- * @param controller An RpcController
- * @param request the request data
- * @param response the response to return
- * @param done the closure to call once the request is complete
- */
 void ArtNetDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
@@ -204,10 +177,6 @@ void ArtNetDevice::Configure(RpcController *controller,
   }
 }
 
-
-/*
- * Handle an options request
- */
 void ArtNetDevice::HandleOptions(Request *request, string *response) {
   bool status = true;
   if (request->has_options()) {
@@ -237,10 +206,6 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
   reply.SerializeToString(response);
 }
 
-
-/**
- * Handle a node list request
- */
 void ArtNetDevice::HandleNodeList(Request *request,
                                   string *response,
                                   RpcController *controller) {

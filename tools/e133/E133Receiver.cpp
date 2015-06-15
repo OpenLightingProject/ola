@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133Receiver.cpp
  * Copyright (C) 2013 Simon Newton
@@ -110,18 +110,18 @@ void E133Receiver::HandleStatusMessage(
 void E133Receiver::HandlePacket(
     const ola::plugin::e131::TransportHeader *transport_header,
     const ola::plugin::e131::E133Header *e133_header,
-    const std::string &raw_response) {
+    const string &raw_response) {
   if (!m_rdm_callback)
     return;
 
   OLA_INFO << "Got E1.33 data from " << transport_header->Source();
 
   // Attempt to unpack as a response for now.
-  ola::rdm::rdm_response_code response_code;
+  ola::rdm::RDMStatusCode status_code;
   const RDMResponse *response = RDMResponse::InflateFromData(
     reinterpret_cast<const uint8_t*>(raw_response.data()),
     raw_response.size(),
-    &response_code);
+    &status_code);
 
   if (!response) {
     OLA_WARN << "Failed to unpack E1.33 RDM message, ignoring request.";
@@ -130,7 +130,7 @@ void E133Receiver::HandlePacket(
 
   m_rdm_callback->Run(E133RDMMessage(
       transport_header->Source().Host(), e133_header->Endpoint(),
-      e133_header->Sequence(), response_code, response));
+      e133_header->Sequence(), status_code, response));
 }
 }  // namespace e133
 }  // namespace ola

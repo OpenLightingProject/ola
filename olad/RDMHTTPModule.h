@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RDMHTTPModule.h
  * This module acts as the http -> olad gateway for RDM commands.
@@ -590,7 +590,7 @@ class RDMHTTPModule {
     void AddSection(std::vector<section_info> *sections,
                     const std::string &section_id,
                     const std::string &section_name,
-                    const std::string &hint="");
+                    const std::string &hint = "");
 
     static const uint32_t INVALID_PERSONALITY = 0xffff;
     static const char BACKEND_DISCONNECTED_ERROR[];

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ola_rdm_get.py
 # Copyright (C) 2010 Simon Newton
@@ -34,7 +34,7 @@ from ola.RDMAPI import RDMAPI
 from ola.UID import UID
 
 def Usage():
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
   Usage: ola_rdm_get.py --universe <universe> --uid <uid> <pid>
 
   Get the value of a pid for a device.
@@ -46,7 +46,7 @@ def Usage():
     -l, --list-pids           display a list of pids
     -p, --pid-location        the directory to read PID definitions from
     --uid                     the UID to send to
-    -u, --universe <universe> Universe number.""")
+    -u, --universe <universe> Universe number."""))
 
 wrapper = None
 
@@ -64,38 +64,37 @@ class ResponsePrinter(object):
   def PrintResponse(self, uid, pid_value, response_data):
     pid = self.pid_store.GetPid(pid_value, uid.manufacturer_id)
     if pid is None:
-      print 'PID: 0x%04hx' % pid_value
+      print('PID: 0x%04hx' % pid_value)
       self.Default(uid, response_data)
     else:
-      print pid
+      print(pid)
       if pid.name in self._handlers:
         self._handlers[pid.name](uid, response_data)
       else:
         self.Default(uid, response_data)
 
   def SupportedParameters(self, uid, response_data):
-    params = [p['param_id'] for p in response_data['params']]
-    params.sort()
+    params = sorted([p['param_id'] for p in response_data['params']])
     for pid_value in params:
       pid = self.pid_store.GetPid(pid_value, uid.manufacturer_id)
       if pid:
-        print pid
+        print(pid)
       else:
-        print '0x%hx' % pid_value
+        print('0x%hx' % pid_value)
 
   def ProxiedDevices(self, uid, response_data):
     uids = []
     for uid_data in response_data['uids']:
       uids.append(UID(uid_data['manufacturer_id'], uid_data['device_id']))
     for uid in sorted(uids):
-      print uid
+      print(uid)
 
   def Default(self, uid, response_data):
     if isinstance(response_data, dict):
-      for key, value in response_data.iteritems():
-        print '%s: %r' % (key, value)
+      for key, value in response_data.items():
+        print('%s: %r' % (key, value))
     else:
-      print response_data
+      print(response_data)
 
 
 class InteractiveModeController(cmd.Cmd):
@@ -130,31 +129,31 @@ class InteractiveModeController(cmd.Cmd):
     pass
 
   def do_exit(self, s):
-    """Exit the intrepreter."""
+    """Exit the interpreter."""
     return True
 
   def do_EOF(self, s):
-    print ''
+    print('')
     return self.do_exit('')
 
   def do_uid(self, line):
     """Sets the active UID."""
     args = line.split()
     if len(args) != 1:
-      print '*** Requires a single UID argument'
+      print('*** Requires a single UID argument')
       return
 
     uid = UID.FromString(args[0])
     if uid is None:
-      print '*** Invalid UID'
+      print('*** Invalid UID')
       return
 
     if uid not in self._uids:
-      print '*** UID not found'
+      print('*** UID not found')
       return
 
     self._uid = uid
-    print 'Fetching queued messages...'
+    print('Fetching queued messages...')
     self._FetchQueuedMessages()
     self.wrapper.Run()
 
@@ -170,30 +169,30 @@ class InteractiveModeController(cmd.Cmd):
     """Sets the sub device."""
     args = line.split()
     if len(args) != 1:
-      print '*** Requires a single int argument'
+      print('*** Requires a single int argument')
       return
 
     try:
       sub_device = int(args[0])
     except ValueError:
-      print '*** Requires a single int argument'
+      print('*** Requires a single int argument')
       return
 
     if sub_device < 0 or sub_device > PidStore.ALL_SUB_DEVICES:
-      print ('*** Argument must be between 0 and 0x%hx' %
+      print('*** Argument must be between 0 and 0x%hx' %
              PidStore.ALL_SUB_DEVICES)
       return
     self._sub_device = sub_device
 
   def do_print(self, l):
     """Prints the current universe, UID and sub device."""
-    print textwrap.dedent("""\
+    print(textwrap.dedent("""\
       Universe: %d
       UID: %s
       Sub Device: %d""" % (
         self._universe,
         self._uid,
-        self._sub_device))
+        self._sub_device)))
 
   def do_uids(self, l):
     """List the UIDs for this universe."""
@@ -205,7 +204,7 @@ class InteractiveModeController(cmd.Cmd):
     if state.Succeeded():
       self._UpdateUids(uids)
       for uid in uids:
-        print str(uid)
+        print(str(uid))
     self.wrapper.Stop()
 
   def do_full_discovery(self, l):
@@ -237,7 +236,7 @@ class InteractiveModeController(cmd.Cmd):
       for pid in self.pid_store.ManufacturerPids(self._uid.manufacturer_id):
         names.append('%s (0x%04hx)' % (pid.name.lower(), pid.value))
     names.sort()
-    print '\n'.join(names)
+    print('\n'.join(names))
 
   def do_queued(self, line):
     """Fetch all the queued messages."""
@@ -269,15 +268,14 @@ class InteractiveModeController(cmd.Cmd):
           pids.append(pid)
 
     # now check if this type of request is supported
-    pid_names = [pid.name.lower() for pid in pids
-                 if pid.RequestSupported(request_type)]
+    pid_names = sorted([pid.name.lower() for pid in pids
+                 if pid.RequestSupported(request_type)])
 
-    pid_names.sort()
     return pid_names
 
   def GetOrSet(self, request_type, line):
     if self._uid is None:
-      print '*** No UID selected, use the uid command'
+      print('*** No UID selected, use the uid command')
       return
 
     args = line.split()
@@ -285,7 +283,7 @@ class InteractiveModeController(cmd.Cmd):
     if request_type == PidStore.RDM_SET:
       command = 'set'
     if len(args) < 1:
-      print '%s <pid> [args]' % command
+      print('%s <pid> [args]' % command)
       return
 
     pid = None
@@ -294,12 +292,12 @@ class InteractiveModeController(cmd.Cmd):
     except ValueError:
       pid = self.pid_store.GetName(args[0].upper(), self._uid.manufacturer_id)
     if pid is None:
-      print '*** Unknown pid %s' % args[0]
+      print('*** Unknown pid %s' % args[0])
       return
 
     rdm_args = args[1:]
     if not pid.RequestSupported(request_type):
-      print '*** PID does not support command'
+      print('*** PID does not support command')
       return
 
     if request_type == PidStore.RDM_SET:
@@ -316,12 +314,12 @@ class InteractiveModeController(cmd.Cmd):
                 args[1:]):
         self._outstanding_request = (self._sub_device, request_type, pid)
         self.wrapper.Run()
-    except PidStore.ArgsValidationError, e:
+    except PidStore.ArgsValidationError as e:
       args, help_string = pid.GetRequestDescription(request_type)
-      print 'Usage: %s %s %s' % (command, pid.name.lower(), args)
-      print help_string
-      print ''
-      print '*** %s' % e
+      print('Usage: %s %s %s' % (command, pid.name.lower(), args))
+      print(help_string)
+      print('')
+      print('*** %s' % e)
       return
 
   def _FetchQueuedMessages(self):
@@ -343,15 +341,15 @@ class InteractiveModeController(cmd.Cmd):
     self.wrapper.Stop()
 
     if response.response_type == OlaClient.RDM_NACK_REASON:
-      print 'Got nack with reason: %s' % response.nack_reason
+      print('Got nack with reason: %s' % response.nack_reason)
     elif unpack_exception:
-      print unpack_exception
+      print(unpack_exception)
     else:
       self._response_printer.PrintResponse(self._uid, response.pid,
                                            unpacked_data)
 
     if response.queued_messages:
-      print '%d queued messages remain' % response.queued_messages
+      print('%d queued messages remain' % response.queued_messages)
 
   def _QueuedMessageComplete(self, response, unpacked_data, unpack_exception):
     if not self._CheckForAckOrNack(response):
@@ -368,14 +366,14 @@ class InteractiveModeController(cmd.Cmd):
 
       elif (response.nack_reason == RDMNack.NR_UNKNOWN_PID and
             response.pid == self.pid_store.GetName('QUEUED_MESSAGE').value):
-        print 'Device doesn\'t support queued messages'
+        print('Device doesn\'t support queued messages')
         self.wrapper.StopIfNoEvents()
       else:
-        print 'Got nack for 0x%04hx with reason: %s' % (
-            response.pid, response.nack_reason)
+        print('Got nack for 0x%04hx with reason: %s' % (
+            response.pid, response.nack_reason))
 
     elif unpack_exception:
-      print 'Invalid Param data: %s' % unpack_exception
+      print('Invalid Param data: %s' % unpack_exception)
     else:
       status_messages_pid = self.pid_store.GetName('STATUS_MESSAGES')
       if (response.pid == status_messages_pid.value and
@@ -399,12 +397,12 @@ class InteractiveModeController(cmd.Cmd):
       True if this response was an ACK or NACK, False for all other cases.
     """
     if not response.status.Succeeded():
-      print response.status.message
+      print(response.status.message)
       self.wrapper.Stop()
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print response.ResponseCodeAsString()
+      print(response.ResponseCodeAsString())
       self.wrapper.Stop()
       return False
 
@@ -423,8 +421,8 @@ def main():
                                ['sub-device=', 'help', 'interactive',
                                  'list-pids', 'pid-location=', 'uid=',
                                  'universe='])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

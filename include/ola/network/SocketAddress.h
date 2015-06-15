@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SocketAddress.h
  * Represents a sockaddr structure.
@@ -30,10 +30,11 @@
 #define INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_
 
 #include <ola/network/IPV4Address.h>
+#include <ola/base/Macro.h>
 #include <stdint.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #else
 #include <sys/socket.h>
 #endif
@@ -110,11 +111,28 @@ class IPV4SocketAddress: public SocketAddress {
       return !(*this == other);
     }
 
+    /**
+     * @brief Less than operator for partial ordering.
+     *
+     * Sorts by host, then port.
+     */
     bool operator<(const IPV4SocketAddress &other) const {
       if (m_host == other.m_host)
         return m_port < other.m_port;
       else
         return m_host < other.m_host;
+    }
+
+    /**
+     * @brief Greater than operator.
+     *
+     * Sorts by host, then port.
+     */
+    bool operator>(const IPV4SocketAddress &other) const {
+      if (m_host == other.m_host)
+        return m_port > other.m_port;
+      else
+        return m_host > other.m_host;
     }
 
     uint16_t Family() const { return AF_INET; }
@@ -167,10 +185,10 @@ class GenericSocketAddress: public SocketAddress {
       return *this;
     }
 
-    bool ToSockAddr(struct sockaddr *addr, unsigned int size) const {
+    bool ToSockAddr(struct sockaddr *addr,
+                    OLA_UNUSED unsigned int size) const {
       *addr = m_addr;
       return true;
-      (void) size;
     }
 
     std::string ToString() const;

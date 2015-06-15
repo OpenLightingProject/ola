@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIWriter.cpp
  * This writes data to a SPI device.
@@ -52,7 +52,9 @@ SPIWriter::SPIWriter(const string &spi_device,
     : m_device_path(spi_device),
       m_spi_speed(options.spi_speed),
       m_cs_enable_high(options.cs_enable_high),
-      m_fd(-1) {
+      m_fd(-1),
+      m_error_map_var(NULL),
+      m_write_map_var(NULL) {
   OLA_INFO << "Created SPI Writer " << spi_device << " with speed "
            << options.spi_speed << ", CE is " << m_cs_enable_high;
   if (export_map) {

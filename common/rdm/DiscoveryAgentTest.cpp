@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DiscoveryAgentTest.cpp
  * Test fixture for the DiscoveryAgent class
@@ -35,7 +35,7 @@ using ola::rdm::DiscoveryAgent;
 using std::vector;
 
 
-typedef std::vector<class MockResponderInterface*> ResponderList;
+typedef vector<class MockResponderInterface*> ResponderList;
 
 
 class DiscoveryAgentTest: public CppUnit::TestFixture {
@@ -67,10 +67,6 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
     void testNonMutingResponder();
     void testFlakeyResponder();
     void testProxy();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-    }
 
  private:
     bool m_callback_run;
@@ -123,8 +119,9 @@ void DiscoveryAgentTest::PopulateResponderListFromUIDs(
     const UIDSet &uids,
     ResponderList *responders) {
   UIDSet::Iterator iter = uids.Begin();
-  for (; iter != uids.End(); iter++)
+  for (; iter != uids.End(); iter++) {
     responders->push_back(new MockResponder(*iter));
+  }
 }
 
 
@@ -137,21 +134,22 @@ void DiscoveryAgentTest::testNoReponders() {
   PopulateResponderListFromUIDs(uids, &responders);
   MockDiscoveryTarget target(responders);
   DiscoveryAgent agent(&target);
-  OLA_INFO << "starting discovery with no responders";
 
   agent.StartFullDiscovery(
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
   OLA_ASSERT_TRUE(m_callback_run);
+  OLA_ASSERT_EQ(3u, target.UnmuteCallCount());
 
   // now try incremental
-  OLA_INFO << "starting incremental discovery with no responders";
+  target.ResetCounters();
   agent.StartIncrementalDiscovery(
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
   OLA_ASSERT_TRUE(m_callback_run);
+  OLA_ASSERT_EQ(3u, target.UnmuteCallCount());
 }
 
 
@@ -263,20 +261,23 @@ void DiscoveryAgentTest::testObnoxiousResponder() {
  * Test a responder that replies with responses larger than the DUB size
  */
 void DiscoveryAgentTest::testRamblingResponder() {
+  const UID normal_responder_uid(0x7a70, 0x00002002);
+  const UID rambling_responder_uid(0x7a77, 0x0002002);
+
   UIDSet uids;
   ResponderList responders;
-  uids.AddUID(UID(0x7a70, 0x00002002));
+  uids.AddUID(normal_responder_uid);
   PopulateResponderListFromUIDs(uids, &responders);
   // add the RamblingResponder
-  UID rambling_uid = UID(0x7a77, 0x00002002);
-  responders.push_back(new RamblingResponder(rambling_uid));
+  responders.push_back(new RamblingResponder(rambling_responder_uid));
   MockDiscoveryTarget target(responders);
 
   DiscoveryAgent agent(&target);
+  uids.AddUID(rambling_responder_uid);
   OLA_INFO << "starting discovery with rambling responder";
   agent.StartFullDiscovery(
       ola::NewSingleCallback(this,
-                             &DiscoveryAgentTest::DiscoveryFailed,
+                             &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
   OLA_ASSERT_TRUE(m_callback_run);
 }

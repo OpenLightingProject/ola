@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * MockAction.cpp
  * A mock action uses for testing.
@@ -22,6 +22,7 @@
 #define TOOLS_OLA_TRIGGER_MOCKACTION_H_
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <ola/testing/TestUtils.h>
 #include <queue>
 #include <sstream>
 
@@ -38,17 +39,18 @@ class MockAction: public Action {
       m_values.push(slot_value);
     }
 
-    void CheckForValue(int32_t line, uint8_t expected_value) {
-      std::ostringstream str;
-      str << "Line " << line;
-      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(),
-                                   static_cast<size_t>(1),
-                                   m_values.size());
+    void CheckForValue(const ola::testing::SourceLine &source_line,
+                       uint8_t expected_value) {
+      ola::testing::_AssertEquals(source_line,
+                                  static_cast<size_t>(1),
+                                  m_values.size(),
+                                  "Queue sizes differ");
+
       uint8_t value = m_values.front();
-      CPPUNIT_ASSERT_EQUAL_MESSAGE(
-          str.str(),
-          static_cast<int>(expected_value),
-          static_cast<int>(value));
+      ola::testing::_AssertEquals(source_line,
+                                  static_cast<int>(expected_value),
+                                  static_cast<int>(value),
+                                  "Values differ");
       m_values.pop();
     }
 

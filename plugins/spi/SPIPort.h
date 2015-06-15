@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIPort.h
  * An OLA SPI Port. This simply wraps the SPIOutput.
@@ -33,26 +33,28 @@ namespace spi {
 
 class SPIOutputPort: public BasicOutputPort {
  public:
-    SPIOutputPort(SPIDevice *parent, class SPIBackendInterface *backend,
-                  const ola::rdm::UID &uid, const SPIOutput::Options &options);
-    ~SPIOutputPort() {}
+  SPIOutputPort(SPIDevice *parent, class SPIBackendInterface *backend,
+                const ola::rdm::UID &uid, const SPIOutput::Options &options);
+  ~SPIOutputPort() {}
 
-    uint8_t GetPersonality() const;
-    bool SetPersonality(uint16_t personality);
-    uint16_t GetStartAddress() const;
-    bool SetStartAddress(uint16_t start_address);
-    unsigned int PixelCount() const;
+  std::string GetDeviceLabel() const;
+  bool SetDeviceLabel(const std::string &device_label);
+  uint8_t GetPersonality() const;
+  bool SetPersonality(uint16_t personality);
+  uint16_t GetStartAddress() const;
+  bool SetStartAddress(uint16_t start_address);
+  unsigned int PixelCount() const;
 
-    std::string Description() const;
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+  std::string Description() const;
+  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *callback);
+  void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+  void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
+                      ola::rdm::RDMCallback *callback);
 
  private:
-    SPIOutput m_spi_output;
+  SPIOutput m_spi_output;
 };
 }  // namespace spi
 }  // namespace plugin

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133PDUTest.cpp
  * Test fixture for the E133PDU class
@@ -38,7 +38,6 @@ namespace e131 {
 using ola::io::IOQueue;
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::string;
 
 class E133PDUTest: public CppUnit::TestFixture {
@@ -149,9 +148,7 @@ void E133PDUTest::testSimpleE133PDUToOutputStream() {
     0, 2,  // endpoint
     0,
   };
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED, sizeof(EXPECTED),
-                     pdu_data, pdu_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), pdu_data, pdu_size);
   output.Pop(output.Size());
   delete[] pdu_data;
 }

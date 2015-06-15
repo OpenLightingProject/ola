@@ -16,12 +16,14 @@ DAEMON=/usr/bin/$NAME
 PIDFILE=/var/run/$NAME.pid
 DESC="OLA daemon"
 USER=olad
+LOG_LEVEL=3
+CONFIG_DIR="/var/lib/ola/conf"
 
 # Reads config file (will override defaults above)
 [ -r /etc/default/ola ] && . /etc/default/ola
 
 if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
-  DAEMON_ARGS="--syslog --log-level 3  --config-dir  /var/lib/ola/conf"
+  DAEMON_ARGS="--syslog --log-level $LOG_LEVEL --config-dir $CONFIG_DIR"
 elif [ "$1" = "start" ] || [ "$1" = "stop" ] ; then
   echo "The init script is currently inactive;\nuse \"dpkg-reconfigure ola\" to change this." >&2
 fi
@@ -48,14 +50,14 @@ case "$1" in
       log_end_msg $?
     fi
     ;;
-  reload|restart)
+  reload|force-reload|restart)
     $0 stop && $0 start
     ;;
   status)
     status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
     ;;
   *)
-    echo "Usage: /etc/init.d/$NAME {start|stop|restart|status}" >&2
+    echo "Usage: /etc/init.d/$NAME {start|stop|reload|restart|force-reload|status}" >&2
     exit 1
     ;;
 esac

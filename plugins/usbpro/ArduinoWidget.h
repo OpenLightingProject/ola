@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArduinoWidget.h
  * The Arduino RGB Mixer widget.
@@ -21,6 +21,7 @@
 #ifndef PLUGINS_USBPRO_ARDUINOWIDGET_H_
 #define PLUGINS_USBPRO_ARDUINOWIDGET_H_
 
+#include <memory>
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -47,7 +48,7 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
 
     void Stop();
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
@@ -61,7 +62,7 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
  private:
     uint8_t m_transaction_id;
     ola::rdm::UID m_uid;
-    const ola::rdm::RDMRequest *m_pending_request;
+    std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
 
     void HandleMessage(uint8_t label,
@@ -100,7 +101,7 @@ class ArduinoWidget: public SerialWidgetInterface,
       return m_impl->SendDMX(buffer);
     }
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_controller->SendRDMRequest(request, on_complete);
     }

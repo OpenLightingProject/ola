@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * HTTPServer.h
  * The Base HTTP Server class.
@@ -32,8 +32,13 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <ola/win/CleanWinSock2.h>
+#else
 #include <sys/select.h>
 #include <sys/socket.h>
+#endif
 #include <microhttpd.h>
 #include <map>
 #include <set>
@@ -185,7 +190,7 @@ class HTTPServer: public ola::thread::Thread {
   const std::string DataDir() const { return m_data_dir; }
 
   // Return an error
-  int ServeError(HTTPResponse *response, const std::string &details="");
+  int ServeError(HTTPResponse *response, const std::string &details = "");
   int ServeNotFound(HTTPResponse *response);
   static int ServeRedirect(HTTPResponse *response, const std::string &location);
 
@@ -200,9 +205,10 @@ class HTTPServer: public ola::thread::Thread {
   static const char CONTENT_TYPE_PNG[];
   static const char CONTENT_TYPE_CSS[];
   static const char CONTENT_TYPE_JS[];
+  static const char CONTENT_TYPE_OCT[];
 
   // Expose the SelectServer
-  ola::io::SelectServer *SelectServer() { return &m_select_server; }
+  ola::io::SelectServer *SelectServer() { return m_select_server.get(); }
 
  private :
   typedef struct {
@@ -210,11 +216,29 @@ class HTTPServer: public ola::thread::Thread {
     std::string content_type;
   } static_file_info;
 
-  typedef std::set<ola::io::UnmanagedFileDescriptor*,
-                   ola::io::UnmanagedFileDescriptor_lt> SocketSet;
+  struct DescriptorState {
+   public:
+    explicit DescriptorState(ola::io::UnmanagedFileDescriptor *descriptor)
+        : descriptor(descriptor), read(0), write(0) {}
+
+    ola::io::UnmanagedFileDescriptor *descriptor;
+    uint8_t read    : 1;
+    uint8_t write   : 1;
+    uint8_t         : 6;
+  };
+
+  struct Descriptor_lt {
+    bool operator()(const DescriptorState *d1,
+                    const DescriptorState *d2) const {
+      return d1->descriptor->ReadDescriptor() <
+             d2->descriptor->ReadDescriptor();
+    }
+  };
+
+  typedef std::set<DescriptorState*, Descriptor_lt> SocketSet;
 
   struct MHD_Daemon *m_httpd;
-  ola::io::SelectServer m_select_server;
+  std::auto_ptr<ola::io::SelectServer> m_select_server;
   SocketSet m_sockets;
 
   std::map<std::string, BaseHTTPCallback*> m_handlers;
@@ -226,9 +250,8 @@ class HTTPServer: public ola::thread::Thread {
   int ServeStaticContent(static_file_info *file_info,
                          HTTPResponse *response);
 
-  ola::io::UnmanagedFileDescriptor *NewSocket(fd_set *r_set,
-                                              fd_set *w_set,
-                                              int fd);
+  void InsertSocket(bool is_readable, bool is_writeable, int fd);
+  void FreeSocket(DescriptorState *state);
 
   DISALLOW_COPY_AND_ASSIGN(HTTPServer);
 };

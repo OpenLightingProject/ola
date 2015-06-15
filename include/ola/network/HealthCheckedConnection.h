@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * HealthCheckedConnection.h
  * Copyright (C) 2012 Simon Newton
@@ -97,6 +97,7 @@ class HealthCheckedConnection {
      */
     void ResumeTimer();
 
+ protected:
     /**
      * This is called when we don't receive a health check within the interval.
      */
@@ -110,6 +111,7 @@ class HealthCheckedConnection {
 
     bool SendNextHeartbeat();
     void UpdateReceiveTimer();
+    void InternalHeartbeatTimeout();
 
     DISALLOW_COPY_AND_ASSIGN(HealthCheckedConnection);
 };

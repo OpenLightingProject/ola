@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Copyright (C) 2010 Simon Newton
  */
@@ -22,9 +22,9 @@
 using std::cout;
 using std::endl;
 
-// These options are --foo and --nobar.
-DEFINE_bool(foo, false, "Enable feature foo");
-DEFINE_bool(bar, true, "Disable feature bar");
+// These options are --foo and --no-bar.
+DEFINE_default_bool(foo, false, "Enable feature foo");
+DEFINE_default_bool(bar, true, "Disable feature bar");
 
 // FLAGS_name defaults to "simon" and can be changed with --name bob
 DEFINE_string(name, "simon", "Specify the name");

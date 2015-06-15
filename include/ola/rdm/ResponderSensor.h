@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderSensor.h
  * Manages a sensor for a RDM responder.
@@ -88,6 +88,8 @@ class Sensor {
         m_range_max(options.range_max),
         m_normal_min(options.normal_min),
         m_normal_max(options.normal_max),
+        m_lowest(0),
+        m_highest(0),
         m_recorded(0) {
   }
   virtual ~Sensor() {}

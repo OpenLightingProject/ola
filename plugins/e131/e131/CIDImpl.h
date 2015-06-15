@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * CIDImpl.h
  * The actual implementation of a CID. The implementation changes based on
@@ -62,6 +62,7 @@ class CIDImpl {
   CIDImpl& operator=(const CIDImpl& c1);
   bool operator==(const CIDImpl& c1) const;
   bool operator!=(const CIDImpl& c1) const;
+  bool operator<(const CIDImpl& c1) const;
 
   static CIDImpl* Generate();
   static CIDImpl* FromData(const uint8_t *data);

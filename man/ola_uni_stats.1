@@ -1,0 +1,26 @@
+.TH ola_uni_stats 1 "August 2014"
+.SH NAME
+ola_uni_stats \- Produce statistics on DMX frame rates.
+.SH SYNOPSIS
+.B ola_uni_stats
+[options] <universe1> <universe2> ...
+.SH DESCRIPTION
+.B ola_uni_stats
+is used to watch one or more universes and produce stats on DMX frame rates.
+.SH OPTIONS
+.IP "-h, --help"
+Display the help message
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4.
+.IP "-v, --version"
+Display version information
+.IP "--syslog"
+Send to syslog rather than stderr.
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
+.IP "--scheduler-policy <policy>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <priority>"
+The thread priority, only used if --scheduler-policy is set.

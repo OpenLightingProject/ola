@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KarateLight.cpp
  * The KarateLight communication class
@@ -30,10 +30,11 @@
 #include <iostream>
 #include <string>
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
+#include "ola/strings/Format.h"
 #include "plugins/karate/KarateLight.h"
 
 namespace ola {
@@ -43,11 +44,12 @@ namespace karate {
 using std::string;
 
 /**
- * Default constructor
- * \param dev the filename of the device to use
+ * @brief Default constructor
+ * @param dev the filename of the device to use
  */
 KarateLight::KarateLight(const string &dev)
     : m_devname(dev),
+      m_fd(-1),
       m_fw_version(0),
       m_hw_version(0),
       m_nChannels(0),
@@ -57,8 +59,9 @@ KarateLight::KarateLight(const string &dev)
 }
 
 /**
- * Default destructor
- * closes the device and does release the file-lock
+ * @brief Default destructor
+ *
+ * Closes the device and does release the file-lock
  */
 KarateLight::~KarateLight() {
   KarateLight::Close();
@@ -66,17 +69,20 @@ KarateLight::~KarateLight() {
 
 void KarateLight::Close() {
   // remove lock and close file
-  flock(m_fd, LOCK_UN);
-  tcflush(m_fd, TCIOFLUSH);
-  close(m_fd);
+  if (m_fd >= 0) {
+    flock(m_fd, LOCK_UN);
+    tcflush(m_fd, TCIOFLUSH);
+    close(m_fd);
+  }
   m_active = false;
 }
 
 /**
- * Initialize the device
- * 1. open the devicefile and get a file lock
- * 2. read defaults (firmware, hardware, channels count)
- * 3. set all channels to black
+ * @brief Initialize the device
+ *
+ * 1. Open the device file and get a file lock
+ * 2. Read defaults (firmware, hardware, channels count)
+ * 3. Set all channels to black
  */
 bool KarateLight::Init() {
   uint8_t rd_buffer[CMD_MAX_LENGTH];
@@ -121,9 +127,9 @@ bool KarateLight::Init() {
   }
 
   // clear possible junk data still in the systems fifo
-  int bytesread = 1;
-  while (bytesread > 0) {
-    bytesread = read(m_fd, rd_buffer, CMD_MAX_LENGTH);
+  int bytes_read = 1;
+  while (bytes_read > 0) {
+    bytes_read = read(m_fd, rd_buffer, CMD_MAX_LENGTH);
   }
 
   // read firmware version
@@ -185,10 +191,10 @@ bool KarateLight::Init() {
 
   OLA_INFO << "successfully initalized device " << m_devname
            << " with firmware version 0x"
-           << std::hex << static_cast<int>(m_fw_version)
+           << strings::ToHex(m_fw_version)
            << ", hardware-revision = 0x"
-           << std::hex << static_cast<int>(m_hw_version)
-           << ", channel_count = " << std::dec << m_nChannels
+           << strings::ToHex(m_hw_version)
+           << ", channel_count = " << m_nChannels
            << ", dmx_offset = " << m_dmx_offset;
 
   // set channels to black
@@ -196,8 +202,8 @@ bool KarateLight::Init() {
 }
 
 /**
- * Sets all Channels to black and sends data to the device
- * \returns true on success
+ * @brief Sets all Channels to black and sends data to the device
+ * @returns true on success
  */
 bool KarateLight::Blank() {
   memset(m_color_buffer, 0, DMX_UNIVERSE_SIZE);
@@ -206,8 +212,8 @@ bool KarateLight::Blank() {
 }
 
 /**
- * copy contents of the DmxBuffer into my local scope
- * \returns true on success
+ * @brief Copy contents of the DmxBuffer into my local scope
+ * @returns true on success
  */
 bool KarateLight::SetColors(const DmxBuffer &da) {
   // make sure not to request data beyond the bounds of the universe
@@ -223,65 +229,70 @@ bool KarateLight::SetColors(const DmxBuffer &da) {
 */
 
 /**
- * Tries to read an answer from the device
- * \parm rd_data buffer for the received data (excluding the header)
- * \parm rd_len number of bytes received (excluding the header)
- * \return true on success
+ * @brief Tries to read an answer from the device
+ * @param rd_data buffer for the received data (excluding the header)
+ * @param rd_len number of bytes to read (excluding the header), will be
+ *     overwritten with the number of bytes received in the case
+ *     of a mismatch
+ * @return true on success
  */
 bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
-  int bytesread = 0;
   uint8_t rd_buffer[CMD_MAX_LENGTH];
 
   // read header (4 bytes)
-  while (bytesread != CMD_DATA_START) {
-    bytesread = read(m_fd, rd_buffer, CMD_DATA_START);
-    if (bytesread < 0) {
-      if (errno != EINTR) {  // this is also true for EAGAIN
-        OLA_WARN << "could not read 4 bytes (header) from " << m_devname
-                 << "ErrorCode: " << strerror(errno);
+  int bytes_read = read(m_fd, rd_buffer, CMD_DATA_START);
+  if (bytes_read != CMD_DATA_START) {
+    if (errno != EINTR) {  // this is also true for EAGAIN
+      OLA_WARN << "Could not read 4 bytes (header) from " << m_devname
+               << " ErrorCode: " << strerror(errno);
+      KarateLight::Close();
+      return false;
+    }
+  }
+  bytes_read = 0;
+
+  // read payload-data (if there is any)
+  uint8_t payload_size = rd_buffer[CMD_HD_LEN];
+  if (payload_size > CMD_MAX_LENGTH - CMD_DATA_START) {
+    OLA_WARN << "KarateLight returned " << static_cast<int>(payload_size)
+             << " bytes of data, this exceeds our buffer size";
+    return false;
+  }
+
+  if (payload_size > 0u) {
+    // we won't enter this loop if there are no bytes to receive
+    bytes_read = read(m_fd, &rd_buffer[CMD_DATA_START], payload_size);
+    if (bytes_read != payload_size) {
+      if (errno != EINTR) {  // this is also true for EAGAIN (timeout)
+        OLA_WARN << "Reading > " << static_cast<int>(payload_size)
+                 << " < bytes payload from " << m_devname
+                 << " ErrorCode: " << strerror(errno);
         KarateLight::Close();
         return false;
       }
     }
   }
 
-  // read payload-data (if there is any)
-  bytesread = 0;
-  while (bytesread != rd_buffer[CMD_HD_LEN]) {
-    // we wont enter this loop if there are no bytes to receive
-    bytesread = read(m_fd, &rd_buffer[CMD_DATA_START], rd_buffer[CMD_HD_LEN]);
-    if (bytesread < 0) {
-      if (errno != EINTR) {  // this is also true for EAGAIN (timeout)
-        OLA_WARN << "reading " << static_cast<int>(rd_buffer[CMD_HD_LEN])
-                 << "bytes payload from " << m_devname
-                 << "ErrorCode: " << strerror(errno);
-        KarateLight::Close();
-        return false;
-      }
-    }  // if (bytesread < request)
-  }  // while
-
   // verify data-length
-  if ((*rd_len != rd_buffer[CMD_HD_LEN]) ||
-      (bytesread != rd_buffer[CMD_HD_LEN])) {
-    OLA_WARN << "number of bytes read" << bytesread
-             << "does not match number of bytes expected"
-             << static_cast<int>(rd_buffer[CMD_HD_LEN]);
+  if (*rd_len != payload_size) {
+    OLA_WARN << "Number of bytes read > " << bytes_read
+             << " < does not match number of bytes expected > "
+             << static_cast<int>(payload_size)
+             << " <";
     KarateLight::Close();
     return false;
   }
 
   // verify checksum
   int checksum = 0;
-  for (int i = 0; i < (bytesread + CMD_DATA_START); i++) {
+  for (int i = 0; i < bytes_read + CMD_DATA_START; i++) {
     if (i != CMD_HD_CHECK) {
       checksum ^= rd_buffer[i];
     }
   }
   if (checksum != rd_buffer[CMD_HD_CHECK]) {
-    OLA_WARN << "checkum verification of incoming data failed."
-             << "data-checkum is: 0x" << std::hex
-             << static_cast<int>(checksum)
+    OLA_WARN << "Checkum verification of incoming data failed. "
+             << "Data-checkum is: " << strings::ToHex(checksum)
              << " but the device said it would be 0x"
              << static_cast<int>(rd_buffer[CMD_HD_CHECK]);
     KarateLight::Close();
@@ -290,17 +301,17 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
   }
 
   // prepare data
-  *rd_len = static_cast<uint8_t>(bytesread);
+  *rd_len = static_cast<uint8_t>(bytes_read);
   memcpy(rd_data, &rd_buffer[CMD_DATA_START], *rd_len);
 
   return true;
 }  // end of KarateLight::ReadBack
 
 /**
- * Reads the a single byte from the eeprom
- * \parm addr the eeprom address to read from (0..255)
- * \parm data location to store the received byte to
- * \return true on success
+ * @brief Reads the a single byte from the eeprom
+ * @param addr the eeprom address to read from (0..255)
+ * @param data location to store the received byte to
+ * @return true on success
  */
 bool KarateLight::ReadByteFromEeprom(uint8_t addr , uint8_t *data) {
   uint8_t rd_buffer[CMD_MAX_LENGTH];
@@ -317,16 +328,17 @@ bool KarateLight::ReadByteFromEeprom(uint8_t addr , uint8_t *data) {
 }
 
 /**
- * Creates and Command, sends it, reads the reply
+ * @brief Creates and Command, sends it, reads the reply
+ *
  * Will return false in case the number of bytes received does not match
  * the number of bytes expected.
  *
- * \param cmd the commandcode to be used
- * \param output_buffer buffer containing payload-data to be send
- * \param n_bytes_to_write number of bytes to be written
- * \param input_buffer returned payload data will be stored here
- * \param n_bytes_expected number of bytes expected (excluding the header)
- * \returns true on success
+ * @param cmd the commandcode to be used
+ * @param output_buffer buffer containing payload-data to be send
+ * @param n_bytes_to_write number of bytes to be written
+ * @param input_buffer returned payload data will be stored here
+ * @param n_bytes_expected number of bytes expected (excluding the header)
+ * @returns true on success
  */
 bool KarateLight::SendCommand(uint8_t cmd, const uint8_t *output_buffer,
                               int n_bytes_to_write, uint8_t *input_buffer,
@@ -334,7 +346,7 @@ bool KarateLight::SendCommand(uint8_t cmd, const uint8_t *output_buffer,
   uint8_t wr_buffer[CMD_MAX_LENGTH];
   uint8_t n_bytes_read;
 
-  // maximum command lenght
+  // maximum command length
   uint8_t cmd_length = n_bytes_to_write + CMD_DATA_START;
   if (cmd_length > CMD_MAX_LENGTH) {
     OLA_WARN << "Error: Command is to long (" << std::dec
@@ -360,10 +372,10 @@ bool KarateLight::SendCommand(uint8_t cmd, const uint8_t *output_buffer,
 
   // now write to the serial port
   if (write(m_fd, wr_buffer, cmd_length) != cmd_length) {
-      OLA_WARN << "failed to write data to " << m_devname;
-      KarateLight::Close();
-      return false;
-    }
+    OLA_WARN << "Failed to write data to " << m_devname;
+    KarateLight::Close();
+    return false;
+  }
 
   // read the answer, check if we got the number of bytes we expected
   n_bytes_read = n_bytes_expected;
@@ -377,9 +389,9 @@ bool KarateLight::SendCommand(uint8_t cmd, const uint8_t *output_buffer,
 }
 
 /**
- * Sends color values currently stored in the local buffer
+ * @brief Sends color values currently stored in the local buffer
  * to the hardware.
- * \returns true on success
+ * @returns true on success
  */
 bool KarateLight::UpdateColors() {
   int block;

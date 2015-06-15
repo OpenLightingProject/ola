@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIBackendTest.cpp
  * Test fixture for the SPIBackendTests.
@@ -183,31 +183,31 @@ void SPIBackendTest::testHardwareVariousFrameLengths() {
   OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(1u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
   OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(2u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
   OLA_ASSERT(SendSomeData(&backend, 0, DATA2, arraysize(DATA2), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(3u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED2, arraysize(EXPECTED2));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED2, arraysize(EXPECTED2));
   m_writer.ResetWrite();
 
   OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(4u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
   OLA_ASSERT(SendSomeData(&backend, 0, DATA3, arraysize(DATA3), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(5u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, DATA3, arraysize(DATA3));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), DATA3, arraysize(DATA3));
   m_writer.ResetWrite();
 
   // now test the latch bytes
@@ -215,14 +215,14 @@ void SPIBackendTest::testHardwareVariousFrameLengths() {
       SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size, 4));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(6u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED3, arraysize(EXPECTED3));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED3, arraysize(EXPECTED3));
   m_writer.ResetWrite();
 
   OLA_ASSERT(
       SendSomeData(&backend, 0, DATA3, arraysize(DATA3), m_total_size, 4));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(7u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED3, arraysize(EXPECTED3));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED3, arraysize(EXPECTED3));
   m_writer.ResetWrite();
 }
 
@@ -282,31 +282,31 @@ void SPIBackendTest::testSoftwareVariousFrameLengths() {
   OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(1u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
   OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(2u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
   OLA_ASSERT(SendSomeData(&backend, 0, DATA2, arraysize(DATA2), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(3u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED2, arraysize(EXPECTED2));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED2, arraysize(EXPECTED2));
   m_writer.ResetWrite();
 
   OLA_ASSERT(SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(4u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED1, arraysize(EXPECTED1));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED1, arraysize(EXPECTED1));
   m_writer.ResetWrite();
 
   OLA_ASSERT(SendSomeData(&backend, 0, DATA3, arraysize(DATA3), m_total_size));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(5u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, DATA3, arraysize(DATA3));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), DATA3, arraysize(DATA3));
   m_writer.ResetWrite();
 
   // now test the latch bytes
@@ -314,13 +314,13 @@ void SPIBackendTest::testSoftwareVariousFrameLengths() {
       SendSomeData(&backend, 0, DATA1, arraysize(DATA1), m_total_size, 4));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(6u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED4, arraysize(EXPECTED4));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED4, arraysize(EXPECTED4));
   m_writer.ResetWrite();
 
   OLA_ASSERT(
       SendSomeData(&backend, 0, DATA3, arraysize(DATA3), m_total_size, 4));
   m_writer.WaitForWrite();
   OLA_ASSERT_EQ(7u, m_writer.WriteCount());
-  m_writer.CheckDataMatches(__LINE__, EXPECTED3, arraysize(EXPECTED3));
+  m_writer.CheckDataMatches(OLA_SOURCELINE(), EXPECTED3, arraysize(EXPECTED3));
   m_writer.ResetWrite();
 }

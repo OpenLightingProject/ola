@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StringMessageBuilder.cpp
  * Builds a Message object from a list of strings & a Descriptor.
@@ -46,12 +46,13 @@ using std::vector;
 StringMessageBuilder::StringMessageBuilder()
     : m_offset(0),
       m_input_size(0),
+      m_group_instance_count(0),
       m_error(false) {
 }
 
 
 /**
- * Clean up
+ * @brief Clean up
  */
 StringMessageBuilder::~StringMessageBuilder() {
   CleanUpVector();
@@ -59,11 +60,12 @@ StringMessageBuilder::~StringMessageBuilder() {
 
 
 /**
- * Get the Message object that this Builder created
+ * @brief Get the Message object that this Builder created
  *
  * This method is *not* re-entrant.
- * @param descriptor The descriptor to use to build the Message
- * @returns A Message object, or NULL if the inputs failed.
+ * @param inputs the string inputs provided to build the Message
+ * @param descriptor the descriptor to use to build the Message
+ * @returns a Message object, or NULL if the inputs failed.
  */
 const ola::messaging::Message *StringMessageBuilder::GetMessage(
     const vector<string> &inputs,

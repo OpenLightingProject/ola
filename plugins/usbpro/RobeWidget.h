@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RobeWidget.h
  * Read and Write to a USB Widget.
@@ -57,7 +57,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
 
     bool SendDMX(const DmxBuffer &buffer);
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -88,7 +88,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
     ola::rdm::DiscoveryAgent m_discovery_agent;
     std::auto_ptr<Callback0<void> > m_dmx_callback;
     DmxBuffer m_buffer;
-    const ola::rdm::RDMRequest *m_pending_request;
+    std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
     const ola::rdm::UID m_uid;
     uint8_t m_transaction_number;
 
@@ -130,7 +130,7 @@ class RobeWidget: public SerialWidgetInterface,
       return m_impl->SendDMX(buffer);
     }
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_controller->SendRDMRequest(request, on_complete);
     }

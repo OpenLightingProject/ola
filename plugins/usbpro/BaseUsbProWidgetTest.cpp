@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BaseUsbProWidgetTest.cpp
  * Test fixture for the BaseUsbProWidget class
@@ -24,9 +24,9 @@
 
 #include "ola/testing/TestUtils.h"
 
-#include "ola/BaseTypes.h"
-#include "ola/DmxBuffer.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
+#include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
@@ -180,7 +180,7 @@ void BaseUsbProWidgetTest::testSendDMX() {
   buffer.SetFromString("0,1,2,3,4");
 
   // expected message
-  uint8_t dmx_frame_data[] = {DMX512_START_CODE, 0, 1, 2, 3, 4};
+  uint8_t dmx_frame_data[] = {ola::DMX512_START_CODE, 0, 1, 2, 3, 4};
   m_endpoint->AddExpectedUsbProMessage(
       DMX_FRAME_LABEL,
       dmx_frame_data,
@@ -193,7 +193,7 @@ void BaseUsbProWidgetTest::testSendDMX() {
 
   // now test an empty frame
   DmxBuffer buffer2;
-  uint8_t empty_frame_data[] = {DMX512_START_CODE};  // just the start code
+  uint8_t empty_frame_data[] = {ola::DMX512_START_CODE};  // just the start code
   m_endpoint->AddExpectedUsbProMessage(
       DMX_FRAME_LABEL,
       empty_frame_data,

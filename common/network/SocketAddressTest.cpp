@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SocketAddressTest.cpp
  * Test fixture for the SocketAddress class
@@ -92,8 +92,13 @@ void SocketAddressTest::testIPV4SocketAddress() {
 
   OLA_ASSERT_LT(socket_address2, socket_address);
   OLA_ASSERT_LT(socket_address, socket_address3);
-  OLA_ASSERT_LT(socket_address, socket_address4);
-  OLA_ASSERT_LT(socket_address3, socket_address4);
+  OLA_ASSERT_LT(socket_address4, socket_address);
+  OLA_ASSERT_LT(socket_address4, socket_address3);
+
+  OLA_ASSERT_GT(socket_address, socket_address2);
+  OLA_ASSERT_GT(socket_address3, socket_address);
+  OLA_ASSERT_GT(socket_address, socket_address4);
+  OLA_ASSERT_GT(socket_address3, socket_address4);
 
   // test assignment & copy constructor
   IPV4SocketAddress copy_address(socket_address);

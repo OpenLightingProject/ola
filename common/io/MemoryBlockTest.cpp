@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MemoryBlockTest.cpp
  * Test fixture for the IOQueue class.
@@ -28,26 +28,20 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::io::MemoryBlock;
-using ola::testing::ASSERT_DATA_EQUALS;
 
 class MemoryBlockTest: public CppUnit::TestFixture {
  public:
-    CPPUNIT_TEST_SUITE(MemoryBlockTest);
-    CPPUNIT_TEST(testAppend);
-    CPPUNIT_TEST(testPrepend);
-    CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(MemoryBlockTest);
+  CPPUNIT_TEST(testAppend);
+  CPPUNIT_TEST(testPrepend);
+  CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
-    void testAppend();
-    void testPrepend();
+  void testAppend();
+  void testPrepend();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MemoryBlockTest);
-
-void MemoryBlockTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-}
 
 
 /*
@@ -71,8 +65,7 @@ void MemoryBlockTest::testAppend() {
   OLA_ASSERT_EQ(size - static_cast<unsigned int>(arraysize(data1)),
                 block.Remaining());
   OLA_ASSERT_FALSE(block.Empty());
-  ASSERT_DATA_EQUALS(__LINE__, data1, arraysize(data1),
-                     block.Data(), block.Size());
+  OLA_ASSERT_DATA_EQUALS(data1, arraysize(data1), block.Data(), block.Size());
 
   // pop 1 byte
   OLA_ASSERT_EQ(1u, block.PopFront(1));
@@ -80,8 +73,8 @@ void MemoryBlockTest::testAppend() {
   // popping doesn't change the location of the data in the memory block.
   OLA_ASSERT_EQ(96u, block.Remaining());
   OLA_ASSERT_FALSE(block.Empty());
-  ASSERT_DATA_EQUALS(__LINE__, data1 + 1, arraysize(data1) - 1,
-                     block.Data(), block.Size());
+  OLA_ASSERT_DATA_EQUALS(data1 + 1, arraysize(data1) - 1, block.Data(),
+                         block.Size());
 
   // try to pop more data than exists
   OLA_ASSERT_EQ(3u, block.PopFront(5));
@@ -110,8 +103,7 @@ void MemoryBlockTest::testPrepend() {
   OLA_ASSERT_EQ(4u, block.Size());
   OLA_ASSERT_EQ(0u, block.Remaining());
   OLA_ASSERT_FALSE(block.Empty());
-  ASSERT_DATA_EQUALS(__LINE__, data1, arraysize(data1),
-                     block.Data(), block.Size());
+  OLA_ASSERT_DATA_EQUALS(data1, arraysize(data1), block.Data(), block.Size());
 
   // pop
   OLA_ASSERT_EQ(1u, block.PopFront(1));
@@ -119,8 +111,8 @@ void MemoryBlockTest::testPrepend() {
   // popping doesn't change the location of the data in the memory block.
   OLA_ASSERT_EQ(0u, block.Remaining());
   OLA_ASSERT_FALSE(block.Empty());
-  ASSERT_DATA_EQUALS(__LINE__, data1 + 1, arraysize(data1) - 1,
-                     block.Data(), block.Size());
+  OLA_ASSERT_DATA_EQUALS(data1 + 1, arraysize(data1) - 1, block.Data(),
+                         block.Size());
 
   // try to pop more data than exists
   OLA_ASSERT_EQ(3u, block.PopFront(5));

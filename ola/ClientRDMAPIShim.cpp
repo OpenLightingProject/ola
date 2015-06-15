@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ClientRDMAPIShim.cpp
  * An implemention of RDMAPIImplInterface that uses the OlaClient.
@@ -97,7 +97,7 @@ void ClientRDMAPIShim::HandleResponseWithPid(
 
 void ClientRDMAPIShim::GetResponseStatusAndData(
     const Result &result,
-    ola::rdm::rdm_response_code response_code,
+    ola::rdm::RDMStatusCode status_code,
     const ola::rdm::RDMResponse *response,
     rdm::ResponseStatus *response_status,
     string *data) {
@@ -105,8 +105,8 @@ void ClientRDMAPIShim::GetResponseStatusAndData(
   response_status->response_code = ola::rdm::RDM_FAILED_TO_SEND;
 
   if (result.Success()) {
-    response_status->response_code = response_code;
-    if (response_code == ola::rdm::RDM_COMPLETED_OK && response) {
+    response_status->response_code = status_code;
+    if (status_code == ola::rdm::RDM_COMPLETED_OK && response) {
       response_status->response_type = response->PortIdResponseType();
       response_status->message_count = response->MessageCount();
       response_status->pid_value = response->ParamId();

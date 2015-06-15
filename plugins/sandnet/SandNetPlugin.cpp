@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SandNetPlugin.cpp
  * The SandNet plugin for ola
@@ -43,8 +43,9 @@ bool SandNetPlugin::StartHook() {
                                m_preferences,
                                m_plugin_adaptor);
 
-  if (!m_device)
+  if (!m_device) {
     return false;
+  }
 
   if (!m_device->Start()) {
     delete m_device;
@@ -99,8 +100,9 @@ string SandNetPlugin::Description() const {
  * Assign default values
  */
 bool SandNetPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
   save |= m_preferences->SetDefaultValue(SandNetDevice::IP_KEY,
@@ -108,11 +110,13 @@ bool SandNetPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(SandNetDevice::NAME_KEY,
                                          StringValidator(), SANDNET_NODE_NAME);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
-  if (m_preferences->GetValue(SandNetDevice::NAME_KEY).empty())
+  if (m_preferences->GetValue(SandNetDevice::NAME_KEY).empty()) {
     return false;
+  }
   return true;
 }
 }  // namespace sandnet

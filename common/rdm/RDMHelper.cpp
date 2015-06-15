@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMHelper.cpp
  * Various misc RDM functions.
@@ -35,9 +35,9 @@ using std::vector;
 
 
 /**
- * Convert a rdm_response_code to a string
+ * Convert a RDMStatusCode to a string
  */
-string ResponseCodeToString(rdm_response_code status) {
+string StatusCodeToString(RDMStatusCode status) {
   switch (status) {
     case RDM_COMPLETED_OK:
       return "Completed Ok";
@@ -75,6 +75,10 @@ string ResponseCodeToString(rdm_response_code status) {
       return "The command class didn't match the request";
     case RDM_INVALID_RESPONSE_TYPE:
       return "The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK";
+    case RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED:
+      return "The output plugin does not support DISCOVERY commands";
+    case RDM_DUB_RESPONSE:
+      return "DUB response";
     default:
       return "Unknown";
   }
@@ -783,6 +787,20 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, scroll";
       case SD_COLOR_SEMAPHORE:
         return "Primary, color semaphone";
+      case SD_COLOR_ADD_AMBER:
+        return "Primary, additive amber";
+      case SD_COLOR_ADD_WHITE:
+        return "Primary, additive white";
+      case SD_COLOR_ADD_WARM_WHITE:
+        return "Primary, additive warm white";
+      case SD_COLOR_ADD_COOL_WHITE:
+        return "Primary, additive cool white";
+      case SD_COLOR_SUB_UV:
+        return "Primary, subtractive UV";
+      case SD_COLOR_HUE:
+        return "Primary, hue";
+      case SD_COLOR_SATURATION:
+        return "Primary, saturation";
       case SD_STATIC_GOBO_WHEEL:
         return "Primary, static gobo wheel";
       case SD_ROTO_GOBO_WHEEL:
@@ -823,6 +841,8 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, fan control";
       case SD_HEATER_CONTROL:
         return "Primary, heater control";
+      case SD_FOUNTAIN_CONTROL:
+        return "Primary, fountain water pump control";
       case SD_UNDEFINED:
         return "Primary, undefined";
       default:
@@ -978,15 +998,15 @@ string StatusMessageIdToString(uint16_t message_id,
       // Data Value shall be a signed integer." but I'm sure it's what was
       // intended. The same thing is technically true with the slots too.
       str << "Proxy Drop: PID "
-          << IntToHexString(reinterpret_cast<uint16_t&>(data1)) << " at TN "
+          << strings::ToHex(reinterpret_cast<uint16_t&>(data1)) << " at TN "
           << data2;
       break;
     case STS_ASC_RXOK:
-      str << "DMX ASC " << IntToHexString(reinterpret_cast<uint16_t&>(data1))
+      str << "DMX ASC " << strings::ToHex(reinterpret_cast<uint16_t&>(data1))
           << " received OK";
       break;
     case STS_ASC_DROPPED:
-      str << "DMX ASC " << IntToHexString(reinterpret_cast<uint16_t&>(data1))
+      str << "DMX ASC " << strings::ToHex(reinterpret_cast<uint16_t&>(data1))
           << " now dropped";
       break;
     case STS_DMXNSCNONE:

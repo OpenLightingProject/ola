@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * FtdiDmxPlugin.h
  * The FTDI usb chipset DMX plugin for ola
@@ -62,9 +62,9 @@ class FtdiDmxPlugin : public Plugin {
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();
-  unsigned int GetFrequency();
 
-  static const char DEFAULT_FREQUENCY[];
+  static const uint8_t DEFAULT_FREQUENCY = 30;
+
   static const char K_FREQUENCY[];
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];

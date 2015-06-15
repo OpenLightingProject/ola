@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIDevice.cpp
  * SPI device
@@ -99,7 +99,12 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
   }
 
   for (uint8_t i = 0; i < port_count; i++) {
-    SPIOutput::Options spi_output_options(i);
+    SPIOutput::Options spi_output_options(i, m_spi_device_name);
+
+    if (m_preferences->HasKey(DeviceLabelKey(i))) {
+      spi_output_options.device_label =
+          m_preferences->GetValue(DeviceLabelKey(i));
+    }
 
     uint8_t pixel_count;
     if (StringToInt(m_preferences->GetValue(PixelCountKey(i)), &pixel_count)) {
@@ -158,6 +163,7 @@ void SPIDevice::PrePortStop() {
   SPIPorts::iterator iter = m_spi_ports.begin();
   for (uint8_t i = 0; iter != m_spi_ports.end(); iter++, i++) {
     ostringstream str;
+    m_preferences->SetValue(DeviceLabelKey(i), (*iter)->GetDeviceLabel());
     str << static_cast<int>((*iter)->GetPersonality());
     m_preferences->SetValue(PersonalityKey(i), str.str());
     str.str("");
@@ -194,6 +200,10 @@ string SPIDevice::GPIOPinKey() const {
   return m_spi_device_name + "-gpio-pin";
 }
 
+string SPIDevice::DeviceLabelKey(uint8_t port) const {
+  return GetPortKey("device-label", port);
+}
+
 string SPIDevice::PersonalityKey(uint8_t port) const {
   return GetPortKey("personality", port);
 }
@@ -221,10 +231,11 @@ void SPIDevice::SetDefaults() {
                                  SetValidator<string>(valid_backends),
                                  SOFTWARE_BACKEND);
   m_preferences->SetDefaultValue(SPISpeedKey(), UIntValidator(0, 32000000),
-                                 "1000000");
-  m_preferences->SetDefaultValue(SPICEKey(), BoolValidator(), "false");
-  m_preferences->SetDefaultValue(PortCountKey(), UIntValidator(1, 8), "1");
-  m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 8), "0");
+                                 1000000);
+  m_preferences->SetDefaultValue(SPICEKey(), BoolValidator(), false);
+  m_preferences->SetDefaultValue(PortCountKey(), UIntValidator(1, 8), 1);
+  m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 8), 0);
+  m_preferences->Save();
 }
 
 void SPIDevice::PopulateHardwareBackendOptions(
@@ -250,8 +261,15 @@ void SPIDevice::PopulateHardwareBackendOptions(
 
 void SPIDevice::PopulateSoftwareBackendOptions(
     SoftwareBackend::Options *options) {
-  StringToInt(m_preferences->GetValue(PortCountKey()), &options->outputs);
-  StringToInt(m_preferences->GetValue(SyncPortKey()), &options->sync_output);
+  if (!StringToInt(m_preferences->GetValue(PortCountKey()),
+                                           &options->outputs)) {
+    OLA_WARN << "Invalid integer value for " << PortCountKey();
+  }
+
+  if (!StringToInt(m_preferences->GetValue(SyncPortKey()),
+                                           &options->sync_output)) {
+    OLA_WARN << "Invalid integer value for " << SyncPortKey();
+  }
   if (options->sync_output == -2) {
     options->sync_output = options->outputs - 1;
   }

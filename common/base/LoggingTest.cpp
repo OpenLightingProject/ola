@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * LoggingTest.cpp
  * Test fixture for the Logging framework
@@ -70,7 +70,7 @@ void MockLogDestination::AddExpected(log_level level, string log_line) {
  */
 void MockLogDestination::Write(log_level level, const string &log_line) {
   vector<string> tokens;
-  ola::StringSplit(log_line, tokens, ":");
+  ola::StringSplit(log_line, &tokens, ":");
   vector<string>::iterator iter;
   OLA_ASSERT_EQ(tokens.size() , (size_t) 3);
   OLA_ASSERT_GT(m_log_lines.size(), 0);

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonPatch.cpp
  * Implementation of RFC 6902.
@@ -51,6 +51,8 @@ JsonValue *GetParent(JsonValue *value, const JsonPointer &pointer) {
  */
 class ObjectOrArrayAction {
  public:
+  virtual ~ObjectOrArrayAction() {}
+
   bool TakeActionOn(JsonValue *value, const JsonPointer &target);
 
   // Implement these with the specific actions

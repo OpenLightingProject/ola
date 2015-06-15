@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * NetworkUtilsTest.cpp
  * Test fixture for the NetworkUtils class
@@ -19,6 +19,10 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+
+#ifdef _WIN32
+#include <ola/win/CleanWinSock2.h>
+#endif
 
 #include <string>
 #include <vector>
@@ -52,6 +56,8 @@ class NetworkUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
+    void setUp();
+    void tearDown();
     void testToFromNetwork();
     void testToFromLittleEndian();
     void testNameProcessing();
@@ -61,6 +67,26 @@ class NetworkUtilsTest: public CppUnit::TestFixture {
 
 CPPUNIT_TEST_SUITE_REGISTRATION(NetworkUtilsTest);
 
+/*
+ * Setup networking subsystem
+ */
+void NetworkUtilsTest::setUp() {
+#if _WIN32
+  WSADATA wsa_data;
+  int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
+  OLA_ASSERT_EQ(result, 0);
+#endif
+}
+
+
+/*
+ * Cleanup the networking subsystem
+ */
+void NetworkUtilsTest::tearDown() {
+#ifdef _WIN32
+  WSACleanup();
+#endif
+}
 
 /*
  * Check that we can convert to/from network byte order
@@ -91,6 +117,16 @@ void NetworkUtilsTest::testToFromLittleEndian() {
 
   uint32_t v3 = 0x01020304;
   OLA_ASSERT_EQ(v3, LittleEndianToHost(HostToLittleEndian(v3)));
+
+  int8_t v4 = -10;
+  OLA_ASSERT_EQ(v4, HostToLittleEndian(v4));
+  OLA_ASSERT_EQ(v4, LittleEndianToHost(HostToLittleEndian(v4)));
+
+  int16_t v5 = -0x0102;
+  OLA_ASSERT_EQ(v5, LittleEndianToHost(HostToLittleEndian(v5)));
+
+  int32_t v6 = -0x01020304;
+  OLA_ASSERT_EQ(v6, LittleEndianToHost(HostToLittleEndian(v6)));
 }
 
 

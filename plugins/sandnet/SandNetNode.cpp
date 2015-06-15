@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SandNetNode.cpp
  * A SandNet node
@@ -97,15 +97,18 @@ bool SandNetNode::Start() {
   }
   delete picker;
 
-  if (!IPV4Address::FromString(CONTROL_ADDRESS, &m_control_addr)) {
+  IPV4Address ip;
+  if (!IPV4Address::FromString(CONTROL_ADDRESS, &ip)) {
     OLA_WARN << "Could not convert " << CONTROL_ADDRESS;
     return false;
   }
+  m_control_addr = IPV4SocketAddress(ip, CONTROL_PORT);
 
-  if (!IPV4Address::FromString(DATA_ADDRESS, &m_data_addr)) {
+  if (!IPV4Address::FromString(DATA_ADDRESS, &ip)) {
     OLA_WARN << "Could not convert " << DATA_ADDRESS;
     return false;
   }
+  m_data_addr = IPV4SocketAddress(ip, DATA_PORT);
 
   if (!InitNetwork())
     return false;
@@ -147,15 +150,14 @@ vector<UDPSocket*> SandNetNode::GetSockets() {
 void SandNetNode::SocketReady(UDPSocket *socket) {
   sandnet_packet packet;
   ssize_t packet_size = sizeof(packet);
-  IPV4Address source;
+  IPV4SocketAddress source;
 
   if (!socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                        &packet_size,
-                        source))
+                        &packet_size, &source))
     return;
 
   // skip packets sent by us
-  if (source == m_interface.ip_address)
+  if (source.Host() == m_interface.ip_address)
     return;
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.opcode))) {
@@ -342,14 +344,15 @@ bool SandNetNode::InitNetwork() {
   }
 
   if (!m_control_socket.JoinMulticast(m_interface.ip_address,
-                                      m_control_addr)) {
+                                      m_control_addr.Host())) {
       OLA_WARN << "Failed to join multicast to: " << m_control_addr;
     m_data_socket.Close();
     m_control_socket.Close();
     return false;
   }
 
-  if (!m_data_socket.JoinMulticast(m_interface.ip_address, m_data_addr)) {
+  if (!m_data_socket.JoinMulticast(m_interface.ip_address,
+                                   m_data_addr.Host())) {
       OLA_WARN << "Failed to join multicast to: " << m_data_addr;
     m_data_socket.Close();
     m_control_socket.Close();
@@ -396,7 +399,7 @@ bool SandNetNode::HandleCompressedDMX(const sandnet_compressed_dmx &dmx_packet,
 
 
 /*
- * Handle a uncompressed DMX packet
+ * Handle an uncompressed DMX packet
  */
 bool SandNetNode::HandleDMX(const sandnet_dmx &dmx_packet,
                             unsigned int size) {
@@ -457,8 +460,7 @@ bool SandNetNode::SendPacket(const sandnet_packet &packet,
   ssize_t bytes_sent = socket->SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
       size,
-      is_control ? m_control_addr : m_data_addr,
-      is_control ? CONTROL_PORT : DATA_PORT);
+      is_control ? m_control_addr : m_data_addr);
 
   if (bytes_sent != static_cast<ssize_t>(size)) {
     OLA_INFO << "Only sent " << bytes_sent << " of " << size;

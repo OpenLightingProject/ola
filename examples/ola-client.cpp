@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ola-client.cpp
  * The multi purpose ola client.
@@ -22,8 +22,10 @@
 #include <getopt.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
-#include <ola/OlaCallbackClient.h>
-#include <ola/OlaClientWrapper.h>
+#include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
+#include <ola/client/ClientWrapper.h>
+#include <ola/client/OlaClient.h>
 #include <ola/file/Util.h>
 #include <ola/io/SelectServer.h>
 #include <olad/PortConstants.h>
@@ -35,13 +37,14 @@
 #include <vector>
 
 using ola::NewSingleCallback;
-using ola::OlaCallbackClient;
-using ola::OlaCallbackClientWrapper;
-using ola::OlaDevice;
-using ola::OlaInputPort;
-using ola::OlaOutputPort;
-using ola::OlaPlugin;
-using ola::OlaUniverse;
+using ola::client::OlaClient;
+using ola::client::OlaClientWrapper;
+using ola::client::OlaDevice;
+using ola::client::OlaInputPort;
+using ola::client::OlaOutputPort;
+using ola::client::OlaPlugin;
+using ola::client::OlaUniverse;
+using ola::client::Result;
 using ola::io::SelectServer;
 using std::cerr;
 using std::cout;
@@ -75,16 +78,17 @@ typedef struct {
   bool help;       // show the help
   int device_id;   // device id
   int port_id;     // port id
-  ola::PortDirection port_direction;  // input or output
-  ola::PatchAction patch_action;      // patch or unpatch
+  ola::client::PortDirection port_direction;  // input or output
+  ola::client::PatchAction patch_action;      // patch or unpatch
   OlaUniverse::merge_mode merge_mode;  // the merge mode
   string cmd;      // argv[0]
   string uni_name;  // universe name
-  string dmx;      // dmx string
+  string dmx;      // DMX string
   ola::port_priority_mode priority_mode;  // port priority mode
   uint8_t priority_value;  // port priority value
   bool list_plugin_ids;
   bool list_universe_ids;
+  string state;      // plugin enable/disable state
 } options;
 
 
@@ -97,10 +101,11 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
   for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
     cout << "  port " << port_iter->Id() << ", ";
 
-    if (input)
+    if (input) {
       cout << "IN";
-    else
+    } else {
       cout << "OUT";
+    }
 
     if (!port_iter->Description().empty()) {
       cout << " " << port_iter->Description();
@@ -112,20 +117,23 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
         break;
       case ola::CAPABILITY_FULL:
         cout << ", priority ";
-        if (port_iter->PriorityMode() == ola::PRIORITY_MODE_INHERIT)
+        if (port_iter->PriorityMode() == ola::PRIORITY_MODE_INHERIT) {
           cout << "inherited";
-        else
+        } else {
           cout << "overide " << static_cast<int>(port_iter->Priority());
+        }
         break;
       default:
         break;
     }
 
-    if (port_iter->IsActive())
+    if (port_iter->IsActive()) {
       cout << ", patched to universe " << port_iter->Universe();
+    }
 
-    if (port_iter->SupportsRDM())
+    if (port_iter->SupportsRDM()) {
       cout << ", RDM supported";
+    }
     cout << endl;
   }
 }
@@ -138,12 +146,12 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
  */
 void DisplayUniverses(SelectServer *ss,
                       bool list_ids_only,
-                      const vector <OlaUniverse> &universes,
-                      const string &error) {
+                      const Result &result,
+                      const vector <OlaUniverse> &universes) {
   vector<OlaUniverse>::const_iterator iter;
 
-  if (!error.empty()) {
-    cerr << error << endl;
+  if (!result.Success()) {
+    cerr << result.Error() << endl;
     ss->Terminate();
     return;
   }
@@ -154,14 +162,15 @@ void DisplayUniverses(SelectServer *ss,
     }
   } else {
     cout << setw(5) << "Id" << "\t" << setw(30) << "Name" << "\t\tMerge Mode"
-      << endl;
-    cout << "----------------------------------------------------------" <<
-      endl;
+         << endl;
+    cout << "----------------------------------------------------------"
+         << endl;
 
     for (iter = universes.begin(); iter != universes.end(); ++iter) {
-      cout << setw(5) << iter->Id() << "\t" << setw(30) << iter->Name() <<
-        "\t\t" << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" :
-        "LTP") << endl;
+      cout << setw(5) << iter->Id() << "\t" << setw(30) << iter->Name()
+           << "\t\t"
+           << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP")
+           << endl;
     }
 
     cout << "----------------------------------------------------------" <<
@@ -178,12 +187,12 @@ void DisplayUniverses(SelectServer *ss,
  */
 void DisplayPlugins(SelectServer *ss,
                     bool list_ids_only,
-                    const vector <OlaPlugin> &plugins,
-                    const string &error) {
+                    const Result &result,
+                    const vector <OlaPlugin> &plugins) {
   vector<OlaPlugin>::const_iterator iter;
 
-  if (!error.empty()) {
-    cerr << error << endl;
+  if (!result.Success()) {
+    cerr << result.Error() << endl;
     ss->Terminate();
     return;
   }
@@ -211,12 +220,13 @@ void DisplayPlugins(SelectServer *ss,
  * Print a plugin description
  */
 void DisplayPluginDescription(SelectServer *ss,
-                              const string &description,
-                              const string &error) {
-  if (!error.empty())
-    cerr << error << endl;
-  else
+                              const Result &result,
+                              const string &description) {
+  if (!result.Success()) {
+    cerr << result.Error() << endl;
+  } else {
     cout << description << endl;
+  }
   ss->Terminate();
   return;
 }
@@ -226,10 +236,10 @@ void DisplayPluginDescription(SelectServer *ss,
  * Print a plugin state
  */
 void DisplayPluginState(SelectServer *ss,
-                        const OlaCallbackClient::PluginState &state,
-                        const string &error) {
-  if (!error.empty()) {
-    cerr << error << endl;
+                        const Result &result,
+                        const ola::client::PluginState &state) {
+  if (!result.Success()) {
+    cerr << result.Error() << endl;
   } else {
     cout << state.name << endl;
     cout << "Enabled: " << (state.enabled ? "True" : "False") << endl;
@@ -249,12 +259,12 @@ void DisplayPluginState(SelectServer *ss,
  * @param devices a vector of OlaDevices
  */
 void DisplayDevices(SelectServer *ss,
-                    const vector <OlaDevice> &devices,
-                    const string &error) {
+                    const Result &result,
+                    const vector <OlaDevice> &devices) {
   vector<OlaDevice>::const_iterator iter;
 
-  if (!error.empty()) {
-    cerr << error << endl;
+  if (!result.Success()) {
+    cerr << result.Error() << endl;
     ss->Terminate();
     return;
   }
@@ -269,45 +279,15 @@ void DisplayDevices(SelectServer *ss,
   ss->Terminate();
 }
 
-
 /*
- * Called when the patch command completes.
+ * Called when a generic set command completes
  */
-void PatchComplete(SelectServer *ss, const string &error) {
-  if (!error.empty())
-    cerr << error << endl;
+void HandleAck(SelectServer *ss, const Result &result) {
+  if (!result.Success()) {
+    cerr << result.Error() << endl;
+  }
   ss->Terminate();
 }
-
-/*
- * Called when the name command completes.
- */
-void UniverseNameComplete(SelectServer *ss, const string &error) {
-  if (!error.empty())
-    cerr << error << endl;
-  ss->Terminate();
-}
-
-
-void UniverseMergeModeComplete(SelectServer *ss, const string &error) {
-  if (!error.empty())
-    cerr << error << endl;
-  ss->Terminate();
-}
-
-
-void SendDmxComplete(SelectServer *ss, const string &error) {
-  if (!error.empty())
-    cerr << error << endl;
-  ss->Terminate();
-}
-
-void SetPortPriorityComplete(SelectServer *ss, const string &error) {
-  if (!error.empty())
-    cerr << error << endl;
-  ss->Terminate();
-}
-
 
 /*
  * Init options
@@ -319,9 +299,9 @@ void InitOptions(options *opts) {
   opts->help = false;
   opts->list_plugin_ids = false;
   opts->list_universe_ids = false;
-  opts->patch_action = ola::PATCH;
+  opts->patch_action = ola::client::PATCH;
   opts->port_id = INVALID_VALUE;
-  opts->port_direction = ola::OUTPUT_PORT;
+  opts->port_direction = ola::client::OUTPUT_PORT;
   opts->device_id = INVALID_VALUE;
   opts->merge_mode = OlaUniverse::MERGE_HTP;
   opts->priority_mode = ola::PRIORITY_MODE_INHERIT;
@@ -334,12 +314,24 @@ void InitOptions(options *opts) {
  */
 void SetMode(options *opts) {
   opts->cmd = ola::file::FilenameFromPathOrPath(opts->cmd);
+  // To skip the lt prefix during development
+  ola::StripPrefix(&opts->cmd, "lt-");
+#ifdef _WIN32
+  // Strip the extension
+  size_t extension = opts->cmd.find(".");
+  if (extension != string::npos) {
+    opts->cmd = opts->cmd.substr(0, extension);
+  }
+#endif
 
   if (opts->cmd == "ola_plugin_info") {
     opts->m = PLUGIN_INFO;
   } else if (opts->cmd == "ola_plugin_state") {
     opts->m = PLUGIN_STATE;
   } else if (opts->cmd == "ola_patch") {
+    opts->m = DEVICE_PATCH;
+  } else if (opts->cmd == "ola_ptch") {
+    // Working around Windows UAC
     opts->m = DEVICE_PATCH;
   } else if (opts->cmd == "ola_uni_info") {
     opts->m = UNIVERSE_INFO;
@@ -370,6 +362,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"ltp", no_argument, 0, 'l'},
       {"name", required_argument, 0, 'n'},
       {"plugin-id", required_argument, 0, 'p'},
+      {"state", required_argument, 0, 's'},
       {"list-plugin-ids", no_argument, 0, LIST_PLUGIN_IDS_OPTION},
       {"list-universe-ids", no_argument, 0, LIST_UNIVERSE_IDS_OPTION},
       {"universe", required_argument, 0, 'u'},
@@ -380,7 +373,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "ld:n:u:p:hv", long_options, &option_index);
+    c = getopt_long(argc, argv, "ld:n:u:p:s:hv", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -402,6 +395,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'p':
         opts->plugin_id = atoi(optarg);
+        break;
+      case 's':
+        opts->state = optarg;
         break;
       case 'u':
         opts->uni = atoi(optarg);
@@ -442,14 +438,15 @@ int ParsePatchOptions(int argc, char *argv[], options *opts) {
   while (1) {
     c = getopt_long(argc, argv, "ard:p:u:hi", long_options, &option_index);
 
-    if (c == -1)
+    if (c == -1) {
       break;
+    }
 
     switch (c) {
       case 0:
         break;
       case 'a':
-        opts->patch_action = ola::PATCH;
+        opts->patch_action = ola::client::PATCH;
         break;
       case 'd':
         opts->device_id = atoi(optarg);
@@ -458,7 +455,7 @@ int ParsePatchOptions(int argc, char *argv[], options *opts) {
         opts->port_id = atoi(optarg);
         break;
       case 'r':
-        opts->patch_action = ola::UNPATCH;
+        opts->patch_action = ola::client::UNPATCH;
         break;
       case 'u':
         opts->uni = atoi(optarg);
@@ -467,7 +464,7 @@ int ParsePatchOptions(int argc, char *argv[], options *opts) {
         opts->help = true;
         break;
       case 'i':
-        opts->port_direction = ola::INPUT_PORT;
+        opts->port_direction = ola::client::INPUT_PORT;
         break;
       case '?':
         break;
@@ -498,8 +495,9 @@ int ParseSetPriorityOptions(int argc, char *argv[], options *opts) {
   while (1) {
     c = getopt_long(argc, argv, "d:p:o:hi", long_options, &option_index);
 
-    if (c == -1)
+    if (c == -1) {
       break;
+    }
 
     switch (c) {
       case 0:
@@ -511,7 +509,7 @@ int ParseSetPriorityOptions(int argc, char *argv[], options *opts) {
         opts->help = true;
         break;
       case 'i':
-        opts->port_direction = ola::INPUT_PORT;
+        opts->port_direction = ola::client::INPUT_PORT;
         break;
       case 'o':
         opts->priority_mode = ola::PRIORITY_MODE_STATIC;
@@ -535,12 +533,13 @@ int ParseSetPriorityOptions(int argc, char *argv[], options *opts) {
  */
 void DisplayDeviceInfoHelp(const options &opts) {
   cout << "Usage: " << opts.cmd << " [--plugin-id <plugin_id>]\n"
-  "\n"
-  "Show information on the devices loaded by olad.\n"
-  "\n"
-  "  -h, --help                  Display this help message and exit.\n"
-  "  -p, --plugin-id <plugin-id> Show only devices owned by this plugin.\n"
-  << endl;
+          "\n"
+          "Show information on the devices loaded by olad.\n"
+          "\n"
+          "  -h, --help                  Display this help message and exit.\n"
+          "  -p, --plugin-id <plugin-id> Show only devices owned by this "
+          "plugin.\n"
+       << endl;
 }
 
 
@@ -548,19 +547,22 @@ void DisplayDeviceInfoHelp(const options &opts) {
  * Display the Patch help
  */
 void DisplayPatchHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  " [--patch | --unpatch] --device <dev> --port <port> [--universe <uni>]\n"
-  "\n"
-  "Control ola port <-> universe mappings.\n"
-  "\n"
-  "  -a, --patch              Patch this port (default).\n"
-  "  -d, --device <device>    Id of device to patch.\n"
-  "  -h, --help               Display this help message and exit.\n"
-  "  -p, --port <port>        Id of the port to patch.\n"
-  "  -r, --unpatch            Unpatch this port.\n"
-  "  -i, --input              Patch the input port (default is output).\n"
-  "  -u, --universe <uni>     Id of the universe to patch to (default 0).\n"
-  << endl;
+  cout << "Usage: " << opts.cmd
+       << " [--patch | --unpatch] --device <dev> --port <port> "
+          "[--universe <uni>]\n"
+          "\n"
+          "Control ola port <-> universe mappings.\n"
+          "\n"
+          "  -a, --patch              Patch this port (default).\n"
+          "  -d, --device <device>    Id of device to patch.\n"
+          "  -h, --help               Display this help message and exit.\n"
+          "  -p, --port <port>        Id of the port to patch.\n"
+          "  -r, --unpatch            Unpatch this port.\n"
+          "  -i, --input              Patch the input port (default is "
+          "output).\n"
+          "  -u, --universe <uni>     Id of the universe to patch to (default "
+          "0).\n"
+       << endl;
 }
 
 
@@ -568,17 +570,19 @@ void DisplayPatchHelp(const options &opts) {
  * help message for plugin info
  */
 void DisplayPluginInfoHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  " [--plugin-id <plugin-id>]\n"
-  "\n"
-  "Get info on the plugins loaded by olad. Called without arguments this will\n"
-  "display the plugins loaded by olad. When used with --plugin-id this will \n"
-  "display the specified plugin's description.\n"
-  "\n"
-  "  -h, --help                  Display this help message and exit.\n"
-  "  -p, --plugin-id <plugin_id> Id of the plugin to fetch the description of\n"
-  "  --list-plugin-ids           List plugin Ids only.\n"
-  << endl;
+  cout << "Usage: " << opts.cmd << " [--plugin-id <plugin-id>]\n"
+          "\n"
+          "Get info on the plugins loaded by olad. Called without arguments \n"
+          "this will\n"
+          "display the plugins loaded by olad. When used with --plugin-id this"
+          " will\n"
+          " display the specified plugin's description.\n"
+          "\n"
+          "  -h, --help                  Display this help message and exit.\n"
+          "  -p, --plugin-id <plugin_id> Id of the plugin to fetch the "
+          "description of\n"
+          "  --list-plugin-ids           List plugin Ids only.\n"
+       << endl;
 }
 
 
@@ -586,15 +590,18 @@ void DisplayPluginInfoHelp(const options &opts) {
  * help message for plugin state
  */
 void DisplayPluginStateHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  " [--plugin-id <plugin-id>]\n"
-  "\n"
-  "Displays the enabled/disabled state for a plugin and the list of plugins \n"
-  "this plugin will conflict with.\n"
-  "\n"
-  "  -h, --help                  Display this help message and exit.\n"
-  "  -p, --plugin-id <plugin-id> Id of the plugin to fetch the state of\n"
-  << endl;
+  cout << "Usage: " << opts.cmd
+       << " --plugin-id <plugin-id> [--state <enable|disable]\n"
+          "\n"
+          "Displays the enabled/disabled state for a plugin and the list of"
+          "plugins\n"
+          "this plugin will conflict with.\n"
+          "\n"
+          "  -h, --help                  Display this help message and exit.\n"
+          "  -p, --plugin-id <plugin-id> Id of the plugin to fetch the state "
+          "of\n"
+          "  -s, --state <enable|disable> State to set a plugin to\n"
+      << endl;
 }
 
 
@@ -602,13 +609,13 @@ void DisplayPluginStateHelp(const options &opts) {
  * help message for uni info
  */
 void DisplayUniverseInfoHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  "\n"
-  "Shows info on the active universes in use.\n"
-  "\n"
-  "  -h, --help          Display this help message and exit.\n"
-  "  --list-universe-ids List universe Ids only.\n"
-  << endl;
+  cout << "Usage: " << opts.cmd
+       << "\n"
+          "Shows info on the active universes in use.\n"
+          "\n"
+          "  -h, --help          Display this help message and exit.\n"
+          "  --list-universe-ids List universe Ids only.\n"
+       << endl;
 }
 
 
@@ -616,15 +623,14 @@ void DisplayUniverseInfoHelp(const options &opts) {
  * Help message for set uni name
  */
 void DisplayUniverseNameHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  " --name <name> --universe <uni>\n"
-  "\n"
-  "Set a name for the specified universe\n"
-  "\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -n, --name <name>         Name for the universe.\n"
-  "  -u, --universe <universe> Id of the universe to name.\n"
-  << endl;
+  cout << "Usage: " << opts.cmd << " --name <name> --universe <uni>\n"
+          "\n"
+          "Set a name for the specified universe\n"
+          "\n"
+          "  -h, --help                Display this help message and exit.\n"
+          "  -n, --name <name>         Name for the universe.\n"
+          "  -u, --universe <universe> Id of the universe to name.\n"
+       << endl;
 }
 
 
@@ -632,16 +638,16 @@ void DisplayUniverseNameHelp(const options &opts) {
  * Help message for set uni merge mode
  */
 void DisplayUniverseMergeHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  " --universe <uni> [ --ltp]\n"
-  "\n"
-  "Change the merge mode for the specified universe. Without --ltp it will\n"
-  "revert to HTP mode.\n"
-  "\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -l, --ltp                 Change to ltp mode.\n"
-  "  -u, --universe <universe> Id of the universe to change.\n"
-  << endl;
+  cout << "Usage: " << opts.cmd << " --universe <uni> [ --ltp]\n"
+          "\n"
+          "Change the merge mode for the specified universe. Without --ltp "
+          "it will\n"
+          " revert to HTP mode.\n"
+          "\n"
+          "  -h, --help                Display this help message and exit.\n"
+          "  -l, --ltp                 Change to ltp mode.\n"
+          "  -u, --universe <universe> Id of the universe to change.\n"
+       << endl;
 }
 
 
@@ -650,33 +656,34 @@ void DisplayUniverseMergeHelp(const options &opts) {
  * Help message for set dmx
  */
 void DisplaySetDmxHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  " --universe <universe> --dmx 0,255,0,255\n"
-  "\n"
-  "Sets the DMX values for a universe.\n"
-  "\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -u, --universe <universe> Universe number.\n"
-  "  -d, --dmx <values>        Comma separated DMX values.\n"
-  << endl;
+  cout << "Usage: " << opts.cmd << " --universe <universe> --dmx 0,255,0,255\n"
+          "\n"
+          "Sets the DMX values for a universe.\n"
+          "\n"
+          "  -h, --help                Display this help message and exit.\n"
+          "  -u, --universe <universe> Universe number.\n"
+          "  -d, --dmx <values>        Comma separated DMX values.\n"
+       << endl;
 }
 
 /*
  * Display the Patch help
  */
 void DisplaySetPriorityHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  " --device <dev> --port <port> [--override <value>]\n"
-  "\n"
-  "Set a port's priority, without the --override flag this will set the port\n"
-  "to inherit mode.\n"
-  "\n"
-  "  -d, --device <device>    Id of device to set priority for.\n"
-  "  -h, --help               Display this help message and exit.\n"
-  "  -i, --input              Set an input port\n"
-  "  -o, --override <value>   Set the port priority to a static value.\n"
-  "  -p, --port <port>        Id of the port to set priority for.\n"
-  << endl;
+  cout << "Usage: " << opts.cmd
+       << " --device <dev> --port <port> [--override <value>]\n"
+          "\n"
+          "Set a port's priority, without the --override flag this will set "
+          "the port\n"
+          " to inherit mode.\n"
+          "\n"
+          "  -d, --device <device>    Id of device to set priority for.\n"
+          "  -h, --help               Display this help message and exit.\n"
+          "  -i, --input              Set an input port\n"
+          "  -o, --override <value>   Set the port priority to a static "
+          "value.\n"
+          "  -p, --port <port>        Id of the port to set priority for.\n"
+       << endl;
 }
 
 
@@ -722,24 +729,24 @@ void DisplayHelpAndExit(const options &opts) {
  * @param client  the ola client
  * @param opts  the const options
  */
-int FetchDeviceInfo(OlaCallbackClientWrapper *wrapper, const options &opts) {
+int FetchDeviceInfo(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
-  OlaCallbackClient *client = wrapper->GetClient();
+  OlaClient *client = wrapper->GetClient();
   client->FetchDeviceInfo((ola::ola_plugin_id) opts.plugin_id,
                           NewSingleCallback(&DisplayDevices, ss));
   return 0;
 }
 
 
-void Patch(OlaCallbackClientWrapper *wrapper, const options &opts) {
+void Patch(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
-  OlaCallbackClient *client = wrapper->GetClient();
+  OlaClient *client = wrapper->GetClient();
   if (opts.device_id == INVALID_VALUE || opts.port_id == INVALID_VALUE) {
     DisplayPatchHelp(opts);
     exit(1);
   }
 
-  if (opts.patch_action == ola::PATCH  && opts.uni == INVALID_VALUE) {
+  if (opts.patch_action == ola::client::PATCH  && opts.uni == INVALID_VALUE) {
     DisplayPatchHelp(opts);
     exit(1);
   }
@@ -747,16 +754,16 @@ void Patch(OlaCallbackClientWrapper *wrapper, const options &opts) {
                 opts.port_id,
                 opts.port_direction,
                 opts.patch_action, opts.uni,
-                NewSingleCallback(&PatchComplete, ss));
+                NewSingleCallback(&HandleAck, ss));
 }
 
 
 /*
  * Fetch information on plugins.
  */
-int FetchPluginInfo(OlaCallbackClientWrapper *wrapper, const options &opts) {
+int FetchPluginInfo(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
-  OlaCallbackClient *client = wrapper->GetClient();
+  OlaClient *client = wrapper->GetClient();
   if (opts.plugin_id > 0) {
     client->FetchPluginDescription(
         (ola::ola_plugin_id) opts.plugin_id,
@@ -772,15 +779,30 @@ int FetchPluginInfo(OlaCallbackClientWrapper *wrapper, const options &opts) {
 /*
  * Fetch the state of a plugin.
  */
-int FetchPluginState(OlaCallbackClientWrapper *wrapper, const options &opts) {
+int FetchPluginState(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
-  OlaCallbackClient *client = wrapper->GetClient();
+  OlaClient *client = wrapper->GetClient();
   if (opts.plugin_id == 0) {
     DisplayPluginStateHelp(opts);
     exit(1);
   }
-  client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
-                           NewSingleCallback(&DisplayPluginState, ss));
+  if (!opts.state.empty()) {
+    bool state;
+    if (ola::StringToBoolTolerant(opts.state, &state)) {
+      cout << "Setting state to " << (state ? "enabled" : "disabled") << endl;
+      client->SetPluginState(
+          (ola::ola_plugin_id) opts.plugin_id,
+          state,
+          NewSingleCallback(&HandleAck, ss));
+    } else {
+      cerr << "Invalid state: " << opts.state << endl;
+      DisplayPluginStateHelp(opts);
+      exit(1);
+    }
+  } else {
+    client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
+                             NewSingleCallback(&DisplayPluginState, ss));
+  }
   return 0;
 }
 
@@ -791,15 +813,15 @@ int FetchPluginState(OlaCallbackClientWrapper *wrapper, const options &opts) {
  * @param client the ola client
  * @param opts  the const options
  */
-int SetUniverseName(OlaCallbackClientWrapper *wrapper, const options &opts) {
+int SetUniverseName(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
-  OlaCallbackClient *client = wrapper->GetClient();
+  OlaClient *client = wrapper->GetClient();
   if (opts.uni == INVALID_VALUE) {
     DisplayUniverseNameHelp(opts);
     exit(1);
   }
   client->SetUniverseName(opts.uni, opts.uni_name,
-                          NewSingleCallback(&UniverseNameComplete, ss));
+                          NewSingleCallback(&HandleAck, ss));
   return 0;
 }
 
@@ -809,29 +831,29 @@ int SetUniverseName(OlaCallbackClientWrapper *wrapper, const options &opts) {
  * @param client the ola client
  * @param opts  the const options
  */
-int SetUniverseMergeMode(OlaCallbackClientWrapper *wrapper,
+int SetUniverseMergeMode(OlaClientWrapper *wrapper,
                          const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
-  OlaCallbackClient *client = wrapper->GetClient();
+  OlaClient *client = wrapper->GetClient();
   if (opts.uni == INVALID_VALUE) {
     DisplayUniverseMergeHelp(opts);
     exit(1);
   }
   client->SetUniverseMergeMode(
       opts.uni, opts.merge_mode,
-      NewSingleCallback(&UniverseMergeModeComplete, ss));
+      NewSingleCallback(&HandleAck, ss));
   return 0;
 }
 
 
 /*
- * Send a dmx message
+ * Send a DMX message
  * @param client the ola client
  * @param opts the options
  */
-int SendDmx(OlaCallbackClientWrapper *wrapper, const options &opts) {
+int SendDmx(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
-  OlaCallbackClient *client = wrapper->GetClient();
+  OlaClient *client = wrapper->GetClient();
   ola::DmxBuffer buffer;
   bool status = buffer.SetFromString(opts.dmx);
 
@@ -840,11 +862,8 @@ int SendDmx(OlaCallbackClientWrapper *wrapper, const options &opts) {
     exit(1);
   }
 
-  if (!client->SendDmx(opts.uni, buffer,
-                       NewSingleCallback(&SendDmxComplete, ss))) {
-    cout << "Send DMX failed" << endl;
-    return 1;
-  }
+  ola::client::SendDMXArgs args(NewSingleCallback(&HandleAck, ss));
+  client->SendDMX(opts.uni, buffer, args);
   return 0;
 }
 
@@ -852,9 +871,9 @@ int SendDmx(OlaCallbackClientWrapper *wrapper, const options &opts) {
 /*
  * Set the priority of a port
  */
-void SetPortPriority(OlaCallbackClientWrapper *wrapper, const options &opts) {
+void SetPortPriority(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
-  OlaCallbackClient *client = wrapper->GetClient();
+  OlaClient *client = wrapper->GetClient();
 
   if (opts.device_id == INVALID_VALUE || opts.port_id == INVALID_VALUE) {
     DisplaySetPriorityHelp(opts);
@@ -864,11 +883,11 @@ void SetPortPriority(OlaCallbackClientWrapper *wrapper, const options &opts) {
   if (opts.priority_mode == ola::PRIORITY_MODE_INHERIT) {
     client->SetPortPriorityInherit(
         opts.device_id, opts.port_id, opts.port_direction,
-        NewSingleCallback(&SetPortPriorityComplete, ss));
+        NewSingleCallback(&HandleAck, ss));
   } else if (opts.priority_mode == ola::PRIORITY_MODE_STATIC) {
     client->SetPortPriorityOverride(
         opts.device_id, opts.port_id, opts.port_direction, opts.priority_value,
-        NewSingleCallback(&SetPortPriorityComplete, ss));
+        NewSingleCallback(&HandleAck, ss));
   } else {
     DisplaySetPriorityHelp(opts);
   }
@@ -880,7 +899,11 @@ void SetPortPriority(OlaCallbackClientWrapper *wrapper, const options &opts) {
  */
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
-  OlaCallbackClientWrapper ola_client;
+  if (!ola::NetworkInit()) {
+    OLA_WARN << "Network initialization failed." << endl;
+    exit(ola::EXIT_UNAVAILABLE);
+  }
+  OlaClientWrapper ola_client;
   options opts;
 
   InitOptions(&opts);
@@ -889,15 +912,17 @@ int main(int argc, char *argv[]) {
   // decide how we should behave
   SetMode(&opts);
 
-  if (opts.m == DEVICE_PATCH)
+  if (opts.m == DEVICE_PATCH) {
     ParsePatchOptions(argc, argv, &opts);
-  else if (opts.m == SET_PORT_PRIORITY)
+  } else if (opts.m == SET_PORT_PRIORITY) {
     ParseSetPriorityOptions(argc, argv, &opts);
-  else
+  } else {
     ParseOptions(argc, argv, &opts);
+  }
 
-  if (opts.help)
+  if (opts.help) {
     DisplayHelpAndExit(opts);
+  }
 
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";

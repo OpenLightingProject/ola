@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * MilInstWidget.cpp
  * This is the base widget class
@@ -28,6 +28,8 @@ namespace ola {
 namespace plugin {
 namespace milinst {
 
+using std::string;
+
 /*
  * New widget
  */
@@ -41,7 +43,7 @@ MilInstWidget::~MilInstWidget() {
 /*
  * Connect to the widget
  */
-int MilInstWidget::ConnectToWidget(const std::string &path, speed_t speed) {
+int MilInstWidget::ConnectToWidget(const string &path, speed_t speed) {
   struct termios newtio;
 
   if (path.empty()) {

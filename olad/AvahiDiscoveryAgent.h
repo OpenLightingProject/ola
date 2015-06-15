@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AvahiDiscoveryAgent.h
  * The Avahi implementation of DiscoveryAgentInterface.
@@ -41,79 +41,79 @@ namespace ola {
  */
 class AvahiDiscoveryAgent : public DiscoveryAgentInterface {
  public:
-    AvahiDiscoveryAgent();
-    ~AvahiDiscoveryAgent();
+  AvahiDiscoveryAgent();
+  ~AvahiDiscoveryAgent();
 
-    bool Init();
+  bool Init();
 
-    void RegisterService(const std::string &service_name,
-                         const std::string &type,
-                         uint16_t port,
-                         const RegisterOptions &options);
+  void RegisterService(const std::string &service_name,
+                       const std::string &type,
+                       uint16_t port,
+                       const RegisterOptions &options);
 
-    /**
-     * @brief Called when the Avahi client state changes
-     */
-    void ClientStateChanged(AvahiClientState state, AvahiClient *client);
+  /**
+   * @brief Called when the Avahi client state changes
+   */
+  void ClientStateChanged(AvahiClientState state, AvahiClient *client);
 
-    /**
-     * @brief Called when a entry group state changes.
-     */
-    void GroupStateChanged(const std::string &service_key,
-                           AvahiEntryGroup *group,
-                           AvahiEntryGroupState state);
+  /**
+   * @brief Called when an entry group state changes.
+   */
+  void GroupStateChanged(const std::string &service_key,
+                         AvahiEntryGroup *group,
+                         AvahiEntryGroupState state);
 
-    /**
-     * @brief Called when the reconnect timeout expires.
-     */
-    void ReconnectTimeout();
+  /**
+   * @brief Called when the reconnect timeout expires.
+   */
+  void ReconnectTimeout();
 
  private:
-    // The structure used to track services.
-    struct ServiceEntry : public RegisterOptions {
-     public:
-      const std::string service_name;
-      // This may differ from the service name if there was a collision.
-      std::string actual_service_name;
-      const uint16_t port;
-      AvahiEntryGroup *group;
-      AvahiEntryGroupState state;
-      struct EntryGroupParams *params;
+  // The structure used to track services.
+  struct ServiceEntry : public RegisterOptions {
+   public:
+    const std::string service_name;
+    // This may differ from the service name if there was a collision.
+    std::string actual_service_name;
+    const uint16_t port;
+    AvahiEntryGroup *group;
+    AvahiEntryGroupState state;
+    struct EntryGroupParams *params;
 
-      ServiceEntry(const std::string &service_name,
-                   const std::string &type_spec,
-                   uint16_t port,
-                   const RegisterOptions &options);
+    ServiceEntry(const std::string &service_name,
+                 const std::string &type_spec,
+                 uint16_t port,
+                 const RegisterOptions &options);
 
-      std::string key() const;
-      const std::string &type() const { return m_type; }
-      const std::vector<std::string> sub_types() const { return m_sub_types; }
+    std::string key() const;
+    const std::string &type() const { return m_type; }
+    const std::vector<std::string> sub_types() const { return m_sub_types; }
 
-     private:
-      std::string m_type_spec;   // type[,subtype]
-      std::string m_type;
-      std::vector<std::string> m_sub_types;
-    };
+   private:
+    std::string m_type_spec;   // type[,subtype]
+    std::string m_type;
+    std::vector<std::string> m_sub_types;
+  };
 
-    typedef std::map<std::string, ServiceEntry*> Services;
+  typedef std::map<std::string, ServiceEntry*> Services;
 
-    AvahiThreadedPoll *m_threaded_poll;
-    AvahiClient *m_client;
-    AvahiTimeout *m_reconnect_timeout;
-    Services m_services;
-    BackoffGenerator m_backoff;
+  AvahiThreadedPoll *m_threaded_poll;
+  AvahiClient *m_client;
+  AvahiTimeout *m_reconnect_timeout;
+  Services m_services;
+  BackoffGenerator m_backoff;
 
-    bool InternalRegisterService(ServiceEntry *service);
-    void CreateNewClient();
-    void UpdateServices();
-    void DeregisterAllServices();
-    void SetUpReconnectTimeout();
-    bool RenameAndRegister(ServiceEntry *service);
+  bool InternalRegisterService(ServiceEntry *service);
+  void CreateNewClient();
+  void UpdateServices();
+  void DeregisterAllServices();
+  void SetUpReconnectTimeout();
+  bool RenameAndRegister(ServiceEntry *service);
 
-    static std::string ClientStateToString(AvahiClientState state);
-    static std::string GroupStateToString(AvahiEntryGroupState state);
+  static std::string ClientStateToString(AvahiClientState state);
+  static std::string GroupStateToString(AvahiEntryGroupState state);
 
-    DISALLOW_COPY_AND_ASSIGN(AvahiDiscoveryAgent);
+  DISALLOW_COPY_AND_ASSIGN(AvahiDiscoveryAgent);
 };
 }  // namespace ola
 #endif  // OLAD_AVAHIDISCOVERYAGENT_H_

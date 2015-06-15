@@ -11,12 +11,14 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RpcChannel.cpp
  * Interface for the UDP RPC Channel
  * Copyright (C) 2005 Simon Newton
  */
+
+#include "common/rpc/RpcChannel.h"
 
 #include <errno.h>
 #include <google/protobuf/service.h>
@@ -26,10 +28,10 @@
 #include <string>
 
 #include "common/rpc/Rpc.pb.h"
-#include "common/rpc/RpcService.h"
+#include "common/rpc/RpcSession.h"
 #include "common/rpc/RpcController.h"
-#include "common/rpc/RpcChannel.h"
 #include "common/rpc/RpcHeader.h"
+#include "common/rpc/RpcService.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
@@ -56,25 +58,60 @@ const char *RpcChannel::K_RPC_VARIABLES[] = {
   K_RPC_SENT_VAR,
 };
 
+class OutstandingRequest {
+  /*
+   * These are requests on the server end that haven't completed yet.
+   */
+ public:
+  OutstandingRequest(int id,
+                     RpcSession *session,
+                     google::protobuf::Message *response)
+      : id(id),
+        controller(new RpcController(session)),
+        response(response) {
+  }
+  ~OutstandingRequest() {
+    if (controller) {
+      delete controller;
+    }
+    if (response) {
+      delete response;
+    }
+  }
+
+  int id;
+  RpcController *controller;
+  google::protobuf::Message *response;
+};
+
+
 class OutstandingResponse {
   /*
    * These are Requests on the client end that haven't completed yet.
    */
  public:
-    OutstandingResponse() {}
-    ~OutstandingResponse() {}
+  OutstandingResponse(int id,
+                      RpcController *controller,
+                      SingleUseCallback0<void> *callback,
+                      Message *reply)
+      : id(id),
+        controller(controller),
+        callback(callback),
+        reply(reply) {
+  }
 
-    int id;
-    RpcController *controller;
-    SingleUseCallback0<void> *callback;
-    Message *reply;
+  int id;
+  RpcController *controller;
+  SingleUseCallback0<void> *callback;
+  Message *reply;
 };
 
 RpcChannel::RpcChannel(
     RpcService *service,
     ola::io::ConnectedDescriptor *descriptor,
     ExportMap *export_map)
-    : m_service(service),
+    : m_session(new RpcSession(this)),
+      m_service(service),
       m_descriptor(descriptor),
       m_buffer(NULL),
       m_buffer_size(0),
@@ -161,9 +198,8 @@ void RpcChannel::DescriptorReady() {
   return;
 }
 
-void RpcChannel::SetChannelCloseHandler(
-    SingleUseCallback0<void> *closure) {
-  m_on_close.reset(closure);
+void RpcChannel::SetChannelCloseHandler(CloseCallback *callback) {
+  m_on_close.reset(callback);
 }
 
 void RpcChannel::CallMethod(const MethodDescriptor *method,
@@ -205,11 +241,8 @@ void RpcChannel::CallMethod(const MethodDescriptor *method,
     return;
   }
 
-  OutstandingResponse *response = new OutstandingResponse();
-  response->id = message.id();
-  response->controller = controller;
-  response->callback = done;
-  response->reply = reply;
+  OutstandingResponse *response = new OutstandingResponse(
+      message.id(), controller, done, reply);
 
   auto_ptr<OutstandingResponse> old_response(
       STLReplacePtr(&m_responses, message.id(), response));
@@ -238,6 +271,10 @@ void RpcChannel::RequestComplete(OutstandingRequest *request) {
   message.set_buffer(output);
   SendMsg(&message);
   DeleteOutstandingRequest(request);
+}
+
+RpcSession *RpcChannel::Session() {
+  return m_session.get();
 }
 
 // private
@@ -432,10 +469,8 @@ void RpcChannel::HandleRequest(RpcMessage *msg) {
     return;
   }
 
-  OutstandingRequest *request = new OutstandingRequest();
-  request->id = msg->id();
-  request->controller = new RpcController();
-  request->response = response_pb;
+  OutstandingRequest *request = new OutstandingRequest(
+      msg->id(), m_session.get(), response_pb);
 
   if (m_requests.find(msg->id()) != m_requests.end()) {
     OLA_WARN << "dup sequence number for request " << msg->id();
@@ -490,7 +525,8 @@ void RpcChannel::HandleStreamRequest(RpcMessage *msg) {
     return;
   }
 
-  m_service->CallMethod(method, NULL, request_pb, NULL, NULL);
+  RpcController controller(m_session.get());
+  m_service->CallMethod(method, &controller, request_pb, NULL, NULL);
   delete request_pb;
 }
 
@@ -524,10 +560,7 @@ void RpcChannel::SendNotImplemented(int msg_id) {
  * Cleanup an outstanding request after the response has been returned
  */
 void RpcChannel::DeleteOutstandingRequest(OutstandingRequest *request) {
-  m_requests.erase(request->id);
-  delete request->controller;
-  delete request->response;
-  delete request;
+  STLRemoveAndDelete(&m_requests, request->id);
 }
 
 
@@ -539,7 +572,10 @@ void RpcChannel::HandleResponse(RpcMessage *msg) {
   auto_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
   if (response.get()) {
-    response->reply->ParseFromString(msg->buffer());
+    if (!response->reply->ParseFromString(msg->buffer())) {
+      OLA_WARN << "Failed to parse response proto for "
+               << response->reply->GetTypeName();
+    }
     response->callback->Run();
   }
 }
@@ -590,7 +626,7 @@ void RpcChannel::HandleNotImplemented(RpcMessage *msg) {
  */
 void RpcChannel::HandleChannelClose() {
   if (m_on_close.get()) {
-    m_on_close.release()->Run();
+    m_on_close.release()->Run(m_session.get());
   }
 }
 }  // namespace rpc

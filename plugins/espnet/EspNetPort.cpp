@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EspNetPort.cpp
  * The EspNet plugin for ola
@@ -74,14 +74,13 @@ void EspNetInputPort::PostSetUniverse(Universe *old_universe,
  * Write data to this port.
  */
 bool EspNetOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                uint8_t priority) {
+                                OLA_UNUSED uint8_t priority) {
   if (!GetUniverse())
     return false;
 
   if (!m_node->SendDMX(m_helper.EspNetUniverseId(GetUniverse()), buffer))
     return false;
   return true;
-  (void) priority;
 }
 }  // namespace espnet
 }  // namespace plugin

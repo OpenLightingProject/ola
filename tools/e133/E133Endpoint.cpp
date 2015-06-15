@@ -11,13 +11,14 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133Endpoint.cpp
  * Copyright (C) 2012 Simon Newton
  */
 
 #include <ola/Logging.h>
+#include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/UID.h>
 #include <ola/rdm/UIDSet.h>
 #include <memory>
@@ -26,15 +27,16 @@
 #include "tools/e133/E133Endpoint.h"
 
 using ola::rdm::RDMCallback;
+using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using std::auto_ptr;
 using std::string;
-using ola::rdm::RDMDiscoveryCallback;
+using std::vector;
 
 const uint16_t E133EndpointInterface::UNPATCHED_UNIVERSE = 0;
 const uint16_t E133EndpointInterface::COMPOSITE_UNIVERSE = 0xffff;
 
-typedef std::vector<std::string> RDMPackets;
+typedef vector<string> RDMPackets;
 
 E133Endpoint::E133Endpoint(DiscoverableRDMControllerInterface *controller,
                            const EndpointProperties &properties)
@@ -83,7 +85,7 @@ void E133Endpoint::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
 /**
  * Handle RDM requests to this endpoint
  */
-void E133Endpoint::SendRDMRequest(const RDMRequest *request_ptr,
+void E133Endpoint::SendRDMRequest(RDMRequest *request_ptr,
                                   RDMCallback *on_complete) {
   if (m_controller) {
     m_controller->SendRDMRequest(request_ptr, on_complete);
@@ -92,7 +94,6 @@ void E133Endpoint::SendRDMRequest(const RDMRequest *request_ptr,
     auto_ptr<const RDMRequest> request(request_ptr);
     OLA_WARN << "Endpoint " << m_endpoint_label
              << " has no controller attached";
-    RDMPackets packets;
-    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
+    ola::rdm::RunRDMCallback(on_complete, ola::rdm::RDM_UNKNOWN_UID);
   }
 }

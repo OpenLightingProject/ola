@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMHelper.h
  * Various misc RDM functions.
@@ -37,7 +37,14 @@
 namespace ola {
 namespace rdm {
 
-std::string ResponseCodeToString(rdm_response_code status);
+std::string StatusCodeToString(RDMStatusCode status);
+
+/**
+ * @deprecated Use StatusCodeToString instead.
+ */
+inline std::string ResponseCodeToString(RDMStatusCode status) {
+  return StatusCodeToString(status);
+}
 
 std::string DataTypeToString(uint8_t type);
 std::string LampModeToString(uint8_t lamp_mode);

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * StageProfiDevice.h
  * Interface for the stageprofi device
@@ -33,25 +33,35 @@ class AbstractPlugin;
 namespace plugin {
 namespace stageprofi {
 
+class StageProfiWidget;
+
 class StageProfiDevice: public Device {
  public:
-    StageProfiDevice(AbstractPlugin *owner,
-                     const std::string &name,
-                     const std::string &dev_path);
-    ~StageProfiDevice();
+  /**
+   * @brief Create a new StageProfi device.
+   * @param owner the Plugin that owns this device
+   * @param widget The StageProfiWidget to use for this device.
+   * @param name the device name
+   */
+  StageProfiDevice(AbstractPlugin *owner,
+                   StageProfiWidget *widget,
+                   const std::string &name);
 
-    // I don't think this get us full stickiness because USB devices may
-    // appear as different devices.
-    std::string DeviceId() const { return m_path; }
-    ola::io::ConnectedDescriptor *GetSocket() const;
+  /**
+   * @brief Destructor.
+   */
+  ~StageProfiDevice();
+
+  // TODO(simon): I don't think this get us full stickiness because USB devices
+  // may appear as different devices.
+  std::string DeviceId() const;
 
  protected:
-    bool StartHook();
-    void PrePortStop();
+  bool StartHook();
 
  private:
-    std::string m_path;
-    std::auto_ptr<class StageProfiWidget> m_widget;
+  std::string m_path;
+  std::auto_ptr<StageProfiWidget> m_widget;
 };
 }  // namespace stageprofi
 }  // namespace plugin

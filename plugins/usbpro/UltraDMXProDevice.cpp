@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UltraDMXProDevice.cpp
  * A DMX King Ultra DMX Pro Device
@@ -25,8 +25,8 @@
 #include <string>
 
 #include "common/rpc/RpcController.h"
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/usbpro/UltraDMXProDevice.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
@@ -50,15 +50,18 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
                                      ola::AbstractPlugin *owner,
                                      const string &name,
                                      UltraDMXProWidget *widget,
-                                     uint16_t esta_id,
-                                     uint16_t device_id,
+                                     OLA_UNUSED uint16_t esta_id,
+                                     OLA_UNUSED uint16_t device_id,
                                      uint32_t serial,
                                      uint16_t firmware_version,
                                      unsigned int fps_limit):
     UsbSerialDevice(owner, name, widget),
     m_ultra_widget(widget),
     m_serial(),
-    m_got_parameters(false) {
+    m_got_parameters(false),
+    m_break_time(0),
+    m_mab_time(0),
+    m_rate(0) {
   std::ostringstream str;
   str << std::setfill('0');
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
@@ -112,10 +115,6 @@ UltraDMXProDevice::UltraDMXProDevice(ola::PluginAdaptor *plugin_adaptor,
       fps_limit,
       false);
   AddPort(output_port);
-
-  Start();  // this does nothing but set IsEnabled() to true
-  (void) esta_id;
-  (void) device_id;
 }
 
 

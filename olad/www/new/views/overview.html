@@ -1,0 +1,86 @@
+<div class="row">
+ <div style="text-align: left;" class="col-md-4">
+  <h1>{{Info.instance_name}}</h1>
+  <table class="info">
+   <tr>
+    <td>Instance Name:</td>
+    <td>{{Info.instance_name}}</td>
+   </tr>
+   <tr>
+    <td>Hostname:</td>
+    <td>{{Info.hostname}}</td>
+   </tr>
+   <tr>
+    <td>IP Address:</td>
+    <td>{{Info.ip}}</td>
+   </tr>
+   <tr>
+    <td>Broadcast Address:</td>
+    <td>{{Info.broadcast}}</td>
+   </tr>
+   <tr>
+    <td>Subnet Mask:</td>
+    <td>{{Info.subnet}}</td>
+   </tr>
+   <tr>
+    <td>MAC Address:</td>
+    <td>{{Info.hw_address}}</td>
+   </tr>
+   <tr>
+    <td>Up Since:</td>
+    <td>{{Info.up_since}}</td>
+   </tr>
+   <tr>
+    <td>Version:</td>
+    <td>{{Info.version}}</td>
+   </tr>
+   <tr>
+    <td>Configuration Directory:</td>
+    <td>{{Info.config_dir}}</td>
+   </tr>
+  </table>
+  <br/>
+  <button ng-show="Info.quit_enabled" type="button" class="btn btn-default btn-md btn-grey" data-toggle="modal" data-target="#ShutdownAlert">
+   Shutdown
+  </button>
+ </div>
+ <div class="col-md-8">
+  <table class="table table-striped">
+   <caption>
+    <div class="caption-overview">
+     <a href="/new/#/universes/">
+      <h2>Universes</h2>
+     </a>
+    </div>
+    <div class="caption-overview button-caption">
+     <button type="button" class="btn btn-primary btn-md" ng-click="goUniverse('add')">Add New Universe</button>
+    </div>
+   </caption>
+   <tr>
+    <th>Id</th>
+    <th>Name</th>
+   </tr>
+   <tr style="cursor: pointer;" ng-repeat="u in Universes track by $index">
+    <td class="align" ng-click="goUniverse(u.id)">{{u.id}}</td>
+    <td class="align" ng-click="goUniverse(u.id)">{{u.name}}</td>
+   </tr>
+  </table>
+ </div>
+</div>
+<div class="modal fade" id="ShutdownAlert" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+ <div class="modal-dialog">
+  <div class="modal-content">
+   <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="myModalLabel">Are you sure?</h4>
+   </div>
+   <div class="modal-body">
+    Do you really want to shutdown?<br/>OLA may not be configured to restart automatically.
+   </div>
+   <div class="modal-footer">
+    <button ng-click="Shutdown()" type="button" class="btn btn-primary" data-dismiss="modal">Yes</button>
+    <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+   </div>
+  </div>
+ </div>
+</div>

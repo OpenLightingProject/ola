@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIPlugin.cpp
  * The SPI plugin for ola
@@ -68,7 +68,9 @@ bool SPIPlugin::StartHook() {
   vector<string> spi_files;
   vector<string> spi_prefixes = m_preferences->GetMultipleValue(
       SPI_DEVICE_PREFIX_KEY);
-  ola::file::FindMatchingFiles("/dev", spi_prefixes, &spi_files);
+  if (!ola::file::FindMatchingFiles("/dev", spi_prefixes, &spi_files)) {
+    return false;
+  }
 
   ola::rdm::UIDAllocator uid_allocator(*base_uid);
   vector<string>::const_iterator iter = spi_files.begin();
@@ -76,8 +78,9 @@ bool SPIPlugin::StartHook() {
     SPIDevice *device = new SPIDevice(this, m_preferences, m_plugin_adaptor,
                                       *iter, &uid_allocator);
 
-    if (!device)
+    if (!device) {
       continue;
+    }
 
     if (!device->Start()) {
       delete device;
@@ -167,6 +170,9 @@ string SPIPlugin::Description() const {
 "<device>-<port>-dmx-address = <int>\n"
 "The DMX address to use. e.g. spidev0.1-0-dmx-address = 1\n"
 "\n"
+"<device>-<port>-device-label = <string>\n"
+"The RDM device label to use.\n"
+"\n"
 "<device>-<port>-personality = <int>\n"
 "The RDM personality to use.\n"
 "\n"
@@ -182,8 +188,9 @@ string SPIPlugin::Description() const {
 bool SPIPlugin::SetDefaultPreferences() {
   bool save = false;
 
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   save |= m_preferences->SetDefaultValue(SPI_DEVICE_PREFIX_KEY,
                                          StringValidator(),
@@ -191,11 +198,13 @@ bool SPIPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(SPI_BASE_UID_KEY,
                                          StringValidator(),
                                          DEFAULT_BASE_UID);
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
-  if (m_preferences->GetValue(SPI_DEVICE_PREFIX_KEY).empty())
+  if (m_preferences->GetValue(SPI_DEVICE_PREFIX_KEY).empty()) {
     return false;
+  }
 
   return true;
 }

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOQueue.cpp
  * A non-contigous memory buffer
@@ -34,11 +34,10 @@ namespace ola {
 namespace io {
 
 using std::min;
-
+using std::string;
 
 /**
- * IOQueue.
- * @param block_size the size of blocks to use.
+ * @brief IOQueue.
  */
 IOQueue::IOQueue()
     : m_pool(new MemoryBlockPool()),
@@ -123,7 +122,7 @@ unsigned int IOQueue::Read(uint8_t *data, unsigned int n) {
 /**
  * Read up to n bytes into the string output.
  */
-unsigned int IOQueue::Read(std::string *output, unsigned int n) {
+unsigned int IOQueue::Read(string *output, unsigned int n) {
   unsigned int bytes_remaining = n;
   BlockVector::iterator iter = m_blocks.begin();
   while (iter != m_blocks.end() && bytes_remaining) {
@@ -213,6 +212,14 @@ const struct IOVec *IOQueue::AsIOVec(int *iocnt) const {
  */
 void IOQueue::AppendBlock(class MemoryBlock *block) {
   m_blocks.push_back(block);
+}
+
+void IOQueue::AppendMove(IOQueue *other) {
+  BlockVector::const_iterator iter = other->m_blocks.begin();
+  for (; iter != other->m_blocks.end(); ++iter) {
+    m_blocks.push_back(*iter);
+  }
+  other->m_blocks.clear();
 }
 
 

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PathportPort.h
  * The Pathport plugin for ola
@@ -52,9 +52,9 @@ class PathportInputPort: public BasicInputPort {
       return m_helper.Description(GetUniverse());
     }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+    bool PreSetUniverse(OLA_UNUSED Universe *old_universe,
+                        Universe *new_universe) {
       return m_helper.PreSetUniverse(new_universe);
-      (void) old_universe;
     }
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
@@ -79,9 +79,9 @@ class PathportOutputPort: public BasicOutputPort {
       return m_helper.Description(GetUniverse());
     }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+    bool PreSetUniverse(OLA_UNUSED Universe *old_universe,
+                        Universe *new_universe) {
       return m_helper.PreSetUniverse(new_universe);
-      (void) old_universe;
     }
 
  private:

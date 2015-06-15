@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # rdm_compare.py
 # Copyright (C) 2012 Simon Newton
@@ -38,13 +38,13 @@ class LoadException(Error):
   """Raised when we can't write to the output file."""
 
 def Usage():
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
   Usage: rdm_compare.py <file1> <file2>
 
   Compare two RDM configurations saved with rdm_snapshot.
 
   Flags:
-    -h, --help    Display this help message and exit.""")
+    -h, --help    Display this help message and exit."""))
 
 
 def ReadFile(filename):
@@ -56,7 +56,7 @@ def ReadFile(filename):
   raw_data = pickle.load(f)
   f.close()
   data = {}
-  for uid, settings in raw_data.iteritems():
+  for uid, settings in raw_data.items():
     data[UID.FromString(uid)] = settings
   return data
 
@@ -77,7 +77,7 @@ def Diff(configuration1, configuration2):
   added = set()
   changed = []
   removed = set()
-  for uid, config1 in configuration1.iteritems():
+  for uid, config1 in configuration1.items():
     config2 = configuration2.get(uid)
     if config2 is None:
       removed.add(uid)
@@ -163,12 +163,12 @@ def DiffToStdout(configuration1, configuration2):
   """Diff the configurations and write to STDOUT."""
   added, changed, removed = Diff(configuration1, configuration2)
   for uid in added:
-    print 'Device %s was added' % uid
+    print('Device %s was added' % uid)
   for uid in removed:
-      print 'Device %s was removed' % uid
+      print('Device %s was removed' % uid)
 
   for uid, human_field, value1, value2 in changed:
-    print ('%s: %s changed from %s to %s' %
+    print('%s: %s changed from %s to %s' %
            (uid, human_field, value1, value2))
 
 
@@ -178,8 +178,8 @@ def main():
         sys.argv[1:],
         'hb',
         ['help', 'browser'])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

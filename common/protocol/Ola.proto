@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Ola.proto
  * Defines the protocol buffers used to talk to olad
- * Copyright (C) 2005 - 2008 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 package ola.proto;
@@ -40,8 +40,7 @@ enum MergeMode {
 }
 
 /**
- * Please discuss on open-lighting@googlegroups.com before claiming a Plugin
- * ID.
+ * Please see the note below about getting a new Plugin ID.
  */
 enum PluginIds {
   OLA_PLUGIN_ALL = 0;
@@ -64,12 +63,16 @@ enum PluginIds {
   OLA_PLUGIN_KARATE = 17;
   OLA_PLUGIN_MILINST = 18;
   OLA_PLUGIN_RENARD = 19;
+  OLA_PLUGIN_UARTDMX = 20;
+  OLA_PLUGIN_OPENPIXELCONTROL = 21;
+  OLA_PLUGIN_GPIO = 22;
 
   /*
-   * To obtain a new plugin ID open a ticket at
+   * To obtain a new plugin ID, open a ticket at
    * https://github.com/OpenLightingProject/ola/issues/new
    * Plugin IDs are usually assigned just prior to merging the code into the
-   * mainline. For development of plugins please use OLA_PLUGIN_EXPERIMENTAL.
+   * mainline. For development of plugins please use the value of
+   * OLA_PLUGIN_EXPERIMENTAL in a plugin ID you define above.
    */
   OLA_PLUGIN_EXPERIMENTAL = 10000;
 }
@@ -156,10 +159,14 @@ message Ack {}
 // request the list of available plugins
 message PluginListRequest {}
 
+// Trigger a plugin reload.
+message PluginReloadRequest {}
+
 message PluginInfo {
   required int32 plugin_id = 1;
   required string name = 2;
   required bool active = 3;
+  optional bool enabled = 4;
 }
 
 message PluginListReply {
@@ -187,6 +194,11 @@ message PluginStateReply {
   required bool active = 3;
   required string preferences_source = 4;
   repeated PluginInfo conflicts_with = 5;
+}
+
+message PluginStateChangeRequest {
+  required int32 plugin_id = 1;
+  required bool enabled = 2;
 }
 
 // request info on a device
@@ -259,6 +271,8 @@ message UniverseInfo {
   required int32 input_port_count = 4;
   required int32 output_port_count = 5;
   required int32 rdm_devices = 6;
+  repeated PortInfo input_ports = 7;
+  repeated PortInfo output_ports = 8;
 }
 
 message UniverseInfoReply {
@@ -272,8 +286,6 @@ message PortPriorityRequest {
   required int32 priority_mode = 4;
   optional int32 priority = 5;
 }
-
-
 
 // a device config request
 message DeviceConfigRequest {
@@ -307,6 +319,13 @@ message UIDListReply {
   repeated UID uid = 2;
 }
 
+message RDMRequestOverrideOptions {
+  optional uint32 sub_start_code = 1;
+  optional uint32 message_length = 2;
+  optional uint32 message_count = 3;
+  optional uint32 checksum = 4;
+}
+
 message RDMRequest {
   required int32 universe = 1;
   required UID uid = 2;
@@ -315,6 +334,7 @@ message RDMRequest {
   required bytes data = 5; // 0 - 231 bytes
   required bool is_set = 6;
   optional bool include_raw_response = 7 [default = false];
+  optional RDMRequestOverrideOptions options = 8;
 }
 
 message RDMDiscoveryRequest {
@@ -324,6 +344,19 @@ message RDMDiscoveryRequest {
   required int32 param_id = 4;
   required bytes data = 5; // 0 - 231 bytes
   optional bool include_raw_response = 6 [default = false];
+  optional RDMRequestOverrideOptions options = 8;
+}
+
+message RDMFrameTiming {
+  optional int32 response_delay = 1;
+  optional int32 break_time = 2;
+  optional int32 mark_time = 3;
+  optional int32 data_time = 4;
+}
+
+message RDMFrame {
+  optional bytes raw_response = 1;
+  optional RDMFrameTiming timing = 2;
 }
 
 message RDMResponse {
@@ -339,7 +372,8 @@ message RDMResponse {
   optional RDMCommandClass command_class = 6; // the command class
   optional uint32 param_id = 5;  // the param id, required for queued messages
   optional bytes data = 4 [default = ""]; // 0 - 231 bytes
-  repeated bytes raw_response = 8;
+  repeated bytes raw_response = 8;  // deprecated
+  repeated RDMFrame raw_frame = 12;
 }
 
 
@@ -365,12 +399,14 @@ message TimeCode {
 // RPCs handled by the OLA Server
 service OlaServerService {
   rpc GetPlugins (PluginListRequest) returns (PluginListReply);
+  rpc ReloadPlugins (PluginReloadRequest) returns (Ack);
   rpc GetPluginDescription (PluginDescriptionRequest) returns
     (PluginDescriptionReply);
   rpc GetPluginState (PluginStateRequest) returns (PluginStateReply);
   rpc GetDeviceInfo (DeviceInfoRequest) returns (DeviceInfoReply);
   rpc GetCandidatePorts (OptionalUniverseRequest) returns (DeviceInfoReply);
   rpc ConfigureDevice (DeviceConfigRequest) returns (DeviceConfigReply);
+  rpc SetPluginState (PluginStateChangeRequest) returns (Ack);
   rpc SetPortPriority (PortPriorityRequest) returns (Ack);
   rpc GetUniverseInfo (OptionalUniverseRequest) returns (UniverseInfoReply);
   rpc SetUniverseName (UniverseNameRequest) returns (Ack);

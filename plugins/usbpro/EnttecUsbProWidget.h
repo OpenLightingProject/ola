@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EnttecUsbProWidget.h
  * The Enttec USB Pro Widget
@@ -61,7 +61,7 @@ class EnttecPort
     bool SupportsRDM() const { return m_enable_rdm; }
 
     // the following are from DiscoverableRDMControllerInterface
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -115,7 +115,8 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
       }
     };
 
-    EnttecUsbProWidget(ola::io::ConnectedDescriptor *descriptor,
+    EnttecUsbProWidget(ola::thread::SchedulerInterface *ss,
+                       ola::io::ConnectedDescriptor *descriptor,
                        const EnttecUsbProWidgetOptions &options);
     ~EnttecUsbProWidget();
 

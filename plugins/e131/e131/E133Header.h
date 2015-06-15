@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133Header.h
  * The E1.33 Header
@@ -20,6 +20,8 @@
 
 #ifndef PLUGINS_E131_E131_E133HEADER_H_
 #define PLUGINS_E131_E131_E133HEADER_H_
+
+#include <ola/base/Macro.h>
 
 #include <stdint.h>
 #include <string>
@@ -33,7 +35,11 @@ namespace e131 {
  */
 class E133Header {
  public:
-    E133Header() {}
+    E133Header()
+        : m_sequence(0),
+          m_endpoint(0) {
+    }
+
     E133Header(const std::string &source,
                uint32_t sequence,
                uint16_t endpoint)
@@ -55,12 +61,13 @@ class E133Header {
 
     enum { SOURCE_NAME_LEN = 64 };
 
+    PACK(
     struct e133_pdu_header_s {
       char source[SOURCE_NAME_LEN];
       uint32_t sequence;
       uint16_t endpoint;
       uint8_t reserved;
-    } __attribute__((packed));
+    });
     typedef struct e133_pdu_header_s e133_pdu_header;
 
  private:

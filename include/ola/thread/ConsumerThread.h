@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ConsumerThread.h
  * An thread which consumes Callbacks from a queue and runs them.
@@ -43,12 +43,14 @@ class ConsumerThread: public ola::thread::Thread {
    *   variable.
    * @param condition_var the ConditionVariable to wait on. This signals when
    *   the queue is non-empty, or shutdown changes to true.
+   * @param options The thread options.
    */
   ConsumerThread(std::queue<Action> *callback_queue,
                  const bool *shutdown,
                  Mutex *mutex,
-                 ConditionVariable *condition_var)
-      : Thread(),
+                 ConditionVariable *condition_var,
+                 const Thread::Options& options = Thread::Options())
+      : Thread(options),
         m_callback_queue(callback_queue),
         m_shutdown(shutdown),
         m_mutex(mutex),

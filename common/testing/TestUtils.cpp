@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TestUtils.cpp
  * Functions used for unit testing.
@@ -30,46 +30,56 @@ namespace testing {
 
 using std::string;
 
-
 /*
  * Assert that two blocks of data match.
- * @param line the line number of this assert
+ * @param source_line the file name and line number of this assert
  * @param expected pointer to the expected data
  * @param expected_length the length of the expected data
  * @param actual point to the actual data
  * @param actual_length length of the actual data
  */
-void ASSERT_DATA_EQUALS(unsigned int line,
+void ASSERT_DATA_EQUALS(const SourceLine &source_line,
                         const uint8_t *expected,
                         unsigned int expected_length,
                         const uint8_t *actual,
                         unsigned int actual_length) {
-  std::ostringstream str;
-  str << "Line " << line;
-  const string message = str.str();
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(message, expected_length, actual_length);
+  _AssertEquals(source_line, expected_length, actual_length,
+                "Data lengths differ");
 
-  bool data_matches = 0 == memcmp(expected, actual, expected_length);
+  bool data_matches = (0 == memcmp(expected, actual, expected_length));
   if (!data_matches) {
+    std::ostringstream str;
     for (unsigned int i = 0; i < expected_length; ++i) {
       str.str("");
       str << std::dec << i << ": 0x" << std::hex
           << static_cast<int>(expected[i]);
-      str << ((expected[i] == actual[i]) ? " == " : "  != ");
+      str << ((expected[i] == actual[i]) ? " == " : " != ");
       str << "0x" << static_cast<int>(actual[i]) << " (";
       str << ((expected[i] >= '!' && expected[i] <= '~') ?
               static_cast<char>(expected[i]) : ' ');
-      str << ((expected[i] == actual[i]) ? " == " : "  != ");
+      str << ((expected[i] == actual[i]) ? " == " : " != ");
       str << ((actual[i] >= '!' && actual[i] <= '~') ?
               static_cast<char>(actual[i]) : ' ');
       str << ")";
 
-      if (expected[i] != actual[i])
+      if (expected[i] != actual[i]) {
         str << "  ## MISMATCH";
+      }
       OLA_INFO << str.str();
     }
   }
-  CPPUNIT_ASSERT_MESSAGE(message, data_matches);
+  CPPUNIT_NS::Asserter::failIf(!data_matches, "Data differs", source_line);
+}
+
+void ASSERT_DATA_EQUALS(const SourceLine &source_line,
+                        const char *expected,
+                        unsigned int expected_length,
+                        const char *actual,
+                        unsigned int actual_length) {
+  ASSERT_DATA_EQUALS(source_line, reinterpret_cast<const uint8_t*>(expected),
+                     expected_length,
+                     reinterpret_cast<const uint8_t*>(actual),
+                     actual_length);
 }
 }  // namespace testing
 }  // namespace ola

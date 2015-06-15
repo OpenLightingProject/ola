@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KaratePlugin.cpp
  * The karate plugin for ola
@@ -48,8 +48,8 @@ const char KaratePlugin::PLUGIN_NAME[] = "KarateLight";
 const char KaratePlugin::PLUGIN_PREFIX[] = "karate";
 const char KaratePlugin::DEVICE_KEY[] = "device";
 
-/*
- * Start the plugin
+/**
+ * @brief Start the plugin
  */
 bool KaratePlugin::StartHook() {
   vector<string> devices = m_preferences->GetMultipleValue(DEVICE_KEY);
@@ -83,8 +83,8 @@ bool KaratePlugin::StartHook() {
 }
 
 
-/*
- * Stop the plugin
+/**
+ * @brief Stop the plugin
  * @return true on success, false on failure
  */
 bool KaratePlugin::StopHook() {
@@ -100,8 +100,8 @@ bool KaratePlugin::StopHook() {
 }
 
 
-/*
- * Return the description for this plugin
+/**
+ * @brief Return the description for this plugin
  */
 string KaratePlugin::Description() const {
     return
@@ -110,8 +110,8 @@ string KaratePlugin::Description() const {
 "\n"
 "The plugin creates devices with a single output port.\n"
 "Info on the KarateLight Hardware can be found at http://karatelight.de\n"
-"Unfortunately the site is in german only, but the maintainer will respond "
-"to emails in english.\n\n"
+"Unfortunately the site is in German only, but the maintainer will respond "
+"to emails in English.\n\n"
 "--- Config file : ola-karate.conf ---\n"
 "\n"
 "device = /dev/kldmx0\n"
@@ -119,21 +119,24 @@ string KaratePlugin::Description() const {
 }
 
 
-/*
- * Set default preferences.
+/**
+ * @brief Set default preferences.
  */
 bool KaratePlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   if (m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
-                                     KARATE_DEVICE_PATH))
+                                     KARATE_DEVICE_PATH)) {
     m_preferences->Save();
+  }
 
-  // check if this save correctly
+  // check if this saved correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue(DEVICE_KEY).empty())
+  if (m_preferences->GetValue(DEVICE_KEY).empty()) {
     return false;
+  }
 
   return true;
 }

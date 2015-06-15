@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MACAddress.cpp
  * A MAC address
@@ -25,7 +25,7 @@
 #endif
 
 #ifdef _WIN32
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 struct ether_addr {
   unsigned char octet[ola::network::MACAddress::LENGTH];
 };
@@ -144,31 +144,35 @@ bool StringToEther(const string &address, ether_addr *target) {
    * handle dots as well as colons as seperators)
    */
   vector<string> tokens;
-  ola::StringSplit(address, tokens, ":.");
-  if (tokens.size() != MACAddress::LENGTH)
+  ola::StringSplit(address, &tokens, ":.");
+  if (tokens.size() != MACAddress::LENGTH) {
     return false;
+  }
 
   for (unsigned int i = 0; i < MACAddress::LENGTH; i++) {
-    if (!ola::HexStringToInt(tokens[i], target->ether_addr_octet + i))
+    if (!ola::HexStringToInt(tokens[i], target->ether_addr_octet + i)) {
       return false;
+    }
   }
   return true;
 }
 
 
-MACAddress* MACAddress::FromString(const std::string &address) {
+MACAddress* MACAddress::FromString(const string &address) {
   struct ether_addr addr;
-  if (!StringToEther(address, &addr))
+  if (!StringToEther(address, &addr)) {
     return NULL;
+  }
 
   return new MACAddress(addr.ether_addr_octet);
 }
 
-bool MACAddress::FromString(const std::string &address, MACAddress *target) {
+bool MACAddress::FromString(const string &address, MACAddress *target) {
   struct ether_addr addr;
 
-  if (!StringToEther(address, &addr))
+  if (!StringToEther(address, &addr)) {
     return false;
+  }
 
   *target = MACAddress(addr.ether_addr_octet);
   return true;

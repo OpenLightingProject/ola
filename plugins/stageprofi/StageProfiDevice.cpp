@@ -11,26 +11,20 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * StageProfiDevice.cpp
  * StageProfi device
  * Copyright (C) 2006 Simon Newton
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
+#include "plugins/stageprofi/StageProfiDevice.h"
+
 #include <string>
 
 #include "ola/Logging.h"
-#include "olad/Preferences.h"
-#include "olad/Universe.h"
-#include "plugins/stageprofi/StageProfiDevice.h"
 #include "plugins/stageprofi/StageProfiPort.h"
-#include "plugins/stageprofi/StageProfiWidgetLan.h"
-#include "plugins/stageprofi/StageProfiWidgetUsb.h"
+#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -41,72 +35,30 @@ using ola::io::ConnectedDescriptor;
 using std::string;
 
 
-/*
- * Create a new device
- *
- * @param owner  the plugin that owns this device
- * @param name  the device name
- * @param dev_path  path to the pro widget
- */
 StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
-                                   const string &name,
-                                   const string &dev_path)
+                                   StageProfiWidget *widget,
+                                   const string &name)
     : Device(owner, name),
-      m_path(dev_path) {
-    if (dev_path.at(0) == '/') {
-      m_widget.reset(new StageProfiWidgetUsb());
-    } else {
-      m_widget.reset(new StageProfiWidgetLan());
-    }
+      m_widget(widget) {
 }
 
 
-/*
- * Destroy this device
-*/
 StageProfiDevice::~StageProfiDevice() {
   // Stub destructor for compatibility with StageProfiWidget subclasses
 }
 
-/*
- * Start this device
- */
+string StageProfiDevice::DeviceId() const {
+  return m_widget->GetPath();
+}
+
 bool StageProfiDevice::StartHook() {
   if (!m_widget.get())
     return false;
 
-  if (!m_widget->Connect(m_path)) {
-    OLA_WARN << "StageProfiPlugin: failed to connect to " << m_path;
-    return false;
-  }
-
-  if (!m_widget->DetectDevice()) {
-    OLA_WARN << "StageProfiPlugin: no device found at " << m_path;
-    return false;
-  }
-
-  StageProfiOutputPort *port = new StageProfiOutputPort(this,
-                                                        0,
-                                                        m_widget.get());
+  StageProfiOutputPort *port = new StageProfiOutputPort(
+      this, 0, m_widget.get());
   AddPort(port);
   return true;
-}
-
-
-/*
- * Stop this device
- */
-void StageProfiDevice::PrePortStop() {
-  // disconnect from widget
-  m_widget->Disconnect();
-}
-
-
-/*
- * return the sd for this device
- */
-ConnectedDescriptor *StageProfiDevice::GetSocket() const {
-  return m_widget->GetSocket();
 }
 }  // namespace stageprofi
 }  // namespace plugin

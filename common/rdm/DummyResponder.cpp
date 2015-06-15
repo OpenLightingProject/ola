@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DummyResponder.cpp
  * Copyright (C) 2005 Simon Newton
@@ -25,8 +25,8 @@
 #include <string>
 #include <vector>
 #include "ola/base/Array.h"
-#include "ola/BaseTypes.h"
 #include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/DummyResponder.h"
@@ -194,13 +194,13 @@ DummyResponder::~DummyResponder() {
 /*
  * Handle an RDM Request
  */
-void DummyResponder::SendRDMRequest(const RDMRequest *request,
+void DummyResponder::SendRDMRequest(RDMRequest *request,
                                     RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ola::rdm::ROOT_RDM_DEVICE,
                                        request, callback);
 }
 
-const RDMResponse *DummyResponder::GetParamDescription(
+RDMResponse *DummyResponder::GetParamDescription(
     const RDMRequest *request) {
   // Check that it's OLA_MANUFACTURER_PID_CODE_VERSION being requested
   uint16_t parameter_id;
@@ -222,7 +222,7 @@ const RDMResponse *DummyResponder::GetParamDescription(
   }
 }
 
-const RDMResponse *DummyResponder::GetDeviceInfo(const RDMRequest *request) {
+RDMResponse *DummyResponder::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DEVICE_MODEL,
       PRODUCT_CATEGORY_OTHER, 3,
@@ -234,7 +234,7 @@ const RDMResponse *DummyResponder::GetDeviceInfo(const RDMRequest *request) {
 /**
  * Reset to factory defaults
  */
-const RDMResponse *DummyResponder::GetFactoryDefaults(
+RDMResponse *DummyResponder::GetFactoryDefaults(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -247,7 +247,7 @@ const RDMResponse *DummyResponder::GetFactoryDefaults(
   return GetResponseFromData(request, &using_defaults, sizeof(using_defaults));
 }
 
-const RDMResponse *DummyResponder::SetFactoryDefaults(
+RDMResponse *DummyResponder::SetFactoryDefaults(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -260,72 +260,72 @@ const RDMResponse *DummyResponder::SetFactoryDefaults(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *DummyResponder::GetProductDetailList(
+RDMResponse *DummyResponder::GetProductDetailList(
     const RDMRequest *request) {
-  std::vector<rdm_product_detail> product_details;
+  vector<rdm_product_detail> product_details;
   product_details.push_back(PRODUCT_DETAIL_TEST);
   product_details.push_back(PRODUCT_DETAIL_OTHER);
   return ResponderHelper::GetProductDetailList(request, product_details);
 }
 
-const RDMResponse *DummyResponder::GetPersonality(
+RDMResponse *DummyResponder::GetPersonality(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonality(request, &m_personality_manager);
 }
 
-const RDMResponse *DummyResponder::SetPersonality(
+RDMResponse *DummyResponder::SetPersonality(
     const RDMRequest *request) {
   return ResponderHelper::SetPersonality(request, &m_personality_manager,
                                          m_start_address);
 }
 
-const RDMResponse *DummyResponder::GetPersonalityDescription(
+RDMResponse *DummyResponder::GetPersonalityDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, &m_personality_manager);
 }
 
-const RDMResponse *DummyResponder::GetSlotInfo(const RDMRequest *request) {
+RDMResponse *DummyResponder::GetSlotInfo(const RDMRequest *request) {
   return ResponderHelper::GetSlotInfo(request, &m_personality_manager);
 }
 
-const RDMResponse *DummyResponder::GetSlotDescription(
+RDMResponse *DummyResponder::GetSlotDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetSlotDescription(request, &m_personality_manager);
 }
 
-const RDMResponse *DummyResponder::GetSlotDefaultValues(
+RDMResponse *DummyResponder::GetSlotDefaultValues(
     const RDMRequest *request) {
   return ResponderHelper::GetSlotDefaultValues(request, &m_personality_manager);
 }
 
-const RDMResponse *DummyResponder::GetDmxStartAddress(
+RDMResponse *DummyResponder::GetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::GetDmxAddress(request, &m_personality_manager,
                                         m_start_address);
 }
 
-const RDMResponse *DummyResponder::SetDmxStartAddress(
+RDMResponse *DummyResponder::SetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::SetDmxAddress(request, &m_personality_manager,
                                         &m_start_address);
 }
 
-const RDMResponse *DummyResponder::GetLampStrikes(const RDMRequest *request) {
+RDMResponse *DummyResponder::GetLampStrikes(const RDMRequest *request) {
   return ResponderHelper::GetUInt32Value(request, m_lamp_strikes);
 }
 
-const RDMResponse *DummyResponder::SetLampStrikes(const RDMRequest *request) {
+RDMResponse *DummyResponder::SetLampStrikes(const RDMRequest *request) {
   return ResponderHelper::SetUInt32Value(request, &m_lamp_strikes);
 }
 
-const RDMResponse *DummyResponder::GetIdentify(const RDMRequest *request) {
+RDMResponse *DummyResponder::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
-const RDMResponse *DummyResponder::SetIdentify(const RDMRequest *request) {
+RDMResponse *DummyResponder::SetIdentify(const RDMRequest *request) {
   bool old_value = m_identify_mode;
-  const RDMResponse *response = ResponderHelper::SetBoolValue(
+  RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_mode);
   if (m_identify_mode != old_value) {
     OLA_INFO << "Dummy device, identify mode "
@@ -334,25 +334,25 @@ const RDMResponse *DummyResponder::SetIdentify(const RDMRequest *request) {
   return response;
 }
 
-const RDMResponse *DummyResponder::GetRealTimeClock(const RDMRequest *request) {
+RDMResponse *DummyResponder::GetRealTimeClock(const RDMRequest *request) {
   return ResponderHelper::GetRealTimeClock(request);
 }
 
-const RDMResponse *DummyResponder::GetManufacturerLabel(
+RDMResponse *DummyResponder::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *DummyResponder::GetDeviceLabel(const RDMRequest *request) {
+RDMResponse *DummyResponder::GetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy RDM Device");
 }
 
-const RDMResponse *DummyResponder::GetDeviceModelDescription(
+RDMResponse *DummyResponder::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy Model");
 }
 
-const RDMResponse *DummyResponder::GetSoftwareVersionLabel(
+RDMResponse *DummyResponder::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy Software Version");
 }
@@ -360,7 +360,7 @@ const RDMResponse *DummyResponder::GetSoftwareVersionLabel(
 /**
  * PID_SENSOR_DEFINITION
  */
-const RDMResponse *DummyResponder::GetSensorDefinition(
+RDMResponse *DummyResponder::GetSensorDefinition(
     const RDMRequest *request) {
   return ResponderHelper::GetSensorDefinition(request, m_sensors);
 }
@@ -368,74 +368,74 @@ const RDMResponse *DummyResponder::GetSensorDefinition(
 /**
  * PID_SENSOR_VALUE
  */
-const RDMResponse *DummyResponder::GetSensorValue(const RDMRequest *request) {
+RDMResponse *DummyResponder::GetSensorValue(const RDMRequest *request) {
   return ResponderHelper::GetSensorValue(request, m_sensors);
 }
 
-const RDMResponse *DummyResponder::SetSensorValue(const RDMRequest *request) {
+RDMResponse *DummyResponder::SetSensorValue(const RDMRequest *request) {
   return ResponderHelper::SetSensorValue(request, m_sensors);
 }
 
 /**
  * PID_RECORD_SENSORS
  */
-const RDMResponse *DummyResponder::RecordSensor(const RDMRequest *request) {
+RDMResponse *DummyResponder::RecordSensor(const RDMRequest *request) {
   return ResponderHelper::RecordSensor(request, m_sensors);
 }
 
 /**
  * E1.37-2 PIDs
  */
-const RDMResponse *DummyResponder::GetListInterfaces(
+RDMResponse *DummyResponder::GetListInterfaces(
     const RDMRequest *request) {
   return ResponderHelper::GetListInterfaces(request,
                                             m_network_manager.get());
 }
 
-const RDMResponse *DummyResponder::GetInterfaceLabel(
+RDMResponse *DummyResponder::GetInterfaceLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetInterfaceLabel(request,
                                             m_network_manager.get());
 }
 
-const RDMResponse *DummyResponder::GetInterfaceHardwareAddressType1(
+RDMResponse *DummyResponder::GetInterfaceHardwareAddressType1(
     const RDMRequest *request) {
   return ResponderHelper::GetInterfaceHardwareAddressType1(
       request,
       m_network_manager.get());
 }
 
-const RDMResponse *DummyResponder::GetIPV4CurrentAddress(
+RDMResponse *DummyResponder::GetIPV4CurrentAddress(
     const RDMRequest *request) {
   return ResponderHelper::GetIPV4CurrentAddress(request,
                                                 m_network_manager.get());
 }
 
-const RDMResponse *DummyResponder::GetIPV4DefaultRoute(
+RDMResponse *DummyResponder::GetIPV4DefaultRoute(
     const RDMRequest *request) {
   return ResponderHelper::GetIPV4DefaultRoute(request,
                                               m_network_manager.get());
 }
 
-const RDMResponse *DummyResponder::GetDNSHostname(
+RDMResponse *DummyResponder::GetDNSHostname(
     const RDMRequest *request) {
   return ResponderHelper::GetDNSHostname(request,
                                          m_network_manager.get());
 }
 
-const RDMResponse *DummyResponder::GetDNSDomainName(
+RDMResponse *DummyResponder::GetDNSDomainName(
     const RDMRequest *request) {
   return ResponderHelper::GetDNSDomainName(request,
                                            m_network_manager.get());
 }
 
-const RDMResponse *DummyResponder::GetDNSNameServer(
+RDMResponse *DummyResponder::GetDNSNameServer(
     const RDMRequest *request) {
   return ResponderHelper::GetDNSNameServer(request,
                                            m_network_manager.get());
 }
 
-const RDMResponse *DummyResponder::GetOlaCodeVersion(
+RDMResponse *DummyResponder::GetOlaCodeVersion(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, VERSION);
 }

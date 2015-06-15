@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * TCPTransport.h
  * Copyright (C) 2012 Simon Newton
@@ -38,6 +38,7 @@
 #include "ola/network/TCPSocket.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/Transport.h"
+#include "plugins/e131/e131/TransportHeader.h"
 
 namespace ola {
 namespace plugin {

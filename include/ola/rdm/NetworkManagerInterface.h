@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * NetworkManagerInterface.h
  * The glue between the ResponderHelper and the OLA network code.
@@ -64,6 +64,8 @@ class NetworkManagerInterface {
 
   /**
    * Get the IPv4 default route
+   * @param[out] if_index the index of the interface the machine's default
+   *   is on
    * @param[out] default_route the machine's default route as an IPV4Address
    *   object
    * @return true if we managed to fetch the default route, false otherwise
@@ -72,6 +74,7 @@ class NetworkManagerInterface {
    * IsWildcard().
    */
   virtual bool GetIPV4DefaultRoute(
+      int32_t *if_index,
       ola::network::IPV4Address *default_route) const = 0;
 
   /**

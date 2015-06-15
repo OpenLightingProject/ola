@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SelectServerThreadTest.cpp
  * Test fixture for the SelectServer class that ensures Execute works
@@ -33,17 +33,6 @@ using ola::io::SelectServer;
 using ola::network::UDPSocket;
 using ola::thread::ThreadId;
 
-#if defined(_WIN32) && defined(__GNUC__)
-bool operator==(const ptw32_handle_t &left, const ptw32_handle_t &right) {
-  return (left.p == right.p) && (left.x == right.x);
-}
-
-std::ostream& operator<<(std::ostream &stream, const ptw32_handle_t &handle) {
-  stream << handle.p;
-  return stream;
-}
-#endif
-
 class TestThread: public ola::thread::Thread {
  public:
     TestThread(SelectServer *ss,
@@ -60,7 +49,8 @@ class TestThread: public ola::thread::Thread {
     }
 
     void TestCallback() {
-      OLA_ASSERT_EQ(m_ss_thread_id, ola::thread::Thread::Self());
+      OLA_ASSERT_TRUE(
+          pthread_equal(m_ss_thread_id, ola::thread::Thread::Self()));
       m_callback_executed = true;
       m_ss->Terminate();
     }
@@ -81,27 +71,15 @@ class SelectServerThreadTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp();
-    void tearDown();
-    void testSameThreadCallback();
-    void testDifferentThreadCallback();
+  void testSameThreadCallback();
+  void testDifferentThreadCallback();
 
  private:
-    SelectServer m_ss;
+  SelectServer m_ss;
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SelectServerThreadTest);
-
-
-void SelectServerThreadTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-}
-
-
-void SelectServerThreadTest::tearDown() {
-}
-
 
 /**
  * Check that a callback from the SelectServer thread executes.

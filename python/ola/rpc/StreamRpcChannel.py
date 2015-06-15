@@ -1,4 +1,3 @@
-#  This program is free software; you can redistribute it and/or modify
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +10,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # StreamRpcChannel.py
 # Copyright (C) 2005 Simon Newton
@@ -23,8 +22,8 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import logging
 import struct
 from google.protobuf import service
-import Rpc_pb2
-from SimpleRpcController import SimpleRpcController
+from ola.rpc import Rpc_pb2
+from ola.rpc.SimpleRpcController import SimpleRpcController
 
 
 class OutstandingRequest(object):
@@ -229,7 +228,7 @@ class StreamRpcChannel(service.RpcChannel):
         data.append(chunk)
         size_left -= len(chunk)
 
-    return ''.join(data)
+    return b''.join(data)
 
   def _ProcessIncomingData(self):
     """Process the received data."""

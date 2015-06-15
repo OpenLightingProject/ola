@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131PDU.h
  * Interface for the E131PDU class
@@ -32,25 +32,40 @@ class DMPPDU;
 
 class E131PDU: public PDU {
  public:
-    E131PDU(unsigned int vector,
-            const E131Header &header,
-            const DMPPDU *dmp_pdu):
-      PDU(vector),
-      m_header(header),
-      m_dmp_pdu(dmp_pdu) {}
-    ~E131PDU() {}
+  E131PDU(unsigned int vector,
+          const E131Header &header,
+          const DMPPDU *dmp_pdu):
+    PDU(vector),
+    m_header(header),
+    m_dmp_pdu(dmp_pdu),
+    m_data(NULL),
+    m_data_size(0) {}
 
-    unsigned int HeaderSize() const;
-    unsigned int DataSize() const;
-    bool PackHeader(uint8_t *data, unsigned int *length) const;
-    bool PackData(uint8_t *data, unsigned int *length) const;
+  E131PDU(unsigned int vector,
+          const E131Header &header,
+          const uint8_t *data,
+          unsigned int data_size):
+    PDU(vector),
+    m_header(header),
+    m_dmp_pdu(NULL),
+    m_data(data),
+    m_data_size(data_size) {}
 
-    void PackHeader(ola::io::OutputStream *stream) const;
-    void PackData(ola::io::OutputStream *stream) const;
+  ~E131PDU() {}
+
+  unsigned int HeaderSize() const;
+  unsigned int DataSize() const;
+  bool PackHeader(uint8_t *data, unsigned int *length) const;
+  bool PackData(uint8_t *data, unsigned int *length) const;
+
+  void PackHeader(ola::io::OutputStream *stream) const;
+  void PackData(ola::io::OutputStream *stream) const;
 
  private:
-    E131Header m_header;
-    const DMPPDU *m_dmp_pdu;
+  E131Header m_header;
+  const DMPPDU *m_dmp_pdu;
+  const uint8_t *m_data;
+  const unsigned int m_data_size;
 };
 }  // namespace e131
 }  // namespace plugin

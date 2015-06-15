@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ActionQueue.h
  * Interface for the ActionQueue class.
@@ -53,7 +53,7 @@ class Action {
  */
 class ActionQueue {
  public:
-    ActionQueue(SingleUseCallback1<void, ActionQueue*> *on_complete):
+    explicit ActionQueue(SingleUseCallback1<void, ActionQueue*> *on_complete):
       m_on_complete(on_complete),
       m_action_index(-1),
       m_success(true) {

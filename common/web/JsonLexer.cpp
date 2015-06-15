@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonLexer.cpp
  * A Json Lexer.
@@ -30,7 +30,6 @@
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/StringUtils.h"
 #include "ola/web/Json.h"
 
 namespace ola {
@@ -65,6 +64,7 @@ static bool TrimWhitespace(const char **input) {
  * @param input A pointer to a pointer with the data. This should point to the
  * first character after the quote (") character.
  * @param str A string object to store the extracted string.
+ * @param parser the JsonParserInterface to pass tokens to.
  * @returns true if the string was extracted correctly, false otherwise.
  */
 static bool ParseString(const char **input, string* str,
@@ -195,6 +195,7 @@ static bool ParseNumber(const char **input, JsonParserInterface *parser) {
     switch (**input) {
       case '-':
         negative_exponent = true;
+        // fall through
       case '+':
         (*input)++;
         break;
@@ -270,7 +271,7 @@ static bool ParseArray(const char **input, JsonParserInterface *parser) {
 
     bool result = ParseTrimmedInput(input, parser);
     if (!result) {
-      OLA_INFO << "input failed";
+      OLA_INFO << "Invalid input";
       return false;
     }
 
@@ -426,7 +427,7 @@ bool ParseRaw(const char *input, JsonParserInterface *parser) {
   return !TrimWhitespace(&input);
 }
 
-bool JsonLexer::Parse(const std::string &input,
+bool JsonLexer::Parse(const string &input,
                       JsonParserInterface *parser) {
   // TODO(simon): Do we need to convert to unicode here? I think this may be
   // an issue on Windows. Consider mbstowcs.

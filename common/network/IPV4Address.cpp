@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IPV4Address.cpp
  * A IPV4 address
@@ -23,7 +23,7 @@
 #endif
 
 #ifdef HAVE_WINSOCK2_H
-#include <winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #ifndef in_addr_t
 #define in_addr_t uint32_t
 #endif
@@ -52,10 +52,25 @@ namespace network {
 
 using std::string;
 
+bool IPV4Address::operator<(const IPV4Address &other) const {
+  // Stored in network byte order, so convert to sort appropriately
+  return NetworkToHost(m_address) < NetworkToHost(other.m_address);
+}
+
+bool IPV4Address::operator>(const IPV4Address &other) const {
+  // Stored in network byte order, so convert to sort appropriately
+  return NetworkToHost(m_address) > NetworkToHost(other.m_address);
+}
+
 bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
   bool ok;
 // TODO(Peter): This currently allows some rather quirky values as per
 // inet_aton, we may want to restrict that in future to match IPV4Validator
+
+  if (address.empty()) {
+    // Don't bother trying to extract an address if we weren't given one
+    return false;
+  }
 
 #ifdef HAVE_INET_ATON
   ok = (1 == inet_aton(address.data(), addr));
@@ -75,29 +90,31 @@ bool IPV4Address::IsWildcard() const {
   return m_address == INADDR_ANY;
 }
 
-std::string IPV4Address::ToString() const {
+string IPV4Address::ToString() const {
   struct in_addr addr;
   addr.s_addr = m_address;
   return inet_ntoa(addr);
 }
 
-IPV4Address* IPV4Address::FromString(const std::string &address) {
+IPV4Address* IPV4Address::FromString(const string &address) {
   struct in_addr addr;
-  if (!IPV4StringToAddress(address, &addr))
+  if (!IPV4StringToAddress(address, &addr)) {
     return NULL;
+  }
 
   return new IPV4Address(addr.s_addr);
 }
 
-bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
+bool IPV4Address::FromString(const string &address, IPV4Address *target) {
   struct in_addr addr;
-  if (!IPV4StringToAddress(address, &addr))
+  if (!IPV4StringToAddress(address, &addr)) {
     return false;
+  }
   *target = IPV4Address(addr.s_addr);
   return true;
 }
 
-IPV4Address IPV4Address::FromStringOrDie(const std::string &address) {
+IPV4Address IPV4Address::FromStringOrDie(const string &address) {
   struct in_addr addr;
   assert(IPV4StringToAddress(address, &addr));
   return IPV4Address(addr.s_addr);

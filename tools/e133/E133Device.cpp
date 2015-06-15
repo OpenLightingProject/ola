@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133Device.cpp
  * Copyright (C) 2011 Simon Newton
@@ -56,6 +56,38 @@ using std::auto_ptr;
 using std::string;
 using std::vector;
 
+// TODO(simon): At some point move this to a common E1.33 library.
+ola::e133::E133StatusCode RDMStatusCodeToE133Status(
+    ola::rdm::RDMStatusCode status_code) {
+  switch (status_code) {
+    case ola::rdm::RDM_COMPLETED_OK:
+      return ola::e133::SC_E133_ACK;
+    case ola::rdm::RDM_WAS_BROADCAST:
+      return ola::e133::SC_E133_BROADCAST_COMPLETE;
+    case ola::rdm::RDM_FAILED_TO_SEND:
+    case ola::rdm::RDM_TIMEOUT:
+      return ola::e133::SC_E133_RDM_TIMEOUT;
+    case ola::rdm::RDM_UNKNOWN_UID:
+      return ola::e133::SC_E133_UNKNOWN_UID;
+    case ola::rdm::RDM_INVALID_RESPONSE:
+    case ola::rdm::RDM_CHECKSUM_INCORRECT:
+    case ola::rdm::RDM_TRANSACTION_MISMATCH:
+    case ola::rdm::RDM_SUB_DEVICE_MISMATCH:
+    case ola::rdm::RDM_SRC_UID_MISMATCH:
+    case ola::rdm::RDM_DEST_UID_MISMATCH:
+    case ola::rdm::RDM_WRONG_SUB_START_CODE:
+    case ola::rdm::RDM_PACKET_TOO_SHORT:
+    case ola::rdm::RDM_PACKET_LENGTH_MISMATCH:
+    case ola::rdm::RDM_PARAM_LENGTH_MISMATCH:
+    case ola::rdm::RDM_INVALID_COMMAND_CLASS:
+    case ola::rdm::RDM_COMMAND_CLASS_MISMATCH:
+    case ola::rdm::RDM_INVALID_RESPONSE_TYPE:
+    case ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED:
+    case ola::rdm::RDM_DUB_RESPONSE:
+      return ola::e133::SC_E133_RDM_INVALID_RESPONSE;
+  }
+  return ola::e133::SC_E133_RDM_INVALID_RESPONSE;
+}
 
 E133Device::E133Device(ola::io::SelectServerInterface *ss,
                        const ola::acn::CID &cid,
@@ -66,6 +98,7 @@ E133Device::E133Device(ola::io::SelectServerInterface *ss,
       m_message_builder(cid, "OLA Device"),
       m_endpoint_manager(endpoint_manager),
       m_root_endpoint(NULL),
+      m_root_rdm_device(NULL),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator) {
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
@@ -169,7 +202,7 @@ bool E133Device::CloseTCPConnection() {
 void E133Device::EndpointRequest(
     const ola::plugin::e131::TransportHeader *transport_header,
     const ola::plugin::e131::E133Header *e133_header,
-    const std::string &raw_request) {
+    const string &raw_request) {
   IPV4SocketAddress target = transport_header->Source();
   uint16_t endpoint_id = e133_header->Endpoint();
   OLA_INFO << "Got request for to endpoint " << endpoint_id
@@ -190,7 +223,7 @@ void E133Device::EndpointRequest(
   }
 
   // attempt to unpack as a request
-  const ola::rdm::RDMRequest *request = ola::rdm::RDMRequest::InflateFromData(
+  ola::rdm::RDMRequest *request = ola::rdm::RDMRequest::InflateFromData(
     reinterpret_cast<const uint8_t*>(raw_request.data()),
     raw_request.size());
 
@@ -221,53 +254,18 @@ void E133Device::EndpointRequestComplete(
     ola::network::IPV4SocketAddress target,
     uint32_t sequence_number,
     uint16_t endpoint_id,
-    ola::rdm::rdm_response_code response_code,
-    const ola::rdm::RDMResponse *response_ptr,
-    const std::vector<std::string>&) {
-  auto_ptr<const ola::rdm::RDMResponse> response(response_ptr);
-
-  if (response_code != ola::rdm::RDM_COMPLETED_OK) {
-    ola::e133::E133StatusCode status_code =
-      ola::e133::SC_E133_RDM_INVALID_RESPONSE;
-    string description = ola::rdm::ResponseCodeToString(response_code);
-    switch (response_code) {
-      case ola::rdm::RDM_COMPLETED_OK:
-        break;
-      case ola::rdm::RDM_WAS_BROADCAST:
-        status_code = ola::e133::SC_E133_BROADCAST_COMPLETE;
-        break;
-      case ola::rdm::RDM_FAILED_TO_SEND:
-      case ola::rdm::RDM_TIMEOUT:
-        status_code = ola::e133::SC_E133_RDM_TIMEOUT;
-        break;
-      case ola::rdm::RDM_UNKNOWN_UID:
-        status_code = ola::e133::SC_E133_UNKNOWN_UID;
-        break;
-      case ola::rdm::RDM_INVALID_RESPONSE:
-      case ola::rdm::RDM_CHECKSUM_INCORRECT:
-      case ola::rdm::RDM_TRANSACTION_MISMATCH:
-      case ola::rdm::RDM_SUB_DEVICE_MISMATCH:
-      case ola::rdm::RDM_SRC_UID_MISMATCH:
-      case ola::rdm::RDM_DEST_UID_MISMATCH:
-      case ola::rdm::RDM_WRONG_SUB_START_CODE:
-      case ola::rdm::RDM_PACKET_TOO_SHORT:
-      case ola::rdm::RDM_PACKET_LENGTH_MISMATCH:
-      case ola::rdm::RDM_PARAM_LENGTH_MISMATCH:
-      case ola::rdm::RDM_INVALID_COMMAND_CLASS:
-      case ola::rdm::RDM_COMMAND_CLASS_MISMATCH:
-      case ola::rdm::RDM_INVALID_RESPONSE_TYPE:
-      case ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED:
-      case ola::rdm::RDM_DUB_RESPONSE:
-        status_code = ola::e133::SC_E133_RDM_INVALID_RESPONSE;
-        break;
-    }
+    ola::rdm::RDMReply *reply) {
+  if (reply->StatusCode() != ola::rdm::RDM_COMPLETED_OK) {
+    string description = ola::rdm::ResponseCodeToString(reply->StatusCode());
+    ola::e133::E133StatusCode e133_status_code = RDMStatusCodeToE133Status(
+        reply->StatusCode());
     SendStatusMessage(target, sequence_number, endpoint_id,
-                      status_code, description);
+                      e133_status_code, description);
     return;
   }
 
   IOStack packet(m_message_builder.pool());
-  ola::rdm::RDMCommandSerializer::Write(*response.get(), &packet);
+  ola::rdm::RDMCommandSerializer::Write(*reply->Response(), &packet);
   RDMPDU::PrependPDU(&packet);
   m_message_builder.BuildUDPRootE133(
       &packet, ola::acn::VECTOR_FRAMING_RDMNET, sequence_number,

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SlotTest.cpp
  * Test fixture for the Slot class.
@@ -20,10 +20,9 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <ola/Logging.h>
+#include <ola/testing/TestUtils.h>
 #include <sstream>
 #include <string>
-
-#include "ola/testing/TestUtils.h"
 
 #include "tools/ola_trigger/Action.h"
 #include "tools/ola_trigger/MockAction.h"
@@ -145,13 +144,13 @@ void SlotTest::testActionMatching() {
       !slot.SetDefaultFallingAction(default_falling_action));
 
   slot.TakeAction(NULL, 10);
-  rising_action1->CheckForValue(__LINE__, 10);
+  rising_action1->CheckForValue(OLA_SOURCELINE(), 10);
   OLA_ASSERT(falling_action1->NoCalls());
   OLA_ASSERT(default_rising_action->NoCalls());
   OLA_ASSERT(default_falling_action->NoCalls());
 
   slot.TakeAction(NULL, 20);
-  rising_action1->CheckForValue(__LINE__, 20);
+  rising_action1->CheckForValue(OLA_SOURCELINE(), 20);
   OLA_ASSERT(falling_action1->NoCalls());
   OLA_ASSERT(default_rising_action->NoCalls());
   OLA_ASSERT(default_falling_action->NoCalls());
@@ -160,18 +159,18 @@ void SlotTest::testActionMatching() {
   OLA_ASSERT(rising_action1->NoCalls());
   OLA_ASSERT(falling_action1->NoCalls());
   OLA_ASSERT(default_rising_action->NoCalls());
-  default_falling_action->CheckForValue(__LINE__, 2);
+  default_falling_action->CheckForValue(OLA_SOURCELINE(), 2);
 
   slot.TakeAction(NULL, 9);
   OLA_ASSERT(rising_action1->NoCalls());
   OLA_ASSERT(falling_action1->NoCalls());
-  default_rising_action->CheckForValue(__LINE__, 9);
+  default_rising_action->CheckForValue(OLA_SOURCELINE(), 9);
   OLA_ASSERT(default_falling_action->NoCalls());
 
   slot.TakeAction(NULL, 21);
   OLA_ASSERT(rising_action1->NoCalls());
   OLA_ASSERT(falling_action1->NoCalls());
-  default_rising_action->CheckForValue(__LINE__, 21);
+  default_rising_action->CheckForValue(OLA_SOURCELINE(), 21);
   OLA_ASSERT(default_falling_action->NoCalls());
 
   // add another action
@@ -183,7 +182,7 @@ void SlotTest::testActionMatching() {
   slot.TakeAction(NULL, 30);
   OLA_ASSERT(rising_action1->NoCalls());
   OLA_ASSERT(falling_action1->NoCalls());
-  rising_action2->CheckForValue(__LINE__, 30);
+  rising_action2->CheckForValue(OLA_SOURCELINE(), 30);
   OLA_ASSERT(falling_action2->NoCalls());
   OLA_ASSERT(default_rising_action->NoCalls());
   OLA_ASSERT(default_falling_action->NoCalls());
@@ -191,7 +190,7 @@ void SlotTest::testActionMatching() {
   slot.TakeAction(NULL, 35);
   OLA_ASSERT(rising_action1->NoCalls());
   OLA_ASSERT(falling_action1->NoCalls());
-  rising_action2->CheckForValue(__LINE__, 35);
+  rising_action2->CheckForValue(OLA_SOURCELINE(), 35);
   OLA_ASSERT(falling_action2->NoCalls());
   OLA_ASSERT(default_rising_action->NoCalls());
   OLA_ASSERT(default_falling_action->NoCalls());
@@ -199,7 +198,7 @@ void SlotTest::testActionMatching() {
   slot.TakeAction(NULL, 40);
   OLA_ASSERT(rising_action1->NoCalls());
   OLA_ASSERT(falling_action1->NoCalls());
-  rising_action2->CheckForValue(__LINE__, 40);
+  rising_action2->CheckForValue(OLA_SOURCELINE(), 40);
   OLA_ASSERT(falling_action2->NoCalls());
   OLA_ASSERT(default_rising_action->NoCalls());
   OLA_ASSERT(default_falling_action->NoCalls());
@@ -219,7 +218,7 @@ void SlotTest::testActionMatching() {
   OLA_ASSERT(rising_action2->NoCalls());
   OLA_ASSERT(falling_action2->NoCalls());
   OLA_ASSERT(rising_action3->NoCalls());
-  falling_action3->CheckForValue(__LINE__, 28);
+  falling_action3->CheckForValue(OLA_SOURCELINE(), 28);
   OLA_ASSERT(default_rising_action->NoCalls());
   OLA_ASSERT(default_falling_action->NoCalls());
 
@@ -231,14 +230,14 @@ void SlotTest::testActionMatching() {
   OLA_ASSERT(rising_action3->NoCalls());
   OLA_ASSERT(falling_action3->NoCalls());
   OLA_ASSERT(default_rising_action->NoCalls());
-  default_falling_action->CheckForValue(__LINE__, 25);
+  default_falling_action->CheckForValue(OLA_SOURCELINE(), 25);
 
   slot.TakeAction(NULL, 27);
   OLA_ASSERT(rising_action1->NoCalls());
   OLA_ASSERT(falling_action1->NoCalls());
   OLA_ASSERT(rising_action2->NoCalls());
   OLA_ASSERT(falling_action2->NoCalls());
-  rising_action3->CheckForValue(__LINE__, 27);
+  rising_action3->CheckForValue(OLA_SOURCELINE(), 27);
   OLA_ASSERT(falling_action3->NoCalls());
   OLA_ASSERT(default_rising_action->NoCalls());
   OLA_ASSERT(default_falling_action->NoCalls());
@@ -252,7 +251,7 @@ void SlotTest::testActionMatching() {
   OLA_ASSERT(rising_action3->NoCalls());
   OLA_ASSERT(falling_action3->NoCalls());
   OLA_ASSERT(default_rising_action->NoCalls());
-  default_falling_action->CheckForValue(__LINE__, 22);
+  default_falling_action->CheckForValue(OLA_SOURCELINE(), 22);
 
   slot.TakeAction(NULL, 28);
   OLA_ASSERT(rising_action1->NoCalls());
@@ -261,7 +260,7 @@ void SlotTest::testActionMatching() {
   OLA_ASSERT(falling_action2->NoCalls());
   OLA_ASSERT(rising_action3->NoCalls());
   OLA_ASSERT(falling_action3->NoCalls());
-  default_rising_action->CheckForValue(__LINE__, 28);
+  default_rising_action->CheckForValue(OLA_SOURCELINE(), 28);
   OLA_ASSERT(default_falling_action->NoCalls());
 }
 
@@ -280,13 +279,13 @@ void SlotTest::testDefaultAction() {
 
   // signal a rising edge
   slot.TakeAction(NULL, 100);
-  default_rising_action->CheckForValue(__LINE__, 100);
+  default_rising_action->CheckForValue(OLA_SOURCELINE(), 100);
   OLA_ASSERT(default_falling_action->NoCalls());
 
   // signal a falling edge
   slot.TakeAction(NULL, 99);
   OLA_ASSERT(default_rising_action->NoCalls());
-  default_falling_action->CheckForValue(__LINE__, 99);
+  default_falling_action->CheckForValue(OLA_SOURCELINE(), 99);
 
   // now try to add another default one, ref the existing actions otherwise
   // we'll delete them
@@ -303,7 +302,7 @@ void SlotTest::testDefaultAction() {
   slot.TakeAction(NULL, 100);
   OLA_ASSERT(default_rising_action->NoCalls());
   OLA_ASSERT(default_falling_action->NoCalls());
-  default_rising_action2->CheckForValue(__LINE__, 100);
+  default_rising_action2->CheckForValue(OLA_SOURCELINE(), 100);
   OLA_ASSERT(default_falling_action2->NoCalls());
 
   // signal a falling edge
@@ -311,7 +310,7 @@ void SlotTest::testDefaultAction() {
   OLA_ASSERT(default_rising_action->NoCalls());
   OLA_ASSERT(default_falling_action->NoCalls());
   OLA_ASSERT(default_rising_action2->NoCalls());
-  default_falling_action2->CheckForValue(__LINE__, 99);
+  default_falling_action2->CheckForValue(OLA_SOURCELINE(), 99);
 
   default_rising_action->DeRef();
   default_falling_action->DeRef();

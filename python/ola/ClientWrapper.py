@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # ClientWrapper.py
 # Copyright (C) 2005 Simon Newton
@@ -27,11 +27,10 @@ import heapq
 import logging
 import os
 import select
-import socket
 import termios
 import threading
 import traceback
-from ola.OlaClient import OLADNotRunningException, OlaClient, Universe
+from ola.OlaClient import OlaClient
 
 
 class _Event(object):
@@ -43,7 +42,7 @@ class _Event(object):
   """
   def __init__(self, time_ms, callback):
     self._run_at = (datetime.datetime.now() +
-                    datetime.timedelta(milliseconds = time_ms))
+                    datetime.timedelta(milliseconds=time_ms))
     self._callback = callback
 
   def __cmp__(self, other):
@@ -56,8 +55,8 @@ class _Event(object):
       The number of seconds (as a float) before this event fires.
     """
     time_delta = self._run_at - now
-    seconds =  time_delta.seconds + time_delta.days * 24 * 3600
-    seconds += time_delta.microseconds / 10.0**6
+    seconds = time_delta.seconds + time_delta.days * 24 * 3600
+    seconds += time_delta.microseconds / 10.0 ** 6
     return seconds
 
   def HasExpired(self, now):
@@ -137,7 +136,7 @@ class SelectServer(object):
     Args:
       fd: the descriptor to remove
     """
-    if  fd in self._read_descriptors:
+    if fd in self._read_descriptors:
       del self._read_descriptors[fd]
 
   def AddWriteDescriptor(self, fd, callback):
@@ -155,7 +154,7 @@ class SelectServer(object):
     Args:
       fd: the descriptor to remove
     """
-    if  fd in self._write_descriptors:
+    if fd in self._write_descriptors:
       del self._write_descriptors[fd]
 
   def AddErrorDescriptor(self, fd, callback):
@@ -228,7 +227,7 @@ class SelectServer(object):
 
   def _CheckDescriptors(self, ready_set, all_descriptors):
     runnables = []
-    for fd, runnable in all_descriptors.iteritems():
+    for fd, runnable in all_descriptors.items():
       if fd in ready_set:
         runnables.append(runnable)
     for runnable in runnables:
@@ -246,7 +245,7 @@ class SelectServer(object):
     buf_ = array.array('i', [0])
     if fcntl.ioctl(self._local_socket[0], termios.FIONREAD, buf_, 1) == -1:
       return
-    b = os.read(self._local_socket[0], buf_[0])
+    os.read(self._local_socket[0], buf_[0])
 
     self._function_list_lock.acquire()
     functions = list(self._functions)

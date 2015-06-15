@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOQueueTest.cpp
  * Test fixture for the IOQueue class.
@@ -31,7 +31,6 @@
 using ola::io::IOQueue;
 using ola::io::IOVec;
 using ola::io::MemoryBlockPool;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;
 
@@ -70,7 +69,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IOQueueTest);
 
 
 void IOQueueTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_buffer.reset(new IOQueue());
 }
 
@@ -190,7 +188,7 @@ void IOQueueTest::testPop() {
   queue.Write(data1, 4);
   OLA_ASSERT_EQ(4u, queue.Size());
   unsigned int output_size = queue.Peek(output_data, 4);
-  ASSERT_DATA_EQUALS(__LINE__, data1, 4, output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, 4, output_data, output_size);
   queue.Pop(4);
   OLA_ASSERT_TRUE(queue.Empty());
 
@@ -198,7 +196,7 @@ void IOQueueTest::testPop() {
   queue.Write(data1 + 4, 4);
   OLA_ASSERT_EQ(4u, queue.Size());
   output_size = queue.Peek(output_data, 4);
-  ASSERT_DATA_EQUALS(__LINE__, data1 + 4, 4, output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1 + 4, 4, output_data, output_size);
   queue.Pop(4);
   OLA_ASSERT_TRUE(queue.Empty());
 
@@ -221,18 +219,18 @@ void IOQueueTest::testPeek() {
 
   // peek at the first four bytes
   unsigned int output_size = m_buffer->Peek(output_data, 4);
-  ASSERT_DATA_EQUALS(__LINE__, data1, 4, output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, 4, output_data, output_size);
   OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // peek at the first 9 bytes
   output_size = m_buffer->Peek(output_data, 9);
-  ASSERT_DATA_EQUALS(__LINE__, data1, 9, output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, 9, output_data, output_size);
   OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // peek at more bytes that exist in the buffer
   output_size = m_buffer->Peek(output_data, DATA_SIZE);
   OLA_ASSERT_EQ(9u, output_size);
-  ASSERT_DATA_EQUALS(__LINE__, data1, sizeof(data1), output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, sizeof(data1), output_data, output_size);
   OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // Now try a buffer with smaller blocks
@@ -243,32 +241,32 @@ void IOQueueTest::testPeek() {
 
   // peek at he same amount as the first block size
   output_size = queue.Peek(output_data, 4);
-  ASSERT_DATA_EQUALS(__LINE__, data1, 4, output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, 4, output_data, output_size);
   OLA_ASSERT_EQ(9u, queue.Size());
   OLA_ASSERT_FALSE(queue.Empty());
 
   // peek at data from more than one block
   output_size = queue.Peek(output_data, 6);
-  ASSERT_DATA_EQUALS(__LINE__, data1, 6, output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, 6, output_data, output_size);
   OLA_ASSERT_EQ(9u, queue.Size());
   OLA_ASSERT_FALSE(queue.Empty());
 
   // peek at data on the two block boundry
   output_size = queue.Peek(output_data, 8);
-  ASSERT_DATA_EQUALS(__LINE__, data1, 8, output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, 8, output_data, output_size);
   OLA_ASSERT_EQ(9u, queue.Size());
   OLA_ASSERT_FALSE(queue.Empty());
 
   // peek at all the data
   output_size = queue.Peek(output_data, 9);
-  ASSERT_DATA_EQUALS(__LINE__, data1, 9, output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, 9, output_data, output_size);
   OLA_ASSERT_EQ(9u, queue.Size());
   OLA_ASSERT_FALSE(queue.Empty());
 
   // peek at more data than what exists
   output_size = queue.Peek(output_data, DATA_SIZE);
   OLA_ASSERT_EQ(9u, output_size);
-  ASSERT_DATA_EQUALS(__LINE__, data1, 9, output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, 9, output_data, output_size);
   OLA_ASSERT_EQ(9u, queue.Size());
   OLA_ASSERT_FALSE(queue.Empty());
 
@@ -337,7 +335,7 @@ void IOQueueTest::testStringRead() {
   queue.Write(data1, sizeof(data1));
   OLA_ASSERT_EQ(9u, queue.Size());
 
-  std::string output;
+  string output;
   OLA_ASSERT_EQ(9u, queue.Read(&output, 9u));
   OLA_ASSERT_EQ(string("abcd1234 "), output);
 }

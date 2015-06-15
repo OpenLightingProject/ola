@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Version.cpp
  * Provides version information for all of OLA.
@@ -40,7 +40,7 @@ unsigned int Version::GetRevision() {
   return OLA_VERSION_REVISION;
 }
 
-std::string Version::GetVersion() {
+string Version::GetVersion() {
   std::ostringstream str;
   str << GetMajor() << "." << GetMinor() << "." << GetRevision();
   return str.str();

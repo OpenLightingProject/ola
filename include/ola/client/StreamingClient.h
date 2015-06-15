@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * StreamingClient.h
  * Interface to the Streaming Client class.
@@ -25,7 +25,7 @@
 #ifndef INCLUDE_OLA_CLIENT_STREAMINGCLIENT_H_
 #define INCLUDE_OLA_CLIENT_STREAMINGCLIENT_H_
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/base/Macro.h>
 #include <ola/dmx/SourcePriorities.h>
@@ -35,9 +35,46 @@ namespace ola {
 namespace io { class SelectServer; }
 namespace network { class TCPSocket; }
 namespace proto { class OlaServerService_Stub; }
-namespace rpc { class RpcChannel; }
+namespace rpc {
+class RpcChannel;
+class RpcSession;
+}
 
 namespace client {
+
+/**
+ * @class StreamingClientInterface ola/client/StreamingClient.h
+ * @brief The interface for the StreamingClient class.
+ */
+class StreamingClientInterface {
+ public:
+  /**
+   * The arguments for the SendDmx method
+   */
+  class SendArgs {
+   public:
+    /**
+     * @brief the priority of the data.
+     * This should be between ola::dmx::SOURCE_PRIORITY_MIN and
+     * ola::dmx::SOURCE_PRIORITY_MAX.
+     */
+    uint8_t priority;
+
+    SendArgs() : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {}
+  };
+
+  virtual ~StreamingClientInterface() {}
+
+  virtual bool Setup() = 0;
+
+  virtual void Stop() = 0;
+
+  virtual bool SendDmx(unsigned int universe, const DmxBuffer &data) = 0;
+
+  virtual bool SendDMX(unsigned int universe,
+                       const DmxBuffer &data,
+                       const SendArgs &args) = 0;
+};
 
 /**
  * @class StreamingClient ola/client/StreamingClient.h
@@ -49,7 +86,7 @@ namespace client {
  *
  * @snippet streaming_client.cpp Tutorial Example
  */
-class StreamingClient {
+class StreamingClient : public StreamingClientInterface {
  public:
   /**
    * Controls the options for the StreamingClient class.
@@ -72,21 +109,6 @@ class StreamingClient {
      * The RPC port olad is listening on.
      */
     uint16_t server_port;
-  };
-
-  /**
-   * The arguments for the SendDmx method
-   */
-  class SendArgs {
-   public:
-    /**
-     * @brief the priority of the data.
-     * This should be between ola::dmx::SOURCE_PRIORITY_MIN and
-     * ola::dmx::SOURCE_PRIORITY_MAX.
-     */
-    uint8_t priority;
-
-    SendArgs() : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT) {}
   };
 
   /**
@@ -142,7 +164,7 @@ class StreamingClient {
                const DmxBuffer &data,
                const SendArgs &args);
 
-  void ChannelClosed();
+  void ChannelClosed(ola::rpc::RpcSession *session);
 
  private:
   bool m_auto_start;

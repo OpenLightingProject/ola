@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # SimpleRpcControllerTest.py
 # Copyright (C) 2005 Simon Newton
@@ -35,7 +35,7 @@ class SimpleRpcControllerTest(unittest.TestCase):
     controller = SimpleRpcController()
     self.assertFalse(controller.Failed())
     self.assertFalse(controller.IsCanceled())
-    self.assertEquals(None, controller.ErrorText())
+    self.assertEqual(None, controller.ErrorText())
     self.assertFalse(self.callback_run)
 
     # cancel
@@ -43,26 +43,26 @@ class SimpleRpcControllerTest(unittest.TestCase):
     controller.StartCancel()
     self.assertFalse(controller.Failed())
     self.assertFalse(not controller.IsCanceled())
-    self.assertEquals(None, controller.ErrorText())
+    self.assertEqual(None, controller.ErrorText())
     self.assertFalse(not self.callback_run)
 
     self.callback_run = False
     controller.Reset()
     self.assertFalse(controller.Failed())
     self.assertFalse(controller.IsCanceled())
-    self.assertEquals(None, controller.ErrorText())
+    self.assertEqual(None, controller.ErrorText())
 
     # fail
     failure_string = 'foo'
     controller.SetFailed(failure_string)
     self.assertFalse(not controller.Failed())
     self.assertFalse(controller.IsCanceled())
-    self.assertEquals(failure_string, controller.ErrorText())
+    self.assertEqual(failure_string, controller.ErrorText())
 
     controller.Reset()
     self.assertFalse(controller.Failed())
     self.assertFalse(controller.IsCanceled())
-    self.assertEquals(None, controller.ErrorText())
+    self.assertEqual(None, controller.ErrorText())
     self.assertFalse(self.callback_run)
 
 if __name__ == '__main__':

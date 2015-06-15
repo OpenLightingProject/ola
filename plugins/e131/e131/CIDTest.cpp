@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * CIDTest.cpp
  * Test fixture for the CID class
@@ -31,7 +31,6 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::acn::CID;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::string;
 
 class CIDTest: public CppUnit::TestFixture {
@@ -140,6 +139,5 @@ void CIDTest::testToOutputBuffer() {
   uint8_t cid_data[size];
   OLA_ASSERT_EQ(size, output.Read(cid_data, size));
 
-  ASSERT_DATA_EQUALS(__LINE__, TEST_DATA, sizeof(TEST_DATA),
-                     cid_data, size);
+  OLA_ASSERT_DATA_EQUALS(TEST_DATA, sizeof(TEST_DATA), cid_data, size);
 }

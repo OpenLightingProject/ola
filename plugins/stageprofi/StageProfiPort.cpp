@@ -11,30 +11,39 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * StageProfiPort.cpp
  * The StageProfi plugin for ola
  * Copyright (C) 2006 Simon Newton
  */
 
-#include <string.h>
 #include "plugins/stageprofi/StageProfiPort.h"
+
+#include <string.h>
+#include <string>
+#include "ola/base/Macro.h"
 #include "plugins/stageprofi/StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace stageprofi {
 
-/*
- * Write operation
- * @param the buffer to write
- * @return true on success, false on failure
- */
+StageProfiOutputPort::StageProfiOutputPort(StageProfiDevice *parent,
+                                           unsigned int id,
+                                           StageProfiWidget *widget)
+    : BasicOutputPort(parent, id),
+      m_widget(widget) {
+}
+
 bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                    uint8_t priority) {
+                                    OLA_UNUSED uint8_t priority) {
   return m_widget->SendDmx(buffer);
-  (void) priority;
+}
+
+std::string StageProfiOutputPort::Description() const {
+  return m_widget->GetPath();
 }
 }  // namespace stageprofi
 }  // namespace plugin

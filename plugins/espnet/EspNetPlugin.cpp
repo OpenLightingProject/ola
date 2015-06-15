@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *
  * EspNetPlugin.cpp
@@ -44,8 +44,9 @@ bool EspNetPlugin::StartHook() {
                               m_preferences,
                               m_plugin_adaptor);
 
-  if (!m_device)
+  if (!m_device) {
     return false;
+  }
 
   if (!m_device->Start()) {
     delete m_device;
@@ -102,8 +103,9 @@ string EspNetPlugin::Description() const {
  * Set the default preferences.
  */
 bool EspNetPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
   save |= m_preferences->SetDefaultValue(EspNetDevice::IP_KEY,
@@ -112,11 +114,13 @@ bool EspNetPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(EspNetDevice::NODE_NAME_KEY,
                                          StringValidator(), ESPNET_NODE_NAME);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
-  if (m_preferences->GetValue("name").empty())
+  if (m_preferences->GetValue("name").empty()) {
     return false;
+  }
 
   return true;
 }

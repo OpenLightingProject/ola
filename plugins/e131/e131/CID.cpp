@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * CID.cpp
  * CID class, passes everything through to CIDImpl.
@@ -24,6 +24,8 @@
 
 namespace ola {
 namespace acn {
+
+using std::string;
 
 CID::CID() : m_impl(new CIDImpl()) {}
 
@@ -56,7 +58,11 @@ bool CID::operator!=(const CID& c1) const {
   return !(*this == c1);
 }
 
-std::string CID::ToString() const {
+bool CID::operator<(const CID& c1) const {
+  return *m_impl < *c1.m_impl;
+}
+
+string CID::ToString() const {
   return m_impl->ToString();
 }
 
@@ -75,7 +81,7 @@ CID CID::FromData(const uint8_t *data) {
 }
 
 
-CID CID::FromString(const std::string &cid) {
+CID CID::FromString(const string &cid) {
   return CID(CIDImpl::FromString(cid));
 }
 }  // namespace acn

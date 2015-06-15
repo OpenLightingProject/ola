@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Mutex.cpp
  * Mutex and ConditionVariable
@@ -70,7 +70,8 @@ void Mutex::Unlock() {
  * Create a new MutexLocker and lock the mutex.
  */
 MutexLocker::MutexLocker(Mutex *mutex)
-    : m_mutex(mutex) {
+    : m_mutex(mutex),
+      m_requires_unlock(true) {
   m_mutex->Lock();
 }
 
@@ -78,9 +79,15 @@ MutexLocker::MutexLocker(Mutex *mutex)
  * Destroy this MutexLocker and unlock the mutex
  */
 MutexLocker::~MutexLocker() {
-  m_mutex->Unlock();
+  Release();
 }
 
+void MutexLocker::Release() {
+  if (m_requires_unlock) {
+    m_mutex->Unlock();
+    m_requires_unlock = false;
+  }
+}
 
 /**
  * New ConditionVariable

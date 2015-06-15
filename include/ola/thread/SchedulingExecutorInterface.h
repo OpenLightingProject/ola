@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SchedulingExecutorInterface.h
  * An interface that implements both the Scheduling & Executor methods.
@@ -27,10 +27,13 @@
 namespace ola {
 namespace thread {
 
+/**
+ * @brief Combines the ExecutorInterface and the SchedulerInterface.
+ */
 class SchedulingExecutorInterface: public ExecutorInterface,
                                    public SchedulerInterface {
  public:
-    virtual ~SchedulingExecutorInterface() {}
+  virtual ~SchedulingExecutorInterface() {}
 };
 }  // namespace thread
 }  // namespace ola

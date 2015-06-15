@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PDUTestCommon.cpp
  * Provides a simple PDU class for testing
@@ -50,16 +50,14 @@ class FakePDU: public PDU {
       return true;
     }
 
-    bool PackHeader(uint8_t *data, unsigned int *length) const {
+    bool PackHeader(OLA_UNUSED uint8_t *data,
+                    OLA_UNUSED unsigned int *length) const {
       return true;
-      (void) data;
-      (void) length;
     }
 
-    bool PackData(uint8_t *data, unsigned int *length) const {
+    bool PackData(OLA_UNUSED uint8_t *data,
+                  OLA_UNUSED unsigned int *length) const {
       return true;
-      (void) data;
-      (void) length;
     }
 
     void Write(ola::io::OutputStream *stream) const {
@@ -150,7 +148,8 @@ class MockPDU: public PDU {
  */
 class MockInflator: public BaseInflator {
  public:
-    MockInflator(const ola::acn::CID &cid, Callback0<void> *on_recv = NULL):
+    explicit MockInflator(const ola::acn::CID &cid,
+                          Callback0<void> *on_recv = NULL):
       BaseInflator(),
       m_cid(cid),
       m_on_recv(on_recv) {}

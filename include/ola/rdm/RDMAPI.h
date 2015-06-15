@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMAPI.h
  * Provide a generic RDM API that can use different implementations.
@@ -41,6 +41,7 @@
 
 #include <stdint.h>
 #include <ola/Callback.h>
+#include <ola/base/Macro.h>
 #include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/UID.h>
@@ -83,6 +84,7 @@ typedef struct {
 /*
  * Represents a DeviceDescriptor reply
  */
+PACK(
 struct device_info_s {
   uint8_t protocol_version_high;
   uint8_t protocol_version_low;
@@ -95,7 +97,7 @@ struct device_info_s {
   uint16_t dmx_start_address;
   uint16_t sub_device_count;
   uint8_t sensor_count;
-} __attribute__((packed));
+});
 
 typedef struct device_info_s DeviceDescriptor;
 
@@ -103,21 +105,23 @@ typedef struct device_info_s DeviceDescriptor;
 /*
  * Information about a DMX slot
  */
+PACK(
 struct slot_info_s {
   uint16_t slot_offset;
   uint8_t slot_type;
   uint16_t slot_label;
-} __attribute__((packed));
+});
 
 typedef struct slot_info_s SlotDescriptor;
 
 /*
  * The default values for a slot
  */
+PACK(
 struct slot_default_s {
   uint16_t slot_offset;
   uint8_t default_value;
-} __attribute__((packed));
+});
 
 typedef struct slot_default_s SlotDefault;
 
@@ -142,19 +146,21 @@ typedef struct {
 /*
  * Sensor values
  */
+PACK(
 struct sensor_values_s {
   uint8_t sensor_number;
   int16_t present_value;
   int16_t lowest;
   int16_t highest;
   int16_t recorded;
-} __attribute__((packed));
+});
 
 typedef struct sensor_values_s SensorValueDescriptor;
 
 /*
  * Clock structure
  */
+PACK(
 struct clock_value_s {
   uint16_t year;
   uint8_t month;
@@ -162,7 +168,7 @@ struct clock_value_s {
   uint8_t hour;
   uint8_t minute;
   uint8_t second;
-} __attribute__((packed));
+});
 
 typedef struct clock_value_s ClockValue;
 

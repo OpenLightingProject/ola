@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * NetworkManager.cpp
  * Copyright (C) 2013 Peter Newman
@@ -38,16 +38,14 @@ const InterfacePicker *NetworkManager::GetInterfacePicker() const {
 }
 
 rdm_dhcp_status NetworkManager::GetDHCPStatus(const Interface&) const {
-  // It's a challenge to determine DHCP state, so we already return
+  // It's a challenge to determine DHCP state, so we always return
   // DHCP_STATUS_UNKNOWN.
   return DHCP_STATUS_UNKNOWN;
 }
 
-bool NetworkManager::GetIPV4DefaultRoute(
-    IPV4Address *default_route) const {
-  // if_index is ignored for now.
-  int32_t if_index;
-  return ola::network::DefaultRoute(&if_index, default_route);
+bool NetworkManager::GetIPV4DefaultRoute(int32_t *if_index,
+                                         IPV4Address *default_route) const {
+  return ola::network::DefaultRoute(if_index, default_route);
 }
 
 const string NetworkManager::GetHostname() const {

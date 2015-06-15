@@ -1,17 +1,17 @@
 /**
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * The class the manages the server stats table.
  * Copyright (C) 2010 Simon Newton
@@ -74,6 +74,7 @@ ola.common.ServerStats.prototype.updateServerInfo_ = function(e) {
   goog.dom.$('server_ip').innerHTML = e.server_info['ip'];
   goog.dom.$('server_broadcast').innerHTML = e.server_info['broadcast'];
   goog.dom.$('server_mac').innerHTML = e.server_info['hw_address'];
+  goog.dom.$('server_instance_name').innerHTML = e.server_info['instance_name'];
   goog.dom.$('server_version').innerHTML = e.server_info['version'];
   goog.dom.$('server_uptime').innerHTML = e.server_info['up_since'];
 

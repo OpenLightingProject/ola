@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMControllerAdaptor.h
  * Allows an RDMControllerInterface to be used as an
@@ -50,7 +50,7 @@ class DiscoverableRDMControllerAdaptor
         : m_uid(uid),
           m_interface(interface) {
     }
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete) {
+    void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete) {
       m_interface->SendRDMRequest(request, on_complete);
     }
 

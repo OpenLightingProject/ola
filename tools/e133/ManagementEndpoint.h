@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ManagementEndpoint.h
  * Copyright (C) 2012 Simon Newton
@@ -43,7 +43,7 @@ class ManagementEndpoint: public E133Endpoint {
                        class TCPConnectionStats *tcp_stats);
     ~ManagementEndpoint() {}
 
-    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
+    void SendRDMRequest(RDMRequest *request, RDMCallback *on_complete);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -72,20 +72,20 @@ class ManagementEndpoint: public E133Endpoint {
     DiscoverableRDMControllerInterface *m_controller;
 
     // RDM PID handlers.
-    const RDMResponse *GetEndpointList(const RDMRequest *request);
-    const RDMResponse *GetEndpointListChange(const RDMRequest *request);
-    const RDMResponse *GetEndpointIdentify(const RDMRequest *request);
-    const RDMResponse *SetEndpointIdentify(const RDMRequest *request);
-    const RDMResponse *GetEndpointToUniverse(const RDMRequest *request);
-    const RDMResponse *SetEndpointToUniverse(const RDMRequest *request);
-    const RDMResponse *GetEndpointMode(const RDMRequest *request);
-    const RDMResponse *SetEndpointMode(const RDMRequest *request);
-    const RDMResponse *GetEndpointLabel(const RDMRequest *request);
-    const RDMResponse *SetEndpointLabel(const RDMRequest *request);
-    const RDMResponse *GetEndpointDeviceListChange(const RDMRequest *request);
-    const RDMResponse *GetEndpointDevices(const RDMRequest *request);
-    const RDMResponse *GetTCPCommsStatus(const RDMRequest *request);
-    const RDMResponse *SetTCPCommsStatus(const RDMRequest *request);
+    RDMResponse *GetEndpointList(const RDMRequest *request);
+    RDMResponse *GetEndpointListChange(const RDMRequest *request);
+    RDMResponse *GetEndpointIdentify(const RDMRequest *request);
+    RDMResponse *SetEndpointIdentify(const RDMRequest *request);
+    RDMResponse *GetEndpointToUniverse(const RDMRequest *request);
+    RDMResponse *SetEndpointToUniverse(const RDMRequest *request);
+    RDMResponse *GetEndpointMode(const RDMRequest *request);
+    RDMResponse *SetEndpointMode(const RDMRequest *request);
+    RDMResponse *GetEndpointLabel(const RDMRequest *request);
+    RDMResponse *SetEndpointLabel(const RDMRequest *request);
+    RDMResponse *GetEndpointDeviceListChange(const RDMRequest *request);
+    RDMResponse *GetEndpointDevices(const RDMRequest *request);
+    RDMResponse *GetTCPCommsStatus(const RDMRequest *request);
+    RDMResponse *SetTCPCommsStatus(const RDMRequest *request);
 
     void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                            const ola::rdm::UIDSet &uids);

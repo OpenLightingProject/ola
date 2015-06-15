@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Json.h
  * A simple set of classes for generating JSON.
@@ -659,7 +659,7 @@ class JsonDouble: public JsonNumber {
    *   exponent: -3
    */
   struct DoubleRepresentation {
-    /** The sign of the double, true is negative, false is postive */
+    /** The sign of the double, true is negative, false is positive */
     bool is_negative;
     /** The number to the left of the decimal point */
     uint64_t full;
@@ -813,7 +813,7 @@ class JsonNull: public JsonLeafValue {
   /**
    * @brief Create a new JsonNull
    */
-  explicit JsonNull() {}
+  JsonNull() {}
 
   void Accept(JsonValueVisitorInterface *visitor) { visitor->Visit(this); }
   void Accept(JsonValueConstVisitorInterface *visitor) const {

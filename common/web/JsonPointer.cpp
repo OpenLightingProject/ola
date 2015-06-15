@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonPointer.cpp
  * An implementation of RFC 6901.
@@ -37,7 +37,7 @@ JsonPointer::JsonPointer(const JsonPointer &other)
       m_tokens(other.m_tokens) {
 }
 
-JsonPointer::JsonPointer(const std::string &path)
+JsonPointer::JsonPointer(const string &path)
     : m_is_valid(true) {
   if (path.empty()) {
     return;
@@ -49,7 +49,7 @@ JsonPointer::JsonPointer(const std::string &path)
   }
 
   Tokens escaped_tokens;
-  StringSplit(path.substr(1), escaped_tokens, "/");
+  StringSplit(path.substr(1), &escaped_tokens, "/");
 
   Tokens::const_iterator iter = escaped_tokens.begin();
   for (; iter != escaped_tokens.end(); ++iter) {

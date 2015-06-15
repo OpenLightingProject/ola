@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * AvahiDiscoveryAgent.cpp
  * The Avahi implementation of DiscoveryAgentInterface.
@@ -110,7 +110,7 @@ AvahiDiscoveryAgent::ServiceEntry::ServiceEntry(
       params(NULL),
       m_type_spec(type_spec) {
   vector<string> tokens;
-  StringSplit(type_spec, tokens, ",");
+  StringSplit(type_spec, &tokens, ",");
   m_type = tokens[0];
   if (tokens.size() > 1) {
     copy(tokens.begin() + 1, tokens.end(), std::back_inserter(m_sub_types));

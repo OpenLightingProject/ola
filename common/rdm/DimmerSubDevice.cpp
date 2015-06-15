@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DimmerSubDevice.cpp
  * Copyright (C) 2013 Simon Newton
@@ -26,10 +26,9 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
-#include "ola/Clock.h"
-#include "ola/Logging.h"
 #include "ola/base/Array.h"
+#include "ola/Constants.h"
+#include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
@@ -111,13 +110,13 @@ DimmerSubDevice::DimmerSubDevice(const UID &uid,
 /*
  * Handle an RDM Request
  */
-void DimmerSubDevice::SendRDMRequest(const RDMRequest *request,
+void DimmerSubDevice::SendRDMRequest(RDMRequest *request,
                                      RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, m_sub_device_number,
                                        request, callback);
 }
 
-const RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
+RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DIMMER_MODEL,
       PRODUCT_CATEGORY_DIMMER, 1,
@@ -135,68 +134,68 @@ bool DimmerSubDevice::SetDmxStartAddress(uint16_t start_address) {
   return true;
 }
 
-const RDMResponse *DimmerSubDevice::GetProductDetailList(
+RDMResponse *DimmerSubDevice::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
-    std::vector<rdm_product_detail> (1, PRODUCT_DETAIL_TEST));
+    vector<rdm_product_detail> (1, PRODUCT_DETAIL_TEST));
 }
 
-const RDMResponse *DimmerSubDevice::GetPersonality(
+RDMResponse *DimmerSubDevice::GetPersonality(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonality(request, &m_personality_manager);
 }
 
-const RDMResponse *DimmerSubDevice::SetPersonality(
+RDMResponse *DimmerSubDevice::SetPersonality(
     const RDMRequest *request) {
   return ResponderHelper::SetPersonality(request, &m_personality_manager,
                                          m_start_address);
 }
 
-const RDMResponse *DimmerSubDevice::GetPersonalityDescription(
+RDMResponse *DimmerSubDevice::GetPersonalityDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, &m_personality_manager);
 }
 
-const RDMResponse *DimmerSubDevice::GetDmxStartAddress(
+RDMResponse *DimmerSubDevice::GetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt16Value(request, m_start_address);
 }
 
-const RDMResponse *DimmerSubDevice::SetDmxStartAddress(
+RDMResponse *DimmerSubDevice::SetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::SetDmxAddress(request, &m_personality_manager,
                                         &m_start_address);
 }
 
-const RDMResponse *DimmerSubDevice::GetDeviceModelDescription(
+RDMResponse *DimmerSubDevice::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA Dimmer");
 }
 
-const RDMResponse *DimmerSubDevice::GetManufacturerLabel(
+RDMResponse *DimmerSubDevice::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *DimmerSubDevice::GetDeviceLabel(
+RDMResponse *DimmerSubDevice::GetDeviceLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy Dimmer");
 }
 
-const RDMResponse *DimmerSubDevice::GetSoftwareVersionLabel(
+RDMResponse *DimmerSubDevice::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-const RDMResponse *DimmerSubDevice::GetIdentify(const RDMRequest *request) {
+RDMResponse *DimmerSubDevice::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_on);
 }
 
-const RDMResponse *DimmerSubDevice::SetIdentify(const RDMRequest *request) {
+RDMResponse *DimmerSubDevice::SetIdentify(const RDMRequest *request) {
   bool old_value = m_identify_on;
-  const RDMResponse *response = ResponderHelper::SetBoolValue(
+  RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_on);
   if (m_identify_on != old_value) {
     OLA_INFO << "Dummy dimmer device " << m_uid << ":" << m_sub_device_number
@@ -205,12 +204,12 @@ const RDMResponse *DimmerSubDevice::SetIdentify(const RDMRequest *request) {
   return response;
 }
 
-const RDMResponse *DimmerSubDevice::GetIdentifyMode(
+RDMResponse *DimmerSubDevice::GetIdentifyMode(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt8Value(request, m_identify_mode);
 }
 
-const RDMResponse *DimmerSubDevice::SetIdentifyMode(
+RDMResponse *DimmerSubDevice::SetIdentifyMode(
     const RDMRequest *request) {
   uint8_t new_identify_mode;
 

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SandNetNode.h
  * Header file for the SandNetNode class
@@ -111,8 +111,8 @@ class SandNetNode {
     ola::network::UDPSocket m_control_socket;
     ola::network::UDPSocket m_data_socket;
     ola::dmx::RunLengthEncoder m_encoder;
-    ola::network::IPV4Address m_control_addr;
-    ola::network::IPV4Address m_data_addr;
+    ola::network::IPV4SocketAddress m_control_addr;
+    ola::network::IPV4SocketAddress m_data_addr;
 
     static const uint16_t CONTROL_PORT;
     static const uint16_t DATA_PORT;

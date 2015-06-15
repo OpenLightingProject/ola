@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133PDU.cpp
  * The E133PDU
@@ -22,9 +22,10 @@
 #include <string.h>
 #include <string>
 #include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/strings/Utils.h"
 #include "plugins/e131/e131/E133PDU.h"
-#include "plugins/e131/e131/RDMPDU.h"
 
 namespace ola {
 namespace plugin {
@@ -64,8 +65,8 @@ bool E133PDU::PackHeader(uint8_t *data, unsigned int *length) const {
   }
 
   E133Header::e133_pdu_header header;
-  strncpy(header.source, m_header.Source().data(),
-          E133Header::SOURCE_NAME_LEN);
+  strings::CopyToFixedLengthBuffer(m_header.Source(), header.source,
+                                   arraysize(header.source));
   header.sequence = HostToNetwork(m_header.Sequence());
   header.endpoint = HostToNetwork(m_header.Endpoint());
   header.reserved = 0;
@@ -91,8 +92,8 @@ bool E133PDU::PackData(uint8_t *data, unsigned int *length) const {
  */
 void E133PDU::PackHeader(OutputStream *stream) const {
   E133Header::e133_pdu_header header;
-  strncpy(header.source, m_header.Source().data(),
-          E133Header::SOURCE_NAME_LEN);
+  strings::CopyToFixedLengthBuffer(m_header.Source(), header.source,
+                                   arraysize(header.source));
   header.sequence = HostToNetwork(m_header.Sequence());
   header.endpoint = HostToNetwork(m_header.Endpoint());
   header.reserved = 0;
@@ -114,8 +115,8 @@ void E133PDU::PrependPDU(ola::io::IOStack *stack, uint32_t vector,
                          const string &source_name, uint32_t sequence_number,
                          uint16_t endpoint_id) {
   E133Header::e133_pdu_header header;
-  strncpy(header.source, source_name.data(),
-          E133Header::SOURCE_NAME_LEN);
+  strings::CopyToFixedLengthBuffer(source_name, header.source,
+                                   arraysize(header.source));
   header.sequence = HostToNetwork(sequence_number);
   header.endpoint = HostToNetwork(endpoint_id);
   header.reserved = 0;

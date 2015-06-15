@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OSCPlugin.h
  * Interface for the OSC plugin.
@@ -55,10 +55,11 @@ class OSCPlugin: public ola::Plugin {
                        OSCDevice::PortConfig *port_config);
 
     OSCDevice *m_device;
+    static const uint8_t DEFAULT_PORT_COUNT = 5;
+    static const uint16_t DEFAULT_UDP_PORT = 7770;
+
     static const char DEFAULT_ADDRESS_TEMPLATE[];
-    static const char DEFAULT_PORT_COUNT[];
     static const char DEFAULT_TARGETS_TEMPLATE[];
-    static const char DEFAULT_UDP_PORT[];
     static const char INPUT_PORT_COUNT_KEY[];
     static const char OUTPUT_PORT_COUNT_KEY[];
     static const char PLUGIN_NAME[];

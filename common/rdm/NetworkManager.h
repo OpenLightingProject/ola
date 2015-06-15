@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * NetworkManager.h
  * Talks to the machine's network systems to get/set data.
@@ -50,7 +50,8 @@ class NetworkManager : public NetworkManagerInterface {
 
   const ola::network::InterfacePicker *GetInterfacePicker() const;
   rdm_dhcp_status GetDHCPStatus(const ola::network::Interface &iface) const;
-  bool GetIPV4DefaultRoute(ola::network::IPV4Address *default_route) const;
+  bool GetIPV4DefaultRoute(int32_t *if_index,
+                           ola::network::IPV4Address *default_route) const;
   const std::string GetHostname() const;
   const std::string GetDomainName() const;
   bool GetNameServers(

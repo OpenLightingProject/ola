@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonSchema.h
  * A Json Schema, see json-schema.org
@@ -403,7 +403,8 @@ class MaximumConstraint : public NumberConstraint {
    */
   explicit MaximumConstraint(const JsonNumber *limit)
       : m_limit(limit),
-        m_has_exclusive(false) {
+        m_has_exclusive(false),
+        m_is_exclusive(false) {
   }
 
   bool IsValid(const JsonNumber &value) {
@@ -445,7 +446,8 @@ class MinimumConstraint : public NumberConstraint {
    */
   explicit MinimumConstraint(const JsonNumber *limit)
       : m_limit(limit),
-        m_has_exclusive(false) {
+        m_has_exclusive(false),
+        m_is_exclusive(false) {
   }
 
   bool IsValid(const JsonNumber &value) {
@@ -528,7 +530,8 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
       : max_properties(-1),
         min_properties(0),
         has_required_properties(false),
-        has_allow_additional_properties(false) {
+        has_allow_additional_properties(false),
+        allow_additional_properties(false) {
     }
 
     void SetRequiredProperties(

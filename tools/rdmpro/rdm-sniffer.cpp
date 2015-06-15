@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * rdm-sniffer.cpp
  * RDM Sniffer software for the ENTTEC RDM Pro.
@@ -21,10 +21,11 @@
 #include <string.h>
 #include <time.h>
 
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
@@ -37,6 +38,7 @@
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
+#include <ola/strings/Format.h>
 
 #include <iostream>
 #include <fstream>
@@ -52,6 +54,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+using ola::strings::ToHex;
 using ola::io::SelectServerInterface;
 using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::messaging::Descriptor;
@@ -61,17 +64,17 @@ using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
 
-DEFINE_s_bool(display_dmx, d, false,
-              "Display DMX frames. Defaults to false.");
-DEFINE_s_bool(timestamp, t, false, "Include timestamps.");
-DEFINE_s_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+DEFINE_s_default_bool(display_dmx, d, false,
+                      "Display DMX frames. Defaults to false.");
+DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
+DEFINE_s_default_bool(full_rdm, r, false, "Unpack RDM parameter data.");
 DEFINE_s_string(readfile, p, "",
                 "Display data from a previously captured file.");
 DEFINE_s_string(savefile, w, "",
                 "Also write the captured data to a file.");
-DEFINE_bool(display_asc, false,
-              "Display non-RDM alternate start code frames.");
-DEFINE_int16(dmx_slot_limit, 512,
+DEFINE_default_bool(display_asc, false,
+                    "Display non-RDM alternate start code frames.");
+DEFINE_int16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
              "Only display the first N slots of DMX data.");
 
 /**
@@ -120,7 +123,7 @@ class RDMSniffer {
 
     static void InitOptions(RDMSnifferOptions *options) {
       options->display_dmx_frames = false;
-      options->dmx_slot_limit = DMX_UNIVERSE_SIZE;
+      options->dmx_slot_limit = ola::DMX_UNIVERSE_SIZE;
       options->display_rdm_frames = true;
       options->summarize_rdm_frames = true;
       options->unpack_param_data = true;
@@ -173,8 +176,9 @@ RDMSniffer::RDMSniffer(const RDMSnifferOptions &options)
       m_options(options),
       m_pid_helper(options.pid_location, 4),
       m_command_printer(&cout, &m_pid_helper) {
-  if (!m_pid_helper.Init())
+  if (!m_pid_helper.Init()) {
     OLA_WARN << "Failed to init PidStore";
+  }
 }
 
 
@@ -228,16 +232,18 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
     // this is an actual byte of data
     switch (m_state) {
       case IDLE:
+        // fall through
       case MAB:
         m_state = DATA;
         m_frame.Reset();
+        // fall through
       case DATA:
         m_frame.AddByte(data_byte);
         break;
       default:
-        OLA_WARN << "Unknown transition from state " << m_state <<
-          ", with data 0x" << std::hex << static_cast<int>(control_byte) <<
-          " 0x" << static_cast<int>(data_byte);
+        OLA_WARN << "Unknown transition from state " << m_state
+                 << ", with data " << ToHex(control_byte) << " "
+                 << ToHex(data_byte);
     }
   } else {
     // control byte
@@ -247,9 +253,9 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
           m_state = MAB;
           break;
         default:
-          OLA_WARN << "Unknown transition from state " << m_state <<
-            ", with data 0x" << std::hex << static_cast<int>(control_byte) <<
-            " 0x" << static_cast<int>(data_byte);
+          OLA_WARN << "Unknown transition from state " << m_state
+                   << ", with data " << ToHex(control_byte) << " "
+                   << ToHex(data_byte);
       }
     } else if (data_byte == 1) {
       switch (m_state) {
@@ -261,9 +267,9 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
           m_state = BREAK;
           break;
         default:
-          OLA_WARN << "Unknown transition from state " << m_state <<
-            ", with data 0x" << std::hex << static_cast<int>(control_byte) <<
-            " 0x" << static_cast<int>(data_byte);
+          OLA_WARN << "Unknown transition from state " << m_state
+                   << ", with data " << ToHex(control_byte) << " "
+                   << ToHex(data_byte);
       }
     } else if (data_byte == 2) {
       switch (m_state) {
@@ -276,9 +282,9 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
           ProcessFrame();
       }
     } else {
-      OLA_WARN << "Unknown transition from state " << m_state <<
-        ", with data 0x" << std::hex << static_cast<int>(control_byte) <<
-        " 0x" << static_cast<int>(data_byte);
+      OLA_WARN << "Unknown transition from state " << m_state
+               << ", with data " << ToHex(control_byte) << " "
+               << ToHex(data_byte);
     }
   }
 }
@@ -289,16 +295,18 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
  */
 void RDMSniffer::ProcessFrame() {
   switch (m_frame[0]) {
-    case DMX512_START_CODE:
-      if (m_options.display_dmx_frames)
+    case ola::DMX512_START_CODE:
+      if (m_options.display_dmx_frames) {
         DisplayDmxFrame();
+      }
       break;
     case RDMCommand::START_CODE:
       DisplayRDMFrame();
       break;
     default:
-      if (m_options.display_non_rdm_asc_frames)
+      if (m_options.display_non_rdm_asc_frames) {
         DisplayAlternateFrame();
+      }
   }
 }
 
@@ -310,9 +318,10 @@ void RDMSniffer::DisplayDmxFrame() {
   unsigned int dmx_slot_count = m_frame.Size() - 1;
   MaybePrintTimestamp();
   cout << "DMX " << std::dec;
-  if (m_options.dmx_slot_limit < dmx_slot_count)
+  if (m_options.dmx_slot_limit < dmx_slot_count) {
     cout << m_options.dmx_slot_limit << "/";
-  cout << dmx_slot_count << ":" << std::hex;
+  }
+  cout << dmx_slot_count << ":";
   unsigned int slots_to_display = std::min(
       dmx_slot_count,
       static_cast<unsigned int>(m_options.dmx_slot_limit));
@@ -327,8 +336,7 @@ void RDMSniffer::DisplayDmxFrame() {
 void RDMSniffer::DisplayAlternateFrame() {
   unsigned int slot_count = m_frame.Size() - 1;
   MaybePrintTimestamp();
-  cout << "SC 0x" << std::hex << std::setw(2) << static_cast<int>(m_frame[0])
-    << " " << std::dec << slot_count << ":" << std::hex;
+  cout << "SC " << ToHex(m_frame[0]) << " " << slot_count << ":";
   unsigned int slots_to_display = std::min(
       slot_count,
       static_cast<unsigned int>(m_options.dmx_slot_limit));
@@ -346,11 +354,13 @@ void RDMSniffer::DisplayRDMFrame() {
       RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(&m_frame[1]),
                           slot_count));
   if (command.get()) {
-    if (!m_options.summarize_rdm_frames)
+    if (!m_options.summarize_rdm_frames) {
       cout << "---------------------------------------" << endl;
+    }
 
-    if (!m_options.summarize_rdm_frames && m_options.timestamp)
+    if (!m_options.summarize_rdm_frames && m_options.timestamp) {
       cout << endl;
+    }
 
     MaybePrintTimestamp();
 
@@ -367,8 +377,9 @@ void RDMSniffer::DisplayRDMFrame() {
  * Dump out the raw data if we couldn't parse it correctly.
  */
 void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
-  for (unsigned int i = start; i <= end; i++)
-    cout << std::hex << std::setw(2) << static_cast<int>(m_frame[i]) << " ";
+  for (unsigned int i = start; i <= end; i++) {
+    cout << ToHex(m_frame[i], false) << " ";
+  }
   cout << endl;
 }
 
@@ -377,8 +388,9 @@ void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
  * Print the timestamp if timestamps are enabled
  */
 void RDMSniffer::MaybePrintTimestamp() {
-  if (!m_options.timestamp)
+  if (!m_options.timestamp) {
     return;
+  }
 
   ola::TimeStamp now;
   ola::Clock clock;
@@ -439,12 +451,11 @@ void ParseFile(RDMSniffer::RDMSnifferOptions *sniffer_options,
  * Dump RDM data
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(&argc, argv, "[options] <usb-device-path>",
+  ola::AppInit(&argc, argv, "[ options ] <usb-device-path>",
                "Sniff traffic from a ENTTEC RDM Pro device.");
 
   if (!FLAGS_savefile.str().empty() && !FLAGS_readfile.str().empty()) {
-    ola::DisplayUsage();
-    exit(ola::EXIT_USAGE);
+    ola::DisplayUsageAndExit();
   }
 
   RDMSniffer::RDMSnifferOptions sniffer_options;
@@ -463,7 +474,7 @@ int main(int argc, char *argv[]) {
               std::ios::out | std::ios::binary);
     if (!file.is_open()) {
       cerr << "Could not open file for writing: " << sniffer_options.write_file
-        << endl;
+           << endl;
       exit(ola::EXIT_UNAVAILABLE);
     }
   }
@@ -475,16 +486,16 @@ int main(int argc, char *argv[]) {
   }
 
   if (argc != 2) {
-    ola::DisplayUsage();
-    exit(ola::EXIT_USAGE);
+    ola::DisplayUsageAndExit();
   }
 
   const string device = argv[1];
 
   ola::io::ConnectedDescriptor *descriptor =
       ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(device);
-  if (!descriptor)
+  if (!descriptor) {
     exit(ola::EXIT_UNAVAILABLE);
+  }
 
   ola::io::SelectServer ss;
   descriptor->SetOnClose(ola::NewSingleCallback(&Stop, &ss));

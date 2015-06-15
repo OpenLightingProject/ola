@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * WidgetDetectorThread.h
  * A thread that periodically looks for usb serial devices, and runs the
@@ -85,6 +85,8 @@ class WidgetDetectorThread: public ola::thread::Thread {
     void SetDevicePrefixes(const std::vector<std::string> &prefixes);
     // Must be called before Run()
     void SetIgnoredDevices(const std::vector<std::string> &devices);
+    // Must be called before Run()
+    void SetUUCPLockFilePaths(const std::vector<std::string> &paths);
 
     // Start the thread, this will call the SuccessHandler whenever a new
     // Widget is located.
@@ -93,7 +95,8 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // Stop the thread.
     bool Join(void *ptr);
 
-    // Can be called from any thread.
+    // Used to release a widget. Should be called from the thread running the
+    // SelectServerInterface that was passed to the constructor.
     void FreeWidget(SerialWidgetInterface *widget);
 
     // blocks until the thread is running
@@ -111,6 +114,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
     std::string m_directory;  // directory to look for widgets in
     std::vector<std::string> m_prefixes;  // prefixes to try
     std::set<std::string> m_ignored_devices;  // devices to ignore
+    std::vector<std::string> m_uucp_lock_paths;  // uucp lock path
     NewWidgetHandler *m_handler;
     bool m_is_running;
     unsigned int m_usb_pro_timeout;
@@ -152,7 +156,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
 
     // This is how device identification is done, see
     // http://opendmx.net/index.php/USB_Protocol_Extensions
-    // OPEN_LIGHTING_ESTA_CODE is in BaseTypes.h
+    // OPEN_LIGHTING_ESTA_CODE is in Constants.h
 
     // DmxKing Device Models
     static const uint16_t DMX_KING_DMX512_ID = 0;

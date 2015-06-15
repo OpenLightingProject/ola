@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * EnttecUsbProWidgetImpl.h
  * The Enttec USB Pro Widget
@@ -22,11 +22,13 @@
 #define PLUGINS_USBPRO_ENTTECUSBPROWIDGETIMPL_H_
 
 #include <deque>
-#include "ola/BaseTypes.h"
+#include <memory>
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/util/Watchdog.h"
 
 namespace ola {
 namespace plugin {
@@ -97,7 +99,7 @@ class EnttecPortImpl
     bool SetParameters(uint8_t break_time, uint8_t mab_time, uint8_t rate);
 
     // the following are from DiscoverableRDMControllerInterface
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -116,40 +118,48 @@ class EnttecPortImpl
     void HandleIncomingDataMessage(const uint8_t *data, unsigned int length);
     void HandleDMXDiff(const uint8_t *data, unsigned int length);
 
+    void ClockWatchdog();
+    void WatchdogFired();
+
  private:
-    SendCallback *m_send_cb;
-    OperationLabels m_ops;
-    bool m_active;
+  SendCallback *m_send_cb;
+  OperationLabels m_ops;
+  bool m_active;
+  Watchdog m_watchdog;
 
-    // RX DMX
-    DmxBuffer m_input_buffer;
-    ola::Callback0<void> *m_dmx_callback;
+  // RX DMX
+  DmxBuffer m_input_buffer;
+  std::auto_ptr<ola::Callback0<void> > m_dmx_callback;
 
-    // widget params
-    std::deque<usb_pro_params_callback*> m_outstanding_param_callbacks;
+  // widget params
+  std::deque<usb_pro_params_callback*> m_outstanding_param_callbacks;
 
-    // RDM send
-    ola::rdm::DiscoveryAgent m_discovery_agent;
-    const ola::rdm::UID m_uid;
-    uint8_t m_transaction_number;
-    ola::rdm::RDMCallback *m_rdm_request_callback;
-    const ola::rdm::RDMRequest *m_pending_request;
+  // RDM send
+  ola::rdm::DiscoveryAgent m_discovery_agent;
+  const ola::rdm::UID m_uid;
+  uint8_t m_transaction_number;
+  ola::rdm::RDMCallback *m_rdm_request_callback;
+  std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
 
-    // RDM Discovery
-    MuteDeviceCallback *m_mute_callback;
-    UnMuteDeviceCallback *m_unmute_callback;
-    BranchCallback *m_branch_callback;
-    // holds the discovery response while we're waiting for the timeout message
-    const uint8_t *m_discovery_response;
-    unsigned int m_discovery_response_size;
+  // RDM Discovery
+  MuteDeviceCallback *m_mute_callback;
+  UnMuteDeviceCallback *m_unmute_callback;
+  BranchCallback *m_branch_callback;
+  // holds the discovery response while we're waiting for the timeout message
+  const uint8_t *m_discovery_response;
+  unsigned int m_discovery_response_size;
 
-    void HandleDMX(const uint8_t *data, unsigned int length);
-    void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
-                           bool status,
-                           const ola::rdm::UIDSet &uids);
-    bool PackAndSendRDMRequest(uint8_t label,
-                               const ola::rdm::RDMRequest *request);
-    bool IsDUBRequest(const ola::rdm::RDMRequest *request);
+  void HandleDMX(const uint8_t *data, unsigned int length);
+  void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
+                         bool status,
+                         const ola::rdm::UIDSet &uids);
+  bool PackAndSendRDMRequest(uint8_t label,
+                             const ola::rdm::RDMRequest *request);
+  bool IsDUBRequest(const ola::rdm::RDMRequest *request);
+
+  static const unsigned int PORT_ID = 1;
+  // This gives a limit between 1 and 2s.
+  static const unsigned int WATCHDOG_LIMIT = 2;
 };
 }  // namespace usbpro
 }  // namespace plugin

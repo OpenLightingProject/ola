@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonSections.h
  * This builds the json string for the web UI.
@@ -103,13 +103,16 @@ class UIntItem: public GenericItem {
       GenericItem(description, id),
       m_value(value),
       m_min_set(false),
-      m_max_set(false) {
+      m_max_set(false),
+      m_min(0),
+      m_max(0) {
     }
 
     void SetMin(unsigned int min) {
       m_min_set = true;
       m_min = min;
     }
+
     void SetMax(unsigned int max) {
       m_max_set = true;
       m_max = max;

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Sender.cpp
  * The E131Sender
@@ -67,10 +67,29 @@ bool E131Sender::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
 
   OutgoingUDPTransport transport(&m_transport_impl, addr);
 
-  E131PDU pdu(ola::acn::VECTOR_E131_DMP, header, dmp_pdu);
+  E131PDU pdu(ola::acn::VECTOR_E131_DATA, header, dmp_pdu);
   unsigned int vector = ola::acn::VECTOR_ROOT_E131;
   if (header.UsingRev2())
     vector = ola::acn::VECTOR_ROOT_E131_REV2;
+  return m_root_sender->SendPDU(vector, pdu, &transport);
+}
+
+bool E131Sender::SendDiscoveryData(const E131Header &header,
+                                   const uint8_t *data,
+                                   unsigned int data_size) {
+  if (!m_root_sender)
+    return false;
+
+  IPV4Address addr;
+  if (!UniverseIP(header.Universe(), &addr)) {
+    OLA_INFO << "Could not convert universe to ip.";
+    return false;
+  }
+
+  OutgoingUDPTransport transport(&m_transport_impl, addr);
+
+  E131PDU pdu(ola::acn::VECTOR_E131_DISCOVERY, header, data, data_size);
+  unsigned int vector = ola::acn::VECTOR_ROOT_E131;
   return m_root_sender->SendPDU(vector, pdu, &transport);
 }
 

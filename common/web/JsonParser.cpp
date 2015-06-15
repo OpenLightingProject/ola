@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonParser.cpp
  * A Json Parser.
@@ -24,7 +24,6 @@
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/web/Json.h"
 #include "ola/web/JsonLexer.h"
@@ -141,7 +140,7 @@ void JsonParser::OpenObject() {
   m_container_stack.push(OBJECT);
 }
 
-void JsonParser::ObjectKey(const std::string &key) {
+void JsonParser::ObjectKey(const string &key) {
   if (!m_key.empty()) {
     OLA_WARN << "Json Key should be empty, was " << key;
   }
@@ -208,7 +207,7 @@ void JsonParser::AddValue(JsonValue *value) {
   }
 }
 
-JsonValue* JsonParser::Parse(const std::string &input, std::string *error) {
+JsonValue* JsonParser::Parse(const string &input, string *error) {
   JsonParser parser;
   if (JsonLexer::Parse(input, &parser)) {
     return parser.ClaimRoot();

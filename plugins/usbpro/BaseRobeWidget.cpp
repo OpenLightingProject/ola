@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BaseRobeWidget.cpp
  * Read and Write to a Robe USB Widget.
@@ -19,7 +19,7 @@
  */
 
 #include <string.h>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
 
@@ -46,7 +46,10 @@ const uint8_t BaseRobeWidget::SOM;
 BaseRobeWidget::BaseRobeWidget(ola::io::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor),
       m_state(PRE_SOM),
-      m_bytes_received(0) {
+      m_bytes_received(0),
+      m_data_size(0),
+      m_crc(0) {
+  memset(&m_header, 0, sizeof(m_header));
   m_descriptor->SetOnData(NewCallback(this, &BaseRobeWidget::DescriptorReady));
 }
 

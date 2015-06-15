@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SubDeviceDispatcher_h
  * Handles dispatching RDM requests to the correct sub device.
@@ -46,7 +46,7 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
   void AddSubDevice(uint16_t sub_device_number,
                     ola::rdm::RDMControllerInterface *device);
 
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 
  private:
@@ -59,8 +59,8 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
       return ++m_responses_so_far == m_number_of_subdevices;
     }
 
-    void SetResponse(ola::rdm::rdm_response_code code,
-                     const ola::rdm::RDMResponse *response);
+    void SetResponse(ola::rdm::RDMStatusCode code,
+                     ola::rdm::RDMResponse *response);
 
     void RunCallback();
 
@@ -73,8 +73,8 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
     uint16_t m_responses_so_far;
     ola::rdm::RDMCallback *m_callback;
 
-    ola::rdm::rdm_response_code m_response_code;
-    const ola::rdm::RDMResponse *m_response;
+    ola::rdm::RDMStatusCode m_status_code;
+    ola::rdm::RDMResponse *m_response;
   };
 
   typedef std::map<uint16_t, ola::rdm::RDMControllerInterface*> SubDeviceMap;
@@ -88,11 +88,8 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
                           ola::rdm::RDMCallback *callback,
                           ola::rdm::rdm_nack_reason nack_reason);
 
-  void HandleSubDeviceResponse(
-      FanOutTracker *tracker,
-      ola::rdm::rdm_response_code code,
-      const ola::rdm::RDMResponse *response,
-      const std::vector<std::string> &packets);
+  void HandleSubDeviceResponse(FanOutTracker *tracker,
+                               ola::rdm::RDMReply *reply);
 };
 }  // namespace rdm
 }  // namespace ola

@@ -13,7 +13,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Modified by Simon Newton (nomis52<AT>gmail.com) to use ola
  *
@@ -42,20 +42,27 @@
 #ifdef HAVE_FTIME
 #include <sys/timeb.h>
 #endif
-#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
-#include <ola/OlaCallbackClient.h>
-#include <ola/OlaClientWrapper.h>
+#include <ola/Clock.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
+#include <ola/base/Init.h>
+#include <ola/base/Macro.h>
 #include <ola/base/SysExits.h>
+#include <ola/client/ClientWrapper.h>
+#include <ola/client/OlaClient.h>
 #include <ola/io/SelectServer.h>
 
 #include <string>
 #include <iostream>
 
+using ola::Clock;
 using ola::DmxBuffer;
-using ola::OlaCallbackClient;
-using ola::OlaCallbackClientWrapper;
+using ola::client::OlaClient;
+using ola::client::OlaClientWrapper;
+using ola::client::Result;
+using ola::TimeInterval;
+using ola::TimeStamp;
 using ola::io::SelectServer;
 using std::string;
 
@@ -124,10 +131,9 @@ class DmxMonitor {
 
     bool Init();
     void Run() { m_client.GetSelectServer()->Run(); }
-    void NewDmx(unsigned int universe,
-                const DmxBuffer &buffer,
-                const string &error);
-    void RegisterComplete(const string &error);
+    void NewDmx(const ola::client::DMXMetadata &meta,
+                const DmxBuffer &buffer);
+    void RegisterComplete(const Result &result);
     void StdinReady();
     bool CheckDataLoss();
     void DrawDataLossWindow();
@@ -138,11 +144,11 @@ class DmxMonitor {
     unsigned int m_counter;
     int m_palette_number;
     ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
-    struct timeval m_last_data;
+    TimeStamp m_last_data;
     WINDOW *m_window;
     WINDOW *m_data_loss_window;
     bool m_channels_offset;  // start from channel 1 rather than 0;
-    OlaCallbackClientWrapper m_client;
+    OlaClientWrapper m_client;
     DmxBuffer m_buffer;
 
     void DrawScreen(bool include_values = true);
@@ -163,11 +169,11 @@ bool DmxMonitor::Init() {
     return false;
   }
 
-  OlaCallbackClient *client = m_client.GetClient();
-  client->SetDmxCallback(ola::NewCallback(this, &DmxMonitor::NewDmx));
+  OlaClient *client = m_client.GetClient();
+  client->SetDMXCallback(ola::NewCallback(this, &DmxMonitor::NewDmx));
   client->RegisterUniverse(
       m_universe,
-      ola::REGISTER,
+      ola::client::REGISTER,
       ola::NewSingleCallback(this, &DmxMonitor::RegisterComplete));
 
   /* init curses */
@@ -193,7 +199,6 @@ bool DmxMonitor::Init() {
   ChangePalette(m_palette_number);
 
   m_buffer.Blackout();
-  timerclear(&m_last_data);
   DrawScreen();
   return true;
 }
@@ -202,9 +207,8 @@ bool DmxMonitor::Init() {
 /*
  * Called when there is new DMX data
  */
-void DmxMonitor::NewDmx(unsigned int universe,
-                        const DmxBuffer &buffer,
-                        const string &error) {
+void DmxMonitor::NewDmx(OLA_UNUSED const ola::client::DMXMetadata &meta,
+                        const DmxBuffer &buffer) {
   m_buffer.Set(buffer);
 
   if (m_data_loss_window) {
@@ -231,17 +235,17 @@ void DmxMonitor::NewDmx(unsigned int universe,
       break;
   }
   m_counter++;
-  gettimeofday(&m_last_data, NULL);
+
+  Clock clock;
+  clock.CurrentTime(&m_last_data);
   Values();
   refresh();
-  (void) universe;
-  (void) error;
 }
 
 
-void DmxMonitor::RegisterComplete(const string &error) {
-  if (!error.empty()) {
-    std::cerr << "Register command failed with " << errno <<
+void DmxMonitor::RegisterComplete(const Result &result) {
+  if (!result.Success()) {
+    std::cerr << "Register command failed with " << result.Error() <<
       std::endl;
     m_client.GetSelectServer()->Terminate();
   }
@@ -261,8 +265,8 @@ void DmxMonitor::StdinReady() {
       break;
 
     case KEY_END:
-      current_channel = DMX_UNIVERSE_SIZE - 1;
-      if (channels_per_screen >= DMX_UNIVERSE_SIZE) {
+      current_channel = ola::DMX_UNIVERSE_SIZE - 1;
+      if (channels_per_screen >= ola::DMX_UNIVERSE_SIZE) {
         first_channel = 0;
       } else {
         first_channel = current_channel - (channels_per_screen - 1);
@@ -273,7 +277,7 @@ void DmxMonitor::StdinReady() {
     case 'l':
     case 'L':
     case KEY_RIGHT:
-      if (current_channel < DMX_UNIVERSE_SIZE - 1) {
+      if (current_channel < ola::DMX_UNIVERSE_SIZE - 1) {
         current_channel++;
         if (current_channel >=
             static_cast<int>(first_channel + channels_per_screen)) {
@@ -301,8 +305,8 @@ void DmxMonitor::StdinReady() {
     case 'J':
     case KEY_DOWN:
       current_channel += channels_per_line;
-      if (current_channel >= DMX_UNIVERSE_SIZE)
-        current_channel = DMX_UNIVERSE_SIZE - 1;
+      if (current_channel >= ola::DMX_UNIVERSE_SIZE)
+        current_channel = ola::DMX_UNIVERSE_SIZE - 1;
       if (current_channel >=
           static_cast<int>(first_channel + channels_per_screen)) {
         first_channel += channels_per_line;
@@ -358,12 +362,12 @@ void DmxMonitor::StdinReady() {
  * TODO(simon): move to the ola server
  */
 bool DmxMonitor::CheckDataLoss() {
-  struct timeval now, diff;
-
-  if (timerisset(&m_last_data)) {
-    gettimeofday(&now, NULL);
-    timersub(&now, &m_last_data, &diff);
-    if (diff.tv_sec > 2 || (diff.tv_sec == 2 && diff.tv_usec > 500000)) {
+  if (m_last_data.IsSet()) {
+    TimeStamp now;
+    Clock clock;
+    clock.CurrentTime(&now);
+    TimeInterval diff = now - m_last_data;
+    if (diff > TimeInterval(2, 5000000)) {
       // loss of data
       DrawDataLossWindow();
     }
@@ -430,13 +434,13 @@ void DmxMonitor::Mask() {
   (void) attrset(palette[CHANNEL]);
   for (y = 1;
        static_cast<int>(y) < LINES &&
-       static_cast<int>(channel) < DMX_UNIVERSE_SIZE &&
+       static_cast<int>(channel) < ola::DMX_UNIVERSE_SIZE &&
        i < channels_per_screen;
        y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
          static_cast<int>(x) < static_cast<int>(channels_per_line) &&
-         static_cast<int>(channel) < DMX_UNIVERSE_SIZE &&
+         static_cast<int>(channel) < ola::DMX_UNIVERSE_SIZE &&
          static_cast<int>(i < channels_per_screen);
          x++, i++, channel++) {
       switch (display_mode) {
@@ -462,21 +466,21 @@ void DmxMonitor::Values() {
 
   /* values */
   for (y = ROWS_PER_CHANNEL_ROW;
-       y < LINES && z < DMX_UNIVERSE_SIZE &&
+       y < LINES && z < ola::DMX_UNIVERSE_SIZE &&
        i < static_cast<int>(channels_per_screen);
        y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
          x < static_cast<int>(channels_per_line) &&
-         z < DMX_UNIVERSE_SIZE &&
+         z < ola::DMX_UNIVERSE_SIZE &&
          i < static_cast<int>(channels_per_screen);
          x++, z++, i++) {
       const int d = m_buffer.Get(z);
       switch (d) {
-        case DMX_MIN_CHANNEL_VALUE:
+        case ola::DMX_MIN_SLOT_VALUE:
           (void) attrset(palette[ZERO]);
           break;
-        case DMX_MAX_CHANNEL_VALUE:
+        case ola::DMX_MAX_SLOT_VALUE:
           (void) attrset(palette[FULL]);
           break;
         default:
@@ -512,18 +516,18 @@ void DmxMonitor::Values() {
         case DISP_MODE_DMX:
         default:
           switch (d) {
-            case DMX_MIN_CHANNEL_VALUE:
+            case ola::DMX_MIN_SLOT_VALUE:
               if (static_cast<int>(m_buffer.Size()) <= z) {
                 addstr("--- ");
               } else {
                 addstr("    ");
               }
               break;
-            case DMX_MAX_CHANNEL_VALUE:
+            case ola::DMX_MAX_SLOT_VALUE:
               addstr(" FL ");
               break;
             default:
-              printw(" %02d ", (d * 100) / DMX_MAX_CHANNEL_VALUE);
+              printw(" %02d ", (d * 100) / ola::DMX_MAX_SLOT_VALUE);
           }
       }
     }
@@ -558,6 +562,7 @@ void DmxMonitor::ChangePalette(int p) {
   switch (p) {
     default:
       m_palette_number = 0;
+      // fall through, use 0 as default palette
     case 0:
       init_pair(CHANNEL, COLOR_BLACK, COLOR_CYAN);
       init_pair(ZERO, COLOR_BLACK, COLOR_WHITE);
@@ -579,23 +584,23 @@ void DmxMonitor::ChangePalette(int p) {
       goto color;
 
     color:
-      palette[CHANNEL]=COLOR_PAIR(CHANNEL);
-      palette[ZERO]=COLOR_PAIR(ZERO);
-      palette[NORM]=COLOR_PAIR(NORM);
-      palette[FULL]=COLOR_PAIR(FULL);
-      palette[HEADLINE]=COLOR_PAIR(HEADLINE);
-      palette[HEADEMPH]=COLOR_PAIR(HEADEMPH);
-      palette[HEADERROR]=COLOR_PAIR(HEADERROR);
+      palette[CHANNEL] = COLOR_PAIR(CHANNEL);
+      palette[ZERO] = COLOR_PAIR(ZERO);
+      palette[NORM] = COLOR_PAIR(NORM);
+      palette[FULL] = COLOR_PAIR(FULL);
+      palette[HEADLINE] = COLOR_PAIR(HEADLINE);
+      palette[HEADEMPH] = COLOR_PAIR(HEADEMPH);
+      palette[HEADERROR] = COLOR_PAIR(HEADERROR);
       break;
 
     case 1:
-      palette[CHANNEL]=A_REVERSE;
-      palette[ZERO]=A_NORMAL;
-      palette[NORM]=A_NORMAL;
-      palette[FULL]=A_BOLD;
-      palette[HEADLINE]=A_NORMAL;
-      palette[HEADEMPH]=A_NORMAL;
-      palette[HEADERROR]=A_BOLD;
+      palette[CHANNEL] = A_REVERSE;
+      palette[ZERO] = A_NORMAL;
+      palette[NORM] = A_NORMAL;
+      palette[FULL] = A_BOLD;
+      palette[HEADLINE] = A_NORMAL;
+      palette[HEADEMPH] = A_NORMAL;
+      palette[HEADERROR] = A_BOLD;
       break;
     }
 }
@@ -688,6 +693,11 @@ void DisplayHelpAndExit(char arg[]) {
 int main(int argc, char *argv[]) {
   signal(SIGWINCH, terminalresize);
   atexit(cleanup);
+
+  if (!ola::NetworkInit()) {
+    std::cerr << "Network initialization failed." << std::endl;
+    exit(ola::EXIT_UNAVAILABLE);
+  }
 
   options opts;
 

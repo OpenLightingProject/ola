@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PidStoreLoader.cpp
  * The PidStoreLoader and helper code.
@@ -34,25 +34,26 @@
 #include "ola/file/Util.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/stl/STLUtils.h"
+#include "ola/strings/Format.h"
 
 namespace ola {
 namespace rdm {
 
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
+using std::auto_ptr;
 using std::map;
 using std::ostringstream;
 using std::set;
 using std::string;
 using std::vector;
 
+const char PidStoreLoader::OVERRIDE_FILE_NAME[] = "overrides.proto";
+const uint16_t PidStoreLoader::ESTA_MANUFACTURER_ID = 0;
+const uint16_t PidStoreLoader::MANUFACTURER_PID_MIN = 0x8000;
+const uint16_t PidStoreLoader::MANUFACTURER_PID_MAX = 0xffe0;
 
-/**
- * Load Pid information from a file.
- * @param file the path to the file to load
- * @param validate set to true if we should perform validation of the contents.
- * @returns A pointer to a new RootPidStore or NULL if loading failed.
- */
 const RootPidStore *PidStoreLoader::LoadFromFile(const string &file,
                                                  bool validate) {
   std::ifstream proto_file(file.data());
@@ -67,25 +68,20 @@ const RootPidStore *PidStoreLoader::LoadFromFile(const string &file,
   return store;
 }
 
-
-/**
- * Load Pid information from a directory. This is an all-or-nothing load. Any
- *   error with cause us to abort the load.
- * @param directory the directory to load files from.
- * @param validate set to true if we should perform validation of the contents.
- * @returns A pointer to a new RootPidStore or NULL if loading failed.
- */
 const RootPidStore *PidStoreLoader::LoadFromDirectory(
-    const std::string &directory,
+    const string &directory,
     bool validate) {
   vector<string> files;
 
-  vector<string> filesInDirectory;
-  ola::file::ListDirectory(directory, &filesInDirectory);
-  vector<string>::const_iterator fileInDirectory = filesInDirectory.begin();
-  for (; fileInDirectory != filesInDirectory.end(); ++fileInDirectory) {
-    if (StringEndsWith(*fileInDirectory, ".proto")) {
-      files.push_back(*fileInDirectory);
+  string override_file;
+  vector<string> all_files;
+  ola::file::ListDirectory(directory, &all_files);
+  vector<string>::const_iterator file_iter = all_files.begin();
+  for (; file_iter != all_files.end(); ++file_iter) {
+    if (ola::file::FilenameFromPath(*file_iter) == OVERRIDE_FILE_NAME) {
+      override_file = *file_iter;
+    } else if (StringEndsWith(*file_iter, ".proto")) {
+      files.push_back(*file_iter);
     }
   }
 
@@ -108,16 +104,17 @@ const RootPidStore *PidStoreLoader::LoadFromDirectory(
       return NULL;
     }
   }
-  return BuildStore(pid_store_pb, validate);
+
+  ola::rdm::pid::PidStore override_pb;
+  if (!override_file.empty()) {
+    if (!ReadFile(override_file, &override_pb)) {
+      return NULL;
+    }
+  }
+
+  return BuildStore(pid_store_pb, override_pb, validate);
 }
 
-
-/**
- * Load Pid information from a stream
- * @param data the input stream.
- * @param validate set to true if we should perform validation of the contents.
- * @returns A pointer to a new RootPidStore or NULL if loading failed.
- */
 const RootPidStore *PidStoreLoader::LoadFromStream(std::istream *data,
                                                    bool validate) {
   ola::rdm::pid::PidStore pid_store_pb;
@@ -127,127 +124,171 @@ const RootPidStore *PidStoreLoader::LoadFromStream(std::istream *data,
   if (!ok)
     return NULL;
 
-  return BuildStore(pid_store_pb, validate);
+  ola::rdm::pid::PidStore override_pb;
+  return BuildStore(pid_store_pb, override_pb, validate);
 }
 
+bool PidStoreLoader::ReadFile(const std::string &file_path,
+                              ola::rdm::pid::PidStore *proto) {
+  std::ifstream proto_file(file_path.c_str());
+  if (!proto_file.is_open()) {
+    OLA_WARN << "Failed to open " << file_path << ": " << strerror(errno);
+    return false;
+  }
 
-/**
- * Build the root store from a protocol buffer.
+  google::protobuf::io::IstreamInputStream input_stream(&proto_file);
+  bool ok = google::protobuf::TextFormat::Merge(&input_stream, proto);
+  proto_file.close();
+
+  if (!ok) {
+    OLA_WARN << "Failed to load " << file_path;
+  }
+  return ok;
+}
+
+/*
+ * Build the RootPidStore from a protocol buffer.
  */
 const RootPidStore *PidStoreLoader::BuildStore(
     const ola::rdm::pid::PidStore &store_pb,
+    const ola::rdm::pid::PidStore &override_pb,
     bool validate) {
+  ManufacturerMap pid_data;
+  // Load the overrides first so they get first dibs on each PID.
+  if (!LoadFromProto(&pid_data, override_pb, validate)) {
+    FreeManufacturerMap(&pid_data);
+    return NULL;
+  }
+
+  // Load the main data
+  if (!LoadFromProto(&pid_data, store_pb, validate)) {
+    FreeManufacturerMap(&pid_data);
+    return NULL;
+  }
+
+  // Now we need to convert the data structure into a format that the PidStore
+  // understands.
+  auto_ptr<const PidStore> esta_store;
   RootPidStore::ManufacturerMap manufacturer_map;
-  set<uint16_t> seen_values;
-  set<string> seen_names;
 
-  vector<const PidDescriptor*> esta_pids;
-  if (!GetPidList(&esta_pids, store_pb, validate, true)) {
-    return NULL;
-  }
-
-  bool ok = true;
-  for (int i = 0; i < store_pb.manufacturer_size(); ++i) {
-    const ola::rdm::pid::Manufacturer &manufacturer = store_pb.manufacturer(i);
-    RootPidStore::ManufacturerMap::const_iterator iter = manufacturer_map.find(
-        manufacturer.manufacturer_id());
-    if (iter != manufacturer_map.end()) {
-      OLA_WARN << "Manufacturer id " << manufacturer.manufacturer_id() <<
-          "(" << manufacturer.manufacturer_name() <<
-          ") listed more than once in the pids file";
-      ok = false;
-      break;
-    }
-
+  ManufacturerMap::iterator iter = pid_data.begin();
+  for (; iter != pid_data.end(); ++iter) {
+    // Ownership of the Descriptors is transferred to the vector
     vector<const PidDescriptor*> pids;
-    if (!GetPidList(&pids, manufacturer, validate, false)) {
-      ok = false;
-      break;
+    STLValues(*iter->second, &pids);
+    delete iter->second;
+
+    if (iter->first == ESTA_MANUFACTURER_ID) {
+      esta_store.reset(new PidStore(pids));
+    } else {
+      STLReplaceAndDelete(&manufacturer_map, iter->first,
+                          new PidStore(pids));
     }
-
-    manufacturer_map[manufacturer.manufacturer_id()] = new PidStore(
-        pids);
   }
-
-  if (!ok) {
-    RootPidStore::ManufacturerMap::iterator iter = manufacturer_map.begin();
-    for (; iter != manufacturer_map.end(); ++iter)
-      delete iter->second;
-    return NULL;
-  }
+  pid_data.clear();
 
   OLA_DEBUG << "Load Complete";
-  const PidStore *esta_store = new PidStore(esta_pids);
-  return new RootPidStore(esta_store,
+  return new RootPidStore(esta_store.release(),
                           manufacturer_map,
                           store_pb.version());
 }
 
+/*
+ * @brief Load the data from the PidStore proto into the ManufacturerMap.
+ * @param[out] pid_data the ManufacturerMap to populate.
+ * @param proto the Protobuf data.
+ * @param validate Enables strict validation mode.
+ *
+ * If a collision occurs, the data in the map is not replaced.
+ */
+bool PidStoreLoader::LoadFromProto(ManufacturerMap *pid_data,
+                                   const ola::rdm::pid::PidStore &proto,
+                                   bool validate) {
+  set<uint16_t> seen_manufacturer_ids;
 
+  ManufacturerMap::iterator iter = STLLookupOrInsertNew(
+      pid_data, ESTA_MANUFACTURER_ID);
+  if (!GetPidList(iter->second, proto, validate, true)) {
+    return false;
+  }
 
-/**
- * Get a list of pids from a protobuf object.
+  for (int i = 0; i < proto.manufacturer_size(); ++i) {
+    const ola::rdm::pid::Manufacturer &manufacturer = proto.manufacturer(i);
+
+    if (STLContains(seen_manufacturer_ids, manufacturer.manufacturer_id())) {
+      OLA_WARN << "Manufacturer id " << manufacturer.manufacturer_id() <<
+          "(" << manufacturer.manufacturer_name() <<
+          ") listed more than once in the PIDs file";
+      return false;
+    }
+    seen_manufacturer_ids.insert(manufacturer.manufacturer_id());
+
+    ManufacturerMap::iterator iter = STLLookupOrInsertNew(
+        pid_data, manufacturer.manufacturer_id());
+    if (!GetPidList(iter->second, manufacturer, validate, false)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/*
+ * @brief Populate a PidMap from a protobuf object that has a set of repeated
+ * PIDs.
  */
 template <typename pb_object>
-bool PidStoreLoader::GetPidList(vector<const PidDescriptor*> *pids,
+bool PidStoreLoader::GetPidList(PidMap *pid_map,
                                 const pb_object &store,
                                 bool validate,
                                 bool limit_pid_values) {
-  set<uint16_t> seen_values;
+  set<uint16_t> seen_pids;
   set<string> seen_names;
-  bool ok = true;
 
   for (int i = 0; i < store.pid_size(); ++i) {
     const ola::rdm::pid::Pid &pid = store.pid(i);
 
     OLA_DEBUG << "Loading " << pid.name();
     if (validate) {
-      set<uint16_t>::const_iterator value_iter = seen_values.find(pid.value());
-      if (value_iter != seen_values.end()) {
-        OLA_WARN << "Pid " << pid.value() << " exists multiple times in the "
-            "pid file";
-        ok = false;
-        break;
+      if (STLContains(seen_pids, pid.value())) {
+        OLA_WARN << "PID " << pid.value()
+                 << " exists multiple times in the pid file";
+        return false;
       }
-      seen_values.insert(pid.value());
+      seen_pids.insert(pid.value());
 
-      set<string>::const_iterator name_iter = seen_names.find(pid.name());
-      if (name_iter != seen_names.end()) {
-        OLA_WARN << "Pid " << pid.name() << " exists multiple times in the "
-            "pid file";
-        ok = false;
-        break;
+      if (STLContains(seen_names, pid.name())) {
+        OLA_WARN << "PID " << pid.name()
+                 << " exists multiple times in the pid file";
+        return false;
       }
       seen_names.insert(pid.name());
 
-      if (limit_pid_values && pid.value() > 0x8000 && pid.value() < 0xffe0) {
-        OLA_WARN << "ESTA Pid " << pid.name() << " (" << pid.value() << ")" <<
-            " is outside acceptable range";
-        ok = false;
-        break;
+      if (limit_pid_values && pid.value() > MANUFACTURER_PID_MIN &&
+          pid.value() < MANUFACTURER_PID_MAX) {
+        OLA_WARN << "ESTA PID " << pid.name() << " (" << pid.value() << ")"
+                 << " is outside acceptable range";
+        return false;
       }
+    }
+
+    PidMap::iterator iter = STLLookupOrInsertNull(pid_map, pid.value());
+    if (iter->second) {
+      OLA_INFO << "Using " << OVERRIDE_FILE_NAME << " for " << pid.name()
+               << "( " << strings::ToHex(pid.value()) << ")";
+      continue;
     }
 
     const PidDescriptor *descriptor = PidToDescriptor(pid, validate);
     if (!descriptor) {
-      ok = false;
-      break;
+      return false;
     }
-    pids->push_back(descriptor);
-  }
-
-  if (!ok) {
-    vector<const PidDescriptor*>::iterator iter = pids->begin();
-    for (; iter != pids->end(); ++iter) {
-      delete *iter;
-    }
-    return false;
+    iter->second = descriptor;
   }
   return true;
 }
 
-
-/**
+/*
  * Build a PidDescriptor from a Pid protobuf object
  */
 PidDescriptor *PidStoreLoader::PidToDescriptor(const ola::rdm::pid::Pid &pid,
@@ -312,8 +353,7 @@ PidDescriptor *PidStoreLoader::PidToDescriptor(const ola::rdm::pid::Pid &pid,
   return descriptor;
 }
 
-
-/**
+/*
  * Convert a protobuf frame format to a Descriptor object
  */
 const Descriptor* PidStoreLoader::FrameFormatToDescriptor(
@@ -340,11 +380,11 @@ const Descriptor* PidStoreLoader::FrameFormatToDescriptor(
   }
 
   // we don't give these descriptors names
-  const Descriptor *descriptor =  new Descriptor("", fields);
+  const Descriptor *descriptor = new Descriptor("", fields);
 
   if (validate) {
     if (!m_checker.CheckConsistency(descriptor)) {
-      OLA_WARN << "Frame format failed consistency check!";
+      OLA_WARN << "Invalid frame format";
       delete descriptor;
       return NULL;
     }
@@ -352,8 +392,7 @@ const Descriptor* PidStoreLoader::FrameFormatToDescriptor(
   return descriptor;
 }
 
-
-/**
+/*
  * Convert a protobuf field object to a FieldDescriptor.
  */
 const FieldDescriptor *PidStoreLoader::FieldToFieldDescriptor(
@@ -414,8 +453,7 @@ const FieldDescriptor *PidStoreLoader::FieldToFieldDescriptor(
   return descriptor;
 }
 
-
-/**
+/*
  * Convert a integer protobuf field to a FieldDescriptor.
  */
 template <typename descriptor_class>
@@ -457,7 +495,7 @@ const FieldDescriptor *PidStoreLoader::IntegerFieldToFieldDescriptor(
       multipler);
 }
 
-/**
+/*
  * Convert a string protobuf field to a FieldDescriptor.
  */
 const FieldDescriptor *PidStoreLoader::StringFieldToFieldDescriptor(
@@ -477,8 +515,7 @@ const FieldDescriptor *PidStoreLoader::StringFieldToFieldDescriptor(
       field.max_size());
 }
 
-
-/**
+/*
  * Convert a group protobuf field to a FieldDescriptor.
  */
 const FieldDescriptor *PidStoreLoader::GroupFieldToFieldDescriptor(
@@ -519,8 +556,7 @@ const FieldDescriptor *PidStoreLoader::GroupFieldToFieldDescriptor(
       max);
 }
 
-
-/**
+/*
  * Convert a protobuf sub device enum to a PidDescriptor one.
  */
 PidDescriptor::sub_device_validator PidStoreLoader::ConvertSubDeviceValidator(
@@ -539,6 +575,15 @@ PidDescriptor::sub_device_validator PidStoreLoader::ConvertSubDeviceValidator(
           ", defaulting to all";
       return PidDescriptor::ANY_SUB_DEVICE;
   }
+}
+
+void PidStoreLoader::FreeManufacturerMap(ManufacturerMap *data) {
+  ManufacturerMap::iterator iter = data->begin();
+  for (; iter != data->end(); ++iter) {
+    STLDeleteValues(iter->second);
+    delete iter->second;
+  }
+  data->clear();
 }
 }  // namespace rdm
 }  // namespace ola

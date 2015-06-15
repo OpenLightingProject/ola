@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * BaseTypes.h
  * Copyright (C) 2005 Simon Newton
@@ -32,38 +32,49 @@
 extern "C" {
 #endif
 
+/**
+ * @brief The number of slots in a DMX512 universe.
+ * @deprecated Use ola::DMX_UNIVERSE_SIZE from Constants.h instead.
+ */
 enum {
-  DMX_UNIVERSE_SIZE = 512
+  DMX_UNIVERSE_SIZE = ola::DMX_UNIVERSE_SIZE,
 };
 
 /**
  * @brief The minimum value a DMX512 slot can take.
+ * @deprecated Use ola::DMX_MIN_SLOT_VALUE from Constants.h instead.
  */
 static const uint8_t DMX_MIN_CHANNEL_VALUE = ola::DMX_MIN_SLOT_VALUE;
 
 /**
  * @brief The maximum value a DMX512 slot can take.
+ * @deprecated Use ola::DMX_MAX_SLOT_VALUE from Constants.h instead.
  */
 static const uint8_t DMX_MAX_CHANNEL_VALUE = ola::DMX_MAX_SLOT_VALUE;
 
 /**
  * @brief The start code for DMX512 data.
+ *
  * This is often referred to as NSC for "Null Start Code".
+ * @deprecated Use ola::DMX512_START_CODE from Constants.h instead.
  */
 static const uint8_t DMX512_START_CODE = ola::DMX512_START_CODE;
 
 /**
  * @brief The default port which olad listens on for incoming RPC connections.
+ * @deprecated Use ola::OLA_DEFAULT_PORT from Constants.h instead.
  */
 static const int OLA_DEFAULT_PORT = ola::OLA_DEFAULT_PORT;
 
 /**
  * @brief The ESTA manufacturer code for the Open Lighting Project.
+ * @deprecated Use ola::OPEN_LIGHTING_ESTA_CODE from Constants.h instead.
  */
 static const uint16_t OPEN_LIGHTING_ESTA_CODE = ola::OPEN_LIGHTING_ESTA_CODE;
 
 /**
  * @brief The maximum universe number.
+ * @deprecated Use ola::MAX_UNIVERSE from Constants.h instead.
  */
 static const uint32_t MAX_UNIVERSE = ola::MAX_UNIVERSE;
 

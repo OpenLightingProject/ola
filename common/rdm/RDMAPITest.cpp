@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMAPITest.cpp
  * Test fixture for the RDM API class
@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "ola/StringUtils.h"
+#include "ola/base/Macro.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/UID.h"
@@ -678,6 +679,7 @@ void RDMAPITest::testRDMInformation() {
     NewSingleCallback(this, &RDMAPITest::CheckMalformedParameterDescription),
     &error));
 
+  PACK(
   struct param_info_s {
     uint16_t pid;
     uint8_t pdl_size;
@@ -690,7 +692,8 @@ void RDMAPITest::testRDMInformation() {
     uint32_t max_value;
     uint32_t default_value;
     char label[32];
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(param_info_s) == 52);
   struct param_info_s param_info;
   param_info.pid = HostToNetwork(static_cast<uint16_t>(0x1234));
   param_info.pdl_size = 10;
@@ -729,6 +732,7 @@ void RDMAPITest::testProductInformation() {
   uint16_t sub_device = 1;
 
   // device info
+  PACK(
   struct device_info_s {
     uint8_t version_high;
     uint8_t version_low;
@@ -741,7 +745,8 @@ void RDMAPITest::testProductInformation() {
     uint16_t dmx_start_address;
     uint16_t sub_device_count;
     uint8_t sensor_count;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(device_info_s) == 19);
   struct device_info_s device_info;
   device_info.version_high = 1;
   device_info.version_low = 0;

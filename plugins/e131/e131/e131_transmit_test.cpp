@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * e131_transmit_test.cpp
  * The sends custom E1.31 packets in order to test the implementation of a
@@ -30,6 +30,7 @@
 
 using ola::DmxBuffer;
 using std::string;
+using std::vector;
 
 DmxBuffer BufferFromString(const string &data) {
   DmxBuffer buffer;
@@ -40,7 +41,7 @@ DmxBuffer BufferFromString(const string &data) {
 
 DmxBuffer BufferFromValue(uint8_t value) {
   DmxBuffer buffer;
-  buffer.SetRangeToValue(0, value, DMX_UNIVERSE_SIZE);
+  buffer.SetRangeToValue(0, value, ola::DMX_UNIVERSE_SIZE);
   return buffer;
 }
 
@@ -234,7 +235,7 @@ int main(int argc, char* argv[]) {
   bool interactive_mode = false;
 
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  std::vector<TestState*> test_states;
+  vector<TestState*> test_states;
   TestState **ptr = states;
   while (*ptr)
     test_states.push_back(*ptr++);

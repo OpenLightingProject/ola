@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PosixInterfacePicker.cpp
  * Chooses an interface to listen on
@@ -72,9 +72,12 @@ using std::vector;
 vector<Interface> PosixInterfacePicker::GetInterfaces(
     bool include_loopback) const {
   vector<Interface> interfaces;
+
+#ifdef HAVE_SOCKADDR_DL_STRUCT
   string last_dl_iface_name;
   uint8_t hwlen = 0;
   char *hwaddr = NULL;
+#endif
 
   // create socket to get iface config
   int sd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -160,6 +163,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       }
     }
 
+#ifdef HAVE_SOCKADDR_DL_STRUCT
+    // The only way hwaddr is non-null is if HAVE_SOCKADDR_DL_STRUCT is defined.
     if ((interface.name == last_dl_iface_name) && hwaddr) {
       if (hwlen == MACAddress::LENGTH) {
         interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
@@ -169,6 +174,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
                  << ", expecting " << MACAddress::LENGTH;
       }
     }
+#endif
+
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
     interface.ip_address = IPV4Address(sin->sin_addr.s_addr);
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # DUBDecoderTest.py
 # Copyright (C) Simon Newton
@@ -22,6 +22,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import unittest
 from ola.DUBDecoder import DecodeResponse
+
 
 class UIDTest(unittest.TestCase):
   TEST_DATA = [
@@ -54,8 +55,8 @@ class UIDTest(unittest.TestCase):
   def testValidResponse(self):
     uid = DecodeResponse(self.TEST_DATA)
     self.assertNotEqual(None, uid)
-    self.assertEquals(0x00a1, uid.manufacturer_id)
-    self.assertEquals(0x00020020, uid.device_id)
+    self.assertEqual(0x00a1, uid.manufacturer_id)
+    self.assertEqual(0x00020020, uid.device_id)
 
 if __name__ == '__main__':
   unittest.main()

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * FakeNetworkManager.h
  * Talks to the machine's network systems to get/set data.
@@ -43,6 +43,8 @@ class FakeNetworkManager : public NetworkManagerInterface {
   /**
    * @brief Create a new FakeNetworkManager
    * @param interfaces the interfaces to return
+   * @param ipv4_default_route_if_index the interface that has the default
+       gateway
    * @param ipv4_default_route the default gateway
    * @param hostname the hostname
    * @param domain_name the domain name
@@ -50,6 +52,7 @@ class FakeNetworkManager : public NetworkManagerInterface {
    */
   FakeNetworkManager(
       const std::vector<ola::network::Interface> &interfaces,
+      const int32_t ipv4_default_route_if_index,
       const ola::network::IPV4Address ipv4_default_route,
       const std::string &hostname,
       const std::string &domain_name,
@@ -61,6 +64,7 @@ class FakeNetworkManager : public NetworkManagerInterface {
   rdm_dhcp_status GetDHCPStatus(const ola::network::Interface &iface) const;
 
   bool GetIPV4DefaultRoute(
+      int32_t *if_index,
       ola::network::IPV4Address *default_route) const;
 
   const std::string GetHostname() const;
@@ -72,6 +76,7 @@ class FakeNetworkManager : public NetworkManagerInterface {
 
  private:
   ola::network::FakeInterfacePicker m_interface_picker;
+  int32_t m_ipv4_default_route_if_index;
   ola::network::IPV4Address m_ipv4_default_route;
   std::string m_hostname;
   std::string m_domain_name;

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * WindowsPoller.h
  * A Poller for the Windows platform
@@ -26,7 +26,12 @@
 #include <ola/base/Macro.h>
 #include <ola/io/Descriptor.h>
 
-#include <set>
+#define WIN32_LEAN_AND_MEAN
+#include <ola/win/CleanWindows.h>
+
+#include <map>
+#include <utility>
+#include <vector>
 
 #include "common/io/PollerInterface.h"
 #include "common/io/TimeoutManager.h"
@@ -64,11 +69,26 @@ class WindowsPoller : public PollerInterface {
             const TimeInterval &poll_interval);
 
  private:
+  typedef std::map<void*, class WindowsPollerDescriptor*> DescriptorMap;
+  typedef std::vector<class WindowsPollerDescriptor*> OrphanedDescriptors;
+
   ExportMap *m_export_map;
   CounterVariable *m_loop_iterations;
   CounterVariable *m_loop_time;
   Clock *m_clock;
   TimeStamp m_wake_up_time;
+
+  DescriptorMap m_descriptor_map;
+  OrphanedDescriptors m_orphaned_descriptors;
+
+  std::pair<WindowsPollerDescriptor*, bool>
+      LookupOrCreateDescriptor(void* handle);
+  bool RemoveDescriptor(const DescriptorHandle &handle,
+                        int flag,
+                        bool warn_on_missing);
+
+  void HandleWakeup(class PollData* data);
+  void FinalCheckIOs(std::vector<class PollData*> data);
 
   DISALLOW_COPY_AND_ASSIGN(WindowsPoller);
 };

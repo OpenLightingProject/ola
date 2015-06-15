@@ -11,11 +11,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * FtdiDmxDevice.cpp
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ *
+ * Additional modifications to enable support for multiple outputs and
+ * additional device ids did change the original structure.
+ *
+ * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #include <string>
@@ -36,22 +41,44 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
     : Device(owner, widget_info.Description()),
       m_widget_info(widget_info),
       m_frequency(frequency) {
-  m_widget.reset(
-      new FtdiWidget(widget_info.Serial(),
-                     widget_info.Name(),
-                     widget_info.Id()));
+  m_widget = new FtdiWidget(widget_info.Serial(),
+                            widget_info.Name(),
+                            widget_info.Id(),
+                            widget_info.Vid(),
+                            widget_info.Pid());
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
-  if (m_widget->IsOpen())
-    m_widget->Close();
+  DeleteAllPorts();
+  delete m_widget;
 }
 
 bool FtdiDmxDevice::StartHook() {
-  AddPort(new FtdiDmxOutputPort(this,
-                                m_widget.get(),
-                                m_widget_info.Id(),
-                                m_frequency));
+  unsigned int interface_count = m_widget->GetInterfaceCount();
+  unsigned int successfully_added = 0;
+
+  OLA_INFO << "Widget " << m_widget->Name() << " has " << interface_count
+           << " interfaces.";
+
+  for (unsigned int i = 1; i <= interface_count; i++) {
+    FtdiInterface *port = new FtdiInterface(m_widget,
+                                            static_cast<ftdi_interface>(i));
+    if (port->SetupOutput()) {
+      AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency));
+      successfully_added += 1;
+    } else {
+      OLA_WARN << "Failed to add interface: " << i;
+      delete port;
+    }
+  }
+  if (successfully_added > 0) {
+    OLA_INFO << "Successfully added " << successfully_added << "/"
+             << interface_count << " interfaces.";
+  } else {
+    OLA_INFO << "Removing widget since no ports were added.";
+    return false;
+  }
+
   return true;
 }
 }  // namespace ftdidmx

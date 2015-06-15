@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ola_plugin_info.py
 # Copyright (C) 2005 Simon Newton
@@ -27,28 +27,28 @@ from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
 
 def Usage():
-  print textwrap.dedent("""
+  print(textwrap.dedent("""
   Usage: ola_plugin_info.py [--plugin <plugin_id>]
 
   Display a list of plugins, or a description for a particular plugin.
 
   -h, --help                Display this help message and exit.
-  -p, --plugin <plugin_id>  Plugin ID number.""")
+  -p, --plugin <plugin_id>  Plugin ID number."""))
 
 def main():
   def Plugins(state, plugins):
     for plugin in plugins:
-      print '%d %s' % (plugin.id, plugin.name)
+      print('%d %s' % (plugin.id, plugin.name))
     wrapper.Stop()
 
   def PluginDescription(state, description):
-    print description;
+    print(description);
     wrapper.Stop()
 
   try:
       opts, args = getopt.getopt(sys.argv[1:], "hp:", ["help", "plugin="])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

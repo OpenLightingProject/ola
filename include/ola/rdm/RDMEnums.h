@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMEnums.h
  * Provide a generic RDM ENUMS that can use different implementations.
@@ -47,6 +47,20 @@ static const uint8_t ACK_OVERFLOW = 3;
 typedef enum {
   RDM_VERSION_1_0 = 0x100,
 } rdm_protocol_version;
+
+/**
+ * @brief A set of values representing CommandClasses in E1.20.
+ * @note See section 6.2.10 of ANSI E1.20 for more information.
+ */
+typedef enum {
+  DISCOVER_COMMAND = 0x10, /**< Discovery Command */
+  DISCOVER_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
+  GET_COMMAND = 0x20, /**< Get Command */
+  GET_COMMAND_RESPONSE = 0x21, /**< Get Response */
+  SET_COMMAND = 0x30, /**< Set Command */
+  SET_COMMAND_RESPONSE = 0x31, /**< Set Response */
+  INVALID_COMMAND = 0xff, /**< Invalid Command, specific to OLA */
+} RDMCommandClass;
 
 typedef enum {
   // discovery
@@ -167,21 +181,21 @@ typedef enum {
   PID_QUEUED_STATUS_ENDPOINT_COLLECTION = 0x7FD3,
   PID_QUEUED_STATUS_UID_COLLECTION = 0x7FD4,
 
-  // Draft E1.37-2 PIDs - DO NOT USE, values will change
-  PID_LIST_INTERFACES = 0xFFE0,
-  PID_INTERFACE_LABEL = 0xFFE1,
-  PID_INTERFACE_HARDWARE_ADDRESS_TYPE1 = 0xFFE2,
-  PID_IPV4_DHCP_MODE = 0xFFE3,
-  PID_IPV4_ZEROCONF_MODE = 0xFFE4,
-  PID_IPV4_CURRENT_ADDRESS = 0xFFE5,
-  PID_IPV4_STATIC_ADDRESS = 0xFFE6,
-  PID_INTERFACE_RENEW_DHCP = 0xFFE7,
-  PID_INTERFACE_RELEASE_DHCP = 0xFFE8,
-  PID_INTERFACE_APPLY_CONFIGURATION = 0xFFE9,
-  PID_IPV4_DEFAULT_ROUTE = 0xFFEA,
-  PID_DNS_NAME_SERVER = 0xFFEB,
-  PID_DNS_HOSTNAME = 0xFFEC,
-  PID_DNS_DOMAIN_NAME = 0xFFED,
+  // E1.37-2 PIDs
+  PID_LIST_INTERFACES = 0x0700,
+  PID_INTERFACE_LABEL = 0x0701,
+  PID_INTERFACE_HARDWARE_ADDRESS_TYPE1 = 0x0702,
+  PID_IPV4_DHCP_MODE = 0x0703,
+  PID_IPV4_ZEROCONF_MODE = 0x0704,
+  PID_IPV4_CURRENT_ADDRESS = 0x0705,
+  PID_IPV4_STATIC_ADDRESS = 0x0706,
+  PID_INTERFACE_RENEW_DHCP = 0x0707,
+  PID_INTERFACE_RELEASE_DHCP = 0x0708,
+  PID_INTERFACE_APPLY_CONFIGURATION = 0x0709,
+  PID_IPV4_DEFAULT_ROUTE = 0x070A,
+  PID_DNS_NAME_SERVER = 0x070B,
+  PID_DNS_HOSTNAME = 0x070C,
+  PID_DNS_DOMAIN_NAME = 0x070D,
 } rdm_pid;
 
 
@@ -324,7 +338,7 @@ typedef enum {
   NR_PACKET_SIZE_UNSUPPORTED = 0x0008,
   NR_SUB_DEVICE_OUT_OF_RANGE = 0x0009,
   NR_PROXY_BUFFER_FULL = 0x000A,
-  NR_ACTION_NOT_SUPPORTED = 0x0010,
+  NR_ACTION_NOT_SUPPORTED = 0x000B,
   NR_ENDPOINT_NUMBER_INVALID = 0x0011
 } rdm_nack_reason;
 
@@ -513,6 +527,13 @@ typedef enum {
   SD_COLOR_CORRECTION = 0x0208,
   SD_COLOR_SCROLL = 0x0209,
   SD_COLOR_SEMAPHORE = 0x0210,
+  SD_COLOR_ADD_AMBER = 0x0211,
+  SD_COLOR_ADD_WHITE = 0x0212,
+  SD_COLOR_ADD_WARM_WHITE = 0x0213,
+  SD_COLOR_ADD_COOL_WHITE = 0x0214,
+  SD_COLOR_SUB_UV = 0x0215,
+  SD_COLOR_HUE = 0x0216,
+  SD_COLOR_SATURATION = 0x0217,
   SD_STATIC_GOBO_WHEEL = 0x0301,
   SD_ROTO_GOBO_WHEEL = 0x0302,
   SD_PRISM_WHEEL = 0x0303,
@@ -533,6 +554,7 @@ typedef enum {
   SD_POWER_CONTROL = 0x0505,
   SD_FAN_CONTROL = 0x0506,
   SD_HEATER_CONTROL = 0x0507,
+  SD_FOUNTAIN_CONTROL = 0x0508,
   SD_UNDEFINED = 0xFFFF,
 } rdm_slot_definition;
 
@@ -607,6 +629,7 @@ typedef enum {
   DISPLAY_INVERT_OFF = 0x00,
   DISPLAY_INVERT_ON = 0x01,
   DISPLAY_INVERT_AUTO = 0x02,
+  DISPLAY_INVERT_MAX,
 } rdm_display_invert;
 
 // The identify modes from E1.37-1
@@ -679,7 +702,7 @@ typedef enum {
 static const uint8_t MAX_RDM_HOSTNAME_LENGTH = 63;
 static const uint8_t MAX_RDM_DOMAIN_NAME_LENGTH = 231;
 
-static const int16_t DNS_NAME_SERVER_MAX_INDEX = 2;
+static const uint8_t DNS_NAME_SERVER_MAX_INDEX = 2;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_

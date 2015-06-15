@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * InterfacePickerTest.cpp
  * Test fixture for the InterfacePicker class
@@ -53,10 +53,6 @@ class InterfacePickerTest: public CppUnit::TestFixture {
     void testGetInterfaces();
     void testGetLoopbackInterfaces();
     void testChooseInterface();
-
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
@@ -100,7 +96,9 @@ void InterfacePickerTest::testGetLoopbackInterfaces() {
     if (iter->loopback)
       loopback_count++;
   }
+#ifndef _WIN32
   OLA_ASSERT_GT(loopback_count, 0);
+#endif
 }
 
 
@@ -111,10 +109,13 @@ void InterfacePickerTest::testChooseInterface() {
   // no interfaces
   Interface iface;
   OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, ""));
+  // no interfaces, by index
+  OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, 0));
 
   // now with one iface that doesn't match
   Interface iface1;
   iface1.name = "eth0";
+  iface1.index = 1;
   OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.1", &iface1.ip_address));
   interfaces.push_back(iface1);
 
@@ -125,6 +126,7 @@ void InterfacePickerTest::testChooseInterface() {
   // check that preferred works
   Interface iface2;
   iface2.name = "eth1";
+  iface2.index = 2;
   OLA_ASSERT_TRUE(IPV4Address::FromString("192.168.1.1", &iface2.ip_address));
   interfaces.push_back(iface2);
 
@@ -141,5 +143,13 @@ void InterfacePickerTest::testChooseInterface() {
 
   // a invalid address should return the first one
   OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo"));
+  OLA_ASSERT_TRUE(iface1 == iface);
+
+  // now check by iface index
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, 2));
+  OLA_ASSERT_TRUE(iface2 == iface);
+
+  // an invalid index should return the first one
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, 3));
   OLA_ASSERT_TRUE(iface1 == iface);
 }

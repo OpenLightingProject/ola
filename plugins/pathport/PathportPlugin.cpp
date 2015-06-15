@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PathportPlugin.cpp
  * The Pathport plugin for ola
@@ -37,7 +37,7 @@ using std::string;
 
 const char PathportPlugin::PLUGIN_NAME[] = "Pathport";
 const char PathportPlugin::PLUGIN_PREFIX[] = "pathport";
-const char PathportPlugin::DEFAULT_DSCP_VALUE[] = "0";
+const unsigned int PathportPlugin::DEFAULT_DSCP_VALUE = 0;
 
 
 /*
@@ -49,8 +49,9 @@ bool PathportPlugin::StartHook() {
                                 m_preferences,
                                 m_plugin_adaptor);
 
-  if (!m_device)
+  if (!m_device) {
     return false;
+  }
 
   if (!m_device->Start()) {
     delete m_device;
@@ -114,8 +115,9 @@ string PathportPlugin::Description() const {
 bool PathportPlugin::SetDefaultPreferences() {
   bool save = false;
 
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   save |= m_preferences->SetDefaultValue(PathportDevice::K_DSCP_KEY,
                                          UIntValidator(0, 63),
@@ -134,12 +136,14 @@ bool PathportPlugin::SetDefaultPreferences() {
                                          UIntValidator(0, UINT_MAX),
                                          product_id);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   if (m_preferences->GetValue(PathportDevice::K_NODE_NAME_KEY).empty() ||
-      m_preferences->GetValue(PathportDevice::K_NODE_ID_KEY).empty())
+      m_preferences->GetValue(PathportDevice::K_NODE_ID_KEY).empty()) {
     return false;
+  }
 
   return true;
 }

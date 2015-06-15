@@ -19,10 +19,10 @@ echo "Index file: $index_file";
 cat << 'EOF' > $index_file
 <html>
 <head>
-<title>Man pages for the Open Lighting Project</title>
+<title>Man pages for the Open Lighting Architecture</title>
 </head>
 <body>
-<h1>Man pages for the <a href="http://openlighting.org">Open Lighting Project</a></h1>
+<h1>Man pages for the <a href="https://openlighting.org/ola/">Open Lighting Architecture</a></h1>
 <ul>
 EOF
 

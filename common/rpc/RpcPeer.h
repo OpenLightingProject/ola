@@ -11,11 +11,11 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * RpcController.h
- * Interface for a basic RPC Controller.
- * Copyright (C) 2005 Simon Newton
+ * RpcPeer.h
+ * Represents the peer of an RpcChannel.
+ * Copyright (C) 2013 Simon Newton
  */
 
 #ifndef COMMON_RPC_RPCPEER_H_
@@ -30,43 +30,43 @@ namespace rpc {
 
 class RpcPeer {
  public:
-    explicit RpcPeer(const ola::network::GenericSocketAddress &socket_addr)
-      : m_socket_addr(socket_addr) {
-    }
+  explicit RpcPeer(const ola::network::GenericSocketAddress &socket_addr)
+    : m_socket_addr(socket_addr) {
+  }
 
-    const ola::network::GenericSocketAddress& SocketAddress() const {
-      return m_socket_addr;
-    }
+  const ola::network::GenericSocketAddress& SocketAddress() const {
+    return m_socket_addr;
+  }
 
-   /**
-     * @brief Assignment operator
-     */
-    RpcPeer& operator=(const RpcPeer& other) {
-      if (this != &other) {
-        m_socket_addr = other.m_socket_addr;
-      }
-      return *this;
+  /**
+   * @brief Assignment operator
+   */
+  RpcPeer& operator=(const RpcPeer& other) {
+    if (this != &other) {
+      m_socket_addr = other.m_socket_addr;
     }
+    return *this;
+  }
 
-    /**
-     * @brief Convert a UID to a human readable string.
-     * @returns a string in the form XXXX:YYYYYYYY.
-     */
-    std::string ToString() const {
-      return m_socket_addr.ToString();
-    }
+  /**
+   * @brief Convert a peer to a human readable string.
+   * @returns a string representation of the peer.
+   */
+  std::string ToString() const {
+    return m_socket_addr.ToString();
+  }
 
-    /**
-     * @brief A helper function to write a UID to an ostream.
-     * @param out the ostream
-     * @param peer the RpcPeer to write.
-     */
-    friend ostream& operator<<(ostream &out, const RpcPeer &peer) {
-      return out << peer.ToString();
-    }
+  /**
+   * @brief A helper function to write an RpcPeer to an ostream.
+   * @param out the ostream
+   * @param peer the RpcPeer to write.
+   */
+  friend ostream& operator<<(ostream &out, const RpcPeer &peer) {
+    return out << peer.ToString();
+  }
 
  private:
-    ola::network::GenericSocketAddress m_socket_addr;
+  ola::network::GenericSocketAddress m_socket_addr;
 };
 }  // namespace rpc
 }  // namespace ola

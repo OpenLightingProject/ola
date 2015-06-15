@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * logic-rdm-sniffer.cpp
  * RDM Sniffer software for the Saleae Logic Device.
@@ -31,14 +31,13 @@
 
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
-#include <ola/io/SelectServer.h>
-#include <ola/Logging.h>
-
-#include <ola/BaseTypes.h>
-#include <ola/Callback.h>
 #include <ola/base/SysExits.h>
+#include <ola/Callback.h>
+#include <ola/Constants.h>
 #include <ola/Clock.h>
 #include <ola/DmxBuffer.h>
+#include <ola/io/SelectServer.h>
+#include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
@@ -77,12 +76,13 @@ using ola::thread::MutexLocker;
 using ola::NewSingleCallback;
 
 
-DEFINE_bool(display_asc, false,
-            "Display non-RDM alternate start code frames.");
-DEFINE_s_bool(full_rdm, r, false, "Unpack RDM parameter data.");
-DEFINE_s_bool(timestamp, t, false, "Include timestamps.");
-DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames. Defaults to false.");
-DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
+DEFINE_default_bool(display_asc, false,
+                    "Display non-RDM alternate start code frames.");
+DEFINE_s_default_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
+DEFINE_s_default_bool(display_dmx, d, false,
+                      "Display DMX Frames. Defaults to false.");
+DEFINE_uint16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
               "Only display the first N slots of DMX data.");
 DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
 DEFINE_string(pid_location, "",
@@ -105,6 +105,7 @@ class LogicReader {
         m_pid_helper(FLAGS_pid_location.str(), 4),
         m_command_printer(&cout, &m_pid_helper) {
     }
+    ~LogicReader();
 
     void DeviceConnected(U64 device, GenericInterface *interface);
     void DeviceDisconnected(U64 device);
@@ -137,6 +138,9 @@ class LogicReader {
     void DisplayRawData(const uint8_t *data, unsigned int length);
 };
 
+LogicReader::~LogicReader() {
+  m_ss->DrainCallbacks();
+}
 
 void LogicReader::DeviceConnected(U64 device, GenericInterface *interface) {
   OLA_INFO << "Device " << device << " connected, setting sample rate to "
@@ -147,7 +151,7 @@ void LogicReader::DeviceConnected(U64 device, GenericInterface *interface) {
     return;
   }
 
-  LogicInterface *logic = dynamic_cast<LogicInterface*>(interface);  // NOLINT
+  LogicInterface *logic = dynamic_cast<LogicInterface*>(interface);
   if (logic == NULL) {
     OLA_WARN << "Only the Logic is supported for now";
     return;
@@ -269,8 +273,7 @@ void LogicReader::DisplayDMXFrame(const uint8_t *data, unsigned int length) {
 }
 
 void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
-  auto_ptr<RDMCommand> command(
-      RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(data), length));
+  auto_ptr<RDMCommand> command(RDMCommand::Inflate(data, length));
   if (command.get()) {
     if (FLAGS_full_rdm)
       cout << "---------------------------------------" << endl;
@@ -310,7 +313,8 @@ void OnConnect(U64 device_id, GenericInterface* device_interface,
   if (!user_data)
     return;
 
-  LogicReader *reader = (LogicReader*) user_data;  // NOLINT
+  LogicReader *reader =
+      (LogicReader*) user_data;  // NOLINT(readability/casting)
   reader->DeviceConnected(device_id, device_interface);
 }
 
@@ -318,7 +322,8 @@ void OnDisconnect(U64 device_id, void *user_data) {
   if (!user_data)
     return;
 
-  LogicReader *reader = (LogicReader*) user_data;  // NOLINT
+  LogicReader *reader =
+      (LogicReader*) user_data;  // NOLINT(readability/casting)
   reader->DeviceDisconnected(device_id);
 }
 
@@ -328,7 +333,8 @@ void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
     DevicesManagerInterface::DeleteU8ArrayPtr(data);
     return;
   }
-  LogicReader *reader = (LogicReader*) user_data;  // NOLINT
+  LogicReader *reader =
+      (LogicReader*) user_data;  // NOLINT(readability/casting)
   reader->DataReceived(device_id, data, data_length);
 }
 
@@ -349,7 +355,7 @@ void DisplayReminder(LogicReader *reader) {
  * Main.
  */
 int main(int argc, char *argv[]) {
-  ola::AppInit(&argc, argv, "[options]",
+  ola::AppInit(&argc, argv, "[ options ]",
                "Decode DMX/RDM data from a Saleae Logic device");
 
   SelectServer ss;

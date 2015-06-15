@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOStackTest.cpp
  * Test fixture for the IOStack class.
@@ -33,7 +33,6 @@ using ola::io::IOStack;
 using ola::io::IOQueue;
 using ola::io::IOVec;
 using ola::io::MemoryBlockPool;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::string;
 
 
@@ -48,10 +47,6 @@ class IOStackTest: public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
-
     void testBasicWrite();
     void testBlockOverflow();
     void testIOVec();
@@ -107,8 +102,8 @@ void IOStackTest::testBasicWrite() {
   OLA_ASSERT_EQ(data_size, stack.Read(output, data_size));
 
   const uint8_t expected_data[] = {3, 4, 2, 0, 1};
-  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
-                     output, data_size);
+  OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), output,
+                         data_size);
 }
 
 
@@ -138,8 +133,8 @@ void IOStackTest::testBlockOverflow() {
 
   const uint8_t expected_data[] = {0xa, 0xb, 0xc, 0xd, 0xe, 5, 6, 7, 8, 9,
                                    0, 1, 2, 3, 4};
-  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
-                     output, data_size);
+  OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), output,
+                         data_size);
 }
 
 
@@ -187,8 +182,8 @@ void IOStackTest::testAppendToQueue() {
   uint8_t tmp_data[100];
   unsigned int queue_size = queue.Peek(tmp_data, sizeof(tmp_data));
   OLA_ASSERT_EQ(7u, queue_size);
-  ASSERT_DATA_EQUALS(__LINE__, tmp_data, queue_size, expected_data,
-                     sizeof(expected_data));
+  OLA_ASSERT_DATA_EQUALS(tmp_data, queue_size, expected_data,
+                         sizeof(expected_data));
 
   // now add a second stack
   uint8_t data3[] = {0xb, 0xa};
@@ -205,8 +200,8 @@ void IOStackTest::testAppendToQueue() {
                               0xa};
   queue_size = queue.Peek(tmp_data, sizeof(tmp_data));
   OLA_ASSERT_EQ(13u, queue_size);
-  ASSERT_DATA_EQUALS(__LINE__, tmp_data, queue_size, expected_data2,
-                     sizeof(expected_data2));
+  OLA_ASSERT_DATA_EQUALS(tmp_data, queue_size, expected_data2,
+                         sizeof(expected_data2));
 
   OLA_ASSERT_EQ(4u, pool.BlocksAllocated());
 }

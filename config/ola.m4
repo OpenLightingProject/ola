@@ -71,17 +71,17 @@ elif test -n "$1" ; then
   fi
 fi
 
-AC_ARG_WITH([ola-protoc],
-  [AS_HELP_STRING([--with-ola-protoc=COMMAND],
-    [use the given ola_protoc command instead of building one (useful for cross-compiling)])],
-  [],[with_ola_protoc=no])
+AC_ARG_WITH([ola-protoc-plugin],
+  [AS_HELP_STRING([--with-ola-protoc-plugin=COMMAND],
+    [use the given ola_protoc_plugin instead of building one (useful for cross-compiling)])],
+  [],[with_ola_protoc_plugin=no])
 
-OLA_PROTOC="\$(top_builddir)/protoc/ola_protoc";
 
-if test "$with_ola_protoc" != "no"; then
-  OLA_PROTOC=$with_ola_protoc;
-  echo "set ola_protoc to $with_ola_protoc"
+if test "$with_ola_protoc_plugin" != "no"; then
+  OLA_PROTOC="$PROTOC --plugin=protoc-gen-cppservice=${with_ola_protoc_plugin}";
+  echo "set ola_protoc to $OLA_PROTOC"
 else
+  OLA_PROTOC="$PROTOC --plugin=protoc-gen-cppservice=\$(top_builddir)/protoc/ola_protoc_plugin${EXEEXT}";
   AC_CHECK_HEADER(
       [google/protobuf/compiler/command_line_interface.h],
       [],
@@ -96,7 +96,7 @@ else
   LIBS=$SAVED_LIBS
 fi
 AC_SUBST([OLA_PROTOC])
-AM_CONDITIONAL(BUILD_OLA_PROTOC, test "${with_ola_protoc}" == "no")
+AM_CONDITIONAL(BUILD_OLA_PROTOC_PLUGIN, test "${with_ola_protoc_plugin}" == "no")
 ])
 
 
@@ -115,6 +115,14 @@ AC_DEFUN([PLUGIN_SUPPORT],
   eval enable_plugin=\$$enable_arg;
   if test "$3" == "no"; then
     enable_plugin="no";
+  fi
+
+  # If we've disabled all plugins, disable this one unless it has been
+  # explicitly enabled
+  if test "${enable_all_plugins}" == "no"; then
+    if test "${enable_plugin}" != "yes"; then
+      enable_plugin="no";
+    fi
   fi
 
   if test "${enable_plugin}" != "no"; then

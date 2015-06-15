@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ClockTest.cpp
  * Unittest for String functions.
@@ -25,7 +25,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
-#include <Windows.h>
+#include <ola/win/CleanWindows.h>
 #endif
 
 #include "ola/Clock.h"
@@ -79,8 +79,8 @@ void ClockTest::testTimeStamp() {
 
   // test equalities
   // Windows only seems to have ms resolution, to make the tests pass we need
-  // to sleep here
-  usleep(1000);
+  // to sleep here; XP only has 16ms resolution, so sleep a bit longer
+  usleep(20000);
   clock.CurrentTime(&timestamp3);
   OLA_ASSERT_NE(timestamp3, timestamp);
   OLA_ASSERT_GT(timestamp3, timestamp);

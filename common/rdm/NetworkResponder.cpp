@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * NetworkResponder.cpp
  * Copyright (C) 2013 Peter Newman
@@ -25,8 +25,7 @@
 #include <string>
 #include <vector>
 #include "common/rdm/FakeNetworkManager.h"
-#include "ola/BaseTypes.h"
-#include "ola/Clock.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/IPV4Address.h"
@@ -140,6 +139,7 @@ NetworkResponder::NetworkResponder(const UID &uid)
 
   m_network_manager.reset(new FakeNetworkManager(
       interfaces,
+      1,
       IPV4Address::FromStringOrDie("10.0.0.254"),
       "foo",
       "bar.com",
@@ -153,35 +153,35 @@ NetworkResponder::~NetworkResponder() {
 /*
  * Handle an RDM Request
  */
-void NetworkResponder::SendRDMRequest(const RDMRequest *request,
+void NetworkResponder::SendRDMRequest(RDMRequest *request,
                                       RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);
 }
 
-const RDMResponse *NetworkResponder::GetDeviceInfo(
+RDMResponse *NetworkResponder::GetDeviceInfo(
     const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_E137_2_MODEL, PRODUCT_CATEGORY_TEST,
       2, 0, 1, 1, ZERO_FOOTPRINT_DMX_ADDRESS, 0, 0);
 }
 
-const RDMResponse *NetworkResponder::GetProductDetailList(
+RDMResponse *NetworkResponder::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(
       request, vector<rdm_product_detail>(1, PRODUCT_DETAIL_TEST));
 }
 
-const RDMResponse *NetworkResponder::GetIdentify(
+RDMResponse *NetworkResponder::GetIdentify(
     const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
-const RDMResponse *NetworkResponder::SetIdentify(
+RDMResponse *NetworkResponder::SetIdentify(
     const RDMRequest *request) {
   bool old_value = m_identify_mode;
-  const RDMResponse *response = ResponderHelper::SetBoolValue(
+  RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_mode);
   if (m_identify_mode != old_value) {
     OLA_INFO << "Network Device " << m_uid << ", identify mode "
@@ -190,71 +190,64 @@ const RDMResponse *NetworkResponder::SetIdentify(
   return response;
 }
 
-const RDMResponse *NetworkResponder::GetDeviceModelDescription(
+RDMResponse *NetworkResponder::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA Network Device");
 }
 
-const RDMResponse *NetworkResponder::GetManufacturerLabel(
+RDMResponse *NetworkResponder::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *NetworkResponder::GetDeviceLabel(
-    const RDMRequest *request) {
+RDMResponse *NetworkResponder::GetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Network Device");
 }
 
-const RDMResponse *NetworkResponder::GetSoftwareVersionLabel(
+RDMResponse *NetworkResponder::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-const RDMResponse *NetworkResponder::GetListInterfaces(
-    const RDMRequest *request) {
+RDMResponse *NetworkResponder::GetListInterfaces(const RDMRequest *request) {
   return ResponderHelper::GetListInterfaces(request,
                                             m_network_manager.get());
 }
 
-const RDMResponse *NetworkResponder::GetInterfaceLabel(
-    const RDMRequest *request) {
+RDMResponse *NetworkResponder::GetInterfaceLabel(const RDMRequest *request) {
   return ResponderHelper::GetInterfaceLabel(request,
                                             m_network_manager.get());
 }
 
-const RDMResponse *NetworkResponder::GetInterfaceHardwareAddressType1(
+RDMResponse *NetworkResponder::GetInterfaceHardwareAddressType1(
     const RDMRequest *request) {
   return ResponderHelper::GetInterfaceHardwareAddressType1(
       request,
       m_network_manager.get());
 }
 
-const RDMResponse *NetworkResponder::GetIPV4CurrentAddress(
+RDMResponse *NetworkResponder::GetIPV4CurrentAddress(
     const RDMRequest *request) {
   return ResponderHelper::GetIPV4CurrentAddress(request,
                                                 m_network_manager.get());
 }
 
-const RDMResponse *NetworkResponder::GetIPV4DefaultRoute(
-    const RDMRequest *request) {
+RDMResponse *NetworkResponder::GetIPV4DefaultRoute(const RDMRequest *request) {
   return ResponderHelper::GetIPV4DefaultRoute(request,
                                               m_network_manager.get());
 }
 
-const RDMResponse *NetworkResponder::GetDNSHostname(
-    const RDMRequest *request) {
+RDMResponse *NetworkResponder::GetDNSHostname(const RDMRequest *request) {
   return ResponderHelper::GetDNSHostname(request,
                                          m_network_manager.get());
 }
 
-const RDMResponse *NetworkResponder::GetDNSDomainName(
-    const RDMRequest *request) {
+RDMResponse *NetworkResponder::GetDNSDomainName(const RDMRequest *request) {
   return ResponderHelper::GetDNSDomainName(request,
                                            m_network_manager.get());
 }
 
-const RDMResponse *NetworkResponder::GetDNSNameServer(
-    const RDMRequest *request) {
+RDMResponse *NetworkResponder::GetDNSNameServer(const RDMRequest *request) {
   return ResponderHelper::GetDNSNameServer(request,
                                            m_network_manager.get());
 }

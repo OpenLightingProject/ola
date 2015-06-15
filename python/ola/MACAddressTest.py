@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # MACAddressTest.py
 # Copyright (C) 2013 Peter Newman
@@ -20,49 +20,59 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import sys
 import unittest
 from ola.MACAddress import MACAddress
+
 
 class MACAddressTest(unittest.TestCase):
 
   def testBasic(self):
     mac = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x89, 0xab]))
-    self.assertEquals(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
-    self.assertEquals('01:23:45:67:89:ab', str(mac))
+    self.assertEqual(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
+    self.assertEqual('01:23:45:67:89:ab', str(mac))
 
-    self.assertTrue(mac > None)
+    # Python 3 does not allow sorting of incompatible types.
+    # We don't use sys.version_info.major to support Python 2.6.
+    if sys.version_info[0] == 2:
+        self.assertTrue(mac > None)
+
     mac2 = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x89, 0xcd]))
     self.assertTrue(mac2 > mac)
     mac3 = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x88, 0xab]))
     self.assertTrue(mac > mac3)
     macs = [mac, mac2, mac3]
-    self.assertEquals([mac3, mac, mac2], sorted(macs))
+    self.assertEqual([mac3, mac, mac2], sorted(macs))
 
   def testFromString(self):
-    self.assertEquals(None, MACAddress.FromString(''))
-    self.assertEquals(None, MACAddress.FromString('abc'))
-    self.assertEquals(None, MACAddress.FromString(':'))
-    self.assertEquals(None, MACAddress.FromString('0:1:2'))
-    self.assertEquals(None, MACAddress.FromString('12345:1234'))
+    self.assertEqual(None, MACAddress.FromString(''))
+    self.assertEqual(None, MACAddress.FromString('abc'))
+    self.assertEqual(None, MACAddress.FromString(':'))
+    self.assertEqual(None, MACAddress.FromString('0:1:2'))
+    self.assertEqual(None, MACAddress.FromString('12345:1234'))
 
     mac = MACAddress.FromString('01:23:45:67:89:ab')
     self.assertTrue(mac)
-    self.assertEquals(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
-    self.assertEquals('01:23:45:67:89:ab', str(mac))
+    self.assertEqual(b'\x01\x23\x45\x67\x89\xab', bytes(mac.mac_address))
+    self.assertEqual('01:23:45:67:89:ab', str(mac))
 
     mac2 = MACAddress.FromString('98.76.54.fe.dc.ba')
     self.assertTrue(mac2)
-    self.assertEquals(b'\x98\x76\x54\xfe\xdc\xba', bytes(mac2.mac_address))
-    self.assertEquals('98:76:54:fe:dc:ba', str(mac2))
+    self.assertEqual(b'\x98\x76\x54\xfe\xdc\xba', bytes(mac2.mac_address))
+    self.assertEqual('98:76:54:fe:dc:ba', str(mac2))
 
   def testSorting(self):
     m1 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
     m2 = MACAddress(bytearray([0x48, 0x45, 0x00, 0x00, 0x02, 0x2e]))
     m3 = MACAddress(bytearray([0x48, 0x44, 0x00, 0x00, 0x02, 0x2e]))
     m4 = MACAddress(bytearray([0x48, 0x46, 0x00, 0x00, 0x02, 0x2e]))
-    macs = [m1, m2, m3, m4]
-    macs.sort()
-    self.assertEquals([m3, m2, m1, m4], macs)
+    macs = sorted([m1, m2, m3, m4])
+    self.assertEqual([m3, m2, m1, m4], macs)
+
+  def testEquals(self):
+    m1 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
+    m2 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
+    self.assertEqual(m1, m2)
 
 if __name__ == '__main__':
   unittest.main()

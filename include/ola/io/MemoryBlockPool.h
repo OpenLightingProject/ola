@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MemoryBlockPool.h
  * Allocates and Releases MemoryBlocks.
@@ -29,7 +29,8 @@ namespace ola {
 namespace io {
 
 /**
- * MemoryBlockPool. This class is not thread safe.
+ * @brief MemoryBlockPool. This class is not thread safe.
+ * @param block_size the size of blocks to use.
  */
 class MemoryBlockPool {
  public:

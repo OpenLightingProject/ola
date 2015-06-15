@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DmxBuffer.h
  * Interface for the DmxBuffer
@@ -214,7 +214,7 @@ class DmxBuffer {
      * @brief Get a range of values starting from a particular slot.
      * @param slot is the dmx slot to start from
      * @param data is a pointer to where you want to store the gathered data
-     * @param length is the length of the data you wish to retrieve
+     * @param[in,out] length is the length of the data you wish to retrieve
      */
     void GetRange(unsigned int slot, uint8_t *data,
                   unsigned int *length) const;

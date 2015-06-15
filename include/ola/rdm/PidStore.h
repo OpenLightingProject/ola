@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PidStore.h
  * Holds information about RDM PIDs.
@@ -60,6 +60,10 @@ class PidDescriptor;
  *   - E1.20, Remote %Device Management.
  *   - E1.37-1, Additional Message Sets for Dimmers.
  *   - E1.37-2, Additional Message Sets for IPv4 & DNS Configuration.
+ *
+ * An overrides.proto file can be used as a local system override of any PID
+ * data. This allows manufacturers to specify their own manufacturer specific
+ * commands and for testing of draft PIDs.
  */
 class RootPidStore {
  public:

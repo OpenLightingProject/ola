@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 # ola_universe_info.py
 # Copyright (C) 2005 Simon Newton
@@ -25,7 +25,21 @@ from ola.OlaClient import Universe
 
 def Universes(state, universes):
   for uni in universes:
-    print '%d %s %r' % (uni.id, uni.name, uni.merge_mode == Universe.LTP)
+    print('Universe {}'.format(uni.id))
+    print('  - Name: {}'.format(uni.name))
+    print('  - Merge mode: {}'.format(
+      'LTP' if uni.merge_mode == Universe.LTP else 'HTP'))
+
+    if len(uni.input_ports) > 0:
+      print('  - Input ports:')
+      for p in uni.input_ports:
+        print('    - {}'.format(p))
+
+    if len(uni.output_ports) > 0:
+      print('  - Output ports:')
+      for p in uni.output_ports:
+        print('    - {}'.format(p))
+
   wrapper.Stop()
 
 wrapper = ClientWrapper()

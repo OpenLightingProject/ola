@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * NetworkUtils.cpp
  * Abstract various network functions.
@@ -27,6 +27,10 @@
 
 #ifdef _WIN32
 typedef uint32_t in_addr_t;
+// Iphlpapi.h depends on Winsock2.h
+#define WIN_32_LEAN_AND_MEAN
+#include <ola/win/CleanWinSock2.h>
+#include <Iphlpapi.h>
 #else
 #include <netinet/in.h>
 #endif
@@ -172,17 +176,19 @@ int8_t HostToLittleEndian(int8_t value) {
 }
 
 uint16_t HostToLittleEndian(uint16_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return ((value & 0xff) << 8) | (value >> 8);
-  else
+  } else {
     return value;
+  }
 }
 
 int16_t HostToLittleEndian(int16_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return ((value & 0xff) << 8) | (value >> 8);
-  else
+  } else {
     return value;
+  }
 }
 
 uint32_t _ByteSwap(uint32_t value) {
@@ -193,18 +199,20 @@ uint32_t _ByteSwap(uint32_t value) {
 }
 
 uint32_t HostToLittleEndian(uint32_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return _ByteSwap(value);
-  else
+  } else {
     return value;
+  }
 }
 
 
 int32_t HostToLittleEndian(int32_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return _ByteSwap(value);
-  else
+  } else {
     return value;
+  }
 }
 
 
@@ -219,41 +227,46 @@ int8_t LittleEndianToHost(int8_t value) {
 
 
 uint16_t LittleEndianToHost(uint16_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return ((value & 0xff) << 8) | (value >> 8);
-  else
+  } else {
     return value;
+  }
 }
 
 
 int16_t LittleEndianToHost(int16_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return ((value & 0xff) << 8) | (value >> 8);
-  else
+  } else {
     return value;
+  }
 }
 
 
 uint32_t LittleEndianToHost(uint32_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return _ByteSwap(value);
-  else
+  } else {
     return value;
+  }
 }
 
 
 int32_t LittleEndianToHost(int32_t value) {
-  if (IsBigEndian())
+  if (IsBigEndian()) {
     return _ByteSwap(value);
-  else
+  } else {
     return value;
+  }
 }
 
 
 string HostnameFromFQDN(const string &fqdn) {
   string::size_type first_dot = fqdn.find_first_of(".");
-  if (first_dot == string::npos)
+  if (first_dot == string::npos) {
     return fqdn;
+  }
   return fqdn.substr(0, first_dot);  // Don't return the dot itself
 }
 
@@ -261,8 +274,9 @@ string HostnameFromFQDN(const string &fqdn) {
 string DomainNameFromFQDN(const string &fqdn) {
   string::size_type first_dot = string::npos;
   first_dot = fqdn.find_first_of(".");
-  if (first_dot == string::npos)
+  if (first_dot == string::npos) {
     return "";
+  }
   return fqdn.substr(first_dot + 1);  // Don't return the dot itself
 }
 
@@ -318,10 +332,31 @@ bool NameServers(vector<IPV4Address> *name_servers) {
 
   res_nclose(&res);
 #elif defined(_WIN32)
-  // TODO(Lukas) Implement this for real
-  (void)name_servers;  // Silence compiler warning
-  OLA_WARN << "Nameserver enumeration not supported on Windows yet";
-  return false;
+  ULONG size = sizeof(FIXED_INFO);
+  PFIXED_INFO fixed_info = NULL;
+  while (1) {
+    fixed_info = reinterpret_cast<PFIXED_INFO>(new uint8_t[size]);
+    DWORD result = GetNetworkParams(fixed_info, &size);
+    if (result == ERROR_SUCCESS) {
+      break;
+    }
+
+    if (result != ERROR_BUFFER_OVERFLOW) {
+      OLA_WARN << "GetNetworkParams failed with: " << GetLastError();
+      return false;
+    }
+
+    delete[] fixed_info;
+  }
+
+  IP_ADDR_STRING* addr = &(fixed_info->DnsServerList);
+  for (; addr; addr = addr->Next) {
+    IPV4Address ipv4addr = IPV4Address(inet_addr(addr->IpAddress.String));
+    OLA_DEBUG << "Found nameserver: " << ipv4addr;
+    name_servers->push_back(ipv4addr);
+  }
+
+  delete[] fixed_info;
 #else
   // Init the resolver info each time so it's always current for the RDM
   // responders in case we've set it via RDM too
@@ -598,9 +633,24 @@ bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
 #elif defined(USE_NETLINK_FOR_DEFAULT_ROUTE)
   return GetDefaultRouteWithNetlink(if_index, default_gateway);
 #elif defined(_WIN32)
-  // TODO(Lukas) Implement this for real
-  OLA_WARN << "DefaultRoute not supported on Windows yet";
-  return false;
+  ULONG size = 4096;
+  PMIB_IPFORWARDTABLE forward_table =
+      reinterpret_cast<PMIB_IPFORWARDTABLE>(malloc(size));
+  DWORD result = GetIpForwardTable(forward_table, &size, TRUE);
+  if (result == NO_ERROR) {
+    for (int i = 0; i < forward_table->dwNumEntries; ++i) {
+      if (forward_table->table[i].dwForwardDest == 0) {
+        *default_gateway =
+            IPV4Address(forward_table->table[i].dwForwardNextHop);
+        *if_index = forward_table->table[i].dwForwardIfIndex;
+      }
+    }
+    free(forward_table);
+    return true;
+  } else {
+    OLA_WARN << "GetIpForwardTable failed with " << GetLastError();
+    return false;
+  }
 #else
 #error "DefaultRoute not implemented for this platform, please report this."
   // TODO(Peter): Do something else on machines without Netlink

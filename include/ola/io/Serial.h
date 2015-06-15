@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Serial.h
  * Serial IO functions.
@@ -22,6 +22,9 @@
 #define INCLUDE_OLA_IO_SERIAL_H_
 
 #include <stdint.h>
+#include <string>
+#include <vector>
+
 #ifdef _WIN32
 // Define types and constants to mimic termios.h
 #define B9600 9600
@@ -55,6 +58,15 @@ typedef enum {
  * supported by the method.
  */
 bool UIntToSpeedT(uint32_t value, speed_t *output);
+
+/**
+ * @brief Check for UUCP lock files.
+ * @param directories The directories to check for lock files.
+ * @param serial_device The serial device to check.
+ * @returns true if a lockfile exists, false otherwise.
+ */
+bool CheckForUUCPLockFile(const std::vector<std::string> &directories,
+                          const std::string &serial_device);
 }  // namespace io
 }  // namespace ola
 #endif  // INCLUDE_OLA_IO_SERIAL_H_

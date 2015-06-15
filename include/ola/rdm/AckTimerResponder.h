@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * AckTimerResponder_h
  * Copyright (C) 2013 Simon Newton
@@ -50,7 +50,7 @@ class AckTimerResponder: public RDMControllerInterface {
   explicit AckTimerResponder(const UID &uid);
   ~AckTimerResponder();
 
-  void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
+  void SendRDMRequest(RDMRequest *request, RDMCallback *callback);
 
  private:
   /**
@@ -108,23 +108,24 @@ class AckTimerResponder: public RDMControllerInterface {
 
   uint8_t QueuedMessageCount() const;
   void QueueAnyNewMessages();
-  const RDMResponse *ResponseFromQueuedMessage(
+
+  RDMResponse *ResponseFromQueuedMessage(
       const RDMRequest *request,
       const class QueuedResponse *queued_response);
-  const RDMResponse *EmptyStatusMessage(const RDMRequest *request);
-  const RDMResponse *GetQueuedMessage(const RDMRequest *request);
-  const RDMResponse *GetDeviceInfo(const RDMRequest *request);
-  const RDMResponse *GetPersonality(const RDMRequest *request);
-  const RDMResponse *SetPersonality(const RDMRequest *request);
-  const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
-  const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
-  const RDMResponse *GetIdentify(const RDMRequest *request);
-  const RDMResponse *SetIdentify(const RDMRequest *request);
-  const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceLabel(const RDMRequest *request);
-  const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-  const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+  RDMResponse *EmptyStatusMessage(const RDMRequest *request);
+  RDMResponse *GetQueuedMessage(const RDMRequest *request);
+  RDMResponse *GetDeviceInfo(const RDMRequest *request);
+  RDMResponse *GetPersonality(const RDMRequest *request);
+  RDMResponse *SetPersonality(const RDMRequest *request);
+  RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+  RDMResponse *GetDmxStartAddress(const RDMRequest *request);
+  RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+  RDMResponse *GetIdentify(const RDMRequest *request);
+  RDMResponse *SetIdentify(const RDMRequest *request);
+  RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceLabel(const RDMRequest *request);
+  RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+  RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
 
   static const ResponderOps<AckTimerResponder>::ParamHandler PARAM_HANDLERS[];
   static const uint16_t ACK_TIMER_MS;

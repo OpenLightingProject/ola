@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Header.h
  * The E1.31 Header
@@ -20,6 +20,8 @@
 
 #ifndef PLUGINS_E131_E131_E131HEADER_H_
 #define PLUGINS_E131_E131_E131HEADER_H_
+
+#include <ola/base/Macro.h>
 
 #include <stdint.h>
 #include <string>
@@ -33,7 +35,14 @@ namespace e131 {
  */
 class E131Header {
  public:
-    E131Header() {}
+    E131Header()
+        : m_priority(0),
+          m_sequence(0),
+          m_universe(0),
+          m_is_preview(false),
+          m_has_terminated(false),
+          m_is_rev2(false) {
+    }
     E131Header(const std::string &source,
                uint8_t priority,
                uint8_t sequence,
@@ -72,6 +81,7 @@ class E131Header {
 
     enum { SOURCE_NAME_LEN = 64 };
 
+    PACK(
     struct e131_pdu_header_s {
       char source[SOURCE_NAME_LEN];
       uint8_t priority;
@@ -79,7 +89,7 @@ class E131Header {
       uint8_t sequence;
       uint8_t options;
       uint16_t universe;
-    } __attribute__((packed));
+    });
     typedef struct e131_pdu_header_s e131_pdu_header;
 
     static const uint8_t PREVIEW_DATA_MASK = 0x80;

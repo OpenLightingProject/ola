@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="olaApp">
+<head lang="en">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OLA</title>
+  <link rel="stylesheet" href="/new/libs/bootstrap/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="/new/css/style.min.css"/>
+</head>
+<body>
+<nav class="navbar navbar-default" ng-controller="menuCtrl">
+ <div class="container-fluid">
+  <div class="navbar-header">
+   <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+    <span class="sr-only">Toggle navigation</span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+   </button>
+   <a class="navbar-brand" href="/new/#/">
+    <img height="22" width="51" src="img/logo-mini.png"/>
+   </a>
+   <div class="navbar-text navbar-info navbar-mobile">
+    {{Info.instance_name}}<br/>{{Info.ip}}
+   </div>
+  </div>
+  <div class="navbar-text navbar-info navbar-desktop ">
+   {{Info.instance_name}}<br/>{{Info.ip}}
+  </div>
+
+  <!-- Collect the nav links, forms, and other content for toggling -->
+  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+   <ul class="nav navbar-nav">
+    <li><a href="/new/#/">Home</a></li>
+    <li class="dropdown">
+     <a href="/new/#/universes/" style="display:inline-block;padding-right:0px;" >Universes</a>
+     <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" style="display:inline-block;padding-left:0px;">
+      <span class="caret"></span>
+     </a>
+     <ul class="dropdown-menu" role="menu">
+      <li><a href="/new/#/universe/add">Add Universe</a></li>
+      <li ng-if="Items.universes" class="divider"></li>
+      <li ng-repeat="universe in Items.universes">
+       <a href="/new/#/universe/{{universe.id}}">{{universe.name}}</a>
+      </li>
+     </ul>
+    </li>
+    <li><a href="/new/#/plugins">Plugins</a></li>
+    <li><a href="/ola.html">Old UI</a></li>
+   </ul>
+  </div>
+  <!-- /.navbar-collapse -->
+ </div>
+ <!-- /.container-fluid -->
+</nav>
+<div id="errorAlerts"></div>
+<div id="ngView" class="container-fluid" ng-view></div>
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog"
+     aria-labelledby="errorModalLabel" aria-hidden="true">
+ <div class="modal-dialog">
+  <div class="modal-content">
+   <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+     <span aria-hidden="true">&times;</span>
+    </button>
+    <h4 class="modal-title" id="errorModalLabel">Error</h4>
+   </div>
+   <div class="modal-body" id="errorModalBody">
+   </div>
+   <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">
+     Close
+    </button>
+   </div>
+  </div>
+ </div>
+</div>
+<div id="javascript">
+  <script type="text/javascript" src="/new/libs/angular/js/angular.min.js"></script>
+  <script type="text/javascript" src="/new/libs/angular-route/js/angular-route.min.js"></script>
+  <script type="text/javascript" src="/new/libs/jquery/js/jquery.min.js"></script>
+  <script type="text/javascript" src="/new/libs/bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/new/js/app.min.js"></script>
+</div>
+</body>
+</html>

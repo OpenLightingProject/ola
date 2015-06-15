@@ -11,10 +11,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RDMPDU.h
- * Interface for the RDMPDU class
+ * The RDMPDU class
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -22,46 +22,16 @@
 #define PLUGINS_E131_E131_RDMPDU_H_
 
 #include <ola/io/IOStack.h>
-#include <ola/rdm/RDMCommand.h>
-#include <memory>
 
 #include "plugins/e131/e131/PDU.h"
-#include "plugins/e131/e131/RDMInflator.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
-/**
- * An RDM PDU carries a RDMCommand.
- */
-class RDMPDU: public PDU {
+class RDMPDU : private PDU {
  public:
-    /**
-     * Ownership of the command is transferred here
-     */
-    explicit RDMPDU(const ola::rdm::RDMCommand *command):
-      PDU(RDMInflator::VECTOR_RDMNET_DATA, ONE_BYTE),
-      m_command(command) {
-    }
-    ~RDMPDU() {
-    }
-
-    unsigned int HeaderSize() const { return 0; }
-    unsigned int DataSize() const;
-    bool PackHeader(uint8_t *data, unsigned int *length) const;
-    bool PackData(uint8_t *data, unsigned int *length) const;
-
-    void PackHeader(ola::io::OutputStream *stream) const {
-      (void) stream;
-    }
-
-    void PackData(ola::io::OutputStream *stream) const;
-
-    static void PrependPDU(ola::io::IOStack *stack);
-
- private:
-    std::auto_ptr<const ola::rdm::RDMCommand> m_command;
+  static void PrependPDU(ola::io::IOStack *stack);
 };
 }  // namespace e131
 }  // namespace plugin

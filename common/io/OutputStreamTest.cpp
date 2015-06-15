@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OutputStream.cpp
  * Test fixture for the OutputStream class.
@@ -32,29 +32,25 @@
 using ola::io::IOQueue;
 using ola::io::BigEndianOutputStream;
 using ola::network::HostToNetwork;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;
 
 
 class OutputStreamTest: public CppUnit::TestFixture {
  public:
-    CPPUNIT_TEST_SUITE(OutputStreamTest);
-    CPPUNIT_TEST(testBasicWrite);
-    CPPUNIT_TEST(testWritePrimatives);
-    CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(OutputStreamTest);
+  CPPUNIT_TEST(testBasicWrite);
+  CPPUNIT_TEST(testWritePrimatives);
+  CPPUNIT_TEST_SUITE_END();
 
  public:
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
-    void testBasicWrite();
-    void testWritePrimatives();
+  void testBasicWrite();
+  void testWritePrimatives();
 
  private:
-    IOQueue m_buffer;
+  IOQueue m_buffer;
 
-    unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
+  unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
 };
 
 
@@ -102,6 +98,6 @@ void OutputStreamTest::testWritePrimatives() {
 
   uint8_t data1[] = {0, 0, 0, 4, 0x80, 0, 0, 0, 0xa, 0x9, 0x60};
   unsigned int output_size = m_buffer.Peek(output_data, m_buffer.Size());
-  ASSERT_DATA_EQUALS(__LINE__, data1, sizeof(data1), output_data, output_size);
+  OLA_ASSERT_DATA_EQUALS(data1, sizeof(data1), output_data, output_size);
   delete[] output_data;
 }

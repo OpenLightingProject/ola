@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  ola-recorder.cpp
  *  A simple tool to record & playback shows.
@@ -70,7 +70,7 @@ int RecordShow() {
 
   vector<string> universe_strs;
   vector<unsigned int> universes;
-  ola::StringSplit(FLAGS_universes.str(), universe_strs, ",");
+  ola::StringSplit(FLAGS_universes.str(), &universe_strs, ",");
   vector<string>::const_iterator iter = universe_strs.begin();
   for (; iter != universe_strs.end(); ++iter) {
     unsigned int universe;
@@ -93,6 +93,9 @@ int RecordShow() {
         SIGINT, ola::NewCallback(TerminateRecorder, &show_recorder));
     signal_thread.InstallSignalHandler(
         SIGTERM, ola::NewCallback(TerminateRecorder, &show_recorder));
+    if (!signal_thread.Start()) {
+      show_recorder.Stop();
+    }
     show_recorder.Record();
   }
   cout << "Saved " << show_recorder.FrameCount() << " frames" << endl;
@@ -140,7 +143,12 @@ int VerifyShow(const string &filename) {
   cout << "Playback time: " << total_time / 1000 << "." << total_time % 10 <<
     " seconds" << endl;
 
-  return ola::EXIT_OK;
+  if ((state == ShowLoader::OK) || (state == ShowLoader::END_OF_FILE)) {
+    return ola::EXIT_OK;
+  } else {
+    OLA_FATAL << "Error loading show, got state " << state;
+    return ola::EXIT_DATAERR;
+  }
 }
 
 /*

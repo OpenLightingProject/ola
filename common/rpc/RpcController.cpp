@@ -11,32 +11,39 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RpcController.cpp
- * The  RPC Controller
+ * The RpcController.
  * Copyright (C) 2005 Simon Newton
  */
 
-#include <string>
-#include "ola/Logging.h"
 #include "common/rpc/RpcController.h"
+
+#include <string>
+#include "common/rpc/RpcSession.h"
 
 namespace ola {
 namespace rpc {
 
-RpcController::RpcController()
-    : m_failed(false),
+RpcController::RpcController(RpcSession *session)
+    : m_session(session),
+      m_failed(false),
       m_error_text("") {
 }
 
 void RpcController::Reset() {
   m_failed = false;
+  m_error_text = "";
 }
 
 void RpcController::SetFailed(const std::string &reason) {
   m_failed = true;
   m_error_text = reason;
+}
+
+RpcSession *RpcController::Session() {
+  return m_session;
 }
 }  // namespace rpc
 }  // namespace ola

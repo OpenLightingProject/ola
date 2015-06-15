@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OlaClient.h
  * This is the main client API to OLA.
@@ -66,11 +66,18 @@ class OlaClient {
 
   /**
    * @brief Set the callback to be run when new DMX data arrives.
+   *
    * The DMX callback will be run when new data arrives for universes that
    * have been registered with RegisterUniverse().
    * @param callback the callback to run upon receiving new DMX data.
    */
   void SetDMXCallback(RepeatableDMXCallback *callback);
+
+  /**
+   * @brief Trigger a plugin reload.
+   * @param callback the SetCallback to invoke upon completion.
+   */
+  void ReloadPlugins(SetCallback *callback);
 
   /**
    * @brief Fetch the list of plugins loaded.
@@ -88,8 +95,9 @@ class OlaClient {
                               PluginDescriptionCallback *callback);
 
   /**
-   * @brief Fetch the state of a plugin. This returns the state and the list
-   * of plugins this plugin conflicts with.
+   * @brief Fetch the state of a plugin.
+   *
+   * This returns the state and the list of plugins this plugin conflicts with.
    * @param plugin_id the id of the plugin to fetch the state for.
    * @param callback the PluginStateCallback to be invoked upon completion.
    */
@@ -106,7 +114,7 @@ class OlaClient {
                        DeviceInfoCallback *callback);
 
   /**
-   * Request a list of ports that could be patched to new universe.
+   * @brief Request a list of ports that could be patched to new universe.
    * @param callback the CandidatePortsCallback invoked upon completion.
    */
   void FetchCandidatePorts(CandidatePortsCallback *callback);
@@ -120,6 +128,16 @@ class OlaClient {
    */
   void FetchCandidatePorts(unsigned int universe_id,
                            CandidatePortsCallback *callback);
+
+  /**
+   * @brief Set the state of a plugin.
+   * @param plugin_id the id of the plugin to set the state of.
+   * @param state the state to set the plugin to
+   * @param callback the SetCallback to invoke upon completion.
+   */
+  void SetPluginState(ola_plugin_id plugin_id,
+                      bool state,
+                      SetCallback *callback);
 
   /**
    * @brief Send a device config request.
@@ -208,8 +226,10 @@ class OlaClient {
              SetCallback *callback);
 
   /**
-   * @brief Register our interest in a universe. The callback set by
-   * SetDMXCallback() will be called when new DMX data arrives.
+   * @brief Register our interest in a universe.
+   *
+   * The callback set by SetDMXCallback() will be called when new DMX data
+   * arrives.
    * @param universe the id of the universe to register for.
    * @param register_action the action (register or unregister)
    * @param callback the SetCallback to invoke upon completion.

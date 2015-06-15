@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArduinoRGBDevice.h
  * The Arduino RGB Mixer device.
@@ -22,10 +22,12 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/io/ByteString.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
+#include "ola/strings/Format.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
@@ -34,8 +36,13 @@ namespace plugin {
 namespace usbpro {
 
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMReply;
+using ola::rdm::RDMRequest;
+using ola::rdm::RunRDMCallback;
+using std::auto_ptr;
 using std::ostringstream;
 using std::string;
+using std::vector;
 
 const uint8_t ArduinoWidgetImpl::RDM_REQUEST_LABEL = 'R';
 
@@ -60,7 +67,6 @@ ArduinoWidgetImpl::ArduinoWidgetImpl(
     : BaseUsbProWidget(descriptor),
       m_transaction_id(0),
       m_uid(esta_id, serial),
-      m_pending_request(NULL),
       m_rdm_request_callback(NULL) {
 }
 
@@ -79,16 +85,10 @@ ArduinoWidgetImpl::~ArduinoWidgetImpl() {
  */
 void ArduinoWidgetImpl::Stop() {
   // timeout any existing message
-  std::vector<std::string> packets;
   if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
-  }
-
-  if (m_pending_request) {
-    delete m_pending_request;
-    m_pending_request = NULL;
+    RunRDMCallback(callback, ola::rdm::RDM_TIMEOUT);
   }
 }
 
@@ -96,48 +96,38 @@ void ArduinoWidgetImpl::Stop() {
 /**
  * Handle an RDM request by passing it through to the Arduino
  */
-void ArduinoWidgetImpl::SendRDMRequest(
-    const ola::rdm::RDMRequest *request,
-    ola::rdm::RDMCallback *on_complete) {
-  std::vector<std::string> packets;
-
+void ArduinoWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
+                                       ola::rdm::RDMCallback *on_complete) {
+  auto_ptr<RDMRequest> request(request_ptr);
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND) {
-    on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
-                     NULL,
-                     packets);
-    delete request;
+    RunRDMCallback(on_complete, ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED);
     return;
   }
 
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
-    delete request;
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
 
-  unsigned int data_size = RDMCommandSerializer::RequiredSize(*request);
-  // allow an extra byte for the start code
-  uint8_t *data = new uint8_t[data_size + 1];
-  data[0] = ola::rdm::RDMCommand::START_CODE;
+  request->SetTransactionNumber(m_transaction_id++);
+  request->SetPortId(1);
 
-  if (RDMCommandSerializer::Pack(*request, data + 1, &data_size,
-                                 request->SourceUID(), m_transaction_id++, 1)) {
-    data_size++;
-    m_rdm_request_callback = on_complete;
-    m_pending_request = request;
-    if (SendMessage(RDM_REQUEST_LABEL, data, data_size)) {
-      delete[] data;
-      return;
-    }
-  } else {
+  ola::io::ByteString data;
+  if (!RDMCommandSerializer::PackWithStartCode(*request, &data)) {
     OLA_WARN << "Failed to pack message, dropping request";
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
+    return;
+  }
+
+  m_rdm_request_callback = on_complete;
+  m_pending_request.reset(request.release());
+  if (SendMessage(RDM_REQUEST_LABEL, data.data(), data.size())) {
+    return;
   }
   m_rdm_request_callback = NULL;
-  m_pending_request = NULL;
-  delete[] data;
-  delete request;
-  on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+  m_pending_request.reset();
+  RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
 }
 
 
@@ -152,8 +142,7 @@ void ArduinoWidgetImpl::HandleMessage(uint8_t label,
       HandleRDMResponse(data, length);
       break;
     default:
-      OLA_WARN << "Unknown label: 0x" << std::hex <<
-        static_cast<int>(label);
+      OLA_WARN << "Unknown label: " << strings::ToHex(label);
   }
 }
 
@@ -163,32 +152,26 @@ void ArduinoWidgetImpl::HandleMessage(uint8_t label,
  */
 void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                           unsigned int length) {
-  std::vector<std::string> packets;
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a response but no callback to run!";
     return;
   }
 
-  ostringstream str;
-  for (unsigned int i = 0; i < length; ++i) {
-    str << std::hex << static_cast<int>(data[i]) << " ";
-  }
-
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
-  std::auto_ptr<const ola::rdm::RDMRequest> request(m_pending_request);
-  m_pending_request = NULL;
+  std::auto_ptr<const ola::rdm::RDMRequest> request(
+      m_pending_request.release());
 
   if (length == 0) {
     // invalid response
-    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
+    RunRDMCallback(callback, ola::rdm::RDM_INVALID_RESPONSE);
     return;
   }
 
   if (data[0]) {
     switch (data[0]) {
       case RESPONSE_WAS_BROADCAST:
-        callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+        RunRDMCallback(callback, ola::rdm::RDM_WAS_BROADCAST);
         return;
       case RESPONSE_FAILED:
         break;
@@ -202,10 +185,10 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
         OLA_WARN << "USB Device reports invalid command";
         break;
       default:
-        OLA_WARN << "Invalid response code from USB device: " <<
-          static_cast<int>(data[0]);
+        OLA_WARN << "Invalid response code from USB device: "
+                 << static_cast<int>(data[0]);
     }
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    RunRDMCallback(callback, ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
 
@@ -213,33 +196,21 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
   if (length == 1) {
     // invalid response
     OLA_WARN << "RDM Response was too short";
-    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
+    RunRDMCallback(callback, ola::rdm::RDM_INVALID_RESPONSE);
     return;
   }
 
-  if (data[1] != ola::rdm::RDMCommand::START_CODE) {
-    OLA_WARN << "Wrong start code, was 0x" << std::hex <<
-    static_cast<int>(data[1]) << " required 0x" <<
-    static_cast<int>(ola::rdm::RDMCommand::START_CODE);
-    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
+  if (data[1] != ola::rdm::START_CODE) {
+    OLA_WARN << "Wrong start code, was " << strings::ToHex(data[1])
+             << " required "
+             << strings::ToHex(ola::rdm::START_CODE);
+    RunRDMCallback(callback, ola::rdm::RDM_INVALID_RESPONSE);
     return;
   }
 
-  string packet;
-  packet.assign(reinterpret_cast<const char*>(data + 2), length - 2);
-  packets.push_back(packet);
-
-  ola::rdm::rdm_response_code code;
-  ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
-      packet,
-      &code,
-      request.get(),
-      m_transaction_id - 1);
-
-  if (response)
-    callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
-  else
-    callback->Run(code, NULL, packets);
+  rdm::RDMFrame frame(data + 1, length - 1);
+  auto_ptr<RDMReply> reply(RDMReply::FromFrame(frame, request.get()));
+  callback->Run(reply.get());
 }
 
 

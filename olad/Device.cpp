@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Device.cpp
  * Base implementation of the device class.
@@ -197,8 +197,8 @@ bool Device::GenericAddPort(PortClass *port,
     return false;
 
   if (!STLInsertIfNotPresent(port_map, port->PortId(), port)) {
-    OLA_WARN << "Attempt to insert a port but this port id is already " <<
-      "associated with a diferent port.";
+    OLA_WARN << "Attempt to insert a port but this port id is already "
+             << "associated with a different port.";
   }
   return true;
 }

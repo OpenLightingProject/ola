@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderOps.h
  * A framework for building RDM responders.
@@ -65,7 +65,7 @@ class ResponderOps {
      * The member function should return a RDMResponse object. If the request
      * was broadcast, this object will be discarded.
      */
-    typedef const RDMResponse *(Target::*RDMHandler)(const RDMRequest *request);
+    typedef RDMResponse *(Target::*RDMHandler)(const RDMRequest *request);
 
     /**
      * @brief the structure that defines the behaviour for a specific PID.o

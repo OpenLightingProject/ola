@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PluginLoader.h
  * Interface for the PluginLoader classes
@@ -27,22 +27,42 @@
 
 namespace ola {
 
+/**
+ * @brief The interface used to load plugins.
+ */
 class PluginLoader {
  public:
-    PluginLoader() {}
-    virtual ~PluginLoader() {}
+  PluginLoader() : m_plugin_adaptor(NULL) {}
+  virtual ~PluginLoader() {}
 
-    void SetPluginAdaptor(class PluginAdaptor *adaptor) {
-      m_plugin_adaptor = adaptor;
-    }
-    virtual std::vector<class AbstractPlugin*> LoadPlugins() = 0;
-    virtual void UnloadPlugins() = 0;
+  /**
+   * @brief Set the PluginAdaptor to use for the plugins.
+   * @param adaptor The PluginAdaptor, ownership is not transferred.
+   */
+  void SetPluginAdaptor(class PluginAdaptor *adaptor) {
+    m_plugin_adaptor = adaptor;
+  }
+
+  /**
+   * @brief Load the plugins.
+   * @returns A vector with a list of the plugins which were loaded. The
+   *   PluginLoader maintains ownership of each plugin.
+   */
+  virtual std::vector<class AbstractPlugin*> LoadPlugins() = 0;
+
+  /**
+   * @brief Unload all previously loaded plugins.
+   *
+   * After this call completes, any plugins returned by LoadPlugins() must not
+   * be used.
+   */
+  virtual void UnloadPlugins() = 0;
 
  protected:
-    class PluginAdaptor *m_plugin_adaptor;
+  class PluginAdaptor *m_plugin_adaptor;
 
  private:
-    DISALLOW_COPY_AND_ASSIGN(PluginLoader);
+  DISALLOW_COPY_AND_ASSIGN(PluginLoader);
 };
 }  // namespace ola
 #endif  // OLAD_PLUGINLOADER_H_

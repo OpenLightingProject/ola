@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * GroupSizeCalculator.h
  * Calculate the number of items in a group, given a fixed number of tokens.
@@ -28,7 +28,7 @@
 namespace ola {
 
 namespace messaging {
-  class Descriptor;
+class Descriptor;
 }
 
 namespace rdm {
@@ -41,7 +41,9 @@ namespace rdm {
 class StaticGroupTokenCalculator
     : public ola::messaging::FieldDescriptorVisitor {
  public:
-    StaticGroupTokenCalculator() {}
+    StaticGroupTokenCalculator()
+        : m_variable_sized_group_encountered(false) {
+    }
     ~StaticGroupTokenCalculator() {}
 
     bool Descend() const { return true; }

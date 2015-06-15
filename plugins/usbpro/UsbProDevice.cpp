@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * UsbProDevice.cpp
  * An Enttec Usb Pro device
@@ -26,8 +26,8 @@
 #include <string>
 
 #include "common/rpc/RpcController.h"
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "olad/Preferences.h"
 #include "plugins/usbpro/UsbProDevice.h"
@@ -89,7 +89,6 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
     enttec_port->GetParameters(
       NewSingleCallback(this, &UsbProDevice::UpdateParams, i));
   }
-  Start();  // this does nothing but set IsEnabled() to true
 }
 
 

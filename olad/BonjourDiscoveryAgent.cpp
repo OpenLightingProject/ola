@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BonjourDiscoveryAgent.cpp
  * The Bonjour implementation of DiscoveryAgentInterface.
@@ -34,6 +34,7 @@
 namespace ola {
 
 using ola::network::HostToNetwork;
+using ola::thread::Thread;
 using std::auto_ptr;
 using std::string;
 
@@ -80,8 +81,8 @@ void DNSSDDescriptor::PerformRead() {
 }
 
 BonjourDiscoveryAgent::RegisterArgs::RegisterArgs(
-    const std::string &service_name,
-    const std::string &type,
+    const string &service_name,
+    const string &type,
     uint16_t port,
     const RegisterOptions &options)
     : RegisterOptions(options),
@@ -91,8 +92,9 @@ BonjourDiscoveryAgent::RegisterArgs::RegisterArgs(
 }
 
 BonjourDiscoveryAgent::BonjourDiscoveryAgent()
-    : m_thread(new ola::thread::CallbackThread(NewSingleCallback(
-          &m_ss, &ola::io::SelectServer::Run))) {
+    : m_thread(new ola::thread::CallbackThread(
+          NewSingleCallback(this, &BonjourDiscoveryAgent::RunThread),
+          Thread::Options("bonjour"))) {
 }
 
 BonjourDiscoveryAgent::~BonjourDiscoveryAgent() {
@@ -171,5 +173,10 @@ string BonjourDiscoveryAgent::BuildTxtRecord(
     output.append(iter->second);
   }
   return output;
+}
+
+void BonjourDiscoveryAgent::RunThread() {
+  m_ss.Run();
+  m_ss.DrainCallbacks();
 }
 }  // namespace ola

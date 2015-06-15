@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SensorResponder.cpp
  * Copyright (C) 2013 Simon Newton
@@ -24,11 +24,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
-#include "ola/Clock.h"
-#include "ola/Logging.h"
 #include "ola/base/Array.h"
-#include "ola/stl/STLUtils.h"
+#include "ola/Constants.h"
+#include "ola/Logging.h"
 #include "ola/math/Random.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
@@ -37,6 +35,7 @@
 #include "ola/rdm/ResponderLoadSensor.h"
 #include "ola/rdm/ResponderSensor.h"
 #include "ola/rdm/SensorResponder.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 namespace rdm {
@@ -179,35 +178,35 @@ SensorResponder::~SensorResponder() {
 /*
  * Handle an RDM Request
  */
-void SensorResponder::SendRDMRequest(const RDMRequest *request,
-                                          RDMCallback *callback) {
+void SensorResponder::SendRDMRequest(RDMRequest *request,
+                                     RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);
 }
 
-const RDMResponse *SensorResponder::GetDeviceInfo(
+RDMResponse *SensorResponder::GetDeviceInfo(
     const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_SENSOR_ONLY_MODEL, PRODUCT_CATEGORY_TEST,
       2, 0, 1, 1, ZERO_FOOTPRINT_DMX_ADDRESS, 0, m_sensors.size());
 }
 
-const RDMResponse *SensorResponder::GetProductDetailList(
+RDMResponse *SensorResponder::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(
       request, vector<rdm_product_detail>(1, PRODUCT_DETAIL_TEST));
 }
 
-const RDMResponse *SensorResponder::GetIdentify(
+RDMResponse *SensorResponder::GetIdentify(
     const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
-const RDMResponse *SensorResponder::SetIdentify(
+RDMResponse *SensorResponder::SetIdentify(
     const RDMRequest *request) {
   bool old_value = m_identify_mode;
-  const RDMResponse *response = ResponderHelper::SetBoolValue(
+  RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_mode);
   if (m_identify_mode != old_value) {
     OLA_INFO << "Sensor Device " << m_uid << ", identify mode "
@@ -216,22 +215,22 @@ const RDMResponse *SensorResponder::SetIdentify(
   return response;
 }
 
-const RDMResponse *SensorResponder::GetDeviceModelDescription(
+RDMResponse *SensorResponder::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA Sensor Device");
 }
 
-const RDMResponse *SensorResponder::GetManufacturerLabel(
+RDMResponse *SensorResponder::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *SensorResponder::GetDeviceLabel(
+RDMResponse *SensorResponder::GetDeviceLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Sensor Device");
 }
 
-const RDMResponse *SensorResponder::GetSoftwareVersionLabel(
+RDMResponse *SensorResponder::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
@@ -239,7 +238,7 @@ const RDMResponse *SensorResponder::GetSoftwareVersionLabel(
 /**
  * PID_SENSOR_DEFINITION
  */
-const RDMResponse *SensorResponder::GetSensorDefinition(
+RDMResponse *SensorResponder::GetSensorDefinition(
     const RDMRequest *request) {
   return ResponderHelper::GetSensorDefinition(request, m_sensors);
 }
@@ -247,18 +246,18 @@ const RDMResponse *SensorResponder::GetSensorDefinition(
 /**
  * PID_SENSOR_VALUE
  */
-const RDMResponse *SensorResponder::GetSensorValue(const RDMRequest *request) {
+RDMResponse *SensorResponder::GetSensorValue(const RDMRequest *request) {
   return ResponderHelper::GetSensorValue(request, m_sensors);
 }
 
-const RDMResponse *SensorResponder::SetSensorValue(const RDMRequest *request) {
+RDMResponse *SensorResponder::SetSensorValue(const RDMRequest *request) {
   return ResponderHelper::SetSensorValue(request, m_sensors);
 }
 
 /**
  * PID_RECORD_SENSORS
  */
-const RDMResponse *SensorResponder::RecordSensor(const RDMRequest *request) {
+RDMResponse *SensorResponder::RecordSensor(const RDMRequest *request) {
   return ResponderHelper::RecordSensor(request, m_sensors);
 }
 }  // namespace rdm

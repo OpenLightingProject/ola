@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SocketAddress.cpp
  * Represents a sockaddr structure.
@@ -89,7 +89,7 @@ bool IPV4SocketAddress::FromString(const string &input,
 
 
 IPV4SocketAddress IPV4SocketAddress::FromStringOrDie(
-    const std::string &address) {
+    const string &address) {
   IPV4SocketAddress socket_address;
   assert(FromString(address, &socket_address));
   return socket_address;

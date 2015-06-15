@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetPlugin.h
  * Interface for the ArtNet plugin class
@@ -45,6 +45,11 @@ class ArtNetPlugin : public Plugin {
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
+  /**
+   * Start the plugin, for now we just have one device.
+   * @todo Allow multiple devices on different IPs?
+   * @return true if we started ok, false otherwise
+   */
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();

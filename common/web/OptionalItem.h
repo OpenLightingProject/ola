@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OptionalItem.h
  * A value which may or may not be present.
@@ -22,6 +22,7 @@
 #define COMMON_WEB_OPTIONALITEM_H_
 
 #include <ola/base/Macro.h>
+#include <string>
 
 namespace ola {
 namespace web {
@@ -29,7 +30,7 @@ namespace web {
 template <typename T>
 class OptionalItem {
  public:
-  OptionalItem() : m_is_set(false) {}
+  OptionalItem();
 
   void Reset() { m_is_set = false; }
 
@@ -47,6 +48,18 @@ class OptionalItem {
 
   DISALLOW_COPY_AND_ASSIGN(OptionalItem);
 };
+
+template <>
+inline OptionalItem<std::string>::OptionalItem()
+    : m_is_set(false) {
+}
+
+template <typename T>
+OptionalItem<T>::OptionalItem()
+    : m_is_set(false),
+      m_value(0) {
+}
+
 
 }  // namespace web
 }  // namespace ola

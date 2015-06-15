@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BonjourDiscoveryAgent.h
  * The Bonjour implementation of DiscoveryAgentInterface.
@@ -43,43 +43,44 @@ class CallbackThread;
  */
 class BonjourDiscoveryAgent : public DiscoveryAgentInterface {
  public:
-    BonjourDiscoveryAgent();
-    ~BonjourDiscoveryAgent();
+  BonjourDiscoveryAgent();
+  ~BonjourDiscoveryAgent();
 
-    bool Init();
+  bool Init();
 
-    void RegisterService(const std::string &service_name,
-                         const std::string &type,
-                         uint16_t port,
-                         const RegisterOptions &options);
+  void RegisterService(const std::string &service_name,
+                       const std::string &type,
+                       uint16_t port,
+                       const RegisterOptions &options);
 
  private:
-    struct RegisterArgs : public RegisterOptions {
-      std::string service_name;
-      std::string type;
-      uint16_t port;
+  struct RegisterArgs : public RegisterOptions {
+    std::string service_name;
+    std::string type;
+    uint16_t port;
 
-      RegisterArgs(const std::string &service_name,
-                   const std::string &type,
-                   uint16_t port,
-                   const RegisterOptions &options);
-    };
+    RegisterArgs(const std::string &service_name,
+                 const std::string &type,
+                 uint16_t port,
+                 const RegisterOptions &options);
+  };
 
-    struct ServiceRef {
-      // DNSServiceRef is just a pointer.
-      DNSServiceRef service_ref;
-      class DNSSDDescriptor *descriptor;
-    };
+  struct ServiceRef {
+    // DNSServiceRef is just a pointer.
+    DNSServiceRef service_ref;
+    class DNSSDDescriptor *descriptor;
+  };
 
-    typedef std::vector<ServiceRef> ServiceRefs;
+  typedef std::vector<ServiceRef> ServiceRefs;
 
-    ola::io::SelectServer m_ss;
-    std::auto_ptr<thread::CallbackThread> m_thread;
-    ServiceRefs m_refs;
+  ola::io::SelectServer m_ss;
+  std::auto_ptr<thread::CallbackThread> m_thread;
+  ServiceRefs m_refs;
 
-    void InternalRegisterService(RegisterArgs *args);
-    std::string BuildTxtRecord(const RegisterOptions::TxtData &txt_data);
-    DISALLOW_COPY_AND_ASSIGN(BonjourDiscoveryAgent);
+  void InternalRegisterService(RegisterArgs *args);
+  std::string BuildTxtRecord(const RegisterOptions::TxtData &txt_data);
+  void RunThread();
+  DISALLOW_COPY_AND_ASSIGN(BonjourDiscoveryAgent);
 };
 }  // namespace ola
 #endif  // OLAD_BONJOURDISCOVERYAGENT_H_

@@ -11,21 +11,20 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * e133-receiver.cpp
+ * SimpleE133Node.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * This creates a E1.33 receiver with one (emulated) RDM responder. The node is
- * registered in slp and the RDM responder responds to E1.33 commands.
+ * This creates a E1.33 receiver with one (emulated) RDM responder. The node's
+ * RDM responder responds to E1.33 commands.
  */
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/acn/ACNPort.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
-#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/NetworkUtils.h>
@@ -53,8 +52,7 @@ using std::string;
  * Constructor
  */
 SimpleE133Node::SimpleE133Node(const Options &options)
-    : m_slp_thread(ola::e133::SLPThreadFactory::NewSLPThread(&m_ss)),
-      m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
+    : m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
       m_e133_device(&m_ss, options.cid, options.ip_address,
                     &m_endpoint_manager),
       m_management_endpoint(NULL, E133Endpoint::EndpointProperties(),
@@ -68,8 +66,6 @@ SimpleE133Node::SimpleE133Node(const Options &options)
 
 SimpleE133Node::~SimpleE133Node() {
   m_endpoint_manager.UnRegisterEndpoint(1);
-  m_slp_thread->Join(NULL);
-  m_slp_thread->Cleanup();
 }
 
 
@@ -83,13 +79,6 @@ bool SimpleE133Node::Init() {
   // register the root endpoint
   m_e133_device.SetRootEndpoint(&m_management_endpoint);
 
-  // Start the SLP thread.
-  if (!m_slp_thread->Init()) {
-    OLA_WARN << "SLPThread Init() failed";
-    return false;
-  }
-  m_slp_thread->Start();
-
   cout << "---------------  Controls  ----------------\n";
   cout << " c - Close the TCP connection\n";
   cout << " q - Quit\n";
@@ -101,17 +90,8 @@ bool SimpleE133Node::Init() {
 
 
 void SimpleE133Node::Run() {
-  m_slp_thread->RegisterDevice(
-    ola::NewSingleCallback(this, &SimpleE133Node::RegisterCallback),
-    m_ip_address, m_uid, m_lifetime);
-
   m_ss.Run();
   OLA_INFO << "Starting shutdown process";
-
-  m_slp_thread->DeRegisterDevice(
-    ola::NewSingleCallback(this, &SimpleE133Node::DeRegisterCallback),
-    m_ip_address, m_uid);
-  m_ss.Run();
 }
 
 void SimpleE133Node::AddEndpoint(uint16_t endpoint_id,
@@ -124,28 +104,9 @@ void SimpleE133Node::RemoveEndpoint(uint16_t endpoint_id) {
 }
 
 /**
- * Called when a registration request completes.
- */
-void SimpleE133Node::RegisterCallback(bool ok) {
-  if (!ok)
-    OLA_WARN << "Failed to register in SLP";
-}
-
-
-/**
- * Called when a de-registration request completes.
- */
-void SimpleE133Node::DeRegisterCallback(bool ok) {
-  if (!ok)
-    OLA_WARN << "Failed to de-register in SLP";
-  m_ss.Terminate();
-}
-
-
-/**
  * Called when there is data on stdin.
  */
-void SimpleE133Node::Input(char c) {
+void SimpleE133Node::Input(int c) {
   switch (c) {
     case 'c':
       m_e133_device.CloseTCPConnection();
@@ -183,11 +144,12 @@ void SimpleE133Node::DumpTCPStats() {
 void SimpleE133Node::SendUnsolicited() {
   OLA_INFO << "Sending unsolicited TCP stats message";
 
+  PACK(
   struct tcp_stats_message_s {
     uint32_t ip_address;
     uint16_t unhealthy_events;
     uint16_t connection_events;
-  } __attribute__((packed));
+  });
 
   struct tcp_stats_message_s tcp_stats_message;
 

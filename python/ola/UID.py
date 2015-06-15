@@ -1,4 +1,3 @@
-#  This program is free software; you can redistribute it and/or modify
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -11,7 +10,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # UID.py
 # Copyright (C) 2010 Simon Newton
@@ -61,6 +60,19 @@ class UID(object):
     if self._manufacturer_id == other._manufacturer_id:
       return cmp(self._device_id, other._device_id)
     return cmp(self.manufacturer_id, other.manufacturer_id)
+
+  def __lt__(self, other):
+    if self.manufacturer_id != other.manufacturer_id:
+      return self.manufacturer_id < other.manufacturer_id
+    else:
+      return self.device_id < other.device_id
+
+  def __eq__(self, other):
+    if other is None:
+      return False
+
+    return self.manufacturer_id == other.manufacturer_id and \
+           self.device_id == other.device_id
 
   @staticmethod
   def AllDevices():

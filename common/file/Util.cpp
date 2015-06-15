@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Util.cpp
  * File related helper functions.
@@ -25,7 +25,7 @@
 #include <string.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
-#include <Windows.h>
+#include <ola/win/CleanWindows.h>
 #endif
 
 #if HAVE_CONFIG_H
@@ -49,7 +49,7 @@ const char PATH_SEPARATOR = '\\';
 const char PATH_SEPARATOR = '/';
 #endif
 
-static string ConvertPathSeparators(const string &path) {
+string ConvertPathSeparators(const string &path) {
   string result = path;
 #ifdef _WIN32
   std::replace(result.begin(), result.end(), '/', PATH_SEPARATOR);
@@ -59,19 +59,20 @@ static string ConvertPathSeparators(const string &path) {
   return result;
 }
 
-void FindMatchingFiles(const string &directory,
+bool FindMatchingFiles(const string &directory,
                        const string &prefix,
                        vector<string> *files) {
   vector<string> prefixes;
   prefixes.push_back(prefix);
-  FindMatchingFiles(directory, prefixes, files);
+  return FindMatchingFiles(directory, prefixes, files);
 }
 
-void FindMatchingFiles(const string &directory,
+bool FindMatchingFiles(const string &directory,
                        const vector<string> &prefixes,
                        vector<string> *files) {
-  if (directory.empty() || prefixes.empty())
-    return;
+  if (directory.empty() || prefixes.empty()) {
+    return true;
+  }
 
 #ifdef _WIN32
   WIN32_FIND_DATA find_file_data;
@@ -87,8 +88,9 @@ void FindMatchingFiles(const string &directory,
 
   h_find = FindFirstFileA(search_pattern.data(), &find_file_data);
   if (h_find == INVALID_HANDLE_VALUE) {
-    OLA_WARN << "Find first file failed: " << GetLastError();
-    return;
+    OLA_WARN << "Find first file failed: " << GetLastError() << " for "
+             << search_pattern;
+    return false;
   }
 
   do {
@@ -107,12 +109,17 @@ void FindMatchingFiles(const string &directory,
   DIR *dp;
   struct dirent dir_ent;
   struct dirent *dir_ent_p;
-  if ((dp  = opendir(directory.data())) == NULL) {
+  if ((dp = opendir(directory.data())) == NULL) {
     OLA_WARN << "Could not open " << directory << ":" << strerror(errno);
-    return;
+    return false;
   }
 
-  readdir_r(dp, &dir_ent, &dir_ent_p);
+  if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
+    OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
+    closedir(dp);
+    return false;
+  }
+
   while (dir_ent_p != NULL) {
     vector<string>::const_iterator iter;
     for (iter = prefixes.begin(); iter != prefixes.end(); ++iter) {
@@ -122,15 +129,23 @@ void FindMatchingFiles(const string &directory,
         files->push_back(str.str());
       }
     }
-    readdir_r(dp, &dir_ent, &dir_ent_p);
+    if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
+      OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
+      closedir(dp);
+      return false;
+    }
   }
-  closedir(dp);
+  if (closedir(dp)) {
+    OLA_WARN << "closedir(" << directory << "): " << strerror(errno);
+    return false;
+  }
 #endif
+  return true;
 }
 
-void ListDirectory(const std::string& directory,
-                   std::vector<std::string> *files) {
-  FindMatchingFiles(directory, "", files);
+bool ListDirectory(const string& directory,
+                   vector<string> *files) {
+  return FindMatchingFiles(directory, "", files);
 }
 
 string FilenameFromPathOrDefault(const string &path,

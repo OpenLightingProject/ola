@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SchemaParserTest.cpp
  * Unittests for the Json Schema Parser.
@@ -134,6 +134,10 @@ void JsonSchemaParserTest::ReadTestCases(const string& filename,
                                          NegativeTests *negative_tests) {
   string file_path;
   file_path.append(TEST_SRC_DIR);
+  file_path.push_back(ola::file::PATH_SEPARATOR);
+  file_path.append("common");
+  file_path.push_back(ola::file::PATH_SEPARATOR);
+  file_path.append("web");
   file_path.push_back(ola::file::PATH_SEPARATOR);
   file_path.append("testdata");
   file_path.push_back(ola::file::PATH_SEPARATOR);

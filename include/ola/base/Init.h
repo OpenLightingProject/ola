@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Init.h
  * A grab bag of functions useful for programs.
@@ -55,13 +55,19 @@ namespace ola {
  */
 
 /**
- * @brief Used to initialize a server. Installs the SEGV handler, initializes
- * the random number generator and populates the export map.
+ * @brief Used to initialize a server.
  * @param argc argument count
  * @param argv pointer to argument strings
  * @param export_map an optional pointer to an ExportMap
  * @return true on success and false otherwise
  * @note If you are a client/application then call AppInit() instead.
+ *
+ * This does the following:
+ *  - installs the SEGV handler
+ *  - initializes the random number generator
+ *  - sets the thread scheduling options
+ *  - populates the export map
+ *  - initializes the network stack (Windows only).
  */
 bool ServerInit(int argc, char *argv[], ExportMap *export_map);
 

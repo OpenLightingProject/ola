@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  ShowLoader.cpp
  *  A class that reads OLA show files
@@ -71,7 +71,8 @@ bool ShowLoader::Load() {
   string line;
   ReadLine(&line);
   if (line != OLA_SHOW_HEADER) {
-    OLA_WARN << "Invalid show file";
+    OLA_WARN << "Invalid show file, expecting " << OLA_SHOW_HEADER << " got "
+             << line;
     return false;
   }
   return true;
@@ -122,7 +123,7 @@ ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
     return END_OF_FILE;
 
   vector<string> inputs;
-  ola::StringSplit(line, inputs);
+  ola::StringSplit(line, &inputs);
 
   if (inputs.size() != 2) {
     OLA_WARN << "Line " << m_line << " invalid: " << line;
@@ -140,5 +141,6 @@ ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
 
 void ShowLoader::ReadLine(string *line) {
   getline(m_show_file, *line);
+  ola::StripSuffix(line, "\r");
   m_line++;
 }

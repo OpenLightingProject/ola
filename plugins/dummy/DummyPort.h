@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DummyPort.h
  * The interface to the Dummy port
@@ -25,7 +25,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
@@ -61,6 +61,14 @@ class DummyPort: public BasicOutputPort {
     uint8_t number_of_network_responders;
   };
 
+
+  /**
+   * Create a new DummyPort
+   * @param parent the parent device for this port
+   * @param options the config for the DummyPort such as the number of fake RDM
+   * devices to create
+   * @param id the ID of this port
+   */
   DummyPort(class DummyDevice *parent,
             const Options &options,
             unsigned int id);
@@ -69,7 +77,11 @@ class DummyPort: public BasicOutputPort {
   std::string Description() const { return "Dummy Port"; }
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-  void SendRDMRequest(const ola::rdm::RDMRequest *request,
+
+  /*
+   * Handle an RDM Request
+   */
+  void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 
  private:
@@ -88,9 +100,7 @@ class DummyPort: public BasicOutputPort {
 
   void RunDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void HandleBroadcastAck(broadcast_request_tracker *tracker,
-                          ola::rdm::rdm_response_code code,
-                          const ola::rdm::RDMResponse *response,
-                          const std::vector<std::string> &packets);
+                          ola::rdm::RDMReply *reply);
 
   // See http://www.opendmx.net/index.php/Open_Lighting_Allocations
   // Do not change.

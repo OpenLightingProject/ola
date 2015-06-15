@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KiNetPort.h
  * The KiNet plugin for ola
@@ -33,27 +33,26 @@ namespace kinet {
 
 class KiNetOutputPort: public BasicOutputPort {
  public:
-    KiNetOutputPort(KiNetDevice *device,
-                    const ola::network::IPV4Address &target,
-                    KiNetNode *node,
-                    unsigned int port_id)
-        : BasicOutputPort(device, port_id),
-          m_node(node),
-          m_target(target) {
-    }
+  KiNetOutputPort(KiNetDevice *device,
+                  const ola::network::IPV4Address &target,
+                  KiNetNode *node,
+                  unsigned int port_id)
+      : BasicOutputPort(device, port_id),
+        m_node(node),
+        m_target(target) {
+  }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_node->SendDMX(m_target, buffer);
-      (void) priority;
-    }
+  bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
+    return m_node->SendDMX(m_target, buffer);
+  }
 
-    std::string Description() const {
-      return "Power Supply: " + m_target.ToString();
-    }
+  std::string Description() const {
+    return "Power Supply: " + m_target.ToString();
+  }
 
  private:
-    KiNetNode *m_node;
-    const ola::network::IPV4Address m_target;
+  KiNetNode *m_node;
+  const ola::network::IPV4Address m_target;
 };
 }  // namespace kinet
 }  // namespace plugin

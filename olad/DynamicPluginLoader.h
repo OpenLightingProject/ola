@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DynamicPluginLoader.h
  * Interface for the DynamicPluginLoader class
@@ -27,20 +27,24 @@
 
 namespace ola {
 
+/**
+ * @brief A PluginLoader which loads from shared (dynamic) libraries.
+ */
 class DynamicPluginLoader: public PluginLoader {
  public:
-    DynamicPluginLoader() {}
-    ~DynamicPluginLoader();
+  DynamicPluginLoader() {}
+  ~DynamicPluginLoader();
 
-    std::vector<class AbstractPlugin*> LoadPlugins();
-    void UnloadPlugins() {}
+  std::vector<class AbstractPlugin*> LoadPlugins();
+
+  void UnloadPlugins();
 
  private:
-    void PopulatePlugins();
+  void PopulatePlugins();
 
-    std::vector<class AbstractPlugin*> m_plugins;
+  std::vector<class AbstractPlugin*> m_plugins;
 
-    DISALLOW_COPY_AND_ASSIGN(DynamicPluginLoader);
+  DISALLOW_COPY_AND_ASSIGN(DynamicPluginLoader);
 };
 }  // namespace ola
 #endif  // OLAD_DYNAMICPLUGINLOADER_H_

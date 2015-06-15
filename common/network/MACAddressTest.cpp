@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MACAddressTest.cpp
  * Test fixture for the MACAddress class
@@ -32,6 +32,7 @@
 using ola::network::MACAddress;
 using std::auto_ptr;
 using std::string;
+using std::vector;
 
 class MACAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(MACAddressTest);
@@ -95,22 +96,21 @@ void MACAddressTest::testMACAddress() {
   OLA_ASSERT_EQ(string("67:89:ab:01:23:45"), string_address4.ToString());
 
   // make sure sorting works
-  std::vector<MACAddress> addresses;
+  vector<MACAddress> addresses;
   addresses.push_back(address1);
   addresses.push_back(*string_address);
   addresses.push_back(string_address4);
   std::sort(addresses.begin(), addresses.end());
 
-  // Addresses are in network byte order.
-  if (ola::network::IsBigEndian()) {
-    OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), addresses[0].ToString());
-    OLA_ASSERT_EQ(string("fe:dc:ba:98:76:54"), addresses[1].ToString());
-    OLA_ASSERT_EQ(string("67:89:ab:01:23:45"), addresses[2].ToString());
-  } else {
-    OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), addresses[0].ToString());
-    OLA_ASSERT_EQ(string("67:89:ab:01:23:45"), addresses[1].ToString());
-    OLA_ASSERT_EQ(string("fe:dc:ba:98:76:54"), addresses[2].ToString());
-  }
+  OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), addresses[0].ToString());
+  OLA_ASSERT_EQ(string("67:89:ab:01:23:45"), addresses[1].ToString());
+  OLA_ASSERT_EQ(string("fe:dc:ba:98:76:54"), addresses[2].ToString());
+
+  // Test comparison
+  OLA_ASSERT_TRUE(address1 < string_address4);
+  OLA_ASSERT_TRUE(string_address4 > address1);
+  OLA_ASSERT_TRUE(string_address4 < *string_address);
+  OLA_ASSERT_TRUE(*string_address > string_address4);
 }
 
 /*
@@ -119,6 +119,6 @@ void MACAddressTest::testMACAddress() {
 void MACAddressTest::testMACAddressToString() {
   uint8_t hw_address[ola::network::MACAddress::LENGTH] = {
     0x0, 0xa, 0xff, 0x10, 0x25, 0x4};
-  const std::string mac_address = MACAddress(hw_address).ToString();
-  OLA_ASSERT_EQ(std::string("00:0a:ff:10:25:04"), mac_address);
+  const string mac_address = MACAddress(hw_address).ToString();
+  OLA_ASSERT_EQ(string("00:0a:ff:10:25:04"), mac_address);
 }

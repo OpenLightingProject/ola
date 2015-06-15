@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * MilInstWidget1553.cpp
  * The MilInst 1-553 Widget.
@@ -46,7 +46,7 @@ const uint16_t MilInstWidget1553::CHANNELS_512 = 512;
 const uint16_t MilInstWidget1553::DEFAULT_CHANNELS = CHANNELS_128;
 
 
-MilInstWidget1553::MilInstWidget1553(const std::string &path,
+MilInstWidget1553::MilInstWidget1553(const string &path,
                                      Preferences *preferences)
     : MilInstWidget(path),
       m_preferences(preferences) {
@@ -75,8 +75,9 @@ bool MilInstWidget1553::Connect() {
 
   int fd = ConnectToWidget(m_path, baudrate);
 
-  if (fd < 0)
+  if (fd < 0) {
     return false;
+  }
 
   m_socket = new ola::io::DeviceDescriptor(fd);
   m_socket->SetOnData(
@@ -260,8 +261,9 @@ void MilInstWidget1553::SetWidgetDefaults() {
       SetValidator<unsigned int>(valid_channels),
       DEFAULT_CHANNELS);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 }
 }  // namespace milinst
 }  // namespace plugin

@@ -1,6 +1,6 @@
 %{
-#include "ConfigCommon.h"
-#include "config.tab.h"
+#include "tools/ola_trigger/ConfigCommon.h"
+#include "tools/ola_trigger/config.tab.h"
 
 #define YY_NO_INPUT
 
@@ -11,7 +11,7 @@ void count();
 %option yylineno
 
 alpha        [a-zA-Z_]
-alphanumeric [a-zA-Z0-9_]
+alphanumeric [a-zA-Z0-9_\-\.]
 digit        [0-9]
 word         {alpha}{alphanumeric}*
 int          {digit}+

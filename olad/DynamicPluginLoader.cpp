@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DynamicPluginLoader.cpp
  * This class is responsible for loading and unloading the plugins
@@ -43,6 +43,10 @@
 #include "plugins/espnet/EspNetPlugin.h"
 #endif
 
+#ifdef USE_GPIO
+#include "plugins/gpio/GPIOPlugin.h"
+#endif
+
 #ifdef USE_KARATE
 #include "plugins/karate/KaratePlugin.h"
 #endif
@@ -57,6 +61,14 @@
 
 #ifdef USE_OPENDMX
 #include "plugins/opendmx/OpenDmxPlugin.h"
+#endif
+
+#ifdef USE_OPENPIXELCONTROL
+#include "plugins/openpixelcontrol/OPCPlugin.h"
+#endif
+
+#ifdef USE_OSC
+#include "plugins/osc/OSCPlugin.h"
 #endif
 
 #ifdef USE_PATHPORT
@@ -87,51 +99,46 @@
 #include "plugins/usbpro/UsbSerialPlugin.h"
 #endif
 
-#ifdef HAVE_LIBUSB
+#ifdef USE_LIBUSB
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 #endif
 
-#ifdef HAVE_LIBFTDI
+#ifdef USE_FTDI
 #include "plugins/ftdidmx/FtdiDmxPlugin.h"
 #endif
 
-#ifdef HAVE_DMX4LINUX
-#include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
+#ifdef USE_UART
+#include "plugins/uartdmx/UartDmxPlugin.h"
 #endif
 
-#ifdef HAVE_LIBLO
-#include "plugins/osc/OSCPlugin.h"
+#ifdef USE_DMX4LINUX
+#include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #endif
 
 namespace ola {
 
 using std::vector;
 
-
 DynamicPluginLoader::~DynamicPluginLoader() {
-  STLDeleteElements(&m_plugins);
+  UnloadPlugins();
 }
 
-
-/*
- * Return the plugins that we were linked against
- * @returns a vector of plugins
- */
 vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
-  if (m_plugins.empty())
+  if (m_plugins.empty()) {
     PopulatePlugins();
+  }
   return m_plugins;
 }
 
-
-/**
+/*
  * Setup the plugin list
  */
 void DynamicPluginLoader::PopulatePlugins() {
-#ifdef HAVE_DMX4LINUX
+#ifdef USE_DMX4LINUX
   m_plugins.push_back(
       new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
 #endif
+
 #ifdef USE_ARTNET
   m_plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
 #endif
@@ -146,6 +153,10 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_ESPNET
   m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_GPIO
+  m_plugins.push_back(new ola::plugin::gpio::GPIOPlugin(m_plugin_adaptor));
 #endif
 
 #ifdef USE_KARATE
@@ -167,7 +178,12 @@ void DynamicPluginLoader::PopulatePlugins() {
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
 #endif
 
-#ifdef HAVE_LIBLO
+#ifdef USE_OPENPIXELCONTROL
+  m_plugins.push_back(
+      new ola::plugin::openpixelcontrol::OPCPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_OSC
   m_plugins.push_back(
       new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
 #endif
@@ -202,7 +218,7 @@ void DynamicPluginLoader::PopulatePlugins() {
       new ola::plugin::usbpro::UsbSerialPlugin(m_plugin_adaptor));
 #endif
 
-#ifdef HAVE_LIBUSB
+#ifdef USE_LIBUSB
   m_plugins.push_back(new ola::plugin::usbdmx::UsbDmxPlugin(m_plugin_adaptor));
 #endif
 
@@ -211,9 +227,18 @@ void DynamicPluginLoader::PopulatePlugins() {
       new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor));
 #endif
 
-#ifdef HAVE_LIBFTDI
+#ifdef USE_FTDI
   m_plugins.push_back(
       new ola::plugin::ftdidmx::FtdiDmxPlugin(m_plugin_adaptor));
 #endif
+
+#ifdef USE_UART
+  m_plugins.push_back(
+      new ola::plugin::uartdmx::UartDmxPlugin(m_plugin_adaptor));
+#endif
+}
+
+void DynamicPluginLoader::UnloadPlugins() {
+  STLDeleteElements(&m_plugins);
 }
 }  // namespace ola

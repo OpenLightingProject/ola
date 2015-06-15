@@ -11,19 +11,25 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Serial.cpp
  * Serial I/O Helper methods.
  * Copyright (C) 2014 Peter Newman
  */
 
-#include "ola/io/Serial.h"
+#include <string>
+#include <vector>
 
-#include "ola/Logging.h"
+#include "ola/file/Util.h"
+#include "ola/io/IOUtils.h"
+#include "ola/io/Serial.h"
 
 namespace ola {
 namespace io {
+
+using std::vector;
+using std::string;
 
 bool UIntToSpeedT(uint32_t value, speed_t *output) {
   switch (value) {
@@ -45,6 +51,19 @@ bool UIntToSpeedT(uint32_t value, speed_t *output) {
     case BAUD_RATE_230400:
       *output = B230400;
       return true;
+  }
+  return false;
+}
+
+bool CheckForUUCPLockFile(const std::vector<std::string> &directories,
+                          const std::string &serial_device) {
+  vector<string>::const_iterator iter = directories.begin();
+  for (; iter != directories.end(); ++iter) {
+    const string lock_file = (
+        *iter + ola::file::PATH_SEPARATOR + "LCK.." + serial_device);
+    if (FileExists(lock_file)) {
+      return true;
+    }
   }
   return false;
 }

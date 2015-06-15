@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * BaseInflatorTest.cpp
  * Test fixture for the BaseInflator class
@@ -53,7 +53,8 @@ class BaseInflatorTest: public CppUnit::TestFixture {
 
 class TestInflator: public ola::plugin::e131::BaseInflator {
  public:
-    TestInflator(unsigned int id = 0, PDU::vector_size v_size = PDU::TWO_BYTES)
+    explicit TestInflator(unsigned int id = 0,
+                          PDU::vector_size v_size = PDU::TWO_BYTES)
         : BaseInflator(v_size),
           m_id(id),
           m_blocks_handled(0) {}
@@ -70,14 +71,13 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
       return true;
     }
 
-    bool HandlePDUData(uint32_t vector, const HeaderSet &headers,
+    bool HandlePDUData(uint32_t vector, OLA_UNUSED const HeaderSet &headers,
                        const uint8_t *data, unsigned int pdu_length) {
       OLA_ASSERT_EQ((uint32_t) 289, vector);
       OLA_ASSERT_EQ((unsigned int) sizeof(PDU_DATA), pdu_length);
       OLA_ASSERT_FALSE(memcmp(data, PDU_DATA, pdu_length));
       m_blocks_handled++;
       return true;
-      (void) headers;
     }
 
  private:

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * NetworkUtils.h
  * Abstract various network functions.
@@ -114,7 +114,7 @@ std::string FQDN();
 
 /**
  * Return the machine's full hostname (FQDN)
- * @deprecated use FQDN() instead (17 Nov 2013)
+ * @deprecated use ola::network::FQDN() instead (17 Nov 2013)
  */
 std::string FullHostname();
 

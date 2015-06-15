@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * MilInstPlugin.cpp
  * The Milford Instruments plugin for ola
@@ -130,8 +130,9 @@ int MilInstPlugin::SocketClosed(ConnectedDescriptor *socket) {
   vector<MilInstDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    if ((*iter)->GetSocket() == socket)
+    if ((*iter)->GetSocket() == socket) {
       break;
+    }
   }
 
   if (iter == m_devices.end()) {
@@ -150,20 +151,23 @@ int MilInstPlugin::SocketClosed(ConnectedDescriptor *socket) {
  *
  */
 bool MilInstPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
                                          MILINST_DEVICE_PATH);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   // Just check key exists, as we've set it to ""
-  if (!m_preferences->HasKey(DEVICE_KEY))
+  if (!m_preferences->HasKey(DEVICE_KEY)) {
     return false;
+  }
   return true;
 }
 

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OpenDmxPort.h
  * The Open DMX plugin for ola
@@ -33,29 +33,28 @@ namespace opendmx {
 
 class OpenDmxOutputPort: public BasicOutputPort {
  public:
-    OpenDmxOutputPort(OpenDmxDevice *parent,
-                      unsigned int id,
-                      const std::string &path)
-        : BasicOutputPort(parent, id),
-          m_thread(path),
-          m_path(path) {
-      m_thread.Start();
-    }
+  OpenDmxOutputPort(OpenDmxDevice *parent,
+                    unsigned int id,
+                    const std::string &path)
+      : BasicOutputPort(parent, id),
+        m_thread(path),
+        m_path(path) {
+    m_thread.Start();
+  }
 
-    ~OpenDmxOutputPort() {
-      m_thread.Stop();
-    }
+  ~OpenDmxOutputPort() {
+    m_thread.Stop();
+  }
 
-    std::string Description() const { return "Open Dmx at " + m_path; }
+  std::string Description() const { return "Open DMX at " + m_path; }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_thread.WriteDmx(buffer);
-      (void) priority;
-    }
+  bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
+    return m_thread.WriteDmx(buffer);
+  }
 
  private:
-    OpenDmxThread m_thread;
-    std::string m_path;
+  OpenDmxThread m_thread;
+  std::string m_path;
 };
 }  // namespace opendmx
 }  // namespace plugin

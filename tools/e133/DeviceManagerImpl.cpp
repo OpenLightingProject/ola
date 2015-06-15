@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DeviceManagerImpl.cpp
  * Copyright (C) 2013 Simon Newton
@@ -23,6 +23,7 @@
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/CID.h>
 #include <ola/e133/E133Enums.h>
+#include <ola/io/NonBlockingSender.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
@@ -41,7 +42,6 @@
 #include "tools/e133/DeviceManagerImpl.h"
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/MessageQueue.h"
 
 namespace ola {
 namespace e133 {
@@ -52,6 +52,7 @@ using ola::STLContains;
 using ola::STLFindOrNull;
 using ola::TimeInterval;
 using ola::acn::CID;
+using ola::io::NonBlockingSender;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -78,7 +79,7 @@ class DeviceState {
     // The following may be NULL.
     // The socket connected to the E1.33 device
     auto_ptr<TCPSocket> socket;
-    auto_ptr<MessageQueue> message_queue;
+    auto_ptr<NonBlockingSender> message_queue;
     // The Health Checked connection
     auto_ptr<E133HealthCheckedConnection> health_checked_connection;
     auto_ptr<IncomingTCPTransport> in_transport;
@@ -347,8 +348,8 @@ void DeviceManagerImpl::RLPDataReceived(
     m_acquire_device_cb_->Run(src_ip);
 
   device_state->message_queue.reset(
-      new MessageQueue(device_state->socket.get(), m_ss,
-                       m_message_builder->pool()));
+      new NonBlockingSender(device_state->socket.get(), m_ss,
+                            m_message_builder->pool()));
 
   E133HealthCheckedConnection *health_checked_connection =
       new E133HealthCheckedConnection(

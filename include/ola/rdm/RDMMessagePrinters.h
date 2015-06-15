@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  *
  *  A command line based RDM controller
@@ -273,7 +273,10 @@ class LanguageCapabilityPrinter: public ola::messaging::MessagePrinter {
  */
 class ClockPrinter: public ola::messaging::MessagePrinter {
  public:
-  ClockPrinter() : ola::messaging::MessagePrinter(), m_offset(0) {}
+  ClockPrinter()
+      : ola::messaging::MessagePrinter(),
+        m_year(0),
+        m_offset(0) {}
   void Visit(const ola::messaging::UInt16MessageField *message) {
     m_year = message->Value();
   }

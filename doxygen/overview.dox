@@ -45,7 +45,7 @@
  * @section sec_GettingStarted Getting Started
  *
  * As a developer, the easiest way to get started using OLA is with the
- * @ref client_tutorial.
+ * @ref dmx_cpp_client_tutorial.
  *
  * @section sec_Licensing Licensing
  * The OLA framework and C++ client library is licensed under the

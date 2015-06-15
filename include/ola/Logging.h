@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Logging.h
  * Header file for the logging
@@ -23,7 +23,7 @@
  *
  * @examplepara
  * ~~~~~~~~~~~~~~~~~~~~~
- * #include <ola/Logging.h>
+ * \#include <ola/Logging.h>
  *
  * // Call this once
  * ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
@@ -150,27 +150,63 @@ class StdErrorLogDestination: public LogDestination {
 };
 
 /**
- * @brief A LogDestination that writes to syslog
+ * @brief An abstract base of LogDestination that writes to syslog
  */
 class SyslogDestination: public LogDestination {
  public:
-  SyslogDestination();
+  /**
+  * @brief Destructor
+  */
+  virtual ~SyslogDestination() {}
 
   /**
    * @brief Initialize the SyslogDestination
    */
-  bool Init();
+  virtual bool Init() = 0;
 
   /**
    * @brief Write a line to the system logger.
    * @note This is syslog on *nix or the event log on windows.
    */
-  void Write(log_level level, const std::string &log_line);
+  virtual void Write(log_level level, const std::string &log_line) = 0;
+};
 
+#ifdef _WIN32
+/**
+* @brief A SyslogDestination that writes to Windows event log
+*/
+class WindowsSyslogDestination : public SyslogDestination {
+ public:
+  /**
+  * @brief Initialize the WindowsSyslogDestination
+  */
+  bool Init();
+
+  /**
+  * @brief Write a line to Windows event log.
+  */
+  void Write(log_level level, const std::string &log_line);
  private:
   typedef void* WindowsLogHandle;
   WindowsLogHandle m_eventlog;
 };
+#else
+/**
+* @brief A SyslogDestination that writes to Unix syslog
+*/
+class UnixSyslogDestination : public SyslogDestination {
+ public:
+  /**
+  * @brief Initialize the UnixSyslogDestination
+  */
+  bool Init();
+
+  /**
+  * @brief Write a line to syslog.
+  */
+  void Write(log_level level, const std::string &log_line);
+};
+#endif
 
 /**@}*/
 
@@ -225,7 +261,7 @@ bool InitLoggingFromFlags();
 /**
  * @brief Initialize the OLA logging system
  * @param level the level to log at
- * @param output the destintion for the logs
+ * @param output the destination for the logs
  * @returns true if logging was initialized sucessfully, false otherwise.
  */
 bool InitLogging(log_level level, log_output output);
@@ -234,7 +270,6 @@ bool InitLogging(log_level level, log_output output);
  * @brief Initialize the OLA logging system using the specified LogDestination.
  * @param level the level to log at
  * @param destination the LogDestination to use.
- * @returns true if logging was initialized sucessfully, false otherwise.
  */
 void InitLogging(log_level level, LogDestination *destination);
 /***/

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PluginManagerTest.cpp
  * Test fixture for the PluginManager classes
@@ -55,17 +55,23 @@ class PluginManagerTest: public CppUnit::TestFixture {
     }
 
  private:
-    void VerifyPluginCounts(PluginManager *manager, size_t loaded_plugins,
-                            size_t active_plugins, unsigned int line) {
-      std::ostringstream str;
-      str << "Line " << line;
+    void VerifyPluginCounts(PluginManager *manager,
+                            size_t loaded_plugins,
+                            size_t active_plugins,
+                            const ola::testing::SourceLine &source_line) {
       vector<AbstractPlugin*> plugins;
       manager->Plugins(&plugins);
-      OLA_ASSERT_EQ_MSG(loaded_plugins, plugins.size(), str.str());
+      ola::testing::_AssertEquals(source_line,
+                                  loaded_plugins,
+                                  plugins.size(),
+                                  "Loaded plugin count differs");
 
       plugins.clear();
       manager->ActivePlugins(&plugins);
-      OLA_ASSERT_EQ_MSG(active_plugins, plugins.size(), str.str());
+      ola::testing::_AssertEquals(source_line,
+                                  active_plugins,
+                                  plugins.size(),
+                                  "Active plugin count differs");
     }
 };
 
@@ -97,7 +103,7 @@ class MockLoader: public ola::PluginLoader {
  */
 void PluginManagerTest::testPluginManager() {
   ola::MemoryPreferencesFactory factory;
-  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL);
+  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL, NULL);
 
   TestMockPlugin plugin1(&adaptor, ola::OLA_PLUGIN_ARTNET);
   TestMockPlugin plugin2(&adaptor, ola::OLA_PLUGIN_ESPNET, false);
@@ -112,13 +118,13 @@ void PluginManagerTest::testPluginManager() {
   PluginManager manager(loaders, &adaptor);
   manager.LoadAll();
 
-  VerifyPluginCounts(&manager, 2, 1, __LINE__);
+  VerifyPluginCounts(&manager, 2, 1, OLA_SOURCELINE());
 
   OLA_ASSERT(plugin1.WasStarted());
   OLA_ASSERT_FALSE(plugin2.WasStarted());
 
   manager.UnloadAll();
-  VerifyPluginCounts(&manager, 0, 0, __LINE__);
+  VerifyPluginCounts(&manager, 0, 0, OLA_SOURCELINE());
 }
 
 
@@ -127,7 +133,7 @@ void PluginManagerTest::testPluginManager() {
  */
 void PluginManagerTest::testConflictingPlugins() {
   ola::MemoryPreferencesFactory factory;
-  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL);
+  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL, NULL);
 
   set<ola::ola_plugin_id> conflict_set1;
   conflict_set1.insert(ola::OLA_PLUGIN_ARTNET);
@@ -150,12 +156,12 @@ void PluginManagerTest::testConflictingPlugins() {
   OLA_INFO << "start";
   manager.LoadAll();
 
-  VerifyPluginCounts(&manager, 3, 1, __LINE__);
+  VerifyPluginCounts(&manager, 3, 1, OLA_SOURCELINE());
 
   OLA_ASSERT_FALSE(plugin1.WasStarted());
   OLA_ASSERT(plugin2.WasStarted());
   OLA_ASSERT_FALSE(plugin3.WasStarted());
 
   manager.UnloadAll();
-  VerifyPluginCounts(&manager, 0, 0, __LINE__);
+  VerifyPluginCounts(&manager, 0, 0, OLA_SOURCELINE());
 }

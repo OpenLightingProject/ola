@@ -11,22 +11,21 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * e133-receiver.cpp
+ * SimpleE133Node.h
  * Copyright (C) 2011 Simon Newton
  *
- * This creates a E1.33 receiver with one (emulated) RDM responder. The node is
- * registered in slp and the RDM responder responds to E1.33 commands.
+ * This creates a E1.33 receiver with one (emulated) RDM responder. The node's
+ * RDM responder responds to E1.33 commands.
  */
 
 #ifndef TOOLS_E133_SIMPLEE133NODE_H_
 #define TOOLS_E133_SIMPLEE133NODE_H_
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/base/Init.h>
 #include <ola/acn/CID.h>
-#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/NetworkUtils.h>
@@ -46,8 +45,7 @@ using ola::rdm::UID;
 using std::auto_ptr;
 
 /**
- * A very simple E1.33 node that registers itself using SLP and responds to
- * messages.
+ * A very simple E1.33 node that responds to messages.
  */
 class SimpleE133Node {
  public:
@@ -83,7 +81,6 @@ class SimpleE133Node {
 
  private:
     ola::io::SelectServer m_ss;
-    auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
     ola::io::StdinHandler m_stdin_handler;
     EndpointManager m_endpoint_manager;
     E133Device m_e133_device;
@@ -92,10 +89,7 @@ class SimpleE133Node {
     const UID m_uid;
     const IPV4Address m_ip_address;
 
-    void RegisterCallback(bool ok);
-    void DeRegisterCallback(bool ok);
-
-    void Input(char c);
+    void Input(int c);
     void DumpTCPStats();
     void SendUnsolicited();
 

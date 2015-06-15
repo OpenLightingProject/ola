@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Plugin.cpp
  * Base plugin class for ola
@@ -30,13 +30,10 @@ using std::string;
 
 const char Plugin::ENABLED_KEY[] = "enabled";
 
-
-/*
- * Load the preferences and set defaults
- */
 bool Plugin::LoadPreferences() {
-  if (m_preferences)
+  if (m_preferences) {
     return true;
+  }
 
   if (PluginPrefix() == "") {
     OLA_WARN << Name() << ", no prefix provided";
@@ -45,17 +42,19 @@ bool Plugin::LoadPreferences() {
 
   m_preferences = m_plugin_adaptor->NewPreference(PluginPrefix());
 
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   m_preferences->Load();
 
   bool save = m_preferences->SetDefaultValue(
       ENABLED_KEY,
       BoolValidator(),
-      DefaultMode() ? "true" : "false");
-  if (save)
+      DefaultMode());
+  if (save) {
     m_preferences->Save();
+  }
 
   if (!SetDefaultPreferences()) {
     OLA_INFO << Name() << ", SetDefaultPreferences failed";
@@ -64,35 +63,30 @@ bool Plugin::LoadPreferences() {
   return true;
 }
 
-/*
- * Returns true if this plugin is enabled.
- */
-string Plugin::PreferenceSource() const {
-  return m_preferences->Source();
+string Plugin::PreferenceConfigLocation() const {
+  return m_preferences->ConfigLocation();
 }
 
-
-/*
- * Returns true if this plugin is enabled.
- */
 bool Plugin::IsEnabled() const {
-  return !(m_preferences->GetValue(ENABLED_KEY) == "false");
+  return m_preferences->GetValueAsBool(ENABLED_KEY);
 }
 
-/*
- * Start the plugin. Calls start_hook() which can be over-ridden by the
- * derrived classes.
- * @returns true if started sucessfully, false otherwise.
- */
+void Plugin::SetEnabledState(bool enable) {
+  m_preferences->SetValueAsBool(ENABLED_KEY, enable);
+  m_preferences->Save();
+}
+
 bool Plugin::Start() {
   string enabled;
 
-  if (m_enabled)
+  if (m_enabled) {
     return false;
+  }
 
   // setup prefs
-  if (!LoadPreferences())
+  if (!LoadPreferences()) {
     return false;
+  }
 
   if (!StartHook()) {
     return false;
@@ -102,16 +96,10 @@ bool Plugin::Start() {
   return true;
 }
 
-
-/*
- * Stop the plugin. Calls stop_hook which can be over-ridden by the
- * derrived classes.
- *
- * @returns true if stopped sucessfully, false otherwise.
- */
 bool Plugin::Stop() {
-  if (!m_enabled)
+  if (!m_enabled) {
     return false;
+  }
 
   bool ret = StopHook();
 

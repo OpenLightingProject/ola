@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOStack.cpp
  * A non-contigous memory buffer
@@ -35,11 +35,10 @@ namespace ola {
 namespace io {
 
 using std::min;
-
+using std::string;
 
 /**
  * IOStack.
- * @param block_size the size of blocks to use.
  */
 IOStack::IOStack()
     : m_pool(new MemoryBlockPool()),
@@ -127,7 +126,7 @@ unsigned int IOStack::Read(uint8_t *data, unsigned int length) {
 /**
  * Read up to n bytes into the string output.
  */
-unsigned int IOStack::Read(std::string *output, unsigned int length) {
+unsigned int IOStack::Read(string *output, unsigned int length) {
   unsigned int bytes_remaining = length;
   BlockVector::iterator iter = m_blocks.begin();
   while (iter != m_blocks.end() && bytes_remaining) {
@@ -219,17 +218,21 @@ void IOStack::Purge() {
  * Dump this IOStack as a human readable string
  */
 void IOStack::Dump(std::ostream *output) {
+  unsigned int length = 0;
+  BlockVector::const_iterator iter = m_blocks.begin();
+  for (; iter != m_blocks.end(); ++iter) {
+    length += (*iter)->Size();
+  }
+
   // For now just alloc memory for the entire thing
-  unsigned int length = Size();
   uint8_t *tmp = new uint8_t[length];
 
   unsigned int offset = 0;
-  BlockVector::const_iterator iter = m_blocks.begin();
-  for (; iter != m_blocks.end(); ++iter) {
+  for (iter = m_blocks.begin(); iter != m_blocks.end(); ++iter) {
     offset += (*iter)->Copy(tmp + offset, length - offset);
   }
 
-  ola::FormatData(output, tmp, length);
+  ola::FormatData(output, tmp, offset);
   delete[] tmp;
 }
 
@@ -241,9 +244,10 @@ void IOStack::PrependBlock() {
   MemoryBlock *block = m_pool->Allocate();
   if (!block) {
     OLA_FATAL << "Failed to allocate block, we're out of memory!";
+  } else {
+    block->SeekBack();  // put the block into prepend mode
+    m_blocks.push_front(block);
   }
-  block->SeekBack();  // put the block into prepend mode
-  m_blocks.push_front(block);
 }
 }  // namespace io
 }  // namespace ola

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PortBroker.h
  * The port broker exists to handle the case where a port may be removed
@@ -45,7 +45,7 @@ class PortBrokerInterface {
     virtual void SendRDMRequest(
         const Port *port,
         Universe *universe,
-        const ola::rdm::RDMRequest *request,
+        ola::rdm::RDMRequest *request,
         ola::rdm::RDMCallback *callback) = 0;
 };
 
@@ -60,7 +60,7 @@ class PortBroker: public PortBrokerInterface {
 
     void SendRDMRequest(const Port *port,
                         Universe *universe,
-                        const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
  private:
@@ -68,9 +68,7 @@ class PortBroker: public PortBrokerInterface {
 
     void RequestComplete(port_key key,
                          ola::rdm::RDMCallback *callback,
-                         ola::rdm::rdm_response_code code,
-                         const ola::rdm::RDMResponse *response,
-                         const std::vector<std::string> &packets);
+                         ola::rdm::RDMReply *reply);
 
     std::set<port_key> m_ports;
 

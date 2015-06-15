@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Credentials.cpp
  * Handle getting and setting a process's credentials.
@@ -124,7 +124,7 @@ bool SetUID(uid_t new_uid) {
   return false;
 #else
   if (setuid(new_uid)) {
-    OLA_WARN << "setuid failed with " << strerror(errno);
+    OLA_WARN << "setuid(" << new_uid << "): " << strerror(errno);
     return false;
   }
   return true;
@@ -138,7 +138,7 @@ bool SetGID(gid_t new_gid) {
   return false;
 #else
   if (setgid(new_gid)) {
-    OLA_WARN << "setgid failed with " << strerror(errno);
+    OLA_WARN << "setgid(" << new_gid << "): " << strerror(errno);
     return false;
   }
   return true;
@@ -275,8 +275,10 @@ bool GenericGetGroupReentrant(F f, arg a, GroupEntry *group_entry) {
     }
   }
 
-  if (!grp_ptr)
+  if (!grp_ptr) {
+    // not found
     return false;
+  }
 
   group_entry->gr_name = grp_ptr->gr_name;
   group_entry->gr_gid = grp_ptr->gr_gid;
@@ -322,16 +324,16 @@ bool GetGroupName(const string &name, GroupEntry *group_entry) {
 }
 
 
-bool GetGroupGID(gid_t uid, GroupEntry *group_entry) {
+bool GetGroupGID(gid_t gid, GroupEntry *group_entry) {
 #ifdef _WIN32
-  (void) uid;
+  (void) gid;
   (void) group_entry;
   return false;
 #else
 #ifdef HAVE_GETGRGID_R
-  return GenericGetGroupReentrant(getgrgid_r, uid, group_entry);
+  return GenericGetGroupReentrant(getgrgid_r, gid, group_entry);
 #else
-  return GenericGetGroup(getgrgid, uid, group_entry);
+  return GenericGetGroup(getgrgid, gid, group_entry);
 #endif
 #endif
 }

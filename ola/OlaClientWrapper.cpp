@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OlaClientWrapper.cpp
  * Implementation of the OLA Client
@@ -20,7 +20,7 @@
 
 #include <ola/OlaClientWrapper.h>
 
-#include <ola/BaseTypes.h>
+#include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SocketAddress.h>
@@ -28,14 +28,18 @@
 namespace ola {
 namespace client {
 
+BaseClientWrapper::BaseClientWrapper()
+  : m_close_callback(NewCallback(&m_ss, &ola::io::SelectServer::Terminate)) {
+}
+
 BaseClientWrapper::~BaseClientWrapper() {
   Cleanup();
 }
 
-/*
- * Setup the Simple Client
- * @returns true on success, false on failure
- */
+void BaseClientWrapper::SetCloseCallback(CloseCallback *callback) {
+  m_close_callback.reset(callback);
+}
+
 bool BaseClientWrapper::Setup() {
   if (!m_socket.get()) {
     InitSocket();
@@ -51,22 +55,15 @@ bool BaseClientWrapper::Setup() {
 }
 
 
-/*
- * Close the ola connection.
- * @return true on sucess, false on failure
- */
 bool BaseClientWrapper::Cleanup() {
   if (m_socket.get())
     m_socket->Close();
   return true;
 }
 
-/*
- * Called if the server closed the connection
- */
 void BaseClientWrapper::SocketClosed() {
   OLA_INFO << "Server closed the connection";
-  m_ss.Terminate();
+  m_close_callback->Run();
 }
 }  // namespace client
 }  // namespace ola

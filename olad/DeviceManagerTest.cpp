@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DeviceManagerTest.cpp
  * Test fixture for the DeviceManager class.
@@ -127,6 +127,7 @@ void DeviceManagerTest::testDeviceManager() {
   OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), manager.GetDevice(2));
 
   devices = manager.Devices();
+  OLA_ASSERT_EQ((size_t) 1, devices.size());
   OLA_ASSERT_EQ(2u, devices[0].alias);
   OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), devices[0].device);
 
@@ -162,11 +163,12 @@ void DeviceManagerTest::testRestorePatchings() {
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
   OLA_ASSERT(prefs);
-  prefs->SetValue("2-test_device_1-I-1", "1");
-  prefs->SetValue("2-test_device_1-O-1", "3");
+  // Use a hyphen to confirm we can parse these correctly
+  prefs->SetValue("2-test-device-1-I-1", "1");
+  prefs->SetValue("2-test-device-1-O-1", "3");
 
   TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
-  MockDevice device1(&plugin, "test_device_1");
+  MockDevice device1(&plugin, "test-device-1");
   TestMockInputPort input_port(&device1, 1, NULL);
   TestMockOutputPort output_port(&device1, 1);
   device1.AddPort(&input_port);
@@ -188,8 +190,8 @@ void DeviceManagerTest::testRestorePatchings() {
   manager.UnregisterAllDevices();
   OLA_ASSERT_EQ(0u, manager.DeviceCount());
 
-  OLA_ASSERT_EQ(string("10"), prefs->GetValue("2-test_device_1-I-1"));
-  OLA_ASSERT_EQ(string("3"), prefs->GetValue("2-test_device_1-O-1"));
+  OLA_ASSERT_EQ(string("10"), prefs->GetValue("2-test-device-1-I-1"));
+  OLA_ASSERT_EQ(string("3"), prefs->GetValue("2-test-device-1-O-1"));
 }
 
 

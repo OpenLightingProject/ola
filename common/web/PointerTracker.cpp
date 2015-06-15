@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * PointerTracker.cpp
  * Maintains a Json pointer from a series of parse events.
@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-#include "ola/StringUtils.h"
+#include "ola/strings/Format.h"
 #include "common/web/PointerTracker.h"
 
 namespace ola {
@@ -101,7 +101,7 @@ void PointerTracker::IncrementIndex() {
     m_pointer->Pop();
   }
   token.index++;
-  m_pointer->Push(IntToString(token.index));
+  m_pointer->Push(ola::strings::IntToString(token.index));
 }
 }  // namespace web
 }  // namespace ola

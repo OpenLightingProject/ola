@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PDUTest.cpp
  * Test fixture for the PDU class
@@ -33,7 +33,6 @@ namespace e131 {
 
 using ola::io::IOQueue;
 using ola::io::OutputStream;
-using ola::testing::ASSERT_DATA_EQUALS;
 
 class PDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PDUTest);
@@ -109,9 +108,7 @@ void PDUTest::testBlockToOutputStream() {
     0, 0, 0, 2,
     0, 0, 0, 42
   };
-  ASSERT_DATA_EQUALS(__LINE__,
-                     EXPECTED, sizeof(EXPECTED),
-                     block_data, block_size);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), block_data, block_size);
   output.Pop(output.Size());
   delete[] block_data;
 }

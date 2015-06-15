@@ -23,7 +23,7 @@ cat <<EOM
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * RDMResponseCodes.h
  * Enums representing the state of a response. This is generated from the proto
@@ -47,12 +47,27 @@ cat <<EOM
 namespace ola {
 namespace rdm {
 
+/**
+ * @brief RDM Status Codes.
+ *
+ * The status codes indicates the outcome of an RDM Request. The two most
+ * common status codes are RDM_COMPLETED_OK and RDM_WAS_BROADCAST. The other
+ * codes generally indicate some sort of failure.
+ */
 typedef enum {
 EOM
 sed -ne  '/^enum RDMResponseCode/,/^}/p' $proto | grep RDM_ | sed "s/;/,/"
 cat <<EOM
-} rdm_response_code;
+} RDMStatusCode;
 
+/**
+ * @deprecated Use RDMStatusCode instead.
+ */
+typedef RDMStatusCode rdm_response_code;
+
+/**
+ * @brief RDM response types
+ */
 typedef enum {
 EOM
 sed -ne  '/^enum RDMResponseType/,/^}/p' $proto | grep RDM_ | sed "s/;/,/"
@@ -62,4 +77,4 @@ cat <<EOM
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMRESPONSECODES_H_
 EOM
-) > RDMResponseCodes.h
+)

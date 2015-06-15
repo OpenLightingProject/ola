@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OlaConfigurator.h
  * Makes configuring devices easy
@@ -44,24 +44,24 @@
 class OlaConfigurator;
 
 
-/*
+/**
  * Inherit from this and implement HandleResponse()
  */
 class OlaConfigurator {
  public:
-    /*
+    /**
      * @param device_id the device id to configure
      * @param plugin_id the expected plugin id for this device
      */
-    OlaConfigurator(unsigned int device_id, ola::ola_plugin_id plugin_id):
-      m_alias(device_id),
-      m_plugin_id(plugin_id),
-      m_client_wrapper(NULL),
-      m_client(NULL),
-      m_ss(NULL) {}
+    OlaConfigurator(unsigned int device_id, ola::ola_plugin_id plugin_id)
+        : m_alias(device_id),
+          m_plugin_id(plugin_id),
+          m_client_wrapper(NULL),
+          m_client(NULL),
+          m_ss(NULL) {}
     virtual ~OlaConfigurator();
 
-    /*
+    /**
      * Setup the configurator
      */
     bool Setup();

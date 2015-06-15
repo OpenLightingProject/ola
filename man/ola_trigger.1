@@ -1,0 +1,35 @@
+.TH ola_trigger 1 "October 2014"
+.SH NAME
+ola_trigger \- Run programs based on the values in a DMX stream.
+.SH SYNOPSIS
+.B ola_trigger
+[ options ] <config_file>
+.SH DESCRIPTION
+.B ola_trigger
+Run programs based on the values in a DMX stream.
+.SH OPTIONS
+.IP "-h, --help"
+Display the help message
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4.
+.IP "-o, --offset <uint16_t>"
+Apply an offset to the slot numbers. Valid offsets are 0 to 512, default is 0.
+.IP "-u, --universe <uint32_t>"
+The universe to use, defaults to 0.
+.IP "--validate"
+Validate the config file, rather than running it.
+.IP "-v, --version"
+Display version information
+.IP "--syslog"
+Send to syslog rather than stderr.
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
+.IP "--scheduler-policy <policy>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <priority>"
+The thread priority, only used if --scheduler-policy is set.
+.SH SEE ALSO
+.BR olad(1)
+.

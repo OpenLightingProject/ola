@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * TCPTransport.cpp
  * The classes for transporting ACN over TCP.
@@ -65,7 +65,8 @@ IncomingStreamTransport::IncomingStreamTransport(
       m_block_size(0),
       m_consumed_block_size(0),
       m_stream_valid(true),
-      m_pdu_length_size(TWO_BYTES) {
+      m_pdu_length_size(TWO_BYTES),
+      m_pdu_size(0) {
   EnterWaitingForPreamble();
 }
 

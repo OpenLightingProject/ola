@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133Device.h
  * Encapsulates the functionality of an E1.33 device.
@@ -95,9 +95,7 @@ class E133Device {
     void EndpointRequestComplete(ola::network::IPV4SocketAddress target,
                                  uint32_t sequence_number,
                                  uint16_t endpoint_id,
-                                 ola::rdm::rdm_response_code response_code,
-                                 const ola::rdm::RDMResponse *response,
-                                 const std::vector<string> &packets);
+                                 ola::rdm::RDMReply *reply);
 
     void SendStatusMessage(const ola::network::IPV4SocketAddress target,
                            uint32_t sequence_number,

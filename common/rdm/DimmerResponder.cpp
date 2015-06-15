@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DimmerResponder.cpp
  * A fake dimmer responder for OLA.
@@ -56,7 +56,7 @@ DimmerResponder::~DimmerResponder() {
  * Handle an RDM Request. This just uses the SubDeviceDispatcher to call the
  * correct sub device.
  */
-void DimmerResponder::SendRDMRequest(const RDMRequest *request,
+void DimmerResponder::SendRDMRequest(RDMRequest *request,
                                      RDMCallback *callback) {
   if (request->SubDevice() == ROOT_RDM_DEVICE) {
     m_root_device->SendRDMRequest(request, callback);

@@ -11,10 +11,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RDMHTTPModule.cpp
- * This module acts as the http -> olad gateway for RDM commands.
+ * This module acts as the HTTP -> olad gateway for RDM commands.
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <queue>
 #include <set>
@@ -29,11 +30,12 @@
 #include <utility>
 #include <vector>
 
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/OlaCallbackClient.h"
 #include "ola/StringUtils.h"
+#include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/RDMHelper.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -75,13 +77,13 @@ using std::vector;
 const char RDMHTTPModule::BACKEND_DISCONNECTED_ERROR[] =
     "Failed to send request, client isn't connected";
 
-// global url params
+// global URL params
 const char RDMHTTPModule::HINT_KEY[] = "hint";
 const char RDMHTTPModule::ID_KEY[] = "id";
 const char RDMHTTPModule::SECTION_KEY[] = "section";
 const char RDMHTTPModule::UID_KEY[] = "uid";
 
-// url params for particular sections
+// URL params for particular sections
 const char RDMHTTPModule::ADDRESS_FIELD[] = "address";
 const char RDMHTTPModule::DISPLAY_INVERT_FIELD[] = "invert";
 const char RDMHTTPModule::GENERIC_BOOL_FIELD[] = "bool";
@@ -157,7 +159,8 @@ RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
     : m_server(http_server),
       m_client(client),
       m_shim(client),
-      m_rdm_api(&m_shim) {
+      m_rdm_api(&m_shim),
+      m_pid_store(NULL) {
 
   m_server->RegisterHandler(
       "/rdm/run_discovery",
@@ -168,8 +171,12 @@ RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
   m_server->RegisterHandler(
       "/json/rdm/uid_info",
       NewCallback(this, &RDMHTTPModule::JsonUIDInfo));
+  // Deprecated for clarity, use uid_identify_device instead
   m_server->RegisterHandler(
       "/json/rdm/uid_identify",
+      NewCallback(this, &RDMHTTPModule::JsonUIDIdentifyDevice));
+  m_server->RegisterHandler(
+      "/json/rdm/uid_identify_device",
       NewCallback(this, &RDMHTTPModule::JsonUIDIdentifyDevice));
   m_server->RegisterHandler(
       "/json/rdm/uid_personalities",
@@ -202,7 +209,7 @@ RDMHTTPModule::~RDMHTTPModule() {
 }
 
 /**
- * Can be called while the server is running. Ownership is not transferred.
+ * @brief Can be called while the server is running. Ownership is not transferred.
  */
 void RDMHTTPModule::SetPidStore(const ola::rdm::RootPidStore *pid_store) {
   MutexLocker lock(&m_pid_store_mu);
@@ -211,19 +218,21 @@ void RDMHTTPModule::SetPidStore(const ola::rdm::RootPidStore *pid_store) {
 
 
 /**
- * Run RDM discovery for a universe
+ * @brief Run RDM discovery for a universe
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
 int RDMHTTPModule::RunRDMDiscovery(const HTTPRequest *request,
                                    HTTPResponse *response) {
-  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
     return OladHTTPServer::ServeUsage(response,
                                       "?id=[universe]&amp;incremental=true");
+  }
   unsigned int universe_id;
-  if (!CheckForInvalidId(request, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   string incremental_str = request->GetParameter("incremental");
   bool incremental = incremental_str == "true";
@@ -239,18 +248,20 @@ int RDMHTTPModule::RunRDMDiscovery(const HTTPRequest *request,
 
 
 /**
- * Return the list of uids for this universe as json
+ * @brief Return the list of uids for this universe as json
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
 int RDMHTTPModule::JsonUIDs(const HTTPRequest *request,
                             HTTPResponse *response) {
-  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
     return OladHTTPServer::ServeUsage(response, "?id=[universe]");
+  }
   unsigned int universe_id;
-  if (!CheckForInvalidId(request, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   m_client->RunDiscovery(
       universe_id,
@@ -264,22 +275,25 @@ int RDMHTTPModule::JsonUIDs(const HTTPRequest *request,
 
 
 /**
- * Return the device info for this uid.
+ * @brief Return the device info for this uid.
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
 int RDMHTTPModule::JsonUIDInfo(const HTTPRequest *request,
                                HTTPResponse *response) {
-  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
     return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
+  }
   unsigned int universe_id;
-  if (!CheckForInvalidId(request, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   UID *uid = NULL;
-  if (!CheckForInvalidUid(request, &uid))
+  if (!CheckForInvalidUid(request, &uid)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   string error;
   bool ok = m_rdm_api.GetDeviceInfo(
@@ -292,29 +306,33 @@ int RDMHTTPModule::JsonUIDInfo(const HTTPRequest *request,
       &error);
   delete uid;
 
-  if (!ok)
+  if (!ok) {
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
+  }
   return MHD_YES;
 }
 
 
 /**
- * Returns the identify state for the device.
+ * @brief Returns the identify state for the device.
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
 int RDMHTTPModule::JsonUIDIdentifyDevice(const HTTPRequest *request,
                                          HTTPResponse *response) {
-  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
     return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
+  }
   unsigned int universe_id;
-  if (!CheckForInvalidId(request, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   UID *uid = NULL;
-  if (!CheckForInvalidUid(request, &uid))
+  if (!CheckForInvalidUid(request, &uid)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   string error;
   bool ok = m_rdm_api.GetIdentifyDevice(
@@ -327,58 +345,68 @@ int RDMHTTPModule::JsonUIDIdentifyDevice(const HTTPRequest *request,
       &error);
   delete uid;
 
-  if (!ok)
+  if (!ok) {
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
+  }
   return MHD_YES;
 }
 
 
 /**
- * Returns the personalities on the device
+ * @brief Returns the personalities on the device
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
 int RDMHTTPModule::JsonUIDPersonalities(const HTTPRequest *request,
                                         HTTPResponse *response) {
-  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
     return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
+  }
   unsigned int universe_id;
-  if (!CheckForInvalidId(request, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   UID *uid = NULL;
-  if (!CheckForInvalidUid(request, &uid))
+  if (!CheckForInvalidUid(request, &uid)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   string error = GetPersonalities(request, response, universe_id, *uid, false,
                                   true);
 
   delete uid;
-  if (!error.empty())
+  if (!error.empty()) {
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+  }
   return MHD_YES;
 }
 
 
 /**
- * Return a list of pids supported by this device. This isn't used by the UI
- * but it's useful for debugging.
+ * @brief Return a list of PIDs supported by this device.
+ *
+ * This isn't used by the UI but it's useful for debugging.
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
+ * @sa JsonSupportedSections
  */
 int RDMHTTPModule::JsonSupportedPIDs(const HTTPRequest *request,
                                      HTTPResponse *response) {
-  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
     return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
+  }
   unsigned int universe_id;
-  if (!CheckForInvalidId(request, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   UID *uid = NULL;
-  if (!CheckForInvalidUid(request, &uid))
+  if (!CheckForInvalidUid(request, &uid)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   string error;
   bool ok = m_rdm_api.GetSupportedParameters(
@@ -391,31 +419,36 @@ int RDMHTTPModule::JsonSupportedPIDs(const HTTPRequest *request,
       &error);
   delete uid;
 
-  if (!ok)
+  if (!ok) {
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
+  }
   return MHD_YES;
 }
 
 
 /**
- * Return a list of sections to display in the RDM control panel.
+ * @brief Return a list of sections to display in the RDM control panel.
+ *
  * We use the response from SUPPORTED_PARAMS and DEVICE_INFO to decide which
- * pids exist.
+ * PIDs exist.
  * @param request the HTTPRequest
  * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
 int RDMHTTPModule::JsonSupportedSections(const HTTPRequest *request,
                                          HTTPResponse *response) {
-  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
     return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
+  }
   unsigned int universe_id;
-  if (!CheckForInvalidId(request, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   UID *uid = NULL;
-  if (!CheckForInvalidUid(request, &uid))
+  if (!CheckForInvalidUid(request, &uid)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   string error;
   bool ok = m_rdm_api.GetSupportedParameters(
@@ -430,14 +463,16 @@ int RDMHTTPModule::JsonSupportedSections(const HTTPRequest *request,
       &error);
   delete uid;
 
-  if (!ok)
+  if (!ok) {
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
+  }
   return MHD_YES;
 }
 
 
 /**
- * Get the information required to render a section in the RDM controller panel
+ * @brief Get the information required to render a section in the RDM
+ *   controller panel
  */
 int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
                                    HTTPResponse *response) {
@@ -448,12 +483,14 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
                                       "sections");
   }
   unsigned int universe_id;
-  if (!CheckForInvalidId(request, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   UID *uid = NULL;
-  if (!CheckForInvalidUid(request, &uid))
+  if (!CheckForInvalidUid(request, &uid)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   string section_id = request->GetParameter(SECTION_KEY);
   string error;
@@ -519,8 +556,9 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
   }
 
   delete uid;
-  if (!error.empty())
+  if (!error.empty()) {
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+  }
   return MHD_YES;
 }
 
@@ -537,12 +575,14 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
                                       "sections");
   }
   unsigned int universe_id;
-  if (!CheckForInvalidId(request, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   UID *uid = NULL;
-  if (!CheckForInvalidUid(request, &uid))
+  if (!CheckForInvalidUid(request, &uid)) {
     return OladHTTPServer::ServeHelpRedirect(response);
+  }
 
   string section_id = request->GetParameter(SECTION_KEY);
   string error;
@@ -597,8 +637,9 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
   }
 
   delete uid;
-  if (!error.empty())
+  if (!error.empty()) {
     return RespondWithError(response, error);
+  }
   return MHD_YES;
 }
 
@@ -618,8 +659,9 @@ void RDMHTTPModule::PruneUniverseList(const vector<OlaUniverse> &universes) {
   vector<OlaUniverse>::const_iterator iter;
   for (iter = universes.begin(); iter != universes.end(); ++iter) {
     uid_iter = m_universe_uids.find(iter->Id());
-    if (uid_iter != m_universe_uids.end())
+    if (uid_iter != m_universe_uids.end()) {
       uid_iter->second->active = true;
+    }
   }
 
   // clean up the uid map for those universes that no longer exist
@@ -636,7 +678,7 @@ void RDMHTTPModule::PruneUniverseList(const vector<OlaUniverse> &universes) {
 
 
 /*
- * Handle the UID list response.
+ * @brief Handle the UID list response.
  * @param response the HTTPResponse that is associated with the request.
  * @param uids the UIDs for this response.
  * @param error an error string.
@@ -694,7 +736,7 @@ void RDMHTTPModule::HandleUIDList(HTTPResponse *response,
   response->SendJson(json);
   delete response;
 
-  // remove any old uids
+  // remove any old UIDs
   for (uid_iter = uid_state->resolved_uids.begin();
        uid_iter != uid_state->resolved_uids.end();) {
     if (!uid_iter->second.active) {
@@ -705,13 +747,14 @@ void RDMHTTPModule::HandleUIDList(HTTPResponse *response,
     }
   }
 
-  if (!uid_state->uid_resolution_running)
+  if (!uid_state->uid_resolution_running) {
     ResolveNextUID(universe_id);
+  }
 }
 
 
 /*
- * Send the RDM command needed to resolve the next uid in the queue
+ * @brief Send the RDM command needed to resolve the next uid in the queue
  * @param universe_id the universe id to resolve the next UID for.
  */
 void RDMHTTPModule::ResolveNextUID(unsigned int universe_id) {
@@ -719,8 +762,9 @@ void RDMHTTPModule::ResolveNextUID(unsigned int universe_id) {
   string error;
   uid_resolution_state *uid_state = GetUniverseUids(universe_id);
 
-  if (!uid_state)
+  if (!uid_state) {
     return;
+  }
 
   while (!sent_request) {
     if (uid_state->pending_uids.empty()) {
@@ -763,7 +807,7 @@ void RDMHTTPModule::ResolveNextUID(unsigned int universe_id) {
 }
 
 /*
- * Handle the manufacturer label response.
+ * @brief Handle the manufacturer label response.
  */
 void RDMHTTPModule::UpdateUIDManufacturerLabel(
     unsigned int universe,
@@ -772,21 +816,23 @@ void RDMHTTPModule::UpdateUIDManufacturerLabel(
     const string &manufacturer_label) {
   uid_resolution_state *uid_state = GetUniverseUids(universe);
 
-  if (!uid_state)
+  if (!uid_state) {
     return;
+  }
 
   if (CheckForRDMSuccess(status)) {
     map<UID, resolved_uid>::iterator uid_iter;
     uid_iter = uid_state->resolved_uids.find(uid);
-    if (uid_iter != uid_state->resolved_uids.end())
+    if (uid_iter != uid_state->resolved_uids.end()) {
       uid_iter->second.manufacturer = manufacturer_label;
+    }
   }
   ResolveNextUID(universe);
 }
 
 
 /*
- * Handle the device label response.
+ * @brief Handle the device label response.
  */
 void RDMHTTPModule::UpdateUIDDeviceLabel(
     unsigned int universe,
@@ -795,21 +841,23 @@ void RDMHTTPModule::UpdateUIDDeviceLabel(
     const string &device_label) {
   uid_resolution_state *uid_state = GetUniverseUids(universe);
 
-  if (!uid_state)
+  if (!uid_state) {
     return;
+  }
 
   if (CheckForRDMSuccess(status)) {
     map<UID, resolved_uid>::iterator uid_iter;
     uid_iter = uid_state->resolved_uids.find(uid);
-    if (uid_iter != uid_state->resolved_uids.end())
+    if (uid_iter != uid_state->resolved_uids.end()) {
       uid_iter->second.device = device_label;
+    }
   }
   ResolveNextUID(universe);
 }
 
 
 /*
- * Get the UID resolution state for a particular universe
+ * @brief Get the UID resolution state for a particular universe
  * @param universe the id of the universe to get the state for
  */
 RDMHTTPModule::uid_resolution_state *RDMHTTPModule::GetUniverseUids(
@@ -821,7 +869,7 @@ RDMHTTPModule::uid_resolution_state *RDMHTTPModule::GetUniverseUids(
 
 
 /*
- * Get the UID resolution state for a particular universe or create one if it
+ * @brief Get the UID resolution state for a particular universe or create one if it
  * doesn't exist.
  * @param universe the id of the universe to get the state for
  */
@@ -843,13 +891,14 @@ RDMHTTPModule::uid_resolution_state *RDMHTTPModule::GetUniverseUidsOrCreate(
 
 
 /**
- * Handle the Device Info response and build the json
+ * @brief Handle the Device Info response and build the JSON
  */
 void RDMHTTPModule::UIDInfoHandler(HTTPResponse *response,
                                    const ola::rdm::ResponseStatus &status,
                                    const ola::rdm::DeviceDescriptor &device) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonObject json;
   json.Add("error", "");
@@ -866,13 +915,15 @@ void RDMHTTPModule::UIDInfoHandler(HTTPResponse *response,
 
 
 /**
- * Handle the identify device response and build the json.
+ * @brief Handle the identify device response and build the JSON
  */
-void RDMHTTPModule::UIDIdentifyDeviceHandler(HTTPResponse *response,
-                                       const ola::rdm::ResponseStatus &status,
-                                       bool value) {
-  if (CheckForRDMError(response, status))
+void RDMHTTPModule::UIDIdentifyDeviceHandler(
+    HTTPResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    bool value) {
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonObject json;
   json.Add("error", "");
@@ -886,7 +937,7 @@ void RDMHTTPModule::UIDIdentifyDeviceHandler(HTTPResponse *response,
 
 
 /**
- * Send the response to a dmx personality section
+ * @brief Send the response to a DMX personality section
  */
 void RDMHTTPModule::SendPersonalityResponse(HTTPResponse *response,
                                             personality_info *info) {
@@ -915,7 +966,7 @@ void RDMHTTPModule::SendPersonalityResponse(HTTPResponse *response,
 
 
 /*
- * Handle the response from a supported params request
+ * @brief Handle the response from a supported params request
  */
 void RDMHTTPModule::SupportedParamsHandler(
     HTTPResponse *response,
@@ -937,8 +988,8 @@ void RDMHTTPModule::SupportedParamsHandler(
 
 
 /**
- * Takes the supported pids for a device and come up with the list of sections
- * to display in the RDM panel
+ * @brief Takes the supported PIDs for a device and come up with the list of
+ * sections to display in the RDM panel
  */
 void RDMHTTPModule::SupportedSectionsHandler(
     HTTPResponse *response,
@@ -969,7 +1020,7 @@ void RDMHTTPModule::SupportedSectionsHandler(
 
 
 /**
- * Handle the second part of the supported sections request.
+ * @brief Handle the second part of the supported sections request.
  */
 void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
     HTTPResponse *response,
@@ -982,8 +1033,10 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
 
   // PID_DEVICE_INFO is required so we always add it
   string hint;
-  if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
+  if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end()) {
       hint.push_back('m');  // m is for device model
+  }
+
   AddSection(&sections, DEVICE_INFO_SECTION, DEVICE_INFO_SECTION_NAME, hint);
 
   AddSection(&sections, IDENTIFY_DEVICE_SECTION, IDENTIFY_DEVICE_SECTION_NAME);
@@ -1023,11 +1076,13 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         include_software_version = true;
         break;
       case ola::rdm::PID_DMX_PERSONALITY:
-        if (pids.find(ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION) == pids.end())
+        if (pids.find(ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION) ==
+            pids.end()) {
           AddSection(&sections, PERSONALITY_SECTION, PERSONALITY_SECTION_NAME);
-        else
+        } else {
           AddSection(&sections, PERSONALITY_SECTION, PERSONALITY_SECTION_NAME,
                      "l");
+        }
         break;
       case ola::rdm::PID_DMX_START_ADDRESS:
         AddSection(&sections, DMX_ADDRESS_SECTION, DMX_ADDRESS_SECTION_NAME);
@@ -1081,12 +1136,14 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
     }
   }
 
-  if (include_software_version)
+  if (include_software_version) {
     AddSection(&sections, BOOT_SOFTWARE_SECTION, BOOT_SOFTWARE_SECTION_NAME);
+  }
 
   if (CheckForRDMSuccess(status)) {
-    if (device.dmx_footprint && !dmx_address_added)
+    if (device.dmx_footprint && !dmx_address_added) {
       AddSection(&sections, DMX_ADDRESS_SECTION, DMX_ADDRESS_SECTION_NAME);
+    }
     if (device.sensor_count &&
         pids.find(ola::rdm::PID_SENSOR_DEFINITION) != pids.end() &&
         pids.find(ola::rdm::PID_SENSOR_VALUE) != pids.end()) {
@@ -1119,7 +1176,7 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
 
 
 /*
- * Handle the request for the communication status.
+ * @brief Handle the request for the communication status.
  */
 string RDMHTTPModule::GetCommStatus(HTTPResponse *response,
                                     unsigned int universe_id,
@@ -1137,15 +1194,16 @@ string RDMHTTPModule::GetCommStatus(HTTPResponse *response,
 
 
 /**
- * Handle the response to a communication status call
+ * @brief Handle the response to a communication status call
  */
 void RDMHTTPModule::CommStatusHandler(HTTPResponse *response,
                                       const ola::rdm::ResponseStatus &status,
                                       uint16_t short_messages,
                                       uint16_t length_mismatch,
                                       uint16_t checksum_fail) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
   JsonSection section;
 
   section.AddItem(new UIntItem("Short Messages", short_messages));
@@ -1158,7 +1216,7 @@ void RDMHTTPModule::CommStatusHandler(HTTPResponse *response,
 
 
 /**
- * Clear the communication status counters
+ * @brief Clear the communication status counters
  */
 string RDMHTTPModule::ClearCommsCounters(HTTPResponse *response,
                                          unsigned int universe_id,
@@ -1176,7 +1234,7 @@ string RDMHTTPModule::ClearCommsCounters(HTTPResponse *response,
 
 
 /*
- * Handle the request for the proxied devices
+ * @brief Handle the request for the proxied devices
  */
 string RDMHTTPModule::GetProxiedDevices(HTTPResponse *response,
                                         unsigned int universe_id,
@@ -1195,15 +1253,16 @@ string RDMHTTPModule::GetProxiedDevices(HTTPResponse *response,
 
 
 /**
- * Handle the response to a proxied devices call.
+ * @brief Handle the response to a proxied devices call.
  */
 void RDMHTTPModule::ProxiedDevicesHandler(
     HTTPResponse *response,
     unsigned int universe_id,
     const ola::rdm::ResponseStatus &status,
     const vector<UID> &uids) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
   JsonSection section;
 
   uid_resolution_state *uid_state = GetUniverseUids(universe_id);
@@ -1224,8 +1283,9 @@ void RDMHTTPModule::ProxiedDevicesHandler(
         if (!(device.empty() && manufacturer.empty())) {
           ostringstream str;
           str << uid_iter->second.manufacturer;
-          if ((!device.empty()) && (!manufacturer.empty()))
+          if ((!device.empty()) && (!manufacturer.empty())) {
             str << ", ";
+          }
           str << uid_iter->second.device;
           str << " [";
           str << iter->ToString();
@@ -1241,7 +1301,7 @@ void RDMHTTPModule::ProxiedDevicesHandler(
 
 
 /*
- * Handle the request for the device info section.
+ * @brief Handle the request for the device info section.
  */
 string RDMHTTPModule::GetDeviceInfo(const HTTPRequest *request,
                                     HTTPResponse *response,
@@ -1265,7 +1325,7 @@ string RDMHTTPModule::GetDeviceInfo(const HTTPRequest *request,
 
 
 /**
- * Handle the response to a software version call.
+ * @brief Handle the response to a software version call.
  */
 void RDMHTTPModule::GetSoftwareVersionHandler(
     HTTPResponse *response,
@@ -1274,8 +1334,9 @@ void RDMHTTPModule::GetSoftwareVersionHandler(
     const string &software_version) {
   string error;
 
-  if (CheckForRDMSuccess(status))
+  if (CheckForRDMSuccess(status)) {
     dev_info.software_version = software_version;
+  }
 
   if (dev_info.hint.find('m') != string::npos) {
     m_rdm_api.GetDeviceModelDescription(
@@ -1299,13 +1360,14 @@ void RDMHTTPModule::GetSoftwareVersionHandler(
         &error);
   }
 
-  if (!error.empty())
+  if (!error.empty()) {
     m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+  }
 }
 
 
 /**
- * Handle the response to a device model call.
+ * @brief Handle the response to a device model call.
  */
 void RDMHTTPModule::GetDeviceModelHandler(
     HTTPResponse *response,
@@ -1314,8 +1376,9 @@ void RDMHTTPModule::GetDeviceModelHandler(
     const string &device_model) {
   string error;
 
-  if (CheckForRDMSuccess(status))
+  if (CheckForRDMSuccess(status)) {
     dev_info.device_model = device_model;
+  }
 
   m_rdm_api.GetDeviceInfo(
       dev_info.universe_id,
@@ -1327,13 +1390,14 @@ void RDMHTTPModule::GetDeviceModelHandler(
                         dev_info),
       &error);
 
-  if (!error.empty())
+  if (!error.empty()) {
     m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+  }
 }
 
 
 /**
- * Handle the response to a device info call and build the response
+ * @brief Handle the response to a device info call and build the response
  */
 void RDMHTTPModule::GetDeviceInfoHandler(
     HTTPResponse *response,
@@ -1342,42 +1406,46 @@ void RDMHTTPModule::GetDeviceInfoHandler(
     const ola::rdm::DeviceDescriptor &device) {
   JsonSection section;
 
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   ostringstream stream;
   stream << static_cast<int>(device.protocol_version_high) << "."
-    << static_cast<int>(device.protocol_version_low);
+         << static_cast<int>(device.protocol_version_low);
   section.AddItem(new StringItem("Protocol Version", stream.str()));
 
   stream.str("");
-  if (dev_info.device_model.empty())
+  if (dev_info.device_model.empty()) {
     stream << device.device_model;
-  else
+  } else {
     stream << dev_info.device_model << " (" << device.device_model << ")";
+  }
   section.AddItem(new StringItem("Device Model", stream.str()));
 
   section.AddItem(new StringItem(
       "Product Category",
       ola::rdm::ProductCategoryToString(device.product_category)));
   stream.str("");
-  if (dev_info.software_version.empty())
+  if (dev_info.software_version.empty()) {
     stream << device.software_version;
-  else
+  } else {
     stream << dev_info.software_version << " (" << device.software_version
-      << ")";
+           << ")";
+  }
   section.AddItem(new StringItem("Software Version", stream.str()));
 
-  if (device.dmx_start_address == 0xffff)
+  if (device.dmx_start_address == ola::rdm::ZERO_FOOTPRINT_DMX_ADDRESS) {
     section.AddItem(new StringItem("DMX Address", "N/A"));
-  else
+  } else {
     section.AddItem(new UIntItem("DMX Address", device.dmx_start_address));
+  }
 
   section.AddItem(new UIntItem("DMX Footprint", device.dmx_footprint));
 
   stream.str("");
-  stream << static_cast<int>(device.current_personality) << " of " <<
-    static_cast<int>(device.personality_count);
+  stream << static_cast<int>(device.current_personality) << " of "
+         << static_cast<int>(device.personality_count);
   section.AddItem(new StringItem("Personality", stream.str()));
 
   section.AddItem(new UIntItem("Sub Devices", device.sub_device_count));
@@ -1388,9 +1456,9 @@ void RDMHTTPModule::GetDeviceInfoHandler(
 
 
 /*
- * Handle the request for the product details ids.
+ * @brief Handle the request for the product details ids.
  */
-string RDMHTTPModule::GetProductIds(const HTTPRequest *request,
+string RDMHTTPModule::GetProductIds(OLA_UNUSED const HTTPRequest *request,
                                     HTTPResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
@@ -1404,19 +1472,19 @@ string RDMHTTPModule::GetProductIds(const HTTPRequest *request,
                         response),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Handle the response to a product detail ids call and build the response.
+ * @brief Handle the response to a product detail ids call and build the response.
  */
 void RDMHTTPModule::GetProductIdsHandler(
     HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     const vector<uint16_t> &ids) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   bool first = true;
   ostringstream product_ids;
@@ -1424,13 +1492,15 @@ void RDMHTTPModule::GetProductIdsHandler(
   vector<uint16_t>::const_iterator iter = ids.begin();
   for (; iter != ids.end(); ++iter) {
     string product_id = ola::rdm::ProductDetailToString(*iter);
-    if (product_id.empty())
+    if (product_id.empty()) {
       continue;
+    }
 
-    if (first)
+    if (first) {
       first = false;
-    else
+    } else {
       product_ids << ", ";
+    }
     product_ids << product_id;
   }
   section.AddItem(new StringItem("Product Detail IDs", product_ids.str()));
@@ -1439,12 +1509,13 @@ void RDMHTTPModule::GetProductIdsHandler(
 
 
 /**
- * Handle the request for the Manufacturer label.
+ * @brief Handle the request for the Manufacturer label.
  */
-string RDMHTTPModule::GetManufacturerLabel(const HTTPRequest *request,
-                                           HTTPResponse *response,
-                                           unsigned int universe_id,
-                                           const UID &uid) {
+string RDMHTTPModule::GetManufacturerLabel(
+    OLA_UNUSED const HTTPRequest *request,
+    HTTPResponse *response,
+    unsigned int universe_id,
+    const UID &uid) {
   string error;
   m_rdm_api.GetManufacturerLabel(
       universe_id,
@@ -1457,12 +1528,11 @@ string RDMHTTPModule::GetManufacturerLabel(const HTTPRequest *request,
                         uid),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Handle the response to a manufacturer label call and build the response
+ * @brief Handle the response to a manufacturer label call and build the response
  */
 void RDMHTTPModule::GetManufacturerLabelHandler(
     HTTPResponse *response,
@@ -1470,8 +1540,9 @@ void RDMHTTPModule::GetManufacturerLabelHandler(
     const UID uid,
     const ola::rdm::ResponseStatus &status,
     const string &label) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
   JsonSection section;
   section.AddItem(new StringItem("Manufacturer Label", label));
   RespondWithSection(response, section);
@@ -1481,16 +1552,17 @@ void RDMHTTPModule::GetManufacturerLabelHandler(
   if (uid_state) {
     map<UID, resolved_uid>::iterator uid_iter =
       uid_state->resolved_uids.find(uid);
-    if (uid_iter != uid_state->resolved_uids.end())
+    if (uid_iter != uid_state->resolved_uids.end()) {
       uid_iter->second.manufacturer = label;
+    }
   }
 }
 
 
 /**
- * Handle the request for the Device label.
+ * @brief Handle the request for the Device label.
  */
-string RDMHTTPModule::GetDeviceLabel(const HTTPRequest *request,
+string RDMHTTPModule::GetDeviceLabel(OLA_UNUSED const HTTPRequest *request,
                                      HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
@@ -1506,12 +1578,11 @@ string RDMHTTPModule::GetDeviceLabel(const HTTPRequest *request,
                         uid),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Handle the response to a device label call and build the response
+ * @brief Handle the response to a device label call and build the response
  */
 void RDMHTTPModule::GetDeviceLabelHandler(
     HTTPResponse *response,
@@ -1519,8 +1590,9 @@ void RDMHTTPModule::GetDeviceLabelHandler(
     const UID uid,
     const ola::rdm::ResponseStatus &status,
     const string &label) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   section.AddItem(new StringItem("Device Label", label, LABEL_FIELD));
@@ -1531,14 +1603,15 @@ void RDMHTTPModule::GetDeviceLabelHandler(
   if (uid_state) {
     map<UID, resolved_uid>::iterator uid_iter =
       uid_state->resolved_uids.find(uid);
-    if (uid_iter != uid_state->resolved_uids.end())
+    if (uid_iter != uid_state->resolved_uids.end()) {
       uid_iter->second.device = label;
+    }
   }
 }
 
 
 /*
- * Set the device label
+ * @brief Set the device label
  */
 string RDMHTTPModule::SetDeviceLabel(const HTTPRequest *request,
                                      HTTPResponse *response,
@@ -1560,7 +1633,7 @@ string RDMHTTPModule::SetDeviceLabel(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the factory defaults section
+ * @brief Handle the request for the factory defaults section
  */
 string RDMHTTPModule::GetFactoryDefaults(HTTPResponse *response,
                                          unsigned int universe_id,
@@ -1579,14 +1652,15 @@ string RDMHTTPModule::GetFactoryDefaults(HTTPResponse *response,
 
 
 /**
- * Handle the response to a factory defaults call and build the response
+ * @brief Handle the response to a factory defaults call and build the response
  */
 void RDMHTTPModule::FactoryDefaultsHandler(
     HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     bool defaults) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   section.AddItem(new StringItem("Using Defaults",
@@ -1598,7 +1672,7 @@ void RDMHTTPModule::FactoryDefaultsHandler(
 
 
 /*
- * Reset to the factory defaults
+ * @brief Reset to the factory defaults
  */
 string RDMHTTPModule::SetFactoryDefault(HTTPResponse *response,
                                         unsigned int universe_id,
@@ -1617,7 +1691,7 @@ string RDMHTTPModule::SetFactoryDefault(HTTPResponse *response,
 
 
 /**
- * Handle the request for the language section.
+ * @brief Handle the request for the language section.
  */
 string RDMHTTPModule::GetLanguage(HTTPResponse *response,
                                   unsigned int universe_id,
@@ -1638,13 +1712,13 @@ string RDMHTTPModule::GetLanguage(HTTPResponse *response,
 
 
 /**
- * Handle the response to language capability call.
+ * @brief Handle the response to language capability call.
  */
 void RDMHTTPModule::GetSupportedLanguagesHandler(
     HTTPResponse *response,
     unsigned int universe_id,
     const UID uid,
-    const ola::rdm::ResponseStatus &status,
+    OLA_UNUSED const ola::rdm::ResponseStatus &status,
     const vector<string> &languages) {
   string error;
   m_rdm_api.GetLanguage(
@@ -1657,14 +1731,14 @@ void RDMHTTPModule::GetSupportedLanguagesHandler(
                         languages),
       &error);
 
-  if (!error.empty())
+  if (!error.empty()) {
     m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
-  (void) status;
+  }
 }
 
 
 /**
- * Handle the response to language call and build the response
+ * @brief Handle the response to language call and build the response
  */
 void RDMHTTPModule::GetLanguageHandler(HTTPResponse *response,
                                        vector<string> languages,
@@ -1678,8 +1752,9 @@ void RDMHTTPModule::GetLanguageHandler(HTTPResponse *response,
   unsigned int i = 0;
   for (; iter != languages.end(); ++iter, i++) {
     item->AddItem(*iter, *iter);
-    if (ok && *iter == language)
+    if (ok && *iter == language) {
       item->SetSelectedOffset(i);
+    }
   }
 
   if (ok && languages.empty()) {
@@ -1692,7 +1767,7 @@ void RDMHTTPModule::GetLanguageHandler(HTTPResponse *response,
 
 
 /*
- * Set the language
+ * @brief Set the language
  */
 string RDMHTTPModule::SetLanguage(const HTTPRequest *request,
                                   HTTPResponse *response,
@@ -1714,7 +1789,7 @@ string RDMHTTPModule::SetLanguage(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the boot software section.
+ * @brief Handle the request for the boot software section.
  */
 string RDMHTTPModule::GetBootSoftware(HTTPResponse *response,
                                       unsigned int universe_id,
@@ -1735,13 +1810,13 @@ string RDMHTTPModule::GetBootSoftware(HTTPResponse *response,
 
 
 /**
- * Handle the response to a boot software label.
+ * @brief Handle the response to a boot software label.
  */
 void RDMHTTPModule::GetBootSoftwareLabelHandler(
     HTTPResponse *response,
     unsigned int universe_id,
     const UID uid,
-    const ola::rdm::ResponseStatus &status,
+    OLA_UNUSED const ola::rdm::ResponseStatus &status,
     const string &label) {
   string error;
   m_rdm_api.GetBootSoftwareVersion(
@@ -1753,14 +1828,14 @@ void RDMHTTPModule::GetBootSoftwareLabelHandler(
                         response,
                         label),
       &error);
-  if (!error.empty())
+  if (!error.empty()) {
     m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
-  (void) status;
+  }
 }
 
 
 /**
- * Handle the response to a boot software version.
+ * @brief Handle the response to a boot software version.
  */
 void RDMHTTPModule::GetBootSoftwareVersionHandler(
     HTTPResponse *response,
@@ -1770,10 +1845,11 @@ void RDMHTTPModule::GetBootSoftwareVersionHandler(
   ostringstream str;
   str << label;
   if (CheckForRDMSuccess(status)) {
-    if (!label.empty())
+    if (!label.empty()) {
       str << " (" << version << ")";
-    else
+    } else {
       str << version;
+    }
   }
 
   JsonSection section;
@@ -1784,9 +1860,9 @@ void RDMHTTPModule::GetBootSoftwareVersionHandler(
 
 
 /**
- * Handle the request for the personality section.
+ * @brief Handle the request for the personality section.
  */
-string RDMHTTPModule::GetPersonalities(const HTTPRequest *request,
+string RDMHTTPModule::GetPersonalities(OLA_UNUSED const HTTPRequest *request,
                                        HTTPResponse *response,
                                        unsigned int universe_id,
                                        const UID &uid,
@@ -1814,12 +1890,11 @@ string RDMHTTPModule::GetPersonalities(const HTTPRequest *request,
                         info),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Handle the response to a dmx personality call.
+ * @brief Handle the response to a dmx personality call.
  */
 void RDMHTTPModule::GetPersonalityHandler(
     HTTPResponse *response,
@@ -1836,15 +1911,16 @@ void RDMHTTPModule::GetPersonalityHandler(
   info->active = current;
   info->total = total;
 
-  if (info->include_descriptions)
+  if (info->include_descriptions) {
     GetNextPersonalityDescription(response, info);
-  else
+  } else {
     SendPersonalityResponse(response, info);
+  }
 }
 
 
 /**
- * Get the description of the next dmx personality
+ * @brief Get the description of the next dmx personality
  */
 void RDMHTTPModule::GetNextPersonalityDescription(HTTPResponse *response,
                                                   personality_info *info) {
@@ -1860,29 +1936,33 @@ void RDMHTTPModule::GetNextPersonalityDescription(HTTPResponse *response,
                           response,
                           info),
         &error);
-    if (r)
+    if (r) {
       return;
+    }
 
     info->next++;
   }
-  if (info->return_as_section)
+  if (info->return_as_section) {
     SendSectionPersonalityResponse(response, info);
-  else
+  } else {
     SendPersonalityResponse(response, info);
+  }
 }
 
 
 /**
- * Handle the response to a Personality label call. This fetches the next
- * personality in the sequence, or sends the response if we have all the info.
+ * @brief Handle the response to a Personality label call.
+ *
+ * This fetches the next personality in the sequence, or sends the response if
+ * we have all the info.
  */
 void RDMHTTPModule::GetPersonalityLabelHandler(
-        HTTPResponse *response,
-        personality_info *info,
-        const ola::rdm::ResponseStatus &status,
-        uint8_t personality,
-        uint16_t slot_count,
-        const string &label) {
+    HTTPResponse *response,
+    personality_info *info,
+    const ola::rdm::ResponseStatus &status,
+    OLA_UNUSED uint8_t personality,
+    uint16_t slot_count,
+    const string &label) {
   string description = "";
   uint32_t slots = INVALID_PERSONALITY;
 
@@ -1894,20 +1974,20 @@ void RDMHTTPModule::GetPersonalityLabelHandler(
   info->personalities.push_back(pair<uint32_t, string>(slots, description));
 
   if (info->next == info->total) {
-    if (info->return_as_section)
+    if (info->return_as_section) {
       SendSectionPersonalityResponse(response, info);
-    else
+    } else {
       SendPersonalityResponse(response, info);
+    }
   } else {
     info->next++;
     GetNextPersonalityDescription(response, info);
   }
-  (void) personality;
 }
 
 
 /**
- * Send the response to a dmx personality section
+ * @brief Send the response to a dmx personality section
  */
 void RDMHTTPModule::SendSectionPersonalityResponse(HTTPResponse *response,
                                                    personality_info *info) {
@@ -1925,8 +2005,9 @@ void RDMHTTPModule::SendSectionPersonalityResponse(HTTPResponse *response,
       item->AddItem(IntToString(i), i);
     }
 
-    if (info->active == i)
+    if (info->active == i) {
       item->SetSelectedOffset(i - 1);
+    }
   }
   section.AddItem(item);
   RespondWithSection(response, section);
@@ -1937,7 +2018,7 @@ void RDMHTTPModule::SendSectionPersonalityResponse(HTTPResponse *response,
 
 
 /**
- * Set the personality
+ * @brief Set the personality
  */
 string RDMHTTPModule::SetPersonality(const HTTPRequest *request,
                                      HTTPResponse *response,
@@ -1965,9 +2046,9 @@ string RDMHTTPModule::SetPersonality(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the start address section.
+ * @brief Handle the request for the start address section.
  */
-string RDMHTTPModule::GetStartAddress(const HTTPRequest *request,
+string RDMHTTPModule::GetStartAddress(OLA_UNUSED const HTTPRequest *request,
                                       HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
@@ -1981,23 +2062,23 @@ string RDMHTTPModule::GetStartAddress(const HTTPRequest *request,
                         response),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Handle the response to a dmx start address call and build the response
+ * @brief Handle the response to a dmx start address call and build the response
  */
 void RDMHTTPModule::GetStartAddressHandler(
     HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     uint16_t address) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   GenericItem *item = NULL;
-  if (address == 0xffff) {
+  if (address == ola::rdm::ZERO_FOOTPRINT_DMX_ADDRESS) {
     item = new StringItem("DMX Start Address", "N/A");
   } else {
     UIntItem *uint_item = new UIntItem("DMX Start Address", address,
@@ -2012,7 +2093,7 @@ void RDMHTTPModule::GetStartAddressHandler(
 
 
 /*
- * Set the DMX start address
+ * @brief Set the DMX start address
  */
 string RDMHTTPModule::SetStartAddress(const HTTPRequest *request,
                                       HTTPResponse *response,
@@ -2040,7 +2121,7 @@ string RDMHTTPModule::SetStartAddress(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the sensor section.
+ * @brief Handle the request for the sensor section.
  */
 string RDMHTTPModule::GetSensor(const HTTPRequest *request,
                                 HTTPResponse *response,
@@ -2070,7 +2151,7 @@ string RDMHTTPModule::GetSensor(const HTTPRequest *request,
 
 
 /**
- * Handle the response to a sensor definition request.
+ * @brief Handle the response to a sensor definition request.
  */
 void RDMHTTPModule::SensorDefinitionHandler(
     HTTPResponse *response,
@@ -2096,13 +2177,14 @@ void RDMHTTPModule::SensorDefinitionHandler(
                         response,
                         definition_arg),
       &error);
-  if (!error.empty())
+  if (!error.empty()) {
     m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+  }
 }
 
 
 /**
- * Handle the response to a sensor value request & build the response.
+ * @brief Handle the response to a sensor value request & build the response.
  */
 void RDMHTTPModule::SensorValueHandler(
     HTTPResponse *response,
@@ -2110,21 +2192,24 @@ void RDMHTTPModule::SensorValueHandler(
     const ola::rdm::ResponseStatus &status,
     const ola::rdm::SensorValueDescriptor &value) {
   if (CheckForRDMError(response, status)) {
-    if (definition)
+    if (definition) {
       delete definition;
+    }
     return;
   }
 
   JsonSection section;
   ostringstream str;
 
-  if (definition)
+  if (definition) {
     section.AddItem(new StringItem("Description", definition->description));
+  }
 
   str << value.present_value;
-  if (definition)
-    str << " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
-    ola::rdm::UnitToString(definition->unit);
+  if (definition) {
+    str << " " << ola::rdm::PrefixToString(definition->prefix) << " "
+        << ola::rdm::UnitToString(definition->unit);
+  }
   section.AddItem(new StringItem("Present Value", str.str()));
 
   if (definition) {
@@ -2132,32 +2217,32 @@ void RDMHTTPModule::SensorValueHandler(
           "Type",
           ola::rdm::SensorTypeToString(definition->type)));
     str.str("");
-    str << definition->range_min << " - " << definition->range_max <<
-      " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
+    str << definition->range_min << " - " << definition->range_max << " "
+        << ola::rdm::PrefixToString(definition->prefix) << " " <<
       ola::rdm::UnitToString(definition->unit);
     section.AddItem(new StringItem("Range", str.str()));
 
     str.str("");
-    str << definition->normal_min << " - " << definition->normal_max <<
-      " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
+    str << definition->normal_min << " - " << definition->normal_max << " "
+        << ola::rdm::PrefixToString(definition->prefix) << " " <<
       ola::rdm::UnitToString(definition->unit);
     section.AddItem(new StringItem("Normal Range", str.str()));
 
     if (definition->recorded_value_support &
         ola::rdm::SENSOR_RECORDED_VALUE) {
       str.str("");
-      str << value.recorded << " " <<
-        ola::rdm::PrefixToString(definition->prefix) << " " <<
-        ola::rdm::UnitToString(definition->unit);
+      str << value.recorded << " "
+          << ola::rdm::PrefixToString(definition->prefix) << " "
+          << ola::rdm::UnitToString(definition->unit);
       section.AddItem(new StringItem("Recorded Value", str.str()));
     }
 
     if (definition->recorded_value_support &
         ola::rdm::SENSOR_RECORDED_RANGE_VALUES) {
       str.str("");
-      str << value.lowest << " - " << value.highest <<
-        " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
-        ola::rdm::UnitToString(definition->unit);
+      str << value.lowest << " - " << value.highest << " "
+          << ola::rdm::PrefixToString(definition->prefix) << " "
+          << ola::rdm::UnitToString(definition->unit);
       section.AddItem(new StringItem("Min / Max Recorded Values", str.str()));
     }
   }
@@ -2172,7 +2257,7 @@ void RDMHTTPModule::SensorValueHandler(
 
 
 /*
- * Record a sensor value
+ * @brief Record a sensor value
  */
 string RDMHTTPModule::RecordSensor(const HTTPRequest *request,
                                    HTTPResponse *response,
@@ -2199,9 +2284,9 @@ string RDMHTTPModule::RecordSensor(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the device hours section.
+ * @brief Handle the request for the device hours section.
  */
-string RDMHTTPModule::GetDeviceHours(const HTTPRequest *request,
+string RDMHTTPModule::GetDeviceHours(OLA_UNUSED const HTTPRequest *request,
                                      HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
@@ -2216,12 +2301,11 @@ string RDMHTTPModule::GetDeviceHours(const HTTPRequest *request,
                         string("Device Hours")),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Set the device hours
+ * @brief Set the device hours
  */
 string RDMHTTPModule::SetDeviceHours(const HTTPRequest *request,
                                      HTTPResponse *response,
@@ -2230,8 +2314,9 @@ string RDMHTTPModule::SetDeviceHours(const HTTPRequest *request,
   string device_hours = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t dev_hours;
 
-  if (!StringToInt(device_hours, &dev_hours))
+  if (!StringToInt(device_hours, &dev_hours)) {
     return "Invalid device hours";
+  }
 
   string error;
   m_rdm_api.SetDeviceHours(
@@ -2248,12 +2333,12 @@ string RDMHTTPModule::SetDeviceHours(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the lamp hours section.
+ * @brief Handle the request for the lamp hours section.
  */
-string RDMHTTPModule::GetLampHours(const HTTPRequest *request,
-                                     HTTPResponse *response,
-                                     unsigned int universe_id,
-                                     const UID &uid) {
+string RDMHTTPModule::GetLampHours(OLA_UNUSED const HTTPRequest *request,
+                                   HTTPResponse *response,
+                                   unsigned int universe_id,
+                                   const UID &uid) {
   string error;
   m_rdm_api.GetLampHours(
       universe_id,
@@ -2265,22 +2350,22 @@ string RDMHTTPModule::GetLampHours(const HTTPRequest *request,
                         string("Lamp Hours")),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Set the lamp hours
+ * @brief Set the lamp hours
  */
 string RDMHTTPModule::SetLampHours(const HTTPRequest *request,
-                                    HTTPResponse *response,
-                                    unsigned int universe_id,
-                                    const UID &uid) {
+                                   HTTPResponse *response,
+                                   unsigned int universe_id,
+                                   const UID &uid) {
   string lamp_hours_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t lamp_hours;
 
-  if (!StringToInt(lamp_hours_str, &lamp_hours))
+  if (!StringToInt(lamp_hours_str, &lamp_hours)) {
     return "Invalid lamp hours";
+  }
 
   string error;
   m_rdm_api.SetLampHours(
@@ -2297,9 +2382,9 @@ string RDMHTTPModule::SetLampHours(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the lamp strikes section
+ * @brief Handle the request for the lamp strikes section
  */
-string RDMHTTPModule::GetLampStrikes(const HTTPRequest *request,
+string RDMHTTPModule::GetLampStrikes(OLA_UNUSED const HTTPRequest *request,
                                      HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
@@ -2314,12 +2399,11 @@ string RDMHTTPModule::GetLampStrikes(const HTTPRequest *request,
                         string("Lamp Strikes")),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Set the lamp strikes
+ * @brief Set the lamp strikes
  */
 string RDMHTTPModule::SetLampStrikes(const HTTPRequest *request,
                                      HTTPResponse *response,
@@ -2328,8 +2412,9 @@ string RDMHTTPModule::SetLampStrikes(const HTTPRequest *request,
   string lamp_strikes_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t lamp_strikes;
 
-  if (!StringToInt(lamp_strikes_str, &lamp_strikes))
+  if (!StringToInt(lamp_strikes_str, &lamp_strikes)) {
     return "Invalid lamp strikes";
+  }
 
   string error;
   m_rdm_api.SetLampStrikes(
@@ -2346,9 +2431,9 @@ string RDMHTTPModule::SetLampStrikes(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the lamp state section
+ * @brief Handle the request for the lamp state section
  */
-string RDMHTTPModule::GetLampState(const HTTPRequest *request,
+string RDMHTTPModule::GetLampState(OLA_UNUSED const HTTPRequest *request,
                                    HTTPResponse *response,
                                    unsigned int universe_id,
                                    const UID &uid) {
@@ -2362,18 +2447,18 @@ string RDMHTTPModule::GetLampState(const HTTPRequest *request,
                         response),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Handle the response to lamp state call and build the response
+ * @brief Handle the response to lamp state call and build the response
  */
 void RDMHTTPModule::LampStateHandler(HTTPResponse *response,
                                      const ola::rdm::ResponseStatus &status,
                                      uint8_t state) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   SelectItem *item = new SelectItem("Lamp State", GENERIC_UINT_FIELD);
@@ -2392,8 +2477,9 @@ void RDMHTTPModule::LampStateHandler(HTTPResponse *response,
   for (unsigned int i = 0; i < sizeof(possible_values) / sizeof(values_s);
        ++i) {
     item->AddItem(possible_values[i].label, possible_values[i].state);
-    if (state == possible_values[i].state)
+    if (state == possible_values[i].state) {
       item->SetSelectedOffset(i);
+    }
   }
 
   section.AddItem(item);
@@ -2402,7 +2488,7 @@ void RDMHTTPModule::LampStateHandler(HTTPResponse *response,
 
 
 /**
- * Set the lamp state
+ * @brief Set the lamp state
  */
 string RDMHTTPModule::SetLampState(const HTTPRequest *request,
                                    HTTPResponse *response,
@@ -2429,9 +2515,9 @@ string RDMHTTPModule::SetLampState(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the lamp mode section
+ * @brief Handle the request for the lamp mode section
  */
-string RDMHTTPModule::GetLampMode(const HTTPRequest *request,
+string RDMHTTPModule::GetLampMode(OLA_UNUSED const HTTPRequest *request,
                                   HTTPResponse *response,
                                   unsigned int universe_id,
                                   const UID &uid) {
@@ -2445,18 +2531,18 @@ string RDMHTTPModule::GetLampMode(const HTTPRequest *request,
                         response),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Handle the response to lamp mode call and build the response
+ * @brief Handle the response to lamp mode call and build the response
  */
 void RDMHTTPModule::LampModeHandler(HTTPResponse *response,
                                     const ola::rdm::ResponseStatus &status,
                                     uint8_t mode) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   SelectItem *item = new SelectItem("Lamp Mode", GENERIC_UINT_FIELD);
@@ -2475,8 +2561,9 @@ void RDMHTTPModule::LampModeHandler(HTTPResponse *response,
   for (unsigned int i = 0; i < sizeof(possible_values) / sizeof(values_s);
        ++i) {
     item->AddItem(possible_values[i].label, possible_values[i].mode);
-    if (mode == possible_values[i].mode)
+    if (mode == possible_values[i].mode) {
       item->SetSelectedOffset(i);
+    }
   }
 
   section.AddItem(item);
@@ -2485,7 +2572,7 @@ void RDMHTTPModule::LampModeHandler(HTTPResponse *response,
 
 
 /**
- * Set the lamp mode
+ * @brief Set the lamp mode
  */
 string RDMHTTPModule::SetLampMode(const HTTPRequest *request,
                                   HTTPResponse *response,
@@ -2512,9 +2599,9 @@ string RDMHTTPModule::SetLampMode(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the device power cycles section
+ * @brief Handle the request for the device power cycles section
  */
-string RDMHTTPModule::GetPowerCycles(const HTTPRequest *request,
+string RDMHTTPModule::GetPowerCycles(OLA_UNUSED const HTTPRequest *request,
                                      HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
@@ -2529,12 +2616,11 @@ string RDMHTTPModule::GetPowerCycles(const HTTPRequest *request,
                         string("Device Power Cycles")),
       &error);
   return error;
-  (void) request;
 }
 
 
 /**
- * Set the device power cycles
+ * @brief Set the device power cycles
  */
 string RDMHTTPModule::SetPowerCycles(const HTTPRequest *request,
                                      HTTPResponse *response,
@@ -2543,8 +2629,9 @@ string RDMHTTPModule::SetPowerCycles(const HTTPRequest *request,
   string power_cycles_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t power_cycles;
 
-  if (!StringToInt(power_cycles_str, &power_cycles))
+  if (!StringToInt(power_cycles_str, &power_cycles)) {
     return "Invalid power cycles";
+  }
 
   string error;
   m_rdm_api.SetDevicePowerCycles(
@@ -2562,7 +2649,7 @@ string RDMHTTPModule::SetPowerCycles(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the display invert section.
+ * @brief Handle the request for the display invert section.
  */
 string RDMHTTPModule::GetDisplayInvert(HTTPResponse *response,
                                        unsigned int universe_id,
@@ -2581,14 +2668,15 @@ string RDMHTTPModule::GetDisplayInvert(HTTPResponse *response,
 
 
 /**
- * Handle the response to display invert call and build the response
+ * @brief Handle the response to display invert call and build the response
  */
 void RDMHTTPModule::DisplayInvertHandler(
     HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     uint8_t value) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   SelectItem *item = new SelectItem("Display Invert", DISPLAY_INVERT_FIELD);
@@ -2597,8 +2685,9 @@ void RDMHTTPModule::DisplayInvertHandler(
   item->AddItem("On", ola::rdm::DISPLAY_INVERT_ON);
   item->AddItem("Auto", ola::rdm::DISPLAY_INVERT_AUTO);
 
-  if (value <= ola::rdm::DISPLAY_INVERT_AUTO)
+  if (value < ola::rdm::DISPLAY_INVERT_MAX) {
     item->SetSelectedOffset(value);
+  }
 
   section.AddItem(item);
   RespondWithSection(response, section);
@@ -2606,16 +2695,16 @@ void RDMHTTPModule::DisplayInvertHandler(
 
 
 /**
- * Set the display invert.
+ * @brief Set the display invert.
  */
 string RDMHTTPModule::SetDisplayInvert(const HTTPRequest *request,
                                        HTTPResponse *response,
                                        unsigned int universe_id,
                                        const UID &uid) {
   string invert_field = request->GetParameter(DISPLAY_INVERT_FIELD);
-  uint8_t display_mode;
-  if (!StringToInt(invert_field, &display_mode)) {
-    return "Invalid display mode";
+  uint8_t display_invert;
+  if (!StringToInt(invert_field, &display_invert)) {
+    return "Invalid display invert";
   }
 
   string error;
@@ -2623,7 +2712,7 @@ string RDMHTTPModule::SetDisplayInvert(const HTTPRequest *request,
       universe_id,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
-      display_mode,
+      display_invert,
       NewSingleCallback(this,
                         &RDMHTTPModule::SetHandler,
                         response),
@@ -2633,7 +2722,7 @@ string RDMHTTPModule::SetDisplayInvert(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the display level section.
+ * @brief Handle the request for the display level section.
  */
 string RDMHTTPModule::GetDisplayLevel(HTTPResponse *response,
                                       unsigned int universe_id,
@@ -2652,18 +2741,19 @@ string RDMHTTPModule::GetDisplayLevel(HTTPResponse *response,
 
 
 /**
- * Handle the response to display level call and build the response
+ * @brief Handle the response to display level call and build the response
  */
 void RDMHTTPModule::DisplayLevelHandler(HTTPResponse *response,
                                         const ola::rdm::ResponseStatus &status,
                                         uint8_t value) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   UIntItem *item = new UIntItem("Display Level", value, GENERIC_UINT_FIELD);
-  item->SetMin(0);
-  item->SetMax(255);
+  item->SetMin(std::numeric_limits<uint8_t>::min());
+  item->SetMax(std::numeric_limits<uint8_t>::max());
 
   section.AddItem(item);
   RespondWithSection(response, section);
@@ -2671,7 +2761,7 @@ void RDMHTTPModule::DisplayLevelHandler(HTTPResponse *response,
 
 
 /**
- * Set the display level.
+ * @brief Set the display level.
  */
 string RDMHTTPModule::SetDisplayLevel(const HTTPRequest *request,
                                       HTTPResponse *response,
@@ -2680,7 +2770,7 @@ string RDMHTTPModule::SetDisplayLevel(const HTTPRequest *request,
   string display_level_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint8_t display_level;
   if (!StringToInt(display_level_str, &display_level)) {
-    return "Invalid display mode";
+    return "Invalid display level";
   }
 
   string error;
@@ -2698,7 +2788,7 @@ string RDMHTTPModule::SetDisplayLevel(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the pan invert section.
+ * @brief Handle the request for the pan invert section.
  */
 string RDMHTTPModule::GetPanInvert(HTTPResponse *response,
                                    unsigned int universe_id,
@@ -2718,7 +2808,7 @@ string RDMHTTPModule::GetPanInvert(HTTPResponse *response,
 
 
 /**
- * Set the pan invert.
+ * @brief Set the pan invert.
  */
 string RDMHTTPModule::SetPanInvert(const HTTPRequest *request,
                                    HTTPResponse *response,
@@ -2740,7 +2830,7 @@ string RDMHTTPModule::SetPanInvert(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the tilt invert section.
+ * @brief Handle the request for the tilt invert section.
  */
 string RDMHTTPModule::GetTiltInvert(HTTPResponse *response,
                                     unsigned int universe_id,
@@ -2760,7 +2850,7 @@ string RDMHTTPModule::GetTiltInvert(HTTPResponse *response,
 
 
 /**
- * Set the tilt invert.
+ * @brief Set the tilt invert.
  */
 string RDMHTTPModule::SetTiltInvert(const HTTPRequest *request,
                                     HTTPResponse *response,
@@ -2782,11 +2872,11 @@ string RDMHTTPModule::SetTiltInvert(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the pan/tilt swap section.
+ * @brief Handle the request for the pan/tilt swap section.
  */
 string RDMHTTPModule::GetPanTiltSwap(HTTPResponse *response,
-                                 unsigned int universe_id,
-                                 const UID &uid) {
+                                     unsigned int universe_id,
+                                     const UID &uid) {
   string error;
   m_rdm_api.GetPanTiltSwap(
       universe_id,
@@ -2802,7 +2892,7 @@ string RDMHTTPModule::GetPanTiltSwap(HTTPResponse *response,
 
 
 /**
- * Set the pan/tilt swap.
+ * @brief Set the pan/tilt swap.
  */
 string RDMHTTPModule::SetPanTiltSwap(const HTTPRequest *request,
                                      HTTPResponse *response,
@@ -2824,7 +2914,7 @@ string RDMHTTPModule::SetPanTiltSwap(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the clock section.
+ * @brief Handle the request for the clock section.
  */
 string RDMHTTPModule::GetClock(HTTPResponse *response,
                                unsigned int universe_id,
@@ -2843,21 +2933,22 @@ string RDMHTTPModule::GetClock(HTTPResponse *response,
 
 
 /**
- * Handle the response to clock call and build the response
+ * @brief Handle the response to clock call and build the response
  */
 void RDMHTTPModule::ClockHandler(HTTPResponse *response,
                                  const ola::rdm::ResponseStatus &status,
                                  const ola::rdm::ClockValue &clock) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   ostringstream str;
-  str << std::setfill('0') << std::setw(2) << static_cast<int>(clock.hour) <<
-    ":" << std::setw(2) << static_cast<int>(clock.minute) << ":" <<
-    std::setw(2) << static_cast<int>(clock.second) << " " <<
-    static_cast<int>(clock.day) << "/" << static_cast<int>(clock.month) << "/"
-    << clock.year;
+  str << std::setfill('0') << std::setw(2) << static_cast<int>(clock.hour)
+      << ":" << std::setw(2) << static_cast<int>(clock.minute) << ":"
+      << std::setw(2) << static_cast<int>(clock.second) << " "
+      << static_cast<int>(clock.day) << "/" << static_cast<int>(clock.month)
+      << "/" << clock.year;
 
   section.AddItem(new StringItem("Clock", str.str()));
   section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
@@ -2867,14 +2958,18 @@ void RDMHTTPModule::ClockHandler(HTTPResponse *response,
 
 
 /**
- * Sync the clock
+ * @brief Sync the clock
  */
 string RDMHTTPModule::SyncClock(HTTPResponse *response,
                                 unsigned int universe_id,
                                 const UID &uid) {
   time_t now = time(NULL);
   struct tm now_tm;
+#ifdef _WIN32
+  memcpy(&now_tm, localtime(&now), sizeof(now_tm));
+#else
   localtime_r(&now, &now_tm);
+#endif
   ola::rdm::ClockValue clock_value;
 
   clock_value.year = now_tm.tm_year + 1900;
@@ -2898,11 +2993,11 @@ string RDMHTTPModule::SyncClock(HTTPResponse *response,
 
 
 /**
- * Handle the request for the identify device section.
+ * @brief Handle the request for the identify device section.
  */
 string RDMHTTPModule::GetIdentifyDevice(HTTPResponse *response,
-                                      unsigned int universe_id,
-                                      const UID &uid) {
+                                        unsigned int universe_id,
+                                        const UID &uid) {
   string error;
   m_rdm_api.GetIdentifyDevice(
       universe_id,
@@ -2918,7 +3013,7 @@ string RDMHTTPModule::GetIdentifyDevice(HTTPResponse *response,
 
 
 /*
- * Set identify device
+ * @brief Set identify device
  */
 string RDMHTTPModule::SetIdentifyDevice(const HTTPRequest *request,
                                         HTTPResponse *response,
@@ -2940,7 +3035,7 @@ string RDMHTTPModule::SetIdentifyDevice(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the power state section.
+ * @brief Handle the request for the power state section.
  */
 string RDMHTTPModule::GetPowerState(HTTPResponse *response,
                                     unsigned int universe_id,
@@ -2959,13 +3054,14 @@ string RDMHTTPModule::GetPowerState(HTTPResponse *response,
 
 
 /**
- * Handle the response to power state call and build the response
+ * @brief Handle the response to power state call and build the response
  */
 void RDMHTTPModule::PowerStateHandler(HTTPResponse *response,
                                       const ola::rdm::ResponseStatus &status,
                                       uint8_t value) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   SelectItem *item = new SelectItem("Power State", GENERIC_UINT_FIELD);
@@ -2984,8 +3080,9 @@ void RDMHTTPModule::PowerStateHandler(HTTPResponse *response,
   for (unsigned int i = 0; i < sizeof(possible_values) / sizeof(values_s);
        ++i) {
     item->AddItem(possible_values[i].label, possible_values[i].state);
-    if (value == possible_values[i].state)
+    if (value == possible_values[i].state) {
       item->SetSelectedOffset(i);
+    }
   }
 
   section.AddItem(item);
@@ -2994,7 +3091,7 @@ void RDMHTTPModule::PowerStateHandler(HTTPResponse *response,
 
 
 /*
- * Set the power state.
+ * @brief Set the power state.
  */
 string RDMHTTPModule::SetPowerState(const HTTPRequest *request,
                                     HTTPResponse *response,
@@ -3023,7 +3120,7 @@ string RDMHTTPModule::SetPowerState(const HTTPRequest *request,
 
 
 /**
- * Handle the request for the device reset section.
+ * @brief Handle the request for the device reset section.
  */
 string RDMHTTPModule::GetResetDevice(HTTPResponse *response) {
   JsonSection section = JsonSection(false);
@@ -3052,12 +3149,12 @@ string RDMHTTPModule::GetResetDevice(HTTPResponse *response) {
 
 
 /*
- * Set the reset device.
+ * @brief Set the reset device.
  */
 string RDMHTTPModule::SetResetDevice(const HTTPRequest *request,
-                                    HTTPResponse *response,
-                                    unsigned int universe_id,
-                                    const UID &uid) {
+                                     HTTPResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
   string reset_device_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint8_t reset_device;
   ola::rdm::rdm_reset_device_mode reset_device_enum;
@@ -3081,7 +3178,7 @@ string RDMHTTPModule::SetResetDevice(const HTTPRequest *request,
 
 
 /**
- * Check if the id url param exists and is valid.
+ * @brief Check if the id URL param exists and is valid.
  */
 bool RDMHTTPModule::CheckForInvalidId(const HTTPRequest *request,
                                       unsigned int *universe_id) {
@@ -3095,14 +3192,14 @@ bool RDMHTTPModule::CheckForInvalidId(const HTTPRequest *request,
 
 
 /**
- * Check that the uid url param exists and is valid.
+ * @brief Check that the uid URL param exists and is valid.
  */
 bool RDMHTTPModule::CheckForInvalidUid(const HTTPRequest *request,
                                        UID **uid) {
   string uid_string = request->GetParameter(UID_KEY);
   *uid = UID::FromString(uid_string);
   if (*uid == NULL) {
-    OLA_INFO << "Invalid uid: " << uid_string;
+    OLA_INFO << "Invalid UID: " << uid_string;
     return false;
   }
   return true;
@@ -3110,7 +3207,8 @@ bool RDMHTTPModule::CheckForInvalidUid(const HTTPRequest *request,
 
 
 /**
- * Get the sub device from the HTTP request, or return ROOT_DEVICE if it isn't valid.
+ * @brief Get the sub device from the HTTP request, or return ROOT_DEVICE if it
+ *   isn't valid.
  */
 uint16_t RDMHTTPModule::SubDeviceOrRoot(const HTTPRequest *request) {
   string sub_device_str = request->GetParameter(SUB_DEVICE_FIELD);
@@ -3126,7 +3224,7 @@ uint16_t RDMHTTPModule::SubDeviceOrRoot(const HTTPRequest *request) {
 
 
 /*
- * Check the response to a Set RDM call and build the response.
+ * @brief Check the response to a Set RDM call and build the response.
  */
 void RDMHTTPModule::SetHandler(
     HTTPResponse *response,
@@ -3138,14 +3236,15 @@ void RDMHTTPModule::SetHandler(
 
 
 /*
- * Build a response to a RDM call that returns a uint32_t
+ * @brief Build a response to a RDM call that returns a uint32_t
  */
 void RDMHTTPModule::GenericUIntHandler(HTTPResponse *response,
                                        string description,
                                        const ola::rdm::ResponseStatus &status,
                                        uint32_t value) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   section.AddItem(new UIntItem(description, value, GENERIC_UINT_FIELD));
@@ -3154,7 +3253,7 @@ void RDMHTTPModule::GenericUIntHandler(HTTPResponse *response,
 
 
 /*
- * Build a response to a RDM call that returns a bool
+ * @brief Build a response to a RDM call that returns a bool
  */
 void RDMHTTPModule::GenericUInt8BoolHandler(
     HTTPResponse *response,
@@ -3166,14 +3265,15 @@ void RDMHTTPModule::GenericUInt8BoolHandler(
 
 
 /*
- * Build a response to a RDM call that returns a bool
+ * @brief Build a response to a RDM call that returns a bool
  */
 void RDMHTTPModule::GenericBoolHandler(HTTPResponse *response,
                                        string description,
                                        const ola::rdm::ResponseStatus &status,
                                        bool value) {
-  if (CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status)) {
     return;
+  }
 
   JsonSection section;
   section.AddItem(new BoolItem(description, value, GENERIC_BOOL_FIELD));
@@ -3181,7 +3281,7 @@ void RDMHTTPModule::GenericBoolHandler(HTTPResponse *response,
 }
 
 /**
- * Check for an RDM error, and if it occurs, return a json response.
+ * @brief Check for an RDM error, and if it occurs, return a JSON response.
  * @return true if an error occured.
  */
 bool RDMHTTPModule::CheckForRDMError(HTTPResponse *response,
@@ -3210,7 +3310,7 @@ int RDMHTTPModule::RespondWithError(HTTPResponse *response,
 
 
 /**
- * Build & send a response from a JsonSection
+ * @brief Build & send a response from a JsonSection
  */
 void RDMHTTPModule::RespondWithSection(HTTPResponse *response,
                                        const ola::web::JsonSection &section) {
@@ -3223,7 +3323,7 @@ void RDMHTTPModule::RespondWithSection(HTTPResponse *response,
 
 
 /*
- * Check the success of an RDM command
+ * @brief Check the success of an RDM command
  * @returns true if this command was ok, false otherwise.
  */
 bool RDMHTTPModule::CheckForRDMSuccess(
@@ -3238,8 +3338,10 @@ bool RDMHTTPModule::CheckForRDMSuccess(
 
 
 /*
- * Check the success of an RDM command. At the moment we're very strict in this
- * method, some day this should be relaxed to handle the corner cases.
+ * @brief Check the success of an RDM command or return an error message.
+ *
+ * At the moment we're very strict in this method, some day this should be
+ * relaxed to handle the corner cases.
  * @returns true if this command returns an ACK. false for any other condition.
  */
 bool RDMHTTPModule::CheckForRDMSuccessWithError(
@@ -3248,30 +3350,34 @@ bool RDMHTTPModule::CheckForRDMSuccessWithError(
   ostringstream str;
   if (!status.error.empty()) {
     str << "RDM command error: " << status.error;
-    if (error)
+    if (error) {
       *error = str.str();
+    }
     return false;
   }
 
   // TODO(simon): One day we should handle broadcast responses, ack timers etc.
   if (status.response_code != ola::rdm::RDM_COMPLETED_OK) {
-    if (error)
-      *error = ola::rdm::ResponseCodeToString(status.response_code);
+    if (error) {
+      *error = ola::rdm::StatusCodeToString(status.response_code);
+    }
   } else {
     switch (status.response_type) {
       case ola::rdm::RDM_ACK:
         return true;
       case ola::rdm::RDM_ACK_TIMER:
         str << "Got ACK Timer for " << status.AckTimer() << " ms";
-        if (error)
+        if (error) {
           *error = str.str();
+        }
         break;
       case ola::rdm::RDM_NACK_REASON:
         str << "Request was NACKED with code: " <<
           ola::rdm::NackReasonToString(status.NackReason());
         OLA_INFO << str.str();
-        if (error)
+        if (error) {
           *error = str.str();
+        }
     }
   }
   return false;
@@ -3279,7 +3385,7 @@ bool RDMHTTPModule::CheckForRDMSuccessWithError(
 
 
 /*
- * Handle the RDM discovery response
+ * @brief Handle the RDM discovery response
  * @param response the HTTPResponse that is associated with the request.
  * @param error an error string.
  */
@@ -3298,7 +3404,7 @@ void RDMHTTPModule::HandleBoolResponse(HTTPResponse *response,
 
 
 /**
- * Add a section to the supported section list
+ * @brief Add a section to the supported section list
  */
 void RDMHTTPModule::AddSection(vector<section_info> *sections,
                                const string &section_id,

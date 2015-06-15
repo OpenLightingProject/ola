@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DmxBuffer.cpp
  * The DmxBuffer class
@@ -32,7 +32,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -73,7 +73,7 @@ DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length)
 }
 
 
-DmxBuffer::DmxBuffer(const std::string &data)
+DmxBuffer::DmxBuffer(const string &data)
     : m_ref_count(0),
       m_copy_on_write(false),
       m_data(NULL),
@@ -150,7 +150,7 @@ bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
 }
 
 
-bool DmxBuffer::Set(const std::string &data) {
+bool DmxBuffer::Set(const string &data) {
   return Set(reinterpret_cast<const uint8_t*>(data.data()), data.length());
 }
 
@@ -175,7 +175,7 @@ bool DmxBuffer::SetFromString(const string &input) {
     m_length = 0;
     return true;
   }
-  StringSplit(input, dmx_values, ",");
+  StringSplit(input, &dmx_values, ",");
   for (iter = dmx_values.begin();
       iter != dmx_values.end() && i < DMX_UNIVERSE_SIZE; ++iter, ++i) {
     m_data[i] = atoi(iter->data());
@@ -238,7 +238,7 @@ void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
   }
 
   if (channel > m_length) {
-    OLA_WARN << "attempting to set channel " << channel << " when length is "
+    OLA_WARN << "Attempting to set channel " << channel << " when length is "
              << m_length;
     return;
   }
@@ -261,6 +261,11 @@ void DmxBuffer::Get(uint8_t *data, unsigned int *length) const {
 
 void DmxBuffer::GetRange(unsigned int slot, uint8_t *data,
                          unsigned int *length) const {
+  if (slot >= m_length) {
+    *length = 0;
+    return;
+  }
+
   if (m_data) {
     *length = min(*length, m_length - slot);
     memcpy(data, m_data + slot, *length);
@@ -271,10 +276,11 @@ void DmxBuffer::GetRange(unsigned int slot, uint8_t *data,
 
 
 uint8_t DmxBuffer::Get(unsigned int channel) const {
-  if (m_data && channel < m_length)
+  if (m_data && channel < m_length) {
     return m_data[channel];
-  else
+  } else {
     return 0;
+  }
 }
 
 
@@ -285,36 +291,39 @@ string DmxBuffer::Get() const {
 }
 
 
-/*
- * Set the buffer to all zeros.
- * @post Size() == DMX_UNIVERSE_SIZE
- */
 bool DmxBuffer::Blackout() {
-  if (m_copy_on_write)
+  if (m_copy_on_write) {
     CleanupMemory();
-  if (!m_data)
-    if (!Init())
+  }
+  if (!m_data) {
+    if (!Init()) {
       return false;
-  memset(m_data, DMX_MIN_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
+    }
+  }
+  memset(m_data, DMX_MIN_SLOT_VALUE, DMX_UNIVERSE_SIZE);
   m_length = DMX_UNIVERSE_SIZE;
   return true;
 }
 
 
 void DmxBuffer::Reset() {
-  if (m_data)
+  if (m_data) {
     m_length = 0;
+  }
 }
 
 
 string DmxBuffer::ToString() const {
-  if (!m_data)
+  if (!m_data) {
     return "";
+  }
 
+  // TODO(Peter): Change to the uint8_t version of StringJoin
   std::ostringstream str;
   for (unsigned int i = 0; i < Size(); i++) {
-    if (i)
+    if (i) {
       str << ",";
+    }
     str << static_cast<int>(m_data[i]);
   }
   return str.str();
@@ -339,8 +348,9 @@ bool DmxBuffer::Init() {
  * @return true on Duplication, and false it duplication was not needed
  */
 bool DmxBuffer::DuplicateIfNeeded() {
-  if (m_copy_on_write && *m_ref_count == 1)
+  if (m_copy_on_write && *m_ref_count == 1) {
     m_copy_on_write = false;
+  }
 
   if (m_copy_on_write && *m_ref_count > 1) {
     unsigned int *old_ref_count = m_ref_count;

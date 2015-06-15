@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133Receiver.h
  * Handles E1.33 UDP packets and executes RDM and Status message callbacks.
@@ -39,13 +39,13 @@ namespace ola {
 // and allocate the members on the heap.
 namespace plugin {
 namespace e131 {
-  class E133Header;
-  class E133Inflator;
-  class E133StatusInflator;
-  class IncomingUDPTransport;
-  class RDMInflator;
-  class RootInflator;
-  class TransportHeader;
+class E133Header;
+class E133Inflator;
+class E133StatusInflator;
+class IncomingUDPTransport;
+class RDMInflator;
+class RootInflator;
+class TransportHeader;
 }  // namespace e131
 }  // namespace plugin
 
@@ -97,14 +97,14 @@ class E133RDMMessage : public E133Message {
     E133RDMMessage(const IPV4Address &ip,
                    uint16_t endpoint,
                    uint32_t sequence_number,
-                   ola::rdm::rdm_response_code response_code,
+                   ola::rdm::RDMStatusCode status_code,
                    const ola::rdm::RDMResponse *response)
       : E133Message(ip, endpoint, sequence_number),
-        response_code(response_code),
+        status_code(status_code),
         response(response) {
     }
 
-    ola::rdm::rdm_response_code response_code;
+    ola::rdm::RDMStatusCode status_code;
     const ola::rdm::RDMResponse *response;
 };
 

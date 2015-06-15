@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * TimeCodeTest.cpp
  * Test fixture for the TimeCode classes
@@ -27,6 +27,7 @@
 
 
 using ola::timecode::TimeCode;
+using std::ostringstream;
 using std::string;
 
 using ola::timecode::TIMECODE_FILM;
@@ -52,6 +53,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TimeCodeTest);
  * Test the TimeCodes work.
  */
 void TimeCodeTest::testTimeCode() {
+  ostringstream str1;
+
   TimeCode t1(TIMECODE_FILM, 0, 0, 0, 0);
   OLA_ASSERT_EQ(TIMECODE_FILM, t1.Type());
   OLA_ASSERT_EQ(static_cast<uint8_t>(0), t1.Hours());
@@ -59,12 +62,19 @@ void TimeCodeTest::testTimeCode() {
   OLA_ASSERT_EQ(static_cast<uint8_t>(0), t1.Seconds());
   OLA_ASSERT_EQ(static_cast<uint8_t>(0), t1.Frames());
   OLA_ASSERT_EQ(string("00:00:00:00"), t1.AsString());
+  str1 << t1;
+  OLA_ASSERT_EQ(string("00:00:00:00"), str1.str());
   OLA_ASSERT_TRUE(t1.IsValid());
+
+  ostringstream str3;
 
   TimeCode t2(t1);
   OLA_ASSERT_EQ(t1, t2);
+
   TimeCode t3(TIMECODE_SMPTE, 10, 9, 12, 14);
   OLA_ASSERT_EQ(string("10:09:12:14"), t3.AsString());
+  str3 << t3;
+  OLA_ASSERT_EQ(string("10:09:12:14"), str3.str());
   OLA_ASSERT_TRUE(t3.IsValid());
   OLA_ASSERT_NE(t1, t3);
   t3 = t1;

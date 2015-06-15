@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Random.h
  * A simple random number generator.
@@ -24,7 +24,18 @@
 namespace ola {
 namespace math {
 
+/**
+ * @brief Seed the random number generator
+ */
 void InitRandom();
+
+/**
+ * @brief Return a random number between lower and upper, inclusive. i.e.
+ * [lower, upper]
+ * @param lower the lower bound of the range the random number should be within
+ * @param upper the upper bound of the range the random number should be within
+ * @return the random number
+ */
 int Random(int lower, int upper);
 }  // namespace math
 }  // namespace ola

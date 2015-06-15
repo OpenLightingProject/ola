@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *  ola-discover.cpp
  *  Print the list of UIDs and force RDM discovery
@@ -23,6 +23,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/rdm/UID.h>
@@ -203,6 +204,10 @@ bool FetchUIDs(OlaCallbackClient *client, const options &opts) {
  */
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  if (!ola::NetworkInit()) {
+    OLA_WARN << "Network initialization failed." << endl;
+    exit(ola::EXIT_UNAVAILABLE);
+  }
   OlaCallbackClientWrapper ola_client;
   opts.cmd = argv[0];
 

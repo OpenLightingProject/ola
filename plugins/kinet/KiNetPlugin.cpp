@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * KiNetPlugin.cpp
  * The KiNet plugin for ola
@@ -122,14 +122,16 @@ string KiNetPlugin::Description() const {
 bool KiNetPlugin::SetDefaultPreferences() {
   bool save = false;
 
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   save |= m_preferences->SetDefaultValue(POWER_SUPPLY_KEY,
                                          StringValidator(true), "");
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
   return true;
 }
 }  // namespace kinet

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * InterfacePicker.cpp
  * Chooses an interface to listen on
@@ -50,7 +50,7 @@ using std::vector;
 // TODO(Simon): Change these to callback based code to reduce duplication.
 bool InterfacePicker::ChooseInterface(
     Interface *iface,
-    const std::string &ip_or_name,
+    const string &ip_or_name,
     const Options &options) const {
   bool found = false;
   vector<Interface> interfaces = GetInterfaces(options.include_loopback);

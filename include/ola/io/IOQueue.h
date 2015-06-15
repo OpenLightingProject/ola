@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IOQueue.h
  * A non-contigous memory buffer that operates as a queue (FIFO).
@@ -66,6 +66,12 @@ class IOQueue: public InputBufferInterface,
 
     // Append a MemoryBlock to this IOQueue. Ownership of the block is taken.
     void AppendBlock(class MemoryBlock *block);
+
+    /**
+     * @brief Move the contents of one IOQueue to another.
+     * @param other The IOQueue with the data to append to this IOQueue.
+     */
+    void AppendMove(IOQueue *other);
 
     void Clear();
 

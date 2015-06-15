@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Random.cpp
  * Random number generator
@@ -22,41 +22,41 @@
 #include <config.h>
 #endif
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifdef HAVE_RANDOM
 #include <random>
 #endif
 
+#include "ola/Clock.h"
 #include "ola/math/Random.h"
 
 namespace ola {
 namespace math {
 
-
 #ifdef HAVE_RANDOM
 std::default_random_engine generator_;
 #endif
 
-/**
- * Seed the random number generator
- */
 void InitRandom() {
+  Clock clock;
+  TimeStamp now;
+  clock.CurrentTime(&now);
+
+  uint64_t seed = (static_cast<uint64_t>(now.MicroSeconds()) << 32) +
+                   static_cast<uint64_t>(getpid());
 #ifdef HAVE_RANDOM
-  generator_.seed(time(NULL));
+  generator_.seed(seed);
 #elif defined(_WIN32)
-  srand(time(NULL));
+  srand(seed);
 #else
-  srandom(time(NULL));
+  srandom(seed);
 #endif
 }
 
-
-/**
- * Return a random number between lower and upper, inclusive. i.e.
- * [lower, upper]
- */
 int Random(int lower, int upper) {
 #ifdef HAVE_RANDOM
   std::uniform_int_distribution<int> distribution(lower, upper);

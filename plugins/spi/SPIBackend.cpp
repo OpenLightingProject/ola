@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIBackend.cpp
  * The backend for SPI output. These are the classes which write the data to
@@ -98,6 +98,7 @@ HardwareBackend::HardwareBackend(const Options &options,
                                  SPIWriterInterface *writer,
                                  ExportMap *export_map)
     : m_spi_writer(writer),
+      m_drop_map(NULL),
       m_output_count(1 << options.gpio_pins.size()),
       m_exit(false),
       m_gpio_pins(options.gpio_pins) {
@@ -148,6 +149,8 @@ uint8_t *HardwareBackend::Checkout(uint8_t output_id,
     m_mutex.Unlock();
   }
   m_output_data[output_id]->SetLatchBytes(latch_bytes);
+  // We return with the Mutex locked, the caller must then call Commit()
+  // coverity[LOCK]
   return output;
 }
 
@@ -301,6 +304,7 @@ SoftwareBackend::SoftwareBackend(const Options &options,
                                  SPIWriterInterface *writer,
                                  ExportMap *export_map)
     : m_spi_writer(writer),
+      m_drop_map(NULL),
       m_write_pending(false),
       m_exit(false),
       m_sync_output(options.sync_output),

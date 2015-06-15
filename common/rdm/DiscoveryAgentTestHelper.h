@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DiscoveryAgentTestHelper.h
  * Helper classes for the DiscoveryAgent test.
@@ -339,13 +339,22 @@ class ProxyResponder: public MockResponder {
 class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
  public:
     explicit MockDiscoveryTarget(const ResponderList &responders)
-        : m_responders(responders) {
+        : m_responders(responders),
+          m_unmute_calls(0) {
     }
 
     ~MockDiscoveryTarget() {
       ResponderList::const_iterator iter = m_responders.begin();
       for (; iter != m_responders.end(); ++iter)
         delete *iter;
+    }
+
+    void ResetCounters() {
+      m_unmute_calls = 0;
+    }
+
+    unsigned int UnmuteCallCount() const {
+      return m_unmute_calls;
     }
 
     // Mute a device
@@ -365,8 +374,10 @@ class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
     // Un Mute all devices
     void UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
       ResponderList::const_iterator iter = m_responders.begin();
-      for (; iter != m_responders.end(); ++iter)
+      for (; iter != m_responders.end(); ++iter) {
         (*iter)->UnMute();
+      }
+      m_unmute_calls++;
       unmute_complete->Run();
     }
 
@@ -414,5 +425,6 @@ class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
 
  private:
     ResponderList m_responders;
+    unsigned int m_unmute_calls;
 };
 #endif  // COMMON_RDM_DISCOVERYAGENTTESTHELPER_H_

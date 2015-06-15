@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DescriptorTest.cpp
  * Test fixture for the Descriptor classes
@@ -24,7 +24,7 @@
 #include <string>
 
 #ifdef _WIN32
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #endif
 
 #include "ola/Callback.h"
@@ -105,7 +105,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DescriptorTest);
  * Setup the select server
  */
 void DescriptorTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &DescriptorTest::Timeout);
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
@@ -246,9 +245,8 @@ void DescriptorTest::Receive(ConnectedDescriptor *socket) {
 void DescriptorTest::ReceiveAndSend(ConnectedDescriptor *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
-  socket->Receive(buffer, sizeof(buffer), data_read);
-  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
-                       data_read);
+  OLA_ASSERT_EQ(0, socket->Receive(buffer, sizeof(buffer), data_read));
+  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)), data_read);
   ssize_t bytes_sent = socket->Send(buffer, data_read);
   OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
 }
@@ -280,8 +278,7 @@ void DescriptorTest::SocketClientClose(ConnectedDescriptor *socket,
       ola::NewCallback(this, &DescriptorTest::ReceiveAndSend,
                        static_cast<ConnectedDescriptor*>(socket2)));
   socket2->SetOnClose(
-      ola::NewSingleCallback(this,
-                             &DescriptorTest::TerminateOnClose));
+      ola::NewSingleCallback(this, &DescriptorTest::TerminateOnClose));
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket2));
 
   ssize_t bytes_sent = socket->Send(
@@ -299,7 +296,7 @@ void DescriptorTest::SocketClientClose(ConnectedDescriptor *socket,
  * Generic method to test server initiated close
  */
 void DescriptorTest::SocketServerClose(ConnectedDescriptor *socket,
-                                   ConnectedDescriptor *socket2) {
+                                       ConnectedDescriptor *socket2) {
   OLA_ASSERT_TRUE(socket);
   socket->SetOnData(ola::NewCallback(
         this, &DescriptorTest::Receive,

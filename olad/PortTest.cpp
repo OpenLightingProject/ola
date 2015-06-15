@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PortTest.cpp
  * Test fixture for the Port classes
@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "olad/PluginAdaptor.h"
 #include "olad/PortBroker.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
@@ -31,6 +32,7 @@
 
 using ola::Clock;
 using ola::TimeStamp;
+using std::string;
 
 class PortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PortTest);
@@ -89,7 +91,7 @@ void PortTest::testInputPortPriorities() {
   MockDevice device(NULL, "foo");
   TimeStamp time_stamp;
   MockSelectServer ss(&time_stamp);
-  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL, NULL);
   // This port operates in static priority mode
   TestMockInputPort input_port(&device, 1, &plugin_adaptor);
   port_manager.PatchPort(&input_port, universe_id);

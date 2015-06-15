@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Socket.cpp
  * Implementation of the Socket classes
@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 #ifdef _WIN32
-#include <Winsock2.h>
+#include <ola/win/CleanWinSock2.h>
 #include <Ws2tcpip.h>
 #include <winioctl.h>
 #else
@@ -52,8 +52,10 @@
 
 #include "common/network/SocketHelper.h"
 #include "ola/Logging.h"
+#include "ola/io/Descriptor.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
+#include "ola/network/SocketCloser.h"
 #include "ola/network/TCPSocketFactory.h"
 
 namespace ola {
@@ -87,7 +89,6 @@ TCPSocket::TCPSocket(int sd) {
 #ifdef _WIN32
   m_handle.m_handle.m_fd = sd;
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
-  m_handle.m_event_handle = 0;
 #else
   m_handle = sd;
 #endif
@@ -149,13 +150,15 @@ TCPSocket* TCPSocket::Connect(const SocketAddress &endpoint) {
     return NULL;
   }
 
+  SocketCloser closer(sd);
+
   int r = connect(sd, &server_address, sizeof(server_address));
 
   if (r) {
-    OLA_WARN << "connect to " << endpoint << " failed, " << strerror(errno);
+    OLA_WARN << "connect(" << endpoint << "): " << strerror(errno);
     return NULL;
   }
-  TCPSocket *socket = new TCPSocket(sd);
+  TCPSocket *socket = new TCPSocket(closer.Release());
   socket->SetReadNonBlocking();
   return socket;
 }
@@ -204,6 +207,20 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
     return false;
   }
 
+  SocketCloser closer(sd);
+
+#ifdef _WIN32
+  ola::io::DescriptorHandle temp_handle;
+  temp_handle.m_handle.m_fd = sd;
+  temp_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
+  if (!ola::io::ConnectedDescriptor::SetNonBlocking(temp_handle)) {
+#else
+  if (!ola::io::ConnectedDescriptor::SetNonBlocking(sd)) {
+#endif
+    OLA_WARN << "Failed to mark TCP accept socket as non-blocking";
+    return false;
+  }
+
   int ok = setsockopt(sd,
                       SOL_SOCKET,
                       SO_REUSEADDR,
@@ -211,21 +228,11 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
                       sizeof(reuse_flag));
   if (ok < 0) {
     OLA_WARN << "can't set reuse for " << sd << ", " << strerror(errno);
-#ifdef _WIN32
-    closesocket(sd);
-#else
-    close(sd);
-#endif
     return false;
   }
 
   if (bind(sd, &server_address, sizeof(server_address)) == -1) {
     OLA_WARN << "bind to " << endpoint << " failed, " << strerror(errno);
-#ifdef _WIN32
-    closesocket(sd);
-#else
-    close(sd);
-#endif
     return false;
   }
 
@@ -234,11 +241,10 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
     return false;
   }
 #ifdef _WIN32
-  m_handle.m_handle.m_fd = sd;
+  m_handle.m_handle.m_fd = closer.Release();
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
-  m_handle.m_event_handle = 0;
 #else
-  m_handle = sd;
+  m_handle = closer.Release();
 #endif
   return true;
 }
@@ -270,32 +276,44 @@ bool TCPAcceptingSocket::Close() {
  * @return a new connected socket
  */
 void TCPAcceptingSocket::PerformRead() {
-  struct sockaddr_in cli_address;
-  socklen_t length = sizeof(cli_address);
-
   if (m_handle == ola::io::INVALID_DESCRIPTOR)
     return;
 
-#ifdef _WIN32
-  int sd = accept(m_handle.m_handle.m_fd, (struct sockaddr*) &cli_address,
-                  &length);
-#else
-  int sd = accept(m_handle, (struct sockaddr*) &cli_address, &length);
-#endif
-  if (sd < 0) {
-    OLA_WARN << "accept() failed, " << strerror(errno);
-    return;
-  }
+  while (1) {
+    struct sockaddr_in cli_address;
+    socklen_t length = sizeof(cli_address);
 
-  if (m_factory) {
-    m_factory->NewTCPSocket(sd);
-  } else {
-    OLA_WARN << "Accepted new TCP Connection but no factory registered";
 #ifdef _WIN32
-    closesocket(sd);
+    int sd = accept(m_handle.m_handle.m_fd, (struct sockaddr*) &cli_address,
+                    &length);
 #else
-    close(sd);
+    int sd = accept(m_handle, (struct sockaddr*) &cli_address, &length);
 #endif
+    if (sd < 0) {
+#ifdef _WIN32
+      if (WSAGetLastError() == WSAEWOULDBLOCK) {
+#else
+      if (errno == EWOULDBLOCK) {
+#endif
+        return;
+      }
+
+      OLA_WARN << "accept() failed, " << strerror(errno);
+      return;
+    }
+
+    if (m_factory) {
+      // The callback takes ownership of the new socket descriptor
+      // coverity[RESOURCE_LEAK]
+      m_factory->NewTCPSocket(sd);
+    } else {
+      OLA_WARN << "Accepted new TCP Connection but no factory registered";
+#ifdef _WIN32
+      closesocket(sd);
+#else
+      close(sd);
+#endif
+    }
   }
 }
 

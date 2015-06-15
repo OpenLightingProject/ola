@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * MilInstDevice.cpp
  * MilInst device
@@ -81,8 +81,9 @@ MilInstDevice::~MilInstDevice() {
  * Start this device
  */
 bool MilInstDevice::StartHook() {
-  if (!m_widget.get())
+  if (!m_widget.get()) {
     return false;
+  }
 
   if (!m_widget->Connect()) {
     OLA_WARN << "Failed to connect to " << m_path;
@@ -132,8 +133,9 @@ void MilInstDevice::SetDeviceDefaults() {
                                          SetValidator<string>(valid_types),
                                          TYPE_1463);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 }
 }  // namespace milinst
 }  // namespace plugin

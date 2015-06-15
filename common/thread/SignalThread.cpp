@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SignalThread.cpp
  * A thread to handle signals.
@@ -51,13 +51,17 @@ static void Win32SignalHandler(int signo) {
 }
 #endif
 
+SignalThread::SignalThread()
+    : Thread(Thread::Options("signal-thread")) {}
+
 SignalThread::~SignalThread() {
   ola::STLDeleteValues(&m_signal_handlers);
 }
 
 /**
- * Install a signal handler for the given signal. This can't be called once the
- * thread has stared.
+ * @brief Install a signal handler for the given signal.
+ *
+ * This can't be called once the thread has stared.
  */
 bool SignalThread::InstallSignalHandler(int signal, SignalHandler *handler) {
   if (BlockSignal(signal)) {
@@ -68,11 +72,13 @@ bool SignalThread::InstallSignalHandler(int signal, SignalHandler *handler) {
 }
 
 /**
- * Entry point into the thread.
+ * @brief Entry point into the thread.
  */
 void* SignalThread::Run() {
+#ifndef _WIN32
   sigset_t signals;
   int signo;
+#endif
 
 #ifdef _WIN32
   if (g_signal_map) {
@@ -107,7 +113,7 @@ void* SignalThread::Run() {
 }
 
 /**
- * Add the signals we're interested in to the sigset.
+ * @brief Add the signals we're interested in to the sigset.
  */
 bool SignalThread::AddSignals(sigset_t *signals) {
 #ifndef _WIN32

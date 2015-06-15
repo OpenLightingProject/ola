@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderPersonality.cpp
  * Manages personalities for a RDM responder.
@@ -37,12 +37,12 @@ using std::string;
  * @param footprint the number of dmx slots consumed
  * @param description the personality name (32 chars)
  */
-Personality::Personality(uint16_t footprint, const std::string &description)
+Personality::Personality(uint16_t footprint, const string &description)
     : m_footprint(footprint),
       m_description(description) {
 }
 
-Personality::Personality(uint16_t footprint, const std::string &description,
+Personality::Personality(uint16_t footprint, const string &description,
                          const SlotDataCollection &slot_data)
     : m_footprint(footprint),
       m_description(description),

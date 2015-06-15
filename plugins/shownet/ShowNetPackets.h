@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ShowNetPackets.h
  * Datagram definitions for the ShowNet protocol.
@@ -22,22 +22,25 @@
 #define PLUGINS_SHOWNET_SHOWNETPACKETS_H_
 
 /**
+ * @namespace ola::plugin::shownet
  * Some reference info:
  * https://code.google.com/p/open-lighting/issues/detail?id=218
  */
 
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/MACAddress.h"
 
 namespace ola {
 namespace plugin {
 namespace shownet {
 
-enum { SHOWNET_MAC_LENGTH = 6 };
+enum { SHOWNET_MAC_LENGTH = ola::network::MACAddress::LENGTH };
 enum { SHOWNET_NAME_LENGTH = 9 };
 enum { SHOWNET_SPARE_LENGTH = 22 };
 
 // Assume this is 512.
-enum { SHOWNET_DMX_DATA_LENGTH = 512 };
+enum { SHOWNET_DMX_DATA_LENGTH = DMX_UNIVERSE_SIZE };
 
 enum { SHOWNET_COMPRESSED_DATA_LENGTH = 1269 };
 
@@ -48,6 +51,7 @@ enum ShowNetPacketType {
 
 // The old style Shownet DMX packet. Type 0x202f . Apparently this isn't used
 // much.
+PACK(
 struct shownet_dmx_s {
   uint16_t port;
   uint16_t slot_length;
@@ -58,12 +62,13 @@ struct shownet_dmx_s {
   uint8_t universe;  // 0 = not used
   uint16_t spare[SHOWNET_SPARE_LENGTH];
   uint8_t dmx_data[SHOWNET_DMX_DATA_LENGTH];
-} __attribute__((packed));
+});
 
 typedef struct shownet_dmx_s shownet_dmx;
 
 // The 'new' style, compressed shownet packet. Type 0x808f
 // Each packet can contain up to 4 'blocks' of DMX data.
+PACK(
 struct shownet_compressed_dmx_s {
   uint16_t netSlot[4];       // start channel of each slot (hSlot)
   uint16_t slotSize[4];      // size of each slot
@@ -75,14 +80,14 @@ struct shownet_compressed_dmx_s {
                              // passwords. PasswordNumChans ?
   char name[SHOWNET_NAME_LENGTH];  // name of console
   uint8_t data[SHOWNET_COMPRESSED_DATA_LENGTH];  // RLE data.
-} __attribute__((packed));
+});
 
 typedef struct shownet_compressed_dmx_s shownet_compressed_dmx;
 
 // The union of all packets.
 typedef struct {
   uint16_t type;   // packet type
-  uint8_t  ip[4];  // ip of sender
+  uint8_t  ip[ola::network::IPV4Address::LENGTH];  // ip of sender
   union {
     shownet_dmx dmx;
     shownet_compressed_dmx compressed_dmx;

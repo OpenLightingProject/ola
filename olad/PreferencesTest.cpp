@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * PreferencesTest.cpp
  * Test fixture for the Preferences classes
@@ -149,6 +149,8 @@ void PreferencesTest::testGetSetRemove() {
   unsigned int value4 = 2;
   int value5 = 3;
   int value6 = 4;
+  const char value7[] = "bar";
+  const char value8[] = "baz";
 
   // test get/set/has single values string
   OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
@@ -260,6 +262,24 @@ void PreferencesTest::testGetSetRemove() {
   OLA_ASSERT_EQ(IntToString(value5), preferences->GetValue(key1));
   OLA_ASSERT(preferences->HasKey(key1));
   preferences->RemoveValue(key1);
+
+  // test SetDefaultValue char[]
+  OLA_ASSERT(preferences->SetDefaultValue(key1, StringValidator(), value7));
+  OLA_ASSERT_EQ(string(value7), preferences->GetValue(key1));
+  OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, StringValidator(),
+                                                value8));
+  OLA_ASSERT_EQ(string(value7), preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
+  preferences->RemoveValue(key1);
+
+  // test SetDefaultValue bool
+  OLA_ASSERT(preferences->SetDefaultValue(key1, BoolValidator(), true));
+  OLA_ASSERT_EQ(string(BoolValidator::ENABLED), preferences->GetValue(key1));
+  OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, BoolValidator(),
+                                                false));
+  OLA_ASSERT_EQ(string(BoolValidator::ENABLED), preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
+  preferences->RemoveValue(key1);
 }
 
 
@@ -304,7 +324,8 @@ void PreferencesTest::testLoad() {
       "", "dummy", NULL);
   preferences->Clear();
   preferences->SetValue("foo", "bad");
-  preferences->LoadFromFile(TEST_SRC_DIR "/testdata/test_preferences.conf");
+  preferences->LoadFromFile(
+      TEST_SRC_DIR "/olad/testdata/test_preferences.conf");
 
   OLA_ASSERT_EQ(string("bar"), preferences->GetValue("foo"));
   OLA_ASSERT(preferences->HasKey("foo"));
@@ -321,13 +342,14 @@ void PreferencesTest::testLoad() {
 
 
 void PreferencesTest::testSave() {
+  const string data_path = TEST_BUILD_DIR "/olad/ola-output.conf";
+
   ola::FilePreferenceSaverThread saver_thread;
   saver_thread.Start();
   FileBackedPreferences *preferences = new FileBackedPreferences(
-      ".", "output", &saver_thread);
+      TEST_BUILD_DIR "/olad", "output", &saver_thread);
   preferences->Clear();
 
-  string data_path = "./ola-output.conf";
   unlink(data_path.c_str());
   string key1 = "foo";
   string key2 = "bat";

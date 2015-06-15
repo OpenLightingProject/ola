@@ -11,11 +11,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * FtdiDmxThread.h
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
+ *
+ * Additional modifications to enable support for multiple outputs and
+ * additional device ids did change the original structure.
+ *
+ * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
 #ifndef PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
@@ -30,7 +35,7 @@ namespace ftdidmx {
 
 class FtdiDmxThread : public ola::thread::Thread {
  public:
-    FtdiDmxThread(FtdiWidget *widget, unsigned int frequency);
+    FtdiDmxThread(FtdiInterface *interface, unsigned int frequency);
     ~FtdiDmxThread();
 
     bool Stop();
@@ -41,9 +46,9 @@ class FtdiDmxThread : public ola::thread::Thread {
     enum TimerGranularity { UNKNOWN, GOOD, BAD };
 
     TimerGranularity m_granularity;
-    FtdiWidget *m_widget;
+    FtdiInterface *m_interface;
     bool m_term;
-    int unsigned m_frequency;
+    unsigned int m_frequency;
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;
@@ -52,6 +57,7 @@ class FtdiDmxThread : public ola::thread::Thread {
 
     static const uint32_t DMX_MAB = 16;
     static const uint32_t DMX_BREAK = 110;
+    static const uint32_t BAD_GRANULARITY_LIMIT = 3;
 };
 }  // namespace ftdidmx
 }  // namespace plugin

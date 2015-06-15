@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OSCNodeTest.cpp
  * Test fixture for the OSCNode class
@@ -24,6 +24,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/base/Init.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
@@ -40,7 +41,6 @@ using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
 using ola::plugin::osc::OSCNode;
 using ola::plugin::osc::OSCTarget;
-using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 
 
@@ -172,6 +172,7 @@ const char OSCNodeTest::TEST_OSC_ADDRESS[] = "/dmx/universe/10";
 void OSCNodeTest::setUp() {
   // Init logging
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  ola::NetworkInit();
 
   // Setup and register the Timeout.
   m_timeout_id = m_ss.RegisterSingleTimeout(
@@ -198,8 +199,7 @@ void OSCNodeTest::UDPSocketReady() {
   // Read the received packet into 'data'.
   OLA_ASSERT_TRUE(m_udp_socket.RecvFrom(data, &data_read));
   // Verify it matches the expected packet
-  ASSERT_DATA_EQUALS(__LINE__, OSC_BLOB_DATA,
-                     sizeof(OSC_BLOB_DATA), data, data_read);
+  OLA_ASSERT_DATA_EQUALS(OSC_BLOB_DATA, sizeof(OSC_BLOB_DATA), data, data_read);
   // Stop the SelectServer
   m_ss.Terminate();
 }

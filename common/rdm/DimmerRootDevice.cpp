@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * DimmerRootDevice.cpp
  * Copyright (C) 2013 Simon Newton
@@ -24,7 +24,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
@@ -94,13 +94,13 @@ DimmerRootDevice::DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices)
 /*
  * Handle an RDM Request
  */
-void DimmerRootDevice::SendRDMRequest(const RDMRequest *request,
+void DimmerRootDevice::SendRDMRequest(RDMRequest *request,
                                       RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);
 }
 
-const RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -112,40 +112,37 @@ const RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
       m_sub_devices.size(), 0);
 }
 
-const RDMResponse *DimmerRootDevice::GetProductDetailList(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetProductDetailList(const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
     vector<rdm_product_detail>(1, PRODUCT_DETAIL_TEST));
 }
 
-const RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
+RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA Dimmer");
 }
 
-const RDMResponse *DimmerRootDevice::GetManufacturerLabel(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetManufacturerLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *DimmerRootDevice::GetDeviceLabel(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy Dimmer");
 }
 
-const RDMResponse *DimmerRootDevice::GetSoftwareVersionLabel(
+RDMResponse *DimmerRootDevice::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-const RDMResponse *DimmerRootDevice::GetIdentify(const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_on);
 }
 
-const RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
   bool old_value = m_identify_on;
-  const RDMResponse *response = ResponderHelper::SetBoolValue(
+  RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_on);
   if (m_identify_on != old_value) {
     OLA_INFO << "Dimmer Root Device " << m_uid << ", identify mode "
@@ -154,16 +151,17 @@ const RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
   return response;
 }
 
-const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetDmxBlockAddress(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
+  PACK(
   struct block_address_pdl {
     uint16_t total_footprint;
     uint16_t base_address;
-  } __attribute__((packed));
+  });
+  STATIC_ASSERT(sizeof(block_address_pdl) == 4);
 
   block_address_pdl pdl;
   pdl.base_address = 0;
@@ -194,8 +192,7 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
                              sizeof(pdl));
 }
 
-const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::SetDmxBlockAddress(const RDMRequest *request) {
   uint16_t base_start_address = 0;
   uint16_t total_footprint = 0;
 
@@ -210,7 +207,7 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
   }
 
   if (base_start_address < 1 ||
-      base_start_address + total_footprint - 1 > DMX_MAX_CHANNEL_VALUE) {
+      base_start_address + total_footprint - 1 > DMX_MAX_SLOT_VALUE) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -225,13 +222,11 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
   return GetResponseFromData(request, NULL, 0);
 }
 
-const RDMResponse *DimmerRootDevice::GetIdentifyMode(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::GetIdentifyMode(const RDMRequest *request) {
   return ResponderHelper::GetUInt8Value(request, m_identify_mode);
 }
 
-const RDMResponse *DimmerRootDevice::SetIdentifyMode(
-    const RDMRequest *request) {
+RDMResponse *DimmerRootDevice::SetIdentifyMode(const RDMRequest *request) {
   uint8_t new_identify_mode;
 
   if (!ResponderHelper::ExtractUInt8(request, &new_identify_mode))

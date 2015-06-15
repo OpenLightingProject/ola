@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Array.h
  * A macro for determining array size.
@@ -24,6 +24,8 @@
 
 #ifndef INCLUDE_OLA_BASE_ARRAY_H_
 #define INCLUDE_OLA_BASE_ARRAY_H_
+
+#include <stdint.h>
 
 namespace ola {
 
@@ -61,5 +63,34 @@ template <typename T, size_t N>
  */
 #define arraysize(array) (sizeof(ola::ArraySizeHelper(array)))
 
+
+/**
+ * @brief Deletes an array when it goes out of scope.
+ *
+ * This is similar to unique_ptr<T[]>, which we should switch to once we start
+ * introducing C++11 syntax.
+ */
+class ArrayDeleter {
+ public:
+  /**
+   * @brief Create a new ArrayDeleter.
+   * @param data The data to wrap.
+   */
+  explicit ArrayDeleter(const uint8_t* data) : m_data(data) {}
+
+  /**
+   * @brief Destructor.
+   *
+   * This calls delete[] on the data.
+   */
+  ~ArrayDeleter() {
+    if (m_data) {
+      delete[] m_data;
+    }
+  }
+
+ private:
+  const uint8_t* m_data;
+};
 }  // namespace ola
 #endif  // INCLUDE_OLA_BASE_ARRAY_H_

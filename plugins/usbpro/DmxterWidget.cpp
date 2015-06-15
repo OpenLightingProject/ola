@@ -11,17 +11,19 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DmxterWidgetImpl.h
  * The Goddard Design Dmxter RDM and miniDmxter
  * Copyright (C) 2010 Simon Newton
  */
 
+#include <memory>
 #include <string>
 #include <vector>
-#include "ola/BaseTypes.h"
+#include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/io/ByteString.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -31,11 +33,16 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::io::ByteString;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
+using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using std::auto_ptr;
 using std::string;
+using std::vector;
 
 const uint8_t DmxterWidgetImpl::RDM_REQUEST_LABEL = 0x80;
 const uint8_t DmxterWidgetImpl::RDM_BCAST_REQUEST_LABEL = 0x81;
@@ -60,7 +67,6 @@ DmxterWidgetImpl::DmxterWidgetImpl(
     : BaseUsbProWidget(descriptor),
       m_uid(esta_id, serial),
       m_discovery_callback(NULL),
-      m_pending_request(NULL),
       m_rdm_request_callback(NULL),
       m_transaction_number(0) {
 }
@@ -79,11 +85,10 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
  */
 void DmxterWidgetImpl::Stop() {
   // timeout any existing message
-  std::vector<std::string> packets;
   if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    RunRDMCallback(callback, ola::rdm::RDM_TIMEOUT);
   }
 
   if (m_discovery_callback) {
@@ -92,60 +97,52 @@ void DmxterWidgetImpl::Stop() {
     m_discovery_callback = NULL;
     callback->Run(uids);
   }
-
-  if (m_pending_request) {
-    delete m_pending_request;
-    m_pending_request = NULL;
-  }
 }
 
 
 /**
  * Send an RDM request. By wrapping this in a QueueingRDMController, we ensure
  * that this is only called one-at-a-time.
- * @param request the RDMRequest object
+ * @param request_ptr the RDMRequest object
  * @param on_complete the callback to run when the request completes or fails
  */
-void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
+void DmxterWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
                                       ola::rdm::RDMCallback *on_complete) {
-  std::vector<std::string> packets;
-
+  auto_ptr<RDMRequest> request(request_ptr);
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
-    delete request;
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     return;
   }
 
-  unsigned int data_size = RDMCommandSerializer::RequiredSize(*request);
-  uint8_t *data = new uint8_t[data_size + 1];  // + start code
-  data[0] = ola::rdm::RDMCommand::START_CODE;
+  request->SetSourceUID(m_uid);
+  request->SetTransactionNumber(m_transaction_number++);
+  request->SetPortId(1);
 
-  bool r = RDMCommandSerializer::Pack(*request, data + 1, &data_size,
-                                      m_uid, m_transaction_number++, 1);
-  if (r) {
-    uint8_t label;
-    if (IsDUBRequest(request)) {
-      label = DISCOVERY_BRANCH_LABEL;
-    } else {
-      label = request->DestinationUID().IsBroadcast() ?
-        RDM_BCAST_REQUEST_LABEL : RDM_REQUEST_LABEL;
-    }
-
-    m_rdm_request_callback = on_complete;
-    m_pending_request = request;
-    if (SendMessage(label, data, data_size + 1)) {
-      delete[] data;
-      return;
-    }
-  } else {
+  ByteString data;
+  if (!RDMCommandSerializer::PackWithStartCode(*request, &data)) {
     OLA_WARN << "Failed to pack message, dropping request";
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
+    return;
   }
+
+  uint8_t label;
+  if (request->IsDUB()) {
+    label = DISCOVERY_BRANCH_LABEL;
+  } else {
+    label = request->DestinationUID().IsBroadcast() ?
+      RDM_BCAST_REQUEST_LABEL : RDM_REQUEST_LABEL;
+  }
+
+  m_rdm_request_callback = on_complete;
+  m_pending_request.reset(request.release());
+  if (SendMessage(label, data.data(), data.size())) {
+    return;
+  }
+
   m_rdm_request_callback = NULL;
-  m_pending_request = NULL;
-  delete[] data;
-  delete request;
-  on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+  m_pending_request.reset();
+  RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
 }
 
 
@@ -190,7 +187,7 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
       HandleTodResponse(data, length);
       break;
     case DISCOVERY_BRANCH_LABEL:
-      HandleRDMResponse(data, length, true);
+      HandleRDMResponse(data, length);
       break;
     case RDM_REQUEST_LABEL:
       HandleRDMResponse(data, length);
@@ -238,87 +235,87 @@ void DmxterWidgetImpl::HandleTodResponse(const uint8_t *data,
  * Handle a RDM response.
  */
 void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
-                                         unsigned int length,
-                                         bool is_dub) {
-  std::vector<std::string> packets;
+                                         unsigned int length) {
+  struct ResponseHeader {
+    uint8_t version;
+    uint8_t response_code;
+  };
+
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a response but no callback to run!";
     return;
   }
 
-  bool waiting_for_dub_response = IsDUBRequest(m_pending_request);
+  bool waiting_for_dub_response = m_pending_request->IsDUB();
 
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
-  const ola::rdm::RDMRequest *request = m_pending_request;
-  m_pending_request = NULL;
+  auto_ptr<const ola::rdm::RDMRequest> request(m_pending_request.release());
 
-  if (length < 2) {
+  if (length < sizeof(ResponseHeader)) {
     OLA_WARN << "Invalid RDM response from the widget";
-    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
-    delete request;
+    RunRDMCallback(callback, ola::rdm::RDM_INVALID_RESPONSE);
     return;
   }
 
-  uint8_t version = data[0];
-  uint8_t response_code = data[1];
-
-  if (version != 0) {
-    OLA_WARN << "Unknown version # in widget response: " <<
-      static_cast<int>(version);
-    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
-    delete request;
+  const ResponseHeader *header = reinterpret_cast<const ResponseHeader*>(data);
+  if (header->version != 0) {
+    OLA_WARN << "Unknown version # in widget response: "
+             << static_cast<int>(header->version);
+    RunRDMCallback(callback, ola::rdm::RDM_INVALID_RESPONSE);
     return;
   }
 
-  ola::rdm::rdm_response_code code = ola::rdm::RDM_COMPLETED_OK;
-  switch (response_code) {
+  ola::rdm::RDMStatusCode status_code = ola::rdm::RDM_COMPLETED_OK;
+  switch (header->response_code) {
     case RC_CHECKSUM_ERROR:
-      code = ola::rdm::RDM_CHECKSUM_INCORRECT;
+      status_code = ola::rdm::RDM_CHECKSUM_INCORRECT;
       break;
     case RC_FRAMING_ERROR:
     case RC_FRAMING_ERROR2:
     case RC_BAD_STARTCODE:
-      code = ola::rdm::RDM_INVALID_RESPONSE;
+      status_code = ola::rdm::RDM_INVALID_RESPONSE;
       break;
     case RC_BAD_SUB_STARTCODE:
-      code = ola::rdm::RDM_WRONG_SUB_START_CODE;
+      status_code = ola::rdm::RDM_WRONG_SUB_START_CODE;
       break;
     case RC_WRONG_PDL:
     case RC_BAD_PDL:
-      code = ola::rdm::RDM_INVALID_RESPONSE;
+      status_code = ola::rdm::RDM_INVALID_RESPONSE;
       break;
     case RC_PACKET_TOO_SHORT:
-      code = ola::rdm::RDM_PACKET_TOO_SHORT;
+      status_code = ola::rdm::RDM_PACKET_TOO_SHORT;
       break;
     case RC_PACKET_TOO_LONG:
-      code = ola::rdm::RDM_INVALID_RESPONSE;
+      status_code = ola::rdm::RDM_INVALID_RESPONSE;
       break;
     case RC_PHYSICAL_LENGTH_MISMATCH:
-      code = ola::rdm::RDM_PACKET_LENGTH_MISMATCH;
+      status_code = ola::rdm::RDM_PACKET_LENGTH_MISMATCH;
       break;
     case RC_PDL_LENGTH_MISMATCH:
-      code = ola::rdm::RDM_PARAM_LENGTH_MISMATCH;
+      status_code = ola::rdm::RDM_PARAM_LENGTH_MISMATCH;
       break;
     case RC_TRANSACTION_MISMATCH:
-      code = ola::rdm::RDM_TRANSACTION_MISMATCH;
+      status_code = ola::rdm::RDM_TRANSACTION_MISMATCH;
       break;
     case RC_BAD_RESPONSE_TYPE:
-      code = ola::rdm::RDM_INVALID_RESPONSE_TYPE;
+      status_code = ola::rdm::RDM_INVALID_RESPONSE_TYPE;
       break;
     case RC_GOOD_LEVEL:
       if (waiting_for_dub_response) {
-        code = ola::rdm::RDM_DUB_RESPONSE;
+        status_code = ola::rdm::RDM_DUB_RESPONSE;
       } else {
-        OLA_INFO << "Got response code " << static_cast<int>(response_code);
-        code = ola::rdm::RDM_INVALID_RESPONSE;
+        OLA_INFO << "Got response code "
+                 << static_cast<int>(header->response_code);
+        status_code = ola::rdm::RDM_INVALID_RESPONSE;
       }
       break;
     case RC_BAD_LEVEL:
     case RC_BROADCAST:
     case RC_VENDORCAST:
-      OLA_INFO << "Got response code " << static_cast<int>(response_code);
-      code = ola::rdm::RDM_INVALID_RESPONSE;
+      OLA_INFO << "Got response status_code "
+               << static_cast<int>(header->response_code);
+      status_code = ola::rdm::RDM_INVALID_RESPONSE;
       break;
     case RC_GOOD_RESPONSE:
     case RC_ACK_TIMER:
@@ -335,55 +332,54 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
     case RC_NACK_PACKET_SIZE:
     case RC_NACK_SUB_DEVICE_RANGE:
     case RC_NACK_PROXY_QUEUE_BUFFER_FULL:
-      code = ola::rdm::RDM_COMPLETED_OK;
+      status_code = ola::rdm::RDM_COMPLETED_OK;
       break;
     case RC_IDLE_LEVEL:
     case RC_TIMED_OUT:
       OLA_INFO << "Request timed out";
-      code = ola::rdm::RDM_TIMEOUT;
+      status_code = ola::rdm::RDM_TIMEOUT;
       break;
     case RC_SUBDEVICE_MISMATCH:
-      code = ola::rdm::RDM_SUB_DEVICE_MISMATCH;
+      status_code = ola::rdm::RDM_SUB_DEVICE_MISMATCH;
       break;
     case RC_SRC_UID_MISMATCH:
-      code = ola::rdm::RDM_SRC_UID_MISMATCH;
+      status_code = ola::rdm::RDM_SRC_UID_MISMATCH;
       break;
     case RC_DEST_UID_MISMATCH:
-      code = ola::rdm::RDM_DEST_UID_MISMATCH;
+      status_code = ola::rdm::RDM_DEST_UID_MISMATCH;
       break;
     case RC_COMMAND_CLASS_MISMATCH:
-      code = ola::rdm::RDM_COMMAND_CLASS_MISMATCH;
+      status_code = ola::rdm::RDM_COMMAND_CLASS_MISMATCH;
       break;
     case RC_PARAM_ID_MISMATCH:
       // this should *hopefully* be caught higher up the stack
-      code = ola::rdm::RDM_COMPLETED_OK;
+      status_code = ola::rdm::RDM_COMPLETED_OK;
+      break;
+    case RC_DATA_RECEIVED_NO_BREAK:
+      OLA_INFO << "Got data with no break";
+      status_code = ola::rdm::RDM_INVALID_RESPONSE;
       break;
     default:
-      OLA_WARN << "Unknown response code " << static_cast<int>(response_code);
-      code = ola::rdm::RDM_INVALID_RESPONSE;
+      OLA_WARN << "Unknown response status_code "
+               << static_cast<int>(header->response_code);
+      status_code = ola::rdm::RDM_INVALID_RESPONSE;
   }
 
-  string packet;
-  unsigned packet_offset = is_dub ? 2 : 3;
-  if (length > packet_offset) {
-    packet.assign(reinterpret_cast<const char*>(data + packet_offset),
-                  length - packet_offset);
-    packets.push_back(packet);
-  }
+  data += sizeof(ResponseHeader);
+  length -= sizeof(ResponseHeader);
 
-  if (code == ola::rdm::RDM_COMPLETED_OK) {
-    ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
-        packet,
-        &code,
-        m_pending_request);
-    if (response)
-      callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
-    else
-      callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
+  auto_ptr<RDMReply> reply;
+  if (status_code == ola::rdm::RDM_COMPLETED_OK) {
+    rdm::RDMFrame frame(data, length);
+    reply.reset(RDMReply::FromFrame(frame, request.get()));
   } else {
-    callback->Run(code, NULL, packets);
+    rdm::RDMFrames frames;
+    if (length > 0) {
+      frames.push_back(rdm::RDMFrame(data, length));
+    }
+    reply.reset(new RDMReply(status_code, NULL, frames));
   }
-  delete request;
+  callback->Run(reply.get());
 }
 
 
@@ -401,9 +397,10 @@ void DmxterWidgetImpl::HandleBroadcastRDMResponse(const uint8_t *data,
     OLA_WARN << "Got strange broadcast response, length was " << length <<
       ", data was " << data;
   }
-  std::vector<std::string> packets;
-  m_rdm_request_callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+
+  ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
+  RunRDMCallback(callback, ola::rdm::RDM_WAS_BROADCAST);
 }
 
 
@@ -415,20 +412,15 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
   if (length || data) {
     OLA_WARN << "Invalid shutdown message, length was " << length;
   } else {
-    OLA_INFO << "Received shutdown message from Dmxter";
-    // this closed descriptor will be detected the the ss, which will then
-    // invoke the on_close callback, removing the device.
-    GetDescriptor()->Close();
+    OLA_INFO << "Received shutdown message from the Dmxter";
+    // Run the on close handler which calls WidgetDetectorThread::FreeWidget.
+    // This removes the descriptor from the SS and closes the FD.
+    // This is the same behaviour as if the remote end closed the connection
+    // i.e. the device was plugged.
+    ola::io::ConnectedDescriptor::OnCloseCallback *on_close =
+        GetDescriptor()->TransferOnClose();
+    on_close->Run();
   }
-}
-
-
-/**
- * Return true if this is a Discovery Unique Branch request
- */
-bool DmxterWidgetImpl::IsDUBRequest(const ola::rdm::RDMRequest *request) {
-  return (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
-          request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
 }
 
 
@@ -443,7 +435,6 @@ DmxterWidget::DmxterWidget(ola::io::ConnectedDescriptor *descriptor,
   m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
                                                                  queue_size);
 }
-
 
 DmxterWidget::~DmxterWidget() {
   // delete the controller after the impl because the controller owns the
