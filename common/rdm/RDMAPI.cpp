@@ -2425,8 +2425,9 @@ bool RDMAPI::GetDnsHostname(
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
-    &RDMAPI::_HandleLabelResponse,
-    callback);
+    &RDMAPI::_HandleCustomLengthLabelResponse,
+    callback,
+    MAX_RDM_HOSTNAME_LENGTH);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
                    universe,
@@ -2745,6 +2746,30 @@ bool RDMAPI::SetPresetPlaybackMode(
 // ----------------------------------------------------------------------------
 
 /*
+ * Handle a response that contains a custom length ascii string
+ */
+void RDMAPI::_HandleCustomLengthLabelResponse(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const string&> *callback,
+    uint8_t max_length,
+    const ResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status = status;
+  if (status.WasAcked() && data.size() > max_length) {
+    std::ostringstream str;
+    str << "PDL needs to be <= " << static_cast<int>(max_length) << ", was "
+        << data.size();
+    response_status.error = str.str();
+  }
+
+  string label = data;
+  ShortenString(&label);
+  callback->Run(response_status, label);
+}
+
+
+/*
  * Handle a response that contains a 32 byte ascii string
  */
 void RDMAPI::_HandleLabelResponse(
@@ -2753,17 +2778,10 @@ void RDMAPI::_HandleLabelResponse(
                        const string&> *callback,
     const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status = status;
-  if (status.WasAcked() && data.size() > MAX_RDM_STRING_LENGTH) {
-    std::ostringstream str;
-    str << "PDL needs to be <= " << MAX_RDM_STRING_LENGTH << ", was "
-        << data.size();
-    response_status.error = str.str();
-  }
-
-  string label = data;
-  ShortenString(&label);
-  callback->Run(response_status, label);
+  _HandleCustomLengthLabelResponse(callback,
+                                   MAX_RDM_STRING_LENGTH,
+                                   status,
+                                   data);
 }
 
 

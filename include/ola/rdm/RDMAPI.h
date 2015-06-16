@@ -968,6 +968,14 @@ class RDMAPI {
     // Handlers, these are called by the RDMAPIImpl.
 
     // Generic handlers
+    void _HandleCustomLengthLabelResponse(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        uint8_t length,
+        const ResponseStatus &status,
+        const std::string &data);
+
     void _HandleLabelResponse(
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
