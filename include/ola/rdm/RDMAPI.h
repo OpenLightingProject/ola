@@ -1182,8 +1182,6 @@ class RDMAPI {
     class RDMAPIImplInterface *m_impl;
     std::map<UID, uint8_t> m_outstanding_messages;
 
-    enum {LABEL_SIZE = 32};
-
     bool GenericGetU8(
         unsigned int universe,
         const UID &uid,

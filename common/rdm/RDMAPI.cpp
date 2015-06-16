@@ -2754,9 +2754,10 @@ void RDMAPI::_HandleLabelResponse(
     const ResponseStatus &status,
     const string &data) {
   ResponseStatus response_status = status;
-  if (status.WasAcked() && data.size() > LABEL_SIZE) {
+  if (status.WasAcked() && data.size() > MAX_RDM_STRING_LENGTH) {
     std::ostringstream str;
-    str << "PDL needs to be <= " << LABEL_SIZE << ", was " << data.size();
+    str << "PDL needs to be <= " << MAX_RDM_STRING_LENGTH << ", was "
+        << data.size();
     response_status.error = str.str();
   }
 
@@ -3099,18 +3100,18 @@ void RDMAPI::_HandleGetParameterDescriptor(
       uint32_t default_value;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
-      char description[LABEL_SIZE + 1];
+      char description[MAX_RDM_STRING_LENGTH + 1];
     });
     STATIC_ASSERT(sizeof(param_description) == 53);
     struct param_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
-    unsigned int min = max - LABEL_SIZE;
+    unsigned int min = max - MAX_RDM_STRING_LENGTH;
     unsigned int data_size = data.size();
     if (data_size >= min && data_size <= max) {
       memcpy(&raw_description, data.data(),
              std::min(static_cast<unsigned int>(data.size()), max));
-      raw_description.description[LABEL_SIZE] = 0;
+      raw_description.description[MAX_RDM_STRING_LENGTH] = 0;
 
       description.pid = NetworkToHost(raw_description.pid);
       description.pdl_size = raw_description.pdl_size;
@@ -3122,7 +3123,7 @@ void RDMAPI::_HandleGetParameterDescriptor(
       description.default_value = NetworkToHost(raw_description.default_value);
       description.max_value = NetworkToHost(raw_description.max_value);
       unsigned int label_size = data_size - (
-          sizeof(raw_description) - LABEL_SIZE - 1);
+          sizeof(raw_description) - MAX_RDM_STRING_LENGTH - 1);
       description.description = string(raw_description.description,
                                        label_size);
       ShortenString(&description.description);
@@ -3330,13 +3331,13 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
       uint16_t dmx_slots;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
-      char description[LABEL_SIZE + 1];
+      char description[MAX_RDM_STRING_LENGTH + 1];
     });
     STATIC_ASSERT(sizeof(personality_description) == 36);
     struct personality_description raw_description;
 
     unsigned int max = sizeof(personality_description) - 1;
-    unsigned int min = max - LABEL_SIZE;
+    unsigned int min = max - MAX_RDM_STRING_LENGTH;
     unsigned int data_size = data.size();
     if (data_size >= min && data_size <= max) {
       memcpy(&raw_description, data.data(),
@@ -3435,16 +3436,16 @@ void RDMAPI::_HandleGetSlotDescription(
       uint16_t slot_index;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
-      char description[LABEL_SIZE + 1];
+      char description[MAX_RDM_STRING_LENGTH + 1];
     });
     STATIC_ASSERT(sizeof(slot_description) == 35);
     struct slot_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
-    unsigned int min = max - LABEL_SIZE;
+    unsigned int min = max - MAX_RDM_STRING_LENGTH;
     unsigned int data_size = data.size();
     if (data_size >= min && data_size <= max) {
-      raw_description.description[LABEL_SIZE] = 0;
+      raw_description.description[MAX_RDM_STRING_LENGTH] = 0;
       memcpy(&raw_description, data.data(), data.size());
       slot_index = NetworkToHost(raw_description.slot_index);
       description = string(raw_description.description,
@@ -3518,13 +3519,13 @@ void RDMAPI::_HandleGetSensorDefinition(
       int16_t normal_min;
       int16_t normal_max;
       uint8_t recorded_value_support;
-      char description[LABEL_SIZE + 1];
+      char description[MAX_RDM_STRING_LENGTH + 1];
     });
     STATIC_ASSERT(sizeof(sensor_definition_s) == 46);
     struct sensor_definition_s raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
-    unsigned int min = max - LABEL_SIZE;
+    unsigned int min = max - MAX_RDM_STRING_LENGTH;
     unsigned int data_size = data.size();
     if (data_size >= min && data_size <= max) {
       memcpy(&raw_description, data.data(),
@@ -3626,16 +3627,16 @@ void RDMAPI::_HandleSelfTestDescription(
       uint8_t self_test_number;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
-      char description[LABEL_SIZE + 1];
+      char description[MAX_RDM_STRING_LENGTH + 1];
     });
     STATIC_ASSERT(sizeof(self_test_description) == 34);
     struct self_test_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
-    unsigned int min = max - LABEL_SIZE;
+    unsigned int min = max - MAX_RDM_STRING_LENGTH;
     unsigned int data_size = data.size();
     if (data_size >= min && data_size <= max) {
-      raw_description.description[LABEL_SIZE] = 0;
+      raw_description.description[MAX_RDM_STRING_LENGTH] = 0;
       memcpy(&raw_description, data.data(), data.size());
       self_test_number = raw_description.self_test_number;
       description = string(raw_description.description,
