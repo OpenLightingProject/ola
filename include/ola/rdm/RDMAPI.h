@@ -892,6 +892,23 @@ class RDMAPI {
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         std::string *error);
 
+    bool GetDnsHostname(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
+
+    bool SetDnsHostname(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        const std::string &label,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
     bool SelfTestEnabled(
         unsigned int universe,
         const UID &uid,

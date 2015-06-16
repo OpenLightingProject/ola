@@ -2398,6 +2398,85 @@ bool RDMAPI::SetResetDevice(
 
 
 /*
+ * Fetch the DNS hostname
+ * @param uid the UID to fetch the DNS hostname for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetDnsHostname(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const string&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback)) {
+    return false;
+  }
+  if (CheckNotBroadcast(uid, error, callback)) {
+    return false;
+  }
+  if (CheckValidSubDevice(sub_device, false, error, callback)) {
+    return false;
+  }
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleLabelResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_DNS_HOSTNAME),
+    error);
+}
+
+
+/*
+ * Set the DNS hostname
+ * @param uid the UID to fetch the DNS hostname for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::SetDnsHostname(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    const string &label,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback)) {
+    return false;
+  }
+  // It doesn't really make sense to broadcast this but allow it anyway
+  if (CheckValidSubDevice(sub_device, true, error, callback)) {
+    return false;
+  }
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_DNS_HOSTNAME,
+                   reinterpret_cast<const uint8_t*>(label.data()),
+                   label.size()),
+    error);
+}
+
+
+/*
  * Check if a device is in self test mode.
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
