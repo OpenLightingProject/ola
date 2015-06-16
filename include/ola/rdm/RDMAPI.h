@@ -892,6 +892,23 @@ class RDMAPI {
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         std::string *error);
 
+    bool GetDnsHostname(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
+
+    bool SetDnsHostname(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        const std::string &label,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
     bool SelfTestEnabled(
         unsigned int universe,
         const UID &uid,
@@ -951,6 +968,14 @@ class RDMAPI {
     // Handlers, these are called by the RDMAPIImpl.
 
     // Generic handlers
+    void _HandleCustomLengthLabelResponse(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        uint8_t length,
+        const ResponseStatus &status,
+        const std::string &data);
+
     void _HandleLabelResponse(
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
@@ -1164,8 +1189,6 @@ class RDMAPI {
  private:
     class RDMAPIImplInterface *m_impl;
     std::map<UID, uint8_t> m_outstanding_messages;
-
-    enum {LABEL_SIZE = 32};
 
     bool GenericGetU8(
         unsigned int universe,

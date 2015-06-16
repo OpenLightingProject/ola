@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * RDMHTTPModule.h
- * This module acts as the http -> olad gateway for RDM commands.
+ * This module acts as the HTTP -> olad gateway for RDM commands.
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -547,6 +547,19 @@ class RDMHTTPModule {
                                unsigned int universe_id,
                                const ola::rdm::UID &uid);
 
+    std::string GetDnsHostname(ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
+
+    void GetDnsHostnameHandler(ola::http::HTTPResponse *response,
+                               const ola::rdm::ResponseStatus &status,
+                               const std::string &label);
+
+    std::string SetDnsHostname(const ola::http::HTTPRequest *request,
+                               ola::http::HTTPResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::UID &uid);
+
     // util methods
     bool CheckForInvalidId(const ola::http::HTTPRequest *request,
                            unsigned int *universe_id);
@@ -620,6 +633,7 @@ class RDMHTTPModule {
     static const char DISPLAY_INVERT_SECTION[];
     static const char DISPLAY_LEVEL_SECTION[];
     static const char DMX_ADDRESS_SECTION[];
+    static const char DNS_HOSTNAME_SECTION[];
     static const char FACTORY_DEFAULTS_SECTION[];
     static const char IDENTIFY_DEVICE_SECTION[];
     static const char LAMP_HOURS_SECTION[];
@@ -648,6 +662,7 @@ class RDMHTTPModule {
     static const char DISPLAY_INVERT_SECTION_NAME[];
     static const char DISPLAY_LEVEL_SECTION_NAME[];
     static const char DMX_ADDRESS_SECTION_NAME[];
+    static const char DNS_HOSTNAME_SECTION_NAME[];
     static const char FACTORY_DEFAULTS_SECTION_NAME[];
     static const char IDENTIFY_DEVICE_SECTION_NAME[];
     static const char LAMP_HOURS_SECTION_NAME[];
