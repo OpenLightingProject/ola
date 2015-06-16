@@ -19,7 +19,7 @@
  *
  * This class provides a high level C++ RDM API for PIDs defined in
  * E1.20. It includes errors checking for out-of-range arguments. Each RDM
- * method takes a pointer to a string, which will be populated with an english
+ * method takes a pointer to a string, which will be populated with an English
  * error message if the command fails.
  */
 
@@ -902,6 +902,23 @@ class RDMAPI {
         std::string *error);
 
     bool SetDnsHostname(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        const std::string &label,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
+    bool GetDnsDomainName(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const std::string&> *callback,
+        std::string *error);
+
+    bool SetDnsDomainName(
         unsigned int universe,
         const UID &uid,
         uint16_t sub_device,

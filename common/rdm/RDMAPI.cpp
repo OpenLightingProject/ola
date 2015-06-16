@@ -2440,7 +2440,7 @@ bool RDMAPI::GetDnsHostname(
 
 /*
  * Set the DNS hostname
- * @param uid the UID to fetch the DNS hostname for
+ * @param uid the UID to set the DNS hostname for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
  * @param error a pointer to a string which it set if an error occurs
@@ -2471,6 +2471,86 @@ bool RDMAPI::SetDnsHostname(
                    uid,
                    sub_device,
                    PID_DNS_HOSTNAME,
+                   reinterpret_cast<const uint8_t*>(label.data()),
+                   label.size()),
+    error);
+}
+
+
+/*
+ * Fetch the DNS domain name
+ * @param uid the UID to fetch the DNS domain name for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetDnsDomainName(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const string&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback)) {
+    return false;
+  }
+  if (CheckNotBroadcast(uid, error, callback)) {
+    return false;
+  }
+  if (CheckValidSubDevice(sub_device, false, error, callback)) {
+    return false;
+  }
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleCustomLengthLabelResponse,
+    callback,
+    MAX_RDM_DOMAIN_NAME_LENGTH);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_DNS_DOMAIN_NAME),
+    error);
+}
+
+
+/*
+ * Set the DNS domain name
+ * @param uid the UID to set the DNS domain name for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::SetDnsDomainName(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    const string &label,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback)) {
+    return false;
+  }
+  // It doesn't really make sense to broadcast this but allow it anyway
+  if (CheckValidSubDevice(sub_device, true, error, callback)) {
+    return false;
+  }
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_DNS_DOMAIN_NAME,
                    reinterpret_cast<const uint8_t*>(label.data()),
                    label.size()),
     error);
@@ -2746,7 +2826,7 @@ bool RDMAPI::SetPresetPlaybackMode(
 // ----------------------------------------------------------------------------
 
 /*
- * Handle a response that contains a custom length ascii string
+ * Handle a response that contains a custom length ASCII string
  */
 void RDMAPI::_HandleCustomLengthLabelResponse(
     SingleUseCallback2<void,
@@ -2770,7 +2850,7 @@ void RDMAPI::_HandleCustomLengthLabelResponse(
 
 
 /*
- * Handle a response that contains a 32 byte ascii string
+ * Handle a response that contains a 32 byte ASCII string
  */
 void RDMAPI::_HandleLabelResponse(
     SingleUseCallback2<void,
