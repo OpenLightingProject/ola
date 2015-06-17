@@ -480,6 +480,10 @@ have_microhttpd="no"
 AS_IF([test "x$enable_http" != xno],
       [PKG_CHECK_MODULES([libmicrohttpd], [libmicrohttpd],
                          [have_microhttpd="yes"], [true])])
+
+AS_IF([test "x$enable_http" = xyes && test "x$have_microhttpd" != xyes],
+      AC_MSG_ERROR([--enable-http was given but libmicrohttpd was not found.]))
+
 AM_CONDITIONAL([HAVE_LIBMICROHTTPD], [test "x$have_microhttpd" = xyes])
 AS_IF([test "x$have_microhttpd" = xyes],
       [AC_DEFINE([HAVE_LIBMICROHTTPD], [1],
@@ -663,6 +667,11 @@ AC_ARG_ENABLE(
 # knows what to link against.
 PLUGINS=""
 
+# Force enable_usbdmx to yes when Ja Rule is explicitly requested.
+AS_IF([test "x$enable_ja_rule" = xyes],
+      [AS_ECHO(["Ja Rule is enabled, enabling the usbdmx plugin."])]
+      [enable_usbdmx="yes"])
+
 PLUGIN_SUPPORT(artnet, USE_ARTNET)
 PLUGIN_SUPPORT(dmx4linux, USE_DMX4LINUX, [$have_dmx4linux])
 PLUGIN_SUPPORT(dummy, USE_DUMMY)
@@ -717,13 +726,19 @@ AC_SUBST(OLA_CLIENT_LIBS)
 
 # Extra tools
 #####################################################
-AM_CONDITIONAL([BUILD_JA_RULE],
-               [test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xyes \
-                && test "x$have_libusb_hotplug_api" = xyes])
+AS_IF([test "x$enable_ja_rule" = xyes && test "x$enable_usbdmx" = xno],
+      [AC_MSG_ERROR([Ja Rule requires the usbdmx plugin, but it could not be enabled.])])
+AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xno],
+      [AC_MSG_ERROR([Ja Rule requires libusb, but it was not found on your system.])])
+AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb_hotplug_api" = xno],
+      [AC_MSG_ERROR([Ja Rule requires libusb to have the hotplug capability (versions 1.0.16 \
+and above), but the version found on your system doesn't appear to have it.])])
+
+AM_CONDITIONAL([BUILD_JA_RULE], [test "x$enable_ja_rule" = xyes])
 
 # Status just for configure
 BUILDING_JA_RULE='no'
-if test -z "${BUILD_JA_RULE_TRUE}"; then
+if test "x$enable_ja_rule" = xyes; then
   BUILDING_JA_RULE='yes'
 fi
 

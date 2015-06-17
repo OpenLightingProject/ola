@@ -214,7 +214,7 @@ tools/ja-rule/ja-rule.exe
 tools/ja-rule/ja-rule-controller
 tools/ja-rule/ja-rule-controller.exe
 javascript/new-src/node_modules
-javascript/new-src/.idea
+.idea
 .project
 .autotools
 .cproject

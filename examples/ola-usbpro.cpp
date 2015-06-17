@@ -123,12 +123,15 @@ bool UsbProConfigurator::SendParametersRequest() {
   ola::plugin::usbpro::ParameterRequest *parameter_request =
     request.mutable_parameters();
   parameter_request->set_port_id(FLAGS_port);
-  if (FLAGS_brk.present())
+  if (FLAGS_brk.present()) {
     parameter_request->set_break_time(FLAGS_brk);
-  if (FLAGS_mab.present())
+  }
+  if (FLAGS_mab.present()) {
     parameter_request->set_mab_time(FLAGS_mab);
-  if (FLAGS_rate.present())
+  }
+  if (FLAGS_rate.present()) {
     parameter_request->set_rate(FLAGS_rate);
+  }
   return SendMessage(request);
 }
 
@@ -161,8 +164,8 @@ void UsbProConfigurator::DisplayParameters(
     const ola::plugin::usbpro::ParameterReply &reply) {
 
   cout << "Device: " << m_alias << endl;
-  cout << "Firmware: " << reply.firmware_high() << "." << reply.firmware() <<
-    endl;
+  cout << "Firmware: " << reply.firmware_high() << "." << reply.firmware()
+       << endl;
   cout << "Break Time: " << reply.break_time() * 10.67 << "us" << endl;
   cout << "MAB Time: " <<  reply.mab_time() * 10.67 << "us" << endl;
   cout << "Packet Rate: " << reply.rate() << " packets/sec" << endl;
@@ -203,22 +206,27 @@ int main(int argc, char *argv[]) {
           "<rate>]",
       "Configure Enttec USB Pro Devices managed by OLA.");
 
-  if (FLAGS_device < 0)
+  if (FLAGS_device < 0) {
     ola::DisplayUsageAndExit();
+  }
 
   // check for valid parameters
-  if (FLAGS_brk.present() && (FLAGS_brk < 9 || FLAGS_brk > 127))
+  if (FLAGS_brk.present() && (FLAGS_brk < 9 || FLAGS_brk > 127)) {
     ola::DisplayUsageAndExit();
+  }
 
-  if (FLAGS_mab.present() && (FLAGS_mab < 1 || FLAGS_mab > 127))
+  if (FLAGS_mab.present() && (FLAGS_mab < 1 || FLAGS_mab > 127)) {
     ola::DisplayUsageAndExit();
+  }
 
-  if (FLAGS_rate.present() && (FLAGS_rate < 1 || FLAGS_rate > 40))
+  if (FLAGS_rate.present() && (FLAGS_rate < 1 || FLAGS_rate > 40)) {
     ola::DisplayUsageAndExit();
+  }
 
   if ((FLAGS_get_params || (!FLAGS_assignments && !FLAGS_serial)) &&
-      (FLAGS_port < 0))
+      (FLAGS_port < 0)) {
     ola::DisplayUsageAndExit();
+  }
 
   UsbProConfigurator configurator;
   if (!configurator.Setup()) {

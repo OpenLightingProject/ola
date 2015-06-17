@@ -48,8 +48,8 @@ class E131Plugin: public ola::Plugin {
 
     class E131Device *m_device;
     static const char CID_KEY[];
-    static const char DEFAULT_DSCP_VALUE[];
-    static const char DEFAULT_PORT_COUNT[];
+    static const unsigned int DEFAULT_DSCP_VALUE;
+    static const unsigned int DEFAULT_PORT_COUNT;
     static const char DRAFT_DISCOVERY_KEY[];
     static const char DSCP_KEY[];
     static const char IGNORE_PREVIEW_DATA_KEY[];

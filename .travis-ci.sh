@@ -66,7 +66,7 @@ elif [[ $TASK = 'coverity' ]]; then
 elif [[ $TASK = 'jshint' ]]; then
   cd ./javascript/new-src;
   npm install;
-  grunt jshint:dev
+  grunt test
 else
   # Otherwise compile and check as normal
   autoreconf -i && ./configure --enable-rdm-tests --enable-ja-rule --enable-java-libs && make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-java-libs'

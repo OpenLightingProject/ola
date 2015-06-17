@@ -231,10 +231,11 @@ void SPIDevice::SetDefaults() {
                                  SetValidator<string>(valid_backends),
                                  SOFTWARE_BACKEND);
   m_preferences->SetDefaultValue(SPISpeedKey(), UIntValidator(0, 32000000),
-                                 "1000000");
-  m_preferences->SetDefaultValue(SPICEKey(), BoolValidator(), "false");
-  m_preferences->SetDefaultValue(PortCountKey(), UIntValidator(1, 8), "1");
-  m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 8), "0");
+                                 1000000);
+  m_preferences->SetDefaultValue(SPICEKey(), BoolValidator(), false);
+  m_preferences->SetDefaultValue(PortCountKey(), UIntValidator(1, 8), 1);
+  m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 8), 0);
+  m_preferences->Save();
 }
 
 void SPIDevice::PopulateHardwareBackendOptions(

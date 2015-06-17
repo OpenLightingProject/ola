@@ -129,6 +129,7 @@ include debian/Makefile.mk
 include doxygen/Makefile.mk
 include examples/Makefile.mk
 include include/Makefile.mk
+include javascript/Makefile.mk
 include man/Makefile.mk
 include ola/Makefile.mk
 include plugins/Makefile.mk
@@ -185,48 +186,6 @@ EXTRA_DIST += \
   README.debian \
   README.developer \
   README.rpm ola.spec \
-  javascript/README \
-  javascript/ola/base_frame.js \
-  javascript/ola/common/dmx_constants.js \
-  javascript/ola/common/dmx_monitor.js \
-  javascript/ola/common/keypad_controller.js \
-  javascript/ola/common/keypad_parser.js \
-  javascript/ola/common/plugin_list.js \
-  javascript/ola/common/rdm_section_list.js \
-  javascript/ola/common/section_render.js \
-  javascript/ola/common/server.js \
-  javascript/ola/common/server_stats.js \
-  javascript/ola/common/sorted_list.js \
-  javascript/ola/common/uid_list.js \
-  javascript/ola/dialog.js \
-  javascript/ola/full/available_port_table.js \
-  javascript/ola/full/base_universe_tab.js \
-  javascript/ola/full/custom_dragger.js \
-  javascript/ola/full/custom_dragscrollsupport.js \
-  javascript/ola/full/dmx_console.js \
-  javascript/ola/full/dmx_console_tab.js \
-  javascript/ola/full/dmx_monitor_tab.js \
-  javascript/ola/full/plugin_frame.js \
-  javascript/ola/full/rdm_attributes_panel.js \
-  javascript/ola/full/rdm_patcher.js \
-  javascript/ola/full/rdm_patcher_tab.js \
-  javascript/ola/full/rdm_tab.js \
-  javascript/ola/full/universe_frame.js \
-  javascript/ola/full/universe_settings_tab.js \
-  javascript/ola/home_frame.js \
-  javascript/ola/logger.js \
-  javascript/ola/mobile.js \
-  javascript/ola/mobile/controller_tab.js \
-  javascript/ola/mobile/monitor_tab.js \
-  javascript/ola/mobile/plugin_tab.js \
-  javascript/ola/mobile/universe_tab.js \
-  javascript/ola/new_universe_frame.js \
-  javascript/ola/ola.js \
-  javascript/ola/port_table.js \
-  javascript/ola/universe_control.js \
-  javascript/ola/universe_item.js \
-  javascript/new-src/src/css/style.css \
-  javascript/new-src/src/js/app.js \
   mac_build.sh \
   tests/recvdmx.py \
   tests/regression.py

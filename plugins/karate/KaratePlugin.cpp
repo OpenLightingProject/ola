@@ -110,8 +110,8 @@ string KaratePlugin::Description() const {
 "\n"
 "The plugin creates devices with a single output port.\n"
 "Info on the KarateLight Hardware can be found at http://karatelight.de\n"
-"Unfortunately the site is in german only, but the maintainer will respond "
-"to emails in english.\n\n"
+"Unfortunately the site is in German only, but the maintainer will respond "
+"to emails in English.\n\n"
 "--- Config file : ola-karate.conf ---\n"
 "\n"
 "device = /dev/kldmx0\n"
@@ -123,17 +123,20 @@ string KaratePlugin::Description() const {
  * @brief Set default preferences.
  */
 bool KaratePlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   if (m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
-                                     KARATE_DEVICE_PATH))
+                                     KARATE_DEVICE_PATH)) {
     m_preferences->Save();
+  }
 
   // check if this saved correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue(DEVICE_KEY).empty())
+  if (m_preferences->GetValue(DEVICE_KEY).empty()) {
     return false;
+  }
 
   return true;
 }

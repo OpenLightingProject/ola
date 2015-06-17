@@ -74,7 +74,9 @@ using std::max;
 
 const TimeStamp SelectServer::empty_time;
 
-SelectServer::SelectServer(ExportMap *export_map, Clock *clock)
+SelectServer::SelectServer(ExportMap *export_map,
+                           Clock *clock,
+                           const Options &options)
     : m_export_map(export_map),
       m_terminate(false),
       m_is_running(false),
@@ -98,7 +100,7 @@ SelectServer::SelectServer(ExportMap *export_map, Clock *clock)
 #else
 
 #ifdef HAVE_EPOLL
-  if (FLAGS_use_epoll) {
+  if (FLAGS_use_epoll && !options.force_select) {
     m_poller.reset(new EPoller(export_map, m_clock));
   }
   if (m_export_map) {
@@ -108,7 +110,7 @@ SelectServer::SelectServer(ExportMap *export_map, Clock *clock)
 
 #ifdef HAVE_KQUEUE
   bool using_kqueue = false;
-  if (FLAGS_use_kqueue && !m_poller.get()) {
+  if (FLAGS_use_kqueue && !m_poller.get() && !options.force_select) {
     m_poller.reset(new KQueuePoller(export_map, m_clock));
     using_kqueue = true;
   }
