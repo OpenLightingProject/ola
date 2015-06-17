@@ -217,3 +217,28 @@ div#header-universe > div{
 .settings, .input-group, .save-settings {
  margin-top: 5px;
 }
+
+/* Custom checkboxes for plugins page */
+/* Hide checkbox */
+input.form-control[type="checkbox"] {
+ display:none;
+}
+/* Mock checkbox in label */
+input.form-control[type="checkbox"] + label span.glyphicon:before {
+ width:20px;
+ height:20px;
+ border-radius: 4px;
+ border: solid #ccc 1px;
+ content:"\e014"; /* Use cross as standard glyph */
+ color: #d9534f;
+ background-color: #fff;
+}
+/* Use check glyph if checked */
+input.form-control[type="checkbox"]:checked + label span.glyphicon:before {
+ content:"\e013";
+ color: #5cb85c;
+}
+/* grey out checkbox if disabled */
+input.form-control[type="checkbox"][disabled] + label span.glyphicon:before {
+ color: darkgrey;
+}

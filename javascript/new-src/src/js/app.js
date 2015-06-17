@@ -740,12 +740,17 @@ angular
       };
       $scope.getInfo();
       $scope.Reload = function() {
-        $ola.action.Reload().then();
+        $ola.action.Reload();
         $scope.getInfo();
       };
       $scope.go = function(id) {
         $location.path('/plugin/' + id);
       };
+      $scope.changeStatus = function(id, current) {
+        $ola.post.PluginState(id, current);
+        $scope.Reload();
+      };
+
       $scope.getStyle = function(style) {
         if (style) {
           return {

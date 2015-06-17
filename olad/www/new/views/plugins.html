@@ -17,11 +17,19 @@
       <td ng-click="go(plugin.id)">
           {{plugin.name}}&nbsp;<span class="glyphicon glyphicon-info-sign plugin-icon"></span>
       </td>
-      <td ng-click="go(plugin.id)">
-        <div class="status-light" ng-style="getStyle(plugin.enabled)">&nbsp;</div>
+      <td>
+          <input class="form-control"
+                 type="checkbox"
+                 id="enable{{plugin.id}}"
+                 ng-change="changeStatus(plugin.id, plugin.enabled)"
+                 ng-model="plugin.enabled"/>
+          <label for="enable{{plugin.id}}">
+              <span class="glyphicon"></span>
+              <span class="sr-only">Toggle plugin</span>
+          </label>
       </td>
-      <td ng-click="go(plugin.id)">
-        <div class="status-light" ng-style="getStyle(plugin.active)">&nbsp;</div>
+      <td>
+          <div class="status-light" ng-style="getStyle(plugin.active)">&nbsp;</div>
       </td>
     </tr>
   </table>
