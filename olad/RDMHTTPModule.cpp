@@ -105,6 +105,8 @@ const char RDMHTTPModule::DEVICE_LABEL_SECTION[] = "device_label";
 const char RDMHTTPModule::DISPLAY_INVERT_SECTION[] = "display_invert";
 const char RDMHTTPModule::DISPLAY_LEVEL_SECTION[] = "display_level";
 const char RDMHTTPModule::DMX_ADDRESS_SECTION[] = "dmx_address";
+const char RDMHTTPModule::DNS_DOMAIN_NAME_SECTION[] = "dns_domain_name";
+const char RDMHTTPModule::DNS_HOSTNAME_SECTION[] = "dns_hostname";
 const char RDMHTTPModule::FACTORY_DEFAULTS_SECTION[] = "factory_defaults";
 const char RDMHTTPModule::IDENTIFY_DEVICE_SECTION[] = "identify_device";
 const char RDMHTTPModule::LAMP_HOURS_SECTION[] = "lamp_hours";
@@ -135,6 +137,8 @@ const char RDMHTTPModule::DEVICE_LABEL_SECTION_NAME[] = "Device Label";
 const char RDMHTTPModule::DISPLAY_INVERT_SECTION_NAME[] = "Display Invert";
 const char RDMHTTPModule::DISPLAY_LEVEL_SECTION_NAME[] = "Display Level";
 const char RDMHTTPModule::DMX_ADDRESS_SECTION_NAME[] = "DMX Start Address";
+const char RDMHTTPModule::DNS_DOMAIN_NAME_SECTION_NAME[] = "DNS Domain Name";
+const char RDMHTTPModule::DNS_HOSTNAME_SECTION_NAME[] = "DNS Hostname";
 const char RDMHTTPModule::FACTORY_DEFAULTS_SECTION_NAME[] = "Factory Defaults";
 const char RDMHTTPModule::IDENTIFY_DEVICE_SECTION_NAME[] = "Identify Device";
 const char RDMHTTPModule::LAMP_HOURS_SECTION_NAME[] = "Lamp Hours";
@@ -440,6 +444,7 @@ int RDMHTTPModule::JsonSupportedSections(const HTTPRequest *request,
   if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
     return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
   }
+
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id)) {
     return OladHTTPServer::ServeHelpRedirect(response);
@@ -549,6 +554,10 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
   } else if (section_id == RESET_DEVICE_SECTION) {
     // No get command available, so just generate the JSON
     error = GetResetDevice(response);
+  } else if (section_id == DNS_HOSTNAME_SECTION) {
+    error = GetDnsHostname(response, universe_id, *uid);
+  } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
+    error = GetDnsDomainName(response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -630,6 +639,10 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
     error = SetPowerState(request, response, universe_id, *uid);
   } else if (section_id == RESET_DEVICE_SECTION) {
     error = SetResetDevice(request, response, universe_id, *uid);
+  } else if (section_id == DNS_HOSTNAME_SECTION) {
+    error = SetDnsHostname(request, response, universe_id, *uid);
+  } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
+    error = SetDnsDomainName(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -1132,6 +1145,14 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         break;
       case ola::rdm::PID_RESET_DEVICE:
         AddSection(&sections, RESET_DEVICE_SECTION, RESET_DEVICE_SECTION_NAME);
+        break;
+      case ola::rdm::PID_DNS_HOSTNAME:
+        AddSection(&sections, DNS_HOSTNAME_SECTION, DNS_HOSTNAME_SECTION_NAME);
+        break;
+      case ola::rdm::PID_DNS_DOMAIN_NAME:
+        AddSection(&sections,
+                   DNS_DOMAIN_NAME_SECTION,
+                   DNS_DOMAIN_NAME_SECTION_NAME);
         break;
     }
   }
@@ -3169,6 +3190,122 @@ string RDMHTTPModule::SetResetDevice(const HTTPRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       reset_device_enum,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * @brief Handle the request for the DNS Hostname.
+ */
+string RDMHTTPModule::GetDnsHostname(HTTPResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string error;
+  m_rdm_api.GetDnsHostname(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::GetDnsHostnameHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * @brief Handle the response to a DNS hostname call and build the response
+ */
+void RDMHTTPModule::GetDnsHostnameHandler(
+    HTTPResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const string &label) {
+  if (CheckForRDMError(response, status)) {
+    return;
+  }
+
+  JsonSection section;
+  section.AddItem(new StringItem("Hostname", label, GENERIC_STRING_FIELD));
+  RespondWithSection(response, section);
+}
+
+
+/*
+ * @brief Set the DNS hostname
+ */
+string RDMHTTPModule::SetDnsHostname(const HTTPRequest *request,
+                                     HTTPResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string label = request->GetParameter(GENERIC_STRING_FIELD);
+  string error;
+  m_rdm_api.SetDnsHostname(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      label,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * @brief Handle the request for the DNS domain name.
+ */
+string RDMHTTPModule::GetDnsDomainName(HTTPResponse *response,
+                                       unsigned int universe_id,
+                                       const UID &uid) {
+  string error;
+  m_rdm_api.GetDnsDomainName(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::GetDnsDomainNameHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * @brief Handle the response to a DNS domain name call and build the response
+ */
+void RDMHTTPModule::GetDnsDomainNameHandler(
+    HTTPResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const string &label) {
+  if (CheckForRDMError(response, status)) {
+    return;
+  }
+
+  JsonSection section;
+  section.AddItem(new StringItem("Domain Name", label, GENERIC_STRING_FIELD));
+  RespondWithSection(response, section);
+}
+
+
+/*
+ * @brief Set the DNS domain name
+ */
+string RDMHTTPModule::SetDnsDomainName(const HTTPRequest *request,
+                                       HTTPResponse *response,
+                                       unsigned int universe_id,
+                                       const UID &uid) {
+  string label = request->GetParameter(GENERIC_STRING_FIELD);
+  string error;
+  m_rdm_api.SetDnsDomainName(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      label,
       NewSingleCallback(this,
                         &RDMHTTPModule::SetHandler,
                         response),

@@ -31,9 +31,10 @@ tools_ola_trigger_ola_trigger_SOURCES = \
     tools/ola_trigger/ParserActions.cpp \
     tools/ola_trigger/ParserActions.h \
     tools/ola_trigger/ParserGlobals.h \
-    tools/ola_trigger/config.tab.cpp \
-    tools/ola_trigger/lex.yy.cpp \
     tools/ola_trigger/ola-trigger.cpp
+nodist_tools_ola_trigger_ola_trigger_SOURCES = \
+    tools/ola_trigger/config.tab.cpp \
+    tools/ola_trigger/lex.yy.cpp
 # required, otherwise we get build errors from the flex output
 tools_ola_trigger_ola_trigger_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
 tools_ola_trigger_ola_trigger_LDADD = common/libolacommon.la \
