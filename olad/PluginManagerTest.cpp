@@ -120,8 +120,8 @@ void PluginManagerTest::testPluginManager() {
 
   VerifyPluginCounts(&manager, 2, 1, OLA_SOURCELINE());
 
-  OLA_ASSERT(plugin1.WasStarted());
-  OLA_ASSERT_FALSE(plugin2.WasStarted());
+  OLA_ASSERT(plugin1.IsRunning());
+  OLA_ASSERT_FALSE(plugin2.IsRunning());
 
   manager.UnloadAll();
   VerifyPluginCounts(&manager, 0, 0, OLA_SOURCELINE());
@@ -135,32 +135,48 @@ void PluginManagerTest::testConflictingPlugins() {
   ola::MemoryPreferencesFactory factory;
   ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL, NULL);
 
-  set<ola::ola_plugin_id> conflict_set1;
+  set<ola::ola_plugin_id> conflict_set1, conflict_set2, conflict_set3;
   conflict_set1.insert(ola::OLA_PLUGIN_ARTNET);
   TestMockPlugin plugin1(&adaptor, ola::OLA_PLUGIN_DUMMY, conflict_set1);
   TestMockPlugin plugin2(&adaptor, ola::OLA_PLUGIN_ARTNET);
-  set<ola::ola_plugin_id> conflict_set2;
   conflict_set2.insert(ola::OLA_PLUGIN_ARTNET);
   TestMockPlugin plugin3(&adaptor, ola::OLA_PLUGIN_SHOWNET, conflict_set2);
+
+  conflict_set3.insert(ola::OLA_PLUGIN_DUMMY);
+  TestMockPlugin plugin4(&adaptor, ola::OLA_PLUGIN_SANDNET, conflict_set3);
 
   vector<AbstractPlugin*> our_plugins;
   our_plugins.push_back(&plugin1);
   our_plugins.push_back(&plugin2);
   our_plugins.push_back(&plugin3);
+  our_plugins.push_back(&plugin4);
 
   MockLoader loader(our_plugins);
   vector<PluginLoader*> loaders;
   loaders.push_back(&loader);
 
   PluginManager manager(loaders, &adaptor);
-  OLA_INFO << "start";
   manager.LoadAll();
 
-  VerifyPluginCounts(&manager, 3, 1, OLA_SOURCELINE());
+  VerifyPluginCounts(&manager, 4, 2, OLA_SOURCELINE());
 
-  OLA_ASSERT_FALSE(plugin1.WasStarted());
-  OLA_ASSERT(plugin2.WasStarted());
-  OLA_ASSERT_FALSE(plugin3.WasStarted());
+  OLA_ASSERT_TRUE(plugin1.IsRunning());
+  OLA_ASSERT_FALSE(plugin2.IsRunning());
+  OLA_ASSERT_TRUE(plugin3.IsRunning());
+
+  // Try to enable the sandnet plugin, that conflicts with the dummy plugin
+  OLA_ASSERT_FALSE(manager.EnableAndStartPlugin(ola::OLA_PLUGIN_SANDNET));
+  VerifyPluginCounts(&manager, 4, 2, OLA_SOURCELINE());
+
+  // Now disable the dummy plugin
+  manager.DisableAndStopPlugin(ola::OLA_PLUGIN_DUMMY);
+  VerifyPluginCounts(&manager, 4, 1, OLA_SOURCELINE());
+  OLA_ASSERT_FALSE(plugin1.IsRunning());
+
+  // Try to load sandnet again
+  OLA_ASSERT_TRUE(manager.EnableAndStartPlugin(ola::OLA_PLUGIN_SANDNET));
+  VerifyPluginCounts(&manager, 4, 2, OLA_SOURCELINE());
+  OLA_ASSERT_TRUE(plugin4.IsRunning());
 
   manager.UnloadAll();
   VerifyPluginCounts(&manager, 0, 0, OLA_SOURCELINE());

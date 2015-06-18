@@ -118,6 +118,23 @@ class PluginManager {
   bool IsEnabled(ola_plugin_id plugin_id) const;
 
   /**
+   * @brief Enable & start a plugin
+   * @param plugin_id the id of the plugin to start.
+   * @returns true if the plugin was started or was already running, false if
+   * it couldn't be started.
+   *
+   * This call will enable a plugin, but may not start it due to conflicts with
+   * existing plugins.
+   */
+  bool EnableAndStartPlugin(ola_plugin_id plugin_id);
+
+  /**
+   * @brief Disable & stop a plugin.
+   * @param plugin_id the id of the plugin to stop.
+   */
+  void DisableAndStopPlugin(ola_plugin_id plugin_id);
+
+  /**
    * @brief Return a list of plugins that conflict with this particular plugin.
    * @param plugin_id the id of the plugin to check.
    * @param[out] plugins the list of plugins that conflict with this one.
@@ -133,6 +150,9 @@ class PluginManager {
   PluginMap m_active_plugins;  // active plugins
   PluginMap m_enabled_plugins;  // enabled plugins
   PluginAdaptor *m_plugin_adaptor;
+
+  bool StartIfSafe(AbstractPlugin *plugin);
+  AbstractPlugin* CheckForRunningConflicts(const AbstractPlugin *plugin) const;
 
   DISALLOW_COPY_AND_ASSIGN(PluginManager);
 };

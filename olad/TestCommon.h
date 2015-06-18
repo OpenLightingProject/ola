@@ -216,29 +216,39 @@ class TestMockPlugin: public ola::Plugin {
                  ola::ola_plugin_id plugin_id,
                  bool enabled = true)
       : Plugin(plugin_adaptor),
-        m_start_run(false),
+        m_is_running(false),
         m_enabled(enabled),
         m_id(plugin_id) {}
 
   TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
                  ola::ola_plugin_id plugin_id,
-                 const std::set<ola::ola_plugin_id> &conflict_set)
+                 const std::set<ola::ola_plugin_id> &conflict_set,
+                 bool enabled = true)
       : Plugin(plugin_adaptor),
-        m_start_run(false),
-        m_enabled(true),
+        m_is_running(false),
+        m_enabled(enabled),
         m_id(plugin_id),
         m_conflict_set(conflict_set) {}
 
-  void ConflictsWith(std::set<ola::ola_plugin_id> *conflict_set) {
+  void ConflictsWith(std::set<ola::ola_plugin_id> *conflict_set) const {
     *conflict_set = m_conflict_set;
   }
-  bool LoadPreferences() { return true; }
+  bool LoadPreferences() {
+    m_preferences = m_plugin_adaptor->NewPreference(PluginPrefix());
+    return true;
+  }
   std::string PreferencesSource() const { return ""; }
   bool IsEnabled() const { return m_enabled; }
   bool StartHook() {
-    m_start_run = true;
+    m_is_running = true;
     return true;
   }
+
+  bool StopHook() {
+    m_is_running = false;
+    return true;
+  }
+
   std::string Name() const {
     std::ostringstream str;
     str << m_id;
@@ -248,10 +258,10 @@ class TestMockPlugin: public ola::Plugin {
   ola::ola_plugin_id Id() const { return m_id; }
   std::string PluginPrefix() const { return "test"; }
 
-  bool WasStarted() { return m_start_run; }
+  bool IsRunning() { return m_is_running; }
 
  private:
-  bool m_start_run;
+  bool m_is_running;
   bool m_enabled;
   ola::ola_plugin_id m_id;
   std::set<ola::ola_plugin_id> m_conflict_set;
