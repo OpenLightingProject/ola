@@ -11,6 +11,7 @@ x/y/2015 ola-0.9.6
  * Add additional C++ client documentation and examples.
  * Support an overrides.proto file to load system specific PID data #732.
  * Respect UUCP lock files before opening devices #716.
+ * Initial partial E1.37-2 support in the web UI.
 
  API:
  * Python: callbacks are now also systematically called when the RPC calls fail.
