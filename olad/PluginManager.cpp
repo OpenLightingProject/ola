@@ -206,7 +206,7 @@ bool PluginManager::StartIfSafe(AbstractPlugin *plugin) {
 /*
  * @brief Check if this plugin conflicts with any of the running plugins.
  * @param plugin The plugin to check
- * @returns The first conflicting plugin, or NULL if there isn't one.
+ * @returns The first conflicting plugin, or NULL if there aren't any.
  */
 AbstractPlugin* PluginManager::CheckForRunningConflicts(
     const AbstractPlugin *plugin) const {
