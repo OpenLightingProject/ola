@@ -498,7 +498,7 @@ void OlaServerServiceImpl::SetPluginState(
               << " for plugin " << plugin->Name();
     if (request->enabled()) {
       if (!m_plugin_manager->EnableAndStartPlugin(plugin_id)) {
-        controller->SetFailed("Failed to start plugin");
+        controller->SetFailed("Failed to start plugin: " + plugin->Name());
       }
     } else {
       m_plugin_manager->DisableAndStopPlugin(plugin_id);
