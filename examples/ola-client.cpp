@@ -572,11 +572,11 @@ void DisplayPatchHelp(const options &opts) {
 void DisplayPluginInfoHelp(const options &opts) {
   cout << "Usage: " << opts.cmd << " [--plugin-id <plugin-id>]\n"
           "\n"
-          "Get info on the plugins loaded by olad. Called without arguments \n"
-          "this will\n"
+          "Get info on the plugins loaded by olad. Called without arguments"
+          " this will\n"
           "display the plugins loaded by olad. When used with --plugin-id this"
           " will\n"
-          " display the specified plugin's description.\n"
+          "display the specified plugin's description.\n"
           "\n"
           "  -h, --help                  Display this help message and exit.\n"
           "  -p, --plugin-id <plugin_id> Id of the plugin to fetch the "
@@ -591,9 +591,9 @@ void DisplayPluginInfoHelp(const options &opts) {
  */
 void DisplayPluginStateHelp(const options &opts) {
   cout << "Usage: " << opts.cmd
-       << " --plugin-id <plugin-id> [--state <enable|disable]\n"
+       << " --plugin-id <plugin-id> [--state <enable|disable>]\n"
           "\n"
-          "Displays the enabled/disabled state for a plugin and the list of"
+          "Displays the enabled/disabled state for a plugin and the list of "
           "plugins\n"
           "this plugin will conflict with.\n"
           "\n"
