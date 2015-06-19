@@ -13,8 +13,8 @@
       <th class="top-table">Enabled</th>
       <th class="top-table">Active</th>
     </tr>
-    <tr class="special-mouse striped-table" ng-repeat="plugin in Items.plugins">
-      <td ng-click="go(plugin.id)">
+    <tr class="striped-table" ng-repeat="plugin in Items.plugins">
+      <td class="special-mouse" ng-click="go(plugin.id)">
           {{plugin.name}}&nbsp;<span class="glyphicon glyphicon-info-sign plugin-icon"></span>
       </td>
       <td>
