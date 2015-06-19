@@ -6,6 +6,8 @@ dist_man_MANS += \
     man/ola_dmxmonitor.1 \
     man/ola_e131.1 \
     man/ola_patch.1 \
+    man/ola_plugin_info.1 \
+    man/ola_plugin_state.1 \
     man/ola_recorder.1 \
     man/ola_set_priority.1 \
     man/ola_streaming_client.1 \

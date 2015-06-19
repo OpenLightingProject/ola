@@ -47,7 +47,7 @@ class FtdiDmxPlugin : public Plugin {
   // This plugin is disabled unless explicitly enabled by a user.
   bool DefaultMode() const { return false; }
 
-  void ConflictsWith(std::set<ola_plugin_id> *conflict_set) {
+  void ConflictsWith(std::set<ola_plugin_id> *conflict_set) const {
     conflict_set->insert(ola::OLA_PLUGIN_USBPRO);
     conflict_set->insert(ola::OLA_PLUGIN_OPENDMX);
   }
