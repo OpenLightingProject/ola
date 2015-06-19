@@ -748,7 +748,7 @@ angular
       };
       $scope.changeStatus = function(id, current) {
         $ola.post.PluginState(id, current);
-        $scope.Reload();
+        $scope.getInfo();
       };
 
       $scope.getStyle = function(style) {
