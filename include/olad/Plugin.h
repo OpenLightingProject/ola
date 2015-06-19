@@ -100,7 +100,7 @@ class AbstractPlugin {
    */
   virtual std::string Description() const = 0;
 
-  virtual void ConflictsWith(std::set<ola_plugin_id> *conflict_set) = 0;
+  virtual void ConflictsWith(std::set<ola_plugin_id> *conflict_set) const = 0;
 
   // used to sort plugins
   virtual bool operator<(const AbstractPlugin &other) const = 0;
@@ -143,7 +143,7 @@ class Plugin: public AbstractPlugin {
   virtual std::string PluginPrefix() const = 0;
 
   // by default we don't conflict with any other plugins
-  virtual void ConflictsWith(std::set<ola_plugin_id>*) {}
+  virtual void ConflictsWith(std::set<ola_plugin_id>*) const {}
 
   bool operator<(const AbstractPlugin &other) const {
     return Id() < other.Id();

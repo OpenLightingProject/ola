@@ -60,6 +60,7 @@ void PluginManager::LoadAll() {
       if (!STLInsertIfNotPresent(&m_loaded_plugins, plugin->Id(), plugin)) {
         OLA_WARN << "Skipping plugin " << plugin->Name()
                  << " because it's already been loaded";
+        delete plugin;
         continue;
       }
 
@@ -79,38 +80,7 @@ void PluginManager::LoadAll() {
   // The second pass checks for conflicts and starts each plugin
   PluginMap::iterator plugin_iter = m_enabled_plugins.begin();
   for (; plugin_iter != m_enabled_plugins.end(); ++plugin_iter) {
-    AbstractPlugin *plugin = &(*plugin_iter->second);
-
-    // check for conflicts
-    bool conflict = false;
-    set<ola_plugin_id> conflict_list;
-    plugin->ConflictsWith(&conflict_list);
-    set<ola_plugin_id>::const_iterator set_iter = conflict_list.begin();
-    for (; set_iter != conflict_list.end(); ++set_iter) {
-      if (STLContains(m_enabled_plugins, *set_iter)) {
-        AbstractPlugin *conflicting_plugin = GetPlugin(*set_iter);
-        OLA_WARN << "Skipping " << plugin->Name()
-                 << " because it conflicts with "
-                 << (conflicting_plugin ?
-                     conflicting_plugin->Name() :
-                     "plugin id " + IntToString(*set_iter))
-                 << " which is also enabled";
-        conflict = true;
-        break;
-      }
-    }
-
-    if (conflict) {
-      continue;
-    }
-
-    OLA_INFO << "Trying to start " << plugin->Name();
-    if (!plugin->Start()) {
-      OLA_WARN << "Failed to start " << plugin->Name();
-    } else {
-      OLA_INFO << "Started " << plugin->Name();
-    }
-    STLReplace(&m_active_plugins, plugin->Id(), plugin);
+    StartIfSafe(plugin_iter->second);
   }
 }
 
@@ -157,6 +127,39 @@ bool PluginManager::IsEnabled(ola_plugin_id plugin_id) const {
   return STLContains(m_enabled_plugins, plugin_id);
 }
 
+void PluginManager::DisableAndStopPlugin(ola_plugin_id plugin_id) {
+  AbstractPlugin *plugin = STLFindOrNull(m_loaded_plugins, plugin_id);
+  if (!plugin_id) {
+    return;
+  }
+
+  if (STLRemove(&m_active_plugins, plugin_id)) {
+    plugin->Stop();
+  }
+
+  if (STLRemove(&m_enabled_plugins, plugin_id)) {
+    plugin->SetEnabledState(false);
+  }
+}
+
+bool PluginManager::EnableAndStartPlugin(ola_plugin_id plugin_id) {
+  if (STLContains(m_active_plugins, plugin_id)) {
+    // Already running, nothing to do.
+    return true;
+  }
+
+  AbstractPlugin *plugin = STLFindOrNull(m_loaded_plugins, plugin_id);
+  if (!plugin) {
+    return false;
+  }
+
+  if (STLInsertIfNotPresent(&m_enabled_plugins, plugin_id, plugin)) {
+    plugin->SetEnabledState(true);
+  }
+
+  return StartIfSafe(plugin);
+}
+
 void PluginManager::GetConflictList(ola_plugin_id plugin_id,
                                     vector<AbstractPlugin*> *plugins) {
   PluginMap::iterator iter = m_loaded_plugins.begin();
@@ -177,5 +180,55 @@ void PluginManager::GetConflictList(ola_plugin_id plugin_id,
       }
     }
   }
+}
+
+bool PluginManager::StartIfSafe(AbstractPlugin *plugin) {
+  AbstractPlugin *conflicting_plugin = CheckForRunningConflicts(plugin);
+  if (conflicting_plugin) {
+    OLA_WARN << "Not enabling " << plugin->Name()
+             << " because it conflicts with "
+             << conflicting_plugin->Name()
+             << " which is already running";
+    return false;
+  }
+
+  OLA_INFO << "Trying to start " << plugin->Name();
+  bool ok = plugin->Start();
+  if (!ok) {
+    OLA_WARN << "Failed to start " << plugin->Name();
+  } else {
+    OLA_INFO << "Started " << plugin->Name();
+    STLReplace(&m_active_plugins, plugin->Id(), plugin);
+  }
+  return ok;
+}
+
+/*
+ * @brief Check if this plugin conflicts with any of the running plugins.
+ * @param plugin The plugin to check
+ * @returns The first conflicting plugin, or NULL if there aren't any.
+ */
+AbstractPlugin* PluginManager::CheckForRunningConflicts(
+    const AbstractPlugin *plugin) const {
+  PluginMap::const_iterator iter = m_active_plugins.begin();
+  for (; iter != m_active_plugins.end(); ++iter) {
+    set<ola_plugin_id> conflict_list;
+    iter->second->ConflictsWith(&conflict_list);
+    if (STLContains(conflict_list, plugin->Id())) {
+      return iter->second;
+    }
+  }
+
+  set<ola_plugin_id> conflict_list;
+  plugin->ConflictsWith(&conflict_list);
+  set<ola_plugin_id>::const_iterator set_iter = conflict_list.begin();
+  for (; set_iter != conflict_list.end(); ++set_iter) {
+    AbstractPlugin *conflicting_plugin = STLFindOrNull(
+        m_active_plugins, *set_iter);
+    if (conflicting_plugin) {
+      return conflicting_plugin;
+    }
+  }
+  return NULL;
 }
 }  // namespace ola

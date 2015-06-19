@@ -496,7 +496,11 @@ void OlaServerServiceImpl::SetPluginState(
   if (plugin) {
     OLA_DEBUG << "SetPluginState to " << request->enabled()
               << " for plugin " << plugin->Name();
-    plugin->SetEnabledState(request->enabled());
+    if (request->enabled()) {
+      m_plugin_manager->EnableAndStartPlugin(plugin_id);
+    } else {
+      m_plugin_manager->DisableAndStopPlugin(plugin_id);
+    }
   }
 }
 

@@ -148,6 +148,9 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       "/new/views/universe-add.html",
       HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile(
+      "/new/views/universe-header.html",
+      HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile(
       "/new/views/universe-keypad.html",
       HTTPServer::CONTENT_TYPE_HTML);
   m_server.RegisterFile(

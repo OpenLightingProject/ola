@@ -167,6 +167,22 @@ angular
             }).then(function(response) {
               return response.data;
             });
+          },
+          PluginState: function(pluginId, state) {
+            var data = {
+              state: state,
+              plugin_id: pluginId
+            };
+            return $http({
+              method: 'POST',
+              url: '/set_plugin_state',
+              data: postEncode(data),
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              }
+            }).then(function(response) {
+              return response.data;
+            });
           }
         },
         action: {
@@ -320,34 +336,6 @@ angular
               });
           }
         },
-        tabs: function(tab, id) {
-          // TODO(Dave_o): use a directive instead of this
-          $window.$('ul#ola-nav-tabs').html('' +
-            '<li id="overview" role="presentation"><a href="/new/#/universe/' +
-            id +
-            '/\">Overview</a></li>' +
-            '<li id="faders" role="presentation"><a href="/new/#/universe/' +
-            id +
-            '/faders">Faders</a></li>' +
-            '<li id="keypad" role="presentation"><a href="/new/#/universe/' +
-            id +
-            '/keypad">Keypad</a></li>' +
-            '<li id="rdm" role="presentation"><a href="/new/#/universe/' +
-            id +
-            '/rdm">RDM</a></li>' +
-            '<li id="patch" role="presentation"><a href="/new/#/universe/' +
-            id +
-            '/patch">RDM Patcher</a></li>' +
-            '<li id="settings"role="presentation"><a href="/new/#/universe/' +
-            id +
-            '/settings">Settings</a></li>');
-          $window.$('ul#ola-nav-tabs > li#' + tab).addClass('active');
-        },
-        header: function(name, id) {
-          $('div#header-universe').html(
-            '<h4>' + name + '</h4><div>(id: ' + id + ')</div>'
-          );  // TODO(Dave_o): use a directive instead of this
-        },
         error: {
           modal: function(body, title) {
             if (typeof body !== 'undefined') {
@@ -469,10 +457,15 @@ angular
   ['$scope', '$ola', '$routeParams', '$interval', 'OLA',
     function($scope, $ola, $routeParams, $interval, OLA) {
       'use strict';
-      $ola.tabs('overview', $routeParams.id);
-      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
-        $ola.header(data.name, $routeParams.id);
-      });
+      $scope.header = {
+        tab: 'overview',
+        id: $routeParams.id,
+        name: ''
+      };
+      $ola.get.UniverseInfo($routeParams.id)
+        .then(function(data) {
+          $scope.header.name = data.name;
+        });
       $scope.dmx = [];
       $scope.Universe = $routeParams.id;
       var interval = $interval(function() {
@@ -500,10 +493,15 @@ angular
   ['$scope', '$ola', '$routeParams', '$window', '$interval', 'OLA',
     function($scope, $ola, $routeParams, $window, $interval, OLA) {
       'use strict';
-      $ola.tabs('faders', $routeParams.id);
-      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
-        $ola.header(data.name, $routeParams.id);
-      });
+      $scope.header = {
+        tab: 'faders',
+        id: $routeParams.id,
+        name: ''
+      };
+      $ola.get.UniverseInfo($routeParams.id)
+        .then(function(data) {
+          $scope.header.name = data.name;
+        });
       $scope.get = [];
       $scope.list = [];
       $scope.last = 0;
@@ -589,36 +587,59 @@ angular
   .controller('keypadUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $ola.tabs('keypad', $routeParams.id);
+      $scope.header = {
+        tab: 'keypad',
+        id: $routeParams.id,
+        name: ''
+      };
+      $ola.get.UniverseInfo($routeParams.id)
+        .then(function(data) {
+          $scope.header.name = data.name;
+        });
       $scope.Universe = $routeParams.id;
-      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
-        $ola.header(data.name, $routeParams.id);
-      });
     }])
   .controller('rdmUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $ola.tabs('rdm', $routeParams.id);
+      $scope.header = {
+        tab: 'rdm',
+        id: $routeParams.id,
+        name: ''
+      };
+      $ola.get.UniverseInfo($routeParams.id)
+        .then(function(data) {
+          $scope.header.name = data.name;
+        });
       //get:
       // /json/rdm/set_section_info?id={{id}}&uid={{uid}}&section={{section}}&hint={{hint}}&address={{address}}
       $scope.Universe = $routeParams.id;
-      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
-        $ola.header(data.name, $routeParams.id);
-      });
     }])
   .controller('patchUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $ola.tabs('patch', $routeParams.id);
+      $scope.header = {
+        tab: 'patch',
+        id: $routeParams.id,
+        name: ''
+      };
+      $ola.get.UniverseInfo($routeParams.id)
+        .then(function(data) {
+          $scope.header.name = data.name;
+        });
       $scope.Universe = $routeParams.id;
-      $ola.get.UniverseInfo($routeParams.id).then(function(data) {
-        $ola.header(data.name, $routeParams.id);
-      });
     }])
   .controller('settingUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $ola.tabs('settings', $routeParams.id);
+      $scope.header = {
+        tab: 'settings',
+        id: $routeParams.id,
+        name: ''
+      };
+      $ola.get.UniverseInfo($routeParams.id)
+        .then(function(data) {
+          $scope.header.name = data.name;
+        });
       $scope.loadData = function() {
         $scope.Data = {
           old: {},
@@ -632,7 +653,6 @@ angular
         });
         $ola.get.UniverseInfo($routeParams.id).then(function(data) {
           window.console.log(data);
-          $ola.header(data.name, $routeParams.id);
           $scope.Data.old.name = $scope.Data.model.name = data.name;
           $scope.Data.old.merge_mode = data.merge_mode;
           $scope.Data.model.merge_mode = data.merge_mode;
@@ -713,18 +733,24 @@ angular
       $scope.active = [];
       $scope.enabled = [];
       $scope.getInfo = function() {
-        $ola.get.ItemList().then(function(data) {
-          $scope.Items = data;
-        });
+        $ola.get.ItemList()
+          .then(function(data) {
+            $scope.Items = data;
+          });
       };
       $scope.getInfo();
       $scope.Reload = function() {
-        $ola.action.Reload().then();
+        $ola.action.Reload();
         $scope.getInfo();
       };
       $scope.go = function(id) {
         $location.path('/plugin/' + id);
       };
+      $scope.changeStatus = function(id, current) {
+        $ola.post.PluginState(id, current);
+        $scope.getInfo();
+      };
+
       $scope.getStyle = function(style) {
         if (style) {
           return {
