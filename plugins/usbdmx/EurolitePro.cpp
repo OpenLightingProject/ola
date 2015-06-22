@@ -209,7 +209,7 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
 
     libusb_device_handle *usb_handle;
     bool ok = m_adaptor->OpenDeviceAndClaimInterface(
-        m_usb_device, 0, &usb_handle);
+        m_usb_device, interface_number, &usb_handle);
     return ok ? usb_handle : NULL;
   }
 
