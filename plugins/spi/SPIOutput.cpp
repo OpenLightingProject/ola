@@ -520,10 +520,16 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
     return;
   }
 
+
   // We always check out the entire string length, even if we only have data
   // for part of it
-  const uint16_t output_length = APA102_START_FRAME_BYTES +
+  // only add the APA102_START_FRAME_BYTES on the first port!!
+  if (m_output_number == 0) {
+    const uint16_t output_length = APA102_START_FRAME_BYTES +
       (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
+  } else {
+    const uint16_t output_length = (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
+  }
   uint8_t *output = m_backend->Checkout(
       m_output_number,
       output_length,
@@ -534,17 +540,26 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
     return;
   }
 
-  // set APA102_START_FRAME_BYTES to zero
-  memset(output, 0, APA102_START_FRAME_BYTES);
+  // only write to APA102_START_FRAME_BYTES on the first port!!
+  if (m_output_number == 0) {
+    // set APA102_START_FRAME_BYTES to zero
+    memset(output, 0, APA102_START_FRAME_BYTES);
+  }
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     // Convert RGB to APA102 Pixel
     unsigned int offset = first_slot + (i * APA102_SLOTS_PER_PIXEL);
 
-    // We need to avoid the first 4 bytes of the buffer since that acts as a
-    // start of frame delimiter
-    unsigned int spi_offset = APA102_START_FRAME_BYTES +
+
+    // only skip APA102_START_FRAME_BYTES on the first port!!
+    if (m_output_number == 0) {
+      // We need to avoid the first 4 bytes of the buffer since that acts as a
+      // start of frame delimiter
+      unsigned int spi_offset = APA102_START_FRAME_BYTES +
                               (i * APA102_SPI_BYTES_PER_PIXEL);
+    } else {
+      unsigned int spi_offset = (i * APA102_SPI_BYTES_PER_PIXEL);
+    }
     // set pixel data
     // first Byte contains:
     // 3 bits start mark (111) + 5 bits global brightness
