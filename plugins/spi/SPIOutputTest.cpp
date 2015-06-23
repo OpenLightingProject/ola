@@ -539,7 +539,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
   data = backend.GetData(1, &length);
   // this is the expected spi data stream:
   // StartFrame is missing --> port is >0 !
-  const uint8_t EXPECTED0[] = { //0, 0, 0, 0,               // StartFrame
+  const uint8_t EXPECTED0[] = { // 0, 0, 0, 0,            // StartFrame
                                 0xFF, 0x64, 0x0A, 0x01,   // first Pixel
                                 0xFF, 0x01, 0x0A, 0x64,   // second Pixel
                                 0};                       // EndFrame
@@ -727,7 +727,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   data = backend.GetData(1, &length);
   // this is the expected spi data stream:
   // StartFrame is missing --> port is >0 !
-  const uint8_t EXPECTED0[] = { //0, 0, 0, 0,               // StartFrame
+  const uint8_t EXPECTED0[] = { // 0, 0, 0, 0,            // StartFrame
                                 0xFF, 0x64, 0x0A, 0x01,   // first Pixel
                                 0xFF, 0x01, 0x0A, 0x64,   // second Pixel
                                 0};                       // EndFrame
