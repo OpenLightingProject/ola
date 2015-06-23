@@ -727,10 +727,6 @@ void SPIOutputTest::testCombinedAPA102Control() {
   output1.WriteDMX(buffer);
   // get fake SPI data stream
   data = backend.GetData(1, &length);
-  OLA_WARN << "data:";
-  for (uint16_t i = 0; i < length; i++) {
-    OLA_WARN << "[" << static_cast<int>(i) << "] " << static_cast<int>(data[i]);
-  }
   // this is the expected spi data stream:
   // StartFrame is missing --> port is >0 !
   const uint8_t EXPECTED7[] = { // 0, 0, 0, 0,            // StartFrame
