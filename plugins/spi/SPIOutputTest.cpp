@@ -524,17 +524,17 @@ void SPIOutputTest::testIndividualAPA102Control() {
   // test7
   // test for multiple ports
   // StartFrame is only allowed on first port.
-  SPIOutput::Options options2(1, "second SPI Device");
+  SPIOutput::Options output1(1, "second SPI Device");
   // setup pixel_count to 2 (enough to test all cases)
   options2.pixel_count = 2;
   // setup SPIOutput
-  SPIOutput output2(m_uid, &backend, options2);
+  SPIOutput output1(m_uid, &backend, options2);
   // set personality
-  output2.SetPersonality(this_test_personality);
+  output1.SetPersonality(this_test_personality);
   // setup some 'DMX' data
   buffer.SetFromString("1, 10, 100, 100, 10, 1");
   // simulate incoming data
-  output2.WriteDMX(buffer);
+  output1.WriteDMX(buffer);
   // get fake SPI data stream
   data = backend.GetData(1, &length);
   // this is the expected spi data stream:
@@ -712,17 +712,17 @@ void SPIOutputTest::testCombinedAPA102Control() {
   // test7
   // test for multiple ports
   // StartFrame is only allowed on first port.
-  SPIOutput::Options options2(1, "second SPI Device");
+  SPIOutput::Options output1(1, "second SPI Device");
   // setup pixel_count to 2 (enough to test all cases)
-  options2.pixel_count = 2;
+  output1.pixel_count = 2;
   // setup SPIOutput
   SPIOutput output2(m_uid, &backend, options2);
   // set personality
-  output2.SetPersonality(8);
+  output1.SetPersonality(8);
   // setup some 'DMX' data
   buffer.SetFromString("1, 10, 100, 100, 10, 1");
   // simulate incoming data
-  output2.WriteDMX(buffer);
+  output1.WriteDMX(buffer);
   // get fake SPI data stream
   data = backend.GetData(1, &length);
   // this is the expected spi data stream:
