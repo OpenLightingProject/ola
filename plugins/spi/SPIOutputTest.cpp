@@ -524,11 +524,11 @@ void SPIOutputTest::testIndividualAPA102Control() {
   // test7
   // test for multiple ports
   // StartFrame is only allowed on first port.
-  SPIOutput::Options output1(1, "second SPI Device");
+  SPIOutput::Options options1(1, "second SPI Device");
   // setup pixel_count to 2 (enough to test all cases)
-  options2.pixel_count = 2;
+  options1.pixel_count = 2;
   // setup SPIOutput
-  SPIOutput output1(m_uid, &backend, options2);
+  SPIOutput output1(m_uid, &backend, options1);
   // set personality
   output1.SetPersonality(this_test_personality);
   // setup some 'DMX' data
@@ -712,11 +712,11 @@ void SPIOutputTest::testCombinedAPA102Control() {
   // test7
   // test for multiple ports
   // StartFrame is only allowed on first port.
-  SPIOutput::Options output1(1, "second SPI Device");
+  SPIOutput::Options option1(1, "second SPI Device");
   // setup pixel_count to 2 (enough to test all cases)
-  output1.pixel_count = 2;
+  option1.pixel_count = 2;
   // setup SPIOutput
-  SPIOutput output2(m_uid, &backend, options2);
+  SPIOutput output2(m_uid, &backend, option1);
   // set personality
   output1.SetPersonality(8);
   // setup some 'DMX' data
