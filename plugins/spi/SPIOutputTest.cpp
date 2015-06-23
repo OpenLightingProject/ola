@@ -539,12 +539,12 @@ void SPIOutputTest::testIndividualAPA102Control() {
   data = backend.GetData(1, &length);
   // this is the expected spi data stream:
   // StartFrame is missing --> port is >0 !
-  const uint8_t EXPECTED8[] = { // 0, 0, 0, 0,            // StartFrame
+  const uint8_t EXPECTED7[] = { // 0, 0, 0, 0,            // StartFrame
                                 0xFF, 0x64, 0x0A, 0x01,   // first Pixel
                                 0xFF, 0x01, 0x0A, 0x64,   // second Pixel
                                 0};                       // EndFrame
   // check for Equality
-  OLA_ASSERT_DATA_EQUALS(EXPECTED8, arraysize(EXPECTED8), data, length);
+  OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
   // check if the output writes are 1
   OLA_ASSERT_EQ(1u, backend.Writes(1));
 
@@ -716,7 +716,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   // setup pixel_count to 2 (enough to test all cases)
   option1.pixel_count = 2;
   // setup SPIOutput
-  SPIOutput output2(m_uid, &backend, option1);
+  SPIOutput output1(m_uid, &backend, option1);
   // set personality
   output1.SetPersonality(8);
   // setup some 'DMX' data
