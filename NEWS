@@ -35,6 +35,7 @@ x/y/2015 ola-0.9.6
  * Fix various configure script behaviour issues #773.
  * Fix build issues with GCC-5 #765 Debian #778038.
  * Restore LIBS when we can't find the Saleae library during configure.
+ * Fix the async libusb Eurolite Pro implementation.
 
  Internal:
  * Rename the method Source to ConfigLocation for Preference classes and
