@@ -624,6 +624,8 @@ void SPIOutputTest::testIndividualAPA102Control() {
  * Test DMX writes in the combined APA102 mode.
  */
 void SPIOutputTest::testCombinedAPA102Control() {
+  // personality 8= Combined APA102
+  const uint16_t this_test_personality = 8;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
@@ -632,7 +634,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
   // setup SPIOutput
   SPIOutput output(m_uid, &backend, options);
   // set personality to 8= Combined APA102
-  output.SetPersonality(8);
+  output.SetPersonality(this_test_personality);
 
   // simulate incoming dmx data with this buffer
   DmxBuffer buffer;
@@ -718,18 +720,22 @@ void SPIOutputTest::testCombinedAPA102Control() {
   // setup SPIOutput
   SPIOutput output1(m_uid, &backend, option1);
   // set personality
-  output1.SetPersonality(8);
+  output1.SetPersonality(this_test_personality);
   // setup some 'DMX' data
-  buffer.SetFromString("1, 10, 100, 100, 10, 1");
+  buffer.SetFromString("1, 10, 100");
   // simulate incoming data
   output1.WriteDMX(buffer);
   // get fake SPI data stream
   data = backend.GetData(1, &length);
+  OLA_WARN << "data:";
+  for (uint16_t i = 0; i < length; i++) {
+    OLA_WARN << "[" << static_cast<int>(i) << "] " << static_cast<int>(data[i]);
+  }
   // this is the expected spi data stream:
   // StartFrame is missing --> port is >0 !
   const uint8_t EXPECTED7[] = { // 0, 0, 0, 0,            // StartFrame
                                 0xFF, 0x64, 0x0A, 0x01,   // first Pixel
-                                0xFF, 0x01, 0x0A, 0x64,   // second Pixel
+                                0xFF, 0x64, 0x0A, 0x01,   // second Pixel
                                 0};                       // EndFrame
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
