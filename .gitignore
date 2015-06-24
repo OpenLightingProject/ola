@@ -142,6 +142,10 @@ examples/ola_timecode
 examples/ola_timecode.exe
 examples/ola_uni_info
 examples/ola_uni_info.exe
+examples/ola_uni_merge
+examples/ola_uni_merge.exe
+examples/ola_uni_name
+examples/ola_uni_name.exe
 examples/ola_uni_stats
 examples/ola_uni_stats.exe
 examples/ola_usbpro
