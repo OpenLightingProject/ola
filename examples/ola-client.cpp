@@ -638,14 +638,14 @@ void DisplayUniverseNameHelp(const options &opts) {
  * Help message for set uni merge mode
  */
 void DisplayUniverseMergeHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd << " --universe <uni> [ --ltp]\n"
+  cout << "Usage: " << opts.cmd << " --universe <uni> [--ltp]\n"
           "\n"
           "Change the merge mode for the specified universe. Without --ltp "
           "it will\n"
-          " revert to HTP mode.\n"
+          "revert to HTP mode.\n"
           "\n"
           "  -h, --help                Display this help message and exit.\n"
-          "  -l, --ltp                 Change to ltp mode.\n"
+          "  -l, --ltp                 Change to LTP mode.\n"
           "  -u, --universe <universe> Id of the universe to change.\n"
        << endl;
 }
