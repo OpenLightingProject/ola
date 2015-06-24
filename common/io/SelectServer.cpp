@@ -61,7 +61,7 @@ DEFINE_default_bool(use_epoll, true,
 #ifdef HAVE_KQUEUE
 #include "common/io/KQueuePoller.h"
 DEFINE_default_bool(use_kqueue, false,
-                    "Use of kqueue() rather than select()");
+                    "Use kqueue() rather than select()");
 #endif
 
 namespace ola {
