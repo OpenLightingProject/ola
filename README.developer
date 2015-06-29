@@ -46,6 +46,29 @@ command can be run within a sub directory to only run a particular set of
 tests (although you may experience issues with this method, running from the
 root ola directory is guaranteed to work).
 
+Branches, Versioning & Releases
+-------------------------------
+
+Version numbers take the form MAJOR.MINOR.PATCH. The release lifecycle is:
+
+- New feature work occurs on the master branch.
+- Once the new features are considered stable or enough time has passed, a new
+  minor release branch will be created, e.g. 0.9.
+- The minor release branch will be stablized with bugfixes, these bug fixes
+  will be merged back into master.
+- Once declared stable, a new patch branch 0 will be created e.g. 0.9.0
+- Release specific changes like the version number, debian files etc. will be
+  pushed to the patch branch.
+- The release will occur.
+- Changes on the release branch will be merged back into the minor version
+  branch.
+- Bug fixes will continue on the minor version branch, leading to another patch
+  release.
+
+What this means for you as a developer is that depending on the scope of your
+change, we may request that you merge it into the minor release branch rather
+than master. This allows us to get your change out to end uses faster than if
+it was merged into master directly.
 
 C++
 ===============================================================================
