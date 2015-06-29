@@ -124,9 +124,9 @@ AC_FUNC_STAT
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
-                if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
-                socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
-                getgrnam_r getgrgid_r secure_getenv])
+                if_nametoindex inet_ntoa inet_aton select socket strerror \
+                getifaddrs getloadavg getpwnam_r getpwuid_r getgrnam_r \
+                getgrgid_r secure_getenv])
 
 LT_INIT
 AC_PROG_LIBTOOL
@@ -667,14 +667,10 @@ AC_ARG_ENABLE(
 # knows what to link against.
 PLUGINS=""
 
-# Force enable_usbdmx to yes when Ja Rule is explicitly requested,
-# set to auto if Ja Rule is auto and usbdmx isn't yes
+# Force enable_usbdmx to yes when Ja Rule is explicitly requested.
 AS_IF([test "x$enable_ja_rule" = xyes],
       [AS_ECHO(["Ja Rule is enabled, enabling the usbdmx plugin."])]
-      [enable_usbdmx="yes"],
-      [test "x$enable_ja_rule" = xauto && test "x$enable_usbdmx" != xyes],
-      [AS_ECHO(["Ja Rule is set to auto, setting the usbdmx plugin to auto."])]
-      [enable_usbdmx="auto"])
+      [enable_usbdmx="yes"])
 
 PLUGIN_SUPPORT(artnet, USE_ARTNET)
 PLUGIN_SUPPORT(dmx4linux, USE_DMX4LINUX, [$have_dmx4linux])
@@ -730,24 +726,15 @@ AC_SUBST(OLA_CLIENT_LIBS)
 
 # Extra tools
 #####################################################
-if [ "x$enable_ja_rule" = "xyes" ] || [ "x$enable_ja_rule" = "xauto" ] ; then
-  AS_IF([test "x$enable_ja_rule" = xyes && test "x$enable_usbdmx" = xno],
-        [AC_MSG_ERROR([Ja Rule requires the usbdmx plugin, but it could not be enabled.])],
-        [test "x$enable_usbdmx" = "xno"],
-        [enable_ja_rule="no"][AS_ECHO([Ja Rule requires the usbdmx plugin, but it could not be enabled.])])
-  AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xno],
-        [AC_MSG_ERROR([Ja Rule requires libusb, but it was not found on your system.])],
-        [test "x$have_libusb" = "xno"],
-        [enable_ja_rule="no"][AS_ECHO([Ja Rule requires libusb, but it was not found on your system.])])
-  AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb_hotplug_api" = xno],
-        [AC_MSG_ERROR([Ja Rule requires libusb to have the hotplug capability (versions 1.0.16 \
-                       and above), but the version found on your system doesn't appear to have it.])],
-        [test "x$have_libusb_hotplug_api" = "xno"],
-        [enable_ja_rule="no"][AS_ECHO([Ja Rule requires libusb to have the hotplug capability (versions 1.0.16 \
-                                       and above), but the version found on your system doesn't appear to have it.])])
-fi
+AS_IF([test "x$enable_ja_rule" = xyes && test "x$enable_usbdmx" = xno],
+      [AC_MSG_ERROR([Ja Rule requires the usbdmx plugin, but it could not be enabled.])])
+AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xno],
+      [AC_MSG_ERROR([Ja Rule requires libusb, but it was not found on your system.])])
+AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb_hotplug_api" = xno],
+      [AC_MSG_ERROR([Ja Rule requires libusb to have the hotplug capability (versions 1.0.16 \
+and above), but the version found on your system doesn't appear to have it.])])
 
-AM_CONDITIONAL([BUILD_JA_RULE], [test "x$enable_ja_rule" != xno])
+AM_CONDITIONAL([BUILD_JA_RULE], [test "x$enable_ja_rule" = xyes])
 
 # Status just for configure
 BUILDING_JA_RULE='no'
