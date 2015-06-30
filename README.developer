@@ -55,7 +55,7 @@ Version numbers take the form MAJOR.MINOR.PATCH. The release lifecycle is:
 - Once the new features are considered stable or enough time has passed, a new
   minor release branch will be created, e.g. 0.9.
 - The minor release branch will be stablized with bugfixes, these bug fixes
-  will be merged back into master.
+  will also be merged back into master.
 - Once declared stable, a new patch branch 0 will be created e.g. 0.9.0
 - Release specific changes like the version number, debian files etc. will be
   pushed to the patch branch.
