@@ -2,6 +2,11 @@ ola (0.11.0-1) UNRELEASED; urgency=medium
   * debian/ola.postinst: add --home parameter to adduser invocation
   * This change pulled from Debian by Perry Naseck <git@perrynaseck.com>
     https://salsa.debian.org/wouter/ola/-/commit/b9a0e2ab290d64f215891e1d543079dd78e7125e
+   * Remove debconf usage
+   * This change pulled from Debian by Perry Naseck <git@perrynaseck.com>
+    https://salsa.debian.org/wouter/ola/-/commit/6d27c071547426536b6f8f0db193dcfd7a4e5991
+   * This change pulled from Debian by Perry Naseck <git@perrynaseck.com>
+    191514d233d2300674df7e9c3febb35c2890c50c
 
  -- Perry Naseck <git@perrynaseck.com>  Thu, 20 Apr 2023 18:47:03 -0400
 
