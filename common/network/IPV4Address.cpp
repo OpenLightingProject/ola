@@ -93,7 +93,13 @@ bool IPV4Address::IsWildcard() const {
 string IPV4Address::ToString() const {
   struct in_addr addr;
   addr.s_addr = m_address;
+#ifdef HAVE_INET_NTOP
+  char str[INET_ADDRSTRLEN];
+  inet_ntop(AF_INET, &addr, str, INET_ADDRSTRLEN);
+  return str;
+#else
   return inet_ntoa(addr);
+#endif
 }
 
 IPV4Address* IPV4Address::FromString(const string &address) {
