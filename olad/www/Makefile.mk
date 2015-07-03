@@ -25,8 +25,8 @@ dist_www_DATA = \
     olad/www/hide_sections.png \
     olad/www/incremental-discovery.png \
     olad/www/landing.html \
-    olad/www/light_bulb.png \
     olad/www/light_bulb_off.png \
+    olad/www/light_bulb.png \
     olad/www/loader-mini.gif \
     olad/www/loader.gif \
     olad/www/logo-mini.png \
@@ -64,10 +64,10 @@ dist_js_DATA = \
 dist_css_DATA = \
     olad/www/new/css/style.min.css
 dist_img_DATA = \
-    olad/www/new/img/light_bulb.png \
-    olad/www/new/img/logo.png \
     olad/www/new/img/light_bulb_off.png \
-    olad/www/new/img/logo-mini.png
+    olad/www/new/img/light_bulb.png \
+    olad/www/new/img/logo-mini.png \
+    olad/www/new/img/logo.png
 dist_jquery_DATA = \
     olad/www/new/libs/jquery/js/jquery.min.js
 dist_angularroute_DATA = \
@@ -77,10 +77,10 @@ dist_angular_DATA = \
 dist_bootjs_DATA = \
     olad/www/new/libs/bootstrap/js/bootstrap.min.js
 dist_bootfonts_DATA = \
-    olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff \
+    olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.eot \
     olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.svg \
     olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.ttf \
-    olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.eot \
+    olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff \
     olad/www/new/libs/bootstrap/fonts/glyphicons-halflings-regular.woff2
 dist_bootcss_DATA = \
     olad/www/new/libs/bootstrap/css/bootstrap.min.css
