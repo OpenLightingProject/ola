@@ -1,0 +1,7 @@
+# Source for these files is all under /javascript
+ola source: source-is-missing olad/www/mobile.js
+ola source: source-is-missing olad/www/ola.js
+# We don't use these
+ola source: source-is-missing tools/rdm/static/jquery-1.7.2.min.js
+ola source: source-is-missing tools/rdm/static/jquery-ui-1.8.21.custom.min.js
+
