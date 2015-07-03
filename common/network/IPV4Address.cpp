@@ -72,7 +72,9 @@ bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
     return false;
   }
 
-#ifdef HAVE_INET_ATON
+#ifdef HAVE_INET_PTON
+  ok = (1 == inet_pton(AF_INET, address.data(), addr));
+#elif HAVE_INET_ATON
   ok = (1 == inet_aton(address.data(), addr));
 #else
   in_addr_t ip_addr4 = inet_addr(address.c_str());
@@ -95,7 +97,11 @@ string IPV4Address::ToString() const {
   addr.s_addr = m_address;
 #ifdef HAVE_INET_NTOP
   char str[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, &addr, str, INET_ADDRSTRLEN);
+  if (inet_ntop(AF_INET, &addr, str, INET_ADDRSTRLEN) == NULL) {
+    OLA_WARN << "Failed to convert address to string using inet_ntop, failing "
+             << "back to inet_ntoa";
+    return inet_ntoa(addr);
+  }
   return str;
 #else
   return inet_ntoa(addr);
