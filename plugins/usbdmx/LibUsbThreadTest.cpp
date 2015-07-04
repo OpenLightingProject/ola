@@ -87,6 +87,10 @@ void LibUsbThreadTest::testNonHotplug() {
 
 #if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
 void LibUsbThreadTest::testHotplug() {
+  if (!m_context) {
+    return;
+  }
+
   ola::plugin::usbdmx::LibUsbHotplugThread thread(m_context, hotplug_callback,
                                                   NULL);
   OLA_ASSERT_TRUE(thread.Init());
