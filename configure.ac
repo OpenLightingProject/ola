@@ -243,7 +243,9 @@ if test -z "${USING_WIN32_FALSE}" && test "${have_msg_no_signal}" = "no" && \
 fi
 
 AC_CHECK_TYPE(termios2,
-              AC_DEFINE([HAVE_TERMIOS2], [1], [define if we have termios2]))
+              AC_DEFINE([HAVE_TERMIOS2], [1], [define if we have termios2]),
+              ,
+              [#include <asm/termios.h>])
 
 # Headers.
 #####################################################
