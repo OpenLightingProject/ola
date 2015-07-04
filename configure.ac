@@ -242,6 +242,9 @@ if test -z "${USING_WIN32_FALSE}" && test "${have_msg_no_signal}" = "no" && \
  AC_MSG_ERROR([Your system needs either MSG_NOSIGNAL or SO_NOSIGPIPE])
 fi
 
+AC_CHECK_TYPE(termios2,
+              AC_DEFINE([HAVE_TERMIOS2], [1], [define if we have termios2]))
+
 # Headers.
 #####################################################
 AC_CHECK_HEADER([linux/spi/spidev.h], [have_spi="yes"], [have_spi="no"])
