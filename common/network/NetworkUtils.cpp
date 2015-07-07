@@ -82,6 +82,35 @@ using std::string;
 using std::vector;
 using ola::network::Interface;
 
+namespace {
+
+inline bool IsBigEndian() {
+#ifdef HAVE_ENDIAN_H
+  return BYTE_ORDER == __BIG_ENDIAN;
+#else
+#ifdef _WIN32
+  // Windows currently only runs in little-endian mode, but that might change
+  // on future devices. Since there is no BYTE_ORDER define, we use this
+  // little trick from http://esr.ibiblio.org/?p=5095
+  return (*(uint16_t*)"\0\xff" < 0x100);  // NOLINT(readability/casting)
+#else
+  return BYTE_ORDER == BIG_ENDIAN;
+#endif
+#endif
+}
+
+inline uint32_t ByteSwap32(uint32_t value) {
+  return ((value & 0x000000ff) << 24) |
+         ((value & 0x0000ff00) << 8) |
+         ((value & 0x00ff0000) >> 8) |
+         ((value & 0xff000000) >> 24);
+}
+
+inline uint32_t ByteSwap16(uint16_t value) {
+  return ((value & 0xff) << 8) | ((value & 0xff00) >> 8);
+}
+}  // namespace
+
 unsigned int SockAddrLen(const struct sockaddr &sa) {
 #ifdef HAVE_SOCKADDR_SA_LEN
   return sa.sa_len;
@@ -104,25 +133,6 @@ unsigned int SockAddrLen(const struct sockaddr &sa) {
 #endif
 }
 
-bool IsBigEndian() {
-#ifdef HAVE_ENDIAN_H
-  return BYTE_ORDER == __BIG_ENDIAN;
-#else
-#ifdef _WIN32
-  // Windows currently only runs in little-endian mode, but that might change
-  // on future devices. Since there is no BYTE_ORDER define, we use this
-  // little trick from http://esr.ibiblio.org/?p=5095
-  return (*(uint16_t*)"\0\xff" < 0x100);  // NOLINT(readability/casting)
-#else
-  return BYTE_ORDER == BIG_ENDIAN;
-#endif
-#endif
-}
-
-uint8_t NetworkToHost(uint8_t value) {
-  return value;
-}
-
 uint16_t NetworkToHost(uint16_t value) {
   return ntohs(value);
 }
@@ -131,24 +141,12 @@ uint32_t NetworkToHost(uint32_t value) {
   return ntohl(value);
 }
 
-int8_t NetworkToHost(int8_t value) {
-  return value;
-}
-
 int16_t NetworkToHost(int16_t value) {
   return ntohs(value);
 }
 
 int32_t NetworkToHost(int32_t value) {
   return ntohl(value);
-}
-
-uint8_t HostToNetwork(uint8_t value) {
-  return value;
-}
-
-int8_t HostToNetwork(int8_t value) {
-  return value;
 }
 
 uint16_t HostToNetwork(uint16_t value) {
@@ -167,17 +165,9 @@ int32_t HostToNetwork(int32_t value) {
   return htonl(value);
 }
 
-uint8_t HostToLittleEndian(uint8_t value) {
-  return value;
-}
-
-int8_t HostToLittleEndian(int8_t value) {
-  return value;
-}
-
 uint16_t HostToLittleEndian(uint16_t value) {
   if (IsBigEndian()) {
-    return ((value & 0xff) << 8) | (value >> 8);
+    return ByteSwap16(value);
   } else {
     return value;
   }
@@ -185,50 +175,31 @@ uint16_t HostToLittleEndian(uint16_t value) {
 
 int16_t HostToLittleEndian(int16_t value) {
   if (IsBigEndian()) {
-    return ((value & 0xff) << 8) | (value >> 8);
+    return ByteSwap16(value);
   } else {
     return value;
   }
-}
-
-uint32_t _ByteSwap(uint32_t value) {
-  return ((value & 0x000000ff) << 24) |
-         ((value & 0x0000ff00) << 8) |
-         ((value & 0x00ff0000) >> 8) |
-         ((value & 0xff000000) >> 24);
 }
 
 uint32_t HostToLittleEndian(uint32_t value) {
   if (IsBigEndian()) {
-    return _ByteSwap(value);
+    return ByteSwap32(value);
   } else {
     return value;
   }
 }
-
 
 int32_t HostToLittleEndian(int32_t value) {
   if (IsBigEndian()) {
-    return _ByteSwap(value);
+    return ByteSwap32(value);
   } else {
     return value;
   }
 }
 
-
-uint8_t LittleEndianToHost(uint8_t value) {
-  return value;
-}
-
-
-int8_t LittleEndianToHost(int8_t value) {
-  return value;
-}
-
-
 uint16_t LittleEndianToHost(uint16_t value) {
   if (IsBigEndian()) {
-    return ((value & 0xff) << 8) | (value >> 8);
+    return ByteSwap16(value);
   } else {
     return value;
   }
@@ -237,7 +208,7 @@ uint16_t LittleEndianToHost(uint16_t value) {
 
 int16_t LittleEndianToHost(int16_t value) {
   if (IsBigEndian()) {
-    return ((value & 0xff) << 8) | (value >> 8);
+    return ByteSwap16(value);
   } else {
     return value;
   }
@@ -246,7 +217,7 @@ int16_t LittleEndianToHost(int16_t value) {
 
 uint32_t LittleEndianToHost(uint32_t value) {
   if (IsBigEndian()) {
-    return _ByteSwap(value);
+    return ByteSwap32(value);
   } else {
     return value;
   }
@@ -255,12 +226,11 @@ uint32_t LittleEndianToHost(uint32_t value) {
 
 int32_t LittleEndianToHost(int32_t value) {
   if (IsBigEndian()) {
-    return _ByteSwap(value);
+    return ByteSwap32(value);
   } else {
     return value;
   }
 }
-
 
 string HostnameFromFQDN(const string &fqdn) {
   string::size_type first_dot = fqdn.find_first_of(".");
@@ -269,7 +239,6 @@ string HostnameFromFQDN(const string &fqdn) {
   }
   return fqdn.substr(0, first_dot);  // Don't return the dot itself
 }
-
 
 string DomainNameFromFQDN(const string &fqdn) {
   string::size_type first_dot = string::npos;
