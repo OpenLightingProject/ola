@@ -27,6 +27,7 @@
 #include "ola/base/Array.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/stl/STLUtils.h"
 #include "ola/strings/Utils.h"
 #include "plugins/shownet/ShowNetNode.h"
 
@@ -37,11 +38,13 @@ namespace shownet {
 
 using std::string;
 using std::map;
-using ola::network::UDPSocket;
+using ola::network::HostToLittleEndian;
 using ola::network::HostToNetwork;
-using ola::network::NetworkToHost;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
+using ola::network::LittleEndianToHost;
+using ola::network::NetworkToHost;
+using ola::network::UDPSocket;
 using ola::Callback0;
 
 
@@ -246,57 +249,61 @@ bool ShowNetNode::HandlePacket(const shownet_packet *packet,
 
 bool ShowNetNode::HandleCompressedPacket(const shownet_compressed_dmx *packet,
                                          unsigned int packet_size) {
-  if (packet->indexBlock[0] < MAGIC_INDEX_OFFSET) {
-    OLA_WARN << "Strange ShowNet packet, indexBlock[0] is " <<
-      packet->indexBlock[0] << ", please contact the developers!";
+  uint16_t index_block = LittleEndianToHost(packet->indexBlock[0]);
+  if (index_block < MAGIC_INDEX_OFFSET) {
+    OLA_WARN << "Strange ShowNet packet, indexBlock[0] is "
+             << index_block << ", please contact the developers!";
     return false;
   }
 
+  uint16_t net_slot = LittleEndianToHost(packet->netSlot[0]);
+
   // We only handle data from the first slot
   // enc_length is the size of the received (optionally encoded) DMX data
-  int enc_len = packet->indexBlock[1] - packet->indexBlock[0];
-  if (enc_len < 1 || packet->netSlot[0] == 0) {
+  int enc_len = LittleEndianToHost(packet->indexBlock[1]) - index_block;
+  if (enc_len < 1 || net_slot == 0) {
     OLA_WARN << "Invalid shownet packet, enc_len=" << enc_len << ", netSlot="
-      << packet->netSlot[0];
+             << net_slot;
     return false;
   }
 
   // the offset into packet.data of the actual data
-  unsigned int data_offset = packet->indexBlock[0] - MAGIC_INDEX_OFFSET;
+  unsigned int data_offset = index_block - MAGIC_INDEX_OFFSET;
   unsigned int received_data_size = packet_size - (
       sizeof(packet) - SHOWNET_COMPRESSED_DATA_LENGTH);
 
   if (data_offset + enc_len > received_data_size) {
-    OLA_WARN << "Not enough shownet data: offset=" << data_offset <<
-      ", enc_len=" << enc_len << ", received_bytes=" << received_data_size;
+    OLA_WARN << "Not enough shownet data: offset=" << data_offset
+             << ", enc_len=" << enc_len << ", received_bytes="
+             << received_data_size;
     return false;
   }
 
-  if (!packet->slotSize[0]) {
-    OLA_WARN << "Malformed shownet packet, slotSize=" << packet->slotSize[0];
+  uint16_t slot_size = LittleEndianToHost(packet->slotSize[0]);
+  if (!slot_size) {
+    OLA_WARN << "Malformed shownet packet, slotSize=" << slot_size;
     return false;
   }
 
-  unsigned int start_channel = (packet->netSlot[0] - 1) % DMX_UNIVERSE_SIZE;
-  unsigned int universe_id = (packet->netSlot[0] - 1) / DMX_UNIVERSE_SIZE;
-  map<unsigned int, universe_handler>::iterator iter =
-    m_handlers.find(universe_id);
+  unsigned int start_channel = (net_slot - 1) % DMX_UNIVERSE_SIZE;
+  unsigned int universe_id = (net_slot - 1) / DMX_UNIVERSE_SIZE;
 
-  if (iter == m_handlers.end()) {
-    OLA_DEBUG << "Not interested in universe " << universe_id <<
-      ", skipping ";
+  universe_handler *handler = STLFind(&m_handlers, universe_id);
+  if (!handler) {
+    OLA_DEBUG << "Not interested in universe " << universe_id
+              << ", skipping ";
     return false;
   }
 
-  if (packet->slotSize[0] != enc_len) {
+  if (slot_size != enc_len) {
     m_encoder.Decode(start_channel, packet->data + data_offset,
-                     enc_len, iter->second.buffer);
+                     enc_len, handler->buffer);
   } else {
-    iter->second.buffer->SetRange(start_channel,
-                                  packet->data + data_offset,
-                                  enc_len);
+    handler->buffer->SetRange(start_channel,
+                              packet->data + data_offset,
+                              enc_len);
   }
-  iter->second.closure->Run();
+  handler->closure->Run();
   return true;
 }
 
@@ -313,15 +320,17 @@ unsigned int ShowNetNode::BuildCompressedPacket(shownet_packet *packet,
 
   shownet_compressed_dmx *compressed_dmx = &packet->data.compressed_dmx;
 
-  compressed_dmx->netSlot[0] = (universe * DMX_UNIVERSE_SIZE) + 1;
-  compressed_dmx->slotSize[0] = buffer.Size();
+  compressed_dmx->netSlot[0] = HostToLittleEndian(
+      universe * DMX_UNIVERSE_SIZE + 1);
+  compressed_dmx->slotSize[0] = HostToLittleEndian(buffer.Size());
 
   unsigned int enc_len = sizeof(packet->data);
   if (!m_encoder.Encode(buffer, compressed_dmx->data, &enc_len))
     OLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
 
-  compressed_dmx->indexBlock[0] = MAGIC_INDEX_OFFSET;
-  compressed_dmx->indexBlock[1] = MAGIC_INDEX_OFFSET + enc_len;
+  compressed_dmx->indexBlock[0] = HostToLittleEndian(MAGIC_INDEX_OFFSET);
+  compressed_dmx->indexBlock[1] = HostToLittleEndian(
+      MAGIC_INDEX_OFFSET + enc_len);
 
   compressed_dmx->sequence = HostToNetwork(m_packet_count);
 
