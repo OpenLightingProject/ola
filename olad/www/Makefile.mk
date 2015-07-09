@@ -60,7 +60,8 @@ dist_views_DATA = \
     olad/www/new/views/universe-settings.html \
     olad/www/new/views/universes.html
 dist_js_DATA = \
-    olad/www/new/js/app.min.js
+    olad/www/new/js/app.min.js \
+    olad/www/new/js/app.min.js.map
 dist_css_DATA = \
     olad/www/new/css/style.min.css
 dist_img_DATA = \
