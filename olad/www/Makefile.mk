@@ -48,9 +48,8 @@ dist_new_DATA = \
     olad/www/new/index.html
 dist_views_DATA = \
     olad/www/new/views/overview.html \
-    olad/www/new/views/plugins.html \
     olad/www/new/views/plugin-info.html \
-    olad/www/new/views/universes.html \
+    olad/www/new/views/plugins.html \
     olad/www/new/views/universe-add.html \
     olad/www/new/views/universe-faders.html \
     olad/www/new/views/universe-header.html \
@@ -58,14 +57,16 @@ dist_views_DATA = \
     olad/www/new/views/universe-overview.html \
     olad/www/new/views/universe-patch.html \
     olad/www/new/views/universe-rdm.html \
-    olad/www/new/views/universe-settings.html
+    olad/www/new/views/universe-settings.html \
+    olad/www/new/views/universes.html
 dist_js_DATA = \
-    olad/www/new/js/app.min.js
+    olad/www/new/js/app.min.js \
+    olad/www/new/js/app.min.js.map
 dist_css_DATA = \
     olad/www/new/css/style.min.css
 dist_img_DATA = \
-    olad/www/new/img/light_bulb_off.png \
     olad/www/new/img/light_bulb.png \
+    olad/www/new/img/light_bulb_off.png \
     olad/www/new/img/logo-mini.png \
     olad/www/new/img/logo.png
 dist_jquery_DATA = \

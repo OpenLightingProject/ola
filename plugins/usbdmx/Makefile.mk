@@ -93,3 +93,5 @@ plugins_usbdmx_LibUsbThreadTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) \
                                              $(libusb_CFLAGS)
 plugins_usbdmx_LibUsbThreadTester_LDADD = $(COMMON_USBDMX_TEST_LDADD)
 endif
+
+EXTRA_DIST += plugins/usbdmx/README.md
