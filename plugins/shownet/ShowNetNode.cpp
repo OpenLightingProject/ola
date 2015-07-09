@@ -321,16 +321,18 @@ unsigned int ShowNetNode::BuildCompressedPacket(shownet_packet *packet,
   shownet_compressed_dmx *compressed_dmx = &packet->data.compressed_dmx;
 
   compressed_dmx->netSlot[0] = HostToLittleEndian(
-      universe * DMX_UNIVERSE_SIZE + 1);
-  compressed_dmx->slotSize[0] = HostToLittleEndian(buffer.Size());
+      static_cast<uint16_t>(universe * DMX_UNIVERSE_SIZE + 1));
+  compressed_dmx->slotSize[0] = HostToLittleEndian(
+      static_cast<uint16_t>(buffer.Size()));
 
   unsigned int enc_len = sizeof(packet->data);
   if (!m_encoder.Encode(buffer, compressed_dmx->data, &enc_len))
     OLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
 
-  compressed_dmx->indexBlock[0] = HostToLittleEndian(MAGIC_INDEX_OFFSET);
+  compressed_dmx->indexBlock[0] = HostToLittleEndian(
+      static_cast<uint16_t>(MAGIC_INDEX_OFFSET));
   compressed_dmx->indexBlock[1] = HostToLittleEndian(
-      MAGIC_INDEX_OFFSET + enc_len);
+      static_cast<uint16_t>(MAGIC_INDEX_OFFSET + enc_len));
 
   compressed_dmx->sequence = HostToNetwork(m_packet_count);
 
