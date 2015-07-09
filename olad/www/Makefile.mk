@@ -25,8 +25,8 @@ dist_www_DATA = \
     olad/www/hide_sections.png \
     olad/www/incremental-discovery.png \
     olad/www/landing.html \
-    olad/www/light_bulb.png \
     olad/www/light_bulb_off.png \
+    olad/www/light_bulb.png \
     olad/www/loader-mini.gif \
     olad/www/loader.gif \
     olad/www/logo-mini.png \
