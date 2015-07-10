@@ -47,7 +47,7 @@ cache: apt
 before_install:
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo add-apt-repository ppa:h-rayflood/gcc-upper -y
- - sudo add-apt-repository ppa:h-rayflood/llvm-upper -y
+ - sudo add-apt-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.7 main" -y
  - sudo add-apt-repository ppa:ubuntu-cloud-archive/icehouse-staging -y
  - sudo apt-get update -qq
  - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev
@@ -59,10 +59,10 @@ before_install:
 #Remove the old g++/gcc to ensure we're using the latest ones
  - if [ "$CXX" = "g++-4.9" -o "$CXX" = "g++-5" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
 #Install latest clang if we're compiling with clang
- - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq clang-3.6; fi
- - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.6" CC="clang-3.6"; fi
+ - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq clang-3.7; fi
+ - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
 #Remove the old clang to ensure we're using the latest ones
- - if [ "$CXX" = "clang++-3.6" ]; then sudo rm /usr/local/clang-3.4/bin/clang; sudo rm /usr/local/clang-3.4/bin/clang++; fi
+ - if [ "$CXX" = "clang++-3.7" ]; then sudo rm /usr/local/clang-3.4/bin/clang; sudo rm /usr/local/clang-3.4/bin/clang++; fi
 #Report the compiler version
  - $CXX --version
 #Install coveralls if required
