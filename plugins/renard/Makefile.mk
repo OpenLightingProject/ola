@@ -11,5 +11,6 @@ plugins_renard_libolarenard_la_SOURCES = \
     plugins/renard/RenardPort.h \
     plugins/renard/RenardWidget.cpp \
     plugins/renard/RenardWidget.h
-plugins_renard_libolarenard_la_LIBADD = common/libolacommon.la
+plugins_renard_libolarenard_la_LIBADD = common/libolacommon.la \
+                                        olad/libolaserverplugininterface.la
 endif

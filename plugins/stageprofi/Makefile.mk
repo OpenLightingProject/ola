@@ -13,6 +13,8 @@ plugins_stageprofi_libolastageprofi_la_SOURCES = \
     plugins/stageprofi/StageProfiPort.h \
     plugins/stageprofi/StageProfiWidget.cpp \
     plugins/stageprofi/StageProfiWidget.h
-plugins_stageprofi_libolastageprofi_la_LIBADD = common/libolacommon.la
+plugins_stageprofi_libolastageprofi_la_LIBADD = \
+    common/libolacommon.la \
+    olad/libolaserverplugininterface.la \
 endif
 
