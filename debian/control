@@ -19,7 +19,7 @@ Description: Open Lighting Architecture - development libraries
  effects.
  .
  The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
+ distributing DMX512 control signals.
  .
  This package contains the development files for libola and various related
  libraries, used to write plugins or control the OLA daemon.
@@ -34,10 +34,9 @@ Description: Open Lighting Architecture - Python Classes
  effects.
  .
  The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
+ distributing DMX512 control signals.
  .
- This package contains the files required for plugins or to control the OLA
- daemon from python.
+ This package contains the Python client module.
 
 Package: ola-rdm-tests
 Section: libs
@@ -54,7 +53,7 @@ Description: Open Lighting Architecture - RDM Responder Tests
  without disturbing other devices on the same connection.
  .
  The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
+ distributing DMX512 control signals.
  .
  This package provides an automated way to check protocol compliance in
  RDM devices.
@@ -70,7 +69,7 @@ Description: Open Lighting Architecture
  effects.
  .
  The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
+ distributing DMX512 control signals.
  .
  This package contains olad, the OLA daemon used to control lighting,
  and a number of command-line tools to control and manipulate olad.
@@ -86,7 +85,7 @@ Description: Open Lighting Architecture - shared libraries
  effects.
  .
  The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
+ distributing DMX512 control signals.
  .
  This package contains the shared libraries required to communicate with
  olad.
