@@ -65,8 +65,8 @@ dist_js_DATA = \
 dist_css_DATA = \
     olad/www/new/css/style.min.css
 dist_img_DATA = \
-    olad/www/new/img/light_bulb.png \
     olad/www/new/img/light_bulb_off.png \
+    olad/www/new/img/light_bulb.png \
     olad/www/new/img/logo-mini.png \
     olad/www/new/img/logo.png
 dist_jquery_DATA = \

@@ -124,9 +124,9 @@ AC_FUNC_STAT
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
-                if_nametoindex inet_ntoa inet_aton select socket strerror \
-                getifaddrs getloadavg getpwnam_r getpwuid_r getgrnam_r \
-                getgrgid_r secure_getenv])
+                if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
+                socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
+                getgrnam_r getgrgid_r secure_getenv])
 
 LT_INIT
 AC_PROG_LIBTOOL
