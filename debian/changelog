@@ -1,3 +1,9 @@
+ola (0.9.6-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Simon Newton <nomis52@gmail.com>  Tue, 30 Jun 2015 15:08:57 -0700
+
 ola (0.9.5-1) unstable; urgency=low
 
   * New upstream release
@@ -41,7 +47,7 @@ ola (0.8.33-2) unstable; urgency=low
 
   * Remove logic_rdm_sniffer since it causes debuild failures.
 
- -- Simon Newton <nomis52@gmail.com>  Tue Dec 17 18:25:55 2013 -0800
+ -- Simon Newton <nomis52@gmail.com>  Tue, 17 Dec 2013 18:25:55 -0800
 
 ola (0.8.33-1) unstable; urgency=low
 

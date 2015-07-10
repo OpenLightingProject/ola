@@ -3,6 +3,8 @@
 # This script is triggered from the script section of .travis.yml
 # It runs the appropriate commands depending on the task requested.
 
+set -e
+
 CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py";
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
@@ -37,7 +39,8 @@ elif [[ $TASK = 'check-licences' ]]; then
   fi;
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
-  autoreconf -i && ./configure --enable-ja-rule
+  autoreconf -i;
+  ./configure --enable-ja-rule;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
@@ -53,7 +56,10 @@ elif [[ $TASK = 'doxygen' ]]; then
   fi;
 elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
-  autoreconf -i && ./configure --enable-ja-rule --enable-gcov && make && make check
+  autoreconf -i;
+  ./configure --enable-ja-rule --enable-gcov;
+  make;
+  make check;
 elif [[ $TASK = 'coverity' ]]; then
   # Run Coverity Scan unless token is zero length
   # The Coverity Scan script also relies on a number of other COVERITY_SCAN_
@@ -69,5 +75,12 @@ elif [[ $TASK = 'jshint' ]]; then
   grunt test
 else
   # Otherwise compile and check as normal
-  autoreconf -i && ./configure --enable-rdm-tests --enable-ja-rule --enable-java-libs && make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-java-libs'
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-java-libs;
+  make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-java-libs';
+  make dist;
+  tarball=$(ls -Ut ola*.tar.gz | head -1)
+  tar -zxf $tarball;
+  tarball_root=$(echo $tarball | sed 's/.tar.gz$//')
+  ./scripts/verify_trees.py ./ $tarball_root
 fi

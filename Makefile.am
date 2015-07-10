@@ -168,6 +168,15 @@ pkgconfig_DATA += libola.pc libolaserver.pc
 dvi:
 
 EXTRA_DIST += \
+  CONTRIBUTING \
+  Doxyfile \
+  GPL \
+  LGPL \
+  LICENCE \
+  README.debian \
+  README.developer \
+  README.mingw32 \
+  README.rpm \
   config/ac_prog_java_cc.m4 \
   config/ac_python_devel.m4 \
   config/ac_saleae.m4 \
@@ -179,13 +188,7 @@ EXTRA_DIST += \
   config/pkg.m4 \
   config/resolv.m4 \
   config/stl_hash.m4 \
-  CONTRIBUTING \
-  GPL \
-  LGPL \
-  LICENCE \
-  README.debian \
-  README.developer \
-  README.rpm ola.spec \
   mac_build.sh \
+  ola.spec \
   tests/recvdmx.py \
   tests/regression.py

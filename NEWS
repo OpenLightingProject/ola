@@ -1,11 +1,25 @@
-x/y/2015 ola-0.9.6
+x/y/2015 ola-0.9.7
  Features:
- * Default to using epoll() and kqueue() rather than select() if they exist,
-   apart from for the HTTP thread.
+ * 
+
+ API:
+ * 
+
+ RDM Tests:
+ * 
+
+ Bugs:
+ * 
+
+ Internal:
+ *
+
+30/6/2015 ola-0.9.6
+ Features:
+ * Default to using epoll() rather than select() if it exists,
  * Default to the async libusb implementation in the usbdmx plugin.
  * Added support for the APA102 family of SPI pixels.
- * Show the plugin enabled/disable state in the new web UI.
- * Allow plugins to be enabled/disabled from the CLI tools while running #682.
+ * Allow plugins to be enabled/disabled from the new web UI & CLI tools #682.
  * Add an option to display the frame and timing data in the RDM CLI tools
    where available.
  * Add additional C++ client documentation and examples.
@@ -14,7 +28,7 @@ x/y/2015 ola-0.9.6
  * Initial partial E1.37-2 support in the web UI.
 
  API:
- * Python: callbacks are now also systematically called when the RPC calls fail.
+ * Python: Fix a bug where callbacks weren't run if the operation failed.
  * Python: improve Python 3 compatability.
  * Add patched ports in Universe protobuf message.
  * Python: Add a patch/unpatch example.
@@ -35,11 +49,12 @@ x/y/2015 ola-0.9.6
  * Fix various configure script behaviour issues #773.
  * Fix build issues with GCC-5 #765 Debian #778038.
  * Restore LIBS when we can't find the Saleae library during configure.
+ * Fix the async libusb Eurolite Pro implementation.
 
  Internal:
  * Rename the method Source to ConfigLocation for Preference classes and
    associated changes.
- * Various RDM cleanup.
+ * Major cleanup of RDM code.
  * Switch to using pthread_equal rather than operator==.
  * Switch to using Dot for Doxygen diagrams where present.
 

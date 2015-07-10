@@ -88,7 +88,7 @@ class ShowNetNode {
     // In the shownet spec, the pass(2) and name(9) fields are combined with the
     // compressed data. This means the indicies referenced in indexBlocks are
     // off by 11.
-    static const int MAGIC_INDEX_OFFSET = 11;
+    static const uint16_t MAGIC_INDEX_OFFSET = 11;
 
     DISALLOW_COPY_AND_ASSIGN(ShowNetNode);
 };

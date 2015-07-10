@@ -19,6 +19,7 @@ include include/ola/thread/Makefile.mk
 include include/ola/timecode/Makefile.mk
 include include/ola/util/Makefile.mk
 include include/ola/web/Makefile.mk
+include include/ola/win/Makefile.mk
 
 dist_noinst_SCRIPTS += \
   include/ola/gen_callbacks.py \

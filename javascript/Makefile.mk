@@ -1,5 +1,17 @@
 EXTRA_DIST += \
     javascript/README \
+    javascript/new-src/.jscsrc \
+    javascript/new-src/.jshintrc \
+    javascript/new-src/Gruntfile.js \
+    javascript/new-src/README.md \
+    javascript/new-src/bower.json \
+    javascript/new-src/package.json \
+    javascript/new-src/src/css/style.css \
+    javascript/new-src/src/img \
+    javascript/new-src/src/index.html \
+    javascript/new-src/src/js/app.js \
+    javascript/new-src/src/libs \
+    javascript/new-src/src/views \
     javascript/ola/base_frame.js \
     javascript/ola/common/dmx_constants.js \
     javascript/ola/common/dmx_monitor.js \
@@ -38,10 +50,4 @@ EXTRA_DIST += \
     javascript/ola/ola.js \
     javascript/ola/port_table.js \
     javascript/ola/universe_control.js \
-    javascript/ola/universe_item.js \
-    javascript/new-src/src/index.html \
-    javascript/new-src/src/img \
-    javascript/new-src/src/libs \
-    javascript/new-src/src/views \
-    javascript/new-src/src/css/style.css \
-    javascript/new-src/src/js/app.js
+    javascript/ola/universe_item.js
