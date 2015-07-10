@@ -13,7 +13,6 @@ plugins_e131_libolae131_la_SOURCES = \
     plugins/e131/E131Plugin.h \
     plugins/e131/E131Port.cpp \
     plugins/e131/E131Port.h
-plugins_e131_libolae131_la_LIBADD = olad/libolaserverplugininterface.la \
-                                    plugins/e131/messages/libolae131conf.la \
+plugins_e131_libolae131_la_LIBADD = plugins/e131/messages/libolae131conf.la \
                                     plugins/e131/e131/libolae131core.la
 endif

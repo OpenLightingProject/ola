@@ -10,7 +10,5 @@ plugins_dmx4linux_liboladmx4linux_la_SOURCES = \
     plugins/dmx4linux/Dmx4LinuxPort.cpp \
     plugins/dmx4linux/Dmx4LinuxPort.h \
     plugins/dmx4linux/Dmx4LinuxSocket.h
-plugins_dmx4linux_liboladmx4linux_la_LIBADD = \
-    common/libolacommon.la \
-    olad/libolaserverplugininterface.la
+plugins_dmx4linux_liboladmx4linux_la_LIBADD = common/libolacommon.la
 endif

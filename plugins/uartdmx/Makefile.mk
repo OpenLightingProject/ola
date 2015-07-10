@@ -12,7 +12,6 @@ plugins_uartdmx_libolauartdmx_la_SOURCES = \
     plugins/uartdmx/UartDmxThread.h \
     plugins/uartdmx/UartWidget.cpp \
     plugins/uartdmx/UartWidget.h
-plugins_uartdmx_libolauartdmx_la_LIBADD = common/libolacommon.la \
-                                          olad/libolaserverplugininterface.la
+plugins_uartdmx_libolauartdmx_la_LIBADD = common/libolacommon.la
 endif
 

@@ -21,8 +21,7 @@ plugins_osc_libolaosc_la_SOURCES = \
     plugins/osc/OSCPort.cpp \
     plugins/osc/OSCPort.h
 plugins_osc_libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
-plugins_osc_libolaosc_la_LIBADD = olad/libolaserverplugininterface.la \
-                                  plugins/osc/libolaoscnode.la
+plugins_osc_libolaosc_la_LIBADD = plugins/osc/libolaoscnode.la
 
 # TESTS
 ##################################################

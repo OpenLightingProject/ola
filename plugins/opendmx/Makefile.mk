@@ -10,6 +10,5 @@ plugins_opendmx_libolaopendmx_la_SOURCES = \
     plugins/opendmx/OpenDmxPort.h \
     plugins/opendmx/OpenDmxThread.cpp \
     plugins/opendmx/OpenDmxThread.h
-plugins_opendmx_libolaopendmx_la_LIBADD = common/libolacommon.la \
-                                          olad/libolaserverplugininterface.la
+plugins_opendmx_libolaopendmx_la_LIBADD = common/libolacommon.la
 endif

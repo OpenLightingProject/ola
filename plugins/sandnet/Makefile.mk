@@ -13,6 +13,5 @@ plugins_sandnet_libolasandnet_la_SOURCES = \
     plugins/sandnet/SandNetPlugin.h \
     plugins/sandnet/SandNetPort.cpp \
     plugins/sandnet/SandNetPort.h
-plugins_sandnet_libolasandnet_la_LIBADD = common/libolacommon.la \
-                                          olad/libolaserverplugininterface.la
+plugins_sandnet_libolasandnet_la_LIBADD = common/libolacommon.la
 endif

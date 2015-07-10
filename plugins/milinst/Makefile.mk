@@ -15,6 +15,5 @@ plugins_milinst_libolamilinst_la_SOURCES = \
     plugins/milinst/MilInstWidget1463.h \
     plugins/milinst/MilInstWidget1553.cpp \
     plugins/milinst/MilInstWidget1553.h
-plugins_milinst_libolamilinst_la_LIBADD = common/libolacommon.la \
-                                          olad/libolaserverplugininterface.la
+plugins_milinst_libolamilinst_la_LIBADD = common/libolacommon.la
 endif

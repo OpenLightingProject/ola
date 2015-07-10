@@ -10,8 +10,7 @@ plugins_dummy_liboladummy_la_SOURCES = \
     plugins/dummy/DummyPlugin.h \
     plugins/dummy/DummyPort.cpp \
     plugins/dummy/DummyPort.h
-plugins_dummy_liboladummy_la_LIBADD = common/libolacommon.la \
-                                      olad/libolaserverplugininterface.la
+plugins_dummy_liboladummy_la_LIBADD = common/libolacommon.la
 
 # TESTS
 ##################################################
