@@ -26,8 +26,6 @@ angular
   .factory('$ola', ['$http', '$window', 'OLA',
     function($http, $window, OLA) {
       'use strict';
-      // once olad supports json post data postEncode can go away
-      // and the header in post requests too.
       var postEncode = function(data) {
         var PostData = [];
         for (var key in data) {
@@ -46,16 +44,27 @@ angular
         }
         return PostData.join('&');
       };
+      var channelValueCheck = function(i) {
+        i = parseInt(i, 10);
+        if (i < OLA.MIN_CHANNEL_VALUE){
+          i = OLA.MIN_CHANNEL_VALUE;
+        } else if (i > OLA.MAX_CHANNEL_VALUE){
+          i = OLA.MAX_CHANNEL_VALUE;
+        }
+        return i;
+      };
       var dmxConvert = function(dmx) {
-        var length = 1;
+        var strip = true;
         var integers = [];
-        for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
-          integers[i] = parseInt(dmx[i], 10);
-          if (integers[i] > OLA.MIN_CHANNEL_VALUE) {
-            length = (i + 1);
+        for (var i = OLA.MAX_CHANNEL_NUMBER; i >= OLA.MIN_CHANNEL_NUMBER; i--) {
+          var value = channelValueCheck(dmx[i - 1]);
+          if (value > OLA.MIN_CHANNEL_VALUE ||
+              !strip ||
+              i === OLA.MIN_CHANNEL_NUMBER){
+            integers[i - 1] = value;
+            strip = false;
           }
         }
-        integers.length = length;
         return integers.join(',');
       };
       return {

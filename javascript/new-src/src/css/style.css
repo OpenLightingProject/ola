@@ -218,7 +218,7 @@ div#header-universe > div{
  margin-top: 5px;
 }
 
-/* Custom checkboxes for plugins page */
+/* Begin custom checkboxes for plugins page */
 /* Hide checkbox */
 input.form-control[type="checkbox"] {
  display:none;
@@ -243,3 +243,4 @@ input.form-control[type="checkbox"]:checked + label span.glyphicon:before {
 input.form-control[type="checkbox"][disabled] + label span.glyphicon:before {
  color: darkgrey;
 }
+/* End custom checkboxes */
