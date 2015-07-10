@@ -48,6 +48,7 @@ before_install:
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo add-apt-repository ppa:h-rayflood/gcc-upper -y
  - sudo add-apt-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise main" -y
+ - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
  - sudo add-apt-repository ppa:ubuntu-cloud-archive/icehouse-staging -y
  - sudo apt-get update -qq
  - sudo apt-get install -qq protobuf-compiler libprotobuf-lite7 libprotobuf-dev libprotoc-dev bison flex libftdi-dev libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev uuid-dev libcppunit-dev libcppunit-1.12-1 libncurses5-dev python-protobuf libmicrohttpd-dev
