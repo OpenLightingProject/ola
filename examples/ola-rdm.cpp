@@ -22,12 +22,13 @@
 #include <getopt.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
-#include <ola/client/OlaClient.h>
-#include <ola/client/ClientWrapper.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
+#include <ola/client/ClientWrapper.h>
+#include <ola/client/OlaClient.h>
 #include <ola/file/Util.h>
+#include <ola/network/NetworkUtils.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/RDMEnums.h>
@@ -43,6 +44,7 @@
 #include <string>
 #include <vector>
 
+using ola::network::NetworkToHost;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::UID;
 using std::auto_ptr;
@@ -151,7 +153,7 @@ void DisplayGetPidHelp(const options &opts) {
   "Get the value of a pid for a device.\n"
   "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
   "\n"
-  "  --frames                  display the raw RDM frames if available\n."
+  "  --frames                  display the raw RDM frames if available.\n"
   "  --uid <uid>               the UID of the device to control.\n"
   "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
@@ -315,7 +317,7 @@ void RDMController::HandleResponse(const ola::client::Result &result,
     } else {
       memcpy(reinterpret_cast<uint8_t*>(&backoff_time), response->ParamData(),
              sizeof(backoff_time));
-      unsigned int timeout = 100 * backoff_time;
+      unsigned int timeout = 100 * NetworkToHost(backoff_time);
       m_ola_client.GetSelectServer()->RegisterSingleTimeout(
         timeout,
         ola::NewSingleCallback(this, &RDMController::FetchQueuedMessage));
@@ -349,6 +351,7 @@ void RDMController::HandleResponse(const ola::client::Result &result,
     } else {
       memcpy(reinterpret_cast<uint8_t*>(&nack_reason), response->ParamData(),
              sizeof(nack_reason));
+      nack_reason = NetworkToHost(nack_reason);
       cout << "Request NACKed: " <<
         ola::rdm::NackReasonToString(nack_reason) << endl;
     }
