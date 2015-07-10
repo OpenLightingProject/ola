@@ -55,6 +55,7 @@ plugins_usbpro_libolausbpro_la_SOURCES = \
     plugins/usbpro/UsbSerialPlugin.cpp \
     plugins/usbpro/UsbSerialPlugin.h
 plugins_usbpro_libolausbpro_la_LIBADD = \
+    olad/libolaserverplugininterface.la \
     plugins/usbpro/libolausbprowidget.la \
     plugins/usbpro/messages/libolausbproconf.la
 
