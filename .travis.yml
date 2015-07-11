@@ -51,7 +51,6 @@ addons:
       - llvm-toolchain-precise-3.6
     packages:
       - protobuf-compiler
-      #- libprotobuf-lite7 <- already gets installed as a dependency
       - libprotobuf-dev
       #- libprotoc-dev <- not in whitelist
       - bison
@@ -60,10 +59,9 @@ addons:
       #- libftdi1
       - libusb-1.0-0-dev
       #- liblo-dev
-      #- libavahi-client-dev
+      - libavahi-glib1
       - uuid-dev
       - libcppunit-dev
-      #- libcppunit-1.12-1 <- already gets as a dependency
       - libncurses5-dev
       #- python-protobuf
       - libmicrohttpd-dev
@@ -74,8 +72,8 @@ addons:
       - clang-3.6
 
 install:
-  - pip install protobuf==2.4.1
-  - pip install cpp-coveralls
+  - pip install --user protobuf==2.4.1
+  - pip install --user cpp-coveralls
   - npm install -g grunt-cli
 
 before_install:
