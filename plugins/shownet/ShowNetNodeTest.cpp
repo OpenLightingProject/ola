@@ -36,7 +36,6 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
-
 using ola::DmxBuffer;
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
@@ -44,7 +43,7 @@ using std::string;
 
 namespace {
 
-// HostToLittleEndian is overloaded, so to avoid lots of casts, we provide this
+// HostToLittleEndian is overloaded, so to avoid lots of casts we provide this
 // function.
 uint16_t ToLittleEndian(uint16_t value) {
   return ola::network::HostToLittleEndian(value);
