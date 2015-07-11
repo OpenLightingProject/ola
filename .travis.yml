@@ -74,6 +74,8 @@ addons:
       - clang-3.6
 
 before_install:
+#Install python protobuf package
+ - pip install protobuf==2.4.1
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
  - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
