@@ -52,7 +52,7 @@ addons:
     packages:
       - protobuf-compiler
       - libprotobuf-dev
-      #- libprotoc-dev <- not in whitelist
+      - protobuf-c-compiler
       - bison
       - flex
       #- libftdi-dev
