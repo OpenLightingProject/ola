@@ -6,8 +6,8 @@ script:
 matrix:
   fast_finish: true
   include:
-    #- compiler: clang
-    #  env: TASK='compile'
+    - compiler: clang
+      env: TASK='compile'
     - compiler: gcc
       env: TASK='compile'
     - compiler: gcc
@@ -48,6 +48,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.7
     packages:
       - protobuf-compiler
       - libprotobuf-lite7
@@ -70,7 +71,7 @@ addons:
       - graphviz
       - g++-5
       - g++-4.9
-      #- clang-3.6
+      - clang-3.7
 
 before_install:
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
