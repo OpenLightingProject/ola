@@ -1,9 +1,10 @@
-11/7/2015 ola-0.9.7
+12/7/2015 ola-0.9.7
  Bugs:
  * RDM NACK codes displayed with incorrect byte ordering in the C++ client #812
  * Fix endian issues on s390x and PPC architectures.
  * Fix ShowNet endian issues.
  * Add some missing files to the tarball.
+ * Restore binary compatability with 0.9.5 #826
 
 30/6/2015 ola-0.9.6
  Features:
