@@ -321,8 +321,9 @@ void SelectServer::Init(const Options &options) {
 
   // TODO(simon): this should really be in an Init() method that returns a
   // bool.
-  if (!m_incoming_descriptor.Init())
+  if (!m_incoming_descriptor.Init()) {
     OLA_FATAL << "Failed to init LoopbackDescriptor, Execute() won't work!";
+  }
   m_incoming_descriptor.SetOnData(
       ola::NewCallback(this, &SelectServer::DrainAndExecute));
   AddReadDescriptor(&m_incoming_descriptor);
