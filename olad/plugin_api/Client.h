@@ -18,8 +18,8 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#ifndef OLAD_CLIENT_H_
-#define OLAD_CLIENT_H_
+#ifndef OLAD_PLUGIN_API_CLIENT_H_
+#define OLAD_PLUGIN_API_CLIENT_H_
 
 #include <map>
 #include <memory>
@@ -106,4 +106,4 @@ class Client {
   DISALLOW_COPY_AND_ASSIGN(Client);
 };
 }  // namespace ola
-#endif  // OLAD_CLIENT_H_
+#endif  // OLAD_PLUGIN_API_CLIENT_H_

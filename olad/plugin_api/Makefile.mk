@@ -1,3 +1,7 @@
+# This file is included directly in Makefile.am rather than via
+# olad/Makefile.mk due to the order of dependencies between them; we need to
+# build olad/plugin_api, then the plugins, then olad
+
 # HEADERS
 ##################################################
 noinst_HEADERS += olad/plugin_api/TestCommon.h
@@ -9,6 +13,7 @@ ola_server_plugin_interface_sources = \
     olad/plugin_api/Client.h \
     olad/plugin_api/Device.cpp \
     olad/plugin_api/DeviceManager.cpp \
+    olad/plugin_api/DeviceManager.h \
     olad/plugin_api/DmxSource.cpp \
     olad/plugin_api/Plugin.cpp \
     olad/plugin_api/PluginAdaptor.cpp \
