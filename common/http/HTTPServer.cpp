@@ -429,7 +429,7 @@ HTTPServer::HTTPServer(const HTTPServerOptions &options)
   // See issue #761. epoll/kqueue can't be used with the current
   // implementation.
   ss_options.force_select = true;
-  m_select_server.reset(new ola::io::SelectServer(NULL, NULL, ss_options));
+  m_select_server.reset(new ola::io::SelectServer(ss_options));
 }
 
 
