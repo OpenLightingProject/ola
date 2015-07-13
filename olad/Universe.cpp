@@ -45,6 +45,7 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/strings/Format.h"
 #include "olad/Client.h"
 #include "olad/Port.h"
 #include "olad/Universe.h"
@@ -57,6 +58,7 @@ using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
+using ola::strings::ToHex;
 using std::auto_ptr;
 using std::map;
 using std::ostringstream;
