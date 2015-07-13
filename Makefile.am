@@ -122,7 +122,7 @@ test_scripts =
 # -----------------------------------------------------------------------------
 
 # Since `make install` relinks the libraries, this should be in the order in
-# which libraries depend on each other. e.g. common, plugins, server.
+# which libraries depend on each other. e.g. common, plugin_api, plugins, server.
 include common/Makefile.mk
 include data/Makefile.mk
 include debian/Makefile.mk
@@ -132,6 +132,7 @@ include include/Makefile.mk
 include javascript/Makefile.mk
 include man/Makefile.mk
 include ola/Makefile.mk
+include olad/plugin_api/Makefile.mk
 include plugins/Makefile.mk
 include olad/Makefile.mk
 include protoc/Makefile.mk

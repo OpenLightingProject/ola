@@ -30,8 +30,8 @@
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/UID.h"
 #include "ola/testing/TestUtils.h"
-#include "olad/Client.h"
 #include "olad/DmxSource.h"
+#include "olad/plugin_api/Client.h"
 
 
 static unsigned int TEST_UNIVERSE = 1;

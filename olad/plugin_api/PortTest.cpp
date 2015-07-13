@@ -25,8 +25,8 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/PortBroker.h"
 #include "olad/Preferences.h"
-#include "olad/TestCommon.h"
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/TestCommon.h"
+#include "olad/plugin_api/UniverseStore.h"
 #include "ola/testing/TestUtils.h"
 
 

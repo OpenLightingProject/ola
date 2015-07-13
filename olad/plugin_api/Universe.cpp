@@ -46,10 +46,10 @@
 #include "ola/rdm/RDMEnums.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/strings/Format.h"
-#include "olad/Client.h"
 #include "olad/Port.h"
 #include "olad/Universe.h"
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/Client.h"
+#include "olad/plugin_api/UniverseStore.h"
 
 namespace ola {
 

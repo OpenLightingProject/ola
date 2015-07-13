@@ -35,12 +35,12 @@
 #include "ola/Logging.h"
 #include "ola/rdm/UID.h"
 #include "ola/testing/TestUtils.h"
-#include "olad/Client.h"
-#include "olad/DeviceManager.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/PluginLoader.h"
 #include "olad/Universe.h"
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/Client.h"
+#include "olad/plugin_api/DeviceManager.h"
+#include "olad/plugin_api/UniverseStore.h"
 
 using ola::Client;
 using ola::NewSingleCallback;

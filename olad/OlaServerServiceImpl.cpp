@@ -33,18 +33,18 @@
 #include "ola/strings/Format.h"
 #include "ola/timecode/TimeCode.h"
 #include "ola/timecode/TimeCodeEnums.h"
-#include "olad/Client.h"
 #include "olad/ClientBroker.h"
 #include "olad/Device.h"
-#include "olad/DeviceManager.h"
 #include "olad/DmxSource.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
 #include "olad/Port.h"
-#include "olad/PortManager.h"
 #include "olad/Universe.h"
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/Client.h"
+#include "olad/plugin_api/DeviceManager.h"
+#include "olad/plugin_api/PortManager.h"
+#include "olad/plugin_api/UniverseStore.h"
 
 namespace ola {
 
