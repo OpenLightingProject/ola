@@ -152,7 +152,7 @@ void ShowNetNodeTest::testHandlePacket() {
 
   // invalid block length
   compressed_dmx->indexBlock[0] =
-    ToLittleEndian(ShowNetNode::MAGIC_INDEX_OFFSET);
+      ToLittleEndian(ShowNetNode::MAGIC_INDEX_OFFSET);
   OLA_ASSERT_EQ(false, m_node->HandlePacket(&packet, sizeof(packet)));
   OLA_ASSERT_EQ(0, m_handler_called);
 
@@ -164,7 +164,7 @@ void ShowNetNodeTest::testHandlePacket() {
   // valid block length, but not enough data
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
   compressed_dmx->indexBlock[1] =
-    ToLittleEndian(ShowNetNode::MAGIC_INDEX_OFFSET);
+      ToLittleEndian(ShowNetNode::MAGIC_INDEX_OFFSET);
   OLA_ASSERT_EQ(false,
                 m_node->HandlePacket(&packet,
                 header_size + sizeof(ENCODED_DATA)));
@@ -179,7 +179,7 @@ void ShowNetNodeTest::testHandlePacket() {
 
   // test invalid slot size
   compressed_dmx->indexBlock[1] = ToLittleEndian(
-        ShowNetNode::MAGIC_INDEX_OFFSET + sizeof(ENCODED_DATA));
+      ShowNetNode::MAGIC_INDEX_OFFSET + sizeof(ENCODED_DATA));
 
   OLA_ASSERT_EQ(false,
       m_node->HandlePacket(&packet, header_size + sizeof(ENCODED_DATA)));
