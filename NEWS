@@ -1,4 +1,4 @@
-12/7/2015 ola-0.9.7
+x/y/2015 ola-0.9.7
  Bugs:
  * RDM NACK codes displayed with incorrect byte ordering in the C++ client #812
  * Fix endian issues on s390x and PPC architectures.
