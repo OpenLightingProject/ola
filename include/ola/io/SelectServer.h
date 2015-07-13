@@ -64,24 +64,42 @@ class SelectServer: public SelectServerInterface {
  public :
   struct Options {
    public:
-    Options(): force_select(false) {}
+    Options()
+        : force_select(false),
+          export_map(NULL),
+          clock(NULL) {
+    }
 
     /**
      * @brief Fall back to the select() implementation even if the flags are
      * set for kqueue/epoll.
      */
     bool force_select;
+
+    /**
+     * @brief The export map to use.
+     */
+    ola::ExportMap *export_map;
+
+    /**
+     * @brief The Clock to use.
+     */
+    Clock *clock;
   };
 
   /**
    * @brief Create a new SelectServer
    * @param export_map the ExportMap to use for stats
    * @param clock the Clock to use to keep time.
-   * @param options Additional options
    */
   SelectServer(ola::ExportMap *export_map = NULL,
-               Clock *clock = NULL,
-               const Options &options = Options());
+               Clock *clock = NULL);
+
+  /**
+   * @brief Create a new SelectServer
+   * @param options additional options.
+   */
+  explicit SelectServer(const Options &options);
 
   /**
    * @brief Clean up.
@@ -190,6 +208,7 @@ class SelectServer: public SelectServerInterface {
   ola::thread::Mutex m_incoming_mutex;
   LoopbackDescriptor m_incoming_descriptor;
 
+  void Init(const Options &options);
   bool CheckForEvents(const TimeInterval &poll_interval);
   void DrainAndExecute();
   void RunCallbacks(Callbacks *callbacks);
