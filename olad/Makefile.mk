@@ -43,7 +43,7 @@ ola_server_additional_libs += common/http/libolahttp.la
 endif
 
 # lib olaserver
-lib_LTLIBRARIES += olad/plugin_api/libolaserverplugininterface.la olad/libolaserver.la
+lib_LTLIBRARIES += olad/libolaserver.la
 
 olad_libolaserver_la_SOURCES = $(ola_server_sources) \
                                olad/OlaServer.cpp \

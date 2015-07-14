@@ -8,7 +8,10 @@ noinst_HEADERS += olad/plugin_api/TestCommon.h
 
 # LIBRARIES
 ##################################################
-ola_server_plugin_interface_sources = \
+# lib olaserverplugininterface
+lib_LTLIBRARIES += olad/plugin_api/libolaserverplugininterface.la
+
+olad_plugin_api_libolaserverplugininterface_la_SOURCES = \
     olad/plugin_api/Client.cpp \
     olad/plugin_api/Client.h \
     olad/plugin_api/Device.cpp \
@@ -25,9 +28,6 @@ ola_server_plugin_interface_sources = \
     olad/plugin_api/Universe.cpp \
     olad/plugin_api/UniverseStore.cpp \
     olad/plugin_api/UniverseStore.h
-
-olad_plugin_api_libolaserverplugininterface_la_SOURCES = \
-    $(ola_server_plugin_interface_sources)
 olad_plugin_api_libolaserverplugininterface_la_CXXFLAGS = $(COMMON_CXXFLAGS)
 olad_plugin_api_libolaserverplugininterface_la_LIBADD = \
     common/libolacommon.la \
