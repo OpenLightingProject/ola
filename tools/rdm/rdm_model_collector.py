@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# model_collector.py
+# rdm_model_collector.py
 # Copyright (C) 2011 Simon Newton
 
 '''Quick script to collect information about responders.'''

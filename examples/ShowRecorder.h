@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ShowRecorder.h
- *  A simple show playback system.
- *  Copyright (C) 2011 Simon Newton
+ * ShowRecorder.h
+ * A simple show playback system.
+ * Copyright (C) 2011 Simon Newton
  */
 
 #include <ola/Clock.h>

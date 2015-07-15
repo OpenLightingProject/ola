@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * UltraDMXProWidget.h
+ * UltraDMXProWidget.cpp
  * The DMXKing Ultra DMX Pro Widget.
  * Copyright (C) 2011 Simon Newton
  */
