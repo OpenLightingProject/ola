@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DeviceManagerImpl.cpp
+ * DeviceManagerImpl.h
  * Copyright (C) 2013 Simon Newton
  * The DeviceManagerImpl maintains a TCP connection to each E1.33 device.
  */

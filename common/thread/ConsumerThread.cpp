@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * ConsumerThread.h
+ * ConsumerThread.cpp
  * An thread which consumes Callbacks from a queue and runs them.
  * Copyright (C) 2011 Simon Newton
  */
