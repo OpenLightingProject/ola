@@ -12,8 +12,9 @@ plugins_karate_libolakarate_la_SOURCES = \
     plugins/karate/KaratePort.h \
     plugins/karate/KarateThread.h \
     plugins/karate/KarateLight.h
-plugins_karate_libolakarate_la_LIBADD = common/libolacommon.la \
-                                        olad/libolaserverplugininterface.la
+plugins_karate_libolakarate_la_LIBADD = \
+    common/libolacommon.la \
+    olad/plugin_api/libolaserverplugininterface.la
 endif
 
 EXTRA_DIST += plugins/karate/README.protocol

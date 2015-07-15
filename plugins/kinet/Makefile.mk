@@ -14,8 +14,9 @@ plugins_kinet_libolakinet_la_SOURCES = \
     plugins/kinet/KiNetDevice.cpp \
     plugins/kinet/KiNetDevice.h \
     plugins/kinet/KiNetPort.h
-plugins_kinet_libolakinet_la_LIBADD = olad/libolaserverplugininterface.la \
-                                      plugins/kinet/libolakinetnode.la
+plugins_kinet_libolakinet_la_LIBADD = \
+    olad/plugin_api/libolaserverplugininterface.la \
+    plugins/kinet/libolakinetnode.la
 
 # TESTS
 ##################################################

@@ -24,7 +24,7 @@ plugins_openpixelcontrol_libolaopenpixelcontrol_la_SOURCES = \
 
 plugins_openpixelcontrol_libolaopenpixelcontrol_la_LIBADD = \
     common/libolacommon.la \
-    olad/libolaserverplugininterface.la \
+    olad/plugin_api/libolaserverplugininterface.la \
     plugins/openpixelcontrol/libolaopc.la
 
 # TESTS

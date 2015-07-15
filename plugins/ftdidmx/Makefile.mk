@@ -12,7 +12,8 @@ plugins_ftdidmx_libolaftdidmx_la_SOURCES = \
     plugins/ftdidmx/FtdiDmxThread.h \
     plugins/ftdidmx/FtdiWidget.cpp \
     plugins/ftdidmx/FtdiWidget.h
-plugins_ftdidmx_libolaftdidmx_la_LIBADD = $(libftdi_LIBS) \
-                                          common/libolacommon.la \
-                                          olad/libolaserverplugininterface.la
+plugins_ftdidmx_libolaftdidmx_la_LIBADD = \
+    $(libftdi_LIBS) \
+    common/libolacommon.la \
+    olad/plugin_api/libolaserverplugininterface.la
 endif

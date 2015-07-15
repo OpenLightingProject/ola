@@ -76,7 +76,7 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/UsbDmxPlugin.h
 plugins_usbdmx_libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
 plugins_usbdmx_libolausbdmx_la_LIBADD = \
-    olad/libolaserverplugininterface.la \
+    olad/plugin_api/libolaserverplugininterface.la \
     plugins/usbdmx/libolausbdmxwidget.la
 
 # TESTS
