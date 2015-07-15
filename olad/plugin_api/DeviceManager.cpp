@@ -19,7 +19,7 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include "olad/DeviceManager.h"
+#include "olad/plugin_api/DeviceManager.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -32,7 +32,7 @@
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
 #include "olad/Port.h"
-#include "olad/PortManager.h"
+#include "olad/plugin_api/PortManager.h"
 
 namespace ola {
 

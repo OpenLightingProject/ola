@@ -32,7 +32,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/Callback.h"
 #include "olad/Universe.h"
-#include "olad/Client.h"
+#include "olad/plugin_api/Client.h"
 
 namespace ola {
 

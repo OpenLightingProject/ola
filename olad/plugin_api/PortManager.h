@@ -18,14 +18,14 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#ifndef OLAD_PORTMANAGER_H_
-#define OLAD_PORTMANAGER_H_
+#ifndef OLAD_PLUGIN_API_PORTMANAGER_H_
+#define OLAD_PLUGIN_API_PORTMANAGER_H_
 
 #include <vector>
 #include "olad/Device.h"
-#include "olad/DeviceManager.h"
 #include "olad/PortBroker.h"
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/DeviceManager.h"
+#include "olad/plugin_api/UniverseStore.h"
 #include "ola/base/Macro.h"
 
 
@@ -139,4 +139,4 @@ class PortManager {
   DISALLOW_COPY_AND_ASSIGN(PortManager);
 };
 }  // namespace ola
-#endif  // OLAD_PORTMANAGER_H_
+#endif  // OLAD_PLUGIN_API_PORTMANAGER_H_
