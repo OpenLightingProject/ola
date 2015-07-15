@@ -113,7 +113,7 @@ def TransformCppLine(line):
   """Transform a line to within a C++ multiline style comment"""
   line = line.strip()
   if line:
-    return (' * %s' % line)
+    return ' * %s' % line
   else:
     return ' *'
 
@@ -121,8 +121,7 @@ def TransformLicence(licence):
   """Wrap a licence in C++ style comments"""
   output = []
   output.append('/*')
-  for l in licence:
-    output.append(TransformCppLine(l))
+  output.extend(map(TransformCppLine, licence))
   output.append(TransformCppLine(''))
   return '\n'.join(output)
 
@@ -143,7 +142,7 @@ def TransformPythonLine(line):
   """Transform a line to within a Python multiline style comment"""
   line = line.strip()
   if line:
-    return ('# %s' % line)
+    return '# %s' % line
   else:
     return '#'
 
@@ -156,11 +155,11 @@ def TransformCppToPythonLicence(licence):
   return '\n'.join(output)
 
 def TransformLine(line, lang):
-  if (lang == CPP or lang == PROTOBUF):
+  if lang == CPP or lang == PROTOBUF:
     return TransformCppLine(line)
-  elif (lang == JS):
+  elif lang == JS:
     return TransformJsLine(line)
-  elif (lang == PYTHON):
+  elif lang == PYTHON:
     return TransformPythonLine(line)
   else:
     return line
@@ -267,9 +266,10 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   file_name_line = f.readline()  
   f.close()
   if header == licence:
-    if lang != JS and file_name_line.rstrip('\n') != TransformLine(os.path.basename(file_name), lang):    
+    expected_line = TransformLine(os.path.basename(file_name), lang)
+    if lang != JS and file_name_line.rstrip('\n') != expected_line:
       print "File %s does not have a filename line after the licence; found \"%s\" expected \"%s\"" % (
-          file_name, file_name_line.rstrip('\n'), TransformLine(os.path.basename(file_name), lang))
+          file_name, file_name_line.rstrip('\n'), expected_line)
       return 1
     return 0
 
