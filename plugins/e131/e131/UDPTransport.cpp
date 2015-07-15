@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OutgoingUDPTransport.cpp
- * The OutgoingUDPTransport class
+ * UDPTransport.cpp
+ * The OutgoingUDPTransport and IncomingUDPTransport classes
  * Copyright (C) 2007 Simon Newton
  */
 

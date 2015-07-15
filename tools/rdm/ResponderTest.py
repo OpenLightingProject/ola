@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# ResponderTestFixture.py
+# ResponderTest.py
 # Copyright (C) 2010 Simon Newton
 #
 # The test classes are broken down as follows:

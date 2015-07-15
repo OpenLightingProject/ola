@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ShowRecorder.h
- * A simple show playback system.
+ * Create recordings for the simple show playback system.
  * Copyright (C) 2011 Simon Newton
  */
 
