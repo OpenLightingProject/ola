@@ -21,6 +21,7 @@ plugins_artnet_libolaartnet_la_SOURCES = \
     plugins/artnet/ArtNetPort.cpp \
     plugins/artnet/ArtNetPort.h
 plugins_artnet_libolaartnet_la_LIBADD = \
+    olad/libolaserverplugininterface.la \
     plugins/artnet/libolaartnetnode.la \
     plugins/artnet/messages/libolaartnetconf.la
 

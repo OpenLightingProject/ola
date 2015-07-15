@@ -15,7 +15,8 @@ plugins_espnet_libolaespnet_la_SOURCES = \
     plugins/espnet/EspNetPort.h \
     plugins/espnet/RunLengthDecoder.cpp \
     plugins/espnet/RunLengthDecoder.h
-plugins_espnet_libolaespnet_la_LIBADD = common/libolacommon.la
+plugins_espnet_libolaespnet_la_LIBADD = common/libolacommon.la \
+                                        olad/libolaserverplugininterface.la
 
 # TESTS
 ##################################################
