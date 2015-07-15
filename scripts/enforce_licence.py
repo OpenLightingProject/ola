@@ -109,18 +109,26 @@ def IgnoreFile(file_name):
       return True
   return False
 
+def TransformCppLine(line):
+  """Transform a line to within a C++ multiline style comment"""
+  line = line.strip()
+  if line:
+    return (' * %s' % line)
+  else:
+    return ' *'
+
 def TransformLicence(licence):
-  """Wrap a licence in C++ style comments,"""
+  """Wrap a licence in C++ style comments"""
   output = []
   output.append('/*')
   for l in licence:
-    l = l.strip()
-    if l:
-      output.append(' * %s' % l)
-    else:
-      output.append(' *')
-  output.append(' *')
+    output.append(TransformCppLine(l))
+  output.append(TransformCppLine(''))
   return '\n'.join(output)
+
+def TransformJsLine(line):
+  """Transform a line to within a JS multiline style comment"""
+  return TransformCppLine(line)
 
 def TransformCppToJsLicence(licence):
   """Change a C++ licence to JS style"""
@@ -128,20 +136,34 @@ def TransformCppToJsLicence(licence):
   output = []
   output.append('/**')
   for l in lines[1:]:
-    l = l[2:].strip()
-    if l:
-      output.append(' * %s' % l)
-    else:
-      output.append(' *')
+    output.append(TransformJsLine(l[2:]))
   return '\n'.join(output)
+
+def TransformPythonLine(line):
+  """Transform a line to within a Python multiline style comment"""
+  line = line.strip()
+  if line:
+    return ('# %s' % line)
+  else:
+    return '#'
 
 def TransformCppToPythonLicence(licence):
   """Change a C++ licence to Python style"""
   lines = licence.split('\n')
   output = []
   for l in lines[1:]:
-    output.append('#%s' % l[2:])
+    output.append(TransformPythonLine(l[3:]))
   return '\n'.join(output)
+
+def TransformLine(line, lang):
+  if (lang == CPP or lang == PROTOBUF):
+    return TransformCppLine(line)
+  elif (lang == JS):
+    return TransformJsLine(line)
+  elif (lang == PYTHON):
+    return TransformPythonLine(line)
+  else:
+    return line
 
 def ReplaceHeader(file_name, new_header, lang):
   f = open(file_name)
@@ -231,7 +253,8 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     return 0
 
   f = open(file_name)
-  header_size = len(licence)
+  # + 1 to include the newline to have a complete line
+  header_size = len(licence) + 1
   first_line = None
   if lang == PYTHON:
     first_line = f.readline()
@@ -239,9 +262,15 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       # First line isn't a shebang, ignore it.
       f.seek(0, os.SEEK_SET)
       first_line = None
-  header = f.read(header_size)
+  # strip the trailing newline off as we don't actually want it
+  header = f.read(header_size).rstrip('\n')
+  file_name_line = f.readline()  
   f.close()
   if header == licence:
+    if lang != JS and file_name_line.rstrip('\n') != TransformLine(os.path.basename(file_name), lang):    
+      print "File %s does not have a filename line after the licence; found \"%s\" expected \"%s\"" % (
+          file_name, file_name_line.rstrip('\n'), TransformLine(os.path.basename(file_name), lang))
+      return 1
     return 0
 
   if fix:
