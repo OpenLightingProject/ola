@@ -290,7 +290,8 @@ void SelectServer::Init(const Options &options) {
 
   m_timeout_manager.reset(new TimeoutManager(m_export_map, m_clock));
 #ifdef _WIN32
-  m_poller.reset(new WindowsPoller(export_map, m_clock));
+  m_poller.reset(new WindowsPoller(m_export_map, m_clock));
+  (void) options;
 #else
 
 #ifdef HAVE_EPOLL
