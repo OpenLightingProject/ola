@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * devicemanager.cpp
- * Implementation of the device manager, this object tracks what devices are in
+ * DeviceManager.cpp
+ * Implementation of the Device Manager, this object tracks what devices are in
  * use.
  * Copyright (C) 2005 Simon Newton
  */

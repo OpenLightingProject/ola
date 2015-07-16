@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Socket.cpp
- * Implementation of the Socket classes
+ * Implementation of the UDP Socket classes
  * Copyright (C) 2005 Simon Newton
  */
 

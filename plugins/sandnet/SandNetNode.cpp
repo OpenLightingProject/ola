@@ -173,7 +173,7 @@ void SandNetNode::SocketReady(UDPSocket *socket) {
       HandleCompressedDMX(packet.contents.compressed_dmx,
                           packet_size - sizeof(packet.opcode));
       break;
-    case SANDNET_ADVERTISMENT:
+    case SANDNET_ADVERTISEMENT:
       break;
     default:
       OLA_INFO << "Skipping sandnet packet with unknown code: 0x" <<
@@ -246,7 +246,7 @@ bool SandNetNode::SetPortParameters(uint8_t port_id, sandnet_port_type type,
 
 
 /*
- * Send a Sandnet Advertisment.
+ * Send a Sandnet Advertisement.
  */
 bool SandNetNode::SendAdvertisement() {
   if (!m_running)
@@ -255,7 +255,7 @@ bool SandNetNode::SendAdvertisement() {
   sandnet_packet packet;
   sandnet_advertisement *advertisement = &packet.contents.advertisement;
   memset(&packet, 0, sizeof(packet));
-  packet.opcode = HostToNetwork(static_cast<uint16_t>(SANDNET_ADVERTISMENT));
+  packet.opcode = HostToNetwork(static_cast<uint16_t>(SANDNET_ADVERTISEMENT));
 
   m_interface.hw_address.Get(advertisement->mac);
   advertisement->firmware = HostToNetwork(FIRMWARE_VERSION);

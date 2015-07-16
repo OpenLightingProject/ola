@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * RDMCommandSerializer.h
+ * RDMCommandSerializer.cpp
  * Write RDMCommands to a memory buffer.
  * Copyright (C) 2012 Simon Newton
  */
