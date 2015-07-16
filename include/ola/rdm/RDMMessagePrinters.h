@@ -35,6 +35,7 @@
 #include <ola/rdm/PidStore.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
+#include <ola/strings/Format.h>
 #include <iomanip>
 #include <set>
 #include <string>
@@ -174,7 +175,7 @@ class SupportedParamsPrinter: public ola::messaging::MessagePrinter {
   void PostStringHook() {
     std::set<uint16_t>::const_iterator iter = m_pids.begin();
     for (; iter != m_pids.end(); ++iter) {
-      Stream() << "  " << ToHex(*iter);
+      Stream() << "  " << ola::strings::ToHex(*iter);
       const PidDescriptor *descriptor = m_root_store->GetDescriptor(
           *iter, m_manufacturer_id);
       if (descriptor) {
