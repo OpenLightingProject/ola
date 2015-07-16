@@ -143,7 +143,7 @@ AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
 AC_CHECK_FUNCS([kqueue])
 AM_CONDITIONAL(HAVE_KQUEUE, test "${ac_cv_func_kqueue}" = "yes")
 
-# check if the compiler supports -rdyanmic
+# check if the compiler supports -rdynamic
 AC_MSG_CHECKING(for -rdynamic support)
 old_cppflags=$CPPFLAGS
 CPPFLAGS="${CPPFLAGS} -rdynamic -Wall -Werror"

@@ -81,26 +81,31 @@ class ProxiedDevicesPrinter: public ola::messaging::MessagePrinter {
 class StatusMessagePrinter: public ola::messaging::MessagePrinter {
  public:
   void Visit(const ola::messaging::UInt8MessageField *field) {
-    if (m_messages.empty())
+    if (m_messages.empty()) {
       return;
+    }
     m_messages.back().status_type = field->Value();
     m_messages.back().status_type_defined = true;
   }
 
   void Visit(const ola::messaging::Int16MessageField *field) {
-    if (m_messages.empty())
+    if (m_messages.empty()) {
       return;
+    }
     status_message &message = m_messages.back();
-    if (message.int_offset < MAX_INT_FIELDS)
+    if (message.int_offset < MAX_INT_FIELDS) {
       message.int16_fields[message.int_offset++] = field->Value();
+    }
   }
 
   void Visit(const ola::messaging::UInt16MessageField *field) {
-    if (m_messages.empty())
+    if (m_messages.empty()) {
       return;
+    }
     status_message &message = m_messages.back();
-    if (message.uint_offset < MAX_UINT_FIELDS)
+    if (message.uint_offset < MAX_UINT_FIELDS) {
       message.uint16_fields[message.uint_offset++] = field->Value();
+    }
   }
 
   void Visit(const ola::messaging::GroupMessageField*) {
@@ -125,13 +130,14 @@ class StatusMessagePrinter: public ola::messaging::MessagePrinter {
           iter->int16_fields[1]);
 
       Stream() << StatusTypeToString(iter->status_type) << ": ";
-      if (iter->uint16_fields[0])
+      if (iter->uint16_fields[0]) {
         Stream() << "Sub-device " << iter->uint16_fields[0] << ": ";
+      }
 
       if (message.empty()) {
-        Stream() << " message-id: " <<
-          iter->uint16_fields[1] << ", data1: " << iter->int16_fields[0] <<
-          ", data2: " << iter->int16_fields[1] << std::endl;
+        Stream() << " message-id: " << iter->uint16_fields[1] << ", data1: "
+                 << iter->int16_fields[0] << ", data2: "
+                 << iter->int16_fields[1] << std::endl;
       } else {
         Stream() << message << std::endl;
       }
@@ -202,8 +208,8 @@ class DeviceInfoPrinter: public ola::messaging::GenericMessagePrinter {
   void Visit(const ola::messaging::UInt16MessageField *message) {
     const std::string name = message->GetDescriptor()->Name();
     if (name == "product_category") {
-      Stream() << TransformLabel(name) << ": " <<
-        ProductCategoryToString(message->Value()) << std::endl;
+      Stream() << TransformLabel(name) << ": "
+               << ProductCategoryToString(message->Value()) << std::endl;
     } else {
       ola::messaging::GenericMessagePrinter::Visit(message);
     }
@@ -284,8 +290,9 @@ class ClockPrinter: public ola::messaging::MessagePrinter {
   }
 
   void Visit(const ola::messaging::UInt8MessageField *message) {
-    if (m_offset < CLOCK_FIELDS)
+    if (m_offset < CLOCK_FIELDS) {
       m_fields[m_offset] = message->Value();
+    }
     m_offset++;
   }
 
@@ -293,13 +300,13 @@ class ClockPrinter: public ola::messaging::MessagePrinter {
     if (m_offset != CLOCK_FIELDS) {
       Stream() << "Malformed packet";
     }
-    Stream() << std::setfill('0') << std::setw(2) <<
-      static_cast<int>(m_fields[1]) << "/" <<
-      static_cast<int>(m_fields[0]) << "/" <<
-      m_year << " " <<
-      static_cast<int>(m_fields[2]) << ":" <<
-      static_cast<int>(m_fields[3]) << ":" <<
-      static_cast<int>(m_fields[4]) << std::endl;
+    Stream() << std::setfill('0') << std::setw(2)
+             << static_cast<int>(m_fields[1]) << "/"
+             << static_cast<int>(m_fields[0]) << "/"
+             << m_year << " "
+             << static_cast<int>(m_fields[2]) << ":"
+             << static_cast<int>(m_fields[3]) << ":"
+             << static_cast<int>(m_fields[4]) << std::endl;
   }
 
  private:
@@ -315,15 +322,17 @@ class ClockPrinter: public ola::messaging::MessagePrinter {
 class SlotInfoPrinter: public ola::messaging::MessagePrinter {
  public:
   void Visit(const ola::messaging::UInt8MessageField *field) {
-    if (m_slot_info.empty())
+    if (m_slot_info.empty()) {
       return;
+    }
     m_slot_info.back().type = field->Value();
     m_slot_info.back().type_defined = true;
   }
 
   void Visit(const ola::messaging::UInt16MessageField *field) {
-    if (m_slot_info.empty())
+    if (m_slot_info.empty()) {
       return;
+    }
     if (!m_slot_info.back().offset_defined) {
       m_slot_info.back().offset = field->Value();
       m_slot_info.back().offset_defined = true;
@@ -352,9 +361,8 @@ class SlotInfoPrinter: public ola::messaging::MessagePrinter {
       const std::string slot = SlotInfoToString(iter->type, iter->label);
 
       if (slot.empty()) {
-        Stream() << " offset: " <<
-          iter->offset << ", type: " << iter->type <<
-          ", label: " << iter->label << std::endl;
+        Stream() << " offset: " << iter->offset << ", type: " << iter->type
+                 << ", label: " << iter->label << std::endl;
       } else {
         Stream() << "Slot offset " << iter->offset << ": " << slot << std::endl;
       }
@@ -386,8 +394,8 @@ class SensorDefinitionPrinter: public ola::messaging::GenericMessagePrinter {
   void Visit(const ola::messaging::UInt8MessageField *message) {
     const std::string name = message->GetDescriptor()->Name();
     if (name == "type") {
-      Stream() << TransformLabel(name) << ": " <<
-        SensorTypeToString(message->Value()) << std::endl;
+      Stream() << TransformLabel(name) << ": "
+               << SensorTypeToString(message->Value()) << std::endl;
     } else if (name == "unit") {
       Stream() << TransformLabel(name) << ": ";
       if (message->Value() == UNITS_NONE) {
