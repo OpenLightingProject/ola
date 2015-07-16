@@ -13,9 +13,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- *
- *  A command line based RDM controller
- *  Copyright (C) 2010 Simon Newton
+ * RDMMessagePrinters.h
+ * Write out RDM Messages in a human-readable format.
+ * Copyright (C) 2010 Simon Newton
  */
 
 /**
@@ -174,7 +174,7 @@ class SupportedParamsPrinter: public ola::messaging::MessagePrinter {
   void PostStringHook() {
     std::set<uint16_t>::const_iterator iter = m_pids.begin();
     for (; iter != m_pids.end(); ++iter) {
-      Stream() << "  0x" << std::hex << *iter;
+      Stream() << "  " << ToHex(*iter);
       const PidDescriptor *descriptor = m_root_store->GetDescriptor(
           *iter, m_manufacturer_id);
       if (descriptor) {
@@ -200,11 +200,12 @@ class DeviceInfoPrinter: public ola::messaging::GenericMessagePrinter {
  public:
   void Visit(const ola::messaging::UInt16MessageField *message) {
     const std::string name = message->GetDescriptor()->Name();
-    if (name == "product_category")
+    if (name == "product_category") {
       Stream() << TransformLabel(name) << ": " <<
         ProductCategoryToString(message->Value()) << std::endl;
-    else
+    } else {
       ola::messaging::GenericMessagePrinter::Visit(message);
+    }
   }
 
  protected:
