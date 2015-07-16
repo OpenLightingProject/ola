@@ -1,3 +1,19 @@
+x/y/2015 ola-0.9.8
+ Features:
+ * 
+
+ API:
+ * 
+
+ RDM Tests:
+ * 
+
+ Bugs:
+ * 
+
+ Internal:
+ *
+
 13/7/2015 ola-0.9.7
  Bugs:
  * RDM NACK codes displayed with incorrect byte ordering in the C++ client #812
