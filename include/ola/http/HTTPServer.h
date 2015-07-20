@@ -218,8 +218,8 @@ class HTTPServer: public ola::thread::Thread {
 
   struct DescriptorState {
    public:
-    explicit DescriptorState(ola::io::UnmanagedFileDescriptor *descriptor)
-        : descriptor(descriptor), read(0), write(0) {}
+    explicit DescriptorState(ola::io::UnmanagedFileDescriptor *_descriptor)
+        : descriptor(_descriptor), read(0), write(0) {}
 
     ola::io::UnmanagedFileDescriptor *descriptor;
     uint8_t read    : 1;
