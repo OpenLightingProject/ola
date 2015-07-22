@@ -45,6 +45,9 @@ env:
 cache:
   apt: true
   pip: true
+  npm: true
+  directories:
+    - javascript/new-src/node_modules
 
 addons:
   apt:
