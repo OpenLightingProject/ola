@@ -42,7 +42,9 @@ env:
    - secure: "U+NmPtScHZ1NLmkDrzpqApHmJvELV44cXgjQsxA8N8xIATckbs+DrmWSNeECENyvuOPz+nPzglSgBvJtejf97jYJIIwAExq5TJMUAIPFS6KU3mohODW2PZSoVoUyJPzFIlhzcELQgONI+ILLm29lNdQNb7GFUVtO6+jS10AFtWY="
    # -- END Coverity Scan ENV
 
-cache: apt
+cache:
+  apt: true
+  pip: true
 
 addons:
   apt:
