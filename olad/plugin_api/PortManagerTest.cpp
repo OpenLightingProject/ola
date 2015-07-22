@@ -23,9 +23,9 @@
 
 #include "olad/DmxSource.h"
 #include "olad/PortBroker.h"
-#include "olad/PortManager.h"
-#include "olad/UniverseStore.h"
-#include "olad/TestCommon.h"
+#include "olad/plugin_api/PortManager.h"
+#include "olad/plugin_api/TestCommon.h"
+#include "olad/plugin_api/UniverseStore.h"
 #include "ola/testing/TestUtils.h"
 
 

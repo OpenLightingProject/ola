@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# DMXSenderThread.py
+# DMXSender.py
 # Copyright (C) 2011 Simon Newton
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'

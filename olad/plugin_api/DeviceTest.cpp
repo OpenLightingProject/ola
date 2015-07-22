@@ -26,7 +26,7 @@
 #include "olad/Plugin.h"
 #include "olad/Port.h"
 #include "olad/Preferences.h"
-#include "olad/TestCommon.h"
+#include "olad/plugin_api/TestCommon.h"
 #include "ola/testing/TestUtils.h"
 
 

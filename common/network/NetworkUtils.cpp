@@ -607,7 +607,7 @@ bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
       reinterpret_cast<PMIB_IPFORWARDTABLE>(malloc(size));
   DWORD result = GetIpForwardTable(forward_table, &size, TRUE);
   if (result == NO_ERROR) {
-    for (int i = 0; i < forward_table->dwNumEntries; ++i) {
+    for (unsigned int i = 0; i < forward_table->dwNumEntries; ++i) {
       if (forward_table->table[i].dwForwardDest == 0) {
         *default_gateway =
             IPV4Address(forward_table->table[i].dwForwardNextHop);

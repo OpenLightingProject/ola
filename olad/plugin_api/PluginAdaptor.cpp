@@ -21,10 +21,10 @@
 
 #include <string>
 #include "ola/Callback.h"
-#include "olad/DeviceManager.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/PortBroker.h"
 #include "olad/Preferences.h"
+#include "olad/plugin_api/DeviceManager.h"
 
 namespace ola {
 

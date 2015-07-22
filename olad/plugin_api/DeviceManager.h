@@ -18,8 +18,8 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#ifndef OLAD_DEVICEMANAGER_H_
-#define OLAD_DEVICEMANAGER_H_
+#ifndef OLAD_PLUGIN_API_DEVICEMANAGER_H_
+#define OLAD_PLUGIN_API_DEVICEMANAGER_H_
 
 #include <map>
 #include <set>
@@ -170,4 +170,4 @@ class DeviceManager {
   DISALLOW_COPY_AND_ASSIGN(DeviceManager);
 };
 }  // namespace ola
-#endif  // OLAD_DEVICEMANAGER_H_
+#endif  // OLAD_PLUGIN_API_DEVICEMANAGER_H_

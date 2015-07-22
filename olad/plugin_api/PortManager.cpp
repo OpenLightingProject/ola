@@ -18,7 +18,7 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include "olad/PortManager.h"
+#include "olad/plugin_api/PortManager.h"
 
 #include <vector>
 #include "ola/Logging.h"

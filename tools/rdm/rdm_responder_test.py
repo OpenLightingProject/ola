@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# ola_rdm_get.py
+# rdm_responder_test.py
 # Copyright (C) 2010 Simon Newton
 
 '''Automated testing for RDM responders.'''

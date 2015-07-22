@@ -26,7 +26,7 @@
 #include "ola/Logging.h"
 #include "ola/rdm/UID.h"
 #include "ola/stl/STLUtils.h"
-#include "olad/Client.h"
+#include "olad/plugin_api/Client.h"
 
 namespace ola {
 

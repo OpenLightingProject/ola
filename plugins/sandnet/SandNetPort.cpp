@@ -13,7 +13,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *
  * SandNetPort.cpp
  * The SandNet plugin for ola
  * Copyright (C) 2005 Simon Newton
