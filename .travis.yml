@@ -51,19 +51,20 @@ addons:
       - llvm-toolchain-precise-3.6
     packages:
       - protobuf-compiler
+      - libprotoc-dev
       - libprotobuf-dev
       - protobuf-c-compiler
       - bison
       - flex
-      #- libftdi-dev
-      #- libftdi1
+      - libftdi-dev
+      - libftdi1
       - libusb-1.0-0-dev
-      #- liblo-dev
+      - liblo-dev
       - libavahi-glib1
       - uuid-dev
       - libcppunit-dev
       - libncurses5-dev
-      #- python-protobuf
+      - python-protobuf
       - libmicrohttpd-dev
       - doxygen
       - graphviz
