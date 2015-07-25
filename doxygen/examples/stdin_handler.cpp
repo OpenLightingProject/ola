@@ -21,10 +21,6 @@
 #include <ola/io/StdinHandler.h>
 #include <iostream>
 
-using ola::io::SelectServer;
-using std::cout;
-using std::endl;
-
 class ExampleStdinHandler {
  public:
   ExampleStdinHandler();
@@ -44,15 +40,13 @@ ExampleStdinHandler::ExampleStdinHandler()
                     ola::NewCallback(this, &ExampleStdinHandler::Input)) {
 }
 
-ExampleStdinHandler::~ExampleStdinHandler() {}
-
 void ExampleStdinHandler::Input(int c) {
   switch (c) {
     case 'q':
       m_ss.Terminate();
       break;
     default:
-      cout << "Got " << static_cast<char>(c) << " - " << c << endl;
+      std::cout << "Got " << static_cast<char>(c) << " - " << c << std::endl;
       break;
   }
 }
