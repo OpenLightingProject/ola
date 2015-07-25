@@ -74,6 +74,7 @@ elif [[ $TASK = 'jshint' ]]; then
   npm install;
   grunt test
 else
+  # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
   autoreconf -i;
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
