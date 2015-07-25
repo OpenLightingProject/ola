@@ -77,7 +77,7 @@ else
   # Otherwise compile and check as normal
   autoreconf -i;
   ./configure --enable-rdm-tests # --enable-ja-rule;
-  make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule';
+  make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests';
   make dist;
   tarball=$(ls -Ut ola*.tar.gz | head -1)
   tar -zxf $tarball;
