@@ -43,9 +43,9 @@ env:
    # -- END Coverity Scan ENV
 
 cache:
-  apt: true
-  pip: true
-  npm: true
+  - apt
+  - npm
+  - pip
 
 addons:
   apt:
