@@ -13,6 +13,7 @@ noinst_PROGRAMS += \
     doxygen/examples/legacy_receiver \
     doxygen/examples/legacy_streaming_client \
     doxygen/examples/receiver \
+    doxygen/examples/stdin_handler \
     doxygen/examples/streaming_client \
     doxygen/examples/udp_server
 
@@ -64,6 +65,10 @@ doxygen_examples_legacy_receiver_LDADD = $(DOXYGEN_EXAMPLES_LDADD)
 doxygen_examples_receiver_SOURCES = \
     doxygen/examples/receiver.cpp
 doxygen_examples_receiver_LDADD = $(DOXYGEN_EXAMPLES_LDADD)
+
+doxygen_examples_stdin_handler_SOURCES = \
+    doxygen/examples/stdin_handler.cpp
+doxygen_examples_stdin_handler_LDADD = $(DOXYGEN_EXAMPLES_LDADD)
 
 doxygen_examples_udp_server_SOURCES = \
     doxygen/examples/udp_server.cpp
