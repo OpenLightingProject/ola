@@ -23,8 +23,11 @@
 
 class ExampleStdinHandler {
  public:
-  ExampleStdinHandler();
-  ~ExampleStdinHandler();
+  ExampleStdinHandler()
+    : m_stdin_handler(&m_ss,
+                      ola::NewCallback(this, &ExampleStdinHandler::Input)) {
+  }
+  ~ExampleStdinHandler() {};
 
   void Run() { m_ss.Run(); }
 
@@ -34,11 +37,6 @@ class ExampleStdinHandler {
 
   void Input(int c);
 };
-
-ExampleStdinHandler::ExampleStdinHandler()
-  : m_stdin_handler(&m_ss,
-                    ola::NewCallback(this, &ExampleStdinHandler::Input)) {
-}
 
 void ExampleStdinHandler::Input(int c) {
   switch (c) {
