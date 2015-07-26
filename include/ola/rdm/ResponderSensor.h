@@ -56,20 +56,20 @@ class Sensor {
     // SensorOptions constructor to set all options, for use in
     // initialisation lists. This also sets the defaults if called with no
     // args
-    SensorOptions(bool recorded_value_support = true,
-                  bool recorded_range_support = true,
-                  int16_t range_min = SENSOR_DEFINITION_RANGE_MIN_UNDEFINED,
-                  int16_t range_max = SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
-                  int16_t normal_min =
+    SensorOptions(bool _recorded_value_support = true,
+                  bool _recorded_range_support = true,
+                  int16_t _range_min = SENSOR_DEFINITION_RANGE_MIN_UNDEFINED,
+                  int16_t _range_max = SENSOR_DEFINITION_RANGE_MAX_UNDEFINED,
+                  int16_t _normal_min =
                       SENSOR_DEFINITION_NORMAL_MIN_UNDEFINED,
-                  int16_t normal_max =
+                  int16_t _normal_max =
                       SENSOR_DEFINITION_NORMAL_MAX_UNDEFINED)
-        : recorded_value_support(recorded_value_support),
-          recorded_range_support(recorded_range_support),
-          range_min(range_min),
-          range_max(range_max),
-          normal_min(normal_min),
-          normal_max(normal_max) {
+        : recorded_value_support(_recorded_value_support),
+          recorded_range_support(_recorded_range_support),
+          range_min(_range_min),
+          range_max(_range_max),
+          normal_min(_normal_min),
+          normal_max(_normal_max) {
     }
   };
 

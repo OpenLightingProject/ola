@@ -43,8 +43,8 @@ class RDMFrame {
    public:
     Options() : prepend_start_code(false) {}
 
-    explicit Options(bool prepend_start_code)
-        : prepend_start_code(prepend_start_code) {
+    explicit Options(bool _prepend_start_code)
+        : prepend_start_code(_prepend_start_code) {
     }
 
     /**
