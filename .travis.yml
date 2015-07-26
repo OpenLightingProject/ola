@@ -73,7 +73,8 @@ addons:
       - graphviz
       - g++-5
       - g++-4.9
-      - clang-3.6
+      - clang-3.6 # waiting for clang-3.8 to be approved
+      # https://github.com/travis-ci/apt-package-whitelist/issues/474 
 
 install:
   - pip install --user protobuf==2.4.1

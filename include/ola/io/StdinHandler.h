@@ -30,9 +30,32 @@
 #include <ola/io/SelectServerInterface.h>
 #include <memory>
 
+/**
+ * @defgroup stdin Stdin Handling
+ * @brief Standard Input Handling.
+ *
+ * Code to read from stdin
+ *
+ * @examplepara
+ *  @snippet stdin_handler.cpp Example
+ *  When <tt>./stdin_handler</tt> is run, it will echo each key pressed except
+ *  for q which will quit.
+ */
+
+/**
+ * @addtogroup stdin
+ * @{
+ * @file StdinHandler.h
+ * @brief The stdin handler
+ */
 
 namespace ola {
 namespace io {
+
+/**
+ * @addtogroup stdin
+ * @{
+ */
 
 class StdinHandler {
  public :
@@ -54,4 +77,5 @@ class StdinHandler {
 };
 }  // namespace io
 }  // namespace ola
+/** @}*/
 #endif  // INCLUDE_OLA_IO_STDINHANDLER_H_
