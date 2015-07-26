@@ -38,38 +38,35 @@ using ola::thread::Thread;
 using std::auto_ptr;
 using std::string;
 
-static void RegisterCallback(DNSServiceRef service,
-                             DNSServiceFlags flags,
+static void RegisterCallback(OLA_UNUSED DNSServiceRef service,
+                             OLA_UNUSED DNSServiceFlags flags,
                              DNSServiceErrorType error_code,
                              const char *name,
                              const char *type,
                              const char *domain,
-                             void *context) {
+                             OLA_UNUSED void *context) {
   if (error_code != kDNSServiceErr_NoError) {
     OLA_WARN << "DNSServiceRegister for " << name << "." << type << domain
              << " returned error " << error_code;
   } else {
     OLA_INFO << "Registered: " << name << "." << type << domain;
   }
-  (void) service;
-  (void) flags;
-  (void) context;
 }
 
 class DNSSDDescriptor : public ola::io::ReadFileDescriptor {
  public:
-    explicit DNSSDDescriptor(DNSServiceRef service_ref)
-        : m_service_ref(service_ref) {
-    }
+  explicit DNSSDDescriptor(DNSServiceRef service_ref)
+      : m_service_ref(service_ref) {
+  }
 
-    int ReadDescriptor() const {
-      return DNSServiceRefSockFD(m_service_ref);
-    }
+  int ReadDescriptor() const {
+    return DNSServiceRefSockFD(m_service_ref);
+  }
 
-    void PerformRead();
+  void PerformRead();
 
  private:
-    DNSServiceRef m_service_ref;
+  DNSServiceRef m_service_ref;
 };
 
 void DNSSDDescriptor::PerformRead() {
