@@ -38,7 +38,7 @@ class StringMessageBuilder: public FieldDescriptorVisitor {
     explicit StringMessageBuilder(const std::vector<std::string> &input)
         : m_input(input) {
     }
-    ~StringMessageBuilderVisitor() {}
+    ~StringMessageBuilder() {}
 
     void Visit(const BoolFieldDescriptor*);
     void Visit(const IPV4FieldDescriptor*);
