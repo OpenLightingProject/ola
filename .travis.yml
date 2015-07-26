@@ -50,7 +50,8 @@ cache:
     - $HOME/.ccache # ccache cache
 
 before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log # erease log
+  - rm -f $HOME/.cache/pip/log/debug.log # erase log
+  - ccache -s # see how many hits ccache got
 
 addons:
   apt:
