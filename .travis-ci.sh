@@ -75,9 +75,10 @@ elif [[ $TASK = 'jshint' ]]; then
   grunt test
 else
   # Otherwise compile and check as normal
+  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
   autoreconf -i;
-  ./configure --enable-rdm-tests --enable-ja-rule;
-  make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule';
+  ./configure $DISTCHECK_CONFIGURE_FLAGS;
+  make distcheck;
   make dist;
   tarball=$(ls -Ut ola*.tar.gz | head -1)
   tar -zxf $tarball;
