@@ -44,10 +44,10 @@ env:
 
 cache:
   apt: true
-  ccache: true
   directories:
     - $HOME/.cache/pip # pip cache
     - $HOME/.npm # npm cache
+    - $HOME/.ccache # ccache cache
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log # erease log
