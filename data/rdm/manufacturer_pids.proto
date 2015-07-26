@@ -8143,5 +8143,44 @@ manufacturer {
     }
     get_sub_device_range: ROOT_OR_SUBDEVICE
   }
+  pid {
+    name: "MODEL_ID"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "model_id"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "model_id"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "MODEL_ID_LIST"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: GROUP
+        name: "models"
+        field {
+          type: UINT16
+          name: "model_id"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
 }
-version: 1432052711
+version: 1437580798

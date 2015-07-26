@@ -9,7 +9,7 @@ x/y/2015 ola-0.9.8
  * 
 
  Bugs:
- * 
+ * Fix the build on Windows
 
  Internal:
  *

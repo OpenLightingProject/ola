@@ -90,9 +90,9 @@ struct SendDMXArgs {
   /**
    * @brief Create a new SendDMXArgs object
    */
-  explicit SendDMXArgs(GeneralSetCallback *callback)
+  explicit SendDMXArgs(GeneralSetCallback *_callback)
       : priority(ola::dmx::SOURCE_PRIORITY_DEFAULT),
-        callback(callback) {
+        callback(_callback) {
   }
 };
 
@@ -111,8 +111,8 @@ struct SendRDMArgs {
    */
   bool include_raw_frames;
 
-  explicit SendRDMArgs(RDMCallback *callback)
-    : callback(callback),
+  explicit SendRDMArgs(RDMCallback *_callback)
+    : callback(_callback),
       include_raw_frames(false) {
   }
 };
