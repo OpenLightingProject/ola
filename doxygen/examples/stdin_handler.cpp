@@ -27,7 +27,6 @@ class ExampleStdinHandler {
     : m_stdin_handler(&m_ss,
                       ola::NewCallback(this, &ExampleStdinHandler::Input)) {
   }
-  ~ExampleStdinHandler() {};
 
   void Run() { m_ss.Run(); }
 
