@@ -40,7 +40,7 @@ elif [[ $TASK = 'check-licences' ]]; then
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
   autoreconf -i;
-  ./configure --enable-ja-rule;
+  ./configure --enable-rdm-tests # --enable-ja-rule;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
@@ -57,7 +57,7 @@ elif [[ $TASK = 'doxygen' ]]; then
 elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i;
-  ./configure --enable-ja-rule --enable-gcov;
+  ./configure --enable-rdm-tests --enable-gcov # --enable-ja-rule;
   make;
   make check;
 elif [[ $TASK = 'coverity' ]]; then
@@ -75,7 +75,7 @@ elif [[ $TASK = 'jshint' ]]; then
   grunt test
 else
   # Otherwise compile and check as normal
-  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
+  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests'
   autoreconf -i;
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
   make distcheck;
