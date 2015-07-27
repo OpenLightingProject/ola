@@ -176,6 +176,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // Goddard device models
     static const uint16_t GODDARD_DMXTER4_ID = 0x444d;
     static const uint16_t GODDARD_MINI_DMXTER4_ID = 0x4d49;
+    static const uint16_t GODDARD_DMXTER4A_ID = 0x3441;
 
     // Open Lighting device models
     static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
