@@ -1041,7 +1041,7 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
         self.NackGetResult(
             RDMNack.NR_DATA_OUT_OF_RANGE,
             advisory='Parameter Description appears to be supported but no'
-                     'manufacturer pids were declared'),
+                     'manufacturer PIDs were declared'),
     ]
     if self.Property('manufacturer_parameters'):
       results = self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
@@ -1060,9 +1060,9 @@ class GetParamDescriptionWithData(ResponderTestFixture):
     results = [
         self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
         self.NackGetResult(RDMNack.NR_FORMAT_ERROR,
-                          advisory='Parameter Description appears to be '
-                                   'supported but no manufacturer pids were '
-                                   'declared'),
+                           advisory='Parameter Description appears to be '
+                                    'supported but no manufacturer PIDs were '
+                                    'declared'),
     ]
     if self.Property('manufacturer_parameters'):
       results = self.NackGetResult(RDMNack.NR_FORMAT_ERROR)
@@ -4964,22 +4964,13 @@ class GetLockPin(OptionalParameterTestFixture):
     if response.WasAcked():
       self.SetPropertyFromDict(fields, 'pin_code')
 
-class GetLockPinWithData(OptionalParameterTestFixture):
+class GetLockPinWithData(TestMixins.GetWithDataMixin,
+                         OptionalParameterTestFixture):
   """Get LOCK_PIN with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_PIN'
   DATA = 'foo'
-
-  def Test(self):
-    # We can't use the GetWithDataMixin because NR_UNSUPPORTED_COMMAND_CLASS is
-    # a valid response here.
-    self.AddIfGetSupported([
-      self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-      self.AckGetResult(
-        warning='Get %s with data returned an ack' % self.pid.name)
-    ])
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+  ALLOWED_NACK = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
 
 class AllSubDevicesGetLockPin(TestMixins.AllSubDevicesGetMixin,
                               OptionalParameterTestFixture):
@@ -6443,7 +6434,7 @@ class AllSubDevicesGetPresetMergeMode(TestMixins.AllSubDevicesGetMixin,
 class GetListInterfaces(TestMixins.GetMixin,
                         OptionalParameterTestFixture):
   """Get LIST_INTERFACES."""
-  CATEGORY = TestCategory.CONTROL
+  CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'LIST_INTERFACES'
   PROVIDES = ['list_interfaces']
 
@@ -6481,6 +6472,89 @@ class SetListInterfaces(ResponderTestFixture):
   def Test(self):
     self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
     self.SendRawSet(ROOT_DEVICE, self.pid)
+
+# DNS_HOSTNAME
+#------------------------------------------------------------------------------
+class GetDNSHostname(TestMixins.GetStringMixin,
+                     OptionalParameterTestFixture):
+  """GET the DNS hostname."""
+  CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+  PID = 'DNS_HOSTNAME'
+  EXPECTED_FIELD = 'dns_hostname'
+  PROVIDES = ['dns_hostname']
+  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
+  MIN_LENGTH = RDM_MIN_HOSTNAME_LENGTH
+  MAX_LENGTH = RDM_MAX_HOSTNAME_LENGTH
+
+class GetDNSHostnameWithData(TestMixins.GetWithDataMixin,
+                             OptionalParameterTestFixture):
+  """Get DNS hostname with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DNS_HOSTNAME'
+  # Allow NR_HARDWARE_FAULT in case they're checking length then PDL
+  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
+
+# TODO(Peter): Need to restrict these somehow so we don't saw off the branch
+#class SetDnsHostname(TestMixins.UnsupportedSetMixin,
+#                     OptionalParameterTestFixture):
+#  """Attempt to SET the DNS hostname with no data."""
+#  CATEGORY = TestCategory.ERROR_CONDITIONS
+#  PID = 'DNS_HOSTNAME'
+#
+#
+#class SetDnsHostnameWithData(TestMixins.UnsupportedSetMixin,
+#                                   OptionalParameterTestFixture):
+#  """SET the DNS hostname with data."""
+#  CATEGORY = TestCategory.ERROR_CONDITIONS
+#  PID = 'DNS_HOSTNAME'
+#  DATA = 'FOOBAR'
+
+class AllSubDevicesGetDNSHostname(TestMixins.AllSubDevicesGetMixin,
+                                  OptionalParameterTestFixture):
+  """Send a Get DNS_HOSTNAME to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'DNS_HOSTNAME'
+
+# DNS_DOMAIN_NAME
+#------------------------------------------------------------------------------
+class GetDNSDomainName(TestMixins.GetStringMixin,
+                       OptionalParameterTestFixture):
+  """GET the DNS domain name."""
+  CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+  PID = 'DNS_DOMAIN_NAME'
+  EXPECTED_FIELD = 'dns_domain_name'
+  PROVIDES = ['dns_domain_name']
+  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
+  MAX_LENGTH = RDM_MAX_DOMAIN_NAME_LENGTH
+
+class GetDNSDomainNameWithData(TestMixins.GetWithDataMixin,
+                               OptionalParameterTestFixture):
+  """Get DNS domain name with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DNS_DOMAIN_NAME'
+  # Allow NR_HARDWARE_FAULT in case they're checking length then PDL
+  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
+
+# TODO(Peter): Need to restrict these somehow so we don't saw off the branch
+#class SetDnsDomainName(TestMixins.UnsupportedSetMixin,
+#                       OptionalParameterTestFixture):
+#  """Attempt to SET the DNS domain name with no data."""
+#  CATEGORY = TestCategory.ERROR_CONDITIONS
+#  PID = 'DNS_DOMAIN_NAME'
+#
+#
+#class SetDnsDomainNameWithData(TestMixins.UnsupportedSetMixin,
+#                               OptionalParameterTestFixture):
+#  """SET the DNS domain name with data."""
+#  CATEGORY = TestCategory.ERROR_CONDITIONS
+#  PID = 'DNS_DOMAIN_NAME'
+#  DATA = 'FOOBAR'
+
+class AllSubDevicesGetDNSDomainName(TestMixins.AllSubDevicesGetMixin,
+                                    OptionalParameterTestFixture):
+  """Send a Get DNS_DOMAIN_NAME to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'DNS_DOMAIN_NAME'
 
 # Cross check the control fields with various other properties
 #------------------------------------------------------------------------------

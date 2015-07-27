@@ -30,13 +30,14 @@ from TestCategory import TestCategory
 from TestHelpers import ContainsUnprintable
 from collections import deque
 from ola import PidStore
+from ola.DMXConstants import *
 from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
+from ola.RDMConstants import *
 from ola.UID import UID
 
-MAX_LABEL_SIZE = 32
-MAX_DMX_ADDRESS = 512
+MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
 
 def UnsupportedSetNacks(pid):
   """Responders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
@@ -61,9 +62,17 @@ class GetMixin(object):
 
     This mixin also sets a property if PROVIDES is defined.  The target class
     needs to defined EXPECTED_FIELD and optionally PROVIDES.
+
+    If ALLOWED_NACK is defined, this adds a custom NackGetResult to the list of
+    allowed results.
   """
+  ALLOWED_NACK = None
+
   def Test(self):
-    self.AddIfGetSupported(self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
+    results = [self.AckGetResult(field_names=[self.EXPECTED_FIELD])]
+    if self.ALLOWED_NACK:
+      results.append(self.NackGetResult(self.ALLOWED_NACK))
+    self.AddIfGetSupported(results)
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
@@ -77,6 +86,9 @@ class GetStringMixin(GetMixin):
     This mixin also sets a property if PROVIDES is defined.  The target class
     needs to defined EXPECTED_FIELD and optionally PROVIDES.
   """
+  MIN_LENGTH = 0
+  MAX_LENGTH = RDM_MAX_STRING_LENGTH
+
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
@@ -89,6 +101,18 @@ class GetStringMixin(GetMixin):
           '%s field in %s contains unprintable characters, was %s' %
           (self.EXPECTED_FIELD.capitalize(), self.PID,
            fields[self.EXPECTED_FIELD].encode('string-escape')))
+
+    if self.MIN_LENGTH and len(fields[self.EXPECTED_FIELD]) < self.MIN_LENGTH:
+      self.SetFailed(
+          '%s field in %s was shorter than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELD.capitalize(), self.PID,
+           len(fields[self.EXPECTED_FIELD]), self.MIN_LENGTH))
+
+    if self.MAX_LENGTH and len(fields[self.EXPECTED_FIELD]) > self.MAX_LENGTH:
+      self.SetFailed(
+          '%s field in %s was longer than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELD.capitalize(), self.PID,
+           len(fields[self.EXPECTED_FIELD]), self.MAX_LENGTH))
 
 class GetRequiredMixin(object):
   """GET Mixin for a required PID. Verify EXPECTED_FIELD is in the response.
@@ -112,6 +136,9 @@ class GetRequiredStringMixin(GetRequiredMixin):
     This mixin also sets a property if PROVIDES is defined.  The target class
     needs to defined EXPECTED_FIELD and optionally PROVIDES.
   """
+  MIN_LENGTH = 0
+  MAX_LENGTH = RDM_MAX_STRING_LENGTH
+
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
@@ -125,16 +152,36 @@ class GetRequiredStringMixin(GetRequiredMixin):
           (self.EXPECTED_FIELD.capitalize(), self.PID,
            fields[self.EXPECTED_FIELD].encode('string-escape')))
 
+    if self.MIN_LENGTH and len(fields[self.EXPECTED_FIELD]) < self.MIN_LENGTH:
+      self.SetFailed(
+          '%s field in %s was shorter than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELD.capitalize(), self.PID,
+           len(fields[self.EXPECTED_FIELD]), self.MIN_LENGTH))
+
+    if self.MAX_LENGTH and len(fields[self.EXPECTED_FIELD]) > self.MAX_LENGTH:
+      self.SetFailed(
+          '%s field in %s was longer than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELD.capitalize(), self.PID,
+           len(fields[self.EXPECTED_FIELD]), self.MAX_LENGTH))
+
 class GetWithDataMixin(object):
-  """GET a PID with junk param data."""
+  """GET a PID with junk param data.
+
+    If ALLOWED_NACK is defined, this adds an additional custom NackGetResult to
+    the list of allowed results.
+  """
   DATA = 'foo'
+  ALLOWED_NACK = None
 
   def Test(self):
-    self.AddIfGetSupported([
+    results = [
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckGetResult(
         warning='Get %s with data returned an ack' % self.pid.name)
-    ])
+    ]
+    if self.ALLOWED_NACK:
+      results.append(self.NackGetResult(self.ALLOWED_NACK))
+    self.AddIfGetSupported(results)
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 class GetMandatoryPIDWithDataMixin(object):
@@ -302,7 +349,7 @@ class SetOversizedLabelMixin(object):
     if 'label' not in fields:
       self.SetFailed('Missing label field in response')
     else:
-      if fields['label'] != self.LONG_STRING[0:MAX_LABEL_SIZE]:
+      if fields['label'] != self.LONG_STRING[0:RDM_MAX_STRING_LENGTH]:
         self.AddWarning(
             'Setting an oversized %s set the first %d characters' % (
             self.PID, len(fields['label'])))
