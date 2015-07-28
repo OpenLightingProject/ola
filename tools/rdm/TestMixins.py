@@ -900,7 +900,7 @@ class SetOutOfRangeByteMixin(object):
     self.SendSet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
 class GetSettingDescriptionsMixin(object):
-  """Perform a GET for each setting in the range 0 .. NumberOfSettings().
+  """Perform a GET for each setting in the range 1 .. NumberOfSettings().
 
     Subclasses must define EXPECTED_FIELD, which is the field to validate the
     index against and DESCRIPTION_FIELD, which is the field to check for
