@@ -803,6 +803,9 @@ RDMResponse *ResponderHelper::GetIPV4DefaultRoute(
     const RDMRequest *request,
     const NetworkManagerInterface *network_manager,
     uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
   int32_t if_index = Interface::DEFAULT_INDEX;
   IPV4Address default_route;
   if (!network_manager->GetIPV4DefaultRoute(&if_index, &default_route)) {
