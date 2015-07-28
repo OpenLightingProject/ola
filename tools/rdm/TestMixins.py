@@ -60,8 +60,9 @@ class UnsupportedGetMixin(object):
 class GetMixin(object):
   """GET Mixin for an optional PID. Verify EXPECTED_FIELD is in the response.
 
-    This mixin also sets a property if PROVIDES is defined.  The target class
-    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+    This mixin also sets a property/mulitiple properties if PROVIDES is
+    defined.  The target class needs to defined EXPECTED_FIELD and optionally
+    PROVIDES.
 
     If ALLOWED_NACK is defined, this adds a custom NackGetResult to the list of
     allowed results.
@@ -69,7 +70,11 @@ class GetMixin(object):
   ALLOWED_NACK = None
 
   def Test(self):
-    results = [self.AckGetResult(field_names=[self.EXPECTED_FIELD])]
+    if isinstance(self.EXPECTED_FIELD, list):
+      expected_fields = self.EXPECTED_FIELD
+    else:
+      expected_fields = [self.EXPECTED_FIELD]
+    results = [self.AckGetResult(field_names=expected_fields)]
     if self.ALLOWED_NACK:
       results.append(self.NackGetResult(self.ALLOWED_NACK))
     self.AddIfGetSupported(results)
@@ -77,7 +82,11 @@ class GetMixin(object):
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+      if isinstance(self.EXPECTED_FIELD, list):
+        for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELD))):
+          self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELD[i]])
+      else:
+        self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
 class GetStringMixin(GetMixin):
   """GET Mixin for an optional string PID. Verify EXPECTED_FIELD is in the

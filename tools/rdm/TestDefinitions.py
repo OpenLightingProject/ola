@@ -1814,6 +1814,11 @@ class GetPersonalityDescriptions(OptionalParameterTestFixture):
     if response.WasAcked():
       self._personalities.append(fields)
 
+      if ContainsUnprintable(fields['name']):
+        self.AddAdvisory(
+            'Name field in %s contains unprintable characters, was %s' %
+            (self.PID, fields['name'].encode('string-escape')))
+
 
 class SetPersonality(OptionalParameterTestFixture):
   """Set the personality."""
@@ -6526,11 +6531,11 @@ class AllSubDevicesGetDNSDomainName(TestMixins.AllSubDevicesGetMixin,
 class GetIPv4DefaultRoute(TestMixins.GetMixin,
                           OptionalParameterTestFixture):
   """GET the IPv4 default route."""
+  # TODO(Peter): Check interface identifier is a valid interface
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'IPV4_DEFAULT_ROUTE'
-  EXPECTED_FIELD = 'dns_domain_name'
+  EXPECTED_FIELD = ['ipv4_address', 'interface_identifier']
   ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
-  MAX_LENGTH = RDM_MAX_DOMAIN_NAME_LENGTH
 
 class GetIPv4DefaultRouteWithData(TestMixins.GetWithDataMixin,
                                   OptionalParameterTestFixture):
