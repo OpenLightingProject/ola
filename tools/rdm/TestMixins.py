@@ -900,13 +900,22 @@ class SetOutOfRangeByteMixin(object):
     self.SendSet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
 class GetSettingDescriptionsMixin(object):
-  """Perform a GET for each setting in the range 1 .. NumberOfSettings().
+  """Perform a GET for each setting in a range.
+
+    The range can either be an array of settings, which don't need to be 
+    sequential, or a count, in which case it will check
+    FIRST_INDEX_OFFSET to FIRST_INDEX_OFFSET + NumberOfSettings().
 
     Subclasses must define EXPECTED_FIELD, which is the field to validate the
     index against and DESCRIPTION_FIELD, which is the field to check for
     unprintable characters.
+
+    If ALLOWED_NACK is defined, this adds a custom NackGetResult to the list of
+    allowed results.
   """
   CATEGORY = TestCategory.DIMMER_SETTINGS
+  ALLOWED_NACK = None
+  FIRST_INDEX_OFFSET = 1
 
   def NumberOfSettings(self):
     # By default we use the first property from REQUIRES
@@ -915,13 +924,14 @@ class GetSettingDescriptionsMixin(object):
   def Test(self):
     count = self.NumberOfSettings()
     if count is None:
-      # Try to GET item 1, this should NACK
+      # Try to GET first item, this should NACK
       self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-      self.SendGet(ROOT_DEVICE, self.pid, [1])
+      self.SendGet(ROOT_DEVICE, self.pid, [self.FIRST_INDEX_OFFSET])
       return
 
     # Otherwise fetch the description for each known setting.
-    self.items = [i + 1 for i in xrange(count)]
+    self.items = range(self.FIRST_INDEX_OFFSET,
+                       count + self.FIRST_INDEX_OFFSET)
     self._GetNextDescription()
 
   def _GetNextDescription(self):
@@ -929,7 +939,10 @@ class GetSettingDescriptionsMixin(object):
       self.Stop()
       return
 
-    self.AddIfGetSupported(self.AckGetResult(action=self._GetNextDescription))
+    results = [self.AckGetResult(action=self._GetNextDescription)]
+    if self.ALLOWED_NACK:
+      results.append(self.NackGetResult(self.ALLOWED_NACK, action=self._GetNextDescription))
+    self.AddIfGetSupported(results)
     self.current_item = self.items.pop()
     self.SendGet(ROOT_DEVICE, self.pid, [self.current_item])
 

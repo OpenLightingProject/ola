@@ -2191,55 +2191,16 @@ class AllSubDevicesGetSlotInfo(TestMixins.AllSubDevicesGetMixin,
 
 # Slot Description
 #------------------------------------------------------------------------------
-class GetSlotDescriptions(OptionalParameterTestFixture):
+class GetSlotDescriptions(TestMixins.GetSettingDescriptionsMixin,
+                          OptionalParameterTestFixture):
   """Get the slot descriptions for all defined slots."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'SLOT_DESCRIPTION'
   REQUIRES = ['dmx_footprint']
-
-  def Test(self):
-    footprint = self.Property('dmx_footprint')
-
-    if footprint == 0:
-      self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-      self.SendGet(ROOT_DEVICE, self.pid, [0])
-    else:
-      self._slots = range(footprint)
-      self._GetSlotDescription()
-
-  def _GetSlotDescription(self):
-    if not self._slots:
-      self.Stop()
-      return
-
-    self.AddIfGetSupported([
-      self.AckGetResult(action=self._GetNextSlot),
-      self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
-                         action=self._GetNextSlot)
-    ])
-    self.SendGet(ROOT_DEVICE, self.pid, [self._slots[0]])
-
-  def _GetNextSlot(self):
-    self._slots.pop(0)
-    self._GetSlotDescription()
-
-  def VerifyResult(self, response, fields):
-    if not response.WasAcked():
-      return
-
-    if self._slots[0] != fields['slot_number']:
-      self.AddWarning(
-          'Requested description for slot %d, message returned slot %d' %
-          (self._slots[0], fields['slot_number']))
-      return
-
-    if ContainsUnprintable(fields['name']):
-      self.AddAdvisory(
-          'Name field in %s for slot %d contains unprintable characters, was '
-          '%s' % (self.PID,
-                  self._slots[0],
-                  fields['name'].encode('string-escape')))
-
+  FIRST_INDEX_OFFSET = 0
+  EXPECTED_FIELD = 'slot_number'
+  DESCRIPTION_FIELD = 'name'
+  ALLOWED_NACK = RDMNack.NR_DATA_OUT_OF_RANGE
 
 class GetSlotDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                    OptionalParameterTestFixture):
@@ -3923,6 +3884,12 @@ class FindSelfTests(OptionalParameterTestFixture):
             (self._current_index, fields['test_number']))
       else:
         self._self_tests[self._current_index] = fields['description']
+
+      if ContainsUnprintable(fields['description']):
+        self.AddAdvisory(
+            'Description field in self test description for test number %d '
+            'contains unprintable characters, was %s' %
+            (fields['test_number'], fields['description'].encode('string-escape')))
 
 class AllSubDevicesGetSelfTestDescription(TestMixins.AllSubDevicesGetMixin,
                                           OptionalParameterTestFixture):
@@ -6481,7 +6448,6 @@ class GetDNSHostname(TestMixins.GetStringMixin,
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'DNS_HOSTNAME'
   EXPECTED_FIELD = 'dns_hostname'
-  PROVIDES = ['dns_hostname']
   ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
   MIN_LENGTH = RDM_MIN_HOSTNAME_LENGTH
   MAX_LENGTH = RDM_MAX_HOSTNAME_LENGTH
@@ -6523,7 +6489,6 @@ class GetDNSDomainName(TestMixins.GetStringMixin,
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'DNS_DOMAIN_NAME'
   EXPECTED_FIELD = 'dns_domain_name'
-  PROVIDES = ['dns_domain_name']
   ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
   MAX_LENGTH = RDM_MAX_DOMAIN_NAME_LENGTH
 
@@ -6555,6 +6520,46 @@ class AllSubDevicesGetDNSDomainName(TestMixins.AllSubDevicesGetMixin,
   """Send a Get DNS_DOMAIN_NAME to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DNS_DOMAIN_NAME'
+
+# IPV4_DEFAULT_ROUTE
+#------------------------------------------------------------------------------
+class GetIPv4DefaultRoute(TestMixins.GetMixin,
+                          OptionalParameterTestFixture):
+  """GET the IPv4 default route."""
+  CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+  PID = 'IPV4_DEFAULT_ROUTE'
+  EXPECTED_FIELD = 'dns_domain_name'
+  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
+  MAX_LENGTH = RDM_MAX_DOMAIN_NAME_LENGTH
+
+class GetIPv4DefaultRouteWithData(TestMixins.GetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Get IPv4 default route with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IPV4_DEFAULT_ROUTE'
+  # Allow NR_HARDWARE_FAULT in case they're checking length then PDL
+  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
+
+# TODO(Peter): Need to restrict these somehow so we don't saw off the branch
+#class SetIPv4DefaultRoute(TestMixins.UnsupportedSetMixin,
+#                          OptionalParameterTestFixture):
+#  """Attempt to SET the IPv4 default route with no data."""
+#  CATEGORY = TestCategory.ERROR_CONDITIONS
+#  PID = 'IPV4_DEFAULT_ROUTE'
+#
+#
+#class SetIPv4DefaultRouteWithData(TestMixins.UnsupportedSetMixin,
+#                                  OptionalParameterTestFixture):
+#  """SET the IPv4 default route with data."""
+#  CATEGORY = TestCategory.ERROR_CONDITIONS
+#  PID = 'IPV4_DEFAULT_ROUTE'
+#  DATA = 'FOOBAR'
+
+class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
+                                       OptionalParameterTestFixture):
+  """Send a Get IPV4_DEFAULT_ROUTE to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'IPV4_DEFAULT_ROUTE'
 
 # Cross check the control fields with various other properties
 #------------------------------------------------------------------------------
