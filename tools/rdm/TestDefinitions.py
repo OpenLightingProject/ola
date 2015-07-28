@@ -5984,14 +5984,11 @@ class GetPresetInfoWithData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_INFO'
 
-class SetPresetInfo(ResponderTestFixture, DeviceInfoTest):
+class SetPresetInfo(TestMixins.UnsupportedSetMixin,
+                    OptionalParameterTestFixture):
   """Set PRESET_INFO."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_INFO'
-
-  def Test(self):
-    self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
-    self.SendRawSet(ROOT_DEVICE, self.pid)
 
 class AllSubDevicesGetPresetInfo(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
@@ -6408,7 +6405,7 @@ class GetListInterfaces(TestMixins.GetMixin,
   """Get LIST_INTERFACES."""
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'LIST_INTERFACES'
-  PROVIDES = ['list_interfaces']
+  PROVIDES = ['interface_list']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -6416,7 +6413,7 @@ class GetListInterfaces(TestMixins.GetMixin,
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
-      self.SetProperty('list_interfaces', [])
+      self.SetProperty(self.PROVIDES[0], [])
       return
 
     interfaces = []
@@ -6428,7 +6425,7 @@ class GetListInterfaces(TestMixins.GetMixin,
         self.AddAdvisory('Possible error, found unusual hardware type %d for interface %d' %
                          (interface['interface_hardware_type'], interface_id))
 
-    self.SetProperty('list_interfaces', interfaces)
+    self.SetProperty(self.PROVIDES[0], interfaces)
 
 class GetListInterfacesWithData(TestMixins.GetWithDataMixin,
                                 OptionalParameterTestFixture):
@@ -6436,14 +6433,11 @@ class GetListInterfacesWithData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LIST_INTERFACES'
 
-class SetListInterfaces(ResponderTestFixture):
+class SetListInterfaces(TestMixins.UnsupportedSetMixin,
+                        OptionalParameterTestFixture):
   """Attempt to SET list interfaces."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LIST_INTERFACES'
-
-  def Test(self):
-    self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
-    self.SendRawSet(ROOT_DEVICE, self.pid)
 
 # DNS_HOSTNAME
 #------------------------------------------------------------------------------
@@ -6565,6 +6559,51 @@ class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
   """Send a Get IPV4_DEFAULT_ROUTE to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IPV4_DEFAULT_ROUTE'
+
+# Interface label
+#------------------------------------------------------------------------------
+class GetInterfaceLabels(TestMixins.GetSettingDescriptionsMixin,
+                         OptionalParameterTestFixture):
+  """Get the interface labels for all defined interfaces."""
+  CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+  PID = 'INTERFACE_LABEL'
+  REQUIRES = ['interface_list']
+  FIRST_INDEX_OFFSET = 0
+  EXPECTED_FIELD = 'interface_identifier'
+  DESCRIPTION_FIELD = 'interface_label'
+  # TODO(Peter): Is this required?
+  #ALLOWED_NACK = RDMNack.NR_DATA_OUT_OF_RANGE
+
+class GetInterfaceLabelWithNoData(TestMixins.GetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
+  """Get the interface label with no interface id specified."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'INTERFACE_LABEL'
+
+
+class GetInterfaceLabelWithTooMuchData(OptionalParameterTestFixture):
+  """Get the interface label with more than 4 bytes of data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'INTERFACE_LABEL'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
+    self.SendRawGet(ROOT_DEVICE, self.pid, 'foobar')
+
+class SetInterfaceLabel(TestMixins.UnsupportedSetMixin,
+                        OptionalParameterTestFixture):
+  """Attempt to SET the interface label with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'INTERFACE_LABEL'
+
+
+class SetInterfaceLabelWithData(TestMixins.UnsupportedSetMixin,
+                                OptionalParameterTestFixture):
+  """SET the interface label with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'INTERFACE_LABEL'
+  DATA = 'FOO BAR'
+
 
 # Cross check the control fields with various other properties
 #------------------------------------------------------------------------------

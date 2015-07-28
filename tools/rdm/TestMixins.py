@@ -913,7 +913,7 @@ class GetSettingDescriptionsMixin(object):
 
     The range can either be an array of settings, which don't need to be 
     sequential, or a count, in which case it will check
-    FIRST_INDEX_OFFSET to FIRST_INDEX_OFFSET + NumberOfSettings().
+    FIRST_INDEX_OFFSET to FIRST_INDEX_OFFSET + count.
 
     Subclasses must define EXPECTED_FIELD, which is the field to validate the
     index against and DESCRIPTION_FIELD, which is the field to check for
@@ -926,12 +926,21 @@ class GetSettingDescriptionsMixin(object):
   ALLOWED_NACK = None
   FIRST_INDEX_OFFSET = 1
 
-  def NumberOfSettings(self):
+  def ListOfSettings(self):
     # By default we use the first property from REQUIRES
-    return self.Property(self.REQUIRES[0])
+    if isinstance(self.Property(self.REQUIRES[0]), list):
+      # If it's a list, we return it
+      return self.Property(self.REQUIRES[0])
+    else:
+      # Otherwise we generate a range from FIRST_INDEX_OFFSET to it's count
+      if self.Property(self.REQUIRES[0]) is None:
+        return []
+      else:
+        return range(self.FIRST_INDEX_OFFSET,
+                     self.Property(self.REQUIRES[0]) + self.FIRST_INDEX_OFFSET)
 
   def Test(self):
-    count = self.NumberOfSettings()
+    count = len(self.ListOfSettings())
     if count is None:
       # Try to GET first item, this should NACK
       self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
@@ -939,8 +948,7 @@ class GetSettingDescriptionsMixin(object):
       return
 
     # Otherwise fetch the description for each known setting.
-    self.items = range(self.FIRST_INDEX_OFFSET,
-                       count + self.FIRST_INDEX_OFFSET)
+    self.items = self.ListOfSettings()
     self._GetNextDescription()
 
   def _GetNextDescription(self):
