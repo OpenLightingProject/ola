@@ -35,10 +35,15 @@ using ola::rdm::RDMCommand;
 using std::string;
 using std::vector;
 
+namespace {
+static const uint8_t ARTNET_UNIVERSE_COUNT = 16;
+};  // namespace
+
 void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
                                       Universe *new_universe) {
   if (new_universe)
-    m_node->SetOutputPortUniverse(PortId(), new_universe->UniverseId() % 0xf);
+    m_node->SetOutputPortUniverse(
+        PortId(), new_universe->UniverseId() % ARTNET_UNIVERSE_COUNT);
   else
     m_node->DisableOutputPort(PortId());
 
@@ -139,7 +144,7 @@ void ArtNetOutputPort::PostSetUniverse(Universe *old_universe,
                                        Universe *new_universe) {
   if (new_universe)
     m_node->SetInputPortUniverse(
-        PortId(), new_universe->UniverseId() % 0xf);
+        PortId(), new_universe->UniverseId() % ARTNET_UNIVERSE_COUNT);
   else
     m_node->DisableInputPort(PortId());
 
