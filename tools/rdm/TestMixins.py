@@ -64,10 +64,10 @@ class GetMixin(object):
     defined.  The target class needs to defined EXPECTED_FIELD and optionally
     PROVIDES.
 
-    If ALLOWED_NACK is defined, this adds a custom NackGetResult to the list of
-    allowed results.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
+    allowed results for each entry.
   """
-  ALLOWED_NACK = None
+  ALLOWED_NACKS = []
 
   def Test(self):
     if isinstance(self.EXPECTED_FIELD, list):
@@ -75,8 +75,8 @@ class GetMixin(object):
     else:
       expected_fields = [self.EXPECTED_FIELD]
     results = [self.AckGetResult(field_names=expected_fields)]
-    if self.ALLOWED_NACK:
-      results.append(self.NackGetResult(self.ALLOWED_NACK))
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackGetResult(nack))
     self.AddIfGetSupported(results)
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
@@ -176,11 +176,11 @@ class GetRequiredStringMixin(GetRequiredMixin):
 class GetWithDataMixin(object):
   """GET a PID with junk param data.
 
-    If ALLOWED_NACK is defined, this adds an additional custom NackGetResult to
-    the list of allowed results.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
+    allowed results for each entry.
   """
   DATA = 'foo'
-  ALLOWED_NACK = None
+  ALLOWED_NACKS = []
 
   def Test(self):
     results = [
@@ -188,8 +188,8 @@ class GetWithDataMixin(object):
       self.AckGetResult(
         warning='Get %s with data returned an ack' % self.pid.name)
     ]
-    if self.ALLOWED_NACK:
-      results.append(self.NackGetResult(self.ALLOWED_NACK))
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackGetResult(nack))
     self.AddIfGetSupported(results)
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
@@ -909,35 +909,27 @@ class SetOutOfRangeByteMixin(object):
     self.SendSet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
 class GetSettingDescriptionsMixin(object):
-  """Perform a GET for each setting in a range.
+  """Perform a GET for each setting in a list.
 
-    The range can either be an array of settings, which don't need to be 
-    sequential, or a count, in which case it will check
-    FIRST_INDEX_OFFSET to FIRST_INDEX_OFFSET + count.
+    The list is returned by ListOfSettings which subclasses must implement. See
+    GetSettingDescriptionsMixinRange and GetSettingDescriptionsMixinList for
+    some implementations.
+
+    If there are no entries in the list, it will fetch FIRST_INDEX_OFFSET and
+    expect a NACK.
 
     Subclasses must define EXPECTED_FIELD, which is the field to validate the
     index against and DESCRIPTION_FIELD, which is the field to check for
     unprintable characters.
 
-    If ALLOWED_NACK is defined, this adds a custom NackGetResult to the list of
-    allowed results.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
+    allowed results for each entry.
   """
-  CATEGORY = TestCategory.DIMMER_SETTINGS
-  ALLOWED_NACK = None
+  ALLOWED_NACKS = []
   FIRST_INDEX_OFFSET = 1
 
   def ListOfSettings(self):
-    # By default we use the first property from REQUIRES
-    if isinstance(self.Property(self.REQUIRES[0]), list):
-      # If it's a list, we return it
-      return self.Property(self.REQUIRES[0])
-    else:
-      # Otherwise we generate a range from FIRST_INDEX_OFFSET to it's count
-      if self.Property(self.REQUIRES[0]) is None:
-        return []
-      else:
-        return range(self.FIRST_INDEX_OFFSET,
-                     self.Property(self.REQUIRES[0]) + self.FIRST_INDEX_OFFSET)
+    self.SetBroken('base method of GetSettingDescriptionsMixin called')
 
   def Test(self):
     count = len(self.ListOfSettings())
@@ -957,8 +949,8 @@ class GetSettingDescriptionsMixin(object):
       return
 
     results = [self.AckGetResult(action=self._GetNextDescription)]
-    if self.ALLOWED_NACK:
-      results.append(self.NackGetResult(self.ALLOWED_NACK, action=self._GetNextDescription))
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackGetResult(nack, action=self._GetNextDescription))
     self.AddIfGetSupported(results)
     self.current_item = self.items.pop()
     self.SendGet(ROOT_DEVICE, self.pid, [self.current_item])
@@ -980,3 +972,49 @@ class GetSettingDescriptionsMixin(object):
            self.DESCRIPTION_FIELD,
            self.current_item,
            fields[self.DESCRIPTION_FIELD].encode('string-escape')))
+
+
+class GetSettingDescriptionsMixinRange(GetSettingDescriptionsMixin):
+  """Perform a GET for each setting in a range.
+
+    The range is a count, it will check FIRST_INDEX_OFFSET to
+    FIRST_INDEX_OFFSET + NumberOfSettings().
+
+    Subclasses must define EXPECTED_FIELD, which is the field to validate the
+    index against and DESCRIPTION_FIELD, which is the field to check for
+    unprintable characters.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
+    allowed results for each entry.
+  """
+
+  def NumberOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+
+  def ListOfSettings(self):
+    # We generate a range from FIRST_INDEX_OFFSET to NumberOfSettings()
+    if self.NumberOfSettings() is None:
+        return []
+    else:
+      return range(self.FIRST_INDEX_OFFSET,
+                   self.NumberOfSettings() + self.FIRST_INDEX_OFFSET)
+
+class GetSettingDescriptionsMixinList(GetSettingDescriptionsMixin):
+  """Perform a GET for each setting in a list.
+
+    The list is an array of settings, which don't need to be 
+    sequential
+
+    Subclasses must define EXPECTED_FIELD, which is the field to validate the
+    index against and DESCRIPTION_FIELD, which is the field to check for
+    unprintable characters.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
+    allowed results for each entry.
+  """
+
+  def ListOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+

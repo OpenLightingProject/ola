@@ -960,7 +960,7 @@ class GetClearStatusMessages(TestMixins.UnsupportedGetMixin,
 
 
 class ClearStatusMessagesWithData(TestMixins.SetWithDataMixin,
-                            OptionalParameterTestFixture):
+                                  OptionalParameterTestFixture):
   """Clear the status message queue with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CLEAR_STATUS_ID'
@@ -2196,7 +2196,7 @@ class AllSubDevicesGetSlotInfo(TestMixins.AllSubDevicesGetMixin,
 
 # Slot Description
 #------------------------------------------------------------------------------
-class GetSlotDescriptions(TestMixins.GetSettingDescriptionsMixin,
+class GetSlotDescriptions(TestMixins.GetSettingDescriptionsMixinRange,
                           OptionalParameterTestFixture):
   """Get the slot descriptions for all defined slots."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -2205,7 +2205,7 @@ class GetSlotDescriptions(TestMixins.GetSettingDescriptionsMixin,
   FIRST_INDEX_OFFSET = 0
   EXPECTED_FIELD = 'slot_number'
   DESCRIPTION_FIELD = 'name'
-  ALLOWED_NACK = RDMNack.NR_DATA_OUT_OF_RANGE
+  ALLOWED_NACKS = [RDMNack.NR_DATA_OUT_OF_RANGE]
 
 class GetSlotDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                    OptionalParameterTestFixture):
@@ -4870,7 +4870,7 @@ class SetLockState(OptionalParameterTestFixture):
 
 # LOCK_STATE_DESCRIPTION
 #------------------------------------------------------------------------------
-class GetLockStateDescription(TestMixins.GetSettingDescriptionsMixin,
+class GetLockStateDescription(TestMixins.GetSettingDescriptionsMixinRange,
                               OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION for all known states."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -4942,7 +4942,7 @@ class GetLockPinWithData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_PIN'
   DATA = 'foo'
-  ALLOWED_NACK = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
+  ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
 class AllSubDevicesGetLockPin(TestMixins.AllSubDevicesGetMixin,
                               OptionalParameterTestFixture):
@@ -5543,7 +5543,7 @@ class AllSubDevicesGetCurve(TestMixins.AllSubDevicesGetMixin,
 
 # CURVE_DESCRIPTION
 #------------------------------------------------------------------------------
-class GetCurveDescription(TestMixins.GetSettingDescriptionsMixin,
+class GetCurveDescription(TestMixins.GetSettingDescriptionsMixinRange,
                           OptionalParameterTestFixture):
   """Get the CURVE_DESCRIPTION for all known curves."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5698,8 +5698,9 @@ class AllSubDevicesGetOutputResponseTime(TestMixins.AllSubDevicesGetMixin,
 
 # OUTPUT_RESPONSE_TIME_DESCRIPTION
 #------------------------------------------------------------------------------
-class GetOutputResponseTimeDescription(TestMixins.GetSettingDescriptionsMixin,
-                                       OptionalParameterTestFixture):
+class GetOutputResponseTimeDescription(
+    TestMixins.GetSettingDescriptionsMixinRange,
+    OptionalParameterTestFixture):
   """Get the OUTPUT_RESPONSE_TIME_DESCRIPTION for all response times."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
@@ -5856,8 +5857,9 @@ class AllSubDevicesGetModulationFrequency(TestMixins.AllSubDevicesGetMixin,
 
 # MODULATION_FREQUENCY_DESCRIPTION
 #------------------------------------------------------------------------------
-class GetModulationFrequencyDescription(TestMixins.GetSettingDescriptionsMixin,
-                                        OptionalParameterTestFixture):
+class GetModulationFrequencyDescription(
+    TestMixins.GetSettingDescriptionsMixinRange,
+    OptionalParameterTestFixture):
   """Get the MODULATION_FREQUENCY_DESCRIPTION for all frequencies."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
@@ -6447,7 +6449,7 @@ class GetDNSHostname(TestMixins.GetStringMixin,
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'DNS_HOSTNAME'
   EXPECTED_FIELD = 'dns_hostname'
-  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
+  ALLOWED_NACKS = [RDMNack.NR_HARDWARE_FAULT]
   MIN_LENGTH = RDM_MIN_HOSTNAME_LENGTH
   MAX_LENGTH = RDM_MAX_HOSTNAME_LENGTH
 
@@ -6456,8 +6458,6 @@ class GetDNSHostnameWithData(TestMixins.GetWithDataMixin,
   """Get DNS hostname with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DNS_HOSTNAME'
-  # Allow NR_HARDWARE_FAULT in case they're checking length then PDL
-  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
 
 # TODO(Peter): Need to restrict these somehow so we don't saw off the branch
 #class SetDnsHostname(TestMixins.UnsupportedSetMixin,
@@ -6488,7 +6488,7 @@ class GetDNSDomainName(TestMixins.GetStringMixin,
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'DNS_DOMAIN_NAME'
   EXPECTED_FIELD = 'dns_domain_name'
-  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
+  ALLOWED_NACKS = [RDMNack.NR_HARDWARE_FAULT]
   MAX_LENGTH = RDM_MAX_DOMAIN_NAME_LENGTH
 
 class GetDNSDomainNameWithData(TestMixins.GetWithDataMixin,
@@ -6496,8 +6496,6 @@ class GetDNSDomainNameWithData(TestMixins.GetWithDataMixin,
   """Get DNS domain name with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DNS_DOMAIN_NAME'
-  # Allow NR_HARDWARE_FAULT in case they're checking length then PDL
-  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
 
 # TODO(Peter): Need to restrict these somehow so we don't saw off the branch
 #class SetDnsDomainName(TestMixins.UnsupportedSetMixin,
@@ -6529,15 +6527,14 @@ class GetIPv4DefaultRoute(TestMixins.GetMixin,
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'IPV4_DEFAULT_ROUTE'
   EXPECTED_FIELD = ['ipv4_address', 'interface_identifier']
-  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
+  # TODO(Peter): Is this required?
+  #ALLOWED_NACKS = [RDMNack.NR_HARDWARE_FAULT]
 
 class GetIPv4DefaultRouteWithData(TestMixins.GetWithDataMixin,
                                   OptionalParameterTestFixture):
   """Get IPv4 default route with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IPV4_DEFAULT_ROUTE'
-  # Allow NR_HARDWARE_FAULT in case they're checking length then PDL
-  ALLOWED_NACK = RDMNack.NR_HARDWARE_FAULT
 
 # TODO(Peter): Need to restrict these somehow so we don't saw off the branch
 #class SetIPv4DefaultRoute(TestMixins.UnsupportedSetMixin,
@@ -6562,7 +6559,7 @@ class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
 
 # Interface label
 #------------------------------------------------------------------------------
-class GetInterfaceLabels(TestMixins.GetSettingDescriptionsMixin,
+class GetInterfaceLabels(TestMixins.GetSettingDescriptionsMixinList,
                          OptionalParameterTestFixture):
   """Get the interface labels for all defined interfaces."""
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
