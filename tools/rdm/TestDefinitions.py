@@ -1681,10 +1681,9 @@ class AllSubDevicesGetBootSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
 
 # DMX Personality & DMX Personality Description
 #------------------------------------------------------------------------------
-class GetZeroPersonalityDescription(TestMixins.GetZeroByteMixin,
+class GetZeroPersonalityDescription(TestMixins.GetZeroUInt8Mixin,
                                     OptionalParameterTestFixture):
   """GET DMX_PERSONALITY_DESCRIPTION for personality 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY_DESCRIPTION'
 
 class GetOutOfRangePersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
@@ -1910,10 +1909,9 @@ class SetPersonality(OptionalParameterTestFixture):
     self._wrapper.Run()
 
 
-class SetZeroPersonality(TestMixins.SetZeroByteMixin,
+class SetZeroPersonality(TestMixins.SetZeroUInt8Mixin,
                          OptionalParameterTestFixture):
   """Set DMX_PERSONALITY for personality 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY'
 
 class SetOutOfRangePersonality(TestMixins.SetOutOfRangeByteMixin,
@@ -2190,7 +2188,7 @@ class AllSubDevicesGetSlotInfo(TestMixins.AllSubDevicesGetMixin,
 
 # Slot Description
 #------------------------------------------------------------------------------
-class GetSlotDescriptions(TestMixins.GetSettingDescriptionsMixinRange,
+class GetSlotDescriptions(TestMixins.GetSettingDescriptionsRangeMixin,
                           OptionalParameterTestFixture):
   """Get the slot descriptions for all defined slots."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -4182,16 +4180,11 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
     # we can't reset as the addresses may not have been contiguous
     pass
 
-class SetZeroDMXBlockAddress(OptionalParameterTestFixture):
+class SetZeroDMXBlockAddress(TestMixins.SetZeroUInt16Mixin,
+                             OptionalParameterTestFixture):
   """Set DMX_BLOCK_ADDRESS to 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
   DEPS = [SetDMXBlockAddress]
-
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!H', 0)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 class SetOversizedDMXBlockAddress(OptionalParameterTestFixture):
   """Set DMX_BLOCK_ADDRESS to 513."""
@@ -4864,7 +4857,7 @@ class SetLockState(OptionalParameterTestFixture):
 
 # LOCK_STATE_DESCRIPTION
 #------------------------------------------------------------------------------
-class GetLockStateDescription(TestMixins.GetSettingDescriptionsMixinRange,
+class GetLockStateDescription(TestMixins.GetSettingDescriptionsRangeMixin,
                               OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION for all known states."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -4885,10 +4878,9 @@ class GetLockStateDescriptionWithExtraData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE_DESCRIPTION'
 
-class GetZeroLockStateDescription(TestMixins.GetZeroByteMixin,
+class GetZeroLockStateDescription(TestMixins.GetZeroUInt8Mixin,
                                   OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION for lock state 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE_DESCRIPTION'
 
 class GetOutOfRangeLockStateDescription(TestMixins.GetOutOfRangeByteMixin,
@@ -4913,22 +4905,14 @@ class AllSubDevicesGetLockStateDescription(TestMixins.AllSubDevicesGetMixin,
 
 # LOCK_PIN
 #------------------------------------------------------------------------------
-class GetLockPin(OptionalParameterTestFixture):
+class GetLockPin(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get LOCK_PIN."""
   CATEGORY = TestCategory.CONFIGURATION
   PID = 'LOCK_PIN'
+  EXPECTED_FIELD = 'pin_code'
   PROVIDES = ['pin_code']
-
-  def Test(self):
-    self.AddIfGetSupported([
-      self.AckGetResult(field_names=['pin_code']),
-      self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-    ])
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-  def VerifyResult(self, response, fields):
-    if response.WasAcked():
-      self.SetPropertyFromDict(fields, 'pin_code')
+  # Some responders may not let you GET the pin. 
+  ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
 class GetLockPinWithData(TestMixins.GetWithDataMixin,
                          OptionalParameterTestFixture):
@@ -4936,6 +4920,7 @@ class GetLockPinWithData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_PIN'
   DATA = 'foo'
+  # Some responders may not let you GET the pin. 
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
 class AllSubDevicesGetLockPin(TestMixins.AllSubDevicesGetMixin,
@@ -5537,7 +5522,7 @@ class AllSubDevicesGetCurve(TestMixins.AllSubDevicesGetMixin,
 
 # CURVE_DESCRIPTION
 #------------------------------------------------------------------------------
-class GetCurveDescription(TestMixins.GetSettingDescriptionsMixinRange,
+class GetCurveDescription(TestMixins.GetSettingDescriptionsRangeMixin,
                           OptionalParameterTestFixture):
   """Get the CURVE_DESCRIPTION for all known curves."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5558,10 +5543,9 @@ class GetCurveDescriptionWithExtraData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
 
-class GetZeroCurveDescription(TestMixins.GetZeroByteMixin,
+class GetZeroCurveDescription(TestMixins.GetZeroUInt8Mixin,
                               OptionalParameterTestFixture):
   """Get CURVE_DESCRIPTION for curve 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
 
 class GetOutOfRangeCurveDescription(TestMixins.GetOutOfRangeByteMixin,
@@ -5693,7 +5677,7 @@ class AllSubDevicesGetOutputResponseTime(TestMixins.AllSubDevicesGetMixin,
 # OUTPUT_RESPONSE_TIME_DESCRIPTION
 #------------------------------------------------------------------------------
 class GetOutputResponseTimeDescription(
-    TestMixins.GetSettingDescriptionsMixinRange,
+    TestMixins.GetSettingDescriptionsRangeMixin,
     OptionalParameterTestFixture):
   """Get the OUTPUT_RESPONSE_TIME_DESCRIPTION for all response times."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5715,10 +5699,9 @@ class GetOutputResponseTimeDescriptionWithExtraData(
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
 
-class GetZeroOutputResponseTimeDescription(TestMixins.GetZeroByteMixin,
+class GetZeroOutputResponseTimeDescription(TestMixins.GetZeroUInt8Mixin,
                                            OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for response_time 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
 
 class GetOutOfRangeOutputResponseTimeDescription(
@@ -5852,7 +5835,7 @@ class AllSubDevicesGetModulationFrequency(TestMixins.AllSubDevicesGetMixin,
 # MODULATION_FREQUENCY_DESCRIPTION
 #------------------------------------------------------------------------------
 class GetModulationFrequencyDescription(
-    TestMixins.GetSettingDescriptionsMixinRange,
+    TestMixins.GetSettingDescriptionsRangeMixin,
     OptionalParameterTestFixture):
   """Get the MODULATION_FREQUENCY_DESCRIPTION for all frequencies."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5874,10 +5857,9 @@ class GetModulationFrequencyDescriptionWithExtraData(
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
 
-class GetZeroModulationFrequencyDescription(TestMixins.GetZeroByteMixin,
+class GetZeroModulationFrequencyDescription(TestMixins.GetZeroUInt8Mixin,
                                             OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION for frequency 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
 
 class GetOutOfRangeModulationFrequencyDescription(
@@ -6503,8 +6485,6 @@ class GetIPv4DefaultRoute(TestMixins.GetMixin,
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'IPV4_DEFAULT_ROUTE'
   EXPECTED_FIELD = ['ipv4_address', 'interface_identifier']
-  # TODO(Peter): Is this required?
-  #ALLOWED_NACKS = [RDMNack.NR_HARDWARE_FAULT]
 
 class GetIPv4DefaultRouteWithData(TestMixins.GetWithDataMixin,
                                   OptionalParameterTestFixture):
@@ -6535,7 +6515,7 @@ class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
 
 # Interface label
 #------------------------------------------------------------------------------
-class GetInterfaceLabels(TestMixins.GetSettingDescriptionsMixinList,
+class GetInterfaceLabels(TestMixins.GetSettingDescriptionsListMixin,
                          OptionalParameterTestFixture):
   """Get the interface labels for all defined interfaces."""
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
@@ -6560,12 +6540,10 @@ class GetInterfaceLabelWithTooMuchData(OptionalParameterTestFixture):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foobar')
 
-class GetZeroInterfaceLabel(TestMixins.GetZeroByteMixin,
+class GetZeroInterfaceLabel(TestMixins.GetZeroUInt32Mixin,
                             OptionalParameterTestFixture):
   """GET INTERFACE_LABEL for interface 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'INTERFACE_LABEL'
-  DATA = struct.pack('!L', 0)
 
 class SetInterfaceLabel(TestMixins.UnsupportedSetMixin,
                         OptionalParameterTestFixture):

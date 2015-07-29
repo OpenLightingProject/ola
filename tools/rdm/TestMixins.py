@@ -60,9 +60,8 @@ class UnsupportedGetMixin(object):
 class GetMixin(object):
   """GET Mixin for an optional PID. Verify EXPECTED_FIELD is in the response.
 
-    This mixin also sets a property/mulitiple properties if PROVIDES is
-    defined.  The target class needs to defined EXPECTED_FIELD and optionally
-    PROVIDES.
+    This mixin also sets one or more properties if PROVIDES is defined.  The
+    target class needs to defined EXPECTED_FIELD and optionally PROVIDES.
 
     If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
     allowed results for each entry.
@@ -852,8 +851,8 @@ class SetMinimumLevelMixin(object):
          self.settings['on_below_minimum']])
     self._wrapper.Run()
 
-class GetZeroByteMixin(object):
-  """Get a parameter with value 0, defaults to a byte, expect NR_DATA_OUT_OF_RANGE"""
+class GetZeroUInt8Mixin(object):
+  """Get a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = struct.pack('!B', 0)
 
@@ -861,14 +860,30 @@ class GetZeroByteMixin(object):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
-class SetZeroByteMixin(object):
-  """Set a parameter with value 0, defaults to a byte, expect NR_DATA_OUT_OF_RANGE"""
+class GetZeroUInt16Mixin(GetZeroUInt8Mixin):
+  """Get a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!H', 0)
+
+class GetZeroUInt32Mixin(GetZeroUInt8Mixin):
+  """Get a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!I', 0)
+
+class SetZeroUInt8Mixin(object):
+  """Set a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = struct.pack('!B', 0)
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendRawSet(ROOT_DEVICE, self.pid, self.DATA)
+
+class SetZeroUInt16Mixin(SetZeroUInt8Mixin):
+  """Set a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!H', 0)
+
+class SetZeroUInt32Mixin(SetZeroUInt8Mixin):
+  """Set a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!I', 0)
 
 class GetOutOfRangeByteMixin(object):
   """The subclass provides the NumberOfSettings() method."""
@@ -936,15 +951,14 @@ class GetSettingDescriptionsMixin(object):
     self.SetBroken('base method of GetSettingDescriptionsMixin called')
 
   def Test(self):
-    count = len(self.ListOfSettings())
-    if count is None:
+    self.items = self.ListOfSettings()
+    if not self.items:
       # Try to GET first item, this should NACK
       self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
       self.SendGet(ROOT_DEVICE, self.pid, [self.FIRST_INDEX_OFFSET])
       return
 
     # Otherwise fetch the description for each known setting.
-    self.items = self.ListOfSettings()
     self._GetNextDescription()
 
   def _GetNextDescription(self):
@@ -978,18 +992,11 @@ class GetSettingDescriptionsMixin(object):
            fields[self.DESCRIPTION_FIELD].encode('string-escape')))
 
 
-class GetSettingDescriptionsMixinRange(GetSettingDescriptionsMixin):
+class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
   """Perform a GET for each setting in a range.
 
     The range is a count, it will check FIRST_INDEX_OFFSET to
     FIRST_INDEX_OFFSET + NumberOfSettings().
-
-    Subclasses must define EXPECTED_FIELD, which is the field to validate the
-    index against and DESCRIPTION_FIELD, which is the field to check for
-    unprintable characters.
-
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
   """
 
   def NumberOfSettings(self):
@@ -1004,18 +1011,11 @@ class GetSettingDescriptionsMixinRange(GetSettingDescriptionsMixin):
       return range(self.FIRST_INDEX_OFFSET,
                    self.NumberOfSettings() + self.FIRST_INDEX_OFFSET)
 
-class GetSettingDescriptionsMixinList(GetSettingDescriptionsMixin):
+class GetSettingDescriptionsListMixin(GetSettingDescriptionsMixin):
   """Perform a GET for each setting in a list.
 
     The list is an array of settings, which don't need to be 
     sequential
-
-    Subclasses must define EXPECTED_FIELD, which is the field to validate the
-    index against and DESCRIPTION_FIELD, which is the field to check for
-    unprintable characters.
-
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
   """
 
   def ListOfSettings(self):
