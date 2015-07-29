@@ -806,6 +806,7 @@ RDMResponse *ResponderHelper::GetIPV4DefaultRoute(
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
+
   int32_t if_index = Interface::DEFAULT_INDEX;
   IPV4Address default_route;
   if (!network_manager->GetIPV4DefaultRoute(&if_index, &default_route)) {
@@ -849,6 +850,10 @@ RDMResponse *ResponderHelper::GetDNSHostname(
     const RDMRequest *request,
     const NetworkManagerInterface *network_manager,
     uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
   const string hostname = network_manager->GetHostname();
   if (hostname.empty() || hostname.length() > MAX_RDM_HOSTNAME_LENGTH) {
     // Hostname outside of the allowed parameters for RDM, return an error
@@ -866,6 +871,10 @@ RDMResponse *ResponderHelper::GetDNSDomainName(
     const RDMRequest *request,
     const NetworkManagerInterface *network_manager,
     uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
   string domain_name = network_manager->GetDomainName();
   if (domain_name.length() > MAX_RDM_DOMAIN_NAME_LENGTH) {
     // Domain name outside of the allowed parameters for RDM, return an error
