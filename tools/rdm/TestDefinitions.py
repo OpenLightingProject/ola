@@ -6461,20 +6461,7 @@ class GetDNSHostnameWithData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DNS_HOSTNAME'
 
-# TODO(Peter): Need to restrict these somehow so we don't saw off the branch
-#class SetDnsHostname(TestMixins.UnsupportedSetMixin,
-#                     OptionalParameterTestFixture):
-#  """Attempt to SET the DNS hostname with no data."""
-#  CATEGORY = TestCategory.ERROR_CONDITIONS
-#  PID = 'DNS_HOSTNAME'
-#
-#
-#class SetDnsHostnameWithData(TestMixins.UnsupportedSetMixin,
-#                                   OptionalParameterTestFixture):
-#  """SET the DNS hostname with data."""
-#  CATEGORY = TestCategory.ERROR_CONDITIONS
-#  PID = 'DNS_HOSTNAME'
-#  DATA = 'FOOBAR'
+# TODO(Peter): Need to test set
 
 class AllSubDevicesGetDNSHostname(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
@@ -6499,20 +6486,7 @@ class GetDNSDomainNameWithData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DNS_DOMAIN_NAME'
 
-# TODO(Peter): Need to restrict these somehow so we don't saw off the branch
-#class SetDnsDomainName(TestMixins.UnsupportedSetMixin,
-#                       OptionalParameterTestFixture):
-#  """Attempt to SET the DNS domain name with no data."""
-#  CATEGORY = TestCategory.ERROR_CONDITIONS
-#  PID = 'DNS_DOMAIN_NAME'
-#
-#
-#class SetDnsDomainNameWithData(TestMixins.UnsupportedSetMixin,
-#                               OptionalParameterTestFixture):
-#  """SET the DNS domain name with data."""
-#  CATEGORY = TestCategory.ERROR_CONDITIONS
-#  PID = 'DNS_DOMAIN_NAME'
-#  DATA = 'FOOBAR'
+# TODO(Peter): Need to test set
 
 class AllSubDevicesGetDNSDomainName(TestMixins.AllSubDevicesGetMixin,
                                     OptionalParameterTestFixture):
