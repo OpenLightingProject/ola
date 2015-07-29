@@ -98,29 +98,31 @@ class GetStringMixin(GetMixin):
   MAX_LENGTH = RDM_MAX_STRING_LENGTH
 
   def VerifyResult(self, response, fields):
-    if response.WasAcked() and self.PROVIDES:
-      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
-
     if not response.WasAcked():
       return
 
-    if ContainsUnprintable(fields[self.EXPECTED_FIELD]):
+    string_field = fields[self.EXPECTED_FIELD]
+
+    if self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], string_field)
+
+    if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
           (self.EXPECTED_FIELD.capitalize(), self.PID,
-           fields[self.EXPECTED_FIELD].encode('string-escape')))
+           string_field.encode('string-escape')))
 
-    if self.MIN_LENGTH and len(fields[self.EXPECTED_FIELD]) < self.MIN_LENGTH:
+    if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
           '%s field in %s was shorter than expected, was %d, expected %d' %
           (self.EXPECTED_FIELD.capitalize(), self.PID,
-           len(fields[self.EXPECTED_FIELD]), self.MIN_LENGTH))
+           len(string_field), self.MIN_LENGTH))
 
-    if self.MAX_LENGTH and len(fields[self.EXPECTED_FIELD]) > self.MAX_LENGTH:
+    if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
       self.SetFailed(
           '%s field in %s was longer than expected, was %d, expected %d' %
           (self.EXPECTED_FIELD.capitalize(), self.PID,
-           len(fields[self.EXPECTED_FIELD]), self.MAX_LENGTH))
+           len(string_field), self.MAX_LENGTH))
 
 class GetRequiredMixin(object):
   """GET Mixin for a required PID. Verify EXPECTED_FIELD is in the response.
@@ -148,29 +150,31 @@ class GetRequiredStringMixin(GetRequiredMixin):
   MAX_LENGTH = RDM_MAX_STRING_LENGTH
 
   def VerifyResult(self, response, fields):
-    if response.WasAcked() and self.PROVIDES:
-      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
-
     if not response.WasAcked():
       return
 
-    if ContainsUnprintable(fields[self.EXPECTED_FIELD]):
+    string_field = fields[self.EXPECTED_FIELD]
+
+    if self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], string_field)
+
+    if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
           (self.EXPECTED_FIELD.capitalize(), self.PID,
-           fields[self.EXPECTED_FIELD].encode('string-escape')))
+           string_field.encode('string-escape')))
 
-    if self.MIN_LENGTH and len(fields[self.EXPECTED_FIELD]) < self.MIN_LENGTH:
+    if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
           '%s field in %s was shorter than expected, was %d, expected %d' %
           (self.EXPECTED_FIELD.capitalize(), self.PID,
-           len(fields[self.EXPECTED_FIELD]), self.MIN_LENGTH))
+           len(string_field), self.MIN_LENGTH))
 
-    if self.MAX_LENGTH and len(fields[self.EXPECTED_FIELD]) > self.MAX_LENGTH:
+    if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
       self.SetFailed(
           '%s field in %s was longer than expected, was %d, expected %d' %
           (self.EXPECTED_FIELD.capitalize(), self.PID,
-           len(fields[self.EXPECTED_FIELD]), self.MAX_LENGTH))
+           len(string_field), self.MAX_LENGTH))
 
 class GetWithDataMixin(object):
   """GET a PID with junk param data.
