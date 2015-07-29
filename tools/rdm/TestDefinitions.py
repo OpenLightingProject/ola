@@ -1687,16 +1687,11 @@ class GetZeroPersonalityDescription(TestMixins.GetZeroByteMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY_DESCRIPTION'
 
-class GetOutOfRangePersonalityDescription(OptionalParameterTestFixture):
+class GetOutOfRangePersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
+                                          OptionalParameterTestFixture):
   """GET the personality description for the N + 1 personality."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY_DESCRIPTION'
   REQUIRES = ['personality_count']
-
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    personality_count = self.Property('personality_count')
-    self.SendGet(ROOT_DEVICE, self.pid, [personality_count + 1])
 
 class AllSubDevicesGetPersonalityDescription(TestMixins.AllSubDevicesGetMixin,
                                              OptionalParameterTestFixture):
@@ -1924,7 +1919,6 @@ class SetZeroPersonality(TestMixins.SetZeroByteMixin,
 class SetOutOfRangePersonality(TestMixins.SetOutOfRangeByteMixin,
                                OptionalParameterTestFixture):
   """Set DMX_PERSONALITY to an out-of-range value."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY'
   REQUIRES = ['personality_count']
   LABEL = 'personalities'
@@ -6023,7 +6017,7 @@ class GetPresetStatusPresetScene(OptionalParameterTestFixture):
 
 class GetOutOfRangePresetStatus(OptionalParameterTestFixture):
   """Get the PRESET_STATUS for max_scene + 1."""
-  CATEGORY = TestCategory.CONTROL
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_STATUS'
   REQUIRES = ['max_scene_number']
 
@@ -6156,7 +6150,7 @@ class SetPresetStatusPresetScene(TestMixins.SetPresetStatusMixin,
 class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
                                 OptionalParameterTestFixture):
   """Set the PRESET_STATUS for max_scene + 1."""
-  CATEGORY = TestCategory.CONTROL
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_STATUS'
   REQUIRES = ['max_scene_number', 'preset_info']
 
@@ -6423,8 +6417,16 @@ class GetListInterfaces(TestMixins.GetMixin,
     for interface in fields['interfaces']:
       interface_id = interface['interface_identifier']
       interfaces.append(interface_id)
-      if interface['interface_hardware_type'] != INTERFACE_HARDWARE_TYPE_ETHERNET:
-        self.AddAdvisory('Possible error, found unusual hardware type %d for interface %d' %
+      if (interface_id < RDM_INTERFACE_INDEX_MIN or
+          interface_id > RDM_INTERFACE_INDEX_MAX):
+        self.AddWarning('Interface index %d is outside allowed range (%d to '
+                        '%d)' % (interface_id,
+                                 RDM_INTERFACE_INDEX_MIN,
+                                 RDM_INTERFACE_INDEX_MAX))
+      if (interface['interface_hardware_type'] !=
+          INTERFACE_HARDWARE_TYPE_ETHERNET):
+        self.AddAdvisory('Possible error, found unusual hardware type %d for '
+                         'interface %d' %
                          (interface['interface_hardware_type'], interface_id))
 
     self.SetProperty(self.PROVIDES[0], interfaces)
@@ -6565,11 +6567,8 @@ class GetInterfaceLabels(TestMixins.GetSettingDescriptionsMixinList,
   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
   PID = 'INTERFACE_LABEL'
   REQUIRES = ['interface_list']
-  FIRST_INDEX_OFFSET = 0
   EXPECTED_FIELD = 'interface_identifier'
   DESCRIPTION_FIELD = 'interface_label'
-  # TODO(Peter): Is this required?
-  #ALLOWED_NACK = RDMNack.NR_DATA_OUT_OF_RANGE
 
 class GetInterfaceLabelWithNoData(TestMixins.GetWithNoDataMixin,
                                   OptionalParameterTestFixture):
@@ -6586,6 +6585,13 @@ class GetInterfaceLabelWithTooMuchData(OptionalParameterTestFixture):
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foobar')
+
+class GetZeroInterfaceLabel(TestMixins.GetZeroByteMixin,
+                            OptionalParameterTestFixture):
+  """GET INTERFACE_LABEL for interface 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'INTERFACE_LABEL'
+  DATA = struct.pack('!L', 0)
 
 class SetInterfaceLabel(TestMixins.UnsupportedSetMixin,
                         OptionalParameterTestFixture):

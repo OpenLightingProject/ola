@@ -849,22 +849,22 @@ class SetMinimumLevelMixin(object):
     self._wrapper.Run()
 
 class GetZeroByteMixin(object):
-  """Get a single byte parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  """Get a parameter with value 0, defaults to a byte, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+  DATA = struct.pack('!B', 0)
 
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawGet(ROOT_DEVICE, self.pid, data)
+    self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
 class SetZeroByteMixin(object):
-  """Set a single byte parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  """Set a parameter with value 0, defaults to a byte, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+  DATA = struct.pack('!B', 0)
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+    self.SendRawSet(ROOT_DEVICE, self.pid, self.DATA)
 
 class GetOutOfRangeByteMixin(object):
   """The subclass provides the NumberOfSettings() method."""
