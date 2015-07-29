@@ -5496,7 +5496,7 @@ class SetCurve(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_curve')])
     self._wrapper.Run()
 
-class SetZeroCurve(TestMixins.SetZeroByteMixin,
+class SetZeroCurve(TestMixins.SetZeroUInt8Mixin,
                    OptionalParameterTestFixture):
   """Set CURVE to 0."""
   PID = 'CURVE'
@@ -5650,7 +5650,7 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_response_time')])
     self._wrapper.Run()
 
-class SetZeroOutputResponseTime(TestMixins.SetZeroByteMixin,
+class SetZeroOutputResponseTime(TestMixins.SetZeroUInt8Mixin,
                                 OptionalParameterTestFixture):
   """Set OUTPUT_RESPONSE_TIME to 0."""
   PID = 'OUTPUT_RESPONSE_TIME'
@@ -5808,7 +5808,7 @@ class SetModulationFrequency(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_modulation_frequency')])
     self._wrapper.Run()
 
-class SetZeroModulationFrequency(TestMixins.SetZeroByteMixin,
+class SetZeroModulationFrequency(TestMixins.SetZeroUInt8Mixin,
                                  OptionalParameterTestFixture):
   """Set MODULATION_FREQUENCY with a frequency setting of 0."""
   PID = 'MODULATION_FREQUENCY'
