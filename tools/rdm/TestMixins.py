@@ -58,10 +58,10 @@ class UnsupportedGetMixin(object):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
 class GetMixin(object):
-  """GET Mixin for an optional PID. Verify EXPECTED_FIELD is in the response.
+  """GET Mixin for an optional PID. Verify EXPECTED_FIELDS is in the response.
 
     This mixin also sets one or more properties if PROVIDES is defined.  The
-    target class needs to defined EXPECTED_FIELD and optionally PROVIDES.
+    target class needs to defined EXPECTED_FIELDS and optionally PROVIDES.
 
     If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
     allowed results for each entry.
@@ -69,11 +69,7 @@ class GetMixin(object):
   ALLOWED_NACKS = []
 
   def Test(self):
-    if isinstance(self.EXPECTED_FIELD, list):
-      expected_fields = self.EXPECTED_FIELD
-    else:
-      expected_fields = [self.EXPECTED_FIELD]
-    results = [self.AckGetResult(field_names=expected_fields)]
+    results = [self.AckGetResult(field_names=self.EXPECTED_FIELDS)]
     for nack in self.ALLOWED_NACKS:
       results.append(self.NackGetResult(nack))
     self.AddIfGetSupported(results)
@@ -81,18 +77,15 @@ class GetMixin(object):
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      if isinstance(self.EXPECTED_FIELD, list):
-        for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELD))):
-          self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELD[i]])
-      else:
-        self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+        self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 class GetStringMixin(GetMixin):
-  """GET Mixin for an optional string PID. Verify EXPECTED_FIELD is in the
+  """GET Mixin for an optional string PID. Verify EXPECTED_FIELDS are in the
     response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
-    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+    needs to defined EXPECTED_FIELDS and optionally PROVIDES.
   """
   MIN_LENGTH = 0
   MAX_LENGTH = RDM_MAX_STRING_LENGTH
@@ -101,7 +94,7 @@ class GetStringMixin(GetMixin):
     if not response.WasAcked():
       return
 
-    string_field = fields[self.EXPECTED_FIELD]
+    string_field = fields[self.EXPECTED_FIELDS[0]]
 
     if self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], string_field)
@@ -109,42 +102,43 @@ class GetStringMixin(GetMixin):
     if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
-          (self.EXPECTED_FIELD.capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
            string_field.encode('string-escape')))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
           '%s field in %s was shorter than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELD.capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
            len(string_field), self.MIN_LENGTH))
 
     if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
       self.SetFailed(
           '%s field in %s was longer than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELD.capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
            len(string_field), self.MAX_LENGTH))
 
 class GetRequiredMixin(object):
-  """GET Mixin for a required PID. Verify EXPECTED_FIELD is in the response.
+  """GET Mixin for a required PID. Verify EXPECTED_FIELDS is in the response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
-    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+    needs to defined EXPECTED_FIELDS and optionally PROVIDES.
   """
   def Test(self):
     self.AddExpectedResults(
-        self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
+        self.AckGetResult(field_names=self.EXPECTED_FIELDS))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+        self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 class GetRequiredStringMixin(GetRequiredMixin):
-  """GET Mixin for a required string PID. Verify EXPECTED_FIELD is in the
+  """GET Mixin for a required string PID. Verify EXPECTED_FIELDS is in the
     response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
-    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+    needs to defined EXPECTED_FIELDS and optionally PROVIDES.
   """
   MIN_LENGTH = 0
   MAX_LENGTH = RDM_MAX_STRING_LENGTH
@@ -153,27 +147,28 @@ class GetRequiredStringMixin(GetRequiredMixin):
     if not response.WasAcked():
       return
 
-    string_field = fields[self.EXPECTED_FIELD]
+    string_field = fields[self.EXPECTED_FIELDS[0]]
 
     if self.PROVIDES:
-      self.SetProperty(self.PROVIDES[0], string_field)
+      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+        self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
     if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
-          (self.EXPECTED_FIELD.capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
            string_field.encode('string-escape')))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
           '%s field in %s was shorter than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELD.capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
            len(string_field), self.MIN_LENGTH))
 
     if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
       self.SetFailed(
           '%s field in %s was longer than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELD.capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
            len(string_field), self.MAX_LENGTH))
 
 class GetWithDataMixin(object):
@@ -390,7 +385,9 @@ class SetMixin(object):
 
   def VerifySet(self):
     self.AddExpectedResults(
-      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
+      self.AckGetResult(
+          field_names=self.EXPECTED_FIELDS,
+          field_values={self.EXPECTED_FIELDS[0]: self.NewValue()}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def ResetState(self):
@@ -941,9 +938,9 @@ class GetSettingDescriptionsMixin(object):
     If there are no entries in the list, it will fetch FIRST_INDEX_OFFSET and
     expect a NACK.
 
-    Subclasses must define EXPECTED_FIELD, which is the field to validate the
-    index against and DESCRIPTION_FIELD, which is the field to check for
-    unprintable characters.
+    Subclasses must define EXPECTED_FIELDS, the first of which is the field
+    used to validate the index against and DESCRIPTION_FIELD, which is the
+    field to check for unprintable characters.
 
     If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
     allowed results for each entry.
@@ -970,7 +967,8 @@ class GetSettingDescriptionsMixin(object):
       self.Stop()
       return
 
-    results = [self.AckGetResult(action=self._GetNextDescription)]
+    results = [self.AckGetResult(field_names=self.EXPECTED_FIELDS,
+                                 action=self._GetNextDescription)]
     for nack in self.ALLOWED_NACKS:
       results.append(self.NackGetResult(nack, action=self._GetNextDescription))
     self.AddIfGetSupported(results)
@@ -981,10 +979,10 @@ class GetSettingDescriptionsMixin(object):
     if not response.WasAcked():
       return
 
-    if fields[self.EXPECTED_FIELD] != self.current_item:
+    if fields[self.EXPECTED_FIELDS[0]] != self.current_item:
       self.AddWarning(
           '%s mismatch, sent %d, received %d' %
-          (self.pid, self.current_item, fields[self.EXPECTED_FIELD]))
+          (self.pid, self.current_item, fields[self.EXPECTED_FIELDS[0]]))
 
     if ContainsUnprintable(fields[self.DESCRIPTION_FIELD]):
       self.AddAdvisory(
