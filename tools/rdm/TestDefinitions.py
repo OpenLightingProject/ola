@@ -2016,6 +2016,7 @@ class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
     if footprint == 0 or current_address == RDM_ZERO_FOOTPRINT_DMX_ADDRESS:
       results = [
           self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
       ]
     else:
@@ -2065,8 +2066,10 @@ class SetOutOfRangeStartAddress(ResponderTestFixture):
     if self.Property('dmx_footprint') > 0:
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     else:
-      self.AddExpectedResults([self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
-                               self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+      self.AddExpectedResults([
+          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+          self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
                               ])
     data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
@@ -2084,8 +2087,10 @@ class SetZeroStartAddress(ResponderTestFixture):
     if self.Property('dmx_footprint') > 0:
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     else:
-      self.AddExpectedResults([self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
-                               self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+      self.AddExpectedResults([
+          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+          self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
                               ])
     data = struct.pack('!H', 0)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
@@ -2104,9 +2109,10 @@ class SetOversizedStartAddress(ResponderTestFixture):
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
     else:
       self.AddExpectedResults([
-        self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
-        self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
-        ])
+          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+          self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+                              ])
     self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
 
 class AllSubDevicesGetStartAddress(TestMixins.AllSubDevicesGetMixin,
@@ -2534,14 +2540,23 @@ class GetSensorDefinition(OptionalParameterTestFixture):
     self._sensors[self._current_index] = fields
 
     # perform sanity checks on the sensor infomation
-    if (fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME and
-        fields['type'] < 0x80):
-      self.AddWarning('Unknown type %d for sensor %d' %
-                      (fields['type'], sensor_number))
+    if fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME:
+      if fields['type'] >= 0x80:
+        self.AddAdvisory('Using a manufacturer specific type %d for sensor %d,'
+                         ' is there no suitable defined type?' %
+                         (fields['type'], sensor_number))
+      else:
+        self.AddWarning('Unknown type %d for sensor %d' %
+                        (fields['type'], sensor_number))
 
     if fields['unit'] not in RDMConstants.UNIT_TO_NAME:
-      self.AddWarning('Unknown unit %d for sensor %d' %
-                      (fields['unit'], sensor_number))
+      if fields['unit'] >= 0x80:
+        self.AddAdvisory('Using a manufacturer specific unit %d for sensor %d,'
+                         ' is there no suitable defined unit?' %
+                         (fields['unit'], sensor_number))
+      else:
+        self.AddWarning('Unknown unit %d for sensor %d' %
+                        (fields['unit'], sensor_number))
 
     if fields['prefix'] not in RDMConstants.PREFIX_TO_NAME:
       self.AddWarning('Unknown prefix %d for sensor %d' %
