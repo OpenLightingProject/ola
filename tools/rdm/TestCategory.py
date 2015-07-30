@@ -29,6 +29,7 @@ class TestCategory(object):
     'PRODUCT_INFORMATION': 'Product Information',
     'DMX_SETUP': 'DMX512 Setup',
     'DIMMER_SETTINGS': 'Dimmer Settings',
+    'IP_DNS_CONFIGURATION': 'IP and DNS Configuration',
     'SENSORS': 'Sensors',
     'POWER_LAMP_SETTINGS': 'Power / Lamp Settings',
     'DISPLAY_SETTINGS': 'Display Settings',
