@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SandnetPackets.h
- * Datagram definitions for Sandnet
+ * SandNetPackets.h
+ * Datagram definitions for SandNet
  * Copyright (C) 2005 Simon Newton
  */
 
@@ -39,15 +39,15 @@ namespace sandnet {
 enum { SANDNET_NAME_LENGTH = 31};
 
 /*
- * Sandnet opcodes.
- * These are transmitted as little-endian which why they appear strange.
+ * SandNet opcodes.
+ * These are transmitted as little-endian which is why they appear strange.
  */
 // We can't use the PACK macro for enums
 #ifdef _WIN32
 #pragma pack(push, 1)
 #endif
 enum packet_type_e {
-  SANDNET_ADVERTISMENT = 0x0100,
+  SANDNET_ADVERTISEMENT = 0x0100,
   SANDNET_CONTROL = 0x0200,
   SANDNET_DMX = 0x0300,
   SANDNET_NAME = 0x0400,
@@ -97,7 +97,7 @@ struct sandnet_packet_advertisement_port_s {
 
 
 /*
- * A Sandnet Advertisment
+ * A Sandnet Advertisement
  */
 PACK(
 struct sandnet_advertisement_s {

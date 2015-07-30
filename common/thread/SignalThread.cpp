@@ -125,6 +125,8 @@ bool SignalThread::AddSignals(sigset_t *signals) {
       return false;
     }
   }
+#else
+  (void) signals;
 #endif
   return true;
 }

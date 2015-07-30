@@ -17,6 +17,8 @@ plugins_gpio_libolagpio_la_SOURCES = \
     plugins/gpio/GPIOPlugin.h \
     plugins/gpio/GPIOPort.cpp \
     plugins/gpio/GPIOPort.h
-plugins_gpio_libolagpio_la_LIBADD = common/libolacommon.la \
-                                    plugins/gpio/libolagpiocore.la
+plugins_gpio_libolagpio_la_LIBADD = \
+    common/libolacommon.la \
+    olad/plugin_api/libolaserverplugininterface.la \
+    plugins/gpio/libolagpiocore.la
 endif

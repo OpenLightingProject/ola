@@ -13,6 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
+ * UartWidget.cpp
  * This class is based on QLCFTDI class from
  *
  * Q Light Controller
@@ -59,8 +60,9 @@ UartWidget::UartWidget(const string& path)
 }
 
 UartWidget::~UartWidget() {
-  if (IsOpen())
+  if (IsOpen()) {
     Close();
+  }
 }
 
 
@@ -100,10 +102,11 @@ bool UartWidget::SetBreak(bool on) {
   /* this is passed to ioctl, which is declared to take
    * unsigned long as it's second argument
    */
-  if (on == true)
+  if (on == true) {
     request = TIOCSBRK;
-  else
+  } else {
     request = TIOCCBRK;
+  }
 
   if (ioctl(m_fd, request, NULL) < 0) {
     OLA_WARN << Name() << " ioctl() failed";

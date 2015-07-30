@@ -30,13 +30,14 @@ from TestCategory import TestCategory
 from TestHelpers import ContainsUnprintable
 from collections import deque
 from ola import PidStore
+from ola.DMXConstants import *
 from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
+from ola.RDMConstants import *
 from ola.UID import UID
 
-MAX_LABEL_SIZE = 32
-MAX_DMX_ADDRESS = 512
+MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
 
 def UnsupportedSetNacks(pid):
   """Responders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
@@ -57,84 +58,137 @@ class UnsupportedGetMixin(object):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
 class GetMixin(object):
-  """GET Mixin for an optional PID. Verify EXPECTED_FIELD is in the response.
+  """GET Mixin for an optional PID. Verify EXPECTED_FIELDS is in the response.
 
-    This mixin also sets a property if PROVIDES is defined.  The target class
-    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+    This mixin also sets one or more properties if PROVIDES is defined.  The
+    target class needs to defined EXPECTED_FIELDS and optionally PROVIDES.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
+    allowed results for each entry.
   """
+  ALLOWED_NACKS = []
+
   def Test(self):
-    self.AddIfGetSupported(self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
+    results = [self.AckGetResult(field_names=self.EXPECTED_FIELDS)]
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackGetResult(nack))
+    self.AddIfGetSupported(results)
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+        self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 class GetStringMixin(GetMixin):
-  """GET Mixin for an optional string PID. Verify EXPECTED_FIELD is in the
+  """GET Mixin for an optional string PID. Verify EXPECTED_FIELDS are in the
     response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
-    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+    needs to defined EXPECTED_FIELDS and optionally PROVIDES.
   """
-  def VerifyResult(self, response, fields):
-    if response.WasAcked() and self.PROVIDES:
-      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+  MIN_LENGTH = 0
+  MAX_LENGTH = RDM_MAX_STRING_LENGTH
 
+  def VerifyResult(self, response, fields):
     if not response.WasAcked():
       return
 
-    if ContainsUnprintable(fields[self.EXPECTED_FIELD]):
+    string_field = fields[self.EXPECTED_FIELDS[0]]
+
+    if self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], string_field)
+
+    if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
-          (self.EXPECTED_FIELD.capitalize(), self.PID,
-           fields[self.EXPECTED_FIELD].encode('string-escape')))
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+           string_field.encode('string-escape')))
+
+    if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
+      self.SetFailed(
+          '%s field in %s was shorter than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+           len(string_field), self.MIN_LENGTH))
+
+    if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
+      self.SetFailed(
+          '%s field in %s was longer than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+           len(string_field), self.MAX_LENGTH))
 
 class GetRequiredMixin(object):
-  """GET Mixin for a required PID. Verify EXPECTED_FIELD is in the response.
+  """GET Mixin for a required PID. Verify EXPECTED_FIELDS is in the response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
-    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+    needs to defined EXPECTED_FIELDS and optionally PROVIDES.
   """
   def Test(self):
     self.AddExpectedResults(
-        self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
+        self.AckGetResult(field_names=self.EXPECTED_FIELDS))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+        self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 class GetRequiredStringMixin(GetRequiredMixin):
-  """GET Mixin for a required string PID. Verify EXPECTED_FIELD is in the
+  """GET Mixin for a required string PID. Verify EXPECTED_FIELDS is in the
     response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
-    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+    needs to defined EXPECTED_FIELDS and optionally PROVIDES.
   """
-  def VerifyResult(self, response, fields):
-    if response.WasAcked() and self.PROVIDES:
-      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
+  MIN_LENGTH = 0
+  MAX_LENGTH = RDM_MAX_STRING_LENGTH
 
+  def VerifyResult(self, response, fields):
     if not response.WasAcked():
       return
 
-    if ContainsUnprintable(fields[self.EXPECTED_FIELD]):
+    string_field = fields[self.EXPECTED_FIELDS[0]]
+
+    if self.PROVIDES:
+      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+        self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
+
+    if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
-          (self.EXPECTED_FIELD.capitalize(), self.PID,
-           fields[self.EXPECTED_FIELD].encode('string-escape')))
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+           string_field.encode('string-escape')))
+
+    if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
+      self.SetFailed(
+          '%s field in %s was shorter than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+           len(string_field), self.MIN_LENGTH))
+
+    if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
+      self.SetFailed(
+          '%s field in %s was longer than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+           len(string_field), self.MAX_LENGTH))
 
 class GetWithDataMixin(object):
-  """GET a PID with junk param data."""
+  """GET a PID with junk param data.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
+    allowed results for each entry.
+  """
   DATA = 'foo'
+  ALLOWED_NACKS = []
 
   def Test(self):
-    self.AddIfGetSupported([
+    results = [
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckGetResult(
         warning='Get %s with data returned an ack' % self.pid.name)
-    ])
+    ]
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackGetResult(nack))
+    self.AddIfGetSupported(results)
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 class GetMandatoryPIDWithDataMixin(object):
@@ -302,7 +356,7 @@ class SetOversizedLabelMixin(object):
     if 'label' not in fields:
       self.SetFailed('Missing label field in response')
     else:
-      if fields['label'] != self.LONG_STRING[0:MAX_LABEL_SIZE]:
+      if fields['label'] != self.LONG_STRING[0:RDM_MAX_STRING_LENGTH]:
         self.AddWarning(
             'Setting an oversized %s set the first %d characters' % (
             self.PID, len(fields['label'])))
@@ -331,7 +385,9 @@ class SetMixin(object):
 
   def VerifySet(self):
     self.AddExpectedResults(
-      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
+      self.AckGetResult(
+          field_names=self.EXPECTED_FIELDS,
+          field_values={self.EXPECTED_FIELDS[0]: self.NewValue()}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def ResetState(self):
@@ -733,7 +789,8 @@ class SetMaximumLevelMixin(object):
 
 class SetMinimumLevelMixin(object):
   PID = 'MINIMUM_LEVEL'
-  REQUIRES = ['minimum_level_settings', 'set_minimum_level_supported']
+  REQUIRES = ['minimum_level_settings', 'set_minimum_level_supported',
+              'split_levels_supported']
   CATEGORY = TestCategory.DIMMER_SETTINGS
 
   def MinLevelIncreasing(self):
@@ -773,10 +830,13 @@ class SetMinimumLevelMixin(object):
          self.OnBelowMin()])
 
   def GetMinLevel(self):
+    min_level_decreasing = self.MinLevelDecreasing()
+    if self.Property('split_levels_supported'):
+      min_level_decreasing = self.MinLevelIncreasing()
     self.AddIfGetSupported(self.AckGetResult(
         field_values={
           'minimum_level_increasing': self.MinLevelIncreasing(),
-          'minimum_level_decreasing': self.MinLevelDecreasing(),
+          'minimum_level_decreasing': min_level_decreasing,
           'on_below_minimum': self.OnBelowMin(),
     }))
     self.SendGet(ROOT_DEVICE, self.pid)
@@ -792,23 +852,39 @@ class SetMinimumLevelMixin(object):
          self.settings['on_below_minimum']])
     self._wrapper.Run()
 
-class GetZeroByteMixin(object):
-  """Get a single byte parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+class GetZeroUInt8Mixin(object):
+  """Get a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+  DATA = struct.pack('!B', 0)
 
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawGet(ROOT_DEVICE, self.pid, data)
+    self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
-class SetZeroByteMixin(object):
-  """Set a single byte parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+class GetZeroUInt16Mixin(GetZeroUInt8Mixin):
+  """Get a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!H', 0)
+
+class GetZeroUInt32Mixin(GetZeroUInt8Mixin):
+  """Get a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!I', 0)
+
+class SetZeroUInt8Mixin(object):
+  """Set a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+  DATA = struct.pack('!B', 0)
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+    self.SendRawSet(ROOT_DEVICE, self.pid, self.DATA)
+
+class SetZeroUInt16Mixin(SetZeroUInt8Mixin):
+  """Set a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!H', 0)
+
+class SetZeroUInt32Mixin(SetZeroUInt8Mixin):
+  """Set a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!I', 0)
 
 class GetOutOfRangeByteMixin(object):
   """The subclass provides the NumberOfSettings() method."""
@@ -853,28 +929,37 @@ class SetOutOfRangeByteMixin(object):
     self.SendSet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
 class GetSettingDescriptionsMixin(object):
-  """Perform a GET for each setting in the range 0 .. NumberOfSettings().
+  """Perform a GET for each setting in a list.
 
-    Subclasses must define EXPECTED_FIELD, which is the field to validate the
-    index against and DESCRIPTION_FIELD, which is the field to check for
-    unprintable characters.
+    The list is returned by ListOfSettings which subclasses must implement. See
+    GetSettingDescriptionsMixinRange and GetSettingDescriptionsMixinList for
+    some implementations.
+
+    If there are no entries in the list, it will fetch FIRST_INDEX_OFFSET and
+    expect a NACK.
+
+    Subclasses must define EXPECTED_FIELDS, the first of which is the field
+    used to validate the index against and DESCRIPTION_FIELD, which is the
+    field to check for unprintable characters.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
+    allowed results for each entry.
   """
-  CATEGORY = TestCategory.DIMMER_SETTINGS
+  ALLOWED_NACKS = []
+  FIRST_INDEX_OFFSET = 1
 
-  def NumberOfSettings(self):
-    # By default we use the first property from REQUIRES
-    return self.Property(self.REQUIRES[0])
+  def ListOfSettings(self):
+    self.SetBroken('base method of GetSettingDescriptionsMixin called')
 
   def Test(self):
-    count = self.NumberOfSettings()
-    if count is None:
-      # Try to GET item 1, this should NACK
+    self.items = self.ListOfSettings()
+    if not self.items:
+      # Try to GET first item, this should NACK
       self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-      self.SendGet(ROOT_DEVICE, self.pid, [1])
+      self.SendGet(ROOT_DEVICE, self.pid, [self.FIRST_INDEX_OFFSET])
       return
 
     # Otherwise fetch the description for each known setting.
-    self.items = [i + 1 for i in xrange(count)]
     self._GetNextDescription()
 
   def _GetNextDescription(self):
@@ -882,7 +967,11 @@ class GetSettingDescriptionsMixin(object):
       self.Stop()
       return
 
-    self.AddIfGetSupported(self.AckGetResult(action=self._GetNextDescription))
+    results = [self.AckGetResult(field_names=self.EXPECTED_FIELDS,
+                                 action=self._GetNextDescription)]
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackGetResult(nack, action=self._GetNextDescription))
+    self.AddIfGetSupported(results)
     self.current_item = self.items.pop()
     self.SendGet(ROOT_DEVICE, self.pid, [self.current_item])
 
@@ -890,10 +979,10 @@ class GetSettingDescriptionsMixin(object):
     if not response.WasAcked():
       return
 
-    if fields[self.EXPECTED_FIELD] != self.current_item:
+    if fields[self.EXPECTED_FIELDS[0]] != self.current_item:
       self.AddWarning(
           '%s mismatch, sent %d, received %d' %
-          (self.pid, self.current_item, fields[self.EXPECTED_FIELD]))
+          (self.pid, self.current_item, fields[self.EXPECTED_FIELDS[0]]))
 
     if ContainsUnprintable(fields[self.DESCRIPTION_FIELD]):
       self.AddAdvisory(
@@ -903,3 +992,35 @@ class GetSettingDescriptionsMixin(object):
            self.DESCRIPTION_FIELD,
            self.current_item,
            fields[self.DESCRIPTION_FIELD].encode('string-escape')))
+
+
+class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
+  """Perform a GET for each setting in a range.
+
+    The range is a count, it will check FIRST_INDEX_OFFSET to
+    FIRST_INDEX_OFFSET + NumberOfSettings().
+  """
+
+  def NumberOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+
+  def ListOfSettings(self):
+    # We generate a range from FIRST_INDEX_OFFSET to NumberOfSettings()
+    if self.NumberOfSettings() is None:
+        return []
+    else:
+      return range(self.FIRST_INDEX_OFFSET,
+                   self.NumberOfSettings() + self.FIRST_INDEX_OFFSET)
+
+class GetSettingDescriptionsListMixin(GetSettingDescriptionsMixin):
+  """Perform a GET for each setting in a list.
+
+    The list is an array of settings, which don't need to be 
+    sequential
+  """
+
+  def ListOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+

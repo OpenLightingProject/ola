@@ -24,14 +24,14 @@
 
 #include "ola/Logging.h"
 #include "ola/DmxBuffer.h"
-#include "olad/DeviceManager.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
 #include "olad/PortBroker.h"
-#include "olad/PortManager.h"
 #include "olad/Preferences.h"
-#include "olad/TestCommon.h"
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/DeviceManager.h"
+#include "olad/plugin_api/PortManager.h"
+#include "olad/plugin_api/TestCommon.h"
+#include "olad/plugin_api/UniverseStore.h"
 #include "ola/testing/TestUtils.h"
 
 
