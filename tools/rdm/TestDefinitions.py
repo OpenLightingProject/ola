@@ -2498,14 +2498,23 @@ class GetSensorDefinition(OptionalParameterTestFixture):
     self._sensors[self._current_index] = fields
 
     # perform sanity checks on the sensor infomation
-    if (fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME and
-        fields['type'] < 0x80):
-      self.AddWarning('Unknown type %d for sensor %d' %
-                      (fields['type'], sensor_number))
+    if fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME:
+      if fields['type'] >= 0x80:
+        self.AddAdvisory('Using a manufacturer specific type %d for sensor %d,'
+                         ' is there no suitable defined type?' %
+                         (fields['type'], sensor_number))
+      else:
+        self.AddWarning('Unknown type %d for sensor %d' %
+                        (fields['type'], sensor_number))
 
     if fields['unit'] not in RDMConstants.UNIT_TO_NAME:
-      self.AddWarning('Unknown unit %d for sensor %d' %
-                      (fields['unit'], sensor_number))
+      if fields['unit'] >= 0x80:
+        self.AddAdvisory('Using a manufacturer specific unit %d for sensor %d,'
+                         ' is there no suitable defined unit?' %
+                         (fields['unit'], sensor_number))
+      else:
+        self.AddWarning('Unknown unit %d for sensor %d' %
+                        (fields['unit'], sensor_number))
 
     if fields['prefix'] not in RDMConstants.PREFIX_TO_NAME:
       self.AddWarning('Unknown prefix %d for sensor %d' %
