@@ -5071,7 +5071,9 @@ class SetOutOfRangeLockPin(OptionalParameterTestFixture):
       self.SetNotRun('Unable to determine pin code')
       return
 
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    # Section 3.9, out of range pins return NR_FORMAT_ERROR rather than
+    # NR_DATA_OUT_OF_RANGE like one may expect.
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
     data = struct.pack('!HH', 10001, self.pin)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
