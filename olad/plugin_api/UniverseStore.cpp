@@ -19,7 +19,7 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/UniverseStore.h"
 
 #include <iostream>
 #include <set>

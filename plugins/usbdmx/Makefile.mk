@@ -76,6 +76,7 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/UsbDmxPlugin.h
 plugins_usbdmx_libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
 plugins_usbdmx_libolausbdmx_la_LIBADD = \
+    olad/plugin_api/libolaserverplugininterface.la \
     plugins/usbdmx/libolausbdmxwidget.la
 
 # TESTS
@@ -93,3 +94,5 @@ plugins_usbdmx_LibUsbThreadTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) \
                                              $(libusb_CFLAGS)
 plugins_usbdmx_LibUsbThreadTester_LDADD = $(COMMON_USBDMX_TEST_LDADD)
 endif
+
+EXTRA_DIST += plugins/usbdmx/README.md

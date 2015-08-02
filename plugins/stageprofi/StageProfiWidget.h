@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * stageprofidevice.h
- * Interface for the stageprofi device
+ * StageProfiWidget.h
+ * This is the base widget class
  * Copyright (C) 2006 Simon Newton
  */
 

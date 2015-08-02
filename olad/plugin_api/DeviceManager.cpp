@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * devicemanager.cpp
- * Implementation of the device manager, this object tracks what devices are in
+ * DeviceManager.cpp
+ * Implementation of the Device Manager, this object tracks what devices are in
  * use.
  * Copyright (C) 2005 Simon Newton
  */
 
-#include "olad/DeviceManager.h"
+#include "olad/plugin_api/DeviceManager.h"
 
 #include <stdio.h>
 #include <errno.h>
@@ -32,7 +32,7 @@
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
 #include "olad/Port.h"
-#include "olad/PortManager.h"
+#include "olad/plugin_api/PortManager.h"
 
 namespace ola {
 

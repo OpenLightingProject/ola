@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * UniverseTest.cpp
- * Test fixture for the Universe and UniverseStore classes
+ * TestCommon.h
+ * Test fixture for various olad classes
  * Copyright (C) 2005 Simon Newton
  */
 
-#ifndef OLAD_TESTCOMMON_H_
-#define OLAD_TESTCOMMON_H_
+#ifndef OLAD_PLUGIN_API_TESTCOMMON_H_
+#define OLAD_PLUGIN_API_TESTCOMMON_H_
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 #include <set>
@@ -33,7 +33,7 @@
 #include "olad/Device.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
-#include "olad/PortManager.h"
+#include "olad/plugin_api/PortManager.h"
 
 /*
  * Mock out an Input Port
@@ -340,4 +340,4 @@ class MockSelectServer: public ola::io::SelectServerInterface {
  private:
   const ola::TimeStamp *m_wake_up;
 };
-#endif  // OLAD_TESTCOMMON_H_
+#endif  // OLAD_PLUGIN_API_TESTCOMMON_H_

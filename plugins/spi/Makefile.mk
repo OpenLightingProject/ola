@@ -19,8 +19,10 @@ plugins_spi_libolaspi_la_SOURCES = \
     plugins/spi/SPIPlugin.h \
     plugins/spi/SPIPort.cpp \
     plugins/spi/SPIPort.h
-plugins_spi_libolaspi_la_LIBADD = common/libolacommon.la \
-                                  plugins/spi/libolaspicore.la
+plugins_spi_libolaspi_la_LIBADD = \
+    common/libolacommon.la \
+    olad/plugin_api/libolaserverplugininterface.la \
+    plugins/spi/libolaspicore.la
 
 # TESTS
 ##################################################

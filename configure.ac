@@ -124,9 +124,9 @@ AC_FUNC_STAT
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
-                if_nametoindex inet_ntoa inet_aton select socket strerror \
-                getifaddrs getloadavg getpwnam_r getpwuid_r getgrnam_r \
-                getgrgid_r secure_getenv])
+                if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
+                socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
+                getgrnam_r getgrgid_r secure_getenv])
 
 LT_INIT
 AC_PROG_LIBTOOL
@@ -143,7 +143,7 @@ AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
 AC_CHECK_FUNCS([kqueue])
 AM_CONDITIONAL(HAVE_KQUEUE, test "${ac_cv_func_kqueue}" = "yes")
 
-# check if the compiler supports -rdyanmic
+# check if the compiler supports -rdynamic
 AC_MSG_CHECKING(for -rdynamic support)
 old_cppflags=$CPPFLAGS
 CPPFLAGS="${CPPFLAGS} -rdynamic -Wall -Werror"
@@ -241,6 +241,11 @@ if test -z "${USING_WIN32_FALSE}" && test "${have_msg_no_signal}" = "no" && \
    test "${have_so_no_pipe}" = "no"; then
  AC_MSG_ERROR([Your system needs either MSG_NOSIGNAL or SO_NOSIGPIPE])
 fi
+
+AC_CHECK_TYPE(termios2,
+              AC_DEFINE([HAVE_TERMIOS2], [1], [define if we have termios2]),
+              ,
+              [#include <asm/termios.h>])
 
 # Headers.
 #####################################################

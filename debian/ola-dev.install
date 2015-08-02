@@ -1,5 +1,0 @@
-usr/include/*
-usr/lib/pkgconfig/*
-usr/lib/libola*.so
-usr/lib/libola*.la
-usr/lib/libola*.a

@@ -18,8 +18,8 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#ifndef OLAD_UNIVERSESTORE_H_
-#define OLAD_UNIVERSESTORE_H_
+#ifndef OLAD_PLUGIN_API_UNIVERSESTORE_H_
+#define OLAD_PLUGIN_API_UNIVERSESTORE_H_
 
 #include <map>
 #include <set>
@@ -110,4 +110,4 @@ class UniverseStore {
   DISALLOW_COPY_AND_ASSIGN(UniverseStore);
 };
 }  // namespace ola
-#endif  // OLAD_UNIVERSESTORE_H_
+#endif  // OLAD_PLUGIN_API_UNIVERSESTORE_H_

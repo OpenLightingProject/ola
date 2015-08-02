@@ -45,10 +45,11 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/stl/STLUtils.h"
-#include "olad/Client.h"
+#include "ola/strings/Format.h"
 #include "olad/Port.h"
 #include "olad/Universe.h"
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/Client.h"
+#include "olad/plugin_api/UniverseStore.h"
 
 namespace ola {
 
@@ -57,6 +58,7 @@ using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
+using ola::strings::ToHex;
 using std::auto_ptr;
 using std::map;
 using std::ostringstream;
@@ -115,11 +117,12 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
   };
 
   if (m_export_map) {
-    for (unsigned int i = 0; i < arraysize(vars); ++i)
+    for (unsigned int i = 0; i < arraysize(vars); ++i) {
       (*m_export_map->GetUIntMapVar(vars[i]))[m_universe_id_str] = 0;
+    }
   }
 
-  // we set the last discovery time to now, since most ports will trigger
+  // We set the last discovery time to now, since most ports will trigger
   // discovery when they are patched.
   clock->CurrentTime(&m_last_discovery_time);
 }
@@ -145,10 +148,12 @@ Universe::~Universe() {
   };
 
   if (m_export_map) {
-    for (unsigned int i = 0; i < arraysize(string_vars); ++i)
+    for (unsigned int i = 0; i < arraysize(string_vars); ++i) {
       m_export_map->GetStringMapVar(string_vars[i])->Remove(m_universe_id_str);
-    for (unsigned int i = 0; i < arraysize(uint_vars); ++i)
+    }
+    for (unsigned int i = 0; i < arraysize(uint_vars); ++i) {
       m_export_map->GetUIntMapVar(uint_vars[i])->Remove(m_universe_id_str);
+    }
   }
 }
 
@@ -215,9 +220,10 @@ bool Universe::RemovePort(InputPort *port) {
 bool Universe::RemovePort(OutputPort *port) {
   bool ret = GenericRemovePort(port, &m_output_ports, &m_output_uids);
 
-  if (m_export_map)
+  if (m_export_map) {
     (*m_export_map->GetUIntMapVar(K_UNIVERSE_UID_COUNT_VAR))[m_universe_id_str]
-      = m_output_uids.size();
+        = m_output_uids.size();
+  }
   return ret;
 }
 
@@ -249,7 +255,7 @@ bool Universe::ContainsPort(OutputPort *port) const {
 void Universe::InputPorts(vector<InputPort*> *ports) const {
   ports->clear();
   std::copy(m_input_ports.begin(), m_input_ports.end(),
-      std::back_inserter(*ports));
+            std::back_inserter(*ports));
 }
 
 
@@ -260,7 +266,7 @@ void Universe::InputPorts(vector<InputPort*> *ports) const {
 void Universe::OutputPorts(vector<OutputPort*> *ports) const {
   ports->clear();
   std::copy(m_output_ports.begin(), m_output_ports.end(),
-      std::back_inserter(*ports));
+            std::back_inserter(*ports));
 }
 
 
@@ -272,11 +278,12 @@ void Universe::OutputPorts(vector<OutputPort*> *ports) const {
 bool Universe::AddSourceClient(Client *client) {
   // Check to see if it exists already. It doesn't make sense to have multiple
   //  clients
-  if (STLReplace(&m_source_clients, client, false))
+  if (STLReplace(&m_source_clients, client, false)) {
     return true;
+  }
 
   OLA_INFO << "Added source client, " << client << " to universe "
-    << m_universe_id;
+           << m_universe_id;
 
   SafeIncrement(K_UNIVERSE_SOURCE_CLIENTS_VAR);
   return true;
@@ -291,16 +298,18 @@ bool Universe::AddSourceClient(Client *client) {
  * @return true is this client was removed, false if it didn't exist
  */
 bool Universe::RemoveSourceClient(Client *client) {
-  if (!STLRemove(&m_source_clients, client))
+  if (!STLRemove(&m_source_clients, client)) {
     return false;
+  }
 
   SafeDecrement(K_UNIVERSE_SOURCE_CLIENTS_VAR);
 
-  OLA_INFO << "Source client " << client << " has been removed from uni " <<
-    m_universe_id;
+  OLA_INFO << "Source client " << client << " has been removed from uni "
+           << m_universe_id;
 
-  if (!IsActive())
+  if (!IsActive()) {
     m_universe_store->AddUniverseGarbageCollection(this);
+  }
   return true;
 }
 
@@ -321,11 +330,12 @@ bool Universe::ContainsSourceClient(Client *client) const {
  * @return true if client was added, and false if it was already a sink client
  */
 bool Universe::AddSinkClient(Client *client) {
-  if (!STLInsertIfNotPresent(&m_sink_clients, client))
+  if (!STLInsertIfNotPresent(&m_sink_clients, client)) {
     return false;
+  }
 
-  OLA_INFO << "Added sink client, " << client << " to universe " <<
-    m_universe_id;
+  OLA_INFO << "Added sink client, " << client << " to universe "
+           << m_universe_id;
 
   SafeIncrement(K_UNIVERSE_SINK_CLIENTS_VAR);
   return true;
@@ -340,16 +350,18 @@ bool Universe::AddSinkClient(Client *client) {
  * @return true is this client was removed, false if it didn't exist
  */
 bool Universe::RemoveSinkClient(Client *client) {
-  if (!STLRemove(&m_sink_clients, client))
+  if (!STLRemove(&m_sink_clients, client)) {
     return false;
+  }
 
   SafeDecrement(K_UNIVERSE_SINK_CLIENTS_VAR);
 
-  OLA_INFO << "Sink client " << client << " has been removed from uni " <<
-    m_universe_id;
+  OLA_INFO << "Sink client " << client << " has been removed from uni "
+           << m_universe_id;
 
-  if (!IsActive())
+  if (!IsActive()) {
     m_universe_store->AddUniverseGarbageCollection(this);
+  }
   return true;
 }
 
@@ -371,8 +383,8 @@ bool Universe::ContainsSinkClient(Client *client) const {
  */
 bool Universe::SetDMX(const DmxBuffer &buffer) {
   if (!buffer.Size()) {
-    OLA_INFO << "Trying to SetDMX with a 0 length dmx buffer, universe " <<
-      UniverseId();
+    OLA_INFO << "Trying to SetDMX with a 0 length dmx buffer, universe "
+             << UniverseId();
     return true;
   }
   m_buffer.Set(buffer);
@@ -387,11 +399,12 @@ bool Universe::SetDMX(const DmxBuffer &buffer) {
 bool Universe::PortDataChanged(InputPort *port) {
   if (!ContainsPort(port)) {
     OLA_INFO << "Trying to update a port which isn't bound to universe: "
-      << UniverseId();
+             << UniverseId();
     return false;
   }
-  if (MergeAll(port, NULL))
+  if (MergeAll(port, NULL)) {
     UpdateDependants();
+  }
   return true;
 }
 
@@ -400,12 +413,14 @@ bool Universe::PortDataChanged(InputPort *port) {
  * Called to indicate that data from a client has changed
  */
 bool Universe::SourceClientDataChanged(Client *client) {
-  if (!client)
+  if (!client) {
     return false;
+  }
 
   AddSourceClient(client);   // always add since this may be the first call
-  if (MergeAll(NULL, client))
+  if (MergeAll(NULL, client)) {
     UpdateDependants();
+  }
   return true;
 }
 
@@ -421,8 +436,9 @@ void Universe::CleanStaleSourceClients() {
       m_source_clients.erase(iter++);
       SafeDecrement(K_UNIVERSE_SOURCE_CLIENTS_VAR);
       OLA_INFO << "Removed Stale Client";
-      if (!IsActive())
+      if (!IsActive()) {
         m_universe_store->AddUniverseGarbageCollection(this);
+      }
     } else {
       // clear the stale flag
       iter->second = true;
@@ -440,12 +456,12 @@ void Universe::SendRDMRequest(RDMRequest *request_ptr,
                               ola::rdm::RDMCallback *callback) {
   auto_ptr<RDMRequest> request(request_ptr);
 
-  OLA_INFO << "Universe " << UniverseId() << ", RDM request to " <<
-    request->DestinationUID() << ", SD: " << request->SubDevice() << ", CC "
-      << std::hex << request->CommandClass() << ", TN "
-      << static_cast<int>(request->TransactionNumber()) << ", PID 0x"
-      << std::hex << request->ParamId() << ", PDL: " << std::dec
-      << request->ParamDataSize();
+  OLA_INFO << "Universe " << UniverseId() << ", RDM request to "
+           << request->DestinationUID() << ", SD: " << request->SubDevice()
+           << ", CC " << ToHex(request->CommandClass()) << ", TN "
+           << static_cast<int>(request->TransactionNumber()) << ", PID "
+           << ToHex(request->ParamId()) << ", PDL: "
+           << request->ParamDataSize();
 
   SafeIncrement(K_UNIVERSE_RDM_REQUESTS);
 
@@ -485,11 +501,11 @@ void Universe::SendRDMRequest(RDMRequest *request_ptr,
     }
   } else {
     map<UID, OutputPort*>::iterator iter =
-      m_output_uids.find(request->DestinationUID());
+        m_output_uids.find(request->DestinationUID());
 
     if (iter == m_output_uids.end()) {
-      OLA_WARN << "Can't find UID " << request->DestinationUID() <<
-        " in the output universe map, dropping request";
+      OLA_WARN << "Can't find UID " << request->DestinationUID()
+               << " in the output universe map, dropping request";
       RunRDMCallback(callback, ola::rdm::RDM_UNKNOWN_UID);
     } else {
       iter->second->SendRDMRequest(request.release(), callback);
@@ -502,11 +518,12 @@ void Universe::SendRDMRequest(RDMRequest *request_ptr,
  * Trigger RDM discovery for this universe
  */
 void Universe::RunRDMDiscovery(RDMDiscoveryCallback *on_complete, bool full) {
-  if (full)
+  if (full) {
     OLA_INFO << "Full RDM discovery triggered for universe " << m_universe_id;
-  else
-    OLA_INFO << "Incremental RDM discovery triggered for universe " <<
-      m_universe_id;
+  } else {
+    OLA_INFO << "Incremental RDM discovery triggered for universe "
+             << m_universe_id;
+  }
 
   m_clock->CurrentTime(&m_last_discovery_time);
 
@@ -548,10 +565,11 @@ void Universe::RunRDMDiscovery(RDMDiscoveryCallback *on_complete, bool full) {
 void Universe::NewUIDList(OutputPort *port, const ola::rdm::UIDSet &uids) {
   map<UID, OutputPort*>::iterator iter = m_output_uids.begin();
   while (iter != m_output_uids.end()) {
-    if (iter->second == port && !uids.Contains(iter->first))
+    if (iter->second == port && !uids.Contains(iter->first)) {
       m_output_uids.erase(iter++);
-    else
+    } else {
       ++iter;
+    }
   }
 
   ola::rdm::UIDSet::Iterator set_iter = uids.Begin();
@@ -564,9 +582,10 @@ void Universe::NewUIDList(OutputPort *port, const ola::rdm::UIDSet &uids) {
     }
   }
 
-  if (m_export_map)
+  if (m_export_map) {
     (*m_export_map->GetUIntMapVar(K_UNIVERSE_UID_COUNT_VAR))[m_universe_id_str]
-      = m_output_uids.size();
+        = m_output_uids.size();
+  }
 }
 
 
@@ -575,8 +594,9 @@ void Universe::NewUIDList(OutputPort *port, const ola::rdm::UIDSet &uids) {
  */
 void Universe::GetUIDs(ola::rdm::UIDSet *uids) const {
   map<UID, OutputPort*>::const_iterator iter = m_output_uids.begin();
-  for (; iter != m_output_uids.end(); ++iter)
+  for (; iter != m_output_uids.end(); ++iter) {
     uids->AddUID(iter->first);
+  }
 }
 
 
@@ -631,8 +651,9 @@ bool Universe::UpdateDependants() {
  * Update the name in the export map.
  */
 void Universe::UpdateName() {
-  if (!m_export_map)
+  if (!m_export_map) {
     return;
+  }
   StringMap *name_map = m_export_map->GetStringMapVar(K_UNIVERSE_NAME_VAR);
   (*name_map)[m_universe_id_str] = m_universe_name;
 }
@@ -642,8 +663,9 @@ void Universe::UpdateName() {
  * Update the mode in the export map.
  */
 void Universe::UpdateMode() {
-  if (!m_export_map)
+  if (!m_export_map) {
     return;
+  }
   StringMap *mode_map = m_export_map->GetStringMapVar(K_UNIVERSE_MODE_VAR);
   (*mode_map)[m_universe_id_str] = (m_merge_mode == Universe::MERGE_LTP ?
                                     K_MERGE_LTP_STR : K_MERGE_HTP_STR);
@@ -687,8 +709,9 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
   // Find the highest active ports
   for (iter = m_input_ports.begin(); iter != m_input_ports.end(); ++iter) {
     DmxSource source = (*iter)->SourceData();
-    if (!source.IsSet() || !source.IsActive(now) || !source.Data().Size())
+    if (!source.IsSet() || !source.IsActive(now) || !source.Data().Size()) {
       continue;
+    }
 
     if (source.Priority() > m_active_priority) {
       changed_source_is_active = false;
@@ -698,8 +721,9 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
 
     if (source.Priority() == m_active_priority) {
       active_sources.push_back(source);
-      if (*iter == port)
+      if (*iter == port) {
         changed_source_is_active = true;
+      }
     }
   }
 
@@ -709,8 +733,9 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
        ++client_iter) {
     const DmxSource &source = client_iter->first->SourceData(UniverseId());
 
-    if (!source.IsSet() || !source.IsActive(now) || !source.Data().Size())
+    if (!source.IsSet() || !source.IsActive(now) || !source.Data().Size()) {
       continue;
+    }
 
     if (source.Priority() > m_active_priority) {
       changed_source_is_active = false;
@@ -720,20 +745,22 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
 
     if (source.Priority() == m_active_priority) {
       active_sources.push_back(source);
-      if (client_iter->first == client)
+      if (client_iter->first == client) {
         changed_source_is_active = true;
+      }
     }
   }
 
   if (active_sources.empty()) {
-    OLA_WARN << "Something changed but we didn't find any active sources " <<
-      " for universe " << UniverseId();
+    OLA_WARN << "Something changed but we didn't find any active sources "
+             << " for universe " << UniverseId();
     return false;
   }
 
-  if (!changed_source_is_active)
+  if (!changed_source_is_active) {
     // this source didn't have any effect, skip
     return false;
+  }
 
   // only one source at the active priority
   if (active_sources.size() == 1) {
@@ -743,16 +770,18 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
     if (m_merge_mode == Universe::MERGE_LTP) {
       vector<DmxSource>::const_iterator source_iter = active_sources.begin();
       DmxSource changed_source;
-      if (port)
+      if (port) {
         changed_source = port->SourceData();
-      else
+      } else {
         changed_source = client->SourceData(UniverseId());
+      }
 
       // check that the current port/client is newer than all other active
       // sources
       for (; source_iter != active_sources.end(); source_iter++) {
-        if (changed_source.Timestamp() < source_iter->Timestamp())
+        if (changed_source.Timestamp() < source_iter->Timestamp()) {
           return false;
+        }
       }
       // if we made it to here this is the newest source
       m_buffer.Set(changed_source.Data());
@@ -781,8 +810,9 @@ void Universe::PortDiscoveryComplete(BaseCallback0<void> *on_complete,
 void Universe::DiscoveryComplete(RDMDiscoveryCallback *on_complete) {
   ola::rdm::UIDSet uids;
   GetUIDs(&uids);
-  if (on_complete)
+  if (on_complete) {
     on_complete->Run(uids);
+  }
 }
 
 
@@ -878,8 +908,9 @@ void Universe::SafeDecrement(const string &name) {
  */
 template<class PortClass>
 bool Universe::GenericAddPort(PortClass *port, vector<PortClass*> *ports) {
-  if (find(ports->begin(), ports->end(), port) != ports->end())
+  if (find(ports->begin(), ports->end(), port) != ports->end()) {
     return true;
+  }
 
   ports->push_back(port);
   if (m_export_map) {
@@ -918,17 +949,19 @@ bool Universe::GenericRemovePort(PortClass *port,
     (*map)[m_universe_id_str]--;
   }
 
-  if (!IsActive())
+  if (!IsActive()) {
     m_universe_store->AddUniverseGarbageCollection(this);
+  }
 
   // Remove any uids that mapped to this port
   if (uid_map) {
     typename map<UID, PortClass*>::iterator uid_iter = uid_map->begin();
     while (uid_iter != uid_map->end()) {
-      if (uid_iter->second == port)
+      if (uid_iter->second == port) {
         uid_map->erase(uid_iter++);
-      else
+      } else {
         ++uid_iter;
+      }
     }
   }
   return true;

@@ -43,9 +43,10 @@ void ClientBroker::SendRDMRequest(const Client *client,
                                   Universe *universe,
                                   ola::rdm::RDMRequest *request,
                                   ola::rdm::RDMCallback *callback) {
-  if (!STLContains(m_clients, client))
-    OLA_WARN <<
-      "Making an RDM call but the client doesn't exist in the broker!";
+  if (!STLContains(m_clients, client)) {
+    OLA_WARN << "Making an RDM call but the client doesn't exist in the "
+             << "broker!";
+  }
 
   universe->SendRDMRequest(
       request,

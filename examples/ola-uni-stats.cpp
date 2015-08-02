@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ola-uni-stats.cpp
- *  Display some simple universe stats.
- *  Copyright (C) 2012 Simon Newton
+ * ola-uni-stats.cpp
+ * Display some simple universe stats.
+ * Copyright (C) 2012 Simon Newton
  */
 
 #include <errno.h>

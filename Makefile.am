@@ -122,7 +122,7 @@ test_scripts =
 # -----------------------------------------------------------------------------
 
 # Since `make install` relinks the libraries, this should be in the order in
-# which libraries depend on each other. e.g. common, plugins, server.
+# which libraries depend on each other. e.g. common, plugin_api, plugins, server.
 include common/Makefile.mk
 include data/Makefile.mk
 include debian/Makefile.mk
@@ -132,6 +132,10 @@ include include/Makefile.mk
 include javascript/Makefile.mk
 include man/Makefile.mk
 include ola/Makefile.mk
+# olad/plugin_api/Makefile.mk is included directly due to the order of
+# dependencies between them; we need to build olad/plugin_api, then the
+# plugins, then olad
+include olad/plugin_api/Makefile.mk
 include plugins/Makefile.mk
 include olad/Makefile.mk
 include protoc/Makefile.mk
@@ -168,6 +172,15 @@ pkgconfig_DATA += libola.pc libolaserver.pc
 dvi:
 
 EXTRA_DIST += \
+  CONTRIBUTING \
+  Doxyfile \
+  GPL \
+  LGPL \
+  LICENCE \
+  README.debian \
+  README.developer \
+  README.mingw32 \
+  README.rpm \
   config/ac_prog_java_cc.m4 \
   config/ac_python_devel.m4 \
   config/ac_saleae.m4 \
@@ -179,13 +192,7 @@ EXTRA_DIST += \
   config/pkg.m4 \
   config/resolv.m4 \
   config/stl_hash.m4 \
-  CONTRIBUTING \
-  GPL \
-  LGPL \
-  LICENCE \
-  README.debian \
-  README.developer \
-  README.rpm ola.spec \
   mac_build.sh \
+  ola.spec \
   tests/recvdmx.py \
   tests/regression.py
