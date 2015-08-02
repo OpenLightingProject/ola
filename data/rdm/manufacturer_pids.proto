@@ -8182,5 +8182,85 @@ manufacturer {
     }
     get_sub_device_range: ROOT_DEVICE
   }
+  pid {
+    name: "PIXEL_TYPE"
+    value: 32773
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "pixel_type"
+        label {
+          value: 1
+          label: "LPD8806"
+        }
+        label {
+          value: 2
+          label: "WS2801"
+        }
+        label {
+          value: 3
+          label: "P9813"
+        }
+        label {
+          value: 4
+          label: "APA102"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "pixel_type"
+        label {
+          value: 1
+          label: "LPD8806"
+        }
+        label {
+          value: 2
+          label: "WS2801"
+        }
+        label {
+          value: 3
+          label: "P9813"
+        }
+        label {
+          value: 4
+          label: "APA102"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PIXEL_COUNT"
+    value: 32774
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "pixel_count"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "pixel_count"
+        range {
+          min: 1
+          max: 65535
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
 }
-version: 1437580798
+version: 1438559429
