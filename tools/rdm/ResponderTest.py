@@ -329,7 +329,7 @@ class ResponderTestFixture(TestFixture):
     """
     self.LogDebug(' DISCOVERY: uid: %s, pid: %s, sub device: %d, args: %s' %
                   (uid, pid, sub_device, args))
-    self._outstanding_request = (sub_device, PidStore.RDM_DISCOVERY, pid.value)
+    self._MakeRequestKey(sub_device, PidStore.RDM_DISCOVERY, pid.value)
     return self._api.Discovery(self._universe,
                                uid,
                                sub_device,
@@ -348,7 +348,7 @@ class ResponderTestFixture(TestFixture):
     """
     self.LogDebug(' DISCOVERY: pid: %s, sub device: %d, data: %r' %
                   (pid, sub_device, data))
-    self._outstanding_request = (sub_device, PidStore.RDM_DISCOVERY, pid.value)
+    self._MakeRequestKey(sub_device, PidStore.RDM_DISCOVERY, pid.value)
     return self._api.RawDiscovery(self._universe,
                                   self._uid,
                                   sub_device,
@@ -377,7 +377,7 @@ class ResponderTestFixture(TestFixture):
     """
     self.LogDebug(' GET: uid: %s, pid: %s, sub device: %d, args: %s' %
                   (uid, pid, sub_device, args))
-    self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
+    self._MakeRequestKey(sub_device, PidStore.RDM_GET, pid.value)
     ret_code = self._api.Get(self._universe,
                              uid,
                              sub_device,
@@ -396,7 +396,7 @@ class ResponderTestFixture(TestFixture):
     """
     self.LogDebug(' GET: uid: %s, pid: %s, sub device: %d, data: %r' %
                   (self._uid, pid, sub_device, data))
-    self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
+    self._MakeRequestKey(sub_device, PidStore.RDM_GET, pid.value)
     return self._api.RawGet(self._universe,
                             self._uid,
                             sub_device,
@@ -425,7 +425,7 @@ class ResponderTestFixture(TestFixture):
     """
     self.LogDebug(' SET: uid: %s, pid: %s, sub device: %d, args: %s' %
                   (uid, pid, sub_device, self._EscapeData(args)))
-    self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
+    self._MakeRequestKey(sub_device, PidStore.RDM_SET, pid.value)
     ret_code = self._api.Set(self._universe,
                              uid,
                              sub_device,
@@ -446,7 +446,7 @@ class ResponderTestFixture(TestFixture):
     """
     self.LogDebug(' SET: pid: %s, sub device: %d, data: %r' %
                   (pid, sub_device, data))
-    self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
+    self._MakeRequestKey(sub_device, PidStore.RDM_SET, pid.value)
     return self._api.RawSet(self._universe,
                             self._uid,
                             sub_device,
@@ -466,6 +466,13 @@ class ResponderTestFixture(TestFixture):
       return
 
     self._PerformMatching(response, unpacked_data, unpack_exception)
+
+  def _MakeRequestKey(self, sub_device, command_class, pid):
+    # if the request was sent to the all-subdevice, the response should come
+    # from the root.
+    if sub_device == PidStore.ALL_SUB_DEVICES:
+      sub_device = PidStore.ROOT_DEVICE
+    self._outstanding_request = (sub_device, command_class, pid)
 
   def _HandleQueuedResponse(self, response, unpacked_data, unpack_exception):
     """Handle a response to a get QUEUED_MESSAGE request.
