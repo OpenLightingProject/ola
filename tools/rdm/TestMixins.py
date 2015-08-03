@@ -733,7 +733,8 @@ class SetMaximumLevelMixin(object):
 
 class SetMinimumLevelMixin(object):
   PID = 'MINIMUM_LEVEL'
-  REQUIRES = ['minimum_level_settings', 'set_minimum_level_supported']
+  REQUIRES = ['minimum_level_settings', 'set_minimum_level_supported',
+              'split_levels_supported']
   CATEGORY = TestCategory.DIMMER_SETTINGS
 
   def MinLevelIncreasing(self):
@@ -773,10 +774,13 @@ class SetMinimumLevelMixin(object):
          self.OnBelowMin()])
 
   def GetMinLevel(self):
+    min_level_decreasing = self.MinLevelDecreasing()
+    if self.Property('split_levels_supported'):
+      min_level_decreasing = self.MinLevelIncreasing()
     self.AddIfGetSupported(self.AckGetResult(
         field_values={
           'minimum_level_increasing': self.MinLevelIncreasing(),
-          'minimum_level_decreasing': self.MinLevelDecreasing(),
+          'minimum_level_decreasing': min_level_decreasing,
           'on_below_minimum': self.OnBelowMin(),
     }))
     self.SendGet(ROOT_DEVICE, self.pid)
