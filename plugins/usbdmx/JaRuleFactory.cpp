@@ -34,8 +34,9 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t JaRuleFactory::PRODUCT_ID = 0x0053;
-const uint16_t JaRuleFactory::VENDOR_ID = 0x04d8;
+// http://pid.codes/1209/ACED/
+const uint16_t JaRuleFactory::PRODUCT_ID = 0xaced;
+const uint16_t JaRuleFactory::VENDOR_ID = 0x1209;
 
 bool JaRuleFactory::DeviceAdded(
     WidgetObserver *observer,

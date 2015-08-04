@@ -925,7 +925,7 @@ class FindSubDevices(ResponderTestFixture):
 
     if self._current_index >= PidStore.MAX_VALID_SUB_DEVICE:
       self.SetFailed('Only found %d of %d sub devices' %
-                     (len(self._sub_devices), self._device_count))
+                     (len(self._sub_device_addresses), self._device_count))
       self.Stop()
       return
 
@@ -5013,6 +5013,9 @@ class SetOutOfRangeLockPin(OptionalParameterTestFixture):
       self.SetNotRun('Unable to determine pin code')
       return
 
+    # Section 3.9, out of range pins return NR_FORMAT_ERROR rather than
+    # NR_DATA_OUT_OF_RANGE like one may expect. NR_DATA_OUT_OF_RANGE is
+    # reserved for reporting when an incorrect PIN is used.
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
     data = struct.pack('!HH', 10001, self.pin)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
