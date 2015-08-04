@@ -1,16 +1,23 @@
 x/y/2015 ola-0.9.8
  Features:
- * 
+ * Add support for the DMXter4A
 
  API:
  * 
 
  RDM Tests:
- * 
+ * Fix a bug related to split levels not being supported in the dimmer PIDs
+ * Allow NR_UNSUPPORTED_COMMAND_CLASS for SET DMX_ADDRESS when the address is
+   not required
+ * Switch from a warning to an advisory if it's a manufacturer specific use in
+   GetSensorDefinition
 
  Bugs:
+ * Fix some Xcode build errors
  * Fix the build on Windows
  * Fix a bug in Artnet universe mapping #856
+ * NACK requests for IPv4 default route PID with data
+ * NACK with format error requests for DNS PIDs with data
 
  Internal:
  *
