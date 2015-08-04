@@ -386,6 +386,24 @@ angular
       getData();
       $interval(getData, 10000);
     }])
+  .controller('headerControl',
+  ['$scope', '$ola', '$routeParams', '$window',
+    function($scope, $ola, $routeParams, $window) {
+      'use strict';
+      $scope.header = {
+        tab: '',
+        id: $routeParams.id,
+        name: ''
+      };
+
+      $ola.get.UniverseInfo($routeParams.id)
+        .then(function(data) {
+          $scope.header.name = data.name;
+        });
+
+      var hash = $window.location.hash;
+      $scope.header.tab = hash.replace(/#\/universe\/[0-9]+\/?/, '');
+    }])
   .controller('overviewCtrl', ['$scope', '$ola', '$location',
     function($scope, $ola, $location) {
       'use strict';
@@ -469,15 +487,6 @@ angular
   ['$scope', '$ola', '$routeParams', '$interval', 'OLA',
     function($scope, $ola, $routeParams, $interval, OLA) {
       'use strict';
-      $scope.header = {
-        tab: 'overview',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.dmx = [];
       $scope.Universe = $routeParams.id;
       var interval = $interval(function() {
@@ -505,15 +514,6 @@ angular
   ['$scope', '$ola', '$routeParams', '$window', '$interval', 'OLA',
     function($scope, $ola, $routeParams, $window, $interval, OLA) {
       'use strict';
-      $scope.header = {
-        tab: 'faders',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.get = [];
       $scope.list = [];
       $scope.last = 0;
@@ -599,29 +599,11 @@ angular
   .controller('keypadUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $scope.header = {
-        tab: 'keypad',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.Universe = $routeParams.id;
     }])
   .controller('rdmUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $scope.header = {
-        tab: 'rdm',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       //get:
       // /json/rdm/set_section_info?id={{id}}&uid={{uid}}&section={{section}}&hint={{hint}}&address={{address}}
       $scope.Universe = $routeParams.id;
@@ -629,29 +611,11 @@ angular
   .controller('patchUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $scope.header = {
-        tab: 'patch',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.Universe = $routeParams.id;
     }])
   .controller('settingUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $scope.header = {
-        tab: 'settings',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.loadData = function() {
         $scope.Data = {
           old: {},
@@ -664,7 +628,6 @@ angular
           $scope.DeactivePorts = data;
         });
         $ola.get.UniverseInfo($routeParams.id).then(function(data) {
-          window.console.log(data);
           $scope.Data.old.name = $scope.Data.model.name = data.name;
           $scope.Data.old.merge_mode = data.merge_mode;
           $scope.Data.model.merge_mode = data.merge_mode;
@@ -706,14 +669,12 @@ angular
           }
         });
         a.modify_ports = $.grep(modified, Boolean).join(',');
-        $ola.post.ModifyUniverse(a).then(function(data) {
-          window.console.log(data);
-        });
+        $ola.post.ModifyUniverse(a);
         $scope.loadData();
       };
     }])
-  .controller('pluginInfoCtrl', ['$scope', '$routeParams', '$ola', '$window',
-    function($scope, $routeParams, $ola, $window) {
+  .controller('pluginInfoCtrl', ['$scope', '$routeParams', '$ola',
+    function($scope, $routeParams, $ola) {
       'use strict';
       $ola.get.InfoPlugin($routeParams.id).then(function(data) {
         $scope.active = data.active;
@@ -723,7 +684,6 @@ angular
         description.textContent = data.description;
         description.innerHTML =
           description.innerHTML.replace(/\\n/g, '<br />');
-        $window.console.log(data);
       });
       $scope.stateColor = function(val) {
         if (val) {
