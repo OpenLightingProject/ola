@@ -29,8 +29,8 @@ angular
   .factory('$ola', ['$http', '$window', 'OLA',
     function($http, $window, OLA) {
       'use strict';
-      // once olad supports json post data postEncode can go away
-      // and the header in post requests too.
+      // TODO(Dave_o): once olad supports json post data postEncode
+      // can go away and the header in post requests too.
       var postEncode = function(data) {
         var PostData = [];
         for (var key in data) {
