@@ -264,7 +264,10 @@ void ServiceGenerator::GenerateNotImplementedMethods(Printer* printer) {
     map<string, string> sub_vars;
     sub_vars["classname"] = descriptor_->name();
     sub_vars["name"] = method->name();
-    sub_vars["method_name_padding"] = string((descriptor_->name().length() + 2 + method->name().length() + 1), ' ');
+    sub_vars["method_name_padding"] =
+        string((descriptor_->name().length() + 2 +
+                method->name().length() + 1),
+               ' ');
     sub_vars["index"] = SimpleItoa(i);
     sub_vars["input_type"] = ClassName(method->input_type(), true);
     sub_vars["output_type"] = ClassName(method->output_type(), true);
