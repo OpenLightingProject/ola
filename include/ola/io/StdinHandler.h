@@ -61,6 +61,11 @@ class StdinHandler {
  public :
   typedef ola::Callback1<void, int> InputCallback;
 
+  /**
+   * @brief Handle data from stdin
+   * @param ss The SelectServer to use
+   * @param callback the callback to run when we get new data on stdin
+   */
   explicit StdinHandler(SelectServerInterface *ss, InputCallback *callback);
   ~StdinHandler();
 
