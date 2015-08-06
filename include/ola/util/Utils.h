@@ -51,6 +51,26 @@ inline uint16_t JoinUInt8(uint8_t high, uint8_t low)  {
   return ((static_cast<uint16_t>(high) << std::numeric_limits<uint8_t>::digits)
       | low);
 }
+
+
+/**
+ * @brief Convert four uint8_t's to a uint32_t
+ * @param byte0 the highest byte
+ * @param byte1 the high middle byte
+ * @param byte2 the low middle byte
+ * @param byte3 the lowest byte
+ * @return the combined uint32_t
+ */
+inline uint32_t JoinUInt8(uint8_t byte0, uint8_t byte1, uint8_t byte2,
+                          uint8_t byte3)  {
+  return ((static_cast<uint32_t>(byte0) <<
+           (std::numeric_limits<uint8_t>::digits * 3))
+          | (static_cast<uint32_t>(byte1) <<
+             (std::numeric_limits<uint8_t>::digits * 2))
+          | (static_cast<uint32_t>(byte2) <<
+             (std::numeric_limits<uint8_t>::digits))
+          | byte3);
+}
 }  // namespace utils
 }  // namespace ola
 #endif  // INCLUDE_OLA_UTIL_UTILS_H_

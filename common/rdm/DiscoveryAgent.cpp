@@ -24,9 +24,12 @@
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/strings/Format.h"
+#include "ola/util/Utils.h"
 
 namespace ola {
 namespace rdm {
+
+using ola::utils::JoinUInt8;
 
 DiscoveryAgent::DiscoveryAgent(DiscoveryTargetInterface *target)
     : m_target(target),
@@ -91,17 +94,20 @@ void DiscoveryAgent::InitDiscovery(
   m_on_complete = on_complete;
 
   // this should be empty, but clear it out anyway
-  while (!m_uids_to_mute.empty())
+  while (!m_uids_to_mute.empty()) {
     m_uids_to_mute.pop();
+  }
 
   // this should also be empty
-  while (!m_uid_ranges.empty())
+  while (!m_uid_ranges.empty()) {
     FreeCurrentRange();
+  }
 
   if (incremental) {
     UIDSet::Iterator iter = m_uids.Begin();
-    for (; iter != m_uids.End(); ++iter)
+    for (; iter != m_uids.End(); ++iter) {
       m_uids_to_mute.push(*iter);
+    }
   } else {
     m_uids.Clear();
   }
@@ -187,17 +193,17 @@ void DiscoveryAgent::SendDiscovery() {
       range->attempt == MAX_EMPTY_BRANCH_ATTEMPTS ||
       range->branch_corrupt) {
     // limit reached, move on to the next branch
-    OLA_DEBUG << "Hit failure limit for (" << range->lower << ", " <<
-      range->upper << ")";
+    OLA_DEBUG << "Hit failure limit for (" << range->lower << ", "
+              << range->upper << ")";
     if (range->parent)
       range->parent->branch_corrupt = true;
     FreeCurrentRange();
     SendDiscovery();
   } else {
-    OLA_DEBUG << "DUB " << range->lower << " - " << range->upper <<
-      ", attempt " << range->attempt << ", uids found: " <<
-      range->uids_discovered << ", failures " << range->failures <<
-      ", corrupted " << range->branch_corrupt;
+    OLA_DEBUG << "DUB " << range->lower << " - " << range->upper
+              << ", attempt " << range->attempt << ", uids found: "
+              << range->uids_discovered << ", failures " << range->failures
+              << ", corrupted " << range->branch_corrupt;
     m_target->Branch(range->lower, range->upper, m_branch_callback.get());
   }
 }
@@ -274,26 +280,23 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
     calculated_checksum += data[i];
   }
 
-  uint16_t recovered_checksum =
-    ((response->ecs3 & response->ecs2) << 8) +
-    (response->ecs1 & response->ecs0);
+  uint16_t recovered_checksum = JoinUInt8((response->ecs3 & response->ecs2),
+                                          (response->ecs1 & response->ecs0));
 
   if (recovered_checksum != calculated_checksum) {
-    OLA_INFO << "recovered checksum: " << recovered_checksum << " != " <<
-      "calculated checksum: " << calculated_checksum;
+    OLA_INFO << "Recovered checksum: " << recovered_checksum << " != "
+             << "calculated checksum: " << calculated_checksum;
     HandleCollision();
     return;
   }
 
   // ok this is a valid response
-  uint16_t manufacturer_id =
-    ((response->euid11 & response->euid10) << 8) +
-    (response->euid9 & response->euid8);
-  uint32_t device_id =
-    ((response->euid7 & response->euid6) << 24) +
-    ((response->euid5 & response->euid4) << 16) +
-    ((response->euid3 & response->euid2) << 8) +
-    (response->euid1 & response->euid0);
+  uint16_t manufacturer_id = JoinUInt8((response->euid11 & response->euid10),
+                                       (response->euid9 & response->euid8));
+  uint32_t device_id = JoinUInt8((response->euid7 & response->euid6),
+                                 (response->euid5 & response->euid4),
+                                 (response->euid3 & response->euid2),
+                                 (response->euid1 & response->euid0));
 
   UIDRange *range = m_uid_ranges.top();
 
@@ -301,8 +304,8 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
   // callback each time.
   UID located_uid = UID(manufacturer_id, device_id);
   if (m_uids.Contains(located_uid)) {
-    OLA_WARN << "Previous muted responder " << located_uid <<
-      " continues to respond";
+    OLA_WARN << "Previous muted responder " << located_uid
+             << " continues to respond";
     range->failures++;
     // ignore this and continue on to the next branch.
     SendDiscovery();
@@ -313,7 +316,7 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
   } else {
     m_muting_uid = located_uid;
     m_mute_attempts = 0;
-    OLA_INFO << "muting " << m_muting_uid;
+    OLA_INFO << "Muting " << m_muting_uid;
     m_target->MuteDevice(m_muting_uid, m_branch_mute_callback.get());
   }
 }
@@ -329,7 +332,7 @@ void DiscoveryAgent::BranchMuteComplete(bool status) {
   } else {
     // failed to mute, if we haven't reached the limit try it again
     if (m_mute_attempts < MAX_MUTE_ATTEMPTS) {
-      OLA_INFO << "muting " << m_muting_uid;
+      OLA_INFO << "Muting " << m_muting_uid;
       m_target->MuteDevice(m_muting_uid, m_branch_mute_callback.get());
       return;
     } else {
@@ -352,7 +355,7 @@ void DiscoveryAgent::HandleCollision() {
 
   if (lower_uid == upper_uid) {
     range->failures++;
-    OLA_WARN << "end of tree reached!!!";
+    OLA_WARN << "End of tree reached!!!";
     SendDiscovery();
     return;
   }
@@ -366,8 +369,8 @@ void DiscoveryAgent::HandleCollision() {
   UID mid_uid(mid >> 32, mid);
   mid++;
   UID mid_plus_one_uid(mid >> 32, mid);
-  OLA_INFO << " collision, spliting into: " << lower_uid << " - " << mid_uid <<
-    " , " << mid_plus_one_uid << " - " << upper_uid;
+  OLA_INFO << "Collision, spliting into: " << lower_uid << " - " << mid_uid
+           << " , " << mid_plus_one_uid << " - " << upper_uid;
 
   range->uids_discovered = 0;
   // add both ranges to the stack
