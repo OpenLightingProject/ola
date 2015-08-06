@@ -226,7 +226,8 @@ class ConfigReader(object):
 
     # at this stage the response is either a ack or nack
     if response.response_type == OlaClient.RDM_NACK_REASON:
-      print('Got nack with reason: %s' % response.nack_reason)
+      print('Got nack with reason for PID %d: %s' %
+            (response.pid, response.nack_reason))
       self._NextState()
     elif unpack_exception:
       print(unpack_exception)

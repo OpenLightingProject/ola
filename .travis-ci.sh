@@ -11,6 +11,11 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests; # --enable-ja-rule;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for linting to run against
+  make builtfiles
   # first check we've not got any generic NOLINTs
   # count the number of generic NOLINTs
   nolints=$(grep -IR NOLINT * | grep -v "NOLINT(" | wc -l)
@@ -27,12 +32,25 @@ if [[ $TASK = 'lint' ]]; then
   chmod u+x cpplint.py;
   ./cpplint.py \
     --filter=-legal/copyright,-readability/streams,-runtime/arrays \
-    $(find ./ -name "*.h" -or -name "*.cpp" | xargs)
+    $(find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
+        -wholename "./common/protocol/Ola.pb.*" -or \
+        -wholename "./common/rpc/Rpc.pb.*" -or \
+        -wholename "./common/rpc/TestService.pb.*" -or \
+        -wholename "./common/rdm/Pids.pb.*" -or \
+        -wholename "./config.h" -or \
+        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
+        -wholename "./tools/ola_trigger/config.tab.*" -or \
+        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests; # --enable-ja-rule;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for licence checking to run against
+  make builtfiles
   ./scripts/enforce_licence.py
   if [[ $? -ne 0 ]]; then
     exit 1;
