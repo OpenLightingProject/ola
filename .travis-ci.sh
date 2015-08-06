@@ -32,7 +32,12 @@ if [[ $TASK = 'lint' ]]; then
   chmod u+x cpplint.py;
   ./cpplint.py \
     --filter=-legal/copyright,-readability/streams,-runtime/arrays \
-    $(find ./ -name "*.h" -or -name "*.cpp" | xargs)
+    $(find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
+        -wholename "./common/protocol/Ola.pb.*" -or \
+        -wholename "./common/rpc/Rpc.pb.*" -or \
+        -wholename "./common/rpc/TestService.pb.*" -or \
+        -wholename "./common/rdm/Pids.pb.*" -or \
+        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" \) | xargs)
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
