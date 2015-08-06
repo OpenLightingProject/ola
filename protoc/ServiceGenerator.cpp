@@ -80,22 +80,41 @@ void ServiceGenerator::GenerateInterface(Printer* printer) {
     "class $dllexport$$classname$ : public ola::rpc::RpcService {\n"
     " protected:\n"
     "  // This class should be treated as an abstract interface.\n"
-    "  inline $classname$() {};\n"
+    "  inline $classname$() {}\n"
+    "\n"
     " public:\n"
     "  virtual ~$classname$();\n");
   printer->Indent();
 
+  // Don't indent blank lines
+  printer->Outdent();
+  printer->PrintRaw("\n");
+  printer->Indent();
+
   printer->Print(vars_,
-    "\n"
-    "static const ::google::protobuf::ServiceDescriptor* descriptor();\n"
-    "\n");
+    "static const ::google::protobuf::ServiceDescriptor* descriptor();\n");
+
+  // Don't indent blank lines
+  printer->Outdent();
+  printer->PrintRaw("\n");
+  printer->Indent();
 
   GenerateMethodSignatures(VIRTUAL, printer);
 
+  // Don't indent blank lines
+  printer->Outdent();
+  printer->PrintRaw("\n");
+  printer->Indent();
+
+  printer->PrintRaw(
+    "// implements Service ----------------------------------------------\n");
+
+  // Don't indent blank lines
+  printer->Outdent();
+  printer->PrintRaw("\n");
+  printer->Indent();
+
   printer->Print(
-    "\n"
-    "// implements Service ----------------------------------------------\n"
-    "\n"
     "const ::google::protobuf::ServiceDescriptor* GetDescriptor();\n"
     "void CallMethod(const ::google::protobuf::MethodDescriptor* method,\n"
     "                ola::rpc::RpcController* controller,\n"
@@ -124,21 +143,38 @@ void ServiceGenerator::GenerateStubDefinition(Printer* printer) {
   printer->Indent();
 
   printer->Print(vars_,
-    "$classname$_Stub(ola::rpc::RpcChannel* channel);\n"
+    "explicit $classname$_Stub(ola::rpc::RpcChannel* channel);\n"
     "$classname$_Stub(ola::rpc::RpcChannel* channel,\n"
     "                 ::google::protobuf::Service::ChannelOwnership ownership"
     ");\n"
-    "~$classname$_Stub();\n"
-    "\n"
-    "inline ola::rpc::RpcChannel* channel() { return channel_; }\n"
-    "\n"
-    "// implements $classname$ ------------------------------------------\n"
-    "\n");
+    "~$classname$_Stub();\n");
+
+  // Don't indent blank lines
+  printer->Outdent();
+  printer->PrintRaw("\n");
+  printer->Indent();
+
+  printer->PrintRaw(
+    "inline ola::rpc::RpcChannel* channel() { return channel_; }\n");
+
+  // Don't indent blank lines
+  printer->Outdent();
+  printer->PrintRaw("\n");
+  printer->Indent();
+
+  printer->PrintRaw(
+    "// implements $classname$ ------------------------------------------\n");
+
+  // Don't indent blank lines
+  printer->Outdent();
+  printer->PrintRaw("\n");
+  printer->Indent();
 
   GenerateMethodSignatures(NON_VIRTUAL, printer);
 
   printer->Outdent();
   printer->Print(vars_,
+    "\n"
     " private:\n"
     "  ola::rpc::RpcChannel* channel_;\n"
     "  bool owns_channel_;\n"
@@ -210,10 +246,12 @@ void ServiceGenerator::GenerateImplementation(Printer* printer) {
     "    ola::rpc::RpcChannel* channel,\n"
     "    ::google::protobuf::Service::ChannelOwnership ownership)\n"
     "  : channel_(channel),\n"
-    "    owns_channel_(ownership == "
-    "::google::protobuf::Service::STUB_OWNS_CHANNEL) {}\n"
+    "    owns_channel_(ownership ==\n"
+    "                  ::google::protobuf::Service::STUB_OWNS_CHANNEL) {}\n"
     "$classname$_Stub::~$classname$_Stub() {\n"
-    "  if (owns_channel_) delete channel_;\n"
+    "  if (owns_channel_) {\n"
+    "    delete channel_;\n"
+    "  }\n"
     "}\n"
     "\n");
 
@@ -226,16 +264,17 @@ void ServiceGenerator::GenerateNotImplementedMethods(Printer* printer) {
     map<string, string> sub_vars;
     sub_vars["classname"] = descriptor_->name();
     sub_vars["name"] = method->name();
+    sub_vars["method_name_padding"] = string((descriptor_->name().length() + 2 + method->name().length() + 1), ' ');
     sub_vars["index"] = SimpleItoa(i);
     sub_vars["input_type"] = ClassName(method->input_type(), true);
     sub_vars["output_type"] = ClassName(method->output_type(), true);
 
     printer->Print(sub_vars,
       "void $classname$::$name$(ola::rpc::RpcController* controller,\n"
-      "                         const $input_type$*,\n"
-      "                         $output_type$*,\n"
-      "                         ola::rpc::RpcService::CompletionCallback* done"
-      ") {\n"
+      "     $method_name_padding$const $input_type$*,\n"
+      "     $method_name_padding$$output_type$*,\n"
+      "     $method_name_padding$ola::rpc::RpcService::CompletionCallback* "
+      "done) {\n"
       "  controller->SetFailed(\"Method $name$() not implemented.\");\n"
       "  done->Run();\n"
       "}\n"
@@ -253,12 +292,13 @@ void ServiceGenerator::GenerateCallMethod(Printer* printer) {
     "                             ola::rpc::RpcService::CompletionCallback* "
     "done) {\n"
     "  GOOGLE_DCHECK_EQ(method->service(), $classname$_descriptor_);\n"
-    "  switch(method->index()) {\n");
+    "  switch (method->index()) {\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
     map<string, string> sub_vars;
     sub_vars["name"] = method->name();
+    sub_vars["name_padding"] = string((method->name().length() + 1), ' ');
     sub_vars["index"] = SimpleItoa(i);
     sub_vars["input_type"] = ClassName(method->input_type(), true);
     sub_vars["output_type"] = ClassName(method->output_type(), true);
@@ -268,10 +308,11 @@ void ServiceGenerator::GenerateCallMethod(Printer* printer) {
     printer->Print(sub_vars,
       "    case $index$:\n"
       "      $name$(controller,\n"
-      "             ::google::protobuf::down_cast<const $input_type$*>(request"
-      "),\n"
-      "             ::google::protobuf::down_cast< $output_type$*>(response),\n"
-      "             done);\n"
+      "      $name_padding$::google::protobuf::down_cast<\n"
+      "      $name_padding$    const $input_type$*>(request),\n"
+      "      $name_padding$::google::protobuf::down_cast<\n"
+      "      $name_padding$    $output_type$*>(response),\n"
+      "      $name_padding$done);\n"
       "      break;\n");
   }
 
@@ -299,7 +340,7 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
   printer->Print(vars_,
     "    const ::google::protobuf::MethodDescriptor* method) const {\n"
     "  GOOGLE_DCHECK_EQ(method->service(), descriptor());\n"
-    "  switch(method->index()) {\n");
+    "  switch (method->index()) {\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);

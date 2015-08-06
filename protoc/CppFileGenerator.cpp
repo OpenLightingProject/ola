@@ -99,8 +99,8 @@ void FileGenerator::GenerateHeader(Printer *printer) {
     "\n"
     "namespace ola {\n"
     "namespace rpc {\n"
-    "  class RpcController;\n"
-    "  class RpcChannel;\n"
+    "class RpcController;\n"
+    "class RpcChannel;\n"
     "}  // rpc\n"
     "}  // ola\n"
     "\n");
