@@ -37,7 +37,10 @@ if [[ $TASK = 'lint' ]]; then
         -wholename "./common/rpc/Rpc.pb.*" -or \
         -wholename "./common/rpc/TestService.pb.*" -or \
         -wholename "./common/rdm/Pids.pb.*" -or \
-        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" \) | xargs)
+        -wholename "./config.h" -or \
+        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
+        -wholename "./tools/ola_trigger/config.tab.*" -or \
+        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;

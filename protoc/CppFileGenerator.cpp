@@ -145,8 +145,8 @@ void FileGenerator::GenerateImplementation(Printer *printer) {
     "\n");
   for (int i = 0; i < m_file->service_count(); i++) {
     printer->Print(
-      "const ::google::protobuf::ServiceDescriptor* $name$_descriptor_ = "
-      "NULL;\n",
+      "const ::google::protobuf::ServiceDescriptor* $name$_descriptor_ =\n"
+      "    NULL;\n",
       "name", m_file->service(i)->name());
   }
   printer->Print(

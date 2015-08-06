@@ -242,12 +242,14 @@ void ServiceGenerator::GenerateImplementation(Printer* printer) {
   printer->Print(vars_,
     "$classname$_Stub::$classname$_Stub(ola::rpc::RpcChannel* channel)\n"
     "  : channel_(channel), owns_channel_(false) {}\n"
+    "\n"
     "$classname$_Stub::$classname$_Stub(\n"
     "    ola::rpc::RpcChannel* channel,\n"
     "    ::google::protobuf::Service::ChannelOwnership ownership)\n"
     "  : channel_(channel),\n"
     "    owns_channel_(ownership ==\n"
     "                  ::google::protobuf::Service::STUB_OWNS_CHANNEL) {}\n"
+    "\n"
     "$classname$_Stub::~$classname$_Stub() {\n"
     "  if (owns_channel_) {\n"
     "    delete channel_;\n"
@@ -264,20 +266,16 @@ void ServiceGenerator::GenerateNotImplementedMethods(Printer* printer) {
     map<string, string> sub_vars;
     sub_vars["classname"] = descriptor_->name();
     sub_vars["name"] = method->name();
-    sub_vars["method_name_padding"] =
-        string((descriptor_->name().length() + 2 +
-                method->name().length() + 1),
-               ' ');
     sub_vars["index"] = SimpleItoa(i);
     sub_vars["input_type"] = ClassName(method->input_type(), true);
     sub_vars["output_type"] = ClassName(method->output_type(), true);
 
     printer->Print(sub_vars,
-      "void $classname$::$name$(ola::rpc::RpcController* controller,\n"
-      "     $method_name_padding$const $input_type$*,\n"
-      "     $method_name_padding$$output_type$*,\n"
-      "     $method_name_padding$ola::rpc::RpcService::CompletionCallback* "
-      "done) {\n"
+      "void $classname$::$name$(\n"
+      "    ola::rpc::RpcController* controller,\n"
+      "    const $input_type$*,\n"
+      "    $output_type$*,\n"
+      "    ola::rpc::RpcService::CompletionCallback* done) {\n"
       "  controller->SetFailed(\"Method $name$() not implemented.\");\n"
       "  done->Run();\n"
       "}\n"
@@ -287,13 +285,12 @@ void ServiceGenerator::GenerateNotImplementedMethods(Printer* printer) {
 
 void ServiceGenerator::GenerateCallMethod(Printer* printer) {
   printer->Print(vars_,
-    "void $classname$::CallMethod(const ::google::protobuf::MethodDescriptor* "
-    "method,\n"
-    "                             ola::rpc::RpcController* controller,\n"
-    "                             const ::google::protobuf::Message* request,\n"
-    "                             ::google::protobuf::Message* response,\n"
-    "                             ola::rpc::RpcService::CompletionCallback* "
-    "done) {\n"
+    "void $classname$::CallMethod(\n"
+    "    const ::google::protobuf::MethodDescriptor* method,\n"
+    "    ola::rpc::RpcController* controller,\n"
+    "    const ::google::protobuf::Message* request,\n"
+    "    ::google::protobuf::Message* response,\n"
+    "    ola::rpc::RpcService::CompletionCallback* done) {\n"
     "  GOOGLE_DCHECK_EQ(method->service(), $classname$_descriptor_);\n"
     "  switch (method->index()) {\n");
 
@@ -301,7 +298,6 @@ void ServiceGenerator::GenerateCallMethod(Printer* printer) {
     const MethodDescriptor* method = descriptor_->method(i);
     map<string, string> sub_vars;
     sub_vars["name"] = method->name();
-    sub_vars["name_padding"] = string((method->name().length() + 1), ' ');
     sub_vars["index"] = SimpleItoa(i);
     sub_vars["input_type"] = ClassName(method->input_type(), true);
     sub_vars["output_type"] = ClassName(method->output_type(), true);
@@ -310,12 +306,13 @@ void ServiceGenerator::GenerateCallMethod(Printer* printer) {
     //   not references.
     printer->Print(sub_vars,
       "    case $index$:\n"
-      "      $name$(controller,\n"
-      "      $name_padding$::google::protobuf::down_cast<\n"
-      "      $name_padding$    const $input_type$*>(request),\n"
-      "      $name_padding$::google::protobuf::down_cast<\n"
-      "      $name_padding$    $output_type$*>(response),\n"
-      "      $name_padding$done);\n"
+      "      $name$(\n"
+      "          controller,\n"
+      "          ::google::protobuf::down_cast<\n"
+      "              const $input_type$*>(request),\n"
+      "          ::google::protobuf::down_cast<\n"
+      "              $output_type$*>(response),\n"
+      "          done);\n"
       "      break;\n");
   }
 
@@ -380,11 +377,11 @@ void ServiceGenerator::GenerateStubMethods(Printer* printer) {
     sub_vars["output_type"] = ClassName(method->output_type(), true);
 
     printer->Print(sub_vars,
-      "void $classname$_Stub::$name$(ola::rpc::RpcController* controller,\n"
-      "                              const $input_type$* request,\n"
-      "                              $output_type$* response,\n"
-      "                              ola::rpc::RpcService::CompletionCallback*"
-      " done) {\n"
+      "void $classname$_Stub::$name$(\n"
+      "    ola::rpc::RpcController* controller,\n"
+      "    const $input_type$* request,\n"
+      "    $output_type$* response,\n"
+      "    ola::rpc::RpcService::CompletionCallback* done) {\n"
       "  channel_->CallMethod(descriptor()->method($index$),\n"
       "                       controller, request, response, done);\n"
       "}\n");
