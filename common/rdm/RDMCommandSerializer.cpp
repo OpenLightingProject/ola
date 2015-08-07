@@ -33,8 +33,9 @@ using ola::utils::SplitUInt16;
 
 unsigned int RDMCommandSerializer::RequiredSize(
     const RDMCommand &command) {
-  if (command.ParamDataSize() > MAX_PARAM_DATA_LENGTH)
+  if (command.ParamDataSize() > MAX_PARAM_DATA_LENGTH) {
     return 0;
+  }
   // Don't use command.MessageLength() here, since it may be overridden.
   return sizeof(RDMCommandHeader) + command.ParamDataSize() + CHECKSUM_LENGTH;
 }

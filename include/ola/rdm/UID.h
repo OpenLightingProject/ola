@@ -33,6 +33,8 @@
 #include <sstream>
 #include <string>
 
+#include <ola/util/Utils.h>
+
 namespace ola {
 namespace rdm {
 
@@ -80,11 +82,9 @@ class UID {
      * should be most significant byte first.
      */
     explicit UID(const uint8_t *data) {
-      m_uid.esta_id = static_cast<uint16_t>((data[0] << 8) + data[1]);
-      m_uid.device_id = static_cast<uint32_t>(data[2] << 24) +
-                        static_cast<uint32_t>(data[3] << 16) +
-                        static_cast<uint32_t>(data[4] << 8) +
-                        data[5];
+      m_uid.esta_id = ola::utils::JoinUInt8(data[0], data[1]);
+      m_uid.device_id = ola::utils::JoinUInt8(data[2], data[3], data[4],
+                                             data[5]);
     }
 
     /**

@@ -22,6 +22,7 @@
 #include "ola/acn/ACNVectors.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/util/Utils.h"
 #include "plugins/e131/e131/DMPE131Inflator.h"
 #include "plugins/e131/e131/E131Inflator.h"
 #include "plugins/e131/e131/E131Sender.h"
@@ -45,8 +46,9 @@ E131Sender::E131Sender(ola::network::UDPSocket *socket,
     : m_socket(socket),
       m_transport_impl(socket, &m_packer),
       m_root_sender(root_sender) {
-  if (!m_root_sender)
+  if (!m_root_sender) {
     OLA_WARN << "root_sender is null, this won't work";
+  }
 }
 
 
@@ -56,12 +58,14 @@ E131Sender::E131Sender(ola::network::UDPSocket *socket,
  * @param dmp_pdu the DMPPDU to send
  */
 bool E131Sender::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
-  if (!m_root_sender)
+  if (!m_root_sender) {
     return false;
+  }
 
   IPV4Address addr;
   if (!UniverseIP(header.Universe(), &addr)) {
-    OLA_INFO << "could not convert universe to ip.";
+    OLA_INFO << "Could not convert universe " << header.Universe()
+             << " to IP.";
     return false;
   }
 
@@ -69,20 +73,23 @@ bool E131Sender::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
 
   E131PDU pdu(ola::acn::VECTOR_E131_DATA, header, dmp_pdu);
   unsigned int vector = ola::acn::VECTOR_ROOT_E131;
-  if (header.UsingRev2())
+  if (header.UsingRev2()) {
     vector = ola::acn::VECTOR_ROOT_E131_REV2;
+  }
   return m_root_sender->SendPDU(vector, pdu, &transport);
 }
 
 bool E131Sender::SendDiscoveryData(const E131Header &header,
                                    const uint8_t *data,
                                    unsigned int data_size) {
-  if (!m_root_sender)
+  if (!m_root_sender) {
     return false;
+  }
 
   IPV4Address addr;
   if (!UniverseIP(header.Universe(), &addr)) {
-    OLA_INFO << "Could not convert universe to ip.";
+    OLA_INFO << "Could not convert universe " << header.Universe()
+             << " to IP.";
     return false;
   }
 
@@ -100,16 +107,20 @@ bool E131Sender::SendDiscoveryData(const E131Header &header,
  * @param addr where to store the address
  * @return true if this is a valid E1.31 universe, false otherwise
  */
-bool E131Sender::UniverseIP(unsigned int universe, IPV4Address *addr) {
+bool E131Sender::UniverseIP(uint16_t universe, IPV4Address *addr) {
+  uint8_t universe_high;
+  uint8_t universe_low;
+  ola::utils::SplitUInt16(universe, &universe_high, &universe_low);
   *addr = IPV4Address(
-      HostToNetwork(239U << 24 |
-                    255U << 16 |
-                    (universe & 0xFF00) |
-                    (universe & 0xFF)));
-  if (universe && (universe & 0xFFFF) != 0xFFFF)
+      HostToNetwork(ola::utils::JoinUInt8(239,
+                                          255,
+                                          universe_high,
+                                          universe_low)));
+  if (universe && (universe != 0xFFFF)) {
     return true;
+  }
 
-  OLA_WARN << "universe " << universe << " isn't a valid E1.31 universe";
+  OLA_WARN << "Universe " << universe << " isn't a valid E1.31 universe";
   return false;
 }
 }  // namespace e131
