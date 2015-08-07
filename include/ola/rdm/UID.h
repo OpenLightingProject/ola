@@ -29,11 +29,12 @@
 #define INCLUDE_OLA_RDM_UID_H_
 
 #include <stdint.h>
+
+#include <ola/util/Utils.h>
+
 #include <iomanip>
 #include <sstream>
 #include <string>
-
-#include <ola/util/Utils.h>
 
 namespace ola {
 namespace rdm {
