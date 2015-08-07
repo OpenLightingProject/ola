@@ -110,7 +110,7 @@ bool StateManager::Init() {
   cout << "========= E1.31 Tester ==========" << endl;
   if (m_interactive) {
     cout << "Space for the next state, 'e' for expected results, 'q' to quit"
-      << endl;
+         << endl;
   }
 
   EnterState(m_states[0]);
@@ -120,8 +120,15 @@ bool StateManager::Init() {
 
 StateManager::~StateManager() {
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
-  m_ss->RemoveReadDescriptor(m_node1->GetSocket());
-  m_ss->RemoveReadDescriptor(m_node2->GetSocket());
+  if (m_node1) {
+    m_ss->RemoveReadDescriptor(m_node1->GetSocket());
+    delete m_node1;
+  }
+
+  if (m_node2) {
+    m_ss->RemoveReadDescriptor(m_node2->GetSocket());
+    delete m_node2;
+  }
 
   if (m_local_node) {
     m_ss->RemoveReadDescriptor(m_local_node->GetSocket());
@@ -129,16 +136,15 @@ StateManager::~StateManager() {
   }
 
   delete m_ss;
-  delete m_node1;
-  delete m_node2;
 }
 
 
 bool StateManager::Tick() {
   if (m_ticker > (TIME_PER_STATE_MS / TICK_INTERVAL_MS) && !m_interactive) {
     NextState();
-    if (m_count == m_states.size())
+    if (m_count == m_states.size()) {
       return false;
+    }
   } else {
     m_ticker++;
   }
@@ -157,7 +163,7 @@ bool StateManager::Tick() {
       cout << "\\";
       break;
   }
-  cout << static_cast<char>(0x8) << std::flush;
+  cout << '\b' << std::flush;
   return true;
 }
 
@@ -184,8 +190,9 @@ void StateManager::Input() {
  * Called when new DMX is received by the local node
  */
 void StateManager::NewDMX() {
-  if (!m_states[m_count]->Verify(m_recv_buffer))
+  if (!m_states[m_count]->Verify(m_recv_buffer)) {
     cout << "FAILED TEST" << endl;
+  }
 }
 
 
@@ -194,8 +201,8 @@ void StateManager::NewDMX() {
  */
 void StateManager::EnterState(TestState *state) {
   cout << "------------------------------------" << endl;
-  cout << "Test Case: " << static_cast<int>(m_count + 1) << "/" <<
-    m_states.size() << endl;
+  cout << "Test Case: " << static_cast<int>(m_count + 1) << "/"
+       << m_states.size() << endl;
   cout << "Test Name: " << state->StateName() << endl;
   state->SetNodes(m_node1, m_node2);
   m_ticker = 0;
@@ -203,8 +210,9 @@ void StateManager::EnterState(TestState *state) {
 
 
 void StateManager::NextState() {
-  if (!m_states[m_count]->Passed())
+  if (!m_states[m_count]->Passed()) {
     m_failed_tests.push_back(m_states[m_count]);
+  }
 
   m_count++;
   if (m_count == m_states.size()) {

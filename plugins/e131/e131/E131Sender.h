@@ -45,7 +45,7 @@ class E131Sender {
   bool SendDiscoveryData(const E131Header &header, const uint8_t *data,
                          unsigned int data_size);
 
-  static bool UniverseIP(unsigned int universe,
+  static bool UniverseIP(uint16_t universe,
                          class ola::network::IPV4Address *addr);
 
  private:

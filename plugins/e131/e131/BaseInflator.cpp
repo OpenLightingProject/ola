@@ -18,18 +18,22 @@
  * Copyright (C) 2007 Simon Newton
  */
 
+#include "plugins/e131/e131/BaseInflator.h"
+
 #include <algorithm>
 #include <map>
+
 #include "ola/Logging.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/network/NetworkUtils.h"
-#include "plugins/e131/e131/BaseInflator.h"
+#include "ola/util/Utils.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
 using ola::network::NetworkToHost;
+using ola::utils::JoinUInt8;
 
 /*
  * Setup the base inflator
@@ -74,14 +78,17 @@ unsigned int BaseInflator::InflatePDUBlock(HeaderSet *headers,
   unsigned int offset = 0;
   ResetPDUFields();
 
-  if (length == 0)
+  if (length == 0) {
     return 0;
+  }
 
   do {
     unsigned int bytes_used = 0;
     unsigned int pdu_length = 0;
-    if (!DecodeLength(data + offset, length - offset, &pdu_length, &bytes_used))
+    if (!DecodeLength(data + offset, length - offset, &pdu_length,
+                      &bytes_used)) {
       return offset;
+    }
 
     if (offset + pdu_length <= length) {
       InflatePDU(headers, data[offset], data + offset + bytes_used,
@@ -127,17 +134,14 @@ bool BaseInflator::DecodeLength(const uint8_t *data,
       return false;
     }
     *bytes_used = 3;
-    *pdu_length = (data[2] +
-        static_cast<unsigned int>(data[1] << 8) +
-        static_cast<unsigned int>((data[0] & LENGTH_MASK) << 16));
+    *pdu_length = JoinUInt8(0, (data[0] & LENGTH_MASK), data[1], data[2]);
   } else {
     if (length < 2) {
       OLA_WARN << "PDU length " << length << " < 2";
       return false;
     }
     *bytes_used = 2;
-    *pdu_length = data[1] + static_cast<unsigned int>(
-        (data[0] & LENGTH_MASK) << 8);
+    *pdu_length = JoinUInt8((data[0] & LENGTH_MASK), data[1]);
   }
   if (*pdu_length < *bytes_used) {
     OLA_WARN << "PDU length was set to " << *pdu_length << " but "
@@ -150,7 +154,7 @@ bool BaseInflator::DecodeLength(const uint8_t *data,
 
 
 /*
- * Decode the vector field
+ * @brief Decode the vector field
  * @param flags the PDU flags
  * @param data pointer to the pdu data
  * @param length length of the data
@@ -172,17 +176,14 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
         *vector = *data;
         break;
       case PDU::TWO_BYTES:
-        *vector = data[1] + static_cast<unsigned int>(data[0] << 8);
+        *vector = JoinUInt8(data[0], data[1]);
         break;
       case PDU::FOUR_BYTES:
         // careful: we can't cast to a uint32 because this isn't word aligned
-        *vector = data[3] +
-          static_cast<unsigned int>(data[2] << 8) +
-          static_cast<unsigned int>(data[1] << 16) +
-          static_cast<unsigned int>(data[0] << 24);
+        *vector = JoinUInt8(data[0], data[1], data[2], data[3]);
         break;
       default:
-        OLA_WARN << "unknown vector size " << m_vector_size;
+        OLA_WARN << "Unknown vector size " << m_vector_size;
         return false;
     }
     m_vector_set = true;
@@ -204,7 +205,7 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
 
 
 /*
- * Parse a generic PDU structure
+ * @brief Parse a generic PDU structure
  * @param headers a reference to the header set
  * @param flags the flag field
  * @param data  pointer to the vector field
@@ -219,8 +220,9 @@ bool BaseInflator::InflatePDU(HeaderSet *headers,
   unsigned int data_offset, header_bytes_used;
   bool result;
 
-  if (!DecodeVector(flags, data, pdu_len, &vector, &data_offset))
+  if (!DecodeVector(flags, data, pdu_len, &vector, &data_offset)) {
     return false;
+  }
 
   if (flags & PDU::HFLAG_MASK) {
     result = DecodeHeader(headers, data + data_offset,
@@ -230,11 +232,13 @@ bool BaseInflator::InflatePDU(HeaderSet *headers,
     result = DecodeHeader(headers, NULL, 0, &header_bytes_used);
     header_bytes_used = 0;
   }
-  if (!result)
+  if (!result) {
     return false;
+  }
 
-  if (!PostHeader(vector, *headers))
+  if (!PostHeader(vector, *headers)) {
     return true;
+  }
 
   // TODO(simon): handle the crazy DFLAG here
 
@@ -252,8 +256,10 @@ bool BaseInflator::InflatePDU(HeaderSet *headers,
 
 
 /*
- * The Post header hook. This is called once the header has been decoded but
- * before either the next inflator or handle_data is called.
+ * @brief The Post header hook.
+ *
+ * This is called once the header has been decoded but before either the next
+ * inflator or handle_data is called.
  * @return false will cease processing this PDU
  */
 bool BaseInflator::PostHeader(OLA_UNUSED uint32_t,
@@ -263,7 +269,7 @@ bool BaseInflator::PostHeader(OLA_UNUSED uint32_t,
 
 
 /*
- * The base handle data method - does nothing
+ * @brief The base handle data method - does nothing
  */
 bool BaseInflator::HandlePDUData(uint32_t vector,
                                  OLA_UNUSED const HeaderSet &headers,

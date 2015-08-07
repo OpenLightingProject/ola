@@ -35,9 +35,9 @@ namespace utils {
  * @param[out] low the low byte
  */
 inline void SplitUInt16(uint16_t input, uint8_t *high, uint8_t *low) {
-  *high = (input >> std::numeric_limits<uint8_t>::digits) &
-      std::numeric_limits<uint8_t>::max();
-  *low = input & std::numeric_limits<uint8_t>::max();
+  *high = static_cast<uint8_t>((input >> std::numeric_limits<uint8_t>::digits) &
+      std::numeric_limits<uint8_t>::max());
+  *low = static_cast<uint8_t>(input & std::numeric_limits<uint8_t>::max());
 }
 
 
@@ -48,7 +48,8 @@ inline void SplitUInt16(uint16_t input, uint8_t *high, uint8_t *low) {
  * @return the combined uint16_t
  */
 inline uint16_t JoinUInt8(uint8_t high, uint8_t low)  {
-  return ((static_cast<uint16_t>(high) << std::numeric_limits<uint8_t>::digits)
+  return static_cast<uint16_t>(
+      (static_cast<uint16_t>(high) << std::numeric_limits<uint8_t>::digits)
       | low);
 }
 
