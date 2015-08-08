@@ -25,6 +25,7 @@
 
 #include <unistd.h>
 #include <string>
+#include <memory>
 #include <vector>
 #include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
@@ -320,7 +321,7 @@ class StateManager {
     ola::acn::CID m_cid1, m_cid2;
     ola::plugin::e131::E131Node *m_local_node, *m_node1, *m_node2;
     ola::io::SelectServer *m_ss;
-    ola::io::StdinHandler *m_stdin_handler;
+    std::auto_ptr<ola::io::StdinHandler> m_stdin_handler;
     std::vector<TestState*> m_states;
     ola::DmxBuffer m_recv_buffer;
     std::vector<TestState*> m_failed_tests;

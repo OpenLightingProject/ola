@@ -67,8 +67,8 @@ bool StateManager::Init() {
   m_ss = new SelectServer();
 
   // setup notifications for stdin
-  m_stdin_handler = new StdinHandler(
-      m_ss, ola::NewCallback(this, &StateManager::Input));
+  m_stdin_handler.reset(new StdinHandler(
+      m_ss, ola::NewCallback(this, &StateManager::Input)));
 
   if (!m_interactive) {
     // local node test
@@ -131,7 +131,6 @@ StateManager::~StateManager() {
     delete m_local_node;
   }
 
-  delete m_stdin_handler;
   delete m_ss;
 }
 
