@@ -22,7 +22,6 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <termios.h>
 #include <unistd.h>
 #include <string>
 #include <vector>
@@ -32,6 +31,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
+#include "ola/io/StdinHandler.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/E131Node.h"
 #include "plugins/e131/e131/E131TestFramework.h"
@@ -40,6 +40,7 @@
 using ola::DmxBuffer;
 using ola::acn::CID;
 using ola::io::SelectServer;
+using ola::io::StdinHandler;
 using ola::plugin::e131::E131Node;
 using std::cout;
 using std::endl;
@@ -55,8 +56,8 @@ StateManager::StateManager(const std::vector<TestState*> &states,
       m_node1(NULL),
       m_node2(NULL),
       m_ss(NULL),
-      m_states(states),
-      m_stdin_descriptor(STDIN_FILENO) {
+      m_stdin_handler(NULL),
+      m_states(states) {
   memset(&m_old_tc, 0, sizeof(m_old_tc));
 }
 
@@ -64,6 +65,10 @@ bool StateManager::Init() {
   m_cid1 = CID::Generate();
   m_cid2 = CID::Generate();
   m_ss = new SelectServer();
+
+  // setup notifications for stdin
+  m_stdin_handler.reset(new StdinHandler(
+      m_ss, ola::NewCallback(this, &StateManager::Input)));
 
   if (!m_interactive) {
     // local node test
@@ -93,14 +98,6 @@ bool StateManager::Init() {
   m_node1->SetSourceName(UNIVERSE_ID, "E1.31 Merge Test Node 1");
   m_node2->SetSourceName(UNIVERSE_ID, "E1.31 Merge Test Node 2");
 
-  // setup notifications for stdin & turn off buffering
-  m_stdin_descriptor.SetOnData(ola::NewCallback(this, &StateManager::Input));
-  m_ss->AddReadDescriptor(&m_stdin_descriptor);
-  tcgetattr(STDIN_FILENO, &m_old_tc);
-  termios new_tc = m_old_tc;
-  new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
-
   // tick every 200ms
   m_ss->RegisterRepeatingTimeout(
       TICK_INTERVAL_MS,
@@ -119,7 +116,6 @@ bool StateManager::Init() {
 
 
 StateManager::~StateManager() {
-  tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
   if (m_node1) {
     m_ss->RemoveReadDescriptor(m_node1->GetSocket());
     delete m_node1;
@@ -168,8 +164,8 @@ bool StateManager::Tick() {
 }
 
 
-void StateManager::Input() {
-  switch (getchar()) {
+void StateManager::Input(int c) {
+  switch (c) {
     case 'e':
       cout << m_states[m_count]->ExpectedResults() << endl;
       break;
