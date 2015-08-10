@@ -317,7 +317,6 @@ class StateManager {
  private:
     bool m_interactive;
     unsigned int m_count, m_ticker;
-    termios m_old_tc;
     ola::acn::CID m_cid1, m_cid2;
     ola::plugin::e131::E131Node *m_local_node, *m_node1, *m_node2;
     ola::io::SelectServer *m_ss;
