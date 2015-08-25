@@ -63,8 +63,9 @@ angular
         var integers = [];
         for (var i = OLA.MAX_CHANNEL_NUMBER; i >= OLA.MIN_CHANNEL_NUMBER; i--) {
           var value = channelValueCheck(dmx[i - 1]);
-          if (value > OLA.MIN_CHANNEL_VALUE || !strip ||
-            i === OLA.MIN_CHANNEL_NUMBER) {
+          if (value > OLA.MIN_CHANNEL_VALUE ||
+              !strip ||
+              i === OLA.MIN_CHANNEL_NUMBER) {
             integers[i - 1] = value;
             strip = false;
           }
@@ -656,6 +657,38 @@ angular
           $scope.field = '';
         } else if (check.regexGroups(fields)) {
           $scope.field = fields[0];
+        }
+      };
+      $scope.submit = function() {
+        var dmx = [];
+        var input = $scope.field;
+        var result = regexkeypad.exec(input);
+        if (result !== null && check.regexGroups(result)) {
+          var begin = parseInt(result[1],10);
+          var end = result[3] ? parseInt(result[3],10) : parseInt(result[1],10);
+          var value = (result[5] === 'FULL') ?
+            OLA.MAX_CHANNEL_VALUE : parseInt(result[5],10);
+          if (begin <= end && check.channelValue(value)) {
+            $ola.get.Dmx($scope.Universe).then(function(data) {
+              for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
+                if (i < data.dmx.length) {
+                  dmx[i] = data.dmx[i];
+                } else {
+                  dmx[i] = OLA.MIN_CHANNEL_VALUE;
+                }
+              }
+              for (var j = begin; j <= end; j++) {
+                dmx[j - 1] = value;
+              }
+              $ola.post.Dmx($scope.Universe, dmx);
+              $scope.field = '';
+            });
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
         }
       };
     }])
