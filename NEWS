@@ -18,6 +18,7 @@ x/y/2015 ola-0.9.8
  * Fix a bug in Artnet universe mapping #856
  * NACK requests for IPv4 default route PID with data
  * NACK with format error requests for DNS PIDs with data
+ * Fix a bug regarding stack traces error messages with Python RDM gets #884
 
  Internal:
  *
