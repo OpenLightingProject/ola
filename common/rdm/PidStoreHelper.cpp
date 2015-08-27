@@ -49,8 +49,9 @@ PidStoreHelper::PidStoreHelper(const string &pid_location,
  * @brief Clean up
  */
 PidStoreHelper::~PidStoreHelper() {
-  if (m_root_store)
+  if (m_root_store) {
     delete m_root_store;
+  }
 }
 
 
@@ -59,7 +60,7 @@ PidStoreHelper::~PidStoreHelper() {
  */
 bool PidStoreHelper::Init() {
   if (m_root_store) {
-    OLA_WARN << "Root Pid Store already loaded from: " << m_pid_location;
+    OLA_WARN << "Root PID Store already loaded from: " << m_pid_location;
     return false;
   }
 
@@ -77,8 +78,9 @@ bool PidStoreHelper::Init() {
 const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
     const string &pid_name,
     uint16_t manufacturer_id) const {
-  if (!m_root_store)
+  if (!m_root_store) {
     return NULL;
+  }
   return m_root_store->GetDescriptor(pid_name, manufacturer_id);
 }
 
@@ -92,8 +94,9 @@ const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
 const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
     uint16_t pid_value,
     uint16_t manufacturer_id) const {
-  if (!m_root_store)
+  if (!m_root_store) {
     return NULL;
+  }
   return m_root_store->GetDescriptor(pid_value, manufacturer_id);
 }
 
@@ -108,8 +111,9 @@ const ola::messaging::Message *PidStoreHelper::BuildMessage(
   const ola::messaging::Message *message = m_string_builder.GetMessage(
       inputs,
       descriptor);
-  if (!message)
+  if (!message) {
     OLA_WARN << "Error building message: " << m_string_builder.GetError();
+  }
   return message;
 }
 
@@ -236,17 +240,20 @@ const string PidStoreHelper::SchemaAsString(
  */
 void PidStoreHelper::SupportedPids(uint16_t manufacturer_id,
                                    vector<string> *pid_names) const {
-  if (!m_root_store)
+  if (!m_root_store) {
     return;
+  }
 
   vector<const ola::rdm::PidDescriptor*> descriptors;
   const ola::rdm::PidStore *store = m_root_store->EstaStore();
-  if (store)
+  if (store) {
     store->AllPids(&descriptors);
+  }
 
   store = m_root_store->ManufacturerStore(manufacturer_id);
-  if (store)
+  if (store) {
     store->AllPids(&descriptors);
+  }
 
   vector<const ola::rdm::PidDescriptor*>::const_iterator iter;
   for (iter = descriptors.begin(); iter != descriptors.end(); ++iter) {
@@ -266,16 +273,19 @@ void PidStoreHelper::SupportedPids(uint16_t manufacturer_id,
 void PidStoreHelper::SupportedPids(
     uint16_t manufacturer_id,
     vector<const PidDescriptor*> *descriptors) const {
-  if (!m_root_store)
+  if (!m_root_store) {
     return;
+  }
 
   const ola::rdm::PidStore *store = m_root_store->EstaStore();
-  if (store)
+  if (store) {
     store->AllPids(descriptors);
+  }
 
   store = m_root_store->ManufacturerStore(manufacturer_id);
-  if (store)
+  if (store) {
     store->AllPids(descriptors);
+  }
 }
 }  // namespace rdm
 }  // namespace ola
