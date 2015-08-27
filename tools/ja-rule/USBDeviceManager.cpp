@@ -46,8 +46,8 @@ using ola::thread::MutexLocker;
 using ola::thread::Thread;
 using std::auto_ptr;
 
-static const uint16_t kProductId = 0x0053;
-static const uint16_t kVendorId = 0x04d8;
+static const uint16_t kProductId = 0xaced;
+static const uint16_t kVendorId = 0x1209;
 
 namespace {
 
