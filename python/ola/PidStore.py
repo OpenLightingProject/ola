@@ -387,11 +387,11 @@ class IntAtom(FixedSizeAtom):
 
     for range in self._ranges:
       if range.min == range.max:
-        values.append(str(self._AccountForMultiplier(range.min)))
+        values.append(str(self._AccountForMultiplierUnpack(range.min)))
       else:
         values.append('[%s, %s]' %
-                      (self._AccountForMultiplier(range.min),
-                       self._AccountForMultiplier(range.max)))
+                      (self._AccountForMultiplierUnpack(range.min),
+                       self._AccountForMultiplierUnpack(range.max)))
 
     return ('%s' % ', '.join(values))
 
