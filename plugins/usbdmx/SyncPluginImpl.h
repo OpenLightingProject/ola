@@ -30,6 +30,7 @@
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
+#include "olad/Preferences.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/Widget.h"
 #include "plugins/usbdmx/WidgetFactory.h"
@@ -61,7 +62,8 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
    */
   SyncPluginImpl(PluginAdaptor *plugin_adaptor,
                  Plugin *plugin,
-                 unsigned int debug_level);
+                 unsigned int debug_level,
+                 Preferences *preferences);
 
   ~SyncPluginImpl();
 
@@ -90,6 +92,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   Plugin* const m_plugin;
   const unsigned int m_debug_level;
   ola::usb::SyncronousLibUsbAdaptor m_usb_adaptor;
+  Preferences* const m_preferences;
   WidgetFactories m_widget_factories;
 
   libusb_context *m_context;

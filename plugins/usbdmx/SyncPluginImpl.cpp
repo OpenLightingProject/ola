@@ -56,10 +56,12 @@ using std::vector;
 
 SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
                                Plugin *plugin,
-                               unsigned int debug_level)
+                               unsigned int debug_level,
+                               Preferences *preferences)
     : m_plugin_adaptor(plugin_adaptor),
       m_plugin(plugin),
       m_debug_level(debug_level),
+      m_preferences(preferences),
       m_context(NULL) {
   m_widget_factories.push_back(new AnymauDMXFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor));

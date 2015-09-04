@@ -38,6 +38,7 @@
 
 #include "ola/base/Macro.h"
 #include "ola/thread/Future.h"
+#include "olad/Preferences.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncronizedWidgetObserver.h"
 #include "plugins/usbdmx/WidgetFactory.h"
@@ -68,7 +69,8 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
    */
   AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
                   Plugin *plugin,
-                  unsigned int debug_level);
+                  unsigned int debug_level,
+                  Preferences* preferences);
   ~AsyncPluginImpl();
 
   bool Start();
@@ -90,6 +92,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   Plugin* const m_plugin;
   const unsigned int m_debug_level;
   std::auto_ptr<ola::usb::HotplugAgent> m_agent;
+  Preferences* const m_preferences;
 
   SyncronizedWidgetObserver m_widget_observer;
   ola::usb::AsyncronousLibUsbAdaptor *m_usb_adaptor;  // not owned
