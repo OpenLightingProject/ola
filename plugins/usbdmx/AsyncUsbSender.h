@@ -73,6 +73,8 @@ class AsyncUsbSender {
    */
   void TransferComplete(struct libusb_transfer *transfer);
 
+  libusb_device_handle *GetHandle() { return m_usb_handle; }
+
  protected:
   /**
    * @brief The LibUsbAdaptor passed in the constructor.
