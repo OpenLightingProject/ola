@@ -43,6 +43,9 @@
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/JaRuleDevice.h"
 #include "plugins/usbdmx/JaRuleFactory.h"
+#include "plugins/usbdmx/NodleU1.h"
+#include "plugins/usbdmx/NodleU1Device.h"
+#include "plugins/usbdmx/NodleU1Factory.h"
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/SunliteFactory.h"
@@ -117,6 +120,7 @@ bool AsyncPluginImpl::Start() {
   m_widget_factories.push_back(
       new JaRuleFactory(m_plugin_adaptor, m_usb_adaptor));
   m_widget_factories.push_back(
+      new NodleU1Factory(m_usb_adaptor.get(), m_preferences));
       new ScanlimeFadecandyFactory(m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(m_usb_adaptor));
   m_widget_factories.push_back(new VellemanK8062Factory(m_usb_adaptor));
@@ -175,6 +179,14 @@ bool AsyncPluginImpl::NewWidget(JaRuleWidget *widget) {
   str << widget->ProductString() << " (" << widget->GetUID() << ")";
   return StartAndRegisterDevice(widget,
                                 new JaRuleDevice(m_plugin, widget, str.str()));
+}
+
+bool AsyncPluginImpl::NewWidget(NodleU1 *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new NodleU1Device(m_plugin, widget, "DMXControl Projects e.V. Nodle U1",
+                        "NodleU1-" + widget->SerialNumber(),
+                        m_plugin_adaptor));
 }
 
 bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {

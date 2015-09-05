@@ -59,6 +59,10 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
+  bool NewWidget(class NodleU1 *widget) {
+    return DispatchNewWidget(widget);
+  }
+
   bool NewWidget(class ScanlimeFadecandy *widget) {
     return DispatchNewWidget(widget);
   }

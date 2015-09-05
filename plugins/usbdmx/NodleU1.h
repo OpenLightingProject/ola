@@ -1,0 +1,146 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * NodleU1.h
+ * The synchronous and asynchronous Nodle widgets.
+ * Copyright (C) 2015 Stefan Krupop
+ */
+
+#ifndef PLUGINS_USBDMX_NODLEU1_H_
+#define PLUGINS_USBDMX_NODLEU1_H_
+
+#include <libusb.h>
+#include <memory>
+#include <string>
+
+#include "ola/Callback.h"
+#include "ola/DmxBuffer.h"
+#include "ola/base/Macro.h"
+#include "ola/thread/Mutex.h"
+#include "plugins/usbdmx/Widget.h"
+
+namespace ola {
+namespace plugin {
+namespace usbdmx {
+
+/**
+ * @brief The interface for the Nodle Widgets
+ */
+class NodleU1: public BaseWidget {
+ public:
+  explicit NodleU1(LibUsbAdaptor *adaptor,
+                    const std::string &serial,
+                    unsigned int mode)
+      : BaseWidget(adaptor),
+        m_serial(serial),
+        m_mode(mode) {
+  }
+
+  /**
+   * @brief Get the serial number of this widget.
+   * @returns The serial number of the widget.
+   */
+  std::string SerialNumber() const {
+    return m_serial;
+  }
+
+  /**
+   * @brief Get the current mode of this widget.
+   * @returns The mode of the widget.
+   */
+  unsigned int Mode() const {
+    return m_mode;
+  }
+
+  virtual void SetDmxCallback(Callback0<void> *callback) = 0;
+  virtual const DmxBuffer &GetDmxInBuffer() const = 0;
+
+  static const char NODLE_MODE_KEY[];
+  static int NODLE_DEFAULT_MODE;
+  static int NODLE_MIN_MODE;
+  static int NODLE_MAX_MODE;
+
+ private:
+  std::string m_serial;
+
+ protected:
+  unsigned int m_mode;
+};
+
+/**
+ * @brief An Nodle widget that uses synchronous libusb operations.
+ *
+ * Internally this spawns a new thread to avoid blocking SendDMX() calls.
+ */
+class SynchronousNodleU1: public NodleU1 {
+ public:
+  /**
+   * @brief Create a new SynchronousNodleU1.
+   * @param adaptor the LibUsbAdaptor to use.
+   * @param usb_device the libusb_device to use for the widget.
+   */
+  SynchronousNodleU1(LibUsbAdaptor *adaptor,
+                           libusb_device *usb_device,
+                           const std::string &serial,
+                           unsigned int mode);
+
+  bool Init();
+
+  bool SendDMX(const DmxBuffer &buffer);
+
+  void SetDmxCallback(Callback0<void> *callback);
+  const DmxBuffer &GetDmxInBuffer() const;
+
+ private:
+  libusb_device* const m_usb_device;
+  std::auto_ptr<class NodleU1ThreadedSender> m_sender;
+  std::auto_ptr<class NodleU1ThreadedReceiver> m_receiver;
+
+  DISALLOW_COPY_AND_ASSIGN(SynchronousNodleU1);
+};
+
+/**
+ * @brief An Nodle widget that uses asynchronous libusb operations.
+ */
+class AsynchronousNodleU1 : public NodleU1 {
+ public:
+  /**
+   * @brief Create a new AsynchronousNodleU1.
+   * @param adaptor the LibUsbAdaptor to use.
+   * @param usb_device the libusb_device to use for the widget.
+   */
+  AsynchronousNodleU1(LibUsbAdaptor *adaptor,
+                            libusb_device *usb_device,
+                            const std::string &serial,
+                            unsigned int mode);
+
+  bool Init();
+
+  bool SendDMX(const DmxBuffer &buffer);
+
+  void SetDmxCallback(Callback0<void> *callback);
+  const DmxBuffer &GetDmxInBuffer() const;
+
+ private:
+  std::auto_ptr<class NodleU1AsyncUsbSender> m_sender;
+  std::auto_ptr<class NodleU1AsyncUsbReceiver> m_receiver;
+  DmxBuffer m_buffer;
+
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousNodleU1);
+};
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
+#endif  // PLUGINS_USBDMX_NODLEU1_H_
