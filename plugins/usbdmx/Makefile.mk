@@ -8,8 +8,9 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/AnymauDMX.h \
     plugins/usbdmx/AnymauDMXFactory.cpp \
     plugins/usbdmx/AnymauDMXFactory.h \
+    plugins/usbdmx/AsyncUsbReceiver.cpp \
+    plugins/usbdmx/AsyncUsbReceiver.h \
     plugins/usbdmx/AsyncUsbSender.cpp \
-    plugins/usbdmx/AsyncUsbSender.h \
     plugins/usbdmx/AsyncUsbSender.h \
     plugins/usbdmx/EurolitePro.cpp \
     plugins/usbdmx/EurolitePro.h \
@@ -32,6 +33,8 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/SunliteFirmwareLoader.h \
     plugins/usbdmx/SyncronizedWidgetObserver.cpp \
     plugins/usbdmx/SyncronizedWidgetObserver.h \
+    plugins/usbdmx/ThreadedUsbReceiver.cpp \
+    plugins/usbdmx/ThreadedUsbReceiver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
     plugins/usbdmx/ThreadedUsbSender.h \
     plugins/usbdmx/VellemanK8062.cpp \
