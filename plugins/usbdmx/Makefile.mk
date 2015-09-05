@@ -20,6 +20,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/Flags.cpp \
     plugins/usbdmx/JaRuleFactory.cpp \
     plugins/usbdmx/JaRuleFactory.h \
+    plugins/usbdmx/NodleU1.cpp \
+    plugins/usbdmx/NodleU1.h \
+    plugins/usbdmx/NodleU1Factory.cpp \
+    plugins/usbdmx/NodleU1Factory.h \
     plugins/usbdmx/ScanlimeFadecandy.cpp \
     plugins/usbdmx/ScanlimeFadecandy.h \
     plugins/usbdmx/ScanlimeFadecandyFactory.cpp \
@@ -63,6 +67,10 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/JaRuleDevice.h \
     plugins/usbdmx/JaRuleOutputPort.cpp \
     plugins/usbdmx/JaRuleOutputPort.h \
+    plugins/usbdmx/NodleU1Device.cpp \
+    plugins/usbdmx/NodleU1Device.h \
+    plugins/usbdmx/NodleU1Port.cpp \
+    plugins/usbdmx/NodleU1Port.h \
     plugins/usbdmx/PluginImplInterface.h \
     plugins/usbdmx/SyncPluginImpl.cpp \
     plugins/usbdmx/SyncPluginImpl.h \
