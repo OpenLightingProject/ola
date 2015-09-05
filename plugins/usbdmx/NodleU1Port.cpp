@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * NodleU1OutputPort.cpp
+ * NodleU1Port.cpp
  * Output and input ports that use a widget and give the serial as desciption.
  * Copyright (C) 2015 Stefan Krupop
  */
