@@ -72,6 +72,7 @@ class NodleU1InputPort: public BasicInputPort {
    * @brief Create a new NodleU1InputPort.
    * @param parent The parent device for this port.
    * @param id The port id.
+   * @param plugin_adaptor a PluginAdaptor object, used by the base class.
    * @param widget The widget to use to receive DMX frames.
    */
   NodleU1InputPort(Device *parent,

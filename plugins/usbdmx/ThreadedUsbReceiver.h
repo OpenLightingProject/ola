@@ -91,6 +91,8 @@ class ThreadedUsbReceiver: private ola::thread::Thread {
    * @brief Perform the DMX transfer.
    * @param handle the libusb_device_handle to use for the transfer.
    * @param buffer The DmxBuffer to be updated.
+   * @param buffer_updated set to true when buffer was updated (=data
+       received)
    * @returns true if the transfer was completed, false otherwise.
    *
    * This is called from the sender thread.

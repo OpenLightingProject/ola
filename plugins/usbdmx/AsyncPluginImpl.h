@@ -66,6 +66,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
    * @param plugin The parent Plugin object which is used when creating
    * devices.
    * @param debug_level the debug level to use for libusb.
+   * @param preferences The preferences container used by the plugin
    */
   AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
                   Plugin *plugin,

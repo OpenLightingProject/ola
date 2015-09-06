@@ -44,6 +44,7 @@ class NodleU1Device: public Device {
    * @param widget The widget to use for this device.
    * @param device_name The name of the device.
    * @param device_id The id of the device.
+   * @param plugin_adaptor a PluginAdaptor object, used by the input port.
    */
   NodleU1Device(ola::AbstractPlugin *owner,
                 class NodleU1 *widget,
