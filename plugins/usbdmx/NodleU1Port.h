@@ -76,9 +76,9 @@ class NodleU1InputPort: public BasicInputPort {
    * @param widget The widget to use to receive DMX frames.
    */
   NodleU1InputPort(Device *parent,
-                    unsigned int id,
-                    PluginAdaptor *plugin_adaptor,
-                    class NodleU1 *widget);
+                   unsigned int id,
+                   PluginAdaptor *plugin_adaptor,
+                   class NodleU1 *widget);
 
   const DmxBuffer &ReadDMX() const {
     return m_widget->GetDmxInBuffer();

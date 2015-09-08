@@ -15,7 +15,7 @@
  *
  * ThreadedUsbReceiver.cpp
  * Receive DMX data over USB from a dedicated thread.
- * Copyright (C) 2015 Simon Newton, Stefan Krupop
+ * Copyright (C) 2015 Stefan Krupop
  */
 
 #include "plugins/usbdmx/ThreadedUsbReceiver.h"
@@ -59,14 +59,16 @@ bool ThreadedUsbReceiver::Start() {
 void *ThreadedUsbReceiver::Run() {
   DmxBuffer buffer;
   buffer.Blackout();
-  if (!m_usb_handle)
+  if (!m_usb_handle) {
     return NULL;
+  }
 
   while (1) {
     {
       ola::thread::MutexLocker locker(&m_term_mutex);
-      if (m_term)
+      if (m_term) {
         break;
+      }
     }
 
     bool buffer_updated = false;

@@ -41,8 +41,8 @@ namespace usbdmx {
 class NodleU1: public BaseWidget {
  public:
   explicit NodleU1(LibUsbAdaptor *adaptor,
-                    const std::string &serial,
-                    unsigned int mode)
+                   const std::string &serial,
+                   unsigned int mode)
       : BaseWidget(adaptor),
         m_serial(serial),
         m_mode(mode) {
@@ -94,9 +94,9 @@ class SynchronousNodleU1: public NodleU1 {
    * @param mode the send/receive mode to be used by the widget.
    */
   SynchronousNodleU1(LibUsbAdaptor *adaptor,
-                           libusb_device *usb_device,
-                           const std::string &serial,
-                           unsigned int mode);
+                     libusb_device *usb_device,
+                     const std::string &serial,
+                     unsigned int mode);
 
   bool Init();
 
@@ -126,9 +126,9 @@ class AsynchronousNodleU1 : public NodleU1 {
    * @param mode the send/receive mode to be used by the widget.
    */
   AsynchronousNodleU1(LibUsbAdaptor *adaptor,
-                            libusb_device *usb_device,
-                            const std::string &serial,
-                            unsigned int mode);
+                      libusb_device *usb_device,
+                      const std::string &serial,
+                      unsigned int mode);
 
   bool Init();
 

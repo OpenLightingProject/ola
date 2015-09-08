@@ -52,7 +52,7 @@ bool NodleU1Factory::DeviceAdded(
   OLA_INFO << "Nodle U1 serial: " << info.serial;
 
   unsigned int mode;
-  if (!StringToInt(m_preferences->GetValue(NodleU1::NODLE_MODE_KEY) ,
+  if (!StringToInt(m_preferences->GetValue(NodleU1::NODLE_MODE_KEY),
                    &mode)) {
     mode = NodleU1::NODLE_DEFAULT_MODE;
   }

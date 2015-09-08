@@ -15,7 +15,7 @@
  *
  * ThreadedUsbReceiver.h
  * Receive DMX data over USB from a dedicated thread.
- * Copyright (C) 2015 Simon Newton, Stefan Krupop
+ * Copyright (C) 2015 Stefan Krupop
  */
 
 #ifndef PLUGINS_USBDMX_THREADEDUSBRECEIVER_H_

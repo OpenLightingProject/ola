@@ -15,7 +15,7 @@
  *
  * AsyncUsbReceiver.cpp
  * An Asynchronous DMX USB receiver.
- * Copyright (C) 2015 Simon Newton, Stefan Krupop
+ * Copyright (C) 2015 Stefan Krupop
  */
 
 #include "plugins/usbdmx/AsyncUsbReceiver.h"

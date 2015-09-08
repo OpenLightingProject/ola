@@ -15,7 +15,7 @@
  *
  * AsyncUsbReceiver.h
  * An Asynchronous DMX USB receiver.
- * Copyright (C) 2015 Simon Newton, Stefan Krupop
+ * Copyright (C) 2015 Stefan Krupop
  */
 
 #ifndef PLUGINS_USBDMX_ASYNCUSBRECEIVER_H_

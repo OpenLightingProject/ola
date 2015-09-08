@@ -41,9 +41,9 @@ bool NodleU1OutputPort::WriteDMX(const DmxBuffer &buffer,
 }
 
 NodleU1InputPort::NodleU1InputPort(Device *parent,
-                                     unsigned int id,
-                                     PluginAdaptor *plugin_adaptor,
-                                     NodleU1 *widget)
+                                   unsigned int id,
+                                   PluginAdaptor *plugin_adaptor,
+                                   NodleU1 *widget)
     : BasicInputPort(parent, id, plugin_adaptor),
       m_widget(widget) {
   m_widget->SetDmxCallback(NewCallback(

@@ -35,7 +35,7 @@ namespace usbdmx {
 class NodleU1Factory : public BaseWidgetFactory<class NodleU1> {
  public:
   explicit NodleU1Factory(class LibUsbAdaptor *adaptor,
-                           Preferences *preferences)
+                          Preferences *preferences)
       : m_adaptor(adaptor), m_preferences(preferences) {
   }
 

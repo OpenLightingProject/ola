@@ -57,12 +57,12 @@ static const unsigned int DATABLOCK_SIZE = 33;
 
 /*
  * @brief Send chosen mode to the DMX device
- * @param handle the ibusb_device_handle to use.
+ * @param handle the libusb_device_handle to use.
  * @returns true when mode was set 
  */
 bool SetInterfaceMode(LibUsbAdaptor *adaptor,
-                        libusb_device_handle *handle,
-                        uint8_t mode) {
+                      libusb_device_handle *handle,
+                      uint8_t mode) {
   unsigned char usb_data[DATABLOCK_SIZE];
   int transferred;
 
@@ -74,7 +74,7 @@ bool SetInterfaceMode(LibUsbAdaptor *adaptor,
       handle, WRITE_ENDPOINT, reinterpret_cast<unsigned char*>(usb_data),
       DATABLOCK_SIZE, &transferred, URB_TIMEOUT_MS);
   if (ret) {
-    OLA_WARN << "InterruptTransfer():" << adaptor->ErrorCodeToString(ret)
+    OLA_WARN << "InterruptTransfer(): " << adaptor->ErrorCodeToString(ret)
              << ", transferred " << transferred << " / " << DATABLOCK_SIZE;
   }
   return ret == 0;
@@ -85,10 +85,10 @@ bool SetInterfaceMode(LibUsbAdaptor *adaptor,
  * @brief Attempt to open a handle to a Nodle widget.
  * @param adaptor the LibUsbAdaptor to use.
  * @param usb_device the libusb_device to use.
- * @returns A libusb_device_handle of NULL if it failed.
+ * @returns A libusb_device_handle or NULL if it failed.
  */
 libusb_device_handle *OpenNodleU1Widget(LibUsbAdaptor *adaptor,
-                                         libusb_device *usb_device) {
+                                        libusb_device *usb_device) {
   libusb_device_handle *usb_handle;
   bool ok = adaptor->OpenDevice(usb_device, &usb_handle);
   if (!ok) {
@@ -107,13 +107,13 @@ libusb_device_handle *OpenNodleU1Widget(LibUsbAdaptor *adaptor,
   ret_code = adaptor->SetConfiguration(usb_handle, CONFIGURATION);
   if (ret_code) {
     OLA_WARN << "Nodle set config failed, with libusb error code "
-             << ret_code;
+             << adaptor->ErrorCodeToString(ret_code);
     adaptor->Close(usb_handle);
     return NULL;
   }
 
   if (adaptor->ClaimInterface(usb_handle, INTERFACE)) {
-    OLA_WARN << "Failed to claim Nodle usb device";
+    OLA_WARN << "Failed to claim Nodle USB device";
     adaptor->Close(usb_handle);
     return NULL;
   }
@@ -131,8 +131,8 @@ libusb_device_handle *OpenNodleU1Widget(LibUsbAdaptor *adaptor,
 class NodleU1ThreadedSender: public ThreadedUsbSender {
  public:
   NodleU1ThreadedSender(LibUsbAdaptor *adaptor,
-                         libusb_device *usb_device,
-                         libusb_device_handle *handle)
+                        libusb_device *usb_device,
+                        libusb_device_handle *handle)
       : ThreadedUsbSender(usb_device, handle),
         m_adaptor(adaptor) {
     m_tx_buffer.Blackout();
@@ -151,7 +151,7 @@ class NodleU1ThreadedSender: public ThreadedUsbSender {
 };
 
 bool NodleU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
-                                            const DmxBuffer &buffer) {
+                                           const DmxBuffer &buffer) {
   m_tx_buffer.SetRange(0, buffer.GetRaw(), buffer.Size());
 
   unsigned char usb_data[DATABLOCK_SIZE];
@@ -187,13 +187,13 @@ bool NodleU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 bool NodleU1ThreadedSender::SendDataChunk(libusb_device_handle *handle,
-                                           uint8_t *usb_data) {
+                                          uint8_t *usb_data) {
   int transferred;
   int ret = m_adaptor->InterruptTransfer(
       handle, WRITE_ENDPOINT, reinterpret_cast<unsigned char*>(usb_data),
       DATABLOCK_SIZE, &transferred, URB_TIMEOUT_MS);
   if (ret) {
-    OLA_WARN << "InterruptTransfer():" << m_adaptor->ErrorCodeToString(ret)
+    OLA_WARN << "InterruptTransfer(): " << m_adaptor->ErrorCodeToString(ret)
              << ", transferred " << transferred << " / " << DATABLOCK_SIZE;
   }
   return ret == 0;
@@ -208,8 +208,8 @@ bool NodleU1ThreadedSender::SendDataChunk(libusb_device_handle *handle,
 class NodleU1ThreadedReceiver: public ThreadedUsbReceiver {
  public:
   NodleU1ThreadedReceiver(LibUsbAdaptor *adaptor,
-                           libusb_device *usb_device,
-                           libusb_device_handle *handle)
+                          libusb_device *usb_device,
+                          libusb_device_handle *handle)
       : ThreadedUsbReceiver(usb_device, handle),
         m_adaptor(adaptor) {
   }
@@ -249,7 +249,7 @@ bool NodleU1ThreadedReceiver::ReadDataChunk(libusb_device_handle *handle,
       handle, READ_ENDPOINT, reinterpret_cast<unsigned char*>(usb_data),
       DATABLOCK_SIZE, &transferred, URB_TIMEOUT_MS);
   if (ret && ret != LIBUSB_ERROR_TIMEOUT) {
-    OLA_WARN << "InterruptTransfer():" << m_adaptor->ErrorCodeToString(ret)
+    OLA_WARN << "InterruptTransfer(): " << m_adaptor->ErrorCodeToString(ret)
              << ", transferred " << transferred << " / " << DATABLOCK_SIZE;
   }
   return ret == 0;
@@ -303,8 +303,9 @@ bool SynchronousNodleU1::SendDMX(const DmxBuffer &buffer) {
 }
 
 void SynchronousNodleU1::SetDmxCallback(Callback0<void> *callback) {
-  if (m_receiver.get())
+  if (m_receiver.get()) {
     m_receiver->SetReceiveCallback(callback);
+  }
 }
 
 const DmxBuffer &SynchronousNodleU1::GetDmxInBuffer() const {
@@ -351,7 +352,7 @@ class NodleU1AsyncUsbReceiver : public AsyncUsbReceiver {
 
 bool NodleU1AsyncUsbReceiver::PerformTransfer() {
   FillInterruptTransfer(READ_ENDPOINT, m_packet,
-                          DATABLOCK_SIZE, URB_TIMEOUT_MS);
+                        DATABLOCK_SIZE, URB_TIMEOUT_MS);
   return (SubmitTransfer() == 0);
 }
 
@@ -371,8 +372,8 @@ bool NodleU1AsyncUsbReceiver::TransferCompleted(DmxBuffer *buffer) {
 class NodleU1AsyncUsbSender : public AsyncUsbSender {
  public:
   NodleU1AsyncUsbSender(LibUsbAdaptor *adaptor,
-                         libusb_device *usb_device,
-                         unsigned int mode)
+                        libusb_device *usb_device,
+                        unsigned int mode)
       : AsyncUsbSender(adaptor, usb_device),
         m_mode(mode),
         m_buffer_offset(0),
@@ -403,7 +404,7 @@ class NodleU1AsyncUsbSender : public AsyncUsbSender {
  private:
   unsigned int m_mode;
   DmxBuffer m_tx_buffer;
-  // This tracks where were are in m_tx_buffer. A value of 0 means we're at the
+  // This tracks where we are in m_tx_buffer. A value of 0 means we're at the
   // start of a DMX frame.
   unsigned int m_buffer_offset;
   uint8_t *m_packet;
@@ -414,7 +415,7 @@ class NodleU1AsyncUsbSender : public AsyncUsbSender {
 
   bool SendChunk() {
     FillInterruptTransfer(WRITE_ENDPOINT, m_packet,
-                            DATABLOCK_SIZE, URB_TIMEOUT_MS);
+                          DATABLOCK_SIZE, URB_TIMEOUT_MS);
     return (SubmitTransfer() == 0);
   }
 
@@ -514,8 +515,9 @@ bool AsynchronousNodleU1::SendDMX(const DmxBuffer &buffer) {
 }
 
 void AsynchronousNodleU1::SetDmxCallback(Callback0<void> *callback) {
-  if (m_receiver.get())
+  if (m_receiver.get()) {
     m_receiver->SetReceiveCallback(callback);
+  }
 }
 
 const DmxBuffer &AsynchronousNodleU1::GetDmxInBuffer() const {
