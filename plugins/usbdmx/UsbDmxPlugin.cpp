@@ -108,7 +108,7 @@ string UsbDmxPlugin::Description() const {
 "1 - DMX In -> DMX Out\n"
 "2 - PC Out -> DMX Out\n"
 "3 - DMX In + PC Out -> DMX Out\n"
-"4 - DMX In -> PC IN\n"
+"4 - DMX In -> PC In\n"
 "5 - DMX In -> DMX Out & DMX In -> PC In\n"
 "6 - PC Out -> DMX Out & DMX In -> PC In\n"
 "7 - DMX In + PC Out -> DMX Out & DMX In -> PC In\n"
