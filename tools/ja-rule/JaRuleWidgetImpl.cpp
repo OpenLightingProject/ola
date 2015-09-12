@@ -210,9 +210,9 @@ void JaRuleWidgetImpl::HandleDUBResponse(const Message& message) {
   if (m_branch_callback) {
     const uint8_t *data = NULL;
     unsigned int size = 0;
-    if (message.payload && message.payload_size > 1) {
-      data = message.payload + 1;
-      size = message.payload_size - 1;
+    if (message.payload && message.payload_size > 4) {
+      data = message.payload + 4;
+      size = message.payload_size - 4;
     }
     BranchCallback *callback = m_branch_callback;
     m_branch_callback = NULL;
