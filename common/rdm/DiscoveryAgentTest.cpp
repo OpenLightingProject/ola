@@ -42,6 +42,7 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DiscoveryAgentTest);
   CPPUNIT_TEST(testNoReponders);
   CPPUNIT_TEST(testSingleResponder);
+  CPPUNIT_TEST(testResponderWithBroadcastUID);
   CPPUNIT_TEST(testMultipleResponders);
   CPPUNIT_TEST(testObnoxiousResponder);
   CPPUNIT_TEST(testRamblingResponder);
@@ -59,6 +60,7 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
     }
     void testNoReponders();
     void testSingleResponder();
+    void testResponderWithBroadcastUID();
     void testMultipleResponders();
     void testObnoxiousResponder();
     void testRamblingResponder();
@@ -181,6 +183,31 @@ void DiscoveryAgentTest::testSingleResponder() {
   OLA_ASSERT_TRUE(m_callback_run);
 }
 
+/**
+ * Test single responder with a broadcast UID
+ */
+void DiscoveryAgentTest::testResponderWithBroadcastUID() {
+  UIDSet uids;
+  ResponderList responders;
+  uids.AddUID(UID(0xffff, 0xffffffff));
+  PopulateResponderListFromUIDs(uids, &responders);
+  MockDiscoveryTarget target(responders);
+
+  DiscoveryAgent agent(&target);
+  agent.StartFullDiscovery(
+      ola::NewSingleCallback(this,
+                             &DiscoveryAgentTest::DiscoverySuccessful,
+                             static_cast<const UIDSet*>(&uids)));
+  OLA_ASSERT_TRUE(m_callback_run);
+  m_callback_run = false;
+
+  // now try incremental
+  agent.StartIncrementalDiscovery(
+      ola::NewSingleCallback(this,
+                             &DiscoveryAgentTest::DiscoverySuccessful,
+                             static_cast<const UIDSet*>(&uids)));
+  OLA_ASSERT_TRUE(m_callback_run);
+}
 
 /**
  * Test multiple responders
