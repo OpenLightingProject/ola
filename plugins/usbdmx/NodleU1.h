@@ -29,6 +29,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
+#include "olad/PluginAdaptor.h"
 #include "plugins/usbdmx/Widget.h"
 
 namespace ola {
@@ -41,11 +42,13 @@ namespace usbdmx {
 class NodleU1: public BaseWidget {
  public:
   explicit NodleU1(LibUsbAdaptor *adaptor,
+                   PluginAdaptor *plugin_adaptor,
                    const std::string &serial,
                    unsigned int mode)
       : BaseWidget(adaptor),
         m_serial(serial),
-        m_mode(mode) {
+        m_mode(mode),
+        m_plugin_adaptor(plugin_adaptor) {
   }
 
   /**
@@ -77,6 +80,7 @@ class NodleU1: public BaseWidget {
 
  protected:
   unsigned int m_mode;
+  PluginAdaptor *m_plugin_adaptor;
 };
 
 /**
@@ -95,6 +99,7 @@ class SynchronousNodleU1: public NodleU1 {
    */
   SynchronousNodleU1(LibUsbAdaptor *adaptor,
                      libusb_device *usb_device,
+                     PluginAdaptor *plugin_adaptor,
                      const std::string &serial,
                      unsigned int mode);
 
@@ -127,6 +132,7 @@ class AsynchronousNodleU1 : public NodleU1 {
    */
   AsynchronousNodleU1(LibUsbAdaptor *adaptor,
                       libusb_device *usb_device,
+                      PluginAdaptor *plugin_adaptor,
                       const std::string &serial,
                       unsigned int mode);
 

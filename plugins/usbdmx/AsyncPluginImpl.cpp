@@ -120,7 +120,8 @@ bool AsyncPluginImpl::Start() {
   m_widget_factories.push_back(
       new JaRuleFactory(m_plugin_adaptor, m_usb_adaptor));
   m_widget_factories.push_back(
-      new NodleU1Factory(m_usb_adaptor.get(), m_preferences));
+      new NodleU1Factory(m_usb_adaptor,
+                         m_plugin_adaptor, m_preferences));
       new ScanlimeFadecandyFactory(m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(m_usb_adaptor));
   m_widget_factories.push_back(new VellemanK8062Factory(m_usb_adaptor));

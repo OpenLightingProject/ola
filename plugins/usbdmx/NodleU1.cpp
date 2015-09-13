@@ -209,8 +209,9 @@ class NodleU1ThreadedReceiver: public ThreadedUsbReceiver {
  public:
   NodleU1ThreadedReceiver(LibUsbAdaptor *adaptor,
                           libusb_device *usb_device,
-                          libusb_device_handle *handle)
-      : ThreadedUsbReceiver(usb_device, handle),
+                          libusb_device_handle *handle,
+                          PluginAdaptor *plugin_adaptor)
+      : ThreadedUsbReceiver(usb_device, handle, plugin_adaptor),
         m_adaptor(adaptor) {
   }
 
@@ -261,9 +262,10 @@ bool NodleU1ThreadedReceiver::ReadDataChunk(libusb_device_handle *handle,
 SynchronousNodleU1::SynchronousNodleU1(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
+    PluginAdaptor *plugin_adaptor,
     const string &serial,
     unsigned int mode)
-    : NodleU1(adaptor, serial, mode),
+    : NodleU1(adaptor, plugin_adaptor, serial, mode),
       m_usb_device(usb_device) {
 }
 
@@ -288,7 +290,8 @@ bool SynchronousNodleU1::Init() {
 
   if (m_mode & 4) {  // input port active
     std::auto_ptr<NodleU1ThreadedReceiver> receiver(
-        new NodleU1ThreadedReceiver(m_adaptor, m_usb_device, usb_handle));
+        new NodleU1ThreadedReceiver(m_adaptor, m_usb_device, usb_handle,
+                                    m_plugin_adaptor));
     if (!receiver->Start()) {
       return false;
     }
@@ -305,6 +308,8 @@ bool SynchronousNodleU1::SendDMX(const DmxBuffer &buffer) {
 void SynchronousNodleU1::SetDmxCallback(Callback0<void> *callback) {
   if (m_receiver.get()) {
     m_receiver->SetReceiveCallback(callback);
+  } else {
+    delete callback;
   }
 }
 
@@ -479,9 +484,10 @@ bool NodleU1AsyncUsbSender::SendInitialChunk(const DmxBuffer &buffer) {
 AsynchronousNodleU1::AsynchronousNodleU1(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
+    PluginAdaptor *plugin_adaptor,
     const string &serial,
     unsigned int mode)
-    : NodleU1(adaptor, serial, mode) {
+    : NodleU1(adaptor, plugin_adaptor, serial, mode) {
   if (mode & 2) {  // output port active
     m_sender.reset(new NodleU1AsyncUsbSender(m_adaptor, usb_device, mode));
   }
@@ -517,6 +523,8 @@ bool AsynchronousNodleU1::SendDMX(const DmxBuffer &buffer) {
 void AsynchronousNodleU1::SetDmxCallback(Callback0<void> *callback) {
   if (m_receiver.get()) {
     m_receiver->SetReceiveCallback(callback);
+  } else {
+    delete callback;
   }
 }
 

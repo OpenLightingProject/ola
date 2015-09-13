@@ -28,10 +28,12 @@ namespace plugin {
 namespace usbdmx {
 
 ThreadedUsbReceiver::ThreadedUsbReceiver(libusb_device *usb_device,
-                                         libusb_device_handle *usb_handle)
+                                         libusb_device_handle *usb_handle,
+                                         PluginAdaptor *plugin_adaptor)
     : m_term(false),
       m_usb_device(usb_device),
       m_usb_handle(usb_handle),
+      m_plugin_adaptor(plugin_adaptor),
       m_receive_callback(NULL) {
   libusb_ref_device(usb_device);
 }
@@ -83,7 +85,7 @@ void *ThreadedUsbReceiver::Run() {
         m_buffer.Set(buffer);
       }
       if (m_receive_callback.get()) {
-        m_receive_callback->Run();
+        m_plugin_adaptor->Execute(m_receive_callback.get());
       }
     }
   }

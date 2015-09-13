@@ -61,9 +61,11 @@ bool NodleU1Factory::DeviceAdded(
 
   NodleU1 *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousNodleU1(m_adaptor, usb_device, info.serial, mode);
+    widget = new AsynchronousNodleU1(m_adaptor, usb_device, m_plugin_adaptor,
+                                     info.serial, mode);
   } else {
-    widget = new SynchronousNodleU1(m_adaptor, usb_device, info.serial, mode);
+    widget = new SynchronousNodleU1(m_adaptor, usb_device, m_plugin_adaptor,
+                                    info.serial, mode);
   }
   return AddWidget(observer, usb_device, widget);
 }

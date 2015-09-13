@@ -22,6 +22,7 @@
 #define PLUGINS_USBDMX_NODLEU1FACTORY_H_
 
 #include "ola/base/Macro.h"
+#include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
@@ -35,8 +36,11 @@ namespace usbdmx {
 class NodleU1Factory : public BaseWidgetFactory<class NodleU1> {
  public:
   explicit NodleU1Factory(class LibUsbAdaptor *adaptor,
+                          PluginAdaptor *plugin_adaptor,
                           Preferences *preferences)
-      : m_adaptor(adaptor), m_preferences(preferences) {
+      : m_adaptor(adaptor),
+        m_plugin_adaptor(plugin_adaptor),
+        m_preferences(preferences) {
   }
 
   bool DeviceAdded(
@@ -46,6 +50,7 @@ class NodleU1Factory : public BaseWidgetFactory<class NodleU1> {
 
  private:
   class LibUsbAdaptor* const m_adaptor;
+  PluginAdaptor* const m_plugin_adaptor;
   Preferences* const m_preferences;
 
   static const uint16_t VENDOR_ID;

@@ -27,6 +27,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
+#include "olad/PluginAdaptor.h"
 
 namespace ola {
 namespace plugin {
@@ -54,7 +55,8 @@ class ThreadedUsbReceiver: private ola::thread::Thread {
    * @param usb_handle The handle to use for the DMX transfer.
    */
   ThreadedUsbReceiver(libusb_device *usb_device,
-                      libusb_device_handle *usb_handle);
+                      libusb_device_handle *usb_handle,
+                      PluginAdaptor *plugin_adaptor);
   virtual ~ThreadedUsbReceiver();
 
   /**
@@ -105,6 +107,7 @@ class ThreadedUsbReceiver: private ola::thread::Thread {
   bool m_term;
   libusb_device* const m_usb_device;
   libusb_device_handle* const m_usb_handle;
+  PluginAdaptor* const m_plugin_adaptor;
   std::auto_ptr<Callback0<void> > m_receive_callback;
   DmxBuffer m_buffer;
   ola::thread::Mutex m_data_mutex;

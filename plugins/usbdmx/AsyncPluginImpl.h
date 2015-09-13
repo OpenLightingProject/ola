@@ -71,7 +71,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
                   Plugin *plugin,
                   unsigned int debug_level,
-                  Preferences* preferences);
+                  Preferences *preferences);
   ~AsyncPluginImpl();
 
   bool Start();

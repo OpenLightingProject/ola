@@ -66,7 +66,7 @@ bool UsbDmxPlugin::StartHook() {
   if (FLAGS_use_async_libusb) {
     impl.reset(
         new AsyncPluginImpl(m_plugin_adaptor, this, debug_level,
-            m_preferences));
+                            m_preferences));
   } else {
     impl.reset(
         new SyncPluginImpl(m_plugin_adaptor, this, debug_level, m_preferences));
