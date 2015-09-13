@@ -94,6 +94,7 @@ class SynchronousNodleU1: public NodleU1 {
    * @brief Create a new SynchronousNodleU1.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param plugin_adaptor the PluginAdaptor used to execute callbacks
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */
@@ -127,6 +128,7 @@ class AsynchronousNodleU1 : public NodleU1 {
    * @brief Create a new AsynchronousNodleU1.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param plugin_adaptor the PluginAdaptor used to execute callbacks
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */

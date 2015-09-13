@@ -53,6 +53,7 @@ class ThreadedUsbReceiver: private ola::thread::Thread {
    * @param usb_device The usb_device to use. The ThreadedUsbReceiver takes a ref
    *   on the device, while the ThreadedUsbReceiver object exists.
    * @param usb_handle The handle to use for the DMX transfer.
+   * @param plugin_adaptor the PluginAdaptor used to execute callbacks
    */
   ThreadedUsbReceiver(libusb_device *usb_device,
                       libusb_device_handle *usb_handle,
