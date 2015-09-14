@@ -115,6 +115,10 @@
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #endif
 
+#ifdef USE_OVDMX
+#include "plugins/ovdmx/OVDmxPlugin.h"
+#endif
+
 namespace ola {
 
 using std::vector;
@@ -235,6 +239,11 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef USE_UART
   m_plugins.push_back(
       new ola::plugin::uartdmx::UartDmxPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_OVDMX
+  m_plugins.push_back(
+      new ola::plugin::ovdmx::OVDmxPlugin(m_plugin_adaptor));
 #endif
 }
 
