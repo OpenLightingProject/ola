@@ -67,7 +67,7 @@ class ResponsePrinter(object):
       print('PID: 0x%04hx' % pid_value)
       self.Default(uid, response_data)
     else:
-      print(pid)
+      print('PID: %s' % pid)
       if pid.name in self._handlers:
         self._handlers[pid.name](uid, response_data)
       else:
