@@ -21,7 +21,6 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import Plugin
 
 def RDMString(port):
   if port.supports_rdm:
