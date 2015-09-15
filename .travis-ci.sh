@@ -93,6 +93,14 @@ elif [[ $TASK = 'jshint' ]]; then
   cd ./javascript/new-src;
   npm install;
   grunt test
+elif [[ $TASK = 'flake8' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for flake8 to run against
+  make builtfiles
+  flake8 python
+  flake8 tools/rdm
 else
   # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests' # --enable-ja-rule
