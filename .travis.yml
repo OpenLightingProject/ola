@@ -18,6 +18,7 @@ matrix:
     - env: TASK='lint'
     - env: TASK='check-licences'
     - env: TASK='jshint'
+    - env: TASK='jshint'
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'
@@ -87,6 +88,7 @@ addons:
 install:
   - pip install --user protobuf==2.4.1
   - pip install --user cpp-coveralls
+  - pip install --user flake8
   - npm install -g grunt-cli
 
 before_install:
