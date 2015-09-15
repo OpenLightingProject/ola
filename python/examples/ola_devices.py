@@ -22,10 +22,12 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 from ola.ClientWrapper import ClientWrapper
 
+
 def RDMString(port):
   if port.supports_rdm:
     return ', RDM supported'
   return ''
+
 
 def Devices(state, devices):
   for device in sorted(devices):
@@ -41,6 +43,5 @@ def Devices(state, devices):
 
 wrapper = ClientWrapper()
 client = wrapper.Client()
-#client.FetchDevices(Devices, Plugin.OLA_PLUGIN_DUMMY)
 client.FetchDevices(Devices)
 wrapper.Run()
