@@ -29,12 +29,13 @@ universe
 from array import *
 from ola.ClientWrapper import ClientWrapper
 from ola.DMXConstants import DMX_MIN_SLOT_VALUE, DMX_MAX_SLOT_VALUE, \
-  DMX_UNIVERSE_SIZE
+    DMX_UNIVERSE_SIZE
 
 UPDATE_INTERVAL = 25  # In ms, this comes about to ~40 frames a second
 SHUTDOWN_INTERVAL = 10000  # in ms, This is 10 seconds
 DMX_DATA_SIZE = 100
 UNIVERSE = 1
+
 
 class SimpleFadeController(object):
   def __init__(self, universe, update_interval, client_wrapper,
