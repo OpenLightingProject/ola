@@ -31,6 +31,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 class Error(Exception):
   """Base exception class."""
 
+
 class TestLoggerException(Error):
   """Indicates a problem with the log reader."""
 
@@ -141,9 +142,9 @@ class TestLogger(object):
       The text version of the results.
     """
     test_data = self.ReadLog(uid, timestamp)
-    formatted_output =  self._FormatData(test_data, category, test_state,
-                                         include_debug, include_description,
-                                         include_summary)
+    formatted_output = self._FormatData(test_data, category, test_state,
+                                        include_debug, include_description,
+                                        include_summary)
     return formatted_output
 
   def _CheckFilename(self, filename):
