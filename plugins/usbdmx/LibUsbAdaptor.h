@@ -134,6 +134,15 @@ class LibUsbAdaptor {
                                  int interface_number) = 0;
 
   // USB descriptors
+  /**
+   * @brief Wraps libusb_get_device_descriptor.
+   * @param dev a device
+   * @param[out] The device descriptor.
+   * @returns 0 on success
+   * @returns another LIBUSB_ERROR code on error
+   */
+  virtual int GetDeviceDescriptor(libusb_device *dev,
+                                  struct libusb_device_descriptor *desc) = 0;
 
   /**
    * @brief Wraps libusb_get_active_config_descriptor.
@@ -170,6 +179,16 @@ class LibUsbAdaptor {
    */
   virtual void FreeConfigDescriptor(
       struct libusb_config_descriptor *config) = 0;
+
+  /**
+   * @brief Get the value of a string descriptor.
+   * @param usb_handle The USB device handle
+   * @param descriptor_index The index of the string descriptor to fetch.
+   * @param[out] data The value of the string descriptor.
+   */
+  virtual bool GetStringDescriptor(libusb_device_handle *usb_handle,
+                                   uint8_t descriptor_index,
+                                   std::string *data) = 0;
 
   // Asynchronous device I/O
 
@@ -404,6 +423,9 @@ class BaseLibUsbAdaptor : public LibUsbAdaptor {
   int DetachKernelDriver(libusb_device_handle *dev, int interface_number);
 
   // USB descriptors
+  int GetDeviceDescriptor(libusb_device *dev,
+                          struct libusb_device_descriptor *desc);
+
   int GetActiveConfigDescriptor(
       libusb_device *dev,
       struct libusb_config_descriptor **config);
@@ -413,6 +435,10 @@ class BaseLibUsbAdaptor : public LibUsbAdaptor {
                           struct libusb_config_descriptor **config);
 
   void FreeConfigDescriptor(struct libusb_config_descriptor *config);
+
+  bool GetStringDescriptor(libusb_device_handle *usb_handle,
+                           uint8_t descriptor_index,
+                           std::string *data);
 
   // Asynchronous device I/O
   struct libusb_transfer* AllocTransfer(int iso_packets);
