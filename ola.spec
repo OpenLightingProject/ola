@@ -7,7 +7,7 @@ License:        GPLv2 and LGPLv2
 URL:            https://github.com/OpenLightingProject/ola
 Source:         https://github.com/OpenLightingProject/ola/releases/download/%{version}/%{name}-%{version}.tar.gz
 BuildRoot:      %{_buildrootdir}/%{name}-%{version}-%{release}-root
-BuildRequires:  libmicrohttpd-devel,cppunit-devel,protobuf-devel,protobuf-compiler,protobuf-python,libftdi-devel,openslp-devel,uuid-devel,libtool,bison,flex,pkgconfig,gcc,gcc-c++,python-devel,avahi-compat-libdns_sd-devel,avahi-devel
+BuildRequires:  libmicrohttpd-devel,cppunit-devel,protobuf-devel,protobuf-compiler,protobuf-python,libftdi-devel,openslp-devel,uuid-devel,libtool,bison,flex,pkgconfig,gcc,gcc-c++,python-devel,avahi-devel
 
 %description
 The Open Lighting Architecture is a framework for lighting control information.
