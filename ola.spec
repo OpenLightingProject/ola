@@ -1,91 +1,108 @@
-%define name    ola
-%define version 0.3.1
-%define release %mkrel 1
-
-
-Name:      %{name}
-Version:   %{version}
-Release:   %{release}
-Summary:   OLA - Open Lighting Architecture
-Group:     Other
-License:   GPL
-URL:       https://github.com/OpenLightingProject/ola
-# Other doc found at:
-#  http://www.opendmx.net/index.php/LLA_0.3
-#  http://www.opendmx.net/index.php/LLA_on_Linux
-Source0:   %{name}/%{name}-%{version}.tar.gz
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildRequires: libmicrohttpd-devel >= 0.4.0, libcppunit-devel, protobuf-devel >= 2.1.0
-Requires:      libmicrohttpd >= 0.4.0, libcppunit, protobuf >= 2.1.0
+Name:           ola
+Version:        0.9.7
+Release:        1
+Summary:        Open Lighting Architecture
+Group:          Applications/Multimedia
+License:        GPLv2 and LGPLv2
+URL:            https://github.com/OpenLightingProject/ola
+Source:         https://github.com/OpenLightingProject/ola/releases/download/%{version}/%{name}-%{version}.tar.gz
+BuildRoot:      %{_buildrootdir}/%{name}-%{version}-%{release}-root
+BuildRequires:  libmicrohttpd-devel,cppunit-devel,protobuf-devel,protobuf-compiler,protobuf-python,libftdi-devel,openslp-devel,uuid-devel,libtool,bison,flex,pkgconfig,gcc,gcc-c++,python-devel
 
 %description
-The Open Lighting Architecture (OLA) consists of two parts, the daemon olad and the library, libola.
+The Open Lighting Architecture is a framework for lighting control information.
+It supports a range of protocols and over a dozen USB devices. It can run as a
+standalone service, which is useful for converting signals between protocols,
+or alternatively using the OLA API, it can be used as the back-end for lighting
+control software. OLA runs on many different platforms including ARM, which
+makes it a perfect fit for low cost Ethernet to DMX gateways.
 
+%package devel
+Requires:      ola = %{version}-%{release}, protobuf-devel
+Group:         Development/Libraries
+Summary:       C/C++ Development files for OLA
 
-%package -n libola
-Group:         Other
-Summary:       OLA - Open Lighting Architecture
+%description devel
+The OLA C/C++ library
 
-%description -n libola
-The OLA library
+%package -n python2-%{name}
+Requires:      ola = %{version}-%{release}, protobuf-python, python(abi) = 2.7
+Group:         Development/Libraries
+Summary:       Python Development files for OLA
+BuildArch:     noarch
+%{?python_provide:%python_provide python2-%{name}}
 
+%description -n python2-%{name}
+The OLA python library
 
-%package -n libola-devel
-Group:         Other
-Summary:       OLA - Open Lighting Architecture
+%package rdm-tests
+Requires:      ola = %{version}-%{release}, python2-%{name}
+Group:         Development/Libraries
+Summary:       RDM test suite using OLA and python
 
-%description -n libola-devel
-The OLA library headers
-
+%description rdm-tests
+The rdm test suite for OLA
 
 %prep
-%setup -q -n %{name}
-
+%setup -q -n %{name}-%{version}
 
 %build
-%define _disable_ld_no_undefined 1
-export LDFLAGS="-Wl,-undefined -Wl,dynamic_lookup"
 autoreconf -i
-%configure
-%make
+%configure --enable-rdm-tests --enable-shared --disable-static
+sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
+sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
+sed -i "s|\$(LN_S) -f \$(bindir)\/|\$(LN_S) -f |g" Makefile
+make %{?_smp_mflags}
 
 %check
-%make check
-
+export LD_LIBRARY_PATH="%buildroot/usr/lib:%buildroot/usr/lib64"
+make check %{?_smp_mflags}
+find %buildroot -name "*pyc" -delete
+find %buildroot -name "*pyo" -delete
 
 %install
 rm -rf %buildroot
-%makeinstall DESTDIR=%buildroot
-
+%make_install
+find %buildroot -name "*\.pyc" -delete
+find %buildroot -name "*\.pyo" -delete
 
 %clean
 rm -rf %buildroot
 
 
 %files
-%defattr(-,root,root,-)
-/usr/bin/olad
-/usr/bin/olad_test
+%{_bindir}/ola*
+%{_bindir}/rdmpro_sniffer
+%{_bindir}/usbpro_firmware
+%{_datadir}/olad/**
+%{_datadir}/ola/pids/**
+%{_libdir}/libola*\.so\.*
+%{_mandir}/man1/**
 
-%files -n libola
-%defattr(-,root,root,-)
-%{_libdir}/libola.so*
-%{_libdir}/olad/*.so*
-%{_libdir}/libola*.so*
+%files devel
+%{_includedir}/ola**
+%{_libdir}/libola*\.so
+%{_libdir}/pkgconfig/*
 
-%files -n libola-devel
-%defattr(-,root,root,-)
-/usr/include/
-%{_libdir}/olad/libola*.a
-%{_libdir}/olad/libola*.la
-%{_libdir}/libola*.a
-%{_libdir}/libola*.la
-%{_libdir}/pkgconfig/libola*.pc
+%files -n python2-%{name}
+%{python2_sitelib}/ola/*\.py
+%{python2_sitelib}/ola/rpc/*\.py
 
-%doc AUTHORS ChangeLog COPYING INSTALL NEWS README TODO
+%files rdm-tests
+%{_bindir}/rdm_model_collector.py
+%{_bindir}/rdm_responder_test.py
+%{_bindir}/rdm_test_server.py
+%{_datadir}/ola/rdm-server/**
+%{python2_sitelib}/ola/testing/*\.py
+%{python2_sitelib}/ola/testing/rdm/*\.py
 
+%post -p /sbin/ldconfig
+%postun -p /sbin/ldconfig
 
 %changelog
+* Sat Sep 19 2015 Dave Olsthoorn - 0.9.7-1
+- update to 0.9.7
+- OLA now requires libusb
 * Thu Aug 27 2009 Kevin Deldycke <kevin@deldycke.com> 0.3.1.trunk.20090827-1mdv2009.1
 - Rename all project from lla to OLA
 - Upgrade to the latest OLA 0.3.1 from the master branch of the git repository
@@ -93,9 +110,8 @@ rm -rf %buildroot
 - Disable the --no-undefined option and make all undefined symbols weakly bound
 - Add check step
 - Rebuild RPM for Mandriva 2009.1
-
 * Mon May 12 2008 Kevin Deldycke <kev@coolcavemen.com> 0.2.3.200710210908-1mdv2008.1
 - Ported from Fedora Core 8 ( http://rpms.netmindz.net/FC8/SRPMS.netmindz/lla-0.2.3.200710210908-1.fc8.src.rpm ) to Mandriva 2008.1
-
 * Sun Apr 29 2007 Will Tatam <will@netmindz.net> 0.1.3-1
 - Fist Build
+
