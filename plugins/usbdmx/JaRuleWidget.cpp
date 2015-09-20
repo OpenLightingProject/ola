@@ -112,6 +112,8 @@ JaRuleWidget::~JaRuleWidget() {
     }
   }
 
+  STLDeleteElements(&m_ports);
+
   {
     MutexLocker locker(&m_mutex);
     if (!m_queued_commands.empty()) {
@@ -153,7 +155,6 @@ JaRuleWidget::~JaRuleWidget() {
     m_adaptor->Close(m_usb_handle);
   }
 
-  STLDeleteElements(&m_ports);
   m_adaptor->UnrefDevice(m_device);
 }
 
@@ -208,16 +209,20 @@ void JaRuleWidget::CancelAll(uint8_t port_id) {
   // Cancel all of the queued commands
   vector<QueuedCommand>::iterator iter = commands_to_cancel.begin();
   for (; iter != commands_to_cancel.end(); ++iter) {
-    iter->callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
-                        ByteString());
+    if (iter->callback) {
+      iter->callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
+                          ByteString());
+    }
   }
 
   // Cancel all of the pending commands
   vector<PendingCommand>::iterator pending_iter =
       pending_commands_to_cancel.begin();
   for (; pending_iter != pending_commands_to_cancel.end(); ++pending_iter) {
-    pending_iter->callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
-                                ByteString());
+    if (pending_iter->callback) {
+      pending_iter->callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
+                                  ByteString());
+    }
   }
 }
 
@@ -249,7 +254,6 @@ JaRulePortHandle* JaRuleWidget::ClaimPort(uint8_t port_index) {
   return port_info->handle;
 }
 
-
 void JaRuleWidget::ReleasePort(uint8_t port_index) {
   if (port_index > m_ports.size() - 1) {
     return;
@@ -258,6 +262,7 @@ void JaRuleWidget::ReleasePort(uint8_t port_index) {
   if (!port_info->claimed) {
     OLA_WARN << "Releasing unclaimed port: " << static_cast<int>(port_index);
   }
+  CancelAll(port_index);
   port_info->claimed = false;
 }
 
@@ -268,13 +273,17 @@ void JaRuleWidget::SendCommand(uint8_t port_index,
                                CommandCompleteCallback *callback) {
   if (port_index > m_ports.size() - 1) {
     OLA_WARN << "Invalid JaRule Port " << static_cast<int>(port_index);
-    callback->Run(jarule::COMMAND_RESULT_INVALID_PORT, 0, 0, ByteString());
+    if (callback) {
+      callback->Run(jarule::COMMAND_RESULT_INVALID_PORT, 0, 0, ByteString());
+    }
     return;
   }
 
   if (size > MAX_PAYLOAD_SIZE) {
     OLA_WARN << "JaRule message exceeds max payload size";
-    callback->Run(jarule::COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
+    if (callback) {
+      callback->Run(jarule::COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
+    }
     return;
   }
 
@@ -293,10 +302,14 @@ void JaRuleWidget::SendCommand(uint8_t port_index,
 
   MutexLocker locker(&m_mutex);
 
+  OLA_INFO << "Adding new command " << ToHex(command);
+
   if (m_queued_commands.size() > MAX_QUEUED_MESSAGES) {
     locker.Release();
     OLA_WARN << "JaRule outbound queue is full";
-    callback->Run(jarule::COMMAND_RESULT_QUEUE_FULL, 0, 0, ByteString());
+    if (callback) {
+      callback->Run(jarule::COMMAND_RESULT_QUEUE_FULL, 0, 0, ByteString());
+    }
     return;
   }
 
@@ -605,8 +618,10 @@ void JaRuleWidget::ScheduleCallback(CommandCompleteCallback *callback,
     status_flags,
     payload
   };
-  m_executor->Execute(
-      NewSingleCallback(this, &JaRuleWidget::RunCallback, callback, args));
+  if (callback) {
+    m_executor->Execute(
+        NewSingleCallback(this, &JaRuleWidget::RunCallback, callback, args));
+  }
 }
 
 /*
