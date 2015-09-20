@@ -101,7 +101,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
  private:
   typedef std::vector<class WidgetFactory*> WidgetFactories;
   typedef std::map<struct libusb_device*, WidgetFactory*> USBDeviceToFactoryMap;
-  typedef std::map<class Widget*, Device*> WidgetToDeviceMap;
+  typedef std::map<class WidgetInterface*, Device*> WidgetToDeviceMap;
   typedef std::pair<uint8_t, uint8_t> USBDeviceID;
   typedef std::map<USBDeviceID, struct libusb_device*> USBDeviceIDs;
 
@@ -130,8 +130,8 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool USBDeviceAdded(libusb_device *device);
   void USBDeviceRemoved(libusb_device *device);
 
-  bool StartAndRegisterDevice(class Widget *widget, Device *device);
-  void RemoveWidget(class Widget *widget);
+  bool StartAndRegisterDevice(class WidgetInterface *widget, Device *device);
+  void RemoveWidget(class WidgetInterface *widget);
 
   bool ScanUSBDevices();
 

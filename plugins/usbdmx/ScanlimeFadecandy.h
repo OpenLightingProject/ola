@@ -45,11 +45,11 @@ namespace usbdmx {
  * See https://github.com/scanlime/fadecandy/blob/master/README.md for more
  * information on Fadecandy devices.
  */
-class ScanlimeFadecandy: public BaseWidget {
+class ScanlimeFadecandy: public SimpleWidget {
  public:
   ScanlimeFadecandy(LibUsbAdaptor *adaptor,
                     const std::string &serial)
-      : BaseWidget(adaptor),
+      : SimpleWidget(adaptor),
         m_serial(serial) {
   }
 

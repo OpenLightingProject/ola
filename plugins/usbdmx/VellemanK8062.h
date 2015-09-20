@@ -37,10 +37,10 @@ namespace usbdmx {
 /**
  * @brief The interface for the Velleman Widgets
  */
-class VellemanK8062: public BaseWidget {
+class VellemanK8062: public SimpleWidget {
  public:
   explicit VellemanK8062(LibUsbAdaptor *adaptor)
-      : BaseWidget(adaptor) {
+      : SimpleWidget(adaptor) {
   }
 };
 

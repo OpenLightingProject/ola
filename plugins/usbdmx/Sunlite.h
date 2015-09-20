@@ -37,10 +37,10 @@ class SunliteThreadedSender;
 /**
  * @brief The interface for the Sunlite Widgets
  */
-class Sunlite : public BaseWidget {
+class Sunlite : public SimpleWidget {
  public:
   explicit Sunlite(LibUsbAdaptor *adaptor)
-     : BaseWidget(adaptor) {
+     : SimpleWidget(adaptor) {
   }
 };
 

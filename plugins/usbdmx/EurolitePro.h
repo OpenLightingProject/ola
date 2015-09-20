@@ -38,7 +38,7 @@ class EuroliteProThreadedSender;
 /**
  * @brief The EurolitePro Widget.
  */
-class EurolitePro : public BaseWidget {
+class EurolitePro : public SimpleWidget {
  public:
   /**
    * @brief Create a new EurolitePro.
@@ -47,7 +47,7 @@ class EurolitePro : public BaseWidget {
    */
   EurolitePro(LibUsbAdaptor *adaptor,
               const std::string &serial)
-      : BaseWidget(adaptor),
+      : SimpleWidget(adaptor),
         m_serial(serial) {}
 
   /**
