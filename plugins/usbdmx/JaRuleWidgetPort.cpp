@@ -28,6 +28,7 @@
 #include <ola/thread/Mutex.h>
 #include <ola/util/Utils.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -47,6 +48,7 @@ using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;
 using std::cout;
 using std::string;
+using std::auto_ptr;
 
 namespace {
 
@@ -161,19 +163,20 @@ void JaRuleWidgetPort::CancelAll() {
   }
 
   while (!queued_commands.empty()) {
-    QueuedCommand queued_command = queued_commands.front();
-    if (queued_command.callback) {
-      queued_command.callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
-                                   ByteString());
+    auto_ptr<PendingCommand> command(queued_commands.front());
+    if (command->callback) {
+      command->callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
+                             ByteString());
     }
     queued_commands.pop();
   }
 
   PendingCommandMap::iterator iter = pending_commands.begin();
   for (; iter != pending_commands.end(); ++iter) {
-    if (iter->second.callback) {
-      iter->second.callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
-                                 ByteString());
+    if (iter->second->callback) {
+      iter->second->callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
+                                  ByteString());
+      delete iter->second;
     }
   }
 
@@ -186,7 +189,7 @@ void JaRuleWidgetPort::CancelAll() {
 }
 
 void JaRuleWidgetPort::SendCommand(
-    jarule::CommandClass command,
+    jarule::CommandClass command_class,
     const uint8_t *data,
     unsigned int size,
     CommandCompleteCallback *callback) {
@@ -204,15 +207,32 @@ void JaRuleWidgetPort::SendCommand(
     return;
   }
 
-  QueuedCommand queued_command = {
-    command,
-    callback,
-    ByteString(data, size)
-  };
+  // Create the payload
+  ByteString payload;
+  payload.reserve(size + MIN_RESPONSE_SIZE);
+
+  payload.push_back(SOF_IDENTIFIER);
+  payload.push_back(0);  // token, will be set on TX
+  payload.push_back(command_class & 0xff);
+  payload.push_back(command_class >> 8);
+  payload.push_back(size & 0xff);
+  payload.push_back(size >> 8);
+  payload.append(data, size);
+  payload.push_back(EOF_IDENTIFIER);
+
+  if (payload.size() % USB_PACKET_SIZE == 0)  {
+    // We need to pad the message so that the transfer completes on the
+    // Device side. We could use LIBUSB_TRANSFER_ADD_ZERO_PACKET instead but
+    // that isn't avaiable on all platforms.
+    payload.push_back(0);
+  }
+
+  auto_ptr<PendingCommand> command(new PendingCommand(
+      command_class, callback, payload));
+
+  OLA_INFO << "Adding new command " << ToHex(command_class);
 
   MutexLocker locker(&m_mutex);
-
-  OLA_INFO << "Adding new command " << ToHex(command);
 
   if (m_queued_commands.size() > MAX_QUEUED_MESSAGES) {
     locker.Release();
@@ -223,7 +243,7 @@ void JaRuleWidgetPort::SendCommand(
     return;
   }
 
-  m_queued_commands.push(queued_command);
+  m_queued_commands.push(command.release());
   MaybeSendCommand();
 }
 
@@ -270,59 +290,35 @@ void JaRuleWidgetPort::MaybeSendCommand() {
     return;
   }
 
-  QueuedCommand command = m_queued_commands.front();
+  PendingCommand *command = m_queued_commands.front();
   m_queued_commands.pop();
 
-  unsigned int offset = 0;
   uint8_t token = m_token.Next();
-
-  m_out_buffer[0] = SOF_IDENTIFIER;
-  m_out_buffer[1] = token;
-  SplitUInt16(command.command, &m_out_buffer[3], &m_out_buffer[2]);
-  SplitUInt16(command.payload.size(), &m_out_buffer[5], &m_out_buffer[4]);
-  offset += 6;
-
-  if (command.payload.size() > 0) {
-    memcpy(m_out_buffer + offset, command.payload.data(),
-           command.payload.size());
-    offset += command.payload.size();
-  }
-  m_out_buffer[offset++] = EOF_IDENTIFIER;
-
-  if (offset % USB_PACKET_SIZE == 0)  {
-    // We need to pad the message so that the transfer completes on the
-    // Device side. We could use LIBUSB_TRANSFER_ADD_ZERO_PACKET instead but
-    // that isn't avaiable on all platforms.
-    m_out_buffer[offset++] = 0;
-  }
-
-  m_adaptor->FillBulkTransfer(m_out_transfer, m_usb_handle,
-                              m_endpoint_number | LIBUSB_ENDPOINT_OUT,
-                              m_out_buffer, offset,
-                              OutTransferCompleteHandler,
-                              static_cast<void*>(this),
-                              ENDPOINT_TIMEOUT_MS);
+  command->payload[1] = token;
+  m_adaptor->FillBulkTransfer(
+      m_out_transfer, m_usb_handle, m_endpoint_number | LIBUSB_ENDPOINT_OUT,
+      const_cast<uint8_t*>(command->payload.data()),
+      command->payload.size(), OutTransferCompleteHandler,
+      static_cast<void*>(this), ENDPOINT_TIMEOUT_MS);
 
   int r = m_adaptor->SubmitTransfer(m_out_transfer);
   if (r) {
     OLA_WARN << "Failed to submit outbound transfer: "
              << LibUsbAdaptor::ErrorCodeToString(r);
-    ScheduleCallback(command.callback, jarule::COMMAND_RESULT_SEND_ERROR, 0, 0,
+    ScheduleCallback(command->callback, jarule::COMMAND_RESULT_SEND_ERROR, 0, 0,
                      ByteString());
+    delete command;
     return;
   }
 
-  PendingCommand pending_command = {
-    command.command,
-    command.callback
-  };
   std::pair<PendingCommandMap::iterator, bool> p = m_pending_commands.insert(
-      PendingCommandMap::value_type(token, pending_command));
+      PendingCommandMap::value_type(token, command));
   if (!p.second) {
     // We had an old entry, time it out.
-    ScheduleCallback(p.first->second.callback, jarule::COMMAND_RESULT_TIMEOUT,
+    ScheduleCallback(p.first->second->callback, jarule::COMMAND_RESULT_TIMEOUT,
                      0, 0, ByteString());
-    p.first->second = pending_command;
+    delete p.first->second;
+    p.first->second = command;
   }
 
   m_out_in_progress = true;
@@ -372,7 +368,7 @@ void JaRuleWidgetPort::HandleResponse(const uint8_t *data, unsigned int size) {
   }
 
   uint8_t token = data[1];
-  uint16_t command = JoinUInt8(data[3], data[2]);
+  uint16_t command_class = JoinUInt8(data[3], data[2]);
   uint16_t payload_size = JoinUInt8(data[5], data[4]);
   uint8_t return_code = data[6];
   uint8_t status_flags = data[7];
@@ -392,13 +388,13 @@ void JaRuleWidgetPort::HandleResponse(const uint8_t *data, unsigned int size) {
     return;
   }
 
-  PendingCommand pending_request;
-  if (!STLLookupAndRemove(&m_pending_commands, token, &pending_request)) {
+  PendingCommand *command;
+  if (!STLLookupAndRemove(&m_pending_commands, token, &command)) {
     return;
   }
 
   USBCommandResult status = jarule::COMMAND_RESULT_OK;
-  if (pending_request.command != command) {
+  if (command->command != command_class) {
     status = jarule::COMMAND_RESULT_CLASS_MISMATCH;
   }
 
@@ -407,7 +403,8 @@ void JaRuleWidgetPort::HandleResponse(const uint8_t *data, unsigned int size) {
     payload.assign(data + MIN_RESPONSE_SIZE - 1, payload_size);
   }
   ScheduleCallback(
-      pending_request.callback, status, return_code, status_flags, payload);
+      command->callback, status, return_code, status_flags, payload);
+  delete command;
 }
 
 /*

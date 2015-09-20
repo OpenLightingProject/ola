@@ -130,23 +130,24 @@ class JaRuleWidgetPort {
      const ola::io::ByteString payload;
   } CallbackArgs;
 
-  // A command that is in the send queue.
-  typedef struct {
+  class PendingCommand {
+   public:
+    PendingCommand(jarule::CommandClass command,
+                   CommandCompleteCallback *callback,
+                   const ola::io::ByteString &payload)
+        : command(command),
+          callback(callback),
+          payload(payload) {
+    }
+
     jarule::CommandClass command;
     CommandCompleteCallback *callback;
     ola::io::ByteString payload;
-  } QueuedCommand;
-
-  // A command that has been sent, and is waiting on a response.
-  typedef struct {
-    jarule::CommandClass command;
-    CommandCompleteCallback *callback;
     // TODO(simon): we probably need a counter here to detect timeouts.
-  } PendingCommand;
+  };
 
-  // TODO(simon): merge the two of these and switch to a pointer.
-  typedef std::map<uint8_t, PendingCommand> PendingCommandMap;
-  typedef std::queue<QueuedCommand> CommandQueue;
+  typedef std::map<uint8_t, PendingCommand*> PendingCommandMap;
+  typedef std::queue<PendingCommand*> CommandQueue;
 
   ola::thread::ExecutorInterface* const m_executor;
   ola::plugin::usbdmx::LibUsbAdaptor* const m_adaptor;
@@ -162,7 +163,6 @@ class JaRuleWidgetPort {
   CommandQueue m_queued_commands;  // GUARDED_BY(m_mutex);
   PendingCommandMap m_pending_commands;  // GUARDED_BY(m_mutex);
 
-  uint8_t m_out_buffer[OUT_BUFFER_SIZE];  // GUARDED_BY(m_mutex);
   libusb_transfer *m_out_transfer;  // GUARDED_BY(m_mutex);
   bool m_out_in_progress;  // GUARDED_BY(m_mutex);
 
@@ -195,7 +195,6 @@ class JaRuleWidgetPort {
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleWidgetPort);
 };
-
 }  // namespace jarule
 }  // namespace usbdmx
 }  // namespace plugin
