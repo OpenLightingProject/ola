@@ -19,10 +19,10 @@
  */
 
 #include "plugins/usbdmx/JaRuleOutputPort.h"
-#include "ola/Logging.h"
 
 #include <string>
 
+#include "ola/Logging.h"
 #include "ola/strings/Format.h"
 #include "olad/Device.h"
 #include "plugins/usbdmx/JaRulePortHandle.h"

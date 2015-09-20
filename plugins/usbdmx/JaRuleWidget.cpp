@@ -23,9 +23,7 @@
 #include <ola/Callback.h>
 #include <ola/Constants.h>
 #include <ola/Logging.h>
-#include <ola/Logging.h>
 #include <ola/base/Array.h>
-#include <ola/stl/STLUtils.h>
 #include <ola/stl/STLUtils.h>
 #include <ola/strings/Format.h>
 #include <ola/thread/Mutex.h>
@@ -33,6 +31,8 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "plugins/usbdmx/JaRulePortHandle.h"
@@ -88,7 +88,7 @@ struct DiscoveredEndpoint {
 
 JaRuleWidget::PortInfo::~PortInfo() {
   delete handle;
-};
+}
 
 JaRuleWidget::JaRuleWidget(ola::thread::ExecutorInterface *executor,
                            AsyncronousLibUsbAdaptor *adaptor,
@@ -203,7 +203,6 @@ void JaRuleWidget::CancelAll(uint8_t port_id) {
         ++iter;
       }
     }
-
   }
 
   // Cancel all of the queued commands
@@ -584,7 +583,6 @@ void JaRuleWidget::HandleResponse(const uint8_t *data, unsigned int size) {
   if (payload_size) {
     payload.assign(data + MIN_RESPONSE_SIZE - 1, payload_size);
   }
-  OLA_INFO << "return_code is " << (int) return_code;
   ScheduleCallback(
       pending_request.callback, status, return_code, status_flags, payload);
 }
