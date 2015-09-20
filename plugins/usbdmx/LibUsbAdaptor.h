@@ -137,12 +137,13 @@ class LibUsbAdaptor {
   /**
    * @brief Wraps libusb_get_device_descriptor.
    * @param dev a device
-   * @param[out] The device descriptor.
+   * @param[out] descriptor The device descriptor.
    * @returns 0 on success
    * @returns another LIBUSB_ERROR code on error
    */
-  virtual int GetDeviceDescriptor(libusb_device *dev,
-                                  struct libusb_device_descriptor *desc) = 0;
+  virtual int GetDeviceDescriptor(
+      libusb_device *dev,
+      struct libusb_device_descriptor *descriptor) = 0;
 
   /**
    * @brief Wraps libusb_get_active_config_descriptor.
@@ -424,7 +425,7 @@ class BaseLibUsbAdaptor : public LibUsbAdaptor {
 
   // USB descriptors
   int GetDeviceDescriptor(libusb_device *dev,
-                          struct libusb_device_descriptor *desc);
+                          struct libusb_device_descriptor *descriptor);
 
   int GetActiveConfigDescriptor(
       libusb_device *dev,
