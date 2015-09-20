@@ -201,7 +201,8 @@ void SyncPluginImpl::ReScanForDevices() {
  * @param widget The widget that was added.
  * @param device The new olad device that uses this new widget.
  */
-bool SyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
+bool SyncPluginImpl::StartAndRegisterDevice(WidgetInterface *widget,
+                                            Device *device) {
   if (!device->Start()) {
     delete device;
     return false;

@@ -83,7 +83,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
 
  private:
   typedef std::vector<class WidgetFactory*> WidgetFactories;
-  typedef std::map<class Widget*, Device*> WidgetToDeviceMap;
+  typedef std::map<class WidgetInterface*, Device*> WidgetToDeviceMap;
 
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
@@ -100,7 +100,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   void ReScanForDevices();
   bool CheckDevice(libusb_device *device);
 
-  bool StartAndRegisterDevice(class Widget *widget, Device *device);
+  bool StartAndRegisterDevice(class WidgetInterface *widget, Device *device);
 
   DISALLOW_COPY_AND_ASSIGN(SyncPluginImpl);
 };
