@@ -18,14 +18,14 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/FirmwareLoader.h \
     plugins/usbdmx/Flags.cpp \
     plugins/usbdmx/JaRuleConstants.h \
-    plugins/usbdmx/JaRuleEndpoint.cpp \
-    plugins/usbdmx/JaRuleEndpoint.h \
     plugins/usbdmx/JaRuleFactory.cpp \
     plugins/usbdmx/JaRuleFactory.h \
+    plugins/usbdmx/JaRulePortHandle.cpp \
+    plugins/usbdmx/JaRulePortHandle.h \
+    plugins/usbdmx/JaRulePortHandleImpl.cpp \
+    plugins/usbdmx/JaRulePortHandleImpl.h \
     plugins/usbdmx/JaRuleWidget.cpp \
     plugins/usbdmx/JaRuleWidget.h \
-    plugins/usbdmx/JaRuleWidgetImpl.cpp \
-    plugins/usbdmx/JaRuleWidgetImpl.h \
     plugins/usbdmx/LibUsbAdaptor.cpp \
     plugins/usbdmx/LibUsbAdaptor.h \
     plugins/usbdmx/LibUsbThread.cpp \
