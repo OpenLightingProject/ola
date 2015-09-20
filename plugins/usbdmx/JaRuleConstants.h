@@ -21,17 +21,6 @@
 #ifndef PLUGINS_USBDMX_JARULECONSTANTS_H_
 #define PLUGINS_USBDMX_JARULECONSTANTS_H_
 
-#include <libusb.h>
-#include <ola/io/ByteString.h>
-#include <ola/thread/ExecutorInterface.h>
-#include <ola/thread/Mutex.h>
-#include <ola/util/SequenceNumber.h>
-
-#include <map>
-#include <queue>
-
-#include "plugins/usbdmx/LibUsbAdaptor.h"
-
 namespace ola {
 namespace plugin {
 namespace usbdmx {
@@ -102,7 +91,7 @@ typedef enum {
    * @brief Invalid port
    */
   COMMAND_RESULT_INVALID_PORT
-} CommandResult;
+} USBCommandResult;
 
 /**
  * @brief The Ja Rule command set.
