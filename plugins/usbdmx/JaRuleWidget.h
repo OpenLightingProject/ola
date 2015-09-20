@@ -191,11 +191,9 @@ class JaRuleWidget : public WidgetInterface {
   // TODO(simon): We should move to a model where we have separate queue for
   // each port, this will give us isolation and avoid problems like #155
   struct PortInfo {
-    PortInfo(uint8_t endpoint_number, jarule::JaRulePortHandle *handle)
-        : claimed(false), endpoint_number(endpoint_number), handle(handle) {}
-    ~PortInfo();
+    PortInfo(uint8_t endpoint_number)
+        : endpoint_number(endpoint_number), handle(NULL) {}
 
-    bool claimed;
     uint8_t endpoint_number;
     jarule::JaRulePortHandle *handle;
   };

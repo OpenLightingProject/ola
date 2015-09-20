@@ -76,19 +76,15 @@ void OutTransferCompleteHandler(struct libusb_transfer *transfer) {
       transfer->user_data);
   return widget->_OutTransferComplete();
 }
-}  // namespace
 
-struct DiscoveredEndpoint {
-  DiscoveredEndpoint() : in_supported(false), out_supported(false) {}
+struct EndpointCapabilties {
+  EndpointCapabilties() : in_supported(false), out_supported(false) {}
 
   bool in_supported;
   bool out_supported;
 };
 
-
-JaRuleWidget::PortInfo::~PortInfo() {
-  delete handle;
-}
+}  // namespace
 
 JaRuleWidget::JaRuleWidget(ola::thread::ExecutorInterface *executor,
                            AsyncronousLibUsbAdaptor *adaptor,
@@ -107,7 +103,9 @@ JaRuleWidget::JaRuleWidget(ola::thread::ExecutorInterface *executor,
 
 JaRuleWidget::~JaRuleWidget() {
   for (unsigned int i = 0; i < m_ports.size(); i++) {
-    if (m_ports[i]->claimed) {
+    if (m_ports[i]->handle) {
+      // This will trigger cancelation of any pending commands
+      delete m_ports[i]->handle;
       OLA_WARN << "Port " << i << " is still claimed!";
     }
   }
@@ -247,10 +245,11 @@ JaRulePortHandle* JaRuleWidget::ClaimPort(uint8_t port_index) {
     return NULL;
   }
   PortInfo *port_info = m_ports[port_index];
-  if (port_info->claimed) {
+  if (port_info->handle) {
     return NULL;
   }
-  port_info->claimed = true;
+
+  port_info->handle = new JaRulePortHandle(this, port_index);
   return port_info->handle;
 }
 
@@ -259,11 +258,12 @@ void JaRuleWidget::ReleasePort(uint8_t port_index) {
     return;
   }
   PortInfo *port_info = m_ports[port_index];
-  if (!port_info->claimed) {
+  if (!port_info->handle) {
     OLA_WARN << "Releasing unclaimed port: " << static_cast<int>(port_index);
   }
-  CancelAll(port_index);
-  port_info->claimed = false;
+
+  delete port_info->handle;
+  port_info->handle = NULL;
 }
 
 void JaRuleWidget::SendCommand(uint8_t port_index,
@@ -368,7 +368,7 @@ bool JaRuleWidget::InternalInit() {
   // Each endpoint address is 8 bits. Bit 7 is the endpoint direction (in/out).
   // The lower 4 bits are the endpoint number. We try to find bulk endpoints
   // with matching numbers.
-  typedef std::map<uint8_t, DiscoveredEndpoint> EndpointMap;
+  typedef std::map<uint8_t, EndpointCapabilties> EndpointMap;
   EndpointMap endpoint_map;
 
   for (uint8_t iface_index = 0; iface_index < config->bNumInterfaces;
@@ -411,15 +411,12 @@ bool JaRuleWidget::InternalInit() {
   m_adaptor->FreeConfigDescriptor(config);
 
   EndpointMap::const_iterator endpoint_iter = endpoint_map.begin();
-  uint8_t port_id = 0;
   for (; endpoint_iter != endpoint_map.end(); ++endpoint_iter) {
     if (endpoint_iter->second.in_supported &&
         endpoint_iter->second.out_supported) {
       OLA_INFO << "Found Ja Rule port at "
                << static_cast<int>(endpoint_iter->first);
-      m_ports.push_back(
-          new PortInfo(endpoint_iter->first,
-                       new JaRulePortHandle(this, port_id++)));
+      m_ports.push_back(new PortInfo(endpoint_iter->first));
     }
   }
 
