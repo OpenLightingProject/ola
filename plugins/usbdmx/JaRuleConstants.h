@@ -21,6 +21,8 @@
 #ifndef PLUGINS_USBDMX_JARULECONSTANTS_H_
 #define PLUGINS_USBDMX_JARULECONSTANTS_H_
 
+#include <ola/Callback.h>
+
 namespace ola {
 namespace plugin {
 namespace usbdmx {
@@ -117,6 +119,19 @@ typedef enum {
   GET_FLAGS = 0xf2,
   WRITE_LOG = 0xf3,
 } CommandClass;
+
+/**
+ * @brief A command completion callback.
+ * @tparam The result of the command operation
+ * @tparam The return code from the Ja Rule device.
+ * @tparam The status flags.
+ * @tparam The response payload.
+ *
+ * If the USBCommandResult is not COMMAND_COMPLETED_OK, the remaining values
+ * are undefined.
+ */
+typedef ola::BaseCallback4<void, jarule::USBCommandResult, uint8_t, uint8_t,
+                           const ola::io::ByteString&> CommandCompleteCallback;
 
 }  // namespace jarule
 }  // namespace usbdmx

@@ -35,9 +35,6 @@
 namespace ola {
 namespace plugin {
 namespace usbdmx {
-
-class JaRuleWidget;
-
 namespace jarule {
 
 /**
@@ -48,13 +45,20 @@ class JaRulePortHandle : public ola::rdm::DiscoverableRDMControllerInterface {
   /**
    * @brief Create a new Ja Rule Port Handle.
    */
-  JaRulePortHandle(JaRuleWidget *parent_widget, uint8_t port_id);
+  JaRulePortHandle(class JaRuleWidgetPort *parent_port,
+                   const ola::rdm::UID &uid,
+                   uint8_t physical_port);
 
   void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
+  /**
+   * @brief Send DMX data from this widget
+   * @param buffer The DmxBuffer containing the data to send.
+   * @returns true if the data was sent, false otherwise.
+   */
   bool SendDMX(const DmxBuffer &buffer);
 
   /**

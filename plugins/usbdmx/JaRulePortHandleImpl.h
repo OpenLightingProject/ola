@@ -22,6 +22,7 @@
 #define PLUGINS_USBDMX_JARULEPORTHANDLEIMPL_H_
 
 #include <ola/base/Macro.h>
+#include <ola/DmxBuffer.h>
 #include <ola/io/ByteString.h>
 #include <ola/rdm/DiscoveryAgent.h>
 #include <ola/rdm/QueueingRDMController.h>
@@ -31,7 +32,6 @@
 #include <ola/util/SequenceNumber.h>
 
 #include "plugins/usbdmx/JaRuleConstants.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -51,7 +51,9 @@ class JaRulePortHandleImpl
   /**
    * @brief Create a new JaRulePortHandleImpl.
    */
-  JaRulePortHandleImpl(JaRuleWidget *widget, uint8_t port_id);
+  JaRulePortHandleImpl(class JaRuleWidgetPort *parent_port,
+                       const ola::rdm::UID &uid,
+                       uint8_t physical_port);
 
   ~JaRulePortHandleImpl();
 
@@ -106,8 +108,9 @@ class JaRulePortHandleImpl
     uint16_t mark_end;  //!< The end of the mark.
   });
 
-  JaRuleWidget* const m_widget;  // not owned
-  const uint8_t m_port_id;
+  class JaRuleWidgetPort* const m_port;  // not owned
+  const ola::rdm::UID m_uid;
+  const uint8_t m_physical_port;
 
   bool m_in_shutdown;
 
@@ -115,7 +118,7 @@ class JaRulePortHandleImpl
   DmxBuffer m_dmx;
   bool m_dmx_in_progress;
   bool m_dmx_queued;
-  JaRuleWidget::CommandCompleteCallback *m_dmx_callback;
+  CommandCompleteCallback *m_dmx_callback;
 
   // RDM members
   ola::rdm::DiscoveryAgent m_discovery_agent;

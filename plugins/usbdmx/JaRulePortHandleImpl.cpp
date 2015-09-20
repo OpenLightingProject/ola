@@ -37,7 +37,7 @@
 #include <memory>
 #include <vector>
 
-#include "plugins/usbdmx/JaRuleWidget.h"
+#include "plugins/usbdmx/JaRuleWidgetPort.h"
 
 namespace ola {
 namespace plugin {
@@ -65,10 +65,12 @@ using ola::strings::ToHex;
 using std::auto_ptr;
 using std::vector;
 
-JaRulePortHandleImpl::JaRulePortHandleImpl(JaRuleWidget *widget,
-                                           uint8_t port_id)
-    : m_widget(widget),
-      m_port_id(port_id),
+JaRulePortHandleImpl::JaRulePortHandleImpl(JaRuleWidgetPort *parent_port,
+                                           const ola::rdm::UID &uid,
+                                           uint8_t physical_port)
+    : m_port(parent_port),
+      m_uid(uid),
+      m_physical_port(physical_port),
       m_in_shutdown(false),
       m_dmx_in_progress(false),
       m_dmx_queued(false),
@@ -79,7 +81,7 @@ JaRulePortHandleImpl::JaRulePortHandleImpl(JaRuleWidget *widget,
 JaRulePortHandleImpl::~JaRulePortHandleImpl() {
   m_in_shutdown = true;
   m_discovery_agent.Abort();
-  m_widget->CancelAll(m_port_id);
+  m_port->CancelAll();
   delete m_dmx_callback;
 }
 
@@ -100,8 +102,8 @@ void JaRulePortHandleImpl::RunIncrementalDiscovery(
 
 void JaRulePortHandleImpl::SendRDMRequest(RDMRequest *request,
                                           ola::rdm::RDMCallback *on_complete) {
-  request->SetSourceUID(m_widget->GetUID());
-  request->SetPortId(m_port_id + 1);
+  request->SetSourceUID(m_uid);
+  request->SetPortId(m_physical_port + 1);
   request->SetTransactionNumber(m_transaction_number.Next());
 
   ByteString frame;
@@ -111,8 +113,7 @@ void JaRulePortHandleImpl::SendRDMRequest(RDMRequest *request,
     return;
   }
 
-  m_widget->SendCommand(
-      m_port_id,
+  m_port->SendCommand(
       GetCommandFromRequest(request), frame.data(), frame.size(),
       NewSingleCallback(this, &JaRulePortHandleImpl::RDMComplete,
                         static_cast<const RDMRequest*>(request), on_complete));
@@ -121,14 +122,13 @@ void JaRulePortHandleImpl::SendRDMRequest(RDMRequest *request,
 void JaRulePortHandleImpl::MuteDevice(const UID &target,
                                       MuteDeviceCallback *mute_complete) {
   auto_ptr<RDMRequest> request(
-      ola::rdm::NewMuteRequest(m_widget->GetUID(), target,
+      ola::rdm::NewMuteRequest(m_uid, target,
                                m_transaction_number.Next(),
-                               m_port_id + 1));
+                               m_physical_port + 1));
 
   ByteString frame;
   RDMCommandSerializer::Pack(*request, &frame);
-  m_widget->SendCommand(
-      m_port_id,
+  m_port->SendCommand(
       RDM_REQUEST, frame.data(), frame.size(),
       NewSingleCallback(this, &JaRulePortHandleImpl::MuteDeviceComplete,
                         mute_complete));
@@ -136,14 +136,13 @@ void JaRulePortHandleImpl::MuteDevice(const UID &target,
 
 void JaRulePortHandleImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
   auto_ptr<RDMRequest> request(
-      ola::rdm::NewUnMuteRequest(m_widget->GetUID(), UID::AllDevices(),
+      ola::rdm::NewUnMuteRequest(m_uid, UID::AllDevices(),
                                  m_transaction_number.Next(),
-                                 m_port_id + 1));
+                                 m_physical_port + 1));
 
   ByteString frame;
   RDMCommandSerializer::Pack(*request, &frame);
-  m_widget->SendCommand(
-      m_port_id,
+  m_port->SendCommand(
       RDM_BROADCAST_REQUEST, frame.data(), frame.size(),
       NewSingleCallback(this, &JaRulePortHandleImpl::UnMuteDeviceComplete,
                         unmute_complete));
@@ -153,15 +152,14 @@ void JaRulePortHandleImpl::Branch(const UID &lower,
                                   const UID &upper,
                                   BranchCallback *branch_complete) {
   auto_ptr<RDMRequest> request(
-      ola::rdm::NewDiscoveryUniqueBranchRequest(m_widget->GetUID(), lower,
+      ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower,
                                                 upper,
                                                 m_transaction_number.Next()));
 
   ByteString frame;
   RDMCommandSerializer::Pack(*request, &frame);
   OLA_INFO << "Sending RDM DUB: " << lower << " - " << upper;
-  m_widget->SendCommand(
-      m_port_id,
+  m_port->SendCommand(
       RDM_DUB, frame.data(), frame.size(),
       NewSingleCallback(this, &JaRulePortHandleImpl::DUBComplete,
                         branch_complete));
@@ -173,7 +171,7 @@ bool JaRulePortHandleImpl::SendDMX(const DmxBuffer &buffer) {
     m_dmx_queued = true;
   } else {
     m_dmx_in_progress = true;
-    m_widget->SendCommand(m_port_id, TX_DMX, buffer.GetRaw(),
+    m_port->SendCommand(TX_DMX, buffer.GetRaw(),
                           buffer.Size(), m_dmx_callback);
   }
   return true;
@@ -181,7 +179,7 @@ bool JaRulePortHandleImpl::SendDMX(const DmxBuffer &buffer) {
 
 bool JaRulePortHandleImpl::SetPortMode(PortMode new_mode) {
   uint8_t port_mode = new_mode == RESPONDER_MODE ? 1 : 0;
-  m_widget->SendCommand(m_port_id, SET_MODE, &port_mode, sizeof(port_mode),
+  m_port->SendCommand(SET_MODE, &port_mode, sizeof(port_mode),
                         NULL);
   return true;
 }
@@ -203,7 +201,7 @@ void JaRulePortHandleImpl::DMXComplete(
   CheckStatusFlags(status_flags);
   // We ignore status and return_code, since DMX is streaming.
   if (m_dmx_queued && !m_in_shutdown) {
-    m_widget->SendCommand(m_port_id, TX_DMX, m_dmx.GetRaw(),
+    m_port->SendCommand(TX_DMX, m_dmx.GetRaw(),
                           m_dmx.Size(), m_dmx_callback);
     m_dmx_queued = false;
   } else {

@@ -35,9 +35,10 @@ namespace plugin {
 namespace usbdmx {
 namespace jarule {
 
-JaRulePortHandle::JaRulePortHandle(class JaRuleWidget *parent_widget,
-                                   uint8_t port_id)
-  : m_impl(new JaRulePortHandleImpl(parent_widget, port_id)),
+JaRulePortHandle::JaRulePortHandle(class JaRuleWidgetPort *parent_port,
+                                   const ola::rdm::UID &uid,
+                                   uint8_t physical_port)
+  : m_impl(new JaRulePortHandleImpl(parent_port, uid, physical_port)),
     m_queueing_controller(m_impl.get(), RDM_QUEUE_SIZE) {
 }
 

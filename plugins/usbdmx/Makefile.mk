@@ -26,6 +26,8 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/JaRulePortHandleImpl.h \
     plugins/usbdmx/JaRuleWidget.cpp \
     plugins/usbdmx/JaRuleWidget.h \
+    plugins/usbdmx/JaRuleWidgetPort.cpp \
+    plugins/usbdmx/JaRuleWidgetPort.h \
     plugins/usbdmx/LibUsbAdaptor.cpp \
     plugins/usbdmx/LibUsbAdaptor.h \
     plugins/usbdmx/LibUsbThread.cpp \
