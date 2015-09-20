@@ -41,7 +41,7 @@ namespace usbdmx {
 /**
  * @brief Represents a Ja Rule hardware widget.
  */
-class JaRuleWidget : public Widget,
+class JaRuleWidget : public WidgetInterface,
                      public ola::rdm::DiscoverableRDMControllerInterface {
  public:
   /**
