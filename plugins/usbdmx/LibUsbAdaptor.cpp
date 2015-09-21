@@ -183,7 +183,7 @@ int BaseLibUsbAdaptor::DetachKernelDriver(libusb_device_handle *dev,
     int r = libusb_detach_kernel_driver(dev, interface_number);
     if (r) {
       OLA_WARN << "libusb_detach_kernel_driver failed for: " << dev
-               << ": " << LibUsbAdaptor::ErrorCodeToString(r);;
+               << ", " << LibUsbAdaptor::ErrorCodeToString(r);;
     }
     return r;
   } else {
@@ -197,7 +197,7 @@ int BaseLibUsbAdaptor::GetActiveConfigDescriptor(
   int r = libusb_get_active_config_descriptor(dev, config);
   if (r) {
     OLA_WARN << "libusb_get_active_config_descriptor failed for: " << dev
-             << ": " << LibUsbAdaptor::ErrorCodeToString(r);;
+             << ", " << LibUsbAdaptor::ErrorCodeToString(r);;
   }
   return r;
 }
@@ -208,7 +208,7 @@ int BaseLibUsbAdaptor::GetDeviceDescriptor(
   int r = libusb_get_device_descriptor(dev, desc);
   if (r) {
     OLA_WARN << "libusb_get_device_descriptor failed for: " << dev
-             << ": " << LibUsbAdaptor::ErrorCodeToString(r);;
+             << ", " << LibUsbAdaptor::ErrorCodeToString(r);;
   }
   return r;
 }
@@ -220,7 +220,7 @@ int BaseLibUsbAdaptor::GetConfigDescriptor(
   int r = libusb_get_config_descriptor(dev, config_index, config);
   if (r) {
     OLA_WARN << "libusb_get_config_descriptor failed for: " << dev
-             << ": " << LibUsbAdaptor::ErrorCodeToString(r);;
+             << ", " << LibUsbAdaptor::ErrorCodeToString(r);;
   }
   return r;
 }
