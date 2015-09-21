@@ -7,7 +7,7 @@ License:        GPLv2 and LGPLv2
 URL:            https://github.com/OpenLightingProject/ola
 Source:         https://github.com/OpenLightingProject/ola/releases/download/%{version}/%{name}-%{version}.tar.gz
 BuildRoot:      %{_buildrootdir}/%{name}-%{version}-%{release}-root
-BuildRequires:  libmicrohttpd-devel,cppunit-devel,protobuf-devel,protobuf-compiler,protobuf-python,libftdi-devel,openslp-devel,uuid-devel,libtool,bison,flex,pkgconfig,gcc,gcc-c++,python-devel,avahi-devel
+BuildRequires:  libmicrohttpd-devel,cppunit-devel,protobuf-devel,protobuf-compiler,protobuf-python,libftdi-devel,openslp-devel,uuid-devel,libtool,bison,flex,pkgconfig,gcc,gcc-c++,python2-devel,avahi-devel
 
 %description
 The Open Lighting Architecture is a framework for lighting control information.
@@ -26,7 +26,7 @@ Summary:       C/C++ Development files for OLA
 The OLA C/C++ library
 
 %package -n python2-%{name}
-Requires:      ola = %{version}-%{release}, protobuf-python, python(abi) = 2.7
+Requires:      ola = %{version}-%{release}, protobuf-python
 Group:         Development/Libraries
 Summary:       Python Development files for OLA
 BuildArch:     noarch
