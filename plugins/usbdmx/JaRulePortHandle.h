@@ -64,7 +64,8 @@ class JaRulePortHandle : public ola::rdm::DiscoverableRDMControllerInterface {
   /**
    * @brief Change the mode of the port.
    *
-   * I need to think about how to return errors from this since it's async.
+   * @todo I need to think about how to return errors from this since it's
+   * async.
    */
   bool SetPortMode(PortMode new_mode);
 

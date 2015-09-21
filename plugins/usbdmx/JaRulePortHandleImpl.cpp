@@ -172,7 +172,7 @@ bool JaRulePortHandleImpl::SendDMX(const DmxBuffer &buffer) {
   } else {
     m_dmx_in_progress = true;
     m_port->SendCommand(TX_DMX, buffer.GetRaw(),
-                          buffer.Size(), m_dmx_callback);
+                        buffer.Size(), m_dmx_callback);
   }
   return true;
 }
