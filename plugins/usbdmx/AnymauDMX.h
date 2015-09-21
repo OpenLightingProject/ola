@@ -37,7 +37,7 @@ namespace usbdmx {
 /**
  * @brief The base class for Anyma Widgets.
  */
-class AnymauDMX: public BaseWidget {
+class AnymauDMX: public SimpleWidget {
  public:
   /**
    * @brief Create a new AnymauDMX.
@@ -46,7 +46,7 @@ class AnymauDMX: public BaseWidget {
    */
   AnymauDMX(LibUsbAdaptor *adaptor,
             const std::string &serial)
-      : BaseWidget(adaptor),
+      : SimpleWidget(adaptor),
         m_serial(serial) {}
 
   virtual ~AnymauDMX() {}

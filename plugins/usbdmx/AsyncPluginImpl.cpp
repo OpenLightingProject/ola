@@ -320,7 +320,8 @@ void AsyncPluginImpl::USBDeviceRemoved(libusb_device *usb_device) {
  *
  * This is run within the main thread.
  */
-bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
+bool AsyncPluginImpl::StartAndRegisterDevice(WidgetInterface *widget,
+                                             Device *device) {
   if (!device->Start()) {
     delete device;
     return false;
@@ -342,7 +343,7 @@ bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
  *
  * This is run within the main thread.
  */
-void AsyncPluginImpl::RemoveWidget(Widget *widget) {
+void AsyncPluginImpl::RemoveWidget(WidgetInterface *widget) {
   Device *device = STLLookupAndRemovePtr(&m_widget_device_map, widget);
   if (device) {
     m_plugin_adaptor->UnregisterDevice(device);

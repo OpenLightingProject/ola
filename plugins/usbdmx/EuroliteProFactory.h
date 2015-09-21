@@ -32,8 +32,7 @@ namespace usbdmx {
 /**
  * @brief Creates EurolitePro widgets.
  */
-class EuroliteProFactory
-    : public BaseWidgetFactory<class EurolitePro> {
+class EuroliteProFactory : public BaseWidgetFactory<class EurolitePro> {
  public:
   explicit EuroliteProFactory(class LibUsbAdaptor *adaptor)
       : m_adaptor(adaptor) {}

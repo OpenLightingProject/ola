@@ -47,14 +47,14 @@ class GenericOutputPort: public BasicOutputPort {
    */
   GenericOutputPort(Device *parent,
                     unsigned int id,
-                    class Widget *widget);
+                    class SimpleWidgetInterface *widget);
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
   std::string Description() const { return ""; }
 
  private:
-  class Widget* const m_widget;
+  class SimpleWidgetInterface* const m_widget;
 
   DISALLOW_COPY_AND_ASSIGN(GenericOutputPort);
 };
