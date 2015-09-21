@@ -38,6 +38,7 @@ The OLA python library
 %package rdm-tests
 Requires:      ola = %{version}-%{release}, python2-%{name}
 Group:         Development/Libraries
+BuildArch:     noarch
 Summary:       RDM test suite using OLA and python
 
 %description rdm-tests
@@ -113,5 +114,5 @@ rm -rf %buildroot
 * Mon May 12 2008 Kevin Deldycke <kev@coolcavemen.com> 0.2.3.200710210908-1mdv2008.1
 - Ported from Fedora Core 8 ( http://rpms.netmindz.net/FC8/SRPMS.netmindz/lla-0.2.3.200710210908-1.fc8.src.rpm ) to Mandriva 2008.1
 * Sun Apr 29 2007 Will Tatam <will@netmindz.net> 0.1.3-1
-- Fist Build
+- First Build
 
