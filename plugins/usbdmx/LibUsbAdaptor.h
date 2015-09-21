@@ -186,6 +186,7 @@ class LibUsbAdaptor {
    * @param usb_handle The USB device handle
    * @param descriptor_index The index of the string descriptor to fetch.
    * @param[out] data The value of the string descriptor.
+   * @returns true if the string descriptor was retrieved, false otherwise.
    */
   virtual bool GetStringDescriptor(libusb_device_handle *usb_handle,
                                    uint8_t descriptor_index,
