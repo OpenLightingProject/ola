@@ -26,7 +26,6 @@ from ola.testing.rdm import ResponderTest
 from ola.RDMAPI import RDMAPI
 from ola.OlaClient import OlaClient, RDMNack
 from ola import PidStore
-from ola.testing.rdm.TestState import TestState
 
 
 class Error(Exception):
@@ -207,10 +206,11 @@ def GetTestClasses(module):
       classes.append(cls)
   return classes
 
+
 class TestRunner(object):
   """The Test Runner executes the tests."""
   def __init__(self, universe, uid, broadcast_write_delay, inter_test_delay,
-               pid_store, wrapper, timestamp = False):
+               pid_store, wrapper, timestamp=False):
     """Create a new TestRunner.
 
     Args:
@@ -328,7 +328,7 @@ class TestRunner(object):
 
       test.Run()
 
-      #Use inter_test_delay on all but the last test
+      # Use inter_test_delay on all but the last test
       if test != tests[-1]:
         time.sleep(self._inter_test_delay / 1000.0)
 
@@ -353,7 +353,7 @@ class TestRunner(object):
     return deps_map
 
   def _AddTest(self, device, class_name_to_object, deps_map, test_class,
-               parents = []):
+               parents=[]):
     """Add a test class, recursively adding all REQUIRES.
        This also checks for circular dependencies.
 
