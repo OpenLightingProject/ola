@@ -17,6 +17,7 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/EuroliteProFactory.h \
     plugins/usbdmx/FirmwareLoader.h \
     plugins/usbdmx/Flags.cpp \
+    plugins/usbdmx/JaRuleConstants.h \
     plugins/usbdmx/JaRuleEndpoint.cpp \
     plugins/usbdmx/JaRuleEndpoint.h \
     plugins/usbdmx/JaRuleFactory.cpp \
