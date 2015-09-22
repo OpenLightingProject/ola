@@ -22,62 +22,154 @@
 #define PLUGINS_USBDMX_JARULEWIDGET_H_
 
 #include <libusb.h>
+#include <stdint.h>
 
-#include <ola/io/SelectServerInterface.h>
-#include <ola/rdm/QueueingRDMController.h>
-#include <ola/rdm/RDMCommand.h>
-#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/io/ByteString.h>
 #include <ola/rdm/UID.h>
+#include <ola/thread/ExecutorInterface.h>
 
-#include <memory>
+#include <string>
+#include <vector>
 
 #include "plugins/usbdmx/LibUsbAdaptor.h"
+#include "plugins/usbdmx/JaRuleConstants.h"
 #include "plugins/usbdmx/Widget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+namespace jarule {
+class JaRulePortHandle;
+class JaRuleWidgetPort;
+}  // namespace jarule
+
 /**
- * @brief Represents a Ja Rule hardware widget.
+ * @brief A Ja Rule hardware device (widget).
+ *
+ * Ja Rule devices may have more than one DMX/RDM port.
+ *
+ * This class provides two ways to control the ports on the device:
+ *  - The low level SendCommand() method, which sends a single request and
+ *    invokes a callback when the response is received.
+ *  - The high level API where the port is accessed via a JaRulePortHandle.
+ *    Since the JaRulePortHandle implements the
+ *    ola::rdm::DiscoverableRDMControllerInterface, the usual RDM methods can
+ *    be used.
+ *
+ * To obtain a JaRulePortHandle, call ClaimPort(), when you're finished with
+ * the JaRulePortHandle you must call ReleasePort().
  */
-class JaRuleWidget : public WidgetInterface,
-                     public ola::rdm::DiscoverableRDMControllerInterface {
+class JaRuleWidget : public WidgetInterface {
  public:
   /**
    * @brief Create a new Ja Rule widget.
-   * @param ss The SelectServer to run the RDM callbacks on.
+   * @param executor The Executor to run the callbacks on.
    * @param adaptor The LibUsbAdaptor to use.
-   * @param device the libusb_device for the Ja Rule widget.
-   * @param controller_uid The UID of the controller. This is used for DUB &
-   *   Mute / Unmute messages.
-   *
-   * TODO(simon): Can we instead read the UID from the hardware device itself?
+   * @param usb_device the libusb_device for the Ja Rule widget.
    */
-  JaRuleWidget(ola::io::SelectServerInterface *ss,
+  JaRuleWidget(ola::thread::ExecutorInterface *executor,
                AsyncronousLibUsbAdaptor *adaptor,
-               libusb_device *device,
-               const ola::rdm::UID &controller_uid);
-
-  bool Init();
-
-  void SendRDMRequest(ola::rdm::RDMRequest *request,
-                      ola::rdm::RDMCallback *on_complete);
-  void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-  void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-
-  bool SendDMX(const DmxBuffer &buffer);
+               libusb_device *usb_device);
 
   /**
-   * @brief Send a reset message to the hardware widget.
+   * @brief Destructor
    */
-  void ResetDevice();
+  ~JaRuleWidget();
+
+  /**
+   * @brief Initialize the Ja Rule widget.
+   * @returns true if the USB device was opened and claimed correctly, false
+   *   otherwise.
+   */
+  bool Init();
+
+  /**
+   * @brief Cancel all queued and inflight commands.
+   * @param port_id The port id of the commands to cancel
+   *
+   * This will immediately run all CommandCompleteCallbacks with the
+   * COMMAND_CANCELLED code.
+   */
+  void CancelAll(uint8_t port_id);
+
+  /**
+   * @brief The number of ports on the widget.
+   * @pre Init() has been called and returned true;
+   * @returns The number of ports.
+   *
+   * Ports are numbered consecutively from 0.
+   */
+  uint8_t PortCount() const;
+
+  /**
+   * @brief The UID of the widget.
+   * @pre Init() has been called and returned true;
+   * @returns The UID for the device.
+   */
+  ola::rdm::UID GetUID() const;
+
+  /**
+   * @brief Get the manufacturer string.
+   * @pre Init() has been called and returned true;
+   * @returns The manufacturer string.
+   */
+  std::string ManufacturerString() const;
+
+  /**
+   * @brief Get the product string.
+   * @pre Init() has been called and returned true;
+   * @returns The product string.
+   */
+  std::string ProductString() const;
+
+  /**
+   * @brief Claim a handle to a port.
+   * @param port_index The port to claim.
+   * @returns a port handle, ownership is not transferred. Will return NULL if
+   *   the port id is invalid, or already claimed.
+   */
+  jarule::JaRulePortHandle* ClaimPort(uint8_t port_index);
+
+  /**
+   * @brief Release a handle to a port.
+   * @param port_index The port to claim
+   * @returns a port handle, ownership is not transferred.
+   */
+  void ReleasePort(uint8_t port_index);
+
+  /**
+   * @brief The low level API to send a command to the widget.
+   * @param port_index The port on which to send the command.
+   * @param command the Command type.
+   * @param data the payload data. The data is copied and can be freed once the
+   *   method returns.
+   * @param size the payload size.
+   * @param callback The callback to run when the command completes.
+   * This may be run immediately in some conditions.
+   *
+   * SendCommand() can be called from any thread, and messages will be queued.
+   */
+  void SendCommand(uint8_t port_index, jarule::CommandClass command,
+                   const uint8_t *data, unsigned int size,
+                   jarule::CommandCompleteCallback *callback);
 
  private:
-  std::auto_ptr<class JaRuleWidgetImpl> m_widget_impl;
-  ola::rdm::DiscoverableQueueingRDMController m_queueing_controller;
+  typedef std::vector<jarule::JaRuleWidgetPort*> PortHandles;
 
-  static const unsigned int RDM_QUEUE_SIZE = 50;
+  ola::thread::ExecutorInterface *m_executor;
+  LibUsbAdaptor *m_adaptor;
+  libusb_device *m_device;
+  libusb_device_handle *m_usb_handle;
+  ola::rdm::UID m_uid;  // The UID of the device, or 0000:00000000 if unset
+  std::string m_manufacturer;
+  std::string m_product;
+  PortHandles m_ports;  // The list of port handles.
+
+  bool InternalInit();
+
+  static const uint8_t SUBCLASS_VALUE = 0xff;
+  static const uint8_t PROTOCOL_VALUE = 0xff;
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleWidget);
 };

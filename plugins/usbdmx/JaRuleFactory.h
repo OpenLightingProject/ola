@@ -38,20 +38,16 @@ class JaRuleFactory : public BaseWidgetFactory<class JaRuleWidget> {
   explicit JaRuleFactory(ola::io::SelectServerInterface *ss,
                          class AsyncronousLibUsbAdaptor *adaptor)
       : m_ss(ss),
-        m_adaptor(adaptor),
-        // TODO(simon): Read this from the device.
-        m_uid(0x7a70, 0xfffffe00) {
+        m_adaptor(adaptor) {
   }
 
-  bool DeviceAdded(
-      WidgetObserver *observer,
-      libusb_device *usb_device,
-      const struct libusb_device_descriptor &descriptor);
+  bool DeviceAdded(WidgetObserver *observer,
+                   libusb_device *usb_device,
+                   const struct libusb_device_descriptor &descriptor);
 
  private:
   ola::io::SelectServerInterface *m_ss;
   class AsyncronousLibUsbAdaptor *m_adaptor;
-  const ola::rdm::UID m_uid;
 
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;

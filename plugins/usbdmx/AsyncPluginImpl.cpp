@@ -212,9 +212,10 @@ bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {
 }
 
 bool AsyncPluginImpl::NewWidget(class JaRuleWidget *widget) {
-  return StartAndRegisterDevice(
-      widget,
-      new JaRuleDevice(m_plugin, widget, "Ja Rule USB Device", "0"));
+  std::ostringstream str;
+  str << widget->ProductString() << " (" << widget->GetUID() << ")";
+  return StartAndRegisterDevice(widget,
+                                new JaRuleDevice(m_plugin, widget, str.str()));
 }
 
 bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
