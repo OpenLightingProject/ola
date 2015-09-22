@@ -152,8 +152,7 @@ void JaRulePortHandleImpl::Branch(const UID &lower,
                                   const UID &upper,
                                   BranchCallback *branch_complete) {
   auto_ptr<RDMRequest> request(
-      ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower,
-                                                upper,
+      ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower, upper,
                                                 m_transaction_number.Next()));
 
   ByteString frame;
@@ -171,16 +170,14 @@ bool JaRulePortHandleImpl::SendDMX(const DmxBuffer &buffer) {
     m_dmx_queued = true;
   } else {
     m_dmx_in_progress = true;
-    m_port->SendCommand(TX_DMX, buffer.GetRaw(),
-                        buffer.Size(), m_dmx_callback);
+    m_port->SendCommand(TX_DMX, buffer.GetRaw(), buffer.Size(), m_dmx_callback);
   }
   return true;
 }
 
 bool JaRulePortHandleImpl::SetPortMode(PortMode new_mode) {
-  uint8_t port_mode = new_mode == RESPONDER_MODE ? 1 : 0;
-  m_port->SendCommand(SET_MODE, &port_mode, sizeof(port_mode),
-                        NULL);
+  uint8_t port_mode = new_mode;
+  m_port->SendCommand(SET_MODE, &port_mode, sizeof(port_mode), NULL);
   return true;
 }
 
@@ -201,8 +198,7 @@ void JaRulePortHandleImpl::DMXComplete(
   CheckStatusFlags(status_flags);
   // We ignore status and return_code, since DMX is streaming.
   if (m_dmx_queued && !m_in_shutdown) {
-    m_port->SendCommand(TX_DMX, m_dmx.GetRaw(),
-                          m_dmx.Size(), m_dmx_callback);
+    m_port->SendCommand(TX_DMX, m_dmx.GetRaw(), m_dmx.Size(), m_dmx_callback);
     m_dmx_queued = false;
   } else {
     m_dmx_in_progress = false;
@@ -233,7 +229,7 @@ void JaRulePortHandleImpl::MuteDeviceComplete(
         response->CommandClass() == RDMCommand::DISCOVER_COMMAND_RESPONSE &&
         response->ResponseType() == rdm::RDM_ACK);
   } else {
-    OLA_INFO << "mute failed!";
+    OLA_INFO << "Mute failed!";
   }
   mute_complete->Run(muted_ok);
 }

@@ -161,8 +161,6 @@ bool JaRuleWidget::InternalInit() {
   struct libusb_config_descriptor *config;
   int error = m_adaptor->GetActiveConfigDescriptor(m_device, &config);
   if (error) {
-    OLA_WARN << "Failed to get active config descriptor for Ja Rule device: "
-             << m_adaptor->ErrorCodeToString(error);
     return false;
   }
 
@@ -182,8 +180,8 @@ bool JaRuleWidget::InternalInit() {
     const struct libusb_interface_descriptor &iface_descriptor =
         iface.altsetting[0];
     if (iface_descriptor.bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
-        iface_descriptor.bInterfaceSubClass == 0xff &&
-        iface_descriptor.bInterfaceProtocol == 0xff) {
+        iface_descriptor.bInterfaceSubClass == SUBCLASS_VALUE &&
+        iface_descriptor.bInterfaceProtocol == PROTOCOL_VALUE) {
       // Vendor class, subclass & protocol
       for (uint8_t endpoint_index = 0; endpoint_index <
            iface_descriptor.bNumEndpoints; endpoint_index++) {
@@ -254,7 +252,7 @@ bool JaRuleWidget::InternalInit() {
   }
 
   auto_ptr<UID> uid(UID::FromString(device_info.serial));
-  if (!uid.get()) {
+  if (!uid.get() || uid->IsBroadcast()) {
     OLA_WARN << "Invalid JaRule serial number: " << device_info.serial;
     return false;
   }

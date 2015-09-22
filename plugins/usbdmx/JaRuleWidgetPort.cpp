@@ -165,7 +165,7 @@ void JaRuleWidgetPort::CancelAll() {
   while (!queued_commands.empty()) {
     auto_ptr<PendingCommand> command(queued_commands.front());
     if (command->callback) {
-      command->callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
+      command->callback->Run(jarule::COMMAND_RESULT_CANCELLED, 0, 0,
                              ByteString());
     }
     queued_commands.pop();
@@ -174,7 +174,7 @@ void JaRuleWidgetPort::CancelAll() {
   PendingCommandMap::iterator iter = pending_commands.begin();
   for (; iter != pending_commands.end(); ++iter) {
     if (iter->second->callback) {
-      iter->second->callback->Run(jarule::COMMAND_RESULT_TIMEOUT, 0, 0,
+      iter->second->callback->Run(jarule::COMMAND_RESULT_CANCELLED, 0, 0,
                                   ByteString());
       delete iter->second;
     }
@@ -249,10 +249,10 @@ void JaRuleWidgetPort::SendCommand(
 
 void JaRuleWidgetPort::_OutTransferComplete() {
   OLA_DEBUG << "Out Command status is "
-           << LibUsbAdaptor::ErrorCodeToString(m_in_transfer->status);
+            << LibUsbAdaptor::ErrorCodeToString(m_in_transfer->status);
   if (m_out_transfer->status == LIBUSB_TRANSFER_COMPLETED) {
     if (m_out_transfer->actual_length != m_out_transfer->length) {
-      // TODO(simon): decide what to do here
+      // TODO(simon): Decide what to do here
       OLA_WARN << "Only sent " << m_out_transfer->actual_length << " / "
                << m_out_transfer->length << " bytes";
     }
@@ -315,8 +315,8 @@ void JaRuleWidgetPort::MaybeSendCommand() {
       PendingCommandMap::value_type(token, command));
   if (!p.second) {
     // We had an old entry, time it out.
-    ScheduleCallback(p.first->second->callback, jarule::COMMAND_RESULT_TIMEOUT,
-                     0, 0, ByteString());
+    ScheduleCallback(p.first->second->callback,
+                     jarule::COMMAND_RESULT_CANCELLED, 0, 0, ByteString());
     delete p.first->second;
     p.first->second = command;
   }

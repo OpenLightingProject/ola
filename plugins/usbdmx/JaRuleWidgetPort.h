@@ -93,10 +93,10 @@ class JaRuleWidgetPort {
    * @param data the payload data. The data is copied and can be freed once the
    *   method returns.
    * @param size the payload size.
-   * @param callback The callback to run when the message operation completes.
+   * @param callback The callback to run when the command completes.
    * This may be run immediately in some conditions.
    *
-   * SendMessage can be called from any thread, and messages will be queued.
+   * SendCommand() can be called from any thread, and messages will be queued.
    */
   void SendCommand(jarule::CommandClass command,
                    const uint8_t *data,
@@ -143,7 +143,7 @@ class JaRuleWidgetPort {
     jarule::CommandClass command;
     CommandCompleteCallback *callback;
     ola::io::ByteString payload;
-    // TODO(simon): we probably need a counter here to detect timeouts.
+    // TODO(simon): We probably need a counter here to detect timeouts.
   };
 
   typedef std::map<uint8_t, PendingCommand*> PendingCommandMap;

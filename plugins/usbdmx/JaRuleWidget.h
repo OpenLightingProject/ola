@@ -94,8 +94,8 @@ class JaRuleWidget : public WidgetInterface {
   void CancelAll(uint8_t port_id);
 
   /**
-   * @brief The number of ports on the widget, valid after Init() has returned
-   *   true.
+   * @brief The number of ports on the widget.
+   * @pre Init() has been called and returned true;
    * @returns The number of ports.
    *
    * Ports are numbered consecutively from 0.
@@ -103,24 +103,23 @@ class JaRuleWidget : public WidgetInterface {
   uint8_t PortCount() const;
 
   /**
-   * @brief The UID of the widget, valid after Init() has returned true.
+   * @brief The UID of the widget.
+   * @pre Init() has been called and returned true;
    * @returns The UID for the device.
    */
   ola::rdm::UID GetUID() const;
 
   /**
    * @brief Get the manufacturer string.
+   * @pre Init() has been called and returned true;
    * @returns The manufacturer string.
-   *
-   * The return value is only valid after Init() has returned.
    */
   std::string ManufacturerString() const;
 
   /**
    * @brief Get the product string.
+   * @pre Init() has been called and returned true;
    * @returns The product string.
-   *
-   * The return value is only valid after Init() has returned.
    */
   std::string ProductString() const;
 
@@ -146,10 +145,10 @@ class JaRuleWidget : public WidgetInterface {
    * @param data the payload data. The data is copied and can be freed once the
    *   method returns.
    * @param size the payload size.
-   * @param callback The callback to run when the message operation completes.
+   * @param callback The callback to run when the command completes.
    * This may be run immediately in some conditions.
    *
-   * SendMessage can be called from any thread, and messages will be queued.
+   * SendCommand() can be called from any thread, and messages will be queued.
    */
   void SendCommand(uint8_t port_index, jarule::CommandClass command,
                    const uint8_t *data, unsigned int size,
@@ -168,6 +167,9 @@ class JaRuleWidget : public WidgetInterface {
   PortHandles m_ports;  // The list of port handles.
 
   bool InternalInit();
+
+  static const uint8_t SUBCLASS_VALUE = 0xff;
+  static const uint8_t PROTOCOL_VALUE = 0xff;
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleWidget);
 };
