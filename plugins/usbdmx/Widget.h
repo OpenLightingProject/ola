@@ -78,6 +78,7 @@ class SimpleWidget : public SimpleWidgetInterface {
   /**
    * @brief Create a new SimpleWidget.
    * @param adaptor the LibUsbAdaptor to use.
+   * @param usb_device The libusb_device for this widget.
    */
   explicit SimpleWidget(ola::usb::LibUsbAdaptor *adaptor,
                         libusb_device *usb_device)
