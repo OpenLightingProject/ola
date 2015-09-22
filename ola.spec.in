@@ -1,5 +1,5 @@
 Name:           ola
-Version:        0.9.7
+Version:        @VERSION@
 Release:        1
 Summary:        Open Lighting Architecture
 Group:          Applications/Multimedia
@@ -115,4 +115,3 @@ rm -rf %buildroot
 - Ported from Fedora Core 8 ( http://rpms.netmindz.net/FC8/SRPMS.netmindz/lla-0.2.3.200710210908-1.fc8.src.rpm ) to Mandriva 2008.1
 * Sun Apr 29 2007 Will Tatam <will@netmindz.net> 0.1.3-1
 - First Build
-

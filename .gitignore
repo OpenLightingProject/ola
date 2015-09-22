@@ -160,6 +160,7 @@ include/ola/timecode/TimeCodeEnums.h
 java/src/main/java/ola/rpc/Rpc.java
 javascript/compiler.jar
 javascript/trunk/
+ola.spec
 olad/olad
 olad/olad.exe
 olad/ola-output.conf
