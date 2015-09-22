@@ -32,15 +32,16 @@
 #include "ola/strings/Format.h"
 #include "olad/PluginAdaptor.h"
 
+#include "libs/usb/JaRuleWidget.h"
+#include "libs/usb/LibUsbAdaptor.h"
+#include "libs/usb/LibUsbThread.h"
+
 #include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/AnymauDMXFactory.h"
 #include "plugins/usbdmx/EuroliteProFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/JaRuleDevice.h"
 #include "plugins/usbdmx/JaRuleFactory.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
-#include "plugins/usbdmx/LibUsbThread.h"
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/SunliteFactory.h"
@@ -50,6 +51,10 @@
 namespace ola {
 namespace plugin {
 namespace usbdmx {
+
+using ola::usb::USBDeviceID;
+using ola::usb::JaRuleWidget;
+using ola::strings::IntToString;
 
 namespace {
 
@@ -101,7 +106,7 @@ bool AsyncPluginImpl::Start() {
   OLA_INFO << "HotplugSupported returned " << m_use_hotplug;
   if (m_use_hotplug) {
 #ifdef HAVE_LIBUSB_HOTPLUG_API
-    m_usb_thread.reset(new LibUsbHotplugThread(
+    m_usb_thread.reset(new ola::usb::LibUsbHotplugThread(
           m_context, hotplug_callback, this));
 #else
     OLA_FATAL << "Mismatch between m_use_hotplug and "
@@ -109,9 +114,10 @@ bool AsyncPluginImpl::Start() {
     return false;
 #endif
   } else {
-    m_usb_thread.reset(new LibUsbSimpleThread(m_context));
+    m_usb_thread.reset(new ola::usb::LibUsbSimpleThread(m_context));
   }
-  m_usb_adaptor.reset(new AsyncronousLibUsbAdaptor(m_usb_thread.get()));
+  m_usb_adaptor.reset(
+      new ola::usb::AsyncronousLibUsbAdaptor(m_usb_thread.get()));
 
   // Setup the factories.
   m_widget_factories.push_back(new AnymauDMXFactory(m_usb_adaptor.get()));
@@ -162,11 +168,14 @@ bool AsyncPluginImpl::Stop() {
     m_suppress_hotplug_events = true;
   }
 
-  USBDeviceToFactoryMap::iterator iter = m_device_factory_map.begin();
-  for (; iter != m_device_factory_map.end(); ++iter) {
-    iter->second->DeviceRemoved(this, iter->first);
+  USBDeviceMap::iterator iter = m_device_map.begin();
+  for (; iter != m_device_map.end(); ++iter) {
+    if (iter->second->factory) {
+      iter->second->factory->DeviceRemoved(this, iter->second->usb_device);
+      iter->second->factory = NULL;
+    }
   }
-  m_device_factory_map.clear();
+  STLDeleteValues(&m_device_map);
 
   m_usb_thread->Shutdown();
 
@@ -192,35 +201,41 @@ void AsyncPluginImpl::HotPlugEvent(struct libusb_device *usb_device,
   if (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED) {
     USBDeviceAdded(usb_device);
   } else if (event == LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT) {
-    USBDeviceRemoved(usb_device);
+    USBDeviceID device_id = m_usb_adaptor->GetDeviceId(usb_device);
+    DeviceState *state = STLFindOrNull(m_device_map, device_id);
+    if (state && state->factory) {
+      state->factory->DeviceRemoved(&m_widget_observer, state->usb_device);
+      state->factory = NULL;
+    }
+    STLRemoveAndDelete(&m_device_map, device_id);
   }
 }
 #endif
 
 bool AsyncPluginImpl::NewWidget(AnymauDMX *widget) {
   return StartAndRegisterDevice(
-      widget,
+      widget->GetDeviceId(),
       new GenericDevice(m_plugin, widget, "Anyma USB Device",
                         "anyma-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {
   return StartAndRegisterDevice(
-      widget,
+      widget->GetDeviceId(),
       new GenericDevice(m_plugin, widget, "EurolitePro USB Device",
                         "eurolite-" + widget->SerialNumber()));
 }
 
-bool AsyncPluginImpl::NewWidget(class JaRuleWidget *widget) {
+bool AsyncPluginImpl::NewWidget(JaRuleWidget *widget) {
   std::ostringstream str;
   str << widget->ProductString() << " (" << widget->GetUID() << ")";
-  return StartAndRegisterDevice(widget,
+  return StartAndRegisterDevice(widget->GetDeviceId(),
                                 new JaRuleDevice(m_plugin, widget, str.str()));
 }
 
 bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
   return StartAndRegisterDevice(
-      widget,
+      widget->GetDeviceId(),
       new GenericDevice(
           m_plugin, widget,
           "Fadecandy USB Device (" + widget->SerialNumber() + ")",
@@ -229,38 +244,38 @@ bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
 
 bool AsyncPluginImpl::NewWidget(Sunlite *widget) {
   return StartAndRegisterDevice(
-      widget,
+      widget->GetDeviceId(),
       new GenericDevice(m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2"));
 }
 
 bool AsyncPluginImpl::NewWidget(VellemanK8062 *widget) {
   return StartAndRegisterDevice(
-      widget,
+      widget->GetDeviceId(),
       new GenericDevice(m_plugin, widget, "Velleman USB Device", "velleman"));
 }
 
 void AsyncPluginImpl::WidgetRemoved(AnymauDMX *widget) {
-  RemoveWidget(widget);
+  RemoveWidget(widget->GetDeviceId());
 }
 
 void AsyncPluginImpl::WidgetRemoved(EurolitePro *widget) {
-  RemoveWidget(widget);
+  RemoveWidget(widget->GetDeviceId());
 }
 
 void AsyncPluginImpl::WidgetRemoved(JaRuleWidget *widget) {
-  RemoveWidget(widget);
+  RemoveWidget(widget->GetDeviceId());
 }
 
 void AsyncPluginImpl::WidgetRemoved(ScanlimeFadecandy *widget) {
-  RemoveWidget(widget);
+  RemoveWidget(widget->GetDeviceId());
 }
 
 void AsyncPluginImpl::WidgetRemoved(Sunlite *widget) {
-  RemoveWidget(widget);
+  RemoveWidget(widget->GetDeviceId());
 }
 
 void AsyncPluginImpl::WidgetRemoved(VellemanK8062 *widget) {
-  RemoveWidget(widget);
+  RemoveWidget(widget->GetDeviceId());
 }
 
 /**
@@ -279,10 +294,26 @@ bool AsyncPluginImpl::HotplugSupported() {
 /**
  * @brief Signal a new USB device has been added.
  *
+ * This can be called more than once for a given device, in this case we'll
+ * avoid calling the factories twice.
+ *
  * This can be called from either the libusb thread or the main thread. However
  * only one of those will be active at once, so we can avoid locking.
  */
-bool AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
+void AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
+  USBDeviceID device_id = m_usb_adaptor->GetDeviceId(usb_device);
+  USBDeviceMap::iterator iter = STLLookupOrInsertNew(&m_device_map, device_id);
+
+  DeviceState *state = iter->second;
+  if (!state->usb_device) {
+    state->usb_device = usb_device;
+  }
+
+  if (state->factory) {
+    // Already claimed
+    return;
+  }
+
   struct libusb_device_descriptor descriptor;
   libusb_get_device_descriptor(usb_device, &descriptor);
 
@@ -290,66 +321,63 @@ bool AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
             << strings::ToHex(descriptor.idVendor) << ", product "
             << strings::ToHex(descriptor.idProduct);
 
-  WidgetFactories::iterator iter = m_widget_factories.begin();
-  for (; iter != m_widget_factories.end(); ++iter) {
-    if ((*iter)->DeviceAdded(&m_widget_observer, usb_device, descriptor)) {
-      STLReplacePtr(&m_device_factory_map, usb_device, *iter);
-      return true;
+  WidgetFactories::iterator factory_iter = m_widget_factories.begin();
+  for (; factory_iter != m_widget_factories.end(); ++factory_iter) {
+    if ((*factory_iter)->DeviceAdded(&m_widget_observer, usb_device,
+                                     descriptor)) {
+      state->factory = *factory_iter;
+      return;
     }
-  }
-  return false;
-}
-
-/**
- * @brief Signal a USB device has been removed.
- *
- * This can be called from either the libusb thread or the main thread. However
- * only one of those will be active at once, so we can avoid locking.
- */
-void AsyncPluginImpl::USBDeviceRemoved(libusb_device *usb_device) {
-  WidgetFactory *factory = STLLookupAndRemovePtr(
-      &m_device_factory_map, usb_device);
-  if (factory) {
-    factory->DeviceRemoved(&m_widget_observer, usb_device);
   }
 }
 
 /*
  * @brief Signal widget / device addition.
- * @param widget The widget that was added.
+ * @param device_id The device id to add.
  * @param device The new olad device that uses this new widget.
  *
  * This is run within the main thread.
- */
-bool AsyncPluginImpl::StartAndRegisterDevice(WidgetInterface *widget,
+# */
+bool AsyncPluginImpl::StartAndRegisterDevice(const USBDeviceID &device_id,
                                              Device *device) {
   if (!device->Start()) {
     delete device;
     return false;
   }
 
-  Device *old_device = STLReplacePtr(&m_widget_device_map, widget, device);
-  if (old_device) {
-    m_plugin_adaptor->UnregisterDevice(old_device);
-    old_device->Stop();
-    delete old_device;
+  DeviceState *state = STLFindOrNull(m_device_map, device_id);
+  if (!state) {
+    OLA_WARN << "Failed to find state for device "
+             << IntToString(device_id.first) << ":"
+             << IntToString(device_id.second);
+    delete device;
+    return false;
+  }
+
+  if (state->ola_device) {
+    OLA_WARN << "Clobbering an old device!";
+    m_plugin_adaptor->UnregisterDevice(state->ola_device);
+    state->ola_device->Stop();
+    delete state->ola_device;
   }
   m_plugin_adaptor->RegisterDevice(device);
+  state->ola_device = device;
   return true;
 }
 
 /*
  * @brief Signal widget removal.
- * @param widget The widget that was removed.
+ * @param device_id The device id to remove.
  *
  * This is run within the main thread.
  */
-void AsyncPluginImpl::RemoveWidget(WidgetInterface *widget) {
-  Device *device = STLLookupAndRemovePtr(&m_widget_device_map, widget);
-  if (device) {
-    m_plugin_adaptor->UnregisterDevice(device);
-    device->Stop();
-    delete device;
+void AsyncPluginImpl::RemoveWidget(const ola::usb::USBDeviceID &device_id) {
+  DeviceState *state = STLFindOrNull(m_device_map, device_id);
+  if (state && state->ola_device) {
+    m_plugin_adaptor->UnregisterDevice(state->ola_device);
+    state->ola_device->Stop();
+    delete state->ola_device;
+    state->ola_device = NULL;
   }
 }
 
@@ -376,28 +404,27 @@ bool AsyncPluginImpl::ScanUSBDevices() {
 
     current_device_ids.insert(device_id);
 
-    if (!STLContains(m_seen_usb_devices, device_id)) {
-      OLA_INFO << "  " << usb_device;
-      bool claimed = USBDeviceAdded(usb_device);
-      STLReplace(&m_seen_usb_devices, device_id, claimed ? usb_device : NULL);
-    }
+    OLA_INFO << "  " << usb_device;
+    USBDeviceAdded(usb_device);
   }
   libusb_free_device_list(device_list, 1);  // unref devices
 
-  USBDeviceIDs::iterator iter = m_seen_usb_devices.begin();
-  while (iter != m_seen_usb_devices.end()) {
+  USBDeviceMap::iterator iter = m_device_map.begin();
+  while (iter != m_device_map.end()) {
     if (!STLContains(current_device_ids, iter->first)) {
-      if (iter->second) {
-        USBDeviceRemoved(iter->second);
+      DeviceState *state = iter->second;
+      if (state && state->factory) {
+        state->factory->DeviceRemoved(this, iter->second->usb_device);
+        state->factory = NULL;
       }
-      m_seen_usb_devices.erase(iter++);
+      delete iter->second;
+      m_device_map.erase(iter++);
     } else {
       iter++;
     }
   }
   return true;
 }
-
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola

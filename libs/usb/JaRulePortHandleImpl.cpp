@@ -18,7 +18,7 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "plugins/usbdmx/JaRulePortHandleImpl.h"
+#include "libs/usb/JaRulePortHandleImpl.h"
 
 #include <ola/Callback.h>
 #include <ola/Constants.h>
@@ -37,12 +37,10 @@
 #include <memory>
 #include <vector>
 
-#include "plugins/usbdmx/JaRuleWidgetPort.h"
+#include "libs/usb/JaRuleWidgetPort.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
-namespace jarule {
+namespace usb {
 
 using ola::NewSingleCallback;
 using ola::io::ByteString;
@@ -371,7 +369,5 @@ CommandClass JaRulePortHandleImpl::GetCommandFromRequest(
       RDM_BROADCAST_REQUEST :
       RDM_REQUEST;
 }
-}  // namespace jarule
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola

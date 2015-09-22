@@ -26,6 +26,7 @@
 #include <limits>
 #include <string>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Array.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
@@ -33,13 +34,13 @@
 #include "ola/strings/Format.h"
 #include "ola/util/Utils.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+using ola::usb::LibUsbAdaptor;
 using std::string;
 
 namespace {
@@ -248,8 +249,7 @@ SynchronousScanlimeFadecandy::SynchronousScanlimeFadecandy(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const std::string &serial)
-    : ScanlimeFadecandy(adaptor, serial),
-      m_usb_device(usb_device) {
+    : ScanlimeFadecandy(adaptor, usb_device, serial) {
 }
 
 bool SynchronousScanlimeFadecandy::Init() {
@@ -330,7 +330,7 @@ AsynchronousScanlimeFadecandy::AsynchronousScanlimeFadecandy(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const std::string &serial)
-    : ScanlimeFadecandy(adaptor, serial) {
+    : ScanlimeFadecandy(adaptor, usb_device, serial) {
   m_sender.reset(new FadecandyAsyncUsbSender(m_adaptor, usb_device));
 }
 

@@ -18,7 +18,7 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "plugins/usbdmx/JaRuleWidget.h"
+#include "libs/usb/JaRuleWidget.h"
 
 #include <ola/Callback.h>
 #include <ola/Constants.h>
@@ -35,17 +35,12 @@
 #include <string>
 #include <utility>
 
-#include "plugins/usbdmx/JaRulePortHandle.h"
-#include "plugins/usbdmx/JaRuleWidgetPort.h"
+#include "libs/usb/JaRulePortHandle.h"
+#include "libs/usb/JaRuleWidgetPort.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
-using jarule::CommandClass;
-using jarule::CommandCompleteCallback;
-using jarule::JaRulePortHandle;
-using jarule::JaRuleWidgetPort;
 using ola::io::ByteString;
 using ola::rdm::UID;
 using std::auto_ptr;
@@ -101,6 +96,10 @@ bool JaRuleWidget::Init() {
   return ok;
 }
 
+USBDeviceID JaRuleWidget::GetDeviceId() const {
+  return m_adaptor->GetDeviceId(m_device);
+}
+
 void JaRuleWidget::CancelAll(uint8_t port_index) {
   if (port_index > m_ports.size() - 1) {
     return;
@@ -147,7 +146,7 @@ void JaRuleWidget::SendCommand(uint8_t port_index,
   if (port_index > m_ports.size() - 1) {
     OLA_WARN << "Invalid JaRule Port " << static_cast<int>(port_index);
     if (callback) {
-      callback->Run(jarule::COMMAND_RESULT_INVALID_PORT, 0, 0, ByteString());
+      callback->Run(COMMAND_RESULT_INVALID_PORT, 0, 0, ByteString());
     }
     return;
   }
@@ -264,6 +263,5 @@ bool JaRuleWidget::InternalInit() {
   OLA_INFO << "Found JaRule device : " << m_uid;
   return true;
 }
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola

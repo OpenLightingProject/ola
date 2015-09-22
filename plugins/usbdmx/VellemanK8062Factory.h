@@ -21,6 +21,7 @@
 #ifndef PLUGINS_USBDMX_VELLEMANK8062FACTORY_H_
 #define PLUGINS_USBDMX_VELLEMANK8062FACTORY_H_
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
@@ -33,7 +34,7 @@ namespace usbdmx {
  */
 class VellemanK8062Factory : public BaseWidgetFactory<class VellemanK8062> {
  public:
-  explicit VellemanK8062Factory(class LibUsbAdaptor *adaptor)
+  explicit VellemanK8062Factory(ola::usb::LibUsbAdaptor *adaptor)
       : m_adaptor(adaptor) {
   }
 
@@ -43,7 +44,7 @@ class VellemanK8062Factory : public BaseWidgetFactory<class VellemanK8062> {
       const struct libusb_device_descriptor &descriptor);
 
  private:
-  class LibUsbAdaptor* const m_adaptor;
+  ola::usb::LibUsbAdaptor* const m_adaptor;
 
   static const uint16_t VENDOR_ID;
   static const uint16_t PRODUCT_ID;

@@ -18,8 +18,8 @@
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_LIBUSBTHREAD_H_
-#define PLUGINS_USBDMX_LIBUSBTHREAD_H_
+#ifndef LIBS_USB_LIBUSBTHREAD_H_
+#define LIBS_USB_LIBUSBTHREAD_H_
 
 #include <libusb.h>
 
@@ -31,8 +31,7 @@
 #include "ola/thread/Thread.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
 /**
  * @brief The base class for the dedicated libusb thread.
@@ -202,7 +201,6 @@ class LibUsbSimpleThread : public LibUsbThread {
 
   DISALLOW_COPY_AND_ASSIGN(LibUsbSimpleThread);
 };
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_LIBUSBTHREAD_H_
+#endif  // LIBS_USB_LIBUSBTHREAD_H_

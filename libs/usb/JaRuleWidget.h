@@ -18,8 +18,8 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_JARULEWIDGET_H_
-#define PLUGINS_USBDMX_JARULEWIDGET_H_
+#ifndef LIBS_USB_JARULEWIDGET_H_
+#define LIBS_USB_JARULEWIDGET_H_
 
 #include <libusb.h>
 #include <stdint.h>
@@ -31,18 +31,12 @@
 #include <string>
 #include <vector>
 
-#include "plugins/usbdmx/LibUsbAdaptor.h"
-#include "plugins/usbdmx/JaRuleConstants.h"
-#include "plugins/usbdmx/Widget.h"
+#include "libs/usb/LibUsbAdaptor.h"
+#include "libs/usb/JaRuleConstants.h"
+#include "libs/usb/Types.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
-
-namespace jarule {
-class JaRulePortHandle;
-class JaRuleWidgetPort;
-}  // namespace jarule
+namespace usb {
 
 /**
  * @brief A Ja Rule hardware device (widget).
@@ -60,7 +54,7 @@ class JaRuleWidgetPort;
  * To obtain a JaRulePortHandle, call ClaimPort(), when you're finished with
  * the JaRulePortHandle you must call ReleasePort().
  */
-class JaRuleWidget : public WidgetInterface {
+class JaRuleWidget {
  public:
   /**
    * @brief Create a new Ja Rule widget.
@@ -83,6 +77,12 @@ class JaRuleWidget : public WidgetInterface {
    *   otherwise.
    */
   bool Init();
+
+  /**
+   * @brief The device ID of this widget.
+   * @returns The USBDeviceID.
+   */
+  USBDeviceID GetDeviceId() const;
 
   /**
    * @brief Cancel all queued and inflight commands.
@@ -129,7 +129,7 @@ class JaRuleWidget : public WidgetInterface {
    * @returns a port handle, ownership is not transferred. Will return NULL if
    *   the port id is invalid, or already claimed.
    */
-  jarule::JaRulePortHandle* ClaimPort(uint8_t port_index);
+  class JaRulePortHandle* ClaimPort(uint8_t port_index);
 
   /**
    * @brief Release a handle to a port.
@@ -150,12 +150,12 @@ class JaRuleWidget : public WidgetInterface {
    *
    * SendCommand() can be called from any thread, and messages will be queued.
    */
-  void SendCommand(uint8_t port_index, jarule::CommandClass command,
+  void SendCommand(uint8_t port_index, CommandClass command,
                    const uint8_t *data, unsigned int size,
-                   jarule::CommandCompleteCallback *callback);
+                   CommandCompleteCallback *callback);
 
  private:
-  typedef std::vector<jarule::JaRuleWidgetPort*> PortHandles;
+  typedef std::vector<class JaRuleWidgetPort*> PortHandles;
 
   ola::thread::ExecutorInterface *m_executor;
   LibUsbAdaptor *m_adaptor;
@@ -173,7 +173,6 @@ class JaRuleWidget : public WidgetInterface {
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleWidget);
 };
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_JARULEWIDGET_H_
+#endif  // LIBS_USB_JARULEWIDGET_H_

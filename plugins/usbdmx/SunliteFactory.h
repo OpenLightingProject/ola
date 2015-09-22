@@ -21,6 +21,7 @@
 #ifndef PLUGINS_USBDMX_SUNLITEFACTORY_H_
 #define PLUGINS_USBDMX_SUNLITEFACTORY_H_
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/Sunlite.h"
 #include "plugins/usbdmx/WidgetFactory.h"
@@ -34,7 +35,7 @@ namespace usbdmx {
  */
 class SunliteFactory : public BaseWidgetFactory<Sunlite> {
  public:
-  explicit SunliteFactory(class LibUsbAdaptor *adaptor)
+  explicit SunliteFactory(ola::usb::LibUsbAdaptor *adaptor)
       : m_adaptor(adaptor) {}
 
   bool DeviceAdded(
@@ -46,7 +47,7 @@ class SunliteFactory : public BaseWidgetFactory<Sunlite> {
                      libusb_device *device);
 
  private:
-  class LibUsbAdaptor* const m_adaptor;
+  ola::usb::LibUsbAdaptor* const m_adaptor;
 
   // The product ID for widgets that are missing their firmware.
   static const uint16_t EMPTY_PRODUCT_ID;

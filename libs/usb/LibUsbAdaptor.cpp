@@ -18,18 +18,17 @@
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/LibUsbAdaptor.h"
+#include "libs/usb/LibUsbAdaptor.h"
 
 #include <libusb.h>
 #include <ola/Logging.h>
 #include <sstream>
 #include <string>
 
-#include "plugins/usbdmx/LibUsbThread.h"
+#include "libs/usb/LibUsbThread.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
 using std::ostringstream;
 using std::string;
@@ -331,6 +330,10 @@ int BaseLibUsbAdaptor::InterruptTransfer(libusb_device_handle *dev_handle,
                                    actual_length, timeout);
 }
 
+USBDeviceID BaseLibUsbAdaptor::GetDeviceId(libusb_device *device) const {
+  return USBDeviceID(libusb_get_bus_number(device),
+                     libusb_get_device_address(device));
+}
 
 // SyncronousLibUsbAdaptor
 // -----------------------------------------------------------------------------
@@ -414,6 +417,5 @@ int AsyncronousLibUsbAdaptor::InterruptTransfer(
   return BaseLibUsbAdaptor::InterruptTransfer(dev_handle, endpoint, data,
                                               length, actual_length, timeout);
 }
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola

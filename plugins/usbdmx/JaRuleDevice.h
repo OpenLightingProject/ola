@@ -23,6 +23,8 @@
 
 #include <set>
 #include <string>
+
+#include "libs/usb/JaRuleWidget.h"
 #include "ola/base/Macro.h"
 #include "olad/Device.h"
 
@@ -44,7 +46,7 @@ class JaRuleDevice: public Device {
    * @param device_name The name of the device.
    */
   JaRuleDevice(ola::AbstractPlugin *owner,
-               class JaRuleWidget *widget,
+               ola::usb::JaRuleWidget *widget,
                const std::string &device_name);
 
   std::string DeviceId() const {
@@ -56,7 +58,7 @@ class JaRuleDevice: public Device {
   void PostPortStop();
 
  private:
-  class JaRuleWidget *m_widget;  // not owned
+  ola::usb::JaRuleWidget *m_widget;  // not owned
   const std::string m_device_id;
   std::set<uint8_t> m_claimed_ports;
 

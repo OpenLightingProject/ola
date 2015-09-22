@@ -18,7 +18,7 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "plugins/usbdmx/JaRuleWidgetPort.h"
+#include "libs/usb/JaRuleWidgetPort.h"
 
 #include <ola/Callback.h>
 #include <ola/Constants.h>
@@ -33,15 +33,10 @@
 #include <utility>
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
-namespace jarule {
+namespace usb {
 
-using jarule::CommandClass;
-using jarule::USBCommandResult;
 using ola::NewSingleCallback;
 using ola::io::ByteString;
-using ola::plugin::usbdmx::LibUsbAdaptor;
 using ola::strings::ToHex;
 using ola::thread::MutexLocker;
 using ola::utils::JoinUInt8;
@@ -165,7 +160,7 @@ void JaRuleWidgetPort::CancelAll() {
   while (!queued_commands.empty()) {
     auto_ptr<PendingCommand> command(queued_commands.front());
     if (command->callback) {
-      command->callback->Run(jarule::COMMAND_RESULT_CANCELLED, 0, 0,
+      command->callback->Run(COMMAND_RESULT_CANCELLED, 0, 0,
                              ByteString());
     }
     queued_commands.pop();
@@ -174,7 +169,7 @@ void JaRuleWidgetPort::CancelAll() {
   PendingCommandMap::iterator iter = pending_commands.begin();
   for (; iter != pending_commands.end(); ++iter) {
     if (iter->second->callback) {
-      iter->second->callback->Run(jarule::COMMAND_RESULT_CANCELLED, 0, 0,
+      iter->second->callback->Run(COMMAND_RESULT_CANCELLED, 0, 0,
                                   ByteString());
       delete iter->second;
     }
@@ -189,21 +184,21 @@ void JaRuleWidgetPort::CancelAll() {
 }
 
 void JaRuleWidgetPort::SendCommand(
-    jarule::CommandClass command_class,
+    CommandClass command_class,
     const uint8_t *data,
     unsigned int size,
     CommandCompleteCallback *callback) {
   if (size > MAX_PAYLOAD_SIZE) {
     OLA_WARN << "JaRule message exceeds max payload size";
     if (callback) {
-      callback->Run(jarule::COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
+      callback->Run(COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
     }
     return;
   }
 
   if (size != 0 && data == NULL) {
     OLA_WARN << "JaRule data is NULL, size was " << size;
-    callback->Run(jarule::COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
+    callback->Run(COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
     return;
   }
 
@@ -238,7 +233,7 @@ void JaRuleWidgetPort::SendCommand(
     locker.Release();
     OLA_WARN << "JaRule outbound queue is full";
     if (callback) {
-      callback->Run(jarule::COMMAND_RESULT_QUEUE_FULL, 0, 0, ByteString());
+      callback->Run(COMMAND_RESULT_QUEUE_FULL, 0, 0, ByteString());
     }
     return;
   }
@@ -305,7 +300,7 @@ void JaRuleWidgetPort::MaybeSendCommand() {
   if (r) {
     OLA_WARN << "Failed to submit outbound transfer: "
              << LibUsbAdaptor::ErrorCodeToString(r);
-    ScheduleCallback(command->callback, jarule::COMMAND_RESULT_SEND_ERROR, 0, 0,
+    ScheduleCallback(command->callback, COMMAND_RESULT_SEND_ERROR, 0, 0,
                      ByteString());
     delete command;
     return;
@@ -314,9 +309,9 @@ void JaRuleWidgetPort::MaybeSendCommand() {
   std::pair<PendingCommandMap::iterator, bool> p = m_pending_commands.insert(
       PendingCommandMap::value_type(token, command));
   if (!p.second) {
-    // We had an old entry, time it out.
+    // We had an old entry, cancel it.
     ScheduleCallback(p.first->second->callback,
-                     jarule::COMMAND_RESULT_CANCELLED, 0, 0, ByteString());
+                     COMMAND_RESULT_CANCELLED, 0, 0, ByteString());
     delete p.first->second;
     p.first->second = command;
   }
@@ -393,9 +388,9 @@ void JaRuleWidgetPort::HandleResponse(const uint8_t *data, unsigned int size) {
     return;
   }
 
-  USBCommandResult status = jarule::COMMAND_RESULT_OK;
+  USBCommandResult status = COMMAND_RESULT_OK;
   if (command->command != command_class) {
-    status = jarule::COMMAND_RESULT_CLASS_MISMATCH;
+    status = COMMAND_RESULT_CLASS_MISMATCH;
   }
 
   ByteString payload;
@@ -440,7 +435,5 @@ void JaRuleWidgetPort::RunCallback(
     CallbackArgs args) {
   callback->Run(args.result, args.return_code, args.status_flags, args.payload);
 }
-}  // namespace jarule
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola

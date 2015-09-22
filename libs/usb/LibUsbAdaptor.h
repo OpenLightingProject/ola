@@ -18,17 +18,17 @@
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_LIBUSBADAPTOR_H_
-#define PLUGINS_USBDMX_LIBUSBADAPTOR_H_
+#ifndef LIBS_USB_LIBUSBADAPTOR_H_
+#define LIBS_USB_LIBUSBADAPTOR_H_
 
 #include <libusb.h>
 #include <string>
 
 #include "ola/base/Macro.h"
+#include "libs/usb/Types.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
 /**
  * @brief Wraps calls to libusb so we can test the code.
@@ -368,6 +368,13 @@ class LibUsbAdaptor {
                                 int *actual_length,
                                 unsigned int timeout) = 0;
 
+  /**
+   * @brief Get the USBDeviceID for a device.
+   * @param device The libusb device to get the ID of.
+   * @returns The USBDeviceID for this device.
+   */
+  virtual USBDeviceID GetDeviceId(libusb_device *device) const = 0;
+
   // Static helper methods.
 
   /**
@@ -506,6 +513,8 @@ class BaseLibUsbAdaptor : public LibUsbAdaptor {
                         int length,
                         int *actual_length,
                         unsigned int timeout);
+
+  USBDeviceID GetDeviceId(libusb_device *device) const;
 };
 
 /**
@@ -580,7 +589,6 @@ class AsyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
 
   DISALLOW_COPY_AND_ASSIGN(AsyncronousLibUsbAdaptor);
 };
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_LIBUSBADAPTOR_H_
+#endif  // LIBS_USB_LIBUSBADAPTOR_H_

@@ -18,8 +18,8 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_JARULEPORTHANDLEIMPL_H_
-#define PLUGINS_USBDMX_JARULEPORTHANDLEIMPL_H_
+#ifndef LIBS_USB_JARULEPORTHANDLEIMPL_H_
+#define LIBS_USB_JARULEPORTHANDLEIMPL_H_
 
 #include <ola/base/Macro.h>
 #include <ola/DmxBuffer.h>
@@ -31,12 +31,10 @@
 #include <ola/rdm/UID.h>
 #include <ola/util/SequenceNumber.h>
 
-#include "plugins/usbdmx/JaRuleConstants.h"
+#include "libs/usb/JaRuleConstants.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
-namespace jarule {
+namespace usb {
 
 /**
  * @brief The internal implementation of a Ja Rule Port Handle.
@@ -160,8 +158,6 @@ class JaRulePortHandleImpl
 
   DISALLOW_COPY_AND_ASSIGN(JaRulePortHandleImpl);
 };
-}  // namespace jarule
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_JARULEPORTHANDLEIMPL_H_
+#endif  // LIBS_USB_JARULEPORTHANDLEIMPL_H_

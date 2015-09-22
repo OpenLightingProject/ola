@@ -34,16 +34,16 @@
 
 #include <memory>
 
-#include "plugins/usbdmx/LibUsbAdaptor.h"
-#include "plugins/usbdmx/LibUsbThread.h"
+#include "libs/usb/LibUsbAdaptor.h"
+#include "libs/usb/LibUsbThread.h"
 
 using ola::NewSingleCallback;
 using ola::io::SelectServer;
-using ola::plugin::usbdmx::LibUsbAdaptor;
-using ola::plugin::usbdmx::LibUsbHotplugThread;
 using ola::thread::Future;
 using ola::thread::MutexLocker;
 using ola::thread::Thread;
+using ola::usb::LibUsbAdaptor;
+using ola::usb::LibUsbHotplugThread;
 using std::auto_ptr;
 
 static const uint16_t kProductId = 0xaced;
