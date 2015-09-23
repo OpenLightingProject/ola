@@ -30,22 +30,12 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief The interface for an generic USB Widget.
- *
- * This interface contains no methods, it's simply used as a map key.
+ * @brief The interface for a simple widget that supports a single universe of
+ * DMX.
  */
 class WidgetInterface {
  public:
   virtual ~WidgetInterface() {}
-};
-
-/**
- * @brief The interface for a simple widget that supports a single universe of
- * DMX.
- */
-class SimpleWidgetInterface : public WidgetInterface {
- public:
-  virtual ~SimpleWidgetInterface() {}
 
   /**
    * @brief Initialize the widget.
@@ -73,7 +63,7 @@ class SimpleWidgetInterface : public WidgetInterface {
  * This holds a pointer to a LibUsbAdaptor so we don't have to duplicate that
  * code in all the Widgets.
  */
-class SimpleWidget : public SimpleWidgetInterface {
+class SimpleWidget : public WidgetInterface {
  public:
   /**
    * @brief Create a new SimpleWidget.
