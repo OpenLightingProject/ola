@@ -55,7 +55,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
-  bool NewWidget(class JaRuleWidget *widget) {
+  bool NewWidget(ola::usb::JaRuleWidget *widget) {
     return DispatchNewWidget(widget);
   }
 
@@ -79,7 +79,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     DispatchWidgetRemoved(widget);
   }
 
-  void WidgetRemoved(class JaRuleWidget *widget) {
+  void WidgetRemoved(ola::usb::JaRuleWidget *widget) {
     DispatchWidgetRemoved(widget);
   }
 

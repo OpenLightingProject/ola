@@ -23,9 +23,9 @@
 #include <set>
 #include <string>
 
+#include "libs/usb/JaRuleWidget.h"
+#include "libs/usb/JaRulePortHandle.h"
 #include "plugins/usbdmx/JaRuleOutputPort.h"
-#include "plugins/usbdmx/JaRulePortHandle.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -34,7 +34,7 @@ namespace usbdmx {
 using std::set;
 
 JaRuleDevice::JaRuleDevice(ola::AbstractPlugin *owner,
-                           JaRuleWidget *widget,
+                           ola::usb::JaRuleWidget *widget,
                            const std::string &device_name)
     : Device(owner, device_name),
       m_widget(widget),
@@ -43,7 +43,7 @@ JaRuleDevice::JaRuleDevice(ola::AbstractPlugin *owner,
 
 bool JaRuleDevice::StartHook() {
   for (uint8_t i = 0; i < m_widget->PortCount(); i++) {
-    jarule::JaRulePortHandle *handle = m_widget->ClaimPort(i);
+    ola::usb::JaRulePortHandle *handle = m_widget->ClaimPort(i);
     if (handle) {
       AddPort(new JaRuleOutputPort(this, i, handle));
       m_claimed_ports.insert(i);

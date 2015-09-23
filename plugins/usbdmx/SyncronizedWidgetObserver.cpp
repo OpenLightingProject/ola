@@ -37,7 +37,7 @@ SyncronizedWidgetObserver::SyncronizedWidgetObserver(
 }
 
 template<typename WidgetClass>
-bool SyncronizedWidgetObserver::DispatchNewWidget(WidgetClass*widget) {
+bool SyncronizedWidgetObserver::DispatchNewWidget(WidgetClass *widget) {
   if (pthread_equal(Thread::Self(), m_main_thread_id)) {
     return m_observer->NewWidget(widget);
   } else {

@@ -38,13 +38,13 @@
 #include <memory>
 #include <string>
 
-#include "plugins/usbdmx/LibUsbAdaptor.h"
+#include "libs/usb/LibUsbAdaptor.h"
 
 using ola::Clock;
 using ola::NewSingleCallback;
 using ola::TimeStamp;
 using ola::io::SelectServer;
-using ola::plugin::usbdmx::LibUsbAdaptor;
+using ola::usb::LibUsbAdaptor;
 using ola::thread::MutexLocker;
 using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;

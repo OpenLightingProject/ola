@@ -23,6 +23,7 @@
 
 #include <libusb.h>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
@@ -44,7 +45,7 @@ class AsyncUsbSender {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  AsyncUsbSender(class LibUsbAdaptor* const adaptor,
+  AsyncUsbSender(ola::usb::LibUsbAdaptor* const adaptor,
                  libusb_device *usb_device);
 
   /**
@@ -76,7 +77,7 @@ class AsyncUsbSender {
   /**
    * @brief The LibUsbAdaptor passed in the constructor.
    */
-  class LibUsbAdaptor* const m_adaptor;
+  ola::usb::LibUsbAdaptor* const m_adaptor;
 
   /**
    * @brief The libusb_device passed in the constructor.

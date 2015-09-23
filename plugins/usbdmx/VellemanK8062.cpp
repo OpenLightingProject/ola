@@ -25,17 +25,18 @@
 #include <algorithm>
 #include <string>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/Constants.h"
 #include "ola/StringUtils.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+using ola::usb::LibUsbAdaptor;
 using std::string;
 
 namespace {
@@ -297,8 +298,7 @@ bool VellemanThreadedSender::SendDataChunk(libusb_device_handle *handle,
 SynchronousVellemanK8062::SynchronousVellemanK8062(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : VellemanK8062(adaptor),
-      m_usb_device(usb_device) {
+    : VellemanK8062(adaptor, usb_device) {
 }
 
 bool SynchronousVellemanK8062::Init() {
@@ -500,7 +500,7 @@ bool VellemanAsyncUsbSender::SendSingleSlotChunk() {
 AsynchronousVellemanK8062::AsynchronousVellemanK8062(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : VellemanK8062(adaptor) {
+    : VellemanK8062(adaptor, usb_device) {
   m_sender.reset(new VellemanAsyncUsbSender(m_adaptor, usb_device));
 }
 

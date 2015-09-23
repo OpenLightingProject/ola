@@ -18,15 +18,13 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_JARULECONSTANTS_H_
-#define PLUGINS_USBDMX_JARULECONSTANTS_H_
+#ifndef LIBS_USB_JARULECONSTANTS_H_
+#define LIBS_USB_JARULECONSTANTS_H_
 
 #include <ola/Callback.h>
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
-namespace jarule {
+namespace usb {
 
 /**
  * @brief Ja Rule status flags.
@@ -130,12 +128,10 @@ typedef enum {
  * If the USBCommandResult is not COMMAND_COMPLETED_OK, the remaining values
  * are undefined.
  */
-typedef ola::BaseCallback4<void, jarule::USBCommandResult, uint8_t, uint8_t,
+typedef ola::BaseCallback4<void, USBCommandResult, uint8_t, uint8_t,
                            const ola::io::ByteString&> CommandCompleteCallback;
 
-}  // namespace jarule
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
 
-#endif  // PLUGINS_USBDMX_JARULECONSTANTS_H_
+#endif  // LIBS_USB_JARULECONSTANTS_H_

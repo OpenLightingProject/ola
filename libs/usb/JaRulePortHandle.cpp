@@ -18,7 +18,7 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "plugins/usbdmx/JaRulePortHandle.h"
+#include "libs/usb/JaRulePortHandle.h"
 
 #include <stdint.h>
 
@@ -28,12 +28,10 @@
 
 #include <memory>
 
-#include "plugins/usbdmx/JaRulePortHandleImpl.h"
+#include "libs/usb/JaRulePortHandleImpl.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
-namespace jarule {
+namespace usb {
 
 JaRulePortHandle::JaRulePortHandle(class JaRuleWidgetPort *parent_port,
                                    const ola::rdm::UID &uid,
@@ -64,7 +62,5 @@ bool JaRulePortHandle::SendDMX(const DmxBuffer &buffer) {
 bool JaRulePortHandle::SetPortMode(PortMode new_mode) {
   return m_impl->SetPortMode(new_mode);
 }
-}  // namespace jarule
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola

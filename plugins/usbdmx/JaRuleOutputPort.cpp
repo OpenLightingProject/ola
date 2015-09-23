@@ -22,18 +22,20 @@
 
 #include <string>
 
+#include "libs/usb/JaRulePortHandle.h"
 #include "ola/Logging.h"
 #include "ola/strings/Format.h"
 #include "olad/Device.h"
-#include "plugins/usbdmx/JaRulePortHandle.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+using ola::usb::JaRulePortHandle;
+
 JaRuleOutputPort::JaRuleOutputPort(Device *parent,
                                    unsigned int id,
-                                   jarule::JaRulePortHandle *port_handle)
+                                   JaRulePortHandle *port_handle)
     : BasicOutputPort(parent, id, true, true),
       m_port_handle(port_handle) {
 }
@@ -66,7 +68,7 @@ void JaRuleOutputPort::RunIncrementalDiscovery(
 bool JaRuleOutputPort::PreSetUniverse(Universe *old_universe,
                                       Universe *new_universe) {
   if (old_universe == NULL && new_universe != NULL) {
-    m_port_handle->SetPortMode(jarule::CONTROLLER_MODE);
+    m_port_handle->SetPortMode(ola::usb::CONTROLLER_MODE);
   }
   return true;
 }
@@ -74,7 +76,7 @@ bool JaRuleOutputPort::PreSetUniverse(Universe *old_universe,
 void JaRuleOutputPort::PostSetUniverse(Universe *old_universe,
                                        Universe *new_universe) {
   if (old_universe != NULL && new_universe == NULL) {
-    m_port_handle->SetPortMode(jarule::RESPONDER_MODE);
+    m_port_handle->SetPortMode(ola::usb::RESPONDER_MODE);
   }
 }
 }  // namespace usbdmx
