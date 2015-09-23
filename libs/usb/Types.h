@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Types.h
- * Types use with the USB subsystem.
+ * Types used with the USB subsystem.
  * Copyright (C) 2015 Simon Newton
  */
 
@@ -27,7 +27,7 @@ namespace ola {
 namespace usb {
 
 /**
- * @brief Represents a device on the USB.
+ * @brief Represents a USB device on the bus
  * @tparam bus_address The bus number the device is connected to.
  * @tparam device_address The address of the device on the bus.
  */
