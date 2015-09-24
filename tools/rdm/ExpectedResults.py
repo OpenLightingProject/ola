@@ -286,8 +286,8 @@ class AckResult(SuccessfulResult):
   def __init__(self,
                command_class,
                pid_id,
-               field_names = [],
-               field_values = {},
+               field_names=[],
+               field_values={},
                action=None,
                warning=None,
                advisory=None):
@@ -350,8 +350,8 @@ class AckDiscoveryResult(AckResult):
   """This checks that the device ack'ed a DISCOVERY request."""
   def __init__(self,
                pid_id,
-               field_names = [],
-               field_values = {},
+               field_names=[],
+               field_values={},
                action=None,
                warning=None,
                advisory=None):
@@ -378,8 +378,8 @@ class AckGetResult(AckResult):
   """This checks that the device ack'ed a GET request."""
   def __init__(self,
                pid_id,
-               field_names = [],
-               field_values = {},
+               field_names=[],
+               field_values={},
                action=None,
                warning=None,
                advisory=None):
@@ -406,8 +406,8 @@ class AckSetResult(AckResult):
   """This checks that the device ack'ed a SET request."""
   def __init__(self,
                pid_id,
-               field_names = [],
-               field_values = {},
+               field_names=[],
+               field_values={},
                action=None,
                warning=None,
                advisory=None):

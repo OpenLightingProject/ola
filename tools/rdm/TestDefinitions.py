@@ -2172,7 +2172,7 @@ class GetSlotInfo(OptionalParameterTestFixture):
     if not response.WasAcked():
       self.SetProperty('defined_slots', set())
       self.SetProperty('undefined_definition_slots', [])
-      self.SetProperty('undefined_type_sec_slots', [])		
+      self.SetProperty('undefined_type_sec_slots', [])
       return
 
     slots = [d['slot_offset'] for d in fields['slots']]

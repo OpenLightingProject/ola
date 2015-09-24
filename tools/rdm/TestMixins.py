@@ -211,6 +211,7 @@ class GetMandatoryPIDWithDataMixin(object):
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
+
 class GetWithNoDataMixin(object):
   """GET with no data, expect NR_FORMAT_ERROR."""
   def Test(self):
@@ -734,7 +735,7 @@ class SetDmxFailModeMixin(object):
   REQUIRES = ['dmx_fail_settings', 'preset_info', 'set_dmx_fail_mode_supported']
   CATEGORY = TestCategory.DMX_SETUP
 
-  INFINITE_TIME = 6553.5 # 0xffff * 10^-1 (multiplier)
+  INFINITE_TIME = 6553.5  # 0xffff * 10^-1 (multiplier)
 
   def ResetState(self):
     if not self.PidSupported():
@@ -749,7 +750,7 @@ class SetDmxFailModeMixin(object):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_FAIL_MODE settings, missing %s' % key)
-        return;
+        return
 
     self.SendSet(
         ROOT_DEVICE, self.pid,
@@ -764,7 +765,7 @@ class SetDmxStartupModeMixin(object):
               'set_dmx_startup_mode_supported']
   CATEGORY = TestCategory.DMX_SETUP
 
-  INFINITE_TIME = 6553.5 # 0xffff * 10^-1 (multiplier)
+  INFINITE_TIME = 6553.5  # 0xffff * 10^-1 (multiplier)
 
   def ResetState(self):
     if not self.PidSupported():
@@ -779,7 +780,7 @@ class SetDmxStartupModeMixin(object):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_STARTUP_MODE settings, missing %s' % key)
-        return;
+        return
 
     self.SendSet(
         ROOT_DEVICE, self.pid,
@@ -1043,11 +1044,10 @@ class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
 class GetSettingDescriptionsListMixin(GetSettingDescriptionsMixin):
   """Perform a GET for each setting in a list.
 
-    The list is an array of settings, which don't need to be 
+    The list is an array of settings, which don't need to be
     sequential
   """
 
   def ListOfSettings(self):
     # By default we use the first property from REQUIRES
     return self.Property(self.REQUIRES[0])
-
