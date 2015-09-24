@@ -20,15 +20,13 @@
 
 #include "plugins/usbdmx/JaRuleFactory.h"
 
+#include <memory>
+
+#include "libs/usb/JaRuleWidget.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
-
-DEFINE_string(ja_rule_controller_uid, "7a70:fffffe00",
-              "The UID of the Ja Rule controller.");
 
 namespace ola {
 namespace plugin {
@@ -47,25 +45,15 @@ bool JaRuleFactory::DeviceAdded(
     return false;
   }
 
-  OLA_INFO << "Found a new Ja Rule device";
-  LibUsbAdaptor::DeviceInformation info;
-  if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
-    return false;
-  }
-
-  // TODO(simon): Support multiple widgets.
-  if (DeviceCount() > 0) {
-    OLA_WARN << "Only a single Ja Rule device is supported";
-    return false;
-  }
-
-  if (FLAGS_use_async_libusb) {
-    return AddWidget(observer, usb_device,
-                     new JaRuleWidget(m_ss, m_adaptor, usb_device, m_uid));
-  } else {
+  if (!FLAGS_use_async_libusb) {
     OLA_WARN << "Ja Rule devices are not supported in Synchronous mode";
     return false;
   }
+
+  OLA_INFO << "Found a new Ja Rule device";
+  std::auto_ptr<ola::usb::JaRuleWidget> widget(
+      new ola::usb::JaRuleWidget(m_ss, m_adaptor, usb_device));
+  return AddWidget(observer, usb_device, widget.release());
 }
 }  // namespace usbdmx
 }  // namespace plugin

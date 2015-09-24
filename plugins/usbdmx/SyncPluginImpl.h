@@ -28,8 +28,8 @@
 #include <utility>
 #include <vector>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
@@ -69,26 +69,26 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
 
   bool NewWidget(class AnymauDMX *widget);
   bool NewWidget(class EurolitePro *widget);
-  bool NewWidget(class JaRuleWidget *widget);
+  bool NewWidget(ola::usb::JaRuleWidget *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
   bool NewWidget(class Sunlite *widget);
   bool NewWidget(class VellemanK8062 *widget);
 
   void WidgetRemoved(OLA_UNUSED class AnymauDMX *widget) {}
   void WidgetRemoved(OLA_UNUSED class EurolitePro *widget) {}
-  void WidgetRemoved(OLA_UNUSED class JaRuleWidget *widget) {}
+  void WidgetRemoved(OLA_UNUSED ola::usb::JaRuleWidget *widget) {}
   void WidgetRemoved(OLA_UNUSED class ScanlimeFadecandy *widget) {}
   void WidgetRemoved(OLA_UNUSED class Sunlite *widget) {}
   void WidgetRemoved(OLA_UNUSED class VellemanK8062 *widget) {}
 
  private:
   typedef std::vector<class WidgetFactory*> WidgetFactories;
-  typedef std::map<class Widget*, Device*> WidgetToDeviceMap;
+  typedef std::map<class WidgetInterface*, Device*> WidgetToDeviceMap;
 
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
   const unsigned int m_debug_level;
-  SyncronousLibUsbAdaptor m_usb_adaptor;
+  ola::usb::SyncronousLibUsbAdaptor m_usb_adaptor;
   WidgetFactories m_widget_factories;
 
   libusb_context *m_context;
@@ -100,7 +100,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   void ReScanForDevices();
   bool CheckDevice(libusb_device *device);
 
-  bool StartAndRegisterDevice(class Widget *widget, Device *device);
+  bool StartAndRegisterDevice(class WidgetInterface *widget, Device *device);
 
   DISALLOW_COPY_AND_ASSIGN(SyncPluginImpl);
 };

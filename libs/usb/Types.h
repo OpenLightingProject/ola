@@ -13,34 +13,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * GenericDevice.cpp
- * A Generic device that creates a single port.
- * Copyright (C) 2014 Simon Newton
+ * Types.h
+ * Types used with the USB subsystem.
+ * Copyright (C) 2015 Simon Newton
  */
 
-#include "plugins/usbdmx/GenericDevice.h"
+#ifndef LIBS_USB_TYPES_H_
+#define LIBS_USB_TYPES_H_
 
-#include <string>
-#include "plugins/usbdmx/Widget.h"
-#include "plugins/usbdmx/GenericOutputPort.h"
+#include <utility>
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
-GenericDevice::GenericDevice(ola::AbstractPlugin *owner,
-                             WidgetInterface *widget,
-                             const std::string &device_name,
-                             const std::string &device_id)
-    : Device(owner, device_name),
-      m_device_id(device_id),
-      m_port(new GenericOutputPort(this, 0, widget)) {
-}
+/**
+ * @brief Represents a USB device on the bus
+ * @tparam bus_address The bus number the device is connected to.
+ * @tparam device_address The address of the device on the bus.
+ */
+typedef std::pair<uint8_t, uint8_t> USBDeviceID;
 
-bool GenericDevice::StartHook() {
-  AddPort(m_port.release());
-  return true;
-}
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
+
+#endif  // LIBS_USB_TYPES_H_

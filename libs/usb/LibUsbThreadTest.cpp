@@ -21,9 +21,9 @@
 #include <libusb.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "libs/usb/LibUsbThread.h"
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
-#include "plugins/usbdmx/LibUsbThread.h"
 
 namespace {
 #if defined(LIBUSB_API_VERSION) && (LIBUSB_API_VERSION >= 0x01000102)
@@ -58,7 +58,7 @@ class LibUsbThreadTest: public CppUnit::TestFixture {
  private:
   libusb_context *m_context;
 
-  void AttemptDeviceOpen(ola::plugin::usbdmx::LibUsbThread *thread);
+  void AttemptDeviceOpen(ola::usb::LibUsbThread *thread);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(LibUsbThreadTest);
@@ -80,7 +80,7 @@ void LibUsbThreadTest::testNonHotplug() {
     return;
   }
 
-  ola::plugin::usbdmx::LibUsbSimpleThread thread(m_context);
+  ola::usb::LibUsbSimpleThread thread(m_context);
   OLA_ASSERT_TRUE(thread.Init());
   AttemptDeviceOpen(&thread);
 }
@@ -91,7 +91,7 @@ void LibUsbThreadTest::testHotplug() {
     return;
   }
 
-  ola::plugin::usbdmx::LibUsbHotplugThread thread(m_context, hotplug_callback,
+  ola::usb::LibUsbHotplugThread thread(m_context, hotplug_callback,
                                                   NULL);
   OLA_ASSERT_TRUE(thread.Init());
   AttemptDeviceOpen(&thread);
@@ -102,8 +102,7 @@ void LibUsbThreadTest::testHotplug() {
 /*
  * Try to open any USB device so we can test interaction with the thread.
  */
-void LibUsbThreadTest::AttemptDeviceOpen(
-    ola::plugin::usbdmx::LibUsbThread *thread) {
+void LibUsbThreadTest::AttemptDeviceOpen(ola::usb::LibUsbThread *thread) {
   libusb_device_handle *usb_handle = NULL;
   libusb_device **device_list;
   size_t device_count = libusb_get_device_list(m_context, &device_list);

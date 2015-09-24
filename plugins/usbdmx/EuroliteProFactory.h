@@ -21,6 +21,7 @@
 #ifndef PLUGINS_USBDMX_EUROLITEPROFACTORY_H_
 #define PLUGINS_USBDMX_EUROLITEPROFACTORY_H_
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/EurolitePro.h"
 #include "plugins/usbdmx/WidgetFactory.h"
@@ -32,10 +33,9 @@ namespace usbdmx {
 /**
  * @brief Creates EurolitePro widgets.
  */
-class EuroliteProFactory
-    : public BaseWidgetFactory<class EurolitePro> {
+class EuroliteProFactory : public BaseWidgetFactory<class EurolitePro> {
  public:
-  explicit EuroliteProFactory(class LibUsbAdaptor *adaptor)
+  explicit EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor)
       : m_adaptor(adaptor) {}
 
   bool DeviceAdded(WidgetObserver *observer,
@@ -43,7 +43,7 @@ class EuroliteProFactory
                    const struct libusb_device_descriptor &descriptor);
 
  private:
-  class LibUsbAdaptor *m_adaptor;
+  ola::usb::LibUsbAdaptor *m_adaptor;
 
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;

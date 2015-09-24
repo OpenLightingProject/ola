@@ -34,7 +34,7 @@
 #include <memory>
 #include <utility>
 
-#include "plugins/usbdmx/LibUsbThread.h"
+#include "libs/usb/LibUsbThread.h"
 #include "tools/ja-rule/JaRuleEndpoint.h"
 
 /**
@@ -107,7 +107,7 @@ class USBDeviceManager {
   ola::thread::ExecutorThread m_cleanup_thread;
 
   libusb_context* m_context;
-  std::auto_ptr<ola::plugin::usbdmx::LibUsbHotplugThread> m_usb_thread;
+  std::auto_ptr<ola::usb::LibUsbHotplugThread> m_usb_thread;
   ola::thread::ThreadId m_start_thread_id;
 
   std::auto_ptr<NotificationCallback> const m_notification_cb;

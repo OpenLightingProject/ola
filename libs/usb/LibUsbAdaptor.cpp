@@ -18,18 +18,17 @@
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/LibUsbAdaptor.h"
+#include "libs/usb/LibUsbAdaptor.h"
 
 #include <libusb.h>
 #include <ola/Logging.h>
 #include <sstream>
 #include <string>
 
-#include "plugins/usbdmx/LibUsbThread.h"
+#include "libs/usb/LibUsbThread.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
 using std::ostringstream;
 using std::string;
@@ -67,7 +66,7 @@ bool Open(libusb_device *usb_device,
   int r = libusb_open(usb_device, usb_handle);
   if (r) {
     OLA_WARN << "Failed to open libusb device: " << usb_device << ": "
-             << LibUsbAdaptor::ErrorCodeToString(r);;
+             << LibUsbAdaptor::ErrorCodeToString(r);
     return false;
   }
   return true;
@@ -180,7 +179,12 @@ int BaseLibUsbAdaptor::ClaimInterface(libusb_device_handle *dev,
 int BaseLibUsbAdaptor::DetachKernelDriver(libusb_device_handle *dev,
                                           int interface_number) {
   if (libusb_kernel_driver_active(dev, interface_number)) {
-    return libusb_detach_kernel_driver(dev, interface_number);
+    int r = libusb_detach_kernel_driver(dev, interface_number);
+    if (r) {
+      OLA_WARN << "libusb_detach_kernel_driver failed for: " << dev
+               << ": " << LibUsbAdaptor::ErrorCodeToString(r);
+    }
+    return r;
   } else {
     return 0;
   }
@@ -189,19 +193,47 @@ int BaseLibUsbAdaptor::DetachKernelDriver(libusb_device_handle *dev,
 int BaseLibUsbAdaptor::GetActiveConfigDescriptor(
       libusb_device *dev,
       struct libusb_config_descriptor **config) {
-  return libusb_get_active_config_descriptor(dev, config);
+  int r = libusb_get_active_config_descriptor(dev, config);
+  if (r) {
+    OLA_WARN << "libusb_get_active_config_descriptor failed for: " << dev
+             << ": " << LibUsbAdaptor::ErrorCodeToString(r);
+  }
+  return r;
+}
+
+int BaseLibUsbAdaptor::GetDeviceDescriptor(
+    libusb_device *dev,
+    struct libusb_device_descriptor *desc) {
+  int r = libusb_get_device_descriptor(dev, desc);
+  if (r) {
+    OLA_WARN << "libusb_get_device_descriptor failed for: " << dev
+             << ": " << LibUsbAdaptor::ErrorCodeToString(r);
+  }
+  return r;
 }
 
 int BaseLibUsbAdaptor::GetConfigDescriptor(
     libusb_device *dev,
     uint8_t config_index,
     struct libusb_config_descriptor **config) {
-  return libusb_get_config_descriptor(dev, config_index, config);
+  int r = libusb_get_config_descriptor(dev, config_index, config);
+  if (r) {
+    OLA_WARN << "libusb_get_config_descriptor failed for: " << dev
+             << ": " << LibUsbAdaptor::ErrorCodeToString(r);
+  }
+  return r;
 }
 
 void BaseLibUsbAdaptor::FreeConfigDescriptor(
     struct libusb_config_descriptor *config) {
   libusb_free_config_descriptor(config);
+}
+
+bool BaseLibUsbAdaptor::GetStringDescriptor(
+    libusb_device_handle *usb_handle,
+    uint8_t descriptor_index,
+    string *data) {
+  return GetStringDescriptorAscii(usb_handle, descriptor_index, data);
 }
 
 struct libusb_transfer* BaseLibUsbAdaptor::AllocTransfer(int iso_packets) {
@@ -298,6 +330,10 @@ int BaseLibUsbAdaptor::InterruptTransfer(libusb_device_handle *dev_handle,
                                    actual_length, timeout);
 }
 
+USBDeviceID BaseLibUsbAdaptor::GetDeviceId(libusb_device *device) const {
+  return USBDeviceID(libusb_get_bus_number(device),
+                     libusb_get_device_address(device));
+}
 
 // SyncronousLibUsbAdaptor
 // -----------------------------------------------------------------------------
@@ -381,6 +417,5 @@ int AsyncronousLibUsbAdaptor::InterruptTransfer(
   return BaseLibUsbAdaptor::InterruptTransfer(dev_handle, endpoint, data,
                                               length, actual_length, timeout);
 }
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola

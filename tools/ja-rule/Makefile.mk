@@ -16,7 +16,8 @@ tools_ja_rule_ja_rule_SOURCES = \
 tools_ja_rule_ja_rule_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
 tools_ja_rule_ja_rule_LDADD = $(libusb_LIBS) \
                               common/libolacommon.la \
-                              plugins/usbdmx/libolausbdmxwidget.la
+                              plugins/usbdmx/libolausbdmxwidget.la \
+                              libs/usb/libolausb.la
 
 tools_ja_rule_ja_rule_controller_SOURCES = \
     tools/ja-rule/JaRuleEndpoint.cpp \
@@ -31,4 +32,5 @@ tools_ja_rule_ja_rule_controller_SOURCES = \
 tools_ja_rule_ja_rule_controller_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
 tools_ja_rule_ja_rule_controller_LDADD = $(libusb_LIBS) \
                                          common/libolacommon.la \
-                                         plugins/usbdmx/libolausbdmxwidget.la
+                                         plugins/usbdmx/libolausbdmxwidget.la \
+                                         libs/usb/libolausb.la

@@ -22,15 +22,17 @@
 
 #include <string.h>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
+
+using ola::usb::LibUsbAdaptor;
 
 namespace {
 
@@ -135,8 +137,7 @@ bool SunliteThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 
 SynchronousSunlite::SynchronousSunlite(LibUsbAdaptor *adaptor,
                                                    libusb_device *usb_device)
-    : Sunlite(adaptor),
-      m_usb_device(usb_device) {
+    : Sunlite(adaptor, usb_device) {
 }
 
 bool SynchronousSunlite::Init() {
@@ -200,7 +201,7 @@ class SunliteAsyncUsbSender : public AsyncUsbSender {
 AsynchronousSunlite::AsynchronousSunlite(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device)
-    : Sunlite(adaptor) {
+    : Sunlite(adaptor, usb_device) {
   m_sender.reset(new SunliteAsyncUsbSender(m_adaptor, usb_device));
 }
 

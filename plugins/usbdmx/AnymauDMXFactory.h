@@ -21,6 +21,7 @@
 #ifndef PLUGINS_USBDMX_ANYMAUDMXFACTORY_H_
 #define PLUGINS_USBDMX_ANYMAUDMXFACTORY_H_
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
@@ -33,7 +34,7 @@ namespace usbdmx {
  */
 class AnymauDMXFactory : public BaseWidgetFactory<class AnymauDMX> {
  public:
-  explicit AnymauDMXFactory(class LibUsbAdaptor *adaptor)
+  explicit AnymauDMXFactory(ola::usb::LibUsbAdaptor *adaptor)
       : m_missing_serial_number(false),
         m_adaptor(adaptor) {
   }
@@ -45,7 +46,7 @@ class AnymauDMXFactory : public BaseWidgetFactory<class AnymauDMX> {
 
  private:
   bool m_missing_serial_number;
-  class LibUsbAdaptor *m_adaptor;
+  ola::usb::LibUsbAdaptor *m_adaptor;
 
   static const char EXPECTED_MANUFACTURER[];
   static const char EXPECTED_PRODUCT[];

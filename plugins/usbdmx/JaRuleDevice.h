@@ -14,15 +14,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * JaRuleDevice.h
- * A Ja Rule device that creates a single port.
+ * A Ja Rule device.
  * Copyright (C) 2015 Simon Newton
  */
 
 #ifndef PLUGINS_USBDMX_JARULEDEVICE_H_
 #define PLUGINS_USBDMX_JARULEDEVICE_H_
 
-#include <memory>
+#include <set>
 #include <string>
+
+#include "libs/usb/JaRuleWidget.h"
 #include "ola/base/Macro.h"
 #include "olad/Device.h"
 
@@ -31,23 +33,21 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief A JaRule device.
+ * @brief A JaRule device, that represents one widget.
  *
- * Each Ja Rule device has a single output port.
+ * A widget may have multiple input / output ports.
  */
 class JaRuleDevice: public Device {
  public:
   /**
    * @brief Create a new JaRuleDevice.
-   * @param owner The plugin this device belongs to
-   * @param widget The Ja Rule widget to use for this device.
+   * @param owner The plugin this device belongs to.
+   * @param widget An initalized JaRuleWidget.
    * @param device_name The name of the device.
-   * @param device_id The id of the device.
    */
   JaRuleDevice(ola::AbstractPlugin *owner,
-               class JaRuleWidget *widget,
-               const std::string &device_name,
-               const std::string &device_id);
+               ola::usb::JaRuleWidget *widget,
+               const std::string &device_name);
 
   std::string DeviceId() const {
     return m_device_id;
@@ -55,10 +55,12 @@ class JaRuleDevice: public Device {
 
  protected:
   bool StartHook();
+  void PostPortStop();
 
  private:
+  ola::usb::JaRuleWidget *m_widget;  // not owned
   const std::string m_device_id;
-  std::auto_ptr<class JaRuleOutputPort> m_port;
+  std::set<uint8_t> m_claimed_ports;
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleDevice);
 };

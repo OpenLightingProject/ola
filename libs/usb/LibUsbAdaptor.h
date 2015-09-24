@@ -18,17 +18,17 @@
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_LIBUSBADAPTOR_H_
-#define PLUGINS_USBDMX_LIBUSBADAPTOR_H_
+#ifndef LIBS_USB_LIBUSBADAPTOR_H_
+#define LIBS_USB_LIBUSBADAPTOR_H_
 
 #include <libusb.h>
 #include <string>
 
 #include "ola/base/Macro.h"
+#include "libs/usb/Types.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
 /**
  * @brief Wraps calls to libusb so we can test the code.
@@ -134,6 +134,16 @@ class LibUsbAdaptor {
                                  int interface_number) = 0;
 
   // USB descriptors
+  /**
+   * @brief Wraps libusb_get_device_descriptor.
+   * @param dev a device
+   * @param[out] descriptor The device descriptor.
+   * @returns 0 on success
+   * @returns another LIBUSB_ERROR code on error
+   */
+  virtual int GetDeviceDescriptor(
+      libusb_device *dev,
+      struct libusb_device_descriptor *descriptor) = 0;
 
   /**
    * @brief Wraps libusb_get_active_config_descriptor.
@@ -170,6 +180,17 @@ class LibUsbAdaptor {
    */
   virtual void FreeConfigDescriptor(
       struct libusb_config_descriptor *config) = 0;
+
+  /**
+   * @brief Get the value of a string descriptor.
+   * @param usb_handle The USB device handle
+   * @param descriptor_index The index of the string descriptor to fetch.
+   * @param[out] data The value of the string descriptor.
+   * @returns true if the string descriptor was retrieved, false otherwise.
+   */
+  virtual bool GetStringDescriptor(libusb_device_handle *usb_handle,
+                                   uint8_t descriptor_index,
+                                   std::string *data) = 0;
 
   // Asynchronous device I/O
 
@@ -347,6 +368,13 @@ class LibUsbAdaptor {
                                 int *actual_length,
                                 unsigned int timeout) = 0;
 
+  /**
+   * @brief Get the USBDeviceID for a device.
+   * @param device The libusb device to get the ID of.
+   * @returns The USBDeviceID for this device.
+   */
+  virtual USBDeviceID GetDeviceId(libusb_device *device) const = 0;
+
   // Static helper methods.
 
   /**
@@ -404,6 +432,9 @@ class BaseLibUsbAdaptor : public LibUsbAdaptor {
   int DetachKernelDriver(libusb_device_handle *dev, int interface_number);
 
   // USB descriptors
+  int GetDeviceDescriptor(libusb_device *dev,
+                          struct libusb_device_descriptor *descriptor);
+
   int GetActiveConfigDescriptor(
       libusb_device *dev,
       struct libusb_config_descriptor **config);
@@ -413,6 +444,10 @@ class BaseLibUsbAdaptor : public LibUsbAdaptor {
                           struct libusb_config_descriptor **config);
 
   void FreeConfigDescriptor(struct libusb_config_descriptor *config);
+
+  bool GetStringDescriptor(libusb_device_handle *usb_handle,
+                           uint8_t descriptor_index,
+                           std::string *data);
 
   // Asynchronous device I/O
   struct libusb_transfer* AllocTransfer(int iso_packets);
@@ -478,6 +513,8 @@ class BaseLibUsbAdaptor : public LibUsbAdaptor {
                         int length,
                         int *actual_length,
                         unsigned int timeout);
+
+  USBDeviceID GetDeviceId(libusb_device *device) const;
 };
 
 /**
@@ -552,7 +589,6 @@ class AsyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
 
   DISALLOW_COPY_AND_ASSIGN(AsyncronousLibUsbAdaptor);
 };
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_LIBUSBADAPTOR_H_
+#endif  // LIBS_USB_LIBUSBADAPTOR_H_

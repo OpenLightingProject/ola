@@ -13,15 +13,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * JaRuleWidgetImpl.h
- * The implementation of the Ja Rule Widget.
+ * JaRulePortHandleImpl.h
+ * The implementation of the Ja Rule Port Handle.
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_JARULEWIDGETIMPL_H_
-#define PLUGINS_USBDMX_JARULEWIDGETIMPL_H_
+#ifndef LIBS_USB_JARULEPORTHANDLEIMPL_H_
+#define LIBS_USB_JARULEPORTHANDLEIMPL_H_
 
 #include <ola/base/Macro.h>
+#include <ola/DmxBuffer.h>
 #include <ola/io/ByteString.h>
 #include <ola/rdm/DiscoveryAgent.h>
 #include <ola/rdm/QueueingRDMController.h>
@@ -30,40 +31,29 @@
 #include <ola/rdm/UID.h>
 #include <ola/util/SequenceNumber.h>
 
-#include "plugins/usbdmx/JaRuleEndpoint.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
+#include "libs/usb/JaRuleConstants.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
 /**
- * @brief The internal implementation of a JaRuleWidget.
+ * @brief The internal implementation of a Ja Rule Port Handle.
+ *
+ * This class is responsible for translating high level intent, e.g. "send RDM
+ * command" to the binary messages that can then be passed to a JaRuleWidget.
  */
-class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
-                         public ola::rdm::DiscoverableRDMControllerInterface {
+class JaRulePortHandleImpl
+    : public ola::rdm::DiscoveryTargetInterface,
+      public ola::rdm::DiscoverableRDMControllerInterface {
  public:
   /**
-   * @brief Create a new JaRuleWidgetImpl.
-   * @param ss The SelectServer to run the RDM callbacks on.
-   * @param adaptor The LibUsbAdaptor to use.
-   * @param device the libusb_device for the Ja Rule widget.
-   * @param controller_uid The UID of the controller. This is used for DUB &
-   *   Mute / Unmute messages.
+   * @brief Create a new JaRulePortHandleImpl.
    */
-  JaRuleWidgetImpl(ola::io::SelectServerInterface *ss,
-                   AsyncronousLibUsbAdaptor *adaptor,
-                   libusb_device *device,
-                   const ola::rdm::UID &controller_uid);
+  JaRulePortHandleImpl(class JaRuleWidgetPort *parent_port,
+                       const ola::rdm::UID &uid,
+                       uint8_t physical_port);
 
-  ~JaRuleWidgetImpl();
-
-  /**
-   * @brief Initialize the widget.
-   * @returns true if the USB device was claimed correctly.
-   */
-  bool Init();
+  ~JaRulePortHandleImpl();
 
   // From DiscoverableRDMControllerInterface
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -87,9 +77,9 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
   bool SendDMX(const DmxBuffer &buffer);
 
   /**
-   * @brief Send a reset message to the hardware widget.
+   * @brief Change the mode of this port.
    */
-  void ResetDevice();
+  bool SetPortMode(PortMode new_mode);
 
  private:
   typedef enum {
@@ -116,42 +106,44 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
     uint16_t mark_end;  //!< The end of the mark.
   });
 
-  JaRuleEndpoint m_endpoint;
+  class JaRuleWidgetPort* const m_port;  // not owned
+  const ola::rdm::UID m_uid;
+  const uint8_t m_physical_port;
+
   bool m_in_shutdown;
 
   // DMX members
   DmxBuffer m_dmx;
   bool m_dmx_in_progress;
   bool m_dmx_queued;
-  JaRuleEndpoint::CommandCompleteCallback *m_dmx_callback;
+  CommandCompleteCallback *m_dmx_callback;
 
   // RDM members
   ola::rdm::DiscoveryAgent m_discovery_agent;
-  const ola::rdm::UID m_our_uid;
   ola::SequenceNumber<uint8_t> m_transaction_number;
   ola::rdm::UIDSet m_uids;
 
   void CheckStatusFlags(uint8_t flags);
-  void DMXComplete(JaRuleEndpoint::CommandResult result, uint8_t return_code,
+  void DMXComplete(USBCommandResult result, uint8_t return_code,
                    uint8_t status_flags, const ola::io::ByteString &payload);
   void MuteDeviceComplete(MuteDeviceCallback *mute_complete,
-                          JaRuleEndpoint::CommandResult result,
+                          USBCommandResult result,
                           uint8_t return_code,
                           uint8_t status_flags,
                           const ola::io::ByteString &payload);
   void UnMuteDeviceComplete(UnMuteDeviceCallback *unmute_complete,
-                            JaRuleEndpoint::CommandResult result,
+                            USBCommandResult result,
                             uint8_t return_code,
                             uint8_t status_flags,
                             const ola::io::ByteString &payload);
   void DUBComplete(BranchCallback *callback,
-                   JaRuleEndpoint::CommandResult status,
+                   USBCommandResult status,
                    uint8_t return_code,
                    uint8_t status_flags,
                    const ola::io::ByteString &payload);
   void RDMComplete(const ola::rdm::RDMRequest *request,
                    ola::rdm::RDMCallback *m_rdm_callback,
-                   JaRuleEndpoint::CommandResult result,
+                   USBCommandResult result,
                    uint8_t return_code,
                    uint8_t status_flags,
                    const ola::io::ByteString &payload);
@@ -162,12 +154,10 @@ class JaRuleWidgetImpl : public ola::rdm::DiscoveryTargetInterface,
   void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                          OLA_UNUSED bool ok,
                          const ola::rdm::UIDSet &uids);
-  JaRuleEndpoint::CommandClass GetCommandFromRequest(
-      const ola::rdm::RDMRequest *request);
+  CommandClass GetCommandFromRequest(const ola::rdm::RDMRequest *request);
 
-  DISALLOW_COPY_AND_ASSIGN(JaRuleWidgetImpl);
+  DISALLOW_COPY_AND_ASSIGN(JaRulePortHandleImpl);
 };
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_JARULEWIDGETIMPL_H_
+#endif  // LIBS_USB_JARULEPORTHANDLEIMPL_H_

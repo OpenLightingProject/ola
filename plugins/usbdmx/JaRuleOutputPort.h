@@ -25,6 +25,8 @@
 #include "ola/base/Macro.h"
 #include "olad/Port.h"
 
+#include "libs/usb/JaRulePortHandle.h"
+
 namespace ola {
 
 class Device;
@@ -33,32 +35,35 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief A thin wrapper around a JaRuleWidget so that it can operate as an OLA
- * Port.
+ * @brief A thin wrapper around a JaRulePortHandle so that it can operate as an
+ * OLA Port.
  */
 class JaRuleOutputPort: public BasicOutputPort {
  public:
   /**
    * @brief Create a new JaRuleOutputPort.
    * @param parent The parent device for this port.
-   * @param id The port id.
-   * @param widget The widget to use to send DMX frames.
+   * @param id The port id, starting from 0
+   * @param port_handle A port handle to use.
    */
   JaRuleOutputPort(Device *parent,
                    unsigned int id,
-                   class JaRuleWidget *widget);
+                   ola::usb::JaRulePortHandle *port_handle);
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-  std::string Description() const { return ""; }
+  std::string Description() const;
 
   void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
+  void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+
  private:
-  class JaRuleWidget* const m_widget;
+  ola::usb::JaRulePortHandle* const m_port_handle;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleOutputPort);
 };
