@@ -25,7 +25,8 @@ import textwrap
 import sys
 from ola.ClientWrapper import ClientWrapper
 
-def usage():
+
+def Usage():
   print(textwrap.dedent("""\
   Usage: ola_rdm_discover.py --universe <universe> [--force_discovery]
 
@@ -52,7 +53,7 @@ def main():
 
   for o, a in opts:
     if o in ('-h', '--help'):
-      usage()
+      Usage()
       sys.exit()
     elif o in ('-f', '--full'):
       full_discovery = True
@@ -62,7 +63,7 @@ def main():
       universe = int(a)
 
   if not universe:
-    usage()
+    Usage()
     sys.exit()
 
   if incremental_discovery and full_discovery:

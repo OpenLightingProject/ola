@@ -23,6 +23,7 @@ matrix:
       env: TASK='coverage'
     - compiler: gcc
       env: TASK='coverity'
+    - env: TASK='flake8'
 
 env:
   global:
@@ -86,6 +87,7 @@ addons:
 install:
   - pip install --user protobuf==2.4.1
   - pip install --user cpp-coveralls
+  - pip install --user flake8
   - npm install -g grunt-cli
 
 before_install:

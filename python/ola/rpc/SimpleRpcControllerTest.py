@@ -23,6 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import unittest
 from SimpleRpcController import SimpleRpcController
 
+
 class SimpleRpcControllerTest(unittest.TestCase):
 
   def setUp(self):

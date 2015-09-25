@@ -21,6 +21,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import array
 import logging
 
+
 class DMXSender(object):
   def __init__(self, ola_wrapper, universe, frame_rate, slot_count):
     """Create a new DMXSender:

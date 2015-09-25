@@ -23,12 +23,13 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
 
+
 def Universes(state, universes):
   for uni in universes:
     print('Universe {}'.format(uni.id))
     print('  - Name: {}'.format(uni.name))
     print('  - Merge mode: {}'.format(
-      'LTP' if uni.merge_mode == Universe.LTP else 'HTP'))
+        'LTP' if uni.merge_mode == Universe.LTP else 'HTP'))
 
     if len(uni.input_ports) > 0:
       print('  - Input ports:')

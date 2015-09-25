@@ -30,6 +30,7 @@ class UIDOutOfRangeException(Error):
 
 class UID(object):
   """Represents a UID."""
+
   def __init__(self, manufacturer_id, device_id):
     self._manufacturer_id = manufacturer_id
     self._device_id = device_id

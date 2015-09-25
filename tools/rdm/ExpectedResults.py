@@ -40,6 +40,7 @@ COMMAND_CLASS_DICT = {
     RDM_DISCOVERY: 'Discovery',
 }
 
+
 def _CommandClassToString(command_class):
   return COMMAND_CLASS_DICT[command_class]
 
@@ -47,9 +48,9 @@ def _CommandClassToString(command_class):
 class BaseExpectedResult(object):
   """The base class for expected results."""
   def __init__(self,
-               action = None,
-               warning = None,
-               advisory = None):
+               action=None,
+               warning=None,
+               advisory=None):
     """Create the base expected result object.
 
     Args:
@@ -169,9 +170,9 @@ class NackResult(SuccessfulResult):
                command_class,
                pid_id,
                nack_reason,
-               action = None,
-               warning = None,
-               advisory = None):
+               action=None,
+               warning=None,
+               advisory=None):
     """Create an NackResult object.
 
     Args:
@@ -209,9 +210,9 @@ class NackDiscoveryResult(NackResult):
   def __init__(self,
                pid_id,
                nack_reason,
-               action = None,
-               warning = None,
-               advisory = None):
+               action=None,
+               warning=None,
+               advisory=None):
     """Create an expected result object which is a NACK for a Discovery
       request.
 
@@ -229,14 +230,15 @@ class NackDiscoveryResult(NackResult):
                                               warning,
                                               advisory)
 
+
 class NackGetResult(NackResult):
   """This checks that the device nacked a GET request."""
   def __init__(self,
                pid_id,
                nack_reason,
-               action = None,
-               warning = None,
-               advisory = None):
+               action=None,
+               warning=None,
+               advisory=None):
     """Create an expected result object which is a NACK for a GET request.
 
     Args:
@@ -259,9 +261,9 @@ class NackSetResult(NackResult):
   def __init__(self,
                pid_id,
                nack_reason,
-               action = None,
-               warning = None,
-               advisory = None):
+               action=None,
+               warning=None,
+               advisory=None):
     """Create an expected result object which is a NACK for a SET request.
 
     Args:
@@ -284,11 +286,11 @@ class AckResult(SuccessfulResult):
   def __init__(self,
                command_class,
                pid_id,
-               field_names = [],
-               field_values = {},
-               action = None,
-               warning = None,
-               advisory = None):
+               field_names=[],
+               field_values={},
+               action=None,
+               warning=None,
+               advisory=None):
     """Create an expected result object that matches an ACK.
 
     Args:
@@ -348,11 +350,11 @@ class AckDiscoveryResult(AckResult):
   """This checks that the device ack'ed a DISCOVERY request."""
   def __init__(self,
                pid_id,
-               field_names = [],
-               field_values = {},
-               action = None,
-               warning = None,
-               advisory = None):
+               field_names=[],
+               field_values={},
+               action=None,
+               warning=None,
+               advisory=None):
     """Create an expected result object which is an ACK for a DISCOVERY request.
 
     Args:
@@ -371,15 +373,16 @@ class AckDiscoveryResult(AckResult):
                                              warning,
                                              advisory)
 
+
 class AckGetResult(AckResult):
   """This checks that the device ack'ed a GET request."""
   def __init__(self,
                pid_id,
-               field_names = [],
-               field_values = {},
-               action = None,
-               warning = None,
-               advisory = None):
+               field_names=[],
+               field_values={},
+               action=None,
+               warning=None,
+               advisory=None):
     """Create an expected result object which is an ACK for a GET request.
 
     Args:
@@ -403,11 +406,11 @@ class AckSetResult(AckResult):
   """This checks that the device ack'ed a SET request."""
   def __init__(self,
                pid_id,
-               field_names = [],
-               field_values = {},
-               action = None,
-               warning = None,
-               advisory = None):
+               field_names=[],
+               field_values={},
+               action=None,
+               warning=None,
+               advisory=None):
     """Create an expected result object which is an ACK for a SET request.
 
     Args:
