@@ -77,9 +77,9 @@ class USBDeviceManager {
   /**
    * @brief Get the AsyncronousLibUsbAdaptor to use.
    * @returns An AsyncronousLibUsbAdaptor, ownership is not transferred.
+   * @pre Must be called after Start()
    *
-   * This should be called after Start(). The adaptor is valid until the call
-   * to Stop().
+   * The adaptor is valid until the call to Stop().
    */
   ola::usb::AsyncronousLibUsbAdaptor *GetUSBAdaptor() const;
 

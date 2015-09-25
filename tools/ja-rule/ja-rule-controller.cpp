@@ -129,9 +129,6 @@ class Controller {
       case 'q':
         m_ss->Terminate();
         break;
-      case 'r':
-        ResetDevice();
-        break;
       case 's':
         cout << "Enter a letter for the UID" << endl;
         m_mode = SELECT_UID;
@@ -152,7 +149,6 @@ class Controller {
     cout << " h - Print this help message" << endl;
     cout << " p - Run Incremental Discovery" << endl;
     cout << " q - Quit" << endl;
-    cout << " r - Reset" << endl;
     cout << " s - Select UID" << endl;
     cout << " u - Show UIDs" << endl;
   }
@@ -200,16 +196,6 @@ class Controller {
       m_port->RunFullDiscovery(
           NewSingleCallback(this, &Controller::DiscoveryComplete));
     }
-  }
-
-  void ResetDevice() {
-    /*
-    if (!m_widget) {
-      return;
-    }
-    OLA_INFO << "Resetting device";
-    m_widget->ResetDevice();
-    */
   }
 
   void DiscoveryComplete(const UIDSet& uids) {

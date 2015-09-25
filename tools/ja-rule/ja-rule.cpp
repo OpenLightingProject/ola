@@ -35,6 +35,7 @@
 #include <ola/stl/STLUtils.h>
 
 #include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -199,8 +200,8 @@ class Controller {
       .min_value = 5,  // actual min 10
       .max_value = 55,  // action max is 50
       .units = TIMING_UNITS_TENTHS_OF_MILLI_SECONDS,
-      .get_command = ola::usb::JARULE_CMD_SET_RDM_BROADCAST_TIMEOUT,
-      .set_command = ola::usb::JARULE_CMD_GET_RDM_BROADCAST_TIMEOUT,
+      .get_command = ola::usb::JARULE_CMD_GET_RDM_BROADCAST_TIMEOUT,
+      .set_command = ola::usb::JARULE_CMD_SET_RDM_BROADCAST_TIMEOUT,
     };
     m_timing_settings[TIMING_RDM_BROADCAST_TIMEOUT] =
         broadcast_response_timeout;
@@ -266,7 +267,8 @@ class Controller {
     vector<string> lines;
     for (ActionMap::iterator iter = m_actions.begin();
          iter != m_actions.end(); ++iter) {
-      if (!iter->second.description.empty()) {
+      if (!iter->second.description.empty() ||
+          std::isprint(iter->first)) {
         std::ostringstream str;
         str << " " << iter->first << " - " << iter->second.description << endl;
         lines.push_back(str.str());
