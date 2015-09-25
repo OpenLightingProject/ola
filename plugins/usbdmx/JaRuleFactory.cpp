@@ -22,10 +22,9 @@
 
 #include <memory>
 
+#include "libs/usb/JaRuleWidget.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
 
@@ -52,8 +51,8 @@ bool JaRuleFactory::DeviceAdded(
   }
 
   OLA_INFO << "Found a new Ja Rule device";
-  std::auto_ptr<JaRuleWidget> widget(
-      new JaRuleWidget(m_ss, m_adaptor, usb_device));
+  std::auto_ptr<ola::usb::JaRuleWidget> widget(
+      new ola::usb::JaRuleWidget(m_ss, m_adaptor, usb_device));
   return AddWidget(observer, usb_device, widget.release());
 }
 }  // namespace usbdmx

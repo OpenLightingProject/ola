@@ -18,8 +18,8 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_JARULEPORTHANDLE_H_
-#define PLUGINS_USBDMX_JARULEPORTHANDLE_H_
+#ifndef LIBS_USB_JARULEPORTHANDLE_H_
+#define LIBS_USB_JARULEPORTHANDLE_H_
 
 #include <stdint.h>
 
@@ -30,12 +30,10 @@
 
 #include <memory>
 
-#include "plugins/usbdmx/JaRuleConstants.h"
+#include "libs/usb/JaRuleConstants.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
-namespace jarule {
+namespace usb {
 
 /**
  * @brief Represents a DMX/RDM port on a Ja Rule device.
@@ -77,8 +75,6 @@ class JaRulePortHandle : public ola::rdm::DiscoverableRDMControllerInterface {
 
   DISALLOW_COPY_AND_ASSIGN(JaRulePortHandle);
 };
-}  // namespace jarule
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_JARULEPORTHANDLE_H_
+#endif  // LIBS_USB_JARULEPORTHANDLE_H_

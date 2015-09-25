@@ -29,9 +29,7 @@ import textwrap
 from ola import PidStore
 from ola.testing.rdm.ModelCollector import ModelCollector
 from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import OlaClient, RDMNack
-from ola.RDMAPI import RDMAPI
-from ola.UID import UID
+
 
 def Usage():
   print textwrap.dedent("""\

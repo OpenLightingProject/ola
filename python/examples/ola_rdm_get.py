@@ -33,6 +33,7 @@ from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
 
+
 def Usage():
   print(textwrap.dedent("""\
   Usage: ola_rdm_get.py --universe <universe> --uid <uid> <pid>
@@ -49,7 +50,6 @@ def Usage():
     -u, --universe <universe> Universe number."""))
 
 wrapper = None
-
 
 
 class ResponsePrinter(object):
@@ -180,7 +180,7 @@ class InteractiveModeController(cmd.Cmd):
 
     if sub_device < 0 or sub_device > PidStore.ALL_SUB_DEVICES:
       print('*** Argument must be between 0 and 0x%hx' %
-             PidStore.ALL_SUB_DEVICES)
+            PidStore.ALL_SUB_DEVICES)
       return
     self._sub_device = sub_device
 
@@ -295,7 +295,6 @@ class InteractiveModeController(cmd.Cmd):
       print('*** Unknown pid %s' % args[0])
       return
 
-    rdm_args = args[1:]
     if not pid.RequestSupported(request_type):
       print('*** PID does not support command')
       return
@@ -419,8 +418,8 @@ def main():
   try:
     opts, args = getopt.getopt(sys.argv[1:], 'd:hilp:u:',
                                ['sub-device=', 'help', 'interactive',
-                                 'list-pids', 'pid-location=', 'uid=',
-                                 'universe='])
+                                'list-pids', 'pid-location=', 'uid=',
+                                'universe='])
   except getopt.GetoptError as err:
     print(str(err))
     Usage()

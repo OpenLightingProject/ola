@@ -25,8 +25,10 @@ import textwrap
 import sys
 from ola.ClientWrapper import ClientWrapper
 
+
 def NewData(data):
   print(data)
+
 
 def Usage():
   print(textwrap.dedent("""
@@ -36,6 +38,7 @@ def Usage():
 
   -h, --help                Display this help message and exit.
   -u, --universe <universe> Universe number."""))
+
 
 def main():
   try:

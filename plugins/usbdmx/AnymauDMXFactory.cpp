@@ -20,16 +20,18 @@
 
 #include "plugins/usbdmx/AnymauDMXFactory.h"
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
 #include "plugins/usbdmx/AnymauDMX.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
+
+using ola::usb::LibUsbAdaptor;
 
 const char AnymauDMXFactory::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
 const char AnymauDMXFactory::EXPECTED_PRODUCT[] = "uDMX";

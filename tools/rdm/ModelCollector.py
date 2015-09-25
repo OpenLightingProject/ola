@@ -24,12 +24,11 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import logging
 import ola.RDMConstants
 from ola import PidStore
-from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
-from ola.UID import UID
 
 DEFAULT_LANGUAGE = "en"
+
 
 class Error(Exception):
   """Base exception class."""
@@ -139,7 +138,7 @@ class ModelCollector(object):
   def _HandleUIDList(self, state, uids):
     """Called when the UID list arrives."""
     if not state.Succeeded():
-      raise DiscoveryException(state.message )
+      raise DiscoveryException(state.message)
 
     found_uids = set()
     for uid in uids:

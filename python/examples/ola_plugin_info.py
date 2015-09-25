@@ -24,7 +24,7 @@ import getopt
 import textwrap
 import sys
 from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import Universe
+
 
 def Usage():
   print(textwrap.dedent("""
@@ -35,6 +35,7 @@ def Usage():
   -h, --help                Display this help message and exit.
   -p, --plugin <plugin_id>  Plugin ID number."""))
 
+
 def main():
   def Plugins(state, plugins):
     for plugin in plugins:
@@ -42,7 +43,7 @@ def main():
     wrapper.Stop()
 
   def PluginDescription(state, description):
-    print(description);
+    print(description)
     wrapper.Stop()
 
   try:

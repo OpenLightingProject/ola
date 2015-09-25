@@ -25,7 +25,7 @@
 #include "ola/base/Macro.h"
 #include "olad/Port.h"
 
-#include "plugins/usbdmx/JaRulePortHandle.h"
+#include "libs/usb/JaRulePortHandle.h"
 
 namespace ola {
 
@@ -48,7 +48,7 @@ class JaRuleOutputPort: public BasicOutputPort {
    */
   JaRuleOutputPort(Device *parent,
                    unsigned int id,
-                   jarule::JaRulePortHandle *port_handle);
+                   ola::usb::JaRulePortHandle *port_handle);
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
@@ -63,7 +63,7 @@ class JaRuleOutputPort: public BasicOutputPort {
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
  private:
-  jarule::JaRulePortHandle* const m_port_handle;  // not owned
+  ola::usb::JaRulePortHandle* const m_port_handle;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleOutputPort);
 };

@@ -18,8 +18,8 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_JARULEWIDGETPORT_H_
-#define PLUGINS_USBDMX_JARULEWIDGETPORT_H_
+#ifndef LIBS_USB_JARULEWIDGETPORT_H_
+#define LIBS_USB_JARULEWIDGETPORT_H_
 
 #include <libusb.h>
 #include <ola/Callback.h>
@@ -31,14 +31,12 @@
 #include <map>
 #include <queue>
 
-#include "plugins/usbdmx/JaRulePortHandle.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
+#include "libs/usb/JaRulePortHandle.h"
+#include "libs/usb/LibUsbAdaptor.h"
+#include "libs/usb/JaRuleWidget.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
-namespace jarule {
+namespace usb {
 
 /**
  * @brief The internal model of a port on a JaRule device.
@@ -58,7 +56,7 @@ class JaRuleWidgetPort {
    * @param physical_port The physical port index.
    */
   JaRuleWidgetPort(ola::thread::ExecutorInterface *executor,
-                   ola::plugin::usbdmx::LibUsbAdaptor *adaptor,
+                   LibUsbAdaptor *adaptor,
                    libusb_device_handle *usb_handle,
                    uint8_t endpoint_number,
                    const ola::rdm::UID &uid,
@@ -98,7 +96,7 @@ class JaRuleWidgetPort {
    *
    * SendCommand() can be called from any thread, and messages will be queued.
    */
-  void SendCommand(jarule::CommandClass command,
+  void SendCommand(CommandClass command,
                    const uint8_t *data,
                    unsigned int size,
                    CommandCompleteCallback *callback);
@@ -124,7 +122,7 @@ class JaRuleWidgetPort {
 
   // The arguments passed to the user supplied callback.
   typedef struct {
-    jarule::USBCommandResult result;
+    USBCommandResult result;
      uint8_t return_code;
      uint8_t status_flags;
      const ola::io::ByteString payload;
@@ -132,7 +130,7 @@ class JaRuleWidgetPort {
 
   class PendingCommand {
    public:
-    PendingCommand(jarule::CommandClass command,
+    PendingCommand(CommandClass command,
                    CommandCompleteCallback *callback,
                    const ola::io::ByteString &payload)
         : command(command),
@@ -140,7 +138,7 @@ class JaRuleWidgetPort {
           payload(payload) {
     }
 
-    jarule::CommandClass command;
+    CommandClass command;
     CommandCompleteCallback *callback;
     ola::io::ByteString payload;
     // TODO(simon): We probably need a counter here to detect timeouts.
@@ -150,7 +148,7 @@ class JaRuleWidgetPort {
   typedef std::queue<PendingCommand*> CommandQueue;
 
   ola::thread::ExecutorInterface* const m_executor;
-  ola::plugin::usbdmx::LibUsbAdaptor* const m_adaptor;
+  LibUsbAdaptor* const m_adaptor;
   libusb_device_handle* const m_usb_handle;
   const uint8_t m_endpoint_number;
   const ola::rdm::UID m_uid;
@@ -176,7 +174,7 @@ class JaRuleWidgetPort {
                       unsigned int size);  // LOCK_REQUIRED(m_mutex);
 
   void ScheduleCallback(CommandCompleteCallback *callback,
-                        jarule::USBCommandResult result,
+                        USBCommandResult result,
                         uint8_t return_code,
                         uint8_t status_flags,
                         const ola::io::ByteString &payload);
@@ -195,8 +193,6 @@ class JaRuleWidgetPort {
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleWidgetPort);
 };
-}  // namespace jarule
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_JARULEWIDGETPORT_H_
+#endif  // LIBS_USB_JARULEWIDGETPORT_H_
