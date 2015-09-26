@@ -494,6 +494,18 @@ AS_IF([test "x$have_microhttpd" = xyes],
       [AC_DEFINE([HAVE_LIBMICROHTTPD], [1],
                  [define if libmicrohttpd is installed])])
 
+if test "x$have_microhttpd" = xyes; then
+  # Check if we have MHD_create_response_from_buffer
+  old_cflags=$CFLAGS
+  old_libs=$LIBS
+  CFLAGS="${CPPFLAGS} ${libprotobuf_CFLAGS}"
+  LIBS="${LIBS} ${libmicrohttpd_LIBS}"
+  AC_CHECK_FUNCS([MHD_create_response_from_buffer])
+  # restore CFLAGS
+  CFLAGS=$old_cflags
+  LIBS=$old_libs
+fi
+
 # Java API, this requires Maven
 AC_ARG_ENABLE(
   [java-libs],
