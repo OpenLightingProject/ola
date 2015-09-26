@@ -31,7 +31,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import logging
 import time
-from ExpectedResults import *
+from ExpectedResults import AckDiscoveryResult, AckGetResult, AckSetResult, NackGetResult, NackSetResult
 from TestCategory import TestCategory
 from TestState import TestState
 from ola import PidStore

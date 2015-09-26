@@ -23,14 +23,14 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import datetime
 import operator
 import struct
-from ExpectedResults import *
+from ExpectedResults import AckGetResult, InvalidResponse, TimeoutResult, UnsupportedResult, RDM_GET, RDM_SET
 from ResponderTest import ResponderTestFixture, TestFixture
 from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
-from ola.RDMConstants import *
-from ola.OlaClient import RDMNack
+from ola.RDMConstants import RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH, RDM_MAX_DOMAIN_NAME_LENGTH, RDM_MANUFACTURER_PID_MIN, RDM_MANUFACTURER_PID_MAX, RDM_INTERFACE_INDEX_MIN, RDM_INTERFACE_INDEX_MAX, INTERFACE_HARDWARE_TYPE_ETHERNET, RDM_ZERO_FOOTPRINT_DMX_ADDRESS
+from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
 from TestHelpers import ContainsUnprintable
@@ -6164,7 +6164,7 @@ class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
     self.SetProperty('max_scene_number', fields['max_scene_number'])
 
   def CrossCheckPidSupportIsZero(self, pid_name, fields, key):
-    if not (self.IsSupported(pid_name) or fields[key] == False):
+    if not (self.IsSupported(pid_name) or fields[key] is False):
       self.AddWarning('%s not supported, but %s in PRESET_INFO is non-0' %
                       (pid_name, key))
 

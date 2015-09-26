@@ -26,7 +26,7 @@ To view data, use the web interface or patch an output device to the same
 universe
 """
 
-from array import *
+from array import array
 from ola.ClientWrapper import ClientWrapper
 from ola.DMXConstants import DMX_MIN_SLOT_VALUE, DMX_MAX_SLOT_VALUE, \
     DMX_UNIVERSE_SIZE

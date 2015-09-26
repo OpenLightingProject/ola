@@ -18,6 +18,7 @@ matrix:
     - env: TASK='lint'
     - env: TASK='check-licences'
     - env: TASK='jshint'
+    - env: TASK='flake8'
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'
