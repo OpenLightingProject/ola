@@ -1,3 +1,8 @@
+#python2_sitelib shim
+%{!?python2_sitelib:%global python2_sitelib /usr/lib/python2*/site-packages/}
+#udev shim
+%{!?_udevrulesdir:%global _udevrulesdir /etc/udev/rules.d/}
+
 Name:           ola
 Version:        @VERSION@
 Release:        1
@@ -50,14 +55,15 @@ The rdm test suite for OLA
 %build
 autoreconf -i
 %configure --enable-rdm-tests --enable-shared --disable-static
+#disable rpath as fedora and centos don't like it in their packages
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 sed -i "s|\$(LN_S) -f \$(bindir)\/|\$(LN_S) -f |g" Makefile
-make %{?_smp_mflags}
+make #%{?_smp_mflags} the build fails on epel6 if we enable this
 
 %check
 export LD_LIBRARY_PATH="%buildroot/usr/lib:%buildroot/usr/lib64"
-make check %{?_smp_mflags}
+make check #%{?_smp_mflags} same here
 find %buildroot -name "*\.la" -delete
 find %buildroot -name "*\.a" -delete
 
