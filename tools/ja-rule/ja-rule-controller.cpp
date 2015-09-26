@@ -29,14 +29,15 @@
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/rdm/UID.h>
+#include <ola/rdm/UIDSet.h>
 #include <ola/util/Utils.h>
 
 #include <iostream>
 #include <memory>
 #include <string>
 
-#include "tools/ja-rule/JaRuleEndpoint.h"
-#include "tools/ja-rule/JaRuleWidget.h"
+#include "libs/usb/JaRuleWidget.h"
+#include "libs/usb/JaRulePortHandle.h"
 #include "tools/ja-rule/USBDeviceManager.h"
 
 using ola::NewCallback;
@@ -46,76 +47,51 @@ using ola::io::StdinHandler;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using ola::usb::JaRuleWidget;
+using ola::usb::JaRulePortHandle;
 using std::auto_ptr;
 using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
 
-DEFINE_string(controller_uid, "7a70:fffffe00", "The UID of the controller.");
-
-class WidgetManager {
- public:
-  explicit WidgetManager(const UID &controller_uid)
-      : m_endpoint(NULL),
-        m_widget_uid(controller_uid) {
-  }
-
-  void WidgetEvent(USBDeviceManager::EventType event,
-                   JaRuleEndpoint* device) {
-    if (event == USBDeviceManager::DEVICE_ADDED) {
-      OLA_INFO << "Open Lighting Device added";
-      if (m_endpoint) {
-        // We only support a single device for now
-        OLA_WARN << "More than one device present";
-        return;
-      }
-      m_endpoint = device;
-      m_widget.reset(new JaRuleWidget(device, m_widget_uid));
-    } else {
-      OLA_INFO << "Open Lighting Device removed";
-      if (device == m_endpoint) {
-        m_widget.reset();
-        m_endpoint = NULL;
-      }
-    }
-  }
-
-  // Only valid for the lifetime of the select server event.
-  JaRuleWidget* GetWidget() {
-    return m_widget.get();
-  }
-
- private:
-  JaRuleEndpoint *m_endpoint;
-  const UID m_widget_uid;
-  std::auto_ptr<JaRuleWidget> m_widget;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetManager);
-};
-
-
 /**
  * @brief Wait on input from the keyboard, and based on the input, send
  * messages to the device.
  */
-class InputHandler {
+class Controller {
  public:
-  InputHandler(SelectServer* ss,
-               const UID &controller_uid,
-               WidgetManager *widget_manager)
+  explicit Controller(SelectServer* ss)
       : m_ss(ss),
-        m_widget_manager(widget_manager),
-        m_widget_uid(controller_uid),
         m_stdin_handler(
-            new StdinHandler(ss,
-                             ola::NewCallback(this, &InputHandler::Input))),
+            new StdinHandler(ss, ola::NewCallback(this, &Controller::Input))),
         m_mode(NORMAL),
         m_selected_uid(0, 0) {
   }
 
-  ~InputHandler() {
+  ~Controller() {
     m_stdin_handler.reset();
+  }
+
+  void WidgetEvent(USBDeviceManager::EventType event,
+                   JaRuleWidget *widget) {
+    if (event == USBDeviceManager::DEVICE_ADDED) {
+      OLA_INFO << "Open Lighting Device added";
+      if (m_widget) {
+        // We only support a single device for now
+        OLA_WARN << "More than one device present";
+        return;
+      }
+      m_widget = widget;
+      m_port = widget->ClaimPort(0);
+    } else {
+      OLA_INFO << "Open Lighting Device removed";
+      if (widget == m_widget) {
+        m_widget->ReleasePort(0);
+        m_port = NULL;
+        m_widget = NULL;
+      }
+    }
   }
 
   void Input(int c) {
@@ -153,9 +129,6 @@ class InputHandler {
       case 'q':
         m_ss->Terminate();
         break;
-      case 'r':
-        ResetDevice();
-        break;
       case 's':
         cout << "Enter a letter for the UID" << endl;
         m_mode = SELECT_UID;
@@ -176,7 +149,6 @@ class InputHandler {
     cout << " h - Print this help message" << endl;
     cout << " p - Run Incremental Discovery" << endl;
     cout << " q - Quit" << endl;
-    cout << " r - Reset" << endl;
     cout << " s - Select UID" << endl;
     cout << " u - Show UIDs" << endl;
   }
@@ -188,16 +160,15 @@ class InputHandler {
   } Mode;
 
   SelectServer* m_ss;
-  WidgetManager *m_widget_manager;
-  const UID m_widget_uid;
+  JaRuleWidget *m_widget;
+  JaRulePortHandle *m_port;
   auto_ptr<StdinHandler> m_stdin_handler;
   UIDSet m_uids;
   Mode m_mode;
   UID m_selected_uid;
 
   void SetIdentify(bool identify_on) {
-    JaRuleWidget *widget = m_widget_manager->GetWidget();
-    if (!widget) {
+    if (!m_widget) {
       return;
     }
 
@@ -208,32 +179,23 @@ class InputHandler {
 
     uint8_t param_data = identify_on;
     RDMSetRequest *request = new RDMSetRequest(
-        m_widget_uid, m_selected_uid, 0, 0, 0, ola::rdm::PID_IDENTIFY_DEVICE,
+        m_widget->GetUID(), m_selected_uid, 0, 0, 0,
+        ola::rdm::PID_IDENTIFY_DEVICE,
         &param_data, sizeof(param_data));
-    widget->SendRDMRequest(request, NULL);
+    m_port->SendRDMRequest(request, NULL);
   }
 
   void RunDiscovery(bool incremental) {
-    JaRuleWidget *widget = m_widget_manager->GetWidget();
-    if (!widget) {
+    if (!m_widget) {
       return;
     }
     if (incremental) {
-      widget->RunIncrementalDiscovery(
-          NewSingleCallback(this, &InputHandler::DiscoveryComplete));
+      m_port->RunIncrementalDiscovery(
+          NewSingleCallback(this, &Controller::DiscoveryComplete));
     } else {
-      widget->RunFullDiscovery(
-          NewSingleCallback(this, &InputHandler::DiscoveryComplete));
+      m_port->RunFullDiscovery(
+          NewSingleCallback(this, &Controller::DiscoveryComplete));
     }
-  }
-
-  void ResetDevice() {
-    JaRuleWidget *widget = m_widget_manager->GetWidget();
-    if (!widget) {
-      return;
-    }
-    OLA_INFO << "Resetting device";
-    widget->ResetDevice();
   }
 
   void DiscoveryComplete(const UIDSet& uids) {
@@ -255,7 +217,7 @@ class InputHandler {
     cout << "-------------------------" << endl;
   }
 
-  DISALLOW_COPY_AND_ASSIGN(InputHandler);
+  DISALLOW_COPY_AND_ASSIGN(Controller);
 };
 
 /*
@@ -264,23 +226,11 @@ class InputHandler {
 int main(int argc, char **argv) {
   ola::AppInit(&argc, argv, "[ options ]", "Ja Rule Admin Tool");
 
-  auto_ptr<UID> controller_uid(UID::FromString(FLAGS_controller_uid));
-  if (!controller_uid.get()) {
-    OLA_WARN << "Invalid Controller UID: '" << FLAGS_controller_uid << "'";
-    exit(ola::EXIT_USAGE);
-  }
-
-  if (controller_uid->IsBroadcast()) {
-    OLA_WARN << "The controller UID should not be a broadcast UID";
-    exit(ola::EXIT_USAGE);
-  }
-
   SelectServer ss;
-  WidgetManager widget_manager(*controller_uid);
-  InputHandler input_handler(&ss, *controller_uid, &widget_manager);
+  Controller controller(&ss);
 
   USBDeviceManager manager(
-    &ss, NewCallback(&widget_manager, &WidgetManager::WidgetEvent));
+    &ss, NewCallback(&controller, &Controller::WidgetEvent));
   if (!manager.Start()) {
     exit(ola::EXIT_UNAVAILABLE);
   }

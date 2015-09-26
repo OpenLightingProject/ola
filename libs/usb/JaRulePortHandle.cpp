@@ -40,6 +40,9 @@ JaRulePortHandle::JaRulePortHandle(class JaRuleWidgetPort *parent_port,
     m_queueing_controller(m_impl.get(), RDM_QUEUE_SIZE) {
 }
 
+JaRulePortHandle::~JaRulePortHandle() {
+}
+
 void JaRulePortHandle::SendRDMRequest(ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   m_queueing_controller.SendRDMRequest(request, on_complete);

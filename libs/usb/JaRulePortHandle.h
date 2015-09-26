@@ -46,6 +46,7 @@ class JaRulePortHandle : public ola::rdm::DiscoverableRDMControllerInterface {
   JaRulePortHandle(class JaRuleWidgetPort *parent_port,
                    const ola::rdm::UID &uid,
                    uint8_t physical_port);
+  ~JaRulePortHandle();
 
   void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *on_complete);

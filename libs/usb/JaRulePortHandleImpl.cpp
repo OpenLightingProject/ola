@@ -127,7 +127,7 @@ void JaRulePortHandleImpl::MuteDevice(const UID &target,
   ByteString frame;
   RDMCommandSerializer::Pack(*request, &frame);
   m_port->SendCommand(
-      RDM_REQUEST, frame.data(), frame.size(),
+      JARULE_CMD_RDM_REQUEST, frame.data(), frame.size(),
       NewSingleCallback(this, &JaRulePortHandleImpl::MuteDeviceComplete,
                         mute_complete));
 }
@@ -141,7 +141,7 @@ void JaRulePortHandleImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
   ByteString frame;
   RDMCommandSerializer::Pack(*request, &frame);
   m_port->SendCommand(
-      RDM_BROADCAST_REQUEST, frame.data(), frame.size(),
+      JARULE_CMD_RDM_BROADCAST_REQUEST, frame.data(), frame.size(),
       NewSingleCallback(this, &JaRulePortHandleImpl::UnMuteDeviceComplete,
                         unmute_complete));
 }
@@ -157,7 +157,7 @@ void JaRulePortHandleImpl::Branch(const UID &lower,
   RDMCommandSerializer::Pack(*request, &frame);
   OLA_INFO << "Sending RDM DUB: " << lower << " - " << upper;
   m_port->SendCommand(
-      RDM_DUB, frame.data(), frame.size(),
+      JARULE_CMD_RDM_DUB_REQUEST, frame.data(), frame.size(),
       NewSingleCallback(this, &JaRulePortHandleImpl::DUBComplete,
                         branch_complete));
 }
@@ -168,14 +168,15 @@ bool JaRulePortHandleImpl::SendDMX(const DmxBuffer &buffer) {
     m_dmx_queued = true;
   } else {
     m_dmx_in_progress = true;
-    m_port->SendCommand(TX_DMX, buffer.GetRaw(), buffer.Size(), m_dmx_callback);
+    m_port->SendCommand(JARULE_CMD_TX_DMX, buffer.GetRaw(), buffer.Size(),
+                        m_dmx_callback);
   }
   return true;
 }
 
 bool JaRulePortHandleImpl::SetPortMode(PortMode new_mode) {
   uint8_t port_mode = new_mode;
-  m_port->SendCommand(SET_MODE, &port_mode, sizeof(port_mode), NULL);
+  m_port->SendCommand(JARULE_CMD_SET_MODE, &port_mode, sizeof(port_mode), NULL);
   return true;
 }
 
@@ -196,7 +197,8 @@ void JaRulePortHandleImpl::DMXComplete(
   CheckStatusFlags(status_flags);
   // We ignore status and return_code, since DMX is streaming.
   if (m_dmx_queued && !m_in_shutdown) {
-    m_port->SendCommand(TX_DMX, m_dmx.GetRaw(), m_dmx.Size(), m_dmx_callback);
+    m_port->SendCommand(JARULE_CMD_TX_DMX, m_dmx.GetRaw(), m_dmx.Size(),
+                        m_dmx_callback);
     m_dmx_queued = false;
   } else {
     m_dmx_in_progress = false;
@@ -282,7 +284,7 @@ void JaRulePortHandleImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
   ola::rdm::RDMStatusCode status_code = rdm::RDM_INVALID_RESPONSE;
   ola::rdm::RDMResponse *response = NULL;
 
-  if (command == RDM_DUB && return_code == RC_OK) {
+  if (command == JARULE_CMD_RDM_DUB_REQUEST && return_code == RC_OK) {
     if (payload.size() > sizeof(DUBTiming)) {
       DUBTiming timing;
       memcpy(reinterpret_cast<uint8_t*>(&timing),
@@ -296,16 +298,17 @@ void JaRulePortHandleImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
       frames.push_back(frame);
     }
     status_code = rdm::RDM_DUB_RESPONSE;
-  } else if (command == RDM_BROADCAST_REQUEST && return_code == RC_OK) {
+  } else if (command == JARULE_CMD_RDM_BROADCAST_REQUEST &&
+             return_code == RC_OK) {
     status_code = rdm::RDM_WAS_BROADCAST;
-  } else if (command == RDM_BROADCAST_REQUEST &&
+  } else if (command == JARULE_CMD_RDM_BROADCAST_REQUEST &&
              return_code == RC_RDM_BCAST_RESPONSE) {
     if (payload.size() > sizeof(GetSetTiming)) {
       response = UnpackRDMResponse(
           request.get(), payload.substr(sizeof(GetSetTiming)),
           &status_code);
     }
-  } else if (command == RDM_REQUEST && return_code == RC_OK) {
+  } else if (command == JARULE_CMD_RDM_REQUEST && return_code == RC_OK) {
     if (payload.size() > sizeof(GetSetTiming)) {
       GetSetTiming timing;
       memcpy(reinterpret_cast<uint8_t*>(&timing),
@@ -363,11 +366,11 @@ void JaRulePortHandleImpl::DiscoveryComplete(RDMDiscoveryCallback *callback,
 CommandClass JaRulePortHandleImpl::GetCommandFromRequest(
       const ola::rdm::RDMRequest *request) {
   if (request->IsDUB()) {
-    return RDM_DUB;
+    return JARULE_CMD_RDM_DUB_REQUEST;
   }
   return request->DestinationUID().IsBroadcast() ?
-      RDM_BROADCAST_REQUEST :
-      RDM_REQUEST;
+      JARULE_CMD_RDM_BROADCAST_REQUEST :
+      JARULE_CMD_RDM_REQUEST;
 }
 }  // namespace usb
 }  // namespace ola
