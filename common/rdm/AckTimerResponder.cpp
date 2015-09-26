@@ -208,13 +208,29 @@ RDMResponse *AckTimerResponder::ResponseFromQueuedMessage(
     const class QueuedResponse *queued_response) {
   switch (queued_response->CommandClass()) {
     case RDMCommand::GET_COMMAND_RESPONSE:
+      return new RDMGetResponse(
+        // coverity[SWAPPED_ARGUMENTS]
+        request->DestinationUID(),
+        request->SourceUID(),
+        request->TransactionNumber(),
+        RDM_ACK,
+        QueuedMessageCount(),
+        ROOT_RDM_DEVICE,
+        queued_response->Pid(),
+        queued_response->ParamData(),
+        queued_response->ParamDataSize());
     case RDMCommand::SET_COMMAND_RESPONSE:
-      return GetResponseFromData(request,
-                                 queued_response->ParamData(),
-                                 queued_response->ParamDataSize(),
-                                 RDM_ACK,
-                                 QueuedMessageCount());
-      break;
+      return new RDMSetResponse(
+        // coverity[SWAPPED_ARGUMENTS]
+        request->DestinationUID(),
+        request->SourceUID(),
+        request->TransactionNumber(),
+        RDM_ACK,
+        QueuedMessageCount(),
+        ROOT_RDM_DEVICE,
+        queued_response->Pid(),
+        queued_response->ParamData(),
+        queued_response->ParamDataSize());
     default:
       OLA_WARN << "Queued message returning NULL, CC was "
                << static_cast<int>(queued_response->CommandClass());
