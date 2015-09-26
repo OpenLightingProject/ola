@@ -58,14 +58,16 @@ make %{?_smp_mflags}
 %check
 export LD_LIBRARY_PATH="%buildroot/usr/lib:%buildroot/usr/lib64"
 make check %{?_smp_mflags}
-find %buildroot -name "*pyc" -delete
-find %buildroot -name "*pyo" -delete
+find %buildroot -name "*\.la" -delete
+find %buildroot -name "*\.a" -delete
 
 %install
 rm -rf %buildroot
 %make_install
-find %buildroot -name "*\.pyc" -delete
-find %buildroot -name "*\.pyo" -delete
+find %buildroot -name "*\.la" -delete
+find %buildroot -name "*\.a" -delete
+mkdir -p %buildroot/%{_udevrulesdir}
+cp debian/ola.udev %buildroot%{_udevrulesdir}
 
 %clean
 rm -rf %buildroot
@@ -79,6 +81,7 @@ rm -rf %buildroot
 %{_datadir}/ola/pids/**
 %{_libdir}/libola*\.so\.*
 %{_mandir}/man1/**
+%{_udevrulesdir}/ola.udev
 
 %files devel
 %{_includedir}/ola**
@@ -97,8 +100,17 @@ rm -rf %buildroot
 %{python2_sitelib}/ola/testing/*\.py
 %{python2_sitelib}/ola/testing/rdm/*\.py
 
-%post -p /sbin/ldconfig
-%postun -p /sbin/ldconfig
+%post
+/sbin/ldconfig
+
+%post devel
+/sbin/ldconfig
+
+%post
+/sbin/ldconfig
+
+%postun devel
+/sbin/ldconfig
 
 %changelog
 * Sat Sep 19 2015 Dave Olsthoorn - 0.9.7-1
