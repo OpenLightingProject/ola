@@ -210,6 +210,8 @@ class HTTPServer: public ola::thread::Thread {
   // Expose the SelectServer
   ola::io::SelectServer *SelectServer() { return m_select_server.get(); }
 
+  static struct MHD_Response *BuildResponse(void *data, size_t size);
+
  private :
   typedef struct {
     std::string file_path;
