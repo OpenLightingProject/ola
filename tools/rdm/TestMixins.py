@@ -775,7 +775,7 @@ class SetMinimumLevelMixin(object):
 
   def GetMinLevel(self):
     min_level_decreasing = self.MinLevelDecreasing()
-    if self.Property('split_levels_supported'):
+    if not self.Property('split_levels_supported'):
       min_level_decreasing = self.MinLevelIncreasing()
     self.AddIfGetSupported(self.AckGetResult(
         field_values={
