@@ -1228,6 +1228,6 @@ def GetStore(location=None, only_files=()):
     if not _pid_store.GetName(pid):
       raise MissingPLASAPIDs(
           'Could not find %s in PID datastore, check the directory contains '
-          'the PLASA pids.' % pid);
+          'the PLASA PIDs.' % pid);
 
   return _pid_store
