@@ -118,6 +118,9 @@ rm -rf %buildroot
 %postun devel
 /sbin/ldconfig
 
+%doc AUTHORS ChangeLog NEWS README TODO
+%license COPYING
+
 %changelog
 * Sat Sep 19 2015 Dave Olsthoorn - 0.9.7-1
 - update to 0.9.7
