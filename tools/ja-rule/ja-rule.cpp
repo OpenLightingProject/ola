@@ -234,6 +234,13 @@ class Controller {
       if (!m_widget) {
         m_widget = widget;
         m_our_uid = widget->GetUID();
+
+        // Switch to controller mode.
+        uint8_t mode = ola::usb::CONTROLLER_MODE;
+        m_widget->SendCommand(
+            FLAGS_port,
+            ola::usb::JARULE_CMD_SET_MODE,
+            &mode, sizeof(mode), NULL);
       } else {
         OLA_WARN << "Only a single device is supported";
       }
@@ -267,7 +274,7 @@ class Controller {
     vector<string> lines;
     for (ActionMap::iterator iter = m_actions.begin();
          iter != m_actions.end(); ++iter) {
-      if (!iter->second.description.empty() ||
+      if (!iter->second.description.empty() &&
           std::isprint(iter->first)) {
         std::ostringstream str;
         str << " " << iter->first << " - " << iter->second.description << endl;
@@ -380,12 +387,7 @@ class Controller {
 
     value = JoinUInt8(payload[1], payload[0]);
 
-    if (setting.units == TIMING_UNITS_MICROSECONDS) {
-      OLA_INFO << "Time: " << value << " us";
-    } else if (setting.units == TIMING_UNITS_TENTHS_OF_MILLI_SECONDS) {
-      float adjusted_time = value / 10.0;
-      OLA_INFO << "Time: " << adjusted_time << " ms";
-    }
+    OLA_INFO << "Time: " << FormatTime(setting.units, value) << endl;
   }
 
   void CommandComplete(ola::usb::USBCommandResult result,
@@ -527,14 +529,8 @@ class Controller {
       }
     }
 
-    cout << setting.description << " is now ";
-    if (setting.units == TIMING_UNITS_MICROSECONDS) {
-      cout << setting.current_value << " us";
-    } else if (setting.units == TIMING_UNITS_TENTHS_OF_MILLI_SECONDS) {
-      float adjusted_time = setting.current_value / 10.0;
-      cout << adjusted_time << " ms";
-    }
-    cout << endl;
+    cout << setting.description << " is now "
+         << FormatTime(setting.units, setting.current_value) << endl;
   }
 
   void Commit() {
@@ -627,7 +623,7 @@ class Controller {
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
     RDMCommandSerializer::Pack(*request, data, &rdm_length);
-    OLA_INFO << "Sending " << rdm_length << " RDM command.";
+    OLA_INFO << "Sending " << rdm_length << " byte RDM command.";
     m_widget->SendCommand(
         FLAGS_port,
         ola::usb::JARULE_CMD_RDM_DUB_REQUEST,
@@ -712,6 +708,17 @@ class Controller {
       OLA_INFO << "Message truncated";
     }
     return true;
+  }
+
+  string FormatTime(TimingUnit units, uint16_t value) {
+    std::stringstream str;
+    if (units == TIMING_UNITS_MICROSECONDS) {
+      str << value << " us";
+    } else if (units == TIMING_UNITS_TENTHS_OF_MILLI_SECONDS) {
+      float adjusted_time = value / 10.0;
+      str << adjusted_time << " ms";
+    }
+    return str.str();
   }
 
   DISALLOW_COPY_AND_ASSIGN(Controller);
