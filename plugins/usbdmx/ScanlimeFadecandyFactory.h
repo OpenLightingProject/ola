@@ -21,6 +21,7 @@
 #ifndef PLUGINS_USBDMX_SCANLIMEFADECANDYFACTORY_H_
 #define PLUGINS_USBDMX_SCANLIMEFADECANDYFACTORY_H_
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
@@ -34,7 +35,7 @@ namespace usbdmx {
 class ScanlimeFadecandyFactory
     : public BaseWidgetFactory<class ScanlimeFadecandy> {
  public:
-  explicit ScanlimeFadecandyFactory(class LibUsbAdaptor *adaptor)
+  explicit ScanlimeFadecandyFactory(ola::usb::LibUsbAdaptor *adaptor)
       : m_missing_serial_number(false),
         m_adaptor(adaptor) {
   }
@@ -46,7 +47,7 @@ class ScanlimeFadecandyFactory
 
  private:
   bool m_missing_serial_number;
-  class LibUsbAdaptor *m_adaptor;
+  ola::usb::LibUsbAdaptor *m_adaptor;
 
   static const char EXPECTED_MANUFACTURER[];
   static const char EXPECTED_PRODUCT[];

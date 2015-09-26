@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * JaRuleWidgetImpl.cpp
+ * JaRulePortHandleImpl.cpp
  * The implementation of the Ja Rule Widget.
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "plugins/usbdmx/JaRuleWidgetImpl.h"
+#include "libs/usb/JaRulePortHandleImpl.h"
 
 #include <ola/Callback.h>
 #include <ola/Constants.h>
@@ -37,13 +37,10 @@
 #include <memory>
 #include <vector>
 
-#include "plugins/usbdmx/JaRuleEndpoint.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
+#include "libs/usb/JaRuleWidgetPort.h"
 
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
 using ola::NewSingleCallback;
 using ola::io::ByteString;
@@ -66,46 +63,47 @@ using ola::strings::ToHex;
 using std::auto_ptr;
 using std::vector;
 
-JaRuleWidgetImpl::JaRuleWidgetImpl(ola::io::SelectServerInterface *ss,
-                                   AsyncronousLibUsbAdaptor *adaptor,
-                                   libusb_device *device,
-                                   const UID &controller_uid)
-    : m_endpoint(ss, adaptor, device),
+JaRulePortHandleImpl::JaRulePortHandleImpl(JaRuleWidgetPort *parent_port,
+                                           const ola::rdm::UID &uid,
+                                           uint8_t physical_port)
+    : m_port(parent_port),
+      m_uid(uid),
+      m_physical_port(physical_port),
       m_in_shutdown(false),
       m_dmx_in_progress(false),
       m_dmx_queued(false),
-      m_dmx_callback(NewCallback(this, &JaRuleWidgetImpl::DMXComplete)),
-      m_discovery_agent(this),
-      m_our_uid(controller_uid) {
+      m_dmx_callback(NewCallback(this, &JaRulePortHandleImpl::DMXComplete)),
+      m_discovery_agent(this) {
 }
 
-JaRuleWidgetImpl::~JaRuleWidgetImpl() {
+JaRulePortHandleImpl::~JaRulePortHandleImpl() {
   m_in_shutdown = true;
   m_discovery_agent.Abort();
-  m_endpoint.CancelAll();
+  m_port->CancelAll();
   delete m_dmx_callback;
 }
 
-bool JaRuleWidgetImpl::Init() {
-  return m_endpoint.Init();
-}
-
-void JaRuleWidgetImpl::RunFullDiscovery(RDMDiscoveryCallback *callback) {
+void JaRulePortHandleImpl::RunFullDiscovery(RDMDiscoveryCallback *callback) {
   OLA_INFO << "Full discovery triggered";
   m_discovery_agent.StartFullDiscovery(
-      NewSingleCallback(this, &JaRuleWidgetImpl::DiscoveryComplete,
+      NewSingleCallback(this, &JaRulePortHandleImpl::DiscoveryComplete,
       callback));
 }
 
-void JaRuleWidgetImpl::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
+void JaRulePortHandleImpl::RunIncrementalDiscovery(
+    RDMDiscoveryCallback *callback) {
   OLA_INFO << "Incremental discovery triggered";
   m_discovery_agent.StartIncrementalDiscovery(
-      NewSingleCallback(this, &JaRuleWidgetImpl::DiscoveryComplete,
+      NewSingleCallback(this, &JaRulePortHandleImpl::DiscoveryComplete,
       callback));
 }
 
-void JaRuleWidgetImpl::SendRDMRequest(RDMRequest *request,
-                                      ola::rdm::RDMCallback *on_complete) {
+void JaRulePortHandleImpl::SendRDMRequest(RDMRequest *request,
+                                          ola::rdm::RDMCallback *on_complete) {
+  request->SetSourceUID(m_uid);
+  request->SetPortId(m_physical_port + 1);
+  request->SetTransactionNumber(m_transaction_number.Next());
+
   ByteString frame;
   if (!RDMCommandSerializer::Pack(*request, &frame)) {
     RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
@@ -113,106 +111,109 @@ void JaRuleWidgetImpl::SendRDMRequest(RDMRequest *request,
     return;
   }
 
-  m_endpoint.SendCommand(
+  m_port->SendCommand(
       GetCommandFromRequest(request), frame.data(), frame.size(),
-      NewSingleCallback(this, &JaRuleWidgetImpl::RDMComplete,
+      NewSingleCallback(this, &JaRulePortHandleImpl::RDMComplete,
                         static_cast<const RDMRequest*>(request), on_complete));
 }
 
-void JaRuleWidgetImpl::MuteDevice(const UID &target,
-                                  MuteDeviceCallback *mute_complete) {
+void JaRulePortHandleImpl::MuteDevice(const UID &target,
+                                      MuteDeviceCallback *mute_complete) {
   auto_ptr<RDMRequest> request(
-      ola::rdm::NewMuteRequest(m_our_uid, target,
-                               m_transaction_number.Next()));
+      ola::rdm::NewMuteRequest(m_uid, target,
+                               m_transaction_number.Next(),
+                               m_physical_port + 1));
 
   ByteString frame;
   RDMCommandSerializer::Pack(*request, &frame);
-  m_endpoint.SendCommand(
-      JaRuleEndpoint::RDM_REQUEST, frame.data(), frame.size(),
-      NewSingleCallback(this, &JaRuleWidgetImpl::MuteDeviceComplete,
+  m_port->SendCommand(
+      JARULE_CMD_RDM_REQUEST, frame.data(), frame.size(),
+      NewSingleCallback(this, &JaRulePortHandleImpl::MuteDeviceComplete,
                         mute_complete));
 }
 
-void JaRuleWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
+void JaRulePortHandleImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
   auto_ptr<RDMRequest> request(
-      ola::rdm::NewUnMuteRequest(m_our_uid, UID::AllDevices(),
-                                 m_transaction_number.Next()));
+      ola::rdm::NewUnMuteRequest(m_uid, UID::AllDevices(),
+                                 m_transaction_number.Next(),
+                                 m_physical_port + 1));
 
   ByteString frame;
   RDMCommandSerializer::Pack(*request, &frame);
-  m_endpoint.SendCommand(
-      JaRuleEndpoint::RDM_BROADCAST_REQUEST, frame.data(), frame.size(),
-      NewSingleCallback(this, &JaRuleWidgetImpl::UnMuteDeviceComplete,
+  m_port->SendCommand(
+      JARULE_CMD_RDM_BROADCAST_REQUEST, frame.data(), frame.size(),
+      NewSingleCallback(this, &JaRulePortHandleImpl::UnMuteDeviceComplete,
                         unmute_complete));
 }
 
-void JaRuleWidgetImpl::Branch(const UID &lower,
-                              const UID &upper,
-                              BranchCallback *branch_complete) {
+void JaRulePortHandleImpl::Branch(const UID &lower,
+                                  const UID &upper,
+                                  BranchCallback *branch_complete) {
   auto_ptr<RDMRequest> request(
-      ola::rdm::NewDiscoveryUniqueBranchRequest(m_our_uid, lower, upper,
+      ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower, upper,
                                                 m_transaction_number.Next()));
 
   ByteString frame;
   RDMCommandSerializer::Pack(*request, &frame);
   OLA_INFO << "Sending RDM DUB: " << lower << " - " << upper;
-  m_endpoint.SendCommand(
-      JaRuleEndpoint::RDM_DUB, frame.data(), frame.size(),
-      NewSingleCallback(this, &JaRuleWidgetImpl::DUBComplete, branch_complete));
+  m_port->SendCommand(
+      JARULE_CMD_RDM_DUB_REQUEST, frame.data(), frame.size(),
+      NewSingleCallback(this, &JaRulePortHandleImpl::DUBComplete,
+                        branch_complete));
 }
 
-bool JaRuleWidgetImpl::SendDMX(const DmxBuffer &buffer) {
+bool JaRulePortHandleImpl::SendDMX(const DmxBuffer &buffer) {
   if (m_dmx_in_progress) {
     m_dmx = buffer;
     m_dmx_queued = true;
   } else {
     m_dmx_in_progress = true;
-    m_endpoint.SendCommand(JaRuleEndpoint::TX_DMX, buffer.GetRaw(),
-                           buffer.Size(), m_dmx_callback);
+    m_port->SendCommand(JARULE_CMD_TX_DMX, buffer.GetRaw(), buffer.Size(),
+                        m_dmx_callback);
   }
   return true;
 }
 
-void JaRuleWidgetImpl::ResetDevice() {
-  m_endpoint.SendCommand(JaRuleEndpoint::RESET_DEVICE, NULL, 0, NULL);
+bool JaRulePortHandleImpl::SetPortMode(PortMode new_mode) {
+  uint8_t port_mode = new_mode;
+  m_port->SendCommand(JARULE_CMD_SET_MODE, &port_mode, sizeof(port_mode), NULL);
+  return true;
 }
 
-void JaRuleWidgetImpl::CheckStatusFlags(uint8_t flags) {
-  if (flags & JaRuleEndpoint::LOGS_PENDING_FLAG) {
-    OLA_INFO << "Logs pending!";
-  }
-  if (flags & JaRuleEndpoint::FLAGS_CHANGED_FLAG) {
+void JaRulePortHandleImpl::CheckStatusFlags(uint8_t flags) {
+  if (flags & FLAGS_CHANGED_FLAG) {
     OLA_INFO << "Flags changed!";
   }
-  if (flags & JaRuleEndpoint::MSG_TRUNCATED_FLAG) {
+  if (flags & MSG_TRUNCATED_FLAG) {
     OLA_INFO << "Message truncated";
   }
 }
 
-void JaRuleWidgetImpl::DMXComplete(
-    OLA_UNUSED JaRuleEndpoint::CommandResult result,
+void JaRulePortHandleImpl::DMXComplete(
+    OLA_UNUSED USBCommandResult result,
     OLA_UNUSED uint8_t return_code,
     uint8_t status_flags,
     OLA_UNUSED const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
   // We ignore status and return_code, since DMX is streaming.
   if (m_dmx_queued && !m_in_shutdown) {
-    m_endpoint.SendCommand(JaRuleEndpoint::TX_DMX, m_dmx.GetRaw(),
-                           m_dmx.Size(), m_dmx_callback);
+    m_port->SendCommand(JARULE_CMD_TX_DMX, m_dmx.GetRaw(), m_dmx.Size(),
+                        m_dmx_callback);
     m_dmx_queued = false;
   } else {
     m_dmx_in_progress = false;
   }
 }
 
-void JaRuleWidgetImpl::MuteDeviceComplete(MuteDeviceCallback *mute_complete,
-                                          JaRuleEndpoint::CommandResult result,
-                                          uint8_t return_code,
-                                          uint8_t status_flags,
-                                          const ola::io::ByteString &payload) {
+void JaRulePortHandleImpl::MuteDeviceComplete(
+    MuteDeviceCallback *mute_complete,
+    USBCommandResult result,
+    uint8_t return_code,
+    uint8_t status_flags,
+    const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
   bool muted_ok = false;
-  if (result == JaRuleEndpoint::COMMAND_COMPLETED_OK &&
+  if (result == COMMAND_RESULT_OK &&
       return_code == RC_OK &&
       payload.size() > sizeof(GetSetTiming)) {
     // Skip the timing data & the start code.
@@ -227,58 +228,63 @@ void JaRuleWidgetImpl::MuteDeviceComplete(MuteDeviceCallback *mute_complete,
         response.get() &&
         response->CommandClass() == RDMCommand::DISCOVER_COMMAND_RESPONSE &&
         response->ResponseType() == rdm::RDM_ACK);
+  } else {
+    OLA_INFO << "Mute failed!";
   }
   mute_complete->Run(muted_ok);
 }
 
-void JaRuleWidgetImpl::UnMuteDeviceComplete(
+void JaRulePortHandleImpl::UnMuteDeviceComplete(
     UnMuteDeviceCallback *unmute_complete,
-    OLA_UNUSED JaRuleEndpoint::CommandResult result,
+    OLA_UNUSED USBCommandResult result,
     OLA_UNUSED uint8_t return_code,
     OLA_UNUSED uint8_t status_flags,
     OLA_UNUSED const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
+  if (return_code != COMMAND_RESULT_OK) {
+    OLA_INFO << "JaRule Unmute failed!";
+  }
   // TODO(simon): At some point we need to account for failures here.
   unmute_complete->Run();
 }
 
 
-void JaRuleWidgetImpl::DUBComplete(BranchCallback *callback,
-                                   JaRuleEndpoint::CommandResult result,
-                                   uint8_t return_code,
-                                   uint8_t status_flags,
-                                   const ola::io::ByteString &payload) {
+void JaRulePortHandleImpl::DUBComplete(BranchCallback *callback,
+                                       USBCommandResult result,
+                                       uint8_t return_code,
+                                       uint8_t status_flags,
+                                       const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
   ByteString discovery_data;
   if (payload.size() >= sizeof(DUBTiming)) {
     discovery_data = payload.substr(sizeof(DUBTiming));
   }
-  if (result == JaRuleEndpoint::COMMAND_COMPLETED_OK && return_code == RC_OK) {
+  if (result == COMMAND_RESULT_OK && return_code == RC_OK) {
     callback->Run(discovery_data.data(), discovery_data.size());
   } else {
     callback->Run(NULL, 0);
   }
 }
 
-void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
-                                   ola::rdm::RDMCallback *callback,
-                                   JaRuleEndpoint::CommandResult result,
-                                   uint8_t return_code,
-                                   uint8_t status_flags,
-                                   const ola::io::ByteString &payload) {
+void JaRulePortHandleImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
+                                       ola::rdm::RDMCallback *callback,
+                                       USBCommandResult result,
+                                       uint8_t return_code,
+                                       uint8_t status_flags,
+                                       const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
   auto_ptr<const RDMRequest> request(request_ptr);
   ola::rdm::RDMFrames frames;
 
-  if (result != JaRuleEndpoint::COMMAND_COMPLETED_OK) {
+  if (result != COMMAND_RESULT_OK) {
     RunRDMCallback(callback, rdm::RDM_FAILED_TO_SEND);
   }
 
-  JaRuleEndpoint::CommandClass command = GetCommandFromRequest(request.get());
+  CommandClass command = GetCommandFromRequest(request.get());
   ola::rdm::RDMStatusCode status_code = rdm::RDM_INVALID_RESPONSE;
   ola::rdm::RDMResponse *response = NULL;
 
-  if (command == JaRuleEndpoint::RDM_DUB && return_code == RC_OK) {
+  if (command == JARULE_CMD_RDM_DUB_REQUEST && return_code == RC_OK) {
     if (payload.size() > sizeof(DUBTiming)) {
       DUBTiming timing;
       memcpy(reinterpret_cast<uint8_t*>(&timing),
@@ -292,18 +298,17 @@ void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
       frames.push_back(frame);
     }
     status_code = rdm::RDM_DUB_RESPONSE;
-  } else if (command == JaRuleEndpoint::RDM_BROADCAST_REQUEST &&
+  } else if (command == JARULE_CMD_RDM_BROADCAST_REQUEST &&
              return_code == RC_OK) {
     status_code = rdm::RDM_WAS_BROADCAST;
-  } else if (command == JaRuleEndpoint::RDM_BROADCAST_REQUEST &&
+  } else if (command == JARULE_CMD_RDM_BROADCAST_REQUEST &&
              return_code == RC_RDM_BCAST_RESPONSE) {
     if (payload.size() > sizeof(GetSetTiming)) {
       response = UnpackRDMResponse(
           request.get(), payload.substr(sizeof(GetSetTiming)),
           &status_code);
     }
-  } else if (command == JaRuleEndpoint::RDM_REQUEST &&
-             return_code == RC_OK) {
+  } else if (command == JARULE_CMD_RDM_REQUEST && return_code == RC_OK) {
     if (payload.size() > sizeof(GetSetTiming)) {
       GetSetTiming timing;
       memcpy(reinterpret_cast<uint8_t*>(&timing),
@@ -336,7 +341,7 @@ void JaRuleWidgetImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
   callback->Run(&reply);
 }
 
-ola::rdm::RDMResponse* JaRuleWidgetImpl::UnpackRDMResponse(
+ola::rdm::RDMResponse* JaRulePortHandleImpl::UnpackRDMResponse(
     const RDMRequest *request,
     const ByteString &payload,
     ola::rdm::RDMStatusCode *status_code) {
@@ -349,24 +354,23 @@ ola::rdm::RDMResponse* JaRuleWidgetImpl::UnpackRDMResponse(
       payload.data() + 1, payload.size() - 1, status_code, request);
 }
 
-void JaRuleWidgetImpl::DiscoveryComplete(RDMDiscoveryCallback *callback,
-                                         OLA_UNUSED bool ok,
-                                         const UIDSet& uids) {
+void JaRulePortHandleImpl::DiscoveryComplete(RDMDiscoveryCallback *callback,
+                                             OLA_UNUSED bool ok,
+                                             const UIDSet& uids) {
   m_uids = uids;
   if (callback) {
     callback->Run(m_uids);
   }
 }
 
-JaRuleEndpoint::CommandClass JaRuleWidgetImpl::GetCommandFromRequest(
+CommandClass JaRulePortHandleImpl::GetCommandFromRequest(
       const ola::rdm::RDMRequest *request) {
   if (request->IsDUB()) {
-    return JaRuleEndpoint::RDM_DUB;
+    return JARULE_CMD_RDM_DUB_REQUEST;
   }
   return request->DestinationUID().IsBroadcast() ?
-      JaRuleEndpoint::RDM_BROADCAST_REQUEST :
-      JaRuleEndpoint::RDM_REQUEST;
+      JARULE_CMD_RDM_BROADCAST_REQUEST :
+      JARULE_CMD_RDM_REQUEST;
 }
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola

@@ -20,39 +20,64 @@
 
 #include "plugins/usbdmx/JaRuleOutputPort.h"
 
+#include <string>
+
+#include "libs/usb/JaRulePortHandle.h"
+#include "ola/Logging.h"
+#include "ola/strings/Format.h"
 #include "olad/Device.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+using ola::usb::JaRulePortHandle;
+
 JaRuleOutputPort::JaRuleOutputPort(Device *parent,
                                    unsigned int id,
-                                   JaRuleWidget *widget)
-    : BasicOutputPort(parent, id, true),
-      m_widget(widget) {
+                                   JaRulePortHandle *port_handle)
+    : BasicOutputPort(parent, id, true, true),
+      m_port_handle(port_handle) {
+}
+
+std::string JaRuleOutputPort::Description() const {
+  return "Port " + ola::strings::IntToString(PortId() + 1);
 }
 
 bool JaRuleOutputPort::WriteDMX(const DmxBuffer &buffer,
                                 OLA_UNUSED uint8_t priority) {
-  m_widget->SendDMX(buffer);
+  m_port_handle->SendDMX(buffer);
   return true;
 }
 
 void JaRuleOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *callback) {
-  m_widget->SendRDMRequest(request, callback);
+  m_port_handle->SendRDMRequest(request, callback);
 }
 
 void JaRuleOutputPort::RunFullDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
-  m_widget->RunFullDiscovery(callback);
+  m_port_handle->RunFullDiscovery(callback);
 }
 
 void JaRuleOutputPort::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
-  m_widget->RunIncrementalDiscovery(callback);
+  m_port_handle->RunIncrementalDiscovery(callback);
+}
+
+bool JaRuleOutputPort::PreSetUniverse(Universe *old_universe,
+                                      Universe *new_universe) {
+  if (old_universe == NULL && new_universe != NULL) {
+    m_port_handle->SetPortMode(ola::usb::CONTROLLER_MODE);
+  }
+  return true;
+}
+
+void JaRuleOutputPort::PostSetUniverse(Universe *old_universe,
+                                       Universe *new_universe) {
+  if (old_universe != NULL && new_universe == NULL) {
+    m_port_handle->SetPortMode(ola::usb::RESPONDER_MODE);
+  }
 }
 }  // namespace usbdmx
 }  // namespace plugin

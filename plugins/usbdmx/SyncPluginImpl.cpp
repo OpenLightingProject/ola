@@ -123,7 +123,7 @@ bool SyncPluginImpl::NewWidget(EurolitePro *widget) {
                         "eurolite-" + widget->SerialNumber()));
 }
 
-bool SyncPluginImpl::NewWidget(OLA_UNUSED class JaRuleWidget *widget) {
+bool SyncPluginImpl::NewWidget(OLA_UNUSED ola::usb::JaRuleWidget *widget) {
   // This should never happen since there is no Syncronous support for Ja Rule.
   OLA_WARN << "::NewWidget called for a JaRuleWidget";
   return false;
@@ -201,7 +201,8 @@ void SyncPluginImpl::ReScanForDevices() {
  * @param widget The widget that was added.
  * @param device The new olad device that uses this new widget.
  */
-bool SyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
+bool SyncPluginImpl::StartAndRegisterDevice(WidgetInterface *widget,
+                                            Device *device) {
   if (!device->Start()) {
     delete device;
     return false;

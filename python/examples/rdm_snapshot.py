@@ -37,14 +37,18 @@ from ola.UID import UID
 class Error(Exception):
   """Base exception class."""
 
+
 class DiscoveryException(Error):
   """Raised when discovery fails."""
+
 
 class SaveException(Error):
   """Raised when we can't write to the output file."""
 
+
 class LoadException(Error):
   """Raised when we can't write to the output file."""
+
 
 class ConfigReader(object):
   """A controller that fetches data for responders."""

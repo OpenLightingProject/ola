@@ -26,4 +26,4 @@ def ContainsUnprintable(s):
   elif type(s) == unicode:
     return s != s.encode('unicode-escape')
   else:
-    return False;
+    return False

@@ -20,12 +20,14 @@
 
 #include "plugins/usbdmx/AsyncUsbSender.h"
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
+
+using ola::usb::LibUsbAdaptor;
 
 namespace {
 

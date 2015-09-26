@@ -20,17 +20,18 @@
 
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
-
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
+
+using ola::usb::LibUsbAdaptor;
 
 const char ScanlimeFadecandyFactory::EXPECTED_MANUFACTURER[] = "scanlime";
 const char ScanlimeFadecandyFactory::EXPECTED_PRODUCT[] = "Fadecandy";

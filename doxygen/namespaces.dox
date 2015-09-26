@@ -95,6 +95,9 @@
  * @namespace ola::plugin::usbdmx
  * @brief The plugin for hardware using libusb.
  *
+ * @namespace ola::plugin::usbdmx::jarule
+ * @brief Ja Rule code.
+ *
  * @namespace ola::plugin::usbpro
  * @brief Code for Enttec USB Pro devices and others using the same protocol.
  *
@@ -118,4 +121,7 @@
  *
  * @namespace ola::web
  * @brief Classes to deal with web services.
+ *
+ * @namespace ola::usb
+ * @brief USB Device drivers.
  */

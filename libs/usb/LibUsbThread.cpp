@@ -18,16 +18,14 @@
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/LibUsbThread.h"
+#include "libs/usb/LibUsbThread.h"
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
 
-
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
 // LibUsbThread
 // -----------------------------------------------------------------------------
@@ -119,6 +117,5 @@ void LibUsbSimpleThread::CloseHandle(libusb_device_handle *handle) {
   }
   m_device_count--;
 }
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola

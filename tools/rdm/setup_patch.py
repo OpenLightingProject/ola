@@ -30,7 +30,7 @@ from ola.OlaClient import OlaClient, Plugin
 
 class AutoPatcher(object):
   """A class that patches RDM enabled Output Ports to universes."""
-  def __init__(self, wrapper, callback, force = False):
+  def __init__(self, wrapper, callback, force=False):
     """Create a new AutoPatcher object.
 
     Args:

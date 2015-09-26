@@ -13,43 +13,37 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * JaRuleEndpoint.cpp
- * Handles the communication with a Ja Rule USB endpoint.
+ * JaRuleWidgetPort.cpp
+ * A Ja Rule Widget Port.
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "plugins/usbdmx/JaRuleEndpoint.h"
-
-#include <libusb.h>
-
-#include <string.h>
+#include "libs/usb/JaRuleWidgetPort.h"
 
 #include <ola/Callback.h>
 #include <ola/Constants.h>
 #include <ola/Logging.h>
-#include <ola/base/Array.h>
 #include <ola/stl/STLUtils.h>
 #include <ola/strings/Format.h>
 #include <ola/thread/Mutex.h>
 #include <ola/util/Utils.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
-#include "plugins/usbdmx/LibUsbAdaptor.h"
-
 namespace ola {
-namespace plugin {
-namespace usbdmx {
+namespace usb {
 
-using ola::io::ByteString;
 using ola::NewSingleCallback;
-using ola::plugin::usbdmx::LibUsbAdaptor;
+using ola::io::ByteString;
 using ola::strings::ToHex;
 using ola::thread::MutexLocker;
 using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;
 using std::cout;
+using std::string;
+using std::auto_ptr;
 
 namespace {
 
@@ -57,39 +51,56 @@ namespace {
 __attribute__((__stdcall__))
 #endif
 void InTransferCompleteHandler(struct libusb_transfer *transfer) {
-  JaRuleEndpoint *sender = static_cast<JaRuleEndpoint*>(
-      transfer->user_data);
-  return sender->_InTransferComplete();
+  JaRuleWidgetPort *port = static_cast<JaRuleWidgetPort*>(transfer->user_data);
+  return port->_InTransferComplete();
 }
 
 #ifdef _WIN32
 __attribute__((__stdcall__))
 #endif
 void OutTransferCompleteHandler(struct libusb_transfer *transfer) {
-  JaRuleEndpoint *sender = static_cast<JaRuleEndpoint*>(
-      transfer->user_data);
-  return sender->_OutTransferComplete();
+  JaRuleWidgetPort *port = static_cast<JaRuleWidgetPort*>(transfer->user_data);
+  return port->_OutTransferComplete();
 }
+
 }  // namespace
 
-
-JaRuleEndpoint::JaRuleEndpoint(ola::thread::ExecutorInterface *executor,
-                               AsyncronousLibUsbAdaptor *adaptor,
-                               libusb_device* device)
-  : m_executor(executor),
-    m_adaptor(adaptor),
-    m_device(device),
-    m_usb_handle(NULL),
-    m_out_transfer(adaptor->AllocTransfer(0)),
-    m_out_in_progress(false),
-    m_in_transfer(adaptor->AllocTransfer(0)),
-    m_in_in_progress(false) {
-  m_adaptor->RefDevice(device);
+JaRuleWidgetPort::JaRuleWidgetPort(ola::thread::ExecutorInterface *executor,
+                   LibUsbAdaptor *adaptor,
+                   libusb_device_handle *usb_handle,
+                   uint8_t endpoint_number,
+                   const ola::rdm::UID &uid,
+                   uint8_t physical_port)
+    : m_executor(executor),
+      m_adaptor(adaptor),
+      m_usb_handle(usb_handle),
+      m_endpoint_number(endpoint_number),
+      m_uid(uid),
+      m_physical_port(physical_port),
+      m_handle(NULL),
+      m_out_transfer(adaptor->AllocTransfer(0)),
+      m_out_in_progress(false),
+      m_in_transfer(adaptor->AllocTransfer(0)),
+      m_in_in_progress(false) {
 }
 
-JaRuleEndpoint::~JaRuleEndpoint() {
+JaRuleWidgetPort::~JaRuleWidgetPort() {
+  if (m_handle) {
+    OLA_WARN << "JaRulePortHandle is still claimed!";
+    delete m_handle;
+  }
+
   {
     MutexLocker locker(&m_mutex);
+    if (!m_queued_commands.empty()) {
+      OLA_WARN << "Queued commands remain, did we forget to call "
+                  "CancelTransfer()?";
+    }
+
+    if (!m_pending_commands.empty()) {
+      OLA_WARN << "Pending commands remain, did we forget to call "
+                  "CancelTransfer()?";
+    }
 
     if (m_out_in_progress) {
       m_adaptor->CancelTransfer(m_out_transfer);
@@ -115,19 +126,25 @@ JaRuleEndpoint::~JaRuleEndpoint() {
   if (m_in_transfer) {
     m_adaptor->FreeTransfer(m_in_transfer);
   }
+}
 
-  if (m_usb_handle) {
-    m_adaptor->Close(m_usb_handle);
+JaRulePortHandle* JaRuleWidgetPort::ClaimPort() {
+  if (m_handle) {
+    return NULL;
   }
-  m_adaptor->UnrefDevice(m_device);
+
+  m_handle = new JaRulePortHandle(this, m_uid, m_physical_port);
+  return m_handle;
 }
 
-bool JaRuleEndpoint::Init() {
-  return m_adaptor->OpenDeviceAndClaimInterface(m_device, INTERFACE_OFFSET,
-                                                &m_usb_handle);
+void JaRuleWidgetPort::ReleasePort() {
+  if (m_handle) {
+    delete m_handle;
+    m_handle = NULL;
+  }
 }
 
-void JaRuleEndpoint::CancelAll() {
+void JaRuleWidgetPort::CancelAll() {
   CommandQueue queued_commands;
   PendingCommandMap pending_commands;
 
@@ -141,14 +158,21 @@ void JaRuleEndpoint::CancelAll() {
   }
 
   while (!queued_commands.empty()) {
-    QueuedCommand queued_command = queued_commands.front();
-    queued_command.callback->Run(COMMAND_TIMEOUT, 0, 0, ByteString());
+    auto_ptr<PendingCommand> command(queued_commands.front());
+    if (command->callback) {
+      command->callback->Run(COMMAND_RESULT_CANCELLED, 0, 0,
+                             ByteString());
+    }
     queued_commands.pop();
   }
 
   PendingCommandMap::iterator iter = pending_commands.begin();
   for (; iter != pending_commands.end(); ++iter) {
-    iter->second.callback->Run(COMMAND_TIMEOUT, 0, 0, ByteString());
+    if (iter->second->callback) {
+      iter->second->callback->Run(COMMAND_RESULT_CANCELLED, 0, 0,
+                                  ByteString());
+      delete iter->second;
+    }
   }
 
   {
@@ -159,45 +183,71 @@ void JaRuleEndpoint::CancelAll() {
   }
 }
 
-void JaRuleEndpoint::SendCommand(CommandClass command,
-                                 const uint8_t *data,
-                                 unsigned int size,
-                                 CommandCompleteCallback *callback) {
+void JaRuleWidgetPort::SendCommand(
+    CommandClass command_class,
+    const uint8_t *data,
+    unsigned int size,
+    CommandCompleteCallback *callback) {
   if (size > MAX_PAYLOAD_SIZE) {
     OLA_WARN << "JaRule message exceeds max payload size";
-    callback->Run(COMMAND_MALFORMED, 0, 0, ByteString());
+    if (callback) {
+      callback->Run(COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
+    }
     return;
   }
 
   if (size != 0 && data == NULL) {
     OLA_WARN << "JaRule data is NULL, size was " << size;
-    callback->Run(COMMAND_MALFORMED, 0, 0, ByteString());
+    callback->Run(COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
     return;
   }
 
-  QueuedCommand queued_command = {
-    command,
-    callback,
-    ByteString(data, size)
-  };
+  // Create the payload
+  ByteString payload;
+  payload.reserve(size + MIN_RESPONSE_SIZE);
+
+  payload.push_back(SOF_IDENTIFIER);
+  payload.push_back(0);  // token, will be set on TX
+  payload.push_back(command_class & 0xff);
+  payload.push_back(command_class >> 8);
+  payload.push_back(size & 0xff);
+  payload.push_back(size >> 8);
+  payload.append(data, size);
+  payload.push_back(EOF_IDENTIFIER);
+
+  if (payload.size() % USB_PACKET_SIZE == 0)  {
+    // We need to pad the message so that the transfer completes on the
+    // Device side. We could use LIBUSB_TRANSFER_ADD_ZERO_PACKET instead but
+    // that isn't avaiable on all platforms.
+    payload.push_back(0);
+  }
+
+  auto_ptr<PendingCommand> command(new PendingCommand(
+      command_class, callback, payload));
+
+  OLA_INFO << "Adding new command " << ToHex(command_class);
 
   MutexLocker locker(&m_mutex);
 
   if (m_queued_commands.size() > MAX_QUEUED_MESSAGES) {
+    locker.Release();
     OLA_WARN << "JaRule outbound queue is full";
-    callback->Run(COMMAND_QUEUE_FULL, 0, 0, ByteString());
+    if (callback) {
+      callback->Run(COMMAND_RESULT_QUEUE_FULL, 0, 0, ByteString());
+    }
     return;
   }
 
-  m_queued_commands.push(queued_command);
+  m_queued_commands.push(command.release());
   MaybeSendCommand();
 }
 
-void JaRuleEndpoint::_OutTransferComplete() {
+void JaRuleWidgetPort::_OutTransferComplete() {
   OLA_DEBUG << "Out Command status is "
-           << LibUsbAdaptor::ErrorCodeToString(m_in_transfer->status);
+            << LibUsbAdaptor::ErrorCodeToString(m_in_transfer->status);
   if (m_out_transfer->status == LIBUSB_TRANSFER_COMPLETED) {
     if (m_out_transfer->actual_length != m_out_transfer->length) {
+      // TODO(simon): Decide what to do here
       OLA_WARN << "Only sent " << m_out_transfer->actual_length << " / "
                << m_out_transfer->length << " bytes";
     }
@@ -208,7 +258,7 @@ void JaRuleEndpoint::_OutTransferComplete() {
   MaybeSendCommand();
 }
 
-void JaRuleEndpoint::_InTransferComplete() {
+void JaRuleWidgetPort::_InTransferComplete() {
   OLA_DEBUG << "In transfer completed status is "
             << LibUsbAdaptor::ErrorCodeToString(m_in_transfer->status);
 
@@ -228,64 +278,42 @@ void JaRuleEndpoint::_InTransferComplete() {
   }
 }
 
-void JaRuleEndpoint::MaybeSendCommand() {
+void JaRuleWidgetPort::MaybeSendCommand() {
   if (m_out_in_progress ||
       m_pending_commands.size() > MAX_IN_FLIGHT ||
       m_queued_commands.empty()) {
     return;
   }
 
-  QueuedCommand command = m_queued_commands.front();
+  PendingCommand *command = m_queued_commands.front();
   m_queued_commands.pop();
 
-  unsigned int offset = 0;
   uint8_t token = m_token.Next();
-
-  m_out_buffer[0] = SOF_IDENTIFIER;
-  m_out_buffer[1] = token;
-  SplitUInt16(command.command, &m_out_buffer[3], &m_out_buffer[2]);
-  SplitUInt16(command.payload.size(), &m_out_buffer[5], &m_out_buffer[4]);
-  offset += 6;
-
-  if (command.payload.size() > 0) {
-    memcpy(m_out_buffer + offset, command.payload.data(),
-           command.payload.size());
-    offset += command.payload.size();
-  }
-  m_out_buffer[offset++] = EOF_IDENTIFIER;
-
-  if (offset % USB_PACKET_SIZE == 0)  {
-    // We need to pad the message so that the transfer completes on the
-    // Device side. We could use LIBUSB_TRANSFER_ADD_ZERO_PACKET instead but
-    // that isn't avaiable on all platforms.
-    m_out_buffer[offset++] = 0;
-  }
-
-  m_adaptor->FillBulkTransfer(m_out_transfer, m_usb_handle, OUT_ENDPOINT,
-                              m_out_buffer, offset,
-                              OutTransferCompleteHandler,
-                              static_cast<void*>(this),
-                              ENDPOINT_TIMEOUT_MS);
+  command->payload[1] = token;
+  m_adaptor->FillBulkTransfer(
+      m_out_transfer, m_usb_handle, m_endpoint_number | LIBUSB_ENDPOINT_OUT,
+      const_cast<uint8_t*>(command->payload.data()),
+      command->payload.size(), OutTransferCompleteHandler,
+      static_cast<void*>(this), ENDPOINT_TIMEOUT_MS);
 
   int r = m_adaptor->SubmitTransfer(m_out_transfer);
   if (r) {
     OLA_WARN << "Failed to submit outbound transfer: "
              << LibUsbAdaptor::ErrorCodeToString(r);
-    ScheduleCallback(command.callback, COMMAND_SEND_ERROR, 0, 0, ByteString());
+    ScheduleCallback(command->callback, COMMAND_RESULT_SEND_ERROR, 0, 0,
+                     ByteString());
+    delete command;
     return;
   }
 
-  PendingCommand pending_command = {
-    command.command,
-    command.callback
-  };
   std::pair<PendingCommandMap::iterator, bool> p = m_pending_commands.insert(
-      PendingCommandMap::value_type(token, pending_command));
+      PendingCommandMap::value_type(token, command));
   if (!p.second) {
-    // We had an old entry, time it out.
-    ScheduleCallback(p.first->second.callback, COMMAND_TIMEOUT, 0, 0,
-                     ByteString());
-    p.first->second = pending_command;
+    // We had an old entry, cancel it.
+    ScheduleCallback(p.first->second->callback,
+                     COMMAND_RESULT_CANCELLED, 0, 0, ByteString());
+    delete p.first->second;
+    p.first->second = command;
   }
 
   m_out_in_progress = true;
@@ -295,13 +323,14 @@ void JaRuleEndpoint::MaybeSendCommand() {
   return;
 }
 
-bool JaRuleEndpoint::SubmitInTransfer() {
+bool JaRuleWidgetPort::SubmitInTransfer() {
   if (m_in_in_progress) {
     OLA_WARN << "Read already pending";
     return true;
   }
 
-  m_adaptor->FillBulkTransfer(m_in_transfer, m_usb_handle, IN_ENDPOINT,
+  m_adaptor->FillBulkTransfer(m_in_transfer, m_usb_handle,
+                              m_endpoint_number | LIBUSB_ENDPOINT_IN,
                               m_in_buffer, IN_BUFFER_SIZE,
                               InTransferCompleteHandler,
                               static_cast<void*>(this),
@@ -321,7 +350,7 @@ bool JaRuleEndpoint::SubmitInTransfer() {
 /*
  *
  */
-void JaRuleEndpoint::HandleResponse(const uint8_t *data, unsigned int size) {
+void JaRuleWidgetPort::HandleResponse(const uint8_t *data, unsigned int size) {
   if (size < MIN_RESPONSE_SIZE) {
     OLA_WARN << "Response was too small, " << size << " bytes, min was "
              << MIN_RESPONSE_SIZE;
@@ -334,7 +363,7 @@ void JaRuleEndpoint::HandleResponse(const uint8_t *data, unsigned int size) {
   }
 
   uint8_t token = data[1];
-  uint16_t command = JoinUInt8(data[3], data[2]);
+  uint16_t command_class = JoinUInt8(data[3], data[2]);
   uint16_t payload_size = JoinUInt8(data[5], data[4]);
   uint8_t return_code = data[6];
   uint8_t status_flags = data[7];
@@ -354,14 +383,14 @@ void JaRuleEndpoint::HandleResponse(const uint8_t *data, unsigned int size) {
     return;
   }
 
-  PendingCommand pending_request;
-  if (!STLLookupAndRemove(&m_pending_commands, token, &pending_request)) {
+  PendingCommand *command;
+  if (!STLLookupAndRemove(&m_pending_commands, token, &command)) {
     return;
   }
 
-  CommandResult status = COMMAND_COMPLETED_OK;
-  if (pending_request.command != command) {
-    status = COMMAND_CLASS_MISMATCH;
+  USBCommandResult status = COMMAND_RESULT_OK;
+  if (command->command != command_class) {
+    status = COMMAND_RESULT_CLASS_MISMATCH;
   }
 
   ByteString payload;
@@ -369,17 +398,19 @@ void JaRuleEndpoint::HandleResponse(const uint8_t *data, unsigned int size) {
     payload.assign(data + MIN_RESPONSE_SIZE - 1, payload_size);
   }
   ScheduleCallback(
-      pending_request.callback, status, return_code, status_flags, payload);
+      command->callback, status, return_code, status_flags, payload);
+  delete command;
 }
 
 /*
  * @brief Schedule a callback to be run on the Executor.
  */
-void JaRuleEndpoint::ScheduleCallback(CommandCompleteCallback *callback,
-                                      CommandResult result,
-                                      uint8_t return_code,
-                                      uint8_t status_flags,
-                                      const ByteString &payload) {
+void JaRuleWidgetPort::ScheduleCallback(
+    CommandCompleteCallback *callback,
+    USBCommandResult result,
+    uint8_t return_code,
+    uint8_t status_flags,
+    const ByteString &payload) {
   if (!callback) {
     return;
   }
@@ -390,17 +421,19 @@ void JaRuleEndpoint::ScheduleCallback(CommandCompleteCallback *callback,
     status_flags,
     payload
   };
-  m_executor->Execute(
-      NewSingleCallback(this, &JaRuleEndpoint::RunCallback, callback, args));
+  if (callback) {
+    m_executor->Execute(NewSingleCallback(
+          this, &JaRuleWidgetPort::RunCallback, callback, args));
+  }
 }
 
 /*
  * @brief Only ever run in the Executor thread.
  */
-void JaRuleEndpoint::RunCallback(CommandCompleteCallback *callback,
-                                 CallbackArgs args) {
+void JaRuleWidgetPort::RunCallback(
+    CommandCompleteCallback *callback,
+    CallbackArgs args) {
   callback->Run(args.result, args.return_code, args.status_flags, args.payload);
 }
-}  // namespace usbdmx
-}  // namespace plugin
+}  // namespace usb
 }  // namespace ola

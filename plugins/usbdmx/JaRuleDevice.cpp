@@ -14,31 +14,49 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * JaRuleDevice.cpp
- * A JaRule device that creates a single port.
+ * A Ja Rule device.
  * Copyright (C) 2015 Simon Newton
  */
 
 #include "plugins/usbdmx/JaRuleDevice.h"
 
+#include <set>
 #include <string>
+
+#include "libs/usb/JaRuleWidget.h"
+#include "libs/usb/JaRulePortHandle.h"
 #include "plugins/usbdmx/JaRuleOutputPort.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+using std::set;
+
 JaRuleDevice::JaRuleDevice(ola::AbstractPlugin *owner,
-                           JaRuleWidget *widget,
-                           const std::string &device_name,
-                           const std::string &device_id)
+                           ola::usb::JaRuleWidget *widget,
+                           const std::string &device_name)
     : Device(owner, device_name),
-      m_device_id(device_id),
-      m_port(new JaRuleOutputPort(this, 0, widget)) {
+      m_widget(widget),
+      m_device_id(widget->GetUID().ToString()) {
 }
 
 bool JaRuleDevice::StartHook() {
-  AddPort(m_port.release());
+  for (uint8_t i = 0; i < m_widget->PortCount(); i++) {
+    ola::usb::JaRulePortHandle *handle = m_widget->ClaimPort(i);
+    if (handle) {
+      AddPort(new JaRuleOutputPort(this, i, handle));
+      m_claimed_ports.insert(i);
+    }
+  }
   return true;
+}
+
+void JaRuleDevice::PostPortStop() {
+  set<uint8_t>::const_iterator iter = m_claimed_ports.begin();
+  for (; iter != m_claimed_ports.end(); ++iter) {
+    m_widget->ReleasePort(*iter);
+  }
 }
 }  // namespace usbdmx
 }  // namespace plugin

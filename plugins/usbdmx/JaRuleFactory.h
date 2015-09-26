@@ -21,37 +21,38 @@
 #ifndef PLUGINS_USBDMX_JARULEFACTORY_H_
 #define PLUGINS_USBDMX_JARULEFACTORY_H_
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/rdm/UID.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
+namespace usb {
+class JaRuleWidget;
+}  // namespace usb
+
 namespace plugin {
 namespace usbdmx {
 
 /**
  * @brief Creates Ja Rule widgets.
  */
-class JaRuleFactory : public BaseWidgetFactory<class JaRuleWidget> {
+class JaRuleFactory : public BaseWidgetFactory<ola::usb::JaRuleWidget> {
  public:
   explicit JaRuleFactory(ola::io::SelectServerInterface *ss,
-                         class AsyncronousLibUsbAdaptor *adaptor)
+                         ola::usb::AsyncronousLibUsbAdaptor *adaptor)
       : m_ss(ss),
-        m_adaptor(adaptor),
-        // TODO(simon): Read this from the device.
-        m_uid(0x7a70, 0xfffffe00) {
+        m_adaptor(adaptor) {
   }
 
-  bool DeviceAdded(
-      WidgetObserver *observer,
-      libusb_device *usb_device,
-      const struct libusb_device_descriptor &descriptor);
+  bool DeviceAdded(WidgetObserver *observer,
+                   libusb_device *usb_device,
+                   const struct libusb_device_descriptor &descriptor);
 
  private:
   ola::io::SelectServerInterface *m_ss;
-  class AsyncronousLibUsbAdaptor *m_adaptor;
-  const ola::rdm::UID m_uid;
+  ola::usb::AsyncronousLibUsbAdaptor *m_adaptor;
 
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;

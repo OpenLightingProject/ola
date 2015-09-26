@@ -28,6 +28,11 @@
 #include "ola/stl/STLUtils.h"
 
 namespace ola {
+
+namespace usb {
+class JaRuleWidget;
+}  // namespace usb
+
 namespace plugin {
 namespace usbdmx {
 
@@ -73,7 +78,7 @@ class WidgetObserver {
    * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class JaRuleWidget *widget) = 0;
+  virtual bool NewWidget(ola::usb::JaRuleWidget *widget) = 0;
 
   /**
    * @brief Called when a new ScanlimeFadecandy is added.
@@ -124,7 +129,7 @@ class WidgetObserver {
    *
    * It is an error to use the widget once this call completes.
    */
-  virtual void WidgetRemoved(class JaRuleWidget *widget) = 0;
+  virtual void WidgetRemoved(ola::usb::JaRuleWidget *widget) = 0;
 
   /**
    * @brief Called when a ScanlimeFadecandy is removed.

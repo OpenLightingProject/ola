@@ -34,6 +34,8 @@
 #include <utility>
 #include <vector>
 
+#include "libs/usb/Types.h"
+
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
 #include "ola/thread/Thread.h"
@@ -42,6 +44,10 @@
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
+namespace usb {
+class LibUsbThread;
+class AsyncronousLibUsbAdaptor;
+}  // namespace usb
 
 class Device;
 
@@ -86,24 +92,29 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
 
   bool NewWidget(class AnymauDMX *widget);
   bool NewWidget(class EurolitePro *widget);
-  bool NewWidget(class JaRuleWidget *widget);
+  bool NewWidget(ola::usb::JaRuleWidget *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
   bool NewWidget(class Sunlite *widget);
   bool NewWidget(class VellemanK8062 *widget);
 
   void WidgetRemoved(class AnymauDMX *widget);
   void WidgetRemoved(class EurolitePro *widget);
-  void WidgetRemoved(class JaRuleWidget *widget);
+  void WidgetRemoved(ola::usb::JaRuleWidget *widget);
   void WidgetRemoved(class ScanlimeFadecandy *widget);
   void WidgetRemoved(class Sunlite *widget);
   void WidgetRemoved(class VellemanK8062 *widget);
 
  private:
+  struct DeviceState {
+    DeviceState() : usb_device(NULL), factory(NULL), ola_device(NULL) {}
+
+    struct libusb_device *usb_device;  // The underlying libusb device.
+    WidgetFactory *factory;  // The factory that owns this device.
+    Device *ola_device;  // The OLA device that uses this USB device.
+  };
+
   typedef std::vector<class WidgetFactory*> WidgetFactories;
-  typedef std::map<struct libusb_device*, WidgetFactory*> USBDeviceToFactoryMap;
-  typedef std::map<class Widget*, Device*> WidgetToDeviceMap;
-  typedef std::pair<uint8_t, uint8_t> USBDeviceID;
-  typedef std::map<USBDeviceID, struct libusb_device*> USBDeviceIDs;
+  typedef std::map<ola::usb::USBDeviceID, DeviceState*> USBDeviceMap;
 
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
@@ -115,23 +126,21 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool m_use_hotplug;
   ola::thread::Mutex m_mutex;
   bool m_suppress_hotplug_events;  // GUARDED_BY(m_mutex);
-  std::auto_ptr<class LibUsbThread> m_usb_thread;
-  std::auto_ptr<class AsyncronousLibUsbAdaptor> m_usb_adaptor;
+  std::auto_ptr<ola::usb::LibUsbThread> m_usb_thread;
+  std::auto_ptr<ola::usb::AsyncronousLibUsbAdaptor> m_usb_adaptor;
 
   WidgetFactories m_widget_factories;
-  USBDeviceToFactoryMap m_device_factory_map;
-  WidgetToDeviceMap m_widget_device_map;
+  USBDeviceMap m_device_map;
 
   // Members used if hotplug is not supported
   ola::thread::timeout_id m_scan_timeout;
-  USBDeviceIDs m_seen_usb_devices;
 
   bool HotplugSupported();
-  bool USBDeviceAdded(libusb_device *device);
-  void USBDeviceRemoved(libusb_device *device);
+  void USBDeviceAdded(libusb_device *device);
 
-  bool StartAndRegisterDevice(class Widget *widget, Device *device);
-  void RemoveWidget(class Widget *widget);
+  bool StartAndRegisterDevice(const ola::usb::USBDeviceID &device_id,
+                              Device *device);
+  void RemoveWidget(const ola::usb::USBDeviceID &device_id);
 
   bool ScanUSBDevices();
 

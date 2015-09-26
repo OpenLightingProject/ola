@@ -65,6 +65,9 @@ class UnpackException(Error):
   """Raised if we can't unpack the data corectly."""
 
 
+class MissingPLASAPIDs(Error):
+  """Raises if the files did not contain the PLASA PIDs."""
+
 class Pid(object):
   """A class that describes everything about a PID."""
   def __init__(self, name, value,
@@ -387,11 +390,11 @@ class IntAtom(FixedSizeAtom):
 
     for range in self._ranges:
       if range.min == range.max:
-        values.append(str(self._AccountForMultiplier(range.min)))
+        values.append(str(self._AccountForMultiplierUnpack(range.min)))
       else:
         values.append('[%s, %s]' %
-                      (self._AccountForMultiplier(range.min),
-                       self._AccountForMultiplier(range.max)))
+                      (self._AccountForMultiplierUnpack(range.min),
+                       self._AccountForMultiplierUnpack(range.max)))
 
     return ('%s' % ', '.join(values))
 
@@ -1215,4 +1218,16 @@ def GetStore(location=None, only_files=()):
         continue
       pid_files.append(os.path.join(location, file_name))
     _pid_store.Load(pid_files)
+
+  REQUIRED_PIDS = [
+      'DEVICE_INFO',
+      'QUEUED_MESSAGE',
+      'SUPPORTED_PARAMETERS'
+  ]
+  for pid in REQUIRED_PIDS:
+    if not _pid_store.GetName(pid):
+      raise MissingPLASAPIDs(
+          'Could not find %s in PID datastore, check the directory contains '
+          'the PLASA PIDs.' % pid);
+
   return _pid_store

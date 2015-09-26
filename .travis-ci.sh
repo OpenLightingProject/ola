@@ -5,7 +5,7 @@
 
 set -e
 
-CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py";
+CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py";
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
@@ -93,6 +93,13 @@ elif [[ $TASK = 'jshint' ]]; then
   cd ./javascript/new-src;
   npm install;
   grunt test
+elif [[ $TASK = 'flake8' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for flake8 to run against
+  make builtfiles
+  flake8 --exclude *_pb2.py,.git,__pycache --ignore E111,E121,E127,E129 python tools/rdm
 else
   # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests' # --enable-ja-rule

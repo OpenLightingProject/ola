@@ -34,20 +34,22 @@
 
 #include <memory>
 
-#include "plugins/usbdmx/LibUsbAdaptor.h"
-#include "plugins/usbdmx/LibUsbThread.h"
+#include "libs/usb/LibUsbAdaptor.h"
+#include "libs/usb/LibUsbThread.h"
 
 using ola::NewSingleCallback;
 using ola::io::SelectServer;
-using ola::plugin::usbdmx::LibUsbAdaptor;
-using ola::plugin::usbdmx::LibUsbHotplugThread;
 using ola::thread::Future;
 using ola::thread::MutexLocker;
 using ola::thread::Thread;
+using ola::usb::AsyncronousLibUsbAdaptor;
+using ola::usb::LibUsbAdaptor;
+using ola::usb::LibUsbHotplugThread;
+using ola::usb::JaRuleWidget;
 using std::auto_ptr;
 
-static const uint16_t kProductId = 0x0053;
-static const uint16_t kVendorId = 0x04d8;
+static const uint16_t kProductId = 0xaced;
+static const uint16_t kVendorId = 0x1209;
 
 namespace {
 
@@ -91,10 +93,12 @@ bool USBDeviceManager::Start() {
   m_start_thread_id = Thread::Self();
   m_usb_thread.reset(
       new LibUsbHotplugThread(m_context, hotplug_callback, this));
+  m_adaptor.reset(new AsyncronousLibUsbAdaptor(m_usb_thread.get()));
   bool ok = m_usb_thread->Init();
   if (ok) {
     m_cleanup_thread.Start();
   } else {
+    m_adaptor.reset();
     m_usb_thread.reset();
     libusb_exit(m_context);
     m_context = NULL;
@@ -122,20 +126,21 @@ bool USBDeviceManager::Stop() {
 
   {
     MutexLocker locker(&m_mutex);
-    DeviceMap::iterator iter = m_devices.begin();
-    for (; iter != m_devices.end(); ++iter) {
+    WidgetMap::iterator iter = m_widgets.begin();
+    for (; iter != m_widgets.end(); ++iter) {
       if (iter->second) {
         m_notification_cb->Run(DEVICE_REMOVED, iter->second);
-        DeleteDevice(iter->second);
+        DeleteWidget(iter->second);
       }
     }
-    m_devices.clear();
+    m_widgets.clear();
   }
 
   // Blocks until all devices have been deleted.
   m_cleanup_thread.Stop();
 
   m_usb_thread->Shutdown();
+  m_adaptor.reset();
   m_usb_thread.reset();
   libusb_exit(m_context);
   m_context = NULL;
@@ -174,21 +179,22 @@ void USBDeviceManager::DeviceAdded(struct libusb_device* usb_device,
     return;
   }
 
-  DeviceMap::iterator iter = ola::STLLookupOrInsertNull(&m_devices,
+  WidgetMap::iterator iter = ola::STLLookupOrInsertNull(&m_widgets,
                                                         device_id);
   if (iter->second) {
     // Dup event
     return;
   }
 
-  OLA_INFO << "Open Lighting Device connected";
-  auto_ptr<JaRuleEndpoint> device(new JaRuleEndpoint(m_ss, usb_device));
-  if (!device->Init()) {
-    m_devices.erase(iter);
+  OLA_INFO << "Ja Rule widget connected";
+  auto_ptr<JaRuleWidget> widget(
+      new JaRuleWidget(m_ss, m_adaptor.get(), usb_device));
+  if (!widget->Init()) {
+    m_widgets.erase(iter);
     return;
   }
 
-  iter->second = device.release();
+  iter->second = widget.release();
 
   // We've finished manipulating m_devices, but we need to ensure the callback
   // is queued before releasing the lock.
@@ -202,19 +208,19 @@ void USBDeviceManager::DeviceRemoved(const USBDeviceID& device_id) {
     return;
   }
 
-  JaRuleEndpoint *device = NULL;
-  if (!ola::STLLookupAndRemove(&m_devices, device_id, &device) ||
-      device == NULL) {
+  JaRuleWidget *widget = NULL;
+  if (!ola::STLLookupAndRemove(&m_widgets, device_id, &widget) ||
+      widget == NULL) {
     return;
   }
 
-  OLA_INFO << "Open Lighting Device disconnected";
-  SignalEvent(DEVICE_REMOVED, device, &locker);
-  DeleteDevice(device);
+  OLA_INFO << "Ja Rule widget disconnected";
+  SignalEvent(DEVICE_REMOVED, widget, &locker);
+  DeleteWidget(widget);
 }
 
 void USBDeviceManager::SignalEvent(EventType event,
-                                   JaRuleEndpoint* device,
+                                   JaRuleWidget* widget,
                                    MutexLocker* locker) {
   // We hold the lock at this point.
   if (!m_notification_cb.get()) {
@@ -224,28 +230,28 @@ void USBDeviceManager::SignalEvent(EventType event,
   if (pthread_equal(m_start_thread_id, Thread::Self())) {
     locker->Release();
     // We're within Start(), so we can execute the callbacks directly.
-    m_notification_cb->Run(event, device);
+    m_notification_cb->Run(event, widget);
   } else {
     // We're not within Start(), which means we're running on the libusb event
     // thread. Schedule the callback to run and wait for it to complete.
     // By waiting we ensure the callback has completed before we go ahead and
-    // delete the device.
+    // delete the widget.
     Future<void> f;
-    m_ss->Execute(NewSingleCallback(this, &USBDeviceManager::DeviceEvent,
-                                    event, device, &f));
+    m_ss->Execute(NewSingleCallback(this, &USBDeviceManager::WidgetEvent,
+                                    event, widget, &f));
     locker->Release();
     f.Get();
   }
 }
 
-void USBDeviceManager::DeviceEvent(EventType event, JaRuleEndpoint* device,
+void USBDeviceManager::WidgetEvent(EventType event, JaRuleWidget* widget,
                                    Future<void>* f) {
-  m_notification_cb->Run(event, device);
+  m_notification_cb->Run(event, widget);
   f->Set();
 }
 
 /*
- * @brief Schedule deletion of the device.
+ * @brief Schedule deletion of the widget.
  *
  * The deletion process goes something like:
  *  - cancel any pending transfers
@@ -253,13 +259,13 @@ void USBDeviceManager::DeviceEvent(EventType event, JaRuleEndpoint* device,
  *    thread)
  *  - close the libusb device
  *
- *  These all take place in the destructor of the JaRuleEndpoint.
+ *  These all take place in the destructor of the JaRuleWidget.
  *
  * To avoid deadlocks, we perform the deletion in a separate thread. That
- * way ~JaRuleEndpoint() can block waiting for the transfer callbacks to
+ * way ~JaRuleWidget() can block waiting for the transfer callbacks to
  * run, without having to worry about blocking the main thread.
  */
-void USBDeviceManager::DeleteDevice(JaRuleEndpoint* device) {
-  m_cleanup_thread.Execute(ola::DeletePointerCallback(device));
+void USBDeviceManager::DeleteWidget(JaRuleWidget* widget) {
+  m_cleanup_thread.Execute(ola::DeletePointerCallback(widget));
 }
 
