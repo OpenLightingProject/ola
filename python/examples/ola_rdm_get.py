@@ -112,7 +112,6 @@ class InteractiveModeController(cmd.Cmd):
     self._universe = universe
     self._uid = uid
     self._sub_device = sub_device
-
     self.pid_store = PidStore.GetStore(pid_location)
     self.wrapper = ClientWrapper()
     self.client = self.wrapper.Client()
@@ -454,6 +453,13 @@ def main():
 
   if not uid and not list_pids and not interactive_mode:
     Usage()
+    sys.exit()
+
+  # try to load the PID store so we fail early if we're missing PIDs
+  try:
+    PidStore.GetStore(pid_location)
+  except PidStore.MissingPLASAPIDs as e:
+    print e
     sys.exit()
 
   controller = InteractiveModeController(universe,
