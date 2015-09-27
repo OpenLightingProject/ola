@@ -80,6 +80,8 @@ rm -rf %buildroot
 
 
 %files
+%doc AUTHORS ChangeLog NEWS README TODO
+%licence COPYING GPL LGPL LICENCE
 %{_bindir}/ola*
 %{_bindir}/rdmpro_sniffer
 %{_bindir}/usbpro_firmware
@@ -90,21 +92,24 @@ rm -rf %buildroot
 %{_udevrulesdir}/ola.udev
 
 %files devel
+%doc README.developer
+%licence include/olad/LICENCE
 %{_includedir}/ola**
 %{_libdir}/libola*\.so
 %{_libdir}/pkgconfig/*
 
 %files -n python2-%{name}
-%{python2_sitelib}/ola/*\.py
-%{python2_sitelib}/ola/rpc/*\.py
+%licence python/ola/LICENCE
+%{python2_sitelib}/ola/*\.py*
+%{python2_sitelib}/ola/rpc/*\.py*
 
 %files rdm-tests
-%{_bindir}/rdm_model_collector.py
-%{_bindir}/rdm_responder_test.py
-%{_bindir}/rdm_test_server.py
+%{_bindir}/rdm_model_collector.py*
+%{_bindir}/rdm_responder_test.py*
+%{_bindir}/rdm_test_server.py*
 %{_datadir}/ola/rdm-server/**
-%{python2_sitelib}/ola/testing/*\.py
-%{python2_sitelib}/ola/testing/rdm/*\.py
+%{python2_sitelib}/ola/testing/*\.py*
+%{python2_sitelib}/ola/testing/rdm/*\.py*
 
 %post
 /sbin/ldconfig
@@ -117,9 +122,6 @@ rm -rf %buildroot
 
 %postun devel
 /sbin/ldconfig
-
-%doc AUTHORS ChangeLog NEWS README TODO
-%license COPYING
 
 %changelog
 * Sat Sep 19 2015 Dave Olsthoorn - 0.9.7-1
