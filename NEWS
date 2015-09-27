@@ -1,9 +1,7 @@
 x/y/2015 ola-0.9.8
  Features:
  * Add support for the DMXter4A
-
- API:
- * 
+ * Tidy the output of the Python ola_rdm_get for supported_parameters
 
  RDM Tests:
  * Fix a bug related to split levels not being supported in the dimmer PIDs
@@ -11,6 +9,7 @@ x/y/2015 ola-0.9.8
    not required
  * Switch from a warning to an advisory if it's a manufacturer specific use in
    GetSensorDefinition
+ * Fix some other minor RDM test bugs
 
  Bugs:
  * Fix some Xcode build errors
@@ -19,9 +18,7 @@ x/y/2015 ola-0.9.8
  * NACK requests for IPv4 default route PID with data
  * NACK with format error requests for DNS PIDs with data
  * Fix a bug regarding stack traces error messages with Python RDM gets #884
-
- Internal:
- *
+ * Support 0.9.43 of microhttpd
 
 13/7/2015 ola-0.9.7
  Bugs:
