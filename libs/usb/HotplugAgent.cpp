@@ -41,11 +41,11 @@ namespace usb {
 
 using ola::usb::AsyncronousLibUsbAdaptor;
 using ola::usb::LibUsbAdaptor;
-using ola::usb::LibUsbHotplugThread;
 using std::auto_ptr;
 using std::pair;
 
 namespace {
+#ifdef HAVE_LIBUSB_HOTPLUG_API
 int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
                      struct libusb_device *dev,
                      libusb_hotplug_event event,
@@ -54,6 +54,7 @@ int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
   agent->HotPlugEvent(dev, event);
   return 0;
 }
+#endif
 }  // namespace
 
 HotplugAgent::HotplugAgent(NotificationCallback* notification_cb,
