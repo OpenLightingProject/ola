@@ -63,6 +63,8 @@ class Controller {
  public:
   explicit Controller(SelectServer* ss)
       : m_ss(ss),
+        m_widget(NULL),
+        m_port(NULL),
         m_stdin_handler(
             new StdinHandler(ss, ola::NewCallback(this, &Controller::Input))),
         m_mode(NORMAL),
