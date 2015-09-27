@@ -747,9 +747,6 @@ AS_IF([test "x$enable_ja_rule" = xyes && test "x$enable_usbdmx" = xno],
       [AC_MSG_ERROR([Ja Rule requires the usbdmx plugin, but it could not be enabled.])])
 AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xno],
       [AC_MSG_ERROR([Ja Rule requires libusb, but it was not found on your system.])])
-AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb_hotplug_api" = xno],
-      [AC_MSG_ERROR([Ja Rule requires libusb to have the hotplug capability (versions 1.0.16 \
-and above), but the version found on your system doesn't appear to have it.])])
 
 AM_CONDITIONAL([BUILD_JA_RULE], [test "x$enable_ja_rule" = xyes])
 

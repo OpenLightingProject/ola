@@ -22,6 +22,9 @@
 #define LIBS_USB_TYPES_H_
 
 #include <utility>
+#include <ostream>
+
+#include "ola/strings/Format.h"
 
 namespace ola {
 namespace usb {
@@ -33,6 +36,14 @@ namespace usb {
  */
 typedef std::pair<uint8_t, uint8_t> USBDeviceID;
 
+
+/**
+ * @brief Format a USBDeviceID to a stream
+ */
+inline std::ostream& operator<<(std::ostream &out, const USBDeviceID &id) {
+  return out << ola::strings::IntToString(id.first) << ":"
+             << ola::strings::IntToString(id.second);
+}
 }  // namespace usb
 }  // namespace ola
 
