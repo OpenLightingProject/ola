@@ -97,7 +97,6 @@ rm -rf %buildroot
 
 %files
 %doc AUTHORS ChangeLog NEWS README TODO
-%licence COPYING GPL LGPL LICENCE
 %{_bindir}/ola*
 %{_bindir}/rdmpro_sniffer
 %{_bindir}/usbpro_firmware
@@ -109,7 +108,6 @@ rm -rf %buildroot
 
 %files devel
 %doc README.developer
-%licence include/olad/LICENCE
 %{_includedir}/ola**
 %{_libdir}/libola*\.so
 %{_libdir}/pkgconfig/*
