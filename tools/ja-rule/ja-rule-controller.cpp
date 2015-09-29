@@ -77,7 +77,7 @@ class Controller {
 
   void WidgetEvent(USBDeviceManager::EventType event,
                    JaRuleWidget *widget) {
-    if (event == USBDeviceManager::DEVICE_ADDED) {
+    if (event == USBDeviceManager::WIDGET_ADDED) {
       OLA_INFO << "Open Lighting Device added";
       if (m_widget) {
         // We only support a single device for now
