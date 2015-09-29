@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "libs/usb/Types.h"
+#include "libs/usb/HotplugAgent.h"
 
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
@@ -75,21 +76,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool Start();
   bool Stop();
 
-  #ifdef HAVE_LIBUSB_HOTPLUG_API
-  /**
-   * @brief Called when a USB hotplug event occurs.
-   * @param dev the libusb_device the event occurred for.
-   * @param event indicates if the device was added or removed.
-   *
-   * This can be called from either the thread that called
-   * Start(), or from the libusb thread. It can't be called from both threads at
-   * once though, since the libusb thread is only started once the initial call
-   * to libusb_hotplug_register_callback returns.
-   */
-  void HotPlugEvent(struct libusb_device *dev,
-                    libusb_hotplug_event event);
-  #endif
-
+  // These are all run in the main SelectServer thread.
   bool NewWidget(class AnymauDMX *widget);
   bool NewWidget(class EurolitePro *widget);
   bool NewWidget(ola::usb::JaRuleWidget *widget);
@@ -119,30 +106,25 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
   const unsigned int m_debug_level;
+  std::auto_ptr<ola::usb::HotplugAgent> m_agent;
 
   SyncronizedWidgetObserver m_widget_observer;
 
-  libusb_context *m_context;
-  bool m_use_hotplug;
-  ola::thread::Mutex m_mutex;
-  bool m_suppress_hotplug_events;  // GUARDED_BY(m_mutex);
-  std::auto_ptr<ola::usb::LibUsbThread> m_usb_thread;
-  std::auto_ptr<ola::usb::AsyncronousLibUsbAdaptor> m_usb_adaptor;
+  ola::usb::AsyncronousLibUsbAdaptor *m_usb_adaptor;  // not owned
 
   WidgetFactories m_widget_factories;
   USBDeviceMap m_device_map;
 
   // Members used if hotplug is not supported
-  ola::thread::timeout_id m_scan_timeout;
 
-  bool HotplugSupported();
+  void DeviceEvent(ola::usb::HotplugAgent::EventType event,
+                   struct libusb_device *device);
+
   void USBDeviceAdded(libusb_device *device);
 
   bool StartAndRegisterDevice(const ola::usb::USBDeviceID &device_id,
                               Device *device);
   void RemoveWidget(const ola::usb::USBDeviceID &device_id);
-
-  bool ScanUSBDevices();
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPluginImpl);
 };

@@ -69,6 +69,10 @@ bool USBDeviceManager::Start() {
   m_hotplug_agent.reset(new HotplugAgent(
         NewCallback(this, &USBDeviceManager::HotPlugEvent), 3));
 
+  if (!m_hotplug_agent->Init()) {
+    return false;
+  }
+
   if (!m_hotplug_agent->Start()) {
     return false;
   }

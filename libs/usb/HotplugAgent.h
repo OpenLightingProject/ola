@@ -79,15 +79,22 @@ class HotplugAgent {
   /**
    * @brief Get the AsyncronousLibUsbAdaptor to use.
    * @returns An AsyncronousLibUsbAdaptor, ownership is not transferred.
-   * @pre Must be called after Start()
+   * @pre Must be called after Init()
    *
    * The adaptor is valid until the call to Stop().
    */
   AsyncronousLibUsbAdaptor *GetUSBAdaptor() const;
 
   /**
-   * @brief Start the device manager.
-   * @returns true if the manager started correctly, false otherwise.
+   * @brief Initialize the hotplug agent.
+   * @returns true if the agent started correctly, false otherwise.
+   */
+  bool Init();
+
+  /**
+   * @brief Start the hotplug agent.
+   * @returns true if the agent started correctly, false otherwise.
+   * @pre Init() has been called and returned true.
    */
   bool Start();
 
