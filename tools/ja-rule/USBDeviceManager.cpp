@@ -104,7 +104,7 @@ bool USBDeviceManager::Stop() {
   }
   m_widgets.clear();
 
-  // Blocks all widgets have been deleted.
+  // Blocks until all widgets have been deleted.
   m_cleanup_thread.Stop();
 
   // Now we can finally stop the libusb thread.

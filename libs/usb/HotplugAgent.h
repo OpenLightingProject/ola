@@ -136,7 +136,7 @@ class HotplugAgent {
   ola::thread::Mutex m_mutex;
   bool m_suppress_hotplug_events;  // GUARDED_BY(m_mutex);
 
-  // In hotplug mode, this is guardded by m_mutex while
+  // In hotplug mode, this is guarded by m_mutex while
   // m_suppress_hotplug_events is false.
   // In non-hotplug mode, this is only accessed from the scanner thread, unless
   // the thread is no longer running in which case it's accessed from the main

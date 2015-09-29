@@ -65,7 +65,7 @@ void *PeriodicThread::Run() {
         return NULL;
       }
       if (m_condition.TimedWait(&m_mutex, last_run_at + m_delay)) {
-        // Either m_terminate is true, or a suprious wake up
+        // Either m_terminate is true, or a spurious wake up
         if (m_terminate) {
           return NULL;
         }
