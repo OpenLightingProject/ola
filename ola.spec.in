@@ -8,7 +8,7 @@
 
 Name:		ola
 Version:	@VERSION@
-Release:	1
+Release:	1%{?dist}
 Summary:	Open Lighting Architecture
 Group:		Applications/Multimedia
 License:	GPLv2 and LGPLv2
