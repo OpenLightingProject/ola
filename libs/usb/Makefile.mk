@@ -19,6 +19,7 @@ libs_usb_libolausb_la_SOURCES = \
     libs/usb/LibUsbAdaptor.h \
     libs/usb/LibUsbThread.cpp \
     libs/usb/LibUsbThread.h \
+    libs/usb/Types.cpp \
     libs/usb/Types.h
 libs_usb_libolausb_la_CXXFLAGS = $(COMMON_CXXFLAGS) \
                                  $(libusb_CFLAGS)

@@ -24,8 +24,6 @@
 #include <stdio.h>
 #include <libusb.h>
 
-#include <set>
-
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
@@ -35,6 +33,7 @@
 #include "libs/usb/JaRuleWidget.h"
 #include "libs/usb/LibUsbAdaptor.h"
 #include "libs/usb/LibUsbThread.h"
+#include "libs/usb/Types.h"
 
 #include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/AnymauDMXFactory.h"
@@ -52,7 +51,6 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-using ola::strings::IntToString;
 using ola::usb::HotplugAgent;
 using ola::usb::JaRuleWidget;
 using ola::usb::USBDeviceID;
@@ -203,6 +201,7 @@ void AsyncPluginImpl::DeviceEvent(HotplugAgent::EventType event,
     USBDeviceID device_id = m_usb_adaptor->GetDeviceId(device);
     DeviceState *state = STLFindOrNull(m_device_map, device_id);
     if (state && state->factory) {
+      OLA_INFO << "USB device " << device_id << " removed";
       state->factory->DeviceRemoved(&m_widget_observer, state->usb_device);
       state->factory = NULL;
     }
@@ -224,13 +223,14 @@ void AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
   USBDeviceMap::iterator iter = STLLookupOrInsertNew(&m_device_map, device_id);
 
   DeviceState *state = iter->second;
-  if (!state->usb_device) {
-    state->usb_device = usb_device;
-  }
 
   if (state->factory) {
     // Already claimed
     return;
+  }
+
+  if (!state->usb_device) {
+    state->usb_device = usb_device;
   }
 
   struct libusb_device_descriptor descriptor;
@@ -244,6 +244,8 @@ void AsyncPluginImpl::USBDeviceAdded(libusb_device *usb_device) {
   for (; factory_iter != m_widget_factories.end(); ++factory_iter) {
     if ((*factory_iter)->DeviceAdded(&m_widget_observer, usb_device,
                                      descriptor)) {
+      OLA_INFO << "Device " << device_id << " claimed by "
+               << (*factory_iter)->Name();
       state->factory = *factory_iter;
       return;
     }
@@ -266,9 +268,7 @@ bool AsyncPluginImpl::StartAndRegisterDevice(const USBDeviceID &device_id,
 
   DeviceState *state = STLFindOrNull(m_device_map, device_id);
   if (!state) {
-    OLA_WARN << "Failed to find state for device "
-             << IntToString(device_id.first) << ":"
-             << IntToString(device_id.second);
+    OLA_WARN << "Failed to find state for device " << device_id;
     delete device;
     return false;
   }
@@ -290,7 +290,7 @@ bool AsyncPluginImpl::StartAndRegisterDevice(const USBDeviceID &device_id,
  *
  * This is run within the main thread.
  */
-void AsyncPluginImpl::RemoveWidget(const ola::usb::USBDeviceID &device_id) {
+void AsyncPluginImpl::RemoveWidget(const USBDeviceID &device_id) {
   DeviceState *state = STLFindOrNull(m_device_map, device_id);
   if (state && state->ola_device) {
     m_plugin_adaptor->UnregisterDevice(state->ola_device);

@@ -378,6 +378,13 @@ class LibUsbAdaptor {
   // Static helper methods.
 
   /**
+   * @brief Initialize a new libusb context.
+   * @param context A pointer to a libusb context.
+   * @returns true if the context is initialized, false otherwise.
+   */
+  static bool Initialize(struct libusb_context **context);
+
+  /**
    * @brief Fetch the manufacturer, product and serial strings from a device.
    * @param usb_device The USB device to get information for.
    * @param device_descriptor The descriptor to use
