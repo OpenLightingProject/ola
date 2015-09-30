@@ -95,6 +95,15 @@ bool OpenHandleAndClaimInterface(libusb_device *usb_device,
 // LibUsbAdaptor
 // ----------------------------------------------------------------------------
 
+bool LibUsbAdaptor::Initialize(struct libusb_context **context) {
+  int r = libusb_init(context);
+  if (r) {
+    OLA_WARN << "libusb_init() failed: " << ErrorCodeToString(r);
+    return false;
+  }
+  return true;
+}
+
 bool LibUsbAdaptor::GetDeviceInfo(
     struct libusb_device *usb_device,
     const struct libusb_device_descriptor &device_descriptor,

@@ -35,7 +35,8 @@ namespace usbdmx {
 class VellemanK8062Factory : public BaseWidgetFactory<class VellemanK8062> {
  public:
   explicit VellemanK8062Factory(ola::usb::LibUsbAdaptor *adaptor)
-      : m_adaptor(adaptor) {
+      : BaseWidgetFactory("VellemanK8062Factory"),
+        m_adaptor(adaptor) {
   }
 
   bool DeviceAdded(

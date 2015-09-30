@@ -23,6 +23,7 @@
 
 #include <libusb.h>
 #include <map>
+#include <string>
 #include "ola/Logging.h"
 #include "ola/base/Macro.h"
 #include "ola/stl/STLUtils.h"
@@ -187,6 +188,12 @@ class WidgetFactory {
       const struct libusb_device_descriptor &descriptor) = 0;
 
   /**
+   * @brief The name of this factory.
+   * @returns The name of this factory.
+   */
+  virtual std::string Name() const = 0;
+
+  /**
    * @brief Called when a USB device is removed.
    * @param observer The WidgetObserver to notify if this action results in a
    *   widget removal.
@@ -205,7 +212,9 @@ class WidgetFactory {
 template <typename WidgetType>
 class BaseWidgetFactory : public WidgetFactory {
  public:
-  BaseWidgetFactory() {}
+  explicit BaseWidgetFactory(const std::string &name) : m_name(name) {}
+
+  std::string Name() const { return m_name; }
 
   void DeviceRemoved(WidgetObserver *observer,
                      libusb_device *device);
@@ -243,6 +252,7 @@ class BaseWidgetFactory : public WidgetFactory {
   typedef std::map<libusb_device*, WidgetType*> WidgetMap;
 
   WidgetMap m_widget_map;
+  const std::string m_name;
 
   DISALLOW_COPY_AND_ASSIGN(BaseWidgetFactory<WidgetType>);
 };

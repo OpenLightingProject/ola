@@ -29,7 +29,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -109,17 +108,12 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   std::auto_ptr<ola::usb::HotplugAgent> m_agent;
 
   SyncronizedWidgetObserver m_widget_observer;
-
   ola::usb::AsyncronousLibUsbAdaptor *m_usb_adaptor;  // not owned
-
   WidgetFactories m_widget_factories;
   USBDeviceMap m_device_map;
 
-  // Members used if hotplug is not supported
-
   void DeviceEvent(ola::usb::HotplugAgent::EventType event,
                    struct libusb_device *device);
-
   void USBDeviceAdded(libusb_device *device);
 
   bool StartAndRegisterDevice(const ola::usb::USBDeviceID &device_id,

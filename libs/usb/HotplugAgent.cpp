@@ -77,25 +77,23 @@ AsyncronousLibUsbAdaptor *HotplugAgent::GetUSBAdaptor() const {
 }
 
 bool HotplugAgent::Init() {
-  if (libusb_init(&m_context)) {
-    OLA_WARN << "Failed to init libusb";
+  if (!LibUsbAdaptor::Initialize(&m_context)) {
     return false;
   }
 
-  OLA_DEBUG << "libusb debug level set to " << m_debug_level;
+  OLA_DEBUG << "libusb_set_debug(" << m_debug_level << ")";
   libusb_set_debug(m_context, m_debug_level);
 
   m_use_hotplug = HotplugSupported();
   OLA_DEBUG << "HotplugSupported(): " << m_use_hotplug;
-  if (m_use_hotplug) {
 #ifdef HAVE_LIBUSB_HOTPLUG_API
+  if (m_use_hotplug) {
     m_usb_thread.reset(new ola::usb::LibUsbHotplugThread(
           m_context, hotplug_callback, this));
-#else
-    OLA_FATAL << "Mismatch between m_use_hotplug and HAVE_LIBUSB_HOTPLUG_API";
-    return false;
+  }
 #endif
-  } else {
+
+  if (!m_usb_thread.get()) {
     m_usb_thread.reset(new ola::usb::LibUsbSimpleThread(m_context));
   }
   m_usb_adaptor.reset(
@@ -163,10 +161,11 @@ void HotplugAgent::HotPlugEvent(struct libusb_device *usb_device,
     return;
   }
 
-  OLA_DEBUG << "Got USB hotplug event  for " << usb_device << " : "
-            << (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED ? "add" : "del");
-
   USBDeviceID device_id = m_usb_adaptor->GetDeviceId(usb_device);
+
+  OLA_INFO << "USB hotplug event: " << device_id << " @" << usb_device << " ["
+           << (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED ? "add" : "del")
+           << "]";
 
   if (event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED) {
     pair<DeviceMap::iterator, bool> p = m_devices.insert(
@@ -176,7 +175,7 @@ void HotplugAgent::HotPlugEvent(struct libusb_device *usb_device,
       // already an entry in the map
       if (p.first->second != usb_device) {
         OLA_WARN << "Received double hotplug notification for "
-                 << device_id.first << ":" << device_id.second;
+                 << device_id;
       }
       return;
     }
@@ -224,7 +223,6 @@ bool HotplugAgent::ScanUSBDevices() {
   libusb_device **device_list;
   size_t device_count = libusb_get_device_list(m_context, &device_list);
 
-  OLA_INFO << "USB Scan found " << device_count << " devices";
   for (unsigned int i = 0; i < device_count; i++) {
     libusb_device *usb_device = device_list[i];
 
