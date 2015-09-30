@@ -90,7 +90,8 @@ AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
     : m_plugin_adaptor(plugin_adaptor),
       m_plugin(plugin),
       m_debug_level(debug_level),
-      m_widget_observer(this, plugin_adaptor) {
+      m_widget_observer(this, plugin_adaptor),
+      m_usb_adaptor(NULL) {
 }
 
 AsyncPluginImpl::~AsyncPluginImpl() {
