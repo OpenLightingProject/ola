@@ -1,18 +1,34 @@
-#python2_sitelib shim
-%{!?python2_sitelib:%global python2_sitelib /usr/lib/python2*/site-packages/}
-#udev shim
-%{!?_udevrulesdir:%global _udevrulesdir /etc/udev/rules.d/}
+#missing el6 macros
+%if 0%{?el6}
+#python2_sitelib macro
+%{!?python2_sitelib:%global python2_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+#udev macro
+%{!?_udevrulesdir:%global _udevrulesdir %{_sysconfdir}/udev/rules.d/ }
+%endif #if el6
 
-Name:           ola
-Version:        @VERSION@
-Release:        1
-Summary:        Open Lighting Architecture
-Group:          Applications/Multimedia
-License:        GPLv2 and LGPLv2
-URL:            https://github.com/OpenLightingProject/ola
-Source:         https://github.com/OpenLightingProject/ola/releases/download/%{version}/%{name}-%{version}.tar.gz
-BuildRoot:      %{_buildrootdir}/%{name}-%{version}-%{release}-root
-BuildRequires:  libmicrohttpd-devel,cppunit-devel,protobuf-devel,protobuf-compiler,protobuf-python,libftdi-devel,openslp-devel,uuid-devel,libtool,bison,flex,pkgconfig,gcc,gcc-c++,python2-devel,avahi-devel
+Name:		ola
+Version:	@VERSION@
+Release:	1
+Summary:	Open Lighting Architecture
+Group:		Applications/Multimedia
+License:	GPLv2 and LGPLv2
+URL:		https://github.com/OpenLightingProject/ola
+Source:		https://github.com/OpenLightingProject/ola/releases/download/%{version}/%{name}-%{version}.tar.gz
+BuildRoot:	%{_buildrootdir}/%{name}-%{version}-%{release}-root
+BuildRequires:	libmicrohttpd-devel,cppunit-devel,libftdi-devel,openslp-devel,uuid-devel
+BuildRequires:	protobuf-devel,protobuf-compiler,protobuf-python
+BuildRequires:	libtool,bison,flex,pkgconfig,gcc,gcc-c++,python2-devel,avahi-devel
+%if 0%{?el6}
+BuildRequires:	libusb1-devel
+%endif #if el6
+%if 0%{?el7}
+BuildRequires:	libusbx-devel
+%endif #if el7
+%if 0%{?fedora} >= 21
+BuildRequires:	liblo-devel,libusbx-devel
+%endif #if fedora > 21
+Provides:	bundled(bootstrap) = 3.3.2, bundled(jquery) = 2.1.3
+Provides:	bundled(angularjs) = 1.3.14, bundled(angular-route) = 1.3.14
 
 %description
 The Open Lighting Architecture is a framework for lighting control information.
@@ -23,28 +39,29 @@ control software. OLA runs on many different platforms including ARM, which
 makes it a perfect fit for low cost Ethernet to DMX gateways.
 
 %package devel
-Requires:      ola = %{version}-%{release}, protobuf-devel
-Group:         Development/Libraries
-Summary:       C/C++ Development files for OLA
+Requires:	ola = %{version}-%{release}, protobuf-devel
+Group:		Development/Libraries
+Summary:	C/C++ Development files for OLA
 
 %description devel
 The OLA C/C++ library
 
 %package -n python2-%{name}
-Requires:      ola = %{version}-%{release}, protobuf-python
-Group:         Development/Libraries
-Summary:       Python Development files for OLA
-BuildArch:     noarch
+Requires:	ola = %{version}-%{release}, protobuf-python
+Group:		Development/Libraries
+Summary:	Python Development files for OLA
+BuildArch:	noarch
 %{?python_provide:%python_provide python2-%{name}}
 
 %description -n python2-%{name}
 The OLA python library
 
 %package rdm-tests
-Requires:      ola = %{version}-%{release}, python2-%{name}
-Group:         Development/Libraries
-BuildArch:     noarch
-Summary:       RDM test suite using OLA and python
+Requires:	ola = %{version}-%{release}, python2-%{name}
+Group:		Development/Libraries
+BuildArch:	noarch
+Summary:	RDM test suite using OLA and python
+Provides:	bundled(jquery) = 1.7.2, bundled(jquery-ui) = 1.8.21
 
 %description rdm-tests
 The rdm test suite for OLA
@@ -53,33 +70,35 @@ The rdm test suite for OLA
 %setup -q -n %{name}-%{version}
 
 %build
+echo "python package path: %{python2_sitelib}"
+echo "udev config path: %{_udevrulesdir}"
 autoreconf -i
 %configure --enable-rdm-tests --enable-shared --disable-static
-#disable rpath as fedora and centos don't like it in their packages
+#begin rpath removal
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 sed -i "s|\$(LN_S) -f \$(bindir)\/|\$(LN_S) -f |g" Makefile
-make #%{?_smp_mflags} the build fails on epel6 if we enable this
+#end rpath removal
+make %{!?el6:%{?_smp_mflags}} #el6 has problems with parralel building
 
 %check
 export LD_LIBRARY_PATH="%buildroot/usr/lib:%buildroot/usr/lib64"
-make check #%{?_smp_mflags} same here
+make check %{!?el6:%{?_smp_mflags}} #el6 has problems with parralel building
 find %buildroot -name "*\.la" -delete
 find %buildroot -name "*\.a" -delete
 
 %install
 rm -rf %buildroot
 %make_install
-find %buildroot -name "*\.la" -delete
-find %buildroot -name "*\.a" -delete
 mkdir -p %buildroot/%{_udevrulesdir}
-cp debian/ola.udev %buildroot%{_udevrulesdir}
+cp debian/ola.udev %buildroot/%{_udevrulesdir}
 
 %clean
 rm -rf %buildroot
 
 
 %files
+%doc AUTHORS ChangeLog NEWS README TODO
 %{_bindir}/ola*
 %{_bindir}/rdmpro_sniffer
 %{_bindir}/usbpro_firmware
@@ -90,36 +109,32 @@ rm -rf %buildroot
 %{_udevrulesdir}/ola.udev
 
 %files devel
+%doc README.developer
 %{_includedir}/ola**
 %{_libdir}/libola*\.so
 %{_libdir}/pkgconfig/*
 
 %files -n python2-%{name}
-%{python2_sitelib}/ola/*\.py
-%{python2_sitelib}/ola/rpc/*\.py
+%{python2_sitelib}/ola/*\.py*
+%{python2_sitelib}/ola/rpc/*\.py*
 
 %files rdm-tests
-%{_bindir}/rdm_model_collector.py
-%{_bindir}/rdm_responder_test.py
-%{_bindir}/rdm_test_server.py
+%{_bindir}/rdm_model_collector.py*
+%{_bindir}/rdm_responder_test.py*
+%{_bindir}/rdm_test_server.py*
 %{_datadir}/ola/rdm-server/**
-%{python2_sitelib}/ola/testing/*\.py
-%{python2_sitelib}/ola/testing/rdm/*\.py
+%{python2_sitelib}/ola/testing/*\.py*
+%{python2_sitelib}/ola/testing/rdm/*\.py*
 
-%post
-/sbin/ldconfig
+%post -p /sbin/ldconfig
 
-%post devel
-/sbin/ldconfig
+%postun -p /sbin/ldconfig
 
-%post
-/sbin/ldconfig
+%post devel -p /sbin/ldconfig
 
-%postun devel
-/sbin/ldconfig
+%postun devel -p /sbin/ldconfig
 
-%doc AUTHORS ChangeLog NEWS README TODO
-%license COPYING
+%licence LICENCE
 
 %changelog
 * Sat Sep 19 2015 Dave Olsthoorn - 0.9.7-1
