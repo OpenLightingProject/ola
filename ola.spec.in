@@ -65,8 +65,6 @@ The rdm test suite for OLA
 %setup -q -n %{name}-%{version}
 
 %build
-echo "python package path: %{python2_sitelib}"
-echo "udev config path: %{_udevrulesdir}"
 autoreconf -i
 %configure --enable-rdm-tests --enable-shared --disable-static
 #begin rpath removal
