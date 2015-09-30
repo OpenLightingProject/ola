@@ -51,30 +51,9 @@ bool SyncronizedWidgetObserver::DispatchNewWidget(WidgetClass *widget) {
 }
 
 template<typename WidgetClass>
-void SyncronizedWidgetObserver::DispatchWidgetRemoved(WidgetClass *widget) {
-  if (pthread_equal(Thread::Self(), m_main_thread_id)) {
-    m_observer->WidgetRemoved(widget);
-  } else {
-    RemoveFuture f;
-    m_ss->Execute(
-        NewSingleCallback(
-            this, &SyncronizedWidgetObserver::HandleWidgetRemoved<WidgetClass>,
-            widget, &f));
-    f.Get();
-  }
-}
-
-template<typename WidgetClass>
 void SyncronizedWidgetObserver::HandleNewWidget(WidgetClass*widget,
                                                 AddFuture *f) {
   f->Set(m_observer->NewWidget(widget));
-}
-
-template<typename WidgetClass>
-void SyncronizedWidgetObserver::HandleWidgetRemoved(WidgetClass *widget,
-                                                    RemoveFuture *f) {
-  m_observer->WidgetRemoved(widget);
-  f->Set();
 }
 }  // namespace usbdmx
 }  // namespace plugin

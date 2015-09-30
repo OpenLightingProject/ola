@@ -40,8 +40,7 @@ bool JaRuleFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID ||
-      HasDevice(usb_device)) {
+  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID) {
     return false;
   }
 
@@ -53,7 +52,7 @@ bool JaRuleFactory::DeviceAdded(
   OLA_INFO << "Found a new Ja Rule device";
   std::auto_ptr<ola::usb::JaRuleWidget> widget(
       new ola::usb::JaRuleWidget(m_ss, m_adaptor, usb_device));
-  return AddWidget(observer, usb_device, widget.release());
+  return AddWidget(observer, widget.release());
 }
 }  // namespace usbdmx
 }  // namespace plugin

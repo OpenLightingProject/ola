@@ -42,8 +42,7 @@ bool AnymauDMXFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID ||
-      HasDevice(usb_device)) {
+  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID) {
     return false;
   }
 
@@ -83,7 +82,7 @@ bool AnymauDMXFactory::DeviceAdded(
   } else {
     widget = new SynchronousAnymauDMX(m_adaptor, usb_device, info.serial);
   }
-  return AddWidget(observer, usb_device, widget);
+  return AddWidget(observer, widget);
 }
 }  // namespace usbdmx
 }  // namespace plugin

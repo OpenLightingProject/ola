@@ -46,8 +46,7 @@ bool SunliteFactory::DeviceAdded(
     loader.LoadFirmware();
     return true;
   } else if (descriptor.idVendor == VENDOR_ID &&
-             descriptor.idProduct == FULL_PRODUCT_ID &&
-             !HasDevice(usb_device)) {
+             descriptor.idProduct == FULL_PRODUCT_ID) {
     OLA_INFO << "Found a new Sunlite device";
     Sunlite *widget = NULL;
     if (FLAGS_use_async_libusb) {
@@ -55,15 +54,9 @@ bool SunliteFactory::DeviceAdded(
     } else {
       widget = new SynchronousSunlite(m_adaptor, usb_device);
     }
-    return AddWidget(observer, usb_device, widget);
+    return AddWidget(observer, widget);
   }
   return false;
-}
-
-void SunliteFactory::DeviceRemoved(WidgetObserver *observer,
-                                         libusb_device *device) {
-  // TODO(simon): once firmware loading is async, cancel the load here.
-  BaseWidgetFactory<Sunlite>::DeviceRemoved(observer, device);
 }
 }  // namespace usbdmx
 }  // namespace plugin
