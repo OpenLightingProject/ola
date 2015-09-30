@@ -17,7 +17,7 @@ Source:		https://github.com/OpenLightingProject/ola/releases/download/%{version}
 
 BuildRequires:	pkgconfig,pkgconfig(cppunit),pkgconfig(uuid),pkgconfig(avahi-client)
 BuildRequires:	pkgconfig(libusb-1.0) >= 1.0.2,pkgconfig(libmicrohttpd) >= 0.4.0
-BuildRequires:	libtool,bison,flex,python2-devel,openslp-devel,pkgconfig(libftdi{!?el6:1}) >= 0.18
+BuildRequires:	libtool,bison,flex,python2-devel,openslp-devel,pkgconfig(libftdi%{!?el6:1}) >= 0.18
 BuildRequires:	protobuf-devel >= 0.2,protobuf-compiler,protobuf-python
 %if 0%{?fedora} >= 21
 BuildRequires:	liblo-devel
