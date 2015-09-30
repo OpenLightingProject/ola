@@ -76,7 +76,7 @@ AsyncronousLibUsbAdaptor *HotplugAgent::GetUSBAdaptor() const {
   return m_usb_adaptor.get();
 }
 
-bool HotplugAgent::Start() {
+bool HotplugAgent::Init() {
   if (libusb_init(&m_context)) {
     OLA_WARN << "Failed to init libusb";
     return false;
@@ -100,7 +100,10 @@ bool HotplugAgent::Start() {
   }
   m_usb_adaptor.reset(
       new ola::usb::AsyncronousLibUsbAdaptor(m_usb_thread.get()));
+  return true;
+}
 
+bool HotplugAgent::Start() {
   // If we're using hotplug, this starts the hotplug thread.
   if (!m_usb_thread->Init()) {
     m_usb_adaptor.reset();
