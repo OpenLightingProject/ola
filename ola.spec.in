@@ -93,10 +93,6 @@ rm -rf %buildroot
 mkdir -p %buildroot/%{_udevrulesdir}
 cp debian/ola.udev %buildroot/%{_udevrulesdir}
 
-%clean
-rm -rf %buildroot
-
-
 %files
 %doc AUTHORS ChangeLog NEWS README TODO
 %{_bindir}/ola*
