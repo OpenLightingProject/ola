@@ -41,6 +41,12 @@ JaRulePortHandle::JaRulePortHandle(class JaRuleWidgetPort *parent_port,
 }
 
 JaRulePortHandle::~JaRulePortHandle() {
+  // Pause the queuing controller so it stops sending anything more to the
+  // impl.
+  m_queueing_controller.Pause();
+  // This will run any remaining callbacks.
+  m_impl.reset();
+  // m_queueing_controller will be destroyed next.
 }
 
 void JaRulePortHandle::SendRDMRequest(ola::rdm::RDMRequest *request,
