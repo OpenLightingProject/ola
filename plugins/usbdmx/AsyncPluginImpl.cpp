@@ -273,7 +273,7 @@ void AsyncPluginImpl::SetupUSBDevice(libusb_device *usb_device) {
  * @param device The new olad device that uses this new widget.
  *
  * This is run within the main thread.
-# */
+ */
 template <typename Widget>
 bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
   DeviceState *state = STLFindOrNull(m_device_map, widget->GetDeviceId());
