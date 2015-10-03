@@ -385,7 +385,6 @@ void DiscoveryAgent::HandleCollision() {
  * Deletes the current range from the stack, and pops it.
  */
 void DiscoveryAgent::FreeCurrentRange() {
-  OLA_INFO << "m_uid_ranges size is " << m_uid_ranges.size();
   UIDRange *range = m_uid_ranges.top();
   if (m_uid_ranges.size() == 1) {
     // top of stack
