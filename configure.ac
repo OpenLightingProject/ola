@@ -129,7 +129,6 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 getgrnam_r getgrgid_r secure_getenv])
 
 LT_INIT
-AC_PROG_LIBTOOL
 
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
