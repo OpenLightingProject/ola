@@ -102,6 +102,8 @@ JaRuleWidgetPort::~JaRuleWidgetPort() {
                   "CancelTransfer()?";
     }
 
+    // Cancelling may take up to a second if the endpoint has stalled. I can't
+    // really see a way to speed this up.
     if (m_out_in_progress) {
       m_adaptor->CancelTransfer(m_out_transfer);
     }
