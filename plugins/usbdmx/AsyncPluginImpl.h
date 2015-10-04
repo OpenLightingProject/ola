@@ -37,8 +37,7 @@
 #include "libs/usb/HotplugAgent.h"
 
 #include "ola/base/Macro.h"
-#include "ola/thread/Mutex.h"
-#include "ola/thread/Thread.h"
+#include "ola/thread/Future.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncronizedWidgetObserver.h"
 #include "plugins/usbdmx/WidgetFactory.h"
@@ -83,24 +82,9 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool NewWidget(class Sunlite *widget);
   bool NewWidget(class VellemanK8062 *widget);
 
-  void WidgetRemoved(class AnymauDMX *widget);
-  void WidgetRemoved(class EurolitePro *widget);
-  void WidgetRemoved(ola::usb::JaRuleWidget *widget);
-  void WidgetRemoved(class ScanlimeFadecandy *widget);
-  void WidgetRemoved(class Sunlite *widget);
-  void WidgetRemoved(class VellemanK8062 *widget);
-
  private:
-  struct DeviceState {
-    DeviceState() : usb_device(NULL), factory(NULL), ola_device(NULL) {}
-
-    struct libusb_device *usb_device;  // The underlying libusb device.
-    WidgetFactory *factory;  // The factory that owns this device.
-    Device *ola_device;  // The OLA device that uses this USB device.
-  };
-
   typedef std::vector<class WidgetFactory*> WidgetFactories;
-  typedef std::map<ola::usb::USBDeviceID, DeviceState*> USBDeviceMap;
+  typedef std::map<ola::usb::USBDeviceID, class DeviceState*> USBDeviceMap;
 
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
@@ -114,11 +98,12 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
 
   void DeviceEvent(ola::usb::HotplugAgent::EventType event,
                    struct libusb_device *device);
-  void USBDeviceAdded(libusb_device *device);
+  void SetupUSBDevice(libusb_device *device);
 
-  bool StartAndRegisterDevice(const ola::usb::USBDeviceID &device_id,
-                              Device *device);
-  void RemoveWidget(const ola::usb::USBDeviceID &device_id);
+  template <typename Widget>
+  bool StartAndRegisterDevice(Widget *widget, Device *device);
+
+  void ShutdownDevice(Device *device, ola::thread::Future<void> *f);
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPluginImpl);
 };

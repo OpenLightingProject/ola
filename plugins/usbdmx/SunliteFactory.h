@@ -44,9 +44,6 @@ class SunliteFactory : public BaseWidgetFactory<Sunlite> {
       libusb_device *usb_device,
       const struct libusb_device_descriptor &descriptor);
 
-  void DeviceRemoved(WidgetObserver *observer,
-                     libusb_device *device);
-
  private:
   ola::usb::LibUsbAdaptor* const m_adaptor;
 
