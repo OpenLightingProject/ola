@@ -76,7 +76,7 @@ class JaRuleOutputPort: public BasicOutputPort {
 
  private:
   const unsigned int m_port_index;
-  ola::usb::JaRuleWidget *m_widget;  // not ownedk
+  ola::usb::JaRuleWidget *m_widget;  // not owned
   ola::usb::JaRulePortHandle *m_port_handle;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleOutputPort);
