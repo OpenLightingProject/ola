@@ -39,6 +39,7 @@ class OVDmxThread: public ola::thread::Thread {
     void *Run();
 
  private:
+    void MakeRaw(int fd);
     int m_fd;
     std::string m_path;
     DmxBuffer m_buffer;

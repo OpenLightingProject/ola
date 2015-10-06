@@ -30,6 +30,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <string>
+#include <termios.h>
 
 #include "ola/Clock.h"
 #include "ola/Constants.h"
@@ -57,6 +58,23 @@ OVDmxThread::OVDmxThread(const string &path)
 
 
 /*
+ * Strips away tty rewriting of \n to \r\n (bad for binary transfers)
+ */
+
+void OVDmxThread::MakeRaw(int fd) {
+    struct termios ios;
+    //Not a TTY: nothing to do
+    if (!isatty(fd))
+        return;
+
+    tcgetattr(fd, &ios);
+    cfmakeraw(&ios);
+    tcsetattr(fd, TCSANOW, &ios);
+
+    return;
+}
+
+/*
  * Run this thread
  */
 void *OVDmxThread::Run() {
@@ -79,15 +97,15 @@ void *OVDmxThread::Run() {
   dmx_packet.type  = 'D';
   dmx_packet.data_length_parts[0] = ((((uint16_t)DMX_UNIVERSE_SIZE)>>8) & 0xff);
   dmx_packet.data_length_parts[1] = ((((uint16_t)DMX_UNIVERSE_SIZE)) & 0xff);
-  dmx_packet.crc_parts[0] = 0;
-  dmx_packet.crc_parts[1] = 0;
+  dmx_packet.crc_parts[0] = 'V';
+  dmx_packet.crc_parts[1] = 'O';
 
   Clock clock;
 
   // should close other fd here
 
   ola::io::Open(m_path, O_WRONLY, &m_fd);
-
+  MakeRaw(m_fd);
   while (true) {
     {
       MutexLocker lock(&m_term_mutex);
@@ -108,6 +126,7 @@ void *OVDmxThread::Run() {
       m_term_mutex.Unlock();
 
       ola::io::Open(m_path, O_WRONLY, &m_fd);
+      MakeRaw(m_fd);
 
     } else {
       unsigned int length = DMX_UNIVERSE_SIZE;
@@ -123,6 +142,9 @@ void *OVDmxThread::Run() {
         if (close(m_fd) < 0)
           OLA_WARN << "Close failed " << strerror(errno);
         m_fd = INVALID_FD;
+      }
+      else {
+          fsync(m_fd);
       }
     }
   }
