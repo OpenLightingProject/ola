@@ -36,7 +36,7 @@ namespace usbdmx {
 class EuroliteProFactory : public BaseWidgetFactory<class EurolitePro> {
  public:
   explicit EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor)
-      : BaseWidgetFactory("EuroliteProFactory"),
+      : BaseWidgetFactory<class EurolitePro>("EuroliteProFactory"),
         m_adaptor(adaptor) {}
 
   bool DeviceAdded(WidgetObserver *observer,

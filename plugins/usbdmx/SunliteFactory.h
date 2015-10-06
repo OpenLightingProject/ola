@@ -36,7 +36,7 @@ namespace usbdmx {
 class SunliteFactory : public BaseWidgetFactory<Sunlite> {
  public:
   explicit SunliteFactory(ola::usb::LibUsbAdaptor *adaptor)
-      : BaseWidgetFactory("SunliteFactory"),
+      : BaseWidgetFactory<Sunlite>("SunliteFactory"),
         m_adaptor(adaptor) {}
 
   bool DeviceAdded(
