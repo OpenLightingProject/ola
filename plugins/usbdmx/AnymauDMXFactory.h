@@ -35,7 +35,7 @@ namespace usbdmx {
 class AnymauDMXFactory : public BaseWidgetFactory<class AnymauDMX> {
  public:
   explicit AnymauDMXFactory(ola::usb::LibUsbAdaptor *adaptor)
-      : BaseWidgetFactory("AnymauDMXFactory"),
+      : BaseWidgetFactory<class AnymauDMX>("AnymauDMXFactory"),
         m_missing_serial_number(false),
         m_adaptor(adaptor) {
   }

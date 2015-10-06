@@ -36,7 +36,7 @@ class ScanlimeFadecandyFactory
     : public BaseWidgetFactory<class ScanlimeFadecandy> {
  public:
   explicit ScanlimeFadecandyFactory(ola::usb::LibUsbAdaptor *adaptor)
-      : BaseWidgetFactory("ScanlimeFadecandyFactory"),
+      : BaseWidgetFactory<class ScanlimeFadecandy>("ScanlimeFadecandyFactory"),
         m_missing_serial_number(false),
         m_adaptor(adaptor) {
   }

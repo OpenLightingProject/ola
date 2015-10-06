@@ -31,6 +31,7 @@
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
+#include "plugins/usbdmx/Widget.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
