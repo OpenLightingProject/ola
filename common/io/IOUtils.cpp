@@ -44,6 +44,9 @@ bool Open(const string &path, int oflag, int *fd) {
 
 bool TryOpen(const string &path, int oflag, int *fd) {
   *fd = open(path.c_str(), oflag);
+  if (*fd < 0) {
+    OLA_INFO << "open(" << path << "): " << strerror(errno);
+  }
   return *fd >= 0;
 }
 

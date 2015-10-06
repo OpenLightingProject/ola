@@ -1,4 +1,20 @@
-x/y/2015 ola-0.9.8
+x/y/2015 ola-0.9.9
+ Features:
+ * Add better logging for open()
+
+ API:
+ * 
+
+ RDM Tests:
+ * 
+
+ Bugs:
+ * 
+
+ Internal:
+ *
+
+30/9/2015 ola-0.9.8
  Features:
  * Add support for the DMXter4A
  * Tidy the output of the Python ola_rdm_get for supported_parameters
