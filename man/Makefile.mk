@@ -19,5 +19,8 @@ dist_man_MANS += \
     man/ola_uni_stats.1 \
     man/ola_usbpro.1 \
     man/olad.1 \
+    man/rdm_model_collector.py.1 \
+    man/rdm_responder_test.py.1 \
+    man/rdm_test_server.py.1 \
     man/rdmpro_sniffer.1 \
     man/usbpro_firmware.1
