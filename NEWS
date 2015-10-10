@@ -1,6 +1,7 @@
 x/y/2015 ola-0.9.9
  Features:
  * Add better logging for open()
+ * Added more man pages.
 
  API:
  * 
