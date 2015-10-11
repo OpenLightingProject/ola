@@ -121,7 +121,7 @@ class PatchResults(object):
     self.ports_patched = 0
 
 
-def PatchPorts(wrapper = None):
+def PatchPorts(wrapper=None):
   """Perform the patch and return the results when complete."""
   patch_results = PatchResults()
   if not wrapper:

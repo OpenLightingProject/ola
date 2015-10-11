@@ -187,11 +187,13 @@ using std::string;
 
 bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
   ola::math::InitRandom();
-  if (!InstallSEGVHandler())
+  if (!InstallSEGVHandler()) {
     return false;
+  }
 
-  if (export_map)
+  if (export_map) {
     InitExportMap(argc, argv, export_map);
+  }
   return SetThreadScheduling() && NetworkInit();
 }
 
@@ -221,8 +223,9 @@ bool AppInit(int *argc,
   SetHelpString(first_line, description);
   ParseFlags(argc, argv);
   InitLoggingFromFlags();
-  if (!InstallSEGVHandler())
+  if (!InstallSEGVHandler()) {
     return false;
+  }
   return SetThreadScheduling() && NetworkInit();
 }
 
