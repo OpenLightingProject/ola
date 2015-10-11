@@ -46,10 +46,14 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 
 DEFINE_s_uint32(universe, u, 1, "The universe to do RDM discovery on");
-DEFINE_s_default_bool(full, f, false, "Force full RDM Discovery for this universe");
-DEFINE_s_default_bool(incremental, i, false, "Force incremental RDM Discovery for this universe");
-DEFINE_default_bool(include_broadcast, false, "Include broadcast UID for this universe");
-DEFINE_default_bool(include_vendorcast, false, "Include vendorcast UID for this universe");
+DEFINE_s_default_bool(full, f, false,
+                      "Force full RDM Discovery for this universe");
+DEFINE_s_default_bool(incremental, i, false,
+                      "Force incremental RDM Discovery for this universe");
+DEFINE_default_bool(include_broadcast, false,
+                    "Include broadcast UID for this universe");
+DEFINE_default_bool(include_vendorcast, false,
+                    "Include vendorcast UID for this universe");
 
 SelectServer *ss;
 
