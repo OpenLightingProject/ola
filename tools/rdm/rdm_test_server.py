@@ -109,6 +109,8 @@ class OLAThread(Thread):
       The arguments that would have been passed to the callback function.
     """
     global args_result
+    # TODO(simon): Create our own Event which holds the result args and a
+    # threading.Event object
     event = Event()
 
     def Callback(*args, **kwargs):
