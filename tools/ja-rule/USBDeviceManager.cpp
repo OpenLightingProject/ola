@@ -43,7 +43,6 @@ using ola::thread::Thread;
 using ola::usb::AsyncronousLibUsbAdaptor;
 using ola::usb::JaRuleWidget;
 using ola::usb::LibUsbAdaptor;
-using ola::usb::LibUsbHotplugThread;
 using ola::usb::USBDeviceID;
 using ola::usb::HotplugAgent;
 using std::auto_ptr;

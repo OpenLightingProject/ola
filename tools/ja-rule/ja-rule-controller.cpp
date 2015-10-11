@@ -132,8 +132,12 @@ class Controller {
         m_ss->Terminate();
         break;
       case 's':
-        cout << "Enter a letter for the UID" << endl;
-        m_mode = SELECT_UID;
+        if (m_uids.Empty()) {
+          cout << "No UIDs found to select from" << endl;
+        } else {
+          cout << "Enter a letter for the UID" << endl;
+          m_mode = SELECT_UID;
+        }
         break;
       case 'u':
         ShowUIDs();
@@ -174,7 +178,7 @@ class Controller {
       return;
     }
 
-    if (m_uids.Size() == 0) {
+    if (m_uids.Empty()) {
       OLA_WARN << "No UIDs";
       return;
     }
@@ -236,6 +240,10 @@ int main(int argc, char **argv) {
   if (!manager.Start()) {
     exit(ola::EXIT_UNAVAILABLE);
   }
+
+  // Print this via cout to ensure we actually get some output by default
+  cout << "Press h to print a help message" << endl;
+
   ss.Run();
   return ola::EXIT_OK;
 }
