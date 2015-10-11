@@ -19,10 +19,10 @@
  */
 
 #include <errno.h>
-#include <getopt.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
@@ -45,20 +45,12 @@ using ola::io::SelectServer;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 
-static const int INVALID_VALUE = -1;
+DEFINE_s_uint32(universe, u, 1, "The universe to do RDM discovery on");
+DEFINE_s_default_bool(full, f, false, "Force full RDM Discovery for this universe");
+DEFINE_s_default_bool(incremental, i, false, "Force incremental RDM Discovery for this universe");
+DEFINE_default_bool(include_broadcast, false, "Include broadcast UID for this universe");
+DEFINE_default_bool(include_vendorcast, false, "Include vendorcast UID for this universe");
 
-typedef struct {
-  int uni;         // universe id
-  bool help;       // show the help
-  bool full;       // full discovery
-  bool incremental;  // incremental discovery
-  bool broadcast;  // broadcast UID
-  bool vendorcast;  // vendorcast UID
-  string cmd;      // argv[0]
-} options;
-
-
-options opts;
 SelectServer *ss;
 
 /*
@@ -74,13 +66,13 @@ void UIDList(const ola::rdm::UIDSet &uids,
       cout << *iter << endl;
       vendorcast.AddUID(UID::VendorcastAddress(*iter));
     }
-    if (opts.vendorcast) {
+    if (FLAGS_include_vendorcast) {
       iter = vendorcast.Begin();
       for (; iter != vendorcast.End(); ++iter) {
         cout << *iter << endl;
       }
     }
-    if (opts.broadcast) {
+    if (FLAGS_include_broadcast) {
       cout << UID::AllDevices().ToString() << endl;
     }
   } else {
@@ -89,111 +81,24 @@ void UIDList(const ola::rdm::UIDSet &uids,
   ss->Terminate();
 }
 
-
-/*
- * parse our cmd line options
- */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  opts->uni = INVALID_VALUE;
-  opts->help = false;
-  opts->full = false;
-  opts->incremental = false;
-  opts->broadcast = false;
-  opts->vendorcast = false;
-
-  static struct option long_options[] = {
-      {"include-broadcast", no_argument, 0, 'b'},
-      {"help", no_argument, 0, 'h'},
-      {"full", no_argument, 0, 'f'},
-      {"incremental", no_argument, 0, 'i'},
-      {"universe", required_argument, 0, 'u'},
-      {"include-vendorcast", no_argument, 0, 'v'},
-      {0, 0, 0, 0}
-    };
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "u:bfhiv", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'b':
-        opts->broadcast = true;
-        break;
-      case 'f':
-        opts->full = true;
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'i':
-        opts->incremental = true;
-        break;
-      case 'u':
-        opts->uni = atoi(optarg);
-        break;
-      case 'v':
-        opts->vendorcast = true;
-        break;
-      case '?':
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-
-/*
- * Help message for set dmx
- */
-void DisplayGetUIDsHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  " --universe <universe> [--full|--incremental]\n"
-  "\n"
-  "Fetch the UID list for a universe.\n"
-  "\n"
-  "  -b, --include-broadcast   Include broadcast UID for this universe\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -f, --full                Force full RDM Discovery for this universe\n"
-  "  -i, --incremental         Force incremental RDM Discovery for this\n"
-  "                            universe\n"
-  "  -u, --universe <universe> Universe number.\n"
-  "  -v, --include-vendorcast  Include vendorcast UID for this universe\n"
-  << endl;
-}
-
-
 /*
  * Send a fetch uid list request
  * @param client  the ola client
- * @param opts  the const options
  */
-bool FetchUIDs(OlaCallbackClient *client, const options &opts) {
-  if (opts.uni == INVALID_VALUE) {
-    DisplayGetUIDsHelp(opts);
-    return false;
-  }
-
-  if (opts.full) {
+bool FetchUIDs(OlaCallbackClient *client) {
+  if (FLAGS_full) {
     return client->RunDiscovery(
-        opts.uni,
+        FLAGS_universe,
         true,
         ola::NewSingleCallback(&UIDList));
-  } else if (opts.incremental) {
+  } else if (FLAGS_incremental) {
     return client->RunDiscovery(
-        opts.uni,
+        FLAGS_universe,
         false,
         ola::NewSingleCallback(&UIDList));
   } else {
     return client->FetchUIDList(
-        opts.uni,
+        FLAGS_universe,
         ola::NewSingleCallback(&UIDList));
   }
 }
@@ -203,22 +108,19 @@ bool FetchUIDs(OlaCallbackClient *client, const options &opts) {
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
-  if (!ola::NetworkInit()) {
-    OLA_WARN << "Network initialization failed." << endl;
-    exit(ola::EXIT_UNAVAILABLE);
-  }
+  ola::AppInit(
+      &argc,
+      argv,
+      "--universe <universe> [--full|--incremental]",
+      "Fetch the UID list for a universe.");
+
   OlaCallbackClientWrapper ola_client;
-  opts.cmd = argv[0];
 
-  ParseOptions(argc, argv, &opts);
-
-  if (opts.help) {
-    DisplayGetUIDsHelp(opts);
-    exit(ola::EXIT_OK);
+  if (!FLAGS_universe.present()) {
+    ola::DisplayUsageAndExit();
   }
 
-  if (opts.full && opts.incremental) {
+  if (FLAGS_full && FLAGS_incremental) {
     cerr << "Only one of -i and -f can be specified" << endl;
     exit(ola::EXIT_USAGE);
   }
@@ -231,7 +133,8 @@ int main(int argc, char *argv[]) {
   OlaCallbackClient *client = ola_client.GetClient();
   ss = ola_client.GetSelectServer();
 
-  if (FetchUIDs(client, opts))
+  if (FetchUIDs(client)) {
     ss->Run();
+  }
   return ola::EXIT_OK;
 }
