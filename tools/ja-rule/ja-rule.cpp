@@ -485,7 +485,7 @@ class Controller {
 
   bool CheckForWidget() const {
     if (!m_widget) {
-      cout << "Device not present" << endl;
+      cout << "Device not present or device unavailable" << endl;
       return false;
     }
     return true;
