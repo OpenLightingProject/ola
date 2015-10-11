@@ -14,9 +14,21 @@ Force full RDM Discovery for this universe
 Display the help message
 .IP "-i, --incremental"
 Force incremental RDM Discovery for this universe
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4.
 .IP "-u, --universe <uint32_t>"
 The universe to do RDM discovery on
-.IP "-b, --include-broadcast"
+.IP "-v, --version"
+Display version information
+.IP "--include-broadcast"
 Include broadcast UID for this universe
-.IP "-v, --include-vendorcast"
+.IP "--include-vendorcast"
 Include vendorcast UID for this universe
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--scheduler-policy <string>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <uint16_t>"
+The thread priority, only used if --scheduler-policy is set.
+.IP "--syslog"
+Send to syslog rather than stderr.
