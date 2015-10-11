@@ -1,9 +1,7 @@
 if BUILD_JA_RULE
 if !USING_WIN32
-if HAVE_LIBUSB_HOTPLUG_API
 bin_PROGRAMS += tools/ja-rule/ja-rule \
                 tools/ja-rule/ja-rule-controller
-endif
 endif
 endif
 

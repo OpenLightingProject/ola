@@ -110,7 +110,7 @@ class OLAThread(Thread):
     """
     global args_result
     # TODO(simon): Create our own Event which holds the result args and a
-    # threading.Event object
+    # threading.Event object #948
     event = Event()
 
     def Callback(*args, **kwargs):
