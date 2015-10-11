@@ -24,16 +24,16 @@ test definitions.
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import struct
-from ExpectedResults import *
+from ExpectedResults import BroadcastResult, AckGetResult, NackSetResult
 from ResponderTest import ResponderTestFixture
 from TestCategory import TestCategory
 from TestHelpers import ContainsUnprintable
 from ola import PidStore
-from ola.DMXConstants import *
+from ola.DMXConstants import DMX_UNIVERSE_SIZE
 from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
-from ola.RDMConstants import *
+from ola.RDMConstants import RDM_MAX_STRING_LENGTH
 from ola.UID import UID
 
 MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE

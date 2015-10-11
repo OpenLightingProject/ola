@@ -121,7 +121,7 @@ def SetupLogging(options):
 
   if options.log:
     file_name = '%s.%s.%d' % (options.log, options.uid, time.time())
-    file_handler =logging.FileHandler(file_name, 'w')
+    file_handler = logging.FileHandler(file_name, 'w')
     file_handler.addFilter(MyFilter())
     if options.debug:
       file_handler.setLevel(logging.DEBUG)
