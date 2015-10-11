@@ -36,15 +36,13 @@ namespace usbdmx {
 class SunliteFactory : public BaseWidgetFactory<Sunlite> {
  public:
   explicit SunliteFactory(ola::usb::LibUsbAdaptor *adaptor)
-      : m_adaptor(adaptor) {}
+      : BaseWidgetFactory<Sunlite>("SunliteFactory"),
+        m_adaptor(adaptor) {}
 
   bool DeviceAdded(
       WidgetObserver *observer,
       libusb_device *usb_device,
       const struct libusb_device_descriptor &descriptor);
-
-  void DeviceRemoved(WidgetObserver *observer,
-                     libusb_device *device);
 
  private:
   ola::usb::LibUsbAdaptor* const m_adaptor;

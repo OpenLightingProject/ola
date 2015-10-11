@@ -42,7 +42,8 @@ class JaRuleFactory : public BaseWidgetFactory<ola::usb::JaRuleWidget> {
  public:
   explicit JaRuleFactory(ola::io::SelectServerInterface *ss,
                          ola::usb::AsyncronousLibUsbAdaptor *adaptor)
-      : m_ss(ss),
+      : BaseWidgetFactory<ola::usb::JaRuleWidget>("JaRuleFactory"),
+        m_ss(ss),
         m_adaptor(adaptor) {
   }
 

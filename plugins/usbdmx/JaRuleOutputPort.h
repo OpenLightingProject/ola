@@ -26,6 +26,7 @@
 #include "olad/Port.h"
 
 #include "libs/usb/JaRulePortHandle.h"
+#include "libs/usb/JaRuleWidget.h"
 
 namespace ola {
 
@@ -43,12 +44,23 @@ class JaRuleOutputPort: public BasicOutputPort {
   /**
    * @brief Create a new JaRuleOutputPort.
    * @param parent The parent device for this port.
-   * @param id The port id, starting from 0
-   * @param port_handle A port handle to use.
+   * @param index The port index, starting from 0
+   * @param widget The widget to use.
    */
   JaRuleOutputPort(Device *parent,
-                   unsigned int id,
-                   ola::usb::JaRulePortHandle *port_handle);
+                   unsigned int index,
+                   ola::usb::JaRuleWidget *widget);
+
+  /**
+   * @brief Destructor
+   */
+  ~JaRuleOutputPort();
+
+  /**
+   * @brief Initialize the port.
+   * @returns true if ok, false if initialization failed.
+   */
+  bool Init();
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
@@ -63,7 +75,9 @@ class JaRuleOutputPort: public BasicOutputPort {
   void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
  private:
-  ola::usb::JaRulePortHandle* const m_port_handle;  // not owned
+  const unsigned int m_port_index;
+  ola::usb::JaRuleWidget *m_widget;  // not owned
+  ola::usb::JaRulePortHandle *m_port_handle;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleOutputPort);
 };

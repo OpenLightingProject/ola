@@ -55,12 +55,10 @@ class JaRuleDevice: public Device {
 
  protected:
   bool StartHook();
-  void PostPortStop();
 
  private:
   ola::usb::JaRuleWidget *m_widget;  // not owned
   const std::string m_device_id;
-  std::set<uint8_t> m_claimed_ports;
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleDevice);
 };

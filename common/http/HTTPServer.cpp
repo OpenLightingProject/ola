@@ -18,6 +18,10 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <ola/Logging.h>
 #include <ola/base/Macro.h>
@@ -378,11 +382,9 @@ void HTTPResponse::SetHeader(const string &key, const string &value) {
  */
 int HTTPResponse::SendJson(const JsonValue &json) {
   const string output = JsonWriter::AsString(json);
-  struct MHD_Response *response = MHD_create_response_from_data(
-      output.length(),
+  struct MHD_Response *response = HTTPServer::BuildResponse(
       static_cast<void*>(const_cast<char*>(output.data())),
-      MHD_NO,
-      MHD_YES);
+      output.length());
   HeadersMultiMap::const_iterator iter;
   for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
     MHD_add_response_header(response,
@@ -400,11 +402,9 @@ int HTTPResponse::SendJson(const JsonValue &json) {
  */
 int HTTPResponse::Send() {
   HeadersMultiMap::const_iterator iter;
-  struct MHD_Response *response = MHD_create_response_from_data(
-      m_data.length(),
+  struct MHD_Response *response = HTTPServer::BuildResponse(
       static_cast<void*>(const_cast<char*>(m_data.data())),
-      MHD_NO,
-      MHD_YES);
+      m_data.length());
   for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
     MHD_add_response_header(response,
                             iter->first.c_str(),
@@ -803,11 +803,8 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   i_stream.read(data, length);
   i_stream.close();
 
-  struct MHD_Response *mhd_response = MHD_create_response_from_data(
-      length,
-      static_cast<void*>(data),
-      MHD_YES,
-      MHD_NO);
+  struct MHD_Response *mhd_response = BuildResponse(static_cast<void*>(data),
+                                                    length);
 
   if (!file_info->content_type.empty())
     MHD_add_response_header(mhd_response,
@@ -856,6 +853,15 @@ void HTTPServer::FreeSocket(DescriptorState *state) {
   }
   delete state->descriptor;
   delete state;
+}
+
+
+struct MHD_Response *HTTPServer::BuildResponse(void *data, size_t size) {
+#ifdef HAVE_MHD_CREATE_RESPONSE_FROM_BUFFER
+  return MHD_create_response_from_buffer(size, data, MHD_RESPMEM_MUST_COPY);
+#else
+  return MHD_create_response_from_data(size, data, MHD_NO, MHD_YES);
+#endif
 }
 }  // namespace http
 }  // namespace ola

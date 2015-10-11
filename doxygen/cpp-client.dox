@@ -4,13 +4,13 @@
  *
  * [TOC]
  *
- * @section sec_cpp_client_Overview Overview
+ * @section cpp_client_Overview Overview
  * This page covers some of the more advanced aspects of the OLA C++ Client
  * API including using callbacks, handling a server-side shutdown and running
  * the client in a separate thread. For an introduction on using the OLA C++
  * Client see @ref dmx_cpp_client_tutorial.
  *
- * @section sec_cpp_client_Fetch_Plugins Using Callbacks
+ * @section cpp_client_Fetch_Plugins Using Callbacks
  *
  * Almost all of the ola::client::OlaClient methods take a \ref callbacks
  * "Callback" object. Each callback is executed when the server responds with
@@ -27,13 +27,13 @@
  *
  * @snippet fetch_plugins.cpp Client Fetch Plugins
  *
- * @section sec_cpp_client_Disconnects Handling Server Shutdown.
+ * @section cpp_client_Disconnects Handling Server Shutdown.
  *
  * To write a robust program, you'll need to handle the case of olad
  * shutting down. This can be done by setting a callback to be executed when the
  * connection to the olad server is closed.
  *
- * The following example builds on the @ref sec_dmx_cpp_client_OLAClient_TX
+ * The following example builds on the @ref dmx_cpp_client_OLAClient_TX
  * "OlaClient TX" example. Instead of exiting after 100 DMX frames have been
  * sent, the program runs until the connection to olad is closed.
  *
@@ -43,7 +43,7 @@
  * olad server. Clients that do this should use a ola::BackOffPolicy to avoid
  * spinning in a loop trying to reconnect.
  *
- * @section sec_cpp_client_Thread Running the OlaClient within a thread.
+ * @section cpp_client_Thread Running the OlaClient within a thread.
  *
  * Sometimes it can be difficult to integrate OLA's @ref event_driven
  * "Event Driven" programming model with the main event loop of your program.

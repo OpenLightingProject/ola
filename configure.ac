@@ -129,7 +129,6 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 getgrnam_r getgrgid_r secure_getenv])
 
 LT_INIT
-AC_PROG_LIBTOOL
 
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
@@ -494,6 +493,18 @@ AS_IF([test "x$have_microhttpd" = xyes],
       [AC_DEFINE([HAVE_LIBMICROHTTPD], [1],
                  [define if libmicrohttpd is installed])])
 
+if test "x$have_microhttpd" = xyes; then
+  # Check if we have MHD_create_response_from_buffer
+  old_cflags=$CFLAGS
+  old_libs=$LIBS
+  CFLAGS="${CPPFLAGS} ${libprotobuf_CFLAGS}"
+  LIBS="${LIBS} ${libmicrohttpd_LIBS}"
+  AC_CHECK_FUNCS([MHD_create_response_from_buffer])
+  # restore CFLAGS
+  CFLAGS=$old_cflags
+  LIBS=$old_libs
+fi
+
 # Java API, this requires Maven
 AC_ARG_ENABLE(
   [java-libs],
@@ -735,9 +746,6 @@ AS_IF([test "x$enable_ja_rule" = xyes && test "x$enable_usbdmx" = xno],
       [AC_MSG_ERROR([Ja Rule requires the usbdmx plugin, but it could not be enabled.])])
 AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xno],
       [AC_MSG_ERROR([Ja Rule requires libusb, but it was not found on your system.])])
-AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb_hotplug_api" = xno],
-      [AC_MSG_ERROR([Ja Rule requires libusb to have the hotplug capability (versions 1.0.16 \
-and above), but the version found on your system doesn't appear to have it.])])
 
 AM_CONDITIONAL([BUILD_JA_RULE], [test "x$enable_ja_rule" = xyes])
 

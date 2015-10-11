@@ -32,12 +32,27 @@ namespace plugin {
 namespace usbdmx {
 
 using ola::usb::JaRulePortHandle;
+using ola::usb::JaRuleWidget;
 
 JaRuleOutputPort::JaRuleOutputPort(Device *parent,
-                                   unsigned int id,
-                                   JaRulePortHandle *port_handle)
-    : BasicOutputPort(parent, id, true, true),
-      m_port_handle(port_handle) {
+                                   unsigned int index,
+                                   JaRuleWidget *widget)
+    : BasicOutputPort(parent, index, true, true),
+      m_port_index(index),
+      m_widget(widget),
+      m_port_handle(NULL) {
+}
+
+JaRuleOutputPort::~JaRuleOutputPort() {
+  // The shutdown process is a bit tricky, since there may be callbacks pending
+  // in the JaRulePortHandle. Releasing the port handle will run any pending
+  // callbacks.
+  m_widget->ReleasePort(m_port_index);
+}
+
+bool JaRuleOutputPort::Init() {
+  m_port_handle = m_widget->ClaimPort(m_port_index);
+  return m_port_handle != NULL;
 }
 
 std::string JaRuleOutputPort::Description() const {

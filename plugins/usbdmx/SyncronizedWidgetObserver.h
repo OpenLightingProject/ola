@@ -71,33 +71,8 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
-  void WidgetRemoved(class AnymauDMX *widget) {
-    DispatchWidgetRemoved(widget);
-  }
-
-  void WidgetRemoved(class EurolitePro *widget) {
-    DispatchWidgetRemoved(widget);
-  }
-
-  void WidgetRemoved(ola::usb::JaRuleWidget *widget) {
-    DispatchWidgetRemoved(widget);
-  }
-
-  void WidgetRemoved(class ScanlimeFadecandy *widget) {
-    DispatchWidgetRemoved(widget);
-  }
-
-  void WidgetRemoved(class Sunlite *widget) {
-    DispatchWidgetRemoved(widget);
-  }
-
-  void WidgetRemoved(class VellemanK8062 *widget) {
-    DispatchWidgetRemoved(widget);
-  }
-
  private:
   typedef ola::thread::Future<bool> AddFuture;
-  typedef ola::thread::Future<void> RemoveFuture;
 
   WidgetObserver* const m_observer;
   ola::io::SelectServerInterface* const m_ss;
@@ -107,13 +82,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
   bool DispatchNewWidget(WidgetClass *widget);
 
   template<typename WidgetClass>
-  void DispatchWidgetRemoved(WidgetClass *widget);
-
-  template<typename WidgetClass>
   void HandleNewWidget(WidgetClass *widget, AddFuture *f);
-
-  template<typename WidgetClass>
-  void HandleWidgetRemoved(WidgetClass *widget, RemoveFuture *f);
 
   DISALLOW_COPY_AND_ASSIGN(SyncronizedWidgetObserver);
 };

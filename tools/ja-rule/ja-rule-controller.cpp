@@ -63,6 +63,8 @@ class Controller {
  public:
   explicit Controller(SelectServer* ss)
       : m_ss(ss),
+        m_widget(NULL),
+        m_port(NULL),
         m_stdin_handler(
             new StdinHandler(ss, ola::NewCallback(this, &Controller::Input))),
         m_mode(NORMAL),
@@ -75,7 +77,7 @@ class Controller {
 
   void WidgetEvent(USBDeviceManager::EventType event,
                    JaRuleWidget *widget) {
-    if (event == USBDeviceManager::DEVICE_ADDED) {
+    if (event == USBDeviceManager::WIDGET_ADDED) {
       OLA_INFO << "Open Lighting Device added";
       if (m_widget) {
         // We only support a single device for now

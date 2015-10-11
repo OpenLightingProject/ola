@@ -48,6 +48,7 @@
 using ola::NewCallback;
 using ola::NewSingleCallback;
 using ola::STLFind;
+using ola::STLReplace;
 using ola::io::ByteString;
 using ola::io::SelectServer;
 using ola::io::StdinHandler;
@@ -157,54 +158,37 @@ class Controller {
     // Timing Options
     // For each of the options below, we allow a bigger range than the device
     // itself so we can test out-of-range errors.
-    TimingSetting break_timing = {
-      .character_code = 'b',
-      .description = "break time",
-      .current_value = 176,
-      .min_value = 40,  // actual min is 44
-      .max_value = 1000,  // actual max is 800
-      .units = TIMING_UNITS_MICROSECONDS,
-      .get_command = ola::usb::JARULE_CMD_GET_BREAK_TIME,
-      .set_command = ola::usb::JARULE_CMD_SET_BREAK_TIME,
-    };
-    m_timing_settings[TIMING_BREAK] = break_timing;
+    STLReplace(&m_timing_settings, TIMING_BREAK,
+               TimingSetting('b', "break time", 176,
+                             40,  // actual min is 44
+                             1000,  // actual max is 800
+                             TIMING_UNITS_MICROSECONDS,
+                             ola::usb::JARULE_CMD_GET_BREAK_TIME,
+                             ola::usb::JARULE_CMD_SET_BREAK_TIME));
 
-    TimingSetting mark_timing = {
-      .character_code = 'x',
-      .description = "mark time",
-      .current_value = 12,
-      .min_value = 2,  // actual min is 4
-      .max_value = 850,  // actual max is 800
-      .units = TIMING_UNITS_MICROSECONDS,
-      .get_command = ola::usb::JARULE_CMD_GET_MARK_TIME,
-      .set_command = ola::usb::JARULE_CMD_SET_MARK_TIME,
-    };
-    m_timing_settings[TIMING_MARK] = mark_timing;
+    STLReplace(&m_timing_settings, TIMING_MARK,
+               TimingSetting('x', "mark time", 12,
+                             2,  // actual min is 4
+                             850,  // actual max is 800
+                             TIMING_UNITS_MICROSECONDS,
+                             ola::usb::JARULE_CMD_GET_MARK_TIME,
+                             ola::usb::JARULE_CMD_SET_MARK_TIME));
 
-    TimingSetting response_timout = {
-      .character_code = 'y',
-      .description = "RDM response timeout",
-      .current_value = 28,
-      .min_value = 5,  // actual min 10
-      .max_value = 55,  // action max is 50
-      .units = TIMING_UNITS_TENTHS_OF_MILLI_SECONDS,
-      .get_command = ola::usb::JARULE_CMD_GET_RDM_RESPONSE_TIMEOUT,
-      .set_command = ola::usb::JARULE_CMD_GET_RDM_RESPONSE_TIMEOUT,
-    };
-    m_timing_settings[TIMING_RDM_RESPONSE_TIMEOUT] = response_timout;
+    STLReplace(&m_timing_settings, TIMING_RDM_RESPONSE_TIMEOUT,
+               TimingSetting('y', "RDM response timeout", 28,
+                             5,  // actual min 10
+                             55,  // action max is 50
+                             TIMING_UNITS_TENTHS_OF_MILLI_SECONDS,
+                             ola::usb::JARULE_CMD_GET_RDM_RESPONSE_TIMEOUT,
+                             ola::usb::JARULE_CMD_GET_RDM_RESPONSE_TIMEOUT));
 
-    TimingSetting broadcast_response_timeout = {
-      .character_code = 'z',
-      .description = "RDM broadcast response timeout",
-      .current_value = 28,
-      .min_value = 5,  // actual min 10
-      .max_value = 55,  // action max is 50
-      .units = TIMING_UNITS_TENTHS_OF_MILLI_SECONDS,
-      .get_command = ola::usb::JARULE_CMD_GET_RDM_BROADCAST_TIMEOUT,
-      .set_command = ola::usb::JARULE_CMD_SET_RDM_BROADCAST_TIMEOUT,
-    };
-    m_timing_settings[TIMING_RDM_BROADCAST_TIMEOUT] =
-        broadcast_response_timeout;
+    STLReplace(&m_timing_settings, TIMING_RDM_BROADCAST_TIMEOUT,
+               TimingSetting('z', "RDM broadcast response timeout", 28,
+                             5,  // actual min 10
+                             55,  // action max is 50
+                             TIMING_UNITS_TENTHS_OF_MILLI_SECONDS,
+                             ola::usb::JARULE_CMD_GET_RDM_BROADCAST_TIMEOUT,
+                             ola::usb::JARULE_CMD_SET_RDM_BROADCAST_TIMEOUT));
 
     TimingSettingMap::const_iterator iter = m_timing_settings.begin();
     for (; iter != m_timing_settings.end(); ++iter) {
@@ -229,7 +213,7 @@ class Controller {
 
   void WidgetEvent(USBDeviceManager::EventType event,
                    JaRuleWidget* widget) {
-    if (event == USBDeviceManager::DEVICE_ADDED) {
+    if (event == USBDeviceManager::WIDGET_ADDED) {
       OLA_INFO << "Open Lighting Device added";
       if (!m_widget) {
         m_widget = widget;
@@ -295,8 +279,12 @@ class Controller {
     m_mode = MODE_EDIT_TIMING;
     m_current_timing_option = option;
 
-    const TimingSetting& setting = m_timing_settings[option];
-    cout << "Editing " << setting.description
+    const TimingSetting* setting = STLFind(&m_timing_settings, option);
+    if (!setting) {
+      OLA_WARN << "Missing timing setting " << option;
+      return;
+    }
+    cout << "Editing " << setting->description
          << ". Use +/- to adjust, Enter commits, Esc to abort" << endl;
   }
 
@@ -377,7 +365,11 @@ class Controller {
       return;
     }
 
-    const TimingSetting& setting = m_timing_settings[option];
+    const TimingSetting* setting = STLFind(&m_timing_settings, option);
+    if (!setting) {
+      OLA_WARN << "Missing timing setting " << option;
+      return;
+    }
 
     uint16_t value = 0;
     if (payload.size() != sizeof(value)) {
@@ -387,7 +379,7 @@ class Controller {
 
     value = JoinUInt8(payload[1], payload[0]);
 
-    OLA_INFO << "Time: " << FormatTime(setting.units, value) << endl;
+    OLA_INFO << "Time: " << FormatTime(setting->units, value) << endl;
   }
 
   void CommandComplete(ola::usb::USBCommandResult result,
@@ -448,6 +440,25 @@ class Controller {
   typedef std::map<char, Action> ActionMap;
 
   struct TimingSetting {
+   public:
+     TimingSetting(char character_code,
+                   string description,
+                   uint16_t initial_value,
+                   uint16_t min_value,
+                   uint16_t max_value,
+                   TimingUnit units,
+                   CommandClass get_command,
+                   CommandClass set_command)
+       : character_code(character_code),
+         description(description),
+         current_value(initial_value),
+         min_value(min_value),
+         max_value(max_value),
+         units(units),
+         get_command(get_command),
+         set_command(set_command) {
+    }
+
     char character_code;
     string description;
     uint16_t current_value;
@@ -516,21 +527,27 @@ class Controller {
   }
 
   void Adjust(bool increase) {
-    TimingSetting& setting = m_timing_settings[m_current_timing_option];
+    TimingSetting* setting = STLFind(&m_timing_settings,
+                                     m_current_timing_option);
+    if (!setting) {
+      OLA_WARN << "Missing timing setting " << m_current_timing_option;
+      return;
+    }
+
     if (increase) {
-      setting.current_value++;
-      if (setting.current_value > setting.max_value) {
-        setting.current_value = setting.max_value;
+      setting->current_value++;
+      if (setting->current_value > setting->max_value) {
+        setting->current_value = setting->max_value;
       }
     } else {
-      setting.current_value--;
-      if (setting.current_value < setting.min_value) {
-        setting.current_value = setting.min_value;
+      setting->current_value--;
+      if (setting->current_value < setting->min_value) {
+        setting->current_value = setting->min_value;
       }
     }
 
-    cout << setting.description << " is now "
-         << FormatTime(setting.units, setting.current_value) << endl;
+    cout << setting->description << " is now "
+         << FormatTime(setting->units, setting->current_value) << endl;
   }
 
   void Commit() {
@@ -539,15 +556,20 @@ class Controller {
     }
 
     if (m_mode == MODE_DEFAULT) {
-      OLA_WARN << "Unknown mode " << m_mode;
+      return;
     }
 
     uint8_t payload[2];
-    const TimingSetting& setting = m_timing_settings[m_current_timing_option];
-    SplitUInt16(setting.current_value, &payload[1], &payload[0]);
+    const TimingSetting* setting = STLFind(
+        &m_timing_settings, m_current_timing_option);
+    if (!setting) {
+      OLA_WARN << "Missing timing setting " << m_current_timing_option;
+      return;
+    }
+    SplitUInt16(setting->current_value, &payload[1], &payload[0]);
 
     m_widget->SendCommand(
-        FLAGS_port, setting.set_command,
+        FLAGS_port, setting->set_command,
         payload, arraysize(payload),
         NewSingleCallback(this, &Controller::AckCommandComplete));
     m_mode = MODE_DEFAULT;
@@ -606,10 +628,14 @@ class Controller {
       return;
     }
 
-    const TimingSetting& setting = m_timing_settings[option];
+    const TimingSetting* setting = STLFind(&m_timing_settings, option);
+    if (!setting) {
+      OLA_WARN << "Missing timing setting " << option;
+      return;
+    }
     m_widget->SendCommand(
         FLAGS_port,
-        setting.get_command, NULL, 0,
+        setting->get_command, NULL, 0,
         NewSingleCallback(this, &Controller::DisplayTime, option));
   }
 

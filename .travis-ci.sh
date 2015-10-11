@@ -12,7 +12,7 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   autoreconf -i;
-  ./configure --enable-rdm-tests; # --enable-ja-rule;
+  ./configure --enable-rdm-tests --enable-ja-rule;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for linting to run against
   make builtfiles
@@ -47,7 +47,7 @@ if [[ $TASK = 'lint' ]]; then
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   autoreconf -i;
-  ./configure --enable-rdm-tests; # --enable-ja-rule;
+  ./configure --enable-rdm-tests --enable-ja-rule;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for licence checking to run against
   make builtfiles
@@ -59,7 +59,7 @@ elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
   autoreconf -i;
   # Doxygen is C++ only, so don't bother with RDM tests
-  ./configure; # --enable-ja-rule;
+  ./configure --enable-ja-rule;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
@@ -77,7 +77,7 @@ elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i;
   # Coverage is C++ only, so don't bother with RDM tests
-  ./configure --enable-gcov; # --enable-ja-rule;
+  ./configure --enable-gcov --enable-ja-rule;
   make;
   make check;
 elif [[ $TASK = 'coverity' ]]; then
@@ -102,7 +102,7 @@ elif [[ $TASK = 'flake8' ]]; then
   flake8 --exclude *_pb2.py,.git,__pycache --ignore E111,E121,E127,E129 python tools/rdm
 else
   # Otherwise compile and check as normal
-  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests' # --enable-ja-rule
+  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
   autoreconf -i;
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
   make distcheck;

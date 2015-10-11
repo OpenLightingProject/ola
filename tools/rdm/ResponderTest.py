@@ -336,7 +336,6 @@ class ResponderTestFixture(TestFixture):
                                self._HandleResponse,
                                args)
 
-
   def SendRawDiscovery(self, sub_device, pid, data=""):
     """Send a raw Discovery request.
 
@@ -526,7 +525,7 @@ class ResponderTestFixture(TestFixture):
     """
     if not response.status.Succeeded():
       # This indicates a transport error
-      self.SetBroken(' Error: %s' % status.message)
+      self.SetBroken(' Error: %s' % response.status.message)
       self.Stop()
       return False
 

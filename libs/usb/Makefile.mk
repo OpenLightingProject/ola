@@ -4,6 +4,8 @@ if USE_LIBUSB
 noinst_LTLIBRARIES += libs/usb/libolausb.la
 
 libs_usb_libolausb_la_SOURCES = \
+    libs/usb/HotplugAgent.cpp \
+    libs/usb/HotplugAgent.h \
     libs/usb/JaRuleConstants.h \
     libs/usb/JaRulePortHandle.cpp \
     libs/usb/JaRulePortHandle.h \
@@ -17,6 +19,7 @@ libs_usb_libolausb_la_SOURCES = \
     libs/usb/LibUsbAdaptor.h \
     libs/usb/LibUsbThread.cpp \
     libs/usb/LibUsbThread.h \
+    libs/usb/Types.cpp \
     libs/usb/Types.h
 libs_usb_libolausb_la_CXXFLAGS = $(COMMON_CXXFLAGS) \
                                  $(libusb_CFLAGS)

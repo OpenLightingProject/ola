@@ -13,32 +13,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Types.h
+ * Types.cpp
  * Types used with the USB subsystem.
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef LIBS_USB_TYPES_H_
-#define LIBS_USB_TYPES_H_
-
-#include <stdint.h>
+#include "libs/usb/Types.h"
 #include <ostream>
+
+#include "ola/strings/Format.h"
 
 namespace ola {
 namespace usb {
 
-class USBDeviceID {
- public:
-  USBDeviceID(uint8_t bus_number, uint8_t device_address);
+using std::ostream;
 
-  const uint8_t bus_number;
-  const uint8_t device_address;
+USBDeviceID::USBDeviceID(uint8_t bus_number, uint8_t device_address)
+    : bus_number(bus_number),
+      device_address(device_address) {
+}
 
-  bool operator<(const USBDeviceID &id) const;
+bool USBDeviceID::operator<(const USBDeviceID &id) const {
+  if (bus_number < id.bus_number) {
+    return true;
+  } else if (bus_number == id.bus_number) {
+    return device_address < id.device_address;
+  }
+  return false;
+}
 
-  friend std::ostream& operator<<(std::ostream& os, const USBDeviceID &id);
-};
+ostream& operator<<(ostream& os, const USBDeviceID &id) {
+  return os << ola::strings::IntToString(id.bus_number) << ":"
+            << ola::strings::IntToString(id.device_address);
+}
 }  // namespace usb
 }  // namespace ola
-
-#endif  // LIBS_USB_TYPES_H_

@@ -24,16 +24,16 @@ test definitions.
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import struct
-from ExpectedResults import *
+from ExpectedResults import AckGetResult, AckDiscoveryResult, BroadcastResult, DUBResult, NackSetResult, TimeoutResult, UnsupportedResult
 from ResponderTest import ResponderTestFixture
 from TestCategory import TestCategory
 from TestHelpers import ContainsUnprintable
 from ola import PidStore
-from ola.DMXConstants import *
+from ola.DMXConstants import DMX_UNIVERSE_SIZE
 from ola.DUBDecoder import DecodeResponse
-from ola.OlaClient import RDMNack
+from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
-from ola.RDMConstants import *
+from ola.RDMConstants import RDM_MAX_STRING_LENGTH
 from ola.UID import UID
 
 MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
@@ -849,7 +849,7 @@ class SetMinimumLevelMixin(object):
 
   def GetMinLevel(self):
     min_level_decreasing = self.MinLevelDecreasing()
-    if self.Property('split_levels_supported'):
+    if not self.Property('split_levels_supported'):
       min_level_decreasing = self.MinLevelIncreasing()
     self.AddIfGetSupported(self.AckGetResult(
         field_values={
