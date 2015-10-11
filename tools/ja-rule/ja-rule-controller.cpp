@@ -236,6 +236,10 @@ int main(int argc, char **argv) {
   if (!manager.Start()) {
     exit(ola::EXIT_UNAVAILABLE);
   }
+
+  // Print this via cout to ensure we actually get some output by default
+  cout << "Press h to print a help message" << endl;
+
   ss.Run();
   return ola::EXIT_OK;
 }
