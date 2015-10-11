@@ -111,13 +111,14 @@ class OLAThread(Thread):
     global args_result
     event = Event()
 
-  def Callback(*args, **kwargs):
-    global args_result
-    args_result = args
-    event.set()
+    def Callback(*args, **kwargs):
+      global args_result
+      args_result = args
+      event.set()
 
-  def RunMethod():
-    method(*method_args, callback=Callback)
+    def RunMethod():
+      method(*method_args, callback=Callback)
+
     self._ss.Execute(RunMethod)
     event.wait()
     return args_result
