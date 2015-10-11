@@ -108,15 +108,22 @@ class OLAThread(Thread):
     Returns:
       The arguments that would have been passed to the callback function.
     """
-    global args_result
+    global method
+    global method_args
+    global event
     event = Event()
 
   def Callback(*args, **kwargs):
     global args_result
+    global event
     args_result = args
     event.set()
 
   def RunMethod():
+    global args_result
+    global event
+    global method
+    global method_args
     method(*method_args, callback=Callback)
     self._ss.Execute(RunMethod)
     event.wait()
