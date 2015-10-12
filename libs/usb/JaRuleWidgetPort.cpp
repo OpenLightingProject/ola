@@ -41,7 +41,7 @@ using ola::strings::ToHex;
 using ola::thread::MutexLocker;
 using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;
-using std::cout;
+using std::cerr;
 using std::string;
 using std::auto_ptr;
 
@@ -377,7 +377,9 @@ void JaRuleWidgetPort::HandleResponse(const uint8_t *data, unsigned int size) {
   }
 
   // TODO(simon): Remove this.
-  ola::strings::FormatData(&std::cout, data, size);
+  if (LogLevel() >= OLA_LOG_INFO) {
+    ola::strings::FormatData(&std::cerr, data, size);
+  }
 
   if (data[MIN_RESPONSE_SIZE + payload_size - 1] != EOF_IDENTIFIER) {
     OLA_WARN << "EOF_IDENTIFIER mismatch, was "
