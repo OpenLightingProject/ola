@@ -22,11 +22,12 @@
 #include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/base/Array.h>
-#include <ola/base/Init.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
+#include <ola/network/MACAddress.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/UID.h>
@@ -154,6 +155,9 @@ class Controller {
     m_actions['U'] = Action(
         "Send an unmute to the target UID",
         NewCallback(this, &Controller::SendUnMute, m_target_uid));
+    m_actions['.'] = Action(
+        "Get the hardware info",
+        NewCallback(this, &Controller::GetHardwareInfo));
 
     // Timing Options
     // For each of the options below, we allow a bigger range than the device
@@ -414,6 +418,25 @@ class Controller {
     }
   }
 
+  void HardwareInfoComplete(
+      ola::usb::USBCommandResult result,
+      uint8_t return_code, uint8_t status_flags,
+      const ByteString &payload) {
+    if (!CheckResult(result, status_flags)) {
+      return;
+    }
+
+    OLA_INFO << "ACK (" << static_cast<int>(return_code)
+             << "): payload_size: " << payload.size();
+    if (payload.size() >= 14) {
+      uint16_t model_id = JoinUInt8(payload[1], payload[0]);
+      UID uid(payload.data() + sizeof(uint16_t));
+      ola::network::MACAddress mac_address(
+          payload.data() + sizeof(uint16_t) + UID::LENGTH);
+      OLA_INFO << "Model: " << model_id << ", UID: " << uid << ", MAC: "
+               << mac_address;
+    }
+  }
 
  private:
   enum Mode {
@@ -720,6 +743,16 @@ class Controller {
         FLAGS_port, command_class,
         data, rdm_length,
         NewSingleCallback(this, &Controller::CommandComplete));
+  }
+
+  void GetHardwareInfo() {
+    if (!CheckForWidget()) {
+      return;
+    }
+    m_widget->SendCommand(
+        FLAGS_port, ola::usb::JARULE_CMD_GET_HARDWARE_INFO,
+        NULL, 0,
+        NewSingleCallback(this, &Controller::HardwareInfoComplete));
   }
 
   bool CheckResult(ola::usb::USBCommandResult result,
