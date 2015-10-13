@@ -306,8 +306,8 @@ class Controller {
        response.append(reinterpret_cast<const char*>(payload.data()),
                        payload.size());
     }
-    OLA_INFO << "Echo Reply (" << static_cast<int>(return_code) << "): "
-                               << response;
+    cout << "Echo Reply (" << static_cast<int>(return_code) << "): "
+         << response << endl;
   }
 
   void AckCommandComplete(
@@ -379,7 +379,9 @@ class Controller {
 
     value = JoinUInt8(payload[1], payload[0]);
 
-    OLA_INFO << "Time: " << FormatTime(setting->units, value) << endl;
+    string description = setting->description;
+    ola::CustomCapitalizeLabel(&description);
+    cout << description << ": " << FormatTime(setting->units, value) << endl;
   }
 
   void CommandComplete(ola::usb::USBCommandResult result,
@@ -546,7 +548,9 @@ class Controller {
       }
     }
 
-    cout << setting->description << " is now "
+    string description = setting->description;
+    ola::CustomCapitalizeLabel(&description);
+    cout << description << " is now "
          << FormatTime(setting->units, setting->current_value) << endl;
   }
 
@@ -780,7 +784,8 @@ int main(int argc, char **argv) {
     exit(ola::EXIT_UNAVAILABLE);
   }
 
-  controller.PrintCommands();
+  // Print this via cout to ensure we actually get some output by default
+  cout << "Press h to print a help message" << endl;
 
   ss.Run();
   return ola::EXIT_OK;
