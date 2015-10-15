@@ -32,7 +32,6 @@ namespace usb {
  * @brief Ja Rule status flags.
  */
 typedef enum {
-  LOGS_PENDING_FLAG = 0x01,  //!< Log messages are pending
   FLAGS_CHANGED_FLAG = 0x02,  //!< Flags have changed
   MSG_TRUNCATED_FLAG = 0x04  //!< The message has been truncated.
 } JaRuleStatusFlags;

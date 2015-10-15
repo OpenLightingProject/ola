@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * JaRuleConstants.h
+ * JaRuleConstants.cpp
  * Constants used with Ja Rule devices.
  * Copyright (C) 2015 Simon Newton
  */
@@ -55,6 +55,7 @@ ostream& operator<<(ostream& os, const USBCommandResult &result) {
     default:
       os << "Unknown";
   }
+  os << " (" << static_cast<int>(result) << ")";
   return os;
 }
 
@@ -135,6 +136,7 @@ ostream& operator<<(ostream& os, const CommandClass &command_class) {
     default:
       os << "Unknown";
   }
+  os << " (" << static_cast<int>(command_class) << ")";
   return os;
 }
 
@@ -170,6 +172,7 @@ ostream& operator<<(ostream& os, const JaRuleReturnCode &rc) {
     default:
       os << "Unknown";
   }
+  os << " (" << static_cast<int>(rc) << ")";
   return os;
 }
 }  // namespace usb
