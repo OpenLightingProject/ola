@@ -21,9 +21,9 @@
 #ifndef LIBS_USB_JARULECONSTANTS_H_
 #define LIBS_USB_JARULECONSTANTS_H_
 
-#include <ostream>
 #include <ola/Callback.h>
 #include <ola/io/ByteString.h>
+#include <ostream>
 
 namespace ola {
 namespace usb {
