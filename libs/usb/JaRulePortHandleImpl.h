@@ -79,7 +79,7 @@ class JaRulePortHandleImpl
   /**
    * @brief Change the mode of this port.
    */
-  bool SetPortMode(PortMode new_mode);
+  bool SetPortMode(JaRulePortMode new_mode);
 
  private:
   typedef enum {

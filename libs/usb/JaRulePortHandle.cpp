@@ -68,7 +68,7 @@ bool JaRulePortHandle::SendDMX(const DmxBuffer &buffer) {
   return m_impl->SendDMX(buffer);
 }
 
-bool JaRulePortHandle::SetPortMode(PortMode new_mode) {
+bool JaRulePortHandle::SetPortMode(JaRulePortMode new_mode) {
   return m_impl->SetPortMode(new_mode);
 }
 }  // namespace usb

@@ -271,9 +271,21 @@ void JaRuleWidgetPort::_InTransferComplete() {
     HandleResponse(m_in_transfer->buffer, m_in_transfer->actual_length);
   }
 
-  // TODO(simon): handle timeouts here
-  // Either we'll be getting timouts or we'll be getting good responses from
-  // other messages, either way we don't need a RegisterTimeout with the SS.
+  PendingCommandMap::iterator iter = m_pending_commands.begin();
+  TimeStamp time_limit;
+  m_clock.CurrentTime(&time_limit);
+  time_limit -= TimeInterval(1, 0);
+  while (iter != m_pending_commands.end()) {
+    PendingCommand *command = iter->second;
+    if (command->out_time < time_limit) {
+      ScheduleCallback(command->callback, COMMAND_RESULT_TIMEOUT, 0, 0,
+                       ByteString());
+      delete command;
+      m_pending_commands.erase(iter++);
+    } else {
+      iter++;
+    }
+  }
 
   if (!m_pending_commands.empty()) {
     SubmitInTransfer();
@@ -308,6 +320,7 @@ void JaRuleWidgetPort::MaybeSendCommand() {
     return;
   }
 
+  m_clock.CurrentTime(&command->out_time);
   std::pair<PendingCommandMap::iterator, bool> p = m_pending_commands.insert(
       PendingCommandMap::value_type(token, command));
   if (!p.second) {

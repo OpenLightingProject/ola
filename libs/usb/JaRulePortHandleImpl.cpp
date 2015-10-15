@@ -174,7 +174,7 @@ bool JaRulePortHandleImpl::SendDMX(const DmxBuffer &buffer) {
   return true;
 }
 
-bool JaRulePortHandleImpl::SetPortMode(PortMode new_mode) {
+bool JaRulePortHandleImpl::SetPortMode(JaRulePortMode new_mode) {
   uint8_t port_mode = new_mode;
   m_port->SendCommand(JARULE_CMD_SET_MODE, &port_mode, sizeof(port_mode), NULL);
   return true;

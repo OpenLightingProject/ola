@@ -33,7 +33,7 @@ typedef enum {
   LOGS_PENDING_FLAG = 0x01,  //!< Log messages are pending
   FLAGS_CHANGED_FLAG = 0x02,  //!< Flags have changed
   MSG_TRUNCATED_FLAG = 0x04  //!< The message has been truncated.
-} StatusFlags;
+} JaRuleStatusFlags;
 
 /**
  * @brief Ja Rule Port modes.
@@ -41,7 +41,8 @@ typedef enum {
 typedef enum {
   CONTROLLER_MODE,  //!< DMX/RDM Controller mode
   RESPONDER_MODE,  //!< DMX/RDM Responder mode
-} PortMode;
+  SELF_TEST_MODE,  //!< Self test mode
+} JaRulePortMode;
 
 /**
  * @brief Indicates the eventual state of a Ja Rule command.
@@ -100,6 +101,7 @@ typedef enum {
   JARULE_CMD_RESET_DEVICE = 0x00,
   JARULE_CMD_SET_MODE = 0x01,
   JARULE_CMD_GET_HARDWARE_INFO = 0x02,
+  JARULE_CMD_RUN_SELF_TEST = 0x03,
   JARULE_CMD_SET_BREAK_TIME = 0x10,
   JARULE_CMD_GET_BREAK_TIME = 0x11,
   JARULE_CMD_SET_MARK_TIME = 0x12,
@@ -123,6 +125,30 @@ typedef enum {
   JARULE_CMD_ECHO = 0xf0,
   JARULE_CMD_GET_FLAGS = 0xf2,
 } CommandClass;
+
+/**
+ * @brief JaRule command return codes.
+ */
+typedef enum {
+  RC_OK = 0,  //!< The command completed successfully.
+  RC_UNKNOWN = 1,  //!< Unknown command
+  /**
+   * @brief The command could not be completed due to a full memory buffer
+   */
+  RC_BUFFER_FULL = 2,
+  RC_BAD_PARAM = 3,  //!< The command was malformed.
+  RC_TX_ERROR = 4,  //!< There was an error during transceiver transmit.
+  RC_RDM_TIMEOUT = 5,  //!< No RDM response was received.
+
+  /**
+   * @brief Data was received in response to a broadcast RDM command.
+   *
+   * This usually indicates a broken responder.
+   */
+  RC_RDM_BCAST_RESPONSE = 6,
+  RC_RDM_INVALID_RESPONSE = 7,  //!< An invalid RDM response was received.
+  RC_INVALID_MODE = 8  //!< The command is invalid in the current mode.
+} JaRuleReturnCode;
 
 /**
  * @brief A command completion callback.
