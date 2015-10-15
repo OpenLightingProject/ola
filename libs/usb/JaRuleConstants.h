@@ -21,7 +21,9 @@
 #ifndef LIBS_USB_JARULECONSTANTS_H_
 #define LIBS_USB_JARULECONSTANTS_H_
 
+#include <ostream>
 #include <ola/Callback.h>
+#include <ola/io/ByteString.h>
 
 namespace ola {
 namespace usb {
@@ -162,6 +164,11 @@ typedef enum {
  */
 typedef ola::BaseCallback4<void, USBCommandResult, uint8_t, uint8_t,
                            const ola::io::ByteString&> CommandCompleteCallback;
+
+
+std::ostream& operator<<(std::ostream& os, const USBCommandResult &result);
+std::ostream& operator<<(std::ostream& os, const CommandClass &command_class);
+std::ostream& operator<<(std::ostream& os, const JaRuleReturnCode &rc);
 
 }  // namespace usb
 }  // namespace ola
