@@ -146,7 +146,7 @@ void JaRuleWidget::SendCommand(uint8_t port_index,
   if (port_index > m_ports.size() - 1) {
     OLA_WARN << "Invalid JaRule Port " << static_cast<int>(port_index);
     if (callback) {
-      callback->Run(COMMAND_RESULT_INVALID_PORT, 0, 0, ByteString());
+      callback->Run(COMMAND_RESULT_INVALID_PORT, RC_UNKNOWN, 0, ByteString());
     }
     return;
   }
