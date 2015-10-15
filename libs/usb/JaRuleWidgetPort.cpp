@@ -162,7 +162,7 @@ void JaRuleWidgetPort::CancelAll() {
   while (!queued_commands.empty()) {
     auto_ptr<PendingCommand> command(queued_commands.front());
     if (command->callback) {
-      command->callback->Run(COMMAND_RESULT_CANCELLED, 0, 0,
+      command->callback->Run(COMMAND_RESULT_CANCELLED, RC_UNKNOWN, 0,
                              ByteString());
     }
     queued_commands.pop();
@@ -171,7 +171,7 @@ void JaRuleWidgetPort::CancelAll() {
   PendingCommandMap::iterator iter = pending_commands.begin();
   for (; iter != pending_commands.end(); ++iter) {
     if (iter->second->callback) {
-      iter->second->callback->Run(COMMAND_RESULT_CANCELLED, 0, 0,
+      iter->second->callback->Run(COMMAND_RESULT_CANCELLED, RC_UNKNOWN, 0,
                                   ByteString());
       delete iter->second;
     }
@@ -193,14 +193,14 @@ void JaRuleWidgetPort::SendCommand(
   if (size > MAX_PAYLOAD_SIZE) {
     OLA_WARN << "JaRule message exceeds max payload size";
     if (callback) {
-      callback->Run(COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
+      callback->Run(COMMAND_RESULT_MALFORMED, RC_UNKNOWN, 0, ByteString());
     }
     return;
   }
 
   if (size != 0 && data == NULL) {
     OLA_WARN << "JaRule data is NULL, size was " << size;
-    callback->Run(COMMAND_RESULT_MALFORMED, 0, 0, ByteString());
+    callback->Run(COMMAND_RESULT_MALFORMED, RC_UNKNOWN, 0, ByteString());
     return;
   }
 
@@ -235,7 +235,7 @@ void JaRuleWidgetPort::SendCommand(
     locker.Release();
     OLA_WARN << "JaRule outbound queue is full";
     if (callback) {
-      callback->Run(COMMAND_RESULT_QUEUE_FULL, 0, 0, ByteString());
+      callback->Run(COMMAND_RESULT_QUEUE_FULL, RC_UNKNOWN, 0, ByteString());
     }
     return;
   }
@@ -278,7 +278,7 @@ void JaRuleWidgetPort::_InTransferComplete() {
   while (iter != m_pending_commands.end()) {
     PendingCommand *command = iter->second;
     if (command->out_time < time_limit) {
-      ScheduleCallback(command->callback, COMMAND_RESULT_TIMEOUT, 0, 0,
+      ScheduleCallback(command->callback, COMMAND_RESULT_TIMEOUT, RC_UNKNOWN, 0,
                        ByteString());
       delete command;
       m_pending_commands.erase(iter++);
@@ -314,8 +314,8 @@ void JaRuleWidgetPort::MaybeSendCommand() {
   if (r) {
     OLA_WARN << "Failed to submit outbound transfer: "
              << LibUsbAdaptor::ErrorCodeToString(r);
-    ScheduleCallback(command->callback, COMMAND_RESULT_SEND_ERROR, 0, 0,
-                     ByteString());
+    ScheduleCallback(command->callback, COMMAND_RESULT_SEND_ERROR, RC_UNKNOWN,
+                     0, ByteString());
     delete command;
     return;
   }
@@ -326,7 +326,7 @@ void JaRuleWidgetPort::MaybeSendCommand() {
   if (!p.second) {
     // We had an old entry, cancel it.
     ScheduleCallback(p.first->second->callback,
-                     COMMAND_RESULT_CANCELLED, 0, 0, ByteString());
+                     COMMAND_RESULT_CANCELLED, RC_UNKNOWN, 0, ByteString());
     delete p.first->second;
     p.first->second = command;
   }
@@ -380,7 +380,11 @@ void JaRuleWidgetPort::HandleResponse(const uint8_t *data, unsigned int size) {
   uint8_t token = data[1];
   uint16_t command_class = JoinUInt8(data[3], data[2]);
   uint16_t payload_size = JoinUInt8(data[5], data[4]);
-  uint8_t return_code = data[6];
+
+  JaRuleReturnCode return_code = RC_UNKNOWN;
+  if (data[6] < RC_LAST) {
+    return_code = static_cast<JaRuleReturnCode>(data[6]);
+  }
   uint8_t status_flags = data[7];
 
   if (payload_size + MIN_RESPONSE_SIZE > size) {
@@ -425,7 +429,7 @@ void JaRuleWidgetPort::HandleResponse(const uint8_t *data, unsigned int size) {
 void JaRuleWidgetPort::ScheduleCallback(
     CommandCompleteCallback *callback,
     USBCommandResult result,
-    uint8_t return_code,
+    JaRuleReturnCode return_code,
     uint8_t status_flags,
     const ByteString &payload) {
   if (!callback) {
@@ -447,9 +451,8 @@ void JaRuleWidgetPort::ScheduleCallback(
 /*
  * @brief Only ever run in the Executor thread.
  */
-void JaRuleWidgetPort::RunCallback(
-    CommandCompleteCallback *callback,
-    CallbackArgs args) {
+void JaRuleWidgetPort::RunCallback(CommandCompleteCallback *callback,
+                                   CallbackArgs args) {
   callback->Run(args.result, args.return_code, args.status_flags, args.payload);
 }
 }  // namespace usb

@@ -123,9 +123,9 @@ class JaRuleWidgetPort {
   // The arguments passed to the user supplied callback.
   typedef struct {
     USBCommandResult result;
-     uint8_t return_code;
-     uint8_t status_flags;
-     const ola::io::ByteString payload;
+    JaRuleReturnCode return_code;
+    uint8_t status_flags;
+    const ola::io::ByteString payload;
   } CallbackArgs;
 
   class PendingCommand {
@@ -176,7 +176,7 @@ class JaRuleWidgetPort {
 
   void ScheduleCallback(CommandCompleteCallback *callback,
                         USBCommandResult result,
-                        uint8_t return_code,
+                        JaRuleReturnCode return_code,
                         uint8_t status_flags,
                         const ola::io::ByteString &payload);
   void RunCallback(CommandCompleteCallback *callback,

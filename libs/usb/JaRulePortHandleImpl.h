@@ -82,17 +82,6 @@ class JaRulePortHandleImpl
   bool SetPortMode(JaRulePortMode new_mode);
 
  private:
-  typedef enum {
-    RC_OK,
-    RC_UNKNOWN,
-    RC_BUFFER_FULL,
-    RC_BAD_PARAM,
-    RC_TX_ERROR,
-    RC_RDM_TIMEOUT,
-    RC_RDM_BCAST_RESPONSE,
-    RC_RDM_INVALID_RESPONSE,
-  } JaRuleReturnCode;
-
   PACK(
   struct DUBTiming {
     uint16_t start;  //!< The start of the discovery response.
@@ -124,27 +113,27 @@ class JaRulePortHandleImpl
   ola::rdm::UIDSet m_uids;
 
   void CheckStatusFlags(uint8_t flags);
-  void DMXComplete(USBCommandResult result, uint8_t return_code,
+  void DMXComplete(USBCommandResult result, JaRuleReturnCode return_code,
                    uint8_t status_flags, const ola::io::ByteString &payload);
   void MuteDeviceComplete(MuteDeviceCallback *mute_complete,
                           USBCommandResult result,
-                          uint8_t return_code,
+                          JaRuleReturnCode return_code,
                           uint8_t status_flags,
                           const ola::io::ByteString &payload);
   void UnMuteDeviceComplete(UnMuteDeviceCallback *unmute_complete,
                             USBCommandResult result,
-                            uint8_t return_code,
+                            JaRuleReturnCode return_code,
                             uint8_t status_flags,
                             const ola::io::ByteString &payload);
   void DUBComplete(BranchCallback *callback,
                    USBCommandResult status,
-                   uint8_t return_code,
+                   JaRuleReturnCode return_code,
                    uint8_t status_flags,
                    const ola::io::ByteString &payload);
   void RDMComplete(const ola::rdm::RDMRequest *request,
                    ola::rdm::RDMCallback *m_rdm_callback,
                    USBCommandResult result,
-                   uint8_t return_code,
+                   JaRuleReturnCode return_code,
                    uint8_t status_flags,
                    const ola::io::ByteString &payload);
   ola::rdm::RDMResponse* UnpackRDMResponse(
