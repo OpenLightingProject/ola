@@ -303,11 +303,6 @@ class Controller {
       return;
     }
 
-    if (return_code != ola::usb::COMMAND_RESULT_OK) {
-      OLA_INFO << "RC: " << return_code;
-      return;
-    }
-
     string response;
     if (!payload.empty()) {
        response.append(reinterpret_cast<const char*>(payload.data()),
