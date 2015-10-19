@@ -422,8 +422,8 @@ class Controller {
       UID uid(payload.data() + sizeof(uint16_t));
       ola::network::MACAddress mac_address(
           payload.data() + sizeof(uint16_t) + UID::LENGTH);
-      OLA_INFO << "Model: " << model_id << ", UID: " << uid << ", MAC: "
-               << mac_address;
+      cout << "Model: " << model_id << ", UID: " << uid << ", MAC: "
+           << mac_address << endl;
     }
   }
 
