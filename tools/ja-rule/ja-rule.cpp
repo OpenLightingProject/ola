@@ -292,8 +292,9 @@ class Controller {
       OLA_WARN << "Missing timing setting " << option;
       return;
     }
-    cout << "Editing " << setting->description
-         << ". Use +/- to adjust, Enter commits, Esc to abort" << endl;
+    cout << "Editing " << setting->description << ", currently "
+         << FormatTime(setting->units, setting->current_value) << "." << endl
+         << "Use +/- to adjust, Enter commits, Esc to abort" << endl;
   }
 
   void EchoCommandComplete(ola::usb::USBCommandResult result,
@@ -308,7 +309,7 @@ class Controller {
        response.append(reinterpret_cast<const char*>(payload.data()),
                        payload.size());
     }
-    cout << "Echo Reply: RC (" << return_code << "): " << response << endl;
+    cout << "Echo Reply: RC " << return_code << ": " << response << endl;
   }
 
   void AckCommandComplete(
@@ -344,8 +345,8 @@ class Controller {
       return;
     }
 
-    OLA_INFO << "DUB Response: RC: " << return_code << ", size: "
-             << payload.size();
+    cout << "DUB Response: RC: " << return_code << ", size: "
+         << payload.size() << endl;
   }
 
   void DisplayTime(TimingOption option,
@@ -377,7 +378,7 @@ class Controller {
     value = JoinUInt8(payload[1], payload[0]);
 
     string description = setting->description;
-    ola::CustomCapitalizeLabel(&description);
+    ola::CapitalizeFirst(&description);
     cout << description << ": " << FormatTime(setting->units, value) << endl;
   }
 
@@ -426,6 +427,8 @@ class Controller {
           payload.data() + sizeof(uint16_t) + UID::LENGTH);
       OLA_INFO << "Model: " << model_id << ", UID: " << uid << ", MAC: "
                << mac_address;
+    } else {
+      OLA_WARN << "Received " << payload.size() << " bytes, expecting 14";
     }
   }
 
@@ -589,7 +592,7 @@ class Controller {
     }
 
     string description = setting->description;
-    ola::CustomCapitalizeLabel(&description);
+    ola::CapitalizeFirst(&description);
     cout << description << " is now "
          << FormatTime(setting->units, setting->current_value) << endl;
   }
