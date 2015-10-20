@@ -471,4 +471,11 @@ void CustomCapitalizeLabel(string *s) {
 
   CapitalizeLabel(s);
 }
+
+void CapitalizeFirst(string *s) {
+  string::iterator iter = s->begin();
+  if (islower(*iter)) {
+    *iter = toupper(*iter);
+  }
+}
 }  // namespace ola
