@@ -123,9 +123,9 @@ class JaRuleWidgetPort {
   // The arguments passed to the user supplied callback.
   typedef struct {
     USBCommandResult result;
-     uint8_t return_code;
-     uint8_t status_flags;
-     const ola::io::ByteString payload;
+    JaRuleReturnCode return_code;
+    uint8_t status_flags;
+    const ola::io::ByteString payload;
   } CallbackArgs;
 
   class PendingCommand {
@@ -141,12 +141,13 @@ class JaRuleWidgetPort {
     CommandClass command;
     CommandCompleteCallback *callback;
     ola::io::ByteString payload;
-    // TODO(simon): We probably need a counter here to detect timeouts.
+    TimeStamp out_time;  // When this cmd was sent
   };
 
   typedef std::map<uint8_t, PendingCommand*> PendingCommandMap;
   typedef std::queue<PendingCommand*> CommandQueue;
 
+  ola::Clock m_clock;
   ola::thread::ExecutorInterface* const m_executor;
   LibUsbAdaptor* const m_adaptor;
   libusb_device_handle* const m_usb_handle;
@@ -175,7 +176,7 @@ class JaRuleWidgetPort {
 
   void ScheduleCallback(CommandCompleteCallback *callback,
                         USBCommandResult result,
-                        uint8_t return_code,
+                        JaRuleReturnCode return_code,
                         uint8_t status_flags,
                         const ola::io::ByteString &payload);
   void RunCallback(CommandCompleteCallback *callback,

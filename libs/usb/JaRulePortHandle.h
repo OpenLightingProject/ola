@@ -66,7 +66,7 @@ class JaRulePortHandle : public ola::rdm::DiscoverableRDMControllerInterface {
    * @todo I need to think about how to return errors from this since it's
    * async.
    */
-  bool SetPortMode(PortMode new_mode);
+  bool SetPortMode(JaRulePortMode new_mode);
 
  private:
   // Order of destruction is important.
