@@ -292,8 +292,9 @@ class Controller {
       OLA_WARN << "Missing timing setting " << option;
       return;
     }
-    cout << "Editing " << setting->description
-         << ". Use +/- to adjust, Enter commits, Esc to abort" << endl;
+    cout << "Editing " << setting->description << ", currently "
+         << FormatTime(setting->units, setting->current_value) << "." << endl
+         << "Use +/- to adjust, Enter commits, Esc to abort" << endl;
   }
 
   void EchoCommandComplete(ola::usb::USBCommandResult result,
@@ -308,7 +309,7 @@ class Controller {
        response.append(reinterpret_cast<const char*>(payload.data()),
                        payload.size());
     }
-    OLA_INFO << "RC: " << return_code << ", " << response;
+    cout << "Echo Reply: RC " << return_code << ": " << response << endl;
   }
 
   void AckCommandComplete(
@@ -344,8 +345,8 @@ class Controller {
       return;
     }
 
-    OLA_INFO << "DUB Response: RC: " << return_code << ", size: "
-             << payload.size();
+    cout << "DUB Response: RC: " << return_code << ", size: "
+         << payload.size() << endl;
   }
 
   void DisplayTime(TimingOption option,
@@ -376,7 +377,9 @@ class Controller {
 
     value = JoinUInt8(payload[1], payload[0]);
 
-    OLA_INFO << "Time: " << FormatTime(setting->units, value) << endl;
+    string description = setting->description;
+    ola::CapitalizeFirst(&description);
+    cout << description << ": " << FormatTime(setting->units, value) << endl;
   }
 
   void CommandComplete(ola::usb::USBCommandResult result,
@@ -424,6 +427,8 @@ class Controller {
           payload.data() + sizeof(uint16_t) + UID::LENGTH);
       cout << "Model: " << model_id << ", UID: " << uid << ", MAC: "
            << mac_address << endl;
+    } else {
+      OLA_WARN << "Received " << payload.size() << " bytes, expecting 14";
     }
   }
 
@@ -586,7 +591,9 @@ class Controller {
       }
     }
 
-    cout << setting->description << " is now "
+    string description = setting->description;
+    ola::CapitalizeFirst(&description);
+    cout << description << " is now "
          << FormatTime(setting->units, setting->current_value) << endl;
   }
 
@@ -839,7 +846,8 @@ int main(int argc, char **argv) {
     exit(ola::EXIT_UNAVAILABLE);
   }
 
-  controller.PrintCommands();
+  // Print this via cout to ensure we actually get some output by default
+  cout << "Press h to print a help message" << endl;
 
   ss.Run();
   return ola::EXIT_OK;
