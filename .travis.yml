@@ -23,9 +23,13 @@ matrix:
     - env: TASK='doxygen'
       addons: {apt: {packages: [*core_build, g++-5, doxygen, graphviz], sources: [ubuntu-toolchain-r-test]}}
     - env: TASK='lint'
+      addons: {apt: {packages: []}}
     - env: TASK='check-licences'
+      addons: {apt: {packages: []}}
     - env: TASK='jshint'
+      addons: {apt: {packages: []}}
     - env: TASK='flake8'
+      addons: {apt: {packages: []}}
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'
