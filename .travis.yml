@@ -74,7 +74,7 @@ install:
 
 before_install:
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
- - if [ ( [[ "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" ]] ) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
+ - if [ \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-4.9" CC="ccache gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
  - if [ "$CXX" = "clang++" ]; then export CXX="ccache clang++-3.8" CC="ccache clang-3.8"; fi
