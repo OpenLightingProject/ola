@@ -8,18 +8,18 @@ matrix:
   include:
     - compiler: clang
       env: TASK='compile'
-      addons: {apt: {packages: [*core_build, clang-3.8], sources: [llvm-toolchain-precise]}
+      addons: {apt: {packages: [*core_build, clang-3.8], sources: [llvm-toolchain-precise]}}
     - compiler: gcc
       env: TASK='compile'
-      addons: {apt: {packages: [*core_build, g++-5], sources: [ubuntu-toolchain-r-test]}
+      addons: {apt: {packages: [*core_build, g++-5], sources: [ubuntu-toolchain-r-test]}}
     - compiler: gcc
       env: TASK='coverage'
-      addons: {apt: {packages: [*core_build, g++-5], sources: [ubuntu-toolchain-r-test]}
+      addons: {apt: {packages: [*core_build, g++-5], sources: [ubuntu-toolchain-r-test]}}
     - compiler: gcc
       env: TASK='coverity'
-      addons: {apt: {packages: [*core_build, g++-4.9], sources: [ubuntu-toolchain-r-test]}
+      addons: {apt: {packages: [*core_build, g++-4.9], sources: [ubuntu-toolchain-r-test]}}
     - env: TASK='doxygen'
-      addons: {apt: {packages: [*core_build, g++-5, doxygen, graphviz], sources: [ubuntu-toolchain-r-test]}
+      addons: {apt: {packages: [*core_build, g++-5, doxygen, graphviz], sources: [ubuntu-toolchain-r-test]}}
     - env: TASK='lint'
     - env: TASK='check-licences'
     - env: TASK='jshint'
