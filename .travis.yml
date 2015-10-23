@@ -92,26 +92,7 @@ before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log # erase log
   - ccache -s # see how many hits ccache got
 
-addons:
-  apt:
-    packages: &core_build
-      - protobuf-compiler
-      - libprotoc-dev
-      - libprotobuf-dev
-      - protobuf-c-compiler
-      - bison
-      - flex
-      - libftdi-dev
-      - libftdi1
-      - libusb-1.0-0-dev
-      - liblo-dev
-      - libavahi-glib1
-      - uuid-dev
-      - libcppunit-dev
-      - libncurses5-dev
-      - python-protobuf
-      - libmicrohttpd-dev
-      - ccache
+addons: {apt: {packages: &core_build [protobuf-compiler, libprotoc-dev, libprotobuf-dev, protobuf-c-compiler, bison, flex, libftdi-dev, libftdi1, libusb-1.0-0-dev, liblo-dev, libavahi-glib1, uuid-dev, libcppunit-dev, libncurses5-dev, python-protobuf, libmicrohttpd-dev, ccache]}}
 
 install:
   - pip install --user protobuf==2.4.1
