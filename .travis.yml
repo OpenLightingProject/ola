@@ -15,10 +15,10 @@ addons:
      - uuid-dev
      - libprotobuf-dev
      - protobuf-compiler
+     - libprotoc-dev
      - python-protobuf
     packages: &core_build
      - *base_build
-     - libprotoc-dev
      - protobuf-c-compiler
      - libftdi-dev
      - libftdi1
