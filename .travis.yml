@@ -13,11 +13,11 @@ addons:
      - bison
      - flex
      - uuid-dev
+     - libprotobuf-dev
     packages: &core_build
      - *base_build
      - protobuf-compiler
      - libprotoc-dev
-     - libprotobuf-dev
      - protobuf-c-compiler
      - libftdi-dev
      - libftdi1
@@ -91,9 +91,9 @@ before_cache:
 
 install:
   - pip install --user protobuf==2.4.1
-  - pip install --user cpp-coveralls
-  - pip install --user flake8
-  - npm install -g grunt-cli
+  - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
+  - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
+  - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
