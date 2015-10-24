@@ -774,6 +774,7 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
 AC_CONFIG_FILES([include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
+                 ola.spec
                  plugins/artnet/messages/libolaartnetconf.pc
                  plugins/e131/e131/libolaacn.pc
                  plugins/e131/messages/libolae131conf.pc
