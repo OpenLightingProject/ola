@@ -14,9 +14,10 @@ addons:
      - flex
      - uuid-dev
      - libprotobuf-dev
+     - protobuf-compiler
+     - python-protobuf
     packages: &core_build
      - *base_build
-     - protobuf-compiler
      - libprotoc-dev
      - protobuf-c-compiler
      - libftdi-dev
@@ -25,7 +26,6 @@ addons:
      - liblo-dev
      - libavahi-glib1
      - libncurses5-dev
-     - python-protobuf
      - libmicrohttpd-dev
 
 matrix:
