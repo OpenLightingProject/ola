@@ -5,24 +5,28 @@ script:
 
 addons:
   apt:
+    packages: &base_build
+     # This is the absolute minimum for configure to pass
+     # Non C++ based tasks use it so they can run make builtfiles
+     - ccache
+     - libcppunit-dev
+     - bison
+     - flex
+     - uuid-dev
     packages: &core_build
+     - *base_build
      - protobuf-compiler
      - libprotoc-dev
      - libprotobuf-dev
      - protobuf-c-compiler
-     - bison
-     - flex
      - libftdi-dev
      - libftdi1
      - libusb-1.0-0-dev
      - liblo-dev
      - libavahi-glib1
-     - uuid-dev
-     - libcppunit-dev
      - libncurses5-dev
      - python-protobuf
      - libmicrohttpd-dev
-     - ccache
 
 matrix:
   fast_finish: true
@@ -48,7 +52,7 @@ matrix:
     - env: TASK='jshint'
       addons: {apt: {packages: []}}
     - env: TASK='flake8'
-      addons: {apt: {packages: []}}
+      addons: {apt: {packages: [*base_build]}}
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'
@@ -96,7 +100,7 @@ before_install:
  - if [ \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-4.9" CC="ccache gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
- - if [ "$CXX" = "clang++" ]; then export CXX="ccache clang++-3.8" CC="ccache clang-3.8"; fi
+ - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
 #Report the compiler version
  - $CXX --version
 
