@@ -18,8 +18,8 @@ addons:
      - libprotoc-dev
      - python-protobuf
     packages: &core_build
+     # This is all the bits we need to enable all options
      - *base_build
-     - protobuf-c-compiler
      - libftdi-dev
      - libftdi1
      - libusb-1.0-0-dev
@@ -27,6 +27,12 @@ addons:
      - libavahi-glib1
      - libncurses5-dev
      - libmicrohttpd-dev
+    packages: &core_build_g++_latest
+     - *core_build
+     - g++-5
+    packages: &core_build_clang_latest
+     - *core_build
+     - clang-3.8
 
 matrix:
   fast_finish: true
@@ -36,8 +42,7 @@ matrix:
       addons:
         apt:
           packages:
-           - *core_build
-           - clang-3.8
+           - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
            - llvm-toolchain-precise
@@ -46,8 +51,7 @@ matrix:
       addons:
         apt:
           packages:
-           - *core_build
-           - g++-5
+           - *core_build_g++_latest
           sources:
            - ubuntu-toolchain-r-test
     - compiler: gcc
@@ -55,8 +59,7 @@ matrix:
       addons:
         apt:
           packages:
-           - *core_build
-           - g++-5
+           - *core_build_g++_latest
           sources:
            - ubuntu-toolchain-r-test
     - compiler: gcc
@@ -64,6 +67,7 @@ matrix:
       addons:
         apt:
           packages:
+           # Coverity doesn't work with g++-5 yet
            - *core_build
            - g++-4.9
           sources:
@@ -72,8 +76,7 @@ matrix:
       addons:
         apt:
           packages:
-           - *core_build
-           - g++-5
+           - *core_build_g++_latest
            - doxygen
            - graphviz
           sources:
