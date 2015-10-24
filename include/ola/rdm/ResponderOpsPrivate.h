@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ResponderOpsPrivate.h
- * A private helper functions for building RDM responders.
+ * Private helper functions for building RDM responders.
  * Copyright (C) 2013 Simon Newton
  */
 

@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * RDMCommandSerializer.h
+ * RDMCommandSerializer.cpp
  * Write RDMCommands to a memory buffer.
  * Copyright (C) 2012 Simon Newton
  */
@@ -33,8 +33,9 @@ using ola::utils::SplitUInt16;
 
 unsigned int RDMCommandSerializer::RequiredSize(
     const RDMCommand &command) {
-  if (command.ParamDataSize() > MAX_PARAM_DATA_LENGTH)
+  if (command.ParamDataSize() > MAX_PARAM_DATA_LENGTH) {
     return 0;
+  }
   // Don't use command.MessageLength() here, since it may be overridden.
   return sizeof(RDMCommandHeader) + command.ParamDataSize() + CHECKSUM_LENGTH;
 }

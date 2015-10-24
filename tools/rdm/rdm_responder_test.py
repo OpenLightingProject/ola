@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# ola_rdm_get.py
+# rdm_responder_test.py
 # Copyright (C) 2010 Simon Newton
 
 '''Automated testing for RDM responders.'''
@@ -33,7 +33,7 @@ from ola import PidStore
 from ola import Version
 from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
-from optparse import OptionParser, OptionGroup, OptionValueError
+from optparse import OptionParser
 
 
 def ParseOptions():
@@ -121,7 +121,7 @@ def SetupLogging(options):
 
   if options.log:
     file_name = '%s.%s.%d' % (options.log, options.uid, time.time())
-    file_handler =logging.FileHandler(file_name, 'w')
+    file_handler = logging.FileHandler(file_name, 'w')
     file_handler.addFilter(MyFilter())
     if options.debug:
       file_handler.setLevel(logging.DEBUG)
@@ -205,7 +205,7 @@ def main():
   SetupLogging(options)
   logging.info('OLA Responder Tests Version %s' % Version.version)
   pid_store = PidStore.GetStore(options.pid_location,
-                                ('pids.proto','draft_pids.proto'))
+                                ('pids.proto', 'draft_pids.proto'))
   wrapper = ClientWrapper()
 
   global uid_ok
@@ -268,10 +268,10 @@ def main():
   for test_class in test_classes:
     runner.RegisterTest(test_class)
 
-  dmx_sender = DMXSender(wrapper,
-                         options.universe,
-                         options.dmx_frame_rate,
-                         options.slot_count)
+  DMXSender(wrapper,
+            options.universe,
+            options.dmx_frame_rate,
+            options.slot_count)
 
   tests, device = runner.RunTests(test_filter, options.no_factory_defaults)
   DisplaySummary(options.uid, tests, device)

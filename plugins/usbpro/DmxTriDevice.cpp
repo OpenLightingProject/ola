@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DmxTriDevice.h
+ * DmxTriDevice.cpp
  * The Jese DMX TRI device. This just wraps the DmxTriWidget.
  * Copyright (C) 2010 Simon Newton
  */

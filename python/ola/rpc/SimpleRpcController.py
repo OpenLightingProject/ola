@@ -21,8 +21,10 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 from google.protobuf import service
 
+
 class SimpleRpcController(service.RpcController):
   """See google.protobuf.service.RpcController for documentation."""
+
   def __init__(self):
     self.Reset()
 

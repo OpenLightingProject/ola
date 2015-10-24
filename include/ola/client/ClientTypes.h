@@ -318,10 +318,10 @@ struct DMXMetadata {
    */
   uint8_t priority;
 
-  explicit DMXMetadata(unsigned int universe,
-                       uint8_t priority = ola::dmx::SOURCE_PRIORITY_DEFAULT)
-      : universe(universe),
-        priority(priority) {
+  explicit DMXMetadata(unsigned int _universe,
+                       uint8_t _priority = ola::dmx::SOURCE_PRIORITY_DEFAULT)
+      : universe(_universe),
+        priority(_priority) {
   }
 };
 
@@ -346,8 +346,8 @@ struct RDMMetadata {
    */
   RDMMetadata() : response_code(ola::rdm::RDM_FAILED_TO_SEND) {}
 
-  explicit RDMMetadata(ola::rdm::rdm_response_code response_code)
-      : response_code(response_code) {
+  explicit RDMMetadata(ola::rdm::rdm_response_code _response_code)
+      : response_code(_response_code) {
   }
 };
 }  // namespace client

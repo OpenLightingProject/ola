@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# setup_patch.py
+# launch_tests.py
 # Copyright (C) 2012 Simon Newton
 
 """
@@ -29,7 +29,7 @@ Under the hood this does the following:
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
-from optparse import OptionParser, OptionGroup, OptionValueError
+from optparse import OptionParser
 import logging
 import os
 import setup_patch  # The Port Autopatcher
@@ -79,7 +79,7 @@ def main():
   config_dir = tempfile.mkdtemp()
 
   if not os.access(config_dir, os.W_OK):
-    print '%s is not writable' % skel_config
+    print '%s is not writable' % config_dir
     sys.exit()
 
   # copy the skeleton configs files over, no symlinks since we don't want to

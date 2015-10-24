@@ -23,15 +23,16 @@
 #ifndef PLUGINS_E131_E131_E131TESTFRAMEWORK_H_
 #define PLUGINS_E131_E131_E131TESTFRAMEWORK_H_
 
-#include <termios.h>
 #include <unistd.h>
 #include <string>
+#include <memory>
 #include <vector>
 #include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/acn/CID.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
+#include "ola/io/StdinHandler.h"
 #include "ola/math/Random.h"
 #include "plugins/e131/e131/E131Node.h"
 
@@ -309,7 +310,7 @@ class StateManager {
     bool Init();
     void Run() { m_ss->Run(); }
     bool Tick();
-    void Input();
+    void Input(int c);
     void NewDMX();
     bool Passed() const { return m_failed_tests.empty(); }
 
@@ -320,8 +321,8 @@ class StateManager {
     ola::acn::CID m_cid1, m_cid2;
     ola::plugin::e131::E131Node *m_local_node, *m_node1, *m_node2;
     ola::io::SelectServer *m_ss;
+    std::auto_ptr<ola::io::StdinHandler> m_stdin_handler;
     std::vector<TestState*> m_states;
-    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
     ola::DmxBuffer m_recv_buffer;
     std::vector<TestState*> m_failed_tests;
 

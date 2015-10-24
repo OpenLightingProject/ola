@@ -30,60 +30,125 @@
 namespace ola {
 namespace network {
 
+// We define uint8_t versions of these so we can call them with any type.
 /**
- * @return true if we're big endian, false otherwise.
+ * @brief 8-bit unsigned network to host conversion.
  */
-bool IsBigEndian();
-
-// we define uint8_t versions of these so we can call them with any type.
-uint8_t NetworkToHost(uint8_t value);
+inline uint8_t NetworkToHost(uint8_t value) { return value; }
 
 /**
- * Convert a uint16_t from network to host byte order
+ * @brief 16-bit unsigned network to host conversion.
  */
 uint16_t NetworkToHost(uint16_t value);
 
 /**
- * Convert a uint32_t from network to host byte order
+ * @brief 32-bit unsigned network to host conversion.
  */
 uint32_t NetworkToHost(uint32_t value);
-int8_t NetworkToHost(int8_t value);
 
 /**
- * Convert a uint16_t from network to host byte order
+ * @brief 8-bit signed network to host conversion.
+ */
+inline int8_t NetworkToHost(int8_t value) { return value; }
+
+/**
+ * @brief 16-bit signed network to host conversion.
  */
 int16_t NetworkToHost(int16_t value);
 
 /*
- * Convert a int32_t from network to host byte order
+ * @brief 32-bit signed network to host conversion.
  */
 int32_t NetworkToHost(int32_t value);
-uint8_t HostToNetwork(uint8_t value);
+
+/*
+ * @brief 8-bit unsigned host to network conversion.
+ */
+inline uint8_t HostToNetwork(uint8_t value) { return value; }
 
 /**
- * Convert a uint16_t from host to network byte order
+ * @brief 16-bit unsigned host to network conversion.
  */
 uint16_t HostToNetwork(uint16_t value);
 
 /**
- * Convert a uint32_t from host to network byte order
+ * @brief 32-bit unsigned host to network conversion.
  */
 uint32_t HostToNetwork(uint32_t value);
-int8_t HostToNetwork(int8_t value);
+
+/**
+ * @brief 8-bit signed host to network conversion.
+ */
+inline int8_t HostToNetwork(int8_t value) { return value; }
+
+/**
+ * @brief 16-bit signed host to network conversion.
+ */
 int16_t HostToNetwork(int16_t value);
+
+/**
+ * @brief 32-bit signed host to network conversion.
+ */
 int32_t HostToNetwork(int32_t value);
 
-uint8_t HostToLittleEndian(uint8_t value);
+/**
+ * @brief 8-bit unsigned host to little endian conversion.
+ */
+inline uint8_t HostToLittleEndian(uint8_t value) { return value; }
+
+/**
+ * @brief 16-bit unsigned host to little endian conversion.
+ */
 uint16_t HostToLittleEndian(uint16_t value);
+
+/**
+ * @brief 32-bit unsigned host to little endian conversion.
+ */
 uint32_t HostToLittleEndian(uint32_t value);
-int8_t HostToLittleEndian(int8_t value);
+
+/**
+ * @brief 8-bit signed host to little endian conversion.
+ */
+inline int8_t HostToLittleEndian(int8_t value) { return value; }
+
+/**
+ * @brief 16-bit signed host to little endian conversion.
+ */
 int16_t HostToLittleEndian(int16_t value);
+
+/**
+ * @brief 32-bit signed host to little endian conversion.
+ */
 int32_t HostToLittleEndian(int32_t value);
-uint8_t LittleEndianToHost(uint8_t value);
+
+/**
+ * @brief 8-bit unsigned little endian to host conversion.
+ */
+inline uint8_t LittleEndianToHost(uint8_t value) { return value; }
+
+/**
+ * @brief 16-bit unsigned little endian to host conversion.
+ */
 uint16_t LittleEndianToHost(uint16_t value);
+
+/**
+ * @brief 32-bit unsigned little endian to host conversion.
+ */
 uint32_t LittleEndianToHost(uint32_t value);
-int8_t LittleEndianToHost(int8_t value);
+
+/**
+ * @brief 8-bit signed little endian to host conversion.
+ */
+inline int8_t LittleEndianToHost(int8_t value) { return value; }
+
+/**
+ * @brief 16-bit signed little endian to host conversion.
+ */
 int16_t LittleEndianToHost(int16_t value);
+
+/**
+ * @brief 32-bit signed little endian to host conversion.
+ */
 int32_t LittleEndianToHost(int32_t value);
 
 /**

@@ -37,14 +37,18 @@ from ola.UID import UID
 class Error(Exception):
   """Base exception class."""
 
+
 class DiscoveryException(Error):
   """Raised when discovery fails."""
+
 
 class SaveException(Error):
   """Raised when we can't write to the output file."""
 
+
 class LoadException(Error):
   """Raised when we can't write to the output file."""
+
 
 class ConfigReader(object):
   """A controller that fetches data for responders."""
@@ -226,7 +230,8 @@ class ConfigReader(object):
 
     # at this stage the response is either a ack or nack
     if response.response_type == OlaClient.RDM_NACK_REASON:
-      print('Got nack with reason: %s' % response.nack_reason)
+      print('Got nack with reason for PID %d: %s' %
+            (response.pid, response.nack_reason))
       self._NextState()
     elif unpack_exception:
       print(unpack_exception)

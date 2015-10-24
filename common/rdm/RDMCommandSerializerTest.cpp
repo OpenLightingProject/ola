@@ -224,6 +224,7 @@ void RDMCommandSerializerTest::testRequestOverrides() {
   OLA_ASSERT_DATA_EQUALS(expected_data, arraysize(expected_data),
                          data,
                          length);
+  delete[] data;
 
   ByteString output;
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(request, &output));

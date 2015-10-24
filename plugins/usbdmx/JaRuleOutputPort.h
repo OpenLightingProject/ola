@@ -25,6 +25,9 @@
 #include "ola/base/Macro.h"
 #include "olad/Port.h"
 
+#include "libs/usb/JaRulePortHandle.h"
+#include "libs/usb/JaRuleWidget.h"
+
 namespace ola {
 
 class Device;
@@ -33,32 +36,48 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief A thin wrapper around a JaRuleWidget so that it can operate as an OLA
- * Port.
+ * @brief A thin wrapper around a JaRulePortHandle so that it can operate as an
+ * OLA Port.
  */
 class JaRuleOutputPort: public BasicOutputPort {
  public:
   /**
    * @brief Create a new JaRuleOutputPort.
    * @param parent The parent device for this port.
-   * @param id The port id.
-   * @param widget The widget to use to send DMX frames.
+   * @param index The port index, starting from 0
+   * @param widget The widget to use.
    */
   JaRuleOutputPort(Device *parent,
-                   unsigned int id,
-                   class JaRuleWidget *widget);
+                   unsigned int index,
+                   ola::usb::JaRuleWidget *widget);
+
+  /**
+   * @brief Destructor
+   */
+  ~JaRuleOutputPort();
+
+  /**
+   * @brief Initialize the port.
+   * @returns true if ok, false if initialization failed.
+   */
+  bool Init();
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-  std::string Description() const { return ""; }
+  std::string Description() const;
 
   void SendRDMRequest(ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
   void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
   void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
+  bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
+  void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+
  private:
-  class JaRuleWidget* const m_widget;
+  const unsigned int m_port_index;
+  ola::usb::JaRuleWidget *m_widget;  // not owned
+  ola::usb::JaRulePortHandle *m_port_handle;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(JaRuleOutputPort);
 };

@@ -33,18 +33,18 @@
 #include "ola/strings/Format.h"
 #include "ola/timecode/TimeCode.h"
 #include "ola/timecode/TimeCodeEnums.h"
-#include "olad/Client.h"
 #include "olad/ClientBroker.h"
 #include "olad/Device.h"
-#include "olad/DeviceManager.h"
 #include "olad/DmxSource.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
 #include "olad/Port.h"
-#include "olad/PortManager.h"
 #include "olad/Universe.h"
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/Client.h"
+#include "olad/plugin_api/DeviceManager.h"
+#include "olad/plugin_api/PortManager.h"
+#include "olad/plugin_api/UniverseStore.h"
 
 namespace ola {
 
@@ -485,7 +485,7 @@ void OlaServerServiceImpl::GetPluginState(
 }
 
 void OlaServerServiceImpl::SetPluginState(
-    RpcController*,
+    RpcController *controller,
     const ola::proto::PluginStateChangeRequest* request,
     Ack*,
     ola::rpc::RpcService::CompletionCallback* done) {
@@ -496,7 +496,13 @@ void OlaServerServiceImpl::SetPluginState(
   if (plugin) {
     OLA_DEBUG << "SetPluginState to " << request->enabled()
               << " for plugin " << plugin->Name();
-    plugin->SetEnabledState(request->enabled());
+    if (request->enabled()) {
+      if (!m_plugin_manager->EnableAndStartPlugin(plugin_id)) {
+        controller->SetFailed("Failed to start plugin: " + plugin->Name());
+      }
+    } else {
+      m_plugin_manager->DisableAndStopPlugin(plugin_id);
+    }
   }
 }
 
@@ -645,7 +651,7 @@ void OlaServerServiceImpl::ConfigureDevice(
     DeviceConfigReply* response,
     ola::rpc::RpcService::CompletionCallback* done) {
   AbstractDevice *device =
-    m_device_manager->GetDevice(request->device_alias());
+      m_device_manager->GetDevice(request->device_alias());
   if (!device) {
     MissingDeviceError(controller);
     done->Run();
@@ -723,26 +729,26 @@ void OlaServerServiceImpl::RDMCommand(
   ola::rdm::RDMRequest *rdm_request = NULL;
   if (request->is_set()) {
     rdm_request = new ola::rdm::RDMSetRequest(
-      source_uid,
-      destination,
-      0,  // transaction #
-      1,  // port id
-      request->sub_device(),
-      request->param_id(),
-      reinterpret_cast<const uint8_t*>(request->data().data()),
-      request->data().size(),
-      options);
+        source_uid,
+        destination,
+        0,  // transaction #
+        1,  // port id
+        request->sub_device(),
+        request->param_id(),
+        reinterpret_cast<const uint8_t*>(request->data().data()),
+        request->data().size(),
+        options);
   } else {
     rdm_request = new ola::rdm::RDMGetRequest(
-      source_uid,
-      destination,
-      0,  // transaction #
-      1,  // port id
-      request->sub_device(),
-      request->param_id(),
-      reinterpret_cast<const uint8_t*>(request->data().data()),
-      request->data().size(),
-      options);
+        source_uid,
+        destination,
+        0,  // transaction #
+        1,  // port id
+        request->sub_device(),
+        request->param_id(),
+        reinterpret_cast<const uint8_t*>(request->data().data()),
+        request->data().size(),
+        options);
   }
 
   ola::rdm::RDMCallback *callback =
@@ -816,11 +822,11 @@ void OlaServerServiceImpl::SendTimeCode(
     ola::rpc::RpcService::CompletionCallback* done) {
   ClosureRunner runner(done);
   ola::timecode::TimeCode time_code(
-    static_cast<ola::timecode::TimeCodeType>(request->type()),
-    request->hours(),
-    request->minutes(),
-    request->seconds(),
-    request->frames());
+      static_cast<ola::timecode::TimeCodeType>(request->type()),
+      request->hours(),
+      request->minutes(),
+      request->seconds(),
+      request->frames());
 
   if (time_code.IsValid()) {
     m_device_manager->SendTimeCode(time_code);

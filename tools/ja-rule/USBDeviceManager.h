@@ -27,41 +27,39 @@
 #include <ola/io/SelectServer.h>
 #include <ola/thread/ExecutorThread.h>
 #include <ola/thread/Future.h>
-#include <ola/thread/Mutex.h>
 #include <ola/thread/Thread.h>
 
 #include <map>
 #include <memory>
 #include <utility>
 
-#include "plugins/usbdmx/LibUsbThread.h"
-#include "tools/ja-rule/JaRuleEndpoint.h"
+#include "libs/usb/HotplugAgent.h"
+#include "libs/usb/JaRuleWidget.h"
+#include "libs/usb/Types.h"
 
 /**
  * @brief Manages adding / removing Open Lighting Devices.
  *
- * As Open Lighting USB devices are added or removed, this executes the
+ * As Open Lighting Widgets are added or removed, this executes the
  * callback to notify the recipient.
- *
- * Currently only a single device is supported.
  */
 class USBDeviceManager {
  public:
   enum EventType {
-    DEVICE_ADDED,   //!< The device was added.
-    DEVICE_REMOVED,   //!< The device ws removed.
+    WIDGET_ADDED,   //!< The widget was added.
+    WIDGET_REMOVED,   //!< The widget ws removed.
   };
 
   /**
    * @brief Indicates a device has been added or removed
    */
-  typedef ola::Callback2<void, EventType, JaRuleEndpoint*>
+  typedef ola::Callback2<void, EventType, ola::usb::JaRuleWidget*>
       NotificationCallback;
 
   /**
    * @brief Create a new USBDeviceManager.
    * @param ss The executor to run the notification_cb on.
-   * @param notification_cb The callback to run when the device is added or
+   * @param notification_cb The callback to run when the widget is added or
    *   removed. Ownership is transferred.
    */
   USBDeviceManager(ola::io::SelectServer* ss,
@@ -73,6 +71,15 @@ class USBDeviceManager {
    * This will stop the USBDeviceManager if it's still running.
    */
   ~USBDeviceManager();
+
+  /**
+   * @brief Get the AsyncronousLibUsbAdaptor to use.
+   * @returns An AsyncronousLibUsbAdaptor, ownership is not transferred.
+   * @pre Must be called after Start()
+   *
+   * The adaptor is valid until the call to Stop().
+   */
+  ola::usb::AsyncronousLibUsbAdaptor *GetUSBAdaptor() const;
 
   /**
    * @brief Start the device manager.
@@ -90,42 +97,28 @@ class USBDeviceManager {
   bool Stop();
 
   /**
-   * @brief Called by the hotplug notification when a USB device is added or
+   * @brief Called by the HotplugAgent when a USB device is added or
    * removed.
    *
-   * Due to the way libusb works, this can be called from either the thread
-   * that called Start() or from the libusb thread.
+   * This can be called from either the thread that called Start() or from the
+   * hotplug thread.
    */
-  void HotPlugEvent(struct libusb_device *usb_device,
-                    libusb_hotplug_event event);
+  void HotPlugEvent(ola::usb::HotplugAgent::EventType event,
+                    struct libusb_device *usb_device);
 
  private:
-  typedef std::pair<uint8_t, uint8_t> USBDeviceID;
-  typedef std::map<USBDeviceID, JaRuleEndpoint*> DeviceMap;
+  typedef std::map<ola::usb::USBDeviceID, ola::usb::JaRuleWidget*> WidgetMap;
 
   ola::io::SelectServer* m_ss;
-  ola::thread::ExecutorThread m_cleanup_thread;
-
-  libusb_context* m_context;
-  std::auto_ptr<ola::plugin::usbdmx::LibUsbHotplugThread> m_usb_thread;
-  ola::thread::ThreadId m_start_thread_id;
-
   std::auto_ptr<NotificationCallback> const m_notification_cb;
+  std::auto_ptr<ola::usb::HotplugAgent> m_hotplug_agent;
+  ola::thread::ExecutorThread m_cleanup_thread;
+  ola::thread::ThreadId m_start_thread_id;
+  WidgetMap m_widgets;
 
-  ola::thread::Mutex m_mutex;
-  bool m_suppress_hotplug_events;  // GUARDED_BY(m_mutex);
-  DeviceMap m_devices;  // GUARDED_BY(m_mutex)
-
-  void DeviceAdded(struct libusb_device* usb_device,
-                   const USBDeviceID& device_id);
-  void DeviceRemoved(const USBDeviceID& device_id);
-
-  void SignalEvent(EventType event, JaRuleEndpoint* device,
-                   ola::thread::MutexLocker* locker);
-  void DeviceEvent(EventType event, JaRuleEndpoint* device,
+  void SignalEvent(EventType event, ola::usb::JaRuleWidget* widget);
+  void WidgetEvent(EventType event, ola::usb::JaRuleWidget* widget,
                    ola::thread::Future<void>* f);
-
-  void DeleteDevice(JaRuleEndpoint* device);
 
   DISALLOW_COPY_AND_ASSIGN(USBDeviceManager);
 };

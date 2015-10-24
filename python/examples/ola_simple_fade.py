@@ -26,15 +26,16 @@ To view data, use the web interface or patch an output device to the same
 universe
 """
 
-from array import *
+from array import array
 from ola.ClientWrapper import ClientWrapper
 from ola.DMXConstants import DMX_MIN_SLOT_VALUE, DMX_MAX_SLOT_VALUE, \
-  DMX_UNIVERSE_SIZE
+    DMX_UNIVERSE_SIZE
 
-UPDATE_INTERVAL = 25 # In ms, this comes about to ~40 frames a second
-SHUTDOWN_INTERVAL = 10000 # in ms, This is 10 seconds
+UPDATE_INTERVAL = 25  # In ms, this comes about to ~40 frames a second
+SHUTDOWN_INTERVAL = 10000  # in ms, This is 10 seconds
 DMX_DATA_SIZE = 100
 UNIVERSE = 1
+
 
 class SimpleFadeController(object):
   def __init__(self, universe, update_interval, client_wrapper,
@@ -42,7 +43,7 @@ class SimpleFadeController(object):
     dmx_data_size = min(dmx_data_size, DMX_UNIVERSE_SIZE)
     self._universe = universe
     self._update_interval = update_interval
-    self._data = array ('B', [DMX_MIN_SLOT_VALUE] * dmx_data_size)
+    self._data = array('B', [DMX_MIN_SLOT_VALUE] * dmx_data_size)
     self._wrapper = client_wrapper
     self._client = client_wrapper.Client()
     self._wrapper.AddEvent(self._update_interval, self.UpdateDmx)
@@ -67,4 +68,3 @@ if __name__ == '__main__':
   wrapper.AddEvent(SHUTDOWN_INTERVAL, wrapper.Stop)
   # Start the wrapper
   wrapper.Run()
-

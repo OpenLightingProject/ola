@@ -60,8 +60,8 @@ DEFINE_default_bool(use_epoll, true,
 
 #ifdef HAVE_KQUEUE
 #include "common/io/KQueuePoller.h"
-DEFINE_default_bool(use_kqueue, true,
-                    "Disable the use of kqueue(), revert to select()");
+DEFINE_default_bool(use_kqueue, false,
+                    "Use kqueue() rather than select()");
 #endif
 
 namespace ola {
@@ -75,70 +75,34 @@ using std::max;
 const TimeStamp SelectServer::empty_time;
 
 SelectServer::SelectServer(ExportMap *export_map,
-                           Clock *clock,
-                           const Options &options)
+                           Clock *clock)
     : m_export_map(export_map),
       m_terminate(false),
       m_is_running(false),
       m_poll_interval(POLL_INTERVAL_SECOND, POLL_INTERVAL_USECOND),
       m_clock(clock),
       m_free_clock(false) {
-  if (!m_clock) {
-    m_clock = new Clock;
-    m_free_clock = true;
-  }
+  Options options;
+  Init(options);
+}
 
-  if (m_export_map) {
-    m_export_map->GetIntegerVar(PollerInterface::K_READ_DESCRIPTOR_VAR);
-    m_export_map->GetIntegerVar(PollerInterface::K_WRITE_DESCRIPTOR_VAR);
-    m_export_map->GetIntegerVar(PollerInterface::K_CONNECTED_DESCRIPTORS_VAR);
-  }
-
-  m_timeout_manager.reset(new TimeoutManager(export_map, m_clock));
-#ifdef _WIN32
-  m_poller.reset(new WindowsPoller(export_map, m_clock));
-#else
-
-#ifdef HAVE_EPOLL
-  if (FLAGS_use_epoll && !options.force_select) {
-    m_poller.reset(new EPoller(export_map, m_clock));
-  }
-  if (m_export_map) {
-    m_export_map->GetBoolVar("using-epoll")->Set(FLAGS_use_epoll);
-  }
-#endif
-
-#ifdef HAVE_KQUEUE
-  bool using_kqueue = false;
-  if (FLAGS_use_kqueue && !m_poller.get() && !options.force_select) {
-    m_poller.reset(new KQueuePoller(export_map, m_clock));
-    using_kqueue = true;
-  }
-  if (m_export_map) {
-    m_export_map->GetBoolVar("using-kqueue")->Set(using_kqueue);
-  }
-#endif
-
-  // Default to the SelectPoller
-  if (!m_poller.get()) {
-    m_poller.reset(new SelectPoller(export_map, m_clock));
-  }
-#endif
-
-  // TODO(simon): this should really be in an Init() method.
-  if (!m_incoming_descriptor.Init())
-    OLA_FATAL << "Failed to init LoopbackDescriptor, Execute() won't work!";
-  m_incoming_descriptor.SetOnData(
-      ola::NewCallback(this, &SelectServer::DrainAndExecute));
-  AddReadDescriptor(&m_incoming_descriptor);
+SelectServer::SelectServer(const Options &options)
+    : m_export_map(options.export_map),
+      m_terminate(false),
+      m_is_running(false),
+      m_poll_interval(POLL_INTERVAL_SECOND, POLL_INTERVAL_USECOND),
+      m_clock(options.clock),
+      m_free_clock(false) {
+  Init(options);
 }
 
 SelectServer::~SelectServer() {
   DrainCallbacks();
 
   STLDeleteElements(&m_loop_callbacks);
-  if (m_free_clock)
+  if (m_free_clock) {
     delete m_clock;
+  }
 }
 
 const TimeStamp *SelectServer::WakeUpTime() const {
@@ -150,8 +114,9 @@ const TimeStamp *SelectServer::WakeUpTime() const {
 }
 
 void SelectServer::Terminate() {
-  if (m_is_running)
+  if (m_is_running) {
     Execute(NewSingleCallback(this, &SelectServer::SetTerminate));
+  }
 }
 
 void SelectServer::SetDefaultInterval(const TimeInterval &poll_interval) {
@@ -168,8 +133,9 @@ void SelectServer::Run() {
   m_terminate = false;
   while (!m_terminate) {
     // false indicates an error in CheckForEvents();
-    if (!CheckForEvents(m_poll_interval))
+    if (!CheckForEvents(m_poll_interval)) {
       break;
+    }
   }
   m_is_running = false;
 }
@@ -313,6 +279,60 @@ void SelectServer::DrainCallbacks() {
   }
 }
 
+void SelectServer::Init(const Options &options) {
+  if (!m_clock) {
+    m_clock = new Clock;
+    m_free_clock = true;
+  }
+
+  if (m_export_map) {
+    m_export_map->GetIntegerVar(PollerInterface::K_READ_DESCRIPTOR_VAR);
+    m_export_map->GetIntegerVar(PollerInterface::K_WRITE_DESCRIPTOR_VAR);
+    m_export_map->GetIntegerVar(PollerInterface::K_CONNECTED_DESCRIPTORS_VAR);
+  }
+
+  m_timeout_manager.reset(new TimeoutManager(m_export_map, m_clock));
+#ifdef _WIN32
+  m_poller.reset(new WindowsPoller(m_export_map, m_clock));
+  (void) options;
+#else
+
+#ifdef HAVE_EPOLL
+  if (FLAGS_use_epoll && !options.force_select) {
+    m_poller.reset(new EPoller(m_export_map, m_clock));
+  }
+  if (m_export_map) {
+    m_export_map->GetBoolVar("using-epoll")->Set(FLAGS_use_epoll);
+  }
+#endif
+
+#ifdef HAVE_KQUEUE
+  bool using_kqueue = false;
+  if (FLAGS_use_kqueue && !m_poller.get() && !options.force_select) {
+    m_poller.reset(new KQueuePoller(m_export_map, m_clock));
+    using_kqueue = true;
+  }
+  if (m_export_map) {
+    m_export_map->GetBoolVar("using-kqueue")->Set(using_kqueue);
+  }
+#endif
+
+  // Default to the SelectPoller
+  if (!m_poller.get()) {
+    m_poller.reset(new SelectPoller(m_export_map, m_clock));
+  }
+#endif
+
+  // TODO(simon): this should really be in an Init() method that returns a
+  // bool.
+  if (!m_incoming_descriptor.Init()) {
+    OLA_FATAL << "Failed to init LoopbackDescriptor, Execute() won't work!";
+  }
+  m_incoming_descriptor.SetOnData(
+      ola::NewCallback(this, &SelectServer::DrainAndExecute));
+  AddReadDescriptor(&m_incoming_descriptor);
+}
+
 /*
  * One iteration of the event loop.
  * @return false on error, true on success.
@@ -321,8 +341,9 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   LoopClosureSet::iterator loop_iter;
   for (loop_iter = m_loop_callbacks.begin();
        loop_iter != m_loop_callbacks.end();
-       ++loop_iter)
+       ++loop_iter) {
     (*loop_iter)->Run();
+  }
 
   TimeInterval default_poll_interval = poll_interval;
   // if we've been told to terminate, make this very short.

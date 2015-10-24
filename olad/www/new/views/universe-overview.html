@@ -1,7 +1,4 @@
-<div id="header-universe"></div>
-<ul id="ola-nav-tabs" class="nav nav-tabs">
-
-</ul>
+<div ng-include="'/new/views/universe-header.html'"></div>
 <div class="channel" ng-repeat="c in dmx track by $index">
   <div class="index">{{$index + 1}}</div>
   <div class="value" ng-style="{'background-color': 'rgb('+c+','+c+','+c+')', 'color': getColor(c)}" >{{c}}</div>

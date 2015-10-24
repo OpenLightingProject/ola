@@ -230,7 +230,7 @@ bool WidgetDetectorThread::RunScan() {
       continue;
     }
 
-    OLA_INFO << "new descriptor @ " << descriptor << " for " << *it;
+    OLA_DEBUG << "New descriptor @ " << descriptor << " for " << *it;
     PerformDiscovery(*it, descriptor);
   }
   return true;
@@ -285,6 +285,7 @@ void WidgetDetectorThread::UsbProWidgetReady(
       }
     case GODDARD_ESTA_ID:
       if (information->device_id == GODDARD_DMXTER4_ID ||
+          information->device_id == GODDARD_DMXTER4A_ID ||
           information->device_id == GODDARD_MINI_DMXTER4_ID) {
         DispatchWidget(
             new DmxterWidget(

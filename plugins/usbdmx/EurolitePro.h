@@ -24,6 +24,7 @@
 #include <libusb.h>
 #include <memory>
 #include <string>
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
@@ -38,16 +39,18 @@ class EuroliteProThreadedSender;
 /**
  * @brief The EurolitePro Widget.
  */
-class EurolitePro : public BaseWidget {
+class EurolitePro : public SimpleWidget {
  public:
   /**
    * @brief Create a new EurolitePro.
    * @param adaptor the LibUsbAdaptor to use.
+   * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  EurolitePro(LibUsbAdaptor *adaptor,
+  EurolitePro(ola::usb::LibUsbAdaptor *adaptor,
+              libusb_device *usb_device,
               const std::string &serial)
-      : BaseWidget(adaptor),
+      : SimpleWidget(adaptor, usb_device),
         m_serial(serial) {}
 
   /**
@@ -76,7 +79,7 @@ class SynchronousEurolitePro: public EurolitePro {
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  SynchronousEurolitePro(LibUsbAdaptor *adaptor,
+  SynchronousEurolitePro(ola::usb::LibUsbAdaptor *adaptor,
                          libusb_device *usb_device,
                          const std::string &serial);
 
@@ -85,7 +88,6 @@ class SynchronousEurolitePro: public EurolitePro {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  libusb_device* const m_usb_device;
   std::auto_ptr<class EuroliteProThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousEurolitePro);
@@ -102,7 +104,7 @@ class AsynchronousEurolitePro: public EurolitePro {
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AsynchronousEurolitePro(class LibUsbAdaptor *adaptor,
+  AsynchronousEurolitePro(ola::usb::LibUsbAdaptor *adaptor,
                           libusb_device *usb_device,
                           const std::string &serial);
 

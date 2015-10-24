@@ -5,6 +5,7 @@ EXTRA_DIST += \
 dist_noinst_DATA += \
     tools/ola_trigger/contrib/mac_itunes.conf \
     tools/ola_trigger/contrib/mac_volume.conf \
+    tools/ola_trigger/contrib/philips_hue_lux.conf \
     tools/ola_trigger/example.conf \
     tools/ola_trigger/test_file.conf
 
@@ -31,9 +32,10 @@ tools_ola_trigger_ola_trigger_SOURCES = \
     tools/ola_trigger/ParserActions.cpp \
     tools/ola_trigger/ParserActions.h \
     tools/ola_trigger/ParserGlobals.h \
-    tools/ola_trigger/config.tab.cpp \
-    tools/ola_trigger/lex.yy.cpp \
     tools/ola_trigger/ola-trigger.cpp
+nodist_tools_ola_trigger_ola_trigger_SOURCES = \
+    tools/ola_trigger/config.tab.cpp \
+    tools/ola_trigger/lex.yy.cpp
 # required, otherwise we get build errors from the flex output
 tools_ola_trigger_ola_trigger_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
 tools_ola_trigger_ola_trigger_LDADD = common/libolacommon.la \
@@ -71,7 +73,7 @@ tools_ola_trigger_ActionTester_LDADD = $(COMMON_TESTING_LIBS) \
 test_scripts += tools/ola_trigger/FileValidateTest.sh
 
 tools/ola_trigger/FileValidateTest.sh: tools/ola_trigger/Makefile.mk
-	echo "for FILE in ${srcdir}/tools/ola_trigger/example.conf ${srcdir}/tools/ola_trigger/test_file.conf ${srcdir}/tools/ola_trigger/contrib/mac_volume.conf ${srcdir}/tools/ola_trigger/contrib/mac_itunes.conf; do echo \"Checking \$$FILE\"; ${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate \$$FILE; STATUS=\$$?; if [ \$$STATUS -ne 0 ]; then echo \"FAIL: \$$FILE caused ola_trigger to exit with status \$$STATUS\"; exit \$$STATUS; fi; done; exit 0" > tools/ola_trigger/FileValidateTest.sh
+	echo "for FILE in ${srcdir}/tools/ola_trigger/example.conf ${srcdir}/tools/ola_trigger/test_file.conf ${srcdir}/tools/ola_trigger/contrib/mac_volume.conf ${srcdir}/tools/ola_trigger/contrib/mac_itunes.conf ${srcdir}/tools/ola_trigger/contrib/philips_hue_lux.conf; do echo \"Checking \$$FILE\"; ${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate \$$FILE; STATUS=\$$?; if [ \$$STATUS -ne 0 ]; then echo \"FAIL: \$$FILE caused ola_trigger to exit with status \$$STATUS\"; exit \$$STATUS; fi; done; exit 0" > tools/ola_trigger/FileValidateTest.sh
 	chmod +x tools/ola_trigger/FileValidateTest.sh
 
 CLEANFILES += tools/ola_trigger/FileValidateTest.sh

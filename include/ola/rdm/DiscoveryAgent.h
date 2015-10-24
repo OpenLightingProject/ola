@@ -172,10 +172,10 @@ class DiscoveryAgent {
    * @brief Represents a range of UIDs (a branch of the UID tree)
    */
   struct UIDRange {
-    UIDRange(const UID &lower, const UID &upper, UIDRange *parent)
-        : lower(lower),
-          upper(upper),
-          parent(parent),
+    UIDRange(const UID &_lower, const UID &_upper, UIDRange *_parent)
+        : lower(_lower),
+          upper(_upper),
+          parent(_parent),
           attempt(0),
           failures(0),
           uids_discovered(0),

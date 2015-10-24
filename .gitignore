@@ -102,6 +102,8 @@ doxygen/examples/legacy_streaming_client
 doxygen/examples/legacy_streaming_client.exe
 doxygen/examples/receiver
 doxygen/examples/receiver.exe
+doxygen/examples/stdin_handler
+doxygen/examples/stdin_handler.exe
 doxygen/examples/streaming_client
 doxygen/examples/streaming_client.exe
 doxygen/examples/streaming_client_plugin
@@ -142,6 +144,10 @@ examples/ola_timecode
 examples/ola_timecode.exe
 examples/ola_uni_info
 examples/ola_uni_info.exe
+examples/ola_uni_merge
+examples/ola_uni_merge.exe
+examples/ola_uni_name
+examples/ola_uni_name.exe
 examples/ola_uni_stats
 examples/ola_uni_stats.exe
 examples/ola_usbpro
