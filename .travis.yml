@@ -43,23 +43,60 @@ matrix:
            - llvm-toolchain-precise
     - compiler: gcc
       env: TASK='compile'
-      addons: {apt: {packages: [*core_build, g++-5], sources: [ubuntu-toolchain-r-test]}}
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - g++-5
+          sources:
+           - ubuntu-toolchain-r-test
     - compiler: gcc
       env: TASK='coverage'
-      addons: {apt: {packages: [*core_build, g++-5], sources: [ubuntu-toolchain-r-test]}}
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - g++-5
+          sources:
+           - ubuntu-toolchain-r-test
     - compiler: gcc
       env: TASK='coverity'
-      addons: {apt: {packages: [*core_build, g++-4.9], sources: [ubuntu-toolchain-r-test]}}
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - g++-4.9
+          sources:
+           - ubuntu-toolchain-r-test
     - env: TASK='doxygen'
-      addons: {apt: {packages: [*core_build, g++-5, doxygen, graphviz], sources: [ubuntu-toolchain-r-test]}}
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - g++-5
+           - doxygen
+           - graphviz
+          sources:
+           - ubuntu-toolchain-r-test
     - env: TASK='lint'
-      addons: {apt: {packages: [*core_build]}}
+      addons:
+        apt:
+          packages:
+           - *core_build
     - env: TASK='check-licences'
-      addons: {apt: {packages: [*core_build]}}
+      addons:
+        apt:
+          packages:
+           - *core_build
     - env: TASK='jshint'
-      addons: {apt: {packages: []}}
+      addons:
+        apt:
+          packages:
     - env: TASK='flake8'
-      addons: {apt: {packages: [*base_build]}}
+      addons:
+        apt:
+          packages:
+           - *base_build
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'
