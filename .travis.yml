@@ -33,7 +33,14 @@ matrix:
   include:
     - compiler: clang
       env: TASK='compile'
-      addons: {apt: {packages: [*core_build, clang-3.8], sources: [ubuntu-toolchain-r-test, llvm-toolchain-precise]}}
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - clang-3.8
+          sources:
+           - ubuntu-toolchain-r-test
+           - llvm-toolchain-precise
     - compiler: gcc
       env: TASK='compile'
       addons: {apt: {packages: [*core_build, g++-5], sources: [ubuntu-toolchain-r-test]}}
