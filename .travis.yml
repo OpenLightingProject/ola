@@ -18,8 +18,8 @@ addons:
      - libprotoc-dev
      - python-protobuf
     packages: &core_build
+     # This is all the bits we need to enable all options
      - *base_build
-     - protobuf-c-compiler
      - libftdi-dev
      - libftdi1
      - libusb-1.0-0-dev
@@ -27,6 +27,12 @@ addons:
      - libavahi-glib1
      - libncurses5-dev
      - libmicrohttpd-dev
+    packages: &core_build_gpp_latest
+     - *core_build
+     - g++-5
+    packages: &core_build_clang_latest
+     - *core_build
+     - clang-3.8
 
 matrix:
   fast_finish: true
@@ -36,8 +42,7 @@ matrix:
       addons:
         apt:
           packages:
-           - *core_build
-           - clang-3.8
+           - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
            - llvm-toolchain-precise
@@ -46,8 +51,7 @@ matrix:
       addons:
         apt:
           packages:
-           - *core_build
-           - g++-5
+           - *core_build_gpp_latest
           sources:
            - ubuntu-toolchain-r-test
     - compiler: gcc
@@ -55,8 +59,7 @@ matrix:
       addons:
         apt:
           packages:
-           - *core_build
-           - g++-5
+           - *core_build_gpp_latest
           sources:
            - ubuntu-toolchain-r-test
     - compiler: gcc
@@ -64,6 +67,7 @@ matrix:
       addons:
         apt:
           packages:
+           # Coverity doesn't work with g++-5 yet
            - *core_build
            - g++-4.9
           sources:
@@ -72,8 +76,7 @@ matrix:
       addons:
         apt:
           packages:
-           - *core_build
-           - g++-5
+           - *core_build_gpp_latest
            - doxygen
            - graphviz
           sources:
@@ -149,8 +152,10 @@ before_install:
  - $CXX --version
 
 after_success:
-  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
+
+after_script:
+  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
 
 notifications:
   irc:
