@@ -34,6 +34,7 @@ Watchdog::Watchdog(unsigned int cycle_limit, Callback0<void> *reset_callback)
 void Watchdog::Enable() {
   MutexLocker lock(&m_mu);
   m_count = 0;
+  m_fired = false;
   m_enabled = true;
 }
 
@@ -49,13 +50,20 @@ void Watchdog::Kick() {
 }
 
 void Watchdog::Clock() {
-  MutexLocker lock(&m_mu);
-  if (!m_enabled) {
-    return;
+  bool run_callback = false;
+
+  {
+    MutexLocker lock(&m_mu);
+    if (!m_enabled) {
+      return;
+    }
+    m_count++;
+    if (m_count >= m_limit && !m_fired) {
+      m_fired = true;
+      run_callback = true;
+    }
   }
-  m_count++;
-  if (m_count >= m_limit && !m_fired) {
-    m_fired = true;
+  if (run_callback) {
     m_callback->Run();
   }
 }
