@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
@@ -45,11 +46,12 @@ namespace usbdmx {
  * See https://github.com/scanlime/fadecandy/blob/master/README.md for more
  * information on Fadecandy devices.
  */
-class ScanlimeFadecandy: public BaseWidget {
+class ScanlimeFadecandy: public SimpleWidget {
  public:
-  ScanlimeFadecandy(LibUsbAdaptor *adaptor,
+  ScanlimeFadecandy(ola::usb::LibUsbAdaptor *adaptor,
+                    libusb_device *usb_device,
                     const std::string &serial)
-      : BaseWidget(adaptor),
+      : SimpleWidget(adaptor, usb_device),
         m_serial(serial) {
   }
 
@@ -78,7 +80,7 @@ class SynchronousScanlimeFadecandy: public ScanlimeFadecandy {
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  SynchronousScanlimeFadecandy(LibUsbAdaptor *adaptor,
+  SynchronousScanlimeFadecandy(ola::usb::LibUsbAdaptor *adaptor,
                                libusb_device *usb_device,
                                const std::string &serial);
 
@@ -87,7 +89,6 @@ class SynchronousScanlimeFadecandy: public ScanlimeFadecandy {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  libusb_device* const m_usb_device;
   std::auto_ptr<class FadecandyThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousScanlimeFadecandy);
@@ -104,7 +105,7 @@ class AsynchronousScanlimeFadecandy : public ScanlimeFadecandy {
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AsynchronousScanlimeFadecandy(LibUsbAdaptor *adaptor,
+  AsynchronousScanlimeFadecandy(ola::usb::LibUsbAdaptor *adaptor,
                                 libusb_device *usb_device,
                                 const std::string &serial);
 

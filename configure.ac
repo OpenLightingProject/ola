@@ -129,7 +129,6 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 getgrnam_r getgrgid_r secure_getenv])
 
 LT_INIT
-AC_PROG_LIBTOOL
 
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
@@ -494,6 +493,18 @@ AS_IF([test "x$have_microhttpd" = xyes],
       [AC_DEFINE([HAVE_LIBMICROHTTPD], [1],
                  [define if libmicrohttpd is installed])])
 
+if test "x$have_microhttpd" = xyes; then
+  # Check if we have MHD_create_response_from_buffer
+  old_cflags=$CFLAGS
+  old_libs=$LIBS
+  CFLAGS="${CPPFLAGS} ${libprotobuf_CFLAGS}"
+  LIBS="${LIBS} ${libmicrohttpd_LIBS}"
+  AC_CHECK_FUNCS([MHD_create_response_from_buffer])
+  # restore CFLAGS
+  CFLAGS=$old_cflags
+  LIBS=$old_libs
+fi
+
 # Java API, this requires Maven
 AC_ARG_ENABLE(
   [java-libs],
@@ -688,6 +699,7 @@ PLUGIN_SUPPORT(karate, USE_KARATE)
 PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(milinst, USE_MILINST)
 PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
+PLUGIN_SUPPORT(openpixelcontrol, USE_OPENPIXELCONTROL)
 PLUGIN_SUPPORT(osc, USE_OSC, [$have_liblo])
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
 PLUGIN_SUPPORT(renard, USE_RENARD)
@@ -695,10 +707,9 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
-PLUGIN_SUPPORT(openpixelcontrol, USE_OPENPIXELCONTROL)
 PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_uart])
-PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
+PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 
 # Finally build a list of the required plugin libs.
 PLUGIN_LIBS=''
@@ -735,9 +746,6 @@ AS_IF([test "x$enable_ja_rule" = xyes && test "x$enable_usbdmx" = xno],
       [AC_MSG_ERROR([Ja Rule requires the usbdmx plugin, but it could not be enabled.])])
 AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb" = xno],
       [AC_MSG_ERROR([Ja Rule requires libusb, but it was not found on your system.])])
-AS_IF([test "x$enable_ja_rule" = xyes && test "x$have_libusb_hotplug_api" = xno],
-      [AC_MSG_ERROR([Ja Rule requires libusb to have the hotplug capability (versions 1.0.16 \
-and above), but the version found on your system doesn't appear to have it.])])
 
 AM_CONDITIONAL([BUILD_JA_RULE], [test "x$enable_ja_rule" = xyes])
 
@@ -766,6 +774,7 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
 AC_CONFIG_FILES([include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
+                 ola.spec
                  plugins/artnet/messages/libolaartnetconf.pc
                  plugins/e131/e131/libolaacn.pc
                  plugins/e131/messages/libolae131conf.pc

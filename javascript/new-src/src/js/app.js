@@ -29,8 +29,8 @@ angular
   .factory('$ola', ['$http', '$window', 'OLA',
     function($http, $window, OLA) {
       'use strict';
-      // once olad supports json post data postEncode can go away
-      // and the header in post requests too.
+      // TODO(Dave_o): once olad supports json post data postEncode
+      // can go away and the header in post requests too.
       var postEncode = function(data) {
         var PostData = [];
         for (var key in data) {
@@ -49,16 +49,27 @@ angular
         }
         return PostData.join('&');
       };
+      var channelValueCheck = function(i) {
+        i = parseInt(i, 10);
+        if (i < OLA.MIN_CHANNEL_VALUE) {
+          i = OLA.MIN_CHANNEL_VALUE;
+        } else if (i > OLA.MAX_CHANNEL_VALUE) {
+          i = OLA.MAX_CHANNEL_VALUE;
+        }
+        return i;
+      };
       var dmxConvert = function(dmx) {
-        var length = 1;
+        var strip = true;
         var integers = [];
-        for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
-          integers[i] = parseInt(dmx[i], 10);
-          if (integers[i] > OLA.MIN_CHANNEL_VALUE) {
-            length = (i + 1);
+        for (var i = OLA.MAX_CHANNEL_NUMBER; i >= OLA.MIN_CHANNEL_NUMBER; i--) {
+          var value = channelValueCheck(dmx[i - 1]);
+          if (value > OLA.MIN_CHANNEL_VALUE ||
+              !strip ||
+              i === OLA.MIN_CHANNEL_NUMBER) {
+            integers[i - 1] = value;
+            strip = false;
           }
         }
-        integers.length = length;
         return integers.join(',');
       };
       return {
@@ -377,6 +388,24 @@ angular
       getData();
       $interval(getData, 10000);
     }])
+  .controller('headerControl',
+  ['$scope', '$ola', '$routeParams', '$window',
+    function($scope, $ola, $routeParams, $window) {
+      'use strict';
+      $scope.header = {
+        tab: '',
+        id: $routeParams.id,
+        name: ''
+      };
+
+      $ola.get.UniverseInfo($routeParams.id)
+        .then(function(data) {
+          $scope.header.name = data.name;
+        });
+
+      var hash = $window.location.hash;
+      $scope.header.tab = hash.replace(/#\/universe\/[0-9]+\/?/, '');
+    }])
   .controller('overviewCtrl', ['$scope', '$ola', '$location',
     function($scope, $ola, $location) {
       'use strict';
@@ -460,15 +489,6 @@ angular
   ['$scope', '$ola', '$routeParams', '$interval', 'OLA',
     function($scope, $ola, $routeParams, $interval, OLA) {
       'use strict';
-      $scope.header = {
-        tab: 'overview',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.dmx = [];
       $scope.Universe = $routeParams.id;
       var interval = $interval(function() {
@@ -496,15 +516,6 @@ angular
   ['$scope', '$ola', '$routeParams', '$window', '$interval', 'OLA',
     function($scope, $ola, $routeParams, $window, $interval, OLA) {
       'use strict';
-      $scope.header = {
-        tab: 'faders',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.get = [];
       $scope.list = [];
       $scope.last = 0;
@@ -587,32 +598,103 @@ angular
       });
     }
   ])
-  .controller('keypadUniverseCtrl', ['$scope', '$ola', '$routeParams',
-    function($scope, $ola, $routeParams) {
+  .controller('keypadUniverseCtrl', ['$scope', '$ola', '$routeParams', 'OLA',
+    function($scope, $ola, $routeParams, OLA) {
       'use strict';
-      $scope.header = {
-        tab: 'keypad',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.Universe = $routeParams.id;
+      var regexkeypad;
+      /*jscs:disable maximumLineLength */
+      /*jshint ignore:start */
+      // The following regex doesn't fit in the 80 character limit so to avoid
+      // errors from the linters they are disabled on this part
+      regexkeypad =
+        /^(?:([0-9]{1,3})(?:\s(THRU)\s(?:([0-9]{1,3}))?)?(?:\s(@)\s(?:([0-9]{1,3}|FULL))?)?)/;
+      /*jscs:enable maximumLineLength */
+      /* jshint ignore:end */
+
+      var check = {
+        channelValue: function(value) {
+          return OLA.MIN_CHANNEL_VALUE <= value &&
+            value <= OLA.MAX_CHANNEL_VALUE;
+        },
+        channelNumber: function(value) {
+          return OLA.MIN_CHANNEL_NUMBER <= value &&
+            value <= OLA.MAX_CHANNEL_NUMBER;
+        },
+        regexGroups: function(result) {
+          if (result[1] !== undefined) {
+            var check1 = this.channelNumber(parseInt(result[1], 10));
+            if (!check1) {
+              return false;
+            }
+          }
+          if (result[3] !== undefined) {
+            var check2 = this.channelNumber(parseInt(result[3], 10));
+            if (!check2){
+              return false;
+            }
+          }
+          if (result[5] !== undefined && result[5] !== 'FULL') {
+            var check3 = this.channelValue(parseInt(result[5], 10));
+            if (!check3) {
+              return false;
+            }
+          }
+          return true;
+        }
+      };
+
+      $scope.field = '';
+      $scope.input = function(input) {
+        var tmpField;
+        if (input === 'backspace') {
+          tmpField = $scope.field.substr(0, $scope.field.length - 1);
+        } else {
+          tmpField = $scope.field + input;
+        }
+        var fields = regexkeypad.exec(tmpField);
+        if (fields === null) {
+          $scope.field = '';
+        } else if (check.regexGroups(fields)) {
+          $scope.field = fields[0];
+        }
+      };
+      $scope.submit = function() {
+        var dmx = [];
+        var input = $scope.field;
+        var result = regexkeypad.exec(input);
+        if (result !== null && check.regexGroups(result)) {
+          var begin = parseInt(result[1],10);
+          var end = result[3] ? parseInt(result[3],10) : parseInt(result[1],10);
+          var value = (result[5] === 'FULL') ?
+            OLA.MAX_CHANNEL_VALUE : parseInt(result[5],10);
+          if (begin <= end && check.channelValue(value)) {
+            $ola.get.Dmx($scope.Universe).then(function(data) {
+              for (var i = 0; i < OLA.MAX_CHANNEL_NUMBER; i++) {
+                if (i < data.dmx.length) {
+                  dmx[i] = data.dmx[i];
+                } else {
+                  dmx[i] = OLA.MIN_CHANNEL_VALUE;
+                }
+              }
+              for (var j = begin; j <= end; j++) {
+                dmx[j - 1] = value;
+              }
+              $ola.post.Dmx($scope.Universe, dmx);
+              $scope.field = '';
+            });
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      };
     }])
   .controller('rdmUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $scope.header = {
-        tab: 'rdm',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       //get:
       // /json/rdm/set_section_info?id={{id}}&uid={{uid}}&section={{section}}&hint={{hint}}&address={{address}}
       $scope.Universe = $routeParams.id;
@@ -620,29 +702,11 @@ angular
   .controller('patchUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $scope.header = {
-        tab: 'patch',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.Universe = $routeParams.id;
     }])
   .controller('settingUniverseCtrl', ['$scope', '$ola', '$routeParams',
     function($scope, $ola, $routeParams) {
       'use strict';
-      $scope.header = {
-        tab: 'settings',
-        id: $routeParams.id,
-        name: ''
-      };
-      $ola.get.UniverseInfo($routeParams.id)
-        .then(function(data) {
-          $scope.header.name = data.name;
-        });
       $scope.loadData = function() {
         $scope.Data = {
           old: {},
@@ -655,7 +719,6 @@ angular
           $scope.DeactivePorts = data;
         });
         $ola.get.UniverseInfo($routeParams.id).then(function(data) {
-          window.console.log(data);
           $scope.Data.old.name = $scope.Data.model.name = data.name;
           $scope.Data.old.merge_mode = data.merge_mode;
           $scope.Data.model.merge_mode = data.merge_mode;
@@ -697,14 +760,12 @@ angular
           }
         });
         a.modify_ports = $.grep(modified, Boolean).join(',');
-        $ola.post.ModifyUniverse(a).then(function(data) {
-          window.console.log(data);
-        });
+        $ola.post.ModifyUniverse(a);
         $scope.loadData();
       };
     }])
-  .controller('pluginInfoCtrl', ['$scope', '$routeParams', '$ola', '$window',
-    function($scope, $routeParams, $ola, $window) {
+  .controller('pluginInfoCtrl', ['$scope', '$routeParams', '$ola',
+    function($scope, $routeParams, $ola) {
       'use strict';
       $ola.get.InfoPlugin($routeParams.id).then(function(data) {
         $scope.active = data.active;
@@ -714,7 +775,6 @@ angular
         description.textContent = data.description;
         description.innerHTML =
           description.innerHTML.replace(/\\n/g, '<br />');
-        $window.console.log(data);
       });
       $scope.stateColor = function(val) {
         if (val) {

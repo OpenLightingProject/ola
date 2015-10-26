@@ -29,6 +29,7 @@
 
 using ola::CapitalizeLabel;
 using ola::CustomCapitalizeLabel;
+using ola::CapitalizeFirst;
 using ola::EncodeString;
 using ola::Escape;
 using ola::EscapeString;
@@ -90,6 +91,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToUpper);
   CPPUNIT_TEST(testCapitalizeLabel);
   CPPUNIT_TEST(testCustomCapitalizeLabel);
+  CPPUNIT_TEST(testCapitalizeFirst);
   CPPUNIT_TEST(testFormatData);
   CPPUNIT_TEST(testStringJoin);
   CPPUNIT_TEST(testReplaceAll);
@@ -127,6 +129,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testToUpper();
     void testCapitalizeLabel();
     void testCustomCapitalizeLabel();
+    void testCapitalizeFirst();
     void testFormatData();
     void testStringJoin();
     void testReplaceAll();
@@ -1031,6 +1034,17 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   string label9 = "dns_via_ipv4_dhcp";
   CustomCapitalizeLabel(&label9);
   OLA_ASSERT_EQ(string("DNS Via IPV4 DHCP"), label9);
+}
+
+
+void StringUtilsTest::testCapitalizeFirst() {
+  string label1 = "foo bar";
+  CapitalizeFirst(&label1);
+  OLA_ASSERT_EQ(string("Foo bar"), label1);
+
+  string label2 = "RDM bar";
+  CapitalizeFirst(&label2);
+  OLA_ASSERT_EQ(string("RDM bar"), label2);
 }
 
 

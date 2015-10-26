@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
@@ -37,16 +38,18 @@ namespace usbdmx {
 /**
  * @brief The base class for Anyma Widgets.
  */
-class AnymauDMX: public BaseWidget {
+class AnymauDMX: public SimpleWidget {
  public:
   /**
    * @brief Create a new AnymauDMX.
    * @param adaptor the LibUsbAdaptor to use.
+   * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AnymauDMX(LibUsbAdaptor *adaptor,
+  AnymauDMX(ola::usb::LibUsbAdaptor *adaptor,
+            libusb_device *usb_device,
             const std::string &serial)
-      : BaseWidget(adaptor),
+      : SimpleWidget(adaptor, usb_device),
         m_serial(serial) {}
 
   virtual ~AnymauDMX() {}
@@ -76,7 +79,7 @@ class SynchronousAnymauDMX: public AnymauDMX {
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  SynchronousAnymauDMX(LibUsbAdaptor *adaptor,
+  SynchronousAnymauDMX(ola::usb::LibUsbAdaptor *adaptor,
                        libusb_device *usb_device,
                        const std::string &serial);
 
@@ -85,7 +88,6 @@ class SynchronousAnymauDMX: public AnymauDMX {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  libusb_device* const m_usb_device;
   std::auto_ptr<class AnymaThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousAnymauDMX);
@@ -102,7 +104,7 @@ class AsynchronousAnymauDMX : public AnymauDMX {
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AsynchronousAnymauDMX(LibUsbAdaptor *adaptor,
+  AsynchronousAnymauDMX(ola::usb::LibUsbAdaptor *adaptor,
                         libusb_device *usb_device,
                         const std::string &serial);
 

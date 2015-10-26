@@ -230,7 +230,7 @@ bool WidgetDetectorThread::RunScan() {
       continue;
     }
 
-    OLA_INFO << "new descriptor @ " << descriptor << " for " << *it;
+    OLA_DEBUG << "New descriptor @ " << descriptor << " for " << *it;
     PerformDiscovery(*it, descriptor);
   }
   return true;

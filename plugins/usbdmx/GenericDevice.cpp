@@ -29,7 +29,7 @@ namespace plugin {
 namespace usbdmx {
 
 GenericDevice::GenericDevice(ola::AbstractPlugin *owner,
-                             Widget *widget,
+                             WidgetInterface *widget,
                              const std::string &device_name,
                              const std::string &device_id)
     : Device(owner, device_name),

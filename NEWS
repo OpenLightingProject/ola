@@ -1,6 +1,7 @@
-x/y/2015 ola-0.9.8
+x/y/2015 ola-0.9.9
  Features:
- * 
+ * Add better logging for open()
+ * Added more man pages.
 
  API:
  * 
@@ -9,11 +10,32 @@ x/y/2015 ola-0.9.8
  * 
 
  Bugs:
- * Fix the build on Windows
- * Fix a bug in Artnet universe mapping #856
+ * 
 
  Internal:
  *
+
+30/9/2015 ola-0.9.8
+ Features:
+ * Add support for the DMXter4A
+ * Tidy the output of the Python ola_rdm_get for supported_parameters
+
+ RDM Tests:
+ * Fix a bug related to split levels not being supported in the dimmer PIDs
+ * Allow NR_UNSUPPORTED_COMMAND_CLASS for SET DMX_ADDRESS when the address is
+   not required
+ * Switch from a warning to an advisory if it's a manufacturer specific use in
+   GetSensorDefinition
+ * Fix some other minor RDM test bugs
+
+ Bugs:
+ * Fix some Xcode build errors
+ * Fix the build on Windows
+ * Fix a bug in Artnet universe mapping #856
+ * NACK requests for IPv4 default route PID with data
+ * NACK with format error requests for DNS PIDs with data
+ * Fix a bug regarding stack traces error messages with Python RDM gets #884
+ * Support 0.9.43 of microhttpd
 
 13/7/2015 ola-0.9.7
  Bugs:

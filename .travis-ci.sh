@@ -5,12 +5,17 @@
 
 set -e
 
-CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py";
+CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py";
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for linting to run against
+  make builtfiles
   # first check we've not got any generic NOLINTs
   # count the number of generic NOLINTs
   nolints=$(grep -IR NOLINT * | grep -v "NOLINT(" | wc -l)
@@ -27,12 +32,25 @@ if [[ $TASK = 'lint' ]]; then
   chmod u+x cpplint.py;
   ./cpplint.py \
     --filter=-legal/copyright,-readability/streams,-runtime/arrays \
-    $(find ./ -name "*.h" -or -name "*.cpp" | xargs)
+    $(find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
+        -wholename "./common/protocol/Ola.pb.*" -or \
+        -wholename "./common/rpc/Rpc.pb.*" -or \
+        -wholename "./common/rpc/TestService.pb.*" -or \
+        -wholename "./common/rdm/Pids.pb.*" -or \
+        -wholename "./config.h" -or \
+        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
+        -wholename "./tools/ola_trigger/config.tab.*" -or \
+        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for licence checking to run against
+  make builtfiles
   ./scripts/enforce_licence.py
   if [[ $? -ne 0 ]]; then
     exit 1;
@@ -41,7 +59,7 @@ elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
   autoreconf -i;
   # Doxygen is C++ only, so don't bother with RDM tests
-  ./configure; # --enable-ja-rule;
+  ./configure --enable-ja-rule;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
@@ -59,7 +77,7 @@ elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i;
   # Coverage is C++ only, so don't bother with RDM tests
-  ./configure --enable-gcov; # --enable-ja-rule;
+  ./configure --enable-gcov --enable-ja-rule;
   make;
   make check;
 elif [[ $TASK = 'coverity' ]]; then
@@ -75,9 +93,16 @@ elif [[ $TASK = 'jshint' ]]; then
   cd ./javascript/new-src;
   npm install;
   grunt test
+elif [[ $TASK = 'flake8' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for flake8 to run against
+  make builtfiles
+  flake8 --exclude *_pb2.py,.git,__pycache --ignore E111,E121,E127,E129 python tools/rdm
 else
   # Otherwise compile and check as normal
-  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-java-libs' # --enable-ja-rule
+  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-java-libs --enable-ja-rule'
   autoreconf -i;
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
   make distcheck;
