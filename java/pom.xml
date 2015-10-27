@@ -7,10 +7,29 @@
   <properties>
    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
    <buildDir>${user.dir}</buildDir>
+   <protobufGeneratedSource>${user.dir}</protobufGeneratedSource>
   </properties>
   <build>
    <directory>${buildDir}</directory>
    <plugins>
+     <plugin>
+       <groupId>org.codehaus.mojo</groupId>
+       <artifactId>build-helper-maven-plugin</artifactId>
+       <version>1.7</version>
+       <executions>
+        <execution>
+         <id>add-source</id>
+         <goals>
+          <goal>add-source</goal>
+         </goals>
+         <configuration>
+          <sources>
+           <source>${protobufGeneratedSource}</source>
+          </sources>
+         </configuration>
+        </execution>
+       </executions>
+     </plugin>
      <plugin>
        <groupId>org.apache.maven.plugins</groupId>
        <artifactId>maven-compiler-plugin</artifactId>
