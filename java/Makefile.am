@@ -19,7 +19,7 @@ ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
 	ls -al ${abs_top_builddir}/java
 	ls -al ${abs_top_srcdir}/java/src/main/java/ola
 	ls -al ${abs_top_builddir}/java/src/main/java/ola
-	cd ${top_builddir}/java && mvn --file ${top_srcdir}/java/pom.xml -DbuildDir=${abs_top_builddir}/java package
+	cd ${top_builddir}/java && mvn --file ${top_srcdir}/java/pom.xml -DbuildDir=${abs_top_builddir}/java -DprotobufGeneratedSource=$(abs_top_builddir)/java/src/main/java package
 
 CLEANFILES = src/main/java/ola/proto/Ola.java \
              src/main/java/ola/rpc/Rpc.java
