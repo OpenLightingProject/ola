@@ -84,7 +84,7 @@ bool GetPidFromFile(const string &lock_file, pid_t *pid) {
 bool ProcessExists(pid_t pid) {
   errno = 0;
   if (0 == kill(pid, 0)) {
-    return true;;
+    return true;
   }
   return errno != ESRCH;
 }

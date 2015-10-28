@@ -659,8 +659,6 @@ AS_IF([test -d $UUCPLOCK],
       [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")],
       AC_MSG_ERROR(No suitable lock directory))
 
-#      [AC_MSG_RESULT($UUCPLOCK) AC_DEFINE_UNQUOTED(UUCPLOCK, "$UUCPLOCK")],
-
 # Python wrappers & RDM Responder tests.
 #####################################################
 AM_CONDITIONAL([BUILD_PYTHON_LIBS], [test "x$enable_python_libs" = xyes])
