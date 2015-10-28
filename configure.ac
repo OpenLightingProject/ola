@@ -630,6 +630,38 @@ AC_ARG_ENABLE(
   [AS_HELP_STRING([--disable-doxygen-version],
   [Substitute the Doxygen version with latest, for the website])])
 
+# UUCP Lock directory
+AC_ARG_WITH([uucp-lock],
+            [AS_HELP_STRING([--with-uucp-lock],
+                            [The directory to use for UUCP lock files])],
+            [], [])
+
+# Try to locate the UUCP lock path.
+UUCPLOCK=""
+AH_TEMPLATE([UUCP_LOCK_DIR], [Define to the path of the UUCP lock directory])
+AC_MSG_CHECKING(for serial port lock directory)
+
+# This list is from the minicom configs, The Filesystem Hierarchy Standard says
+# /var/lock is the one true source.
+for ac_uucplock in /var/lock /etc/locks /usr/spool/locks /var/spool/locks /var/spool/lock /usr/spool/uucp /var/spool/uucp /var/run; do
+  UUCPLOCK=$ac_uucplock
+  AS_IF([test -d $$ac_uucplock], [UUCPLOCK=$ac_uucplock; break])
+done
+
+# Mac stores the lock files in /tmp
+case "${host_os}" in
+  *darwin*)
+    UUCPLOCK=/tmp
+    ;;
+esac
+
+AS_IF([test "x$with_uucp_lock" != x], [UUCPLOCK=$with_uucp_lock])
+AS_IF([test -d $UUCPLOCK],
+      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")],
+      AC_MSG_ERROR(No suitable lock directory))
+
+#      [AC_MSG_RESULT($UUCPLOCK) AC_DEFINE_UNQUOTED(UUCPLOCK, "$UUCPLOCK")],
+
 # Python wrappers & RDM Responder tests.
 #####################################################
 AM_CONDITIONAL([BUILD_PYTHON_LIBS], [test "x$enable_python_libs" = xyes])
@@ -801,6 +833,7 @@ Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
 Ja Rule: ${BUILDING_JA_RULE}
 Enabled Plugins:${PLUGINS}
+UUCP Lock Directory: $UUCPLOCK
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
