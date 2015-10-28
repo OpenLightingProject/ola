@@ -15,7 +15,7 @@ src/main/java/ola/rpc/Rpc.java: ${top_srcdir}/common/rpc/Rpc.proto
 	$(PROTOC) --java_out=$(top_builddir)/java/src/main/java --proto_path=${top_srcdir}/common/rpc ${top_srcdir}/common/rpc/Rpc.proto
 
 ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
-	cd ${top_builddir}/java && mvn --file ${top_srcdir}/java/pom.xml package
+	cd ${top_builddir}/java && mvn --file ${top_srcdir}/java/pom.xml -DbuildDir=${abs_top_builddir}/java -DprotobufGeneratedSource=$(abs_top_builddir)/java/src/main/java package
 
 CLEANFILES = src/main/java/ola/proto/Ola.java \
              src/main/java/ola/rpc/Rpc.java \
