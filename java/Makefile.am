@@ -15,14 +15,16 @@ src/main/java/ola/rpc/Rpc.java: ${top_srcdir}/common/rpc/Rpc.proto
 	$(PROTOC) --java_out=$(top_builddir)/java/src/main/java --proto_path=${top_srcdir}/common/rpc ${top_srcdir}/common/rpc/Rpc.proto
 
 ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
-	ls -al ${abs_top_srcdir}/java
-	ls -al ${abs_top_builddir}/java
-	ls -al ${abs_top_srcdir}/java/src/main/java/ola
-	ls -al ${abs_top_builddir}/java/src/main/java/ola
 	cd ${top_builddir}/java && mvn --file ${top_srcdir}/java/pom.xml package
 
 CLEANFILES = src/main/java/ola/proto/Ola.java \
-             src/main/java/ola/rpc/Rpc.java
+             src/main/java/ola/rpc/Rpc.java \
+             java/classes/ola/proto/*.class \
+             java/classes/ola/rpc/*.class \
+             java/classes/ola/*.class \
+             java/test-classes/ola/*.class \
+             java/maven-archiver/pom.properties \
+             java/ola-java-client-0.0.1.jar
 
 if BUILD_JAVA_LIBS
 # .jars aren't really data, but it sure ain't a program.
