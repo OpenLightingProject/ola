@@ -19,12 +19,12 @@ ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
 
 CLEANFILES = src/main/java/ola/proto/Ola.java \
              src/main/java/ola/rpc/Rpc.java \
-             java/classes/ola/proto/*.class \
-             java/classes/ola/rpc/*.class \
-             java/classes/ola/*.class \
-             java/test-classes/ola/*.class \
-             java/maven-archiver/pom.properties \
-             java/ola-java-client-0.0.1.jar
+             classes/ola/proto/*.class \
+             classes/ola/rpc/*.class \
+             classes/ola/*.class \
+             test-classes/ola/*.class \
+             maven-archiver/pom.properties \
+             ola-java-client-0.0.1.jar
 
 if BUILD_JAVA_LIBS
 # .jars aren't really data, but it sure ain't a program.
