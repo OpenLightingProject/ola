@@ -644,8 +644,7 @@ AC_MSG_CHECKING(for serial port lock directory)
 # This list is from the minicom configs, The Filesystem Hierarchy Standard says
 # /var/lock is the one true source.
 for ac_uucplock in /var/lock /etc/locks /usr/spool/locks /var/spool/locks /var/spool/lock /usr/spool/uucp /var/spool/uucp /var/run; do
-  UUCPLOCK=$ac_uucplock
-  AS_IF([test -d $$ac_uucplock], [UUCPLOCK=$ac_uucplock; break])
+  AS_IF([test -d $ac_uucplock], [UUCPLOCK=$ac_uucplock; break])
 done
 
 # Mac stores the lock files in /tmp

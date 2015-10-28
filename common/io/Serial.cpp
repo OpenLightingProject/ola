@@ -131,7 +131,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
 
   // First, clean up a stale lockfile.
   const string lock_file = GetLockFile(path);
-  OLA_INFO << "Checking for " << lock_file;
+  OLA_DEBUG << "Checking for " << lock_file;
   pid_t locked_pid;
   if (!GetPidFromFile(lock_file, &locked_pid)) {
     return false;
