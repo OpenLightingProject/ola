@@ -21,6 +21,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <string.h>
+#include <unistd.h>
 
 #if HAVE_CONFIG_H
 #include <config.h>
