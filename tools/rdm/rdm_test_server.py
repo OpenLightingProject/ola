@@ -69,7 +69,7 @@ class OLAFuture(object):
     self._data = None
 
   def set(self, data):
-    self._data = data;
+    self._data = data
     self._event.set()
 
   def wait(self):
@@ -127,7 +127,7 @@ class OLAThread(Thread):
     future = OLAFuture()
 
     def Callback(*args, **kwargs):
-      future.set(args);
+      future.set(args)
 
     def RunMethod():
       method(*method_args, callback=Callback)
