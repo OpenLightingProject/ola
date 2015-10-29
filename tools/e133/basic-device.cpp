@@ -39,8 +39,8 @@
 #include <memory>
 #include <string>
 
-#include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/TCPTransport.h"
+#include "libs/acn/RootInflator.h"
+#include "libs/acn/TCPTransport.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 
 DEFINE_string(controller_ip, "", "The IP Address of the Controller");
@@ -57,7 +57,7 @@ using ola::io::NonBlockingSender;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
-using ola::plugin::e131::IncomingTCPTransport;
+using ola::acn::IncomingTCPTransport;
 using std::auto_ptr;
 using std::string;
 
@@ -90,7 +90,7 @@ class SimpleE133Device {
   ola::network::TCPSocketFactory m_tcp_socket_factory;
   ola::network::AdvancedTCPConnector m_connector;
   ola::ConstantBackoffPolicy m_backoff_policy;
-  ola::plugin::e131::RootInflator m_root_inflator;
+  ola::acn::RootInflator m_root_inflator;
 
   // Once we have a connection these are filled in.
   auto_ptr<TCPSocket> m_socket;
@@ -101,7 +101,7 @@ class SimpleE133Device {
 
   void OnTCPConnect(TCPSocket *socket);
   void ReceiveTCPData();
-  void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
+  void RLPDataReceived(const ola::acn::TransportHeader &header);
 
   void SocketUnhealthy(IPV4Address ip_address);
   void SocketClosed();
@@ -165,7 +165,7 @@ void SimpleE133Device::ReceiveTCPData() {
 }
 
 void SimpleE133Device::RLPDataReceived(
-    const ola::plugin::e131::TransportHeader &header) {
+    const ola::acn::TransportHeader &header) {
   m_health_checked_connection->HeartbeatReceived();
   (void) header;
 }
