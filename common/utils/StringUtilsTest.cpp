@@ -546,6 +546,8 @@ void StringUtilsTest::testStringToUInt() {
   OLA_ASSERT_EQ(0u, value);
   OLA_ASSERT_TRUE(StringToInt("1", &value));
   OLA_ASSERT_EQ(1u, value);
+  OLA_ASSERT_TRUE(StringToInt("    42050", &value));
+  OLA_ASSERT_EQ(42050u, value);
   OLA_ASSERT_TRUE(StringToInt("65537", &value));
   OLA_ASSERT_EQ(65537u, value);
   OLA_ASSERT_TRUE(StringToInt("4294967295", &value));
