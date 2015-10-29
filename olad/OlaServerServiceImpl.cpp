@@ -693,13 +693,15 @@ void OlaServerServiceImpl::ForceDiscovery(
 
   if (universe) {
     unsigned int universe_id = request->universe();
-    universe->RunRDMDiscovery(
+    m_broker->RunRDMDiscovery(
+        GetClient(controller),
+        universe,
+        request->full(),
         NewSingleCallback(this,
                           &OlaServerServiceImpl::RDMDiscoveryComplete,
                           universe_id,
                           done,
-                          response),
-        request->full());
+                          response));
   } else {
     ClosureRunner runner(done);
     MissingUniverseError(controller);
