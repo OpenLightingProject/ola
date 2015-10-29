@@ -63,6 +63,22 @@ class ServerException(Error):
   """Indicates a problem handling the request."""
 
 
+class OLAFuture(object):
+  def __init__(self):
+    self._event = Event()
+    self._data = None
+
+  def set(self, data):
+    self._data = data;
+    self._event.set()
+
+  def wait(self):
+    self._event.wait()
+
+  def result(self):
+    return self._data
+
+
 class OLAThread(Thread):
   """The thread which runs the OLA Client."""
   def __init__(self, ola_client):
@@ -108,22 +124,17 @@ class OLAThread(Thread):
     Returns:
       The arguments that would have been passed to the callback function.
     """
-    global args_result
-    # TODO(simon): Create our own Event which holds the result args and a
-    # threading.Event object #948
-    event = Event()
+    future = OLAFuture()
 
     def Callback(*args, **kwargs):
-      global args_result
-      args_result = args
-      event.set()
+      future.set(args);
 
     def RunMethod():
       method(*method_args, callback=Callback)
 
     self._ss.Execute(RunMethod)
-    event.wait()
-    return args_result
+    future.wait()
+    return future.result()
 
 
 class RDMTestThread(Thread):
