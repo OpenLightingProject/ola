@@ -22,7 +22,7 @@ libs_acn_libolaacn_la_SOURCES = \
     libs/acn/CIDImpl.h
 libs_acn_libolaacn_la_CXXFLAGS = $(COMMON_E131_CXXFLAGS) $(uuid_CFLAGS)
 libs_acn_libolaacn_la_LIBADD = $(uuid_LIBS) \
-                                        common/libolacommon.la
+                               common/libolacommon.la
 
 # libolae131core.la
 # This needs to be after libolaacn.la since it depends on it. Otherwise it
@@ -87,8 +87,8 @@ libs_acn_libolae131core_la_SOURCES = \
 libs_acn_libolae131core_la_CXXFLAGS = \
     $(COMMON_E131_CXXFLAGS) $(uuid_CFLAGS)
 libs_acn_libolae131core_la_LIBADD = $(uuid_LIBS) \
-                                             common/libolacommon.la \
-                                             libs/acn/libolaacn.la
+                                    common/libolacommon.la \
+                                    libs/acn/libolaacn.la
 
 # PROGRAMS
 ##################################################
@@ -145,4 +145,4 @@ libs_acn_TransportTester_SOURCES = \
     libs/acn/UDPTransportTest.cpp
 libs_acn_TransportTester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 libs_acn_TransportTester_LDADD = libs/acn/libolae131core.la \
-                                          $(COMMON_TESTING_LIBS)
+                                 $(COMMON_TESTING_LIBS)

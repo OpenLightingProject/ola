@@ -131,6 +131,7 @@ StateManager::~StateManager() {
     delete m_local_node;
   }
 
+  m_stdin_handler.reset();
   delete m_ss;
 }
 
