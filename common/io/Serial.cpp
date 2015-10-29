@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #if HAVE_CONFIG_H
@@ -62,7 +63,7 @@ bool GetPidFromFile(const string &lock_file, pid_t *pid) {
       *pid = 0;
       return true;
     }
-    OLA_INFO << "Failed to read pid from " << lock_file << ": "
+    OLA_INFO << "Failed to read PID from " << lock_file << ": "
              << strerror(errno);
     return false;
   }
@@ -177,6 +178,14 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
 
   // Now try to open the serial device.
   if (!TryOpen(path, oflag, fd)) {
+    RemoveLockFile(lock_file);
+    return false;
+  }
+
+  // As a final safety mechanism, use ioctl(TIOCEXCL) to prevent further opens.
+  if (ioctl(*fd, TIOCEXCL) == -1) {
+    OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
+    close(*fd);
     RemoveLockFile(lock_file);
     return false;
   }
