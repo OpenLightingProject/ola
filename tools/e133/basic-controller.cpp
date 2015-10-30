@@ -42,8 +42,8 @@
 #include <string>
 #include <utility>
 
-#include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/TCPTransport.h"
+#include "libs/acn/RootInflator.h"
+#include "libs/acn/TCPTransport.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 
 DEFINE_string(listen_ip, "", "The IP Address to listen on");
@@ -65,7 +65,7 @@ using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
-using ola::plugin::e131::IncomingTCPTransport;
+using ola::acn::IncomingTCPTransport;
 using std::auto_ptr;
 using std::string;
 
@@ -129,14 +129,14 @@ class SimpleE133Controller {
 
   ola::e133::MessageBuilder m_message_builder;
 
-  ola::plugin::e131::RootInflator m_root_inflator;
+  ola::acn::RootInflator m_root_inflator;
 
   bool PrintStats();
 
   void OnTCPConnect(TCPSocket *socket);
   void ReceiveTCPData(IPV4SocketAddress peer,
                       IncomingTCPTransport *transport);
-  void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
+  void RLPDataReceived(const ola::acn::TransportHeader &header);
 
   void SocketUnhealthy(IPV4SocketAddress peer);
 
@@ -258,8 +258,8 @@ void SimpleE133Controller::ReceiveTCPData(IPV4SocketAddress peer,
 }
 
 void SimpleE133Controller::RLPDataReceived(
-    const ola::plugin::e131::TransportHeader &header) {
-  if (header.Transport() != ola::plugin::e131::TransportHeader::TCP)
+    const ola::acn::TransportHeader &header) {
+  if (header.Transport() != ola::acn::TransportHeader::TCP)
     return;
 
   DeviceState *device_state = STLFindOrNull(m_device_map, header.Source());

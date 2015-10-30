@@ -31,9 +31,9 @@
 #include "ola/network/SocketAddress.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
-#include "plugins/e131/e131/E133Header.h"
-#include "plugins/e131/e131/E133StatusInflator.h"
-#include "plugins/e131/e131/RDMPDU.h"
+#include "libs/acn/E133Header.h"
+#include "libs/acn/E133StatusInflator.h"
+#include "libs/acn/RDMPDU.h"
 #include "tools/e133/DesignatedControllerConnection.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/TCPConnectionStats.h"
@@ -43,7 +43,7 @@ using ola::io::IOStack;
 using ola::network::HealthCheckedConnection;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::plugin::e131::TransportHeader;
+using ola::acn::TransportHeader;
 using ola::rdm::RDMResponse;
 using std::auto_ptr;
 using std::string;
@@ -258,7 +258,7 @@ void DesignatedControllerConnection::NewTCPConnection(
   if (m_incoming_tcp_transport) {
     OLA_WARN << "Already have an IncomingTCPTransport";
   }
-  m_incoming_tcp_transport = new ola::plugin::e131::IncomingTCPTransport(
+  m_incoming_tcp_transport = new ola::acn::IncomingTCPTransport(
       &m_root_inflator, m_tcp_socket);
 
   m_tcp_stats->connection_events++;
@@ -347,7 +347,7 @@ bool DesignatedControllerConnection::SendRDMCommand(
 
   IOStack packet(m_message_builder->pool());
   ola::rdm::RDMCommandSerializer::Write(*rdm_response, &packet);
-  ola::plugin::e131::RDMPDU::PrependPDU(&packet);
+  ola::acn::RDMPDU::PrependPDU(&packet);
   m_message_builder->BuildTCPRootE133(
       &packet, ola::acn::VECTOR_FRAMING_RDMNET, sequence_number,
       endpoint);
@@ -361,7 +361,7 @@ bool DesignatedControllerConnection::SendRDMCommand(
  */
 void DesignatedControllerConnection::HandleStatusMessage(
     const TransportHeader *transport_header,
-    const ola::plugin::e131::E133Header *e133_header,
+    const ola::acn::E133Header *e133_header,
     uint16_t status_code,
     const string &description) {
   if (status_code != ola::e133::SC_E133_ACK) {
