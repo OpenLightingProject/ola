@@ -31,10 +31,10 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
 #include "ola/rdm/RDMControllerInterface.h"
-#include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/UDPTransport.h"
+#include "libs/acn/E133Inflator.h"
+#include "libs/acn/RDMInflator.h"
+#include "libs/acn/RootInflator.h"
+#include "libs/acn/UDPTransport.h"
 
 #include "tools/e133/DesignatedControllerConnection.h"
 #include "tools/e133/E133Endpoint.h"
@@ -80,16 +80,16 @@ class E133Device {
     ola::network::UDPSocket m_udp_socket;
 
     // inflators
-    ola::plugin::e131::RootInflator m_root_inflator;
-    ola::plugin::e131::E133Inflator m_e133_inflator;
-    ola::plugin::e131::RDMInflator m_rdm_inflator;
+    ola::acn::RootInflator m_root_inflator;
+    ola::acn::E133Inflator m_e133_inflator;
+    ola::acn::RDMInflator m_rdm_inflator;
 
     // transports
-    ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
+    ola::acn::IncomingUDPTransport m_incoming_udp_transport;
 
     void EndpointRequest(
-        const ola::plugin::e131::TransportHeader *transport_header,
-        const ola::plugin::e131::E133Header *e133_header,
+        const ola::acn::TransportHeader *transport_header,
+        const ola::acn::E133Header *e133_header,
         const string &raw_request);
 
     void EndpointRequestComplete(ola::network::IPV4SocketAddress target,
