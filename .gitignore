@@ -160,6 +160,8 @@ include/ola/timecode/TimeCodeEnums.h
 java/src/main/java/ola/rpc/Rpc.java
 javascript/compiler.jar
 javascript/trunk/
+libs/acn/e131_loadtest
+libs/acn/e131_transmit_test
 ola.spec
 olad/olad
 olad/olad.exe
