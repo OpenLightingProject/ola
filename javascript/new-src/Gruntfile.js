@@ -19,6 +19,7 @@ module.exports = function(grunt) {
         files: [{
           dest: '../../olad/www/new/js/app.min.js',
           src: [
+            'src/app.js',
             'src/controllers/menu.js',
             'src/controllers/patch_universe.js',
             'src/controllers/rdm_universe.js',
@@ -33,7 +34,6 @@ module.exports = function(grunt) {
             'src/controllers/overview.js',
             'src/constants.js',
             'src/factories/ola.js',
-            'src/app.js',
             'src/filters/start_form.js'
           ]
         }],
@@ -46,6 +46,7 @@ module.exports = function(grunt) {
     },
     jshint: {
       dev: [
+        'src/app.js',
         'Gruntfile.js',
         'src/controllers/menu.js',
         'src/controllers/patch_universe.js',
@@ -61,7 +62,6 @@ module.exports = function(grunt) {
         'src/controllers/overview.js',
         'src/constants.js',
         'src/factories/ola.js',
-        'src/app.js',
         'src/filters/start_form.js'
       ],
       options: {
@@ -70,6 +70,7 @@ module.exports = function(grunt) {
     },
     jscs: {
       src: [
+        'src/app.js',
         'Gruntfile.js',
         'src/controllers/menu.js',
         'src/controllers/patch_universe.js',
@@ -85,7 +86,6 @@ module.exports = function(grunt) {
         'src/controllers/overview.js',
         'src/constants.js',
         'src/factories/ola.js',
-        'src/app.js',
         'src/filters/start_form.js'
       ],
       options: {
