@@ -27,6 +27,10 @@ import textwrap
 
 CPP, JS, PROTOBUF, PYTHON = xrange(4)
 
+IGNORED_DIRECTORIES = [
+  'javascript/new-src/node_modules/',
+]
+
 IGNORED_FILES = [
   'common/rdm/testdata/duplicate_manufacturer.proto',
   'common/rdm/testdata/duplicate_pid_name.proto',
@@ -42,10 +46,6 @@ IGNORED_FILES = [
   'include/ola/gen_callbacks.py',
   'olad/www/mobile.js',
   'olad/www/ola.js',
-  'javascript/new-src/src/libs/angular/js/angular.min.js',
-  'javascript/new-src/src/libs/jquery/js/jquery.min.js',
-  'javascript/new-src/src/libs/bootstrap/js/bootstrap.min.js',
-  'javascript/new-src/src/libs/angular-route/js/angular-route.min.js',
   'javascript/new-src/Gruntfile.js',
   'olad/www/new/js/app.min.js',
   'olad/www/new/js/app.min.js.map',
@@ -104,6 +104,9 @@ def ParseArgs():
   return diff, fix
 
 def IgnoreFile(file_name):
+  for ignored_dir in IGNORED_DIRECTORIES:
+    if file_name.rfind(ignored_dir) != -1:
+      return True
   for ignored_file in IGNORED_FILES:
     if file_name.endswith(ignored_file):
       return True
@@ -200,6 +203,15 @@ def GetDirectoryLicences(root_dir):
   for dir_name, subdirs, files in os.walk(root_dir):
     # skip the root_dir since the licence file is different there
     if dir_name == root_dir:
+      continue
+
+    # skip ignored dirs since we don't check them anyways
+    skip = False
+    for ignored_dir in IGNORED_DIRECTORIES:
+      if dir_name.rfind(ignored_dir) != -1:
+        skip = True
+
+    if skip:
       continue
 
     # don't descend into hidden dirs like .libs and .deps

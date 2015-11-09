@@ -349,6 +349,11 @@ input.form-control[type="checkbox"][disabled] + label span.glyphicon:before {
 }
 /* End custom checkboxes */
 
+label.fake-check {
+ margin-top: 5px;
+ margin-bottom: 0;
+}
+
 .nav-tabs {
  overflow-x: auto;
  overflow-y: hidden;
