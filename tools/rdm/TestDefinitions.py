@@ -201,6 +201,7 @@ class MuteAllDevices(ResponderTestFixture):
         PidStore.ROOT_DEVICE,
         self.pid)
 
+
 class DUBFullTree(TestMixins.DiscoveryMixin,
                   ResponderTestFixture):
   """Confirm the device responds within the entire DUB range."""
