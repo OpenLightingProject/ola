@@ -566,6 +566,13 @@ class RDMResponse(object):
   }
 
   def __init__(self, controller, response):
+    """
+    Create a new RDMResponse object.
+
+    Args:
+      controller: The RpcController
+      response: A RDMResponse proto message.
+    """
     self._frames = []
 
     self.status = RequestStatus(controller)
@@ -1130,7 +1137,8 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RDMGet(self, universe, uid, sub_device, param_id, callback, data=''):
+  def RDMGet(self, universe, uid, sub_device, param_id, callback, data='',
+             include_frames=False):
     """Send an RDM get command.
 
     Args:
@@ -1140,6 +1148,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       param_id: the param ID
       callback: The function to call once complete, takes a RDMResponse object
       data: the data to send
+      include_frames: True if the response should include the raw frame data.
 
     Returns:
       True if the request was sent, False otherwise.
@@ -1148,9 +1157,10 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
-                            data)
+                            data, include_frames)
 
-  def RDMSet(self, universe, uid, sub_device, param_id, callback, data=''):
+  def RDMSet(self, universe, uid, sub_device, param_id, callback, data='',
+             include_frames=False):
     """Send an RDM set command.
 
     Args:
@@ -1160,6 +1170,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       param_id: the param ID
       callback: The function to call once complete, takes a RDMResponse object
       data: the data to send
+      include_frames: True if the response should include the raw frame data.
 
     Returns:
       True if the request was sent, False otherwise.
@@ -1168,7 +1179,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
-                            data, set=True)
+                            data, include_frames, set=True)
 
   def SendRawRDMDiscovery(self,
                           universe,
@@ -1176,7 +1187,8 @@ class OlaClient(Ola_pb2.OlaClientService):
                           sub_device,
                           param_id,
                           callback,
-                          data=''):
+                          data='',
+                          include_frames=False):
     """Send an RDM Discovery command. Unless you're writing RDM tests you
       shouldn't need to use this.
 
@@ -1187,6 +1199,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       param_id: the param ID
       callback: The function to call once complete, takes a RDMResponse object
       data: the data to send
+      include_frames: True if the response should include the raw frame data.
 
     Returns:
       True if the request was sent, False otherwise.
@@ -1203,6 +1216,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.param_id = param_id
     request.data = data
     request.include_raw_response = True
+    request.include_raw_response = include_frames
     done = lambda x, y: self._RDMCommandComplete(callback, x, y)
     try:
       self._stub.RDMDiscoveryCommand(controller, request, done)
@@ -1246,7 +1260,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     return True
 
   def _RDMMessage(self, universe, uid, sub_device, param_id, callback, data,
-                  set=False):
+                  include_frames, set=False):
     controller = SimpleRpcController()
     request = Ola_pb2.RDMRequest()
     request.universe = universe
@@ -1256,6 +1270,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.param_id = param_id
     request.data = data
     request.is_set = set
+    request.include_raw_response = include_frames
     done = lambda x, y: self._RDMCommandComplete(callback, x, y)
     try:
       self._stub.RDMCommand(controller, request, done)
@@ -1432,7 +1447,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     Args:
       callback: the callback to run
       controller: an RpcController
-      response: an DeviceConfigReply message.
+      response: an RDMResponse message.
     """
     if not callback:
       return

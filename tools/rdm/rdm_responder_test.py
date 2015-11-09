@@ -29,9 +29,10 @@ import re
 import sys
 import textwrap
 import time
+from TimingStats import TimingStats
 from ola import PidStore
 from ola import Version
-from ola.ClientWrapper import ClientWrapper
+from ola.ClientWrapper import ClientWrapper, OlaClient
 from ola.UID import UID
 from optparse import OptionParser
 
@@ -68,6 +69,8 @@ def ParseOptions():
                     help='A comma separated list of tests to run.')
   parser.add_option('--timestamp', action='store_true',
                     help='Add timestamps to each test.')
+  parser.add_option('--timing', action='store_true',
+                    help='Display summary timing information')
   parser.add_option('--no-factory-defaults', action='store_true',
                     help="Don't run the SET factory defaults tests")
   parser.add_option('-w', '--broadcast-write-delay', default=0,
@@ -128,8 +131,42 @@ def SetupLogging(options):
     logging.getLogger('').addHandler(file_handler)
 
 
-def DisplaySummary(uid, tests, device):
-  """Print a summary of the tests."""
+def LogTimingParam(parameter, data):
+  # if non-0 print the stats
+  if data['max']:
+    data['param'] = parameter
+    logging.info('  %s:' % parameter)
+    logging.info('    Mean: %(mean)d, StdDev %(std)f, Median %(median)d' % data)
+    logging.info('    Min: %(min)d, Max %(max)d, 99%%: %(99)d' % data)
+
+
+def LogAllTimingParams(response_type, stats):
+  if not stats.Count():
+    return
+
+  logging.info('%s [%d frames]' % (response_type, stats.Count()))
+  LogTimingParam('Response Time', stats.ResponseTime())
+  LogTimingParam('Break', stats.Break())
+  LogTimingParam('Mark', stats.Mark())
+  LogTimingParam('Data', stats.Data())
+
+
+def DisplayTiming(timing_stats):
+  """Print timing information."""
+  logging.info('--------------- Response Timing ----------------')
+
+  stats = timing_stats.GetStatsForType(TimingStats.GET)
+  LogAllTimingParams('GET_RESPONSE', stats);
+  stats = timing_stats.GetStatsForType(TimingStats.SET)
+  LogAllTimingParams('SET_RESPONSE', stats);
+  stats = timing_stats.GetStatsForType(TimingStats.DISCOVERY)
+  LogAllTimingParams('DISCOVERY_RESPONSE', stats);
+  stats = timing_stats.GetStatsForType(TimingStats.DUB)
+  LogAllTimingParams('DISCOVERY_UNIQUE_BRANCH', stats);
+
+
+def DisplaySummary(options, runner, tests, device):
+  """Log a summary of the tests."""
   by_category = {}
   warnings = []
   advisories = []
@@ -149,7 +186,7 @@ def DisplaySummary(uid, tests, device):
   logging.info('------------------- Summary --------------------')
   now = datetime.datetime.now()
   logging.info('Test Run: %s' % now.strftime('%F %r %z'))
-  logging.info('UID: %s' % uid)
+  logging.info('UID: %s' % options.uid)
 
   manufacturer_label = getattr(device, 'manufacturer_label', None)
   if manufacturer_label:
@@ -164,6 +201,10 @@ def DisplaySummary(uid, tests, device):
   software_version = getattr(device, 'software_version', None)
   if software_version:
     logging.info('Software Version: %s' % software_version)
+
+  if options.timing:
+    timing_stats = runner.TimingStats()
+    DisplayTiming(timing_stats);
 
   logging.info('------------------- Warnings --------------------')
   for warning in sorted(warnings):
@@ -274,7 +315,8 @@ def main():
             options.slot_count)
 
   tests, device = runner.RunTests(test_filter, options.no_factory_defaults)
-  DisplaySummary(options.uid, tests, device)
+
+  DisplaySummary(options, runner, tests, device)
 
 
 if __name__ == '__main__':
