@@ -166,7 +166,7 @@ void AsyncUsbReceiver::TransferComplete(struct libusb_transfer *transfer) {
   }
 
   if (transfer->status != LIBUSB_TRANSFER_TIMED_OUT) {
-    if (TransferCompleted(&m_rx_buffer)) {  // Input changed
+    if (TransferCompleted(&m_rx_buffer, transfer->actual_length)) {  // Input changed
       if (m_receive_callback.get()) {
         m_plugin_adaptor->Execute(m_receive_callback.get());
       }

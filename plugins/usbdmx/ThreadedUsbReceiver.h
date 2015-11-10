@@ -98,7 +98,7 @@ class ThreadedUsbReceiver: private ola::thread::Thread {
        received)
    * @returns true if the transfer was completed, false otherwise.
    *
-   * This is called from the sender thread.
+   * This is called from the receiver thread.
    */
   virtual bool ReceiveBuffer(libusb_device_handle *handle,
                              DmxBuffer *buffer,

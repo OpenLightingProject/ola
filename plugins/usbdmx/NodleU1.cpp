@@ -134,13 +134,11 @@ class NodleU1ThreadedSender: public ThreadedUsbSender {
                         libusb_device_handle *handle)
       : ThreadedUsbSender(usb_device, handle),
         m_adaptor(adaptor) {
-    m_tx_buffer.Blackout();
     m_last_tx_buffer.Blackout();
   }
 
  private:
   ola::usb::LibUsbAdaptor* const m_adaptor;
-  DmxBuffer m_tx_buffer;
   DmxBuffer m_last_tx_buffer;
 
   bool TransmitBuffer(libusb_device_handle *handle,
@@ -151,11 +149,9 @@ class NodleU1ThreadedSender: public ThreadedUsbSender {
 
 bool NodleU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                            const DmxBuffer &buffer) {
-  m_tx_buffer.SetRange(0, buffer.GetRaw(), buffer.Size());
-
   unsigned char usb_data[DATABLOCK_SIZE];
-  const unsigned int size = m_tx_buffer.Size();
-  const uint8_t *data = m_tx_buffer.GetRaw();
+  const unsigned int size = buffer.Size();
+  const uint8_t *data = buffer.GetRaw();
   const uint8_t *last_data = m_last_tx_buffer.GetRaw();
   unsigned int i = 0;
 
@@ -231,10 +227,8 @@ bool NodleU1ThreadedReceiver::ReceiveBuffer(libusb_device_handle *handle,
 
   if (ReadDataChunk(handle, usb_data)) {
     if (usb_data[0] < 16) {
-      uint16_t startOff = usb_data[0] * 32;
-      for (int i = 0; i < 32; i++) {
-        buffer->SetChannel(startOff + i, usb_data[i + 1]);
-      }
+      uint16_t start_offset = usb_data[0] * 32;
+      buffer->SetRange(start_offset, &usb_data[1], 32);
       *buffer_updated = true;
     }
   }
@@ -326,14 +320,10 @@ class NodleU1AsyncUsbReceiver : public AsyncUsbReceiver {
                           unsigned int mode)
       : AsyncUsbReceiver(adaptor, usb_device, plugin_adaptor),
         m_mode(mode) {
-    m_packet = new uint8_t[DATABLOCK_SIZE];
   }
 
   ~NodleU1AsyncUsbReceiver() {
     CancelTransfer();
-    if (m_packet) {
-      delete[] m_packet;
-    }
   }
 
   libusb_device_handle* SetupHandle() {
@@ -346,11 +336,11 @@ class NodleU1AsyncUsbReceiver : public AsyncUsbReceiver {
 
   bool PerformTransfer();
 
-  bool TransferCompleted(DmxBuffer *buffer);
+  bool TransferCompleted(DmxBuffer *buffer, int transferred_size);
 
  private:
   unsigned int m_mode;
-  uint8_t *m_packet;
+  uint8_t m_packet[DATABLOCK_SIZE];
 
   DISALLOW_COPY_AND_ASSIGN(NodleU1AsyncUsbReceiver);
 };
@@ -361,12 +351,11 @@ bool NodleU1AsyncUsbReceiver::PerformTransfer() {
   return (SubmitTransfer() == 0);
 }
 
-bool NodleU1AsyncUsbReceiver::TransferCompleted(DmxBuffer *buffer) {
-  if (m_packet[0] < 16) {
-    uint16_t startOff = m_packet[0] * 32;
-    for (int i = 0; i < 32; i++) {
-      buffer->SetChannel(startOff + i, m_packet[i + 1]);
-    }
+bool NodleU1AsyncUsbReceiver::TransferCompleted(DmxBuffer *buffer,
+                                                int transferred_size) {
+  if (m_packet[0] < 16 && transferred_size >= (int)DATABLOCK_SIZE) {
+    uint16_t start_offset = m_packet[0] * 32;
+    buffer->SetRange(start_offset, &m_packet[1], 32);
     return true;
   }
   return false;
@@ -381,21 +370,16 @@ class NodleU1AsyncUsbSender : public AsyncUsbSender {
                         unsigned int mode)
       : AsyncUsbSender(adaptor, usb_device),
         m_mode(mode),
-        m_buffer_offset(0),
-        m_packet(NULL) {
+        m_buffer_offset(0) {
     m_tx_buffer.Blackout();
   }
 
   ~NodleU1AsyncUsbSender() {
     CancelTransfer();
-    if (m_packet) {
-      delete[] m_packet;
-    }
   }
 
   libusb_device_handle* SetupHandle() {
     libusb_device_handle *handle = OpenNodleU1Widget(m_adaptor, m_usb_device);
-    m_packet = new uint8_t[DATABLOCK_SIZE];
     if (handle) {
       SetInterfaceMode(m_adaptor, handle, m_mode);
     }
@@ -412,7 +396,7 @@ class NodleU1AsyncUsbSender : public AsyncUsbSender {
   // This tracks where we are in m_tx_buffer. A value of 0 means we're at the
   // start of a DMX frame.
   unsigned int m_buffer_offset;
-  uint8_t *m_packet;
+  uint8_t m_packet[DATABLOCK_SIZE];
 
   bool ContinueTransfer();
 
@@ -499,22 +483,22 @@ AsynchronousNodleU1::AsynchronousNodleU1(
 }
 
 bool AsynchronousNodleU1::Init() {
-  bool err = false;
+  bool ok = true;
   if (m_sender.get()) {
-    err |= !m_sender->Init();
+    ok &= m_sender->Init();
   }
   if (m_receiver.get()) {
     if (m_sender.get()) {
       // If we have a sender, use it's USB handle
-      err |= !m_receiver->Init(m_sender->GetHandle());
+      ok &= m_receiver->Init(m_sender->GetHandle());
     } else {
-      err |= !m_receiver->Init();
+      ok &= m_receiver->Init();
     }
-    if (!err) {
+    if (ok) {
       m_receiver->Start();
     }
   }
-  return !err;
+  return ok;
 }
 
 bool AsynchronousNodleU1::SendDMX(const DmxBuffer &buffer) {
@@ -530,7 +514,9 @@ void AsynchronousNodleU1::SetDmxCallback(Callback0<void> *callback) {
 }
 
 const DmxBuffer &AsynchronousNodleU1::GetDmxInBuffer() {
-  m_receiver->GetDmx(&m_buffer);
+  if (m_receiver.get()) {
+    m_receiver->GetDmx(&m_buffer);
+  }
   return m_buffer;
 }
 }  // namespace usbdmx

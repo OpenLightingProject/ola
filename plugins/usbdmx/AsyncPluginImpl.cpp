@@ -90,7 +90,7 @@ class DeviceState {
 AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
                                  Plugin *plugin,
                                  unsigned int debug_level,
-                                 Preferences* preferences)
+                                 Preferences *preferences)
     : m_plugin_adaptor(plugin_adaptor),
       m_plugin(plugin),
       m_debug_level(debug_level),

@@ -93,7 +93,7 @@ class AsyncUsbReceiver {
    */
   void GetDmx(DmxBuffer *buffer) {
     ola::thread::MutexLocker locker(&m_mutex);
-    *buffer = m_rx_buffer;
+    buffer->Set(m_rx_buffer);
   }
 
   /**
@@ -136,7 +136,7 @@ class AsyncUsbReceiver {
    * @param buffer the DmxBuffer to receive into
    * returns true if the buffer was updated
    */
-  virtual bool TransferCompleted(DmxBuffer *buffer) = 0;
+  virtual bool TransferCompleted(DmxBuffer *buffer, int transferred_size) = 0;
 
   /**
    * @brief Cancel any pending transfers.
