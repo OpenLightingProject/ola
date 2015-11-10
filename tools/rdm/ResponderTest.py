@@ -652,23 +652,23 @@ class ResponderTestFixture(TestFixture):
     for frame in response.frames:
       stats = []
       if frame.response_delay:
-        stats.append('Response Delay: %dus' %
+        stats.append('Response Delay: %.1fus' %
                      self._NanoSecondsToMicroSeconds(frame.response_delay))
       if frame.break_time:
-        stats.append('Break: %dus' %
+        stats.append('Break: %.1fus' %
                      self._NanoSecondsToMicroSeconds(frame.break_time))
       if frame.mark_time:
-        stats.append('Mark: %dus' %
+        stats.append('Mark: %.1fus' %
                      self._NanoSecondsToMicroSeconds(frame.mark_time))
       if frame.data_time:
-        stats.append('Data: %dus' %
+        stats.append('Data: %.1fus' %
                      self._NanoSecondsToMicroSeconds(frame.data_time))
 
       if stats:
         self.LogDebug('    ' + ', '.join(stats))
 
   def _NanoSecondsToMicroSeconds(self, nano_seconds):
-    return round(nano_seconds / 1000.0)
+    return nano_seconds / 1000.0
 
 
 class OptionalParameterTestFixture(ResponderTestFixture):

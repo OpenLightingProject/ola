@@ -136,8 +136,9 @@ def LogTimingParam(parameter, data):
   if data['max']:
     data['param'] = parameter
     logging.info('  %s:' % parameter)
-    logging.info('    Mean: %(mean)d, StdDev %(std)f, Median %(median)d' % data)
-    logging.info('    Min: %(min)d, Max %(max)d, 99%%: %(99)d' % data)
+    logging.info('    Mean: %(mean).1f, StdDev %(std).1f, Median %(median).1f'
+                 % data)
+    logging.info('    Min: %(min).1f, Max %(max).1f, 99%%: %(99).1f' % data)
 
 
 def LogAllTimingParams(response_type, stats):
