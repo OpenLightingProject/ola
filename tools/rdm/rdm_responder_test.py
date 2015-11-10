@@ -32,7 +32,7 @@ import time
 from TimingStats import TimingStats
 from ola import PidStore
 from ola import Version
-from ola.ClientWrapper import ClientWrapper, OlaClient
+from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
 from optparse import OptionParser
 

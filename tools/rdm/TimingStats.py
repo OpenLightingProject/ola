@@ -21,6 +21,7 @@ import logging
 import numpy
 from ola.OlaClient import OlaClient
 
+
 class FrameTypeStats(object):
   """Holds timing stats for a particular class of response."""
   def __init__(self):
@@ -65,7 +66,7 @@ class FrameTypeStats(object):
       # reset 0 to stats
       data = [0]
 
-    array = numpy.array([ x / 1000 for x in data])
+    array = numpy.array([x / 1000.0 for x in data])
     return {
         'max': numpy.amax(array),
         'mean': numpy.mean(array),
@@ -74,6 +75,7 @@ class FrameTypeStats(object):
         'std': numpy.std(array),
         '99': numpy.percentile(array, 99),
     }
+
 
 class TimingStats(object):
   """Holds the timing stats for all frame types."""
@@ -98,8 +100,8 @@ class TimingStats(object):
   @staticmethod
   def FrameTypeFromCommandClass(command_class):
     types = {
-      OlaClient.RDM_GET_RESPONSE : TimingStats.GET,
-      OlaClient.RDM_SET_RESPONSE : TimingStats.SET,
-      OlaClient.RDM_DISCOVERY_RESPONSE : TimingStats.DISCOVERY,
+      OlaClient.RDM_GET_RESPONSE: TimingStats.GET,
+      OlaClient.RDM_SET_RESPONSE: TimingStats.SET,
+      OlaClient.RDM_DISCOVERY_RESPONSE: TimingStats.DISCOVERY,
     }
     return types.get(command_class)

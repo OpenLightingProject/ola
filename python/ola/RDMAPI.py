@@ -71,7 +71,7 @@ class RDMAPI(object):
                              PidStore.RDM_DISCOVERY, include_frames)
 
   def RawDiscovery(self, universe, uid, sub_device, pid, callback, data,
-                   include_frames):
+                   include_frames=False):
     """Send an RDM Discovery message with the raw data supplied.
 
     Args:

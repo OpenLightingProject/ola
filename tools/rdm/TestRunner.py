@@ -243,7 +243,7 @@ class TestRunner(object):
                                                  wrapper)
 
   def TimingStats(self):
-    return self._timing_stats;
+    return self._timing_stats
 
   def RegisterTest(self, test_class):
     """Register a test.

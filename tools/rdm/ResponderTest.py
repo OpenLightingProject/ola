@@ -652,16 +652,24 @@ class ResponderTestFixture(TestFixture):
     for frame in response.frames:
       stats = []
       if frame.response_delay:
-        stats.append('Response Delay: %duS' % (frame.response_delay / 1000))
+        stats.append('Response Delay: %dus' %
+                     self._NanoSecondsToMicroSeconds(frame.response_delay))
       if frame.break_time:
-        stats.append('Break: %duS' % (frame.break_time / 1000))
+        stats.append('Break: %dus' %
+                     self._NanoSecondsToMicroSeconds(frame.break_time))
       if frame.mark_time:
-        stats.append('Mark: %duS' % (frame.mark_time / 1000))
+        stats.append('Mark: %dus' %
+                     self._NanoSecondsToMicroSeconds(frame.mark_time))
       if frame.data_time:
-        stats.append('Data: %duS' % (frame.data_time / 1000))
+        stats.append('Data: %dus' %
+                     self._NanoSecondsToMicroSeconds(frame.data_time))
 
       if stats:
         self.LogDebug('    ' + ', '.join(stats))
+
+  def _NanoSecondsToMicroSeconds(self, nano_seconds):
+    return round(nano_seconds / 1000.0)
+
 
 class OptionalParameterTestFixture(ResponderTestFixture):
   """A sub class of ResponderTestFixture that alters behaviour if the PID isn't
