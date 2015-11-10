@@ -48,6 +48,7 @@ class AsyncUsbReceiver {
    * @brief Create a new AsyncUsbReceiver.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param plugin_adaptor the PluginAdaptor to use for the widget.
    */
   AsyncUsbReceiver(ola::usb::LibUsbAdaptor* const adaptor,
                    libusb_device *usb_device,
