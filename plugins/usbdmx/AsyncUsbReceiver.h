@@ -134,6 +134,7 @@ class AsyncUsbReceiver {
   /**
    * @brief Called when the transfer completes.
    * @param buffer the DmxBuffer to receive into
+   * @param transferred_size the number of bytes actually transferred
    * returns true if the buffer was updated
    */
   virtual bool TransferCompleted(DmxBuffer *buffer, int transferred_size) = 0;
