@@ -21,7 +21,6 @@
 #include "plugins/usbdmx/AsyncUsbReceiver.h"
 
 #include "ola/Logging.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 namespace ola {
 namespace plugin {
@@ -42,11 +41,13 @@ void AsyncCallback(struct libusb_transfer *transfer) {
 }
 }  // namespace
 
-AsyncUsbReceiver::AsyncUsbReceiver(LibUsbAdaptor *adaptor,
-                                   libusb_device *usb_device)
+AsyncUsbReceiver::AsyncUsbReceiver(ola::usb::LibUsbAdaptor *adaptor,
+                                   libusb_device *usb_device,
+                                   PluginAdaptor *plugin_adaptor)
     : m_adaptor(adaptor),
       m_usb_device(usb_device),
       m_usb_handle(NULL),
+      m_plugin_adaptor(plugin_adaptor),
       m_inited_with_handle(false),
       m_suppress_continuation(false),
       m_transfer_state(IDLE) {
@@ -167,7 +168,7 @@ void AsyncUsbReceiver::TransferComplete(struct libusb_transfer *transfer) {
   if (transfer->status != LIBUSB_TRANSFER_TIMED_OUT) {
     if (TransferCompleted(&m_rx_buffer)) {  // Input changed
       if (m_receive_callback.get()) {
-        m_receive_callback->Run();
+        m_plugin_adaptor->Execute(m_receive_callback.get());
       }
     }
   }

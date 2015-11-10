@@ -23,7 +23,6 @@
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
 #include "plugins/usbdmx/NodleU1.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
 
@@ -38,13 +37,12 @@ bool NodleU1Factory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID ||
-      HasDevice(usb_device)) {
+  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID) {
     return false;
   }
 
   OLA_INFO << "Found a new Nodle U1 device";
-  LibUsbAdaptor::DeviceInformation info;
+  ola::usb::LibUsbAdaptor::DeviceInformation info;
   if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
     return false;
   }
@@ -67,7 +65,7 @@ bool NodleU1Factory::DeviceAdded(
     widget = new SynchronousNodleU1(m_adaptor, usb_device, m_plugin_adaptor,
                                     info.serial, mode);
   }
-  return AddWidget(observer, usb_device, widget);
+  return AddWidget(observer, widget);
 }
 }  // namespace usbdmx
 }  // namespace plugin

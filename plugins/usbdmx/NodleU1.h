@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
@@ -39,13 +40,14 @@ namespace usbdmx {
 /**
  * @brief The interface for the Nodle Widgets
  */
-class NodleU1: public BaseWidget {
+class NodleU1: public SimpleWidget {
  public:
-  explicit NodleU1(LibUsbAdaptor *adaptor,
+  explicit NodleU1(ola::usb::LibUsbAdaptor *adaptor,
+                   libusb_device *usb_device,
                    PluginAdaptor *plugin_adaptor,
                    const std::string &serial,
                    unsigned int mode)
-      : BaseWidget(adaptor),
+      : SimpleWidget(adaptor, usb_device),
         m_serial(serial),
         m_mode(mode),
         m_plugin_adaptor(plugin_adaptor) {
@@ -68,7 +70,7 @@ class NodleU1: public BaseWidget {
   }
 
   virtual void SetDmxCallback(Callback0<void> *callback) = 0;
-  virtual const DmxBuffer &GetDmxInBuffer() const = 0;
+  virtual const DmxBuffer &GetDmxInBuffer() = 0;
 
   static const char NODLE_MODE_KEY[];
   static int NODLE_DEFAULT_MODE;
@@ -98,7 +100,7 @@ class SynchronousNodleU1: public NodleU1 {
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */
-  SynchronousNodleU1(LibUsbAdaptor *adaptor,
+  SynchronousNodleU1(ola::usb::LibUsbAdaptor *adaptor,
                      libusb_device *usb_device,
                      PluginAdaptor *plugin_adaptor,
                      const std::string &serial,
@@ -109,7 +111,7 @@ class SynchronousNodleU1: public NodleU1 {
   bool SendDMX(const DmxBuffer &buffer);
 
   void SetDmxCallback(Callback0<void> *callback);
-  const DmxBuffer &GetDmxInBuffer() const;
+  const DmxBuffer &GetDmxInBuffer();
 
  private:
   libusb_device* const m_usb_device;
@@ -132,7 +134,7 @@ class AsynchronousNodleU1 : public NodleU1 {
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */
-  AsynchronousNodleU1(LibUsbAdaptor *adaptor,
+  AsynchronousNodleU1(ola::usb::LibUsbAdaptor *adaptor,
                       libusb_device *usb_device,
                       PluginAdaptor *plugin_adaptor,
                       const std::string &serial,
@@ -143,7 +145,7 @@ class AsynchronousNodleU1 : public NodleU1 {
   bool SendDMX(const DmxBuffer &buffer);
 
   void SetDmxCallback(Callback0<void> *callback);
-  const DmxBuffer &GetDmxInBuffer() const;
+  const DmxBuffer &GetDmxInBuffer();
 
  private:
   std::auto_ptr<class NodleU1AsyncUsbSender> m_sender;

@@ -24,10 +24,12 @@
 #include <libusb.h>
 #include <memory>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
+#include "olad/PluginAdaptor.h"
 
 namespace ola {
 namespace plugin {
@@ -47,8 +49,9 @@ class AsyncUsbReceiver {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  AsyncUsbReceiver(class LibUsbAdaptor* const adaptor,
-                   libusb_device *usb_device);
+  AsyncUsbReceiver(ola::usb::LibUsbAdaptor* const adaptor,
+                   libusb_device *usb_device,
+                   PluginAdaptor *plugin_adaptor);
 
   /**
    * @brief Destructor
@@ -85,10 +88,11 @@ class AsyncUsbReceiver {
 
   /**
    * @brief Get DMX Buffer
-   * @returns DmxBuffer with current input values.
+   * @param buffer DmxBuffer that will get updated with the current input.
    */
-  const DmxBuffer &GetDmxInBuffer() const {
-    return m_rx_buffer;
+  void GetDmx(DmxBuffer *buffer) {
+    ola::thread::MutexLocker locker(&m_mutex);
+    *buffer = m_rx_buffer;
   }
 
   /**
@@ -102,7 +106,7 @@ class AsyncUsbReceiver {
   /**
    * @brief The LibUsbAdaptor passed in the constructor.
    */
-  class LibUsbAdaptor* const m_adaptor;
+  ola::usb::LibUsbAdaptor* const m_adaptor;
 
   /**
    * @brief The libusb_device passed in the constructor.
@@ -171,6 +175,7 @@ class AsyncUsbReceiver {
   };
 
   libusb_device_handle *m_usb_handle;
+  PluginAdaptor* const m_plugin_adaptor;
   bool m_inited_with_handle;
   bool m_suppress_continuation;
   struct libusb_transfer *m_transfer;

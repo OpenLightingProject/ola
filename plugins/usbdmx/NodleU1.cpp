@@ -30,7 +30,6 @@
 #include "ola/StringUtils.h"
 #include "plugins/usbdmx/AsyncUsbReceiver.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbReceiver.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
@@ -60,7 +59,7 @@ static const unsigned int DATABLOCK_SIZE = 33;
  * @param handle the libusb_device_handle to use.
  * @returns true when mode was set 
  */
-bool SetInterfaceMode(LibUsbAdaptor *adaptor,
+bool SetInterfaceMode(ola::usb::LibUsbAdaptor *adaptor,
                       libusb_device_handle *handle,
                       uint8_t mode) {
   unsigned char usb_data[DATABLOCK_SIZE];
@@ -87,7 +86,7 @@ bool SetInterfaceMode(LibUsbAdaptor *adaptor,
  * @param usb_device the libusb_device to use.
  * @returns A libusb_device_handle or NULL if it failed.
  */
-libusb_device_handle *OpenNodleU1Widget(LibUsbAdaptor *adaptor,
+libusb_device_handle *OpenNodleU1Widget(ola::usb::LibUsbAdaptor *adaptor,
                                         libusb_device *usb_device) {
   libusb_device_handle *usb_handle;
   bool ok = adaptor->OpenDevice(usb_device, &usb_handle);
@@ -130,7 +129,7 @@ libusb_device_handle *OpenNodleU1Widget(LibUsbAdaptor *adaptor,
  */
 class NodleU1ThreadedSender: public ThreadedUsbSender {
  public:
-  NodleU1ThreadedSender(LibUsbAdaptor *adaptor,
+  NodleU1ThreadedSender(ola::usb::LibUsbAdaptor *adaptor,
                         libusb_device *usb_device,
                         libusb_device_handle *handle)
       : ThreadedUsbSender(usb_device, handle),
@@ -140,7 +139,7 @@ class NodleU1ThreadedSender: public ThreadedUsbSender {
   }
 
  private:
-  LibUsbAdaptor* const m_adaptor;
+  ola::usb::LibUsbAdaptor* const m_adaptor;
   DmxBuffer m_tx_buffer;
   DmxBuffer m_last_tx_buffer;
 
@@ -207,7 +206,7 @@ bool NodleU1ThreadedSender::SendDataChunk(libusb_device_handle *handle,
  */
 class NodleU1ThreadedReceiver: public ThreadedUsbReceiver {
  public:
-  NodleU1ThreadedReceiver(LibUsbAdaptor *adaptor,
+  NodleU1ThreadedReceiver(ola::usb::LibUsbAdaptor *adaptor,
                           libusb_device *usb_device,
                           libusb_device_handle *handle,
                           PluginAdaptor *plugin_adaptor)
@@ -216,7 +215,7 @@ class NodleU1ThreadedReceiver: public ThreadedUsbReceiver {
   }
 
  private:
-  LibUsbAdaptor* const m_adaptor;
+  ola::usb::LibUsbAdaptor* const m_adaptor;
 
   bool ReceiveBuffer(libusb_device_handle *handle,
                      DmxBuffer *buffer,
@@ -260,12 +259,12 @@ bool NodleU1ThreadedReceiver::ReadDataChunk(libusb_device_handle *handle,
 // -----------------------------------------------------------------------------
 
 SynchronousNodleU1::SynchronousNodleU1(
-    LibUsbAdaptor *adaptor,
+    ola::usb::LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     PluginAdaptor *plugin_adaptor,
     const string &serial,
     unsigned int mode)
-    : NodleU1(adaptor, plugin_adaptor, serial, mode),
+    : NodleU1(adaptor, usb_device, plugin_adaptor, serial, mode),
       m_usb_device(usb_device) {
 }
 
@@ -313,7 +312,7 @@ void SynchronousNodleU1::SetDmxCallback(Callback0<void> *callback) {
   }
 }
 
-const DmxBuffer &SynchronousNodleU1::GetDmxInBuffer() const {
+const DmxBuffer &SynchronousNodleU1::GetDmxInBuffer() {
   return m_receiver->GetDmxInBuffer();
 }
 
@@ -321,10 +320,11 @@ const DmxBuffer &SynchronousNodleU1::GetDmxInBuffer() const {
 // -----------------------------------------------------------------------------
 class NodleU1AsyncUsbReceiver : public AsyncUsbReceiver {
  public:
-  NodleU1AsyncUsbReceiver(LibUsbAdaptor *adaptor,
+  NodleU1AsyncUsbReceiver(ola::usb::LibUsbAdaptor *adaptor,
                           libusb_device *usb_device,
+                          PluginAdaptor *plugin_adaptor,
                           unsigned int mode)
-      : AsyncUsbReceiver(adaptor, usb_device),
+      : AsyncUsbReceiver(adaptor, usb_device, plugin_adaptor),
         m_mode(mode) {
     m_packet = new uint8_t[DATABLOCK_SIZE];
   }
@@ -376,7 +376,7 @@ bool NodleU1AsyncUsbReceiver::TransferCompleted(DmxBuffer *buffer) {
 // -----------------------------------------------------------------------------
 class NodleU1AsyncUsbSender : public AsyncUsbSender {
  public:
-  NodleU1AsyncUsbSender(LibUsbAdaptor *adaptor,
+  NodleU1AsyncUsbSender(ola::usb::LibUsbAdaptor *adaptor,
                         libusb_device *usb_device,
                         unsigned int mode)
       : AsyncUsbSender(adaptor, usb_device),
@@ -482,18 +482,19 @@ bool NodleU1AsyncUsbSender::SendInitialChunk(const DmxBuffer &buffer) {
 // -----------------------------------------------------------------------------
 
 AsynchronousNodleU1::AsynchronousNodleU1(
-    LibUsbAdaptor *adaptor,
+    ola::usb::LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     PluginAdaptor *plugin_adaptor,
     const string &serial,
     unsigned int mode)
-    : NodleU1(adaptor, plugin_adaptor, serial, mode) {
+    : NodleU1(adaptor, usb_device, plugin_adaptor, serial, mode) {
   if (mode & 2) {  // output port active
     m_sender.reset(new NodleU1AsyncUsbSender(m_adaptor, usb_device, mode));
   }
 
   if (mode & 4) {  // input port active
-    m_receiver.reset(new NodleU1AsyncUsbReceiver(m_adaptor, usb_device, mode));
+    m_receiver.reset(new NodleU1AsyncUsbReceiver(m_adaptor, usb_device,
+                                                 plugin_adaptor, mode));
   }
 }
 
@@ -528,8 +529,9 @@ void AsynchronousNodleU1::SetDmxCallback(Callback0<void> *callback) {
   }
 }
 
-const DmxBuffer &AsynchronousNodleU1::GetDmxInBuffer() const {
-  return m_receiver->GetDmxInBuffer();
+const DmxBuffer &AsynchronousNodleU1::GetDmxInBuffer() {
+  m_receiver->GetDmx(&m_buffer);
+  return m_buffer;
 }
 }  // namespace usbdmx
 }  // namespace plugin
