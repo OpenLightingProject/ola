@@ -353,7 +353,8 @@ bool NodleU1AsyncUsbReceiver::PerformTransfer() {
 
 bool NodleU1AsyncUsbReceiver::TransferCompleted(DmxBuffer *buffer,
                                                 int transferred_size) {
-  if (m_packet[0] < 16 && transferred_size >= (int)DATABLOCK_SIZE) {
+  if (m_packet[0] < 16 &&
+      transferred_size >= static_cast<int>(DATABLOCK_SIZE)) {
     uint16_t start_offset = m_packet[0] * 32;
     buffer->SetRange(start_offset, &m_packet[1], 32);
     return true;
