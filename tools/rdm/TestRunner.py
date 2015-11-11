@@ -21,10 +21,11 @@ import datetime
 import inspect
 import logging
 import time
-from ola.testing.rdm import ResponderTest
-from ola.RDMAPI import RDMAPI
-from ola.OlaClient import OlaClient, RDMNack
+from TimingStats import TimingStats
 from ola import PidStore
+from ola.OlaClient import OlaClient, RDMNack
+from ola.RDMAPI import RDMAPI
+from ola.testing.rdm import ResponderTest
 
 
 class Error(Exception):
@@ -229,6 +230,7 @@ class TestRunner(object):
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
+    self._timing_stats = TimingStats()
 
     # maps device properties to the tests that provide them
     self._property_map = {}
@@ -239,6 +241,9 @@ class TestRunner(object):
                                                  uid,
                                                  self._api,
                                                  wrapper)
+
+  def TimingStats(self):
+    return self._timing_stats
 
   def RegisterTest(self, test_class):
     """Register a test.
@@ -377,7 +382,8 @@ class TestRunner(object):
                           self._pid_store,
                           self._api,
                           self._wrapper,
-                          self._broadcast_write_delay)
+                          self._broadcast_write_delay,
+                          self._timing_stats)
 
     new_parents = parents + [test_class]
     dep_classes = []
