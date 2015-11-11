@@ -1,4 +1,3 @@
-# !/usr/bin/python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -23,7 +22,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import datetime
 import operator
 import struct
-from ExpectedResults import AckGetResult, NackGetResult, InvalidResponse, TimeoutResult, UnsupportedResult, RDM_GET, RDM_SET
+from ExpectedResults import AckGetResult, BroadcastResult, NackGetResult, InvalidResponse, TimeoutResult, UnsupportedResult, RDM_GET, RDM_SET
 from ResponderTest import ResponderTestFixture, TestFixture
 from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
@@ -183,6 +182,26 @@ class InvalidDiscoveryPID(ResponderTestFixture):
 
 # DUB Tests
 # -----------------------------------------------------------------------------
+class MuteAllDevices(ResponderTestFixture):
+  """Mute all devices, so we can perform DUB tests"""
+  PID = 'DISC_MUTE'
+  # This is a fake property used to ensure this tests runs before the DUB tests.
+  PROVIDES = ['global_mute']
+
+  def Test(self):
+    # Set the fake property
+    self.SetProperty(self.PROVIDES[0], True)
+    self.AddExpectedResults([
+      BroadcastResult(),
+      UnsupportedResult()
+    ])
+
+    self.SendDirectedDiscovery(
+        UID.AllDevices(),
+        PidStore.ROOT_DEVICE,
+        self.pid)
+
+
 class DUBFullTree(TestMixins.DiscoveryMixin,
                   ResponderTestFixture):
   """Confirm the device responds within the entire DUB range."""

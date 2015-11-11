@@ -32,6 +32,7 @@
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
+#include "ola/io/Serial.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
@@ -127,7 +128,8 @@ ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
     const string &path) {
   struct termios newtio;
   int fd;
-  if (!ola::io::TryOpen(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
+  if (!ola::io::AcquireUUCPLockAndOpen(path, O_RDWR | O_NONBLOCK | O_NOCTTY,
+                                       &fd)) {
     return NULL;
   }
 
@@ -140,7 +142,6 @@ ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
 
   return new ola::io::DeviceDescriptor(fd);
 }
-
 
 /*
  * Read the data and handle the messages.

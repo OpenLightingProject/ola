@@ -658,7 +658,8 @@ class DiscoveryMixin(ResponderTestFixture):
         ffff:ffffffff
   """
   PID = 'DISC_UNIQUE_BRANCH'
-  REQUIRES = ['mute_supported', 'unmute_supported']
+  # Global Mute here ensures we run after all devices have been muted
+  REQUIRES = ['mute_supported', 'unmute_supported', 'global_mute']
 
   def DUBResponseCode(self, response_code):
     pass

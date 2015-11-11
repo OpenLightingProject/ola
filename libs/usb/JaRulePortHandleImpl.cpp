@@ -174,7 +174,7 @@ bool JaRulePortHandleImpl::SendDMX(const DmxBuffer &buffer) {
   return true;
 }
 
-bool JaRulePortHandleImpl::SetPortMode(PortMode new_mode) {
+bool JaRulePortHandleImpl::SetPortMode(JaRulePortMode new_mode) {
   uint8_t port_mode = new_mode;
   m_port->SendCommand(JARULE_CMD_SET_MODE, &port_mode, sizeof(port_mode), NULL);
   return true;
@@ -191,7 +191,7 @@ void JaRulePortHandleImpl::CheckStatusFlags(uint8_t flags) {
 
 void JaRulePortHandleImpl::DMXComplete(
     OLA_UNUSED USBCommandResult result,
-    OLA_UNUSED uint8_t return_code,
+    OLA_UNUSED JaRuleReturnCode return_code,
     uint8_t status_flags,
     OLA_UNUSED const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
@@ -208,7 +208,7 @@ void JaRulePortHandleImpl::DMXComplete(
 void JaRulePortHandleImpl::MuteDeviceComplete(
     MuteDeviceCallback *mute_complete,
     USBCommandResult result,
-    uint8_t return_code,
+    JaRuleReturnCode return_code,
     uint8_t status_flags,
     const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
@@ -237,11 +237,11 @@ void JaRulePortHandleImpl::MuteDeviceComplete(
 void JaRulePortHandleImpl::UnMuteDeviceComplete(
     UnMuteDeviceCallback *unmute_complete,
     OLA_UNUSED USBCommandResult result,
-    OLA_UNUSED uint8_t return_code,
+    OLA_UNUSED JaRuleReturnCode return_code,
     OLA_UNUSED uint8_t status_flags,
     OLA_UNUSED const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
-  if (return_code != COMMAND_RESULT_OK) {
+  if (result != COMMAND_RESULT_OK) {
     OLA_INFO << "JaRule Unmute failed!";
   }
   // TODO(simon): At some point we need to account for failures here.
@@ -251,7 +251,7 @@ void JaRulePortHandleImpl::UnMuteDeviceComplete(
 
 void JaRulePortHandleImpl::DUBComplete(BranchCallback *callback,
                                        USBCommandResult result,
-                                       uint8_t return_code,
+                                       JaRuleReturnCode return_code,
                                        uint8_t status_flags,
                                        const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
@@ -269,7 +269,7 @@ void JaRulePortHandleImpl::DUBComplete(BranchCallback *callback,
 void JaRulePortHandleImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
                                        ola::rdm::RDMCallback *callback,
                                        USBCommandResult result,
-                                       uint8_t return_code,
+                                       JaRuleReturnCode return_code,
                                        uint8_t status_flags,
                                        const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);

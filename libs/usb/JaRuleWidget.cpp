@@ -146,7 +146,7 @@ void JaRuleWidget::SendCommand(uint8_t port_index,
   if (port_index > m_ports.size() - 1) {
     OLA_WARN << "Invalid JaRule Port " << static_cast<int>(port_index);
     if (callback) {
-      callback->Run(COMMAND_RESULT_INVALID_PORT, 0, 0, ByteString());
+      callback->Run(COMMAND_RESULT_INVALID_PORT, RC_UNKNOWN, 0, ByteString());
     }
     return;
   }
@@ -215,6 +215,27 @@ bool JaRuleWidget::InternalInit() {
     return false;
   }
 
+  // Get the serial number (UID) of the device.
+  libusb_device_descriptor device_descriptor;
+  if (m_adaptor->GetDeviceDescriptor(m_device, &device_descriptor)) {
+    return false;
+  }
+
+  AsyncronousLibUsbAdaptor::DeviceInformation device_info;
+  if (!m_adaptor->GetDeviceInfo(m_device, device_descriptor, &device_info)) {
+    return false;
+  }
+
+  auto_ptr<UID> uid(UID::FromString(device_info.serial));
+  if (!uid.get() || uid->IsBroadcast()) {
+    OLA_WARN << "Invalid JaRule serial number: " << device_info.serial;
+    return false;
+  }
+
+  m_uid = *uid;
+  m_manufacturer = device_info.manufacturer;
+  m_product = device_info.product;
+
   std::set<int> interfaces_to_claim;
 
   EndpointMap::const_iterator endpoint_iter = endpoint_map.begin();
@@ -238,27 +259,6 @@ bool JaRuleWidget::InternalInit() {
       return false;
     }
   }
-
-  // Get the serial number (UID) of the device.
-  libusb_device_descriptor device_descriptor;
-  if (m_adaptor->GetDeviceDescriptor(m_device, &device_descriptor)) {
-    return false;
-  }
-
-  AsyncronousLibUsbAdaptor::DeviceInformation device_info;
-  if (!m_adaptor->GetDeviceInfo(m_device, device_descriptor, &device_info)) {
-    return false;
-  }
-
-  auto_ptr<UID> uid(UID::FromString(device_info.serial));
-  if (!uid.get() || uid->IsBroadcast()) {
-    OLA_WARN << "Invalid JaRule serial number: " << device_info.serial;
-    return false;
-  }
-
-  m_uid = *uid;
-  m_manufacturer = device_info.manufacturer;
-  m_product = device_info.product;
 
   OLA_INFO << "Found JaRule device : " << m_uid;
   return true;

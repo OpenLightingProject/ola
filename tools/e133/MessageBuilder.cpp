@@ -25,20 +25,20 @@
 #include "ola/e133/MessageBuilder.h"
 #include "ola/io/IOStack.h"
 
-#include "plugins/e131/e131/E133PDU.h"
-#include "plugins/e131/e131/RDMPDU.h"
-#include "plugins/e131/e131/RootPDU.h"
-#include "plugins/e131/e131/E133StatusPDU.h"
-#include "plugins/e131/e131/PreamblePacker.h"
+#include "libs/acn/E133PDU.h"
+#include "libs/acn/RDMPDU.h"
+#include "libs/acn/RootPDU.h"
+#include "libs/acn/E133StatusPDU.h"
+#include "libs/acn/PreamblePacker.h"
 
 namespace ola {
 namespace e133 {
 
 using ola::acn::CID;
 using ola::io::IOStack;
-using ola::plugin::e131::E133PDU;
-using ola::plugin::e131::PreamblePacker;
-using ola::plugin::e131::RootPDU;
+using ola::acn::E133PDU;
+using ola::acn::PreamblePacker;
+using ola::acn::RootPDU;
 
 
 MessageBuilder::MessageBuilder(const CID &cid, const string &source_name)
@@ -54,7 +54,7 @@ MessageBuilder::MessageBuilder(const CID &cid, const string &source_name)
  * Append a RDM PDU Header onto this packet
  */
 void MessageBuilder::PrependRDMHeader(IOStack *packet) {
-  ola::plugin::e131::RDMPDU::PrependPDU(packet);
+  ola::acn::RDMPDU::PrependPDU(packet);
 }
 
 
@@ -76,7 +76,7 @@ void MessageBuilder::BuildTCPE133StatusPDU(ola::io::IOStack *packet,
                                            uint16_t endpoint_id,
                                            E133StatusCode status_code,
                                            const string &description) {
-  ola::plugin::e131::E133StatusPDU::PrependPDU(
+  ola::acn::E133StatusPDU::PrependPDU(
       packet, status_code, description);
   BuildTCPRootE133(
       packet, ola::acn::VECTOR_FRAMING_STATUS,
@@ -92,7 +92,7 @@ void MessageBuilder::BuildUDPE133StatusPDU(ola::io::IOStack *packet,
                                            uint16_t endpoint_id,
                                            E133StatusCode status_code,
                                            const string &description) {
-  ola::plugin::e131::E133StatusPDU::PrependPDU(
+  ola::acn::E133StatusPDU::PrependPDU(
       packet, status_code, description);
   BuildUDPRootE133(
       packet, ola::acn::VECTOR_FRAMING_STATUS,

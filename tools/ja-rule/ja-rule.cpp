@@ -22,11 +22,12 @@
 #include <ola/Constants.h>
 #include <ola/Logging.h>
 #include <ola/base/Array.h>
-#include <ola/base/Init.h>
 #include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
+#include <ola/network/MACAddress.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/UID.h>
@@ -62,6 +63,7 @@ using ola::rdm::RDMStatusCode;
 using ola::rdm::UID;
 using ola::strings::ToHex;
 using ola::usb::CommandClass;
+using ola::usb::JaRuleReturnCode;
 using ola::usb::JaRuleWidget;
 using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;
@@ -154,6 +156,12 @@ class Controller {
     m_actions['U'] = Action(
         "Send an unmute to the target UID",
         NewCallback(this, &Controller::SendUnMute, m_target_uid));
+    m_actions['.'] = Action(
+        "Get the hardware info",
+        NewCallback(this, &Controller::GetHardwareInfo));
+    m_actions[','] = Action(
+        "Run the self test",
+        NewCallback(this, &Controller::RunSelfTest));
 
     // Timing Options
     // For each of the options below, we allow a bigger range than the device
@@ -284,20 +292,15 @@ class Controller {
       OLA_WARN << "Missing timing setting " << option;
       return;
     }
-    cout << "Editing " << setting->description
-         << ". Use +/- to adjust, Enter commits, Esc to abort" << endl;
+    cout << "Editing " << setting->description << ", currently "
+         << FormatTime(setting->units, setting->current_value) << "." << endl
+         << "Use +/- to adjust, Enter commits, Esc to abort" << endl;
   }
 
-  void EchoCommandComplete(
-      ola::usb::USBCommandResult result,
-      uint8_t return_code, uint8_t status_flags,
-      const ByteString &payload) {
+  void EchoCommandComplete(ola::usb::USBCommandResult result,
+                           JaRuleReturnCode return_code, uint8_t status_flags,
+                           const ByteString &payload) {
     if (!CheckResult(result, status_flags)) {
-      return;
-    }
-
-    if (return_code != ola::usb::COMMAND_RESULT_OK) {
-      OLA_INFO << "RC: " << static_cast<int>(return_code);
       return;
     }
 
@@ -306,62 +309,57 @@ class Controller {
        response.append(reinterpret_cast<const char*>(payload.data()),
                        payload.size());
     }
-    OLA_INFO << "Echo Reply (" << static_cast<int>(return_code) << "): "
-                               << response;
+    cout << "Echo Reply: RC " << return_code << ": " << response << endl;
   }
 
   void AckCommandComplete(
       ola::usb::USBCommandResult result,
-      uint8_t return_code, uint8_t status_flags,
+      JaRuleReturnCode return_code, uint8_t status_flags,
       const ByteString &payload) {
     if (!CheckResult(result, status_flags)) {
       return;
     }
 
-    OLA_INFO << "ACK (" << static_cast<int>(return_code)
-             << "): payload_size: " << payload.size();
+    OLA_INFO << "RC: " << return_code << ", payload_size: " << payload.size();
   }
 
   void GetFlagsCommandComplete(
       ola::usb::USBCommandResult result,
-      uint8_t return_code, uint8_t status_flags,
+      JaRuleReturnCode return_code, uint8_t status_flags,
       const ByteString &payload) {
     if (!CheckResult(result, status_flags)) {
       return;
     }
 
-    OLA_INFO << "ACK (" << static_cast<int>(return_code)
-             << "): payload_size: " << payload.size();
-    OLA_INFO << "Flags (" << static_cast<int>(return_code) << "):";
+    OLA_INFO << "RC: " << return_code << ", payload_size: " << payload.size();
     if (!payload.empty()) {
       ola::strings::FormatData(&std::cout, payload.data(),
                                payload.size());
     }
   }
 
-  void DUBCommandComplete(
-      ola::usb::USBCommandResult result,
-      uint8_t return_code, uint8_t status_flags,
-      const ByteString &payload) {
+  void DUBCommandComplete(ola::usb::USBCommandResult result,
+                          JaRuleReturnCode return_code, uint8_t status_flags,
+                          const ByteString &payload) {
     if (!CheckResult(result, status_flags)) {
       return;
     }
 
-    OLA_INFO << "DUB Response: RC: " << static_cast<int>(return_code)
-             << ", size: " << payload.size();
+    cout << "DUB Response: RC: " << return_code << ", size: "
+         << payload.size() << endl;
   }
 
   void DisplayTime(TimingOption option,
                    ola::usb::USBCommandResult result,
-                   uint8_t return_code, uint8_t status_flags,
+                   JaRuleReturnCode return_code, uint8_t status_flags,
                    const ByteString &payload) {
     if (!CheckResult(result, status_flags)) {
       return;
     }
 
-    if (return_code != 0) {
-      OLA_INFO << "Failed (" << static_cast<int>(return_code)
-               << "): payload_size: " << payload.size();
+    if (return_code != ola::usb::RC_OK) {
+      OLA_INFO << "RC: " << return_code << ", payload_size: "
+               << payload.size();
       return;
     }
 
@@ -379,18 +377,19 @@ class Controller {
 
     value = JoinUInt8(payload[1], payload[0]);
 
-    OLA_INFO << "Time: " << FormatTime(setting->units, value) << endl;
+    string description = setting->description;
+    ola::CapitalizeFirst(&description);
+    cout << description << ": " << FormatTime(setting->units, value) << endl;
   }
 
   void CommandComplete(ola::usb::USBCommandResult result,
-                       uint8_t return_code, uint8_t status_flags,
+                       JaRuleReturnCode return_code, uint8_t status_flags,
                        const ByteString &payload) {
     if (!CheckResult(result, status_flags)) {
       return;
     }
 
-    OLA_INFO << "RC (" << static_cast<int>(return_code)
-             << "): payload_size: " << payload.size();
+    OLA_INFO << "RC: " << return_code << ", payload_size: " << payload.size();
 
     if (!payload.empty()) {
       return;
@@ -412,6 +411,52 @@ class Controller {
     }
   }
 
+  void HardwareInfoComplete(
+      ola::usb::USBCommandResult result,
+      JaRuleReturnCode return_code, uint8_t status_flags,
+      const ByteString &payload) {
+    if (!CheckResult(result, status_flags)) {
+      return;
+    }
+
+    OLA_INFO << "RC: " << return_code << ", payload_size: " << payload.size();
+    if (payload.size() >= 14) {
+      uint16_t model_id = JoinUInt8(payload[1], payload[0]);
+      UID uid(payload.data() + sizeof(uint16_t));
+      ola::network::MACAddress mac_address(
+          payload.data() + sizeof(uint16_t) + UID::LENGTH);
+      cout << "Model: " << model_id << ", UID: " << uid << ", MAC: "
+           << mac_address << endl;
+    } else {
+      OLA_WARN << "Received " << payload.size() << " bytes, expecting 14";
+    }
+  }
+
+  void SelfTestPart2Complete(ola::usb::USBCommandResult result,
+                             JaRuleReturnCode return_code, uint8_t status_flags,
+                             OLA_UNUSED const ByteString &payload) {
+    if (!CheckResult(result, status_flags)) {
+      return;
+    }
+
+    cout << "Test result: " << return_code << endl;
+  }
+
+  void SelfTestPart1Complete(ola::usb::USBCommandResult result,
+                             JaRuleReturnCode return_code, uint8_t status_flags,
+                             OLA_UNUSED const ByteString &payload) {
+    if (!CheckResult(result, status_flags)) {
+      return;
+    }
+    if (return_code == ola::usb::RC_OK) {
+      m_widget->SendCommand(
+          FLAGS_port, ola::usb::JARULE_CMD_RUN_SELF_TEST,
+          NULL, 0,
+          NewSingleCallback(this, &Controller::SelfTestPart2Complete));
+    } else {
+      OLA_WARN << "Unable to change to self test mode";
+    }
+  }
 
  private:
   enum Mode {
@@ -546,7 +591,9 @@ class Controller {
       }
     }
 
-    cout << setting->description << " is now "
+    string description = setting->description;
+    ola::CapitalizeFirst(&description);
+    cout << description << " is now "
          << FormatTime(setting->units, setting->current_value) << endl;
   }
 
@@ -718,14 +765,33 @@ class Controller {
         NewSingleCallback(this, &Controller::CommandComplete));
   }
 
+  void GetHardwareInfo() {
+    if (!CheckForWidget()) {
+      return;
+    }
+    m_widget->SendCommand(
+        FLAGS_port, ola::usb::JARULE_CMD_GET_HARDWARE_INFO,
+        NULL, 0,
+        NewSingleCallback(this, &Controller::HardwareInfoComplete));
+  }
+
+  void RunSelfTest() {
+    if (!CheckForWidget()) {
+      return;
+    }
+    uint8_t mode = ola::usb::SELF_TEST_MODE;
+    m_widget->SendCommand(
+        FLAGS_port,
+        ola::usb::JARULE_CMD_SET_MODE,
+        &mode, sizeof(mode),
+        NewSingleCallback(this, &Controller::SelfTestPart1Complete));
+  }
+
   bool CheckResult(ola::usb::USBCommandResult result,
                    uint8_t status_flags) {
     if (result != ola::usb::COMMAND_RESULT_OK) {
       OLA_WARN << "Error: " << result;
       return false;
-    }
-    if (status_flags & ola::usb::LOGS_PENDING_FLAG) {
-      OLA_INFO << "Logs pending!";
     }
     if (status_flags & ola::usb::FLAGS_CHANGED_FLAG) {
       OLA_INFO << "Flags changed!";
@@ -780,7 +846,8 @@ int main(int argc, char **argv) {
     exit(ola::EXIT_UNAVAILABLE);
   }
 
-  controller.PrintCommands();
+  // Print this via cout to ensure we actually get some output by default
+  cout << "Press h to print a help message" << endl;
 
   ss.Run();
   return ola::EXIT_OK;

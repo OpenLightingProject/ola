@@ -24,26 +24,25 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "libs/acn/E131Node.h"
 #include "ola/acn/CID.h"
 #include "olad/Device.h"
 #include "olad/Plugin.h"
 #include "plugins/e131/messages/E131ConfigMessages.pb.h"
-#include "plugins/e131/e131/E131Node.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
-
 
 class E131InputPort;
 class E131OutputPort;
 
 class E131Device: public ola::Device {
  public:
-  struct E131DeviceOptions : public E131Node::Options {
+  struct E131DeviceOptions : public ola::acn::E131Node::Options {
    public:
     E131DeviceOptions()
-      : E131Node::Options(),
+      : ola::acn::E131Node::Options(),
         input_ports(0),
         output_ports(0) {
     }
@@ -71,7 +70,7 @@ class E131Device: public ola::Device {
 
  private:
   class PluginAdaptor *m_plugin_adaptor;
-  std::auto_ptr<E131Node> m_node;
+  std::auto_ptr<ola::acn::E131Node> m_node;
   const E131DeviceOptions m_options;
   std::vector<E131InputPort*> m_input_ports;
   std::vector<E131OutputPort*> m_output_ports;

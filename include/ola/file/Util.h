@@ -37,6 +37,14 @@ extern const char PATH_SEPARATOR;
 std::string ConvertPathSeparators(const std::string &path);
 
 /**
+ * @brief Join two parts of a path.
+ * @param first The first part of the path.
+ * @param second The second part of the path.
+ * @returns The concatenated path, with the separator if required.
+ */
+std::string JoinPaths(const std::string &first, const std::string &second);
+
+/**
  * @brief Find all files in a directory that match the given prefix.
  * @param[in] directory the directory to look in
  * @param[in] prefix the prefix to match on

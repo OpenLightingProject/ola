@@ -3,22 +3,103 @@ sudo: false
 script:
  - "bash -ex .travis-ci.sh"
 
+addons:
+  apt:
+    packages: &base_build
+     # This is the absolute minimum for configure to pass
+     # Non C++ based tasks use it so they can run make builtfiles
+     - ccache
+     - libcppunit-dev
+     - bison
+     - flex
+     - uuid-dev
+     - libprotobuf-dev
+     - protobuf-compiler
+     - libprotoc-dev
+     - python-protobuf
+    packages: &core_build
+     # This is all the bits we need to enable all options
+     - *base_build
+     - libftdi-dev
+     - libftdi1
+     - libusb-1.0-0-dev
+     - liblo-dev
+     - libavahi-glib1
+     - libncurses5-dev
+     - libmicrohttpd-dev
+    packages: &core_build_gpp_latest
+     - *core_build
+     - g++-5
+    packages: &core_build_clang_latest
+     - *core_build
+     - clang-3.8
+
 matrix:
   fast_finish: true
   include:
     - compiler: clang
       env: TASK='compile'
+      addons:
+        apt:
+          packages:
+           - *core_build_clang_latest
+          sources:
+           - ubuntu-toolchain-r-test
+           - llvm-toolchain-precise
     - compiler: gcc
       env: TASK='compile'
+      addons:
+        apt:
+          packages:
+           - *core_build_gpp_latest
+          sources:
+           - ubuntu-toolchain-r-test
     - compiler: gcc
       env: TASK='coverage'
+      addons:
+        apt:
+          packages:
+           - *core_build_gpp_latest
+          sources:
+           - ubuntu-toolchain-r-test
     - compiler: gcc
       env: TASK='coverity'
+      addons:
+        apt:
+          packages:
+           # Coverity doesn't work with g++-5 yet
+           - *core_build
+           - g++-4.9
+          sources:
+           - ubuntu-toolchain-r-test
     - env: TASK='doxygen'
+      addons:
+        apt:
+          packages:
+           - *core_build_gpp_latest
+           - doxygen
+           - graphviz
+          sources:
+           - ubuntu-toolchain-r-test
     - env: TASK='lint'
+      addons:
+        apt:
+          packages:
+           - *core_build
     - env: TASK='check-licences'
+      addons:
+        apt:
+          packages:
+           - *core_build
     - env: TASK='jshint'
+      addons:
+        apt:
+          packages:
     - env: TASK='flake8'
+      addons:
+        apt:
+          packages:
+           - *base_build
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'
@@ -55,44 +136,15 @@ before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log # erase log
   - ccache -s # see how many hits ccache got
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise
-    packages:
-      - protobuf-compiler
-      - libprotoc-dev
-      - libprotobuf-dev
-      - protobuf-c-compiler
-      - bison
-      - flex
-      - libftdi-dev
-      - libftdi1
-      - libusb-1.0-0-dev
-      - liblo-dev
-      - libavahi-glib1
-      - uuid-dev
-      - libcppunit-dev
-      - libncurses5-dev
-      - python-protobuf
-      - libmicrohttpd-dev
-      - doxygen
-      - graphviz
-      - g++-5
-      - g++-4.9
-      - ccache
-      - clang-3.8
-
 install:
   - pip install --user protobuf==2.4.1
-  - pip install --user cpp-coveralls
-  - pip install --user flake8
-  - npm install -g grunt-cli
+  - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
+  - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
+  - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
- - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
+ - if [ \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-4.9" CC="ccache gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
@@ -100,8 +152,10 @@ before_install:
  - $CXX --version
 
 after_success:
-  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
+
+after_script:
+  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
 
 notifications:
   irc:

@@ -630,6 +630,35 @@ AC_ARG_ENABLE(
   [AS_HELP_STRING([--disable-doxygen-version],
   [Substitute the Doxygen version with latest, for the website])])
 
+# UUCP Lock directory
+AC_ARG_WITH([uucp-lock],
+            [AS_HELP_STRING([--with-uucp-lock],
+                            [The directory to use for UUCP lock files])],
+            [], [])
+
+# Try to locate the UUCP lock path.
+UUCPLOCK=""
+AH_TEMPLATE([UUCP_LOCK_DIR], [Define to the path of the UUCP lock directory])
+AC_MSG_CHECKING(for serial port lock directory)
+
+# This list is from the minicom configs, The Filesystem Hierarchy Standard says
+# /var/lock is the one true source.
+for ac_uucplock in /var/lock /etc/locks /usr/spool/locks /var/spool/locks /var/spool/lock /usr/spool/uucp /var/spool/uucp /var/run; do
+  AS_IF([test -d $ac_uucplock], [UUCPLOCK=$ac_uucplock; break])
+done
+
+# Mac stores the lock files in /tmp
+case "${host_os}" in
+  *darwin*)
+    UUCPLOCK=/tmp
+    ;;
+esac
+
+AS_IF([test "x$with_uucp_lock" != x], [UUCPLOCK=$with_uucp_lock])
+AS_IF([test -d $UUCPLOCK],
+      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")],
+      AC_MSG_ERROR(No suitable lock directory))
+
 # Python wrappers & RDM Responder tests.
 #####################################################
 AM_CONDITIONAL([BUILD_PYTHON_LIBS], [test "x$enable_python_libs" = xyes])
@@ -774,8 +803,9 @@ AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
 AC_CONFIG_FILES([include/ola/base/Version.h
                  libola.pc
                  libolaserver.pc
+                 libs/acn/libolaacn.pc
+                 ola.spec
                  plugins/artnet/messages/libolaartnetconf.pc
-                 plugins/e131/e131/libolaacn.pc
                  plugins/e131/messages/libolae131conf.pc
                  plugins/usbpro/messages/libolausbproconf.pc
                  tools/e133/libolae133common.pc
@@ -800,6 +830,7 @@ Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
 Ja Rule: ${BUILDING_JA_RULE}
 Enabled Plugins:${PLUGINS}
+UUCP Lock Directory: $UUCPLOCK
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
