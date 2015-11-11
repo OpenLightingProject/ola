@@ -157,13 +157,13 @@ def DisplayTiming(timing_stats):
   logging.info('--------------- Response Timing ----------------')
 
   stats = timing_stats.GetStatsForType(TimingStats.GET)
-  LogAllTimingParams('GET_RESPONSE', stats);
+  LogAllTimingParams('GET_RESPONSE', stats)
   stats = timing_stats.GetStatsForType(TimingStats.SET)
-  LogAllTimingParams('SET_RESPONSE', stats);
+  LogAllTimingParams('SET_RESPONSE', stats)
   stats = timing_stats.GetStatsForType(TimingStats.DISCOVERY)
-  LogAllTimingParams('DISCOVERY_RESPONSE', stats);
+  LogAllTimingParams('DISCOVERY_RESPONSE', stats)
   stats = timing_stats.GetStatsForType(TimingStats.DUB)
-  LogAllTimingParams('DISCOVERY_UNIQUE_BRANCH', stats);
+  LogAllTimingParams('DISCOVERY_UNIQUE_BRANCH', stats)
 
 
 def DisplaySummary(options, runner, tests, device):
@@ -205,7 +205,7 @@ def DisplaySummary(options, runner, tests, device):
 
   if options.timing:
     timing_stats = runner.TimingStats()
-    DisplayTiming(timing_stats);
+    DisplayTiming(timing_stats)
 
   logging.info('------------------- Warnings --------------------')
   for warning in sorted(warnings):
