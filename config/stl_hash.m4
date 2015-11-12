@@ -19,10 +19,10 @@ AC_DEFUN([AC_CXX_STL_HASH],
    # First try unordered_map, but not on gcc's before 4.2 -- I've
    # seen unexplainable unordered_map bugs with -O2 on older gcc's.
    AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-                      [#if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2))
+                      [[#if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2))
                        # error GCC too old for unordered_map
-                       #endif],
-                      [/* no program body necessary */])],
+                       #endif]],
+                      [[/* no program body necessary */]])],
                      [stl_hash_old_gcc=no],
                      [stl_hash_old_gcc=yes])
    for location in unordered_map tr1/unordered_map; do
@@ -30,9 +30,9 @@ AC_DEFUN([AC_CXX_STL_HASH],
        if test -z "$ac_cv_cxx_hash_map" -a "$stl_hash_old_gcc" != yes; then
          # Some older gcc's have a buggy tr1, so test a bit of code.
          AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-                            [#include <$location>],
-                            [const ${namespace}::unordered_map<int, int> t;
-                             return t.find(5) == t.end();])],
+                            [[#include <$location>]],
+                            [[const ${namespace}::unordered_map<int, int> t;
+                             return t.find(5) == t.end();]])],
                            [ac_cv_cxx_hash_map="<$location>";
                             ac_cv_cxx_hash_namespace="$namespace";
                             ac_cv_cxx_hash_map_class="unordered_map";])
@@ -44,8 +44,8 @@ AC_DEFUN([AC_CXX_STL_HASH],
      for namespace in __gnu_cxx "" std stdext; do
        if test -z "$ac_cv_cxx_hash_map"; then
          AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-                            [#include <$location>],
-                            [${namespace}::hash_map<int, int> t])],
+                            [[#include <$location>]],
+                            [[${namespace}::hash_map<int, int> t]])],
                            [ac_cv_cxx_hash_map="<$location>";
                             ac_cv_cxx_hash_namespace="$namespace";
                             ac_cv_cxx_hash_map_class="hash_map";])

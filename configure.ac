@@ -161,11 +161,10 @@ AM_CONDITIONAL([SUPPORTS_RDYNAMIC], [test "x$ac_cv_rdynamic" = xyes])
 AC_MSG_CHECKING(for IPv6 support)
 AC_CACHE_VAL(ac_cv_ipv6,
         AC_RUN_IFELSE(
-         [AC_LANG_PROGRAM([
-#       include <stdlib.h>
-#       include <sys/types.h>
-#       include <sys/socket.h>
-#       include <netinet/in.h>],[
+         [AC_LANG_PROGRAM([[#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>]],[[
         /* Make sure the definitions for AF_INET6 and struct sockaddr_in6
          * are defined, and that we can actually create an IPv6 TCP socket.
          */
@@ -175,7 +174,8 @@ AC_CACHE_VAL(ac_cv_ipv6,
                 struct sockaddr_in6 foo;
                 fd = socket(AF_INET6, SOCK_STREAM, 0);
                 exit(fd >= 0 ? 0 : 1);
-        }])],
+        }
+        ]])],
         [ac_cv_ipv6=yes],
         [ac_cv_ipv6=no],
         [ac_cv_ipv6=no])
