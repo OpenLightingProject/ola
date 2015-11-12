@@ -12,6 +12,8 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/AsyncUsbReceiver.h \
     plugins/usbdmx/AsyncUsbSender.cpp \
     plugins/usbdmx/AsyncUsbSender.h \
+    plugins/usbdmx/AsyncUsbTransceiverBase.cpp \
+    plugins/usbdmx/AsyncUsbTransceiverBase.h \
     plugins/usbdmx/EurolitePro.cpp \
     plugins/usbdmx/EurolitePro.h \
     plugins/usbdmx/EuroliteProFactory.cpp \
