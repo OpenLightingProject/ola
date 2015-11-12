@@ -32,7 +32,6 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
-AC_LIBTOOL_WIN32_DLL
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -128,7 +127,7 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
                 getgrnam_r getgrgid_r secure_getenv])
 
-LT_INIT
+LT_INIT([win32-dll])
 
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
