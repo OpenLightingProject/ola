@@ -92,7 +92,7 @@ cp debian/ola.udev %buildroot/%{_udevrulesdir}
 %{_datadir}/ola/pids
 %{_libdir}/libola*\.so\.*
 %{_mandir}/man1/**
-%config(noreplace) %{_udevrulesdir}/ola.udev
+%{_udevrulesdir}/ola.udev
 
 %files devel
 %doc README.developer
