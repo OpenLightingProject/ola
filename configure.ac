@@ -26,6 +26,7 @@ AC_SUBST(OLA_REVISION_VERSION)
 AC_LANG([C++])
 AC_PROG_CXX
 AC_PROG_AWK
+AM_PROG_AR
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
@@ -146,7 +147,11 @@ AC_MSG_CHECKING(for -rdynamic support)
 old_cppflags=$CPPFLAGS
 CPPFLAGS="${CPPFLAGS} -rdynamic -Wall -Werror"
 AC_CACHE_VAL(ac_cv_rdynamic,
-  AC_TRY_COMPILE([], [], ac_cv_rdynamic=yes, ac_cv_rdynamic=no))
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([], [])],
+     [ac_cv_rdynamic=yes],
+     [ac_cv_rdynamic=no])
+)
 CPPFLAGS=$old_cppflags
 AC_MSG_RESULT($ac_cv_rdynamic)
 
@@ -155,11 +160,12 @@ AM_CONDITIONAL([SUPPORTS_RDYNAMIC], [test "x$ac_cv_rdynamic" = xyes])
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
 AC_CACHE_VAL(ac_cv_ipv6,
-        AC_TRY_RUN([
+        AC_RUN_IFELSE(
+         [AC_LANG_PROGRAM([
 #       include <stdlib.h>
 #       include <sys/types.h>
 #       include <sys/socket.h>
-#       include <netinet/in.h>
+#       include <netinet/in.h>],[
         /* Make sure the definitions for AF_INET6 and struct sockaddr_in6
          * are defined, and that we can actually create an IPv6 TCP socket.
          */
@@ -169,10 +175,11 @@ AC_CACHE_VAL(ac_cv_ipv6,
                 struct sockaddr_in6 foo;
                 fd = socket(AF_INET6, SOCK_STREAM, 0);
                 exit(fd >= 0 ? 0 : 1);
-        }],
-        ac_cv_ipv6=yes,
-        ac_cv_ipv6=no,
-        ac_cv_ipv6=no))
+        }])],
+        [ac_cv_ipv6=yes],
+        [ac_cv_ipv6=no],
+        [ac_cv_ipv6=no])
+)
 AC_MSG_RESULT($ac_cv_ipv6)
 AS_IF([test "x$ac_cv_ipv6" = xyes],
       [AC_DEFINE([IPV6], [1], [Define to 1 if the system supports IPv6])])
