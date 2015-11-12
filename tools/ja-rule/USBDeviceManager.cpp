@@ -55,7 +55,8 @@ USBDeviceManager::USBDeviceManager(SelectServer* ss,
     : m_ss(ss),
       m_notification_cb(notification_cb),
       m_cleanup_thread(Thread::Options("cleanup-thread")),
-      m_start_thread_id(0) {
+      m_start_thread_id(),
+      m_in_start(false) {
 }
 
 USBDeviceManager::~USBDeviceManager() {
@@ -64,6 +65,7 @@ USBDeviceManager::~USBDeviceManager() {
 
 bool USBDeviceManager::Start() {
   m_start_thread_id = Thread::Self();
+  m_in_start = true;
 
   m_hotplug_agent.reset(new HotplugAgent(
         NewCallback(this, &USBDeviceManager::HotPlugEvent), 3));
@@ -77,7 +79,8 @@ bool USBDeviceManager::Start() {
   }
 
   m_cleanup_thread.Start();
-  m_start_thread_id = 0;
+  m_start_thread_id = pthread_t();
+  m_in_start = false;
   return true;
 }
 
@@ -180,7 +183,7 @@ void USBDeviceManager::SignalEvent(EventType event, JaRuleWidget* widget) {
     return;
   }
 
-  if (pthread_equal(m_start_thread_id, Thread::Self())) {
+  if (m_in_start && pthread_equal(m_start_thread_id, Thread::Self())) {
     // We're within Start(), so we can execute the callbacks directly.
     m_notification_cb->Run(event, widget);
   } else {

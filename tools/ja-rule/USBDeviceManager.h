@@ -114,6 +114,7 @@ class USBDeviceManager {
   std::auto_ptr<ola::usb::HotplugAgent> m_hotplug_agent;
   ola::thread::ExecutorThread m_cleanup_thread;
   ola::thread::ThreadId m_start_thread_id;
+	bool m_in_start;
   WidgetMap m_widgets;
 
   void SignalEvent(EventType event, ola::usb::JaRuleWidget* widget);
