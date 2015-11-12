@@ -173,7 +173,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
 #ifndef _WIN32
                      | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
 #endif
-                     );
+                     );  // NOLINT(whitespace/parens)
   if (lock_fd < 0) {
     return false;
   }
