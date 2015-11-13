@@ -69,7 +69,7 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
   m_widget_factories.push_back(new AnymauDMXFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor));
   m_widget_factories.push_back(
-    new NodleU1Factory(&m_usb_adaptor, m_plugin_adaptor, m_preferences));
+      new NodleU1Factory(&m_usb_adaptor, m_plugin_adaptor, m_preferences));
   m_widget_factories.push_back(new ScanlimeFadecandyFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new VellemanK8062Factory(&m_usb_adaptor));

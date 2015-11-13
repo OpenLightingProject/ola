@@ -47,8 +47,8 @@ NodleU1InputPort::NodleU1InputPort(Device *parent,
     : BasicInputPort(parent, id, plugin_adaptor),
       m_widget(widget) {
   m_widget->SetDmxCallback(NewCallback(
-    static_cast<BasicInputPort*>(this),
-    &BasicInputPort::DmxChanged));
+      static_cast<BasicInputPort*>(this),
+      &BasicInputPort::DmxChanged));
 }
 }  // namespace usbdmx
 }  // namespace plugin

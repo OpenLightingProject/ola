@@ -53,6 +53,8 @@ static const int CONFIGURATION = 1;
 static const int INTERFACE = 0;
 
 static const unsigned int DATABLOCK_SIZE = 33;
+static const int OUTPUT_ENABLE_MASK = 2;
+static const int INPUT_ENABLE_MASK = 4;
 
 /*
  * @brief Send chosen mode to the DMX device
@@ -272,7 +274,7 @@ bool SynchronousNodleU1::Init() {
 
   SetInterfaceMode(m_adaptor, usb_handle, m_mode);
 
-  if (m_mode & 2) {  // output port active
+  if (m_mode & OUTPUT_ENABLE_MASK) {  // output port active
     std::auto_ptr<NodleU1ThreadedSender> sender(
         new NodleU1ThreadedSender(m_adaptor, m_usb_device, usb_handle));
     if (!sender->Start()) {
@@ -281,7 +283,7 @@ bool SynchronousNodleU1::Init() {
     m_sender.reset(sender.release());
   }
 
-  if (m_mode & 4) {  // input port active
+  if (m_mode & INPUT_ENABLE_MASK) {  // input port active
     std::auto_ptr<NodleU1ThreadedReceiver> receiver(
         new NodleU1ThreadedReceiver(m_adaptor, m_usb_device, usb_handle,
                                     m_plugin_adaptor));
@@ -296,9 +298,9 @@ bool SynchronousNodleU1::Init() {
 
 bool SynchronousNodleU1::SendDMX(const DmxBuffer &buffer) {
   if (m_sender.get()) {
-	  return m_sender->SendDMX(buffer);
+    return m_sender->SendDMX(buffer);
   } else {
-	  return false;
+    return false;
   }
 }
 
@@ -477,11 +479,11 @@ AsynchronousNodleU1::AsynchronousNodleU1(
     const string &serial,
     unsigned int mode)
     : NodleU1(adaptor, usb_device, plugin_adaptor, serial, mode) {
-  if (mode & 2) {  // output port active
+  if (mode & OUTPUT_ENABLE_MASK) {  // output port active
     m_sender.reset(new NodleU1AsyncUsbSender(m_adaptor, usb_device, mode));
   }
 
-  if (mode & 4) {  // input port active
+  if (mode & INPUT_ENABLE_MASK) {  // input port active
     m_receiver.reset(new NodleU1AsyncUsbReceiver(m_adaptor, usb_device,
                                                  plugin_adaptor, mode));
   }

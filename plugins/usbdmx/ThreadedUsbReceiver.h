@@ -75,7 +75,6 @@ class ThreadedUsbReceiver: private ola::thread::Thread {
   /**
    * @brief Set the callback to be called when the receive buffer is updated.
    * @param callback The callback to call.
-   * @returns NULL.
    */
   void SetReceiveCallback(Callback0<void> *callback) {
     m_receive_callback.reset(callback);

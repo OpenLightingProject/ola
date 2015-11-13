@@ -59,7 +59,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
    * @param plugin The parent Plugin object which is used when creating
    * devices.
    * @param debug_level the debug level to use for libusb.
-   * @param preferences The preferences container used by the plugin
+   * @param preferences The Preferences container used by the plugin
    */
   SyncPluginImpl(PluginAdaptor *plugin_adaptor,
                  Plugin *plugin,
