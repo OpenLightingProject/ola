@@ -39,7 +39,6 @@ namespace usbdmx {
 
 using std::string;
 
-const char NodleU1::NODLE_MODE_KEY[] = "nodle_mode";
 int NodleU1::NODLE_DEFAULT_MODE = 6;
 int NodleU1::NODLE_MIN_MODE = 0;
 int NodleU1::NODLE_MAX_MODE = 7;

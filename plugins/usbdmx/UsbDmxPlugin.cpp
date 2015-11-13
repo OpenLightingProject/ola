@@ -102,8 +102,9 @@ string UsbDmxPlugin::Description() const {
 "The debug level for libusb, see http://libusb.sourceforge.net/api-1.0/ .\n"
 "0 = No logging, 4 = Verbose debug.\n"
 "\n"
-"nodle_mode = {0,1,2,3,4,5,6,7}\n"
-"The mode for the Nodle U1 interface to operate in.\n"
+"nodle-<serial>-mode = {0,1,2,3,4,5,6,7}\n"
+"The mode for the Nodle U1 interface with serial number <serial> "
+"to operate in. Default = 6\n"
 "0 - Standby\n"
 "1 - DMX In -> DMX Out\n"
 "2 - PC Out -> DMX Out\n"
@@ -124,11 +125,6 @@ bool UsbDmxPlugin::SetDefaultPreferences() {
       LIBUSB_DEBUG_LEVEL_KEY,
       UIntValidator(LIBUSB_DEFAULT_DEBUG_LEVEL, LIBUSB_MAX_DEBUG_LEVEL),
       LIBUSB_DEFAULT_DEBUG_LEVEL);
-
-  save |= m_preferences->SetDefaultValue(
-      NodleU1::NODLE_MODE_KEY,
-      UIntValidator(NodleU1::NODLE_MIN_MODE, NodleU1::NODLE_MAX_MODE),
-      NodleU1::NODLE_DEFAULT_MODE);
 
   if (save) {
     m_preferences->Save();

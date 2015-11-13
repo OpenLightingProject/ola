@@ -72,7 +72,6 @@ class NodleU1: public SimpleWidget {
   virtual void SetDmxCallback(Callback0<void> *callback) = 0;
   virtual const DmxBuffer &GetDmxInBuffer() = 0;
 
-  static const char NODLE_MODE_KEY[];
   static int NODLE_DEFAULT_MODE;
   static int NODLE_MIN_MODE;
   static int NODLE_MAX_MODE;
