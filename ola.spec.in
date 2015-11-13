@@ -22,8 +22,6 @@ BuildRequires:	protobuf-devel >= 0.2,protobuf-compiler,protobuf-python
 %if 0%{?fedora} >= 21
 BuildRequires:	liblo-devel
 %endif
-Provides:	bundled(bootstrap) = 3.3.2, bundled(jquery) = 2.1.3
-Provides:	bundled(angularjs) = 1.3.14, bundled(angular-route) = 1.3.14
 
 %description
 The Open Lighting Architecture is a framework for lighting control information.
@@ -61,6 +59,16 @@ Provides:	bundled(jquery) = 1.7.2, bundled(jquery-ui) = 1.8.21
 %description rdm-tests
 The rdm test suite for OLA
 
+%package data
+Group:		Development/Libraries
+BuildArch:	noarch
+Summary:	data for OLA
+Provides:	bundled(bootstrap) = 3.3.2, bundled(jquery) = 2.1.3
+Provides:	bundled(angularjs) = 1.3.14, bundled(angular-route) = 1.3.14
+
+%description data
+html, css and js files for the web-server from olad and some rdm pids
+
 %prep
 %setup -q -n %{name}-%{version}
 
@@ -80,18 +88,15 @@ find %buildroot -name "*\.la" -delete
 find %buildroot -name "*\.a" -delete
 
 %install
-rm -rf %buildroot
 %make_install
 mkdir -p %buildroot/%{_udevrulesdir}
 cp debian/ola.udev %buildroot/%{_udevrulesdir}
 
 %files
-%doc AUTHORS ChangeLog NEWS README TODO
+%doc AUTHORS NEWS README
 %{_bindir}/ola*
 %{_bindir}/rdmpro_sniffer
 %{_bindir}/usbpro_firmware
-%{_datadir}/olad
-%{_datadir}/ola/pids
 %{_libdir}/libola*\.so\.*
 %{_mandir}/man1/**
 %{_udevrulesdir}/ola.udev
@@ -103,6 +108,7 @@ cp debian/ola.udev %buildroot/%{_udevrulesdir}
 %{_libdir}/pkgconfig/*
 
 %files -n python2-%{name}
+%dir %{python2_sitelib}/ola
 %{python2_sitelib}/ola/*\.py*
 %{python2_sitelib}/ola/rpc
 
@@ -112,6 +118,11 @@ cp debian/ola.udev %buildroot/%{_udevrulesdir}
 %{_bindir}/rdm_test_server.py*
 %{_datadir}/ola/rdm-server
 %{python2_sitelib}/ola/testing
+
+%files data
+%{_datadir}/olad
+%dir %{_datadir}/ola
+%{_datadir}/ola/pids
 
 %post -p /sbin/ldconfig
 
