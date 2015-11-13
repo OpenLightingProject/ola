@@ -34,7 +34,7 @@ namespace usbdmx {
 /**
  * @brief A NodleU1 device.
  *
- * This device creates a single output port around a Widget.
+ * This device creates an output and/or input port around a Widget.
  */
 class NodleU1Device: public Device {
  public:

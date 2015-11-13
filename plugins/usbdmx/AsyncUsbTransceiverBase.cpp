@@ -63,7 +63,7 @@ AsyncUsbTransceiverBase::~AsyncUsbTransceiverBase() {
 
 bool AsyncUsbTransceiverBase::Init() {
   m_usb_handle = SetupHandle();
-  return m_usb_handle ? true : false;
+  return m_usb_handle != NULL;
 }
 
 void AsyncUsbTransceiverBase::CancelTransfer() {

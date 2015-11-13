@@ -68,8 +68,6 @@ class AsyncUsbSender: public AsyncUsbTransceiverBase {
    */
   void TransferComplete(struct libusb_transfer *transfer);
 
-  libusb_device_handle *GetHandle() { return m_usb_handle; }
-
  protected:
   /**
    * @brief Perform the DMX transfer.

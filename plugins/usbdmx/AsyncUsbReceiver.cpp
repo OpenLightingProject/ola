@@ -43,7 +43,7 @@ AsyncUsbReceiver::~AsyncUsbReceiver() {
 bool AsyncUsbReceiver::Init() {
   m_usb_handle = SetupHandle();
   m_inited_with_handle = false;
-  return m_usb_handle ? true : false;
+  return m_usb_handle != NULL;
 }
 
 bool AsyncUsbReceiver::Init(libusb_device_handle* handle) {

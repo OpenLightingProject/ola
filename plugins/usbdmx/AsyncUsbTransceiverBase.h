@@ -64,6 +64,10 @@ class AsyncUsbTransceiverBase {
    */
   virtual void TransferComplete(struct libusb_transfer *transfer) = 0;
 
+  /**
+   * @brief Get the libusb_device_handle of an already opened widget
+   * @returns the handle of the widget or NULL if it was not opened
+   */
   libusb_device_handle *GetHandle() { return m_usb_handle; }
 
  protected:

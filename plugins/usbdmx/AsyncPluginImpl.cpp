@@ -187,7 +187,7 @@ bool AsyncPluginImpl::NewWidget(NodleU1 *widget) {
   return StartAndRegisterDevice(
       widget,
       new NodleU1Device(m_plugin, widget, "DMXControl Projects e.V. Nodle U1",
-                        "NodleU1-" + widget->SerialNumber(),
+                        "nodleu1-" + widget->SerialNumber(),
                         m_plugin_adaptor));
 }
 

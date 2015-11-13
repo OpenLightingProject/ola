@@ -57,7 +57,7 @@ static const unsigned int DATABLOCK_SIZE = 33;
 /*
  * @brief Send chosen mode to the DMX device
  * @param handle the libusb_device_handle to use.
- * @returns true when mode was set 
+ * @returns true if mode was set
  */
 bool SetInterfaceMode(ola::usb::LibUsbAdaptor *adaptor,
                       libusb_device_handle *handle,
@@ -295,7 +295,11 @@ bool SynchronousNodleU1::Init() {
 }
 
 bool SynchronousNodleU1::SendDMX(const DmxBuffer &buffer) {
-  return m_sender.get() ? m_sender->SendDMX(buffer) : false;
+  if (m_sender.get()) {
+	  return m_sender->SendDMX(buffer);
+  } else {
+	  return false;
+  }
 }
 
 void SynchronousNodleU1::SetDmxCallback(Callback0<void> *callback) {
