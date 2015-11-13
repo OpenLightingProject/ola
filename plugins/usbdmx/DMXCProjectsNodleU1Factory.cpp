@@ -13,16 +13,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * NodleU1Factory.cpp
+ * DMXCProjectsNodleU1Factory.cpp
  * The WidgetFactory for Nodle widgets.
  * Copyright (C) 2015 Stefan Krupop
  */
 
-#include "plugins/usbdmx/NodleU1Factory.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Factory.h"
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
-#include "plugins/usbdmx/NodleU1.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1.h"
 
 DECLARE_bool(use_async_libusb);
 
@@ -30,10 +30,10 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t NodleU1Factory::VENDOR_ID = 0x16d0;
-const uint16_t NodleU1Factory::PRODUCT_ID = 0x0830;
+const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID = 0x16d0;
+const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID = 0x0830;
 
-bool NodleU1Factory::DeviceAdded(
+bool DMXCProjectsNodleU1Factory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -51,26 +51,29 @@ bool NodleU1Factory::DeviceAdded(
 
   if (m_preferences->SetDefaultValue(
       "nodle-" + info.serial + "-mode",
-      UIntValidator(NodleU1::NODLE_MIN_MODE, NodleU1::NODLE_MAX_MODE),
-      NodleU1::NODLE_DEFAULT_MODE)) {
+      UIntValidator(DMXCProjectsNodleU1::NODLE_MIN_MODE,
+                    DMXCProjectsNodleU1::NODLE_MAX_MODE),
+      DMXCProjectsNodleU1::NODLE_DEFAULT_MODE)) {
     m_preferences->Save();
   }
 
   unsigned int mode;
   if (!StringToInt(m_preferences->GetValue("nodle-" + info.serial + "-mode"),
                    &mode)) {
-    mode = NodleU1::NODLE_DEFAULT_MODE;
+    mode = DMXCProjectsNodleU1::NODLE_DEFAULT_MODE;
   }
 
   OLA_INFO << "Setting Nodle U1 mode to " << mode;
 
-  NodleU1 *widget = NULL;
+  DMXCProjectsNodleU1 *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousNodleU1(m_adaptor, usb_device, m_plugin_adaptor,
-                                     info.serial, mode);
+    widget = new AsynchronousDMXCProjectsNodleU1(m_adaptor, usb_device,
+                                                 m_plugin_adaptor, info.serial,
+                                                 mode);
   } else {
-    widget = new SynchronousNodleU1(m_adaptor, usb_device, m_plugin_adaptor,
-                                    info.serial, mode);
+    widget = new SynchronousDMXCProjectsNodleU1(m_adaptor, usb_device,
+                                                m_plugin_adaptor, info.serial,
+                                                mode);
   }
   return AddWidget(observer, widget);
 }

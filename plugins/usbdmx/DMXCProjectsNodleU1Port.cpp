@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * NodleU1Port.cpp
+ * DMXCProjectsNodleU1Port.cpp
  * Output and input ports that use a widget and give the serial as desciption.
  * Copyright (C) 2015 Stefan Krupop
  */
 
-#include "plugins/usbdmx/NodleU1Port.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Port.h"
 
 #include "ola/Logging.h"
 #include "olad/Device.h"
@@ -27,23 +27,25 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-NodleU1OutputPort::NodleU1OutputPort(Device *parent,
-                                     unsigned int id,
-                                     NodleU1 *widget)
+DMXCProjectsNodleU1OutputPort::DMXCProjectsNodleU1OutputPort(
+    Device *parent,
+    unsigned int id,
+    DMXCProjectsNodleU1 *widget)
     : BasicOutputPort(parent, id),
       m_widget(widget) {
 }
 
-bool NodleU1OutputPort::WriteDMX(const DmxBuffer &buffer,
-                                 OLA_UNUSED uint8_t priority) {
+bool DMXCProjectsNodleU1OutputPort::WriteDMX(const DmxBuffer &buffer,
+                                             OLA_UNUSED uint8_t priority) {
   m_widget->SendDMX(buffer);
   return true;
 }
 
-NodleU1InputPort::NodleU1InputPort(Device *parent,
-                                   unsigned int id,
-                                   PluginAdaptor *plugin_adaptor,
-                                   NodleU1 *widget)
+DMXCProjectsNodleU1InputPort::DMXCProjectsNodleU1InputPort(
+    Device *parent,
+    unsigned int id,
+    PluginAdaptor *plugin_adaptor,
+    DMXCProjectsNodleU1 *widget)
     : BasicInputPort(parent, id, plugin_adaptor),
       m_widget(widget) {
   m_widget->SetDmxCallback(NewCallback(

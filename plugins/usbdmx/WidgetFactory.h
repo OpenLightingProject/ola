@@ -84,7 +84,7 @@ class WidgetObserver {
    * @returns true if the widget has been claimed, false if the widget was
    *   ignored.
    */
-  virtual bool NewWidget(class NodleU1 *widget) = 0;
+  virtual bool NewWidget(class DMXCProjectsNodleU1 *widget) = 0;
 
   /**
    * @brief Called when a new ScanlimeFadecandy is added.

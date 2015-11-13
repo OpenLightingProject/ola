@@ -13,19 +13,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * NodleU1Port.h
+ * DMXCProjectsNodleU1Port.h
  * Output and input ports that use a widget and give the serial as desciption.
  * Copyright (C) 2015 Stefan Krupop
  */
 
-#ifndef PLUGINS_USBDMX_NODLEU1PORT_H_
-#define PLUGINS_USBDMX_NODLEU1PORT_H_
+#ifndef PLUGINS_USBDMX_DMXCPROJECTSNODLEU1PORT_H_
+#define PLUGINS_USBDMX_DMXCPROJECTSNODLEU1PORT_H_
 
 #include <string>
 #include <iostream>
 #include "ola/base/Macro.h"
 #include "olad/Port.h"
-#include "plugins/usbdmx/NodleU1.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1.h"
 
 namespace ola {
 
@@ -37,17 +37,17 @@ namespace usbdmx {
 /**
  * @brief A thin wrapper around a Widget so that it can operate as a Port.
  */
-class NodleU1OutputPort: public BasicOutputPort {
+class DMXCProjectsNodleU1OutputPort: public BasicOutputPort {
  public:
   /**
-   * @brief Create a new NodleU1OutputPort.
+   * @brief Create a new DMXCProjectsNodleU1OutputPort.
    * @param parent The parent device for this port.
    * @param id The port id.
    * @param widget The widget to use to send DMX frames.
    */
-  NodleU1OutputPort(Device *parent,
-                    unsigned int id,
-                    class NodleU1 *widget);
+  DMXCProjectsNodleU1OutputPort(Device *parent,
+                                unsigned int id,
+                                class DMXCProjectsNodleU1 *widget);
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
@@ -58,27 +58,27 @@ class NodleU1OutputPort: public BasicOutputPort {
   }
 
  private:
-  class NodleU1* const m_widget;
+  class DMXCProjectsNodleU1* const m_widget;
 
-  DISALLOW_COPY_AND_ASSIGN(NodleU1OutputPort);
+  DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1OutputPort);
 };
 
 /**
  * @brief A thin wrapper around a Widget so that it can operate as a Port.
  */
-class NodleU1InputPort: public BasicInputPort {
+class DMXCProjectsNodleU1InputPort: public BasicInputPort {
  public:
   /**
-   * @brief Create a new NodleU1InputPort.
+   * @brief Create a new DMXCProjectsNodleU1InputPort.
    * @param parent The parent device for this port.
    * @param id The port id.
    * @param plugin_adaptor a PluginAdaptor object, used by the base class.
    * @param widget The widget to use to receive DMX frames.
    */
-  NodleU1InputPort(Device *parent,
-                   unsigned int id,
-                   PluginAdaptor *plugin_adaptor,
-                   class NodleU1 *widget);
+  DMXCProjectsNodleU1InputPort(Device *parent,
+                               unsigned int id,
+                               PluginAdaptor *plugin_adaptor,
+                               class DMXCProjectsNodleU1 *widget);
 
   const DmxBuffer &ReadDMX() const {
     return m_widget->GetDmxInBuffer();
@@ -92,11 +92,11 @@ class NodleU1InputPort: public BasicInputPort {
 
  private:
   DmxBuffer m_buffer;
-  class NodleU1* const m_widget;
+  class DMXCProjectsNodleU1* const m_widget;
 
-  DISALLOW_COPY_AND_ASSIGN(NodleU1InputPort);
+  DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1InputPort);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_NODLEU1PORT_H_
+#endif  // PLUGINS_USBDMX_DMXCPROJECTSNODLEU1PORT_H_

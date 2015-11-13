@@ -81,7 +81,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool NewWidget(class AnymauDMX *widget);
   bool NewWidget(class EurolitePro *widget);
   bool NewWidget(ola::usb::JaRuleWidget *widget);
-  bool NewWidget(class NodleU1 *widget);
+  bool NewWidget(class DMXCProjectsNodleU1 *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
   bool NewWidget(class Sunlite *widget);
   bool NewWidget(class VellemanK8062 *widget);

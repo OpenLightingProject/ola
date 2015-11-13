@@ -13,25 +13,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * NodleU1Device.cpp
- * A NodleU1 device that creates an input and an output port.
+ * DMXCProjectsNodleU1Device.cpp
+ * A DMXCProjectsNodleU1 device that creates an input and an output port.
  * Copyright (C) 2015 Stefan Krupop
  */
 
-#include "plugins/usbdmx/NodleU1Device.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Device.h"
 
 #include <string>
-#include "plugins/usbdmx/NodleU1Port.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Port.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-NodleU1Device::NodleU1Device(ola::AbstractPlugin *owner,
-                             NodleU1 *widget,
-                             const std::string &device_name,
-                             const std::string &device_id,
-                             PluginAdaptor *plugin_adaptor)
+DMXCProjectsNodleU1Device::DMXCProjectsNodleU1Device(
+    ola::AbstractPlugin *owner,
+    DMXCProjectsNodleU1 *widget,
+    const std::string &device_name,
+    const std::string &device_id,
+    PluginAdaptor *plugin_adaptor)
     : Device(owner, device_name),
       m_device_id(device_id),
       m_out_port(),
@@ -39,15 +40,16 @@ NodleU1Device::NodleU1Device(ola::AbstractPlugin *owner,
   unsigned int mode = widget->Mode();
 
   if (mode & 2) {  // output port active
-    m_out_port.reset(new NodleU1OutputPort(this, 0, widget));
+    m_out_port.reset(new DMXCProjectsNodleU1OutputPort(this, 0, widget));
   }
 
   if (mode & 4) {  // input port active
-    m_in_port.reset(new NodleU1InputPort(this, 0, plugin_adaptor, widget));
+    m_in_port.reset(new DMXCProjectsNodleU1InputPort(this, 0, plugin_adaptor,
+                                                     widget));
   }
 }
 
-bool NodleU1Device::StartHook() {
+bool DMXCProjectsNodleU1Device::StartHook() {
   if (m_out_port.get()) {
     AddPort(m_out_port.release());
   }

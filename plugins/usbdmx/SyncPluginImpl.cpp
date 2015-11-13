@@ -38,9 +38,9 @@
 #include "plugins/usbdmx/AnymauDMXFactory.h"
 #include "plugins/usbdmx/EurolitePro.h"
 #include "plugins/usbdmx/EuroliteProFactory.h"
-#include "plugins/usbdmx/NodleU1.h"
-#include "plugins/usbdmx/NodleU1Device.h"
-#include "plugins/usbdmx/NodleU1Factory.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Device.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Factory.h"
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
@@ -68,8 +68,8 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
       m_context(NULL) {
   m_widget_factories.push_back(new AnymauDMXFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor));
-  m_widget_factories.push_back(
-      new NodleU1Factory(&m_usb_adaptor, m_plugin_adaptor, m_preferences));
+  m_widget_factories.push_back(new DMXCProjectsNodleU1Factory(&m_usb_adaptor,
+      m_plugin_adaptor, m_preferences));
   m_widget_factories.push_back(new ScanlimeFadecandyFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new VellemanK8062Factory(&m_usb_adaptor));
@@ -136,12 +136,13 @@ bool SyncPluginImpl::NewWidget(OLA_UNUSED ola::usb::JaRuleWidget *widget) {
   return false;
 }
 
-bool SyncPluginImpl::NewWidget(NodleU1 *widget) {
+bool SyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
   return StartAndRegisterDevice(
       widget,
-      new NodleU1Device(m_plugin, widget, "DMXControl Projects e.V. Nodle U1",
-                        "nodleu1-" + widget->SerialNumber(),
-                        m_plugin_adaptor));
+      new DMXCProjectsNodleU1Device(m_plugin, widget,
+                                    "DMXControl Projects e.V. Nodle U1",
+                                    "nodleu1-" + widget->SerialNumber(),
+                                    m_plugin_adaptor));
 }
 
 bool SyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {

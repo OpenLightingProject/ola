@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * NodleU1Factory.h
+ * DMXCProjectsNodleU1Factory.h
  * The WidgetFactory for Nodle widgets.
  * Copyright (C) 2015 Stefan Krupop
  */
 
-#ifndef PLUGINS_USBDMX_NODLEU1FACTORY_H_
-#define PLUGINS_USBDMX_NODLEU1FACTORY_H_
+#ifndef PLUGINS_USBDMX_DMXCPROJECTSNODLEU1FACTORY_H_
+#define PLUGINS_USBDMX_DMXCPROJECTSNODLEU1FACTORY_H_
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
@@ -34,12 +34,14 @@ namespace usbdmx {
 /**
  * @brief Creates Nodle widgets.
  */
-class NodleU1Factory : public BaseWidgetFactory<class NodleU1> {
+class DMXCProjectsNodleU1Factory :
+    public BaseWidgetFactory<class DMXCProjectsNodleU1> {
  public:
-  explicit NodleU1Factory(ola::usb::LibUsbAdaptor *adaptor,
-                          PluginAdaptor *plugin_adaptor,
-                          Preferences *preferences)
-      : BaseWidgetFactory<class NodleU1>("NodleU1Factory"),
+  explicit DMXCProjectsNodleU1Factory(ola::usb::LibUsbAdaptor *adaptor,
+                                      PluginAdaptor *plugin_adaptor,
+                                      Preferences *preferences)
+      : BaseWidgetFactory<class DMXCProjectsNodleU1>(
+            "DMXCProjectsNodleU1Factory"),
         m_adaptor(adaptor),
         m_plugin_adaptor(plugin_adaptor),
         m_preferences(preferences) {
@@ -58,9 +60,9 @@ class NodleU1Factory : public BaseWidgetFactory<class NodleU1> {
   static const uint16_t VENDOR_ID;
   static const uint16_t PRODUCT_ID;
 
-  DISALLOW_COPY_AND_ASSIGN(NodleU1Factory);
+  DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1Factory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_NODLEU1FACTORY_H_
+#endif  // PLUGINS_USBDMX_DMXCPROJECTSNODLEU1FACTORY_H_

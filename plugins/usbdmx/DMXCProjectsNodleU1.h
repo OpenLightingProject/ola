@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * NodleU1.h
+ * DMXCProjectsNodleU1.h
  * The synchronous and asynchronous Nodle widgets.
  * Copyright (C) 2015 Stefan Krupop
  */
 
-#ifndef PLUGINS_USBDMX_NODLEU1_H_
-#define PLUGINS_USBDMX_NODLEU1_H_
+#ifndef PLUGINS_USBDMX_DMXCPROJECTSNODLEU1_H_
+#define PLUGINS_USBDMX_DMXCPROJECTSNODLEU1_H_
 
 #include <libusb.h>
 #include <memory>
@@ -40,13 +40,13 @@ namespace usbdmx {
 /**
  * @brief The interface for the Nodle Widgets
  */
-class NodleU1: public SimpleWidget {
+class DMXCProjectsNodleU1: public SimpleWidget {
  public:
-  explicit NodleU1(ola::usb::LibUsbAdaptor *adaptor,
-                   libusb_device *usb_device,
-                   PluginAdaptor *plugin_adaptor,
-                   const std::string &serial,
-                   unsigned int mode)
+  explicit DMXCProjectsNodleU1(ola::usb::LibUsbAdaptor *adaptor,
+                               libusb_device *usb_device,
+                               PluginAdaptor *plugin_adaptor,
+                               const std::string &serial,
+                               unsigned int mode)
       : SimpleWidget(adaptor, usb_device),
         m_serial(serial),
         m_mode(mode),
@@ -89,21 +89,21 @@ class NodleU1: public SimpleWidget {
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousNodleU1: public NodleU1 {
+class SynchronousDMXCProjectsNodleU1: public DMXCProjectsNodleU1 {
  public:
   /**
-   * @brief Create a new SynchronousNodleU1.
+   * @brief Create a new SynchronousDMXCProjectsNodleU1.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param plugin_adaptor the PluginAdaptor used to execute callbacks
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */
-  SynchronousNodleU1(ola::usb::LibUsbAdaptor *adaptor,
-                     libusb_device *usb_device,
-                     PluginAdaptor *plugin_adaptor,
-                     const std::string &serial,
-                     unsigned int mode);
+  SynchronousDMXCProjectsNodleU1(ola::usb::LibUsbAdaptor *adaptor,
+                                 libusb_device *usb_device,
+                                 PluginAdaptor *plugin_adaptor,
+                                 const std::string &serial,
+                                 unsigned int mode);
 
   bool Init();
 
@@ -114,30 +114,30 @@ class SynchronousNodleU1: public NodleU1 {
 
  private:
   libusb_device* const m_usb_device;
-  std::auto_ptr<class NodleU1ThreadedSender> m_sender;
-  std::auto_ptr<class NodleU1ThreadedReceiver> m_receiver;
+  std::auto_ptr<class DMXCProjectsNodleU1ThreadedSender> m_sender;
+  std::auto_ptr<class DMXCProjectsNodleU1ThreadedReceiver> m_receiver;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousNodleU1);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousDMXCProjectsNodleU1);
 };
 
 /**
  * @brief An Nodle widget that uses asynchronous libusb operations.
  */
-class AsynchronousNodleU1 : public NodleU1 {
+class AsynchronousDMXCProjectsNodleU1 : public DMXCProjectsNodleU1 {
  public:
   /**
-   * @brief Create a new AsynchronousNodleU1.
+   * @brief Create a new AsynchronousDMXCProjectsNodleU1.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param plugin_adaptor the PluginAdaptor used to execute callbacks
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */
-  AsynchronousNodleU1(ola::usb::LibUsbAdaptor *adaptor,
-                      libusb_device *usb_device,
-                      PluginAdaptor *plugin_adaptor,
-                      const std::string &serial,
-                      unsigned int mode);
+  AsynchronousDMXCProjectsNodleU1(ola::usb::LibUsbAdaptor *adaptor,
+                                  libusb_device *usb_device,
+                                  PluginAdaptor *plugin_adaptor,
+                                  const std::string &serial,
+                                  unsigned int mode);
 
   bool Init();
 
@@ -147,13 +147,13 @@ class AsynchronousNodleU1 : public NodleU1 {
   const DmxBuffer &GetDmxInBuffer();
 
  private:
-  std::auto_ptr<class NodleU1AsyncUsbSender> m_sender;
-  std::auto_ptr<class NodleU1AsyncUsbReceiver> m_receiver;
+  std::auto_ptr<class DMXCProjectsNodleU1AsyncUsbSender> m_sender;
+  std::auto_ptr<class DMXCProjectsNodleU1AsyncUsbReceiver> m_receiver;
   DmxBuffer m_buffer;
 
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousNodleU1);
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousDMXCProjectsNodleU1);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_NODLEU1_H_
+#endif  // PLUGINS_USBDMX_DMXCPROJECTSNODLEU1_H_

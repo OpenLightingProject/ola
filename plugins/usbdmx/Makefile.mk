@@ -14,6 +14,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/AsyncUsbSender.h \
     plugins/usbdmx/AsyncUsbTransceiverBase.cpp \
     plugins/usbdmx/AsyncUsbTransceiverBase.h \
+    plugins/usbdmx/DMXCProjectsNodleU1.cpp \
+    plugins/usbdmx/DMXCProjectsNodleU1.h \
+    plugins/usbdmx/DMXCProjectsNodleU1Factory.cpp \
+    plugins/usbdmx/DMXCProjectsNodleU1Factory.h \
     plugins/usbdmx/EurolitePro.cpp \
     plugins/usbdmx/EurolitePro.h \
     plugins/usbdmx/EuroliteProFactory.cpp \
@@ -22,10 +26,6 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/Flags.cpp \
     plugins/usbdmx/JaRuleFactory.cpp \
     plugins/usbdmx/JaRuleFactory.h \
-    plugins/usbdmx/NodleU1.cpp \
-    plugins/usbdmx/NodleU1.h \
-    plugins/usbdmx/NodleU1Factory.cpp \
-    plugins/usbdmx/NodleU1Factory.h \
     plugins/usbdmx/ScanlimeFadecandy.cpp \
     plugins/usbdmx/ScanlimeFadecandy.h \
     plugins/usbdmx/ScanlimeFadecandyFactory.cpp \
@@ -61,6 +61,10 @@ lib_LTLIBRARIES += plugins/usbdmx/libolausbdmx.la
 plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/AsyncPluginImpl.cpp \
     plugins/usbdmx/AsyncPluginImpl.h \
+    plugins/usbdmx/DMXCProjectsNodleU1Device.cpp \
+    plugins/usbdmx/DMXCProjectsNodleU1Device.h \
+    plugins/usbdmx/DMXCProjectsNodleU1Port.cpp \
+    plugins/usbdmx/DMXCProjectsNodleU1Port.h \
     plugins/usbdmx/GenericDevice.cpp \
     plugins/usbdmx/GenericDevice.h \
     plugins/usbdmx/GenericOutputPort.cpp \
@@ -69,10 +73,6 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/JaRuleDevice.h \
     plugins/usbdmx/JaRuleOutputPort.cpp \
     plugins/usbdmx/JaRuleOutputPort.h \
-    plugins/usbdmx/NodleU1Device.cpp \
-    plugins/usbdmx/NodleU1Device.h \
-    plugins/usbdmx/NodleU1Port.cpp \
-    plugins/usbdmx/NodleU1Port.h \
     plugins/usbdmx/PluginImplInterface.h \
     plugins/usbdmx/SyncPluginImpl.cpp \
     plugins/usbdmx/SyncPluginImpl.h \

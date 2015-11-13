@@ -59,7 +59,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
-  bool NewWidget(class NodleU1 *widget) {
+  bool NewWidget(class DMXCProjectsNodleU1 *widget) {
     return DispatchNewWidget(widget);
   }
 
