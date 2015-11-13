@@ -39,13 +39,13 @@ __attribute__((__stdcall__))
 #endif
 void AsyncCallback(struct libusb_transfer *transfer) {
   AsyncUsbTransceiverBase *widget = reinterpret_cast<AsyncUsbTransceiverBase*>(
-      transfer->user_data);
+    transfer->user_data);
   widget->TransferComplete(transfer);
 }
 }  // namespace
 
 AsyncUsbTransceiverBase::AsyncUsbTransceiverBase(LibUsbAdaptor *adaptor,
-                               libusb_device *usb_device)
+                                                 libusb_device *usb_device)
     : m_adaptor(adaptor),
       m_usb_device(usb_device),
       m_usb_handle(NULL),
@@ -91,23 +91,23 @@ void AsyncUsbTransceiverBase::CancelTransfer() {
 }
 
 void AsyncUsbTransceiverBase::FillControlTransfer(unsigned char *buffer,
-                                         unsigned int timeout) {
+                                                  unsigned int timeout) {
   m_adaptor->FillControlTransfer(m_transfer, m_usb_handle, buffer,
                                  &AsyncCallback, this, timeout);
 }
 
 void AsyncUsbTransceiverBase::FillBulkTransfer(unsigned char endpoint,
-                                      unsigned char *buffer,
-                                      int length,
-                                      unsigned int timeout) {
+                                               unsigned char *buffer,
+                                               int length,
+                                               unsigned int timeout) {
   m_adaptor->FillBulkTransfer(m_transfer, m_usb_handle, endpoint, buffer,
                               length, &AsyncCallback, this, timeout);
 }
 
 void AsyncUsbTransceiverBase::FillInterruptTransfer(unsigned char endpoint,
-                                           unsigned char *buffer,
-                                           int length,
-                                           unsigned int timeout) {
+                                                    unsigned char *buffer,
+                                                    int length,
+                                                    unsigned int timeout) {
   m_adaptor->FillInterruptTransfer(m_transfer, m_usb_handle, endpoint, buffer,
                                    length, &AsyncCallback, this, timeout);
 }

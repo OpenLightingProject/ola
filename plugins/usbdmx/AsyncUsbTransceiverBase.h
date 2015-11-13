@@ -44,7 +44,7 @@ class AsyncUsbTransceiverBase {
    * @param usb_device the libusb_device to use for the widget.
    */
   AsyncUsbTransceiverBase(ola::usb::LibUsbAdaptor* const adaptor,
-                 libusb_device *usb_device);
+                          libusb_device *usb_device);
 
   /**
    * @brief Destructor
