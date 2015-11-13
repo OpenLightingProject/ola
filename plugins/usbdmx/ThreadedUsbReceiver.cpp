@@ -29,10 +29,12 @@ namespace usbdmx {
 
 ThreadedUsbReceiver::ThreadedUsbReceiver(libusb_device *usb_device,
                                          libusb_device_handle *usb_handle,
-                                         PluginAdaptor *plugin_adaptor)
+                                         PluginAdaptor *plugin_adaptor,
+                                         int interface_number)
     : m_term(false),
       m_usb_device(usb_device),
       m_usb_handle(usb_handle),
+      m_interface_number(interface_number),
       m_plugin_adaptor(plugin_adaptor),
       m_receive_callback(NULL) {
   libusb_ref_device(usb_device);
@@ -51,7 +53,7 @@ bool ThreadedUsbReceiver::Start() {
   bool ret = ola::thread::Thread::Start();
   if (!ret) {
     OLA_WARN << "Failed to start receiver thread";
-    libusb_release_interface(m_usb_handle, 0);
+    libusb_release_interface(m_usb_handle, m_interface_number);
     libusb_close(m_usb_handle);
     return false;
   }
@@ -89,7 +91,7 @@ void *ThreadedUsbReceiver::Run() {
       }
     }
   }
-  libusb_release_interface(m_usb_handle, 0);
+  libusb_release_interface(m_usb_handle, m_interface_number);
   libusb_close(m_usb_handle);
   return NULL;
 }

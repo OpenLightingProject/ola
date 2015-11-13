@@ -28,10 +28,12 @@ namespace plugin {
 namespace usbdmx {
 
 ThreadedUsbSender::ThreadedUsbSender(libusb_device *usb_device,
-                                     libusb_device_handle *usb_handle)
+                                     libusb_device_handle *usb_handle,
+                                     int interface_number)
     : m_term(false),
       m_usb_device(usb_device),
-      m_usb_handle(usb_handle) {
+      m_usb_handle(usb_handle),
+      m_interface_number(interface_number) {
   libusb_ref_device(usb_device);
 }
 
@@ -48,7 +50,7 @@ bool ThreadedUsbSender::Start() {
   bool ret = ola::thread::Thread::Start();
   if (!ret) {
     OLA_WARN << "Failed to start sender thread";
-    libusb_release_interface(m_usb_handle, 0);
+    libusb_release_interface(m_usb_handle, m_interface_number);
     libusb_close(m_usb_handle);
     return false;
   }
@@ -82,7 +84,7 @@ void *ThreadedUsbSender::Run() {
       usleep(40000);
     }
   }
-  libusb_release_interface(m_usb_handle, 0);
+  libusb_release_interface(m_usb_handle, m_interface_number);
   libusb_close(m_usb_handle);
   return NULL;
 }

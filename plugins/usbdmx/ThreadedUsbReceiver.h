@@ -54,10 +54,12 @@ class ThreadedUsbReceiver: private ola::thread::Thread {
    *   on the device, while the ThreadedUsbReceiver object exists.
    * @param usb_handle The handle to use for the DMX transfer.
    * @param plugin_adaptor the PluginAdaptor used to execute callbacks
+   * @param interface_number the USB interface number of the widget. Defaults to 0.
    */
   ThreadedUsbReceiver(libusb_device *usb_device,
                       libusb_device_handle *usb_handle,
-                      PluginAdaptor *plugin_adaptor);
+                      PluginAdaptor *plugin_adaptor,
+                      int interface_number = 0);
   virtual ~ThreadedUsbReceiver();
 
   /**
@@ -107,6 +109,7 @@ class ThreadedUsbReceiver: private ola::thread::Thread {
   bool m_term;
   libusb_device* const m_usb_device;
   libusb_device_handle* const m_usb_handle;
+  int const m_interface_number;
   PluginAdaptor* const m_plugin_adaptor;
   std::auto_ptr<Callback0<void> > m_receive_callback;
   DmxBuffer m_buffer;
