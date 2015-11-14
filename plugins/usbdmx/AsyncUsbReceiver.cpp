@@ -13,57 +13,63 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * AsyncUsbSender.cpp
- * An Asynchronous DMX USB sender.
- * Copyright (C) 2014 Simon Newton
+ * AsyncUsbReceiver.cpp
+ * An Asynchronous DMX USB receiver.
+ * Copyright (C) 2015 Stefan Krupop
  */
 
-#include "plugins/usbdmx/AsyncUsbSender.h"
+#include "plugins/usbdmx/AsyncUsbReceiver.h"
 
-#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-using ola::usb::LibUsbAdaptor;
-
-AsyncUsbSender::AsyncUsbSender(LibUsbAdaptor *adaptor,
-                               libusb_device *usb_device)
+AsyncUsbReceiver::AsyncUsbReceiver(ola::usb::LibUsbAdaptor *adaptor,
+                                   libusb_device *usb_device,
+                                   PluginAdaptor *plugin_adaptor)
     : AsyncUsbTransceiverBase(adaptor, usb_device),
-      m_pending_tx(false) {
+      m_plugin_adaptor(plugin_adaptor),
+      m_inited_with_handle(false) {
 }
 
-AsyncUsbSender::~AsyncUsbSender() {
-  m_adaptor->Close(m_usb_handle);
+AsyncUsbReceiver::~AsyncUsbReceiver() {
+  if (!m_inited_with_handle) {
+    m_adaptor->Close(m_usb_handle);
+  }
 }
 
-bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer) {
-  if (!m_usb_handle) {
-    OLA_WARN << "AsyncUsbSender hasn't been initialized";
-    return false;
-  }
-  ola::thread::MutexLocker locker(&m_mutex);
-  if (m_transfer_state == IDLE) {
-    PerformTransfer(buffer);
-  } else {
-    // Buffer incoming data so we can send it when the outstanding transfers
-    // complete.
-    m_pending_tx = true;
-    m_tx_buffer.Set(buffer);
-  }
+bool AsyncUsbReceiver::Init() {
+  m_usb_handle = SetupHandle();
+  m_inited_with_handle = false;
+  return m_usb_handle != NULL;
+}
+
+bool AsyncUsbReceiver::Init(libusb_device_handle* handle) {
+  m_usb_handle = handle;
+  m_inited_with_handle = true;
   return true;
 }
 
-void AsyncUsbSender::TransferComplete(struct libusb_transfer *transfer) {
+bool AsyncUsbReceiver::Start() {
+  if (!m_usb_handle) {
+    OLA_WARN << "AsyncUsbReceiver hasn't been initialized";
+    return false;
+  }
+  ola::thread::MutexLocker locker(&m_mutex);
+  return PerformTransfer();
+}
+
+void AsyncUsbReceiver::TransferComplete(struct libusb_transfer *transfer) {
   if (transfer != m_transfer) {
     OLA_WARN << "Mismatched libusb transfer: " << transfer << " != "
              << m_transfer;
     return;
   }
 
-  if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
+  if (transfer->status != LIBUSB_TRANSFER_COMPLETED &&
+      transfer->status != LIBUSB_TRANSFER_TIMED_OUT ) {
     OLA_WARN << "Transfer returned " << transfer->status;
   }
 
@@ -75,12 +81,17 @@ void AsyncUsbSender::TransferComplete(struct libusb_transfer *transfer) {
     return;
   }
 
-  PostTransferHook();
-
-  if ((m_transfer_state == IDLE) && m_pending_tx) {
-    m_pending_tx = false;
-    PerformTransfer(m_tx_buffer);
+  if (transfer->status != LIBUSB_TRANSFER_TIMED_OUT) {
+    if (TransferCompleted(&m_rx_buffer, transfer->actual_length)) {
+      // Input changed
+      if (m_receive_callback.get()) {
+        m_plugin_adaptor->Execute(m_receive_callback.get());
+      }
+    }
   }
+
+  // Start next request
+  PerformTransfer();
 }
 }  // namespace usbdmx
 }  // namespace plugin

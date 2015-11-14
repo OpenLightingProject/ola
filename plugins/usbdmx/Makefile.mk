@@ -8,9 +8,16 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/AnymauDMX.h \
     plugins/usbdmx/AnymauDMXFactory.cpp \
     plugins/usbdmx/AnymauDMXFactory.h \
+    plugins/usbdmx/AsyncUsbReceiver.cpp \
+    plugins/usbdmx/AsyncUsbReceiver.h \
     plugins/usbdmx/AsyncUsbSender.cpp \
     plugins/usbdmx/AsyncUsbSender.h \
-    plugins/usbdmx/AsyncUsbSender.h \
+    plugins/usbdmx/AsyncUsbTransceiverBase.cpp \
+    plugins/usbdmx/AsyncUsbTransceiverBase.h \
+    plugins/usbdmx/DMXCProjectsNodleU1.cpp \
+    plugins/usbdmx/DMXCProjectsNodleU1.h \
+    plugins/usbdmx/DMXCProjectsNodleU1Factory.cpp \
+    plugins/usbdmx/DMXCProjectsNodleU1Factory.h \
     plugins/usbdmx/EurolitePro.cpp \
     plugins/usbdmx/EurolitePro.h \
     plugins/usbdmx/EuroliteProFactory.cpp \
@@ -32,6 +39,8 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/SunliteFirmwareLoader.h \
     plugins/usbdmx/SyncronizedWidgetObserver.cpp \
     plugins/usbdmx/SyncronizedWidgetObserver.h \
+    plugins/usbdmx/ThreadedUsbReceiver.cpp \
+    plugins/usbdmx/ThreadedUsbReceiver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
     plugins/usbdmx/ThreadedUsbSender.h \
     plugins/usbdmx/VellemanK8062.cpp \
@@ -52,6 +61,10 @@ lib_LTLIBRARIES += plugins/usbdmx/libolausbdmx.la
 plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/AsyncPluginImpl.cpp \
     plugins/usbdmx/AsyncPluginImpl.h \
+    plugins/usbdmx/DMXCProjectsNodleU1Device.cpp \
+    plugins/usbdmx/DMXCProjectsNodleU1Device.h \
+    plugins/usbdmx/DMXCProjectsNodleU1Port.cpp \
+    plugins/usbdmx/DMXCProjectsNodleU1Port.h \
     plugins/usbdmx/GenericDevice.cpp \
     plugins/usbdmx/GenericDevice.h \
     plugins/usbdmx/GenericOutputPort.cpp \
