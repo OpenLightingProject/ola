@@ -51,15 +51,15 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
+  bool NewWidget(class DMXCProjectsNodleU1 *widget) {
+    return DispatchNewWidget(widget);
+  }
+
   bool NewWidget(class EurolitePro *widget) {
     return DispatchNewWidget(widget);
   }
 
   bool NewWidget(ola::usb::JaRuleWidget *widget) {
-    return DispatchNewWidget(widget);
-  }
-
-  bool NewWidget(class DMXCProjectsNodleU1 *widget) {
     return DispatchNewWidget(widget);
   }
 

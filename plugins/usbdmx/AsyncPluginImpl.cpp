@@ -39,13 +39,13 @@
 
 #include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/AnymauDMXFactory.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Device.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Factory.h"
 #include "plugins/usbdmx/EuroliteProFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/JaRuleDevice.h"
 #include "plugins/usbdmx/JaRuleFactory.h"
-#include "plugins/usbdmx/DMXCProjectsNodleU1.h"
-#include "plugins/usbdmx/DMXCProjectsNodleU1Device.h"
-#include "plugins/usbdmx/DMXCProjectsNodleU1Factory.h"
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/SunliteFactory.h"
@@ -116,12 +116,12 @@ bool AsyncPluginImpl::Start() {
   // Setup the factories.
   m_widget_factories.push_back(new AnymauDMXFactory(m_usb_adaptor));
   m_widget_factories.push_back(
+      new DMXCProjectsNodleU1Factory(m_usb_adaptor, m_plugin_adaptor,
+                                     m_preferences));
+  m_widget_factories.push_back(
       new EuroliteProFactory(m_usb_adaptor));
   m_widget_factories.push_back(
       new JaRuleFactory(m_plugin_adaptor, m_usb_adaptor));
-  m_widget_factories.push_back(
-      new DMXCProjectsNodleU1Factory(m_usb_adaptor,
-                                     m_plugin_adaptor, m_preferences));
   m_widget_factories.push_back(
       new ScanlimeFadecandyFactory(m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(m_usb_adaptor));
@@ -169,6 +169,15 @@ bool AsyncPluginImpl::NewWidget(AnymauDMX *widget) {
                         "anyma-" + widget->SerialNumber()));
 }
 
+bool AsyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new DMXCProjectsNodleU1Device(m_plugin, widget,
+                                    "DMXControl Projects e.V. Nodle U1",
+                                    "nodleu1-" + widget->SerialNumber(),
+                                    m_plugin_adaptor));
+}
+
 bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {
   return StartAndRegisterDevice(
       widget,
@@ -181,15 +190,6 @@ bool AsyncPluginImpl::NewWidget(JaRuleWidget *widget) {
   str << widget->ProductString() << " (" << widget->GetUID() << ")";
   return StartAndRegisterDevice(widget,
                                 new JaRuleDevice(m_plugin, widget, str.str()));
-}
-
-bool AsyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
-  return StartAndRegisterDevice(
-      widget,
-      new DMXCProjectsNodleU1Device(m_plugin, widget,
-                                    "DMXControl Projects e.V. Nodle U1",
-                                    "nodleu1-" + widget->SerialNumber(),
-                                    m_plugin_adaptor));
 }
 
 bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
