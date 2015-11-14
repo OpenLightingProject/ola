@@ -42,6 +42,8 @@ using std::string;
 int DMXCProjectsNodleU1::NODLE_DEFAULT_MODE = 6;
 int DMXCProjectsNodleU1::NODLE_MIN_MODE = 0;
 int DMXCProjectsNodleU1::NODLE_MAX_MODE = 7;
+int DMXCProjectsNodleU1::OUTPUT_ENABLE_MASK = 2;
+int DMXCProjectsNodleU1::INPUT_ENABLE_MASK = 4;
 
 namespace {
 
@@ -52,8 +54,6 @@ static const int CONFIGURATION = 1;
 static const int INTERFACE = 0;
 
 static const unsigned int DATABLOCK_SIZE = 33;
-static const int OUTPUT_ENABLE_MASK = 2;
-static const int INPUT_ENABLE_MASK = 4;
 
 /*
  * @brief Send chosen mode to the DMX device

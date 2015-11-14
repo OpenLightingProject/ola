@@ -39,11 +39,11 @@ DMXCProjectsNodleU1Device::DMXCProjectsNodleU1Device(
       m_in_port() {
   unsigned int mode = widget->Mode();
 
-  if (mode & 2) {  // output port active
+  if (mode & DMXCProjectsNodleU1::OUTPUT_ENABLE_MASK) {  // output port active
     m_out_port.reset(new DMXCProjectsNodleU1OutputPort(this, 0, widget));
   }
 
-  if (mode & 4) {  // input port active
+  if (mode & DMXCProjectsNodleU1::INPUT_ENABLE_MASK) {  // input port active
     m_in_port.reset(new DMXCProjectsNodleU1InputPort(this, 0, plugin_adaptor,
                                                      widget));
   }

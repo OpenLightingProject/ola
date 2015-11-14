@@ -76,6 +76,9 @@ class DMXCProjectsNodleU1: public SimpleWidget {
   static int NODLE_MIN_MODE;
   static int NODLE_MAX_MODE;
 
+  static int OUTPUT_ENABLE_MASK;
+  static int INPUT_ENABLE_MASK;
+
  private:
   std::string m_serial;
 
