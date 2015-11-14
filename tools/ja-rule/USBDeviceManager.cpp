@@ -79,7 +79,6 @@ bool USBDeviceManager::Start() {
   }
 
   m_cleanup_thread.Start();
-  m_start_thread_id = pthread_t();
   m_in_start = false;
   return true;
 }
@@ -183,6 +182,8 @@ void USBDeviceManager::SignalEvent(EventType event, JaRuleWidget* widget) {
     return;
   }
 
+  // Because pthread_t is a struct on Windows and there's no invalid process
+  // value, we separately track if we're in start or not too
   if (m_in_start && pthread_equal(m_start_thread_id, Thread::Self())) {
     // We're within Start(), so we can execute the callbacks directly.
     m_notification_cb->Run(event, widget);
