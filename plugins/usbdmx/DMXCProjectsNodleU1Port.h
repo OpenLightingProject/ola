@@ -37,35 +37,6 @@ namespace usbdmx {
 /**
  * @brief A thin wrapper around a Widget so that it can operate as a Port.
  */
-class DMXCProjectsNodleU1OutputPort: public BasicOutputPort {
- public:
-  /**
-   * @brief Create a new DMXCProjectsNodleU1OutputPort.
-   * @param parent The parent device for this port.
-   * @param id The port id.
-   * @param widget The widget to use to send DMX frames.
-   */
-  DMXCProjectsNodleU1OutputPort(Device *parent,
-                                unsigned int id,
-                                class DMXCProjectsNodleU1 *widget);
-
-  bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-
-  std::string Description() const {
-    std::ostringstream str;
-    str << "Serial #: " << m_widget->SerialNumber();
-    return str.str();
-  }
-
- private:
-  class DMXCProjectsNodleU1* const m_widget;
-
-  DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1OutputPort);
-};
-
-/**
- * @brief A thin wrapper around a Widget so that it can operate as a Port.
- */
 class DMXCProjectsNodleU1InputPort: public BasicInputPort {
  public:
   /**
@@ -85,13 +56,10 @@ class DMXCProjectsNodleU1InputPort: public BasicInputPort {
   }
 
   std::string Description() const {
-    std::ostringstream str;
-    str << "Serial #: " << m_widget->SerialNumber();
-    return str.str();
+    return "";
   }
 
  private:
-  DmxBuffer m_buffer;
   class DMXCProjectsNodleU1* const m_widget;
 
   DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1InputPort);

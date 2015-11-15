@@ -172,10 +172,11 @@ bool AsyncPluginImpl::NewWidget(AnymauDMX *widget) {
 bool AsyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
   return StartAndRegisterDevice(
       widget,
-      new DMXCProjectsNodleU1Device(m_plugin, widget,
-                                    "DMXControl Projects e.V. Nodle U1",
-                                    "nodleu1-" + widget->SerialNumber(),
-                                    m_plugin_adaptor));
+      new DMXCProjectsNodleU1Device(
+          m_plugin, widget,
+          "DMXControl Projects e.V. Nodle U1 (" + widget->SerialNumber() + ")",
+          "nodleu1-" + widget->SerialNumber(),
+          m_plugin_adaptor));
 }
 
 bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {
