@@ -58,7 +58,6 @@ StateManager::StateManager(const std::vector<TestState*> &states,
       m_ss(NULL),
       m_stdin_handler(NULL),
       m_states(states) {
-  memset(&m_old_tc, 0, sizeof(m_old_tc));
 }
 
 bool StateManager::Init() {

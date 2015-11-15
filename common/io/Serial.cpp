@@ -22,7 +22,13 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <string.h>
+#ifdef _WIN32
+#include <sys/stat.h>
+#include <ola/win/CleanWindows.h>
+#include <winioctl.h>
+#else
 #include <sys/ioctl.h>
+#endif
 #include <unistd.h>
 
 #if HAVE_CONFIG_H
@@ -83,11 +89,18 @@ bool GetPidFromFile(const string &lock_file, pid_t *pid) {
 }
 
 bool ProcessExists(pid_t pid) {
+#ifdef _WIN32
+  // TODO(Peter): Implement this
+  (void) pid;
+  OLA_WARN << "Not implemented yet";
+  return false;
+#else
   errno = 0;
   if (0 == kill(pid, 0)) {
     return true;
   }
   return errno != ESRCH;
+#endif
 }
 
 bool RemoveLockFile(const string &lock_file) {
@@ -156,7 +169,11 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   // Now try to open the file in O_EXCL mode. If we fail, someone else already
   // took the lock.
   int lock_fd = open(lock_file.c_str(), O_RDWR | O_CREAT | O_EXCL,
-                     S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+                     S_IRUSR | S_IWUSR
+#ifndef _WIN32
+                     | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+#endif
+                     );  // NOLINT(whitespace/parens)
   if (lock_fd < 0) {
     return false;
   }
@@ -182,13 +199,16 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
     return false;
   }
 
-  // As a final safety mechanism, use ioctl(TIOCEXCL) to prevent further opens.
+#if HAVE_SYS_IOCTL_H
+  // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
+  // further opens.
   if (ioctl(*fd, TIOCEXCL) == -1) {
     OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
     close(*fd);
     RemoveLockFile(lock_file);
     return false;
   }
+#endif
   return true;
 }
 
