@@ -27,20 +27,6 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-DMXCProjectsNodleU1OutputPort::DMXCProjectsNodleU1OutputPort(
-    Device *parent,
-    unsigned int id,
-    DMXCProjectsNodleU1 *widget)
-    : BasicOutputPort(parent, id),
-      m_widget(widget) {
-}
-
-bool DMXCProjectsNodleU1OutputPort::WriteDMX(const DmxBuffer &buffer,
-                                             OLA_UNUSED uint8_t priority) {
-  m_widget->SendDMX(buffer);
-  return true;
-}
-
 DMXCProjectsNodleU1InputPort::DMXCProjectsNodleU1InputPort(
     Device *parent,
     unsigned int id,

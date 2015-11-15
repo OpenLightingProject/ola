@@ -22,6 +22,7 @@
 
 #include <string>
 #include "plugins/usbdmx/DMXCProjectsNodleU1Port.h"
+#include "plugins/usbdmx/GenericOutputPort.h"
 
 namespace ola {
 namespace plugin {
@@ -40,7 +41,7 @@ DMXCProjectsNodleU1Device::DMXCProjectsNodleU1Device(
   unsigned int mode = widget->Mode();
 
   if (mode & DMXCProjectsNodleU1::OUTPUT_ENABLE_MASK) {  // output port active
-    m_out_port.reset(new DMXCProjectsNodleU1OutputPort(this, 0, widget));
+    m_out_port.reset(new GenericOutputPort(this, 0, widget));
   }
 
   if (mode & DMXCProjectsNodleU1::INPUT_ENABLE_MASK) {  // input port active
