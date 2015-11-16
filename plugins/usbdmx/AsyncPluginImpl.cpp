@@ -39,6 +39,9 @@
 
 #include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/AnymauDMXFactory.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Device.h"
+#include "plugins/usbdmx/DMXCProjectsNodleU1Factory.h"
 #include "plugins/usbdmx/EuroliteProFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/JaRuleDevice.h"
@@ -86,10 +89,12 @@ class DeviceState {
 
 AsyncPluginImpl::AsyncPluginImpl(PluginAdaptor *plugin_adaptor,
                                  Plugin *plugin,
-                                 unsigned int debug_level)
+                                 unsigned int debug_level,
+                                 Preferences *preferences)
     : m_plugin_adaptor(plugin_adaptor),
       m_plugin(plugin),
       m_debug_level(debug_level),
+      m_preferences(preferences),
       m_widget_observer(this, plugin_adaptor),
       m_usb_adaptor(NULL) {
 }
@@ -110,6 +115,9 @@ bool AsyncPluginImpl::Start() {
 
   // Setup the factories.
   m_widget_factories.push_back(new AnymauDMXFactory(m_usb_adaptor));
+  m_widget_factories.push_back(
+      new DMXCProjectsNodleU1Factory(m_usb_adaptor, m_plugin_adaptor,
+                                     m_preferences));
   m_widget_factories.push_back(
       new EuroliteProFactory(m_usb_adaptor));
   m_widget_factories.push_back(
@@ -159,6 +167,16 @@ bool AsyncPluginImpl::NewWidget(AnymauDMX *widget) {
       widget,
       new GenericDevice(m_plugin, widget, "Anyma USB Device",
                         "anyma-" + widget->SerialNumber()));
+}
+
+bool AsyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new DMXCProjectsNodleU1Device(
+          m_plugin, widget,
+          "DMXControl Projects e.V. Nodle U1 (" + widget->SerialNumber() + ")",
+          "nodleu1-" + widget->SerialNumber(),
+          m_plugin_adaptor));
 }
 
 bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {

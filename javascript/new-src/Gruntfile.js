@@ -18,7 +18,24 @@ module.exports = function(grunt) {
       build: {
         files: [{
           dest: '../../olad/www/new/js/app.min.js',
-          src: 'src/js/app.js'
+          src: [
+            'src/app.js',
+            'src/controllers/menu.js',
+            'src/controllers/patch_universe.js',
+            'src/controllers/rdm_universe.js',
+            'src/controllers/universe.js',
+            'src/controllers/fader_universe.js',
+            'src/controllers/keypad_universe.js',
+            'src/controllers/plugins.js',
+            'src/controllers/add_universe.js',
+            'src/controllers/plugin_info.js',
+            'src/controllers/setting_universe.js',
+            'src/controllers/header.js',
+            'src/controllers/overview.js',
+            'src/constants.js',
+            'src/factories/ola.js',
+            'src/filters/start_form.js'
+          ]
         }],
         options: {
           mangle: true,
@@ -28,13 +45,49 @@ module.exports = function(grunt) {
       }
     },
     jshint: {
-      dev: ['Gruntfile.js', 'src/js/app.js'],
+      dev: [
+        'src/app.js',
+        'Gruntfile.js',
+        'src/controllers/menu.js',
+        'src/controllers/patch_universe.js',
+        'src/controllers/rdm_universe.js',
+        'src/controllers/universe.js',
+        'src/controllers/fader_universe.js',
+        'src/controllers/keypad_universe.js',
+        'src/controllers/plugins.js',
+        'src/controllers/add_universe.js',
+        'src/controllers/plugin_info.js',
+        'src/controllers/setting_universe.js',
+        'src/controllers/header.js',
+        'src/controllers/overview.js',
+        'src/constants.js',
+        'src/factories/ola.js',
+        'src/filters/start_form.js'
+      ],
       options: {
         jshintrc: true
       }
     },
     jscs: {
-      src: ['Gruntfile.js', 'src/js/app.js'],
+      src: [
+        'src/app.js',
+        'Gruntfile.js',
+        'src/controllers/menu.js',
+        'src/controllers/patch_universe.js',
+        'src/controllers/rdm_universe.js',
+        'src/controllers/universe.js',
+        'src/controllers/fader_universe.js',
+        'src/controllers/keypad_universe.js',
+        'src/controllers/plugins.js',
+        'src/controllers/add_universe.js',
+        'src/controllers/plugin_info.js',
+        'src/controllers/setting_universe.js',
+        'src/controllers/header.js',
+        'src/controllers/overview.js',
+        'src/constants.js',
+        'src/factories/ola.js',
+        'src/filters/start_form.js'
+      ],
       options: {
         config: true,
         verbose: true
@@ -42,7 +95,26 @@ module.exports = function(grunt) {
     },
     watch: {
       build: {
-        files: ['Gruntfile.js', 'src/js/app.js', 'src/css/style.css'],
+        files: [
+          'Gruntfile.js',
+          'src/controllers/menu.js',
+          'src/controllers/patch_universe.js',
+          'src/controllers/rdm_universe.js',
+          'src/controllers/universe.js',
+          'src/controllers/fader_universe.js',
+          'src/controllers/keypad_universe.js',
+          'src/controllers/plugins.js',
+          'src/controllers/add_universe.js',
+          'src/controllers/plugin_info.js',
+          'src/controllers/setting_universe.js',
+          'src/controllers/header.js',
+          'src/controllers/overview.js',
+          'src/constants.js',
+          'src/factories/ola.js',
+          'src/app.js',
+          'src/filters/start_form.js',
+          'css/style.css'
+        ],
         tasks: ['test', 'uglify:build', 'cssmin:build'],
         options: {
           atBegin: true
@@ -52,12 +124,13 @@ module.exports = function(grunt) {
     cssmin: {
       build: {
         files: [{
-          src: 'src/css/style.css',
+          src: 'css/style.css',
           dest: '../../olad/www/new/css/style.min.css'
         }]
       }
     }
   });
+
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');

@@ -27,7 +27,10 @@ from ola import PidStore
 
 
 class RDMAPI(object):
-  """The RDM API."""
+  """The RDM API.
+
+  The RDM API provides parameter data serialization & parsing using a PidStore.
+  """
 
   # This maps ola.proto enums to PidStore enums
   COMMAND_CLASS_DICT = {
@@ -48,7 +51,8 @@ class RDMAPI(object):
     self._pid_store = pid_store
     self._strict_checks = strict_checks
 
-  def Discovery(self, universe, uid, sub_device, pid, callback, args):
+  def Discovery(self, universe, uid, sub_device, pid, callback, args,
+                include_frames=False):
     """Send an RDM Discovery message with the raw data supplied.
 
     Args:
@@ -58,14 +62,16 @@ class RDMAPI(object):
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
       args: The args to pack into the param data section.
+      include_frames: True if the response should include the raw frame data.
 
     Return:
       True if sent ok, False otherwise.
     """
     return self._SendRequest(universe, uid, sub_device, pid, callback, args,
-                             PidStore.RDM_DISCOVERY)
+                             PidStore.RDM_DISCOVERY, include_frames)
 
-  def RawDiscovery(self, universe, uid, sub_device, pid, callback, data):
+  def RawDiscovery(self, universe, uid, sub_device, pid, callback, data,
+                   include_frames=False):
     """Send an RDM Discovery message with the raw data supplied.
 
     Args:
@@ -75,14 +81,16 @@ class RDMAPI(object):
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
       data: The param data
+      include_frames: True if the response should include the raw frame data.
 
     Return:
       True if sent ok, False otherwise.
     """
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
-                                PidStore.RDM_DISCOVERY)
+                                PidStore.RDM_DISCOVERY, include_frames)
 
-  def Get(self, universe, uid, sub_device, pid, callback, args=[]):
+  def Get(self, universe, uid, sub_device, pid, callback, args=[],
+          include_frames=False):
     """Send a RDM Get message, packing the arguments into a message.
 
     Args:
@@ -92,6 +100,7 @@ class RDMAPI(object):
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
       args: The args to pack into the param data section.
+      include_frames: True if the response should include the raw frame data.
 
     Return:
       True if sent ok, False otherwise.
@@ -101,9 +110,10 @@ class RDMAPI(object):
       return False
 
     return self._SendRequest(universe, uid, sub_device, pid, callback, args,
-                             PidStore.RDM_GET)
+                             PidStore.RDM_GET, include_frames)
 
-  def RawGet(self, universe, uid, sub_device, pid, callback, data):
+  def RawGet(self, universe, uid, sub_device, pid, callback, data,
+             include_frames=False):
     """Send a RDM Get message with the raw data supplied.
 
     Args:
@@ -113,6 +123,7 @@ class RDMAPI(object):
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
       data: The param data
+      include_frames: True if the response should include the raw frame data.
 
     Return:
       True if sent ok, False otherwise.
@@ -122,9 +133,10 @@ class RDMAPI(object):
       return False
 
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
-                                PidStore.RDM_GET)
+                                PidStore.RDM_GET, include_frames)
 
-  def Set(self, universe, uid, sub_device, pid, callback, args=[]):
+  def Set(self, universe, uid, sub_device, pid, callback, args=[],
+          include_frames=False):
     """Send a RDM Set message.
 
     Args:
@@ -134,14 +146,16 @@ class RDMAPI(object):
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
       args: The args to pack into the param data section.
+      include_frames: True if the response should include the raw frame data.
 
     Return:
       True if sent ok, False otherwise.
     """
     return self._SendRequest(universe, uid, sub_device, pid, callback, args,
-                             PidStore.RDM_SET)
+                             PidStore.RDM_SET, include_frames)
 
-  def RawSet(self, universe, uid, sub_device, pid, callback, args=[]):
+  def RawSet(self, universe, uid, sub_device, pid, callback, args=[],
+             include_frames=False):
     """Send a RDM Set message with the raw data supplied.
 
     Args:
@@ -151,15 +165,16 @@ class RDMAPI(object):
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
       data: The param data
+      include_frames: True if the response should include the raw frame data.
 
     Return:
       True if sent ok, False otherwise.
     """
     return self._SendRawRequest(universe, uid, sub_device, pid, callback,
-                                args, PidStore.RDM_SET)
+                                args, PidStore.RDM_SET, include_frames)
 
   def _SendRequest(self, universe, uid, sub_device, pid, callback, args,
-                   request_type):
+                   request_type, include_frames):
     """Send a RDM Request.
 
     Args:
@@ -171,6 +186,7 @@ class RDMAPI(object):
       args: The args to pack into the param data section.
       request_type: PidStore.RDM_GET or PidStore.RDM_SET or
         PidStore.RDM_DISCOVERY
+      include_frames: True if the response should include the raw frame data.
 
     Return:
       True if sent ok, False otherwise.
@@ -181,10 +197,10 @@ class RDMAPI(object):
       return False
 
     return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
-                                request_type)
+                                request_type, include_frames)
 
   def _SendRawRequest(self, universe, uid, sub_device, pid, callback, data,
-                      request_type):
+                      request_type, include_frames):
     """Send a RDM Request.
 
     Args:
@@ -195,6 +211,7 @@ class RDMAPI(object):
       callback: The callback to run when the request completes.
       data: The param data.
       request_type: PidStore.RDM_GET or PidStore.RDM_SET
+      include_frames: True if the response should include the raw frame data.
 
     Return:
       True if sent ok, False otherwise.
@@ -220,7 +237,8 @@ class RDMAPI(object):
         sub_device,
         pid.value,
         lambda response: self._GenericHandler(callback, uid, response),
-        data)
+        data,
+        include_frames)
 
   def _GenericHandler(self, callback, uid, response):
     """
