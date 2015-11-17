@@ -30,7 +30,8 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import logging
 import time
-from ExpectedResults import AckDiscoveryResult, AckGetResult, AckSetResult, NackDiscoveryResult, NackGetResult, NackSetResult
+from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
+                             NackDiscoveryResult, NackGetResult, NackSetResult)
 from TestCategory import TestCategory
 from TestState import TestState
 from TimingStats import TimingStats
