@@ -24,7 +24,9 @@ test definitions.
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import struct
-from ExpectedResults import AckGetResult, AckDiscoveryResult, BroadcastResult, DUBResult, NackSetResult, TimeoutResult, UnsupportedResult
+from ExpectedResults import (AckGetResult, AckDiscoveryResult, BroadcastResult,
+                             DUBResult, NackSetResult, TimeoutResult,
+                             UnsupportedResult)
 from ResponderTest import ResponderTestFixture
 from TestCategory import TestCategory
 from TestHelpers import ContainsUnprintable
@@ -64,8 +66,8 @@ class GetMixin(object):
     This mixin also sets one or more properties if PROVIDES is defined.  The
     target class needs to defined EXPECTED_FIELDS and optionally PROVIDES.
 
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
   """
   ALLOWED_NACKS = []
 
@@ -179,8 +181,8 @@ class GetRequiredStringMixin(GetRequiredMixin):
 class GetWithDataMixin(object):
   """GET a PID with junk param data.
 
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
   """
   DATA = 'foo'
   ALLOWED_NACKS = []
@@ -970,8 +972,8 @@ class GetSettingDescriptionsMixin(object):
     used to validate the index against and DESCRIPTION_FIELD, which is the
     field to check for unprintable characters.
 
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
   """
   ALLOWED_NACKS = []
   FIRST_INDEX_OFFSET = 1

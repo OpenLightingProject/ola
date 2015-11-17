@@ -22,13 +22,22 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import datetime
 import operator
 import struct
-from ExpectedResults import AckGetResult, BroadcastResult, NackGetResult, InvalidResponse, TimeoutResult, UnsupportedResult, RDM_GET, RDM_SET
+from ExpectedResults import (AckGetResult, BroadcastResult, NackGetResult,
+                             InvalidResponse, TimeoutResult, UnsupportedResult,
+                             RDM_GET, RDM_SET)
 from ResponderTest import ResponderTestFixture, TestFixture
 from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
-from ola.RDMConstants import RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH, RDM_MAX_DOMAIN_NAME_LENGTH, RDM_MANUFACTURER_PID_MIN, RDM_MANUFACTURER_PID_MAX, RDM_INTERFACE_INDEX_MIN, RDM_INTERFACE_INDEX_MAX, INTERFACE_HARDWARE_TYPE_ETHERNET, RDM_ZERO_FOOTPRINT_DMX_ADDRESS, RDM_MANUFACTURER_SD_MIN, RDM_MANUFACTURER_SD_MAX
+from ola.RDMConstants import (RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH,
+                              RDM_MAX_DOMAIN_NAME_LENGTH,
+                              RDM_MANUFACTURER_PID_MIN,
+                              RDM_MANUFACTURER_PID_MAX, RDM_INTERFACE_INDEX_MIN,
+                              RDM_INTERFACE_INDEX_MAX,
+                              INTERFACE_HARDWARE_TYPE_ETHERNET,
+                              RDM_ZERO_FOOTPRINT_DMX_ADDRESS,
+                              RDM_MANUFACTURER_SD_MIN, RDM_MANUFACTURER_SD_MAX)
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
@@ -1698,7 +1707,8 @@ class AllSubDevicesGetBootSoftwareVersion(TestMixins.AllSubDevicesGetMixin,
 
 # Boot Software Version Label
 # -----------------------------------------------------------------------------
-class GetBootSoftwareLabel(TestMixins.GetStringMixin, OptionalParameterTestFixture):
+class GetBootSoftwareLabel(TestMixins.GetStringMixin,
+                           OptionalParameterTestFixture):
   """GET the boot software label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
@@ -4001,7 +4011,8 @@ class FindSelfTests(OptionalParameterTestFixture):
         self.AddAdvisory(
             'Description field in self test description for test number %d '
             'contains unprintable characters, was %s' %
-            (fields['test_number'], fields['description'].encode('string-escape')))
+            (fields['test_number'],
+             fields['description'].encode('string-escape')))
 
 
 class AllSubDevicesGetSelfTestDescription(TestMixins.AllSubDevicesGetMixin,
@@ -5872,7 +5883,8 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
     if not self.PidSupported() or not self.Property('current_response_time'):
       return
 
-    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_response_time')])
+    self.SendSet(ROOT_DEVICE, self.pid,
+                 [self.Property('current_response_time')])
     self._wrapper.Run()
 
 
@@ -5988,11 +6000,12 @@ class GetModulationFrequency(TestMixins.GetMixin, OptionalParameterTestFixture):
       self.SetFailed('Modulation frequency must be numbered from 1')
       return
 
-    if fields['current_modulation_frequency'] > fields['number_modulation_frequencies']:
+    if (fields['current_modulation_frequency'] >
+        fields['number_modulation_frequencies']):
       self.SetFailed(
-          'Modulation frequency %d exceeded number of modulation frequencies %d' %
-          (fields['current_modulation_frequency'],
-           fields['number_modulation_frequencies']))
+          'Modulation frequency %d exceeded number of modulation frequencies %d'
+          % (fields['current_modulation_frequency'],
+             fields['number_modulation_frequencies']))
       return
 
 
@@ -6041,10 +6054,12 @@ class SetModulationFrequency(OptionalParameterTestFixture):
     self._SetModulationFrequency()
 
   def ResetState(self):
-    if not self.PidSupported() or not self.Property('current_modulation_frequency'):
+    if (not self.PidSupported() or
+        not self.Property('current_modulation_frequency')):
       return
 
-    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_modulation_frequency')])
+    self.SendSet(ROOT_DEVICE, self.pid,
+                 [self.Property('current_modulation_frequency')])
     self._wrapper.Run()
 
 
