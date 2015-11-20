@@ -2881,9 +2881,10 @@ class ResetAllSensorValues(OptionalParameterTestFixture):
     if supports_recording:
       results = [self.AckSetResult(),
                  self.NackSetResult(
-                    RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-                    warning="One or more recorded sensors found but Set "
-                            "SENSOR_VALUE wasn't supported")]
+                     RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+                     warning="One or more recorded sensors found but Set "
+                             "SENSOR_VALUE wasn't supported")
+      ]
     else:
       results = [self.AckSetResult(),
                  self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
