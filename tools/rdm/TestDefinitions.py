@@ -1810,8 +1810,8 @@ class GetPersonality(OptionalParameterTestFixture):
 
     current_personality = self.Property('current_personality')
     personality_count = self.Property('personality_count')
-    warning_str = ("Personality information in device info doesn't match"
-      ' that in dmx_personality')
+    warning_str = ("Personality information in device info doesn't match that "
+                   "in dmx_personality")
 
     if current_personality != fields['current_personality']:
       self.SetFailed('%s: current_personality %d != %d' % (
@@ -2131,7 +2131,7 @@ class SetOutOfRangeStartAddress(ResponderTestFixture):
           self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
-                              ])
+      ])
     data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
@@ -2152,7 +2152,7 @@ class SetZeroStartAddress(ResponderTestFixture):
           self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
-                              ])
+      ])
     data = struct.pack('!H', 0)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
@@ -2173,7 +2173,7 @@ class SetOversizedStartAddress(ResponderTestFixture):
           self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
-                              ])
+      ])
     self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
 
 
@@ -2882,8 +2882,8 @@ class ResetAllSensorValues(OptionalParameterTestFixture):
       results = [self.AckSetResult(),
                  self.NackSetResult(
                     RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-                    warning="One or more recorded sensors found but Set"
-                            " SENSOR_VALUE wasn't supported")]
+                    warning="One or more recorded sensors found but Set "
+                            "SENSOR_VALUE wasn't supported")]
     else:
       results = [self.AckSetResult(),
                  self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
@@ -4400,8 +4400,7 @@ class SetDmxFailMode(OptionalParameterTestFixture):
         [settings.get('scene_number', 0),
          settings.get('hold_time', 0),
          settings.get('loss_of_signal_delay', 0),
-         settings.get('level', 0),
-        ]
+         settings.get('level', 0)]
     )
 
   def VerifyResult(self, response, fields):
@@ -4673,8 +4672,7 @@ class SetDmxStartupMode(OptionalParameterTestFixture):
         [settings.get('scene_number', 0),
          settings.get('hold_time', 0),
          settings.get('startup_delay', 0),
-         settings.get('level', 0),
-        ]
+         settings.get('level', 0)]
     )
 
   def VerifyResult(self, response, fields):

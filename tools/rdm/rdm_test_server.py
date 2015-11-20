@@ -1007,7 +1007,7 @@ def SetupLogDirectory(options):
     except OSError:
       logging.error(
           'Failed to create %s for RDM logs. Logging will be disabled.' %
-           options.log_directory)
+          options.log_directory)
   elif not os.path.isdir(options.log_directory):
     logging.error('Log directory invalid: %s. Logging will be disabled.' %
                   options.log_directory)

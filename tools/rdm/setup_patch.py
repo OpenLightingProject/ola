@@ -94,10 +94,9 @@ class AutoPatcher(object):
     """Called when the patch is complete."""
     if status.Succeeded():
       self._ports_patched += 1
-      self._wrapper.Client().SetUniverseName(
-          universe,
-         universe_name,
-         self._UniverseNameComplete)
+      self._wrapper.Client().SetUniverseName(universe,
+                                             universe_name,
+                                             self._UniverseNameComplete)
     else:
       self._IncrementPortAttempts()
 

@@ -268,7 +268,7 @@ def main():
 
     if not uid_ok:
       logging.error('UID %s not found in universe %d' %
-        (options.uid, options.universe))
+          (options.uid, options.universe))
       return
 
     if len(uids) > 1:
