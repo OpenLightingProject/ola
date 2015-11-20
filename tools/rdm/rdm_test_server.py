@@ -938,8 +938,8 @@ def BuildApplication(ola_thread, test_thread):
   app.RegisterHandler('/',
                       RedirectHandler('/static/rdmtests.html').HandleRequest)
   app.RegisterHandler(
-          '/favicon.ico',
-          RedirectHandler('/static/images/favicon.ico').HandleRequest)
+      '/favicon.ico',
+      RedirectHandler('/static/images/favicon.ico').HandleRequest)
   app.RegisterHandler('/GetTestDefs',
                       TestDefinitionsHandler().HandleRequest)
   app.RegisterHandler('/GetUnivInfo',
