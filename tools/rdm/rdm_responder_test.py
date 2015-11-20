@@ -180,8 +180,8 @@ def DisplaySummary(options, runner, tests, device):
     advisories.extend(test.advisories)
 
     by_category.setdefault(test.category, {})
-    by_category[test.category][state] = (1 + 
-        by_category[test.category].get(state, 0))
+    by_category[test.category][state] = (1 +
+            by_category[test.category].get(state, 0))
 
   total = sum(count_by_state.values())
 
