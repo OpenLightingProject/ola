@@ -2883,8 +2883,7 @@ class ResetAllSensorValues(OptionalParameterTestFixture):
                  self.NackSetResult(
                      RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
                      warning="One or more recorded sensors found but Set "
-                             "SENSOR_VALUE wasn't supported"
-                 )
+                             "SENSOR_VALUE wasn't supported")
       ]
     else:
       results = [self.AckSetResult(),
@@ -5919,8 +5918,8 @@ class AllSubDevicesGetOutputResponseTime(TestMixins.AllSubDevicesGetMixin,
 # OUTPUT_RESPONSE_TIME_DESCRIPTION
 # -----------------------------------------------------------------------------
 class GetOutputResponseTimeDescription(
-    TestMixins.GetSettingDescriptionsRangeMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetSettingDescriptionsRangeMixin,
+        OptionalParameterTestFixture):
   """Get the OUTPUT_RESPONSE_TIME_DESCRIPTION for all response times."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
@@ -5937,8 +5936,8 @@ class GetOutputResponseTimeDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
 
 
 class GetOutputResponseTimeDescriptionWithExtraData(
-    TestMixins.GetWithDataMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetWithDataMixin,
+        OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
@@ -5951,8 +5950,8 @@ class GetZeroOutputResponseTimeDescription(TestMixins.GetZeroUInt8Mixin,
 
 
 class GetOutOfRangeOutputResponseTimeDescription(
-    TestMixins.GetOutOfRangeByteMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetOutOfRangeByteMixin,
+        OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for an out-of-range response time."""
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
   REQUIRES = ['number_response_options']
@@ -5967,8 +5966,8 @@ class SetOutputResponseTimeDescription(TestMixins.UnsupportedSetMixin,
 
 
 class AllSubDevicesGetOutputResponseTimeDescription(
-    TestMixins.AllSubDevicesGetMixin,
-    OptionalParameterTestFixture):
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION addressed to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
@@ -6094,8 +6093,8 @@ class AllSubDevicesGetModulationFrequency(TestMixins.AllSubDevicesGetMixin,
 # MODULATION_FREQUENCY_DESCRIPTION
 # -----------------------------------------------------------------------------
 class GetModulationFrequencyDescription(
-    TestMixins.GetSettingDescriptionsRangeMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetSettingDescriptionsRangeMixin,
+        OptionalParameterTestFixture):
   """Get the MODULATION_FREQUENCY_DESCRIPTION for all frequencies."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
@@ -6112,8 +6111,8 @@ class GetModulationFrequencyDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
 
 
 class GetModulationFrequencyDescriptionWithExtraData(
-    TestMixins.GetWithDataMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetWithDataMixin,
+        OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
@@ -6126,8 +6125,8 @@ class GetZeroModulationFrequencyDescription(TestMixins.GetZeroUInt8Mixin,
 
 
 class GetOutOfRangeModulationFrequencyDescription(
-    TestMixins.GetOutOfRangeByteMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetOutOfRangeByteMixin,
+        OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION for an out-of-range frequency."""
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
   REQUIRES = ['number_modulation_frequencies']
@@ -6142,8 +6141,8 @@ class SetModulationFrequencyDescription(TestMixins.UnsupportedSetMixin,
 
 
 class AllSubDevicesGetModulationFrequencyDescription(
-    TestMixins.AllSubDevicesGetMixin,
-    OptionalParameterTestFixture):
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION addressed to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
