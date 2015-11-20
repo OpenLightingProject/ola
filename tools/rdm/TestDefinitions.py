@@ -1068,11 +1068,11 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
   def Test(self):
     device_info_pid = self.LookupPid('DEVICE_INFO')
     results = [
-        self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
-        self.NackGetResult(
-            RDMNack.NR_DATA_OUT_OF_RANGE,
-            advisory='Parameter Description appears to be supported but no'
-                     'manufacturer PIDs were declared'),
+      self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+      self.NackGetResult(
+          RDMNack.NR_DATA_OUT_OF_RANGE,
+          advisory='Parameter Description appears to be supported but no'
+                   'manufacturer PIDs were declared'),
     ]
     if self.Property('manufacturer_parameters'):
       results = self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
@@ -1089,11 +1089,11 @@ class GetParamDescriptionWithData(ResponderTestFixture):
 
   def Test(self):
     results = [
-        self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
-        self.NackGetResult(RDMNack.NR_FORMAT_ERROR,
-                           advisory='Parameter Description appears to be '
-                                    'supported but no manufacturer PIDs were '
-                                    'declared'),
+      self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR,
+                         advisory='Parameter Description appears to be '
+                                  'supported but no manufacturer PIDs were '
+                                  'declared'),
     ]
     if self.Property('manufacturer_parameters'):
       results = self.NackGetResult(RDMNack.NR_FORMAT_ERROR)
@@ -2014,10 +2014,10 @@ class GetStartAddress(ResponderTestFixture):
       results = self.AckGetResult(field_names=['dmx_address'])
     else:
       results = [
-          self.AckGetResult(field_values={
-              'dmx_address': RDM_ZERO_FOOTPRINT_DMX_ADDRESS}),
-          self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
-          self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+        self.AckGetResult(field_values={
+            'dmx_address': RDM_ZERO_FOOTPRINT_DMX_ADDRESS}),
+        self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+        self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
       ]
     self.AddExpectedResults(results)
     self.SendGet(ROOT_DEVICE, self.pid)
@@ -2053,10 +2053,10 @@ class GetStartAddressWithData(ResponderTestFixture):
       # If we don't have a footprint, PID may return something, or may return
       # unsupported, as this PID becomes optional
       results = [
-          self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
-          self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-          self.AckGetResult(
-            warning='Get %s with data returned an ack' % self.pid.name),
+        self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+        self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+        self.AckGetResult(
+          warning='Get %s with data returned an ack' % self.pid.name),
       ]
     self.AddExpectedResults(results)
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
@@ -2076,9 +2076,9 @@ class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
 
     if footprint == 0 or current_address == RDM_ZERO_FOOTPRINT_DMX_ADDRESS:
       results = [
-          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
-          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-          self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+        self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+        self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
       ]
     else:
       self.start_address = self.CalculateNewAddress(current_address, footprint)
@@ -2879,15 +2879,18 @@ class ResetAllSensorValues(OptionalParameterTestFixture):
     # Some devices don't have set
     results = [self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
     if supports_recording:
-      results = [self.AckSetResult(),
-                 self.NackSetResult(
-                     RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-                     warning="One or more recorded sensors found but Set "
-                             "SENSOR_VALUE wasn't supported")
+      results = [
+        self.AckSetResult(),
+        self.NackSetResult(
+            RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+            warning="One or more recorded sensors found but Set SENSOR_VALUE "
+                    "wasn't supported")
       ]
     else:
-      results = [self.AckSetResult(),
-                 self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
+      results = [
+        self.AckSetResult(),
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+      ]
     self.AddIfSetSupported(results)
     self.SendSet(ROOT_DEVICE, self.pid, [self.ALL_SENSORS])
 
