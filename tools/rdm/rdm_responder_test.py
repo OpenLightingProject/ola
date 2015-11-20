@@ -180,8 +180,8 @@ def DisplaySummary(options, runner, tests, device):
     advisories.extend(test.advisories)
 
     by_category.setdefault(test.category, {})
-    by_category[test.category][state] = (1 +
-        by_category[test.category].get(state, 0))
+    by_category[test.category][state] =
+        (1 + by_category[test.category].get(state, 0))
 
   total = sum(count_by_state.values())
 
@@ -268,7 +268,7 @@ def main():
 
     if not uid_ok:
       logging.error('UID %s not found in universe %d' %
-          (options.uid, options.universe))
+                    (options.uid, options.universe))
       return
 
     if len(uids) > 1:
@@ -297,8 +297,9 @@ def main():
 
   logging.info(
       'Starting tests, universe %d, UID %s, broadcast write delay %dms, '
-      'inter-test delay %dms' % (options.universe, options.uid,
-      options.broadcast_write_delay, options.inter_test_delay))
+      'inter-test delay %dms' %
+      (options.universe, options.uid, options.broadcast_write_delay,
+       options.inter_test_delay))
 
   runner = TestRunner.TestRunner(options.universe,
                                  options.uid,
