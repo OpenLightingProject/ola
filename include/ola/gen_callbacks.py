@@ -278,7 +278,7 @@ def GenerateHelperFunction(bind_count,
   /**
    * @brief A helper function to create a new %s with %d
    * create-time arguments and %d execution time arguments.""" %
-   (parent_class, bind_count, exec_count))
+  (parent_class, bind_count, exec_count))
   if is_method:
     print " * @tparam Class the class with the member function."
   print " * @tparam ReturnType the return type of the callback."

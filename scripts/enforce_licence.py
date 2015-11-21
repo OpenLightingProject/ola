@@ -138,6 +138,7 @@ def TransformJsLine(line):
   """Transform a line to within a JS multiline style comment"""
   return TransformCppLine(line)
 
+
 def TransformCppToJsLicence(licence):
   """Change a C++ licence to JS style"""
   lines = licence.split('\n')
@@ -293,9 +294,9 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   if header == licence:
     expected_line = TransformLine(os.path.basename(file_name), lang)
     if lang != JS and file_name_line.rstrip('\n') != expected_line:
-      print "File %s does not have a filename line after the licence; found "
-            "\"%s\" expected \"%s\"" %
-            (file_name, file_name_line.rstrip('\n'), expected_line)
+      print ("File %s does not have a filename line after the licence; found "
+             "\"%s\" expected \"%s\"" %
+             (file_name, file_name_line.rstrip('\n'), expected_line))
       return 1
     return 0
 
