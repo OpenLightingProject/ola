@@ -175,7 +175,7 @@ def GenerateBase(number_of_args):
   PrintLongLine('template <typename ReturnType%s%s>' %
                 (optional_comma, typenames))
   print 'class BaseCallback%d {' % number_of_args
-  print '  public:'
+  print ' public:'
   print '    virtual ~BaseCallback%d() {}' % number_of_args
   PrintLongLine('    virtual ReturnType Run(%s) = 0;' % arg_list)
   print '};'
@@ -190,11 +190,11 @@ def GenerateBase(number_of_args):
                 (optional_comma, typenames))
   print ('class Callback%d: public BaseCallback%d<ReturnType%s%s> {' %
          (number_of_args, number_of_args, optional_comma, arg_types))
-  print '  public:'
+  print ' public:'
   print '    virtual ~Callback%d() {}' % number_of_args
   PrintLongLine('    ReturnType Run(%s) { return this->DoRun(%s); }' %
                 (arg_list, args))
-  print '  private:'
+  print ' private:'
   print '    virtual ReturnType DoRun(%s) = 0;' % arg_list
   print '};'
   print ''
@@ -208,14 +208,14 @@ def GenerateBase(number_of_args):
                 (optional_comma, typenames))
   PrintLongLine('class SingleUseCallback%d: public BaseCallback%d<ReturnType%s%s> {' %
                 (number_of_args, number_of_args, optional_comma, arg_types))
-  print '  public:'
+  print ' public:'
   print '    virtual ~SingleUseCallback%d() {}' % number_of_args
   print '    ReturnType Run(%s) {' % arg_list
   print '      ReturnType ret = this->DoRun(%s);' % args
   print '      delete this;'
   print '      return ret;'
   print '    }'
-  print '  private:'
+  print ' private:'
   print '    virtual ReturnType DoRun(%s) = 0;' % arg_list
   print '};'
   print ''
@@ -229,13 +229,13 @@ def GenerateBase(number_of_args):
   PrintLongLine('class SingleUseCallback%d<void%s%s>: public BaseCallback%d<void%s%s> {' %
                 (number_of_args, optional_comma, arg_types, number_of_args,
                  optional_comma, arg_types))
-  print '  public:'
+  print ' public:'
   print '    virtual ~SingleUseCallback%d() {}' % number_of_args
   print '    void Run(%s) {' % arg_list
   print '      this->DoRun(%s);' % args
   print '      delete this;'
   print '    }'
-  print '  private:'
+  print ' private:'
   print '    virtual void DoRun(%s) = 0;' % arg_list
   print '};'
   print ''
@@ -395,7 +395,7 @@ def GenerateMethodCallback(bind_count,
                 (optional_class, optional_comma, ', '.join(typenames)))
 
   print 'class %s%d_%d: public Parent {' % (class_name, bind_count, exec_count)
-  print '  public:'
+  print ' public:'
   if is_method:
     print '    typedef ReturnType (%s)(%s);' % (signature, method_types)
   else:
@@ -432,7 +432,7 @@ def GenerateMethodCallback(bind_count,
     print '      return m_callback(%s);' % ', '.join(method_args)
   print '    }'
 
-  print '  private:'
+  print ' private:'
   if is_method:
     print '    Class *m_object;'
   print '    %s m_callback;' % method_or_function
