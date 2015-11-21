@@ -64,6 +64,7 @@ IGNORED_FILES = [
   'tools/rdm/static/ui.multiselect.js',
 ]
 
+
 def Usage(arg0):
   print textwrap.dedent("""\
   Usage: %s
@@ -75,6 +76,7 @@ def Usage(arg0):
     --diff               Print the diffs.
     --fix                Fix the files.
     --help               Display this message.""" % arg0)
+
 
 def ParseArgs():
   """Extract the options."""
@@ -103,6 +105,7 @@ def ParseArgs():
     sys.exit(0)
   return diff, fix
 
+
 def IgnoreFile(file_name):
   for ignored_dir in IGNORED_DIRECTORIES:
     if file_name.rfind(ignored_dir) != -1:
@@ -112,6 +115,7 @@ def IgnoreFile(file_name):
       return True
   return False
 
+
 def TransformCppLine(line):
   """Transform a line to within a C++ multiline style comment"""
   line = line.strip()
@@ -120,6 +124,7 @@ def TransformCppLine(line):
   else:
     return ' *'
 
+
 def TransformLicence(licence):
   """Wrap a licence in C++ style comments"""
   output = []
@@ -127,6 +132,7 @@ def TransformLicence(licence):
   output.extend(map(TransformCppLine, licence))
   output.append(TransformCppLine(''))
   return '\n'.join(output)
+
 
 def TransformJsLine(line):
   """Transform a line to within a JS multiline style comment"""
@@ -141,6 +147,7 @@ def TransformCppToJsLicence(licence):
     output.append(TransformJsLine(l[2:]))
   return '\n'.join(output)
 
+
 def TransformPythonLine(line):
   """Transform a line to within a Python multiline style comment"""
   line = line.strip()
@@ -149,6 +156,7 @@ def TransformPythonLine(line):
   else:
     return '#'
 
+
 def TransformCppToPythonLicence(licence):
   """Change a C++ licence to Python style"""
   lines = licence.split('\n')
@@ -156,6 +164,7 @@ def TransformCppToPythonLicence(licence):
   for l in lines[1:]:
     output.append(TransformPythonLine(l[3:]))
   return '\n'.join(output)
+
 
 def TransformLine(line, lang):
   if lang == CPP or lang == PROTOBUF:
@@ -166,6 +175,7 @@ def TransformLine(line, lang):
     return TransformPythonLine(line)
   else:
     return line
+
 
 def ReplaceHeader(file_name, new_header, lang):
   f = open(file_name)
@@ -194,6 +204,7 @@ def ReplaceHeader(file_name, new_header, lang):
   f.write('\n')
   f.write(remainder)
   f.close()
+
 
 def GetDirectoryLicences(root_dir):
   """Walk the directory tree and determine the licence for each directory."""
@@ -231,6 +242,7 @@ def GetDirectoryLicences(root_dir):
         licences[os.path.join(dir_name, sub_dir)] = licence
   return licences
 
+
 def CheckLicenceForDir(dir_name, licence, diff, fix):
   """Check all files in a directory contain the correct licence."""
   errors = 0
@@ -258,6 +270,7 @@ def CheckLicenceForDir(dir_name, licence, diff, fix):
 
   return errors
 
+
 def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   """Check a file contains the correct licence."""
   if IgnoreFile(file_name):
@@ -275,13 +288,14 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       first_line = None
   # strip the trailing newline off as we don't actually want it
   header = f.read(header_size).rstrip('\n')
-  file_name_line = f.readline()  
+  file_name_line = f.readline()
   f.close()
   if header == licence:
     expected_line = TransformLine(os.path.basename(file_name), lang)
     if lang != JS and file_name_line.rstrip('\n') != expected_line:
-      print "File %s does not have a filename line after the licence; found \"%s\" expected \"%s\"" % (
-          file_name, file_name_line.rstrip('\n'), expected_line)
+      print "File %s does not have a filename line after the licence; found "
+            "\"%s\" expected \"%s\"" %
+            (file_name, file_name_line.rstrip('\n'), expected_line)
       return 1
     return 0
 
@@ -300,6 +314,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
       pprint.pprint(result)
     return 1
+
 
 def main():
   diff, fix = ParseArgs()

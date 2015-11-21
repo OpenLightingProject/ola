@@ -26,6 +26,7 @@ def PrintLongLine(line):
     optional_nolint = '  // NOLINT(whitespace/line_length)'
   print ('%s%s' % (line, optional_nolint))
 
+
 def Header():
   print textwrap.dedent("""\
   /*
@@ -143,6 +144,7 @@ def Header():
    */
   """)
 
+
 def Footer():
   print textwrap.dedent("""\
   /**
@@ -150,6 +152,7 @@ def Footer():
    */
   }  // namespace ola
   #endif  // INCLUDE_OLA_CALLBACK_H_""")
+
 
 def GenerateBase(number_of_args):
   """Generate the base Callback classes."""
@@ -190,7 +193,7 @@ def GenerateBase(number_of_args):
   print '  public:'
   print '    virtual ~Callback%d() {}' % number_of_args
   PrintLongLine('    ReturnType Run(%s) { return this->DoRun(%s); }' %
-         (arg_list, args))
+                (arg_list, args))
   print '  private:'
   print '    virtual ReturnType DoRun(%s) = 0;' % arg_list
   print '};'
@@ -225,7 +228,7 @@ def GenerateBase(number_of_args):
   print 'template <%s>' % typenames
   PrintLongLine('class SingleUseCallback%d<void%s%s>: public BaseCallback%d<void%s%s> {' %
                 (number_of_args, optional_comma, arg_types, number_of_args,
-                optional_comma, arg_types))
+                 optional_comma, arg_types))
   print '  public:'
   print '    virtual ~SingleUseCallback%d() {}' % number_of_args
   print '    void Run(%s) {' % arg_list
@@ -286,7 +289,7 @@ def GenerateHelperFunction(bind_count,
   if is_method:
     print " * @param object the object to call the member function on."
     print (" * @param method the member function pointer to use when executing "
-           "the callback.");
+           "the callback.")
   else:
     print (" * @param callback the function pointer to use when executing the "
            "callback.")
@@ -378,7 +381,7 @@ def GenerateMethodCallback(bind_count,
 
   optional_class, method_or_function, class_name = (
       '', 'Function', 'FunctionCallback')
-  class_param, signature = '', '*callback';
+  class_param, signature = '', '*callback'
   if is_method:
     optional_class, method_or_function, class_name = (
         'typename Class, ', 'Method', 'MethodCallback')
@@ -456,17 +459,18 @@ def main():
   Header()
 
   # exec_time : [bind time args]
-  calback_types = {0: [0, 1, 2, 3, 4],
-                   1: [0, 1, 2, 3, 4],
-                   2: [0, 1, 2, 3, 4],
-                   3: [0, 1, 2, 3, 4],
-                   4: [0, 1, 2, 3, 4],
-                  }
+  calback_types = {
+    0: [0, 1, 2, 3, 4],
+    1: [0, 1, 2, 3, 4],
+    2: [0, 1, 2, 3, 4],
+    3: [0, 1, 2, 3, 4],
+    4: [0, 1, 2, 3, 4],
+  }
 
   for exec_time in sorted(calback_types):
     GenerateBase(exec_time)
     for bind_time in calback_types[exec_time]:
-      GenerateMethodCallback(bind_time, exec_time, is_method=False);
+      GenerateMethodCallback(bind_time, exec_time, is_method=False)
       GenerateMethodCallback(bind_time, exec_time)
   Footer()
 
