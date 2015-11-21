@@ -206,8 +206,9 @@ def GenerateBase(number_of_args):
    */""" % number_of_args)
   PrintLongLine('template <typename ReturnType%s%s>' %
                 (optional_comma, typenames))
-  PrintLongLine('class SingleUseCallback%d: public BaseCallback%d<ReturnType%s%s> {' %
-                (number_of_args, number_of_args, optional_comma, arg_types))
+  PrintLongLine("class SingleUseCallback%d: public BaseCallback%d<"
+                "ReturnType%s%s> {" % (number_of_args, number_of_args,
+                optional_comma, arg_types))
   print ' public:'
   print '  virtual ~SingleUseCallback%d() {}' % number_of_args
   print '  ReturnType Run(%s) {' % arg_list
@@ -226,9 +227,9 @@ def GenerateBase(number_of_args):
    * @brief A %d arg, single use callback that returns void.
    */""" % number_of_args)
   print 'template <%s>' % typenames
-  PrintLongLine('class SingleUseCallback%d<void%s%s>: public BaseCallback%d<void%s%s> {' %
-                (number_of_args, optional_comma, arg_types, number_of_args,
-                 optional_comma, arg_types))
+  PrintLongLine("class SingleUseCallback%d<void%s%s>: public BaseCallback%d<"
+                "void%s%s> {" % (number_of_args, optional_comma, arg_types,
+                number_of_args, optional_comma, arg_types))
   print ' public:'
   print '  virtual ~SingleUseCallback%d() {}' % number_of_args
   print '  void Run(%s) {' % arg_list
