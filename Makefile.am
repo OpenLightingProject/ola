@@ -194,6 +194,4 @@ EXTRA_DIST += \
   config/resolv.m4 \
   config/stl_hash.m4 \
   mac_build.sh \
-  ola.spec \
-  tests/recvdmx.py \
-  tests/regression.py
+  ola.spec
