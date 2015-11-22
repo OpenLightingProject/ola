@@ -42,7 +42,8 @@ def Header():
    *
    * You should have received a copy of the GNU Lesser General Public
    * License along with this library; if not, write to the Free Software
-   * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+   * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 \
+USA
    *
    * Callback.h
    * @brief Function objects.
@@ -207,8 +208,8 @@ def GenerateBase(number_of_args):
   PrintLongLine('template <typename ReturnType%s%s>' %
                 (optional_comma, typenames))
   PrintLongLine("class SingleUseCallback%d: public BaseCallback%d<"
-                "ReturnType%s%s> {" % (number_of_args, number_of_args,
-                optional_comma, arg_types))
+                "ReturnType%s%s> {" %
+                (number_of_args, number_of_args, optional_comma, arg_types))
   print ' public:'
   print '  virtual ~SingleUseCallback%d() {}' % number_of_args
   print '  ReturnType Run(%s) {' % arg_list
@@ -228,8 +229,9 @@ def GenerateBase(number_of_args):
    */""" % number_of_args)
   print 'template <%s>' % typenames
   PrintLongLine("class SingleUseCallback%d<void%s%s>: public BaseCallback%d<"
-                "void%s%s> {" % (number_of_args, optional_comma, arg_types,
-                number_of_args, optional_comma, arg_types))
+                "void%s%s> {" %
+                (number_of_args, optional_comma, arg_types, number_of_args,
+                 optional_comma, arg_types))
   print ' public:'
   print '  virtual ~SingleUseCallback%d() {}' % number_of_args
   print '  void Run(%s) {' % arg_list
@@ -279,7 +281,7 @@ def GenerateHelperFunction(bind_count,
   /**
    * @brief A helper function to create a new %s with %d
    * create-time arguments and %d execution time arguments.""" %
-  (parent_class, bind_count, exec_count))
+      (parent_class, bind_count, exec_count))
   if is_method:
     print " * @tparam Class the class with the member function."
   print " * @tparam ReturnType the return type of the callback."
