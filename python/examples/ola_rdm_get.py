@@ -268,7 +268,7 @@ class InteractiveModeController(cmd.Cmd):
 
     # now check if this type of request is supported
     pid_names = sorted([pid.name.lower() for pid in pids
-                 if pid.RequestSupported(request_type)])
+                        if pid.RequestSupported(request_type)])
 
     return pid_names
 

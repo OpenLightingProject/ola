@@ -30,7 +30,8 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import logging
 import time
-from ExpectedResults import AckDiscoveryResult, AckGetResult, AckSetResult, NackDiscoveryResult, NackGetResult, NackSetResult
+from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
+                             NackDiscoveryResult, NackGetResult, NackSetResult)
 from TestCategory import TestCategory
 from TestState import TestState
 from TimingStats import TimingStats
@@ -564,7 +565,7 @@ class ResponderTestFixture(TestFixture):
         escaped_string = '%s' % self._EscapeData(unpacked_data)
         self.LogDebug(' Response: %s, PID: 0x%04hx, TN: %d, PDL: %d, data: %s'
                       % (response, response.pid, response.transaction_number,
-                       len(response.data), escaped_string))
+                         len(response.data), escaped_string))
     else:
       self.LogDebug(' Response: %s, PID: 0x%04hx, TN: %d' %
                     (response, response.pid, response.transaction_number))
@@ -696,9 +697,8 @@ class OptionalParameterTestFixture(ResponderTestFixture):
       expected_results = [
         self.NackSetResult(
           RDMNack.NR_WRITE_PROTECT,
-          advisory='SET %s was write protected, try changing the lock mode if'
-                   ' enabled' %
-            self.pid.name)
+          advisory='SET %s was write protected, try changing the lock mode if '
+                   'enabled' % self.pid.name)
       ]
       if isinstance(result, list):
         expected_results.extend(result)

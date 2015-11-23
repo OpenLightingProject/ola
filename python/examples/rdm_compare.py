@@ -140,7 +140,8 @@ def DiffInBrowser(configuration1, configuration2):
   if changed:
     output.append('    <h4>Device Changes</h4>')
     output.append('    <table>')
-    output.append('     <tr><th>UID</th><th>Field</th><th>Old</th><th>New</th></tr>')
+    output.append('     <tr><th>UID</th><th>Field</th><th>Old</th><th>New</th>'
+                  '</tr>')
     for row in changed:
       output.append('     </tr>')
       output.append('<td>%s</td><td>%s</td><td>%s</td><td>%s</td>' % row)

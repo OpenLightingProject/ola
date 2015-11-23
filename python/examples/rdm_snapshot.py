@@ -419,9 +419,9 @@ class ConfigWriter(object):
 
 
 def Usage():
+  print("Usage: rdm_snapshot.py --universe <universe> [--input <file>] "
+        "[--output <file>]\n")
   print(textwrap.dedent("""\
-  Usage: rdm_snapshot.py --universe <universe> [--input <file>] [--output <file>]
-
   Save and restore RDM settings for a universe. This includes the start address,
   personality and device label.
 

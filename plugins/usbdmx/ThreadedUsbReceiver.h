@@ -13,49 +13,54 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * ThreadedUsbSender.h
- * Send DMX data over USB from a dedicated thread.
- * Copyright (C) 2010 Simon Newton
+ * ThreadedUsbReceiver.h
+ * Receive DMX data over USB from a dedicated thread.
+ * Copyright (C) 2015 Stefan Krupop
  */
 
-#ifndef PLUGINS_USBDMX_THREADEDUSBSENDER_H_
-#define PLUGINS_USBDMX_THREADEDUSBSENDER_H_
+#ifndef PLUGINS_USBDMX_THREADEDUSBRECEIVER_H_
+#define PLUGINS_USBDMX_THREADEDUSBRECEIVER_H_
 
 #include <libusb.h>
+#include <memory>
 #include "ola/base/Macro.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
+#include "olad/PluginAdaptor.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Send DMX data using libusb, from a separate thread.
+ * @brief Receive DMX data using libusb, from a separate thread.
  *
  * The synchronous libusb calls can sometimes take a while to complete, I've
  * seen cases of up to 21ms.
  *
  * To avoid blocking the main thread, we need to perform the libusb transfer
  * calls in a separate thread. This class contains all the thread management
- * code, leaving the subclass to implement TransmitBuffer(), which performs the
+ * code, leaving the subclass to implement ReceiveBuffer(), which performs the
  * actual transfer.
  *
- * ThreadedUsbSender can be used as a building block for synchronous widgets.
+ * ThreadedUsbReceiver can be used as a building block for synchronous widgets.
  */
-class ThreadedUsbSender: private ola::thread::Thread {
+class ThreadedUsbReceiver: private ola::thread::Thread {
  public:
   /**
-   * @brief Create a new ThreadedUsbSender.
-   * @param usb_device The usb_device to use. The ThreadedUsbSender takes a ref
-   *   on the device, while the ThreadedUsbSender object exists.
+   * @brief Create a new ThreadedUsbReceiver.
+   * @param usb_device The usb_device to use. The ThreadedUsbReceiver takes a ref
+   *   on the device, while the ThreadedUsbReceiver object exists.
    * @param usb_handle The handle to use for the DMX transfer.
+   * @param plugin_adaptor the PluginAdaptor used to execute callbacks
    * @param interface_number the USB interface number of the widget. Defaults to 0.
    */
-  ThreadedUsbSender(libusb_device *usb_device,
-                    libusb_device_handle *usb_handle,
-                    int interface_number = 0);
-  virtual ~ThreadedUsbSender();
+  ThreadedUsbReceiver(libusb_device *usb_device,
+                      libusb_device_handle *usb_handle,
+                      PluginAdaptor *plugin_adaptor,
+                      int interface_number = 0);
+  virtual ~ThreadedUsbReceiver();
 
   /**
    * @brief Start the new thread.
@@ -70,37 +75,50 @@ class ThreadedUsbSender: private ola::thread::Thread {
   void *Run();
 
   /**
-   * @brief Buffer a DMX frame for sending.
-   * @param buffer the DmxBuffer to send.
-   *
-   * This should be called in the main thread.
+   * @brief Set the callback to be called when the receive buffer is updated.
+   * @param callback The callback to call.
    */
-  bool SendDMX(const DmxBuffer &buffer);
+  void SetReceiveCallback(Callback0<void> *callback) {
+    m_receive_callback.reset(callback);
+  }
+
+  /**
+   * @brief Get DMX Buffer
+   * @returns DmxBuffer with current input values.
+   */
+  const DmxBuffer &GetDmxInBuffer() const {
+    return m_buffer;
+  }
 
  protected:
   /**
    * @brief Perform the DMX transfer.
    * @param handle the libusb_device_handle to use for the transfer.
-   * @param buffer The DmxBuffer to transfer.
+   * @param buffer The DmxBuffer to be updated.
+   * @param buffer_updated set to true when buffer was updated (=data
+       received)
    * @returns true if the transfer was completed, false otherwise.
    *
-   * This is called from the sender thread.
+   * This is called from the receiver thread.
    */
-  virtual bool TransmitBuffer(libusb_device_handle *handle,
-                              const DmxBuffer &buffer) = 0;
+  virtual bool ReceiveBuffer(libusb_device_handle *handle,
+                             DmxBuffer *buffer,
+                             bool *buffer_updated) = 0;
 
  private:
   bool m_term;
   libusb_device* const m_usb_device;
   libusb_device_handle* const m_usb_handle;
   int const m_interface_number;
+  PluginAdaptor* const m_plugin_adaptor;
+  std::auto_ptr<Callback0<void> > m_receive_callback;
   DmxBuffer m_buffer;
   ola::thread::Mutex m_data_mutex;
   ola::thread::Mutex m_term_mutex;
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadedUsbSender);
+  DISALLOW_COPY_AND_ASSIGN(ThreadedUsbReceiver);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_THREADEDUSBSENDER_H_
+#endif  // PLUGINS_USBDMX_THREADEDUSBRECEIVER_H_

@@ -30,10 +30,20 @@ bin_PROGRAMS += \
 
 if USE_E131
 bin_PROGRAMS += examples/ola_e131
+examples_ola_e131_SOURCES = examples/ola-e131.cpp
+examples_ola_e131_LDADD = examples/libolaconfig.la \
+                          $(EXAMPLE_COMMON_LIBS) \
+                          plugins/e131/messages/libolae131conf.la \
+                          $(libprotobuf_LIBS)
 endif
 
 if USE_USBPRO
 bin_PROGRAMS += examples/ola_usbpro
+examples_ola_usbpro_SOURCES = examples/ola-usbpro.cpp
+examples_ola_usbpro_LDADD = examples/libolaconfig.la \
+                            $(EXAMPLE_COMMON_LIBS) \
+                            plugins/usbpro/messages/libolausbproconf.la \
+                            $(libprotobuf_LIBS)
 endif
 
 if USE_ARTNET
@@ -48,20 +58,8 @@ endif
 examples_ola_dev_info_SOURCES = examples/ola-client.cpp
 examples_ola_dev_info_LDADD = $(EXAMPLE_COMMON_LIBS)
 
-examples_ola_e131_SOURCES = examples/ola-e131.cpp
-examples_ola_e131_LDADD = examples/libolaconfig.la \
-                          $(EXAMPLE_COMMON_LIBS) \
-                          plugins/e131/messages/libolae131conf.la \
-                          $(libprotobuf_LIBS)
-
 examples_ola_streaming_client_SOURCES = examples/ola-streaming-client.cpp
 examples_ola_streaming_client_LDADD = $(EXAMPLE_COMMON_LIBS)
-
-examples_ola_usbpro_SOURCES = examples/ola-usbpro.cpp
-examples_ola_usbpro_LDADD = examples/libolaconfig.la \
-                            $(EXAMPLE_COMMON_LIBS) \
-                            plugins/usbpro/messages/libolausbproconf.la \
-                            $(libprotobuf_LIBS)
 
 examples_ola_rdm_get_SOURCES = examples/ola-rdm.cpp
 examples_ola_rdm_get_LDADD = $(EXAMPLE_COMMON_LIBS)

@@ -99,7 +99,7 @@ elif [[ $TASK = 'flake8' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for flake8 to run against
   make builtfiles
-  flake8 --exclude *_pb2.py,.git,__pycache --ignore E111,E121,E127,E129 python tools/rdm
+  flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E121,E127,E129 data/rdm include/ola python scripts tools/ola_mon tools/rdm
 else
   # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
