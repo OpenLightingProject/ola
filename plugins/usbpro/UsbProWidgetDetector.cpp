@@ -47,6 +47,8 @@
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/strings/Format.h"
+#include "ola/utils/Utils.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/GenericUsbProWidget.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
@@ -55,6 +57,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::strings::ToHex;
 using std::string;
 
 
@@ -87,10 +90,12 @@ UsbProWidgetDetector::UsbProWidgetDetector(
       m_callback(on_success),
       m_failure_callback(on_failure),
       m_timeout_ms(message_interval) {
-  if (!on_success)
+  if (!on_success) {
     OLA_WARN << "on_success callback not set, this will leak memory!";
-  if (!on_failure)
+  }
+  if (!on_failure) {
     OLA_WARN << "on_failure callback not set, this will leak memory!";
+  }
 }
 
 
@@ -103,8 +108,9 @@ UsbProWidgetDetector::~UsbProWidgetDetector() {
   WidgetStateMap::iterator iter;
   for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter) {
     iter->first->GetDescriptor()->SetOnClose(NULL);
-    if (m_failure_callback.get())
+    if (m_failure_callback.get()) {
       m_failure_callback->Run(iter->first->GetDescriptor());
+    }
     RemoveTimeout(&iter->second);
   }
   m_widgets.clear();
@@ -168,8 +174,8 @@ void UsbProWidgetDetector::HandleMessage(DispatchingUsbProWidget *widget,
     case GenericUsbProWidget::RECEIVED_DMX_LABEL:
       break;
     default:
-      OLA_WARN << "Unknown response label: 0x" << std::hex <<
-        static_cast<int>(label) << ", length " << length;
+      OLA_WARN << "Unknown response label: " << ToHex(label) << ", length "
+               << length;
   }
 }
 
@@ -180,8 +186,8 @@ void UsbProWidgetDetector::HandleMessage(DispatchingUsbProWidget *widget,
 void UsbProWidgetDetector::WidgetRemoved(DispatchingUsbProWidget *widget) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
   if (iter == m_widgets.end()) {
-    OLA_FATAL << "Widget " << widget <<
-      " removed but it doesn't exist in the widget map";
+    OLA_FATAL << "Widget " << widget
+              << " removed but it doesn't exist in the widget map";
   } else {
     RemoveTimeout(&(iter->second));
     m_widgets.erase(iter);
@@ -191,8 +197,9 @@ void UsbProWidgetDetector::WidgetRemoved(DispatchingUsbProWidget *widget) {
   delete widget;
   descriptor->SetOnClose(NULL);
   descriptor->Close();
-  if (m_failure_callback.get())
+  if (m_failure_callback.get()) {
     m_failure_callback->Run(descriptor);
+  }
 }
 
 
@@ -211,8 +218,9 @@ void UsbProWidgetDetector::SetupTimeout(DispatchingUsbProWidget *widget,
  * Remove a timeout for a widget.
  */
 void UsbProWidgetDetector::RemoveTimeout(DiscoveryState *discovery_state) {
-  if (discovery_state->timeout_id != ola::thread::INVALID_TIMEOUT)
+  if (discovery_state->timeout_id != ola::thread::INVALID_TIMEOUT) {
     m_scheduler->RemoveTimeout(discovery_state->timeout_id);
+  }
 }
 
 
@@ -256,8 +264,9 @@ void UsbProWidgetDetector::SendGetParams(DispatchingUsbProWidget *widget) {
 void UsbProWidgetDetector::MaybeSendHardwareVersionRequest(
     DispatchingUsbProWidget *widget) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
-  if (iter == m_widgets.end())
+  if (iter == m_widgets.end()) {
     return;
+  }
 
   UsbProWidgetInformation &information = iter->second.information;
   if (information.esta_id == 0 && information.device_id == 0) {
@@ -311,15 +320,16 @@ void UsbProWidgetDetector::DiscoveryTimeout(DispatchingUsbProWidget *widget) {
         CompleteWidgetDiscovery(widget);
         break;
       default:
-        OLA_WARN << "Usb Widget didn't respond to messages, esta id " <<
-          iter->second.information.esta_id << ", device id " <<
-          iter->second.information.device_id;
+        OLA_WARN << "Usb Widget didn't respond to messages, esta id "
+                 << iter->second.information.esta_id << ", device id "
+                 << iter->second.information.device_id;
         ola::io::ConnectedDescriptor *descriptor =
-          widget->GetDescriptor();
+            widget->GetDescriptor();
         descriptor->SetOnClose(NULL);
         delete widget;
-        if (m_failure_callback.get())
+        if (m_failure_callback.get()) {
           m_failure_callback->Run(descriptor);
+        }
         m_widgets.erase(iter);
     }
   }
@@ -349,10 +359,11 @@ void UsbProWidgetDetector::HandleIdResponse(DispatchingUsbProWidget *widget,
 
   WidgetStateMap::iterator iter = m_widgets.find(widget);
 
-  if (iter == m_widgets.end())
+  if (iter == m_widgets.end()) {
     return;
+  }
 
-  uint16_t id = (response.id_high << 8) + response.id_low;
+  uint16_t id = ola::utils::JoinUInt8(response.id_high, response.id_low);
   if (length < sizeof(id)) {
     OLA_WARN << "Received small response packet";
     return;
@@ -384,8 +395,9 @@ void UsbProWidgetDetector::HandleSerialResponse(
     unsigned int length,
     const uint8_t *data) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
-  if (iter == m_widgets.end())
+  if (iter == m_widgets.end()) {
     return;
+  }
   RemoveTimeout(&iter->second);
   UsbProWidgetInformation information = iter->second.information;
 
@@ -394,8 +406,8 @@ void UsbProWidgetDetector::HandleSerialResponse(
     memcpy(reinterpret_cast<uint8_t*>(&serial), data, sizeof(serial));
     iter->second.information.serial = ola::network::LittleEndianToHost(serial);
   } else {
-    OLA_WARN << "Serial number response size " << length << " != " <<
-      sizeof(information.serial);
+    OLA_WARN << "Serial number response size " << length << " != "
+             << sizeof(information.serial);
   }
 
   SendGetParams(widget);
@@ -405,8 +417,9 @@ void UsbProWidgetDetector::HandleGetParams(DispatchingUsbProWidget *widget,
                                            unsigned int length,
                                            const uint8_t *data) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
-  if (iter == m_widgets.end())
+  if (iter == m_widgets.end()) {
     return;
+  }
 
   struct widget_params {
     uint8_t firmware_lo;
@@ -441,8 +454,9 @@ void UsbProWidgetDetector::HandleHardwareVersionResponse(
   }
 
   WidgetStateMap::iterator iter = m_widgets.find(widget);
-  if (iter == m_widgets.end())
+  if (iter == m_widgets.end()) {
     return;
+  }
   RemoveTimeout(&iter->second);
   if (data[0] == DMX_PRO_MKII_VERISON) {
     iter->second.information.dual_port = true;
@@ -464,8 +478,9 @@ void UsbProWidgetDetector::HandleSnifferPacket(
     DispatchingUsbProWidget *widget) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
 
-  if (iter == m_widgets.end())
+  if (iter == m_widgets.end()) {
     return;
+  }
   OLA_DEBUG << "Received Enttec Sniffer Packet";
   iter->second.sniffer_packets++;
 }
@@ -478,8 +493,9 @@ void UsbProWidgetDetector::HandleSnifferPacket(
 void UsbProWidgetDetector::CompleteWidgetDiscovery(
     DispatchingUsbProWidget *widget) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
-  if (iter == m_widgets.end())
+  if (iter == m_widgets.end()) {
     return;
+  }
 
   unsigned int sniffer_packets = iter->second.sniffer_packets;
   const UsbProWidgetInformation information = iter->second.information;
@@ -499,18 +515,18 @@ void UsbProWidgetDetector::CompleteWidgetDiscovery(
   }
 
   std::ostringstream str;
-  str << "ESTA Id: 0x" << std::hex << information.esta_id;
+  str << "ESTA Id: " << ToHex(information.esta_id);
   if (!information.manufacturer.empty()) {
     str << " (" << information.manufacturer << ")";
   }
-  str << ", device Id: " << information.device_id;
+  str << ", device Id: " << ToHex(information.device_id);
   if (!information.device.empty()) {
     str << " (" << information.device << ")";
   }
-  str << ", serial: " << "0x" << information.serial << ", f/w version: ";
+  str << ", serial: " << ToHex(information.serial) << ", f/w version: ";
   if (information.has_firmware_version) {
-     str << std::dec << (information.firmware_version >> 8) << "." <<
-       (information.firmware_version & 0xff);
+     str << (information.firmware_version >> 8) << "."
+         << (information.firmware_version & 0xff);
   } else {
     str << "N/A";
   }
@@ -518,7 +534,7 @@ void UsbProWidgetDetector::CompleteWidgetDiscovery(
 
   const UsbProWidgetInformation *widget_info = new UsbProWidgetInformation(
       information);
-  // given that we've been called via the widget's stack, schedule execution of
+  // Given that we've been called via the widget's stack, schedule execution of
   // the method that deletes the widget.
   m_scheduler->Execute(
       NewSingleCallback(this, &UsbProWidgetDetector::DispatchWidget, widget,
@@ -552,8 +568,9 @@ void UsbProWidgetDetector::HandleSniffer(DispatchingUsbProWidget *widget) {
   ola::io::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   delete widget;
   descriptor->SetOnClose(NULL);
-  if (m_failure_callback.get())
+  if (m_failure_callback.get()) {
     m_failure_callback->Run(descriptor);
+  }
 }
 }  // namespace usbpro
 }  // namespace plugin
