@@ -152,7 +152,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
     static const unsigned int SCAN_INTERVAL_MS = 20000;
 
     // This is how device identification is done, see
-    // http://opendmx.net/index.php/USB_Protocol_Extensions
+    // https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
     // OPEN_LIGHTING_ESTA_CODE is in Constants.h
 
     // DmxKing Device Models
