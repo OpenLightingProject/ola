@@ -94,7 +94,7 @@ libusb_device_handle *OpenVellemenWidget(LibUsbAdaptor *adaptor,
   }
 
   // determine the max packet size, see
-  // http://opendmx.net/index.php/Velleman_K8062_Upgrade
+  // https://wiki.openlighting.org/index.php/Velleman_K8062_Upgrade
   // The standard size is 8.
   *chunk_size = DEFAULT_CHUNK_SIZE;
   if (config &&
