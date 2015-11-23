@@ -9,7 +9,8 @@ AC_CONFIG_AUX_DIR([config])
 AC_SUBST([ac_aux_dir])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
-AM_INIT_AUTOMAKE([subdir-objects])
+# 'AM_PROG_AR' was introduced in Automake 1.11.2
+AM_INIT_AUTOMAKE([1.11.2 subdir-objects])
 
 # OLA version variables
 AC_SUBST([ola_major_version])
