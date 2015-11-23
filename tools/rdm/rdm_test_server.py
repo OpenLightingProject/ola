@@ -936,21 +936,22 @@ def BuildApplication(ola_thread, test_thread):
   """Construct the application and add the handlers."""
   app = Application()
   app.RegisterHandler('/',
-      RedirectHandler('/static/rdmtests.html').HandleRequest)
-  app.RegisterHandler('/favicon.ico',
+                      RedirectHandler('/static/rdmtests.html').HandleRequest)
+  app.RegisterHandler(
+      '/favicon.ico',
       RedirectHandler('/static/images/favicon.ico').HandleRequest)
   app.RegisterHandler('/GetTestDefs',
-      TestDefinitionsHandler().HandleRequest)
+                      TestDefinitionsHandler().HandleRequest)
   app.RegisterHandler('/GetUnivInfo',
-      GetUniversesHandler(ola_thread).HandleRequest)
+                      GetUniversesHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/GetDevices',
-      GetDevicesHandler(ola_thread).HandleRequest)
+                      GetDevicesHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/RunDiscovery',
-      RunDiscoveryHandler(ola_thread).HandleRequest)
+                      RunDiscoveryHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/DownloadResults',
-      DownloadResultsHandler().HandleRequest)
+                      DownloadResultsHandler().HandleRequest)
   app.RegisterHandler('/DownloadModelData',
-      DownloadModelDataHandler().HandleRequest)
+                      DownloadModelDataHandler().HandleRequest)
 
   run_tests_handler = RunTestsHandler(ola_thread, test_thread)
   app.RegisterHandler('/RunCollector', run_tests_handler.HandleRequest)
@@ -958,14 +959,12 @@ def BuildApplication(ola_thread, test_thread):
   app.RegisterHandler('/StatCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatTests', run_tests_handler.HandleRequest)
   app.RegisterRegex('/static/.*',
-      StaticFileHandler(settings['www_dir']).HandleRequest)
+                    StaticFileHandler(settings['www_dir']).HandleRequest)
   return app
 
 
 def parse_options():
-  """
-    Parse Command Line options
-  """
+  """Parse Command Line options"""
   usage = 'Usage: %prog [options]'
   description = textwrap.dedent("""\
     Starts the TestServer (A simple Web Server) which run a series of tests on
@@ -1007,7 +1006,7 @@ def SetupLogDirectory(options):
     except OSError:
       logging.error(
           'Failed to create %s for RDM logs. Logging will be disabled.' %
-           options.log_directory)
+          options.log_directory)
   elif not os.path.isdir(options.log_directory):
     logging.error('Log directory invalid: %s. Logging will be disabled.' %
                   options.log_directory)

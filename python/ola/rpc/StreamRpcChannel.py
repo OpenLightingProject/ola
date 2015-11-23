@@ -245,7 +245,7 @@ class StreamRpcChannel(service.RpcChannel):
 
         if version != self.PROTOCOL_VERSION:
           logging.warning('Protocol mismatch: %d != %d', version,
-              self.PROTOCOL_VERSION)
+                          self.PROTOCOL_VERSION)
           self._skip_message = True
         self._expected_size = size
 

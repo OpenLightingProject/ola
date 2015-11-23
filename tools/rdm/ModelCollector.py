@@ -506,7 +506,7 @@ class ModelCollector(object):
     if (response.response_type == OlaClient.RDM_NACK_REASON and
         response.pid != self.pid_store.GetName('SLOT_DESCRIPTION').value):
       print ('Got nack with reason for pid %s: %s' %
-          (response.pid, response.nack_reason))
+             (response.pid, response.nack_reason))
       self._NextState()
     elif unpack_exception:
       print unpack_exception

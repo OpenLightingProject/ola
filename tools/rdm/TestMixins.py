@@ -371,8 +371,8 @@ class SetOversizedLabelMixin(object):
     else:
       if fields['label'] != self.LONG_STRING[0:RDM_MAX_STRING_LENGTH]:
         self.AddWarning(
-            'Setting an oversized %s set the first %d characters' % (
-            self.PID, len(fields['label'])))
+            'Setting an oversized %s set the first %d characters' %
+            (self.PID, len(fields['label'])))
 
 
 # Generic Set Mixins
@@ -618,7 +618,7 @@ class SetUndefinedSensorValues(object):
         # SET SENSOR_VALUE may not be supported
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
                            action=self._DoAction),
-                           ])
+    ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self._missing_sensors.pop(0)])
 
 
@@ -858,8 +858,9 @@ class SetMinimumLevelMixin(object):
         field_values={
           'minimum_level_increasing': self.MinLevelIncreasing(),
           'minimum_level_decreasing': min_level_decreasing,
-          'on_below_minimum': self.OnBelowMin(),
-    }))
+          'on_below_minimum': self.OnBelowMin()
+        }
+    ))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def ResetState(self):
