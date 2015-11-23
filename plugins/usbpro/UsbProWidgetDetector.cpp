@@ -48,7 +48,7 @@
 #include "ola/io/Descriptor.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/strings/Format.h"
-#include "ola/utils/Utils.h"
+#include "ola/util/Utils.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/GenericUsbProWidget.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
