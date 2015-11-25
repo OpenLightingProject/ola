@@ -53,6 +53,7 @@ stamp-h1
 .AppleDouble/
 .deps
 .libs
+config/ar-lib
 config/compile
 config/config.guess
 config/config.sub
