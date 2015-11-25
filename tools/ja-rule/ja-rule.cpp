@@ -107,7 +107,8 @@ class Controller {
         m_widget(NULL),
         m_log_count(0),
         m_dmx_slot_data(0),
-        m_mode(MODE_DEFAULT) {
+        m_mode(MODE_DEFAULT),
+        m_current_timing_option(TIMING_BREAK) {
     m_actions['\n'] = Action(NewCallback(this, &Controller::Commit));
     m_actions[27] = Action(NewCallback(this, &Controller::ExitEditMode));
     m_actions['+'] = Action(NewCallback(this, &Controller::Adjust, true));
