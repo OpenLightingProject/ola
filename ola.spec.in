@@ -16,14 +16,12 @@ URL:		https://github.com/OpenLightingProject/ola
 Source:		https://github.com/OpenLightingProject/ola/releases/download/%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:	pkgconfig,pkgconfig(cppunit),pkgconfig(uuid),pkgconfig(avahi-client)
-BuildRequires:	pkgconfig(libusb-1.0) >= 1.0.2,pkgconfig(libmicrohttpd) >= 0.4.0
+BuildRequires:	pkgconfig(libusb-1.0) >= 1.0.2,pkgconfig(libmicrohttpd) >= 0.4.0%{!?el6:,pkgconfig(systemd)}
 BuildRequires:	libtool,bison,flex,python2-devel,openslp-devel,pkgconfig(libftdi%{!?el6:1}) >= 0.18
 BuildRequires:	protobuf-devel >= 0.2,protobuf-compiler,protobuf-python
 %if 0%{?fedora} >= 21
 BuildRequires:	liblo-devel
 %endif
-Provides:	bundled(bootstrap) = 3.3.2, bundled(jquery) = 2.1.3
-Provides:	bundled(angularjs) = 1.3.14, bundled(angular-route) = 1.3.14
 
 %description
 The Open Lighting Architecture is a framework for lighting control information.
@@ -61,17 +59,26 @@ Provides:	bundled(jquery) = 1.7.2, bundled(jquery-ui) = 1.8.21
 %description rdm-tests
 The rdm test suite for OLA
 
+%package data
+Group:		Development/Libraries
+BuildArch:	noarch
+Summary:	data for OLA
+Provides:	bundled(bootstrap) = 3.3.2, bundled(jquery) = 2.1.3
+Provides:	bundled(angularjs) = 1.3.14, bundled(angular-route) = 1.3.14
+
+%description data
+HTML, CSS, JS and RDM PIDs files used by OLA
+
 %prep
 %setup -q -n %{name}-%{version}
 
 %build
 autoreconf -i
 %configure --enable-rdm-tests --enable-shared --disable-static
-#begin rpath removal
 sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
+#we can't fix this upstream (I think)
 sed -i "s|\$(LN_S) -f \$(bindir)\/|\$(LN_S) -f |g" Makefile
-#end rpath removal
 make %{!?el6:%{?_smp_mflags}} #el6 has problems with parralel building
 
 %check
@@ -81,21 +88,15 @@ find %buildroot -name "*\.la" -delete
 find %buildroot -name "*\.a" -delete
 
 %install
-rm -rf %buildroot
 %make_install
 mkdir -p %buildroot/%{_udevrulesdir}
 cp debian/ola.udev %buildroot/%{_udevrulesdir}
 
 %files
-%doc AUTHORS ChangeLog NEWS README TODO
+%doc AUTHORS NEWS README
 %{_bindir}/ola*
 %{_bindir}/rdmpro_sniffer
 %{_bindir}/usbpro_firmware
-%{_datadir}/olad
-%{_datadir}/olad/**
-%{_datadir}/ola
-%{_datadir}/ola/pids
-%{_datadir}/ola/pids/**
 %{_libdir}/libola*\.so\.*
 %{_mandir}/man1/**
 %{_udevrulesdir}/ola.udev
@@ -107,21 +108,21 @@ cp debian/ola.udev %buildroot/%{_udevrulesdir}
 %{_libdir}/pkgconfig/*
 
 %files -n python2-%{name}
-%{python2_sitelib}/ola
+%dir %{python2_sitelib}/ola
 %{python2_sitelib}/ola/*\.py*
 %{python2_sitelib}/ola/rpc
-%{python2_sitelib}/ola/rpc/*\.py*
 
 %files rdm-tests
 %{_bindir}/rdm_model_collector.py*
 %{_bindir}/rdm_responder_test.py*
 %{_bindir}/rdm_test_server.py*
 %{_datadir}/ola/rdm-server
-%{_datadir}/ola/rdm-server/**
 %{python2_sitelib}/ola/testing
-%{python2_sitelib}/ola/testing/*\.py*
-%{python2_sitelib}/ola/testing/rdm
-%{python2_sitelib}/ola/testing/rdm/*\.py*
+
+%files data
+%{_datadir}/olad
+%dir %{_datadir}/ola
+%{_datadir}/ola/pids
 
 %post -p /sbin/ldconfig
 
@@ -131,7 +132,7 @@ cp debian/ola.udev %buildroot/%{_udevrulesdir}
 
 %postun devel -p /sbin/ldconfig
 
-%licence LICENCE
+%licence LICENCE tools/rdm/static/MIT-LICENSE.txt javascript/new-src/README.md COPYING
 
 %changelog
 * Sat Sep 19 2015 Dave Olsthoorn - 0.9.7-1
