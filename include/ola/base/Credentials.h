@@ -129,7 +129,7 @@ bool SetGID(gid_t new_gid);
 /**
  * @brief Get the supplementary group ID's of the process
  * @param size the size of the list to place group ID's in
- * @param list the list to place group ID's
+ * @param[out] list the list to place group ID's
  * @note when size 0 is given, the list remain's untouched and only the
  * number of group ID's is returned
  * @return on error -1, otherwise the number of group ID's
