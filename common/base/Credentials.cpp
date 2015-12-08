@@ -135,7 +135,6 @@ bool SetUID(uid_t new_uid) {
 bool SetGID(gid_t new_gid) {
 #ifdef _WIN32
   (void) new_gid;
-  (void_
   return false;
 #else
   if (setgid(new_gid)) {
