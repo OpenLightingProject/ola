@@ -120,6 +120,32 @@ bool SetGID(gid_t new_gid);
 
 /**
  * @}
+ *
+ * @name Get / Set supplementary group IDs
+ * @{
+ */
+
+
+/**
+ * @brief Get the supplementary group ID's of the process
+ * @param size the size of the list to place group ID's in
+ * @param list the list to place group ID's
+ * @note when size 0 is given, the list remain's untouched and only the
+ * number of group ID's is returned
+ * @return on error -1, otherwise the number of group ID's
+ */
+int GetGroups(int size, gid_t list[]);
+
+/**
+ * @brief Set the supplementary group ID's of the process
+ * @param size the size of the list of ID's
+ * @param list pointer to the list of ID's
+ * @return true on success, false otherwise
+ */
+bool SetGroups(size_t size, const gid_t *list);
+
+/**
+ * @}
  */
 
 /**
