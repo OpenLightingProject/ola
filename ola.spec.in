@@ -2,8 +2,6 @@
 %{!?python2_sitelib:%global python2_sitelib %(python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 #udev macro shim
 %{!?_udevrulesdir:%global _udevrulesdir %{_sysconfdir}/udev/rules.d/ }
-#license shim
-%{!?_licensedir:%global license %doc}
 
 Name:		ola
 Version:	@VERSION@
@@ -101,6 +99,8 @@ cp debian/ola.udev %buildroot/%{_udevrulesdir}
 %postun -p /sbin/ldconfig
 
 %files
+#license shim
+%{!?_licensedir:%global license %doc}
 %doc AUTHORS NEWS README
 %{_bindir}/ola*
 %{_bindir}/rdmpro_sniffer
