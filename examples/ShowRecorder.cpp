@@ -67,8 +67,9 @@ int ShowRecorder::Init() {
     return ola::EXIT_UNAVAILABLE;
   }
 
-  if (!m_saver.Open())
+  if (!m_saver.Open()) {
     return ola::EXIT_CANTCREAT;
+  }
 
   m_client.GetClient()->SetDMXCallback(
       ola::NewCallback(this, &ShowRecorder::NewFrame));
