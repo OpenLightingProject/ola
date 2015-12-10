@@ -31,28 +31,28 @@
  */
 class ShowLoader {
  public:
-    explicit ShowLoader(const std::string &filename);
-    ~ShowLoader();
+  explicit ShowLoader(const std::string &filename);
+  ~ShowLoader();
 
-    typedef enum {
-      OK,
-      INVALID_LINE,
-      END_OF_FILE,
-    } State;
+  typedef enum {
+    OK,
+    INVALID_LINE,
+    END_OF_FILE,
+  } State;
 
-    bool Load();
-    void Reset();
+  bool Load();
+  void Reset();
 
-    State NextTimeout(unsigned int *timeout);
-    State NextFrame(unsigned int *universe, ola::DmxBuffer *data);
+  State NextTimeout(unsigned int *timeout);
+  State NextFrame(unsigned int *universe, ola::DmxBuffer *data);
 
  private:
-    const std::string m_filename;
-    std::ifstream m_show_file;
-    unsigned int m_line;
+  const std::string m_filename;
+  std::ifstream m_show_file;
+  unsigned int m_line;
 
-    static const char OLA_SHOW_HEADER[];
+  static const char OLA_SHOW_HEADER[];
 
-    void ReadLine(std::string *line);
+  void ReadLine(std::string *line);
 };
 #endif  // EXAMPLES_SHOWLOADER_H_
