@@ -3,7 +3,7 @@
 #udev macro shim
 %{!?_udevrulesdir:%global _udevrulesdir %{_sysconfdir}/udev/rules.d/ }
 #license shim
-%{!?license:%global license %%doc}
+%{!?_licensedir:%global license %doc}
 
 Name:		ola
 Version:	@VERSION@
