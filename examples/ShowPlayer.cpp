@@ -59,8 +59,9 @@ int ShowPlayer::Init() {
     return ola::EXIT_UNAVAILABLE;
   }
 
-  if (!m_loader.Load())
+  if (!m_loader.Load()) {
     return ola::EXIT_NOINPUT;
+  }
 
   return ola::EXIT_OK;
 }
@@ -124,8 +125,9 @@ void ShowPlayer::SendNextFrame() {
 ShowLoader::State ShowPlayer::RegisterNextTimeout() {
   unsigned int timeout;
   ShowLoader::State state = m_loader.NextTimeout(&timeout);
-  if (state != ShowLoader::OK)
+  if (state != ShowLoader::OK) {
     return state;
+  }
 
   OLA_INFO << "Registering timeout for " << timeout << "ms";
   m_client.GetSelectServer()->RegisterSingleTimeout(
