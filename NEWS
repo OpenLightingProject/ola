@@ -1,19 +1,33 @@
-x/y/2015 ola-0.9.9
+x/12/2015 ola-0.10.0
  Features:
  * Add better logging for open()
  * Added more man pages.
-
- API:
- * 
+ * Added a DMX keypad to the new web UI
+ * OLA Trigger config to control Philips Hue Lux lights
+ * Added hotplug support for usbdmx devices
+ * Numerous Ja Rule plugin and tool improvements
+ * Add UUCP locking support #888
+ * Fix issues encountered when packaging for openSUSE and fedora #904
+ * Add support for the Nodle U1 widget
+ * Add validation of OSC output format types
 
  RDM Tests:
- * 
+ * Fix event handling in the RDM test server #948
+ * Mute all devices before running the DUB tests
+ * Add timing stats to the RDM responder tests
 
  Bugs:
- * 
+ * Remove a number of obsolete Autotools macros, we now require Automake 1.11.2
+   #931
+ * Work around the case where an Enttec USB Pro widget doesn't respond #341
+ * Fix a crash if a client disconnects during RDM discovery #950
+ * Stop e131_transmit_test from segfaulting #966
+ * Fix the build on Windows
 
  Internal:
- *
+ * All the Python code now passes flake8 checking
+ * Switched to using the new command line flags module in ola_rdm_discover
+ * Move the ACN code to libs/acn
 
 30/9/2015 ola-0.9.8
  Features:
