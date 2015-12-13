@@ -10,8 +10,10 @@ x/12/2015 ola-0.10.0
  * Fix issues encountered when packaging for openSUSE and fedora #904
  * Add support for the Nodle U1 widget
  * Add validation of OSC output format types
+ * Add an example Stdin handler to the documentation
 
  RDM Tests:
+ * Add some more E1.37-2 tests
  * Fix event handling in the RDM test server #948
  * Mute all devices before running the DUB tests
  * Add timing stats to the RDM responder tests
@@ -23,9 +25,11 @@ x/12/2015 ola-0.10.0
  * Fix a crash if a client disconnects during RDM discovery #950
  * Stop e131_transmit_test from segfaulting #966
  * Fix the build on Windows
+ * Split libolaserver into two parts to stop dpkg-shlibdeps warnings
 
  Internal:
  * All the Python code now passes flake8 checking
+ * The new web UI now passes jscs checking
  * Switched to using the new command line flags module in ola_rdm_discover
  * Move the ACN code to libs/acn
 
