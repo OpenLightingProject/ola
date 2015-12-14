@@ -158,6 +158,7 @@ int GetGroups(int size, gid_t list[]) {
 bool SetGroups(size_t size, const gid_t *list) {
 #ifdef _WIN32
   (void) size;
+  (void) list;
   return false;
 #else
   if (setgroups(size, list)) {
