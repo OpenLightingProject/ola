@@ -135,6 +135,8 @@ examples/ola_rdm_set
 examples/ola_rdm_set.exe
 examples/ola_recorder
 examples/ola_recorder.exe
+examples/ola_set_dmx
+examples/ola_set_dmx.exe
 examples/ola_set_priority
 examples/ola_set_priority.exe
 examples/ola_streaming_client
