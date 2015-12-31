@@ -1,4 +1,4 @@
-x/12/2015 ola-0.10.0
+x/1/2016 ola-0.10.0
  Features:
  * Add better logging for open()
  * Added more man pages.
@@ -11,6 +11,7 @@ x/12/2015 ola-0.10.0
  * Add support for the Nodle U1 widget
  * Add validation of OSC output format types
  * Add an example Stdin handler to the documentation
+ * Increase the port limit for E1.31 up to 512 from 128
 
  RDM Tests:
  * Add some more E1.37-2 tests
