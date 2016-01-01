@@ -54,10 +54,15 @@ def GetCandidatePortsCallback(status, devices):
   wrapper.Stop()
 
 
-args = ParseArgs()
-universe = args.universe
+def main():
+  args = ParseArgs()
+  universe = args.universe
 
-wrapper = ClientWrapper()
-client = wrapper.Client()
-client.GetCandidatePorts(GetCandidatePortsCallback, universe)
-wrapper.Run()
+  wrapper = ClientWrapper()
+  client = wrapper.Client()
+  client.GetCandidatePorts(GetCandidatePortsCallback, universe)
+  wrapper.Run()
+
+
+if __name__ == '__main__':
+  main()
