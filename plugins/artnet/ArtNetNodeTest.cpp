@@ -508,8 +508,9 @@ void ArtNetNodeTest::testConfigurationMode() {
   OLA_ASSERT_EQ((uint8_t) 2, node.SubnetAddress());
   poll_reply_message[19] = 2;
   poll_reply_message[115] = '4';
-  for (unsigned int i = 186; i <= 193; i++)
+  for (unsigned int i = 186; i <= 193; i++) {
     poll_reply_message[i] = 0x20;
+  }
   ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
   node.ExitConfigurationMode();
   m_socket->Verify();
