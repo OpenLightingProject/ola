@@ -108,7 +108,7 @@ elif [[ $TASK = 'pychecker' ]]; then
   make builtfiles
   PYTHONPATH=./python/:$PYTHONPATH 
   export PYTHONPATH 
-  pychecker --quiet --limit 30 -b threading,unittest $(find ./ -name "*.py" -and ! -name "*_pb2.py" | xargs)
+  pychecker --quiet --limit 30 --blacklist threading,unittest $(find ./ -name "*.py" -and ! -name "*_pb2.py" | xargs)
 else
   # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
