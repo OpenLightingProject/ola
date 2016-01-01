@@ -41,7 +41,13 @@ def Devices(state, devices):
   wrapper.Stop()
 
 
-wrapper = ClientWrapper()
-client = wrapper.Client()
-client.FetchDevices(Devices)
-wrapper.Run()
+def main():
+  wrapper = ClientWrapper()
+  client = wrapper.Client()
+  client.FetchDevices(Devices)
+  wrapper.Run()
+
+
+if __name__ == '__main__':
+  main()
+
