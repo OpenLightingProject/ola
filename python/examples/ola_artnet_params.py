@@ -33,12 +33,16 @@ def ArtNetConfigureReply(state, response):
   wrapper.Stop()
 
 
-# Set this appropriately
-device_alias = 1
-wrapper = ClientWrapper()
-client = wrapper.Client()
-artnet_request = ArtNetConfigMessages_pb2.Request()
-artnet_request.type = artnet_request.ARTNET_OPTIONS_REQUEST
-client.ConfigureDevice(device_alias, artnet_request.SerializeToString(),
-                       ArtNetConfigureReply)
-wrapper.Run()
+def main():
+  # Set this appropriately
+  device_alias = 1
+  wrapper = ClientWrapper()
+  client = wrapper.Client()
+  artnet_request = ArtNetConfigMessages_pb2.Request()
+  artnet_request.type = artnet_request.ARTNET_OPTIONS_REQUEST
+  client.ConfigureDevice(device_alias, artnet_request.SerializeToString(),
+                         ArtNetConfigureReply)
+  wrapper.Run()
+
+if __name__ == '__main__':
+  main()
