@@ -88,7 +88,6 @@ def ParseArgs():
     Usage(sys.argv[0])
     sys.exit(2)
 
-  help = False
   fix = False
   diff = False
   for o, a in opts:
@@ -98,11 +97,8 @@ def ParseArgs():
       fix = True
     elif o in ('-h', '--help'):
       Usage(sys.argv[0])
-      sys.exit()
+      sys.exit(0)
 
-  if help:
-    Usage(sys.argv[0])
-    sys.exit(0)
   return diff, fix
 
 
