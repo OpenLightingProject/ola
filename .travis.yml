@@ -100,6 +100,11 @@ matrix:
         apt:
           packages:
            - *base_build
+    - env: TASK='pychecker'
+      addons:
+        apt:
+          packages:
+           - *base_build
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'
@@ -140,6 +145,7 @@ install:
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
+  - if [ "$TASK" = "pychecker" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 
 before_install:
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
