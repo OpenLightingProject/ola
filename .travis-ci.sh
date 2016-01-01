@@ -106,7 +106,7 @@ elif [[ $TASK = 'pychecker' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for pychecker to run against
   make builtfiles
-  pychecker --quiet data/rdm include/ola python scripts tools/ola_mon tools/rdm
+  pychecker --quiet $(find ./ -name "*.py" | xargs)
 else
   # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
