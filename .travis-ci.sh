@@ -106,7 +106,7 @@ elif [[ $TASK = 'pychecker' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for pychecker to run against
   make builtfiles
-  pychecker --quiet $(find ./ -name "*.py" | xargs)
+  pychecker --quiet --limit 30 $(find `pwd`/ -name "*.py" | xargs)
 else
   # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
