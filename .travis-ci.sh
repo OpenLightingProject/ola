@@ -106,9 +106,11 @@ elif [[ $TASK = 'pychecker' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for pychecker to run against
   make builtfiles
-  PYTHONPATH=./python/:$PYTHONPATH 
-  export PYTHONPATH 
-  pychecker --quiet --limit 30 --blacklist threading,unittest $(find ./ -name "*.py" -and ! -name "*_pb2.py" | xargs)
+  PYTHONPATH=./python/:$PYTHONPATH
+  export PYTHONPATH
+  mkdir ./python/ola/testing/
+  ln -s ./tools/rdm ./python/ola/testing/rdm
+  pychecker --quiet --limit 500 --blacklist threading,unittest,google,google.protobuf $(find ./ -name "*.py" -and ! -name "*_pb2.py" | xargs)
 else
   # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
