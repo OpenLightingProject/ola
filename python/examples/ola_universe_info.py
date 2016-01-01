@@ -43,7 +43,13 @@ def Universes(state, universes):
 
   wrapper.Stop()
 
-wrapper = ClientWrapper()
-client = wrapper.Client()
-client.FetchUniverses(Universes)
-wrapper.Run()
+
+def main():
+  wrapper = ClientWrapper()
+  client = wrapper.Client()
+  client.FetchUniverses(Universes)
+  wrapper.Run()
+
+
+if __name__ == '__main__':
+  main()
