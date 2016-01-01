@@ -105,6 +105,8 @@ matrix:
         apt:
           packages:
            - *base_build
+           - python-numpy
+           - python-rrdtool
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'
