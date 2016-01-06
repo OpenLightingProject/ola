@@ -22,6 +22,8 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 from ola.ClientWrapper import ClientWrapper
 
+wrapper = None
+
 
 def RDMString(port):
   if port.supports_rdm:
@@ -29,19 +31,26 @@ def RDMString(port):
   return ''
 
 
-def Devices(state, devices):
-  for device in sorted(devices):
-    print('Device %d: %s' % (device.alias, device.name))
-    print('Input ports:')
-    for port in device.input_ports:
-      print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
-    print('Output ports:')
-    for port in device.output_ports:
-      print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
-  wrapper.Stop()
+def Devices(status, devices):
+  if status.state == RequestStatus.SUCCESS:
+    for device in sorted(devices):
+      print('Device %d: %s' % (device.alias, device.name))
+      print('Input ports:')
+      for port in device.input_ports:
+        print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
+      print('Output ports:')
+      for port in device.output_ports:
+        print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
+  else:
+    print(message.state)
+
+  global wrapper
+  if wrapper:
+    wrapper.Stop()
 
 
 def main():
+  global wrapper
   wrapper = ClientWrapper()
   client = wrapper.Client()
   client.FetchDevices(Devices)
@@ -50,4 +59,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-
