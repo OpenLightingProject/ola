@@ -110,7 +110,7 @@ elif [[ $TASK = 'pychecker' ]]; then
   export PYTHONPATH
   mkdir ./python/ola/testing/
   ln -s ./tools/rdm ./python/ola/testing/rdm
-  pychecker --quiet --limit 500 --blacklist threading,unittest,google,google.protobuf $(find ./ -name "*.py" -and ! -name "*_pb2.py" | xargs)
+  pychecker --quiet --limit 500 --blacklist threading,unittest,cmd,optparse,google,google.protobuf $(find ./ -name "*.py" -and ! -name "*_pb2.py" -and ! -name "OlaClient.py" -and ! -name "ola_candidate_ports.py" | xargs)
 else
   # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
