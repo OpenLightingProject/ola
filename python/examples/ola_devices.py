@@ -21,6 +21,7 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import RequestStatus
 
 wrapper = None
 
@@ -42,7 +43,7 @@ def Devices(status, devices):
       for port in device.output_ports:
         print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
   else:
-    print(message.state)
+    print(status.state)
 
   global wrapper
   if wrapper:
