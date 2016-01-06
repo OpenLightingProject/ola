@@ -112,6 +112,7 @@ matrix:
       env: TASK='coverage'
     - compiler: gcc
       env: TASK='coverity'
+    - env: TASK='pychecker'
 
 env:
   global:
