@@ -33,7 +33,7 @@ def RDMString(port):
 
 
 def Devices(status, devices):
-  if status.state == RequestStatus.SUCCESS:
+  if status.Succeeded():
     for device in sorted(devices):
       print('Device %d: %s' % (device.alias, device.name))
       print('Input ports:')
@@ -43,7 +43,7 @@ def Devices(status, devices):
       for port in device.output_ports:
         print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
   else:
-    print(status.state)
+    print('Error: {}'.format(status.message), file=sys.stderr)
 
   global wrapper
   if wrapper:
