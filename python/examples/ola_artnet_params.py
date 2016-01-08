@@ -28,14 +28,14 @@ wrapper = None
 
 
 def ArtNetConfigureReply(status, response):
-  if status.state == RequestStatus.SUCCESS:
+  if status.Succeeded():
     reply = ArtNetConfigMessages_pb2.Reply()
     reply.ParseFromString(response)
     print('Short Name: %s' % reply.options.short_name)
     print('Long Name: %s' % reply.options.long_name)
     print('Subnet: %d' % reply.options.subnet)
   else:
-    print(status.state)
+    print('Error: {}'.format(status.message), file=sys.stderr)
 
   global wrapper
   if wrapper:
