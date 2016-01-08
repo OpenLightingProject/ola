@@ -18,11 +18,13 @@
 
 """Fetch some ArtNet parameters."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
+from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import RequestStatus
 from ola import ArtNetConfigMessages_pb2
+import sys
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 wrapper = None
 
@@ -35,7 +37,7 @@ def ArtNetConfigureReply(status, response):
     print('Long Name: %s' % reply.options.long_name)
     print('Subnet: %d' % reply.options.subnet)
   else:
-    print('Error: {}'.format(status.message), file=sys.stderr)
+    print('Error: %s' % status.message, file=sys.stderr)
 
   global wrapper
   if wrapper:
