@@ -18,16 +18,25 @@
 
 """Send some DMX data."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
-import array
+from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
+import array
+import sys
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 wrapper = None
 
 
-def DmxSent(state):
-  wrapper.Stop()
+def DmxSent(status):
+  if status.Succeeded():
+    print('Success!')
+  else:
+    print('Error: %s' % status.message, file=sys.stderr)
+
+  global wrapper
+  if wrapper:
+    wrapper.Stop()
 
 
 def main():
@@ -40,6 +49,7 @@ def main():
   # append third dmx-value
   data.append(255)
 
+  global wrapper
   wrapper = ClientWrapper()
   client = wrapper.Client()
   # send 1 dmx frame with values for channels 1-3
