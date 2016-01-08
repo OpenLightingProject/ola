@@ -348,8 +348,8 @@ class IntAtom(FixedSizeAtom):
     if value is None:
       value = self._AccountForMultiplierPack(args[0])
 
-    for range in self._ranges:
-      if range.Matches(value):
+    for valid_range in self._ranges:
+      if valid_range.Matches(value):
         break
     else:
       raise ArgsValidationError('Param %d out of range, must be one of %s' %
@@ -388,13 +388,13 @@ class IntAtom(FixedSizeAtom):
   def _GetAllowedRanges(self):
     values = list(self._labels.keys())
 
-    for range in self._ranges:
-      if range.min == range.max:
-        values.append(str(self._AccountForMultiplierUnpack(range.min)))
+    for valid_range in self._ranges:
+      if valid_range.min == valid_range.max:
+        values.append(str(self._AccountForMultiplierUnpack(valid_range.min)))
       else:
         values.append('[%s, %s]' %
-                      (self._AccountForMultiplierUnpack(range.min),
-                       self._AccountForMultiplierUnpack(range.max)))
+                      (self._AccountForMultiplierUnpack(valid_range.min),
+                       self._AccountForMultiplierUnpack(valid_range.max)))
 
     return ('%s' % ', '.join(values))
 

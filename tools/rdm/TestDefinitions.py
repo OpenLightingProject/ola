@@ -541,8 +541,8 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
 
   def VerifyResult(self, unused_response, fields):
     """Check the footprint, personalities & sub devices."""
-    for property in self.PROVIDES:
-      self.SetPropertyFromDict(fields, property)
+    for property_name in self.PROVIDES:
+      self.SetPropertyFromDict(fields, property_name)
 
     footprint = fields['dmx_footprint']
     if footprint > MAX_DMX_ADDRESS:
@@ -3631,11 +3631,11 @@ class GetRealTimeClock(OptionalParameterTestFixture):
     if not response.WasAcked():
       return
 
-    for field, range in self.ALLOWED_RANGES.iteritems():
+    for field, valid__range in self.ALLOWED_RANGES.iteritems():
       value = fields[field]
-      if value < range[0] or value > range[1]:
+      if value < valid_range[0] or value > valid_range[1]:
         self.AddWarning('%s in GET %s is out of range, was %d, expected %s' %
-                        (field, self.PID, value, range))
+                        (field, self.PID, value, valid_range))
 
 
 class GetRealTimeClockWithData(TestMixins.GetWithDataMixin,
