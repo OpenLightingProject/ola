@@ -21,21 +21,31 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import RequestStatus
 from ola import ArtNetConfigMessages_pb2
 
+wrapper = None
 
-def ArtNetConfigureReply(state, response):
-  reply = ArtNetConfigMessages_pb2.Reply()
-  reply.ParseFromString(response)
-  print('Short Name: %s' % reply.options.short_name)
-  print('Long Name: %s' % reply.options.long_name)
-  print('Subnet: %d' % reply.options.subnet)
-  wrapper.Stop()
+
+def ArtNetConfigureReply(status, response):
+  if status.state == RequestStatus.SUCCESS:
+    reply = ArtNetConfigMessages_pb2.Reply()
+    reply.ParseFromString(response)
+    print('Short Name: %s' % reply.options.short_name)
+    print('Long Name: %s' % reply.options.long_name)
+    print('Subnet: %d' % reply.options.subnet)
+  else:
+    print(status.state)
+
+  global wrapper
+  if wrapper:
+    wrapper.Stop()
 
 
 def main():
   # Set this appropriately
   device_alias = 1
+  global wrapper
   wrapper = ClientWrapper()
   client = wrapper.Client()
   artnet_request = ArtNetConfigMessages_pb2.Request()
