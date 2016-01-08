@@ -1,11 +1,27 @@
-x/1/2016 ola-0.10.0
+x/y/2016 ola-0.10.1
+ Features:
+ * 
+
+ API:
+ * 
+
+ RDM Tests:
+ * 
+
+ Bugs:
+ * 
+
+ Internal:
+ *
+
+3/1/2016 ola-0.10.0
  Features:
  * Add better logging for open()
  * Added more man pages.
  * Added a DMX keypad to the new web UI
  * OLA Trigger config to control Philips Hue Lux lights
  * Added hotplug support for usbdmx devices
- * Numerous Ja Rule plugin and tool improvements
+ * Add support for JaRule widgets.
  * Add UUCP locking support #888
  * Fix issues encountered when packaging for openSUSE and fedora #904
  * Add support for the Nodle U1 widget
