@@ -22,8 +22,11 @@ from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient
 import argparse
+import sys
 
 __author__ = 'simon.marchi@polymtl.ca (Simon Marchi)'
+
+wrapper = None
 
 
 def ParseArgs():
@@ -55,7 +58,7 @@ def PatchPortCallback(status):
   if status.Succeeded():
     print('Success!')
   else:
-    print('Oops: {}'.format(status.message))
+    print('Error: %s' % status.message, file=sys.stderr)
   wrapper.Stop()
 
 

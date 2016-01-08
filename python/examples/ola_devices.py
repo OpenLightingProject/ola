@@ -18,10 +18,12 @@
 
 """Lists the devices / ports."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
+from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import RequestStatus
+import sys
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 wrapper = None
 
@@ -38,12 +40,12 @@ def Devices(status, devices):
       print('Device %d: %s' % (device.alias, device.name))
       print('Input ports:')
       for port in device.input_ports:
-        print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
+        print('  port %d, %s%s' % (port.id, port.description, RDMString(port)))
       print('Output ports:')
       for port in device.output_ports:
-        print('  port %d, %s %s' % (port.id, port.description, RDMString(port)))
+        print('  port %d, %s%s' % (port.id, port.description, RDMString(port)))
   else:
-    print('Error: {}'.format(status.message), file=sys.stderr)
+    print('Error: %s' % status.message, file=sys.stderr)
 
   global wrapper
   if wrapper:
