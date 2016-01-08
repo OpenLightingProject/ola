@@ -20,10 +20,13 @@
 
 from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import RequestStatus
 import argparse
 import sys
 
 __author__ = 'simon.marchi@polymtl.ca (Simon Marchi)'
+
+wrapper = None
 
 
 def ParseArgs():
@@ -51,13 +54,17 @@ def GetCandidatePortsCallback(status, devices):
         print(s.format(p=port))
   else:
     print('Error: {}'.format(status.message), file=sys.stderr)
-  wrapper.Stop()
+
+  global wrapper
+  if wrapper:
+    wrapper.Stop()
 
 
 def main():
   args = ParseArgs()
   universe = args.universe
 
+  global wrapper
   wrapper = ClientWrapper()
   client = wrapper.Client()
   client.GetCandidatePorts(GetCandidatePortsCallback, universe)
