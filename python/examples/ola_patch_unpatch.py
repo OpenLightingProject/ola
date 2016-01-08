@@ -71,6 +71,7 @@ def main():
   action = OlaClient.PATCH if args.action == 'patch' else OlaClient.UNPATCH
   universe = args.universe
 
+  global wrapper
   wrapper = ClientWrapper()
   client = wrapper.Client()
   client.PatchPort(device, port, is_output, action, universe, PatchPortCallback)

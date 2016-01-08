@@ -20,7 +20,6 @@
 
 from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import RequestStatus
 import sys
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
