@@ -3631,7 +3631,7 @@ class GetRealTimeClock(OptionalParameterTestFixture):
     if not response.WasAcked():
       return
 
-    for field, valid__range in self.ALLOWED_RANGES.iteritems():
+    for field, valid_range in self.ALLOWED_RANGES.iteritems():
       value = fields[field]
       if value < valid_range[0] or value > valid_range[1]:
         self.AddWarning('%s in GET %s is out of range, was %d, expected %s' %
