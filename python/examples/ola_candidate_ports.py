@@ -25,6 +25,8 @@ import sys
 
 __author__ = 'simon.marchi@polymtl.ca (Simon Marchi)'
 
+wrapper = None
+
 
 def ParseArgs():
   desc = 'Show the candidate ports to patch to a universe.'
@@ -50,14 +52,23 @@ def GetCandidatePortsCallback(status, devices):
             '{p.supports_rdm}'
         print(s.format(p=port))
   else:
-    print('Error: {}'.format(status.message), file=sys.stderr)
-  wrapper.Stop()
+    print('Error: %s' % status.message, file=sys.stderr)
+
+  global wrapper
+  if wrapper:
+    wrapper.Stop()
 
 
-args = ParseArgs()
-universe = args.universe
+def main():
+  args = ParseArgs()
+  universe = args.universe
 
-wrapper = ClientWrapper()
-client = wrapper.Client()
-client.GetCandidatePorts(GetCandidatePortsCallback, universe)
-wrapper.Run()
+  global wrapper
+  wrapper = ClientWrapper()
+  client = wrapper.Client()
+  client.GetCandidatePorts(GetCandidatePortsCallback, universe)
+  wrapper.Run()
+
+
+if __name__ == '__main__':
+  main()
