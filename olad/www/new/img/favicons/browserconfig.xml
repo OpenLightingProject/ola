@@ -7,9 +7,6 @@
             <wide310x150logo src="favicons/mstile-310x150.png"/>
             <square310x310logo src="favicons/mstile-310x310.png"/>
             <TileColor>#FFFFFF</TileColor>
-
         </tile>
-
     </msapplication>
-
 </browserconfig>
