@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "name": "Ola",
-  "description": "Ola",
+  "name": "OLA",
+  "description": "Open Lighting Architecture",
   "icons": {
     "60": "firefox_app_60x60.png",
     "128": "firefox_app_128x128.png",
