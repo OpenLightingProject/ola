@@ -10,6 +10,7 @@ angulardir = $(www_datadir)/new/libs/angular/js
 bootcssdir = $(www_datadir)/new/libs/bootstrap/css
 bootjsdir = $(www_datadir)/new/libs/bootstrap/js
 bootfontsdir = $(www_datadir)/new/libs/bootstrap/fonts
+favicondir = $(www_datadir)/new/img/favicons
 
 dist_www_DATA = \
     olad/www/back.png \
@@ -69,7 +70,8 @@ dist_img_DATA = \
     olad/www/new/img/light_bulb.png \
     olad/www/new/img/logo-mini.png \
     olad/www/new/img/logo-mini@2x.png \
-    olad/www/new/img/logo.png \
+    olad/www/new/img/logo.png
+dist_favicon_DATA = \
     olad/www/new/img/favicons/android-chrome-144x144.png \
     olad/www/new/img/favicons/android-chrome-192x192.png \
     olad/www/new/img/favicons/android-chrome-36x36.png \
