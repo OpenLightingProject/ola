@@ -2,7 +2,7 @@
   "version": 1,
   "api_version": 1,
   "layout": {
-    "logo": "favicons/yandex-browser-50x50.png",
+    "logo": "/new/img/favicons/yandex-browser-50x50.png",
     "color": "#FFFFFF",
     "show_title": true
   }
