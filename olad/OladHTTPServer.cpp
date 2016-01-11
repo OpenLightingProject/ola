@@ -307,7 +307,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile(
       "olad/www/new/img/favicons/browserconfig.xml",
-      HTTPServer::CONTENT_TYPE_PNG);
+      HTTPServer::CONTENT_TYPE_XML);
   m_server.RegisterFile(
       "olad/www/new/img/favicons/coast-228x228.png",
       HTTPServer::CONTENT_TYPE_PNG);
@@ -325,7 +325,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile(
       "olad/www/new/img/favicons/favicon.ico",
-      HTTPServer::CONTENT_TYPE_PNG);
+      HTTPServer::CONTENT_TYPE_OCT);
   m_server.RegisterFile(
       "olad/www/new/img/favicons/firefox_app_128x128.png",
       HTTPServer::CONTENT_TYPE_PNG);
@@ -337,10 +337,10 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile(
       "olad/www/new/img/favicons/manifest.json",
-      HTTPServer::CONTENT_TYPE_HTML);
+      HTTPServer::CONTENT_TYPE_JSON);
   m_server.RegisterFile(
       "olad/www/new/img/favicons/manifest.webapp",
-      HTTPServer::CONTENT_TYPE_HTML);
+      HTTPServer::CONTENT_TYPE_PLAIN);
   m_server.RegisterFile(
       "olad/www/new/img/favicons/mstile-144x144.png",
       HTTPServer::CONTENT_TYPE_PNG);
@@ -367,7 +367,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile(
       "olad/www/new/img/favicons/yandex-browser-manifest.json",
-      HTTPServer::CONTENT_TYPE_HTML);
+      HTTPServer::CONTENT_TYPE_JSON);
 
   m_start_time_t = time(NULL);
 }
