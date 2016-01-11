@@ -117,9 +117,7 @@ dist_img_DATA = \
     olad/www/new/img/favicons/open-graph.png \
     olad/www/new/img/favicons/twitter.png \
     olad/www/new/img/favicons/yandex-browser-50x50.png \
-    olad/www/new/img/favicons/yandex-browser-manifest.json \
-    olad/www/new/img/logo-mini.png \
-    olad/www/new/img/logo-mini@2x.png
+    olad/www/new/img/favicons/yandex-browser-manifest.json
 dist_jquery_DATA = \
     olad/www/new/libs/jquery/js/jquery.min.js
 dist_angularroute_DATA = \
