@@ -16,12 +16,7 @@
 # Copyright (C) 2010 Simon Newton
 # Holds all the information about RDM PIDs
 
-"""The PID Store."""
-
 from __future__ import print_function
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import binascii
 import math
 import ola.RDMConstants
@@ -34,6 +29,10 @@ from ola import PidStoreLocation
 from ola import Pids_pb2
 from ola.MACAddress import MACAddress
 from ola.UID import UID
+
+"""The PID Store."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 # Various sub device enums
