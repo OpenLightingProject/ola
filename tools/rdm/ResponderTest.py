@@ -24,10 +24,6 @@
 #                                  result based on the output of
 #                                  SUPPORTED_PARAMETERS
 
-'''Automated testing for RDM responders.'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import logging
 import time
 from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
@@ -37,6 +33,10 @@ from TestState import TestState
 from TimingStats import TimingStats
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
+
+'''Automated testing for RDM responders.'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class Error(Exception):
