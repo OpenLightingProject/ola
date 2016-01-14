@@ -15,16 +15,16 @@
 # ModelCollector.py
 # Copyright (C) 2011 Simon Newton
 
-'''Quick script to collect information about responders.'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
 import logging
 import ola.RDMConstants
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
+
+'''Quick script to collect information about responders.'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
 
 DEFAULT_LANGUAGE = "en"
 
