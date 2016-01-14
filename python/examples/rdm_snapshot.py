@@ -16,11 +16,6 @@
 # rdm_snapshot.py
 # Copyright (C) 2012 Simon Newton
 
-'''Quick script to collect the settings from a rig.'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
 import getopt
 import logging
 import pickle
@@ -32,6 +27,10 @@ from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
+
+'''Quick script to collect the settings from a rig.'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class Error(Exception):
