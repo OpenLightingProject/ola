@@ -15,10 +15,6 @@
 # OlaClient.py
 # Copyright (C) 2005 Simon Newton
 
-"""The client used to communicate with the Ola Server."""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import array
 import socket
 import struct
@@ -26,6 +22,10 @@ from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
 from ola.UID import UID
+
+"""The client used to communicate with the Ola Server."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 """The port that the OLA server listens on."""
