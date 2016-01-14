@@ -15,14 +15,6 @@
 # TestMixins.py
 # Copyright (C) 2010 Simon Newton
 
-'''Mixins used by the test definitions.
-
-This module contains classes which can be inherited from to simplify writing
-test definitions.
-'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import struct
 from ExpectedResults import (AckGetResult, AckDiscoveryResult, BroadcastResult,
                              DUBResult, NackSetResult, TimeoutResult,
@@ -37,6 +29,15 @@ from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import RDM_MAX_STRING_LENGTH
 from ola.UID import UID
+
+'''Mixins used by the test definitions.
+
+This module contains classes which can be inherited from to simplify writing
+test definitions.
+'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
 
 MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
 
