@@ -16,10 +16,6 @@
 # rdm_responder_test.py
 # Copyright (C) 2010 Simon Newton
 
-'''Automated testing for RDM responders.'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 from ola.testing.rdm import TestDefinitions, TestRunner
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm.TestState import TestState
@@ -35,6 +31,10 @@ from ola import Version
 from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
 from optparse import OptionParser
+
+'''Automated testing for RDM responders.'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 def ParseOptions():
