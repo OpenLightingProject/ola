@@ -15,15 +15,15 @@
 # StreamRpcChannel.py
 # Copyright (C) 2005 Simon Newton
 
-"""A RpcChannel that works over a TCP socket."""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import logging
 import struct
 from google.protobuf import service
 from ola.rpc import Rpc_pb2
 from ola.rpc.SimpleRpcController import SimpleRpcController
+
+"""A RpcChannel that works over a TCP socket."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class OutstandingRequest(object):
