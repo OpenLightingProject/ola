@@ -206,6 +206,8 @@ class HTTPServer: public ola::thread::Thread {
   static const char CONTENT_TYPE_CSS[];
   static const char CONTENT_TYPE_JS[];
   static const char CONTENT_TYPE_OCT[];
+  static const char CONTENT_TYPE_XML[];
+  static const char CONTENT_TYPE_JSON[];
 
   // Expose the SelectServer
   ola::io::SelectServer *SelectServer() { return m_select_server.get(); }
