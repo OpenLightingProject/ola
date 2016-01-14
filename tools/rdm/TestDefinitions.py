@@ -15,10 +15,6 @@
 # TestDefinitions.py
 # Copyright (C) 2010 Simon Newton
 
-'''This defines all the tests for RDM responders.'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import datetime
 import operator
 import struct
@@ -44,6 +40,11 @@ from ola.UID import UID
 from TestHelpers import ContainsUnprintable
 import TestMixins
 from TestMixins import MAX_DMX_ADDRESS
+
+'''This defines all the tests for RDM responders.'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
 
 MAX_PERSONALITY_NUMBER = 255
 
