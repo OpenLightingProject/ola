@@ -209,7 +209,7 @@ class ModelCollector(object):
     this_version = self._GetVersion()
     for param_info in data['params']:
       this_version['supported_parameters'].append(param_info['param_id'])
-      if (param_info['param_id'] >= 
+      if (param_info['param_id'] >=
           ola.RDMConstants.RDM_MANUFACTURER_PID_MIN and
           param_info['param_id'] <=
           ola.RDMConstants.RDM_MANUFACTURER_PID_MAX):
