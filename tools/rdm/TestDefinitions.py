@@ -2217,9 +2217,10 @@ class GetSlotInfo(OptionalParameterTestFixture):
 
       if slot['slot_type'] == RDMConstants.SLOT_TYPES['ST_PRIMARY']:
         # slot_label_id must be valid
-        if ((slot['slot_label_id'] not in RDMConstants.SLOT_DEFINITION_TO_NAME)
-            and (slot['slot_label_id'] < RDM_MANUFACTURER_SD_MIN or
-                 slot['slot_label_id'] > RDM_MANUFACTURER_SD_MAX)):
+        if ((slot['slot_label_id'] not in
+             RDMConstants.SLOT_DEFINITION_TO_NAME) and
+            (slot['slot_label_id'] < RDM_MANUFACTURER_SD_MIN or
+             slot['slot_label_id'] > RDM_MANUFACTURER_SD_MAX)):
           self.AddWarning('Unknown slot id %d for slot %d' %
                           (slot['slot_label_id'], slot['slot_offset']))
         if (slot['slot_label_id'] ==
