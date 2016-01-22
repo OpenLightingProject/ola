@@ -40,7 +40,7 @@ whitespace   [ \t]
 ^#[^\n]*             {}
 {whitespace}+#[^\n]* {}
 {whitespace}+     { count(); return WHITESPACE; }
-\n                { count(); yylineno++; return NEW_LINE; }
+\n                { count(); return NEW_LINE; }
 [%=,`\-/+]         { count(); return (int) yytext[0]; }
 
 %%
