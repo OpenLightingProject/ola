@@ -40,7 +40,7 @@ using std::vector;
 
 
 /**
- * Assign the value to the variable.
+ * @brief Assign the value to the variable.
  */
 void VariableAssignmentAction::Execute(Context *context, uint8_t) {
   string interpolated_value;
@@ -49,7 +49,7 @@ void VariableAssignmentAction::Execute(Context *context, uint8_t) {
   if (ok) {
     if (context) {
       OLA_INFO << "Setting " << m_variable << " to \"" << interpolated_value
-          << "\"";
+               << "\"";
       context->Update(m_variable, interpolated_value);
     }
   } else {
@@ -59,7 +59,7 @@ void VariableAssignmentAction::Execute(Context *context, uint8_t) {
 
 
 /**
- * Execute the command
+ * @brief Execute the command
  */
 void CommandAction::Execute(Context *context, uint8_t) {
   char **args = BuildArgList(context);
@@ -71,8 +71,9 @@ void CommandAction::Execute(Context *context, uint8_t) {
     ptr++;  // skip over argv[0]
     while (*ptr) {
       str << "\"" << *ptr++ << "\"";
-      if (*ptr)
+      if (*ptr) {
         str << ", ";
+      }
     }
     str << "]";
     OLA_INFO << str.str();
@@ -129,7 +130,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
     return;
   } else if (pid) {
     // parent
-    OLA_DEBUG << "child for " << m_command << " is " << pid;
+    OLA_DEBUG << "Child for " << m_command << " is " << pid;
     FreeArgList(args);
     return;
   }
@@ -166,18 +167,19 @@ char **CommandAction::BuildArgList(const Context *context) {
 
 
 /**
- * Free the arg array.
+ * @brief Free the arg array.
  */
 void CommandAction::FreeArgList(char **args) {
   char **ptr = args;
-  while (*ptr)
+  while (*ptr) {
     delete[] *ptr++;
+  }
   delete[] args;
 }
 
 
 /**
- * Build a null terminated char* on the heap from a string.
+ * @brief Build a null terminated char* on the heap from a string.
  * @param str the string object to convert
  * @returns a new[] char with the contents of the string.
  */
@@ -190,22 +192,22 @@ char *CommandAction::StringToDynamicChar(const string &str) {
 
 
 /**
- * Return the interval as a string.
+ * @brief Return the interval as a string.
  */
 string ValueInterval::AsString() const {
   std::ostringstream str;
   if (m_lower == m_upper) {
     str << static_cast<int>(m_lower);
   } else {
-    str << "[" << static_cast<int>(m_lower) << ", " <<
-      static_cast<int>(m_upper) << "]";
+    str << "[" << static_cast<int>(m_lower) << ", "
+        << static_cast<int>(m_upper) << "]";
   }
   return str.str();
 }
 
 
 /**
- * Stream operator
+ * @brief Stream operator
  */
 std::ostream& operator<<(std::ostream &out, const ValueInterval &i) {
   return out << i.AsString();
@@ -213,23 +215,26 @@ std::ostream& operator<<(std::ostream &out, const ValueInterval &i) {
 
 
 /**
- * Cleanup
+ * @brief Cleanup
  */
 Slot::~Slot() {
   ActionVector::iterator iter = m_actions.begin();
-  for (; iter != m_actions.end(); iter++)
+  for (; iter != m_actions.end(); iter++) {
     delete iter->interval;
+  }
   m_actions.clear();
 
-  if (m_default_rising_action)
+  if (m_default_rising_action) {
     m_default_rising_action->DeRef();
-  if (m_default_falling_action)
+  }
+  if (m_default_falling_action) {
     m_default_falling_action->DeRef();
+  }
 }
 
 
 /**
- * Attempt to associated an Action with a interval
+ * @brief Attempt to associated an Action with a interval
  * @param lower_value the lower bound of the interval
  * @param upper_value the upper bound of the interval
  * @param action the Action to take if the value is contained within this
@@ -237,8 +242,8 @@ Slot::~Slot() {
  * @returns true if the interval was added, false otherwise.
  */
 bool Slot::AddAction(const ValueInterval &interval_arg,
-                            Action *rising_action,
-                            Action *falling_action) {
+                     Action *rising_action,
+                     Action *falling_action) {
   ActionInterval action_interval(
       new ValueInterval(interval_arg),
       rising_action,
@@ -274,9 +279,9 @@ bool Slot::AddAction(const ValueInterval &interval_arg,
   }
 
   if (lower == upper) {
-    OLA_WARN << "Inconsistent interval state, adding " <<
-      *(action_interval.interval) << ", to " <<
-      IntervalsAsString(m_actions.begin(), m_actions.end());
+    OLA_WARN << "Inconsistent interval state, adding "
+             << *(action_interval.interval) << ", to "
+             << IntervalsAsString(m_actions.begin(), m_actions.end());
     delete action_interval.interval;
     return false;
   }
@@ -307,9 +312,9 @@ bool Slot::AddAction(const ValueInterval &interval_arg,
     } else if (*(mid->interval) < *(action_interval.interval)) {
       lower = mid;
     } else {
-      OLA_WARN << "Inconsistent intervals detected when inserting: " <<
-        *(action_interval.interval) << ", intervals: " <<
-        IntervalsAsString(lower, upper);
+      OLA_WARN << "Inconsistent intervals detected when inserting: "
+               << *(action_interval.interval) << ", intervals: "
+               << IntervalsAsString(lower, upper);
       delete action_interval.interval;
       return false;
     }
@@ -319,7 +324,9 @@ bool Slot::AddAction(const ValueInterval &interval_arg,
 
 
 /**
- * Set the default rising action. If a default already exists this replaces it.
+ * @brief Set the default rising action.
+ *
+ * If a default already exists this replaces it.
  * @param action the action to install as the default
  * @returns true if there was already a default action.
  */
@@ -329,8 +336,9 @@ bool Slot::SetDefaultRisingAction(Action *action) {
 
 
 /**
- * Set the default falling action. If a default already exists this replaces
- * it.
+ * @brief Set the default falling action.
+ *
+ * If a default already exists this replaces it.
  * @param action the action to install as the default
  * @returns true if there was already a default action.
  */
@@ -340,16 +348,17 @@ bool Slot::SetDefaultFallingAction(Action *action) {
 
 
 /**
- * Lookup the action for a value, and if we find one, execute it. Otherwise
- * execute the default action if there is one.
+ * @brief Lookup the action for a value, and if we find one, execute it. Otherwise
+ *   execute the default action if there is one.
  * @param context the Context to use
  * @param value the value to look up.
  */
 void Slot::TakeAction(Context *context,
                       uint8_t value) {
-  if (m_old_value_defined && value == m_old_value)
+  if (m_old_value_defined && value == m_old_value) {
     // nothing to do
     return;
+  }
 
   // set the context correctly
   if (context) {
@@ -358,17 +367,19 @@ void Slot::TakeAction(Context *context,
   }
 
   bool rising = true;
-  if (m_old_value_defined)
+  if (m_old_value_defined) {
     rising = value > m_old_value;
+  }
 
   Action *action = LocateMatchingAction(value, rising);
   if (action) {
     action->Execute(context, value);
   } else {
-    if (rising && m_default_rising_action)
+    if (rising && m_default_rising_action) {
       m_default_rising_action->Execute(context, value);
-    else if (!rising && m_default_falling_action)
+    } else if (!rising && m_default_falling_action) {
       m_default_falling_action->Execute(context, value);
+    }
   }
 
   m_old_value_defined = true;
@@ -377,7 +388,7 @@ void Slot::TakeAction(Context *context,
 
 
 /**
- * Return the intervals as a string, useful for debugging
+ * @brief Return the intervals as a string, useful for debugging
  * @returns the intervals as a string.
  */
 string Slot::IntervalsAsString() const {
@@ -386,8 +397,8 @@ string Slot::IntervalsAsString() const {
 
 
 /**
- * Given two interval iterators, first and last, return true if the value is
- * contained within the lower and upper bounds of the intervals.
+ * @brief Given two interval iterators, first and last, return true if the value is
+ *   contained within the lower and upper bounds of the intervals.
  */
 bool Slot::ValueWithinIntervals(uint8_t value,
                                 const ValueInterval &lower_interval,
@@ -397,7 +408,7 @@ bool Slot::ValueWithinIntervals(uint8_t value,
 
 
 /**
- * Check if two ValueIntervals intersect.
+ * @brief Check if two ValueIntervals intersect.
  */
 bool Slot::IntervalsIntersect(const ValueInterval *a1,
                               const ValueInterval *a2) {
@@ -410,28 +421,32 @@ bool Slot::IntervalsIntersect(const ValueInterval *a1,
 
 
 /**
- * Given a value, find the matching ValueInterval.
+ * @brief Given a value, find the matching ValueInterval.
  * @param value the value to search for
  * @param rising, true if the new value is rising, false otherwise.
  * @returns the Action matching the value,  or NULL if there isn't one.
  */
 Action *Slot::LocateMatchingAction(uint8_t value, bool rising) {
-  if (m_actions.empty())
+  if (m_actions.empty()) {
     return NULL;
+  }
 
   ActionVector::iterator lower = m_actions.begin();
   ActionVector::iterator upper = m_actions.end();
   upper--;
-  if (!ValueWithinIntervals(value, *(lower->interval), *(upper->interval)))
+  if (!ValueWithinIntervals(value, *(lower->interval), *(upper->interval))) {
     return NULL;
+  }
 
   // ok, we know the value lies between the intervals we have, first exclude
   // the endpoints
-  if (lower->interval->Contains(value))
+  if (lower->interval->Contains(value)) {
     return rising ? lower->rising_action : lower->falling_action;
+  }
 
-  if (upper->interval->Contains(value))
+  if (upper->interval->Contains(value)) {
     return rising ? upper->rising_action : upper->falling_action;
+  }
 
   // value isn't at the lower or upper interval, but lies somewhere between
   // the two.
@@ -441,9 +456,10 @@ Action *Slot::LocateMatchingAction(uint8_t value, bool rising) {
     unsigned int difference = upper - lower;
     ActionVector::iterator mid = lower + difference / 2;
 
-    if (mid == lower)
+    if (mid == lower) {
       // lower doesn't contain the value, so we don't have it
       return NULL;
+    }
 
     if (mid->interval->Contains(value)) {
       return rising ? mid->rising_action : mid->falling_action;
@@ -452,9 +468,9 @@ Action *Slot::LocateMatchingAction(uint8_t value, bool rising) {
     } else if (value >= mid->interval->Upper()) {
       lower = mid;
     } else {
-      OLA_WARN << "Inconsistent intervals detected when looking for: " <<
-        static_cast<int>(value) << ", intervals: " <<
-        IntervalsAsString(lower, upper);
+      OLA_WARN << "Inconsistent intervals detected when looking for: "
+               << static_cast<int>(value) << ", intervals: "
+               << IntervalsAsString(lower, upper);
       return NULL;
     }
   }
@@ -462,19 +478,19 @@ Action *Slot::LocateMatchingAction(uint8_t value, bool rising) {
 
 
 /**
- * Format the intervals between the two iterators as a string
+ * @brief Format the intervals between the two iterators as a string
  * @param start an iterator pointing to the first interval
  * @param end an iterator pointing to the last interval
  * @return a string version of the intervals.
  */
-string Slot::IntervalsAsString(
-    const ActionVector::const_iterator &start,
-    const ActionVector::const_iterator &end) const {
+string Slot::IntervalsAsString(const ActionVector::const_iterator &start,
+                               const ActionVector::const_iterator &end) const {
   ActionVector::const_iterator iter = start;
   std::ostringstream str;
   for (; iter != end; ++iter) {
-    if (iter != start)
+    if (iter != start) {
       str << ", ";
+    }
     str << *(iter->interval);
   }
   return str.str();
@@ -482,7 +498,7 @@ string Slot::IntervalsAsString(
 
 
 /**
- * Set one of the default actions.
+ * @brief Set one of the default actions.
  */
 bool Slot::SetDefaultAction(Action **action_to_set,
                             Action *new_action) {

@@ -43,28 +43,28 @@ template<> struct hash<std::string> {
 #endif  // HAVE_UNORDERED_MAP
 
 /**
- * A context is a collection of variables and their values.
+ * @brief A context is a collection of variables and their values.
  */
 class Context {
  public:
-    Context() {}
-    ~Context();
+  Context() {}
+  ~Context();
 
-    bool Lookup(const std::string &name, std::string *value) const;
-    void Update(const std::string &name, const std::string &value);
+  bool Lookup(const std::string &name, std::string *value) const;
+  void Update(const std::string &name, const std::string &value);
 
-    void SetSlotValue(uint8_t value);
-    void SetSlotOffset(uint16_t offset);
+  void SetSlotValue(uint8_t value);
+  void SetSlotOffset(uint16_t offset);
 
-    std::string AsString() const;
-    friend std::ostream& operator<<(std::ostream &out, const Context&);
+  std::string AsString() const;
+  friend std::ostream& operator<<(std::ostream &out, const Context&);
 
-    static const char SLOT_VALUE_VARIABLE[];
-    static const char SLOT_OFFSET_VARIABLE[];
+  static const char SLOT_VALUE_VARIABLE[];
+  static const char SLOT_OFFSET_VARIABLE[];
 
  private:
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<std::string,
-                                           std::string> VariableMap;
-    VariableMap m_variables;
+  typedef HASH_NAMESPACE::HASH_MAP_CLASS<std::string,
+                                         std::string> VariableMap;
+  VariableMap m_variables;
 };
 #endif  // TOOLS_OLA_TRIGGER_CONTEXT_H_

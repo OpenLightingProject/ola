@@ -72,10 +72,10 @@ ola::io::SelectServer *ss = NULL;
 
 typedef vector<Slot*> SlotList;
 
-/*
- * Catch SIGCHLD.
- */
 #ifndef _WIN32
+/*
+ * @brief Catch SIGCHLD.
+ */
 static void CatchSIGCHLD(OLA_UNUSED int signo) {
   pid_t pid;
   int old_errno = errno;
@@ -88,7 +88,7 @@ static void CatchSIGCHLD(OLA_UNUSED int signo) {
 
 
 /*
- * Terminate cleanly on interrupt
+ * @brief Terminate cleanly on interrupt
  */
 static void CatchSIGINT(OLA_UNUSED int signo) {
   // there is a race condition here if you send the signal before we call Run()
@@ -102,7 +102,7 @@ static void CatchSIGINT(OLA_UNUSED int signo) {
 
 
 /*
- * Install the SIGCHLD handler.
+ * @brief Install the SIGCHLD handler.
  */
 bool InstallSignals() {
 #ifndef _WIN32
@@ -117,7 +117,7 @@ bool InstallSignals() {
 
 
 /**
- * The DMX Handler, this calls the trigger if the universes match.
+ * @brief The DMX Handler, this calls the trigger if the universes match.
  */
 void NewDmx(unsigned int our_universe,
             DMXTrigger *trigger,
@@ -130,7 +130,7 @@ void NewDmx(unsigned int our_universe,
 }
 
 /**
- * Build a vector of Slot from the global_slots map with the
+ * @brief Build a vector of Slot from the global_slots map with the
  * offset applied.
  *
  * The clears the global_slots map.
@@ -143,8 +143,8 @@ bool ApplyOffset(uint16_t offset, SlotList *all_slots) {
   for (; iter != global_slots.end(); ++iter) {
     Slot *slots = iter->second;
     if (slots->SlotOffset() + offset >= ola::DMX_UNIVERSE_SIZE) {
-      OLA_FATAL << "Slot " << slots->SlotOffset() << " + offset " <<
-        offset << " is greater than " << ola::DMX_UNIVERSE_SIZE - 1;
+      OLA_FATAL << "Slot " << slots->SlotOffset() << " + offset "
+                << offset << " is greater than " << ola::DMX_UNIVERSE_SIZE - 1;
       ok = false;
       break;
     }
@@ -163,7 +163,7 @@ bool ApplyOffset(uint16_t offset, SlotList *all_slots) {
 
 
 /*
- * Main
+ * @brief Main
  */
 int main(int argc, char *argv[]) {
   ola::AppInit(&argc,
@@ -176,8 +176,9 @@ int main(int argc, char *argv[]) {
     exit(ola::EXIT_USAGE);
   }
 
-  if (argc != 2)
+  if (argc != 2) {
     ola::DisplayUsageAndExit();
+  }
 
   // setup the default context
   global_context = new Context();
@@ -202,13 +203,15 @@ int main(int argc, char *argv[]) {
   // client
   ola::OlaCallbackClientWrapper wrapper;
 
-  if (!wrapper.Setup())
+  if (!wrapper.Setup()) {
     exit(ola::EXIT_UNAVAILABLE);
+  }
 
   ss = wrapper.GetSelectServer();
 
-  if (!InstallSignals())
+  if (!InstallSignals()) {
     exit(ola::EXIT_OSERR);
+  }
 
   // create the vector of Slot
   SlotList slots;
