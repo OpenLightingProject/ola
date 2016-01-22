@@ -3,6 +3,7 @@
 #include <utility>
 #include <vector>
 #include <ola/Logging.h>
+#include <ola/base/SysExits.h>
 #include <ola/strings/Format.h>
 #include "tools/ola_trigger/ConfigCommon.h"
 #include "tools/ola_trigger/ParserActions.h"
@@ -140,7 +141,10 @@ arguments:
     | arguments WHITESPACE argument {
         $$ = $1; $$->push_back(std::string(*$3));
         delete $3;
-    }
+      }
+    | arguments WHITESPACE INTEGER_LITERAL {
+        $$ = $1; $$->push_back(ola::strings::IntToString($3));
+      }
 ;
 
 argument:
@@ -175,9 +179,9 @@ int yyerror(std::string s) {
   extern int yylineno;  // defined and maintained in lex.yy.cpp
   extern char *yytext;  // defined and maintained in lex.yy.cpp
 
-  OLA_FATAL << "ERROR: " << s << " at symbol \"" << yytext <<
-      "\" on line " << yylineno << " column " << column;
-  exit(1);
+  OLA_FATAL << "ERROR: " << s << " at symbol \"" << yytext
+            << "\" on line " << yylineno << " column " << column;
+  exit(ola::EXIT_DATAERR);
 }
 
 int yyerror(const char *s) {
