@@ -3,6 +3,7 @@
 #include <utility>
 #include <vector>
 #include <ola/Logging.h>
+#include <ola/strings/Format.h>
 #include "tools/ola_trigger/ConfigCommon.h"
 #include "tools/ola_trigger/ParserActions.h"
 int yyerror(const char *s);
@@ -64,6 +65,12 @@ assignment :
         $$->push_back(*$5);
         delete $1;
         delete $5;
+      }
+    | WORD_LITERAL optional_whitespace '=' optional_whitespace INTEGER_LITERAL {
+        $$ = new std::vector<std::string>;
+        $$->push_back(*$1);
+        $$->push_back(ola::strings::IntToString($5));
+        delete $1;
       }
 ;
 
