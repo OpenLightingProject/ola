@@ -32,7 +32,7 @@ const char Context::SLOT_OFFSET_VARIABLE[] = "slot_offset";
 
 
 /**
- * Delete the context and all associated variables
+ * @brief Delete the context and all associated variables
  */
 Context::~Context() {
   m_variables.clear();
@@ -40,22 +40,23 @@ Context::~Context() {
 
 
 /**
- * Lookup the value of a variable.
+ * @brief Lookup the value of a variable.
  * @param name the variable name.
  * @param value a pointer to a string to be updated with the value.
  * @returns true if the variable was found, false if it wasn't.
  */
 bool Context::Lookup(const string &name, string *value) const {
   VariableMap::const_iterator iter = m_variables.find(name);
-  if (iter == m_variables.end())
+  if (iter == m_variables.end()) {
     return false;
+  }
   *value = iter->second;
   return true;
 }
 
 
 /**
- * Update the value of a variable.
+ * @brief Update the value of a variable.
  * @param name the variable name
  * @param value the new value
  */
@@ -65,7 +66,7 @@ void Context::Update(const string &name, const string &value) {
 
 
 /**
- * Set the slot value variable
+ * @brief Set the slot value variable
  */
 void Context::SetSlotValue(uint8_t value) {
   ostringstream str;
@@ -75,7 +76,7 @@ void Context::SetSlotValue(uint8_t value) {
 
 
 /**
- * Set the slot offset variable
+ * @brief Set the slot offset variable
  */
 void Context::SetSlotOffset(uint16_t offset) {
   ostringstream str;
@@ -85,23 +86,25 @@ void Context::SetSlotOffset(uint16_t offset) {
 
 
 /**
- * Convert this context to a string
+ * @brief Convert this context to a string
  */
 string Context::AsString() const {
   vector<string> keys;
   keys.reserve(m_variables.size());
 
   VariableMap::const_iterator map_iter = m_variables.begin();
-  for (; map_iter != m_variables.end(); ++map_iter)
+  for (; map_iter != m_variables.end(); ++map_iter) {
     keys.push_back(map_iter->first);
+  }
 
   sort(keys.begin(), keys.end());
 
   ostringstream str;
   vector<string>::const_iterator iter = keys.begin();
   for (; iter != keys.end(); ++iter) {
-    if (iter != keys.begin())
+    if (iter != keys.begin()) {
       str << ", ";
+    }
     map_iter = m_variables.find(*iter);
     str << *iter << "=" << map_iter->second;
   }
@@ -110,7 +113,7 @@ string Context::AsString() const {
 
 
 /**
- * Stream operator
+ * @brief Stream operator
  */
 std::ostream& operator<<(std::ostream &out, const Context &c) {
   return out << c.AsString();
