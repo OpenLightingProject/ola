@@ -15,15 +15,15 @@
 # StreamRpcChannel.py
 # Copyright (C) 2005 Simon Newton
 
-"""A RpcChannel that works over a TCP socket."""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import logging
 import struct
 from google.protobuf import service
 from ola.rpc import Rpc_pb2
 from ola.rpc.SimpleRpcController import SimpleRpcController
+
+"""A RpcChannel that works over a TCP socket."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class OutstandingRequest(object):
@@ -300,8 +300,8 @@ class StreamRpcChannel(service.RpcChannel):
       self._SendRequestFailed(message.id)
 
     self._outstanding_requests[message.id] = request
-    callback = lambda x: self.RequestComplete(request, x)
-    self._service.CallMethod(method, request.controller, request_pb, callback)
+    self._service.CallMethod(method, request.controller, request_pb,
+                             lambda x: self.RequestComplete(request, x))
 
   def _HandleResponse(self, message):
     """Handle a Response message.

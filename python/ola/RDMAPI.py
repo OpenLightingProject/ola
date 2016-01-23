@@ -15,15 +15,14 @@
 # RDMAPI.py
 # Copyright (C) 2010 Simon Newton
 
-"""The Python RDM API."""
-
 from __future__ import print_function
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import sys
 from ola.OlaClient import OlaClient
 from ola import PidStore
+
+"""The Python RDM API."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class RDMAPI(object):
