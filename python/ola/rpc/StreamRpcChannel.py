@@ -300,8 +300,8 @@ class StreamRpcChannel(service.RpcChannel):
       self._SendRequestFailed(message.id)
 
     self._outstanding_requests[message.id] = request
-    callback = lambda x: self.RequestComplete(request, x)
-    self._service.CallMethod(method, request.controller, request_pb, callback)
+    self._service.CallMethod(method, request.controller, request_pb, 
+                             lambda x: self.RequestComplete(request, x))
 
   def _HandleResponse(self, message):
     """Handle a Response message.
