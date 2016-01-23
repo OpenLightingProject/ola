@@ -783,7 +783,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.plugin_id = plugin_id
     try:
       self._stub.GetPluginDescription(
-          controller, request, 
+          controller, request,
           lambda x, y: self._PluginDescriptionComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
