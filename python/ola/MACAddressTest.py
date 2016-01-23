@@ -16,13 +16,13 @@
 # MACAddressTest.py
 # Copyright (C) 2013 Peter Newman
 
-"""Test cases for the MACAddress class."""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import sys
 import unittest
 from ola.MACAddress import MACAddress
+
+"""Test cases for the MACAddress class."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class MACAddressTest(unittest.TestCase):

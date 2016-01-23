@@ -16,6 +16,11 @@
 # ola_simple_fade.py
 # Copyright (C) 2014 Sean Sill
 
+from array import array
+from ola.ClientWrapper import ClientWrapper
+from ola.DMXConstants import DMX_MIN_SLOT_VALUE, DMX_MAX_SLOT_VALUE, \
+    DMX_UNIVERSE_SIZE
+
 __author__ = 'Sean Sill'
 
 """
@@ -26,10 +31,6 @@ To view data, use the web interface or patch an output device to the same
 universe
 """
 
-from array import array
-from ola.ClientWrapper import ClientWrapper
-from ola.DMXConstants import DMX_MIN_SLOT_VALUE, DMX_MAX_SLOT_VALUE, \
-    DMX_UNIVERSE_SIZE
 
 UPDATE_INTERVAL = 25  # In ms, this comes about to ~40 frames a second
 SHUTDOWN_INTERVAL = 10000  # in ms, This is 10 seconds

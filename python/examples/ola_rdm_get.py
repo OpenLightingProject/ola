@@ -18,9 +18,6 @@
 
 '''Get a PID from a UID.'''
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
 import cmd
 import getopt
 import os.path
@@ -32,6 +29,8 @@ from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 def Usage():
