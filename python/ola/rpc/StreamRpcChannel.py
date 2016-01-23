@@ -300,7 +300,7 @@ class StreamRpcChannel(service.RpcChannel):
       self._SendRequestFailed(message.id)
 
     self._outstanding_requests[message.id] = request
-    self._service.CallMethod(method, request.controller, request_pb, 
+    self._service.CallMethod(method, request.controller, request_pb,
                              lambda x: self.RequestComplete(request, x))
 
   def _HandleResponse(self, message):
