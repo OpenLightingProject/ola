@@ -15,8 +15,6 @@
 # TestRunner.py
 # Copyright (C) 2011 Simon Newton
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import datetime
 import inspect
 import logging
@@ -26,6 +24,8 @@ from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.testing.rdm import ResponderTest
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class Error(Exception):

@@ -15,16 +15,16 @@
 # ModelCollector.py
 # Copyright (C) 2011 Simon Newton
 
-'''Quick script to collect information about responders.'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
 import logging
 import ola.RDMConstants
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
+
+'''Quick script to collect information about responders.'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
 
 DEFAULT_LANGUAGE = "en"
 
@@ -209,9 +209,10 @@ class ModelCollector(object):
     this_version = self._GetVersion()
     for param_info in data['params']:
       this_version['supported_parameters'].append(param_info['param_id'])
-      if (param_info['param_id'] >= ola.RDMConstants.RDM_MANUFACTURER_PID_MIN
-          and param_info['param_id'] <=
-            ola.RDMConstants.RDM_MANUFACTURER_PID_MAX):
+      if (param_info['param_id'] >=
+          ola.RDMConstants.RDM_MANUFACTURER_PID_MIN and
+          param_info['param_id'] <=
+          ola.RDMConstants.RDM_MANUFACTURER_PID_MAX):
         self.manufacturer_pids.append(param_info['param_id'])
     self._NextState()
 

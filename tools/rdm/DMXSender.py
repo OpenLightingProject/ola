@@ -15,10 +15,10 @@
 # DMXSender.py
 # Copyright (C) 2011 Simon Newton
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import array
 import logging
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class DMXSender(object):

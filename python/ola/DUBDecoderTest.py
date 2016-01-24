@@ -16,12 +16,12 @@
 # DUBDecoderTest.py
 # Copyright (C) Simon Newton
 
+import unittest
+from ola.DUBDecoder import DecodeResponse
+
 """Test cases for the DUBDecoder class."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
-
-import unittest
-from ola.DUBDecoder import DecodeResponse
 
 
 class UIDTest(unittest.TestCase):
