@@ -67,16 +67,11 @@ assignment :
         delete $1;
         delete $5;
       }
-    | WORD_LITERAL optional_whitespace '=' optional_whitespace INTEGER_LITERAL {
-        $$ = new std::vector<std::string>;
-        $$->push_back(*$1);
-        $$->push_back(ola::strings::IntToString($5));
-        delete $1;
-      }
 ;
 
 value :
-      WORD_LITERAL
+      INTEGER_LITERAL { $$ = ola::strings::IntToString($1); } 
+    | WORD_LITERAL
     | QUOTED_VALUE
 ;
 
@@ -142,13 +137,11 @@ arguments:
         $$ = $1; $$->push_back(std::string(*$3));
         delete $3;
       }
-    | arguments WHITESPACE INTEGER_LITERAL {
-        $$ = $1; $$->push_back(ola::strings::IntToString($3));
-      }
 ;
 
 argument:
-      WORD_LITERAL
+      INTEGER_LITERAL { $$ = ola::strings::IntToString($1); } 
+    | WORD_LITERAL
     | QUOTED_VALUE
 ;
 
