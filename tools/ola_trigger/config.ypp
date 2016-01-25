@@ -70,7 +70,7 @@ assignment :
 ;
 
 value :
-      INTEGER_LITERAL { $$ = ola::strings::IntToString($1); } 
+      INTEGER_LITERAL { $$ = new std::string(ola::strings::IntToString($1)); } 
     | WORD_LITERAL
     | QUOTED_VALUE
 ;
@@ -140,7 +140,7 @@ arguments:
 ;
 
 argument:
-      INTEGER_LITERAL { $$ = ola::strings::IntToString($1); } 
+      INTEGER_LITERAL { $$ = new std::string(ola::strings::IntToString($1)); } 
     | WORD_LITERAL
     | QUOTED_VALUE
 ;
