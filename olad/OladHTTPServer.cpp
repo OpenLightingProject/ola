@@ -325,7 +325,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile(
       "/new/img/favicons/favicon.ico",
-      HTTPServer::CONTENT_TYPE_OCT);
+      HTTPServer::CONTENT_TYPE_ICO);
   m_server.RegisterFile(
       "/new/img/favicons/firefox_app_128x128.png",
       HTTPServer::CONTENT_TYPE_PNG);
