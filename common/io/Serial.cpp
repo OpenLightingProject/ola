@@ -143,7 +143,14 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   // If it was only a single process doing the locking we could use fnctl as
   // described in 55.6 of the Linux Programing Interface book.
 
-  // First, clean up a stale lockfile.
+  // First, check if the path exists, there's no point trying to open it if not
+  if (!FileExists(path)) {
+    OLA_INFO << "Device " << path << " doesn't exist, so there's no point "
+                "trying to acquire a lock";
+    return false;
+  }
+
+  // Second, clean up a stale lockfile.
   const string lock_file = GetLockFile(path);
   OLA_DEBUG << "Checking for " << lock_file;
   pid_t locked_pid;
