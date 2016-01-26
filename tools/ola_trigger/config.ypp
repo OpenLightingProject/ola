@@ -29,6 +29,7 @@ int yylex(void);
 %token <int_val> INTEGER_LITERAL
 %token <str_val> QUOTED_VALUE
 %token <str_val> WORD_LITERAL
+%token <str_val> VARIABLE_LITERAL
 %type <str_val> value
 %type <str_val> program
 %type <str_val> full_path
@@ -73,6 +74,7 @@ value :
       INTEGER_LITERAL { $$ = new std::string(ola::strings::IntToString($1)); } 
     | WORD_LITERAL
     | QUOTED_VALUE
+    | VARIABLE_LITERAL
 ;
 
 optional_whitespace:
@@ -143,6 +145,7 @@ argument:
       INTEGER_LITERAL { $$ = new std::string(ola::strings::IntToString($1)); } 
     | WORD_LITERAL
     | QUOTED_VALUE
+    | VARIABLE_LITERAL
 ;
 
 program:
