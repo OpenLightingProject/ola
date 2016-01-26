@@ -75,6 +75,7 @@ const char HTTPServer::CONTENT_TYPE_PLAIN[] = "text/plain";
 const char HTTPServer::CONTENT_TYPE_HTML[] = "text/html";
 const char HTTPServer::CONTENT_TYPE_GIF[] = "image/gif";
 const char HTTPServer::CONTENT_TYPE_PNG[] = "image/png";
+const char HTTPServer::CONTENT_TYPE_ICO[] = "image/x-icon";
 const char HTTPServer::CONTENT_TYPE_CSS[] = "text/css";
 const char HTTPServer::CONTENT_TYPE_JS[] = "text/javascript";
 const char HTTPServer::CONTENT_TYPE_OCT[] = "application/octet-stream";
