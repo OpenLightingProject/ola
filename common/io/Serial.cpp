@@ -22,8 +22,8 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <string.h>
-#ifdef _WIN32
 #include <sys/stat.h>
+#ifdef _WIN32
 #include <ola/win/CleanWindows.h>
 #include <winioctl.h>
 #else
