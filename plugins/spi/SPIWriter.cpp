@@ -18,6 +18,7 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#include <linux/ioctl.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/spi/spidev.h>
