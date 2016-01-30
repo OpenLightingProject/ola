@@ -55,6 +55,7 @@ typedef uint32_t in_addr_t;
 // Do something else if we don't have Netlink/on Windows
 #endif
 
+#include <endian.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
