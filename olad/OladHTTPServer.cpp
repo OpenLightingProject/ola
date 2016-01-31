@@ -61,7 +61,7 @@ using std::vector;
 const char OladHTTPServer::HELP_PARAMETER[] = "help";
 const char OladHTTPServer::HELP_REDIRECTION[] = "?help=1";
 const char OladHTTPServer::K_BACKEND_DISCONNECTED_ERROR[] =
-  "Failed to send request, client isn't connected";
+    "Failed to send request, client isn't connected";
 const char OladHTTPServer::K_PRIORITY_VALUE_SUFFIX[] = "_priority_value";
 const char OladHTTPServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
 
@@ -648,9 +648,9 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
 
   if (merge_mode == "LTP" || merge_mode == "HTP") {
     OlaUniverse::merge_mode mode = (
-      merge_mode == "LTP" ? OlaUniverse::MERGE_LTP : OlaUniverse::MERGE_HTP);
+        merge_mode == "LTP" ? OlaUniverse::MERGE_LTP : OlaUniverse::MERGE_HTP);
     action_queue->AddAction(
-      new SetMergeModeAction(&m_client, universe_id, mode));
+        new SetMergeModeAction(&m_client, universe_id, mode));
   }
 
   string remove_port_ids = request->GetPostParameter("remove_ports");
