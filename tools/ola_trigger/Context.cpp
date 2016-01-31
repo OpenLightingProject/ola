@@ -27,8 +27,11 @@ using std::ostringstream;
 using std::string;
 using std::vector;
 
+const char Context::CONFIG_FILE_VARIABLE[] = "config_file";
+const char Context::OVERALL_OFFSET_VARIABLE[] = "overall_offset";
 const char Context::SLOT_VALUE_VARIABLE[] = "slot_value";
 const char Context::SLOT_OFFSET_VARIABLE[] = "slot_offset";
+const char Context::UNIVERSE_VARIABLE[] = "universe";
 
 
 /**
@@ -66,6 +69,24 @@ void Context::Update(const string &name, const string &value) {
 
 
 /**
+ * @brief Set the config file variable
+ */
+void Context::SetConfigFile(const string &config_file) {
+  m_variables[CONFIG_FILE_VARIABLE] = string(config_file);
+}
+
+
+/**
+ * @brief Set the overall offset variable
+ */
+void Context::SetOverallOffset(uint16_t overall_offset) {
+  ostringstream str;
+  str << static_cast<int>(overall_offset);
+  m_variables[OVERALL_OFFSET_VARIABLE] = str.str();
+}
+
+
+/**
  * @brief Set the slot value variable
  */
 void Context::SetSlotValue(uint8_t value) {
@@ -82,6 +103,16 @@ void Context::SetSlotOffset(uint16_t offset) {
   ostringstream str;
   str << static_cast<int>(offset);
   m_variables[SLOT_OFFSET_VARIABLE] = str.str();
+}
+
+
+/**
+ * @brief Set the universe variable
+ */
+void Context::SetUniverse(uint32_t universe) {
+  ostringstream str;
+  str << static_cast<int>(universe);
+  m_variables[UNIVERSE_VARIABLE] = str.str();
 }
 
 

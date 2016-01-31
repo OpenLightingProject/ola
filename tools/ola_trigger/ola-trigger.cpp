@@ -192,6 +192,13 @@ int main(int argc, char *argv[]) {
 
   yyparse();
 
+  // set the core context stuff up
+  if (global_context) {
+    global_context->SetConfigFile(argv[1]);
+    global_context->SetOverallOffset(FLAGS_offset);
+    global_context->SetUniverse(FLAGS_universe);
+  }
+
   if (FLAGS_validate) {
     std::cout << "File " << argv[1] << " is valid." << std::endl;
     // TODO(Peter): Print some stats here, validate the offset if supplied
