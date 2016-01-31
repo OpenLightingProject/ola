@@ -1,3 +1,19 @@
+x/y/2016 ola-0.10.1
+ Features:
+ * 
+
+ API:
+ * 
+
+ RDM Tests:
+ * 
+
+ Bugs:
+ * Check if a device exists before trying to acquire a UUCP lock file for it #1006
+
+ Internal:
+ *
+
 3/1/2016 ola-0.10.0
  Features:
  * Add better logging for open()

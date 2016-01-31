@@ -15,10 +15,6 @@
 # OlaClient.py
 # Copyright (C) 2005 Simon Newton
 
-"""The client used to communicate with the Ola Server."""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import array
 import socket
 import struct
@@ -26,6 +22,10 @@ from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
 from ola.UID import UID
+
+"""The client used to communicate with the Ola Server."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 """The port that the OLA server listens on."""
@@ -756,9 +756,10 @@ class OlaClient(Ola_pb2.OlaClientService):
 
     controller = SimpleRpcController()
     request = Ola_pb2.PluginListRequest()
-    done = lambda x, y: self._GetPluginsComplete(callback, x, y)
     try:
-      self._stub.GetPlugins(controller, request, done)
+      self._stub.GetPlugins(
+          controller, request,
+          lambda x, y: self._GetPluginsComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -780,9 +781,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.PluginDescriptionRequest()
     request.plugin_id = plugin_id
-    done = lambda x, y: self._PluginDescriptionComplete(callback, x, y)
     try:
-      self._stub.GetPluginDescription(controller, request, done)
+      self._stub.GetPluginDescription(
+          controller, request,
+          lambda x, y: self._PluginDescriptionComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -804,9 +806,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.DeviceInfoRequest()
     request.plugin_id = plugin_filter
-    done = lambda x, y: self._DeviceInfoComplete(callback, x, y)
     try:
-      self._stub.GetDeviceInfo(controller, request, done)
+      self._stub.GetDeviceInfo(
+          controller, request,
+          lambda x, y: self._DeviceInfoComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -826,9 +829,10 @@ class OlaClient(Ola_pb2.OlaClientService):
 
     controller = SimpleRpcController()
     request = Ola_pb2.OptionalUniverseRequest()
-    done = lambda x, y: self._UniverseInfoComplete(callback, x, y)
     try:
-      self._stub.GetUniverseInfo(controller, request, done)
+      self._stub.GetUniverseInfo(
+          controller, request,
+          lambda x, y: self._UniverseInfoComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -850,9 +854,9 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.UniverseRequest()
     request.universe = universe
-    done = lambda x, y: self._GetDmxComplete(callback, x, y)
     try:
-      self._stub.GetDmx(controller, request, done)
+      self._stub.GetDmx(controller, request,
+                        lambda x, y: self._GetDmxComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -876,9 +880,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request = Ola_pb2.DmxData()
     request.universe = universe
     request.data = data.tostring()
-    done = lambda x, y: self._AckMessageComplete(callback, x, y)
     try:
-      self._stub.UpdateDmxData(controller, request, done)
+      self._stub.UpdateDmxData(
+          controller, request,
+          lambda x, y: self._AckMessageComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -902,9 +907,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request = Ola_pb2.UniverseNameRequest()
     request.universe = universe
     request.name = name
-    done = lambda x, y: self._AckMessageComplete(callback, x, y)
     try:
-      self._stub.SetUniverseName(controller, request, done)
+      self._stub.SetUniverseName(
+          controller, request,
+          lambda x, y: self._AckMessageComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -928,9 +934,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request = Ola_pb2.MergeModeRequest()
     request.universe = universe
     request.merge_mode = merge_mode
-    done = lambda x, y: self._AckMessageComplete(callback, x, y)
     try:
-      self._stub.SetMergeMode(controller, request, done)
+      self._stub.SetMergeMode(
+          controller, request,
+          lambda x, y: self._AckMessageComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -956,9 +963,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request = Ola_pb2.RegisterDmxRequest()
     request.universe = universe
     request.action = action
-    done = lambda x, y: self._AckMessageComplete(callback, x, y)
     try:
-      self._stub.RegisterForDmx(controller, request, done)
+      self._stub.RegisterForDmx(
+          controller, request,
+          lambda x, y: self._AckMessageComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     if action == self.PATCH:
@@ -993,9 +1001,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.action = action
     request.is_output = is_output
     request.universe = universe
-    done = lambda x, y: self._AckMessageComplete(callback, x, y)
     try:
-      self._stub.PatchPort(controller, request, done)
+      self._stub.PatchPort(
+          controller, request,
+          lambda x, y: self._AckMessageComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -1019,9 +1028,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request = Ola_pb2.DeviceConfigRequest()
     request.device_alias = device_alias
     request.data = request_data
-    done = lambda x, y: self._ConfigureDeviceComplete(callback, x, y)
     try:
-      self._stub.ConfigureDevice(controller, request, done)
+      self._stub.ConfigureDevice(
+          controller, request,
+          lambda x, y: self._ConfigureDeviceComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -1058,9 +1068,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.minutes = minutes
     request.seconds = seconds
     request.frames = frames
-    done = lambda x, y: self._AckMessageComplete(callback, x, y)
     try:
-      self._stub.SendTimeCode(controller, request, done)
+      self._stub.SendTimeCode(
+          controller, request,
+          lambda x, y: self._AckMessageComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -1104,9 +1115,9 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.UniverseRequest()
     request.universe = universe
-    done = lambda x, y: self._FetchUIDsComplete(callback, x, y)
     try:
-      self._stub.GetUIDs(controller, request, done)
+      self._stub.GetUIDs(controller, request,
+                         lambda x, y: self._FetchUIDsComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -1130,9 +1141,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request = Ola_pb2.DiscoveryRequest()
     request.universe = universe
     request.full = full
-    done = lambda x, y: self._FetchUIDsComplete(callback, x, y)
     try:
-      self._stub.ForceDiscovery(controller, request, done)
+      self._stub.ForceDiscovery(
+          controller, request,
+          lambda x, y: self._FetchUIDsComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -1217,9 +1229,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.data = data
     request.include_raw_response = True
     request.include_raw_response = include_frames
-    done = lambda x, y: self._RDMCommandComplete(callback, x, y)
     try:
-      self._stub.RDMDiscoveryCommand(controller, request, done)
+      self._stub.RDMDiscoveryCommand(
+          controller, request,
+          lambda x, y: self._RDMCommandComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True
@@ -1249,11 +1262,12 @@ class OlaClient(Ola_pb2.OlaClientService):
     if universe is not None:
       request.universe = universe
 
-    # GetCandidatePorts works very much like GetDeviceInfo, so we can re-use
-    # its complete method.
-    done = lambda x, y: self._DeviceInfoComplete(callback, x, y)
     try:
-      self._stub.GetCandidatePorts(controller, request, done)
+      # GetCandidatePorts works very much like GetDeviceInfo, so we can re-use
+      # its complete method.
+      self._stub.GetCandidatePorts(
+          controller, request,
+          lambda x, y: self._DeviceInfoComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
 
@@ -1271,9 +1285,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.data = data
     request.is_set = set
     request.include_raw_response = include_frames
-    done = lambda x, y: self._RDMCommandComplete(callback, x, y)
     try:
-      self._stub.RDMCommand(controller, request, done)
+      self._stub.RDMCommand(
+          controller, request,
+          lambda x, y: self._RDMCommandComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
     return True

@@ -18,12 +18,12 @@
 
 """Receive DMX data."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import getopt
 import textwrap
 import sys
 from ola.ClientWrapper import ClientWrapper
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 def NewData(data):

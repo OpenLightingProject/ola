@@ -18,11 +18,11 @@
 
 """Test to check we can load the Pid data in Python."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import os
 import unittest
 from ola import PidStore
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class PidDataTest(unittest.TestCase):
