@@ -21,7 +21,10 @@
 #include <string>
 #include <vector>
 
+#include "ola/StringUtils.h"
 #include "tools/ola_trigger/Context.h"
+
+using ola::strings::IntToString;
 
 using std::ostringstream;
 using std::string;
@@ -72,7 +75,7 @@ void Context::Update(const string &name, const string &value) {
  * @brief Set the config file variable
  */
 void Context::SetConfigFile(const string &config_file) {
-  m_variables[CONFIG_FILE_VARIABLE] = string(config_file);
+  m_variables[CONFIG_FILE_VARIABLE] = config_file;
 }
 
 
@@ -80,9 +83,7 @@ void Context::SetConfigFile(const string &config_file) {
  * @brief Set the overall offset variable
  */
 void Context::SetOverallOffset(uint16_t overall_offset) {
-  ostringstream str;
-  str << static_cast<int>(overall_offset);
-  m_variables[OVERALL_OFFSET_VARIABLE] = str.str();
+  m_variables[OVERALL_OFFSET_VARIABLE] = IntToString(overall_offset);
 }
 
 
@@ -90,9 +91,7 @@ void Context::SetOverallOffset(uint16_t overall_offset) {
  * @brief Set the slot value variable
  */
 void Context::SetSlotValue(uint8_t value) {
-  ostringstream str;
-  str << static_cast<int>(value);
-  m_variables[SLOT_VALUE_VARIABLE] = str.str();
+  m_variables[SLOT_VALUE_VARIABLE] = IntToString(value);
 }
 
 
@@ -100,9 +99,7 @@ void Context::SetSlotValue(uint8_t value) {
  * @brief Set the slot offset variable
  */
 void Context::SetSlotOffset(uint16_t offset) {
-  ostringstream str;
-  str << static_cast<int>(offset);
-  m_variables[SLOT_OFFSET_VARIABLE] = str.str();
+  m_variables[SLOT_OFFSET_VARIABLE] = IntToString(offset);
 }
 
 
@@ -110,9 +107,7 @@ void Context::SetSlotOffset(uint16_t offset) {
  * @brief Set the universe variable
  */
 void Context::SetUniverse(uint32_t universe) {
-  ostringstream str;
-  str << static_cast<int>(universe);
-  m_variables[UNIVERSE_VARIABLE] = str.str();
+  m_variables[UNIVERSE_VARIABLE] = IntToString(universe);
 }
 
 
