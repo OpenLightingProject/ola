@@ -180,13 +180,15 @@ int main(int argc, char *argv[]) {
     ola::DisplayUsageAndExit();
   }
 
+  string config_file = argv[1];
+
   // setup the default context
   global_context = new Context();
-  OLA_INFO << "Loading config from " << argv[1];
+  OLA_INFO << "Loading config from " << config_file;
 
   // open the config file
-  if (freopen(argv[1], "r", stdin) == NULL) {
-    OLA_FATAL << "File " << argv[1] << " cannot be opened.\n";
+  if (freopen(config_file.c_str(), "r", stdin) == NULL) {
+    OLA_FATAL << "File " << config_file << " cannot be opened.\n";
     exit(ola::EXIT_DATAERR);
   }
 
@@ -194,13 +196,13 @@ int main(int argc, char *argv[]) {
 
   // set the core context stuff up
   if (global_context) {
-    global_context->SetConfigFile(argv[1]);
+    global_context->SetConfigFile(config_file);
     global_context->SetOverallOffset(FLAGS_offset);
     global_context->SetUniverse(FLAGS_universe);
   }
 
   if (FLAGS_validate) {
-    std::cout << "File " << argv[1] << " is valid." << std::endl;
+    std::cout << "File " << config_file << " is valid." << std::endl;
     // TODO(Peter): Print some stats here, validate the offset if supplied
     STLDeleteValues(&global_slots);
     exit(ola::EXIT_OK);
