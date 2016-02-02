@@ -53,14 +53,20 @@ class Context {
   bool Lookup(const std::string &name, std::string *value) const;
   void Update(const std::string &name, const std::string &value);
 
+  void SetConfigFile(const std::string &config_file);
+  void SetOverallOffset(uint16_t overall_offset);
   void SetSlotValue(uint8_t value);
   void SetSlotOffset(uint16_t offset);
+  void SetUniverse(uint32_t universe);
 
   std::string AsString() const;
   friend std::ostream& operator<<(std::ostream &out, const Context&);
 
+  static const char CONFIG_FILE_VARIABLE[];
+  static const char OVERALL_OFFSET_VARIABLE[];
   static const char SLOT_VALUE_VARIABLE[];
   static const char SLOT_OFFSET_VARIABLE[];
+  static const char UNIVERSE_VARIABLE[];
 
  private:
   typedef HASH_NAMESPACE::HASH_MAP_CLASS<std::string,
