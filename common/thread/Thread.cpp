@@ -173,7 +173,8 @@ void *Thread::_InternalRun() {
   pthread_setname_np(pthread_self(), truncated_name.c_str());
 #endif
 
-#if defined(HAVE_PTHREAD_SET_NAME_NP_2) || defined(HAVE_PTHREAD_SET_NAME_NP_2_VOID)
+#if defined(HAVE_PTHREAD_SET_NAME_NP_2) || \
+    defined(HAVE_PTHREAD_SET_NAME_NP_2_VOID)
   pthread_set_name_np(pthread_self(), truncated_name.c_str());
 #endif
 
