@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -16,17 +15,17 @@
 # TestRunner.py
 # Copyright (C) 2011 Simon Newton
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import datetime
 import inspect
 import logging
 import time
-from ola.testing.rdm import ResponderTest
-from ola.RDMAPI import RDMAPI
-from ola.OlaClient import OlaClient, RDMNack
+from TimingStats import TimingStats
 from ola import PidStore
-from ola.testing.rdm.TestState import TestState
+from ola.OlaClient import OlaClient, RDMNack
+from ola.RDMAPI import RDMAPI
+from ola.testing.rdm import ResponderTest
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class Error(Exception):
@@ -207,10 +206,11 @@ def GetTestClasses(module):
       classes.append(cls)
   return classes
 
+
 class TestRunner(object):
   """The Test Runner executes the tests."""
   def __init__(self, universe, uid, broadcast_write_delay, inter_test_delay,
-               pid_store, wrapper, timestamp = False):
+               pid_store, wrapper, timestamp=False):
     """Create a new TestRunner.
 
     Args:
@@ -230,6 +230,7 @@ class TestRunner(object):
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
+    self._timing_stats = TimingStats()
 
     # maps device properties to the tests that provide them
     self._property_map = {}
@@ -240,6 +241,9 @@ class TestRunner(object):
                                                  uid,
                                                  self._api,
                                                  wrapper)
+
+  def TimingStats(self):
+    return self._timing_stats
 
   def RegisterTest(self, test_class):
     """Register a test.
@@ -328,7 +332,7 @@ class TestRunner(object):
 
       test.Run()
 
-      #Use inter_test_delay on all but the last test
+      # Use inter_test_delay on all but the last test
       if test != tests[-1]:
         time.sleep(self._inter_test_delay / 1000.0)
 
@@ -353,7 +357,7 @@ class TestRunner(object):
     return deps_map
 
   def _AddTest(self, device, class_name_to_object, deps_map, test_class,
-               parents = []):
+               parents=[]):
     """Add a test class, recursively adding all REQUIRES.
        This also checks for circular dependencies.
 
@@ -378,7 +382,8 @@ class TestRunner(object):
                           self._pid_store,
                           self._api,
                           self._wrapper,
-                          self._broadcast_write_delay)
+                          self._broadcast_write_delay,
+                          self._timing_stats)
 
     new_parents = parents + [test_class]
     dep_classes = []

@@ -45,7 +45,7 @@ class GenericDevice: public Device {
    * @param device_id The id of the device.
    */
   GenericDevice(ola::AbstractPlugin *owner,
-                class SimpleWidgetInterface *widget,
+                class WidgetInterface *widget,
                 const std::string &device_name,
                 const std::string &device_id);
 

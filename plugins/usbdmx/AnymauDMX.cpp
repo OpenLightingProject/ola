@@ -23,10 +23,10 @@
 #include <unistd.h>
 #include <string>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/Constants.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
@@ -34,6 +34,7 @@ namespace plugin {
 namespace usbdmx {
 
 using std::string;
+using ola::usb::LibUsbAdaptor;
 
 namespace {
 
@@ -87,8 +88,7 @@ bool AnymaThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 SynchronousAnymauDMX::SynchronousAnymauDMX(LibUsbAdaptor *adaptor,
                                            libusb_device *usb_device,
                                            const string &serial)
-    : AnymauDMX(adaptor, serial),
-      m_usb_device(usb_device) {
+    : AnymauDMX(adaptor, usb_device, serial) {
 }
 
 bool SynchronousAnymauDMX::Init() {
@@ -165,7 +165,7 @@ AsynchronousAnymauDMX::AsynchronousAnymauDMX(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial)
-    : AnymauDMX(adaptor, serial) {
+    : AnymauDMX(adaptor, usb_device, serial) {
   m_sender.reset(new AnymaAsyncUsbSender(m_adaptor, usb_device));
 }
 

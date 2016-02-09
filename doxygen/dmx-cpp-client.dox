@@ -4,7 +4,7 @@
  *
  * [TOC]
  *
- * @section sec_dmx_cpp_client_Overview Overview
+ * @section dmx_cpp_client_Overview Overview
  * This page introduces the OLA Client API, and provides sample programs to
  * send and receive DMX512 data from olad. For information on how to use more
  * advanced features of the API, see \ref cpp_client_tutorial.
@@ -15,12 +15,12 @@
  * receive data, as well as control all aspects of OLA, like patching ports,
  * configuring devices etc.
  *
- * @section sec_dmx_cpp_client_Building Building
+ * @section dmx_cpp_client_Building Building
  * Once OLA is installed on your system, the examples can be built with:
  *
  *     g++ example.cpp $(pkg-config --cflags --libs libola)
  *
- * @section sec_dmx_cpp_client_StreamingClient Streaming Client DMX512 Transmit
+ * @section dmx_cpp_client_StreamingClient Streaming Client DMX512 Transmit
  *
  * The quickest way to get started is by using ola::client::StreamingClient
  * The program below sends 100 frames of DMX data to the olad server on universe
@@ -42,7 +42,7 @@
  *
  * @snippet streaming_client.cpp Tutorial Example
  *
- * @section sec_dmx_cpp_client_OLAClient_TX OLA Client DMX512 Transmit
+ * @section dmx_cpp_client_OLAClient_TX OLA Client DMX512 Transmit
  *
  * While ola::client::StreamingClient is easy to use, it has the drawback that
  * it can only send DMX512 data. It's not possible to receive DMX512, use RDM or
@@ -55,11 +55,11 @@
  * non-DMX512 aspects of OlaClient, see the @ref cpp_client_tutorial.
  *
  * The following code uses ola::client::OlaClient and behaves the same as the
- * \ref sec_dmx_cpp_client_StreamingClient example above.
+ * \ref dmx_cpp_client_StreamingClient example above.
  *
  * @snippet callback_client_transmit.cpp Tutorial Example
  *
- * @section sec_dmx_cpp_client_OLAClient_RX DMX512 Receive
+ * @section dmx_cpp_client_OLAClient_RX DMX512 Receive
  *
  * Receiving DMX involves setting up a callback handler and then instructing the
  * OlaClient to call the handler when new DMX512 data is received. The example

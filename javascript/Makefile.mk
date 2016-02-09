@@ -6,12 +6,24 @@ EXTRA_DIST += \
     javascript/new-src/README.md \
     javascript/new-src/bower.json \
     javascript/new-src/package.json \
-    javascript/new-src/src/css/style.css \
-    javascript/new-src/src/img \
-    javascript/new-src/src/index.html \
-    javascript/new-src/src/js/app.js \
-    javascript/new-src/src/libs \
-    javascript/new-src/src/views \
+    javascript/new-src/css/style.css \
+    javascript/new-src/src/controllers/menu.js \
+    javascript/new-src/src/controllers/patch_universe.js \
+    javascript/new-src/src/controllers/rdm_universe.js \
+    javascript/new-src/src/controllers/universe.js \
+    javascript/new-src/src/controllers/fader_universe.js \
+    javascript/new-src/src/controllers/keypad_universe.js \
+    javascript/new-src/src/controllers/plugins.js \
+    javascript/new-src/src/controllers/add_universe.js \
+    javascript/new-src/src/controllers/plugin_info.js \
+    javascript/new-src/src/controllers/setting_universe.js \
+    javascript/new-src/src/controllers/header.js \
+    javascript/new-src/src/controllers/overview.js \
+    javascript/new-src/src/constants.js \
+    javascript/new-src/src/img/ola-favicon.png \
+    javascript/new-src/src/factories/ola.js \
+    javascript/new-src/src/app.js \
+    javascript/new-src/src/filters/start_form.js \
     javascript/ola/base_frame.js \
     javascript/ola/common/dmx_constants.js \
     javascript/ola/common/dmx_monitor.js \

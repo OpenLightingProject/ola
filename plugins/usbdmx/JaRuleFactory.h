@@ -21,23 +21,29 @@
 #ifndef PLUGINS_USBDMX_JARULEFACTORY_H_
 #define PLUGINS_USBDMX_JARULEFACTORY_H_
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/rdm/UID.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
+namespace usb {
+class JaRuleWidget;
+}  // namespace usb
+
 namespace plugin {
 namespace usbdmx {
 
 /**
  * @brief Creates Ja Rule widgets.
  */
-class JaRuleFactory : public BaseWidgetFactory<class JaRuleWidget> {
+class JaRuleFactory : public BaseWidgetFactory<ola::usb::JaRuleWidget> {
  public:
   explicit JaRuleFactory(ola::io::SelectServerInterface *ss,
-                         class AsyncronousLibUsbAdaptor *adaptor)
-      : m_ss(ss),
+                         ola::usb::AsyncronousLibUsbAdaptor *adaptor)
+      : BaseWidgetFactory<ola::usb::JaRuleWidget>("JaRuleFactory"),
+        m_ss(ss),
         m_adaptor(adaptor) {
   }
 
@@ -47,7 +53,7 @@ class JaRuleFactory : public BaseWidgetFactory<class JaRuleWidget> {
 
  private:
   ola::io::SelectServerInterface *m_ss;
-  class AsyncronousLibUsbAdaptor *m_adaptor;
+  ola::usb::AsyncronousLibUsbAdaptor *m_adaptor;
 
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;

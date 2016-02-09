@@ -39,6 +39,7 @@ RDM_MAX_DOMAIN_NAME_LENGTH = 231
 
 RDM_DNS_NAME_SERVER_MAX_INDEX = 2
 
+
 def _ReverseDict(input):
   output = {}
   for key, value in input.items():
@@ -377,4 +378,4 @@ MERGE_MODE = {
 
 MERGE_MODE_TO_NAME = _ReverseDict(MERGE_MODE)
 
-INTERFACE_HARDWARE_TYPE_ETHERNET = 0x0001;
+INTERFACE_HARDWARE_TYPE_ETHERNET = 0x0001

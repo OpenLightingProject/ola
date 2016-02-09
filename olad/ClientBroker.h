@@ -79,6 +79,19 @@ class ClientBroker {
                       ola::rdm::RDMRequest *request,
                       ola::rdm::RDMCallback *callback);
 
+  /**
+   * @brief Make an RDM call.
+   * @param client the Client responsible for making the call.
+   * @param universe the universe to send the RDM request on.
+   * @param full_discovery true for full discovery, false for incremental.
+   * @param callback the callback to run when the request completes. Ownership
+   *   is transferred.
+   */
+  void RunRDMDiscovery(const Client *client,
+                       Universe *universe,
+                       bool full_discovery,
+                       ola::rdm::RDMDiscoveryCallback *callback);
+
  private:
   typedef std::set<const Client*> client_set;
 
@@ -87,6 +100,10 @@ class ClientBroker {
   void RequestComplete(const Client *key,
                        ola::rdm::RDMCallback *callback,
                        ola::rdm::RDMReply *reply);
+
+  void DiscoveryComplete(const Client *key,
+                         ola::rdm::RDMDiscoveryCallback *on_complete,
+                         const ola::rdm::UIDSet &uids);
 
   DISALLOW_COPY_AND_ASSIGN(ClientBroker);
 };

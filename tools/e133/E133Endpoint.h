@@ -57,7 +57,7 @@ class E133EndpointInterface
     // virtual bool rdm_enabled() const = 0;
 
     // ENDPOINT_MODE
-    // virtual ola::plugin::e131::EndpointMode endpoint_mode() const = 0;
+    // virtual ola::acn::EndpointMode endpoint_mode() const = 0;
 
     // ENDPOINT_LABEL
     virtual string label() const = 0;

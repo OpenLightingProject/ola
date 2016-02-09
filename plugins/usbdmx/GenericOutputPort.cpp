@@ -30,7 +30,7 @@ namespace usbdmx {
 
 GenericOutputPort::GenericOutputPort(Device *parent,
                                      unsigned int id,
-                                     SimpleWidgetInterface *widget)
+                                     WidgetInterface *widget)
     : BasicOutputPort(parent, id),
       m_widget(widget) {
 }

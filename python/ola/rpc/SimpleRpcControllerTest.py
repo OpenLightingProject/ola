@@ -16,12 +16,13 @@
 # SimpleRpcControllerTest.py
 # Copyright (C) 2005 Simon Newton
 
+import unittest
+from SimpleRpcController import SimpleRpcController
+
 """Test cases for the SimpleRpcController."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-import unittest
-from SimpleRpcController import SimpleRpcController
 
 class SimpleRpcControllerTest(unittest.TestCase):
 

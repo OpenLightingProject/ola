@@ -20,50 +20,23 @@
 
 #include "plugins/usbdmx/AsyncUsbSender.h"
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-namespace {
-
-/*
- * Called by libusb when the transfer completes.
- */
-#ifdef _WIN32
-__attribute__((__stdcall__))
-#endif
-void AsyncCallback(struct libusb_transfer *transfer) {
-  AsyncUsbSender *widget = reinterpret_cast<AsyncUsbSender*>(
-      transfer->user_data);
-  widget->TransferComplete(transfer);
-}
-}  // namespace
+using ola::usb::LibUsbAdaptor;
 
 AsyncUsbSender::AsyncUsbSender(LibUsbAdaptor *adaptor,
                                libusb_device *usb_device)
-    : m_adaptor(adaptor),
-      m_usb_device(usb_device),
-      m_usb_handle(NULL),
-      m_suppress_continuation(false),
-      m_transfer_state(IDLE),
+    : AsyncUsbTransceiverBase(adaptor, usb_device),
       m_pending_tx(false) {
-  m_transfer = m_adaptor->AllocTransfer(0);
-  m_adaptor->RefDevice(usb_device);
 }
 
 AsyncUsbSender::~AsyncUsbSender() {
-  CancelTransfer();
   m_adaptor->Close(m_usb_handle);
-  m_adaptor->UnrefDevice(m_usb_device);
-  m_adaptor->FreeTransfer(m_transfer);
-}
-
-bool AsyncUsbSender::Init() {
-  m_usb_handle = SetupHandle();
-  return m_usb_handle ? true : false;
 }
 
 bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer) {
@@ -81,66 +54,6 @@ bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer) {
     m_tx_buffer.Set(buffer);
   }
   return true;
-}
-
-void AsyncUsbSender::CancelTransfer() {
-  if (!m_transfer) {
-    return;
-  }
-
-  bool canceled = false;
-  while (1) {
-    ola::thread::MutexLocker locker(&m_mutex);
-    if (m_transfer_state == IDLE || m_transfer_state == DISCONNECTED) {
-      break;
-    }
-    if (!canceled) {
-      m_suppress_continuation = true;
-      if (m_adaptor->CancelTransfer(m_transfer) == 0) {
-        canceled = true;
-      } else {
-        break;
-      }
-    }
-  }
-
-  m_suppress_continuation = false;
-}
-
-void AsyncUsbSender::FillControlTransfer(unsigned char *buffer,
-                                         unsigned int timeout) {
-  m_adaptor->FillControlTransfer(m_transfer, m_usb_handle, buffer,
-                                 &AsyncCallback, this, timeout);
-}
-
-void AsyncUsbSender::FillBulkTransfer(unsigned char endpoint,
-                                      unsigned char *buffer,
-                                      int length,
-                                      unsigned int timeout) {
-  m_adaptor->FillBulkTransfer(m_transfer, m_usb_handle, endpoint, buffer,
-                              length, &AsyncCallback, this, timeout);
-}
-
-void AsyncUsbSender::FillInterruptTransfer(unsigned char endpoint,
-                                           unsigned char *buffer,
-                                           int length,
-                                           unsigned int timeout) {
-  m_adaptor->FillInterruptTransfer(m_transfer, m_usb_handle, endpoint, buffer,
-                                   length, &AsyncCallback, this, timeout);
-}
-
-int AsyncUsbSender::SubmitTransfer() {
-  int ret = m_adaptor->SubmitTransfer(m_transfer);
-  if (ret) {
-    OLA_WARN << "libusb_submit_transfer returned "
-             << m_adaptor->ErrorCodeToString(ret);
-    if (ret == LIBUSB_ERROR_NO_DEVICE) {
-      m_transfer_state = DISCONNECTED;
-    }
-    return false;
-  }
-  m_transfer_state = IN_PROGRESS;
-  return ret;
 }
 
 void AsyncUsbSender::TransferComplete(struct libusb_transfer *transfer) {

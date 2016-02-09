@@ -50,9 +50,11 @@ class ThreadedUsbSender: private ola::thread::Thread {
    * @param usb_device The usb_device to use. The ThreadedUsbSender takes a ref
    *   on the device, while the ThreadedUsbSender object exists.
    * @param usb_handle The handle to use for the DMX transfer.
+   * @param interface_number the USB interface number of the widget. Defaults to 0.
    */
   ThreadedUsbSender(libusb_device *usb_device,
-                    libusb_device_handle *usb_handle);
+                    libusb_device_handle *usb_handle,
+                    int interface_number = 0);
   virtual ~ThreadedUsbSender();
 
   /**
@@ -91,6 +93,7 @@ class ThreadedUsbSender: private ola::thread::Thread {
   bool m_term;
   libusb_device* const m_usb_device;
   libusb_device_handle* const m_usb_handle;
+  int const m_interface_number;
   DmxBuffer m_buffer;
   ola::thread::Mutex m_data_mutex;
   ola::thread::Mutex m_term_mutex;

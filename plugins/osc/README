@@ -9,8 +9,8 @@ classes. Most of the documentation is inline with the code so please keep it up
 to date if you change anything.
 
 Before we begin you should do the following:
- * Read http://www.opendmx.net/index.php/OLA_developer_info which provides an
-   overview of some of the classes we'll use.
+ * Read https://wiki.openlighting.org/index.php/OLA_developer_info which
+   provides an overview of some of the classes we'll use.
  * Have an understanding of the map & vector classes from the STL -
    http://www.sgi.com/tech/stl/ or http://www.cplusplus.com/reference/stl/ .
  * Know something about the OSC specification:

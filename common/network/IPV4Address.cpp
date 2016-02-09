@@ -29,6 +29,9 @@
 #endif
 #endif
 
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>  // Required by FreeBSD
+#endif
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif

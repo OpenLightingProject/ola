@@ -110,16 +110,6 @@ void WidgetDetectorThread::SetIgnoredDevices(const vector<string> &devices) {
 }
 
 /**
- * @brief Set the directories to check for UUCP lock files.
- * @param paths a list of paths to check for lock files.
- */
-void WidgetDetectorThread::SetUUCPLockFilePaths(
-    const std::vector<std::string> &paths) {
-  m_uucp_lock_paths = paths;
-}
-
-
-/**
  * Run the discovery thread.
  */
 void *WidgetDetectorThread::Run() {
@@ -209,18 +199,16 @@ bool WidgetDetectorThread::RunScan() {
 
   vector<string>::iterator it;
   for (it = device_paths.begin(); it != device_paths.end(); ++it) {
-    if (m_active_paths.find(*it) != m_active_paths.end())
+    if (m_active_paths.find(*it) != m_active_paths.end()) {
       continue;
-    if (m_ignored_devices.find(*it) != m_ignored_devices.end())
-      continue;
-    // FreeBSD has .init and .lock files which we want to skip
-    if (StringEndsWith(*it, ".init") || StringEndsWith(*it, ".lock"))
-      continue;
+    }
 
-    const string base_name = ola::file::FilenameFromPath(*it);
-    if (!base_name.empty() &&
-        ola::io::CheckForUUCPLockFile(m_uucp_lock_paths, base_name)) {
-      OLA_INFO << "Locked USB Serial device at " << *it;
+    if (m_ignored_devices.find(*it) != m_ignored_devices.end()) {
+      continue;
+    }
+
+    // FreeBSD has .init and .lock files which we want to skip
+    if (StringEndsWith(*it, ".init") || StringEndsWith(*it, ".lock")) {
       continue;
     }
 
@@ -230,7 +218,7 @@ bool WidgetDetectorThread::RunScan() {
       continue;
     }
 
-    OLA_INFO << "new descriptor @ " << descriptor << " for " << *it;
+    OLA_DEBUG << "New descriptor @ " << descriptor << " for " << *it;
     PerformDiscovery(*it, descriptor);
   }
   return true;
@@ -425,7 +413,9 @@ void WidgetDetectorThread::InternalFreeWidget(SerialWidgetInterface *widget) {
  */
 void WidgetDetectorThread::FreeDescriptor(ConnectedDescriptor *descriptor) {
   DescriptorInfo &descriptor_info = m_active_descriptors[descriptor];
+
   m_active_paths.erase(descriptor_info.first);
+  io::ReleaseUUCPLock(descriptor_info.first);
   m_active_descriptors.erase(descriptor);
   delete descriptor;
 }

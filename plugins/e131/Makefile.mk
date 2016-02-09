@@ -1,4 +1,3 @@
-include plugins/e131/e131/Makefile.mk
 include plugins/e131/messages/Makefile.mk
 
 # LIBRARIES
@@ -16,5 +15,5 @@ plugins_e131_libolae131_la_SOURCES = \
 plugins_e131_libolae131_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la \
     plugins/e131/messages/libolae131conf.la \
-    plugins/e131/e131/libolae131core.la
+    libs/acn/libolae131core.la
 endif

@@ -62,6 +62,7 @@ IGNORE_PATTERNS = [
   'tools/rdm/DataLocation.py',
 ]
 
+
 def Usage(arg0):
   print (textwrap.dedent("""\
   Usage: %s <treeA> <treeB>
@@ -69,11 +70,13 @@ def Usage(arg0):
   Check for files that exist in treeA but aren't in treeB. This can be used to
   ensure we don't miss files from the tarball.""" % arg0))
 
+
 def ShouldIgnore(path):
   for pattern in IGNORE_PATTERNS:
     if fnmatch.fnmatch(path, pattern):
       return True
   return False
+
 
 def BuildTree(root):
   tree = set()
@@ -89,6 +92,7 @@ def BuildTree(root):
         tree.add(path)
 
   return tree
+
 
 def main():
   if len(sys.argv) != 3:

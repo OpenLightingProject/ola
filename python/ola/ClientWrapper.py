@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -16,10 +15,6 @@
 # ClientWrapper.py
 # Copyright (C) 2005 Simon Newton
 
-"""A simple client wrapper for the OlaClient."""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import array
 import datetime
 import fcntl
@@ -31,6 +26,10 @@ import termios
 import threading
 import traceback
 from ola.OlaClient import OlaClient
+
+"""A simple client wrapper for the OlaClient."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class _Event(object):

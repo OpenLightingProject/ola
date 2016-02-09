@@ -1,0 +1,43 @@
+/**
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * The new OLA web UI.
+ * Copyright (C) 2015 Dave Olsthoorn
+ */
+/*jshint browser: true, jquery: true*/
+/* global ola */
+ola.controller('menuCtrl', ['$scope', '$ola', '$interval', '$location',
+  function($scope, $ola, $interval, $location) {
+    'use strict';
+    $scope.Items = {};
+    $scope.Info = {};
+
+    $scope.goTo = function(url) {
+      $location.path(url);
+    };
+
+    var getData = function() {
+      $ola.get.ItemList().then(function(data) {
+        $scope.Items = data;
+      });
+      $ola.get.ServerInfo().then(function(data) {
+        $scope.Info = data;
+        document.title = data.instance_name + ' - ' + data.ip;
+      });
+    };
+
+    getData();
+    $interval(getData, 10000);
+  }]);

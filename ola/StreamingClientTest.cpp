@@ -124,8 +124,9 @@ void *OlaServerThread::Run() {
  * Stop the OLA server
  */
 void OlaServerThread::Terminate() {
-  if (m_olad.get())
+  if (m_olad.get()) {
     m_olad->GetSelectServer()->Terminate();
+  }
 }
 
 
@@ -134,8 +135,9 @@ void OlaServerThread::Terminate() {
  */
 void OlaServerThread::WaitForStart() {
   m_mutex.Lock();
-  if (!m_is_running)
+  if (!m_is_running) {
     m_condition.Wait(&m_mutex);
+  }
   m_mutex.Unlock();
 }
 
@@ -162,10 +164,11 @@ GenericSocketAddress OlaServerThread::RPCAddress() const {
 void StreamingClientTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_server_thread = new OlaServerThread();
-  if (m_server_thread->Setup())
+  if (m_server_thread->Setup()) {
     m_server_thread->Start();
-  else
+  } else {
     CPPUNIT_FAIL("Failed to setup OlaDaemon");
+  }
 }
 
 

@@ -20,21 +20,23 @@
 
 #include "plugins/usbdmx/JaRuleDevice.h"
 
+#include <memory>
 #include <set>
 #include <string>
 
+#include "libs/usb/JaRuleWidget.h"
+#include "libs/usb/JaRulePortHandle.h"
 #include "plugins/usbdmx/JaRuleOutputPort.h"
-#include "plugins/usbdmx/JaRulePortHandle.h"
-#include "plugins/usbdmx/JaRuleWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
 using std::set;
+using std::auto_ptr;
 
 JaRuleDevice::JaRuleDevice(ola::AbstractPlugin *owner,
-                           JaRuleWidget *widget,
+                           ola::usb::JaRuleWidget *widget,
                            const std::string &device_name)
     : Device(owner, device_name),
       m_widget(widget),
@@ -43,20 +45,15 @@ JaRuleDevice::JaRuleDevice(ola::AbstractPlugin *owner,
 
 bool JaRuleDevice::StartHook() {
   for (uint8_t i = 0; i < m_widget->PortCount(); i++) {
-    jarule::JaRulePortHandle *handle = m_widget->ClaimPort(i);
-    if (handle) {
-      AddPort(new JaRuleOutputPort(this, i, handle));
-      m_claimed_ports.insert(i);
+    auto_ptr<JaRuleOutputPort> port(new JaRuleOutputPort(this, i, m_widget));
+
+    if (!port->Init()) {
+      continue;
     }
+
+    AddPort(port.release());
   }
   return true;
-}
-
-void JaRuleDevice::PostPortStop() {
-  set<uint8_t>::const_iterator iter = m_claimed_ports.begin();
-  for (; iter != m_claimed_ports.end(); ++iter) {
-    m_widget->ReleasePort(*iter);
-  }
 }
 }  // namespace usbdmx
 }  // namespace plugin

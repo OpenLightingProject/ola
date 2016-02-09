@@ -29,49 +29,49 @@
 #include "tools/ola_trigger/Action.h"
 
 /**
- * The MockAction we use for testing.
+ * @brief The MockAction we use for testing.
  */
 class MockAction: public Action {
  public:
-    MockAction() : Action() {}
+  MockAction() : Action() {}
 
-    void Execute(Context*, uint8_t slot_value) {
-      m_values.push(slot_value);
-    }
+  void Execute(Context*, uint8_t slot_value) {
+    m_values.push(slot_value);
+  }
 
-    void CheckForValue(const ola::testing::SourceLine &source_line,
-                       uint8_t expected_value) {
-      ola::testing::_AssertEquals(source_line,
-                                  static_cast<size_t>(1),
-                                  m_values.size(),
-                                  "Queue sizes differ");
+  void CheckForValue(const ola::testing::SourceLine &source_line,
+                     uint8_t expected_value) {
+    ola::testing::_AssertEquals(source_line,
+                                static_cast<size_t>(1),
+                                m_values.size(),
+                                "Queue sizes differ");
 
-      uint8_t value = m_values.front();
-      ola::testing::_AssertEquals(source_line,
-                                  static_cast<int>(expected_value),
-                                  static_cast<int>(value),
-                                  "Values differ");
-      m_values.pop();
-    }
+    uint8_t value = m_values.front();
+    ola::testing::_AssertEquals(source_line,
+                                static_cast<int>(expected_value),
+                                static_cast<int>(value),
+                                "Values differ");
+    m_values.pop();
+  }
 
-    bool NoCalls() const { return m_values.empty(); }
+  bool NoCalls() const { return m_values.empty(); }
 
  private:
-    std::queue<uint8_t> m_values;
+  std::queue<uint8_t> m_values;
 };
 
 
 /**
- * An action that should never be run.
+ * @brief An action that should never be run.
  */
 class BadAction: public Action {
  public:
-    BadAction() : Action() {}
+  BadAction() : Action() {}
 
-    void Execute(Context*, uint8_t slot_value) {
-      std::ostringstream str;
-      str << "Incorrect action called for " << static_cast<int>(slot_value);
-      CPPUNIT_FAIL(str.str());
-    }
+  void Execute(Context*, uint8_t slot_value) {
+    std::ostringstream str;
+    str << "Incorrect action called for " << static_cast<int>(slot_value);
+    CPPUNIT_FAIL(str.str());
+  }
 };
 #endif  // TOOLS_OLA_TRIGGER_MOCKACTION_H_

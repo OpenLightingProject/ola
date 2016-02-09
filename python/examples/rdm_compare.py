@@ -16,13 +16,7 @@
 # rdm_compare.py
 # Copyright (C) 2012 Simon Newton
 
-'''Compare the RDM configurations saves with rdm_snapshot.py'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
 import getopt
-import logging
 import os
 import pickle
 import sys
@@ -31,11 +25,18 @@ import textwrap
 import webbrowser
 from ola.UID import UID
 
+'''Compare the RDM configurations saves with rdm_snapshot.py'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
+
 class Error(Exception):
   """Base exception class."""
 
+
 class LoadException(Error):
   """Raised when we can't write to the output file."""
+
 
 def Usage():
   print(textwrap.dedent("""\
@@ -138,7 +139,8 @@ def DiffInBrowser(configuration1, configuration2):
   if changed:
     output.append('    <h4>Device Changes</h4>')
     output.append('    <table>')
-    output.append('     <tr><th>UID</th><th>Field</th><th>Old</th><th>New</th></tr>')
+    output.append('     <tr><th>UID</th><th>Field</th><th>Old</th><th>New</th>'
+                  '</tr>')
     for row in changed:
       output.append('     </tr>')
       output.append('<td>%s</td><td>%s</td><td>%s</td><td>%s</td>' % row)
@@ -165,11 +167,11 @@ def DiffToStdout(configuration1, configuration2):
   for uid in added:
     print('Device %s was added' % uid)
   for uid in removed:
-      print('Device %s was removed' % uid)
+    print('Device %s was removed' % uid)
 
   for uid, human_field, value1, value2 in changed:
     print('%s: %s changed from %s to %s' %
-           (uid, human_field, value1, value2))
+          (uid, human_field, value1, value2))
 
 
 def main():

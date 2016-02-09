@@ -18,26 +18,42 @@
 
 """Fetch some ArtNet parameters."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
+from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
 from ola import ArtNetConfigMessages_pb2
+import sys
 
-def ArtNetConfigureReply(state, response):
-  reply = ArtNetConfigMessages_pb2.Reply()
-  reply.ParseFromString(response)
-  print('Short Name: %s' % reply.options.short_name)
-  print('Long Name: %s' % reply.options.long_name)
-  print('Subnet: %d' % reply.options.subnet)
-  wrapper.Stop()
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
+wrapper = None
 
 
-#Set this appropriately
-device_alias = 1
-wrapper = ClientWrapper()
-client = wrapper.Client()
-artnet_request = ArtNetConfigMessages_pb2.Request()
-artnet_request.type = artnet_request.ARTNET_OPTIONS_REQUEST
-client.ConfigureDevice(device_alias, artnet_request.SerializeToString(),
-                       ArtNetConfigureReply)
-wrapper.Run()
+def ArtNetConfigureReply(status, response):
+  if status.Succeeded():
+    reply = ArtNetConfigMessages_pb2.Reply()
+    reply.ParseFromString(response)
+    print('Short Name: %s' % reply.options.short_name)
+    print('Long Name: %s' % reply.options.long_name)
+    print('Subnet: %d' % reply.options.subnet)
+  else:
+    print('Error: %s' % status.message, file=sys.stderr)
+
+  global wrapper
+  if wrapper:
+    wrapper.Stop()
+
+
+def main():
+  # Set this appropriately
+  device_alias = 1
+  global wrapper
+  wrapper = ClientWrapper()
+  client = wrapper.Client()
+  artnet_request = ArtNetConfigMessages_pb2.Request()
+  artnet_request.type = artnet_request.ARTNET_OPTIONS_REQUEST
+  client.ConfigureDevice(device_alias, artnet_request.SerializeToString(),
+                         ArtNetConfigureReply)
+  wrapper.Run()
+
+if __name__ == '__main__':
+  main()

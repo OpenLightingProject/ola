@@ -24,7 +24,7 @@
 #include <string>
 #include "olad/Port.h"
 #include "plugins/e131/E131Device.h"
-#include "plugins/e131/e131/E131Node.h"
+#include "libs/acn/E131Node.h"
 
 namespace ola {
 namespace plugin {
@@ -41,7 +41,7 @@ class E131PortHelper {
 
 class E131InputPort: public BasicInputPort {
  public:
-  E131InputPort(E131Device *parent, int id, E131Node *node,
+  E131InputPort(E131Device *parent, int id, ola::acn::E131Node *node,
                 class PluginAdaptor *plugin_adaptor)
       : BasicInputPort(parent, id, plugin_adaptor),
         m_node(node),
@@ -62,7 +62,7 @@ class E131InputPort: public BasicInputPort {
 
  private:
   ola::DmxBuffer m_buffer;
-  E131Node *m_node;
+  ola::acn::E131Node *m_node;
   E131PortHelper m_helper;
   uint8_t m_priority;
 };
@@ -70,7 +70,7 @@ class E131InputPort: public BasicInputPort {
 
 class E131OutputPort: public BasicOutputPort {
  public:
-  E131OutputPort(E131Device *parent, int id, E131Node *node)
+  E131OutputPort(E131Device *parent, int id, ola::acn::E131Node *node)
       : BasicOutputPort(parent, id),
         m_preview_on(false),
         m_node(node) {
@@ -97,7 +97,7 @@ class E131OutputPort: public BasicOutputPort {
   bool m_preview_on;
   uint8_t m_last_priority;
   ola::DmxBuffer m_buffer;
-  E131Node *m_node;
+  ola::acn::E131Node *m_node;
   E131PortHelper m_helper;
 };
 }  // namespace e131

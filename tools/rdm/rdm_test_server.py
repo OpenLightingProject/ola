@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -23,18 +23,16 @@ import mimetypes
 import os
 import pprint
 import re
-import signal
 import stat
 import sys
 import textwrap
-import threading
 import traceback
 import urlparse
 
 from datetime import datetime
-from optparse import OptionParser, OptionGroup, OptionValueError
+from optparse import OptionParser
 from threading import Condition, Event, Lock, Thread
-from time import time, sleep
+from time import time
 from wsgiref.simple_server import make_server
 from ola.UID import UID
 from ola.ClientWrapper import ClientWrapper, SelectServer
@@ -42,12 +40,10 @@ from ola.OlaClient import OlaClient, OLADNotRunningException
 from ola import PidStore
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm import DataLocation
-from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
 from ola.testing.rdm import TestLogger
 from ola.testing.rdm import TestRunner
 from ola.testing.rdm.ModelCollector import ModelCollector
-from ola.testing.rdm.TestCategory import TestCategory
 from ola.testing.rdm.TestState import TestState
 
 
@@ -62,8 +58,25 @@ settings = {
 class Error(Exception):
   """Base exception class."""
 
+
 class ServerException(Error):
   """Indicates a problem handling the request."""
+
+
+class OLAFuture(object):
+  def __init__(self):
+    self._event = Event()
+    self._data = None
+
+  def set(self, data):
+    self._data = data
+    self._event.set()
+
+  def wait(self):
+    self._event.wait()
+
+  def result(self):
+    return self._data
 
 
 class OLAThread(Thread):
@@ -71,7 +84,7 @@ class OLAThread(Thread):
   def __init__(self, ola_client):
     super(OLAThread, self).__init__()
     self._client = ola_client
-    self._ss = None  # created in run()
+    self._ss = None  # Created in run()
 
   def run(self):
     self._ss = SelectServer()
@@ -111,18 +124,17 @@ class OLAThread(Thread):
     Returns:
       The arguments that would have been passed to the callback function.
     """
-    global args_result
-    event = Event()
+    future = OLAFuture()
+
     def Callback(*args, **kwargs):
-      global args_result
-      args_result = args
-      event.set()
+      future.set(args)
 
     def RunMethod():
       method(*method_args, callback=Callback)
+
     self._ss.Execute(RunMethod)
-    event.wait()
-    return args_result
+    future.wait()
+    return future.result()
 
 
 class RDMTestThread(Thread):
@@ -139,10 +151,10 @@ class RDMTestThread(Thread):
     self._logs_directory = logs_directory
     self._terminate = False
     self._request = None
-    # guards _terminate and _request
+    # Guards _terminate and _request
     self._cv = Condition()
     self._wrapper = None
-    self._test_state_lock = Lock()  # guards _test_state
+    self._test_state_lock = Lock()  # Guards _test_state
     self._test_state = {}
 
   def Stop(self):
@@ -167,7 +179,7 @@ class RDMTestThread(Thread):
       self._cv.release()
       return 'Existing request pending'
 
-    self._request = lambda : self._RunTests(universe, uid, test_filter,
+    self._request = lambda: self._RunTests(universe, uid, test_filter,
                                             broadcast_write_delay,
                                             inter_test_delay, dmx_frame_rate,
                                             slot_count)
@@ -189,7 +201,7 @@ class RDMTestThread(Thread):
       self._cv.release()
       return 'Existing request pending'
 
-    self._request = lambda : self._RunCollector(universe, skip_queued_messages)
+    self._request = lambda: self._RunCollector(universe, skip_queued_messages)
     self._cv.notify()
     self._cv.release()
     return None
@@ -213,7 +225,7 @@ class RDMTestThread(Thread):
       if self._terminate:
         logging.info('quitting test thread')
         self._cv.release()
-        return;
+        return
 
       if self._request is not None:
         request = self._request
@@ -221,7 +233,7 @@ class RDMTestThread(Thread):
         self._cv.release()
         request()
         continue
-      # nothing to do, go into the wait
+      # Nothing to do, go into the wait
       self._cv.wait()
       self._cv.release()
 
@@ -255,7 +267,8 @@ class RDMTestThread(Thread):
     if dmx_frame_rate > 0 and slot_count > 0:
       logging.info('Starting DMXSender with slot count %d and FPS of %d' %
                    (slot_count, dmx_frame_rate))
-      dmx_sender = DMXSender(self._wrapper, universe, dmx_frame_rate, slot_count)
+      dmx_sender = DMXSender(self._wrapper, universe, dmx_frame_rate,
+                             slot_count)
 
     try:
       tests, device = runner.RunTests(test_filter, False, self._UpdateStats)
@@ -287,7 +300,7 @@ class RDMTestThread(Thread):
       logs_saved = False
 
     self._test_state_lock.acquire()
-    # we can't use total_seconds() since it requires Python 2.7
+    # We can't use total_seconds() since it requires Python 2.7
     time_delta = end_time - start_time
     self._test_state['duration'] = (
         time_delta.seconds + time_delta.days * 24 * 3600)
@@ -339,7 +352,6 @@ class HTTPRequest(object):
     self._environ = environ
     self._params = None
     self._post_params = None
-
 
   def Path(self):
     """Return the path for the request."""
@@ -396,7 +408,7 @@ class HTTPResponse(object):
 
   def __init__(self):
     self._status = None
-    self._headers = {};
+    self._headers = {}
     self._content_type = None
     self._data = []
 
@@ -420,6 +432,7 @@ class HTTPResponse(object):
 
   def Data(self):
     return self._data
+
 
 class RequestHandler(object):
   """The base request handler class."""
@@ -450,7 +463,7 @@ class StaticFileHandler(RequestHandler):
       response.SetStatus(HTTPResponse.NOT_FOUND)
       return
 
-    # strip off /static
+    # Strip off /static
     path = path[len(self.PREFIX):]
     # This is important as it ensures we can't access arbitary files
     filename = os.path.abspath(os.path.join(self._static_dir, path))
@@ -476,23 +489,23 @@ class StaticFileHandler(RequestHandler):
 
 
 class JsonRequestHandler(RequestHandler):
-  """A class which handles Json requests."""
+  """A class which handles JSON requests."""
   def HandleRequest(self, request, response):
     response.SetHeader('Cache-Control', 'no-cache')
     response.SetHeader('Content-type', 'application/json')
 
     try:
       json_data = self.GetJson(request, response)
-      response.AppendData(json.dumps(json_data, sort_keys = True))
+      response.AppendData(json.dumps(json_data, sort_keys=True))
     except ServerException as e:
-      # for json requests, rather than returning 500s we return the error as
-      # json
+      # For JSON requests, rather than returning 500s we return the error as
+      # JSON
       response.SetStatus(HTTPResponse.OK)
       json_data = {
           'status': False,
           'error': str(e),
       }
-      response.AppendData(json.dumps(json_data, sort_keys = True))
+      response.AppendData(json.dumps(json_data, sort_keys=True))
 
   def RaiseExceptionIfMissing(self, request, param):
     """Helper method to raise an exception if the param is missing."""
@@ -509,7 +522,7 @@ class JsonRequestHandler(RequestHandler):
 class OLAServerRequestHandler(JsonRequestHandler):
   """Catches OLADNotRunningException and handles them gracefully."""
   def __init__(self, ola_thread):
-    self._thread = ola_thread;
+    self._thread = ola_thread
 
   def GetThread(self):
     return self._thread
@@ -517,13 +530,13 @@ class OLAServerRequestHandler(JsonRequestHandler):
   def HandleRequest(self, request, response):
     try:
       super(OLAServerRequestHandler, self).HandleRequest(request, response)
-    except OLADNotRunningException as e:
+    except OLADNotRunningException:
       response.SetStatus(HTTPResponse.OK)
       json_data = {
           'status': False,
           'error': 'The OLA Server instance is no longer running',
       }
-      response.AppendData(json.dumps(json_data, sort_keys = True))
+      response.AppendData(json.dumps(json_data, sort_keys=True))
 
 
 class TestDefinitionsHandler(JsonRequestHandler):
@@ -577,7 +590,7 @@ class GetDevicesHandler(OLAServerRequestHandler):
 
     response.SetStatus(HTTPResponse.OK)
     return {
-      'uids':  [str(u) for u in uids],
+      'uids': [str(u) for u in uids],
       'status': True,
     }
 
@@ -601,9 +614,10 @@ class RunDiscoveryHandler(OLAServerRequestHandler):
 
     response.SetStatus(HTTPResponse.OK)
     return {
-      'uids':  [str(u) for u in uids],
+      'uids': [str(u) for u in uids],
       'status': True,
     }
+
 
 class DownloadModelDataHandler(RequestHandler):
   """Take the data in the form and return it as a downloadable file."""
@@ -666,7 +680,7 @@ class RunTestsHandler(OLAServerRequestHandler):
 
   def GetJson(self, request, response):
     """Check if this is a RunTests or StatTests request."""
-    path =  request.Path()
+    path = request.Path()
     if path == '/RunTests':
       return self.RunTests(request, response)
     if path == '/RunCollector':
@@ -749,7 +763,7 @@ class RunTestsHandler(OLAServerRequestHandler):
     if uid is None:
       raise ServerException('Invalid uid: %s' % uid_param)
 
-    # the tests to run, None means all
+    # The tests to run, None means all
     test_filter = request.GetParam('t')
     if test_filter is not None:
       if test_filter == 'all':
@@ -922,21 +936,22 @@ def BuildApplication(ola_thread, test_thread):
   """Construct the application and add the handlers."""
   app = Application()
   app.RegisterHandler('/',
-      RedirectHandler('/static/rdmtests.html').HandleRequest)
-  app.RegisterHandler('/favicon.ico',
+                      RedirectHandler('/static/rdmtests.html').HandleRequest)
+  app.RegisterHandler(
+      '/favicon.ico',
       RedirectHandler('/static/images/favicon.ico').HandleRequest)
   app.RegisterHandler('/GetTestDefs',
-      TestDefinitionsHandler().HandleRequest)
+                      TestDefinitionsHandler().HandleRequest)
   app.RegisterHandler('/GetUnivInfo',
-      GetUniversesHandler(ola_thread).HandleRequest)
+                      GetUniversesHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/GetDevices',
-      GetDevicesHandler(ola_thread).HandleRequest)
+                      GetDevicesHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/RunDiscovery',
-      RunDiscoveryHandler(ola_thread).HandleRequest)
+                      RunDiscoveryHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/DownloadResults',
-      DownloadResultsHandler().HandleRequest)
+                      DownloadResultsHandler().HandleRequest)
   app.RegisterHandler('/DownloadModelData',
-      DownloadModelDataHandler().HandleRequest)
+                      DownloadModelDataHandler().HandleRequest)
 
   run_tests_handler = RunTestsHandler(ola_thread, test_thread)
   app.RegisterHandler('/RunCollector', run_tests_handler.HandleRequest)
@@ -944,14 +959,12 @@ def BuildApplication(ola_thread, test_thread):
   app.RegisterHandler('/StatCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatTests', run_tests_handler.HandleRequest)
   app.RegisterRegex('/static/.*',
-      StaticFileHandler(settings['www_dir']).HandleRequest)
+                    StaticFileHandler(settings['www_dir']).HandleRequest)
   return app
 
 
 def parse_options():
-  """
-    Parse Command Line options
-  """
+  """Parse Command Line options"""
   usage = 'Usage: %prog [options]'
   description = textwrap.dedent("""\
     Starts the TestServer (A simple Web Server) which run a series of tests on
@@ -989,11 +1002,11 @@ def SetupLogDirectory(options):
       os.makedirs(log_directory)
       if options.world_writeable:
         stat_result = os.stat(log_directory)
-        os.chmod(log_directory,  stat_result.st_mode | stat.S_IWOTH)
+        os.chmod(log_directory, stat_result.st_mode | stat.S_IWOTH)
     except OSError:
       logging.error(
           'Failed to create %s for RDM logs. Logging will be disabled.' %
-           options.log_directory)
+          options.log_directory)
   elif not os.path.isdir(options.log_directory):
     logging.error('Log directory invalid: %s. Logging will be disabled.' %
                   options.log_directory)
@@ -1007,13 +1020,13 @@ def main():
   options = parse_options()
   settings.update(options.__dict__)
   pid_store = PidStore.GetStore(options.pid_location,
-                                ('pids.proto','draft_pids.proto'))
+                                ('pids.proto', 'draft_pids.proto'))
 
   logging.basicConfig(level=logging.INFO, format='%(message)s')
 
   SetupLogDirectory(options)
 
-  #Check olad status
+  # Check olad status
   logging.info('Checking olad status')
   try:
     ola_client = OlaClient()

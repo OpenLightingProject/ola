@@ -447,6 +447,12 @@ void CapitalizeLabel(std::string *s);
 void CustomCapitalizeLabel(std::string *s);
 
 /**
+ * @brief Transform a string by capitalizing the first character.
+ * @param s a string to transform.
+ */
+void CapitalizeFirst(std::string *s);
+
+/**
  * @brief Write binary data to an ostream in a human readable form.
  *
  * @param out the ostream to write to

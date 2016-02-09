@@ -22,8 +22,11 @@ from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient
 import argparse
+import sys
 
 __author__ = 'simon.marchi@polymtl.ca (Simon Marchi)'
+
+wrapper = None
 
 
 def ParseArgs():
@@ -55,18 +58,25 @@ def PatchPortCallback(status):
   if status.Succeeded():
     print('Success!')
   else:
-    print('Oops: {}'.format(status.message))
+    print('Error: %s' % status.message, file=sys.stderr)
   wrapper.Stop()
 
-args = ParseArgs()
 
-device = args.device
-port = args.port
-is_output = args.mode == 'output'
-action = OlaClient.PATCH if args.action == 'patch' else OlaClient.UNPATCH
-universe = args.universe
+def main():
+  args = ParseArgs()
 
-wrapper = ClientWrapper()
-client = wrapper.Client()
-client.PatchPort(device, port, is_output, action, universe, PatchPortCallback)
-wrapper.Run()
+  device = args.device
+  port = args.port
+  is_output = args.mode == 'output'
+  action = OlaClient.PATCH if args.action == 'patch' else OlaClient.UNPATCH
+  universe = args.universe
+
+  global wrapper
+  wrapper = ClientWrapper()
+  client = wrapper.Client()
+  client.PatchPort(device, port, is_output, action, universe, PatchPortCallback)
+  wrapper.Run()
+
+
+if __name__ == '__main__':
+  main()
