@@ -5,7 +5,7 @@ EXTRA_DIST += \
 dist_noinst_DATA += \
     tools/ola_trigger/contrib/mac_itunes.conf \
     tools/ola_trigger/contrib/mac_volume.conf \
-    tools/ola_trigger/contrib/philips_hue_lux.conf \
+    tools/ola_trigger/contrib/philips_hue_osram_lightify.conf \
     tools/ola_trigger/example.conf \
     tools/ola_trigger/test_file.conf
 
