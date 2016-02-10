@@ -50,6 +50,9 @@ module.exports = function(grunt) {
       }
     },
     concat: {
+      options: {
+        stripBanners: true
+      },
       build: {
         src: targets.js,
         dest: '../../olad/www/new/js/app.js'
