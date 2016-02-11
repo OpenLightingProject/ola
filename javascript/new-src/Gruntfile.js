@@ -74,8 +74,7 @@ module.exports = function(grunt) {
         banner: license_banner,
         stripBanners: {
           block: false
-        },
-        footer: '\n'
+        }
       },
       build: {
         src: targets.js_src,
