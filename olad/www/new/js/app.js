@@ -87,6 +87,7 @@ ola.controller('menuCtrl', ['$scope', '$ola', '$interval', '$location',
     getData();
     $interval(getData, 10000);
   }]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('patchUniverseCtrl',
@@ -98,6 +99,7 @@ ola.controller('patchUniverseCtrl',
       //TODO(Dave_o): implement me!
     }
   ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('rdmUniverseCtrl',
@@ -109,6 +111,7 @@ ola.controller('rdmUniverseCtrl',
       $scope.Universe = $routeParams.id;
     }
   ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('universeCtrl',
@@ -141,6 +144,7 @@ ola.controller('universeCtrl',
       };
     }
   ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('faderUniverseCtrl',
@@ -242,6 +246,7 @@ ola.controller('faderUniverseCtrl',
       });
     }
   ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('keypadUniverseCtrl',
@@ -342,6 +347,7 @@ ola.controller('keypadUniverseCtrl',
       };
     }
   ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('pluginsCtrl',
@@ -454,6 +460,7 @@ ola.controller('addUniverseCtrl', ['$scope', '$ola', '$window', '$location',
     };
   }
 ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('pluginInfoCtrl',
@@ -484,6 +491,7 @@ ola.controller('pluginInfoCtrl',
       };
     }
   ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('settingUniverseCtrl',
@@ -548,6 +556,7 @@ ola.controller('settingUniverseCtrl',
       };
     }
   ]);
+
 /*jshint browser: true, jquery: true */
 /* global ola */
 ola.controller('headerControl',
@@ -569,6 +578,7 @@ ola.controller('headerControl',
       $scope.header.tab = hash.replace(/#\/universe\/[0-9]+\/?/, '');
     }
   ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('overviewCtrl',
@@ -595,6 +605,7 @@ ola.controller('overviewCtrl',
       };
     }
   ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.constant('OLA', {
@@ -603,6 +614,7 @@ ola.constant('OLA', {
   'MIN_CHANNEL_VALUE': 0,
   'MAX_CHANNEL_VALUE': 255
 });
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 // TODO(Dave_o): split this up further
@@ -948,6 +960,7 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
     };
   }
 ]);
+
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.filter('startFrom', function() {
