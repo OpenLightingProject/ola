@@ -21,7 +21,7 @@ var license_banner =
 
 // array of source files to concat
 var targets = {
-  js: [
+  js_src: [
     'src/app.js',
     'src/controllers/menu.js',
     'src/controllers/patch_universe.js',
@@ -48,7 +48,7 @@ var targets = {
 };
 
 // create array with linting targets
-targets.linting = targets.js.concat(targets.js_dev);
+targets.linting = targets.js_src.concat(targets.js_dev);
 
 // create array with targets for "watch"
 targets.watching = targets.linting.concat(targets.css);
@@ -78,7 +78,7 @@ module.exports = function(grunt) {
         footer: '\n'
       },
       build: {
-        src: targets.js,
+        src: targets.js_src,
         dest: '../../olad/www/new/js/app.js'
       }
     },
