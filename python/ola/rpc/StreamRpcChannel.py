@@ -240,7 +240,7 @@ class StreamRpcChannel(service.RpcChannel):
         if not raw_header:
           # not enough data yet
           return
-        header = struct.unpack('<L', raw_header)[0]
+        header = struct.unpack('=L', raw_header)[0]
         version, size = self._DecodeHeader(header)
 
         if version != self.PROTOCOL_VERSION:
