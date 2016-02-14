@@ -14,6 +14,9 @@
  * @namespace ola::e133
  * @brief E1.33 (RDMNet)
  *
+ * @namespace ola::file
+ * @brief File helper functions.
+ *
  * @namespace ola::io
  * @brief Classes for general I/O and event handling.
  *
@@ -95,9 +98,6 @@
  * @namespace ola::plugin::usbdmx
  * @brief The plugin for hardware using libusb.
  *
- * @namespace ola::plugin::usbdmx::jarule
- * @brief Ja Rule code.
- *
  * @namespace ola::plugin::usbpro
  * @brief Code for Enttec USB Pro devices and others using the same protocol.
  *
@@ -110,6 +110,12 @@
  * @namespace ola::stl
  * @brief STL Helper functions.
  *
+ * @namespace ola::strings
+ * @brief String helper and formatting functions.
+ *
+ * @namespace ola::system
+ * @brief System helper functions (Load Average).
+ *
  * @namespace ola::testing
  * @brief Code used for unit testing.
  *
@@ -119,9 +125,12 @@
  * @namespace ola::timecode
  * @brief Timecode
  *
+ * @namespace ola::usb
+ * @brief USB %device drivers.
+ *
+ * @namespace ola::utils
+ * @brief General numeric helper functions.
+ *
  * @namespace ola::web
  * @brief Classes to deal with web services.
- *
- * @namespace ola::usb
- * @brief USB Device drivers.
  */
