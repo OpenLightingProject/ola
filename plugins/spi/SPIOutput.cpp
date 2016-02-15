@@ -251,8 +251,7 @@ bool SPIOutput::SetStartAddress(uint16_t address) {
 
 string SPIOutput::Description() const {
   std::ostringstream str;
-  str << m_spi_device_name << ", output "
-      << static_cast<int>(m_output_number) << ", "
+  str << "Output " << static_cast<int>(m_output_number) << ", "
       << m_personality_manager->ActivePersonalityDescription() << ", "
       << m_personality_manager->ActivePersonalityFootprint()
       << " slots @ " << m_start_address << ". (" << m_uid << ")";
@@ -263,8 +262,9 @@ string SPIOutput::Description() const {
  * Send DMX data over SPI.
  */
 bool SPIOutput::WriteDMX(const DmxBuffer &buffer) {
-  if (m_identify_mode)
+  if (m_identify_mode) {
     return true;
+  }
   return InternalWriteDMX(buffer);
 }
 
@@ -327,8 +327,9 @@ void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   // for part of it
   const unsigned int output_length = m_pixel_count * LPD8806_SLOTS_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length);
-  if (!output)
+  if (!output) {
     return;
+  }
 
   unsigned int new_length = output_length;
   buffer.GetRange(m_start_address - 1, output, &new_length);
@@ -347,8 +348,9 @@ void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
 
   const unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, length);
-  if (!output)
+  if (!output) {
     return;
+  }
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     memcpy(output + (i * WS2801_SLOTS_PER_PIXEL), pixel_data,
@@ -435,8 +437,9 @@ void SPIOutput::IndividualP9813Control(const DmxBuffer &buffer) {
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
                                         latch_bytes);
 
-  if (!output)
+  if (!output) {
     return;
+  }
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     // Convert RGB to P9813 Pixel
@@ -479,8 +482,9 @@ void SPIOutput::CombinedP9813Control(const DmxBuffer &buffer) {
 
   const unsigned int length = m_pixel_count * P9813_SPI_BYTES_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, length, latch_bytes);
-  if (!output)
+  if (!output) {
     return;
+  }
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     memcpy(&output[(i + 1) * P9813_SPI_BYTES_PER_PIXEL], pixel_data,
