@@ -88,13 +88,13 @@ void SPIOutputTest::testDescription() {
   SPIOutput output2(m_uid, &backend, options);
 
   OLA_ASSERT_EQ(
-      string("test, output 0, WS2801 Individual Control, 75 slots @ 1."
+      string("Output 0, WS2801 Individual Control, 75 slots @ 1."
              " (707a:00000000)"),
       output1.Description());
   OLA_ASSERT_EQ(static_cast<uint16_t>(1), output1.GetStartAddress());
   OLA_ASSERT_EQ(static_cast<uint8_t>(1), output1.GetPersonality());
   OLA_ASSERT_EQ(
-      string("test, output 1, WS2801 Individual Control, 96 slots @ 1."
+      string("Output 1, WS2801 Individual Control, 96 slots @ 1."
              " (707a:00000000)"),
       output2.Description());
 
@@ -102,7 +102,7 @@ void SPIOutputTest::testDescription() {
   output1.SetStartAddress(10);
   output1.SetPersonality(3);
   OLA_ASSERT_EQ(
-      string("test, output 0, LPD8806 Individual Control, 75 slots @ 10."
+      string("Output 0, LPD8806 Individual Control, 75 slots @ 10."
              " (707a:00000000)"),
       output1.Description());
   OLA_ASSERT_EQ(static_cast<uint16_t>(10), output1.GetStartAddress());
