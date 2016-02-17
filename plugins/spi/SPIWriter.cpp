@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/ioctl.h>
 #include <linux/spi/spidev.h>
 #include <stdlib.h>
 #include <string.h>
