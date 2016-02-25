@@ -40,13 +40,13 @@ class ActionTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testVariableAssignment();
-    void testVariableAssignmentInterpolation();
-    void testCommandAction();
+  void testVariableAssignment();
+  void testVariableAssignmentInterpolation();
+  void testCommandAction();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
+  void setUp() {
+    ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  }
 };
 
 
@@ -58,17 +58,17 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ActionTest);
  */
 class MockCommandAction: CommandAction {
  public:
-    MockCommandAction(const string &command,
-                      const vector<string> &args)
-      : CommandAction(command, args) {
-    }
+  MockCommandAction(const string &command,
+                    const vector<string> &args)
+    : CommandAction(command, args) {
+  }
 
-    void Execute(Context *context, uint8_t slot_value);
-    void CheckArgs(const ola::testing::SourceLine &source_line,
-                   const char* args[]);
+  void Execute(Context *context, uint8_t slot_value);
+  void CheckArgs(const ola::testing::SourceLine &source_line,
+                 const char* args[]);
 
  private:
-    vector<string> m_interpolated_args;
+  vector<string> m_interpolated_args;
 };
 
 
@@ -80,8 +80,9 @@ void MockCommandAction::Execute(Context *context, uint8_t) {
 
   char **args = BuildArgList(context);
   char **ptr = args;
-  while (*ptr)
+  while (*ptr) {
     m_interpolated_args.push_back(string(*ptr++));
+  }
   FreeArgList(args);
 }
 

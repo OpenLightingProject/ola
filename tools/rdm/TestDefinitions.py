@@ -15,10 +15,6 @@
 # TestDefinitions.py
 # Copyright (C) 2010 Simon Newton
 
-'''This defines all the tests for RDM responders.'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import datetime
 import operator
 import struct
@@ -44,6 +40,11 @@ from ola.UID import UID
 from TestHelpers import ContainsUnprintable
 import TestMixins
 from TestMixins import MAX_DMX_ADDRESS
+
+'''This defines all the tests for RDM responders.'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
 
 MAX_PERSONALITY_NUMBER = 255
 
@@ -534,8 +535,8 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
 
   def VerifyResult(self, unused_response, fields):
     """Check the footprint, personalities & sub devices."""
-    for property in self.PROVIDES:
-      self.SetPropertyFromDict(fields, property)
+    for property_name in self.PROVIDES:
+      self.SetPropertyFromDict(fields, property_name)
 
     footprint = fields['dmx_footprint']
     if footprint > MAX_DMX_ADDRESS:
@@ -2216,9 +2217,10 @@ class GetSlotInfo(OptionalParameterTestFixture):
 
       if slot['slot_type'] == RDMConstants.SLOT_TYPES['ST_PRIMARY']:
         # slot_label_id must be valid
-        if ((slot['slot_label_id'] not in RDMConstants.SLOT_DEFINITION_TO_NAME)
-            and (slot['slot_label_id'] < RDM_MANUFACTURER_SD_MIN or
-                 slot['slot_label_id'] > RDM_MANUFACTURER_SD_MAX)):
+        if ((slot['slot_label_id'] not in
+             RDMConstants.SLOT_DEFINITION_TO_NAME) and
+            (slot['slot_label_id'] < RDM_MANUFACTURER_SD_MIN or
+             slot['slot_label_id'] > RDM_MANUFACTURER_SD_MAX)):
           self.AddWarning('Unknown slot id %d for slot %d' %
                           (slot['slot_label_id'], slot['slot_offset']))
         if (slot['slot_label_id'] ==
@@ -3622,11 +3624,11 @@ class GetRealTimeClock(OptionalParameterTestFixture):
     if not response.WasAcked():
       return
 
-    for field, range in self.ALLOWED_RANGES.iteritems():
+    for field, valid_range in self.ALLOWED_RANGES.iteritems():
       value = fields[field]
-      if value < range[0] or value > range[1]:
+      if value < valid_range[0] or value > valid_range[1]:
         self.AddWarning('%s in GET %s is out of range, was %d, expected %s' %
-                        (field, self.PID, value, range))
+                        (field, self.PID, value, valid_range))
 
 
 class GetRealTimeClockWithData(TestMixins.GetWithDataMixin,

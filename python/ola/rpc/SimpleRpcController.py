@@ -15,11 +15,11 @@
 # SimpleRpcController.py
 # Copyright (C) 2005 Simon Newton
 
+from google.protobuf import service
+
 """An implementation of the RpcController interface."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
-
-from google.protobuf import service
 
 
 class SimpleRpcController(service.RpcController):

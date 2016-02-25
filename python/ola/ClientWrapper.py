@@ -15,10 +15,6 @@
 # ClientWrapper.py
 # Copyright (C) 2005 Simon Newton
 
-"""A simple client wrapper for the OlaClient."""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import array
 import datetime
 import fcntl
@@ -30,6 +26,10 @@ import termios
 import threading
 import traceback
 from ola.OlaClient import OlaClient
+
+"""A simple client wrapper for the OlaClient."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class _Event(object):

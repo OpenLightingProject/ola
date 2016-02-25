@@ -16,11 +16,6 @@
 # rdm_compare.py
 # Copyright (C) 2012 Simon Newton
 
-'''Compare the RDM configurations saves with rdm_snapshot.py'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
 import getopt
 import os
 import pickle
@@ -29,6 +24,10 @@ import tempfile
 import textwrap
 import webbrowser
 from ola.UID import UID
+
+'''Compare the RDM configurations saves with rdm_snapshot.py'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class Error(Exception):
