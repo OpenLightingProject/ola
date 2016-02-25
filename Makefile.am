@@ -186,7 +186,6 @@ EXTRA_DIST += \
   config/ac_python_devel.m4 \
   config/ac_saleae.m4 \
   config/ax_python_module.m4 \
-  config/cppunit.m4 \
   config/maven.m4 \
   config/ola.m4 \
   config/ola_version.m4 \
