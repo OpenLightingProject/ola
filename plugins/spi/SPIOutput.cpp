@@ -325,7 +325,7 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
 void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   // We always check out the entire string length, even if we only have data
   // for part of it
-  const unsigned int output_length = m_pixel_count * LPD8806_SLOTS_PER_PIXEL;
+  const unsigned int output_length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length);
   if (!output) {
     return;
