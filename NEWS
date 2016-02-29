@@ -4,12 +4,6 @@ x/y/2016 ola-0.10.1
  * Add Stellascapes Lightwidgets Number1 PIDs
  * Add a warning to the Web UIs if Javascript is disabled.
 
- API:
- * 
-
- RDM Tests:
- * 
-
  Bugs:
  * Check if a device exists before trying to acquire a UUCP lock file for it #1006
  * Fix the build on FreeBSD
@@ -18,9 +12,7 @@ x/y/2016 ola-0.10.1
  * Fix a configure warning on OpenBSD
  * Allow you to set DMX address of a one slot device to 512 #1042. The JSON API now returns min and max inclusive
  * Switch to pkg-config for cppunit detection #1043
-
- Internal:
- *
+ * Fix the error dialog not displaying in the old web UI
 
 3/1/2016 ola-0.10.0
  Features:
