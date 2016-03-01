@@ -25,6 +25,7 @@
 #include "ola/messaging/Descriptor.h"
 #include "ola/messaging/Message.h"
 #include "ola/messaging/MessagePrinter.h"
+#include "ola/network/NetworkUtils.h"
 #include "ola/rdm/UID.h"
 #include "ola/testing/TestUtils.h"
 
@@ -96,7 +97,9 @@ void GenericMessagePrinterTest::testSimplePrinter() {
   // try a simple print first
   vector<const ola::messaging::MessageFieldInterface*> fields;
   fields.push_back(new BoolMessageField(&bool_descriptor, false));
-  fields.push_back(new IPV4MessageField(&ipv4_descriptor, 0x0100000a));
+  fields.push_back(
+      new IPV4MessageField(&ipv4_descriptor,
+                           ola::network::HostToNetwork(0x0a000001)));
   fields.push_back(new UIDMessageField(&uid_descriptor, UID(0x7a70, 1)));
   fields.push_back(new StringMessageField(&string_descriptor, "foobar"));
   fields.push_back(new UInt32MessageField(&uint32_descriptor, 42));

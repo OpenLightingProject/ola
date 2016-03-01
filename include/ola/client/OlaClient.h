@@ -130,6 +130,16 @@ class OlaClient {
                            CandidatePortsCallback *callback);
 
   /**
+   * @brief Set the state of a plugin.
+   * @param plugin_id the id of the plugin to set the state of.
+   * @param state the state to set the plugin to
+   * @param callback the SetCallback to invoke upon completion.
+   */
+  void SetPluginState(ola_plugin_id plugin_id,
+                      bool state,
+                      SetCallback *callback);
+
+  /**
    * @brief Send a device config request.
    * @param device_alias the device alias of the device to configure.
    * @param msg the blob of data to send to the device.

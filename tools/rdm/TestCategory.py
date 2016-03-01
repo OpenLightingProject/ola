@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -29,6 +28,7 @@ class TestCategory(object):
     'PRODUCT_INFORMATION': 'Product Information',
     'DMX_SETUP': 'DMX512 Setup',
     'DIMMER_SETTINGS': 'Dimmer Settings',
+    'IP_DNS_CONFIGURATION': 'IP and DNS Configuration',
     'SENSORS': 'Sensors',
     'POWER_LAMP_SETTINGS': 'Power / Lamp Settings',
     'DISPLAY_SETTINGS': 'Display Settings',

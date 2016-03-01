@@ -1,29 +1,133 @@
-x/y/2015 ola-0.9.6
+29/2/2016 ola-0.10.1
  Features:
- * Default to using epoll() and kqueue() rather than select() if they exist.
- * Default to the async libusb implementation in the usbdmx plugin.
- * Added support for the APA102 family of SPI pixels.
+ * Add support for Osram Lightify products via a Philips Hue bridge
+ * Add Stellascapes Lightwidgets Number1 PIDs
+ * Add a warning to the Web UIs if Javascript is disabled.
 
- API:
- * Python: callbacks are now also systematically called when the RPC calls fail.
+ Bugs:
+ * Check if a device exists before trying to acquire a UUCP lock file for it #1006
+ * Fix the build on FreeBSD
+ * Fix the build when using the musl C library
+ * Python RpcChannel incorrectly decodes message header on big-endian machines
+ * Fix a configure warning on OpenBSD
+ * Allow you to set DMX address of a one slot device to 512 #1042. The JSON API now returns min and max inclusive
+ * Switch to pkg-config for cppunit detection #1043
+
+3/1/2016 ola-0.10.0
+ Features:
+ * Add better logging for open()
+ * Added more man pages.
+ * Added a DMX keypad to the new web UI
+ * OLA Trigger config to control Philips Hue Lux lights
+ * Added hotplug support for usbdmx devices
+ * Add support for JaRule widgets.
+ * Add UUCP locking support #888
+ * Fix issues encountered when packaging for openSUSE and fedora #904
+ * Add support for the Nodle U1 widget
+ * Add validation of OSC output format types
+ * Add an example Stdin handler to the documentation
+ * Increase the port limit for E1.31 up to 512 from 128
 
  RDM Tests:
- *
+ * Add some more E1.37-2 tests
+ * Fix event handling in the RDM test server #948
+ * Mute all devices before running the DUB tests
+ * Add timing stats to the RDM responder tests
+
+ Bugs:
+ * Remove a number of obsolete Autotools macros, we now require Automake 1.11.2
+   #931
+ * Work around the case where an Enttec USB Pro widget doesn't respond #341
+ * Fix a crash if a client disconnects during RDM discovery #950
+ * Stop e131_transmit_test from segfaulting #966
+ * Fix the build on Windows
+ * Split libolaserver into two parts to stop dpkg-shlibdeps warnings
+
+ Internal:
+ * All the Python code now passes flake8 checking
+ * The new web UI now passes jscs checking
+ * Switched to using the new command line flags module in ola_rdm_discover
+ * Move the ACN code to libs/acn
+
+30/9/2015 ola-0.9.8
+ Features:
+ * Add support for the DMXter4A
+ * Tidy the output of the Python ola_rdm_get for supported_parameters
+
+ RDM Tests:
+ * Fix a bug related to split levels not being supported in the dimmer PIDs
+ * Allow NR_UNSUPPORTED_COMMAND_CLASS for SET DMX_ADDRESS when the address is
+   not required
+ * Switch from a warning to an advisory if it's a manufacturer specific use in
+   GetSensorDefinition
+ * Fix some other minor RDM test bugs
+
+ Bugs:
+ * Fix some Xcode build errors
+ * Fix the build on Windows
+ * Fix a bug in Artnet universe mapping #856
+ * NACK requests for IPv4 default route PID with data
+ * NACK with format error requests for DNS PIDs with data
+ * Fix a bug regarding stack traces error messages with Python RDM gets #884
+ * Support 0.9.43 of microhttpd
+
+13/7/2015 ola-0.9.7
+ Bugs:
+ * RDM NACK codes displayed with incorrect byte ordering in the C++ client #812
+ * Fix endian issues on s390x and PPC architectures.
+ * Fix ShowNet endian issues.
+ * Add some missing files to the tarball.
+ * Restore binary compatability with 0.9.5 #826
+
+30/6/2015 ola-0.9.6
+ Features:
+ * Default to using epoll() rather than select() if it exists,
+ * Default to the async libusb implementation in the usbdmx plugin.
+ * Added support for the APA102 family of SPI pixels.
+ * Allow plugins to be enabled/disabled from the new web UI & CLI tools #682.
+ * Add an option to display the frame and timing data in the RDM CLI tools
+   where available.
+ * Add additional C++ client documentation and examples.
+ * Support an overrides.proto file to load system specific PID data #732.
+ * Respect UUCP lock files before opening devices #716.
+ * Initial partial E1.37-2 support in the web UI.
+
+ API:
+ * Python: Fix a bug where callbacks weren't run if the operation failed.
+ * Python: improve Python 3 compatability.
+ * Add patched ports in Universe protobuf message.
+ * Python: Add a patch/unpatch example.
+ * Python Add GetCandidatePorts and an example.
+
+ RDM Tests:
+ * Initial E1.37-2 tests.
+ * Fix a bug in the SetDeviceHours test for devices that NAck set DEVICE_HOURS
+   with a NR_WRITE_PROTECT.
 
  Bugs:
  * Fix port with unset universe appearing as bound to universe 0 in the Python
    client.
  * Ensure universe names and LTP priorities are always written to the config
-   file #661
+   file #661.
+ * Stop tests from failing when no non-loopback interfaces are present #763
+   Debian #769670.
+ * Fix various configure script behaviour issues #773.
+ * Fix build issues with GCC-5 #765 Debian #778038.
+ * Restore LIBS when we can't find the Saleae library during configure.
+ * Fix the async libusb Eurolite Pro implementation.
 
  Internal:
- *
+ * Rename the method Source to ConfigLocation for Preference classes and
+   associated changes.
+ * Major cleanup of RDM code.
+ * Switch to using pthread_equal rather than operator==.
+ * Switch to using Dot for Doxygen diagrams where present.
 
 1/3/2015 ola-0.9.5
  Features:
  * Work on a new Web-UI which is built with AngularJS
  * Added E1.37-2 support to the SPI plugin RDM responder
- * USB DMX plug now works on Windows (Scanlime Fadcandy tested working)
+ * USB DMX plug now works on Windows (Scanlime Fadecandy tested working)
  * Update the deb package's udev rules
 
  Bugs:

@@ -18,15 +18,14 @@
 
 """Test to check we can load the Pid data in Python."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import os
-import sys
 import unittest
 from ola import PidStore
 
-class PidDataTest(unittest.TestCase):
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
+
+class PidDataTest(unittest.TestCase):
   # Implement assertIsNotNone for Python runtimes < 2.7 or < 3.1
   # Copied from:
   # https://github.com/nvie/rq/commit/f5951900c8e79a116c59470b8f5b2f544000bf1f
@@ -36,7 +35,7 @@ class PidDataTest(unittest.TestCase):
 
   def testLoad(self):
     store = PidStore.GetStore(os.environ['PIDDATA'])
-    self.assertIsNotNone(store);
+    self.assertIsNotNone(store)
 
     pids = store.Pids()
     self.assertNotEqual(0, len(pids))

@@ -65,8 +65,9 @@ Dmx4LinuxPlugin::~Dmx4LinuxPlugin() {
  * Start the plugin
  */
 bool Dmx4LinuxPlugin::StartHook() {
-  if (!SetupDescriptors())
+  if (!SetupDescriptors()) {
     return false;
+  }
 
   if (!SetupDevices()) {
     CleanupDescriptors();
@@ -131,7 +132,7 @@ int Dmx4LinuxPlugin::SocketReady() {
   int ret;
 
   if (lseek(m_in_descriptor->ReadDescriptor(), 0, SEEK_SET) != 0) {
-    OLA_WARN << "failed to seek: " << strerror(errno);
+    OLA_WARN << "Failed to seek: " << strerror(errno);
     return -1;
   }
   ret = m_in_descriptor->Receive(m_in_buffer,
@@ -153,20 +154,23 @@ int Dmx4LinuxPlugin::SocketReady() {
 bool Dmx4LinuxPlugin::SetDefaultPreferences() {
   bool save = false;
 
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   save |= m_preferences->SetDefaultValue(IN_DEV_KEY, StringValidator(),
                                          DMX4LINUX_IN_DEVICE);
   save |= m_preferences->SetDefaultValue(OUT_DEV_KEY, StringValidator(),
                                          DMX4LINUX_OUT_DEVICE);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   if (m_preferences->GetValue(IN_DEV_KEY).empty() ||
-      m_preferences->GetValue(OUT_DEV_KEY).empty())
+      m_preferences->GetValue(OUT_DEV_KEY).empty()) {
     return false;
+  }
 
   m_in_dev = m_preferences->GetValue(IN_DEV_KEY);
   m_out_dev = m_preferences->GetValue(OUT_DEV_KEY);
@@ -182,14 +186,14 @@ bool Dmx4LinuxPlugin::SetupDescriptors() {
     int fd = open(m_out_dev.c_str(), O_WRONLY);
 
     if (fd < 0) {
-      OLA_WARN << "failed to open " << m_out_dev << " " << strerror(errno);
+      OLA_WARN << "Failed to open " << m_out_dev << " " << strerror(errno);
       return false;
     }
     m_out_descriptor = new Dmx4LinuxSocket(fd);
 
     fd = open(m_in_dev.c_str(), O_RDONLY | O_NONBLOCK);
     if (fd < 0) {
-      OLA_WARN << "failed to open " << m_in_dev << " " << strerror(errno);
+      OLA_WARN << "Failed to open " << m_in_dev << " " << strerror(errno);
       CleanupDescriptors();
       return false;
     }

@@ -12,5 +12,7 @@ plugins_pathport_libolapathport_la_SOURCES = \
     plugins/pathport/PathportPlugin.h \
     plugins/pathport/PathportPort.cpp \
     plugins/pathport/PathportPort.h
-plugins_pathport_libolapathport_la_LIBADD = common/libolacommon.la
+plugins_pathport_libolapathport_la_LIBADD = \
+    common/libolacommon.la \
+    olad/plugin_api/libolaserverplugininterface.la
 endif

@@ -64,10 +64,11 @@ bool UsbDmxPlugin::StartHook() {
   std::auto_ptr<PluginImplInterface> impl;
   if (FLAGS_use_async_libusb) {
     impl.reset(
-        new AsyncPluginImpl(m_plugin_adaptor, this, debug_level));
+        new AsyncPluginImpl(m_plugin_adaptor, this, debug_level,
+                            m_preferences));
   } else {
     impl.reset(
-        new SyncPluginImpl(m_plugin_adaptor, this, debug_level));
+        new SyncPluginImpl(m_plugin_adaptor, this, debug_level, m_preferences));
   }
 
   if (impl->Start()) {
@@ -91,27 +92,42 @@ string UsbDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, Eurolite, Fadecandy, Sunlite USBDMX2 & Velleman K8062.\n"
+"Anyma uDMX, DMXControl Projects e.V. Nodle U1, Eurolite, Fadecandy, "
+"Sunlite USBDMX2 and Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"
 "libusb_debug_level = {0,1,2,3,4}\n"
 "The debug level for libusb, see http://libusb.sourceforge.net/api-1.0/ .\n"
 "0 = No logging, 4 = Verbose debug.\n"
+"\n"
+"nodle-<serial>-mode = {0,1,2,3,4,5,6,7}\n"
+"The mode for the Nodle U1 interface with serial number <serial> "
+"to operate in. Default = 6\n"
+"0 - Standby\n"
+"1 - DMX In -> DMX Out\n"
+"2 - PC Out -> DMX Out\n"
+"3 - DMX In + PC Out -> DMX Out\n"
+"4 - DMX In -> PC In\n"
+"5 - DMX In -> DMX Out & DMX In -> PC In\n"
+"6 - PC Out -> DMX Out & DMX In -> PC In\n"
+"7 - DMX In + PC Out -> DMX Out & DMX In -> PC In\n"
 "\n";
 }
 
 bool UsbDmxPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = m_preferences->SetDefaultValue(
       LIBUSB_DEBUG_LEVEL_KEY,
       UIntValidator(LIBUSB_DEFAULT_DEBUG_LEVEL, LIBUSB_MAX_DEBUG_LEVEL),
       LIBUSB_DEFAULT_DEBUG_LEVEL);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   return true;
 }

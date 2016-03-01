@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -38,6 +39,7 @@ namespace plugin {
 namespace osc {
 
 using ola::network::IPV4SocketAddress;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -90,8 +92,9 @@ bool OSCPlugin::StartHook() {
     vector<string>::const_iterator iter = tokens.begin();
     for (; iter != tokens.end(); ++iter) {
       OSCTarget target;
-      if (ExtractOSCTarget(*iter, &target))
+      if (ExtractOSCTarget(*iter, &target)) {
         port_config.targets.push_back(target);
+      }
     }
 
     port_configs.push_back(port_config);
@@ -169,8 +172,9 @@ string OSCPlugin::Description() const {
  * Set the default preferences for the OSC plugin.
  */
 bool OSCPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
 
@@ -192,6 +196,15 @@ bool OSCPlugin::SetDefaultPreferences() {
                                            DEFAULT_ADDRESS_TEMPLATE);
   }
 
+  set<string> valid_formats;
+  valid_formats.insert(BLOB_FORMAT);
+  valid_formats.insert(FLOAT_ARRAY_FORMAT);
+  valid_formats.insert(FLOAT_INDIVIDUAL_FORMAT);
+  valid_formats.insert(INT_ARRAY_FORMAT);
+  valid_formats.insert(INT_INDIVIDUAL_FORMAT);
+
+  SetValidator<string> format_validator = SetValidator<string>(valid_formats);
+
   for (unsigned int i = 0; i < GetPortCount(OUTPUT_PORT_COUNT_KEY); i++) {
     save |= m_preferences->SetDefaultValue(
         ExpandTemplate(PORT_TARGETS_TEMPLATE, i),
@@ -200,11 +213,13 @@ bool OSCPlugin::SetDefaultPreferences() {
 
     save |= m_preferences->SetDefaultValue(
         ExpandTemplate(PORT_FORMAT_TEMPLATE, i),
-        StringValidator(true), BLOB_FORMAT);
+        format_validator,
+        BLOB_FORMAT);
   }
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   return true;
 }

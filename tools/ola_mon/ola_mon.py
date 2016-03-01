@@ -21,7 +21,6 @@ import httplib
 import rrdtool
 import time
 import os.path
-import signal
 import socket
 import sys
 import textwrap
@@ -29,6 +28,7 @@ import threading
 
 DEFAULT_CONFIG = 'ola_mon.conf'
 DEFAULT_PORT = 9090
+
 
 class OlaFetcher(object):
   def __init__(self, host, port):
@@ -48,7 +48,7 @@ class OlaFetcher(object):
 
   def _FetchDebug(self):
     """Fetch the contents of the debug page."""
-    connection = httplib.HTTPConnection('%s:%d' %(self._host, self._port))
+    connection = httplib.HTTPConnection('%s:%d' % (self._host, self._port))
     try:
       connection.request('GET', '/debug')
     except socket.error:
@@ -69,13 +69,13 @@ class OlaFetcher(object):
     for line in contents.split('\n'):
       if ':' not in line:
         continue
-      var, data  = line.split(':', 1)
+      var, data = line.split(':', 1)
       var = var.strip()
       data = data.strip()
 
       if data.startswith('map:'):
-        #label, key_values = data.split(' ', 1)
-        #_, label_name = label.split(':', 1)
+        # label, key_values = data.split(' ', 1)
+        # _, label_name = label.split(':', 1)
         pass
       else:
         variables[var] = data
@@ -96,7 +96,6 @@ class RRDStore(object):
                      '--step=1',
                      data_sources,
                      'RRA:AVERAGE:0.5:1:300')
-                     #'RRA:AVERAGE:0.5:10:300')
 
   def Update(self, timestamp, data):
     args = ['%d' % timestamp]
@@ -111,7 +110,7 @@ class Monitor(threading.Thread):
     threading.Thread.__init__(self)
     self._fetcher = OlaFetcher(host, port)
     rrd_file = os.path.join(rrd_directory, '%s.rrd' % host)
-    self._store = RRDStore(variables, rrd_file);
+    self._store = RRDStore(variables, rrd_file)
     self._terminate = False
 
   def Terminate(self):
@@ -158,7 +157,7 @@ class Grapher(threading.Thread):
                       (variable, self._rrd_file, variable),
                     'LINE1:%s#FF0000' % variable)
 
-    variables = set([ x for _, x, _ in self._variables])
+    variables = set([x for _, x, _ in self._variables])
     for cdef_name, function, title in self._cdefs:
       output_file = os.path.join(self._directory, '%s.png' % cdef_name)
       values = function.split(',')
@@ -176,7 +175,6 @@ class Grapher(threading.Thread):
                     'CDEF:%s=%s' %
                       (cdef_name, function),
                     'LINE1:%s#FF0000' % cdef_name)
-
 
 
 def LoadConfig(config_file):

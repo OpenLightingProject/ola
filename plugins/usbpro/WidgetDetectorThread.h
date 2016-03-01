@@ -85,8 +85,6 @@ class WidgetDetectorThread: public ola::thread::Thread {
     void SetDevicePrefixes(const std::vector<std::string> &prefixes);
     // Must be called before Run()
     void SetIgnoredDevices(const std::vector<std::string> &devices);
-    // Must be called before Run()
-    void SetUUCPLockFilePaths(const std::vector<std::string> &paths);
 
     // Start the thread, this will call the SuccessHandler whenever a new
     // Widget is located.
@@ -114,7 +112,6 @@ class WidgetDetectorThread: public ola::thread::Thread {
     std::string m_directory;  // directory to look for widgets in
     std::vector<std::string> m_prefixes;  // prefixes to try
     std::set<std::string> m_ignored_devices;  // devices to ignore
-    std::vector<std::string> m_uucp_lock_paths;  // uucp lock path
     NewWidgetHandler *m_handler;
     bool m_is_running;
     unsigned int m_usb_pro_timeout;
@@ -155,7 +152,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
     static const unsigned int SCAN_INTERVAL_MS = 20000;
 
     // This is how device identification is done, see
-    // http://opendmx.net/index.php/USB_Protocol_Extensions
+    // https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
     // OPEN_LIGHTING_ESTA_CODE is in Constants.h
 
     // DmxKing Device Models
@@ -176,6 +173,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // Goddard device models
     static const uint16_t GODDARD_DMXTER4_ID = 0x444d;
     static const uint16_t GODDARD_MINI_DMXTER4_ID = 0x4d49;
+    static const uint16_t GODDARD_DMXTER4A_ID = 0x3441;
 
     // Open Lighting device models
     static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;

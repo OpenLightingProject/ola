@@ -1,5 +1,5 @@
-# Copied from the protobuf package, http://code.google.com/p/protobuf/
-# HAVE_UNORDERED_MAP added to match docs
+# Copied from the protobuf package, https://github.com/google/protobuf
+# HAVE_UNORDERED_MAP added to match docs, and updated macros to avoid errors
 #
 # We check two things: where the include file is for
 # unordered_map/hash_map (we prefer the first form), and what
@@ -14,28 +14,28 @@
 AC_DEFUN([AC_CXX_STL_HASH],
   [
    AC_MSG_CHECKING(the location of hash_map)
-   AC_LANG_SAVE
-   AC_LANG_CPLUSPLUS
+   AC_LANG_PUSH(C++)
    ac_cv_cxx_hash_map=""
    # First try unordered_map, but not on gcc's before 4.2 -- I've
    # seen unexplainable unordered_map bugs with -O2 on older gcc's.
-   AC_TRY_COMPILE([#if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2))
-                   # error GCC too old for unordered_map
-                   #endif
-                   ],
-                   [/* no program body necessary */],
-                   [stl_hash_old_gcc=no],
-                   [stl_hash_old_gcc=yes])
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+                      [[#if defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 2))
+                       # error GCC too old for unordered_map
+                       #endif]],
+                      [[/* no program body necessary */]])],
+                     [stl_hash_old_gcc=no],
+                     [stl_hash_old_gcc=yes])
    for location in unordered_map tr1/unordered_map; do
      for namespace in std std::tr1; do
        if test -z "$ac_cv_cxx_hash_map" -a "$stl_hash_old_gcc" != yes; then
          # Some older gcc's have a buggy tr1, so test a bit of code.
-         AC_TRY_COMPILE([#include <$location>],
-                        [const ${namespace}::unordered_map<int, int> t;
-                         return t.find(5) == t.end();],
-                        [ac_cv_cxx_hash_map="<$location>";
-                         ac_cv_cxx_hash_namespace="$namespace";
-                         ac_cv_cxx_hash_map_class="unordered_map";])
+         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+                            [[#include <$location>]],
+                            [[const ${namespace}::unordered_map<int, int> t;
+                             return t.find(5) == t.end();]])],
+                           [ac_cv_cxx_hash_map="<$location>";
+                            ac_cv_cxx_hash_namespace="$namespace";
+                            ac_cv_cxx_hash_map_class="unordered_map";])
        fi
      done
    done
@@ -43,11 +43,12 @@ AC_DEFUN([AC_CXX_STL_HASH],
    for location in ext/hash_map hash_map; do
      for namespace in __gnu_cxx "" std stdext; do
        if test -z "$ac_cv_cxx_hash_map"; then
-         AC_TRY_COMPILE([#include <$location>],
-                        [${namespace}::hash_map<int, int> t],
-                        [ac_cv_cxx_hash_map="<$location>";
-                         ac_cv_cxx_hash_namespace="$namespace";
-                         ac_cv_cxx_hash_map_class="hash_map";])
+         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+                            [[#include <$location>]],
+                            [[${namespace}::hash_map<int, int> t]])],
+                           [ac_cv_cxx_hash_map="<$location>";
+                            ac_cv_cxx_hash_namespace="$namespace";
+                            ac_cv_cxx_hash_map_class="hash_map";])
        fi
      done
    done

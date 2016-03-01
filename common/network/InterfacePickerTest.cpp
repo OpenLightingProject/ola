@@ -63,7 +63,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
  */
 void InterfacePickerTest::testGetInterfaces() {
   auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
-  vector<Interface> interfaces = picker->GetInterfaces(false);
+  vector<Interface> interfaces = picker->GetInterfaces(true);
   OLA_ASSERT_TRUE(interfaces.size() > 0);
 
   vector<Interface>::iterator iter;

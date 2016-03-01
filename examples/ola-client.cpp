@@ -88,6 +88,7 @@ typedef struct {
   uint8_t priority_value;  // port priority value
   bool list_plugin_ids;
   bool list_universe_ids;
+  string state;      // plugin enable/disable state
 } options;
 
 
@@ -278,50 +279,15 @@ void DisplayDevices(SelectServer *ss,
   ss->Terminate();
 }
 
-
 /*
- * Called when the patch command completes.
+ * Called when a generic set command completes
  */
-void PatchComplete(SelectServer *ss, const Result &result) {
+void HandleAck(SelectServer *ss, const Result &result) {
   if (!result.Success()) {
     cerr << result.Error() << endl;
   }
   ss->Terminate();
 }
-
-/*
- * Called when the name command completes.
- */
-void UniverseNameComplete(SelectServer *ss, const Result &result) {
-  if (!result.Success()) {
-    cerr << result.Error() << endl;
-  }
-  ss->Terminate();
-}
-
-
-void UniverseMergeModeComplete(SelectServer *ss, const Result &result) {
-  if (!result.Success()) {
-    cerr << result.Error() << endl;
-  }
-  ss->Terminate();
-}
-
-
-void SendDmxComplete(SelectServer *ss, const Result &result) {
-  if (!result.Success()) {
-    cerr << result.Error() << endl;
-  }
-  ss->Terminate();
-}
-
-void SetPortPriorityComplete(SelectServer *ss, const Result &result) {
-  if (!result.Success()) {
-    cerr << result.Error() << endl;
-  }
-  ss->Terminate();
-}
-
 
 /*
  * Init options
@@ -347,33 +313,35 @@ void InitOptions(options *opts) {
  * Decide what mode we're running in
  */
 void SetMode(options *opts) {
-  opts->cmd = ola::file::FilenameFromPathOrPath(opts->cmd);
+  string cmd_name = ola::file::FilenameFromPathOrPath(opts->cmd);
+  // To skip the lt prefix during development
+  ola::StripPrefix(&cmd_name, "lt-");
 #ifdef _WIN32
   // Strip the extension
-  size_t extension = opts->cmd.find(".");
+  size_t extension = cmd_name.find(".");
   if (extension != string::npos) {
-    opts->cmd = opts->cmd.substr(0, extension);
+    cmd_name = cmd_name.substr(0, extension);
   }
 #endif
 
-  if (opts->cmd == "ola_plugin_info") {
+  if (cmd_name == "ola_plugin_info") {
     opts->m = PLUGIN_INFO;
-  } else if (opts->cmd == "ola_plugin_state") {
+  } else if (cmd_name == "ola_plugin_state") {
     opts->m = PLUGIN_STATE;
-  } else if (opts->cmd == "ola_patch") {
+  } else if (cmd_name == "ola_patch") {
     opts->m = DEVICE_PATCH;
-  } else if (opts->cmd == "ola_ptch") {
+  } else if (cmd_name == "ola_ptch") {
     // Working around Windows UAC
     opts->m = DEVICE_PATCH;
-  } else if (opts->cmd == "ola_uni_info") {
+  } else if (cmd_name == "ola_uni_info") {
     opts->m = UNIVERSE_INFO;
-  } else if (opts->cmd == "ola_uni_name") {
+  } else if (cmd_name == "ola_uni_name") {
     opts->m = UNIVERSE_NAME;
-  } else if (opts->cmd == "ola_uni_merge") {
+  } else if (cmd_name == "ola_uni_merge") {
     opts->m = UNI_MERGE;
-  } else if (opts->cmd == "ola_set_dmx") {
+  } else if (cmd_name == "ola_set_dmx") {
     opts->m = SET_DMX;
-  } else if (opts->cmd == "ola_set_priority") {
+  } else if (cmd_name == "ola_set_priority") {
     opts->m = SET_PORT_PRIORITY;
   }
 }
@@ -394,6 +362,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"ltp", no_argument, 0, 'l'},
       {"name", required_argument, 0, 'n'},
       {"plugin-id", required_argument, 0, 'p'},
+      {"state", required_argument, 0, 's'},
       {"list-plugin-ids", no_argument, 0, LIST_PLUGIN_IDS_OPTION},
       {"list-universe-ids", no_argument, 0, LIST_UNIVERSE_IDS_OPTION},
       {"universe", required_argument, 0, 'u'},
@@ -404,7 +373,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "ld:n:u:p:hv", long_options, &option_index);
+    c = getopt_long(argc, argv, "ld:n:u:p:s:hv", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -426,6 +395,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'p':
         opts->plugin_id = atoi(optarg);
+        break;
+      case 's':
+        opts->state = optarg;
         break;
       case 'u':
         opts->uni = atoi(optarg);
@@ -600,11 +572,11 @@ void DisplayPatchHelp(const options &opts) {
 void DisplayPluginInfoHelp(const options &opts) {
   cout << "Usage: " << opts.cmd << " [--plugin-id <plugin-id>]\n"
           "\n"
-          "Get info on the plugins loaded by olad. Called without arguments \n"
-          "this will\n"
+          "Get info on the plugins loaded by olad. Called without arguments"
+          " this will\n"
           "display the plugins loaded by olad. When used with --plugin-id this"
           " will\n"
-          " display the specified plugin's description.\n"
+          "display the specified plugin's description.\n"
           "\n"
           "  -h, --help                  Display this help message and exit.\n"
           "  -p, --plugin-id <plugin_id> Id of the plugin to fetch the "
@@ -619,15 +591,16 @@ void DisplayPluginInfoHelp(const options &opts) {
  */
 void DisplayPluginStateHelp(const options &opts) {
   cout << "Usage: " << opts.cmd
-       << " --plugin-id <plugin-id>\n"
+       << " --plugin-id <plugin-id> [--state <enable|disable>]\n"
           "\n"
-          "Displays the enabled/disabled state for a plugin and the list of"
+          "Displays the enabled/disabled state for a plugin and the list of "
           "plugins\n"
           "this plugin will conflict with.\n"
           "\n"
           "  -h, --help                  Display this help message and exit.\n"
           "  -p, --plugin-id <plugin-id> Id of the plugin to fetch the state "
           "of\n"
+          "  -s, --state <enable|disable> State to set a plugin to\n"
       << endl;
 }
 
@@ -665,14 +638,14 @@ void DisplayUniverseNameHelp(const options &opts) {
  * Help message for set uni merge mode
  */
 void DisplayUniverseMergeHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd << " --universe <uni> [ --ltp]\n"
+  cout << "Usage: " << opts.cmd << " --universe <uni> [--ltp]\n"
           "\n"
           "Change the merge mode for the specified universe. Without --ltp "
           "it will\n"
-          " revert to HTP mode.\n"
+          "revert to HTP mode.\n"
           "\n"
           "  -h, --help                Display this help message and exit.\n"
-          "  -l, --ltp                 Change to ltp mode.\n"
+          "  -l, --ltp                 Change to LTP mode.\n"
           "  -u, --universe <universe> Id of the universe to change.\n"
        << endl;
 }
@@ -781,7 +754,7 @@ void Patch(OlaClientWrapper *wrapper, const options &opts) {
                 opts.port_id,
                 opts.port_direction,
                 opts.patch_action, opts.uni,
-                NewSingleCallback(&PatchComplete, ss));
+                NewSingleCallback(&HandleAck, ss));
 }
 
 
@@ -813,8 +786,23 @@ int FetchPluginState(OlaClientWrapper *wrapper, const options &opts) {
     DisplayPluginStateHelp(opts);
     exit(1);
   }
-  client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
-                           NewSingleCallback(&DisplayPluginState, ss));
+  if (!opts.state.empty()) {
+    bool state;
+    if (ola::StringToBoolTolerant(opts.state, &state)) {
+      cout << "Setting state to " << (state ? "enabled" : "disabled") << endl;
+      client->SetPluginState(
+          (ola::ola_plugin_id) opts.plugin_id,
+          state,
+          NewSingleCallback(&HandleAck, ss));
+    } else {
+      cerr << "Invalid state: " << opts.state << endl;
+      DisplayPluginStateHelp(opts);
+      exit(1);
+    }
+  } else {
+    client->FetchPluginState((ola::ola_plugin_id) opts.plugin_id,
+                             NewSingleCallback(&DisplayPluginState, ss));
+  }
   return 0;
 }
 
@@ -833,7 +821,7 @@ int SetUniverseName(OlaClientWrapper *wrapper, const options &opts) {
     exit(1);
   }
   client->SetUniverseName(opts.uni, opts.uni_name,
-                          NewSingleCallback(&UniverseNameComplete, ss));
+                          NewSingleCallback(&HandleAck, ss));
   return 0;
 }
 
@@ -853,7 +841,7 @@ int SetUniverseMergeMode(OlaClientWrapper *wrapper,
   }
   client->SetUniverseMergeMode(
       opts.uni, opts.merge_mode,
-      NewSingleCallback(&UniverseMergeModeComplete, ss));
+      NewSingleCallback(&HandleAck, ss));
   return 0;
 }
 
@@ -874,7 +862,7 @@ int SendDmx(OlaClientWrapper *wrapper, const options &opts) {
     exit(1);
   }
 
-  ola::client::SendDMXArgs args(NewSingleCallback(&SendDmxComplete, ss));
+  ola::client::SendDMXArgs args(NewSingleCallback(&HandleAck, ss));
   client->SendDMX(opts.uni, buffer, args);
   return 0;
 }
@@ -895,11 +883,11 @@ void SetPortPriority(OlaClientWrapper *wrapper, const options &opts) {
   if (opts.priority_mode == ola::PRIORITY_MODE_INHERIT) {
     client->SetPortPriorityInherit(
         opts.device_id, opts.port_id, opts.port_direction,
-        NewSingleCallback(&SetPortPriorityComplete, ss));
+        NewSingleCallback(&HandleAck, ss));
   } else if (opts.priority_mode == ola::PRIORITY_MODE_STATIC) {
     client->SetPortPriorityOverride(
         opts.device_id, opts.port_id, opts.port_direction, opts.priority_value,
-        NewSingleCallback(&SetPortPriorityComplete, ss));
+        NewSingleCallback(&HandleAck, ss));
   } else {
     DisplaySetPriorityHelp(opts);
   }

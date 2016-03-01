@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/thread/Mutex.h"
@@ -37,10 +38,11 @@ namespace usbdmx {
 /**
  * @brief The interface for the Velleman Widgets
  */
-class VellemanK8062: public BaseWidget {
+class VellemanK8062: public SimpleWidget {
  public:
-  explicit VellemanK8062(LibUsbAdaptor *adaptor)
-      : BaseWidget(adaptor) {
+  explicit VellemanK8062(ola::usb::LibUsbAdaptor *adaptor,
+                         libusb_device *usb_device)
+      : SimpleWidget(adaptor, usb_device) {
   }
 };
 
@@ -56,7 +58,7 @@ class SynchronousVellemanK8062: public VellemanK8062 {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  SynchronousVellemanK8062(LibUsbAdaptor *adaptor,
+  SynchronousVellemanK8062(ola::usb::LibUsbAdaptor *adaptor,
                            libusb_device *usb_device);
 
   bool Init();
@@ -64,7 +66,6 @@ class SynchronousVellemanK8062: public VellemanK8062 {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  libusb_device* const m_usb_device;
   std::auto_ptr<class VellemanThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousVellemanK8062);
@@ -80,7 +81,7 @@ class AsynchronousVellemanK8062 : public VellemanK8062 {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  AsynchronousVellemanK8062(LibUsbAdaptor *adaptor,
+  AsynchronousVellemanK8062(ola::usb::LibUsbAdaptor *adaptor,
                             libusb_device *usb_device);
 
   bool Init();

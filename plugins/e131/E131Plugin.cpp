@@ -38,7 +38,7 @@ using ola::acn::CID;
 using std::string;
 
 const char E131Plugin::CID_KEY[] = "cid";
-const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
+const unsigned int E131Plugin::DEFAULT_DSCP_VALUE = 0;
 const char E131Plugin::DSCP_KEY[] = "dscp";
 const char E131Plugin::DRAFT_DISCOVERY_KEY[] = "draft_discovery";
 const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
@@ -51,7 +51,7 @@ const char E131Plugin::PREPEND_HOSTNAME_KEY[] = "prepend_hostname";
 const char E131Plugin::REVISION_0_2[] = "0.2";
 const char E131Plugin::REVISION_0_46[] = "0.46";
 const char E131Plugin::REVISION_KEY[] = "revision";
-const char E131Plugin::DEFAULT_PORT_COUNT[] = "5";
+const unsigned int E131Plugin::DEFAULT_PORT_COUNT = 5;
 
 
 /*
@@ -86,12 +86,14 @@ bool E131Plugin::StartHook() {
   }
 
   if (!StringToInt(m_preferences->GetValue(INPUT_PORT_COUNT_KEY),
-                   &options.input_ports))
+                   &options.input_ports)) {
     OLA_WARN << "Invalid value for input_ports";
+  }
 
   if (!StringToInt(m_preferences->GetValue(OUTPUT_PORT_COUNT_KEY),
-                   &options.output_ports))
+                   &options.output_ports)) {
     OLA_WARN << "Invalid value for input_ports";
+  }
 
   m_device = new E131Device(this, cid, ip_addr, m_plugin_adaptor, options);
 
@@ -192,21 +194,21 @@ bool E131Plugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(
       DRAFT_DISCOVERY_KEY,
       BoolValidator(),
-      BoolValidator::DISABLED);
+      false);
 
   save |= m_preferences->SetDefaultValue(
       IGNORE_PREVIEW_DATA_KEY,
       BoolValidator(),
-      BoolValidator::ENABLED);
+      true);
 
   save |= m_preferences->SetDefaultValue(
       INPUT_PORT_COUNT_KEY,
-      UIntValidator(0, 128),
+      UIntValidator(0, 512),
       DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(
       OUTPUT_PORT_COUNT_KEY,
-      UIntValidator(0, 128),
+      UIntValidator(0, 512),
       DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(IP_KEY, StringValidator(true), "");
@@ -214,7 +216,7 @@ bool E131Plugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(
       PREPEND_HOSTNAME_KEY,
       BoolValidator(),
-      BoolValidator::ENABLED);
+      true);
 
   std::set<string> revision_values;
   revision_values.insert(REVISION_0_2);
@@ -225,15 +227,17 @@ bool E131Plugin::SetDefaultPreferences() {
       SetValidator<string>(revision_values),
       REVISION_0_46);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   // check if this saved correctly
   // we don't want to use it if null
   string revision = m_preferences->GetValue(REVISION_KEY);
   if (m_preferences->GetValue(CID_KEY).empty() ||
-      (revision != REVISION_0_2 && revision != REVISION_0_46))
+      (revision != REVISION_0_2 && revision != REVISION_0_46)) {
     return false;
+  }
 
   return true;
 }

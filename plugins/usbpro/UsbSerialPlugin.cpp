@@ -64,9 +64,6 @@ const char UsbSerialPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbSerialPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
 const char UsbSerialPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
 const char UsbSerialPlugin::ULTRA_FPS_LIMIT_KEY[] = "ultra_fps_limit";
-const char UsbSerialPlugin::UUCP_LOCK_PATH_KEY[] = "uucp_lock_path";
-const char UsbSerialPlugin::UUCP_LINUX_PATH[] = "/tmp";
-const char UsbSerialPlugin::UUCP_MAC_PATH[] = "/var/lock";
 
 UsbSerialPlugin::UsbSerialPlugin(PluginAdaptor *plugin_adaptor)
     : Plugin(plugin_adaptor),
@@ -87,11 +84,12 @@ string UsbSerialPlugin::Description() const {
 " - Arduino RGB Mixer\n"
 " - DMX-TRI & RDM-TRI\n"
 " - DMXking USB DMX512-A, Ultra DMX, Ultra DMX Pro\n"
-" - DMXter4 & mini DMXter\n"
-" - Enttec DMX USB Pro\n"
+" - DMXter4, DMXter4A & mini DMXter\n"
+" - Enttec DMX USB Pro & USB Pro Mk II\n"
 " - Robe Universe Interface\n"
 "\n"
-"See http://opendmx.net/index.php/USB_Protocol_Extensions for more info.\n"
+"See https://wiki.openlighting.org/index.php/USB_Protocol_Extensions for \n"
+"more info.\n"
 "\n"
 "--- Config file : ola-usbserial.conf ---\n"
 "\n"
@@ -112,9 +110,6 @@ string UsbSerialPlugin::Description() const {
 "\n"
 "ultra_fps_limit = 40\n"
 "The max frames per second to send to a Ultra DMX Pro device.\n"
-"\n"
-"uucp_lock_path = /var/lock\n"
-"Path to check for UUCP Lock files."
 "\n";
 }
 
@@ -165,8 +160,9 @@ void UsbSerialPlugin::NewWidget(
     EnttecUsbProWidget *widget,
     const UsbProWidgetInformation &information) {
   string device_name = GetDeviceName(information);
-  if (device_name.empty())
+  if (device_name.empty()) {
     device_name = USBPRO_DEVICE_NAME;
+  }
 
   AddDevice(new UsbProDevice(m_plugin_adaptor, this, device_name, widget,
                              information.serial, information.firmware_version,
@@ -270,8 +266,6 @@ bool UsbSerialPlugin::StartHook() {
       m_preferences->GetValue(DEVICE_DIR_KEY));
   m_detector_thread.SetDevicePrefixes(
       m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY));
-  m_detector_thread.SetUUCPLockFilePaths(
-      m_preferences->GetMultipleValue(UUCP_LOCK_PATH_KEY));
   if (!m_detector_thread.Start()) {
     OLA_FATAL << "Failed to start the widget discovery thread";
     return false;
@@ -287,8 +281,9 @@ bool UsbSerialPlugin::StartHook() {
  */
 bool UsbSerialPlugin::StopHook() {
   vector<UsbSerialDevice*>::iterator iter;
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter)
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     DeleteDevice(*iter);
+  }
   m_detector_thread.Join(NULL);
   m_devices.clear();
   return true;
@@ -299,8 +294,9 @@ bool UsbSerialPlugin::StopHook() {
  * Default to sensible values
  */
 bool UsbSerialPlugin::SetDefaultPreferences() {
-  if (!m_preferences)
+  if (!m_preferences) {
     return false;
+  }
 
   bool save = false;
 
@@ -310,14 +306,6 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, LINUX_DEVICE_PREFIX);
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, MAC_DEVICE_PREFIX);
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, BSD_DEVICE_PREFIX);
-    save = true;
-  }
-
-  vector<string> lock_paths =
-    m_preferences->GetMultipleValue(UUCP_LOCK_PATH_KEY);
-  if (lock_paths.empty()) {
-    m_preferences->SetMultipleValue(UUCP_LOCK_PATH_KEY, UUCP_MAC_PATH);
-    m_preferences->SetMultipleValue(UUCP_LOCK_PATH_KEY, UUCP_LINUX_PATH);
     save = true;
   }
 
@@ -334,14 +322,16 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(TRI_USE_RAW_RDM_KEY,
                                          BoolValidator(),
-                                         BoolValidator::DISABLED);
+                                         false);
 
-  if (save)
+  if (save) {
     m_preferences->Save();
+  }
 
   device_prefixes = m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY);
-  if (device_prefixes.empty())
+  if (device_prefixes.empty()) {
     return false;
+  }
   return true;
 }
 
@@ -362,8 +352,9 @@ string UsbSerialPlugin::GetDeviceName(
     const UsbProWidgetInformation &information) {
   string device_name = information.manufacturer;
   if (!(information.manufacturer.empty() ||
-        information.device.empty()))
+        information.device.empty())) {
     device_name += " - ";
+  }
   device_name += information.device;
   return device_name;
 }

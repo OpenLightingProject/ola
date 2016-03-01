@@ -60,6 +60,13 @@ class AbstractPlugin {
   virtual bool IsEnabled() const = 0;
 
   /**
+   * @brief Set the plugin's enabled state.
+   * @param enable The new enabled state
+   * @return true if this plugin is enabled
+   */
+  virtual void SetEnabledState(bool enable) = 0;
+
+  /**
    * @brief Start the plugin
    *
    * Calls start_hook() which can be over-ridden by the derrived classes.
@@ -93,7 +100,7 @@ class AbstractPlugin {
    */
   virtual std::string Description() const = 0;
 
-  virtual void ConflictsWith(std::set<ola_plugin_id> *conflict_set) = 0;
+  virtual void ConflictsWith(std::set<ola_plugin_id> *conflict_set) const = 0;
 
   // used to sort plugins
   virtual bool operator<(const AbstractPlugin &other) const = 0;
@@ -121,6 +128,7 @@ class Plugin: public AbstractPlugin {
   bool LoadPreferences();
   std::string PreferenceConfigLocation() const;
   bool IsEnabled() const;
+  void SetEnabledState(bool enable);
   virtual bool Start();
   virtual bool Stop();
   // return true if this plugin is enabled by default
@@ -135,7 +143,7 @@ class Plugin: public AbstractPlugin {
   virtual std::string PluginPrefix() const = 0;
 
   // by default we don't conflict with any other plugins
-  virtual void ConflictsWith(std::set<ola_plugin_id>*) {}
+  virtual void ConflictsWith(std::set<ola_plugin_id>*) const {}
 
   bool operator<(const AbstractPlugin &other) const {
     return Id() < other.Id();

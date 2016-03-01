@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ola-recorder.cpp
- *  A simple tool to record & playback shows.
- *  Copyright (C) 2011 Simon Newton
+ * ShowRecorder.cpp
+ * Create recordings for the simple show playback system.
+ * Copyright (C) 2011 Simon Newton
  *
  * The data file is in the form:
  * universe-number channel1,channel2,channel3
@@ -67,8 +67,9 @@ int ShowRecorder::Init() {
     return ola::EXIT_UNAVAILABLE;
   }
 
-  if (!m_saver.Open())
+  if (!m_saver.Open()) {
     return ola::EXIT_CANTCREAT;
+  }
 
   m_client.GetClient()->SetDMXCallback(
       ola::NewCallback(this, &ShowRecorder::NewFrame));

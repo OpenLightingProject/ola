@@ -45,10 +45,10 @@ enum { HEX_BIT_WIDTH = 4 };
 template<typename T>
 struct _ToHex {
  public:
-  _ToHex(T v, int width, bool prefix)
-      : width(width),
+  _ToHex(T v, int _width, bool _prefix)
+      : width(_width),
         value(v),
-        prefix(prefix) {
+        prefix(_prefix) {
   }
 
   int width;  // setw takes an int

@@ -50,8 +50,7 @@ def GetCandidatePortsCallback(status, devices):
             '{p.supports_rdm}'
         print(s.format(p=port))
   else:
-    print('Error: {}'.format(status.message), file=sys.stderr)
-  wrapper.Stop()
+    print('Error: %s' % status.message, file=sys.stderr)
 
 
 args = ParseArgs()

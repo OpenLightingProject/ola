@@ -133,20 +133,21 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
 
     // look for AF_INET interfaces only
     if (iface->ifr_addr.sa_family != AF_INET) {
-      OLA_DEBUG << "skipping " << iface->ifr_name <<
-        " because it's not af_inet";
+      OLA_DEBUG << "Skipping " << iface->ifr_name
+                << " because it's not af_inet";
       continue;
     }
 
     struct ifreq ifrcopy = *iface;
     if (ioctl(sd, SIOCGIFFLAGS, &ifrcopy) < 0) {
       OLA_WARN << "ioctl error for " << iface->ifr_name << ":"
-        << strerror(errno);
+               << strerror(errno);
       continue;
     }
 
     if (!(ifrcopy.ifr_flags & IFF_UP)) {
-      OLA_DEBUG << "skipping " << iface->ifr_name << " because it's down";
+      OLA_DEBUG << "Skipping " << iface->ifr_name
+                << " because it's down";
       continue;
     }
 
@@ -157,8 +158,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       if (include_loopback) {
         interface.loopback = true;
       } else {
-        OLA_DEBUG << "skipping " << iface->ifr_name <<
-          " because it's a loopback";
+        OLA_DEBUG << "Skipping " << iface->ifr_name
+                  << " because it's a loopback";
         continue;
       }
     }
@@ -240,9 +241,9 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
      * broadcast and hardware addresses
      * I'll leave that for another day
      */
-    OLA_DEBUG << "Found: " << interface.name << ", " <<
-      interface.ip_address << ", " <<
-      interface.hw_address;
+    OLA_DEBUG << "Found: " << interface.name << ", "
+              << interface.ip_address << ", "
+              << interface.hw_address;
     interfaces.push_back(interface);
   }
   delete[] buffer;
@@ -261,10 +262,11 @@ unsigned int PosixInterfacePicker::GetIfReqSize(const char *data) const {
 
   // We can't assume sizeof(ifreq) = IFNAMSIZ + sizeof(sockaddr), this isn't
   // the case on some 64bit linux systems.
-  if (socket_len > sizeof(struct ifreq) - IFNAMSIZ)
+  if (socket_len > sizeof(struct ifreq) - IFNAMSIZ) {
     return IFNAMSIZ + socket_len;
-  else
+  } else {
     return sizeof(struct ifreq);
+  }
 }
 }  // namespace network
 }  // namespace ola

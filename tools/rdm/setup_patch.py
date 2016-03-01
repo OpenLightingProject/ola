@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -16,6 +16,10 @@
 # setup_patch.py
 # Copyright (C) 2012 Simon Newton
 
+import logging
+from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import OlaClient, Plugin
+
 """A simple script to find all RDM enabled ports and auto-patch them to
 universes.
 """
@@ -23,14 +27,9 @@ universes.
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
-import logging
-from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import OlaClient, Plugin
-
-
 class AutoPatcher(object):
   """A class that patches RDM enabled Output Ports to universes."""
-  def __init__(self, wrapper, callback, force = False):
+  def __init__(self, wrapper, callback, force=False):
     """Create a new AutoPatcher object.
 
     Args:
@@ -94,10 +93,9 @@ class AutoPatcher(object):
     """Called when the patch is complete."""
     if status.Succeeded():
       self._ports_patched += 1
-      self._wrapper.Client().SetUniverseName(
-          universe,
-         universe_name,
-         self._UniverseNameComplete)
+      self._wrapper.Client().SetUniverseName(universe,
+                                             universe_name,
+                                             self._UniverseNameComplete)
     else:
       self._IncrementPortAttempts()
 
@@ -121,7 +119,7 @@ class PatchResults(object):
     self.ports_patched = 0
 
 
-def PatchPorts(wrapper = None):
+def PatchPorts(wrapper=None):
   """Perform the patch and return the results when complete."""
   patch_results = PatchResults()
   if not wrapper:

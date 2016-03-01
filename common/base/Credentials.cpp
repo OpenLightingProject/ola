@@ -145,6 +145,30 @@ bool SetGID(gid_t new_gid) {
 #endif
 }
 
+int GetGroups(int size, gid_t list[]) {
+#ifdef _WIN32
+  (void) size;
+  (void) list;
+  return -1;
+#else
+  return getgroups(size, list);
+#endif
+}
+
+bool SetGroups(size_t size, const gid_t *list) {
+#ifdef _WIN32
+  (void) size;
+  (void) list;
+  return false;
+#else
+  if (setgroups(size, list)) {
+    OLA_WARN << "setgroups(): " << strerror(errno);
+    return false;
+  }
+  return true;
+#endif
+}
+
 /**
  * @}
  */

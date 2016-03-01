@@ -12,7 +12,9 @@ plugins_shownet_libolashownet_la_SOURCES = \
     plugins/shownet/ShowNetPort.h \
     plugins/shownet/ShowNetPackets.h \
     plugins/shownet/ShowNetNode.h
-plugins_shownet_libolashownet_la_LIBADD = common/libolacommon.la
+plugins_shownet_libolashownet_la_LIBADD = \
+    common/libolacommon.la \
+    olad/plugin_api/libolaserverplugininterface.la
 
 # TESTS
 ##################################################

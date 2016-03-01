@@ -1,43 +1,62 @@
 Source: ola
 Priority: extra
-Maintainer: RenZO <renzo@imaginux.com>
-Build-Depends: debhelper (>= 7), autotools-dev, bash-completion, automake, libftdi-dev, libusb-dev, libprotobuf-dev, python-dev, libmicrohttpd-dev, protobuf-compiler, uuid-dev, bison, flex, libcppunit-dev, python-protobuf, libprotoc-dev
-Standards-Version: 3.9.1
+Maintainer: Wouter Verhelst <wouter@debian.org>
+Uploaders: RenZO <renzo@imaginux.com>
+Build-Depends: debhelper (>= 9), autotools-dev, dh-autoreconf, bash-completion, libcppunit-dev, bison, flex, pkg-config, uuid-dev, python, python-protobuf, libprotobuf-dev, protobuf-compiler, libprotoc-dev, libusb-1.0-0-dev, libftdi-dev, liblo-dev, libmicrohttpd-dev
+Standards-Version: 3.9.5
 Section: libs
 Vcs-Git: https://github.com/OpenLightingProject/ola.git
 Vcs-browser: https://github.com/OpenLightingProject/ola
-Homepage: https://github.com/OpenLightingProject/ola
+Homepage: https://www.openlighting.org/
 
-Package: ola-dev
+Package: libola-dev
 Section: libdevel
 Architecture: any
 Depends: ola (= ${binary:Version}), ${misc:Depends}
-Description: Open Lighting Architecture
- The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
+Description: Open Lighting Architecture - development libraries
+ The DMX512 standard for Digital MultipleX is used for digital
+ communication networks commonly used to control stage lighting and
+ effects.
  .
- OLA is written and maintained by Simon Newton <nomis52@gmail.com>
+ The Open Lighting Architecture (OLA) provides a plugin framework for
+ distributing DMX512 control signals.
+ .
+ This package contains the development files for libola and various related
+ libraries, used to write plugins or control the OLA daemon.
 
 Package: ola-python
 Section: libs
 Architecture: all
-Depends: ola (= ${binary:Version}), ${python:Depends}, ${misc:Depends}, python-protobuf
-Description: OLA Python Classes
- The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
+Depends: ola (>= ${source:Version}), ola (<< ${source:Version}.~), ${python:Depends}, ${misc:Depends}, python-protobuf
+Description: Open Lighting Architecture - Python Classes
+ The DMX512 standard for Digital MultipleX is used for digital
+ communication networks commonly used to control stage lighting and
+ effects.
  .
- OLA is written and maintained by Simon Newton <nomis52@gmail.com>
+ The Open Lighting Architecture (OLA) provides a plugin framework for
+ distributing DMX512 control signals.
+ .
+ This package contains the Python client module.
 
 Package: ola-rdm-tests
 Section: libs
 Architecture: all
-Depends: ola (= ${binary:Version}), ola-python (= ${binary:Version}), ${python:Depends}, ${misc:Depends}
+Depends: ola (>= ${source:Version}), ola (<< ${source:Version}.~), ola-python (= ${binary:Version}), ${python:Depends}, ${misc:Depends}, python-numpy, libjs-jquery, libjs-jquery-ui
 Suggests: bash-completion
-Description: OLA RDM Responder Tests
- The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
+Description: Open Lighting Architecture - RDM Responder Tests
+ The DMX512 standard for Digital MultipleX is used for digital
+ communication networks commonly used to control stage lighting and
+ effects.
  .
- OLA is written and maintained by Simon Newton <nomis52@gmail.com>
+ The Remote Device Management protocol is an extension to DMX512,
+ allowing bi-directional communication between RDM-compliant devices
+ without disturbing other devices on the same connection.
+ .
+ The Open Lighting Architecture (OLA) provides a plugin framework for
+ distributing DMX512 control signals.
+ .
+ This package provides an automated way to check protocol compliance in
+ RDM devices.
 
 Package: ola
 Section: electronics
@@ -45,7 +64,28 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
 Suggests: bash-completion
 Description: Open Lighting Architecture
- The Open Lighting Architecture (OLA) provides a plugin framework for
- distributing DMX512 control signals on Mac and Linux.
+ The DMX512 standard for Digital MultipleX is used for digital
+ communication networks commonly used to control stage lighting and
+ effects.
  .
- OLA is written and maintained by Simon Newton <nomis52@gmail.com>
+ The Open Lighting Architecture (OLA) provides a plugin framework for
+ distributing DMX512 control signals.
+ .
+ This package contains olad, the OLA daemon used to control lighting,
+ and a number of command-line tools to control and manipulate olad.
+
+Package: libola1
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Description: Open Lighting Architecture - shared libraries
+ The DMX512 standard for Digital MultipleX is used for digital
+ communication networks commonly used to control stage lighting and
+ effects.
+ .
+ The Open Lighting Architecture (OLA) provides a plugin framework for
+ distributing DMX512 control signals.
+ .
+ This package contains the shared libraries required to communicate with
+ olad.

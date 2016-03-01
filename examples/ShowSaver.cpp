@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ShowSaver.cpp
- *  A class that reads OLA show files
- *  Copyright (C) 2011 Simon Newton
+ * ShowSaver.cpp
+ * Writes show data to a file.
+ * Copyright (C) 2011 Simon Newton
  *
  * The data file is in the form:
  * universe-number channel1,channel2,channel3

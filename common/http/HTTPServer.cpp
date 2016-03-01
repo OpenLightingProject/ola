@@ -18,6 +18,10 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <ola/Logging.h>
 #include <ola/base/Macro.h>
@@ -378,11 +382,9 @@ void HTTPResponse::SetHeader(const string &key, const string &value) {
  */
 int HTTPResponse::SendJson(const JsonValue &json) {
   const string output = JsonWriter::AsString(json);
-  struct MHD_Response *response = MHD_create_response_from_data(
-      output.length(),
+  struct MHD_Response *response = HTTPServer::BuildResponse(
       static_cast<void*>(const_cast<char*>(output.data())),
-      MHD_NO,
-      MHD_YES);
+      output.length());
   HeadersMultiMap::const_iterator iter;
   for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
     MHD_add_response_header(response,
@@ -400,11 +402,9 @@ int HTTPResponse::SendJson(const JsonValue &json) {
  */
 int HTTPResponse::Send() {
   HeadersMultiMap::const_iterator iter;
-  struct MHD_Response *response = MHD_create_response_from_data(
-      m_data.length(),
+  struct MHD_Response *response = HTTPServer::BuildResponse(
       static_cast<void*>(const_cast<char*>(m_data.data())),
-      MHD_NO,
-      MHD_YES);
+      m_data.length());
   for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
     MHD_add_response_header(response,
                             iter->first.c_str(),
@@ -425,6 +425,11 @@ HTTPServer::HTTPServer(const HTTPServerOptions &options)
       m_default_handler(NULL),
       m_port(options.port),
       m_data_dir(options.data_dir) {
+  ola::io::SelectServer::Options ss_options;
+  // See issue #761. epoll/kqueue can't be used with the current
+  // implementation.
+  ss_options.force_select = true;
+  m_select_server.reset(new ola::io::SelectServer(ss_options));
 }
 
 
@@ -471,8 +476,9 @@ bool HTTPServer::Init() {
                              NULL,
                              MHD_OPTION_END);
 
-  if (m_httpd)
-    m_select_server.RunInLoop(NewCallback(this, &HTTPServer::UpdateSockets));
+  if (m_httpd) {
+    m_select_server->RunInLoop(NewCallback(this, &HTTPServer::UpdateSockets));
+  }
 
   return m_httpd ? true : false;
 }
@@ -492,12 +498,12 @@ void *HTTPServer::Run() {
 #ifdef _WIN32
   // set a short poll interval since we'd block too long otherwise.
   // TODO(Lukas) investigate why the poller does not wake up on HTTP requests.
-  m_select_server.SetDefaultInterval(TimeInterval(1, 0));
+  m_select_server->SetDefaultInterval(TimeInterval(1, 0));
 #else
   // set a long poll interval so we don't spin
-  m_select_server.SetDefaultInterval(TimeInterval(60, 0));
+  m_select_server->SetDefaultInterval(TimeInterval(60, 0));
 #endif
-  m_select_server.Run();
+  m_select_server->Run();
 
   // clean up any remaining sockets
   SocketSet::iterator iter = m_sockets.begin();
@@ -515,7 +521,7 @@ void *HTTPServer::Run() {
 void HTTPServer::Stop() {
   if (IsRunning()) {
     OLA_INFO << "Notifying HTTP server thread to stop";
-    m_select_server.Terminate();
+    m_select_server->Terminate();
     OLA_INFO << "Waiting for HTTP server thread to exit";
     Join();
     OLA_INFO << "HTTP server thread exited";
@@ -564,18 +570,18 @@ void HTTPServer::UpdateSockets() {
     } else if (ola::io::ToFD(state->descriptor->ReadDescriptor()) == i) {
       // Check if this socket must be updated.
       if (FD_ISSET(i, &r_set) && state->read == 0) {
-        m_select_server.AddReadDescriptor(state->descriptor);
+        m_select_server->AddReadDescriptor(state->descriptor);
         state->read = 1;
       } else if ((!FD_ISSET(i, &r_set)) && state->read == 1) {
-        m_select_server.RemoveReadDescriptor(state->descriptor);
+        m_select_server->RemoveReadDescriptor(state->descriptor);
         state->read = 0;
       }
 
       if (FD_ISSET(i, &w_set) && state->write == 0) {
-        m_select_server.AddWriteDescriptor(state->descriptor);
+        m_select_server->AddWriteDescriptor(state->descriptor);
         state->write = 1;
       } else if ((!FD_ISSET(i, &w_set)) && state->write == 1) {
-        m_select_server.RemoveWriteDescriptor(state->descriptor);
+        m_select_server->RemoveWriteDescriptor(state->descriptor);
         state->write = 0;
       }
       iter++;
@@ -797,11 +803,8 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   i_stream.read(data, length);
   i_stream.close();
 
-  struct MHD_Response *mhd_response = MHD_create_response_from_data(
-      length,
-      static_cast<void*>(data),
-      MHD_YES,
-      MHD_NO);
+  struct MHD_Response *mhd_response = BuildResponse(static_cast<void*>(data),
+                                                    length);
 
   if (!file_info->content_type.empty())
     MHD_add_response_header(mhd_response,
@@ -828,13 +831,13 @@ void HTTPServer::InsertSocket(bool is_readable, bool is_writeable, int fd) {
   DescriptorState *state = new DescriptorState(socket);
 
   if (is_readable) {
-    m_select_server.AddReadDescriptor(state->descriptor);
+    m_select_server->AddReadDescriptor(state->descriptor);
     state->read = 1;
   }
 
   if (is_writeable) {
     state->write = 1;
-    m_select_server.AddWriteDescriptor(state->descriptor);
+    m_select_server->AddWriteDescriptor(state->descriptor);
   }
 
   m_sockets.insert(state);
@@ -842,14 +845,23 @@ void HTTPServer::InsertSocket(bool is_readable, bool is_writeable, int fd) {
 
 void HTTPServer::FreeSocket(DescriptorState *state) {
   if (state->read) {
-    m_select_server.RemoveReadDescriptor(state->descriptor);
+    m_select_server->RemoveReadDescriptor(state->descriptor);
   }
 
   if (state->write) {
-    m_select_server.RemoveWriteDescriptor(state->descriptor);
+    m_select_server->RemoveWriteDescriptor(state->descriptor);
   }
   delete state->descriptor;
   delete state;
+}
+
+
+struct MHD_Response *HTTPServer::BuildResponse(void *data, size_t size) {
+#ifdef HAVE_MHD_CREATE_RESPONSE_FROM_BUFFER
+  return MHD_create_response_from_buffer(size, data, MHD_RESPMEM_MUST_COPY);
+#else
+  return MHD_create_response_from_data(size, data, MHD_NO, MHD_YES);
+#endif
 }
 }  // namespace http
 }  // namespace ola

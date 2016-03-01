@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ola-recorder.cpp
- *  A simple tool to record & playback shows.
- *  Copyright (C) 2011 Simon Newton
+ * ShowPlayer.cpp
+ * A simple show playback system.
+ * Copyright (C) 2011 Simon Newton
  *
  * The data file is in the form:
  * universe-number channel1,channel2,channel3
@@ -59,8 +59,9 @@ int ShowPlayer::Init() {
     return ola::EXIT_UNAVAILABLE;
   }
 
-  if (!m_loader.Load())
+  if (!m_loader.Load()) {
     return ola::EXIT_NOINPUT;
+  }
 
   return ola::EXIT_OK;
 }
@@ -124,8 +125,9 @@ void ShowPlayer::SendNextFrame() {
 ShowLoader::State ShowPlayer::RegisterNextTimeout() {
   unsigned int timeout;
   ShowLoader::State state = m_loader.NextTimeout(&timeout);
-  if (state != ShowLoader::OK)
+  if (state != ShowLoader::OK) {
     return state;
+  }
 
   OLA_INFO << "Registering timeout for " << timeout << "ms";
   m_client.GetSelectServer()->RegisterSingleTimeout(

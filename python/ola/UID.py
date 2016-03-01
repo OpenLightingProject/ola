@@ -30,6 +30,7 @@ class UIDOutOfRangeException(Error):
 
 class UID(object):
   """Represents a UID."""
+
   def __init__(self, manufacturer_id, device_id):
     self._manufacturer_id = manufacturer_id
     self._device_id = device_id
@@ -60,6 +61,19 @@ class UID(object):
     if self._manufacturer_id == other._manufacturer_id:
       return cmp(self._device_id, other._device_id)
     return cmp(self.manufacturer_id, other.manufacturer_id)
+
+  def __lt__(self, other):
+    if self.manufacturer_id != other.manufacturer_id:
+      return self.manufacturer_id < other.manufacturer_id
+    else:
+      return self.device_id < other.device_id
+
+  def __eq__(self, other):
+    if other is None:
+      return False
+
+    return self.manufacturer_id == other.manufacturer_id and \
+           self.device_id == other.device_id
 
   @staticmethod
   def AllDevices():

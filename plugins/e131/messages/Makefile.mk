@@ -8,6 +8,7 @@ pkgconfig_DATA += plugins/e131/messages/libolae131conf.pc
 
 # LIBRARIES
 ##################################################
+if USE_E131
 lib_LTLIBRARIES += plugins/e131/messages/libolae131conf.la
 e131includedir = $(includedir)/ola/e131
 nodist_e131include_HEADERS = \
@@ -23,3 +24,4 @@ plugins_e131_messages_libolae131conf_la_LIBADD = $(libprotobuf_LIBS)
 plugins/e131/messages/E131ConfigMessages.pb.cc plugins/e131/messages/E131ConfigMessages.pb.h: plugins/e131/messages/Makefile.mk plugins/e131/messages/E131ConfigMessages.proto
 	$(PROTOC) --cpp_out plugins/e131/messages/ --proto_path $(srcdir)/plugins/e131/messages/ $(srcdir)/plugins/e131/messages/E131ConfigMessages.proto
 
+endif

@@ -16,12 +16,13 @@
 # UIDTest.py
 # Copyright (C) 2005 Simon Newton
 
+import sys
+import unittest
+from ola.UID import UID, UIDOutOfRangeException
+
 """Test cases for the UID class."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
-
-import unittest
-from ola.UID import UID, UIDOutOfRangeException
 
 
 class UIDTest(unittest.TestCase):
@@ -32,7 +33,11 @@ class UIDTest(unittest.TestCase):
     self.assertEqual(0x12345678, uid.device_id)
     self.assertEqual('707a:12345678', str(uid))
 
-    self.assertTrue(uid > None)
+    # Python 3 does not allow sorting of incompatible types.
+    # We don't use sys.version_info.major to support Python 2.6.
+    if sys.version_info[0] == 2:
+        self.assertTrue(uid > None)
+
     uid2 = UID(0x707a, 0x12345679)
     self.assertTrue(uid2 > uid)
     uid3 = UID(0x7079, 0x12345678)

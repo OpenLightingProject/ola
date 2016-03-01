@@ -100,8 +100,9 @@ class ArtNetNodeImpl::InputPort {
   // Returns true if the address changed.
   bool SetUniverseAddress(uint8_t universe_address) {
     universe_address = universe_address & 0x0f;
-    if ((m_port_address & 0x0f) == universe_address)
+    if ((m_port_address & 0x0f) == universe_address) {
       return false;
+    }
 
     m_port_address = ((m_port_address & 0xf0) | universe_address);
     uids.clear();
@@ -116,8 +117,9 @@ class ArtNetNodeImpl::InputPort {
   // Returns true if the address changed.
   bool SetSubNetAddress(uint8_t subnet_address) {
     subnet_address = subnet_address << 4;
-    if (subnet_address == (m_port_address & 0xf0))
+    if (subnet_address == (m_port_address & 0xf0)) {
       return false;
+    }
 
     m_port_address = subnet_address | (m_port_address & 0x0f);
     uids.clear();
@@ -136,8 +138,9 @@ class ArtNetNodeImpl::InputPort {
   }
 
   void RunTodCallback() {
-    if (m_tod_callback.get())
+    if (m_tod_callback.get()) {
       RunRDMCallbackWithUIDs(uids, m_tod_callback.get());
+    }
   }
 
   void RunDiscoveryCallback() {
@@ -149,8 +152,9 @@ class ArtNetNodeImpl::InputPort {
   }
 
   void IncrementUIDCounts() {
-    for (uid_map::iterator iter = uids.begin(); iter != uids.end(); ++iter)
+    for (uid_map::iterator iter = uids.begin(); iter != uids.end(); ++iter) {
       iter->second.second++;
+    }
   }
 
   bool enabled;
@@ -182,8 +186,9 @@ class ArtNetNodeImpl::InputPort {
                               RDMDiscoveryCallback *callback) {
     UIDSet uid_set;
     uid_map::const_iterator uid_iter = uids.begin();
-    for (; uid_iter != uids.end(); ++uid_iter)
+    for (; uid_iter != uids.end(); ++uid_iter) {
       uid_set.AddUID(uid_iter->first);
+    }
     callback->Run(uid_set);
   }
 };
@@ -208,8 +213,9 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &iface,
       m_interface(iface),
       m_socket(socket) {
 
-  if (!m_socket.get())
+  if (!m_socket.get()) {
     m_socket.reset(new UDPSocket());
+  }
 
   for (unsigned int i = 0; i < options.input_port_count; i++) {
     m_input_ports.push_back(new InputPort());
@@ -236,28 +242,34 @@ ArtNetNodeImpl::~ArtNetNodeImpl() {
   STLDeleteElements(&m_input_ports);
 
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
-    if (m_output_ports[i].on_data)
+    if (m_output_ports[i].on_data) {
       delete m_output_ports[i].on_data;
-    if (m_output_ports[i].on_discover)
+    }
+    if (m_output_ports[i].on_discover) {
       delete m_output_ports[i].on_discover;
-    if (m_output_ports[i].on_flush)
+    }
+    if (m_output_ports[i].on_flush) {
       delete m_output_ports[i].on_flush;
-    if (m_output_ports[i].on_rdm_request)
+    }
+    if (m_output_ports[i].on_rdm_request) {
       delete m_output_ports[i].on_rdm_request;
+    }
   }
 }
 
 bool ArtNetNodeImpl::Start() {
-  if (m_running || !InitNetwork())
+  if (m_running || !InitNetwork()) {
     return false;
+  }
 
   m_running = true;
   return true;
 }
 
 bool ArtNetNodeImpl::Stop() {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   // clean up any in-flight rdm requests
   InputPorts::iterator iter = m_input_ports.begin();
@@ -297,8 +309,9 @@ bool ArtNetNodeImpl::Stop() {
 }
 
 bool ArtNetNodeImpl::EnterConfigurationMode() {
-  if (m_in_configuration_mode)
+  if (m_in_configuration_mode) {
     return false;
+  }
   m_in_configuration_mode = true;
   m_artpoll_required = false;
   m_artpollreply_required = false;
@@ -306,8 +319,9 @@ bool ArtNetNodeImpl::EnterConfigurationMode() {
 }
 
 bool ArtNetNodeImpl::ExitConfigurationMode() {
-  if (!m_in_configuration_mode)
+  if (!m_in_configuration_mode) {
     return false;
+  }
   m_in_configuration_mode = false;
 
   if (m_artpoll_required) {
@@ -322,16 +336,18 @@ bool ArtNetNodeImpl::ExitConfigurationMode() {
 }
 
 bool ArtNetNodeImpl::SetShortName(const string &name) {
-  if (m_short_name == name)
+  if (m_short_name == name) {
     return true;
+  }
 
   m_short_name = name;
   return SendPollReplyIfRequired();
 }
 
 bool ArtNetNodeImpl::SetLongName(const string &name) {
-  if (m_long_name == name)
+  if (m_long_name == name) {
     return true;
+  }
   m_long_name = name;
   return SendPollReplyIfRequired();
 }
@@ -341,8 +357,9 @@ bool ArtNetNodeImpl::SetNetAddress(uint8_t net_address) {
     OLA_WARN << "Artnet net address > 127, truncating";
     net_address = net_address & 0x7f;
   }
-  if (net_address == m_net_address)
+  if (net_address == m_net_address) {
     return true;
+  }
 
   m_net_address = net_address;
 
@@ -353,8 +370,9 @@ bool ArtNetNodeImpl::SetNetAddress(uint8_t net_address) {
     (*iter)->ClearSubscribedNodes();
   }
 
-  if (input_ports_enabled)
+  if (input_ports_enabled) {
     SendPollIfAllowed();
+  }
   return SendPollReplyIfRequired();
 }
 
@@ -368,18 +386,20 @@ bool ArtNetNodeImpl::SetSubnetAddress(uint8_t subnet_address) {
     changed |= (*iter)->SetSubNetAddress(subnet_address);
   }
 
-  if (input_ports_enabled && changed)
+  if (input_ports_enabled && changed) {
     SendPollIfAllowed();
+  }
 
   // set for all output ports.
   uint8_t old_address = m_output_ports[0].universe_address >> 4;
-  if (old_address == subnet_address && !changed)
+  if (old_address == subnet_address && !changed) {
     return true;
+  }
 
   subnet_address = subnet_address << 4;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     m_output_ports[i].universe_address = subnet_address |
-      (m_output_ports[i].universe_address & 0x0f);
+        (m_output_ports[i].universe_address & 0x0f);
   }
 
   return SendPollReplyIfRequired();
@@ -392,8 +412,9 @@ uint8_t ArtNetNodeImpl::InputPortCount() const {
 bool ArtNetNodeImpl::SetInputPortUniverse(uint8_t port_id,
                                           uint8_t universe_id) {
   InputPort *port = GetInputPort(port_id);
-  if (!port)
+  if (!port) {
     return false;
+  }
 
   port->enabled = true;
   if (port->SetUniverseAddress(universe_id)) {
@@ -469,24 +490,28 @@ bool ArtNetNodeImpl::OutputPortState(uint8_t port_id) const {
 bool ArtNetNodeImpl::SetMergeMode(uint8_t port_id,
                                   artnet_merge_mode merge_mode) {
   OutputPort *port = GetOutputPort(port_id);
-  if (!port)
+  if (!port) {
     return false;
+  }
 
   port->merge_mode = merge_mode;
   return SendPollReplyIfRequired();
 }
 
 bool ArtNetNodeImpl::SendPoll() {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   bool send = false;
   InputPorts::const_iterator iter = m_input_ports.begin();
-  for (; iter != m_input_ports.end(); ++iter)
+  for (; iter != m_input_ports.end(); ++iter) {
     send |= (*iter)->enabled;
+  }
 
-  if (!send)
+  if (!send) {
     return true;
+  }
 
   OLA_DEBUG << "Sending ArtPoll";
   artnet_packet packet;
@@ -502,8 +527,9 @@ bool ArtNetNodeImpl::SendPoll() {
 
 bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
   InputPort *port = GetEnabledInputPort(port_id, "ArtDMX");
-  if (!port)
+  if (!port) {
     return false;
+  }
 
   if (!buffer.Size()) {
     OLA_DEBUG << "Not sending 0 length packet";
@@ -558,9 +584,9 @@ bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
     }
 
     if (port->subscribed_nodes.empty()) {
-      OLA_DEBUG <<
-        "Suppressing data transmit due to no active nodes for universe " <<
-        static_cast<int>(port->PortAddress());
+      OLA_DEBUG << "Suppressing data transmit due to no active nodes for "
+                   "universe "
+                << static_cast<int>(port->PortAddress());
       sent_ok = true;
     } else {
       // We sent at least one packet, increment the sequence number
@@ -568,8 +594,9 @@ bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
     }
   }
 
-  if (!sent_ok)
+  if (!sent_ok) {
     OLA_WARN << "Failed to send ArtNet DMX packet";
+  }
   return sent_ok;
 }
 
@@ -582,8 +609,9 @@ void ArtNetNodeImpl::RunFullDiscovery(uint8_t port_id,
     return;
   }
 
-  if (!StartDiscoveryProcess(port, callback))
+  if (!StartDiscoveryProcess(port, callback)) {
     return;
+  }
 
   OLA_DEBUG << "Sending ArtTodControl";
   artnet_packet packet;
@@ -594,8 +622,9 @@ void ArtNetNodeImpl::RunFullDiscovery(uint8_t port_id,
   packet.data.tod_control.command = TOD_FLUSH_COMMAND;
   packet.data.tod_control.address = port->PortAddress();
   unsigned int size = sizeof(packet.data.tod_control);
-  if (!SendPacket(packet, size, m_interface.bcast_address))
+  if (!SendPacket(packet, size, m_interface.bcast_address)) {
     port->RunDiscoveryCallback();
+  }
 }
 
 void ArtNetNodeImpl::RunIncrementalDiscovery(
@@ -608,8 +637,9 @@ void ArtNetNodeImpl::RunIncrementalDiscovery(
     return;
   }
 
-  if (!StartDiscoveryProcess(port, callback))
+  if (!StartDiscoveryProcess(port, callback)) {
     return;
+  }
 
   OLA_DEBUG << "Sending ArtTodRequest for address "
             << static_cast<int>(port->PortAddress());
@@ -621,8 +651,9 @@ void ArtNetNodeImpl::RunIncrementalDiscovery(
   packet.data.tod_request.address_count = 1;  // only one universe address
   packet.data.tod_request.addresses[0] = port->PortAddress();
   unsigned int size = sizeof(packet.data.tod_request);
-  if (!SendPacket(packet, size, m_interface.bcast_address))
+  if (!SendPacket(packet, size, m_interface.bcast_address)) {
     port->RunDiscoveryCallback();
+  }
 }
 
 void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
@@ -650,9 +681,10 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
   const UID &uid_destination = request->DestinationUID();
   uid_map::const_iterator iter = port->uids.find(uid_destination);
   if (iter == port->uids.end()) {
-    if (!uid_destination.IsBroadcast())
+    if (!uid_destination.IsBroadcast()) {
       OLA_WARN << "Couldn't find " << uid_destination
                << " in the uid map, broadcasting packet";
+    }
   } else {
     port->rdm_ip_destination = iter->second.first;
   }
@@ -682,8 +714,9 @@ bool ArtNetNodeImpl::SetUnsolicitedUIDSetHandler(
     uint8_t port_id,
     ola::Callback1<void, const ola::rdm::UIDSet&> *tod_callback) {
   InputPort *port = GetInputPort(port_id);
-  if (port)
+  if (port) {
     port->SetTodCallback(tod_callback);
+  }
   return port;
 }
 
@@ -691,8 +724,9 @@ void ArtNetNodeImpl::GetSubscribedNodes(
     uint8_t port_id,
     vector<IPV4Address> *node_addresses) {
   InputPort *port = GetInputPort(port_id);
-  if (!port)
+  if (!port) {
     return;
+  }
 
   map<IPV4Address, TimeStamp> &subscribed_nodes = port->subscribed_nodes;
   map<IPV4Address, TimeStamp>::const_iterator iter = subscribed_nodes.begin();
@@ -709,11 +743,13 @@ bool ArtNetNodeImpl::SetDMXHandler(uint8_t port_id,
                                    DmxBuffer *buffer,
                                    Callback0<void> *on_data) {
   OutputPort *port = GetOutputPort(port_id);
-  if (!port)
+  if (!port) {
     return false;
+  }
 
-  if (port->on_data)
+  if (port->on_data) {
     delete m_output_ports[port_id].on_data;
+  }
   port->buffer = buffer;
   port->on_data = on_data;
   return true;
@@ -721,8 +757,9 @@ bool ArtNetNodeImpl::SetDMXHandler(uint8_t port_id,
 
 bool ArtNetNodeImpl::SendTod(uint8_t port_id, const UIDSet &uid_set) {
   OutputPort *port = GetEnabledOutputPort(port_id, "ArtTodData");
-  if (!port)
+  if (!port) {
     return false;
+  }
 
   OLA_DEBUG << "Sending ArtTodRequest";
   artnet_packet packet;
@@ -774,15 +811,19 @@ bool ArtNetNodeImpl::SetOutputPortRDMHandlers(
     ola::Callback0<void> *on_flush,
     ola::Callback2<void, RDMRequest*, RDMCallback*> *on_rdm_request) {
   OutputPort *port = GetOutputPort(port_id);
-  if (!port)
+  if (!port) {
     return false;
+  }
 
-  if (port->on_discover)
+  if (port->on_discover) {
     delete port->on_discover;
-  if (port->on_flush)
+  }
+  if (port->on_flush) {
     delete port->on_flush;
-  if (port->on_rdm_request)
+  }
+  if (port->on_rdm_request) {
     delete port->on_rdm_request;
+  }
   port->on_discover = on_discover;
   port->on_flush = on_flush;
   port->on_rdm_request = on_rdm_request;
@@ -816,15 +857,17 @@ void ArtNetNodeImpl::SocketReady() {
 
   if (!m_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                           &packet_size,
-                          &source))
+                          &source)) {
     return;
+  }
 
   HandlePacket(source.Host(), packet, packet_size);
 }
 
 bool ArtNetNodeImpl::SendPollIfAllowed() {
-  if (!m_running)
+  if (!m_running) {
     return true;
+  }
 
   if (m_in_configuration_mode) {
     m_artpoll_required = true;
@@ -975,11 +1018,16 @@ void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
 void ArtNetNodeImpl::HandlePollPacket(const IPV4Address &source_address,
                                       const artnet_poll_t &packet,
                                       unsigned int packet_size) {
-  if (!CheckPacketSize(source_address, "ArtPoll", packet_size, sizeof(packet)))
+  if (!CheckPacketSize(source_address,
+                       "ArtPoll",
+                       packet_size,
+                       sizeof(packet))) {
     return;
+  }
 
-  if (!CheckPacketVersion(source_address, "ArtPoll", packet.version))
+  if (!CheckPacketVersion(source_address, "ArtPoll", packet.version)) {
     return;
+  }
 
   m_send_reply_on_change = packet.talk_to_me & 0x02;
   // It's unclear if this should be broadcast or unicast, stick with broadcast
@@ -990,10 +1038,11 @@ void ArtNetNodeImpl::HandlePollPacket(const IPV4Address &source_address,
 void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
                                        const artnet_reply_t &packet,
                                        unsigned int packet_size) {
-  if (m_interface.ip_address == source_address)
+  if (m_interface.ip_address == source_address) {
     return;
+  }
 
-  // older versions don't have the bind_ip and the extra filler, make sure we
+  // Older versions don't have the bind_ip and the extra filler, make sure we
   // support these
   unsigned int minimum_reply_size = (
       sizeof(packet) -
@@ -1002,8 +1051,9 @@ void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
       sizeof(packet.bind_index) -
       sizeof(packet.bind_ip));
   if (!CheckPacketSize(source_address, "ArtPollReply", packet_size,
-                       minimum_reply_size))
+                       minimum_reply_size)) {
     return;
+  }
 
   if (packet.net_address != m_net_address) {
     OLA_DEBUG << "Received ArtPollReply for net "
@@ -1036,11 +1086,16 @@ void ArtNetNodeImpl::HandleDataPacket(const IPV4Address &source_address,
                                       unsigned int packet_size) {
   // The data section needs to be at least 2 bytes according to the spec
   unsigned int header_size = sizeof(artnet_dmx_t) - DMX_UNIVERSE_SIZE;
-  if (!CheckPacketSize(source_address, "ArtDmx", packet_size, header_size + 2))
+  if (!CheckPacketSize(source_address,
+                       "ArtDmx",
+                       packet_size,
+                       header_size + 2)) {
     return;
+  }
 
-  if (!CheckPacketVersion(source_address, "ArtDmx", packet.version))
+  if (!CheckPacketVersion(source_address, "ArtDmx", packet.version)) {
     return;
+  }
 
   if (packet.net != m_net_address) {
     OLA_DEBUG << "Received ArtDmx for net " << static_cast<int>(packet.net)
@@ -1074,11 +1129,13 @@ void ArtNetNodeImpl::HandleTodRequest(const IPV4Address &source_address,
                                       unsigned int packet_size) {
   unsigned int header_size = sizeof(packet) - sizeof(packet.addresses);
   if (!CheckPacketSize(source_address, "ArtTodRequest", packet_size,
-                       header_size))
+                       header_size)) {
     return;
+  }
 
-  if (!CheckPacketVersion(source_address, "ArtTodRequest", packet.version))
+  if (!CheckPacketVersion(source_address, "ArtTodRequest", packet.version)) {
     return;
+  }
 
   if (packet.net != m_net_address) {
     OLA_DEBUG << "Received ArtTodRequest for net "
@@ -1123,11 +1180,13 @@ void ArtNetNodeImpl::HandleTodData(const IPV4Address &source_address,
                                    unsigned int packet_size) {
   unsigned int expected_size = sizeof(packet) - sizeof(packet.tod);
   if (!CheckPacketSize(source_address, "ArtTodData", packet_size,
-                       expected_size))
+                       expected_size)) {
     return;
+  }
 
-  if (!CheckPacketVersion(source_address, "ArtTodData", packet.version))
+  if (!CheckPacketVersion(source_address, "ArtTodData", packet.version)) {
     return;
+  }
 
   if (packet.rdm_version != RDM_VERSION) {
     OLA_WARN << "Dropping non standard RDM version: "
@@ -1143,7 +1202,7 @@ void ArtNetNodeImpl::HandleTodData(const IPV4Address &source_address,
   }
 
   if (packet.command_response) {
-    OLA_WARN << "Command response 0x" << std::hex << packet.command_response
+    OLA_WARN << "Command response " << ToHex(packet.command_response)
              << " != 0x0";
     return;
   }
@@ -1160,11 +1219,13 @@ void ArtNetNodeImpl::HandleTodControl(const IPV4Address &source_address,
                                       const artnet_todcontrol_t &packet,
                                       unsigned int packet_size) {
   if (!CheckPacketSize(source_address, "ArtTodControl", packet_size,
-                       sizeof(packet)))
+                       sizeof(packet))) {
     return;
+  }
 
-  if (!CheckPacketVersion(source_address, "ArtTodControl", packet.version))
+  if (!CheckPacketVersion(source_address, "ArtTodControl", packet.version)) {
     return;
+  }
 
   if (packet.net != m_net_address) {
     OLA_DEBUG << "Received ArtTodControl for net "
@@ -1174,8 +1235,9 @@ void ArtNetNodeImpl::HandleTodControl(const IPV4Address &source_address,
     return;
   }
 
-  if (packet.command != TOD_FLUSH_COMMAND)
+  if (packet.command != TOD_FLUSH_COMMAND) {
     return;
+  }
 
   for (unsigned int port_id = 0; port_id < ARTNET_MAX_PORTS; port_id++) {
     if (m_output_ports[port_id].enabled &&
@@ -1190,11 +1252,13 @@ void ArtNetNodeImpl::HandleRdm(const IPV4Address &source_address,
                                const artnet_rdm_t &packet,
                                unsigned int packet_size) {
   unsigned int header_size = sizeof(packet) - ARTNET_MAX_RDM_DATA;
-  if (!CheckPacketSize(source_address, "ArtRDM", packet_size, header_size))
+  if (!CheckPacketSize(source_address, "ArtRDM", packet_size, header_size)) {
     return;
+  }
 
-  if (!CheckPacketVersion(source_address, "ArtRDM", packet.version))
+  if (!CheckPacketVersion(source_address, "ArtRDM", packet.version)) {
     return;
+  }
 
   if (packet.rdm_version != RDM_VERSION) {
     OLA_INFO << "Dropping non standard RDM version: "
@@ -1215,8 +1279,9 @@ void ArtNetNodeImpl::HandleRdm(const IPV4Address &source_address,
   }
 
   unsigned int rdm_length = packet_size - header_size;
-  if (!rdm_length)
+  if (!rdm_length) {
     return;
+  }
 
   // look for the port that this was sent to, once we know the port we can try
   // to parse the message
@@ -1256,8 +1321,9 @@ void ArtNetNodeImpl::RDMRequestCompletion(
     uint8_t universe_address,
     RDMReply *reply) {
   OutputPort *port = GetEnabledOutputPort(port_id, "ArtRDM");
-  if (!port)
+  if (!port) {
     return;
+  }
 
   if (port->universe_address == universe_address) {
     if (reply->StatusCode() == ola::rdm::RDM_COMPLETED_OK) {
@@ -1281,7 +1347,7 @@ void ArtNetNodeImpl::HandleRDMResponse(InputPort *port,
                                        const IPV4Address &source_address) {
   auto_ptr<RDMReply> reply(ola::rdm::RDMReply::FromFrame(frame));
 
-  // without a valid response, we don't know which request this matches. This
+  // Without a valid response, we don't know which request this matches. This
   // makes ArtNet rather useless for RDM regression testing
   if (!reply->Response()) {
     return;
@@ -1358,11 +1424,13 @@ void ArtNetNodeImpl::HandleIPProgram(const IPV4Address &source_address,
                                      const artnet_ip_prog_t &packet,
                                      unsigned int packet_size) {
   if (!CheckPacketSize(source_address, "ArtIpProg", packet_size,
-                       sizeof(packet)))
+                       sizeof(packet))) {
     return;
+  }
 
-  if (!CheckPacketVersion(source_address, "ArtIpProg", packet.version))
+  if (!CheckPacketVersion(source_address, "ArtIpProg", packet.version)) {
     return;
+  }
 
   OLA_INFO << "Got ArtIpProgram, ignoring because we don't support remote "
            << "configuration";
@@ -1442,13 +1510,15 @@ void ArtNetNodeImpl::UpdatePortFromSource(OutputPort *port,
     }
 
     // timeout old sources
-    if (port->sources[i].timestamp < merge_time_threshold)
+    if (port->sources[i].timestamp < merge_time_threshold) {
       port->sources[i].address = IPV4Address();
+    }
 
-    if (!port->sources[i].address.IsWildcard())
+    if (!port->sources[i].address.IsWildcard()) {
       active_sources++;
-    else if (i < first_empty_slot)
+    } else if (i < first_empty_slot) {
       first_empty_slot = i;
+    }
   }
 
   if (source_slot == MAX_MERGE_SOURCES) {
@@ -1522,8 +1592,8 @@ ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(uint8_t port_id,
                                                         bool warn) {
   if (port_id >= m_input_ports.size()) {
     if (warn) {
-      OLA_WARN << "Port index of out bounds: " <<
-        static_cast<int>(port_id) << " >= " << m_input_ports.size();
+      OLA_WARN << "Port index of out bounds: "
+               << static_cast<int>(port_id) << " >= " << m_input_ports.size();
     }
     return NULL;
   }
@@ -1533,8 +1603,8 @@ ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(uint8_t port_id,
 const ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(
     uint8_t port_id) const {
   if (port_id >= m_input_ports.size()) {
-    OLA_WARN << "Port index of out bounds: " <<
-      static_cast<int>(port_id) << " >= " << m_input_ports.size();
+    OLA_WARN << "Port index of out bounds: "
+             << static_cast<int>(port_id) << " >= " << m_input_ports.size();
     return NULL;
   }
   return m_input_ports[port_id];
@@ -1543,20 +1613,22 @@ const ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(
 ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetEnabledInputPort(
     uint8_t port_id,
     const string &action) {
-  if (!m_running)
+  if (!m_running) {
     return NULL;
+  }
 
   InputPort *port = GetInputPort(port_id);
   bool ok = port ? port->enabled : false;
-  if (!ok)
+  if (!ok) {
     OLA_INFO << "Attempt to send " << action << " on an inactive port";
+  }
   return ok ? port : NULL;
 }
 
 ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetOutputPort(uint8_t port_id) {
   if (port_id >= ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: " <<
-      static_cast<int>(port_id) << " >= " << ARTNET_MAX_PORTS;
+    OLA_WARN << "Port index of out bounds: "
+             << static_cast<int>(port_id) << " >= " << ARTNET_MAX_PORTS;
     return NULL;
   }
   return &m_output_ports[port_id];
@@ -1575,13 +1647,15 @@ const ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetOutputPort(
 ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetEnabledOutputPort(
     uint8_t port_id,
     const string &action) {
-  if (!m_running)
+  if (!m_running) {
     return NULL;
+  }
 
   OutputPort *port = GetOutputPort(port_id);
   bool ok = port ? port->enabled : false;
-  if (!ok)
+  if (!ok) {
     OLA_INFO << "Attempt to send " << action << " on an inactive port";
+  }
   return ok ? port : NULL;
 }
 
@@ -1614,7 +1688,7 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(InputPort *port,
   unsigned int uid_count = std::min(tod_size / ola::rdm::UID::UID_SIZE,
                                     (unsigned int) packet.uid_count);
 
-  OLA_DEBUG << "Got TOD data packet with " << uid_count << " uids";
+  OLA_DEBUG << "Got TOD data packet with " << uid_count << " UIDs";
   uid_map &port_uids = port->uids;
   UIDSet uid_set;
 
@@ -1626,8 +1700,8 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(InputPort *port,
       port_uids[uid] = std::pair<IPV4Address, uint8_t>(source_address, 0);
     } else {
       if (iter->second.first != source_address) {
-        OLA_WARN << "UID " << uid << " changed from " <<
-            iter->second.first << " to " << source_address;
+        OLA_WARN << "UID " << uid << " changed from "
+                 << iter->second.first << " to " << source_address;
         iter->second.first = source_address;
       }
       iter->second.second = 0;
@@ -1674,9 +1748,8 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(InputPort *port,
 bool ArtNetNodeImpl::StartDiscoveryProcess(InputPort *port,
                                            RDMDiscoveryCallback *callback) {
   if (port->discovery_callback) {
-    OLA_FATAL
-        << "ArtNet UID discovery already running, something has gone wrong "
-        << "with the DiscoverableQueueingRDMController.";
+    OLA_FATAL << "ArtNet UID discovery already running, something has gone "
+                 "wrong with the DiscoverableQueueingRDMController.";
     port->RunTodCallback();
     return false;
   }
@@ -1762,7 +1835,7 @@ void ArtNetNode::RunIncrementalDiscovery(uint8_t port_id,
 void ArtNetNode::SendRDMRequest(uint8_t port_id, RDMRequest *request,
                                 RDMCallback *on_complete) {
   if (!CheckInputPortId(port_id)) {
-  RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
+    RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
     delete request;
   } else {
     m_controllers[port_id]->SendRDMRequest(request, on_complete);

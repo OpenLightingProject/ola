@@ -12,7 +12,7 @@ built_sources += \
 
 # We build the .cc files as a separate unit because they aren't warning-clean.
 noinst_LTLIBRARIES += common/protocol/libolaproto.la
-common_protocol_libolaproto_la_SOURCES = \
+nodist_common_protocol_libolaproto_la_SOURCES = \
     common/protocol/Ola.pb.cc \
     common/protocol/OlaService.pb.cpp
 common_protocol_libolaproto_la_LIBADD = $(libprotobuf_LIBS)

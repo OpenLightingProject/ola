@@ -208,7 +208,9 @@ class HTTPServer: public ola::thread::Thread {
   static const char CONTENT_TYPE_OCT[];
 
   // Expose the SelectServer
-  ola::io::SelectServer *SelectServer() { return &m_select_server; }
+  ola::io::SelectServer *SelectServer() { return m_select_server.get(); }
+
+  static struct MHD_Response *BuildResponse(void *data, size_t size);
 
  private :
   typedef struct {
@@ -218,8 +220,8 @@ class HTTPServer: public ola::thread::Thread {
 
   struct DescriptorState {
    public:
-    explicit DescriptorState(ola::io::UnmanagedFileDescriptor *descriptor)
-        : descriptor(descriptor), read(0), write(0) {}
+    explicit DescriptorState(ola::io::UnmanagedFileDescriptor *_descriptor)
+        : descriptor(_descriptor), read(0), write(0) {}
 
     ola::io::UnmanagedFileDescriptor *descriptor;
     uint8_t read    : 1;
@@ -238,7 +240,7 @@ class HTTPServer: public ola::thread::Thread {
   typedef std::set<DescriptorState*, Descriptor_lt> SocketSet;
 
   struct MHD_Daemon *m_httpd;
-  ola::io::SelectServer m_select_server;
+  std::auto_ptr<ola::io::SelectServer> m_select_server;
   SocketSet m_sockets;
 
   std::map<std::string, BaseHTTPCallback*> m_handlers;

@@ -84,7 +84,7 @@ MACAddress::MACAddress() {
   memset(m_address, 0, LENGTH);
 }
 
-MACAddress::MACAddress(const uint8_t address[LENGTH]) {
+MACAddress::MACAddress(const uint8_t *address) {
   memcpy(m_address, address, LENGTH);
 }
 

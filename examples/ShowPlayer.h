@@ -34,40 +34,40 @@
  */
 class ShowPlayer {
  public:
-    /**
-     * @brief Create a new ShowPlayer
-     * @param filename the show file to play
-     */
-    explicit ShowPlayer(const std::string &filename);
-    ~ShowPlayer();
+  /**
+   * @brief Create a new ShowPlayer
+   * @param filename the show file to play
+   */
+  explicit ShowPlayer(const std::string &filename);
+  ~ShowPlayer();
 
-    /**
-     * @brief Initialize the show player.
-     * @return EXIT_OK if successfull.
-     */
-    int Init();
+  /**
+   * @brief Initialize the show player.
+   * @return EXIT_OK if successfull.
+   */
+  int Init();
 
-    /**
-     * @brief Playback the show
-     * @param iterations the number of iterations of the show to play.
-     * @param duration the duration in seconds after which playback is stopped.
-     * @param delay the hold time at the end of a show before playback starts
-     * from the beginning again.
-     */
-    int Playback(unsigned int iterations,
-                 unsigned int duration,
-                 unsigned int delay);
+  /**
+   * @brief Playback the show
+   * @param iterations the number of iterations of the show to play.
+   * @param duration the duration in seconds after which playback is stopped.
+   * @param delay the hold time at the end of a show before playback starts
+   * from the beginning again.
+   */
+  int Playback(unsigned int iterations,
+               unsigned int duration,
+               unsigned int delay);
 
  private:
-    ola::client::OlaClientWrapper m_client;
-    ShowLoader m_loader;
-    bool m_infinite_loop;
-    unsigned int m_iteration_remaining;
-    unsigned int m_loop_delay;
+  ola::client::OlaClientWrapper m_client;
+  ShowLoader m_loader;
+  bool m_infinite_loop;
+  unsigned int m_iteration_remaining;
+  unsigned int m_loop_delay;
 
-    void SendNextFrame();
-    ShowLoader::State RegisterNextTimeout();
-    bool ReadNextFrame(unsigned int *universe, ola::DmxBuffer *data);
-    void HandleEndOfFile();
+  void SendNextFrame();
+  ShowLoader::State RegisterNextTimeout();
+  bool ReadNextFrame(unsigned int *universe, ola::DmxBuffer *data);
+  void HandleEndOfFile();
 };
 #endif  // EXAMPLES_SHOWPLAYER_H_

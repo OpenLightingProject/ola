@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DeviceManagerImpl.cpp
+ * DeviceManagerImpl.h
  * Copyright (C) 2013 Simon Newton
  * The DeviceManagerImpl maintains a TCP connection to each E1.33 device.
  */
@@ -41,10 +41,10 @@
 
 #include HASH_MAP_H
 
-#include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/TCPTransport.h"
+#include "libs/acn/RDMInflator.h"
+#include "libs/acn/E133Inflator.h"
+#include "libs/acn/RootInflator.h"
+#include "libs/acn/TCPTransport.h"
 
 namespace ola {
 namespace e133 {
@@ -111,9 +111,9 @@ class DeviceManagerImpl {
     ola::e133::MessageBuilder *m_message_builder;
 
     // inflators
-    ola::plugin::e131::RootInflator m_root_inflator;
-    ola::plugin::e131::E133Inflator m_e133_inflator;
-    ola::plugin::e131::RDMInflator m_rdm_inflator;
+    ola::acn::RootInflator m_root_inflator;
+    ola::acn::E133Inflator m_e133_inflator;
+    ola::acn::RDMInflator m_rdm_inflator;
 
     /*
      * Avoid passing pointers to the DeviceState objects in callbacks.
@@ -123,14 +123,14 @@ class DeviceManagerImpl {
      */
     void OnTCPConnect(TCPSocket *socket);
     void ReceiveTCPData(IPV4Address ip_address,
-                        ola::plugin::e131::IncomingTCPTransport *transport);
+                        ola::acn::IncomingTCPTransport *transport);
     void SocketUnhealthy(IPV4Address address);
     void SocketClosed(IPV4Address address);
-    void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
+    void RLPDataReceived(const ola::acn::TransportHeader &header);
 
     void EndpointRequest(
-        const ola::plugin::e131::TransportHeader *transport_header,
-        const ola::plugin::e131::E133Header *e133_header,
+        const ola::acn::TransportHeader *transport_header,
+        const ola::acn::E133Header *e133_header,
         const string &raw_request);
 
     static const TimeInterval TCP_CONNECT_TIMEOUT;

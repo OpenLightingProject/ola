@@ -55,20 +55,21 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
   while (1) {
     pAdapterInfo = reinterpret_cast<IP_ADAPTER_INFO*>(new uint8_t[ulOutBufLen]);
     if (!pAdapterInfo) {
-      OLA_WARN << "Error allocating memory needed for GetAdaptersinfo";
+      OLA_WARN << "Error allocating memory needed for GetAdaptersInfo";
       return interfaces;
     }
 
-    // if ulOutBufLen isn't long enough it'll be set to the size of the buffer
-    // required
+    // if ulOutBufLen isn't long enough it will be set to the size of the
+    // buffer required
     DWORD status = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen);
-    if (status == NO_ERROR)
+    if (status == NO_ERROR) {
       break;
+    }
 
     delete[] pAdapterInfo;
     if (status != ERROR_BUFFER_OVERFLOW) {
-      OLA_WARN << "GetAdaptersInfo failed with error: " <<
-        static_cast<int>(status);
+      OLA_WARN << "GetAdaptersInfo failed with error: "
+               << static_cast<int>(status);
       return interfaces;
     }
   }
@@ -76,8 +77,12 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
   for (pAdapter = pAdapterInfo;
        pAdapter && pAdapter < pAdapterInfo + ulOutBufLen;
        pAdapter = pAdapter->Next) {
-    if (pAdapter->Type != MIB_IF_TYPE_ETHERNET)
+    if (pAdapter->Type != MIB_IF_TYPE_ETHERNET) {
+      OLA_INFO << "Skipping " << pAdapter->AdapterName
+               << " as it's not MIB_IF_TYPE_ETHERNET"
+               << " got " << pAdapter->Type << " instead";
       continue;
+    }
 
     for (ipAddress = &pAdapter->IpAddressList; ipAddress;
          ipAddress = ipAddress->Next) {
