@@ -169,11 +169,15 @@ before_install:
 #Report the compiler version
  - $CXX --version
 
+after_failure:
+  - if [ -e ${TRAVIS_BUILD_DIR}/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/test-suite.log; fi
+  - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log
+
 after_success:
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
 
 after_script:
-  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
+  - if [ "$TASK" = "coverity" ]; then cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi
 
 notifications:
   irc:
