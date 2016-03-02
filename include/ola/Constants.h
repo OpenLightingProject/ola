@@ -37,6 +37,16 @@ enum {
 };
 
 /**
+ * @brief The minimum number for a DMX512 slot.
+ */
+static const uint16_t DMX_MIN_SLOT_NUMBER = 1;
+
+/**
+ * @brief The maximum number for a DMX512 slot.
+ */
+static const uint16_t DMX_MAX_SLOT_NUMBER = DMX_UNIVERSE_SIZE;
+
+/**
  * @brief The minimum value a DMX512 slot can take.
  */
 static const uint8_t DMX_MIN_SLOT_VALUE = 0;
