@@ -37,7 +37,14 @@ addons:
 matrix:
   fast_finish: true
   include:
-    - compiler: clang
+    - os: osx
+      compiler: clang
+      env: TASK='compile'
+    - os: osx
+      compiler: gcc
+      env: TASK='compile'
+    - os: linux
+      compiler: clang
       env: TASK='compile'
       addons:
         apt:
@@ -46,7 +53,8 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
            - llvm-toolchain-precise
-    - compiler: gcc
+    - os: linux
+      compiler: gcc
       env: TASK='compile'
       addons:
         apt:
@@ -54,7 +62,8 @@ matrix:
            - *core_build_gpp_latest
           sources:
            - ubuntu-toolchain-r-test
-    - compiler: gcc
+    - os: linux
+      compiler: gcc
       env: TASK='coverage'
       addons:
         apt:
@@ -62,7 +71,8 @@ matrix:
            - *core_build_gpp_latest
           sources:
            - ubuntu-toolchain-r-test
-    - compiler: gcc
+    - os: linux
+      compiler: gcc
       env: TASK='coverity'
       addons:
         apt:
@@ -72,7 +82,8 @@ matrix:
            - g++-4.9
           sources:
            - ubuntu-toolchain-r-test
-    - env: TASK='doxygen'
+    - os: linux
+      env: TASK='doxygen'
       addons:
         apt:
           packages:
@@ -81,21 +92,25 @@ matrix:
            - graphviz
           sources:
            - ubuntu-toolchain-r-test
-    - env: TASK='lint'
+    - os: linux
+      env: TASK='lint'
       addons:
         apt:
           packages:
            - *core_build
-    - env: TASK='check-licences'
+    - os: linux
+      env: TASK='check-licences'
       addons:
         apt:
           packages:
            - *core_build
-    - env: TASK='jshint'
+    - os: linux
+      env: TASK='jshint'
       addons:
         apt:
           packages:
-    - env: TASK='flake8'
+    - os: linux
+      env: TASK='flake8'
       addons:
         apt:
           packages:
@@ -108,9 +123,11 @@ matrix:
            - python-numpy
            - python-rrdtool
   allow_failures:
-    - compiler: gcc
+    - os: linux
+      compiler: gcc
       env: TASK='coverage'
-    - compiler: gcc
+    - os: linux
+      compiler: gcc
       env: TASK='coverity'
     - env: TASK='pychecker'
 
@@ -151,19 +168,25 @@ install:
   - if [ "$TASK" = "pychecker" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 
 before_install:
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex ossp-uuid protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
- - if [ \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-4.9" CC="ccache gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
- - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
 #Report the compiler version
  - $CXX --version
+
+after_failure:
+  - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log
 
 after_success:
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
 
 after_script:
-  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
+  - if [ "$TASK" = "coverity" ]; then cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi
 
 notifications:
   irc:
