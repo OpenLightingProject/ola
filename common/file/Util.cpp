@@ -128,30 +128,29 @@ bool FindMatchingFiles(const string &directory,
   FindClose(h_find);
 #else
   DIR *dp;
-  struct dirent dir_ent;
-  struct dirent *dir_ent_p;
+  struct dirent *dir_ent;
   if ((dp = opendir(directory.data())) == NULL) {
     OLA_WARN << "Could not open " << directory << ":" << strerror(errno);
     return false;
   }
 
-  if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
-    OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
+  if ((dir_ent = readdir(dp)) == NULL) {
+    OLA_WARN << "readdir(" << directory << "): " << strerror(errno);
     closedir(dp);
     return false;
   }
 
-  while (dir_ent_p != NULL) {
+  while (dir_ent != NULL) {
     vector<string>::const_iterator iter;
     for (iter = prefixes.begin(); iter != prefixes.end(); ++iter) {
-      if (!strncmp(dir_ent_p->d_name, iter->data(), iter->size())) {
+      if (!strncmp(dir_ent->d_name, iter->data(), iter->size())) {
         std::ostringstream str;
-        str << directory << PATH_SEPARATOR << dir_ent_p->d_name;
+        str << directory << PATH_SEPARATOR << dir_ent->d_name;
         files->push_back(str.str());
       }
     }
-    if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
-      OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
+    if ((dir_ent = readdir(dp)) == NULL) {
+      OLA_WARN << "readdir(" << directory << "): " << strerror(errno);
       closedir(dp);
       return false;
     }
