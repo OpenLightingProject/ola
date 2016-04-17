@@ -52,7 +52,7 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise
+           - llvm-toolchain-precise-3.8
     - os: linux
       compiler: gcc
       env: TASK='compile'

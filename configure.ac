@@ -411,22 +411,25 @@ AS_IF([test "x$use_ossp_uuid" = xyes],
 
 # DNS-SD support
 # We use either avahi or the Apple DNS-SD library.
+AC_ARG_WITH(dns-sd,
+[AS_HELP_STRING([--without-dns-sd], [disable DNS-SD support])],,)
+if test "x$with_dns_sd" != "xno"; then
+	# dns_sd
+	AC_CHECK_HEADER(
+	  [dns_sd.h],
+	  [AC_SEARCH_LIBS(DNSServiceRegister, [dns_sd], [have_dnssd="yes"])])
 
-# dns_sd
-AC_CHECK_HEADER(
-  [dns_sd.h],
-  [AC_SEARCH_LIBS(DNSServiceRegister, [dns_sd], [have_dnssd="yes"])])
+	# avahi
+	PKG_CHECK_MODULES(
+	  avahi,
+	  [avahi-client],
+	  [have_avahi="yes"],
+	  [true])
+fi
 
 AS_IF([test "x$have_dnssd" = xyes],
       [AC_DEFINE([HAVE_DNSSD], [1], [Defined to use Bonjour DNS_SD])])
 AM_CONDITIONAL([HAVE_DNSSD], [test "x$have_dnssd" = xyes])
-
-# avahi
-PKG_CHECK_MODULES(
-  avahi,
-  [avahi-client],
-  [have_avahi="yes"],
-  [true])
 
 AS_IF([test "x$have_avahi" = xyes],
       [AC_DEFINE([HAVE_AVAHI], [1], [Defined to use Avahi])])
