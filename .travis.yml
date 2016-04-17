@@ -17,6 +17,7 @@ addons:
      - protobuf-compiler
      - libprotoc-dev
      - python-protobuf
+     - python-numpy
     packages: &core_build
      # This is all the bits we need to enable all options
      - *base_build
@@ -52,7 +53,7 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise
+           - llvm-toolchain-precise-3.8
     - os: linux
       compiler: gcc
       env: TASK='compile'
