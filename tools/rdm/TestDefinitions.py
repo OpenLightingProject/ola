@@ -195,12 +195,18 @@ class InvalidDiscoveryPID(ResponderTestFixture):
 class MuteAllDevices(ResponderTestFixture):
   """Mute all devices, so we can perform DUB tests"""
   PID = 'DISC_MUTE'
+  REQUIRES = ['mute_supported']
   # This is a fake property used to ensure this tests runs before the DUB tests.
   PROVIDES = ['global_mute']
 
   def Test(self):
     # Set the fake property
     self.SetProperty(self.PROVIDES[0], True)
+    if not (self.Property('mute_supported')): 
+       self.SetNotRun('RDM Controller does not support DISCOVERY commands') 
+       self.Stop() 
+       return 
+
     self.AddExpectedResults([
       BroadcastResult(),
       UnsupportedResult()
@@ -651,13 +657,32 @@ class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
     self.SendGet()
 
 
-class SetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
-  """SET device info."""
+class SetDeviceInfo(ResponderTestFixture,
+                    DeviceInfoTest):
+  """Attempt to SET device info with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def Test(self):
-    self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
-    self.SendRawSet(ROOT_DEVICE, self.pid)
+    # Unknown PID shouldn't be valid for a mandatory PID
+    self.AddExpectedResults(
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+    )
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class SetWithData(TestMixins.UnsupportedSetMixin,
+                  ResponderTestFixture,
+                  DeviceInfoTest):
+  """SET device info with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  DATA = 'FOO BAR'
+
+  def Test(self):
+    # Unknown PID shouldn't be valid for a mandatory PID
+    self.AddExpectedResults(
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+    )
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
 class AllSubDevicesGetDeviceInfo(TestMixins.AllSubDevicesGetMixin,
@@ -853,14 +878,19 @@ class GetSupportedParametersWithData(ResponderTestFixture):
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
-class SetSupportedParameters(ResponderTestFixture):
+class SetSupportedParameters(TestMixins.UnsupportedSetMixin,
+                             ResponderTestFixture):
   """Attempt to SET supported parameters."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SUPPORTED_PARAMETERS'
 
-  def Test(self):
-    self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
-    self.SendRawSet(ROOT_DEVICE, self.pid)
+
+class SetSupportedParametersWithData(TestMixins.UnsupportedSetMixin,
+                                     ResponderTestFixture):
+  """SET supported parameters with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SUPPORTED_PARAMETERS'
+  DATA = 'FOO BAR'
 
 
 class AllSubDevicesGetSupportedParameters(TestMixins.AllSubDevicesGetMixin,
@@ -1109,6 +1139,14 @@ class SetParamDescription(TestMixins.UnsupportedSetMixin,
   PID = 'PARAMETER_DESCRIPTION'
 
 
+class SetParamDescriptionWithData(TestMixins.UnsupportedSetMixin,
+                                  ResponderTestFixture):
+  """SET the parameter description with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PARAMETER_DESCRIPTION'
+  DATA = 'FOO BAR'
+
+
 class AllSubDevicesGetParamDescription(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a Get PARAMETER_DESCRIPTION to ALL_SUB_DEVICES."""
@@ -1269,10 +1307,18 @@ class GetProductDetailIdListWithData(TestMixins.GetWithDataMixin,
 
 
 class SetProductDetailIdList(TestMixins.UnsupportedSetMixin,
-                             ResponderTestFixture):
+                             OptionalParameterTestFixture):
   """SET product detail id list."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRODUCT_DETAIL_ID_LIST'
+
+
+class SetProductDetailIdListWithData(TestMixins.UnsupportedSetMixin,
+                                     OptionalParameterTestFixture):
+  """SET product detail id list with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRODUCT_DETAIL_ID_LIST'
+  DATA = 'FOO BAR'
 
 
 class AllSubDevicesGetProductDetailIdList(TestMixins.AllSubDevicesGetMixin,
@@ -1522,9 +1568,24 @@ class GetLanguageCapabilities(OptionalParameterTestFixture):
 
 class GetLanguageCapabilitiesWithData(TestMixins.GetWithDataMixin,
                                       OptionalParameterTestFixture):
-  """GET the language capabilities pid with extra data."""
+  """GET the language capabilities with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LANGUAGE_CAPABILITIES'
+
+
+class SetLanguageCapabilities(TestMixins.UnsupportedSetMixin,
+                              OptionalParameterTestFixture):
+  """Attempt to SET the language capabilities with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LANGUAGE_CAPABILITIES'
+
+
+class SetLanguageCapabilitiesWithData(TestMixins.UnsupportedSetMixin,
+                                      OptionalParameterTestFixture):
+  """SET the language capabilities with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LANGUAGE_CAPABILITIES'
+  DATA = 'FOO BAR'
 
 
 class AllSubDevicesGetLanguageCapablities(TestMixins.AllSubDevicesGetMixin,
@@ -1645,6 +1706,14 @@ class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
   PID = 'SOFTWARE_VERSION_LABEL'
 
 
+class SetSoftwareVersionLabelWithData(TestMixins.UnsupportedSetMixin,
+                                      ResponderTestFixture):
+  """Attempt to SET the software version label with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SOFTWARE_VERSION_LABEL'
+  DATA = 'FOO BAR'
+
+
 class AllSubDevicesGetSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
                                            OptionalParameterTestFixture):
   """Send a Get SOFTWARE_VERSION_LABEL to ALL_SUB_DEVICES."""
@@ -1693,10 +1762,18 @@ class GetBootSoftwareVersionWithData(TestMixins.GetWithDataMixin,
 
 
 class SetBootSoftwareVersion(TestMixins.UnsupportedSetMixin,
-                             ResponderTestFixture):
+                             OptionalParameterTestFixture):
   """Attempt to SET the boot software version."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BOOT_SOFTWARE_VERSION_ID'
+
+
+class SetBootSoftwareVersionWithData(TestMixins.UnsupportedSetMixin,
+                                     OptionalParameterTestFixture):
+  """Attempt to SET the boot software version with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'BOOT_SOFTWARE_VERSION_ID'
+  DATA = 'FOO BAR'
 
 
 class AllSubDevicesGetBootSoftwareVersion(TestMixins.AllSubDevicesGetMixin,
@@ -1728,6 +1805,14 @@ class SetBootSoftwareLabel(TestMixins.UnsupportedSetMixin,
   """SET the boot software label."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
+
+
+class SetBootSoftwareLabelWithData(TestMixins.UnsupportedSetMixin,
+                                   OptionalParameterTestFixture):
+  """SET the boot software label with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'BOOT_SOFTWARE_VERSION_LABEL'
+  DATA = 'FOO BAR'
 
 
 class AllSubDevicesGetBootSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
