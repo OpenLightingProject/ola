@@ -686,10 +686,10 @@ class SetWithData(TestMixins.UnsupportedSetMixin,
 
 
 class AllSubDevicesGetDeviceInfo(TestMixins.AllSubDevicesGetMixin,
-                                 OptionalParameterTestFixture):
+                                 ResponderTestFixture,
+                                 DeviceInfoTest):
   """Send a Get Device Info to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
-  PID = 'DEVICE_INFO'
 
 
 # Supported Parameters Tests & Mixin
@@ -894,7 +894,7 @@ class SetSupportedParametersWithData(TestMixins.UnsupportedSetMixin,
 
 
 class AllSubDevicesGetSupportedParameters(TestMixins.AllSubDevicesGetMixin,
-                                          OptionalParameterTestFixture):
+                                          ResponderTestFixture):
   """Send a Get SUPPORTED_PARAMETERS to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SUPPORTED_PARAMETERS'
@@ -1148,7 +1148,7 @@ class SetParamDescriptionWithData(TestMixins.UnsupportedSetMixin,
 
 
 class AllSubDevicesGetParamDescription(TestMixins.AllSubDevicesGetMixin,
-                                       OptionalParameterTestFixture):
+                                       ResponderTestFixture):
   """Send a Get PARAMETER_DESCRIPTION to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PARAMETER_DESCRIPTION'
@@ -1192,10 +1192,18 @@ class GetProxiedDeviceCountWithData(TestMixins.GetWithDataMixin,
 
 
 class SetProxiedDeviceCount(TestMixins.UnsupportedSetMixin,
-                            ResponderTestFixture):
+                            OptionalParameterTestFixture):
   """SET the count of proxied devices."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PROXIED_DEVICE_COUNT'
+
+
+class SetProxiedDeviceCountWithData(TestMixins.UnsupportedSetMixin,
+                                     OptionalParameterTestFixture):
+  """SET the count of proxied devices with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PROXIED_DEVICE_COUNT'
+  DATA = 'FOO BAR'
 
 
 class AllSubDevicesGetProxiedDeviceCount(TestMixins.AllSubDevicesGetMixin,
@@ -1222,10 +1230,19 @@ class GetProxiedDevicesWithData(TestMixins.GetWithDataMixin,
   PID = 'PROXIED_DEVICES'
 
 
-class SetProxiedDevices(TestMixins.UnsupportedSetMixin, ResponderTestFixture):
+class SetProxiedDevices(TestMixins.UnsupportedSetMixin,
+                        OptionalParameterTestFixture):
   """SET the list of proxied devices."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PROXIED_DEVICES'
+
+
+class SetProxiedDevicesWithData(TestMixins.UnsupportedSetMixin,
+                                OptionalParameterTestFixture):
+  """SET the list of proxied devices with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PROXIED_DEVICES'
+  DATA = 'FOO BAR'
 
 
 class AllSubDevicesGetProxiedDevices(TestMixins.AllSubDevicesGetMixin,
@@ -1715,7 +1732,7 @@ class SetSoftwareVersionLabelWithData(TestMixins.UnsupportedSetMixin,
 
 
 class AllSubDevicesGetSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
-                                           OptionalParameterTestFixture):
+                                           ResponderTestFixture):
   """Send a Get SOFTWARE_VERSION_LABEL to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SOFTWARE_VERSION_LABEL'
