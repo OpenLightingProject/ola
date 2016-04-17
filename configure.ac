@@ -679,6 +679,13 @@ AS_IF([test "${enable_python_libs}" = "yes"],
            eval ac_cv_have_pymod_google_protobuf=\$AS_TR_CPP([HAVE_PYMOD_google.protobuf])])
      ])
 
+AS_IF([test "${enable_rdm_tests}" = "yes"],
+      [AC_CACHE_CHECK([for $PYTHON_NAME module: numpy],
+          [ac_cv_have_pymod_numpy],
+          [AX_PYTHON_MODULE([numpy], [fatal])
+           eval ac_cv_have_pymod_numpy=\$AS_TR_CPP([HAVE_PYMOD_numpy])])
+     ])
+
 # Libraries, that depend on the feature args above.
 #####################################################
 
