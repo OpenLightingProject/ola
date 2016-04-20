@@ -4415,6 +4415,7 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
   REQUIRES = ['total_sub_device_footprint', 'base_dmx_address']
   EXPECTED_FIELDS = ['base_dmx_address']
 
+  # Todo, also allow nack write protect when 0 sub device footprint/no addressable subs
   def NewValue(self):
     base_address = self.Property('base_dmx_address')
     footprint = self.Property('total_sub_device_footprint')
@@ -4454,25 +4455,12 @@ class SetOutOfRangeDMXBlockAddress(OptionalParameterTestFixture):
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
-class SetDMXBlockAddressWithExtraData(ResponderTestFixture):
+class SetDMXBlockAddressWithExtraData(TestMixins.SetWithDataMixin,
+                                      OptionalParameterTestFixture):
   """Send a SET dmx block address with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
-  # We depend on dmx_address to make sure this runs after GetStartAddress
-  # DEPS = [GetStartAddress]
-  # REQUIRES = ['dmx_footprint']
-
-  def Test(self):
-    if self.Property('dmx_footprint') > 0:
-      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    else:
-      self.AddExpectedResults([
-          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
-          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-          self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
-      ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, 'foobar')
-
+  DATA = 'foobar'
 
 
 class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
