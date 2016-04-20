@@ -670,7 +670,7 @@ class SetDeviceInfo(ResponderTestFixture,
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class SetWithData(TestMixins.UnsupportedSetMixin,
+class SetDeviceInfoWithData(TestMixins.UnsupportedSetMixin,
                   ResponderTestFixture,
                   DeviceInfoTest):
   """SET device info with data."""
@@ -2086,7 +2086,7 @@ class SetOutOfRangePersonality(TestMixins.SetOutOfRangeByteMixin,
   LABEL = 'personalities'
 
 
-class SetOversizedPersonality(OptionalParameterTestFixture):
+class SetOutOfRangePersonality(OptionalParameterTestFixture):
   """Send an over-sized SET personality command."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY'
@@ -2260,8 +2260,8 @@ class SetZeroStartAddress(ResponderTestFixture):
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
-class SetOversizedStartAddress(ResponderTestFixture):
-  """Send an over-sized SET dmx start address."""
+class SetStartAddressWithExtraData(ResponderTestFixture):
+  """Send a SET dmx start address with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
   # We depend on dmx_address to make sure this runs after GetStartAddress
@@ -2383,7 +2383,7 @@ class GetSlotDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
   PID = 'SLOT_DESCRIPTION'
 
 
-class GetSlotDescriptionWithTooMuchData(OptionalParameterTestFixture):
+class GetSlotDescriptionWithExtraData(OptionalParameterTestFixture):
   """Get the slot description with more than 2 bytes of data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SLOT_DESCRIPTION'
@@ -2733,7 +2733,7 @@ class GetSensorDefinitionWithNoData(TestMixins.GetWithNoDataMixin,
   PID = 'SENSOR_DEFINITION'
 
 
-class GetSensorDefinitionWithTooMuchData(OptionalParameterTestFixture):
+class GetSensorDefinitionWithExtraData(OptionalParameterTestFixture):
   """Get the sensor definition with more than 1 byte of data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SENSOR_DEFINITION'
@@ -4438,7 +4438,7 @@ class SetZeroDMXBlockAddress(TestMixins.SetZeroUInt16Mixin,
   DEPS = [SetDMXBlockAddress]
 
 
-class SetOversizedDMXBlockAddress(OptionalParameterTestFixture):
+class SetOutOfRangeDMXBlockAddress(OptionalParameterTestFixture):
   """Set DMX_BLOCK_ADDRESS to 513."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
@@ -4448,6 +4448,27 @@ class SetOversizedDMXBlockAddress(OptionalParameterTestFixture):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+
+class SetDMXBlockAddressWithExtraData(ResponderTestFixture):
+  """Send a SET dmx block address with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_BLOCK_ADDRESS'
+  # We depend on dmx_address to make sure this runs after GetStartAddress
+  # DEPS = [GetStartAddress]
+  # REQUIRES = ['dmx_footprint']
+
+  def Test(self):
+    if self.Property('dmx_footprint') > 0:
+      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
+    else:
+      self.AddExpectedResults([
+          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+          self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      ])
+    self.SendRawSet(ROOT_DEVICE, self.pid, 'foobar')
+
 
 
 class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
@@ -6940,7 +6961,7 @@ class GetInterfaceLabelWithNoData(TestMixins.GetWithNoDataMixin,
   PID = 'INTERFACE_LABEL'
 
 
-class GetInterfaceLabelWithTooMuchData(OptionalParameterTestFixture):
+class GetInterfaceLabelWithExtraData(OptionalParameterTestFixture):
   """Get the interface label with more than 4 bytes of data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'INTERFACE_LABEL'
