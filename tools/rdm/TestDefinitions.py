@@ -609,7 +609,11 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
           advisory='Responder timed out to a command with PDL of %d' %
                    self.MAX_PDL),
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self.MAX_PDL)
+    # Incrementing list, so we can find out which bit we have where in memory
+    data = ''
+    for i in xrange(0, self.MAX_PDL):
+      data+=chr(i)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
   def VerifyResult(self, response, fields):
     ok = response not in [OlaClient.RDM_INVALID_RESPONSE,
