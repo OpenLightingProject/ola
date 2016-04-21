@@ -460,7 +460,8 @@ void UsbProWidgetDetector::HandleHardwareVersionResponse(
     return;
   }
   RemoveTimeout(&iter->second);
-  if ((data[0] == DMX_PRO_MKII_VERSION) || (data[0] == DMX_PRO_MKII_B_VERSION)) {
+  if ((data[0] == DMX_PRO_MKII_VERSION) ||
+      (data[0] == DMX_PRO_MKII_B_VERSION)) {
     iter->second.information.dual_port = true;
     SendAPIRequest(widget);
   }
