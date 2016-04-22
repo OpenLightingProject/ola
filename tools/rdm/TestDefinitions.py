@@ -612,7 +612,7 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
     # Incrementing list, so we can find out which bit we have where in memory
     data = ''
     for i in xrange(0, self.MAX_PDL):
-      data+=chr(i)
+      data += chr(i)
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
   def VerifyResult(self, response, fields):
@@ -675,8 +675,8 @@ class SetDeviceInfo(ResponderTestFixture,
 
 
 class SetDeviceInfoWithData(TestMixins.UnsupportedSetMixin,
-                  ResponderTestFixture,
-                  DeviceInfoTest):
+                            ResponderTestFixture,
+                            DeviceInfoTest):
   """SET device info with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'FOO BAR'
@@ -2090,15 +2090,18 @@ class SetOutOfRangePersonality(TestMixins.SetOutOfRangeByteMixin,
   LABEL = 'personalities'
 
 
-class SetOutOfRangePersonality(OptionalParameterTestFixture):
-  """Send an over-sized SET personality command."""
+class SetPersonalityWithExtraData(TestMixins.SetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Send a SET DMX_PERSONALITY command with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
 
+class SetPersonalityWithNoData(TestMixins.SetWithNoDataMixin,
+                               OptionalParameterTestFixture):
+  """Set DMX_PERSONALITY with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_PERSONALITY'
 
 class AllSubDevicesGetPersonality(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
@@ -4415,7 +4418,8 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
   REQUIRES = ['total_sub_device_footprint', 'base_dmx_address']
   EXPECTED_FIELDS = ['base_dmx_address']
 
-  # Todo, also allow nack write protect when 0 sub device footprint/no addressable subs
+  # TODO(Peter): Allow Nack write protect when 0 sub device footprint or no
+  # addressable subs
   def NewValue(self):
     base_address = self.Property('base_dmx_address')
     footprint = self.Property('total_sub_device_footprint')
