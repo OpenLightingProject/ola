@@ -2021,6 +2021,7 @@ class SetOversizedPersonality(OptionalParameterTestFixture):
     self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
 
 
+
 class AllSubDevicesGetPersonality(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get DMX_PERSONALITY to ALL_SUB_DEVICES."""
