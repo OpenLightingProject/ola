@@ -2103,6 +2103,7 @@ class SetPersonalityWithNoData(TestMixins.SetWithNoDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY'
 
+
 class AllSubDevicesGetPersonality(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get DMX_PERSONALITY to ALL_SUB_DEVICES."""
