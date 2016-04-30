@@ -1569,6 +1569,10 @@ class GetLanguage(TestMixins.GetStringMixin, OptionalParameterTestFixture):
   PID = 'LANGUAGE'
   PROVIDES = ['language']
   EXPECTED_FIELDS = ['language']
+  MIN_LENGTH = 2
+  MAX_LENGTH = 2
+  # TODO(Peter): We should cross check this against the declared list of
+  # supported languages, and also that the langauage is alpha only
 
 
 class GetLanguageWithData(TestMixins.GetWithDataMixin,
