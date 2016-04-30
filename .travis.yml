@@ -33,7 +33,7 @@ addons:
      - g++-5
     packages: &core_build_clang_latest
      - *core_build
-     - clang-3.8
+     - clang-3.9
 
 matrix:
   fast_finish: true
@@ -53,7 +53,7 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise-3.8
+           - llvm-toolchain-precise
     - os: linux
       compiler: gcc
       env: TASK='compile'
@@ -167,7 +167,7 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-4.9" CC="ccache gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-3.9" CC="clang-3.9"; fi
 #Report the compiler version
  - $CXX --version
 
