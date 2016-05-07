@@ -667,10 +667,12 @@ class SetDeviceInfo(ResponderTestFixture,
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def Test(self):
-    # Unknown PID shouldn't be valid for a mandatory PID
-    self.AddExpectedResults(
-      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
-    )
+    self.AddExpectedResults([
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackSetResult(RDMNack.NR_UNKNOWN_PID,
+                         advisory='NR_UNSUPPORTED_COMMAND_CLASS would be more '
+                                  'appropriate for a mandatory PID')
+    ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -682,10 +684,12 @@ class SetDeviceInfoWithData(TestMixins.UnsupportedSetMixin,
   DATA = 'FOO BAR'
 
   def Test(self):
-    # Unknown PID shouldn't be valid for a mandatory PID
-    self.AddExpectedResults(
-      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
-    )
+    self.AddExpectedResults([
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackSetResult(RDMNack.NR_UNKNOWN_PID,
+                         advisory='NR_UNSUPPORTED_COMMAND_CLASS would be more '
+                                  'appropriate for a mandatory PID')
+    ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
