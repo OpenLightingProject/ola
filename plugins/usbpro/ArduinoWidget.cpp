@@ -30,6 +30,7 @@
 #include "ola/strings/Format.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/ArduinoWidget.h"
 
 namespace ola {
 namespace plugin {
