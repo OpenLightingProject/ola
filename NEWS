@@ -7,7 +7,7 @@ x/y/2016 ola-0.10.2
  * 
 
  RDM Tests:
- * 
+ * Correct expected NAck type in GetSettingDescriptionsMixin, as spotted by ETC
 
  Bugs:
  * Check Python numpy exists during configure if required
