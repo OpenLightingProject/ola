@@ -1,15 +1,16 @@
 x/y/2016 ola-0.10.2
  Features:
- * 
+ * Add support for Enttec USB Pro Mk 2 B
+ * Make DNS-SD functionality optional at build time
 
  API:
  * 
 
  RDM Tests:
- * 
+ * Correct expected NAck type in GetSettingDescriptionsMixin, as spotted by ETC
 
  Bugs:
- *
+ * Check Python numpy exists during configure if required
 
  Internal:
  *
