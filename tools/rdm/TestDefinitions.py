@@ -195,12 +195,18 @@ class InvalidDiscoveryPID(ResponderTestFixture):
 class MuteAllDevices(ResponderTestFixture):
   """Mute all devices, so we can perform DUB tests"""
   PID = 'DISC_MUTE'
+  REQUIRES = ['mute_supported']
   # This is a fake property used to ensure this tests runs before the DUB tests.
   PROVIDES = ['global_mute']
 
   def Test(self):
     # Set the fake property
     self.SetProperty(self.PROVIDES[0], True)
+    if not (self.Property('mute_supported')): 
+      self.SetNotRun('RDM Controller does not support DISCOVERY commands') 
+      self.Stop() 
+      return
+
     self.AddExpectedResults([
       BroadcastResult(),
       UnsupportedResult()
