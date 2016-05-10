@@ -202,9 +202,9 @@ class MuteAllDevices(ResponderTestFixture):
   def Test(self):
     # Set the fake property
     self.SetProperty(self.PROVIDES[0], True)
-    if not (self.Property('mute_supported')): 
-      self.SetNotRun('RDM Controller does not support DISCOVERY commands') 
-      self.Stop() 
+    if not (self.Property('mute_supported')):
+      self.SetNotRun('RDM Controller does not support DISCOVERY commands')
+      self.Stop()
       return
 
     self.AddExpectedResults([
