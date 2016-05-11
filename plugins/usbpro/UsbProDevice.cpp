@@ -60,8 +60,9 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
       m_pro_widget(widget),
       m_serial(SerialToString(serial)) {
   ostringstream str;
-  str << "Serial #: " << m_serial << ", firmware "
+  str << name << ", Serial #: " << m_serial << ", firmware "
       << (firmware_version >> 8) << "." << (firmware_version & 0xff);
+  SetName(str.str());
 
   for (unsigned int i = 0; i < widget->PortCount(); i++) {
     EnttecPort *enttec_port = widget->GetPort(i);
@@ -70,15 +71,20 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
       continue;
     }
 
+    ostringstream port_description;
+    if (widget->PortCount() > 1) {
+      port_description << "DMX" << IntToString(i+1);
+    }
+
     UsbProInputPort *input_port = new UsbProInputPort(
-        this, enttec_port, i, plugin_adaptor, str.str());
+        this, enttec_port, i, plugin_adaptor, port_description.str());
     enttec_port->SetDMXCallback(
         NewCallback(static_cast<InputPort*>(input_port),
                     &InputPort::DmxChanged));
     AddPort(input_port);
 
     OutputPort *output_port = new UsbProOutputPort(
-        this, enttec_port, i, str.str(),
+        this, enttec_port, i, port_description.str(),
         plugin_adaptor->WakeUpTime(),
         5,  // allow up to 5 burst frames
         fps_limit);  // 200 frames per second seems to be the limit
