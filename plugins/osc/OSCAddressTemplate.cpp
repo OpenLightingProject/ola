@@ -20,6 +20,7 @@
 
 #include <string>
 #include "ola/StringUtils.h"
+#include "plugins/osc/OSCAddressTemplate.h"
 
 namespace ola {
 namespace plugin {

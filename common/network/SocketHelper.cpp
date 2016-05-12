@@ -27,6 +27,7 @@
 
 #include <ola/Logging.h>
 #include <ola/network/SocketAddress.h>
+#include "common/network/SocketHelper.h"
 
 namespace ola {
 namespace network {
