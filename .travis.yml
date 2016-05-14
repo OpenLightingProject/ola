@@ -34,6 +34,10 @@ addons:
     packages: &core_build_clang_latest
      - *core_build
      - clang-3.9
+    packages: &base_build_python
+     # This is all the bits we need to enable all Python options
+     - *base_build
+     - python-rrdtool
 
 matrix:
   fast_finish: true
@@ -115,14 +119,19 @@ matrix:
       addons:
         apt:
           packages:
-           - *base_build
-    - env: TASK='pychecker'
+           - *base_build_python
+    - os: linux
+      env: TASK='pychecker'
       addons:
         apt:
           packages:
-           - *base_build
-           - python-numpy
-           - python-rrdtool
+           - *base_build_python
+    - os: linux
+      env: TASK='pychecker-wip'
+      addons:
+        apt:
+          packages:
+           - *base_build_python
   allow_failures:
     - os: linux
       compiler: gcc
@@ -130,7 +139,7 @@ matrix:
     - os: linux
       compiler: gcc
       env: TASK='coverity'
-    - env: TASK='pychecker'
+    - env: TASK='pychecker-wip'
 
 env:
   global:
