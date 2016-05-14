@@ -112,7 +112,7 @@ elif [[ $TASK = 'pychecker' ]]; then
   export PYTHONPATH
   mkdir ./python/ola/testing/
   ln -s ./tools/rdm ./python/ola/testing/rdm
-  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and \( -wholename "./data/*" -or -wholename "./include/*" -or -wholename "./scripts/*" \) -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" \) | xargs)
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and \( -wholename "./data/*" -or -wholename "./include/*" -or -wholename "./scripts/*" -or -wholename "./python/examples/rdm_compare.py" \) -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -wholename "./scripts/enforce_licence.py" \) | xargs)
 elif [[ $TASK = 'pychecker-wip' ]]; then
   autoreconf -i;
   ./configure --enable-rdm-tests
