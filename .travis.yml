@@ -43,9 +43,11 @@ matrix:
   fast_finish: true
   include:
     - os: osx
+      osx_image: xcode7.3
       compiler: clang
       env: TASK='compile'
     - os: osx
+      osx_image: xcode7.3
       compiler: gcc
       env: TASK='compile'
     - os: linux
