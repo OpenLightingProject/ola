@@ -1,5 +1,6 @@
 language: cpp
-sudo: false
+# To get the Trusty image, not actually required
+sudo: required
 script:
  - "bash -ex .travis-ci.sh"
 
@@ -51,6 +52,7 @@ matrix:
       compiler: gcc
       env: TASK='compile'
     - os: linux
+      dist: trusty
       compiler: clang
       env: TASK='compile'
       addons:
@@ -61,6 +63,7 @@ matrix:
            - ubuntu-toolchain-r-test
            - llvm-toolchain-precise
     - os: linux
+      dist: trusty
       compiler: gcc
       env: TASK='compile'
       addons:
@@ -70,6 +73,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
+      dist: trusty
       compiler: gcc
       env: TASK='coverage'
       addons:
@@ -79,6 +83,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
+      dist: trusty
       compiler: gcc
       env: TASK='coverity'
       addons:
@@ -90,6 +95,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
+      dist: trusty
       env: TASK='doxygen'
       addons:
         apt:
@@ -100,35 +106,41 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
+      dist: trusty
       env: TASK='lint'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
+      dist: trusty
       env: TASK='check-licences'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
+      dist: trusty
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
+      dist: trusty
       env: TASK='flake8'
       addons:
         apt:
           packages:
            - *base_build_python
     - os: linux
+      dist: trusty
       env: TASK='pychecker'
       addons:
         apt:
           packages:
            - *base_build_python
     - os: linux
+      dist: trusty
       env: TASK='pychecker-wip'
       addons:
         apt:
@@ -136,12 +148,16 @@ matrix:
            - *base_build_python
   allow_failures:
     - os: linux
+      dist: trusty
       compiler: gcc
       env: TASK='coverage'
     - os: linux
+      dist: trusty
       compiler: gcc
       env: TASK='coverity'
-    - env: TASK='pychecker-wip'
+    - os: linux
+      dist: trusty
+      env: TASK='pychecker-wip'
 
 env:
   global:
