@@ -189,7 +189,8 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 install:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user protobuf==2.4.1; fi
+# Match the version of protobuf being installed via apt
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user protobuf==2.5.0; fi
 # We should be able to find the dpkg version on Trusty too, then we can remove this
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
