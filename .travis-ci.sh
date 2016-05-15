@@ -11,8 +11,6 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 
 PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand,locale"
 
-export
-
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   autoreconf -i;

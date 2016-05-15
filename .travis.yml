@@ -17,8 +17,6 @@ addons:
      - libprotobuf-dev
      - protobuf-compiler
      - libprotoc-dev
-     - python-protobuf
-     - python-numpy
     packages: &core_build
      # This is all the bits we need to enable all options
      - *base_build
