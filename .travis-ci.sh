@@ -43,6 +43,8 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
 BLACKLIST
 )
 
+export
+
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   autoreconf -i;
