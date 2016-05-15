@@ -53,6 +53,7 @@ matrix:
       dist: trusty
       compiler: clang
       env: TASK='compile'
+      python: '2.7'
       addons:
         apt:
           packages:
@@ -64,6 +65,7 @@ matrix:
       dist: trusty
       compiler: gcc
       env: TASK='compile'
+      python: '2.7'
       addons:
         apt:
           packages:
@@ -187,15 +189,16 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 install:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo pip install protobuf==2.4.1; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user protobuf==2.4.1; fi
 # We should be able to find the dpkg version on Trusty too, then we can remove this
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo pip install numpy; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 
 before_install:
+ - ls -al $HOME/virtualenv/
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd homebrew/python/numpy; fi # ossp-uuid already present
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
