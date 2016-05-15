@@ -189,7 +189,9 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 install:
-  - pip install --user protobuf==2.4.1
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user protobuf==2.4.1; fi
+# We should be able to find the dpkg version on Trusty too, then we can remove this
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
@@ -197,7 +199,7 @@ install:
 
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd numpy; fi # ossp-uuid already present
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
@@ -208,6 +210,8 @@ before_install:
  - $CXX --version
 
 after_failure:
+  - cat ${TRAVIS_BUILD_DIR}/ola-*/config.log
+  - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log
   - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log
 
 after_success:
