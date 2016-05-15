@@ -187,9 +187,9 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 install:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install protobuf==2.4.1; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo pip install protobuf==2.4.1; fi
 # We should be able to find the dpkg version on Trusty too, then we can remove this
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install numpy; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo pip install numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
