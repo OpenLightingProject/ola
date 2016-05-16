@@ -9,7 +9,7 @@ CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cppli
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
-PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand,locale"
+PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand"
 
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task

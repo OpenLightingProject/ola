@@ -191,7 +191,7 @@ before_cache:
 install:
 # Match the version of protobuf being installed via apt
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user protobuf==2.5.0; fi
-# We should be able to find the dpkg version on Trusty too, then we can remove this
+# We need to use pip rather than apt on Trusty
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
@@ -211,7 +211,6 @@ before_install:
  - $CXX --version
 
 after_failure:
-#  - cat ${TRAVIS_BUILD_DIR}/ola-*/config.log
   - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log
 
 after_success:
