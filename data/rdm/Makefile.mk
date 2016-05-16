@@ -23,7 +23,7 @@ endif
 endif
 
 data/rdm/PidDataTest.sh: data/rdm/Makefile.mk
-	echo "PYTHONPATH=${top_builddir}/python PIDDATA=${srcdir}/data/rdm $(PYTHON) -v ${srcdir}/data/rdm/PidDataTest.py; exit \$$?" > data/rdm/PidDataTest.sh
+	echo "PYTHONPATH=${top_builddir}/python PIDDATA=${srcdir}/data/rdm $(PYTHON) ${srcdir}/data/rdm/PidDataTest.py; exit \$$?" > data/rdm/PidDataTest.sh
 	chmod +x data/rdm/PidDataTest.sh
 
 data_rdm_PidDataTester_SOURCES = data/rdm/PidDataTest.cpp
