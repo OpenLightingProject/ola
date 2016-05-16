@@ -634,9 +634,9 @@ class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
 
     self._lower = 1
     self._upper = GetMaxPacketSize.MAX_PDL
-    self.SendGet()
+    self.SendPacket()
 
-  def SendGet(self):
+  def SendPacket(self):
     if self._lower + 1 == self._upper:
       self.AddWarning('Max PDL supported is < %d, was %d' %
                       (GetMaxPacketSize.MAX_PDL, self._lower))
@@ -654,11 +654,11 @@ class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
 
   def GetPassed(self):
     self._lower = self._current
-    self.SendGet()
+    self.SendPacket()
 
   def GetFailed(self):
     self._upper = self._current
-    self.SendGet()
+    self.SendPacket()
 
 
 class SetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
