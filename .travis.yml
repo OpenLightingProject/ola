@@ -43,14 +43,17 @@ matrix:
   include:
     - os: osx
       osx_image: xcode7.3
+      language: cpp
       compiler: clang
       env: TASK='compile'
     - os: osx
       osx_image: xcode7.3
+      language: cpp
       compiler: gcc
       env: TASK='compile'
     - os: linux
       dist: trusty
+      language: cpp
       compiler: clang
       env: TASK='compile'
       python: '2.7'
@@ -63,6 +66,7 @@ matrix:
            - llvm-toolchain-precise
     - os: linux
       dist: trusty
+      language: cpp
       compiler: gcc
       env: TASK='compile'
       python: '2.7'
@@ -74,6 +78,7 @@ matrix:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: trusty
+      language: cpp
       compiler: gcc
       env: TASK='coverage'
       addons:
@@ -84,6 +89,7 @@ matrix:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: trusty
+      language: cpp
       compiler: gcc
       env: TASK='coverity'
       addons:
@@ -149,10 +155,12 @@ matrix:
   allow_failures:
     - os: linux
       dist: trusty
+      language: cpp
       compiler: gcc
       env: TASK='coverage'
     - os: linux
       dist: trusty
+      language: cpp
       compiler: gcc
       env: TASK='coverity'
     - os: linux
