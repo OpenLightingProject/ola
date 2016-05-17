@@ -697,8 +697,9 @@ class Group(Atom):
         variable_sized_atoms.append(atom)
 
     if len(variable_sized_atoms) > 1:
-      raise PidStore('More than one variable size field in %s: %s' % (
-        self.name, variable_sized_atoms))
+      raise PidStructureException(
+        'More than one variable size field in %s: %s' %
+        (self.name, variable_sized_atoms))
 
     if not variable_sized_atoms:
       # The group is of a fixed size, this means we don't care how many times
