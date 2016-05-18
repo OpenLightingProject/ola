@@ -62,8 +62,9 @@ OlaClientCore::OlaClientCore(ConnectedDescriptor *descriptor)
 
 
 OlaClientCore::~OlaClientCore() {
-  if (m_connected)
+  if (m_connected) {
     Stop();
+  }
 }
 
 
@@ -72,8 +73,9 @@ OlaClientCore::~OlaClientCore() {
  * @return true on success, false on failure
  */
 bool OlaClientCore::Setup() {
-  if (m_connected)
+  if (m_connected) {
     return false;
+  }
 
   m_channel.reset(new RpcChannel(this, m_descriptor));
 
