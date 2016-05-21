@@ -1,26 +1,23 @@
-x/y/2016 ola-0.10.2
+21/5/2016 ola-0.10.2
  Features:
  * Add support for Enttec USB Pro Mk 2 B
  * Make DNS-SD functionality optional at build time
  * Name multi-port Enttec Pro Mk 2 ports to match the labelling on the device
-
- API:
- * 
 
  RDM Tests:
  * Correct expected NAck type in GetSettingDescriptionsMixin, as spotted by ETC
  * Fix the mute all devices test for controllers that don't support discovery
 
  Bugs:
+ * Allow one slot devices to correctly be set to any start address, including
+   512
  * Check Python numpy exists during configure if required
  * Allow the PID location to be set in the rdmpro_sniffer
  * Actually decode PID param data when requested when using the
    logic_rdm_sniffer
  * Correct the operation of the --full-rdm option in the logic_rdm_sniffer,
    this inverts how it used to behave
-
- Internal:
- *
+ * Fix a segfault with the client if auto start is off or olad fails to start
 
 29/2/2016 ola-0.10.1
  Features:
