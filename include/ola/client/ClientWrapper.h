@@ -145,7 +145,9 @@ class GenericClientWrapper: public BaseClientWrapper {
             ola::network::IPV4Address::Loopback(),
            OLA_DEFAULT_PORT)));
     }
-    m_socket->SetNoDelay();
+    if (m_socket.get()) {
+      m_socket->SetNoDelay();
+    }
   }
 };
 

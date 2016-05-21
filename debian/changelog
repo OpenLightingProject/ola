@@ -1,3 +1,9 @@
+ola (0.10.2-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Simon Newton <nomis52@gmail.com>  Sat, 21 May 2016 22:27:00 +0100
+
 ola (0.10.1-1) unstable; urgency=low
 
   * New upstream release
@@ -15,7 +21,6 @@ ola (0.9.8-1) unstable; urgency=low
   * New upstream release
 
  -- Simon Newton <nomis52@gmail.com>  Wed, 30 Sep 2015 19:28:21 -0700
-
 
 ola (0.9.7-1) unstable; urgency=low
 
