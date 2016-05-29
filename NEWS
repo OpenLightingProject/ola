@@ -9,7 +9,7 @@ x/y/2016 ola-0.10.3
  * 
 
  Bugs:
- * Fix a clang warning in our protobuf generator code
+ * Work around a clang warning in our protobuf generator code
 
  Internal:
  *
