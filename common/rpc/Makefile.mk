@@ -1,4 +1,3 @@
-
 built_sources += \
     common/rpc/Rpc.pb.cc \
     common/rpc/Rpc.pb.h \
