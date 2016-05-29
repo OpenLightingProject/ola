@@ -243,6 +243,44 @@ AC_MSG_RESULT($ac_cv_rdynamic)
 
 AM_CONDITIONAL([SUPPORTS_RDYNAMIC], [test "x$ac_cv_rdynamic" = xyes])
 
+# check if the compiler supports -std=gnu++98
+AC_MSG_CHECKING(for -std=gnu++98 support)
+old_cppflags=$CPPFLAGS
+CPPFLAGS="${CPPFLAGS} -std=gnu++98 -Wall -Werror"
+AC_CACHE_VAL(ac_cv_gnu_plus_plus_98,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([], [])],
+     [ac_cv_gnu_plus_plus_98=yes],
+     [ac_cv_gnu_plus_plus_98=no])
+)
+CPPFLAGS=$old_cppflags
+AC_MSG_RESULT($ac_cv_gnu_plus_plus_98)
+
+AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_98], [test "x$ac_cv_gnu_plus_plus_98" = xyes])
+
+# check if the compiler supports -std=gnu++11
+AC_MSG_CHECKING(for -std=gnu++11 support)
+old_cppflags=$CPPFLAGS
+CPPFLAGS="${CPPFLAGS} -std=gnu++11 -Wall -Werror"
+AC_CACHE_VAL(ac_cv_gnu_plus_plus_11,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([], [])],
+     [ac_cv_gnu_plus_plus_11=yes],
+     [ac_cv_gnu_plus_plus_11=no])
+)
+CPPFLAGS=$old_cppflags
+AC_MSG_RESULT($ac_cv_gnu_plus_plus_11)
+
+AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = xyes])
+
+# force us into gnu++98 mode if necessary
+AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
+      [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
+             [CFLAGS="$CFLAGS -std=gnu++98"
+              CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+             [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+      ])
+
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
 AC_CACHE_VAL(ac_cv_ipv6,
