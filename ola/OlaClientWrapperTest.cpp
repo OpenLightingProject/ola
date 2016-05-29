@@ -49,13 +49,16 @@ void OlaClientWrapperTest::testNoAutoStartNoOlad() {
   OlaClientWrapper ola_client(false);
 
   // Setup the client, this tried to connect to the server
-  OLA_ASSERT_FALSE(ola_client.Setup());
+  OLA_ASSERT_FALSE_MSG(ola_client.Setup(),
+                       "Check for another instance of olad running");
   // Try it again to make sure it still fails
-  OLA_ASSERT_FALSE(ola_client.Setup());
+  OLA_ASSERT_FALSE_MSG(ola_client.Setup(),
+                       "Check for another instance of olad running");
 
   // This should be a NOOP
   OLA_ASSERT_TRUE(ola_client.Cleanup());
 
   // Try for a third time to start
-  OLA_ASSERT_FALSE(ola_client.Setup());
+  OLA_ASSERT_FALSE_MSG(ola_client.Setup(),
+                       "Check for another instance of olad running");
 }
