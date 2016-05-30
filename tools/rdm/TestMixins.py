@@ -42,18 +42,10 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
 
 
-def UnsupportedSetNacks(pid):
-  """Responders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
-  return [
-    NackSetResult(pid.value, RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-    NackSetResult(pid.value, RDMNack.NR_UNKNOWN_PID),
-  ]
-
-
 # Generic GET Mixins
 # These don't care about the format of the message.
 # -----------------------------------------------------------------------------
-class UnsupportedGetMixin(object):
+class UnsupportedGetMixin(ResponderTestFixture):
   """Check that Get fails with NR_UNSUPPORTED_COMMAND_CLASS."""
   def Test(self):
     self.AddIfGetSupported(
@@ -135,7 +127,7 @@ class GetStringMixin(GetMixin):
            len(string_field), self.MAX_LENGTH))
 
 
-class GetRequiredMixin(object):
+class GetRequiredMixin(ResponderTestFixture):
   """GET Mixin for a required PID. Verify EXPECTED_FIELDS is in the response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
@@ -191,7 +183,7 @@ class GetRequiredStringMixin(GetRequiredMixin):
            len(string_field), self.MAX_LENGTH))
 
 
-class GetWithDataMixin(object):
+class GetWithDataMixin(ResponderTestFixture):
   """GET a PID with junk param data.
 
     If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
@@ -238,7 +230,7 @@ class GetWithNoDataMixin(ResponderTestFixture):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class AllSubDevicesGetMixin(object):
+class AllSubDevicesGetMixin(ResponderTestFixture):
   """Send a GET to ALL_SUB_DEVICES."""
   DATA = []
 
@@ -260,10 +252,8 @@ class UnsupportedSetMixin(ResponderTestFixture):
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def Test(self):
-    self.AddExpectedResults(UnsupportedSetNacks(self.pid))
-    # TODO(Peter): Swap back to the below once everything has been merged
-    # self.AddIfSetSupported(
-    #     self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.AddIfSetSupported(
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
