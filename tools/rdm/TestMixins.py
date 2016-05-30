@@ -17,8 +17,7 @@
 
 import struct
 from ExpectedResults import (AckGetResult, AckDiscoveryResult, BroadcastResult,
-                             DUBResult, NackSetResult, TimeoutResult,
-                             UnsupportedResult)
+                             DUBResult, TimeoutResult, UnsupportedResult)
 from ResponderTest import ResponderTestFixture
 from TestCategory import TestCategory
 from TestHelpers import ContainsUnprintable
