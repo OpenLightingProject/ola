@@ -5166,6 +5166,198 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
+    name: "GOBO3_ANIMATION_START"
+    value: 33567
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "gobo3_animation_start"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "gobo3_animation_start"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "GOBO3_ANIMATION_END"
+    value: 33568
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "gobo3_animation_end"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+        label {
+          value: 9
+          label: "Position 9"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "gobo3_animation_start"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
     name: "PAN_TILT_SPEED"
     value: 33792
     get_request {
@@ -8386,4 +8578,4 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-version: 1455773308
+version: 1458491190
