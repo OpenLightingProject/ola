@@ -286,6 +286,32 @@ class ResponderTestFixture(TestFixture):
     else:
       self._expected_results = [results]
 
+  def AddIfGetSupported(self, result):
+    """Add a set of expected GET results if the PID is supported"""
+    if not self.PidSupported():
+      result = self.NackGetResult(RDMNack.NR_UNKNOWN_PID)
+    self.AddExpectedResults(result)
+
+  def AddIfSetSupported(self, result):
+    """Add a set of expected SET results if the PID is supported"""
+    # The lock modes means that some sets may return NR_WRITE_PROTECT. Account
+    # for that here.
+    if not self.PidSupported():
+      expected_results = self.NackSetResult(RDMNack.NR_UNKNOWN_PID)
+    else:
+      expected_results = [
+        self.NackSetResult(
+          RDMNack.NR_WRITE_PROTECT,
+          advisory='SET %s was write protected, try changing the lock mode if '
+                   'enabled' % self.pid.name)
+      ]
+      if isinstance(result, list):
+        expected_results.extend(result)
+      else:
+        expected_results.append(result)
+
+    self.AddExpectedResults(expected_results)
+
   def NackDiscoveryResult(self, nack_reason, **kwargs):
     """A helper method which returns a NackDiscoveryResult for the current
        PID.
@@ -686,27 +712,3 @@ class OptionalParameterTestFixture(ResponderTestFixture):
 
   def PidSupported(self):
     return self.pid.value in self.Property('supported_parameters')
-
-  def AddIfGetSupported(self, result):
-    if not self.PidSupported():
-      result = self.NackGetResult(RDMNack.NR_UNKNOWN_PID)
-    self.AddExpectedResults(result)
-
-  def AddIfSetSupported(self, result):
-    # The lock modes means that some sets may return NR_WRITE_PROTECT. Account
-    # for that here.
-    if not self.PidSupported():
-      expected_results = self.NackSetResult(RDMNack.NR_UNKNOWN_PID)
-    else:
-      expected_results = [
-        self.NackSetResult(
-          RDMNack.NR_WRITE_PROTECT,
-          advisory='SET %s was write protected, try changing the lock mode if '
-                   'enabled' % self.pid.name)
-      ]
-      if isinstance(result, list):
-        expected_results.extend(result)
-      else:
-        expected_results.append(result)
-
-    self.AddExpectedResults(expected_results)

@@ -42,18 +42,10 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
 
 
-def UnsupportedSetNacks(pid):
-  """Responders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
-  return [
-    NackSetResult(pid.value, RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-    NackSetResult(pid.value, RDMNack.NR_UNKNOWN_PID),
-  ]
-
-
 # Generic GET Mixins
 # These don't care about the format of the message.
 # -----------------------------------------------------------------------------
-class UnsupportedGetMixin(object):
+class UnsupportedGetMixin(ResponderTestFixture):
   """Check that Get fails with NR_UNSUPPORTED_COMMAND_CLASS."""
   def Test(self):
     self.AddIfGetSupported(
@@ -123,7 +115,7 @@ class GetStringMixin(GetMixin):
            len(string_field), self.MAX_LENGTH))
 
 
-class GetRequiredMixin(object):
+class GetRequiredMixin(ResponderTestFixture):
   """GET Mixin for a required PID. Verify EXPECTED_FIELDS is in the response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
@@ -179,7 +171,7 @@ class GetRequiredStringMixin(GetRequiredMixin):
            len(string_field), self.MAX_LENGTH))
 
 
-class GetWithDataMixin(object):
+class GetWithDataMixin(ResponderTestFixture):
   """GET a PID with junk param data.
 
     If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
@@ -215,14 +207,14 @@ class GetMandatoryPIDWithDataMixin(object):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
-class GetWithNoDataMixin(object):
+class GetWithNoDataMixin(ResponderTestFixture):
   """GET with no data, expect NR_FORMAT_ERROR."""
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class AllSubDevicesGetMixin(object):
+class AllSubDevicesGetMixin(ResponderTestFixture):
   """Send a GET to ALL_SUB_DEVICES."""
   DATA = []
 
@@ -239,10 +231,11 @@ class AllSubDevicesGetMixin(object):
 # Generic SET Mixins
 # These don't care about the format of the message.
 # -----------------------------------------------------------------------------
-class UnsupportedSetMixin(object):
+class UnsupportedSetMixin(ResponderTestFixture):
   """Check that SET fails with NR_UNSUPPORTED_COMMAND_CLASS."""
   def Test(self):
-    self.AddExpectedResults(UnsupportedSetNacks(self.pid))
+    self.AddIfSetSupported(
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -259,7 +252,7 @@ class SetWithDataMixin(ResponderTestFixture):
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
-class SetWithNoDataMixin(object):
+class SetWithNoDataMixin(ResponderTestFixture):
   """Attempt a set with no data."""
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
