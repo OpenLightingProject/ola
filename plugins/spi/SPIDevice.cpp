@@ -63,6 +63,10 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
       m_spi_device_name(spi_device) {
   m_spi_device_name = ola::file::FilenameFromPathOrPath(m_spi_device_name);
 
+  ostringstream str;
+  str << SPI_DEVICE_NAME << " " << m_spi_device_name;
+  SetName(str.str());
+
   SetDefaults();
   unsigned int port_count = 0;
 

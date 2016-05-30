@@ -246,7 +246,7 @@ class UnsupportedSetMixin(object):
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class SetWithDataMixin(ResponderTestFixture):
+class SetWithDataMixin(object):
   """SET a PID with random param data."""
   DATA = 'foo'
 
@@ -257,6 +257,8 @@ class SetWithDataMixin(ResponderTestFixture):
         warning='Set %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
+  # TODO(simon): add a method to check this didn't change the value
 
 
 class SetWithNoDataMixin(object):
@@ -987,7 +989,7 @@ class GetSettingDescriptionsMixin(object):
     self.items = self.ListOfSettings()
     if not self.items:
       # Try to GET first item, this should NACK
-      self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
       self.SendGet(ROOT_DEVICE, self.pid, [self.FIRST_INDEX_OFFSET])
       return
 
