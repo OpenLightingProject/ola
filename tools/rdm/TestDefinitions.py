@@ -6425,45 +6425,36 @@ class SetPresetStatusPresetOff(TestMixins.SetPresetStatusMixin,
                                OptionalParameterTestFixture):
   """Set the PRESET_STATUS for PRESET_PLAYBACK_OFF."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PRESET_STATUS'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = self.BuildPresetStatus(0)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+  def PresetStatusSceneNumber(self):
+    return 0
 
 
 class SetPresetStatusPresetScene(TestMixins.SetPresetStatusMixin,
                                  OptionalParameterTestFixture):
   """Set the PRESET_STATUS for PRESET_PLAYBACK_SCENE."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PRESET_STATUS'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = self.BuildPresetStatus(0xffff)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+  def PresetStatusSceneNumber(self):
+    return 0xffff
 
 
 class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
                                 OptionalParameterTestFixture):
   """Set the PRESET_STATUS for max_scene + 1."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PRESET_STATUS'
-  REQUIRES = ['max_scene_number', 'preset_info']
+  REQUIRES = ['max_scene_number'] + TestMixins.SetPresetStatusMixin.REQUIRES
 
-  def Test(self):
+  def PresetStatusSceneNumber(self):
     max_scene = self.Property('max_scene_number')
     if max_scene is None:
       # Set a default value, PID likely isn't supported anyway
-      max_scene = 0x0000
+      max_scene = 0x0000 
     elif max_scene == 0xfffe:
       self.SetNotRun('Device supports all scenes')
-      return
+      return None
 
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = self.BuildPresetStatus(max_scene + 1)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+    return (max_scene + 1)
 
 
 class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
