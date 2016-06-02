@@ -34,6 +34,43 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 
+# check if the compiler supports -std=gnu++98
+AC_MSG_CHECKING(for -std=gnu++98 support)
+old_cxxflags=$CXXFLAGS
+CXXFLAGS="${CXXFLAGS} -std=gnu++98 -Wall -Werror"
+AC_CACHE_VAL(ac_cv_gnu_plus_plus_98,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([], [])],
+     [ac_cv_gnu_plus_plus_98=yes],
+     [ac_cv_gnu_plus_plus_98=no])
+)
+CXXFLAGS=$old_cxxflags
+AC_MSG_RESULT($ac_cv_gnu_plus_plus_98)
+
+AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_98], [test "x$ac_cv_gnu_plus_plus_98" = xyes])
+
+# check if the compiler supports -std=gnu++11
+AC_MSG_CHECKING(for -std=gnu++11 support)
+old_cxxflags=$CXXFLAGS
+CXXFLAGS="${CXXFLAGS} -std=gnu++11 -Wall -Werror"
+AC_CACHE_VAL(ac_cv_gnu_plus_plus_11,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([], [])],
+     [ac_cv_gnu_plus_plus_11=yes],
+     [ac_cv_gnu_plus_plus_11=no])
+)
+CXXFLAGS=$old_cxxflags
+AC_MSG_RESULT($ac_cv_gnu_plus_plus_11)
+
+AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = xyes])
+
+# force us into gnu++98 mode if necessary
+AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
+      [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
+             [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+             [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+      ])
+
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_RESOLV
