@@ -28,7 +28,6 @@ common_web_libolaweb_la_SOURCES = \
     common/web/JsonSections.cpp \
     common/web/JsonTypes.cpp \
     common/web/JsonWriter.cpp \
-    common/web/OptionalItem.h \
     common/web/PointerTracker.cpp \
     common/web/PointerTracker.h \
     common/web/SchemaErrorLogger.cpp \
