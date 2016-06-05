@@ -29,7 +29,7 @@ addons:
      - libmicrohttpd-dev
     packages: &core_build_gpp_latest
      - *core_build
-     - g++-5
+     - g++-6
     packages: &core_build_clang_latest
      - *core_build
      - clang-3.9
@@ -85,7 +85,7 @@ matrix:
       addons:
         apt:
           packages:
-           # Coverity doesn't work with g++-5 yet
+           # Coverity doesn't work with g++-5 or g++-6 yet
            - *core_build
            - g++-4.9
           sources:
@@ -198,8 +198,8 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd homebrew/python/numpy; fi # ossp-uuid already present
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
-#Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
- - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
+#Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-6" CC="ccache gcc-6"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-4.9" CC="ccache gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-3.9" CC="clang-3.9"; fi
@@ -210,7 +210,7 @@ after_failure:
   - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log
 
 after_success:
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-6 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
 
 after_script:
   - if [ "$TASK" = "coverity" ]; then cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi
