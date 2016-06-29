@@ -20,6 +20,7 @@ EXTRA_DIST += \
     javascript/new-src/src/controllers/header.js \
     javascript/new-src/src/controllers/overview.js \
     javascript/new-src/src/constants.js \
+    javascript/new-src/src/img/ola-favicon.png \
     javascript/new-src/src/factories/ola.js \
     javascript/new-src/src/app.js \
     javascript/new-src/src/filters/start_form.js \

@@ -66,7 +66,7 @@ class HardwareBackend : public ola::thread::Thread,
   struct Options {
     // Which GPIO bits to use to select the output. The number of outputs
     // will be 2 ** gpio_pins.size();
-    std::vector<uint8_t> gpio_pins;
+    std::vector<uint16_t> gpio_pins;
   };
 
   HardwareBackend(const Options &options,

@@ -244,6 +244,10 @@ class ResponderTestFixture(TestFixture):
   def uid(self):
     return self._uid
 
+  def PidSupported(self):
+    # By default all PIDs are supported, overridden in subclasses
+    return True
+
   def SleepAfterBroadcastSet(self):
     if self._broadcast_write_delay_s:
       self.LogDebug('Sleeping after broadcast...')
