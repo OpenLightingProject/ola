@@ -47,7 +47,7 @@ class GPIODriver : private ola::thread::Thread {
     /**
      * @brief A list of I/O pins to map to slots.
      */
-    std::vector<uint8_t> gpio_pins;
+    std::vector<uint16_t> gpio_pins;
 
     /**
      * @brief The DMX512 start address of the first pin
