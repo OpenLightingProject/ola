@@ -137,7 +137,7 @@ class HardwareBackend : public ola::thread::Thread,
 
   // GPIO members
   GPIOFds m_gpio_fds;
-  const std::vector<uint8_t> m_gpio_pins;
+  const std::vector<uint16_t> m_gpio_pins;
   std::vector<bool> m_gpio_pin_state;
 
   void SetupOutputs(Outputs *outputs);
