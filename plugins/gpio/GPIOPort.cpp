@@ -48,7 +48,7 @@ string GPIOOutputPort::Description() const {
   std::ostringstream str;
   str << "Pins ";
 
-  vector<uint16t>::const_iterator iter = pins.begin();
+  vector<uint16_t>::const_iterator iter = pins.begin();
   while (iter != pins.end()) {
     str << static_cast<unsigned int>(*iter++);
     if (iter != pins.end())
