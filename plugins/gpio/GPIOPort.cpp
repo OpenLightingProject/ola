@@ -44,11 +44,11 @@ bool GPIOOutputPort::Init() {
 }
 
 string GPIOOutputPort::Description() const {
-  vector<uint8_t> pins = m_driver->PinList();
+  vector<uint16_t> pins = m_driver->PinList();
   std::ostringstream str;
   str << "Pins ";
 
-  vector<uint8_t>::const_iterator iter = pins.begin();
+  vector<uint16t>::const_iterator iter = pins.begin();
   while (iter != pins.end()) {
     str << static_cast<unsigned int>(*iter++);
     if (iter != pins.end())
