@@ -102,7 +102,7 @@
  * @brief Code for Enttec USB Pro devices and others using the same protocol.
  *
  * @namespace ola::rdm
- * @brief PLASA E1.20 Remote %Device Management
+ * @brief ESTA E1.20 Remote %Device Management
  *
  * @namespace ola::rpc
  * @brief The RPC (Remote Procedure Call) system

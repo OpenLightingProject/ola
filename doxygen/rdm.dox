@@ -1,7 +1,7 @@
 /**
- * See [PLASA Standards]
- * (http://tsp.plasa.org/tsp/documents/published_docs.php) to download a
- * copy of E1.20.
+ * See [ESTA Standards]
+ * (http://tsp.esta.org/tsp/documents/published_docs.php) to download a copy of
+ * E1.20.
  *
  * @defgroup rdm RDM
  * @brief E1.20 (Remote Device Management)
