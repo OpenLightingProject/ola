@@ -51,7 +51,10 @@ bool BaseClientWrapper::Setup() {
 
   CreateClient();
 
-  m_ss.AddReadDescriptor(m_socket.get());
+  if (!m_ss.AddReadDescriptor(m_socket.get())) {
+    return false;
+  }
+
   return StartupClient();
 }
 
