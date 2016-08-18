@@ -78,7 +78,7 @@ class BaseClientWrapper {
 
   /**
    * @brief Reset the connection to the server.
-   * @returns true if the setup succeeded, false otherwise.
+   * @returns true if the reset succeeded, false otherwise.
    */
   bool Cleanup();
 
