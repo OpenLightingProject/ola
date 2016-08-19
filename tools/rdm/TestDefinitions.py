@@ -6449,7 +6449,7 @@ class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
     max_scene = self.Property('max_scene_number')
     if max_scene is None:
       # Set a default value, PID likely isn't supported anyway
-      max_scene = 0x0000 
+      max_scene = 0x0000
     elif max_scene == 0xfffe:
       self.SetNotRun('Device supports all scenes')
       return None
