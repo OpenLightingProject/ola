@@ -20,6 +20,9 @@
 # TestFixture - The base test class, defines common behaviour
 #  ResponderTestFixture - A test which involves sending one or more RDM
 #                         commands to a responder
+#   ParamDescriptionTestFixture - A test fixture that changes the expected
+#                                 result based on if PARAMETER_DESCRIPTION
+#                                 is supported
 #   OptionalParameterTestFixture - A test fixture that changes the expected
 #                                  result based on the output of
 #                                  SUPPORTED_PARAMETERS
@@ -700,6 +703,18 @@ class ResponderTestFixture(TestFixture):
 
   def _NanoSecondsToMicroSeconds(self, nano_seconds):
     return nano_seconds / 1000.0
+
+
+class ParamDescriptionTestFixture(ResponderTestFixture):
+  """A sub class of ResponderTestFixture that alters behaviour if the
+     PARAMETER_DESCRIPTION PID shouldn't be supported.
+  """
+  def Requires(self):
+    return (super(ParamDescriptionTestFixture, self).Requires() +
+            ['manufacturer_parameters'])
+
+  def PidSupported(self):
+    return self.Property('manufacturer_parameters')
 
 
 class OptionalParameterTestFixture(ResponderTestFixture):

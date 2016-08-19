@@ -196,6 +196,7 @@ def GetTestClasses(module):
       continue
     base_classes = [
         ResponderTest.OptionalParameterTestFixture,
+        ResponderTest.ParamDescriptionTestFixture,
         ResponderTest.ResponderTestFixture,
         ResponderTest.TestFixture
     ]
