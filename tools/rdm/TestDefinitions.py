@@ -22,7 +22,8 @@ from ExpectedResults import (AckGetResult, BroadcastResult, NackGetResult,
                              InvalidResponse, TimeoutResult, UnsupportedResult,
                              RDM_GET, RDM_SET)
 from ResponderTest import ResponderTestFixture, TestFixture
-from ResponderTest import OptionalParameterTestFixture
+from ResponderTest import (ParamDescriptionTestFixture,
+                           OptionalParameterTestFixture)
 from TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
@@ -1134,20 +1135,20 @@ class GetParamDescriptionWithExtraData(ResponderTestFixture):
 
 
 class SetParamDescription(TestMixins.UnsupportedSetMixin,
-                          ResponderTestFixture):
+                          ParamDescriptionTestFixture):
   """SET the parameter description."""
   PID = 'PARAMETER_DESCRIPTION'
 
 
 class SetParamDescriptionWithData(TestMixins.UnsupportedSetMixin,
-                                  ResponderTestFixture):
+                                  ParamDescriptionTestFixture):
   """SET the parameter description with data."""
   PID = 'PARAMETER_DESCRIPTION'
   DATA = 'FOO BAR'
 
 
 class AllSubDevicesGetParamDescription(TestMixins.AllSubDevicesGetMixin,
-                                       ResponderTestFixture):
+                                       ParamDescriptionTestFixture):
   """Send a Get PARAMETER_DESCRIPTION to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PARAMETER_DESCRIPTION'
