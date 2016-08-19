@@ -52,6 +52,18 @@ class UnsupportedGetMixin(ResponderTestFixture):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
 
+class UnsupportedGetWithDataMixin(ResponderTestFixture):
+  """Check that GET with random param data fails with
+    NR_UNSUPPORTED_COMMAND_CLASS.
+  """
+  DATA = 'foo'
+
+  def Test(self):
+    self.AddIfGetSupported(
+        self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
+
 class GetMixin(object):
   """GET Mixin for an optional PID. Verify EXPECTED_FIELDS is in the response.
 
@@ -236,6 +248,18 @@ class UnsupportedSetMixin(ResponderTestFixture):
     self.AddIfSetSupported(
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class UnsupportedSetWithDataMixin(ResponderTestFixture):
+  """Check that SET with random param data fails with
+    NR_UNSUPPORTED_COMMAND_CLASS.
+  """
+  DATA = 'foo'
+
+  def Test(self):
+    self.AddIfSetSupported(
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
 class SetWithDataMixin(ResponderTestFixture):
