@@ -16,8 +16,7 @@
 # Copyright (C) 2011 Simon Newton
 
 import logging
-import ola.RDMConstants
-from ola import PidStore
+from ola import PidStore, RDMConstants
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 
@@ -210,9 +209,9 @@ class ModelCollector(object):
     for param_info in data['params']:
       this_version['supported_parameters'].append(param_info['param_id'])
       if (param_info['param_id'] >=
-          ola.RDMConstants.RDM_MANUFACTURER_PID_MIN and
+          RDMConstants.RDM_MANUFACTURER_PID_MIN and
           param_info['param_id'] <=
-          ola.RDMConstants.RDM_MANUFACTURER_PID_MAX):
+          RDMConstants.RDM_MANUFACTURER_PID_MAX):
         self.manufacturer_pids.append(param_info['param_id'])
     self._NextState()
 
