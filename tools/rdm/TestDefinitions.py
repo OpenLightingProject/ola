@@ -5349,7 +5349,8 @@ class GetDimmerInfoWithData(TestMixins.GetWithDataMixin,
   PID = 'DIMMER_INFO'
 
 
-class SetDimmerInfo(TestMixins.UnsupportedSetMixin, OptionalParameterTestFixture):
+class SetDimmerInfo(TestMixins.UnsupportedSetMixin,
+                    OptionalParameterTestFixture):
   """Set DIMMER_INFO."""
   PID = 'DIMMER_INFO'
 
