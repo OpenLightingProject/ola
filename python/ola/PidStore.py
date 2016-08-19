@@ -65,7 +65,7 @@ class UnpackException(Error):
 
 
 class MissingPLASAPIDs(Error):
-  """Raises if the files did not contain the PLASA PIDs."""
+  """Raises if the files did not contain the ESTA (PLASA) PIDs."""
 
 
 class Pid(object):
@@ -1229,6 +1229,6 @@ def GetStore(location=None, only_files=()):
     if not _pid_store.GetName(pid):
       raise MissingPLASAPIDs(
           'Could not find %s in PID datastore, check the directory contains '
-          'the PLASA PIDs.' % pid)
+          'the ESTA (PLASA) PIDs.' % pid)
 
   return _pid_store
