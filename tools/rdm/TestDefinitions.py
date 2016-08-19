@@ -1781,6 +1781,7 @@ class GetOutOfRangePersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
   """GET the personality description for the N + 1 personality."""
   PID = 'DMX_PERSONALITY_DESCRIPTION'
   REQUIRES = ['personality_count']
+  LABEL = 'personalities'
 
 
 class AllSubDevicesGetPersonalityDescription(TestMixins.AllSubDevicesGetMixin,
@@ -5111,7 +5112,7 @@ class GetOutOfRangeLockStateDescription(TestMixins.GetOutOfRangeByteMixin,
 
 
 class SetLockStateDescription(TestMixins.UnsupportedSetMixin,
-                              ResponderTestFixture):
+                              OptionalParameterTestFixture):
   """Set the LOCK_STATE_DESCRIPTION."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE_DESCRIPTION'
@@ -5360,7 +5361,7 @@ class GetDimmerInfoWithData(TestMixins.GetWithDataMixin,
   PID = 'DIMMER_INFO'
 
 
-class SetDimmerInfo(TestMixins.UnsupportedSetMixin, ResponderTestFixture):
+class SetDimmerInfo(TestMixins.UnsupportedSetMixin, OptionalParameterTestFixture):
   """Set DIMMER_INFO."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DIMMER_INFO'
@@ -5825,7 +5826,7 @@ class GetOutOfRangeCurveDescription(TestMixins.GetOutOfRangeByteMixin,
 
 
 class SetCurveDescription(TestMixins.UnsupportedSetMixin,
-                          ResponderTestFixture):
+                          OptionalParameterTestFixture):
   """Set the CURVE_DESCRIPTION."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
@@ -5993,11 +5994,11 @@ class GetOutOfRangeOutputResponseTimeDescription(
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for an out-of-range response time."""
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
   REQUIRES = ['number_response_options']
-  LABEL = 'response times'
+  LABEL = 'output response times'
 
 
 class SetOutputResponseTimeDescription(TestMixins.UnsupportedSetMixin,
-                                       ResponderTestFixture):
+                                       OptionalParameterTestFixture):
   """SET OUTPUT_RESPONSE_TIME_DESCRIPTION."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
@@ -6172,7 +6173,7 @@ class GetOutOfRangeModulationFrequencyDescription(
 
 
 class SetModulationFrequencyDescription(TestMixins.UnsupportedSetMixin,
-                                        ResponderTestFixture):
+                                        OptionalParameterTestFixture):
   """SET MODULATION_FREQUENCY_DESCRIPTION."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'

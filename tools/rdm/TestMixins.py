@@ -881,7 +881,7 @@ class SetMinimumLevelMixin(object):
     self._wrapper.Run()
 
 
-class GetZeroUInt8Mixin(object):
+class GetZeroUInt8Mixin(ResponderTestFixture):
   """Get a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = struct.pack('!B', 0)
@@ -901,7 +901,7 @@ class GetZeroUInt32Mixin(GetZeroUInt8Mixin):
   DATA = struct.pack('!I', 0)
 
 
-class SetZeroUInt8Mixin(object):
+class SetZeroUInt8Mixin(ResponderTestFixture):
   """Set a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = struct.pack('!B', 0)
@@ -921,7 +921,7 @@ class SetZeroUInt32Mixin(SetZeroUInt8Mixin):
   DATA = struct.pack('!I', 0)
 
 
-class GetOutOfRangeByteMixin(object):
+class GetOutOfRangeByteMixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
@@ -930,6 +930,10 @@ class GetOutOfRangeByteMixin(object):
     return self.Property(self.REQUIRES[0])
 
   def Test(self):
+    if not hasattr(self, 'LABEL'):
+      self.SetBroken('No LABEL given for %s' % self.__class__.__name__)
+      return
+
     settings_supported = self.NumberOfSettings()
     if settings_supported is None:
       self.SetNotRun('Unable to determine number of %s' % self.LABEL)
@@ -943,7 +947,7 @@ class GetOutOfRangeByteMixin(object):
     self.SendGet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
 
-class SetOutOfRangeByteMixin(object):
+class SetOutOfRangeByteMixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
@@ -952,6 +956,10 @@ class SetOutOfRangeByteMixin(object):
     return self.Property(self.REQUIRES[0])
 
   def Test(self):
+    if not hasattr(self, 'LABEL'):
+      self.SetBroken('No LABEL given for %s' % self.__class__.__name__)
+      return
+
     settings_supported = self.NumberOfSettings()
     if settings_supported is None:
       self.SetNotRun('Unable to determine number of %s' % self.LABEL)
@@ -965,7 +973,7 @@ class SetOutOfRangeByteMixin(object):
     self.SendSet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
 
-class GetSettingDescriptionsMixin(object):
+class GetSettingDescriptionsMixin(ResponderTestFixture):
   """Perform a GET for each setting in a list.
 
     The list is returned by ListOfSettings which subclasses must implement. See
