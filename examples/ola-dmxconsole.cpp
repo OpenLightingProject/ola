@@ -171,7 +171,7 @@ void mask() {
 
   /* clear headline */
   (void) attrset(palette[HEADLINE]);
-  move(0, 0);
+  move(0, 0);  // NOLINT(build/include_what_you_use) This is ncurses.h's move
   for (x = 0; x < COLS; x++)
     addch(' ');
 
@@ -180,7 +180,7 @@ void mask() {
   for (y = 1;
        y < LINES && z < ola::DMX_UNIVERSE_SIZE && i < channels_per_screen;
        y += ROWS_PER_CHANNEL_ROW) {
-    move(y, 0);
+    move(y, 0);  // NOLINT(build/include_what_you_use) This is ncurses.h's move
     for (x = 0;
          x < channels_per_line &&
          z < ola::DMX_UNIVERSE_SIZE &&
@@ -273,7 +273,7 @@ void values() {
   for (y = ROWS_PER_CHANNEL_ROW;
        y < LINES && z < ola::DMX_UNIVERSE_SIZE && i < channels_per_screen;
        y += ROWS_PER_CHANNEL_ROW) {
-    move(y, 0);
+    move(y, 0);  // NOLINT(build/include_what_you_use) This is ncurses.h's move
     for (x = 0;
          x < channels_per_line &&
          z < ola::DMX_UNIVERSE_SIZE &&
