@@ -39,7 +39,6 @@ from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
 from TestHelpers import ContainsUnprintable
 import TestMixins
-from TestMixins import MAX_DMX_ADDRESS
 
 '''This defines all the tests for RDM responders.'''
 
@@ -545,7 +544,7 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
       self.SetPropertyFromDict(fields, property_name)
 
     footprint = fields['dmx_footprint']
-    if footprint > MAX_DMX_ADDRESS:
+    if footprint > TestMixins.MAX_DMX_ADDRESS:
       self.AddWarning('DMX Footprint of %d, was more than 512' % footprint)
     if footprint > 0:
       personality_count = fields['personality_count']
@@ -562,7 +561,7 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
 
     start_address = fields['dmx_start_address']
     if (start_address == 0 or
-        (start_address > MAX_DMX_ADDRESS and
+        (start_address > TestMixins.MAX_DMX_ADDRESS and
          start_address != RDM_ZERO_FOOTPRINT_DMX_ADDRESS)):
       self.AddWarning('Invalid DMX address %d in DEVICE_INFO' % start_address)
 
@@ -2166,7 +2165,7 @@ class SetOutOfRangeStartAddress(ResponderTestFixture):
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
       ])
-    data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
+    data = struct.pack('!H', TestMixins.MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
@@ -3907,14 +3906,6 @@ class SetPowerState(TestMixins.SetMixin, OptionalParameterTestFixture):
     length = len(GetPowerState.ALLOWED_STATES)
     return GetPowerState.ALLOWED_STATES[(old_value + 1) % length]
 
-  def ResetState(self):
-    if not self.OldValue():
-      return
-
-    # Reset back to the old value
-    self.SendSet(ROOT_DEVICE, self.pid, [self.OldValue()])
-    self._wrapper.Run()
-
 
 class SetPowerStateWithNoData(TestMixins.SetWithNoDataMixin,
                               OptionalParameterTestFixture):
@@ -4273,11 +4264,11 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
       footprint = fields['sub_device_footprint']
       base_address = fields['base_dmx_address']
 
-      if footprint > MAX_DMX_ADDRESS:
+      if footprint > TestMixins.MAX_DMX_ADDRESS:
         self.AddWarning('Sub device footprint > 512, was %d' % footprint)
 
       if (base_address == 0 or
-          (base_address > MAX_DMX_ADDRESS and
+          (base_address > TestMixins.MAX_DMX_ADDRESS and
            base_address != self.NON_CONTIGUOUS)):
         self.AddWarning('Base DMX address is outside range 1-512, was %d' %
                         base_address)
@@ -4354,7 +4345,7 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
       return 1
 
     new_address = base_address + 1
-    if new_address + footprint > MAX_DMX_ADDRESS:
+    if new_address + footprint > TestMixins.MAX_DMX_ADDRESS:
       new_address = 1
     return new_address
 
@@ -4378,7 +4369,7 @@ class SetOversizedDMXBlockAddress(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
+    data = struct.pack('!H', TestMixins.MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
