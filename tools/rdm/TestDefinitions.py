@@ -2099,7 +2099,8 @@ class GetStartAddress(ResponderTestFixture):
     self.SetPropertyFromDict(fields, 'dmx_address')
 
 
-class GetStartAddressWithData(TestMixins.GetWithDataMixin, ResponderTestFixture):
+class GetStartAddressWithData(TestMixins.GetWithDataMixin,
+                              ResponderTestFixture):
   """GET the DMX start address with data."""
   PID = 'DMX_START_ADDRESS'
   REQUIRES = ['dmx_footprint']
@@ -2951,7 +2952,7 @@ class ResetUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
   REQUIRES = ['sensor_definitions']
 
 
-class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin, 
+class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
   PID = 'SENSOR_VALUE'
@@ -3376,7 +3377,8 @@ class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
       self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
       self.NackSetResult(
         RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-        advisory='SET for %s returned unsupported command class' % self.pid.name),
+        advisory='SET for %s returned unsupported command class' %
+                 self.pid.name),
     ])
     self.SendSet(ROOT_DEVICE, self.pid, [self.NewValue()])
 
@@ -5032,7 +5034,8 @@ class SetLockState(OptionalParameterTestFixture):
         self.AckSetResult(action=self.VerifySet),
         self.NackSetResult(
           RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-          advisory='SET for %s returned unsupported command class' % self.pid.name),
+          advisory='SET for %s returned unsupported command class' %
+                   self.pid.name),
       ])
       self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.pin, self.lock_state])
 
@@ -5150,7 +5153,8 @@ class SetLockPin(OptionalParameterTestFixture):
         self.AckSetResult(action=self.VerifySet),
         self.NackSetResult(
           RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-          advisory='SET for %s returned unsupported command class' % self.pid.name),
+          advisory='SET for %s returned unsupported command class' %
+                   self.pid.name),
       ])
       self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.pin, self.pin])
 
@@ -6567,7 +6571,8 @@ class SetPresetMergeMode(OptionalParameterTestFixture):
       self.AckSetResult(action=self.VerifySet),
       self.NackSetResult(
         RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-        advisory='SET for %s returned unsupported command class' % self.pid.name),
+        advisory='SET for %s returned unsupported command class' %
+                 self.pid.name),
     ])
     self.SendSet(ROOT_DEVICE, self.pid, [self.value])
 
