@@ -425,7 +425,8 @@ class SetMixin(object):
       self.AckSetResult(action=self.VerifySet),
       self.NackSetResult(
         RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-        advisory='SET for %s returned unsupported command class' % self.pid.name),
+        advisory='SET for %s returned unsupported command class' %
+                 self.pid.name),
     ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
