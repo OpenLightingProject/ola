@@ -1052,7 +1052,7 @@ class ClearStatusMessages(TestMixins.SetWithNoDataMixin,
 
 # Parameter Description
 # -----------------------------------------------------------------------------
-class GetParamDescription(ResponderTestFixture):
+class GetParamDescription(ParamDescriptionTestFixture):
   """Check that GET parameter description works for any manufacturer params."""
   CATEGORY = TestCategory.RDM_INFORMATION
   PID = 'PARAMETER_DESCRIPTION'
@@ -1062,6 +1062,7 @@ class GetParamDescription(ResponderTestFixture):
     self.params = self.Property('manufacturer_parameters')[:]
     if len(self.params) == 0:
       self.SetNotRun('No manufacturer params found')
+      # This case is tested in GetParamDescriptionForNonManufacturerPid
       return
     self._GetParam()
 
@@ -1098,7 +1099,7 @@ class GetParamDescription(ResponderTestFixture):
           (self.PID, fields['description'].encode('string-escape')))
 
 
-class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
+class GetParamDescriptionForNonManufacturerPid(ParamDescriptionTestFixture):
   """GET parameter description for a non-manufacturer pid."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PARAMETER_DESCRIPTION'
@@ -1120,7 +1121,8 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
-class GetParamDescriptionWithExtraData(ResponderTestFixture):
+class GetParamDescriptionWithExtraData(TestMixins.GetWithDataMixin,
+                                       ParamDescriptionTestFixture):
   """GET parameter description with extra param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PARAMETER_DESCRIPTION'
@@ -1137,7 +1139,7 @@ class GetParamDescriptionWithExtraData(ResponderTestFixture):
     if self.Property('manufacturer_parameters'):
       results = self.NackGetResult(RDMNack.NR_FORMAT_ERROR)
     self.AddExpectedResults(results)
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
 
 class SetParamDescription(TestMixins.UnsupportedSetMixin,
