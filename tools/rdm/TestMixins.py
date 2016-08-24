@@ -270,16 +270,24 @@ class UnsupportedSetWithDataMixin(ResponderTestFixture):
 
 
 class SetWithDataMixin(ResponderTestFixture):
-  """SET a PID with random param data."""
+  """SET a PID with junk param data.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackSetResult to the list
+    of allowed results for each entry.
+  """
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
+  ALLOWED_NACKS = []
 
   def Test(self):
-    self.AddIfSetSupported([
+    results = [
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckSetResult(
         warning='Set %s with data returned an ack' % self.pid.name)
-    ])
+    ]
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackSetResult(nack))
+    self.AddIfSetSupported(results)
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
   # TODO(simon): add a method to check this didn't change the value

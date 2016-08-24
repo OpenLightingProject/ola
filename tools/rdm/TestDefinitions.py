@@ -2688,10 +2688,6 @@ class GetSensorDefinitionWithExtraData(TestMixins.GetWithDataMixin,
   """Get the sensor definition with more than 1 byte of data."""
   PID = 'SENSOR_DEFINITION'
 
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
-
 
 class GetInvalidSensorDefinition(OptionalParameterTestFixture):
   """Get the sensor definition with the all sensor value (0xff)."""
@@ -2959,13 +2955,7 @@ class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
   PID = 'SENSOR_VALUE'
-
-  def Test(self):
-    self.AddIfSetSupported([
-        self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
-        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-    ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+  ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
 
 class AllSubDevicesGetSensorValue(TestMixins.AllSubDevicesGetMixin,
