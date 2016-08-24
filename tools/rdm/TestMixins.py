@@ -64,7 +64,7 @@ class UnsupportedGetWithDataMixin(ResponderTestFixture):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
-class GetMixin(object):
+class GetMixin(ResponderTestFixture):
   """GET Mixin for an optional PID. Verify EXPECTED_FIELDS is in the response.
 
     This mixin also sets one or more properties if PROVIDES is defined.  The
@@ -204,7 +204,7 @@ class GetWithDataMixin(ResponderTestFixture):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
-class GetMandatoryPIDWithDataMixin(object):
+class GetMandatoryPIDWithDataMixin(ResponderTestFixture):
   """GET a mandatory PID with junk param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
@@ -306,7 +306,7 @@ class SetWithNoDataMixin(ResponderTestFixture):
 
 # Generic Label Mixins
 # -----------------------------------------------------------------------------
-class SetLabelMixin(object):
+class SetLabelMixin(ResponderTestFixture):
   """Set a PID and make sure the label is updated.
 
   If PROVIDES is non empty, the first property will be used to indicate if the
@@ -378,7 +378,7 @@ class NonUnicastSetLabelMixin(SetLabelMixin):
                          [self.TEST_LABEL])
 
 
-class SetOversizedLabelMixin(object):
+class SetOversizedLabelMixin(ResponderTestFixture):
   """Send an over-sized SET label command."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   LONG_STRING = 'this is a string which is more than 32 characters'
@@ -414,7 +414,7 @@ class SetOversizedLabelMixin(object):
 
 # Generic Set Mixins
 # -----------------------------------------------------------------------------
-class SetMixin(object):
+class SetMixin(ResponderTestFixture):
   """The base class for set mixins."""
 
   def OldValue(self):
@@ -507,7 +507,7 @@ class SetUInt32Mixin(SetMixin):
 
 # Start address mixins
 # -----------------------------------------------------------------------------
-class SetStartAddressMixin(object):
+class SetStartAddressMixin(ResponderTestFixture):
   """Set the dmx start address."""
   SET, VERIFY, RESET = xrange(3)
 
@@ -558,7 +558,7 @@ class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
       return
 
     if not self.Property('set_dmx_address_supported'):
-      self.SetNotRun('Previous set start address was nacked')
+      self.SetNotRun('Previous set start address was NAcked')
       self.Stop()
       return
 
@@ -571,7 +571,7 @@ class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
 
 # Identify Device Mixin
 # -----------------------------------------------------------------------------
-class SetNonUnicastIdentifyMixin(object):
+class SetNonUnicastIdentifyMixin(ResponderTestFixture):
   """Sets the identify device state.
 
   To avoid sending a broadcast identify on (which may strike all lamps in a
@@ -619,7 +619,8 @@ class SetNonUnicastIdentifyMixin(object):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def ResetState(self):
-    # reset back to the old value
+    # reset back to the old value, this doesn't reset any other devices
+    # affected by the broadcast identify off
     self.SendSet(PidStore.ROOT_DEVICE, self.pid,
                  [self.Property('identify_state')])
     self._wrapper.Run()
@@ -785,7 +786,7 @@ class DiscoveryMixin(ResponderTestFixture):
 
 # E1.37-1 Mixins
 # -----------------------------------------------------------------------------
-class SetDmxFailModeMixin(object):
+class SetDmxFailModeMixin(ResponderTestFixture):
   PID = 'DMX_FAIL_MODE'
   REQUIRES = ['dmx_fail_settings', 'preset_info', 'set_dmx_fail_mode_supported']
   CATEGORY = TestCategory.DMX_SETUP
@@ -814,7 +815,7 @@ class SetDmxFailModeMixin(object):
     self._wrapper.Run()
 
 
-class SetDmxStartupModeMixin(object):
+class SetDmxStartupModeMixin(ResponderTestFixture):
   PID = 'DMX_STARTUP_MODE'
   REQUIRES = ['dmx_startup_settings', 'preset_info',
               'set_dmx_startup_mode_supported']

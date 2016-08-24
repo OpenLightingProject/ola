@@ -276,6 +276,7 @@ class ResponderTestFixture(TestFixture):
     pass
 
   def ResetState(self):
+    """A hook to reset the responder after the test has run."""
     pass
 
   def Stop(self):
