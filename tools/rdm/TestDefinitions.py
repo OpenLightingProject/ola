@@ -662,7 +662,9 @@ class DetermineMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
     self.SendPacket()
 
 
-class SetDeviceInfo(DeviceInfoTest, ResponderTestFixture):
+class SetDeviceInfo(TestMixins.UnsupportedSetMixin,
+                    DeviceInfoTest,
+                    ResponderTestFixture):
   """Attempt to SET device info with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
@@ -681,7 +683,6 @@ class SetDeviceInfoWithData(TestMixins.UnsupportedSetWithDataMixin,
                             ResponderTestFixture):
   """SET device info with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = 'FOO BAR'
 
   def Test(self):
     self.AddExpectedResults([
@@ -1119,8 +1120,8 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
-class GetParamDescriptionWithData(ResponderTestFixture):
-  """GET parameter description with param data."""
+class GetParamDescriptionWithExtraData(ResponderTestFixture):
+  """GET parameter description with extra param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PARAMETER_DESCRIPTION'
   REQUIRES = ['manufacturer_parameters']
@@ -1205,7 +1206,7 @@ class SetProxiedDeviceCount(TestMixins.UnsupportedSetMixin,
 
 
 class SetProxiedDeviceCountWithData(TestMixins.UnsupportedSetWithDataMixin,
-                                     OptionalParameterTestFixture):
+                                    OptionalParameterTestFixture):
   """SET the count of proxied devices with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PROXIED_DEVICE_COUNT'
@@ -3328,7 +3329,7 @@ class SetLampState(TestMixins.SetBoolMixin, OptionalParameterTestFixture):
 
 
 class SetLampStateWithNoData(TestMixins.SetWithNoDataMixin,
-                               OptionalParameterTestFixture):
+                             OptionalParameterTestFixture):
   """Set the device state with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_STATE'
@@ -3904,7 +3905,7 @@ class SetIdentifyDeviceWithNoData(ResponderTestFixture):
 
 
 class AllSubDevicesGetIdentifyDevice(TestMixins.AllSubDevicesGetMixin,
-                                     OptionalParameterTestFixture):
+                                     ResponderTestFixture):
   """Send a Get IDENTIFY_DEVICE to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IDENTIFY_DEVICE'
