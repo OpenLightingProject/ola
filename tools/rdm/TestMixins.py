@@ -366,7 +366,14 @@ class SetLabelMixin(ResponderTestFixture):
 
 class NonUnicastSetLabelMixin(SetLabelMixin):
   """Send a SET device label to a broadcast or vendorcast uid."""
+  def Uid(self):
+    self.SetBroken('Base method of SetNonUnicastStartAddressMixin called')
+
   def Test(self):
+    target_uid = self.Uid()
+    if target_uid is None:
+      return
+
     if not self.Property('set_device_label_supported'):
       self.SetNotRun('Previous set label was nacked')
       self.Stop()
@@ -374,7 +381,7 @@ class NonUnicastSetLabelMixin(SetLabelMixin):
 
     self._test_state = self.SET
     self.AddExpectedResults(BroadcastResult(action=self.VerifySet))
-    self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid,
+    self.SendDirectedSet(target_uid, PidStore.ROOT_DEVICE, self.pid,
                          [self.TEST_LABEL])
 
 
@@ -418,12 +425,16 @@ class SetMixin(ResponderTestFixture):
   """The base class for set mixins."""
 
   def OldValue(self):
-    self.SetBroken('base method of SetMixin called')
+    self.SetBroken('Base OldValue method of SetMixin called')
 
   def NewValue(self):
-    self.SetBroken('base method of SetMixin called')
+    self.SetBroken('Base NewValue method of SetMixin called')
 
   def Test(self):
+    new_value = self.NewValue()
+    if new_value is None:
+      return
+
     self.AddIfSetSupported([
       self.AckSetResult(action=self.VerifySet),
       self.NackSetResult(
@@ -431,7 +442,7 @@ class SetMixin(ResponderTestFixture):
         advisory='SET for %s returned unsupported command class' %
                  self.pid.name),
     ])
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [new_value])
 
   def VerifySet(self):
     self.AddExpectedResults(
@@ -549,7 +560,14 @@ class SetStartAddressMixin(ResponderTestFixture):
 class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
   """Send a set dmx start address to a non unicast uid."""
 
+  def Uid(self):
+    self.SetBroken('Base method of SetNonUnicastStartAddressMixin called')
+
   def Test(self):
+    target_uid = self.Uid()
+    if target_uid is None:
+      return
+
     footprint = self.Property('dmx_footprint')
     current_address = self.Property('dmx_address')
     if footprint == 0 or current_address == 0xffff:
@@ -565,7 +583,7 @@ class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
     self._test_state = self.SET
     self.start_address = self.CalculateNewAddress(current_address, footprint)
     self.AddExpectedResults(BroadcastResult(action=self.VerifySet))
-    self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid,
+    self.SendDirectedSet(target_uid, PidStore.ROOT_DEVICE, self.pid,
                          [self.start_address])
 
 
@@ -578,6 +596,9 @@ class SetNonUnicastIdentifyMixin(ResponderTestFixture):
   large rig), we instead turn identify on and then send a broadcast off.
   """
   REQUIRES = ['identify_state']
+
+  def Uid(self):
+    self.SetBroken('Base method of SetNonUnicastStartAddressMixin called')
 
   def States(self):
     return [
@@ -610,8 +631,13 @@ class SetNonUnicastIdentifyMixin(ResponderTestFixture):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def TurnOff(self):
+    target_uid = self.Uid()
+    if target_uid is None:
+      self.Stop()
+      return
+
     self.AddExpectedResults(BroadcastResult(action=self.NextState()))
-    self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid, [False])
+    self.SendDirectedSet(target_uid, PidStore.ROOT_DEVICE, self.pid, [False])
 
   def VerifyOff(self):
     self.AddExpectedResults(
@@ -679,7 +705,7 @@ class SetPresetStatusMixin(ResponderTestFixture):
                        int(wait_time), 0)
 
   def PresetStatusSceneNumber(self):
-    self.SetBroken('base method of SetPresetStatusMixin called')
+    self.SetBroken('Base method of SetPresetStatusMixin called')
     return
 
   def Test(self):
@@ -1041,7 +1067,7 @@ class GetSettingDescriptionsMixin(ResponderTestFixture):
   FIRST_INDEX_OFFSET = 1
 
   def ListOfSettings(self):
-    self.SetBroken('base method of GetSettingDescriptionsMixin called')
+    self.SetBroken('Base method of GetSettingDescriptionsMixin called')
 
   def Test(self):
     self.items = self.ListOfSettings()
