@@ -110,19 +110,19 @@ class GetStringMixin(GetMixin):
     if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            string_field.encode('string-escape')))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
           '%s field in %s was shorter than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(string_field), self.MIN_LENGTH))
 
     if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
       self.SetFailed(
           '%s field in %s was longer than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(string_field), self.MAX_LENGTH))
 
 
@@ -166,19 +166,19 @@ class GetRequiredStringMixin(GetRequiredMixin):
     if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            string_field.encode('string-escape')))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
           '%s field in %s was shorter than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(string_field), self.MIN_LENGTH))
 
     if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
       self.SetFailed(
           '%s field in %s was longer than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(string_field), self.MAX_LENGTH))
 
 
@@ -188,6 +188,7 @@ class GetWithDataMixin(ResponderTestFixture):
     If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
     of allowed results for each entry.
   """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
   ALLOWED_NACKS = []
 
@@ -205,6 +206,7 @@ class GetWithDataMixin(ResponderTestFixture):
 
 class GetMandatoryPIDWithDataMixin(object):
   """GET a mandatory PID with junk param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
 
   def Test(self):
@@ -220,6 +222,8 @@ class GetMandatoryPIDWithDataMixin(object):
 
 class GetWithNoDataMixin(ResponderTestFixture):
   """GET with no data, expect NR_FORMAT_ERROR."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
@@ -244,6 +248,8 @@ class AllSubDevicesGetMixin(ResponderTestFixture):
 # -----------------------------------------------------------------------------
 class UnsupportedSetMixin(ResponderTestFixture):
   """Check that SET fails with NR_UNSUPPORTED_COMMAND_CLASS."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddIfSetSupported(
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
@@ -254,6 +260,7 @@ class UnsupportedSetWithDataMixin(ResponderTestFixture):
   """Check that SET with random param data fails with
     NR_UNSUPPORTED_COMMAND_CLASS.
   """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
 
   def Test(self):
@@ -264,6 +271,7 @@ class UnsupportedSetWithDataMixin(ResponderTestFixture):
 
 class SetWithDataMixin(ResponderTestFixture):
   """SET a PID with random param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
 
   def Test(self):
@@ -279,6 +287,8 @@ class SetWithDataMixin(ResponderTestFixture):
 
 class SetWithNoDataMixin(ResponderTestFixture):
   """Attempt a set with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
@@ -331,7 +341,7 @@ class SetLabelMixin(object):
     if (len(new_label) < len(self.TEST_LABEL) and
         self.TEST_LABEL.startswith(new_label)):
       self.AddAdvisory('Label for %s was truncated to %d characters' %
-                       (self.pid, len(new_label)))
+                       (self.pid.name, len(new_label)))
     else:
       self.SetFailed('Labels didn\'t match, expected "%s", got "%s"' %
                      (self.TEST_LABEL.encode('string-escape'),
@@ -362,6 +372,7 @@ class NonUnicastSetLabelMixin(SetLabelMixin):
 
 class SetOversizedLabelMixin(object):
   """Send an over-sized SET label command."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   LONG_STRING = 'this is a string which is more than 32 characters'
 
   def Test(self):
@@ -390,7 +401,7 @@ class SetOversizedLabelMixin(object):
       if fields['label'] != self.LONG_STRING[0:RDM_MAX_STRING_LENGTH]:
         self.AddWarning(
             'Setting an oversized %s set the first %d characters' %
-            (self.PID, len(fields['label'])))
+            (self.pid.name, len(fields['label'])))
 
 
 # Generic Set Mixins
@@ -409,7 +420,7 @@ class SetMixin(object):
       self.AckSetResult(action=self.VerifySet),
       self.NackSetResult(
         RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-        advisory='SET for %s returned unsupported command class' % self.PID),
+        advisory='SET for %s returned unsupported command class' % self.pid.name),
     ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
@@ -1053,13 +1064,13 @@ class GetSettingDescriptionsMixin(ResponderTestFixture):
     if fields[self.EXPECTED_FIELDS[0]] != self.current_item:
       self.AddWarning(
           '%s mismatch, sent %d, received %d' %
-          (self.pid, self.current_item, fields[self.EXPECTED_FIELDS[0]]))
+          (self.pid.name, self.current_item, fields[self.EXPECTED_FIELDS[0]]))
 
     if ContainsUnprintable(fields[self.DESCRIPTION_FIELD]):
       self.AddAdvisory(
           '%s field in %s for %s %d contains unprintable characters, was %s' %
           (self.DESCRIPTION_FIELD.capitalize(),
-           self.PID,
+           self.pid.name,
            self.DESCRIPTION_FIELD,
            self.current_item,
            fields[self.DESCRIPTION_FIELD].encode('string-escape')))
