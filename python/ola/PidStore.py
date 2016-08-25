@@ -19,7 +19,6 @@
 from __future__ import print_function
 import binascii
 import math
-import ola.RDMConstants
 import os
 import socket
 import struct
@@ -28,6 +27,7 @@ from google.protobuf import text_format
 from ola import PidStoreLocation
 from ola import Pids_pb2
 from ola.MACAddress import MACAddress
+from ola import RDMConstants
 from ola.UID import UID
 
 """The PID Store."""
@@ -952,12 +952,12 @@ class PidStore(object):
 
     for pid_pb in self._pid_store.pid:
       if validate:
-        if ((pid_pb.value >= ola.RDMConstants.RDM_MANUFACTURER_PID_MIN) and
-            (pid_pb.value <= ola.RDMConstants.RDM_MANUFACTURER_PID_MAX)):
+        if ((pid_pb.value >= RDMConstants.RDM_MANUFACTURER_PID_MIN) and
+            (pid_pb.value <= RDMConstants.RDM_MANUFACTURER_PID_MAX)):
           raise InvalidPidFormat('%0x04hx between %0x04hx and %0x04hx in %s' %
                                  (pid_pb.value,
-                                  ola.RDMConstants.RDM_MANUFACTURER_PID_MIN,
-                                  ola.RDMConstants.RDM_MANUFACTURER_PID_MAX,
+                                  RDMConstants.RDM_MANUFACTURER_PID_MIN,
+                                  RDMConstants.RDM_MANUFACTURER_PID_MAX,
                                   pid_file_name))
         if pid_pb.value in self._pids:
           raise InvalidPidFormat('0x%04hx listed more than once in %s' %
@@ -983,13 +983,13 @@ class PidStore(object):
 
       for pid_pb in manufacturer.pid:
         if validate:
-          if ((pid_pb.value < ola.RDMConstants.RDM_MANUFACTURER_PID_MIN) or
-              (pid_pb.value > ola.RDMConstants.RDM_MANUFACTURER_PID_MAX)):
+          if ((pid_pb.value < RDMConstants.RDM_MANUFACTURER_PID_MIN) or
+              (pid_pb.value > RDMConstants.RDM_MANUFACTURER_PID_MAX)):
             raise InvalidPidFormat(
               'Manufacturer pid 0x%04hx not between %0x04hx and %0x04hx' %
               (pid_pb.value,
-               ola.RDMConstants.RDM_MANUFACTURER_PID_MIN,
-               ola.RDMConstants.RDM_MANUFACTURER_PID_MAX))
+               RDMConstants.RDM_MANUFACTURER_PID_MIN,
+               RDMConstants.RDM_MANUFACTURER_PID_MAX))
           if pid_pb.value in pid_dict:
             raise InvalidPidFormat(
                 '0x%04hx listed more than once for 0x%04hx in %s' % (
@@ -1066,7 +1066,7 @@ class PidStore(object):
     Returns:
       The value for this PID, or None if it wasn't found.
     """
-    pid = self.GetName(pid_name)
+    pid = self.GetName(pid_name, esta_id)
     if pid:
       return pid.value
     return pid
