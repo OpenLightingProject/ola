@@ -2105,7 +2105,6 @@ class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
   def Test(self):
     footprint = self.Property('dmx_footprint')
     current_address = self.Property('dmx_address')
-    self.start_address = 1
 
     if footprint == 0 or current_address == RDM_ZERO_FOOTPRINT_DMX_ADDRESS:
       results = [

@@ -112,8 +112,8 @@ class TestFixture(object):
     self._warnings.append(message)
 
   # Advisories are logged independently of errors. They should be used to
-  # indicate conditions that while aren't covered by the standard, should still
-  # be fixed.
+  # indicate conditions that while not covered by the standard, should still be
+  # fixed.
   @property
   def advisories(self):
     """Non-fatal advisories message."""
@@ -194,6 +194,9 @@ class TestFixture(object):
   def Run(self):
     """Run the test."""
     self.Test()
+
+  def Stop(self):
+    self.SetBroken('stop method not defined')
 
   def SetNotRun(self, message=None):
     """Set the state of the test to NOT_RUN and stop further processing."""
