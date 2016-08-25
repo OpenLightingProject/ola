@@ -68,7 +68,8 @@ class TestFixture(object):
     except AttributeError:
       self.pid = None
     if self.PidRequired() and self.pid is None:
-      self.SetBroken("%s: Couldn't find PID from %s" % (self.__class__.__name__, self.PID))
+      self.SetBroken("%s: Couldn't find PID from %s" %
+                     (self.__class__.__name__, self.PID))
 
   def __hash__(self):
     return hash(self.__class__.__name__)
