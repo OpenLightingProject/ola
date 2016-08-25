@@ -169,6 +169,9 @@ class InvalidDiscoveryPID(ResponderTestFixture):
   """Send an invalid Discovery CC PID, see E1.20 6.3.4"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
+  def PidRequired(self):
+    return False
+
   # We need to mock out a PID here
   class MockPid(object):
     def __init__(self):
@@ -2497,6 +2500,9 @@ class CheckSensorConsistency(ResponderTestFixture):
   REQUIRES = ['sensor_count', 'sensor_recording_supported',
               'supported_parameters']
 
+  def PidRequired(self):
+    return False
+
   def IsSupported(self, pid):
     return pid.value in self.Property('supported_parameters')
 
@@ -2505,7 +2511,7 @@ class CheckSensorConsistency(ResponderTestFixture):
     if (check_for_support and
         (not self.IsSupported(pid)) and
         self.Property('sensor_count')) > 0:
-      self.AddAdvisory('%s not supported but sensor count was  > 0' % pid)
+      self.AddAdvisory('%s not supported but sensor count was > 0' % pid)
     if self.IsSupported(pid) and self.Property('sensor_count') == 0:
       self.AddAdvisory('%s supported but sensor count was 0' % pid)
 
@@ -4305,15 +4311,14 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
     return True
 
 
-class CheckBlockAddressConsistency(ResponderTestFixture):
+class CheckBlockAddressConsistency(OptionalParameterTestFixture):
   """Check that the device has subdevices if DMX_BLOCK_ADDRESS is supported."""
   CATEGORY = TestCategory.CONTROL
-  REQUIRES = ['sub_device_count', 'supported_parameters']
+  REQUIRES = ['sub_device_count']
+  PID = 'DMX_BLOCK_ADDRESS'
 
   def Test(self):
-    pid = self.LookupPid('DMX_BLOCK_ADDRESS')
-    if (pid.value in self.Property('supported_parameters') and
-        self.Property('sub_device_count') == 0):
+    if (self.PidSupported() and self.Property('sub_device_count') == 0):
       self.AddAdvisory('DMX_BLOCK_ADDRESS supported but sub device count was 0')
     self.SetPassed()
     self.Stop()
@@ -6898,6 +6903,9 @@ class SubDeviceControlField(TestFixture):
   CATEGORY = TestCategory.CORE
   REQUIRES = ['mute_control_fields', 'sub_device_count']
 
+  def PidRequired(self):
+    return False
+
   def Test(self):
     sub_device_field = self.Property('mute_control_fields') & 0x02
     if self.Property('sub_device_count') > 0:
@@ -6911,23 +6919,21 @@ class SubDeviceControlField(TestFixture):
     self.SetPassed()
 
 
-class ProxiedDevicesControlField(TestFixture):
+class ProxiedDevicesControlField(OptionalParameterTestFixture):
   """Check that the proxied devices control field is correct."""
+  PID = 'PROXIED_DEVICES'
   CATEGORY = TestCategory.CORE
-  REQUIRES = ['mute_control_fields', 'supported_parameters']
+  REQUIRES = ['mute_control_fields']
 
   def Test(self):
-    proxied_devices_pid = self.LookupPid('PROXIED_DEVICES')
-    supports_proxied_devices_pid = (
-        proxied_devices_pid.value in self.Property('supported_parameters'))
     managed_proxy_field = self.Property('mute_control_fields') & 0x01
 
-    if supports_proxied_devices_pid and managed_proxy_field == 0:
+    if self.PidSupported() and managed_proxy_field == 0:
       self.AddWarning(
           "Support for PROXIED_DEVICES declared but the managed "
           "proxy control field isn't set")
       return
-    elif not supports_proxied_devices_pid and managed_proxy_field == 1:
+    elif not self.PidSupported() and managed_proxy_field == 1:
       self.SetFailed(
           "Managed proxy control bit is set, but proxied devices isn't "
           "supported")
