@@ -49,12 +49,16 @@ class UndeclaredPropertyException(Error):
 
 class TestFixture(object):
   """The base responder test class, every test inherits from this."""
+  PID = None
   CATEGORY = TestCategory.UNCLASSIFIED
   DEPS = []
   PROVIDES = []
   REQUIRES = []
 
   def __init__(self, device, universe, uid, pid_store, *args, **kwargs):
+    self._warnings = []
+    self._advisories = []
+    self._debug = []
     self._device_properties = device
     self._uid = uid
     self._pid_store = pid_store
@@ -63,9 +67,8 @@ class TestFixture(object):
       self.pid = self.LookupPid(self.PID)
     except AttributeError:
       self.pid = None
-    self._warnings = []
-    self._advisories = []
-    self._debug = []
+    if self.pid is None:
+      self.SetBroken("Couldn't find PID from %s" % self.PID)
 
   def __hash__(self):
     return hash(self.__class__.__name__)
@@ -258,9 +261,14 @@ class ResponderTestFixture(TestFixture):
 
   def Run(self):
     """Call the test method and then start running the loop wrapper."""
+    # Try and fail early
+    if self.state == TestState.BROKEN:
+      return
+
     # the super call invokes self.Test()
     super(ResponderTestFixture, self).Run()
 
+    # Check if we've broken during self.Test()
     if self.state == TestState.BROKEN:
       return
 
