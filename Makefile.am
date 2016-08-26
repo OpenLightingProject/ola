@@ -25,7 +25,7 @@ AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
 #
 # COMMON_PROTOBUF_CXXFLAGS
 # The common C++ flags with some warnings protobuf code throws disabled. Use
-# this for 3rd party protobuf code that does not build correctly with
+# this for generated protobuf code that does not build correctly with
 # COMMON_CXXFLAGS.
 #
 # COMMON_CXXFLAGS_ONLY_WARNINGS
