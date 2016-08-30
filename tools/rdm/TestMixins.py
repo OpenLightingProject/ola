@@ -15,16 +15,10 @@
 # TestMixins.py
 # Copyright (C) 2010 Simon Newton
 
-'''Mixins used by the test definitions.
-
-This module contains classes which can be inherited from to simplify writing
-test definitions.
-'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import struct
-from ExpectedResults import AckGetResult, AckDiscoveryResult, BroadcastResult, DUBResult, NackSetResult, TimeoutResult, UnsupportedResult
+from ExpectedResults import (AckGetResult, AckDiscoveryResult, BroadcastResult,
+                             DUBResult, NackSetResult, TimeoutResult,
+                             UnsupportedResult)
 from ResponderTest import ResponderTestFixture
 from TestCategory import TestCategory
 from TestHelpers import ContainsUnprintable
@@ -35,6 +29,15 @@ from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import RDM_MAX_STRING_LENGTH
 from ola.UID import UID
+
+'''Mixins used by the test definitions.
+
+This module contains classes which can be inherited from to simplify writing
+test definitions.
+'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
 
 MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
 
@@ -64,8 +67,8 @@ class GetMixin(object):
     This mixin also sets one or more properties if PROVIDES is defined.  The
     target class needs to defined EXPECTED_FIELDS and optionally PROVIDES.
 
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
   """
   ALLOWED_NACKS = []
 
@@ -179,8 +182,8 @@ class GetRequiredStringMixin(GetRequiredMixin):
 class GetWithDataMixin(object):
   """GET a PID with junk param data.
 
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
   """
   DATA = 'foo'
   ALLOWED_NACKS = []
@@ -243,7 +246,7 @@ class UnsupportedSetMixin(object):
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class SetWithDataMixin(ResponderTestFixture):
+class SetWithDataMixin(object):
   """SET a PID with random param data."""
   DATA = 'foo'
 
@@ -254,6 +257,8 @@ class SetWithDataMixin(ResponderTestFixture):
         warning='Set %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
+  # TODO(simon): add a method to check this didn't change the value
 
 
 class SetWithNoDataMixin(object):
@@ -369,8 +374,8 @@ class SetOversizedLabelMixin(object):
     else:
       if fields['label'] != self.LONG_STRING[0:RDM_MAX_STRING_LENGTH]:
         self.AddWarning(
-            'Setting an oversized %s set the first %d characters' % (
-            self.PID, len(fields['label'])))
+            'Setting an oversized %s set the first %d characters' %
+            (self.PID, len(fields['label'])))
 
 
 # Generic Set Mixins
@@ -616,7 +621,7 @@ class SetUndefinedSensorValues(object):
         # SET SENSOR_VALUE may not be supported
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
                            action=self._DoAction),
-                           ])
+    ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self._missing_sensors.pop(0)])
 
 
@@ -658,7 +663,8 @@ class DiscoveryMixin(ResponderTestFixture):
         ffff:ffffffff
   """
   PID = 'DISC_UNIQUE_BRANCH'
-  REQUIRES = ['mute_supported', 'unmute_supported']
+  # Global Mute here ensures we run after all devices have been muted
+  REQUIRES = ['mute_supported', 'unmute_supported', 'global_mute']
 
   def DUBResponseCode(self, response_code):
     pass
@@ -855,8 +861,9 @@ class SetMinimumLevelMixin(object):
         field_values={
           'minimum_level_increasing': self.MinLevelIncreasing(),
           'minimum_level_decreasing': min_level_decreasing,
-          'on_below_minimum': self.OnBelowMin(),
-    }))
+          'on_below_minimum': self.OnBelowMin()
+        }
+    ))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def ResetState(self):
@@ -969,8 +976,8 @@ class GetSettingDescriptionsMixin(object):
     used to validate the index against and DESCRIPTION_FIELD, which is the
     field to check for unprintable characters.
 
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
   """
   ALLOWED_NACKS = []
   FIRST_INDEX_OFFSET = 1
@@ -982,7 +989,7 @@ class GetSettingDescriptionsMixin(object):
     self.items = self.ListOfSettings()
     if not self.items:
       # Try to GET first item, this should NACK
-      self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
       self.SendGet(ROOT_DEVICE, self.pid, [self.FIRST_INDEX_OFFSET])
       return
 

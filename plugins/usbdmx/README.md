@@ -44,12 +44,12 @@ Code Concepts & Structure
 
 USB Devices are represented as Widgets, this allows us to de-couple the Widget
 code from OLA's Port representation (remember, prefer composition over
-inheritance). Since all the USB devices we support so far have a single DMX512
-interface, each specific Widget (e.g. AnymauDMX) derives from the Widget
+inheritance). Since the majority of USB devices we support so far have a single
+DMX512 interface, each specific Widget (e.g. AnymauDMX) derives from the Widget
 class. This isn't strictly necessary, it just means we can avoid code
-duplication by using the GenericDevice and GenericPort classes. If in the
-future, multi-interface USB devices are supported, they shouldn't inherit from
-the Widget class.
+duplication by using the GenericDevice and GenericPort classes. Multi-interface
+USB devices which are supported, shouldn't inherit from the Widget class (see
+the Nodle U1 for example, they will need to use the Device class instead).
 
 GenericPort wraps a Widget into a Port object, so it can show up in olad.
 GenericDevice creates a Device with a single GenericPort.

@@ -40,12 +40,12 @@ class DMXTriggerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testRisingEdgeTrigger();
-    void testFallingEdgeTrigger();
+  void testRisingEdgeTrigger();
+  void testFallingEdgeTrigger();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
+  void setUp() {
+    ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  }
 };
 
 

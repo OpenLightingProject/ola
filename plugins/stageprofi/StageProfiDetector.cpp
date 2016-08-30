@@ -38,6 +38,7 @@
 #include "ola/io/Descriptor.h"
 #include "ola/io/IOUtils.h"
 #include "ola/io/SelectServerInterface.h"
+#include "ola/io/Serial.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/stl/STLUtils.h"
@@ -125,6 +126,7 @@ void StageProfiDetector::ReleaseWidget(const std::string &widget_path) {
   // the map.
   DescriptorMap::iterator iter = m_usb_widgets.find(widget_path);
   if (iter != m_usb_widgets.end()) {
+    ola::io::ReleaseUUCPLock(widget_path);
     iter->second = NULL;
     return;
   }
@@ -162,7 +164,9 @@ ConnectedDescriptor* StageProfiDetector::ConnectToUSB(
   struct termios newtio;
 
   int fd;
-  if (!ola::io::TryOpen(widget_path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
+  if (!ola::io::AcquireUUCPLockAndOpen(widget_path,
+                                       O_RDWR | O_NONBLOCK | O_NOCTTY,
+                                       &fd)) {
     return NULL;
   }
 

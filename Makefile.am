@@ -29,6 +29,10 @@ AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
 #
 # COMMON_TESTING_FLAGS
 # The common C++ flags for testing.
+#
+# COMMON_TESTING_FLAGS_ONLY_WARNINGS
+# The common C++ flags for testing with (non-fatal) warnings enabled. Use this
+# for 3rd party code that does not build correctly with COMMON_TESTING_FLAGS.
 COMMON_CXXFLAGS_ONLY_WARNINGS = \
     -I$(top_srcdir)/include \
     -I$(top_builddir)/include \
@@ -37,20 +41,24 @@ COMMON_CXXFLAGS_ONLY_WARNINGS = \
 
 COMMON_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
 
+COMMON_TESTING_FLAGS_ONLY_WARNINGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS) \
+                                     $(CPPUNIT_CFLAGS) \
+                                     -DTEST_SRC_DIR=\"$(srcdir)\" \
+                                     -DTEST_BUILD_DIR=\"$(builddir)\"
+
+COMMON_TESTING_FLAGS = $(COMMON_TESTING_FLAGS_ONLY_WARNINGS)
+
 # The genererated protobuf files don't compile with -Werror on win32 so we
 # disable fatal warnings on WIN32.
 if ! USING_WIN32
 if FATAL_WARNINGS
   COMMON_CXXFLAGS += -Werror
+  COMMON_TESTING_FLAGS += -Werror
 endif
 endif
 
 # AM_CXXFLAGS is used when target_CXXFLAGS isn't specified.
 AM_CXXFLAGS = $(COMMON_CXXFLAGS)
-
-COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS) \
-                       -DTEST_SRC_DIR=\"$(srcdir)\" \
-                       -DTEST_BUILD_DIR=\"$(builddir)\"
 
 # LIBS variables
 # ------------------------------------------------------------------------------
@@ -186,7 +194,6 @@ EXTRA_DIST += \
   config/ac_python_devel.m4 \
   config/ac_saleae.m4 \
   config/ax_python_module.m4 \
-  config/cppunit.m4 \
   config/maven.m4 \
   config/ola.m4 \
   config/ola_version.m4 \
@@ -194,6 +201,4 @@ EXTRA_DIST += \
   config/resolv.m4 \
   config/stl_hash.m4 \
   mac_build.sh \
-  ola.spec \
-  tests/recvdmx.py \
-  tests/regression.py
+  ola.spec

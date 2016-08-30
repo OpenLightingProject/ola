@@ -36,25 +36,25 @@
  */
 class ShowRecorder {
  public:
-    ShowRecorder(const std::string &filename,
-                 const std::vector<unsigned int> &universes);
-    ~ShowRecorder();
+  ShowRecorder(const std::string &filename,
+               const std::vector<unsigned int> &universes);
+  ~ShowRecorder();
 
-    int Init();
-    int Record();
-    void Stop();
+  int Init();
+  int Record();
+  void Stop();
 
-    uint64_t FrameCount() const { return m_frame_count; }
+  uint64_t FrameCount() const { return m_frame_count; }
 
  private:
-    ola::client::OlaClientWrapper m_client;
-    ShowSaver m_saver;
-    std::vector<unsigned int> m_universes;
-    ola::Clock m_clock;
-    uint64_t m_frame_count;
+  ola::client::OlaClientWrapper m_client;
+  ShowSaver m_saver;
+  std::vector<unsigned int> m_universes;
+  ola::Clock m_clock;
+  uint64_t m_frame_count;
 
-    void NewFrame(const ola::client::DMXMetadata &meta,
-                  const ola::DmxBuffer &data);
-    void RegisterComplete(const ola::client::Result &result);
+  void NewFrame(const ola::client::DMXMetadata &meta,
+                const ola::DmxBuffer &data);
+  void RegisterComplete(const ola::client::Result &result);
 };
 #endif  // EXAMPLES_SHOWRECORDER_H_

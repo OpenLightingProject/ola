@@ -21,7 +21,6 @@ import httplib
 import rrdtool
 import time
 import os.path
-import signal
 import socket
 import sys
 import textwrap
@@ -29,6 +28,7 @@ import threading
 
 DEFAULT_CONFIG = 'ola_mon.conf'
 DEFAULT_PORT = 9090
+
 
 class OlaFetcher(object):
   def __init__(self, host, port):
@@ -48,7 +48,7 @@ class OlaFetcher(object):
 
   def _FetchDebug(self):
     """Fetch the contents of the debug page."""
-    connection = httplib.HTTPConnection('%s:%d' %(self._host, self._port))
+    connection = httplib.HTTPConnection('%s:%d' % (self._host, self._port))
     try:
       connection.request('GET', '/debug')
     except socket.error:
@@ -69,13 +69,13 @@ class OlaFetcher(object):
     for line in contents.split('\n'):
       if ':' not in line:
         continue
-      var, data  = line.split(':', 1)
+      var, data = line.split(':', 1)
       var = var.strip()
       data = data.strip()
 
       if data.startswith('map:'):
-        #label, key_values = data.split(' ', 1)
-        #_, label_name = label.split(':', 1)
+        # label, key_values = data.split(' ', 1)
+        # _, label_name = label.split(':', 1)
         pass
       else:
         variables[var] = data
@@ -88,15 +88,14 @@ class RRDStore(object):
     self._variables = variables
 
     data_sources = []
-    for type, variable, _ in variables:
-      data_sources.append('DS:%s:%s:30:0:U' % (variable, type))
+    for data_type, variable, _ in variables:
+      data_sources.append('DS:%s:%s:30:0:U' % (variable, data_type))
 
     if not os.path.exists(filename):
       rrdtool.create(filename,
                      '--step=1',
                      data_sources,
                      'RRA:AVERAGE:0.5:1:300')
-                     #'RRA:AVERAGE:0.5:10:300')
 
   def Update(self, timestamp, data):
     args = ['%d' % timestamp]
@@ -107,11 +106,11 @@ class RRDStore(object):
 
 
 class Monitor(threading.Thread):
-  def __init__(self, rrd_directory, output_directory, host, port, variables):
+  def __init__(self, rrd_directory, host, port, variables):
     threading.Thread.__init__(self)
     self._fetcher = OlaFetcher(host, port)
     rrd_file = os.path.join(rrd_directory, '%s.rrd' % host)
-    self._store = RRDStore(variables, rrd_file);
+    self._store = RRDStore(variables, rrd_file)
     self._terminate = False
 
   def Terminate(self):
@@ -148,7 +147,7 @@ class Grapher(threading.Thread):
       time.sleep(5)
 
   def _MakeGraphs(self):
-    for type, variable, title in self._variables:
+    for data_type, variable, title in self._variables:
       output_file = os.path.join(self._directory, '%s.png' % variable)
       rrdtool.graph(output_file,
                     '--imgformat', 'PNG',
@@ -158,7 +157,7 @@ class Grapher(threading.Thread):
                       (variable, self._rrd_file, variable),
                     'LINE1:%s#FF0000' % variable)
 
-    variables = set([ x for _, x, _ in self._variables])
+    variables = set([x for _, x, _ in self._variables])
     for cdef_name, function, title in self._cdefs:
       output_file = os.path.join(self._directory, '%s.png' % cdef_name)
       values = function.split(',')
@@ -178,7 +177,6 @@ class Grapher(threading.Thread):
                     'LINE1:%s#FF0000' % cdef_name)
 
 
-
 def LoadConfig(config_file):
   """Load the config file.
 
@@ -188,8 +186,8 @@ def LoadConfig(config_file):
   Returns:
     A dict with the config parameters.
   """
-  locals = {}
-  execfile(config_file, {}, locals)
+  locals_dict = {}
+  execfile(config_file, {}, locals_dict)
 
   keys = set(['OLAD_SERVERS', 'DATA_DIRECTORY', 'VARIABLES', 'WWW_DIRECTORY',
               'CDEFS'])
@@ -251,7 +249,7 @@ def main():
     port = DEFAULT_PORT
     if ':' in host:
       host, port = host.split(':')
-    monitor = Monitor(rrd_directory, www_directory, host, port, variables)
+    monitor = Monitor(rrd_directory, host, port, variables)
     monitor.start()
     threads.append(monitor)
 

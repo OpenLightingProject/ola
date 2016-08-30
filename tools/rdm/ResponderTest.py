@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -25,17 +24,19 @@
 #                                  result based on the output of
 #                                  SUPPORTED_PARAMETERS
 
+import logging
+import time
+from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
+                             NackDiscoveryResult, NackGetResult, NackSetResult)
+from TestCategory import TestCategory
+from TestState import TestState
+from TimingStats import TimingStats
+from ola import PidStore
+from ola.OlaClient import OlaClient, RDMNack
+
 '''Automated testing for RDM responders.'''
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
-
-import logging
-import time
-from ExpectedResults import AckDiscoveryResult, AckGetResult, AckSetResult, NackDiscoveryResult, NackGetResult, NackSetResult
-from TestCategory import TestCategory
-from TestState import TestState
-from ola import PidStore
-from ola.OlaClient import OlaClient, RDMNack
 
 
 class Error(Exception):
@@ -222,7 +223,8 @@ class ResponderTestFixture(TestFixture):
                pid_store,
                rdm_api,
                wrapper,
-               broadcast_write_delay):
+               broadcast_write_delay,
+               timing_stats):
     super(ResponderTestFixture, self).__init__(device, universe, uid, pid_store)
     self._api = rdm_api
     self._expected_results = []
@@ -231,6 +233,7 @@ class ResponderTestFixture(TestFixture):
     self._universe = universe
     self._wrapper = wrapper
     self._broadcast_write_delay_s = broadcast_write_delay / 1000.0
+    self._timing_stats = timing_stats
 
     # This is set to the tuple of (sub_device, command_class, pid) when we sent
     # a message. It's used to identify the response if we get an ACK_TIMER and
@@ -240,6 +243,10 @@ class ResponderTestFixture(TestFixture):
   @property
   def uid(self):
     return self._uid
+
+  def PidSupported(self):
+    # By default all PIDs are supported, overridden in subclasses
+    return True
 
   def SleepAfterBroadcastSet(self):
     if self._broadcast_write_delay_s:
@@ -334,7 +341,8 @@ class ResponderTestFixture(TestFixture):
                                sub_device,
                                pid,
                                self._HandleResponse,
-                               args)
+                               args,
+                               include_frames=True)
 
   def SendRawDiscovery(self, sub_device, pid, data=""):
     """Send a raw Discovery request.
@@ -352,7 +360,8 @@ class ResponderTestFixture(TestFixture):
                                   sub_device,
                                   pid,
                                   self._HandleResponse,
-                                  data)
+                                  data,
+                                  include_frames=True)
 
   def SendGet(self, sub_device, pid, args=[]):
     """Send a GET request using the RDM API.
@@ -381,7 +390,8 @@ class ResponderTestFixture(TestFixture):
                              sub_device,
                              pid,
                              self._HandleResponse,
-                             args)
+                             args,
+                             include_frames=True)
     return ret_code
 
   def SendRawGet(self, sub_device, pid, data=""):
@@ -400,7 +410,8 @@ class ResponderTestFixture(TestFixture):
                             sub_device,
                             pid,
                             self._HandleResponse,
-                            data)
+                            data,
+                            include_frames=True)
 
   def SendSet(self, sub_device, pid, args=[]):
     """Send a SET request using the RDM API.
@@ -429,7 +440,8 @@ class ResponderTestFixture(TestFixture):
                              sub_device,
                              pid,
                              self._HandleResponse,
-                             args)
+                             args,
+                             include_frames=True)
     if uid.IsBroadcast():
       self.SleepAfterBroadcastSet()
     return ret_code
@@ -450,7 +462,8 @@ class ResponderTestFixture(TestFixture):
                             sub_device,
                             pid,
                             self._HandleResponse,
-                            data)
+                            data,
+                            include_frames=True)
 
   def _HandleResponse(self, response, unpacked_data, unpack_exception):
     """Handle a RDM response.
@@ -531,11 +544,18 @@ class ResponderTestFixture(TestFixture):
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
       self.LogDebug(' Request status: %s' % response.ResponseCodeAsString())
+      if response.response_code == OlaClient.RDM_DUB_RESPONSE:
+        # track timing for DUB responses.
+        self._RecordFrameTiming(response, TimingStats.DUB)
+        self._LogFrameTiming(response)
       return True
+
+    self._RecordFrameTiming(response)
 
     # Handle the case of an ack timer
     if response.response_type == OlaClient.RDM_ACK_TIMER:
       self.LogDebug(' Received ACK TIMER set to %d ms' % response.ack_timer)
+      self._LogFrameTiming(response)
       self._wrapper.AddEvent(response.ack_timer, self._GetQueuedMessage)
       return False
 
@@ -549,11 +569,12 @@ class ResponderTestFixture(TestFixture):
         escaped_string = '%s' % self._EscapeData(unpacked_data)
         self.LogDebug(' Response: %s, PID: 0x%04hx, TN: %d, PDL: %d, data: %s'
                       % (response, response.pid, response.transaction_number,
-                       len(response.data), escaped_string))
+                         len(response.data), escaped_string))
     else:
       self.LogDebug(' Response: %s, PID: 0x%04hx, TN: %d' %
                     (response, response.pid, response.transaction_number))
 
+    self._LogFrameTiming(response)
     return True
 
   def _EscapeData(self, data):
@@ -621,7 +642,38 @@ class ResponderTestFixture(TestFixture):
                   PidStore.ROOT_DEVICE,
                   queued_message_pid,
                   self._HandleQueuedResponse,
-                  data)
+                  data,
+                  include_frames=True)
+
+  def _RecordFrameTiming(self, response, override_type=None):
+    for frame in response.frames:
+      frame_type = override_type
+      if not frame_type:
+        frame_type = TimingStats.FrameTypeFromCommandClass(
+            response.command_class)
+      self._timing_stats.RecordFrame(frame_type, frame)
+
+  def _LogFrameTiming(self, response):
+    for frame in response.frames:
+      stats = []
+      if frame.response_delay:
+        stats.append('Response Delay: %.1fus' %
+                     self._NanoSecondsToMicroSeconds(frame.response_delay))
+      if frame.break_time:
+        stats.append('Break: %.1fus' %
+                     self._NanoSecondsToMicroSeconds(frame.break_time))
+      if frame.mark_time:
+        stats.append('Mark: %.1fus' %
+                     self._NanoSecondsToMicroSeconds(frame.mark_time))
+      if frame.data_time:
+        stats.append('Data: %.1fus' %
+                     self._NanoSecondsToMicroSeconds(frame.data_time))
+
+      if stats:
+        self.LogDebug('    ' + ', '.join(stats))
+
+  def _NanoSecondsToMicroSeconds(self, nano_seconds):
+    return nano_seconds / 1000.0
 
 
 class OptionalParameterTestFixture(ResponderTestFixture):
@@ -649,9 +701,8 @@ class OptionalParameterTestFixture(ResponderTestFixture):
       expected_results = [
         self.NackSetResult(
           RDMNack.NR_WRITE_PROTECT,
-          advisory='SET %s was write protected, try changing the lock mode if'
-                   ' enabled' %
-            self.pid.name)
+          advisory='SET %s was write protected, try changing the lock mode if '
+                   'enabled' % self.pid.name)
       ]
       if isinstance(result, list):
         expected_results.extend(result)

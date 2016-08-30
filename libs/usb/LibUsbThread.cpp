@@ -35,8 +35,9 @@ void *LibUsbThread::Run() {
   while (1) {
     {
       ola::thread::MutexLocker locker(&m_term_mutex);
-      if (m_term)
+      if (m_term) {
         break;
+      }
     }
     libusb_handle_events(m_context);
   }

@@ -61,8 +61,9 @@ bool SendFrames(ArtNetNode *node, DmxBuffer *buffer,
 int main(int argc, char* argv[]) {
   ola::AppInit(&argc, argv, "", "Run the E1.31 load test.");
 
-  if (FLAGS_universes == 0 || FLAGS_fps == 0)
+  if (FLAGS_universes == 0 || FLAGS_fps == 0) {
     return -1;
+  }
 
   unsigned int fps = min(1000u, static_cast<unsigned int>(FLAGS_fps));
   uint16_t universes = FLAGS_universes;
@@ -91,8 +92,9 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (!node.Start())
+  if (!node.Start()) {
     return -1;
+  }
 
   ss.RegisterRepeatingTimeout(
       1000 / fps,

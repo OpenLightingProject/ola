@@ -102,7 +102,7 @@ class DummyPort: public BasicOutputPort {
   void HandleBroadcastAck(broadcast_request_tracker *tracker,
                           ola::rdm::RDMReply *reply);
 
-  // See http://www.opendmx.net/index.php/Open_Lighting_Allocations
+  // See https://wiki.openlighting.org/index.php/Open_Lighting_Allocations
   // Do not change.
   static const unsigned int kStartAddress = 0xffffff00;
 };

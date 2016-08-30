@@ -32,21 +32,21 @@
  */
 class ShowSaver {
  public:
-    explicit ShowSaver(const std::string &filename);
-    ~ShowSaver();
+  explicit ShowSaver(const std::string &filename);
+  ~ShowSaver();
 
-    bool Open();
-    void Close();
+  bool Open();
+  void Close();
 
-    bool NewFrame(const ola::TimeStamp &arrival_time,
-                  unsigned int universe,
-                  const ola::DmxBuffer &data);
+  bool NewFrame(const ola::TimeStamp &arrival_time,
+                unsigned int universe,
+                const ola::DmxBuffer &data);
 
  private:
-    const std::string m_filename;
-    std::ofstream m_show_file;
-    ola::TimeStamp m_last_frame;
+  const std::string m_filename;
+  std::ofstream m_show_file;
+  ola::TimeStamp m_last_frame;
 
-    static const char OLA_SHOW_HEADER[];
+  static const char OLA_SHOW_HEADER[];
 };
 #endif  // EXAMPLES_SHOWSAVER_H_

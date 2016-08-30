@@ -59,6 +59,27 @@ string ConvertPathSeparators(const string &path) {
   return result;
 }
 
+string JoinPaths(const string &first, const string &second) {
+  if (second.empty()) {
+    return first;
+  }
+
+  if (first.empty()) {
+    return second;
+  }
+
+  if (second[0] == PATH_SEPARATOR) {
+    return second;
+  }
+
+  string output(first);
+  if (output[output.size() - 1] != PATH_SEPARATOR) {
+    output.push_back(PATH_SEPARATOR);
+  }
+  output.append(second);
+  return output;
+}
+
 bool FindMatchingFiles(const string &directory,
                        const string &prefix,
                        vector<string> *files) {

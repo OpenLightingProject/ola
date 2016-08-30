@@ -9,6 +9,8 @@ CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cppli
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
+PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand"
+
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   autoreconf -i;
@@ -99,7 +101,29 @@ elif [[ $TASK = 'flake8' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for flake8 to run against
   make builtfiles
-  flake8 --exclude *_pb2.py,.git,__pycache --ignore E111,E121,E127,E129 python tools/rdm
+  flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129 data/rdm include/ola python scripts tools/ola_mon tools/rdm
+elif [[ $TASK = 'pychecker' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for pychecker to run against
+  make builtfiles
+  PYTHONPATH=./python/:$PYTHONPATH
+  export PYTHONPATH
+  mkdir ./python/ola/testing/
+  ln -s ./tools/rdm ./python/ola/testing/rdm
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and \( -wholename "./data/*" -or -wholename "./include/*" -or -wholename "./scripts/*" -or -wholename "./python/examples/rdm_compare.py" -or -wholename "./python/ola/*" \) -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -wholename "./scripts/enforce_licence.py" -or -wholename "./python/ola/rpc/*" -or -wholename "./python/ola/ClientWrapper.py" -or -wholename "./python/ola/PidStore.py" -or -wholename "./python/ola/RDMAPI.py" \) | xargs)
+elif [[ $TASK = 'pychecker-wip' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for pychecker to run against
+  make builtfiles
+  PYTHONPATH=./python/:$PYTHONPATH
+  export PYTHONPATH
+  mkdir ./python/ola/testing/
+  ln -s ./tools/rdm ./python/ola/testing/rdm
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" \) | xargs)
 else
   # Otherwise compile and check as normal
   export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-java-libs --enable-ja-rule'

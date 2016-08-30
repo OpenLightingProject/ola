@@ -27,11 +27,11 @@
 #include <memory>
 #include <string>
 
-#include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133StatusInflator.h"
-#include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/UDPTransport.h"
+#include "libs/acn/E133Inflator.h"
+#include "libs/acn/E133StatusInflator.h"
+#include "libs/acn/RDMInflator.h"
+#include "libs/acn/RootInflator.h"
+#include "libs/acn/UDPTransport.h"
 
 namespace ola {
 namespace e133 {
@@ -57,12 +57,12 @@ E133Receiver::E133Receiver(ola::network::UDPSocket *socket,
     : m_udp_socket(socket),
       m_status_callback(status_callback),
       m_rdm_callback(rdm_callback),
-      m_root_inflator(new plugin::e131::RootInflator()),
-      m_e133_inflator(new plugin::e131::E133Inflator()),
-      m_rdm_inflator(new plugin::e131::RDMInflator()),
-      m_e133_status_inflator(new plugin::e131::E133StatusInflator()),
+      m_root_inflator(new ola::acn::RootInflator()),
+      m_e133_inflator(new ola::acn::E133Inflator()),
+      m_rdm_inflator(new ola::acn::RDMInflator()),
+      m_e133_status_inflator(new ola::acn::E133StatusInflator()),
       m_incoming_udp_transport(
-          new plugin::e131::IncomingUDPTransport(
+          new ola::acn::IncomingUDPTransport(
             m_udp_socket,
             m_root_inflator.get())) {
   m_root_inflator->AddInflator(m_e133_inflator.get());
@@ -76,7 +76,7 @@ E133Receiver::E133Receiver(ola::network::UDPSocket *socket,
 
   m_udp_socket->SetOnData(
         NewCallback(m_incoming_udp_transport.get(),
-                    &ola::plugin::e131::IncomingUDPTransport::Receive));
+                    &ola::acn::IncomingUDPTransport::Receive));
 }
 
 
@@ -91,8 +91,8 @@ E133Receiver::~E133Receiver() {
  * Handle a E1.33 Status Message.
  */
 void E133Receiver::HandleStatusMessage(
-    const ola::plugin::e131::TransportHeader *transport_header,
-    const ola::plugin::e131::E133Header *e133_header,
+    const ola::acn::TransportHeader *transport_header,
+    const ola::acn::E133Header *e133_header,
     uint16_t status_code,
     const string &description) {
   if (m_status_callback) {
@@ -108,8 +108,8 @@ void E133Receiver::HandleStatusMessage(
  * Handle an RDM packet
  */
 void E133Receiver::HandlePacket(
-    const ola::plugin::e131::TransportHeader *transport_header,
-    const ola::plugin::e131::E133Header *e133_header,
+    const ola::acn::TransportHeader *transport_header,
+    const ola::acn::E133Header *e133_header,
     const string &raw_response) {
   if (!m_rdm_callback)
     return;

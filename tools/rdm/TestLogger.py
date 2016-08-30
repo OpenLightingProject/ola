@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -243,6 +242,6 @@ class TestLogger(object):
                            (category, cat_passed, cat_total, percent))
 
       results_log.append("-------------------------------------------------")
-      results_log.append('%d / %d tests run, %d passed, %d failed, %d broken' % (
-        total - not_run, total, passed, failed, broken))
+      results_log.append('%d / %d tests run, %d passed, %d failed, %d broken' %
+                         (total - not_run, total, passed, failed, broken))
     return '\n'.join(results_log)

@@ -16,15 +16,9 @@
 # Copyright (C) 2010 Simon Newton
 # Holds all the information about RDM PIDs
 
-"""The PID Store."""
-
 from __future__ import print_function
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import binascii
 import math
-import ola.RDMConstants
 import os
 import socket
 import struct
@@ -33,7 +27,12 @@ from google.protobuf import text_format
 from ola import PidStoreLocation
 from ola import Pids_pb2
 from ola.MACAddress import MACAddress
+from ola import RDMConstants
 from ola.UID import UID
+
+"""The PID Store."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 # Various sub device enums
@@ -66,7 +65,7 @@ class UnpackException(Error):
 
 
 class MissingPLASAPIDs(Error):
-  """Raises if the files did not contain the PLASA PIDs."""
+  """Raises if the files did not contain the ESTA (PLASA) PIDs."""
 
 
 class Pid(object):
@@ -349,8 +348,8 @@ class IntAtom(FixedSizeAtom):
     if value is None:
       value = self._AccountForMultiplierPack(args[0])
 
-    for range in self._ranges:
-      if range.Matches(value):
+    for valid_range in self._ranges:
+      if valid_range.Matches(value):
         break
     else:
       raise ArgsValidationError('Param %d out of range, must be one of %s' %
@@ -389,13 +388,13 @@ class IntAtom(FixedSizeAtom):
   def _GetAllowedRanges(self):
     values = list(self._labels.keys())
 
-    for range in self._ranges:
-      if range.min == range.max:
-        values.append(str(self._AccountForMultiplierUnpack(range.min)))
+    for valid_range in self._ranges:
+      if valid_range.min == valid_range.max:
+        values.append(str(self._AccountForMultiplierUnpack(valid_range.min)))
       else:
         values.append('[%s, %s]' %
-                      (self._AccountForMultiplierUnpack(range.min),
-                       self._AccountForMultiplierUnpack(range.max)))
+                      (self._AccountForMultiplierUnpack(valid_range.min),
+                       self._AccountForMultiplierUnpack(valid_range.max)))
 
     return ('%s' % ', '.join(values))
 
@@ -698,8 +697,9 @@ class Group(Atom):
         variable_sized_atoms.append(atom)
 
     if len(variable_sized_atoms) > 1:
-      raise PidStore('More than one variable size field in %s: %s' % (
-        self.name, variable_sized_atoms))
+      raise PidStructureException(
+        'More than one variable size field in %s: %s' %
+        (self.name, variable_sized_atoms))
 
     if not variable_sized_atoms:
       # The group is of a fixed size, this means we don't care how many times
@@ -952,12 +952,12 @@ class PidStore(object):
 
     for pid_pb in self._pid_store.pid:
       if validate:
-        if ((pid_pb.value >= ola.RDMConstants.RDM_MANUFACTURER_PID_MIN) and
-            (pid_pb.value <= ola.RDMConstants.RDM_MANUFACTURER_PID_MAX)):
+        if ((pid_pb.value >= RDMConstants.RDM_MANUFACTURER_PID_MIN) and
+            (pid_pb.value <= RDMConstants.RDM_MANUFACTURER_PID_MAX)):
           raise InvalidPidFormat('%0x04hx between %0x04hx and %0x04hx in %s' %
                                  (pid_pb.value,
-                                  ola.RDMConstants.RDM_MANUFACTURER_PID_MIN,
-                                  ola.RDMConstants.RDM_MANUFACTURER_PID_MAX,
+                                  RDMConstants.RDM_MANUFACTURER_PID_MIN,
+                                  RDMConstants.RDM_MANUFACTURER_PID_MAX,
                                   pid_file_name))
         if pid_pb.value in self._pids:
           raise InvalidPidFormat('0x%04hx listed more than once in %s' %
@@ -983,13 +983,13 @@ class PidStore(object):
 
       for pid_pb in manufacturer.pid:
         if validate:
-          if ((pid_pb.value < ola.RDMConstants.RDM_MANUFACTURER_PID_MIN) or
-              (pid_pb.value > ola.RDMConstants.RDM_MANUFACTURER_PID_MAX)):
+          if ((pid_pb.value < RDMConstants.RDM_MANUFACTURER_PID_MIN) or
+              (pid_pb.value > RDMConstants.RDM_MANUFACTURER_PID_MAX)):
             raise InvalidPidFormat(
               'Manufacturer pid 0x%04hx not between %0x04hx and %0x04hx' %
               (pid_pb.value,
-               ola.RDMConstants.RDM_MANUFACTURER_PID_MIN,
-               ola.RDMConstants.RDM_MANUFACTURER_PID_MAX))
+               RDMConstants.RDM_MANUFACTURER_PID_MIN,
+               RDMConstants.RDM_MANUFACTURER_PID_MAX))
           if pid_pb.value in pid_dict:
             raise InvalidPidFormat(
                 '0x%04hx listed more than once for 0x%04hx in %s' % (
@@ -1066,7 +1066,7 @@ class PidStore(object):
     Returns:
       The value for this PID, or None if it wasn't found.
     """
-    pid = self.GetName(pid_name)
+    pid = self.GetName(pid_name, esta_id)
     if pid:
       return pid.value
     return pid
@@ -1229,6 +1229,6 @@ def GetStore(location=None, only_files=()):
     if not _pid_store.GetName(pid):
       raise MissingPLASAPIDs(
           'Could not find %s in PID datastore, check the directory contains '
-          'the PLASA PIDs.' % pid)
+          'the ESTA (PLASA) PIDs.' % pid)
 
   return _pid_store

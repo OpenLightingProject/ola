@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -63,6 +63,22 @@ class ServerException(Error):
   """Indicates a problem handling the request."""
 
 
+class OLAFuture(object):
+  def __init__(self):
+    self._event = Event()
+    self._data = None
+
+  def set(self, data):
+    self._data = data
+    self._event.set()
+
+  def wait(self):
+    self._event.wait()
+
+  def result(self):
+    return self._data
+
+
 class OLAThread(Thread):
   """The thread which runs the OLA Client."""
   def __init__(self, ola_client):
@@ -108,22 +124,17 @@ class OLAThread(Thread):
     Returns:
       The arguments that would have been passed to the callback function.
     """
-    global args_result
-    # TODO(simon): Create our own Event which holds the result args and a
-    # threading.Event object #948
-    event = Event()
+    future = OLAFuture()
 
     def Callback(*args, **kwargs):
-      global args_result
-      args_result = args
-      event.set()
+      future.set(args)
 
     def RunMethod():
       method(*method_args, callback=Callback)
 
     self._ss.Execute(RunMethod)
-    event.wait()
-    return args_result
+    future.wait()
+    return future.result()
 
 
 class RDMTestThread(Thread):
@@ -256,7 +267,8 @@ class RDMTestThread(Thread):
     if dmx_frame_rate > 0 and slot_count > 0:
       logging.info('Starting DMXSender with slot count %d and FPS of %d' %
                    (slot_count, dmx_frame_rate))
-      dmx_sender = DMXSender(self._wrapper, universe, dmx_frame_rate, slot_count)
+      dmx_sender = DMXSender(self._wrapper, universe, dmx_frame_rate,
+                             slot_count)
 
     try:
       tests, device = runner.RunTests(test_filter, False, self._UpdateStats)
@@ -924,21 +936,22 @@ def BuildApplication(ola_thread, test_thread):
   """Construct the application and add the handlers."""
   app = Application()
   app.RegisterHandler('/',
-      RedirectHandler('/static/rdmtests.html').HandleRequest)
-  app.RegisterHandler('/favicon.ico',
+                      RedirectHandler('/static/rdmtests.html').HandleRequest)
+  app.RegisterHandler(
+      '/favicon.ico',
       RedirectHandler('/static/images/favicon.ico').HandleRequest)
   app.RegisterHandler('/GetTestDefs',
-      TestDefinitionsHandler().HandleRequest)
+                      TestDefinitionsHandler().HandleRequest)
   app.RegisterHandler('/GetUnivInfo',
-      GetUniversesHandler(ola_thread).HandleRequest)
+                      GetUniversesHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/GetDevices',
-      GetDevicesHandler(ola_thread).HandleRequest)
+                      GetDevicesHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/RunDiscovery',
-      RunDiscoveryHandler(ola_thread).HandleRequest)
+                      RunDiscoveryHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/DownloadResults',
-      DownloadResultsHandler().HandleRequest)
+                      DownloadResultsHandler().HandleRequest)
   app.RegisterHandler('/DownloadModelData',
-      DownloadModelDataHandler().HandleRequest)
+                      DownloadModelDataHandler().HandleRequest)
 
   run_tests_handler = RunTestsHandler(ola_thread, test_thread)
   app.RegisterHandler('/RunCollector', run_tests_handler.HandleRequest)
@@ -946,14 +959,12 @@ def BuildApplication(ola_thread, test_thread):
   app.RegisterHandler('/StatCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatTests', run_tests_handler.HandleRequest)
   app.RegisterRegex('/static/.*',
-      StaticFileHandler(settings['www_dir']).HandleRequest)
+                    StaticFileHandler(settings['www_dir']).HandleRequest)
   return app
 
 
 def parse_options():
-  """
-    Parse Command Line options
-  """
+  """Parse Command Line options"""
   usage = 'Usage: %prog [options]'
   description = textwrap.dedent("""\
     Starts the TestServer (A simple Web Server) which run a series of tests on
@@ -995,7 +1006,7 @@ def SetupLogDirectory(options):
     except OSError:
       logging.error(
           'Failed to create %s for RDM logs. Logging will be disabled.' %
-           options.log_directory)
+          options.log_directory)
   elif not os.path.isdir(options.log_directory):
     logging.error('Log directory invalid: %s. Logging will be disabled.' %
                   options.log_directory)

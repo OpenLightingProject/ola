@@ -1,5 +1,6 @@
 language: cpp
-sudo: false
+# To get the Trusty image, not actually required
+sudo: required
 script:
  - "bash -ex .travis-ci.sh"
 
@@ -16,7 +17,6 @@ addons:
      - libprotobuf-dev
      - protobuf-compiler
      - libprotoc-dev
-     - python-protobuf
     packages: &core_build
      # This is all the bits we need to enable all options
      - *base_build
@@ -29,7 +29,7 @@ addons:
      - libmicrohttpd-dev
     packages: &core_build_gpp_latest
      - *core_build
-     - g++-5
+     - g++-6
     packages: &core_build_clang_latest
      - *core_build
      - clang-3.8
@@ -37,24 +37,40 @@ addons:
 matrix:
   fast_finish: true
   include:
-    - compiler: clang
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
       env: TASK='compile'
+    - os: osx
+      osx_image: xcode7.3
+      compiler: gcc
+      env: TASK='compile'
+    - os: linux
+      dist: trusty
+      compiler: clang
+      env: TASK='compile'
+      python: '2.7'
       addons:
         apt:
           packages:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise
-    - compiler: gcc
+           - llvm-toolchain-precise-3.8
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='compile'
+      python: '2.7'
       addons:
         apt:
           packages:
            - *core_build_gpp_latest
           sources:
            - ubuntu-toolchain-r-test
-    - compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='coverage'
       addons:
         apt:
@@ -62,17 +78,21 @@ matrix:
            - *core_build_gpp_latest
           sources:
            - ubuntu-toolchain-r-test
-    - compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='coverity'
       addons:
         apt:
           packages:
-           # Coverity doesn't work with g++-5 yet
+           # Coverity doesn't work with g++-5 or g++-6 yet
            - *core_build
            - g++-4.9
           sources:
            - ubuntu-toolchain-r-test
-    - env: TASK='doxygen'
+    - os: linux
+      dist: trusty
+      env: TASK='doxygen'
       addons:
         apt:
           packages:
@@ -81,31 +101,59 @@ matrix:
            - graphviz
           sources:
            - ubuntu-toolchain-r-test
-    - env: TASK='lint'
+    - os: linux
+      dist: trusty
+      env: TASK='lint'
       addons:
         apt:
           packages:
            - *core_build
-    - env: TASK='check-licences'
+    - os: linux
+      dist: trusty
+      env: TASK='check-licences'
       addons:
         apt:
           packages:
            - *core_build
-    - env: TASK='jshint'
+    - os: linux
+      dist: trusty
+      env: TASK='jshint'
       addons:
         apt:
           packages:
-    - env: TASK='flake8'
+    - os: linux
+      dist: trusty
+      env: TASK='flake8'
+      addons:
+        apt:
+          packages:
+           - *base_build
+    - os: linux
+      dist: trusty
+      env: TASK='pychecker'
+      addons:
+        apt:
+          packages:
+           - *base_build
+    - os: linux
+      dist: trusty
+      env: TASK='pychecker-wip'
       addons:
         apt:
           packages:
            - *base_build
   allow_failures:
-    - compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='coverage'
-    - compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='coverity'
-    - env: TASK='flake8'
+    - os: linux
+      dist: trusty
+      env: TASK='pychecker-wip'
 
 env:
   global:
@@ -137,25 +185,37 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 install:
-  - pip install --user protobuf==2.4.1
+# Match the version of protobuf being installed via apt
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user protobuf==2.5.0; fi
+# We need to use pip rather than apt on Trusty
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
+  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 
 before_install:
-#Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
- - if [ \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+#Fix a broken homebrew libtool install
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd homebrew/python/numpy; fi # ossp-uuid already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
+#Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-6" CC="ccache gcc-6"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-4.9" CC="ccache gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
- - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
 #Report the compiler version
  - $CXX --version
 
+after_failure:
+  - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log
+
 after_success:
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-6 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
 
 after_script:
-  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
+  - if [ "$TASK" = "coverity" ]; then cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi
 
 notifications:
   irc:

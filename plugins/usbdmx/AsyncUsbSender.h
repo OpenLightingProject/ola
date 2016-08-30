@@ -23,6 +23,7 @@
 
 #include <libusb.h>
 
+#include "AsyncUsbTransceiverBase.h"
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
@@ -38,7 +39,7 @@ namespace usbdmx {
  * This encapsulates much of the asynchronous libusb logic. Subclasses should
  * implement the SetupHandle() and PerformTransfer() methods.
  */
-class AsyncUsbSender {
+class AsyncUsbSender: public AsyncUsbTransceiverBase {
  public:
   /**
    * @brief Create a new AsyncUsbSender.
@@ -52,12 +53,6 @@ class AsyncUsbSender {
    * @brief Destructor
    */
   virtual ~AsyncUsbSender();
-
-  /**
-   * @brief Initialize the sender.
-   * @returns true if SetupHandle() returned a valid handle, false otherwise.
-   */
-  bool Init();
 
   /**
    * @brief Send one frame of DMX data.
@@ -74,23 +69,6 @@ class AsyncUsbSender {
   void TransferComplete(struct libusb_transfer *transfer);
 
  protected:
-  /**
-   * @brief The LibUsbAdaptor passed in the constructor.
-   */
-  ola::usb::LibUsbAdaptor* const m_adaptor;
-
-  /**
-   * @brief The libusb_device passed in the constructor.
-   */
-  libusb_device* const m_usb_device;
-
-  /**
-   * @brief Open the device handle.
-   * @returns A valid libusb_device_handle or NULL if the device could not be
-   *   opened.
-   */
-  virtual libusb_device_handle* SetupHandle() = 0;
-
   /**
    * @brief Perform the DMX transfer.
    * @param buffer the DMX buffer to send.
@@ -111,56 +89,14 @@ class AsyncUsbSender {
   virtual void PostTransferHook() {}
 
   /**
-   * @brief Cancel any pending transfers.
-   */
-  void CancelTransfer();
-
-  /**
-   * @brief Fill a control transfer.
-   * @param buffer passed to libusb_fill_control_transfer.
-   * @param timeout passed to libusb_fill_control_transfer.
-   */
-  void FillControlTransfer(unsigned char *buffer, unsigned int timeout);
-
-  /**
-   * @brief Fill a bulk transfer.
-   */
-  void FillBulkTransfer(unsigned char endpoint, unsigned char *buffer,
-                        int length, unsigned int timeout);
-
-  /**
-   * @brief Fill an interrupt transfer.
-   */
-  void FillInterruptTransfer(unsigned char endpoint, unsigned char *buffer,
-                             int length, unsigned int timeout);
-
-  /**
-   * @brief Submit the transfer for tx.
-   * @returns the result of libusb_submit_transfer().
-   */
-  int SubmitTransfer();
-
-  /**
    * @brief Check if there is a pending transfer.
    * @returns true if there is a transfer in progress, false otherwise.
    */
   bool TransferPending() const { return m_pending_tx; }
 
  private:
-  enum TransferState {
-    IDLE,
-    IN_PROGRESS,
-    DISCONNECTED,
-  };
-
-  libusb_device_handle *m_usb_handle;
-  bool m_suppress_continuation;
-  struct libusb_transfer *m_transfer;
-
-  TransferState m_transfer_state;  // GUARDED_BY(m_mutex);
   DmxBuffer m_tx_buffer;  // GUARDED_BY(m_mutex);
   bool m_pending_tx;  // GUARDED_BY(m_mutex);
-  ola::thread::Mutex m_mutex;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncUsbSender);
 };

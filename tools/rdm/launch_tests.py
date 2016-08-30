@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -16,19 +16,6 @@
 # launch_tests.py
 # Copyright (C) 2012 Simon Newton
 
-"""
-Launch the OLA RDM test environment.
-
-Under the hood this does the following:
-  - creates a new temp directory for the configs
-  - copies in the skeleton configs files from the skel directory
-  - starts olad pointing at the config directory
-  - runs the auto-patching script to setup the port / universe patchings
-"""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
 from optparse import OptionParser
 import logging
 import os
@@ -40,6 +27,18 @@ import sys
 import tempfile
 import textwrap
 import time
+
+"""
+Launch the OLA RDM test environment.
+
+Under the hood this does the following:
+  - creates a new temp directory for the configs
+  - copies in the skeleton configs files from the skel directory
+  - starts olad pointing at the config directory
+  - runs the auto-patching script to setup the port / universe patchings
+"""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 olad_process = None
