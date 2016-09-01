@@ -42,7 +42,7 @@
 // ERANGE, EDOM, or EILSEQ, causing a spectacular compile failure there.
 //
 // Explicitly include <cerrno> now to avoid the issue.
-#include <cerrno>
+#include <errno.h>
 #include <asm/termios.h>
 #endif
 
