@@ -208,7 +208,7 @@ class TestFixture(object):
 
   def Stop(self):
     self.SetBroken('stop method not defined')
- 
+
   def SetNotRun(self, message=None):
     """Set the state of the test to NOT_RUN and stop further processing."""
     self._state = TestState.NOT_RUN
