@@ -55,6 +55,9 @@ class TestFixture(object):
   REQUIRES = []
 
   def __init__(self, device, universe, uid, pid_store, *args, **kwargs):
+    self._warnings = []
+    self._advisories = []
+    self._debug = []
     self._device_properties = device
     self._uid = uid
     self._pid_store = pid_store
@@ -63,9 +66,9 @@ class TestFixture(object):
       self.pid = self.LookupPid(self.PID)
     except AttributeError:
       self.pid = None
-    self._warnings = []
-    self._advisories = []
-    self._debug = []
+    if self.PidRequired() and self.pid is None:
+      self.SetBroken("%s: Couldn't find PID from %s" %
+                     (self.__class__.__name__, self.PID))
 
   def __hash__(self):
     return hash(self.__class__.__name__)
@@ -78,6 +81,10 @@ class TestFixture(object):
 
   def __cmp__(self, other):
     return cmp(self.__class__.__name__, other.__class__.__name__)
+
+  def PidRequired(self):
+    """Whether a valid PID is required for this test"""
+    return True
 
   def LookupPid(self, pid_name):
     return self._pid_store.GetName(pid_name, self._uid)
@@ -108,7 +115,7 @@ class TestFixture(object):
     Args:
       message: The text of the warning message.
     """
-    self.LogDebug('Warning: %s' % message)
+    self.LogDebug(' Warning: %s' % message)
     self._warnings.append(message)
 
   # Advisories are logged independently of errors. They should be used to
@@ -125,7 +132,7 @@ class TestFixture(object):
     Args:
       message: The text of the advisory message.
     """
-    self.LogDebug('Advisory: %s' % message)
+    self.LogDebug(' Advisory: %s' % message)
     self._advisories.append(message)
 
   @property
@@ -193,7 +200,14 @@ class TestFixture(object):
 
   def Run(self):
     """Run the test."""
+    # Try and fail early
+    if self.state == TestState.BROKEN:
+      return
+
     self.Test()
+
+  def Stop(self):
+    self.SetBroken('stop method not defined')
 
   def SetNotRun(self, message=None):
     """Set the state of the test to NOT_RUN and stop further processing."""
