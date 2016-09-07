@@ -86,7 +86,7 @@ class GPIODriver : private ola::thread::Thread {
    * @brief Get a list of the GPIO pins controlled by this driver.
    * @returns A list of GPIO pin numbers.
    */
-  std::vector<uint8_t> PinList() const { return m_options.gpio_pins; }
+  std::vector<uint16_t> PinList() const { return m_options.gpio_pins; }
 
   /**
    * @brief Set the values of the GPIO pins from the data in the DMXBuffer.
