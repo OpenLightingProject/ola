@@ -46,7 +46,7 @@ namespace rdm {
  * @brief Represents a RDM UID.
  *
  * UIDs are 6 bytes, the first two bytes are the
- * [manufacturer code](http://tsp.plasa.org/tsp/working_groups/CP/mfctrIDs.php)
+ * [manufacturer code](http://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php)
  * and the last 4 bytes are the device id. UIDs are written as:
  *
  * @code

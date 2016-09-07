@@ -246,7 +246,7 @@ class UnsupportedSetMixin(object):
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class SetWithDataMixin(ResponderTestFixture):
+class SetWithDataMixin(object):
   """SET a PID with random param data."""
   DATA = 'foo'
 
@@ -257,6 +257,8 @@ class SetWithDataMixin(ResponderTestFixture):
         warning='Set %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
+  # TODO(simon): add a method to check this didn't change the value
 
 
 class SetWithNoDataMixin(object):
