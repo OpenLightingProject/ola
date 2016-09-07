@@ -19,6 +19,7 @@
  */
 
 #include "plugins/gpio/GPIOPort.h"
+#include "ola/StringUtils.h"
 
 #include <sstream>
 #include <string>
@@ -47,12 +48,7 @@ string GPIOOutputPort::Description() const {
   vector<uint16_t> pins = m_driver->PinList();
   std::ostringstream str;
   str << "Pins ";
-
-  vector<uint16_t>::const_iterator iter = pins.begin();
-  while (iter != pins.end()) {
-    str << static_cast<unsigned int>(*iter++);
-    if (iter != pins.end())
-      str << ", ";
+  str << ola::StringJoin(", ", pins);
   }
   return str.str();
 }
