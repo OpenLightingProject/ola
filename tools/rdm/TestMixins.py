@@ -233,8 +233,10 @@ class AllSubDevicesGetMixin(ResponderTestFixture):
 class UnsupportedSetMixin(ResponderTestFixture):
   """Check that SET fails with NR_UNSUPPORTED_COMMAND_CLASS."""
   def Test(self):
-    self.AddIfSetSupported(
-        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.AddExpectedResults(UnsupportedSetNacks(self.pid))
+    # TODO(Peter): Swap back to the below once everything has been merged
+    # self.AddIfSetSupported(
+    #     self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
