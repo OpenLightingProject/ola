@@ -248,8 +248,10 @@ class UnsupportedSetMixin(ResponderTestFixture):
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def Test(self):
-    self.AddIfSetSupported(
-        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.AddExpectedResults(UnsupportedSetNacks(self.pid))
+    # TODO(Peter): Swap back to the below once everything has been merged
+    # self.AddIfSetSupported(
+    #     self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
