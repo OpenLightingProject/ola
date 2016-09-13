@@ -33,7 +33,7 @@ addons:
      - g++-5
     packages: &core_build_clang_latest
      - *core_build
-     - clang-3.4
+     - clang-3.8
 
 matrix:
   fast_finish: true
@@ -53,7 +53,7 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           # - llvm-toolchain-precise
+           - llvm-toolchain-precise-3.8
     - os: linux
       compiler: gcc
       env: TASK='compile'
@@ -161,13 +161,15 @@ install:
 
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+#Fix a broken homebrew libtool install
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid already present
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-4.9" CC="ccache gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
-# - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-3.4" CC="clang-3.4"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
 #Report the compiler version
  - $CXX --version
 
