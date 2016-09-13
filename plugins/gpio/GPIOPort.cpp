@@ -19,12 +19,12 @@
  */
 
 #include "plugins/gpio/GPIOPort.h"
-#include "ola/StringUtils.h"
 
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "ola/StringUtils.h"
 #include "plugins/gpio/GPIODriver.h"
 
 namespace ola {
@@ -49,7 +49,6 @@ string GPIOOutputPort::Description() const {
   std::ostringstream str;
   str << "Pins ";
   str << ola::StringJoin(", ", pins);
-  }
   return str.str();
 }
 
