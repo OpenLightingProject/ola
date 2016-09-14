@@ -46,10 +46,7 @@ bool GPIOOutputPort::Init() {
 
 string GPIOOutputPort::Description() const {
   vector<uint16_t> pins = m_driver->PinList();
-  std::ostringstream str;
-  str << "Pins ";
-  str << ola::StringJoin(", ", pins);
-  return str.str();
+  return "Pins " + ola::StringJoin(", ", pins);
 }
 
 bool GPIOOutputPort::WriteDMX(const DmxBuffer &buffer,
