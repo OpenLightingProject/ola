@@ -105,12 +105,12 @@ static void CatchSIGINT(OLA_UNUSED int signo) {
  * Install the SIGCHLD handler.
  */
 bool InstallSignals() {
-#ifndef WIN32
+#ifndef _WIN32
   // There's no SIGCHILD on Windows
   if (!ola::InstallSignal(SIGCHLD, CatchSIGCHLD)) {
     return false;
   }
-#endif  // WIN32
+#endif  // _WIN32
   return ola::InstallSignal(SIGINT, CatchSIGINT) &&
          ola::InstallSignal(SIGTERM, CatchSIGINT);
 }
