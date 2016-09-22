@@ -223,7 +223,7 @@ void ThreadTest::testSchedulingOptions() {
   }
 #else
   OLA_WARN << "Scheduling options are not supported on Windows..";
-#endif  // #ifndef _WIN32
+#endif  // !_WIN32
 }
 
 class MockConditionThread: public Thread {
