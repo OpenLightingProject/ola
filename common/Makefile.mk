@@ -2,7 +2,7 @@ lib_LTLIBRARIES += common/libolacommon.la
 
 # Variables the included files can append to
 # ------------------------------------------
-common_libolacommon_la_CXXFLAGS = $(COMMON_CXXFLAGS)
+common_libolacommon_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 common_libolacommon_la_LIBADD =
 common_libolacommon_la_SOURCES =
 nodist_common_libolacommon_la_SOURCES =
