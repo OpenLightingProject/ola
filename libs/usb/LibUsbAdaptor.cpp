@@ -162,7 +162,7 @@ string LibUsbAdaptor::ErrorCodeToString(const int error_code) {
   ostringstream str;
   str << "Error code " << error_code;
   return str.str();
-#endif
+#endif  // HAVE_LIBUSB_ERROR_NAME
 }
 
 // BaseLibUsbAdaptor
