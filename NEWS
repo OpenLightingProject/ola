@@ -1,3 +1,21 @@
+x/y/2016 ola-0.10.3
+ Features:
+ * Add a message explaining why the auto start test may fail
+
+ API:
+ * 
+
+ RDM Tests:
+ * 
+
+ Bugs:
+ * Work around a clang warning in our protobuf generator code
+ * Force gnu++98 mode if compiler supports 98 and 11 modes so we keep
+   std::auto_ptr
+
+ Internal:
+ *
+
 21/5/2016 ola-0.10.2
  Features:
  * Add support for Enttec USB Pro Mk 2 B

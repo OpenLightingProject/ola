@@ -246,7 +246,7 @@ class UnsupportedSetMixin(object):
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class SetWithDataMixin(ResponderTestFixture):
+class SetWithDataMixin(object):
   """SET a PID with random param data."""
   DATA = 'foo'
 
@@ -257,6 +257,8 @@ class SetWithDataMixin(ResponderTestFixture):
         warning='Set %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
+  # TODO(simon): add a method to check this didn't change the value
 
 
 class SetWithNoDataMixin(object):
@@ -282,6 +284,9 @@ class SetLabelMixin(object):
   PROVIDES = []
 
   SET, VERIFY, RESET = xrange(3)
+
+  def OldValue(self):
+    self.SetBroken('Base OldValue method of SetLabelMixin called')
 
   def ExpectedResults(self):
     return [
@@ -321,11 +326,12 @@ class SetLabelMixin(object):
                       new_label.encode('string-escape')))
 
   def ResetState(self):
-    if not self.OldValue():
+    old_value = self.OldValue()
+    if old_value is None:
       return
     self._test_state = self.RESET
     self.AddExpectedResults(self.AckSetResult())
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.OldValue()])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [old_value])
     self._wrapper.Run()
 
 
@@ -474,6 +480,7 @@ class SetUInt32Mixin(SetMixin):
 class SetStartAddressMixin(object):
   """Set the dmx start address."""
   SET, VERIFY, RESET = xrange(3)
+  start_address = 1
 
   def CalculateNewAddress(self, current_address, footprint):
     if footprint == MAX_DMX_ADDRESS:
@@ -647,7 +654,7 @@ class DiscoveryMixin(ResponderTestFixture):
 
     This mixin requires:
       LowerBound() the lower UID to use in the DUB
-      UpperBound() the upprt UID to use in the DUB
+      UpperBound() the upper UID to use in the DUB
 
     And Optionally:
       DUBResponseCode(response_code): called when the discovery request
@@ -663,6 +670,12 @@ class DiscoveryMixin(ResponderTestFixture):
   PID = 'DISC_UNIQUE_BRANCH'
   # Global Mute here ensures we run after all devices have been muted
   REQUIRES = ['mute_supported', 'unmute_supported', 'global_mute']
+
+  def LowerBound(self):
+    self.SetBroken('Base LowerBound method of DiscoveryMixin called')
+
+  def UpperBound(self):
+    self.SetBroken('Base UpperBound method of DiscoveryMixin called')
 
   def DUBResponseCode(self, response_code):
     pass
@@ -691,6 +704,11 @@ class DiscoveryMixin(ResponderTestFixture):
     self.UnMuteDevice(self.SendDUB)
 
   def SendDUB(self):
+    lower_bound = self.LowerBound()
+    upper_bound = self.UpperBound()
+    if lower_bound is None or upper_bound is None:
+      return
+
     self._muting = False
     results = [UnsupportedResult()]
     if self.ExpectResponse():
@@ -701,7 +719,7 @@ class DiscoveryMixin(ResponderTestFixture):
     self.SendDirectedDiscovery(self.Target(),
                                PidStore.ROOT_DEVICE,
                                self.pid,
-                               [self.LowerBound(), self.UpperBound()])
+                               [lower_bound, upper_bound])
 
   def VerifyResult(self, response, fields):
     if self._muting:
