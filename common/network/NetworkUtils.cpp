@@ -37,7 +37,7 @@ typedef uint32_t in_addr_t;
 
 #ifdef HAVE_RESOLV_H
 #include <resolv.h>
-#endif
+#endif  // HAVE_RESOLV_H
 
 #if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
 #define USE_NETLINK_FOR_DEFAULT_ROUTE 1
