@@ -27,7 +27,7 @@
 #endif  // HAVE_ARPA_INET_H
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>  // Required by FreeBSD
-#endif // HAVE_NETINET_IN_H
+#endif  // HAVE_NETINET_IN_H
 
 #include <assert.h>
 #include <ola/Logging.h>
