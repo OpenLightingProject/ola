@@ -386,7 +386,7 @@ bool KQueuePoller::ApplyChange(int fd, int16_t filter, uint16_t flags,
 #else
   EV_SET(&m_change_set[m_next_change_entry++], fd, filter, flags, 0, 0,
          descriptor);
-#endif // __NetBSD__
+#endif  // __NetBSD__
 
   if (m_next_change_entry == CHANGE_SET_SIZE || apply_immediately) {
     int r = kevent(m_kqueue_fd, m_change_set, m_next_change_entry, NULL, 0,
