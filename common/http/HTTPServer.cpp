@@ -824,7 +824,7 @@ void HTTPServer::InsertSocket(bool is_readable, bool is_writeable, int fd) {
   UnmanagedSocketDescriptor *socket = new UnmanagedSocketDescriptor(fd);
 #else
   UnmanagedFileDescriptor *socket = new UnmanagedFileDescriptor(fd);
-#endif // _WIN32
+#endif  // _WIN32
   socket->SetOnData(NewCallback(this, &HTTPServer::HandleHTTPIO));
   socket->SetOnWritable(NewCallback(this, &HTTPServer::HandleHTTPIO));
 
