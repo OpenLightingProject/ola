@@ -27,7 +27,7 @@
     #include <ifaddrs.h>
     #include <linux/types.h>
     #include <linux/if_packet.h>
-  #endif
+  #endif  // HAVE_LINUX_IF_PACKET_H
 #endif  // HAVE_GETIFADDRS
 
 #ifdef HAVE_SYS_TYPES_H
