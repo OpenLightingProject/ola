@@ -137,7 +137,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef USE_DMX4LINUX
   m_plugins.push_back(
       new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
-#endif // USE_DMX4LINUX
+#endif  // USE_DMX4LINUX
 
 #ifdef USE_ARTNET
   m_plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
