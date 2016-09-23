@@ -176,7 +176,7 @@ void *Thread::_InternalRun() {
 #if defined(HAVE_PTHREAD_SET_NAME_NP_2) || \
     defined(HAVE_PTHREAD_SET_NAME_NP_2_VOID)
   pthread_set_name_np(pthread_self(), truncated_name.c_str());
-#endif  // defined(HAVE_PTHREAD_SET_NAME_NP_2) || \
+#endif  // defined(HAVE_PTHREAD_SET_NAME_NP_2) ||
 // defined(HAVE_PTHREAD_SET_NAME_NP_2_VOID)
 
 #ifdef HAVE_PTHREAD_SETNAME_NP_1
