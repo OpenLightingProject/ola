@@ -30,7 +30,7 @@
 #include "common/network/WindowsInterfacePicker.h"
 #else
 #include "common/network/PosixInterfacePicker.h"
-#endif
+#endif  // _WIN32
 
 namespace ola {
 namespace network {
@@ -144,7 +144,7 @@ InterfacePicker *InterfacePicker::NewPicker() {
   return new WindowsInterfacePicker();
 #else
   return new PosixInterfacePicker();
-#endif
+#endif  // _WIN32
 }
 }  // namespace network
 }  // namespace ola

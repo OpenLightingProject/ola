@@ -30,7 +30,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_SYSEXITS_H
 #include <sysexits.h>
@@ -71,7 +71,7 @@
  * @}
  */
 
-#endif
+#endif  // HAVE_SYSEXITS_H
 
 #include "ola/base/SysExits.h"
 

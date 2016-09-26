@@ -23,7 +23,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <algorithm>
 #include <string>
@@ -242,7 +242,7 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_SENSOR_DEFINITION,
     ola::rdm::PID_SENSOR_VALUE,
     ola::rdm::PID_RECORD_SENSORS,
-#endif
+#endif  // HAVE_GETLOADAVG
     ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK,
     ola::rdm::PID_LIST_INTERFACES,
@@ -310,7 +310,7 @@ void DummyPortTest::testDeviceInfo() {
   device_descriptor.sensor_count = 3;
 #else
   device_descriptor.sensor_count = 0;
-#endif
+#endif  // HAVE_GETLOADAVG
 
   RDMResponse *response = GetResponseFromData(
       request,
