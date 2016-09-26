@@ -51,7 +51,7 @@ bool SetSchedParam(pthread_t thread, int policy,
             << thread.x << ": " << strerror(r);
 #else
             << thread << ": " << strerror(r);
-#endif
+#endif  // _WIN32
     return false;
   }
   return true;

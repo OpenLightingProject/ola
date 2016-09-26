@@ -37,7 +37,7 @@
 #include <ola/win/CleanWinSock2.h>
 #else
 #include <sys/socket.h>
-#endif
+#endif  // _WIN32
 #include <sstream>
 #include <string>
 

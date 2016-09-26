@@ -21,7 +21,7 @@
 
 #ifndef _WIN32
 #include <termios.h>
-#endif
+#endif  // _WIN32
 #include <stdio.h>
 
 #include <ola/Callback.h>
@@ -36,7 +36,7 @@ StdinHandler::StdinHandler(SelectServerInterface *ss,
     : m_stdin_descriptor(0),
 #else
     : m_stdin_descriptor(STDIN_FILENO),
-#endif
+#endif  // _WIN32
       m_ss(ss),
       m_callback(callback) {
   m_stdin_descriptor.SetOnData(
@@ -49,7 +49,7 @@ StdinHandler::StdinHandler(SelectServerInterface *ss,
   termios new_tc = m_old_tc;
   new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
   tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
-#endif
+#endif  // _WIN32
 
   // Add to the SelectServer
   m_ss->AddReadDescriptor(&m_stdin_descriptor);
@@ -60,7 +60,7 @@ StdinHandler::~StdinHandler() {
   m_ss->RemoveReadDescriptor(&m_stdin_descriptor);
 #ifndef _WIN32
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
-#endif
+#endif  // !_WIN32
 }
 
 

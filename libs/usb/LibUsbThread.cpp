@@ -96,7 +96,7 @@ void LibUsbHotplugThread::CloseHandle(libusb_device_handle *handle) {
   libusb_close(handle);
 }
 
-#endif
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 
 // LibUsbSimpleThread
 // -----------------------------------------------------------------------------

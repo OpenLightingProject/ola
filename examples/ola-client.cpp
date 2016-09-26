@@ -322,7 +322,7 @@ void SetMode(options *opts) {
   if (extension != string::npos) {
     cmd_name = cmd_name.substr(0, extension);
   }
-#endif
+#endif  // _WIN32
 
   if (cmd_name == "ola_plugin_info") {
     opts->m = PLUGIN_INFO;

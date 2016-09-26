@@ -117,7 +117,7 @@ std::ostream& operator<<(std::ostream &stream, const DescriptorHandle &data);
 #else
 typedef int DescriptorHandle;
 static DescriptorHandle INVALID_DESCRIPTOR = -1;
-#endif
+#endif  // _WIN32
 
 /**
  * @addtogroup io
