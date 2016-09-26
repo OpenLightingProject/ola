@@ -1114,12 +1114,8 @@ class GetParamDescriptionForNonManufacturerPid(ParamDescriptionTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
-<<<<<<< HEAD
 class GetParamDescriptionWithExtraData(TestMixins.GetWithDataMixin,
                                        ParamDescriptionTestFixture):
-=======
-class GetParamDescriptionWithExtraData(ResponderTestFixture):
->>>>>>> 81c6dde544b8105d88db23b71dcea5ae7e472655
   """GET parameter description with extra param data."""
   PID = 'PARAMETER_DESCRIPTION'
   REQUIRES = ['manufacturer_parameters']
@@ -2697,13 +2693,6 @@ class GetSensorDefinitionWithExtraData(TestMixins.GetWithDataMixin,
   """Get the sensor definition with more than 1 byte of data."""
   PID = 'SENSOR_DEFINITION'
 
-<<<<<<< HEAD
-=======
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
-
->>>>>>> 81c6dde544b8105d88db23b71dcea5ae7e472655
 
 class GetInvalidSensorDefinition(OptionalParameterTestFixture):
   """Get the sensor definition with the all sensor value (0xff)."""
