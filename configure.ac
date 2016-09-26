@@ -75,8 +75,11 @@ AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
 AC_HEADER_DIRENT
 AC_HEADER_RESOLV
 AC_HEADER_STDC
+# Required headers (we cannot work without these)
+AC_CHECK_HEADERS([errno.h],[],[AC_MSG_ERROR([Missing a required header])])
+# Other headers (we can work without these, but may need to modify things slightly)
 AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
-AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h errno.h execinfo.h \
+AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h stropts.h \
                   sys/param.h sys/types.h sys/uio.h sysexits.h])
 AC_CHECK_HEADERS([winsock2.h])
