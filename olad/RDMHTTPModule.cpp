@@ -2990,7 +2990,7 @@ string RDMHTTPModule::SyncClock(HTTPResponse *response,
   memcpy(&now_tm, localtime(&now), sizeof(now_tm));
 #else
   localtime_r(&now, &now_tm);
-#endif
+#endif  // _WIN32
   ola::rdm::ClockValue clock_value;
 
   clock_value.year = now_tm.tm_year + 1900;
