@@ -154,7 +154,7 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 install:
-  - pip install --user protobuf==2.4.1
+  - pip install --user protobuf==3.0.0
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
