@@ -36,6 +36,13 @@
 
 #ifdef HAVE_ASM_TERMIOS_H
 // use this not standard termios for custom baud rates
+//
+// On mips architectures, <asm/termios.h> sets some cpp macros which cause
+// <cerrno> (included by <ostream>, used by <ola/Logging.h>) to not define
+// ERANGE, EDOM, or EILSEQ, causing a spectacular compile failure there.
+//
+// Explicitly include <cerrno> now to avoid the issue.
+#include <errno.h>
 #include <asm/termios.h>
 #endif
 
