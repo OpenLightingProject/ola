@@ -49,6 +49,7 @@ olad_libolaserver_la_SOURCES = $(ola_server_sources) \
                                olad/OlaServer.cpp \
                                olad/OlaDaemon.cpp
 olad_libolaserver_la_CXXFLAGS = $(COMMON_CXXFLAGS) \
+                                $(COMMON_PROTOBUF_CXXFLAGS) \
                                 -DHTTP_DATA_DIR=\"${www_datadir}\"
 olad_libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
                               common/libolacommon.la \

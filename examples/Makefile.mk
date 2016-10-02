@@ -15,7 +15,7 @@ noinst_LTLIBRARIES += examples/libolaconfig.la
 examples_libolaconfig_la_SOURCES = \
     examples/OlaConfigurator.h \
     examples/OlaConfigurator.cpp
-
+examples_libolaconfig_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 
 # PROGRAMS
 ##################################################

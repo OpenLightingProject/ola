@@ -28,7 +28,8 @@ olad_plugin_api_libolaserverplugininterface_la_SOURCES = \
     olad/plugin_api/Universe.cpp \
     olad/plugin_api/UniverseStore.cpp \
     olad/plugin_api/UniverseStore.h
-olad_plugin_api_libolaserverplugininterface_la_CXXFLAGS = $(COMMON_CXXFLAGS)
+olad_plugin_api_libolaserverplugininterface_la_CXXFLAGS = $(COMMON_CXXFLAGS) \
+    $(COMMON_PROTOBUF_CXXFLAGS)
 olad_plugin_api_libolaserverplugininterface_la_LIBADD = \
     common/libolacommon.la \
     common/web/libolaweb.la \
