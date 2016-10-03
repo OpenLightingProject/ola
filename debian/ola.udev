@@ -6,6 +6,9 @@ SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idPro
 # udev rules for the anyma dmx device
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev", TAG+="uaccess"
 
+# udev rules for the avldiy dmx device
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="8888", GROUP="plugdev"
+
 # udev rules for the usbdmx2 dmx device
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0962", GROUP="plugdev", TAG+="uaccess"
 
