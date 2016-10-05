@@ -186,7 +186,7 @@ before_cache:
 
 install:
 # Match the version of protobuf being installed via apt
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user protobuf==2.5.0; fi
+  - pip install --user protobuf==3.0.0
 # We need to use pip rather than apt on Trusty
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
