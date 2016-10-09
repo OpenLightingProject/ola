@@ -66,7 +66,7 @@ class AVLdiyThreadedSender: public ThreadedUsbSender {
 };
 
 bool AVLdiyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
-                                         const DmxBuffer &buffer) {
+                                          const DmxBuffer &buffer) {
   int r = m_adaptor->ControlTransfer(
       handle,
       LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |

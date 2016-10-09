@@ -25,3 +25,4 @@ Contributors:
   Sean Sill, various fixes.
   Stefan Krüger, added APA102 support to the SPI Plugin
   Tobi Schäfer, for the MacPort files
+  Tor Håkon Gjerde, added AVLdiy D512 support

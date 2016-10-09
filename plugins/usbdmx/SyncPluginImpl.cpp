@@ -68,8 +68,8 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
       m_debug_level(debug_level),
       m_preferences(preferences),
       m_context(NULL) {
-  m_widget_factories.push_back(new AVLdiyD512Factory(&m_usb_adaptor));
   m_widget_factories.push_back(new AnymauDMXFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new AVLdiyD512Factory(&m_usb_adaptor));
   m_widget_factories.push_back(new DMXCProjectsNodleU1Factory(&m_usb_adaptor,
       m_plugin_adaptor, m_preferences));
   m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor));
@@ -123,18 +123,18 @@ bool SyncPluginImpl::Stop() {
   return true;
 }
 
-bool SyncPluginImpl::NewWidget(AVLdiyD512 *widget) {
-  return StartAndRegisterDevice(
-      widget,
-      new GenericDevice(m_plugin, widget, "AVLdiy USB Device",
-                        "avldiy-" + widget->SerialNumber()));
-}
-
 bool SyncPluginImpl::NewWidget(AnymauDMX *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Anyma USB Device",
                         "anyma-" + widget->SerialNumber()));
+}
+
+bool SyncPluginImpl::NewWidget(AVLdiyD512 *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "AVLdiy USB Device",
+                        "avldiy-" + widget->SerialNumber()));
 }
 
 bool SyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
