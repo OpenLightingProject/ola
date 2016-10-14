@@ -56,7 +56,7 @@ bool UsbDmxPlugin::StartHook() {
   }
 
   unsigned int debug_level;
-  if (!StringToInt(m_preferences->GetValue(LIBUSB_DEBUG_LEVEL_KEY) ,
+  if (!StringToInt(m_preferences->GetValue(LIBUSB_DEBUG_LEVEL_KEY),
                    &debug_level)) {
     debug_level = LIBUSB_DEFAULT_DEBUG_LEVEL;
   }
@@ -92,11 +92,8 @@ string UsbDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, DMXControl Projects e.V. Nodle U1, DMXCreator 512 Basic, Eurolite,\n"
-"Fadecandy, Sunlite USBDMX2 and Velleman K8062.\n"
-"\n"
-"Note: To allow DMXCreator devices, run the following command to set permissions:\n"
-"sudo echo 'SUBSYSTEMS==\"usb\", ATTRS{idVendor}==\"0a30\", ATTRS{idProduct}==\"0002\", MODE=\"0666\"' > /etc/udev/rules.d/80-dmxcreator.rules\n"
+"Anyma uDMX, DMXControl Projects e.V. Nodle U1, DMXCreator 512 Basic,\n"
+"Eurolite, Fadecandy, Sunlite USBDMX2 and Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"

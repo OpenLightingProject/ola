@@ -60,7 +60,7 @@ bool DMXCreatorFactory::DeviceAdded(
     return false;
   }*/
 
-  // Some DMXCreator devices don't have serial numbers. Since there isn't another
+  // Some DMXCreator devices don't have serial numbers. Since there is no other
   // good way to uniquely identify a USB device, we only support one of these
   // types of devices per host.
   if (info.serial.empty()) {

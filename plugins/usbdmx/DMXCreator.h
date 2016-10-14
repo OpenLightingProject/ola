@@ -47,8 +47,8 @@ class DMXCreator: public SimpleWidget {
    * @param serial the serial number of the widget.
    */
   DMXCreator(ola::usb::LibUsbAdaptor *adaptor,
-            libusb_device *usb_device,
-            const std::string &serial)
+             libusb_device *usb_device,
+             const std::string &serial)
       : SimpleWidget(adaptor, usb_device),
         m_serial(serial) {}
 
@@ -80,8 +80,8 @@ class SynchronousDMXCreator: public DMXCreator {
    * @param serial the serial number of the widget.
    */
   SynchronousDMXCreator(ola::usb::LibUsbAdaptor *adaptor,
-                       libusb_device *usb_device,
-                       const std::string &serial);
+                        libusb_device *usb_device,
+                        const std::string &serial);
 
   bool Init();
 
@@ -105,8 +105,8 @@ class AsynchronousDMXCreator : public DMXCreator {
    * @param serial the serial number of the widget.
    */
   AsynchronousDMXCreator(ola::usb::LibUsbAdaptor *adaptor,
-                        libusb_device *usb_device,
-                        const std::string &serial);
+                         libusb_device *usb_device,
+                         const std::string &serial);
 
   bool Init();
 
