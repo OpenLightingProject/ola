@@ -69,6 +69,15 @@ class WidgetObserver {
   virtual bool NewWidget(class DMXCProjectsNodleU1 *widget) = 0;
 
   /**
+   * @brief Called when a new DMXCreator is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
+   *   ignored.
+   */
+  virtual bool NewWidget(class DMXCreator *widget) = 0;
+
+  /**
    * @brief Called when a new EurolitePro is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.

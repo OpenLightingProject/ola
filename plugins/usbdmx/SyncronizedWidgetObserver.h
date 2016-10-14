@@ -55,6 +55,10 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
+  bool NewWidget(class DMXCreator *widget) {
+    return DispatchNewWidget(widget);
+  }
+
   bool NewWidget(class EurolitePro *widget) {
     return DispatchNewWidget(widget);
   }
