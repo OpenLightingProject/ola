@@ -258,7 +258,7 @@ bool HardwareBackend::SetupGPIO() {
    */
   const string direction("out");
   bool failed = false;
-  vector<uint8_t>::const_iterator iter = m_gpio_pins.begin();
+  vector<uint16_t>::const_iterator iter = m_gpio_pins.begin();
   for (; iter != m_gpio_pins.end(); ++iter) {
     std::ostringstream str;
     str << "/sys/class/gpio/gpio" << static_cast<int>(*iter) << "/value";

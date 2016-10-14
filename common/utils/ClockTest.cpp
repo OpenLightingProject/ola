@@ -26,7 +26,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <ola/win/CleanWindows.h>
-#endif
+#endif  // _WIN32
 
 #include "ola/Clock.h"
 #include "ola/testing/TestUtils.h"
@@ -155,7 +155,7 @@ void ClockTest::testClock() {
   Sleep(1000);
 #else
   sleep(1);
-#endif
+#endif  // _WIN32
 
   TimeStamp second;
   clock.CurrentTime(&second);

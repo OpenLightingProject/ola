@@ -53,7 +53,7 @@
 // occurs with some input values, not all.  In any case, _snprintf does the
 // right thing, so we use it.
 #define snprintf _snprintf
-#endif
+#endif  // _WIN32
 
 namespace ola {
 
@@ -277,7 +277,7 @@ char *InternalFastHexToBuffer(uint64_t value, char* buffer, int num_byte) {
     buffer[i] = hexdigits[value & 0xf];
 #else
     buffer[i] = hexdigits[uint32_t(value) & 0xf];
-#endif
+#endif  // _M_X64
     value >>= 4;
   }
   return buffer;

@@ -21,7 +21,7 @@
 #ifdef _WIN32
 // Pull in fd_set and related definitions.
 #include <ola/win/CleanWinSock2.h>
-#endif
+#endif  // _WIN32
 
 #include "common/io/SelectPoller.h"
 
