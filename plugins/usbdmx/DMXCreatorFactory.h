@@ -15,7 +15,7 @@
  *
  * DMXCreatorFactory.h
  * The factory for DMXCreator widgets.
- * Copyright (C) 2014 Simon Newton
+ * Copyright (C) 2016 Florian Edelmann
  */
 
 #ifndef PLUGINS_USBDMX_DMXCREATORFACTORY_H_

@@ -15,7 +15,7 @@
  *
  * DMXCreator.h
  * The synchronous and asynchronous DMXCreator widgets.
- * Copyright (C) 2014 Simon Newton
+ * Copyright (C) 2016 Florian Edelmann
  */
 
 #ifndef PLUGINS_USBDMX_DMXCREATOR_H_

@@ -15,7 +15,7 @@
  *
  * DMXCreator.cpp
  * The synchronous and asynchronous DMXCreator widgets.
- * Copyright (C) 2014 Simon Newton
+ * Copyright (C) 2016 Florian Edelmann
  */
 
 #include "plugins/usbdmx/DMXCreator.h"

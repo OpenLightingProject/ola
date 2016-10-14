@@ -15,7 +15,7 @@
  *
  * DMXCreatorFactory.cpp
  * The factory for DMXCreator widgets.
- * Copyright (C) 2014 Simon Newton
+ * Copyright (C) 2016 Florian Edelmann
  */
 
 #include "plugins/usbdmx/DMXCreatorFactory.h"
