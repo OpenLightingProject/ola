@@ -23,6 +23,11 @@ AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
 # The common C++ flags. This may include -Werror if fatal-warning was enabled
 # in ./configure. AM_CXXFLAGS defaults to this, and it should be preferred.
 #
+# COMMON_PROTOBUF_CXXFLAGS
+# The common C++ flags with some warnings protobuf code throws disabled. Use
+# this for generated protobuf code that does not build correctly with
+# COMMON_CXXFLAGS.
+#
 # COMMON_CXXFLAGS_ONLY_WARNINGS
 # The common C++ flags with (non-fatal) warnings enabled. Use this for 3rd
 # party code that does not build correctly with COMMON_CXXFLAGS.
@@ -40,6 +45,7 @@ COMMON_CXXFLAGS_ONLY_WARNINGS = \
     $(libprotobuf_CFLAGS)
 
 COMMON_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
+COMMON_PROTOBUF_CXXFLAGS = $(COMMON_CXXFLAGS)
 
 COMMON_TESTING_FLAGS_ONLY_WARNINGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS) \
                                      $(CPPUNIT_CFLAGS) \
@@ -53,6 +59,7 @@ COMMON_TESTING_FLAGS = $(COMMON_TESTING_FLAGS_ONLY_WARNINGS)
 if ! USING_WIN32
 if FATAL_WARNINGS
   COMMON_CXXFLAGS += -Werror
+  COMMON_PROTOBUF_CXXFLAGS += -Werror -Wno-error=unused-parameter
   COMMON_TESTING_FLAGS += -Werror
 endif
 endif

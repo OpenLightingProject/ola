@@ -128,7 +128,7 @@ void AdvancedTCPConnectorTest::setUp() {
   WSADATA wsa_data;
   int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
   OLA_ASSERT_EQ(result, 0);
-#endif
+#endif  // _WIN32
 }
 
 
@@ -140,7 +140,7 @@ void AdvancedTCPConnectorTest::tearDown() {
 
 #ifdef _WIN32
   WSACleanup();
-#endif
+#endif  // _WIN32
 }
 
 

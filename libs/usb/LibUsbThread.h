@@ -25,7 +25,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include "ola/base/Macro.h"
 #include "ola/thread/Thread.h"
@@ -168,7 +168,7 @@ class LibUsbHotplugThread : public LibUsbThread {
   DISALLOW_COPY_AND_ASSIGN(LibUsbHotplugThread);
 };
 
-#endif
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 
 /**
  * @brief The non-hotplug version of LibUsbThread.

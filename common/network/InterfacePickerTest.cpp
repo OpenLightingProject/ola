@@ -98,7 +98,7 @@ void InterfacePickerTest::testGetLoopbackInterfaces() {
   }
 #ifndef _WIN32
   OLA_ASSERT_GT(loopback_count, 0);
-#endif
+#endif  // _WIN32
 }
 
 

@@ -85,7 +85,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   if (extension != string::npos) {
     cmd_name = cmd_name.substr(0, extension);
   }
-#endif
+#endif  // _WIN32
   opts->set_mode = false;
   opts->pid_location = "";
   opts->list_pids = false;
