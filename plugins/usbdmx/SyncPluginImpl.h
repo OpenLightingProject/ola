@@ -72,6 +72,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   bool Stop();
 
   bool NewWidget(class AnymauDMX *widget);
+  bool NewWidget(class AVLdiyD512 *widget);
   bool NewWidget(class DMXCProjectsNodleU1 *widget);
   bool NewWidget(class EurolitePro *widget);
   bool NewWidget(ola::usb::JaRuleWidget *widget);
@@ -80,6 +81,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   bool NewWidget(class VellemanK8062 *widget);
 
   void WidgetRemoved(OLA_UNUSED class AnymauDMX *widget) {}
+  void WidgetRemoved(OLA_UNUSED class AVLdiyD512 *widget) {}
   void WidgetRemoved(OLA_UNUSED class DMXCProjectsNodleU1 *widget) {}
   void WidgetRemoved(OLA_UNUSED class EurolitePro *widget) {}
   void WidgetRemoved(OLA_UNUSED ola::usb::JaRuleWidget *widget) {}
