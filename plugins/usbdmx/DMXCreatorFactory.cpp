@@ -47,40 +47,26 @@ bool DMXCreatorFactory::DeviceAdded(
   }
 
   OLA_INFO << "Found a new DMXCreator device";
-  LibUsbAdaptor::DeviceInformation info;
-  /*if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
+  // Unfortunately, DMXCreator devices don't provide any additional information
+  // that identify them. So we have to stick with just testing vendor and
+  // product ids. Also, since DMXCreator devices don't have serial numbers and
+  // there is no other good way to uniquely identify a USB device, we only
+  // support one of these types of devices per host.
+  if (m_missing_serial_number) {
+    OLA_WARN << "We can only support one device without a serial number.";
     return false;
-  }
-
-  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info)) {
-    return false;
-  }
-
-  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info)) {
-    return false;
-  }*/
-
-  // Some DMXCreator devices don't have serial numbers. Since there is no other
-  // good way to uniquely identify a USB device, we only support one of these
-  // types of devices per host.
-  if (info.serial.empty()) {
-    if (m_missing_serial_number) {
-      OLA_WARN << "Failed to read serial number or serial number empty. "
-               << "We can only support one device without a serial number.";
-      return false;
-    } else {
-      OLA_WARN << "Failed to read serial number from " << info.manufacturer
-               << " : " << info.product
-               << " the device probably doesn't have one";
-      m_missing_serial_number = true;
-    }
+  } else {
+    m_missing_serial_number = true;
   }
 
   DMXCreator *widget = NULL;
   if (FLAGS_use_async_libusb) {
     widget = new AsynchronousDMXCreator(m_adaptor, usb_device, info.serial);
   } else {
-    widget = new SynchronousDMXCreator(m_adaptor, usb_device, info.serial);
+    // Synchronous mode consumes way too much memory and eventually gets killed
+    // Until this is fixed, disable synchronous mode.
+    // widget = new SynchronousDMXCreator(m_adaptor, usb_device, info.serial);
+    return false;
   }
   return AddWidget(observer, widget);
 }

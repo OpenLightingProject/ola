@@ -8,6 +8,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/AnymauDMX.h \
     plugins/usbdmx/AnymauDMXFactory.cpp \
     plugins/usbdmx/AnymauDMXFactory.h \
+    plugins/usbdmx/AVLdiyD512.cpp \
+    plugins/usbdmx/AVLdiyD512.h \
+    plugins/usbdmx/AVLdiyD512Factory.cpp \
+    plugins/usbdmx/AVLdiyD512Factory.h \
     plugins/usbdmx/AsyncUsbReceiver.cpp \
     plugins/usbdmx/AsyncUsbReceiver.h \
     plugins/usbdmx/AsyncUsbSender.cpp \

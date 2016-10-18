@@ -60,6 +60,15 @@ class WidgetObserver {
   virtual bool NewWidget(class AnymauDMX *widget) = 0;
 
   /**
+   * @brief Called when a new AVLdiyD512 is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
+   *   ignored.
+   */
+  virtual bool NewWidget(class AVLdiyD512 *widget) = 0;
+
+  /**
    * @brief Called when a new DMXCProjects Nodle U1 widget is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
