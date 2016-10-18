@@ -195,7 +195,7 @@ bool AsyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
 bool AsyncPluginImpl::NewWidget(DMXCreator *widget) {
   return StartAndRegisterDevice(
       widget,
-      new GenericDevice(m_plugin, widget, "DMXCreator USB Device",
+      new GenericDevice(m_plugin, widget, "DMXCreator 512 Basic USB Device",
                         "dmxcreator-" + widget->SerialNumber()));
 }
 

@@ -33,8 +33,6 @@ namespace usbdmx {
 
 using ola::usb::LibUsbAdaptor;
 
-const char DMXCreatorFactory::EXPECTED_MANUFACTURER[] = "http://www.dmx512.ch/";
-const char DMXCreatorFactory::EXPECTED_PRODUCT[] = "DMXCreator 512 Basic";
 const uint16_t DMXCreatorFactory::VENDOR_ID = 0x0a30;
 const uint16_t DMXCreatorFactory::PRODUCT_ID = 0x0002;
 
@@ -61,11 +59,11 @@ bool DMXCreatorFactory::DeviceAdded(
 
   DMXCreator *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousDMXCreator(m_adaptor, usb_device, info.serial);
+    widget = new AsynchronousDMXCreator(m_adaptor, usb_device);
   } else {
     // Synchronous mode consumes way too much memory and eventually gets killed
     // Until this is fixed, disable synchronous mode.
-    // widget = new SynchronousDMXCreator(m_adaptor, usb_device, info.serial);
+    // widget = new SynchronousDMXCreator(m_adaptor, usb_device);
     return false;
   }
   return AddWidget(observer, widget);

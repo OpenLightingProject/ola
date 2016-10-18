@@ -31,9 +31,10 @@
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 /**
- * DMXCreator sends two URB packets for each change: 
+ * DMXCreator sends two or three URB packets for each change:
  * 1. A constant byte string to endpoint 1 that indicates new data.
- * 2. The actual DMX data to endpoint 2.
+ * 2. The actual DMX data (channels 1..256) to endpoint 2.
+ * 3. The actual DMX data (channels 257..512) to endpoint 2. (optional)
  */
 
 namespace ola {
@@ -48,10 +49,14 @@ namespace {
 static const unsigned char ENDPOINT_1 = 0x01;
 static const unsigned char ENDPOINT_2 = 0x02;
 static const unsigned int URB_TIMEOUT_MS_SYNC = 1000;
-static const unsigned int URB_TIMEOUT_MS_ASYNC = 500;
+static const unsigned int URB_TIMEOUT_MS_ASYNC = 50;
 static const unsigned int CHANNELS_PER_PACKET = 256;
 
-void AsyncCallback(struct libusb_transfer *transfer);
+enum {
+  STATE_SEND_STATUS,
+  STATE_SEND_FIRST_HALF,
+  STATE_SEND_SECOND_HALF
+};
 
 }  // namespace
 
@@ -127,9 +132,8 @@ bool DMXCreatorThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 // -----------------------------------------------------------------------------
 
 SynchronousDMXCreator::SynchronousDMXCreator(LibUsbAdaptor *adaptor,
-                                             libusb_device *usb_device,
-                                             const string &serial)
-    : DMXCreator(adaptor, usb_device, serial) {
+                                             libusb_device *usb_device)
+    : DMXCreator(adaptor, usb_device) {
 }
 
 bool SynchronousDMXCreator::Init() {
@@ -162,12 +166,15 @@ class DMXCreatorAsyncUsbSender : public AsyncUsbSender {
       : AsyncUsbSender(adaptor, usb_device),
         m_adaptor(adaptor),
         m_usb_device(usb_device) {
-    m_control_setup_buffer = new uint8_t[CHANNELS_PER_PACKET];
+    m_dmx_buffer_1 = new uint8_t[CHANNELS_PER_PACKET];
+    m_dmx_buffer_2 = new uint8_t[CHANNELS_PER_PACKET];
+    m_state = STATE_SEND_STATUS;
   }
 
   ~DMXCreatorAsyncUsbSender() {
     CancelTransfer();
-    delete[] m_control_setup_buffer;
+    delete[] m_dmx_buffer_1;
+    delete[] m_dmx_buffer_2;
   }
 
   libusb_device_handle* SetupHandle() {
@@ -178,31 +185,49 @@ class DMXCreatorAsyncUsbSender : public AsyncUsbSender {
   }
 
   bool PerformTransfer(const DmxBuffer &buffer) {
+    // if we only wanted to send the first half, the last byte would be 0x01
     unsigned char status_buffer[6] = {
-      0x80, 0x01, 0x00, 0x00, 0x00, 0x01
+      0x80, 0x01, 0x00, 0x00, 0x00, 0x02
     };
 
     unsigned int length = CHANNELS_PER_PACKET;
-    memset(m_control_setup_buffer, 0, length);
-    buffer.Get(m_control_setup_buffer, &length);
+    memset(m_dmx_buffer_1, 0, length);
+    buffer.Get(m_dmx_buffer_1, &length);
 
-    m_adaptor->FillBulkTransfer(m_transfer, m_usb_handle, ENDPOINT_1,
-      status_buffer, sizeof(status_buffer), &AsyncCallback, this,
+    length = CHANNELS_PER_PACKET;
+    memset(m_dmx_buffer_2, 0, length);
+    buffer.GetRange(CHANNELS_PER_PACKET, m_dmx_buffer_2, &length);
+
+    m_state = STATE_SEND_FIRST_HALF;
+    FillBulkTransfer(ENDPOINT_1, status_buffer, sizeof(status_buffer),
       URB_TIMEOUT_MS_ASYNC);
-
     return (SubmitTransfer() == 0);
   }
 
-  void PerformSecondTransfer() {
-    FillBulkTransfer(ENDPOINT_2,
-      const_cast<unsigned char*>(m_control_setup_buffer),
-      CHANNELS_PER_PACKET, URB_TIMEOUT_MS_ASYNC);
-    SubmitTransfer();
+  void PostTransferHook() {
+    switch (m_state) {
+      case STATE_SEND_FIRST_HALF:
+        m_state = STATE_SEND_SECOND_HALF;
+        FillBulkTransfer(ENDPOINT_2,
+          const_cast<unsigned char*>(m_dmx_buffer_1),
+          CHANNELS_PER_PACKET, URB_TIMEOUT_MS_ASYNC);
+        SubmitTransfer();
+        break;
+      case STATE_SEND_SECOND_HALF:
+        m_state = STATE_SEND_STATUS;
+        FillBulkTransfer(ENDPOINT_2,
+          const_cast<unsigned char*>(m_dmx_buffer_2),
+          CHANNELS_PER_PACKET, URB_TIMEOUT_MS_ASYNC);
+        SubmitTransfer();
+        break;
+    }
   }
 
 
  private:
-  uint8_t *m_control_setup_buffer;
+  uint8_t *m_dmx_buffer_1;
+  uint8_t *m_dmx_buffer_2;
+  uint8_t m_state;
   ola::usb::LibUsbAdaptor* const m_adaptor;
   libusb_device* const m_usb_device;
 
@@ -214,9 +239,8 @@ class DMXCreatorAsyncUsbSender : public AsyncUsbSender {
 
 AsynchronousDMXCreator::AsynchronousDMXCreator(
     LibUsbAdaptor *adaptor,
-    libusb_device *usb_device,
-    const string &serial)
-    : DMXCreator(adaptor, usb_device, serial) {
+    libusb_device *usb_device)
+    : DMXCreator(adaptor, usb_device) {
   m_sender.reset(new DMXCreatorAsyncUsbSender(m_adaptor, usb_device));
 }
 
@@ -227,19 +251,6 @@ bool AsynchronousDMXCreator::Init() {
 bool AsynchronousDMXCreator::SendDMX(const DmxBuffer &buffer) {
   return m_sender->SendDMX(buffer);
 }
-
-namespace {
-
-void AsyncCallback(struct libusb_transfer *transfer) {
-  OLA_DEBUG << "Callback called, libusb_transfer_status " << transfer->status;
-
-  DMXCreatorAsyncUsbSender *sender =
-    reinterpret_cast<DMXCreatorAsyncUsbSender*>(transfer->user_data);
-
-  sender->PerformSecondTransfer();
-}
-
-}  // namespace
 
 }  // namespace usbdmx
 }  // namespace plugin

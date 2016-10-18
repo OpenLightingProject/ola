@@ -44,26 +44,20 @@ class DMXCreator: public SimpleWidget {
    * @brief Create a new DMXCreator.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   DMXCreator(ola::usb::LibUsbAdaptor *adaptor,
-             libusb_device *usb_device,
-             const std::string &serial)
-      : SimpleWidget(adaptor, usb_device),
-        m_serial(serial) {}
+             libusb_device *usb_device)
+      : SimpleWidget(adaptor, usb_device) {}
 
   virtual ~DMXCreator() {}
 
   /**
-   * @brief Get the serial number of this widget.
+   * @brief Get a (fake) serial number of this widget.
    * @returns The serial number of the widget.
    */
   std::string SerialNumber() const {
-    return m_serial;
+    return "?";
   }
-
- private:
-  std::string m_serial;
 };
 
 /**
@@ -77,11 +71,9 @@ class SynchronousDMXCreator: public DMXCreator {
    * @brief Create a new SynchronousDMXCreator.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   SynchronousDMXCreator(ola::usb::LibUsbAdaptor *adaptor,
-                        libusb_device *usb_device,
-                        const std::string &serial);
+                        libusb_device *usb_device);
 
   bool Init();
 
@@ -102,11 +94,9 @@ class AsynchronousDMXCreator : public DMXCreator {
    * @brief Create a new AsynchronousDMXCreator.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   AsynchronousDMXCreator(ola::usb::LibUsbAdaptor *adaptor,
-                         libusb_device *usb_device,
-                         const std::string &serial);
+                         libusb_device *usb_device);
 
   bool Init();
 
