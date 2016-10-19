@@ -44,8 +44,8 @@
 #include "plugins/usbdmx/DMXCProjectsNodleU1.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1Device.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1Factory.h"
-#include "plugins/usbdmx/DMXCreator.h"
-#include "plugins/usbdmx/DMXCreatorFactory.h"
+#include "plugins/usbdmx/DMXCreator512Basic.h"
+#include "plugins/usbdmx/DMXCreator512BasicFactory.h"
 #include "plugins/usbdmx/EuroliteProFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/JaRuleDevice.h"
@@ -123,7 +123,7 @@ bool AsyncPluginImpl::Start() {
   m_widget_factories.push_back(
       new DMXCProjectsNodleU1Factory(m_usb_adaptor, m_plugin_adaptor,
                                      m_preferences));
-  m_widget_factories.push_back(new DMXCreatorFactory(m_usb_adaptor));
+  m_widget_factories.push_back(new DMXCreator512BasicFactory(m_usb_adaptor));
   m_widget_factories.push_back(
       new EuroliteProFactory(m_usb_adaptor));
   m_widget_factories.push_back(
@@ -192,11 +192,11 @@ bool AsyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
           m_plugin_adaptor));
 }
 
-bool AsyncPluginImpl::NewWidget(DMXCreator *widget) {
+bool AsyncPluginImpl::NewWidget(DMXCreator512Basic *widget) {
   return StartAndRegisterDevice(
       widget,
-      new GenericDevice(m_plugin, widget, "DMXCreator 512 Basic USB Device",
-                        "dmxcreator-" + widget->SerialNumber()));
+      new GenericDevice(m_plugin, widget, "DMXCreator512Basic USB Device",
+                        "dmxcreator512basic-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {

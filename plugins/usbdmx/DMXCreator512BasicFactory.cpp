@@ -13,17 +13,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXCreatorFactory.cpp
- * The factory for DMXCreator widgets.
+ * DMXCreator512BasicFactory.cpp
+ * The factory for DMXCreator512Basic widgets.
  * Copyright (C) 2016 Florian Edelmann
  */
 
-#include "plugins/usbdmx/DMXCreatorFactory.h"
+#include "plugins/usbdmx/DMXCreator512BasicFactory.h"
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
-#include "plugins/usbdmx/DMXCreator.h"
+#include "plugins/usbdmx/DMXCreator512Basic.h"
 
 DECLARE_bool(use_async_libusb);
 
@@ -33,10 +33,10 @@ namespace usbdmx {
 
 using ola::usb::LibUsbAdaptor;
 
-const uint16_t DMXCreatorFactory::VENDOR_ID = 0x0a30;
-const uint16_t DMXCreatorFactory::PRODUCT_ID = 0x0002;
+const uint16_t DMXCreator512BasicFactory::VENDOR_ID = 0x0a30;
+const uint16_t DMXCreator512BasicFactory::PRODUCT_ID = 0x0002;
 
-bool DMXCreatorFactory::DeviceAdded(
+bool DMXCreator512BasicFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -44,26 +44,37 @@ bool DMXCreatorFactory::DeviceAdded(
     return false;
   }
 
-  OLA_INFO << "Found a new DMXCreator device";
-  // Unfortunately, DMXCreator devices don't provide any additional information
-  // that identify them. So we have to stick with just testing vendor and
-  // product ids. Also, since DMXCreator devices don't have serial numbers and
-  // there is no other good way to uniquely identify a USB device, we only
-  // support one of these types of devices per host.
-  if (m_missing_serial_number) {
-    OLA_WARN << "We can only support one device without a serial number.";
+  LibUsbAdaptor::DeviceInformation info;
+  if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
     return false;
-  } else {
-    m_missing_serial_number = true;
   }
 
-  DMXCreator *widget = NULL;
+  OLA_INFO << "Found a new DMXCreator512Basic device";
+  // Unfortunately, DMXCreator512Basic devices don't provide any additional
+  // information that identify them. So we have to stick with just testing
+  // vendor and product ids. Also, since DMXCreator512Basic devices don't have
+  // serial numbers and there is no other good way to uniquely identify a USB
+  // device, we only support one of these types of devices per host.
+  if (info.serial.empty()) {
+    if (m_missing_serial_number) {
+      OLA_WARN << "We can only support one device without a serial number.";
+      return false;
+    } else {
+      m_missing_serial_number = true;
+    }
+  }
+
+  DMXCreator512Basic *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousDMXCreator(m_adaptor, usb_device);
+    widget = new AsynchronousDMXCreator512Basic(m_adaptor, usb_device,
+                                                info.serial);
   } else {
     // Synchronous mode consumes way too much memory and eventually gets killed
     // Until this is fixed, disable synchronous mode.
-    // widget = new SynchronousDMXCreator(m_adaptor, usb_device);
+    // widget = new SynchronousDMXCreator512Basic(m_adaptor, usb_device,
+    //                                            info.serial);
+    OLA_WARN << "Synchronous mode is disabled for DMXCreator512Basic at the "
+                "moment";
     return false;
   }
   return AddWidget(observer, widget);

@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXCreatorFactory.h
- * The factory for DMXCreator widgets.
+ * DMXCreator512BasicFactory.h
+ * The factory for DMXCreator512Basic widgets.
  * Copyright (C) 2016 Florian Edelmann
  */
 
-#ifndef PLUGINS_USBDMX_DMXCREATORFACTORY_H_
-#define PLUGINS_USBDMX_DMXCREATORFACTORY_H_
+#ifndef PLUGINS_USBDMX_DMXCREATOR512BASICFACTORY_H_
+#define PLUGINS_USBDMX_DMXCREATOR512BASICFACTORY_H_
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
@@ -30,12 +30,14 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Creates DMXCreator widgets.
+ * @brief Creates DMXCreator512Basic widgets.
  */
-class DMXCreatorFactory : public BaseWidgetFactory<class DMXCreator> {
+class DMXCreator512BasicFactory
+    : public BaseWidgetFactory<class DMXCreator512Basic> {
  public:
-  explicit DMXCreatorFactory(ola::usb::LibUsbAdaptor *adaptor)
-      : BaseWidgetFactory<class DMXCreator>("DMXCreatorFactory"),
+  explicit DMXCreator512BasicFactory(ola::usb::LibUsbAdaptor *adaptor)
+      : BaseWidgetFactory<class DMXCreator512Basic>
+            ("DMXCreator512BasicFactory"),
         m_missing_serial_number(false),
         m_adaptor(adaptor) {
   }
@@ -49,14 +51,12 @@ class DMXCreatorFactory : public BaseWidgetFactory<class DMXCreator> {
   bool m_missing_serial_number;
   ola::usb::LibUsbAdaptor *m_adaptor;
 
-  static const char EXPECTED_MANUFACTURER[];
-  static const char EXPECTED_PRODUCT[];
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;
 
-  DISALLOW_COPY_AND_ASSIGN(DMXCreatorFactory);
+  DISALLOW_COPY_AND_ASSIGN(DMXCreator512BasicFactory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_DMXCREATORFACTORY_H_
+#endif  // PLUGINS_USBDMX_DMXCREATOR512BASICFACTORY_H_

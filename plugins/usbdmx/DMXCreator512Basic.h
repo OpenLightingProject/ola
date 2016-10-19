@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXCreator.h
- * The synchronous and asynchronous DMXCreator widgets.
+ * DMXCreator512Basic.h
+ * The synchronous and asynchronous DMXCreator512Basic widgets.
  * Copyright (C) 2016 Florian Edelmann
  */
 
-#ifndef PLUGINS_USBDMX_DMXCREATOR_H_
-#define PLUGINS_USBDMX_DMXCREATOR_H_
+#ifndef PLUGINS_USBDMX_DMXCREATOR512BASIC_H_
+#define PLUGINS_USBDMX_DMXCREATOR512BASIC_H_
 
 #include <libusb.h>
 #include <memory>
@@ -36,44 +36,50 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief The base class for DMXCreator Widgets.
+ * @brief The base class for DMXCreator512Basic Widgets.
  */
-class DMXCreator: public SimpleWidget {
+class DMXCreator512Basic: public SimpleWidget {
  public:
   /**
-   * @brief Create a new DMXCreator.
+   * @brief Create a new DMXCreator512Basic.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  DMXCreator(ola::usb::LibUsbAdaptor *adaptor,
-             libusb_device *usb_device)
-      : SimpleWidget(adaptor, usb_device) {}
+  DMXCreator512Basic(ola::usb::LibUsbAdaptor *adaptor,
+                     libusb_device *usb_device,
+                     const std::string &serial)
+      : SimpleWidget(adaptor, usb_device),
+        m_serial(serial) {}
 
-  virtual ~DMXCreator() {}
+  virtual ~DMXCreator512Basic() {}
 
   /**
-   * @brief Get a (fake) serial number of this widget.
+   * @brief Get the serial number of this widget.
    * @returns The serial number of the widget.
    */
   std::string SerialNumber() const {
-    return "?";
+    return m_serial;
   }
+
+ private:
+  std::string m_serial;
 };
 
 /**
- * @brief An DMXCreator widget that uses synchronous libusb operations.
+ * @brief An DMXCreator512Basic widget that uses synchronous libusb operations.
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousDMXCreator: public DMXCreator {
+class SynchronousDMXCreator512Basic: public DMXCreator512Basic {
  public:
   /**
-   * @brief Create a new SynchronousDMXCreator.
+   * @brief Create a new SynchronousDMXCreator512Basic.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  SynchronousDMXCreator(ola::usb::LibUsbAdaptor *adaptor,
-                        libusb_device *usb_device);
+  SynchronousDMXCreator512Basic(ola::usb::LibUsbAdaptor *adaptor,
+                                libusb_device *usb_device,
+                                const std::string &serial);
 
   bool Init();
 
@@ -82,21 +88,22 @@ class SynchronousDMXCreator: public DMXCreator {
  private:
   std::auto_ptr<class DMXCreatorThreadedSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousDMXCreator);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousDMXCreator512Basic);
 };
 
 /**
- * @brief An DMXCreator widget that uses asynchronous libusb operations.
+ * @brief An DMXCreator512Basic widget that uses asynchronous libusb operations.
  */
-class AsynchronousDMXCreator : public DMXCreator {
+class AsynchronousDMXCreator512Basic : public DMXCreator512Basic {
  public:
   /**
-   * @brief Create a new AsynchronousDMXCreator.
+   * @brief Create a new AsynchronousDMXCreator512Basic.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  AsynchronousDMXCreator(ola::usb::LibUsbAdaptor *adaptor,
-                         libusb_device *usb_device);
+  AsynchronousDMXCreator512Basic(ola::usb::LibUsbAdaptor *adaptor,
+                                 libusb_device *usb_device,
+                                 const std::string &serial);
 
   bool Init();
 
@@ -105,9 +112,9 @@ class AsynchronousDMXCreator : public DMXCreator {
  private:
   std::auto_ptr<class DMXCreatorAsyncUsbSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousDMXCreator);
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousDMXCreator512Basic);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_DMXCREATOR_H_
+#endif  // PLUGINS_USBDMX_DMXCREATOR512BASIC_H_

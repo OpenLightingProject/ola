@@ -59,7 +59,7 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
-  bool NewWidget(class DMXCreator *widget) {
+  bool NewWidget(class DMXCreator512Basic *widget) {
     return DispatchNewWidget(widget);
   }
 
