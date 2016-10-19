@@ -44,6 +44,7 @@ class DMXCreator512Basic: public SimpleWidget {
    * @brief Create a new DMXCreator512Basic.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
    */
   DMXCreator512Basic(ola::usb::LibUsbAdaptor *adaptor,
                      libusb_device *usb_device,
@@ -76,6 +77,7 @@ class SynchronousDMXCreator512Basic: public DMXCreator512Basic {
    * @brief Create a new SynchronousDMXCreator512Basic.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
    */
   SynchronousDMXCreator512Basic(ola::usb::LibUsbAdaptor *adaptor,
                                 libusb_device *usb_device,
@@ -100,6 +102,7 @@ class AsynchronousDMXCreator512Basic : public DMXCreator512Basic {
    * @brief Create a new AsynchronousDMXCreator512Basic.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
    */
   AsynchronousDMXCreator512Basic(ola::usb::LibUsbAdaptor *adaptor,
                                  libusb_device *usb_device,
