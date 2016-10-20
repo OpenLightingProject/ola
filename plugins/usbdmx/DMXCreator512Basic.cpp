@@ -93,8 +93,8 @@ class DMXCreator512BasicThreadedSender: public ThreadedUsbSender {
                       const DmxBuffer &buffer);
 };
 
-bool DMXCreator512BasicThreadedSender::TransmitBuffer(libusb_device_handle *handle,
-                                              const DmxBuffer &buffer) {
+bool DMXCreator512BasicThreadedSender::TransmitBuffer(
+      libusb_device_handle *handle, const DmxBuffer &buffer) {
   unsigned int length = CHANNELS_PER_PACKET;
   memset(m_dmx_buffer_1, 0, length);
   buffer.Get(m_dmx_buffer_1, &length);
@@ -159,7 +159,8 @@ bool SynchronousDMXCreator512Basic::Init() {
   }
 
   std::auto_ptr<DMXCreator512BasicThreadedSender> sender(
-      new DMXCreator512BasicThreadedSender(m_adaptor, m_usb_device, usb_handle));
+      new DMXCreator512BasicThreadedSender(m_adaptor, m_usb_device,
+                                           usb_handle));
   if (!sender->Start()) {
     return false;
   }
