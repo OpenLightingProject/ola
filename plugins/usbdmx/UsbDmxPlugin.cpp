@@ -93,7 +93,7 @@ string UsbDmxPlugin::Description() const {
 "\n"
 "This plugin supports various USB DMX devices including the\n"
 "Anyma uDMXX, AVLdiy D512, DMXControl Projects e.V. Nodle U1,\n"
-"DMXCreator512Basic, Eurolite, Fadecandy, Sunlite USBDMX2 and\n"
+"DMXCreator 512 Basic, Eurolite, Fadecandy, Sunlite USBDMX2 and\n"
 "Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"

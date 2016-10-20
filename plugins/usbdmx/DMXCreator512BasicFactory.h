@@ -36,8 +36,8 @@ class DMXCreator512BasicFactory
     : public BaseWidgetFactory<class DMXCreator512Basic> {
  public:
   explicit DMXCreator512BasicFactory(ola::usb::LibUsbAdaptor *adaptor)
-      : BaseWidgetFactory<class DMXCreator512Basic>
-            ("DMXCreator512BasicFactory"),
+      : BaseWidgetFactory<class DMXCreator512Basic>(
+            "DMXCreator512BasicFactory"),
         m_missing_serial_number(false),
         m_adaptor(adaptor) {
   }

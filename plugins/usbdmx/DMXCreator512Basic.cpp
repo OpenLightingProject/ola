@@ -31,7 +31,7 @@
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 /**
- * DMXCreator512Basic sends two or three URB packets for each change:
+ * DMXCreator 512 Basic expects two or three URB packets for each change:
  * 1. A constant byte string to endpoint 1 that indicates if we want to transmit
  *    the the full universe or only the first half.
  * 2. The actual DMX data (channels 1..256) to endpoint 2.
@@ -59,7 +59,7 @@ static const unsigned char status_buffer[6] = {
   0x80, 0x01, 0x00, 0x00, 0x00, 0x02
 };
 
-typedef enum SendState {
+typedef enum {
   STATE_SEND_STATUS,
   STATE_SEND_FIRST_HALF,
   STATE_SEND_SECOND_HALF
@@ -67,15 +67,15 @@ typedef enum SendState {
 
 }  // namespace
 
-// DMXCreatorThreadedSender
+// DMXCreator512BasicThreadedSender
 // -----------------------------------------------------------------------------
 
 /**
- * Sends messages to a DMXCreator512Basic device in a separate thread.
+ * Sends messages to a DMXCreator 512 Basic device in a separate thread.
  */
-class DMXCreatorThreadedSender: public ThreadedUsbSender {
+class DMXCreator512BasicThreadedSender: public ThreadedUsbSender {
  public:
-  DMXCreatorThreadedSender(LibUsbAdaptor *adaptor,
+  DMXCreator512BasicThreadedSender(LibUsbAdaptor *adaptor,
                            libusb_device *usb_device,
                            libusb_device_handle *handle)
       : ThreadedUsbSender(usb_device, handle),
@@ -93,7 +93,7 @@ class DMXCreatorThreadedSender: public ThreadedUsbSender {
                       const DmxBuffer &buffer);
 };
 
-bool DMXCreatorThreadedSender::TransmitBuffer(libusb_device_handle *handle,
+bool DMXCreator512BasicThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                               const DmxBuffer &buffer) {
   unsigned int length = CHANNELS_PER_PACKET;
   memset(m_dmx_buffer_1, 0, length);
@@ -158,8 +158,8 @@ bool SynchronousDMXCreator512Basic::Init() {
     return false;
   }
 
-  std::auto_ptr<DMXCreatorThreadedSender> sender(
-      new DMXCreatorThreadedSender(m_adaptor, m_usb_device, usb_handle));
+  std::auto_ptr<DMXCreator512BasicThreadedSender> sender(
+      new DMXCreator512BasicThreadedSender(m_adaptor, m_usb_device, usb_handle));
   if (!sender->Start()) {
     return false;
   }
@@ -171,11 +171,12 @@ bool SynchronousDMXCreator512Basic::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
-// DMXCreatorAsyncUsbSender
+// DMXCreator512BasicAsyncUsbSender
 // -----------------------------------------------------------------------------
-class DMXCreatorAsyncUsbSender : public AsyncUsbSender {
+class DMXCreator512BasicAsyncUsbSender : public AsyncUsbSender {
  public:
-  DMXCreatorAsyncUsbSender(LibUsbAdaptor *adaptor, libusb_device *usb_device)
+  DMXCreator512BasicAsyncUsbSender(LibUsbAdaptor *adaptor,
+                                   libusb_device *usb_device)
       : AsyncUsbSender(adaptor, usb_device),
         m_adaptor(adaptor),
         m_usb_device(usb_device) {
@@ -184,7 +185,7 @@ class DMXCreatorAsyncUsbSender : public AsyncUsbSender {
     m_state = STATE_SEND_STATUS;
   }
 
-  ~DMXCreatorAsyncUsbSender() {
+  ~DMXCreator512BasicAsyncUsbSender() {
     CancelTransfer();
     delete[] m_dmx_buffer_1;
     delete[] m_dmx_buffer_2;
@@ -243,7 +244,7 @@ class DMXCreatorAsyncUsbSender : public AsyncUsbSender {
   ola::usb::LibUsbAdaptor* const m_adaptor;
   libusb_device* const m_usb_device;
 
-  DISALLOW_COPY_AND_ASSIGN(DMXCreatorAsyncUsbSender);
+  DISALLOW_COPY_AND_ASSIGN(DMXCreator512BasicAsyncUsbSender);
 };
 
 // AsynchronousDMXCreator512Basic
@@ -254,7 +255,7 @@ AsynchronousDMXCreator512Basic::AsynchronousDMXCreator512Basic(
     libusb_device *usb_device,
     const string &serial)
     : DMXCreator512Basic(adaptor, usb_device, serial) {
-  m_sender.reset(new DMXCreatorAsyncUsbSender(m_adaptor, usb_device));
+  m_sender.reset(new DMXCreator512BasicAsyncUsbSender(m_adaptor, usb_device));
 }
 
 bool AsynchronousDMXCreator512Basic::Init() {

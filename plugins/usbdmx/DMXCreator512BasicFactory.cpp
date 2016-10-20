@@ -49,10 +49,10 @@ bool DMXCreator512BasicFactory::DeviceAdded(
     return false;
   }
 
-  OLA_INFO << "Found a new DMXCreator512Basic device";
-  // Unfortunately, DMXCreator512Basic devices don't provide any additional
+  OLA_INFO << "Found a new DMXCreator 512 Basic device";
+  // Unfortunately, DMXCreator 512 Basic devices don't provide any additional
   // information that identify them. So we have to stick with just testing
-  // vendor and product ids. Also, since DMXCreator512Basic devices don't have
+  // vendor and product ids. Also, since DMXCreator 512 Basic devices don't have
   // serial numbers and there is no other good way to uniquely identify a USB
   // device, we only support one of these types of devices per host.
   if (info.serial.empty()) {
@@ -73,7 +73,7 @@ bool DMXCreator512BasicFactory::DeviceAdded(
     // Until this is fixed, disable synchronous mode.
     // widget = new SynchronousDMXCreator512Basic(m_adaptor, usb_device,
     //                                            info.serial);
-    OLA_WARN << "Synchronous mode is disabled for DMXCreator512Basic at the "
+    OLA_WARN << "Synchronous mode is disabled for DMXCreator 512 Basic at the "
                 "moment";
     return false;
   }
