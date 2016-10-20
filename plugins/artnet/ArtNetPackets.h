@@ -30,7 +30,7 @@
 
 #ifndef ARTNET_PORT_COUNT
 #define ARTNET_PORT_COUNT 4
-#endif
+#endif  // ARTNET_PORT_COUNT
 
 namespace ola {
 namespace plugin {

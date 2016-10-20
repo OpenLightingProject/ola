@@ -24,7 +24,7 @@
 
 #ifndef _WIN32
 #include <termios.h>
-#endif
+#endif  // _WIN32
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServerInterface.h>
@@ -73,7 +73,7 @@ class StdinHandler {
   UnmanagedFileDescriptor m_stdin_descriptor;
 #ifndef _WIN32
   termios m_old_tc;
-#endif
+#endif  // _WIN32
   SelectServerInterface *m_ss;
   std::auto_ptr<InputCallback> m_callback;
 

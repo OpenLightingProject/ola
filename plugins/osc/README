@@ -233,7 +233,7 @@ In olad/DynamicPluginLoader.cpp we add:
 
   #ifdef HAVE_LIBLO
   #include "plugins/osc/OSCPlugin.h"
-  #endif
+  #endif  // HAVE_LIBLO
 
 DynamicPluginLoader.cpp includes config.h at the top of the file, which is how
 HAVE_LIBLO is defined.
@@ -241,7 +241,7 @@ HAVE_LIBLO is defined.
   #ifdef HAVE_LIBLO
     m_plugins.push_back(
         new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
-  #endif
+  #endif  // HAVE_LIBLO
 
 If HAVE_LIBLO is defined, we go ahead and add the OSCPlugin to the vector of
 plugins to load.

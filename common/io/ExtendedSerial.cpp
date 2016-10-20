@@ -23,7 +23,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +32,7 @@
 #ifdef HAVE_STROPTS_H
 // this provides ioctl() definition without conflicting with asm/termios.h
 #include <stropts.h>
-#endif
+#endif  // HAVE_STROPTS_H
 
 #ifdef HAVE_ASM_TERMIOS_H
 // use this not standard termios for custom baud rates
@@ -44,7 +44,7 @@
 // Explicitly include <cerrno> now to avoid the issue.
 #include <errno.h>
 #include <asm/termios.h>
-#endif
+#endif  // HAVE_ASM_TERMIOS_H
 
 #include <ola/Logging.h>
 
@@ -81,7 +81,7 @@ bool LinuxHelper::SetDmxBaud(int fd) {
 #else
   return false;
   (void) fd;
-#endif
+#endif  // defined(HAVE_STROPTS_H) && defined(HAVE_TERMIOS2)
 }
 }  // namespace io
 }  // namespace ola

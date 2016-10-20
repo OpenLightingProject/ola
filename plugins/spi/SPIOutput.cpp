@@ -23,7 +23,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <string.h>
 #include <algorithm>
@@ -139,7 +139,7 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
   { ola::rdm::PID_RECORD_SENSORS,
     NULL,
     &SPIOutput::RecordSensor},
-#endif
+#endif  // HAVE_GETLOADAVG
   { ola::rdm::PID_LIST_INTERFACES,
     &SPIOutput::GetListInterfaces,
     NULL},
@@ -208,7 +208,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                                      "Load Average 5 minutes"));
   m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_15_MINS,
                                      "Load Average 15 minutes"));
-#endif
+#endif  // HAVE_GETLOADAVG
 
   m_network_manager.reset(new ola::rdm::NetworkManager());
 }

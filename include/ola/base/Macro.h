@@ -60,7 +60,7 @@
 #define OLA_UNUSED __attribute__ ((unused))
 #else
 #define OLA_UNUSED
-#endif
+#endif  // __GNUC__
 
 /**
  * @def STATIC_ASSERT
@@ -139,9 +139,9 @@ namespace internal {
     _Pragma("pack(push, 1)") \
     __Declaration__; \
     _Pragma("pack(pop)")
-#endif
+#endif  // _MSC_VER
 #else
 #define PACK(__Declaration__) __Declaration__ __attribute__((__packed__))
-#endif
+#endif  // _WIN32
 
 #endif  // INCLUDE_OLA_BASE_MACRO_H_

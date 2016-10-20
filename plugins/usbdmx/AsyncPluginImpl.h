@@ -25,7 +25,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <map>
 #include <memory>
@@ -79,6 +79,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
 
   // These are all run in the main SelectServer thread.
   bool NewWidget(class AnymauDMX *widget);
+  bool NewWidget(class AVLdiyD512 *widget);
   bool NewWidget(class DMXCProjectsNodleU1 *widget);
   bool NewWidget(class EurolitePro *widget);
   bool NewWidget(ola::usb::JaRuleWidget *widget);
