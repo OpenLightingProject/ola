@@ -296,7 +296,6 @@ class SetWithNoDataMixin(ResponderTestFixture):
 
 
 # Generic Label Mixins
-# These all work in conjunction with the IsSupportedMixin
 # -----------------------------------------------------------------------------
 class SetLabelMixin(object):
   """Set a PID and make sure the label is updated.
@@ -409,7 +408,6 @@ class SetOversizedLabelMixin(object):
 
 
 # Generic Set Mixins
-# These all work in conjunction with the IsSupportedMixin
 # -----------------------------------------------------------------------------
 class SetMixin(object):
   """The base class for set mixins."""
@@ -659,7 +657,9 @@ class SetUndefinedSensorValues(object):
 
 # Preset Status mixins
 # -----------------------------------------------------------------------------
-class SetPresetStatusMixin(object):
+class SetPresetStatusMixin(ResponderTestFixture):
+  """Set an out of range scene for PRESET_STATUS"""
+  PID = 'PRESET_STATUS'
   REQUIRES = ['preset_info']
 
   def BuildPresetStatus(self, scene):
@@ -672,6 +672,19 @@ class SetPresetStatusMixin(object):
 
     return struct.pack('!HHHHB', scene, int(fade_time), int(fade_time),
                        int(wait_time), 0)
+
+  def PresetStatusSceneNumber(self):
+    self.SetBroken('base method of SetPresetStatusMixin called')
+    return
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    scene_number = self.PresetStatusSceneNumber()
+    if scene_number is None:
+      return
+
+    data = self.BuildPresetStatus(scene_number)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
 # Discovery Mixins
