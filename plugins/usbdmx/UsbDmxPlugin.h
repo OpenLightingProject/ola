@@ -35,8 +35,10 @@ namespace usbdmx {
  * @brief A plugin that uses libusb to communicate with USB devices.
  *
  * This plugin supports a number of USB dongles including
- *   - Anyma uDMX
+ *   - Anyma uDMX.
  *   - AVLdiy D512.
+ *   - DMXControl Projects e.V. Nodle U1.
+ *   - DMXCreator 512 Basic USB.
  *   - Eurolite DMX USB Pro.
  *   - Scanlime's Fadecandy.
  *   - Sunlite.
