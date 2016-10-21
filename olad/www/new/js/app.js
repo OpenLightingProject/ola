@@ -671,6 +671,30 @@ ola.constant('OLA', {
 
 /*jshint browser: true, jquery: true*/
 /* global ola */
+ola.directive('autofocus', ['$timeout', '$parse',
+  function($timeout, $parse) {
+    'use strict';
+    return {
+      restrict: 'A',
+      link: function($scope, $element, $attrs) {
+        var model = $parse($attrs.autofocus);
+        $scope.$watch(model, function(value) {
+          if (value === true) {
+            $timeout(function() {
+              $element[0].focus();
+            });
+          }
+        });
+        $element.bind('blur', function() {
+          $scope.$apply(model.assign($scope, false));
+        });
+      }
+    };
+  }
+]);
+
+/*jshint browser: true, jquery: true*/
+/* global ola */
 // TODO(Dave_o): split this up further
 ola.factory('$ola', ['$http', '$window', 'OLA',
   function($http, $window, OLA) {
