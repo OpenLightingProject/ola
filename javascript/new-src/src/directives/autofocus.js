@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Allows an element to obtail focus whenever a variable is set to true.
+ * Allows an element to obtain focus whenever a variable is set to true.
  * Copyright (C) 2016 Florian Edelmann
  */
 /*jshint browser: true, jquery: true*/
