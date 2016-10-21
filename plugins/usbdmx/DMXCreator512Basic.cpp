@@ -49,8 +49,7 @@ namespace {
 
 static const unsigned char ENDPOINT_1 = 0x01;
 static const unsigned char ENDPOINT_2 = 0x02;
-static const unsigned int URB_TIMEOUT_MS_SYNC = 1000;
-static const unsigned int URB_TIMEOUT_MS_ASYNC = 50;
+static const unsigned int URB_TIMEOUT_MS = 50;
 static const unsigned int CHANNELS_PER_PACKET = 256;
 
 // if we only wanted to send the first half of the universe, the last byte would
@@ -80,11 +79,13 @@ class DMXCreator512BasicThreadedSender: public ThreadedUsbSender {
                                    libusb_device_handle *handle)
       : ThreadedUsbSender(usb_device, handle),
         m_adaptor(adaptor) {
+    m_dmx_buffer = new DmxBuffer();
     m_dmx_buffer_1 = new uint8_t[CHANNELS_PER_PACKET];
     m_dmx_buffer_2 = new uint8_t[CHANNELS_PER_PACKET];
   }
 
  private:
+  DmxBuffer *m_dmx_buffer;
   uint8_t *m_dmx_buffer_1;
   uint8_t *m_dmx_buffer_2;
   LibUsbAdaptor* const m_adaptor;
@@ -95,6 +96,15 @@ class DMXCreator512BasicThreadedSender: public ThreadedUsbSender {
 
 bool DMXCreator512BasicThreadedSender::TransmitBuffer(
     libusb_device_handle *handle, const DmxBuffer &buffer) {
+
+  if (*m_dmx_buffer == buffer) {
+    // no need to update -> sleep 1ms to avoid timeout errors
+    usleep(1000);
+    return true;
+  }
+
+  m_dmx_buffer = new DmxBuffer(buffer); // force copy
+
   unsigned int length = CHANNELS_PER_PACKET;
   memset(m_dmx_buffer_1, 0, length);
   buffer.Get(m_dmx_buffer_1, &length);
@@ -107,12 +117,12 @@ bool DMXCreator512BasicThreadedSender::TransmitBuffer(
   int r = m_adaptor->BulkTransfer(handle, ENDPOINT_1,
                                   const_cast<unsigned char*>(status_buffer),
                                   sizeof(status_buffer), &bytes_sent,
-                                  URB_TIMEOUT_MS_SYNC);
-  OLA_DEBUG << "Sending status bytes returned " << r;
+                                  URB_TIMEOUT_MS);
 
   // Sometimes we get PIPE errors, those are non-fatal
   if (r < 0 && r != LIBUSB_ERROR_PIPE) {
-    OLA_WARN << "Sending status bytes failed";
+    OLA_WARN << "Sending status bytes failed: "
+             << m_adaptor->ErrorCodeToString(r);
     return false;
   }
 
@@ -120,11 +130,11 @@ bool DMXCreator512BasicThreadedSender::TransmitBuffer(
   r = m_adaptor->BulkTransfer(handle, ENDPOINT_2,
                               const_cast<unsigned char*>(m_dmx_buffer_1),
                               CHANNELS_PER_PACKET, &bytes_sent,
-                              URB_TIMEOUT_MS_SYNC);
-  OLA_DEBUG << "Sending data bytes (1) returned " << r;
+                              URB_TIMEOUT_MS);
 
   if (r < 0 && r != LIBUSB_ERROR_PIPE) {
-    OLA_WARN << "Sending status bytes failed";
+    OLA_WARN << "Sending data bytes (1) failed: "
+             << m_adaptor->ErrorCodeToString(r);
     return false;
   }
 
@@ -132,10 +142,15 @@ bool DMXCreator512BasicThreadedSender::TransmitBuffer(
   r = m_adaptor->BulkTransfer(handle, ENDPOINT_2,
                               const_cast<unsigned char*>(m_dmx_buffer_2),
                               CHANNELS_PER_PACKET, &bytes_sent,
-                              URB_TIMEOUT_MS_SYNC);
-  OLA_DEBUG << "Sending data bytes (2) returned " << r;
+                              URB_TIMEOUT_MS);
 
-  return r >= 0 || r == LIBUSB_ERROR_PIPE;
+  if (r < 0 && r != LIBUSB_ERROR_PIPE) {
+    OLA_WARN << "Sending data bytes (2) failed: "
+             << m_adaptor->ErrorCodeToString(r);
+    return false;
+  }
+
+  return true;
 }
 
 
@@ -211,7 +226,7 @@ class DMXCreator512BasicAsyncUsbSender : public AsyncUsbSender {
     m_state = STATE_SEND_FIRST_HALF;
     FillBulkTransfer(ENDPOINT_1,
                      const_cast<unsigned char*>(status_buffer),
-                     sizeof(status_buffer), URB_TIMEOUT_MS_ASYNC);
+                     sizeof(status_buffer), URB_TIMEOUT_MS);
     return (SubmitTransfer() == 0);
   }
 
@@ -224,14 +239,14 @@ class DMXCreator512BasicAsyncUsbSender : public AsyncUsbSender {
         m_state = STATE_SEND_SECOND_HALF;
         FillBulkTransfer(ENDPOINT_2,
                          const_cast<unsigned char*>(m_dmx_buffer_1),
-                         CHANNELS_PER_PACKET, URB_TIMEOUT_MS_ASYNC);
+                         CHANNELS_PER_PACKET, URB_TIMEOUT_MS);
         SubmitTransfer();
         break;
       case STATE_SEND_SECOND_HALF:
         m_state = STATE_SEND_STATUS;
         FillBulkTransfer(ENDPOINT_2,
                          const_cast<unsigned char*>(m_dmx_buffer_2),
-                         CHANNELS_PER_PACKET, URB_TIMEOUT_MS_ASYNC);
+                         CHANNELS_PER_PACKET, URB_TIMEOUT_MS);
         SubmitTransfer();
         break;
     }

@@ -69,13 +69,8 @@ bool DMXCreator512BasicFactory::DeviceAdded(
     widget = new AsynchronousDMXCreator512Basic(m_adaptor, usb_device,
                                                 info.serial);
   } else {
-    // Synchronous mode consumes way too much memory and eventually gets killed
-    // Until this is fixed, disable synchronous mode.
-    // widget = new SynchronousDMXCreator512Basic(m_adaptor, usb_device,
-    //                                            info.serial);
-    OLA_WARN << "Synchronous mode is disabled for DMXCreator 512 Basic at the "
-                "moment";
-    return false;
+    widget = new SynchronousDMXCreator512Basic(m_adaptor, usb_device,
+                                               info.serial);
   }
   return AddWidget(observer, widget);
 }
