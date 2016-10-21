@@ -125,7 +125,7 @@ string GPIOPlugin::Description() const {
 "The list of GPIO pins to control, each pin is mapped to a DMX512 slot.\n"
 "\n"
 "gpio_slot_offset = <int>\n"
-"The DMX512 slot for the first pin. Slots are indexed from 1\n."
+"The DMX512 slot for the first pin. Slots are indexed from 1.\n"
 "\n"
 "gpio_turn_on = <int>\n"
 "The DMX512 value above which a GPIO pin will be turned on.\n"
