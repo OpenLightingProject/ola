@@ -1,5 +1,37 @@
-USBDMX Plugin
-===============================================================================
+USB DMX Plugin
+==============
+
+This plugin supports various USB DMX devices including:
+
+* Anyma uDMX
+* AVLdiy D512
+* DMXControl Projects e.V. Nodle U1
+* Eurolite
+* Fadecandy
+* Sunlite USBDMX2
+* Velleman K8062.
+
+
+## Config file : `ola-usbdmx.conf`
+
+`libusb_debug_level = {0,1,2,3,4}`  
+The debug level for libusb, see http://libusb.sourceforge.net/api-1.0/  
+0 = No logging, 4 = Verbose debug.
+
+`nodle-<serial>-mode = {0,1,2,3,4,5,6,7}`  
+The mode for the Nodle U1 interface with serial number <serial> to operate in.
+Default = 6  
+0 - Standby  
+1 - DMX In -> DMX Out  
+2 - PC Out -> DMX Out  
+3 - DMX In + PC Out -> DMX Out  
+4 - DMX In -> PC In  
+5 - DMX In -> DMX Out & DMX In -> PC In  
+6 - PC Out -> DMX Out & DMX In -> PC In  
+7 - DMX In + PC Out -> DMX Out & DMX In -> PC In  
+
+
+## Developer information
 
 This plugin uses [libusb](http://libusb.info/) to communicate with USB devices.
 
@@ -12,15 +44,14 @@ single thread for the libusb completion handling. This allows us to support
 hotplug.
 
 You can opt-out of the new asynchronous mode by passing the
---no-use-async-libusb flag to olad. Assuming we don't find any problems, at
+`--no-use-async-libusb` flag to olad. Assuming we don't find any problems, at
 some point the synchronous implementation will be removed.
 
 The rest of this file explains how the plugin is constructed and is aimed at
 developers wishing to add support for a new USB Device. It assumes the reader
 has an understanding of libusb.
 
-Terminology
--------------------------------------------------------------------------------
+### Terminology
 
 *USB Device*, is the physical USB device attached to the host.
 
@@ -39,23 +70,24 @@ associate a Port with a Universe.
 *Device*, the software representation of a USB Device. Contains one or more
 Ports.
 
-Code Concepts & Structure
--------------------------------------------------------------------------------
+
+### Code Concepts & Structure
 
 USB Devices are represented as Widgets, this allows us to de-couple the Widget
 code from OLA's Port representation (remember, prefer composition over
 inheritance). Since the majority of USB devices we support so far have a single
-DMX512 interface, each specific Widget (e.g. AnymauDMX) derives from the Widget
-class. This isn't strictly necessary, it just means we can avoid code
-duplication by using the GenericDevice and GenericPort classes. Multi-interface
-USB devices which are supported, shouldn't inherit from the Widget class (see
-the Nodle U1 for example, they will need to use the Device class instead).
+DMX512 interface, each specific Widget (e.g. AnymauDMX) derives from the
+`Widget` class. This isn't strictly necessary, it just means we can avoid code
+duplication by using the `GenericDevice` and `GenericPort` classes.
+Multi-interface USB devices which are supported, shouldn't inherit from the
+Widget class (see the Nodle U1 for example, they will need to use the `Device`
+class instead).
 
-GenericPort wraps a Widget into a Port object, so it can show up in olad.
-GenericDevice creates a Device with a single GenericPort.
+`GenericPort` wraps a Widget into a `Port` object, so it can show up in olad.
+`GenericDevice` creates a Device with a single `GenericPort`.
 
-For each type of USB Device, we create a common base class, e.g. AnymauDMX.
-This enables the WidgetObserver class (see below) to know what
+For each type of USB Device, we create a common base class, e.g. `AnymauDMX`.
+This enables the `WidgetObserver` class (see below) to know what
 name it should give the resultant Device.
 
 Then for each type of USB Device, we create a synchronous and asynchronous
@@ -79,20 +111,19 @@ WidgetObserver can then go ahead and use the newly created Widget to setup an
 OLA Device & Port.
 
 
-Adding Support for a new USB Device
--------------------------------------------------------------------------------
+### Adding Support for a new USB Device
 
 Adding support for a new USB device should be reasonably straightforward. This
 guide assumes the new USB Device has a single DMX512 Interface.
 
-1. Create the FooWidget.{h,cpp} files.
- - Create the FooWidget base class, and a synchronous and asynchronous
+1. Create the `FooWidget.{h,cpp}` files.
+ - Create the `FooWidget` base class, and a synchronous and asynchronous
    implementation of the Foo Widget.
-2. Create the FooWidgetFactory.{h,cpp} files.
- - Write the DeviceAdded() method, to detect the new USB Device and create
+2. Create the `FooWidgetFactory.{h,cpp}` files.
+ - Write the `DeviceAdded()` method, to detect the new USB Device and create
    either a synchronous or asynchronous widget, depending on the
-   --use-async-libusb flag.
-3. Extend the WidgetObserver with new NewWidget() and WidgetRemoved() removed
-   methods for the new FooWidget.
-4. Implement the new NewWidget() and WidgetRemoved() methods in both the
+   `--use-async-libusb` flag.
+3. Extend the `SyncronizedWidgetObserver` with new `NewWidget()` and
+   `WidgetRemoved()` removed methods for the new FooWidget.
+4. Implement the new `NewWidget()` and `WidgetRemoved()` methods in both the
    SyncPluginImpl and AsyncPluginImpl.
