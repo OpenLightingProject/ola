@@ -76,8 +76,8 @@ typedef enum {
 class DMXCreator512BasicThreadedSender: public ThreadedUsbSender {
  public:
   DMXCreator512BasicThreadedSender(LibUsbAdaptor *adaptor,
-                           libusb_device *usb_device,
-                           libusb_device_handle *handle)
+                                   libusb_device *usb_device,
+                                   libusb_device_handle *handle)
       : ThreadedUsbSender(usb_device, handle),
         m_adaptor(adaptor) {
     m_dmx_buffer_1 = new uint8_t[CHANNELS_PER_PACKET];
@@ -94,7 +94,7 @@ class DMXCreator512BasicThreadedSender: public ThreadedUsbSender {
 };
 
 bool DMXCreator512BasicThreadedSender::TransmitBuffer(
-      libusb_device_handle *handle, const DmxBuffer &buffer) {
+    libusb_device_handle *handle, const DmxBuffer &buffer) {
   unsigned int length = CHANNELS_PER_PACKET;
   memset(m_dmx_buffer_1, 0, length);
   buffer.Get(m_dmx_buffer_1, &length);
