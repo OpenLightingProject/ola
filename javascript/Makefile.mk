@@ -24,7 +24,7 @@ EXTRA_DIST += \
     javascript/new-src/src/img/ola-favicon.png \
     javascript/new-src/src/factories/ola.js \
     javascript/new-src/src/app.js \
-    javascript/new-src/src/filters/start_form.js \
+    javascript/new-src/src/filters/start_from.js \
     javascript/ola/base_frame.js \
     javascript/ola/common/dmx_constants.js \
     javascript/ola/common/dmx_monitor.js \
