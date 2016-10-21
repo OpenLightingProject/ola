@@ -19,7 +19,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <iostream>
 #include <string>
@@ -167,7 +167,7 @@ SensorResponder::SensorResponder(const UID &uid)
                                      "Load Average 5 minutes"));
   m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_15_MINS,
                                      "Load Average 15 minutes"));
-#endif
+#endif  // HAVE_GETLOADAVG
 }
 
 

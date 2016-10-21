@@ -28,12 +28,12 @@
 #include <winioctl.h>
 #else
 #include <sys/ioctl.h>
-#endif
+#endif  // _WIN32
 #include <unistd.h>
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <iomanip>
 #include <string>
@@ -101,7 +101,7 @@ bool ProcessExists(pid_t pid) {
     return true;
   }
   return errno != ESRCH;
-#endif
+#endif  // _WIN32
 }
 
 bool RemoveLockFile(const string &lock_file) {
@@ -186,7 +186,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
                      S_IRUSR | S_IWUSR
 #ifndef _WIN32
                      | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
-#endif
+#endif  // !_WIN32
                      );  // NOLINT(whitespace/parens)
   if (lock_fd < 0) {
     OLA_INFO << "Failed to open " << lock_file << " in exclusive mode: "
@@ -226,7 +226,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
     RemoveLockFile(lock_file);
     return false;
   }
-#endif
+#endif  // HAVE_SYS_IOCTL_H
   return true;
 }
 

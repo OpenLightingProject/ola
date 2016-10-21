@@ -20,13 +20,13 @@
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>  // Required by FreeBSD, order is important to OpenBSD
-#endif
+#endif  // HAVE_SYS_TYPES_H
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>  // Required by FreeBSD
-#endif
+#endif  // HAVE_SYS_SOCKET_H
 #ifdef HAVE_NET_IF_ARP_H
 #include <net/if_arp.h>
-#endif
+#endif  // HAVE_NET_IF_ARP_H
 
 #include <stdint.h>
 #include <string.h>
@@ -42,7 +42,7 @@
 #include "common/network/WindowsInterfacePicker.h"
 #else
 #include "common/network/PosixInterfacePicker.h"
-#endif
+#endif  // _WIN32
 
 namespace ola {
 
@@ -55,13 +55,13 @@ using std::vector;
 const uint16_t Interface::ARP_VOID_TYPE = ARPHRD_VOID;
 #else
 const uint16_t Interface::ARP_VOID_TYPE = 0xffff;
-#endif
+#endif  // ARPHRD_VOID
 
 #ifdef ARPHRD_ETHER
 const uint16_t Interface::ARP_ETHERNET_TYPE = ARPHRD_ETHER;
 #else
 const uint16_t Interface::ARP_ETHERNET_TYPE = 1;
-#endif
+#endif  // ARPHRD_ETHER
 
 
 Interface::Interface()
