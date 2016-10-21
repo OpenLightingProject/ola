@@ -103,7 +103,7 @@ bool DMXCreator512BasicThreadedSender::TransmitBuffer(
     return true;
   }
 
-  m_dmx_buffer = new DmxBuffer(buffer); // force copy
+  m_dmx_buffer = new DmxBuffer(buffer);  // force copy
 
   unsigned int length = CHANNELS_PER_PACKET;
   memset(m_dmx_buffer_1, 0, length);
