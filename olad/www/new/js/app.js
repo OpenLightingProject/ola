@@ -317,7 +317,7 @@ ola.controller('keypadUniverseCtrl',
         var key = $event.key;
 
         if ($event.altKey || $event.ctrlKey || $event.metaKey
-            || ($event.which == 0 && key != "Enter" && key != "Backspace")) {
+            || ($event.which == 0 && key != 'Enter' && key != 'Backspace')) {
           // don't handle keyboard shortcuts and F1 - F12 keys
           return;
         }
@@ -334,26 +334,31 @@ ola.controller('keypadUniverseCtrl',
           case '6':
           case '7':
           case '8':
-          case '9':
+          case '9': {
             $scope.input(key);
             break;
+          }
           case '@':
-          case 'a':
+          case 'a': {
             $scope.input(' @ ');
             break;
-          case '-':
-          case 't':
+          }
+          case 't': {
             $scope.input(' THRU ');
             break;
-          case 'f':
+          }
+          case 'f': {
             $scope.input('FULL');
             break;
-          case 'Backspace':
+          }
+          case 'Backspace': {
             $scope.input('backspace');
             break;
-          case 'Enter':
+          }
+          case 'Enter': {
             $scope.submit();
             break;
+          }
         }
       };
 
@@ -663,30 +668,6 @@ ola.constant('OLA', {
   'MIN_CHANNEL_VALUE': 0,
   'MAX_CHANNEL_VALUE': 255
 });
-
-/*jshint browser: true, jquery: true*/
-/* global ola */
-ola.directive('autofocus', ['$timeout', '$parse',
-  function($timeout, $parse) {
-    'use strict';
-    return {
-      restrict: 'A',
-      link: function($scope, $element, $attrs) {
-        var model = $parse($attrs.autofocus);
-        $scope.$watch(model, function(value) {
-          if (value === true) {
-            $timeout(function() {
-              $element[0].focus();
-            });
-          }
-        });
-        $element.bind('blur', function() {
-          $scope.$apply(model.assign($scope, false));
-        });
-      }
-    };
-  }
-]);
 
 /*jshint browser: true, jquery: true*/
 /* global ola */

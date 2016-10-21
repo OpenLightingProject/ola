@@ -79,9 +79,61 @@ ola.controller('keypadUniverseCtrl',
         } else if (check.regexGroups(fields)) {
           $scope.field = fields[0];
         }
+        $scope.focusInput = true;
+      };
+
+      $scope.keypress = function($event) {
+        var key = $event.key;
+
+        if ($event.altKey || $event.ctrlKey || $event.metaKey
+            || ($event.which == 0 && key != 'Enter' && key != 'Backspace')) {
+          // don't handle keyboard shortcuts and F1 - F12 keys
+          return;
+        }
+
+        $event.preventDefault();
+
+        switch (key) {
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9': {
+            $scope.input(key);
+            break;
+          }
+          case '@':
+          case 'a': {
+            $scope.input(' @ ');
+            break;
+          }
+          case 't': {
+            $scope.input(' THRU ');
+            break;
+          }
+          case 'f': {
+            $scope.input('FULL');
+            break;
+          }
+          case 'Backspace': {
+            $scope.input('backspace');
+            break;
+          }
+          case 'Enter': {
+            $scope.submit();
+            break;
+          }
+        }
       };
 
       $scope.submit = function() {
+        $scope.focusInput = true;
+
         var dmx = [];
         var input = $scope.field;
         var result = regexkeypad.exec(input);
@@ -114,5 +166,7 @@ ola.controller('keypadUniverseCtrl',
           return false;
         }
       };
+
+      $scope.focusInput = true;
     }
   ]);
