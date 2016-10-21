@@ -36,6 +36,7 @@ var targets = {
     'src/controllers/header.js',
     'src/controllers/overview.js',
     'src/constants.js',
+    'src/directives/autofocus.js',
     'src/factories/ola.js',
     'src/filters/start_form.js'
   ],
