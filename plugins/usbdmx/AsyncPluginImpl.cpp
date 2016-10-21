@@ -39,6 +39,8 @@
 
 #include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/AnymauDMXFactory.h"
+#include "plugins/usbdmx/AVLdiyD512.h"
+#include "plugins/usbdmx/AVLdiyD512Factory.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1Device.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1Factory.h"
@@ -115,6 +117,7 @@ bool AsyncPluginImpl::Start() {
 
   // Setup the factories.
   m_widget_factories.push_back(new AnymauDMXFactory(m_usb_adaptor));
+  m_widget_factories.push_back(new AVLdiyD512Factory(m_usb_adaptor));
   m_widget_factories.push_back(
       new DMXCProjectsNodleU1Factory(m_usb_adaptor, m_plugin_adaptor,
                                      m_preferences));
@@ -167,6 +170,13 @@ bool AsyncPluginImpl::NewWidget(AnymauDMX *widget) {
       widget,
       new GenericDevice(m_plugin, widget, "Anyma USB Device",
                         "anyma-" + widget->SerialNumber()));
+}
+
+bool AsyncPluginImpl::NewWidget(AVLdiyD512 *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "AVLdiy USB Device",
+                        "avldiy-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {

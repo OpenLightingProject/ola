@@ -36,6 +36,7 @@ namespace usbdmx {
  *
  * This plugin supports a number of USB dongles including
  *   - Anyma uDMX
+ *   - AVLdiy D512.
  *   - Eurolite DMX USB Pro.
  *   - Scanlime's Fadecandy.
  *   - Sunlite.
