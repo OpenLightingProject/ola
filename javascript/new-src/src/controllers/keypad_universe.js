@@ -87,7 +87,7 @@ ola.controller('keypadUniverseCtrl',
 
         // don't handle keyboard shortcuts and function keys
         if ($event.altKey || $event.ctrlKey || $event.metaKey ||
-            ($event.which == 0 && key != 'Enter' && key != 'Backspace')) {
+            ($event.which === 0 && key !== 'Enter' && key !== 'Backspace')) {
           // $event.which is 0 for non-printable keys (like the F1 - F12 keys)
           return;
         }
