@@ -269,18 +269,6 @@ class UnsupportedSetWithDataMixin(ResponderTestFixture):
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
-class UnsupportedSetWithDataMixin(ResponderTestFixture):
-  """Check that SET with random param data fails with
-    NR_UNSUPPORTED_COMMAND_CLASS.
-  """
-  DATA = 'foo'
-
-  def Test(self):
-    self.AddIfSetSupported(
-        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
-
-
 class SetWithDataMixin(ResponderTestFixture):
   """SET a PID with random param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
