@@ -623,7 +623,7 @@ class SetNonUnicastIdentifyMixin(object):
 
 # Sensor mixins
 # -----------------------------------------------------------------------------
-class SetUndefinedSensorValues(object):
+class SetUndefinedSensorValues(ResponderTestFixture):
   """Attempt to set sensor values for all sensors that weren't defined."""
   def Test(self):
     sensors = self.Property('sensor_definitions')
@@ -851,7 +851,7 @@ class SetDmxStartupModeMixin(object):
     self._wrapper.Run()
 
 
-class SetMaximumLevelMixin(object):
+class SetMaximumLevelMixin(ResponderTestFixture):
   PID = 'MAXIMUM_LEVEL'
   REQUIRES = ['maximum_level', 'set_maximum_level_supported']
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -867,7 +867,7 @@ class SetMaximumLevelMixin(object):
       self._wrapper.Run()
 
 
-class SetMinimumLevelMixin(object):
+class SetMinimumLevelMixin(ResponderTestFixture):
   PID = 'MINIMUM_LEVEL'
   REQUIRES = ['minimum_level_settings', 'set_minimum_level_supported',
               'split_levels_supported']
