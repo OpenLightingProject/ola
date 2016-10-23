@@ -104,32 +104,26 @@ ola.controller('keypadUniverseCtrl',
           case '6':
           case '7':
           case '8':
-          case '9': {
+          case '9':
             $scope.input(key);
             break;
-          }
           case '@':
-          case 'a': {
+          case 'a':
             $scope.input(' @ ');
             break;
-          }
           case '>':
-          case 't': {
+          case 't':
             $scope.input(' THRU ');
             break;
-          }
-          case 'f': {
+          case 'f':
             $scope.input('FULL');
             break;
-          }
-          case 'Backspace': {
+          case 'Backspace':
             $scope.input('backspace');
             break;
-          }
-          case 'Enter': {
+          case 'Enter':
             $scope.submit();
             break;
-          }
         }
       };
 
