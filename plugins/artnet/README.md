@@ -6,7 +6,7 @@ supports ArtNet, ArtNet 2 and ArtNet 3.
 
 ArtNet limits a single device (identified by a unique IP) to four input and four
 output ports, each bound to a separate ArtNet Port Address (see the ArtNet spec
-for more details). The ArtNet Port Address is a 16 bits int, defined as follows: 
+for more details). The ArtNet Port Address is a 16 bits int, defined as follows:
 
 | Bit 15 | Bits 14 - 8 | Bits 7 - 4 | Bits 3 - 0 |
 | ------ | ----------- | ---------- | ---------- |
