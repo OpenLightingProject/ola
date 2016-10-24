@@ -664,7 +664,7 @@ class DetermineMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
     self.SendPacket()
 
 
-class SetDeviceInfo(TestMixins.UnsupportedSetMixin,
+class SetDeviceInfo(TestMixins.UnsupportedSetWithDataMixin,
                     DeviceInfoTest,
                     ResponderTestFixture):
   """Attempt to SET device info with no data."""
