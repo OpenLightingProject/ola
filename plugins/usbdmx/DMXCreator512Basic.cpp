@@ -103,15 +103,15 @@ bool DMXCreator512BasicThreadedSender::TransmitBuffer(
     return true;
   }
 
-  m_dmx_buffer = new DmxBuffer(buffer);  // force copy
+  m_dmx_buffer = buffer;
 
   unsigned int length = CHANNELS_PER_PACKET;
   memset(m_dmx_buffer_1, 0, length);
-  buffer.Get(m_dmx_buffer_1, &length);
+  m_dmx_buffer.Get(m_dmx_buffer_1, &length);
 
   length = CHANNELS_PER_PACKET;
   memset(m_dmx_buffer_2, 0, length);
-  buffer.GetRange(CHANNELS_PER_PACKET, m_dmx_buffer_2, &length);
+  m_dmx_buffer.GetRange(CHANNELS_PER_PACKET, m_dmx_buffer_2, &length);
 
   int bytes_sent = 0;
   int r = m_adaptor->BulkTransfer(handle, ENDPOINT_1,
