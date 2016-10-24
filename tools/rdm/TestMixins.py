@@ -296,7 +296,6 @@ class SetWithNoDataMixin(ResponderTestFixture):
 
 
 # Generic Label Mixins
-# These all work in conjunction with the IsSupportedMixin
 # -----------------------------------------------------------------------------
 class SetLabelMixin(object):
   """Set a PID and make sure the label is updated.
@@ -409,7 +408,6 @@ class SetOversizedLabelMixin(object):
 
 
 # Generic Set Mixins
-# These all work in conjunction with the IsSupportedMixin
 # -----------------------------------------------------------------------------
 class SetMixin(object):
   """The base class for set mixins."""
@@ -625,7 +623,7 @@ class SetNonUnicastIdentifyMixin(object):
 
 # Sensor mixins
 # -----------------------------------------------------------------------------
-class SetUndefinedSensorValues(object):
+class SetUndefinedSensorValues(ResponderTestFixture):
   """Attempt to set sensor values for all sensors that weren't defined."""
   def Test(self):
     sensors = self.Property('sensor_definitions')
@@ -659,7 +657,9 @@ class SetUndefinedSensorValues(object):
 
 # Preset Status mixins
 # -----------------------------------------------------------------------------
-class SetPresetStatusMixin(object):
+class SetPresetStatusMixin(ResponderTestFixture):
+  """Set an out of range scene for PRESET_STATUS"""
+  PID = 'PRESET_STATUS'
   REQUIRES = ['preset_info']
 
   def BuildPresetStatus(self, scene):
@@ -672,6 +672,19 @@ class SetPresetStatusMixin(object):
 
     return struct.pack('!HHHHB', scene, int(fade_time), int(fade_time),
                        int(wait_time), 0)
+
+  def PresetStatusSceneNumber(self):
+    self.SetBroken('base method of SetPresetStatusMixin called')
+    return
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    scene_number = self.PresetStatusSceneNumber()
+    if scene_number is None:
+      return
+
+    data = self.BuildPresetStatus(scene_number)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
 # Discovery Mixins
@@ -838,7 +851,7 @@ class SetDmxStartupModeMixin(object):
     self._wrapper.Run()
 
 
-class SetMaximumLevelMixin(object):
+class SetMaximumLevelMixin(ResponderTestFixture):
   PID = 'MAXIMUM_LEVEL'
   REQUIRES = ['maximum_level', 'set_maximum_level_supported']
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -854,7 +867,7 @@ class SetMaximumLevelMixin(object):
       self._wrapper.Run()
 
 
-class SetMinimumLevelMixin(object):
+class SetMinimumLevelMixin(ResponderTestFixture):
   PID = 'MINIMUM_LEVEL'
   REQUIRES = ['minimum_level_settings', 'set_minimum_level_supported',
               'split_levels_supported']
