@@ -167,6 +167,7 @@ include/ola/base/Version.h
 include/ola/plugin_id.h
 include/ola/rdm/RDMResponseCodes.h
 include/ola/timecode/TimeCodeEnums.h
+include/ola/plugins/
 java/src/main/java/ola/rpc/Rpc.java
 javascript/compiler.jar
 javascript/trunk/

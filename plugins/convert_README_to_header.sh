@@ -57,7 +57,16 @@ cat <<EOM > $outfile
 #ifndef $identifier
 #define $identifier
 
-char[] plugin_description = "$desc";
+namespace ola {
+namespace plugin {
+namespace $plugin {
+
+const char plugin_description[] = ""
+"$desc";
+
+}  // namespace $plugin
+}  // namespace plugin
+}  // namespace ola
 
 #endif  // $identifier
 EOM

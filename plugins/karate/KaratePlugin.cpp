@@ -33,6 +33,7 @@
 #include "olad/Preferences.h"
 #include "plugins/karate/KarateDevice.h"
 #include "plugins/karate/KaratePlugin.h"
+#include "include/ola/plugins/karate_plugin_desc.h"
 
 namespace ola {
 namespace plugin {
@@ -104,18 +105,7 @@ bool KaratePlugin::StopHook() {
  * @brief Return the description for this plugin
  */
 string KaratePlugin::Description() const {
-    return
-"KarateLight - Version 0.1\n"
-"----------------------------\n"
-"\n"
-"The plugin creates devices with a single output port.\n"
-"Info on the KarateLight Hardware can be found at http://karatelight.de\n"
-"Unfortunately the site is in German only, but the maintainer will respond "
-"to emails in English.\n\n"
-"--- Config file : ola-karate.conf ---\n"
-"\n"
-"device = /dev/kldmx0\n"
-"The path to the KarateLight device. Multiple entries are supported.\n";
+    return plugin_description;
 }
 
 
