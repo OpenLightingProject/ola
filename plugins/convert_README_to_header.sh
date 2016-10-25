@@ -29,7 +29,7 @@ outfilename=`basename $outfile`;
 
 desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\\\n"\n"/g' "$path/README.md"`;
 
-identifier="PLUGINS_${plugin}_DESCRIPTION_H_";
+identifier="INCLUDE_OLA_PLUGINS_${plugin}_PLUGIN_DESC_H_";
 identifier=`echo "$identifier" | tr '[:lower:]' '[:upper:]'`
 
 cat <<EOM > $outfile

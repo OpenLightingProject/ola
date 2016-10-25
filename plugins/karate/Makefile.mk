@@ -18,4 +18,5 @@ plugins_karate_libolakarate_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la
 endif
 
-EXTRA_DIST += plugins/karate/README.protocol
+EXTRA_DIST += plugins/karate/README.md \
+    plugins/karate/README.protocol
