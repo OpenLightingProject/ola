@@ -89,17 +89,17 @@ class DMXCreator512BasicThreadedSender: public ThreadedUsbSender {
   bool TransmitBuffer(libusb_device_handle *handle, const DmxBuffer &buffer);
 
   bool BulkTransferPart(libusb_device_handle *handle, unsigned char endpoint,
-                        const uint8_t *buffer, const char name[]);
+                        const uint8_t *buffer, size_t size, const char name[]);
 };
 
 bool DMXCreator512BasicThreadedSender::TransmitBuffer(
     libusb_device_handle *handle, const DmxBuffer &buffer) {
 
-  /*if (m_dmx_buffer == buffer) {
-    // no need to update -> sleep 1ms to avoid timeout errors
-    usleep(1000);
+  if (m_dmx_buffer == buffer) {
+    // no need to update -> sleep 100ns to avoid timeout errors
+    usleep(50);
     return true;
-  }*/
+  }
 
   m_dmx_buffer = buffer;
 
@@ -111,28 +111,30 @@ bool DMXCreator512BasicThreadedSender::TransmitBuffer(
   m_dmx_buffer.GetRange(CHANNELS_PER_PACKET, m_universe_data_upper, &length);
   memset(m_universe_data_upper+length, 0, CHANNELS_PER_PACKET - length);
 
-  bool r = BulkTransferPart(handle, ENDPOINT_1, status_buffer, "status");
+  bool r = BulkTransferPart(handle, ENDPOINT_1, status_buffer,
+                            sizeof(status_buffer), "status");
   if (!r) {
     return false;
   }
 
-  r = BulkTransferPart(handle, ENDPOINT_2, m_universe_data_lower, "lower data");
+  r = BulkTransferPart(handle, ENDPOINT_2, m_universe_data_lower,
+                       CHANNELS_PER_PACKET, "lower data");
   if (!r) {
     return false;
   }
 
-  r = BulkTransferPart(handle, ENDPOINT_2, m_universe_data_upper, "upper data");
+  r = BulkTransferPart(handle, ENDPOINT_2, m_universe_data_upper,
+                       CHANNELS_PER_PACKET, "upper data");
   return r;
 }
 
 bool DMXCreator512BasicThreadedSender::BulkTransferPart(
     libusb_device_handle *handle, unsigned char endpoint,
-    const uint8_t *buffer, const char name[]) {
+    const uint8_t *buffer, size_t size, const char name[]) {
   int bytes_sent = 0;
   int r = m_adaptor->BulkTransfer(handle, endpoint,
                                   const_cast<unsigned char*>(buffer),
-                                  sizeof(buffer), &bytes_sent,
-                                  URB_TIMEOUT_MS);
+                                  size, &bytes_sent, URB_TIMEOUT_MS);
 
   // Sometimes we get PIPE errors, those are non-fatal
   if (r < 0 && r != LIBUSB_ERROR_PIPE) {
