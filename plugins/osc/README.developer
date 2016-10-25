@@ -1,3 +1,6 @@
+OSC Plugin Developer Information
+================================
+
 Welcome to the OSC Plugin walkthrough. This is a step by step guide on how to
 write a plugin for OLA, using the OSC (Open Sound Control) plugin as an
 example. The OSC plugin uses liblo (http://liblo.sourceforge.net/) to handle
