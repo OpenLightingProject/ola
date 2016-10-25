@@ -54,7 +54,7 @@ static const unsigned int CHANNELS_PER_PACKET = 256;
 
 // if we only wanted to send the first half of the universe, the last byte would
 // be 0x01
-static const unsigned char status_buffer[6] = {
+static const uint8_t status_buffer[6] = {
   0x80, 0x01, 0x00, 0x00, 0x00, 0x02
 };
 
@@ -78,78 +78,68 @@ class DMXCreator512BasicThreadedSender: public ThreadedUsbSender {
                                    libusb_device *usb_device,
                                    libusb_device_handle *handle)
       : ThreadedUsbSender(usb_device, handle),
-        m_adaptor(adaptor) {
-    m_dmx_buffer = new DmxBuffer();
-    m_dmx_buffer_1 = new uint8_t[CHANNELS_PER_PACKET];
-    m_dmx_buffer_2 = new uint8_t[CHANNELS_PER_PACKET];
-  }
+        m_adaptor(adaptor) {}
 
  private:
-  DmxBuffer *m_dmx_buffer;
-  uint8_t *m_dmx_buffer_1;
-  uint8_t *m_dmx_buffer_2;
+  DmxBuffer m_dmx_buffer;
+  uint8_t m_universe_data_lower[CHANNELS_PER_PACKET];
+  uint8_t m_universe_data_upper[CHANNELS_PER_PACKET];
   LibUsbAdaptor* const m_adaptor;
 
-  bool TransmitBuffer(libusb_device_handle *handle,
-                      const DmxBuffer &buffer);
+  bool TransmitBuffer(libusb_device_handle *handle, const DmxBuffer &buffer);
+
+  bool BulkTransferPart(libusb_device_handle *handle, unsigned char endpoint,
+                        const uint8_t *buffer, const char name[]);
 };
 
 bool DMXCreator512BasicThreadedSender::TransmitBuffer(
     libusb_device_handle *handle, const DmxBuffer &buffer) {
 
-  if (*m_dmx_buffer == buffer) {
+  /*if (m_dmx_buffer == buffer) {
     // no need to update -> sleep 1ms to avoid timeout errors
     usleep(1000);
     return true;
-  }
+  }*/
 
   m_dmx_buffer = buffer;
 
   unsigned int length = CHANNELS_PER_PACKET;
-  memset(m_dmx_buffer_1, 0, length);
-  m_dmx_buffer.Get(m_dmx_buffer_1, &length);
+  m_dmx_buffer.Get(m_universe_data_lower, &length);
+  memset(m_universe_data_lower+length, 0, CHANNELS_PER_PACKET - length);
 
   length = CHANNELS_PER_PACKET;
-  memset(m_dmx_buffer_2, 0, length);
-  m_dmx_buffer.GetRange(CHANNELS_PER_PACKET, m_dmx_buffer_2, &length);
+  m_dmx_buffer.GetRange(CHANNELS_PER_PACKET, m_universe_data_upper, &length);
+  memset(m_universe_data_upper+length, 0, CHANNELS_PER_PACKET - length);
 
+  bool r = BulkTransferPart(handle, ENDPOINT_1, status_buffer, "status");
+  if (!r) {
+    return false;
+  }
+
+  r = BulkTransferPart(handle, ENDPOINT_2, m_universe_data_lower, "lower data");
+  if (!r) {
+    return false;
+  }
+
+  r = BulkTransferPart(handle, ENDPOINT_2, m_universe_data_upper, "upper data");
+  return r;
+}
+
+bool DMXCreator512BasicThreadedSender::BulkTransferPart(
+    libusb_device_handle *handle, unsigned char endpoint,
+    const uint8_t *buffer, const char name[]) {
   int bytes_sent = 0;
-  int r = m_adaptor->BulkTransfer(handle, ENDPOINT_1,
-                                  const_cast<unsigned char*>(status_buffer),
-                                  sizeof(status_buffer), &bytes_sent,
+  int r = m_adaptor->BulkTransfer(handle, endpoint,
+                                  const_cast<unsigned char*>(buffer),
+                                  sizeof(buffer), &bytes_sent,
                                   URB_TIMEOUT_MS);
 
   // Sometimes we get PIPE errors, those are non-fatal
   if (r < 0 && r != LIBUSB_ERROR_PIPE) {
-    OLA_WARN << "Sending status bytes failed: "
+    OLA_WARN << "Sending " << name << " bytes failed: "
              << m_adaptor->ErrorCodeToString(r);
     return false;
   }
-
-  bytes_sent = 0;
-  r = m_adaptor->BulkTransfer(handle, ENDPOINT_2,
-                              const_cast<unsigned char*>(m_dmx_buffer_1),
-                              CHANNELS_PER_PACKET, &bytes_sent,
-                              URB_TIMEOUT_MS);
-
-  if (r < 0 && r != LIBUSB_ERROR_PIPE) {
-    OLA_WARN << "Sending data bytes (1) failed: "
-             << m_adaptor->ErrorCodeToString(r);
-    return false;
-  }
-
-  bytes_sent = 0;
-  r = m_adaptor->BulkTransfer(handle, ENDPOINT_2,
-                              const_cast<unsigned char*>(m_dmx_buffer_2),
-                              CHANNELS_PER_PACKET, &bytes_sent,
-                              URB_TIMEOUT_MS);
-
-  if (r < 0 && r != LIBUSB_ERROR_PIPE) {
-    OLA_WARN << "Sending data bytes (2) failed: "
-             << m_adaptor->ErrorCodeToString(r);
-    return false;
-  }
-
   return true;
 }
 
@@ -196,15 +186,11 @@ class DMXCreator512BasicAsyncUsbSender : public AsyncUsbSender {
       : AsyncUsbSender(adaptor, usb_device),
         m_adaptor(adaptor),
         m_usb_device(usb_device) {
-    m_dmx_buffer_1 = new uint8_t[CHANNELS_PER_PACKET];
-    m_dmx_buffer_2 = new uint8_t[CHANNELS_PER_PACKET];
     m_state = STATE_SEND_STATUS;
   }
 
   ~DMXCreator512BasicAsyncUsbSender() {
     CancelTransfer();
-    delete[] m_dmx_buffer_1;
-    delete[] m_dmx_buffer_2;
   }
 
   libusb_device_handle* SetupHandle() {
@@ -216,12 +202,12 @@ class DMXCreator512BasicAsyncUsbSender : public AsyncUsbSender {
 
   bool PerformTransfer(const DmxBuffer &buffer) {
     unsigned int length = CHANNELS_PER_PACKET;
-    memset(m_dmx_buffer_1, 0, length);
-    buffer.Get(m_dmx_buffer_1, &length);
+    buffer.Get(m_universe_data_lower, &length);
+    memset(m_universe_data_lower+length, 0, CHANNELS_PER_PACKET - length);
 
     length = CHANNELS_PER_PACKET;
-    memset(m_dmx_buffer_2, 0, length);
-    buffer.GetRange(CHANNELS_PER_PACKET, m_dmx_buffer_2, &length);
+    buffer.GetRange(CHANNELS_PER_PACKET, m_universe_data_upper, &length);
+    memset(m_universe_data_upper+length, 0, CHANNELS_PER_PACKET - length);
 
     m_state = STATE_SEND_FIRST_HALF;
     FillBulkTransfer(ENDPOINT_1,
@@ -238,14 +224,14 @@ class DMXCreator512BasicAsyncUsbSender : public AsyncUsbSender {
       case STATE_SEND_FIRST_HALF:
         m_state = STATE_SEND_SECOND_HALF;
         FillBulkTransfer(ENDPOINT_2,
-                         const_cast<unsigned char*>(m_dmx_buffer_1),
+                         const_cast<unsigned char*>(m_universe_data_lower),
                          CHANNELS_PER_PACKET, URB_TIMEOUT_MS);
         SubmitTransfer();
         break;
       case STATE_SEND_SECOND_HALF:
         m_state = STATE_SEND_STATUS;
         FillBulkTransfer(ENDPOINT_2,
-                         const_cast<unsigned char*>(m_dmx_buffer_2),
+                         const_cast<unsigned char*>(m_universe_data_upper),
                          CHANNELS_PER_PACKET, URB_TIMEOUT_MS);
         SubmitTransfer();
         break;
@@ -254,8 +240,8 @@ class DMXCreator512BasicAsyncUsbSender : public AsyncUsbSender {
 
 
  private:
-  uint8_t *m_dmx_buffer_1;
-  uint8_t *m_dmx_buffer_2;
+  uint8_t m_universe_data_lower[CHANNELS_PER_PACKET];
+  uint8_t m_universe_data_upper[CHANNELS_PER_PACKET];
   SendState m_state;
   ola::usb::LibUsbAdaptor* const m_adaptor;
   libusb_device* const m_usb_device;
