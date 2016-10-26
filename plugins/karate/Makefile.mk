@@ -1,10 +1,10 @@
 # LIBRARIES
 ##################################################
 if USE_KARATE
-BUILT_SOURCES += plugins/karate/PluginDescription.cpp
+BUILT_SOURCES += plugins/karate/PluginDescription.h
 lib_LTLIBRARIES += plugins/karate/libolakarate.la
 plugins_karate_libolakarate_la_SOURCES = \
-    plugins/karate/PluginDescription.cpp \
+    plugins/karate/PluginDescription.h \
     plugins/karate/KaratePlugin.cpp \
     plugins/karate/KarateDevice.cpp \
     plugins/karate/KarateThread.cpp \
