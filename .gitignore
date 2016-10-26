@@ -181,7 +181,7 @@ olad/ola-output.conf
 olad/testdata/ola-output.conf
 plugins/artnet/artnet_loadtest
 plugins/artnet/artnet_loadtest.exe
-plugins/*/PluginDescription.h
+plugins/*/PluginDescription.cpp
 protoc/ola_protoc
 protoc/ola_protoc.exe
 protoc/ola_protoc_plugin
