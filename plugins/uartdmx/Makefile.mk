@@ -17,3 +17,5 @@ plugins_uartdmx_libolauartdmx_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la
 endif
 
+EXTRA_DIST += \
+    plugins/uartdmx/README.md
