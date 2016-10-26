@@ -29,7 +29,7 @@ outfilename=`basename $outfile`;
 
 desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\\\n"\n"/g' "$path/README.md"`;
 
-identifier="INCLUDE_OLA_PLUGINS_${plugin}_PLUGIN_DESC_H_";
+identifier="PLUGINS_${plugin}_PLUGIN_DESCRIPTION_H_";
 identifier=`echo "$identifier" | tr '[:lower:]' '[:upper:]'`
 
 cat <<EOM > $outfile
@@ -61,8 +61,7 @@ namespace ola {
 namespace plugin {
 namespace $plugin {
 
-const char plugin_description[] = ""
-"$desc";
+const char plugin_description[] = "$desc";
 
 }  // namespace $plugin
 }  // namespace plugin
