@@ -24,6 +24,5 @@ include plugins/e131/Makefile.mk
 include plugins/uartdmx/Makefile.mk
 endif
 
-include/ola/plugins/%_plugin_desc.h: plugins/%/README.md plugins/convert_README_to_header.sh plugins/Makefile.mk
-	mkdir -p $(top_builddir)/include/ola/plugins
+plugins/%/PluginDescription.h: plugins/%/README.md plugins/convert_README_to_header.sh plugins/Makefile.mk
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(shell dirname $<) $@

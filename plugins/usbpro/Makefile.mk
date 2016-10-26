@@ -150,3 +150,6 @@ plugins_usbpro_WidgetDetectorThreadTester_SOURCES = \
 plugins_usbpro_WidgetDetectorThreadTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 plugins_usbpro_WidgetDetectorThreadTester_LDADD = $(COMMON_USBPRO_TEST_LDADD)
 endif
+
+EXTRA_DIST += \
+    plugins/usbpro/README.md

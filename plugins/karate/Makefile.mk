@@ -1,10 +1,10 @@
 # LIBRARIES
 ##################################################
 if USE_KARATE
-BUILT_SOURCES += include/ola/plugins/karate_plugin_desc.h
+BUILT_SOURCES += plugins/karate/PluginDescription.h
 lib_LTLIBRARIES += plugins/karate/libolakarate.la
 plugins_karate_libolakarate_la_SOURCES = \
-	include/ola/plugins/karate_plugin_desc.h \
+    plugins/karate/PluginDescription.h \
     plugins/karate/KaratePlugin.cpp \
     plugins/karate/KarateDevice.cpp \
     plugins/karate/KarateThread.cpp \
@@ -19,5 +19,6 @@ plugins_karate_libolakarate_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la
 endif
 
-EXTRA_DIST += plugins/karate/README.md \
+EXTRA_DIST += \
+    plugins/karate/README.md \
     plugins/karate/README.protocol

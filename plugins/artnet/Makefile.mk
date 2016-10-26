@@ -12,8 +12,10 @@ plugins_artnet_libolaartnetnode_la_SOURCES = \
 plugins_artnet_libolaartnetnode_la_LIBADD = common/libolacommon.la
 
 # The OLA artnet plugin
+BUILT_SOURCES += plugins/artnet/PluginDescription.h
 lib_LTLIBRARIES += plugins/artnet/libolaartnet.la
 plugins_artnet_libolaartnet_la_SOURCES = \
+    plugins/artnet/PluginDescription.h \
     plugins/artnet/ArtNetPlugin.cpp \
     plugins/artnet/ArtNetPlugin.h \
     plugins/artnet/ArtNetDevice.cpp \
@@ -42,3 +44,6 @@ plugins_artnet_ArtNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 plugins_artnet_ArtNetTester_LDADD = $(COMMON_TESTING_LIBS) \
                                     plugins/artnet/libolaartnetnode.la
 endif
+
+EXTRA_DIST += \
+    plugins/artnet/README.md

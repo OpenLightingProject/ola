@@ -48,3 +48,6 @@ plugins_openpixelcontrol_OPCServerTester_LDADD = \
     plugins/openpixelcontrol/libolaopc.la
 endif
 
+EXTRA_DIST += \
+    plugins/openpixelcontrol/README.md
+

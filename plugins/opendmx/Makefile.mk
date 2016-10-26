@@ -14,3 +14,6 @@ plugins_opendmx_libolaopendmx_la_LIBADD = \
     common/libolacommon.la \
     olad/plugin_api/libolaserverplugininterface.la
 endif
+
+EXTRA_DIST += \
+    plugins/opendmx/README.md

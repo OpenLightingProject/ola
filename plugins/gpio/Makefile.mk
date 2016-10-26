@@ -22,3 +22,6 @@ plugins_gpio_libolagpio_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la \
     plugins/gpio/libolagpiocore.la
 endif
+
+EXTRA_DIST += \
+    plugins/gpio/README.md

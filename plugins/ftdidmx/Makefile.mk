@@ -22,3 +22,6 @@ plugins_ftdidmx_libolaftdidmx_la_LIBADD += $(libftdi0_LIBS)
 endif
 
 endif
+
+EXTRA_DIST += \
+    plugins/ftdidmx/README.md

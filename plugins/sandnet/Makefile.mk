@@ -17,3 +17,6 @@ plugins_sandnet_libolasandnet_la_LIBADD = \
     common/libolacommon.la \
     olad/plugin_api/libolaserverplugininterface.la
 endif
+
+EXTRA_DIST += \
+    plugins/sandnet/README.md

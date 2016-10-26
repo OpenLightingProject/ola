@@ -88,4 +88,6 @@ plugins_usbdmx_libolausbdmx_la_LIBADD = \
     plugins/usbdmx/libolausbdmxwidget.la
 endif
 
-EXTRA_DIST += plugins/usbdmx/README.md
+EXTRA_DIST += \
+    plugins/usbdmx/README.md \
+    plugins/usbdmx/README.developer.md

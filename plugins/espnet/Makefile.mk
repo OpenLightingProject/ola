@@ -30,3 +30,6 @@ plugins_espnet_EspNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 plugins_espnet_EspNetTester_LDADD = $(COMMON_TESTING_LIBS) \
                                     common/libolacommon.la
 endif
+
+EXTRA_DIST += \
+    plugins/espnet/README.md
