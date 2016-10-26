@@ -26,5 +26,5 @@ endif
 
 dist_noinst_SCRIPTS += plugins/convert_README_to_header.sh
 
-plugins/%/PluginDescription.cpp: plugins/%/README.md plugins/convert_README_to_header.sh plugins/Makefile.mk
+plugins/%/PluginDescription.h: plugins/%/README.md plugins/convert_README_to_header.sh plugins/Makefile.mk
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(shell dirname $<) $@
