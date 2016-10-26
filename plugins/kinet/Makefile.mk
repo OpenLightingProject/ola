@@ -27,3 +27,6 @@ plugins_kinet_KiNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 plugins_kinet_KiNetTester_LDADD = $(COMMON_TESTING_LIBS) \
                                   plugins/kinet/libolakinetnode.la
 endif
+
+EXTRA_DIST += \
+    plugins/kinet/README.md
