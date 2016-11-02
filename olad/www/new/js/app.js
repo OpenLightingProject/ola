@@ -318,7 +318,7 @@ ola.controller('keypadUniverseCtrl',
 
         // don't handle keyboard shortcuts and function keys
         if ($event.altKey || $event.ctrlKey || $event.metaKey ||
-            ($event.which == 0 && key != 'Enter' && key != 'Backspace')) {
+            ($event.which === 0 && key !== 'Enter' && key !== 'Backspace')) {
           // $event.which is 0 for non-printable keys (like the F1 - F12 keys)
           return;
         }
@@ -335,32 +335,26 @@ ola.controller('keypadUniverseCtrl',
           case '6':
           case '7':
           case '8':
-          case '9': {
+          case '9':
             $scope.input(key);
             break;
-          }
           case '@':
-          case 'a': {
+          case 'a':
             $scope.input(' @ ');
             break;
-          }
           case '>':
-          case 't': {
+          case 't':
             $scope.input(' THRU ');
             break;
-          }
-          case 'f': {
+          case 'f':
             $scope.input('FULL');
             break;
-          }
-          case 'Backspace': {
+          case 'Backspace':
             $scope.input('backspace');
             break;
-          }
-          case 'Enter': {
+          case 'Enter':
             $scope.submit();
             break;
-          }
         }
       };
 
