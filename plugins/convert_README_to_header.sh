@@ -27,6 +27,9 @@ fi
 plugin=`basename "$path"`;
 outfilename=`basename $outfile`;
 
+# See http://stackoverflow.com/a/16576291
+# On Mac OS's sed, \n is not recognized as a newline character, but
+# \[actual newline] works
 desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\\\n"\\
 "/g' "$path/README.md"`;
 
