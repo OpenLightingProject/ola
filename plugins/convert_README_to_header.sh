@@ -27,8 +27,7 @@ fi
 plugin=`basename "$path"`;
 outfilename=`basename $outfile`;
 
-desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\\\n"\\
-"/g' "$path/README.md"`;
+desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\\\n"\n"/g' "$path/README.md"`;
 
 identifier="PLUGINS_${plugin}_PLUGIN_DESCRIPTION_H_";
 identifier=`echo "$identifier" | tr '[:lower:]' '[:upper:]'`
