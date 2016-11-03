@@ -184,6 +184,12 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       "/new/libs/angular/js/angular.min.js",
       HTTPServer::CONTENT_TYPE_JS);
   m_server.RegisterFile(
+      "/new/libs/marked/js/marked.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/angular-marked/js/angular-marked.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
       "/new/libs/bootstrap/js/bootstrap.min.js",
       HTTPServer::CONTENT_TYPE_JS);
   m_server.RegisterFile(
