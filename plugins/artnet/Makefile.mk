@@ -45,5 +45,4 @@ plugins_artnet_ArtNetTester_LDADD = $(COMMON_TESTING_LIBS) \
                                     plugins/artnet/libolaartnetnode.la
 endif
 
-EXTRA_DIST += \
-    plugins/artnet/README.md
+EXTRA_DIST += plugins/artnet/README.md

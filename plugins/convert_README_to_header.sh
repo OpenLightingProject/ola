@@ -7,7 +7,7 @@
 if [ $# != 2 ]; then
   echo "Usage: convert_README_to_header.sh <path> <dest file>";
   echo "<path>: path to plugin dir, e.g. plugins/artnet";
-  echo "<dest file>: e.g. include/ola/plugins/artnet_description.h";
+  echo "<dest file>: e.g. plugins/artnet/PluginDescription.h";
   exit 1;
 fi
 
@@ -33,8 +33,7 @@ outfilename=`basename $outfile`;
 desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\\\n"\\
 "/g' "$path/README.md"`;
 
-identifier="PLUGINS_${plugin}_PLUGIN_DESCRIPTION_H_";
-identifier=`echo "$identifier" | tr '[:lower:]' '[:upper:]'`
+identifier=`echo "PLUGINS_${plugin}_PLUGIN_DESCRIPTION_H_" | tr '[:lower:]' '[:upper:]'`
 
 cat <<EOM > $outfile
 /*
