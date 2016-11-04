@@ -201,17 +201,14 @@ ola.controller('faderUniverseCtrl',
       };
 
       $scope.page = function(d) {
-        if (d === 1) {
-          var offsetLimit =
-            $window.Math.ceil(OLA.MAX_CHANNEL_NUMBER / $scope.limit);
-          if (($scope.offset + 1) !== offsetLimit) {
-            $scope.offset++;
-          }
-        } else if (d === OLA.MIN_CHANNEL_VALUE) {
-          if ($scope.offset !== OLA.MIN_CHANNEL_VALUE) {
-            $scope.offset--;
-          }
+        var pageCount = $scope.getPageCount();
+        var offset = $scope.offset + d;
+        if (offset + 1 > pageCount) {
+          offset -= pageCount;
+        } else if (offset < 0) {
+          offset += pageCount;
         }
+        $scope.offset = offset;
       };
 
       $scope.getWidth = function() {
@@ -226,6 +223,11 @@ ola.controller('faderUniverseCtrl',
         return $window.Math.floor(width);
       };
 
+      $scope.getPageCount = function() {
+        var count = OLA.MAX_CHANNEL_NUMBER / $scope.limit;
+        return $window.Math.ceil(count);
+      };
+
       $scope.limit = $scope.getLimit();
 
       $scope.width = {
@@ -235,6 +237,10 @@ ola.controller('faderUniverseCtrl',
       $window.$($window).resize(function() {
         $scope.$apply(function() {
           $scope.limit = $scope.getLimit();
+          var pageCount = $scope.getPageCount();
+          if ($scope.offset + 1 > pageCount) {
+            $scope.offset = pageCount - 1;
+          }
           $scope.width = {
             width: $scope.getWidth()
           };
@@ -318,7 +324,7 @@ ola.controller('keypadUniverseCtrl',
 
         // don't handle keyboard shortcuts and function keys
         if ($event.altKey || $event.ctrlKey || $event.metaKey ||
-            ($event.which == 0 && key != 'Enter' && key != 'Backspace')) {
+            ($event.which === 0 && key !== 'Enter' && key !== 'Backspace')) {
           // $event.which is 0 for non-printable keys (like the F1 - F12 keys)
           return;
         }
@@ -335,32 +341,26 @@ ola.controller('keypadUniverseCtrl',
           case '6':
           case '7':
           case '8':
-          case '9': {
+          case '9':
             $scope.input(key);
             break;
-          }
           case '@':
-          case 'a': {
+          case 'a':
             $scope.input(' @ ');
             break;
-          }
           case '>':
-          case 't': {
+          case 't':
             $scope.input(' THRU ');
             break;
-          }
-          case 'f': {
+          case 'f':
             $scope.input('FULL');
             break;
-          }
-          case 'Backspace': {
+          case 'Backspace':
             $scope.input('backspace');
             break;
-          }
-          case 'Enter': {
+          case 'Enter':
             $scope.submit();
             break;
-          }
         }
       };
 

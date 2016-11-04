@@ -72,17 +72,14 @@ ola.controller('faderUniverseCtrl',
       };
 
       $scope.page = function(d) {
-        if (d === 1) {
-          var offsetLimit =
-            $window.Math.ceil(OLA.MAX_CHANNEL_NUMBER / $scope.limit);
-          if (($scope.offset + 1) !== offsetLimit) {
-            $scope.offset++;
-          }
-        } else if (d === OLA.MIN_CHANNEL_VALUE) {
-          if ($scope.offset !== OLA.MIN_CHANNEL_VALUE) {
-            $scope.offset--;
-          }
+        var pageCount = $scope.getPageCount();
+        var offset = $scope.offset + d;
+        if (offset + 1 > pageCount) {
+          offset -= pageCount;
+        } else if (offset < 0) {
+          offset += pageCount;
         }
+        $scope.offset = offset;
       };
 
       $scope.getWidth = function() {
@@ -97,6 +94,11 @@ ola.controller('faderUniverseCtrl',
         return $window.Math.floor(width);
       };
 
+      $scope.getPageCount = function() {
+        var count = OLA.MAX_CHANNEL_NUMBER / $scope.limit;
+        return $window.Math.ceil(count);
+      };
+
       $scope.limit = $scope.getLimit();
 
       $scope.width = {
@@ -106,6 +108,10 @@ ola.controller('faderUniverseCtrl',
       $window.$($window).resize(function() {
         $scope.$apply(function() {
           $scope.limit = $scope.getLimit();
+          var pageCount = $scope.getPageCount();
+          if ($scope.offset + 1 > pageCount) {
+            $scope.offset = pageCount - 1;
+          }
           $scope.width = {
             width: $scope.getWidth()
           };
