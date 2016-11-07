@@ -45,6 +45,7 @@
 #include "plugins/usbdmx/DMXCProjectsNodleU1Device.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1Factory.h"
 #include "plugins/usbdmx/EuroliteProFactory.h"
+#include "plugins/usbdmx/ShowJockeyFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
 #include "plugins/usbdmx/JaRuleDevice.h"
 #include "plugins/usbdmx/JaRuleFactory.h"
@@ -124,6 +125,8 @@ bool AsyncPluginImpl::Start() {
   m_widget_factories.push_back(
       new EuroliteProFactory(m_usb_adaptor));
   m_widget_factories.push_back(
+      new ShowJockeyFactory(m_usb_adaptor));
+  m_widget_factories.push_back(
       new JaRuleFactory(m_plugin_adaptor, m_usb_adaptor));
   m_widget_factories.push_back(
       new ScanlimeFadecandyFactory(m_usb_adaptor));
@@ -194,6 +197,13 @@ bool AsyncPluginImpl::NewWidget(EurolitePro *widget) {
       widget,
       new GenericDevice(m_plugin, widget, "EurolitePro USB Device",
                         "eurolite-" + widget->SerialNumber()));
+}
+
+bool AsyncPluginImpl::NewWidget(ShowJockey *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "ShowJockey USB Device",
+                        "ShowJockey-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(JaRuleWidget *widget) {

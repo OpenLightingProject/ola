@@ -63,6 +63,10 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
+  bool NewWidget(class ShowJockey *widget) {
+    return DispatchNewWidget(widget);
+  }
+
   bool NewWidget(ola::usb::JaRuleWidget *widget) {
     return DispatchNewWidget(widget);
   }
