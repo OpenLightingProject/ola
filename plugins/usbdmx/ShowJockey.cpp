@@ -181,8 +181,8 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
-                                        int endpoint, int maxPacketSize,
-                                        unsigned char *buffer, int size) {
+                                       int endpoint, int maxPacketSize,
+                                       unsigned char *buffer, int size) {
   if (!handle) {
     return -1;
   }
@@ -207,7 +207,7 @@ int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
       }
 
       retVal = m_adaptor->BulkTransfer(handle, endpoint, buffer, nPacket,
-                                        &transferred, URB_TIMEOUT_MS);
+                                       &transferred, URB_TIMEOUT_MS);
 
       if (retVal) {
         break;
@@ -251,8 +251,8 @@ bool SynchronousShowJockey::Init() {
   }
 
   bool ok = m_adaptor->OpenDeviceAndClaimInterface(m_usb_device,
-                                                    interface_number,
-                                                    &usb_handle);
+                                                   interface_number,
+                                                   &usb_handle);
   if (!ok) {
     return false;
   }

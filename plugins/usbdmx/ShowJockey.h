@@ -99,7 +99,7 @@ class AsynchronousShowJockey: public ShowJockey {
    * @param usb_device the libusb_device to use for the widget.
    */
   AsynchronousShowJockey(ola::usb::LibUsbAdaptor *adaptor,
-                          libusb_device *usb_device);
+                         libusb_device *usb_device);
 
   bool Init();
 
