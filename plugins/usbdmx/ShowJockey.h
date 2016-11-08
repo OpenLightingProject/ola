@@ -45,7 +45,6 @@ class ShowJockey : public SimpleWidget {
    * @brief Create a new ShowJockey.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   ShowJockey(ola::usb::LibUsbAdaptor *adaptor,
              libusb_device *usb_device)
@@ -75,7 +74,6 @@ class SynchronousShowJockey: public ShowJockey {
    * @brief Create a new SynchronousShowJockey.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   SynchronousShowJockey(ola::usb::LibUsbAdaptor *adaptor,
                         libusb_device *usb_device);
@@ -99,7 +97,6 @@ class AsynchronousShowJockey: public ShowJockey {
    * @brief Create a new AsynchronousShowJockey.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
-   * @param serial the serial number of the widget.
    */
   AsynchronousShowJockey(ola::usb::LibUsbAdaptor *adaptor,
                           libusb_device *usb_device);
