@@ -89,14 +89,15 @@ class DMXCreator512BasicThreadedSender: public ThreadedUsbSender {
   bool TransmitBuffer(libusb_device_handle *handle, const DmxBuffer &buffer);
 
   bool BulkTransferPart(libusb_device_handle *handle, unsigned char endpoint,
-                        const uint8_t *buffer, size_t size, const char name[]);
+                        const uint8_t *buffer, size_t size,
+                        const std::string name);
 };
 
 bool DMXCreator512BasicThreadedSender::TransmitBuffer(
     libusb_device_handle *handle, const DmxBuffer &buffer) {
 
   if (m_dmx_buffer == buffer) {
-    // no need to update -> sleep 100ns to avoid timeout errors
+    // no need to update -> sleep 50µs to avoid timeout errors
     usleep(50);
     return true;
   }
@@ -105,11 +106,11 @@ bool DMXCreator512BasicThreadedSender::TransmitBuffer(
 
   unsigned int length = CHANNELS_PER_PACKET;
   m_dmx_buffer.Get(m_universe_data_lower, &length);
-  memset(m_universe_data_lower+length, 0, CHANNELS_PER_PACKET - length);
+  memset(m_universe_data_lower + length, 0, CHANNELS_PER_PACKET - length);
 
   length = CHANNELS_PER_PACKET;
   m_dmx_buffer.GetRange(CHANNELS_PER_PACKET, m_universe_data_upper, &length);
-  memset(m_universe_data_upper+length, 0, CHANNELS_PER_PACKET - length);
+  memset(m_universe_data_upper + length, 0, CHANNELS_PER_PACKET - length);
 
   bool r = BulkTransferPart(handle, ENDPOINT_1, status_buffer,
                             sizeof(status_buffer), "status");
@@ -130,7 +131,7 @@ bool DMXCreator512BasicThreadedSender::TransmitBuffer(
 
 bool DMXCreator512BasicThreadedSender::BulkTransferPart(
     libusb_device_handle *handle, unsigned char endpoint,
-    const uint8_t *buffer, size_t size, const char name[]) {
+    const uint8_t *buffer, size_t size, const std::string name) {
   int bytes_sent = 0;
   int r = m_adaptor->BulkTransfer(handle, endpoint,
                                   const_cast<unsigned char*>(buffer),
@@ -205,11 +206,11 @@ class DMXCreator512BasicAsyncUsbSender : public AsyncUsbSender {
   bool PerformTransfer(const DmxBuffer &buffer) {
     unsigned int length = CHANNELS_PER_PACKET;
     buffer.Get(m_universe_data_lower, &length);
-    memset(m_universe_data_lower+length, 0, CHANNELS_PER_PACKET - length);
+    memset(m_universe_data_lower + length, 0, CHANNELS_PER_PACKET - length);
 
     length = CHANNELS_PER_PACKET;
     buffer.GetRange(CHANNELS_PER_PACKET, m_universe_data_upper, &length);
-    memset(m_universe_data_upper+length, 0, CHANNELS_PER_PACKET - length);
+    memset(m_universe_data_upper + length, 0, CHANNELS_PER_PACKET - length);
 
     m_state = STATE_SEND_FIRST_HALF;
     FillBulkTransfer(ENDPOINT_1,
