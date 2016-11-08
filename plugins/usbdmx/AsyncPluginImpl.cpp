@@ -203,7 +203,7 @@ bool AsyncPluginImpl::NewWidget(ShowJockey *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "ShowJockey USB Device",
-                        "ShowJockey-" + widget->SerialNumber()));
+                        "showjockey-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(JaRuleWidget *widget) {
