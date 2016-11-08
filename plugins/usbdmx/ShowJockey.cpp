@@ -143,7 +143,7 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   unsigned int writeSize = 0;
   int maxPacketSizeOut = m_maxPacketSizeOut;
 
-  unsigned char *bulkBuffer = (unsigned char*)malloc(maxPacketSizeOut);
+  unsigned char *bulkBuffer = new unsigned char[maxPacketSizeOut]();
 
   int bulkDataSize = maxPacketSizeOut - 2;
   unsigned int slot = 0;
@@ -173,7 +173,7 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   }
 
   if (bulkBuffer) {
-    free(bulkBuffer);
+    delete[] bulkBuffer;
     bulkBuffer = 0;
   }
 
