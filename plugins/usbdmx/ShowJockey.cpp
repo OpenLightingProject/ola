@@ -27,6 +27,7 @@
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/util/Utils.h"
+#include "ola/strings/Format.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
@@ -40,7 +41,6 @@ using ola::usb::LibUsbAdaptor;
 namespace {
 
 static const unsigned int URB_TIMEOUT_MS = 3000;
-static const unsigned int SHOWJOCKEY_FRAME_SIZE = 512;
 
 
 /*
@@ -69,8 +69,8 @@ bool LocateInterface(LibUsbAdaptor *adaptor,
         const struct libusb_endpoint_descriptor *endpoint =
             &iface_descriptor->endpoint[k];
         OLA_DEBUG << "Interface " << i << ", altsetting " << j << ", endpoint "
-                  << static_cast<int>(k) << ", endpoint address 0x" << std::hex
-                  << static_cast<int>(endpoint->bEndpointAddress);
+                  << static_cast<int>(k) << ", endpoint address 0x"
+                  << strings::ToHex(endpoint->bEndpointAddress);
         int current_endpoint_addr = endpoint->bEndpointAddress;
         bool isOutput = (current_endpoint_addr & LIBUSB_ENDPOINT_DIR_MASK) !=
                         LIBUSB_ENDPOINT_IN;
@@ -100,10 +100,10 @@ bool LocateInterface(LibUsbAdaptor *adaptor,
 class ShowJockeyThreadedSender: public ThreadedUsbSender {
  public:
   ShowJockeyThreadedSender(LibUsbAdaptor *adaptor,
-                            libusb_device *usb_device,
-                            libusb_device_handle *usb_handle,
-                            int maxPacketSizeOut,
-                            int endpoint);
+                           libusb_device *usb_device,
+                           libusb_device_handle *usb_handle,
+                           int maxPacketSizeOut,
+                           int endpoint);
 
  private:
   LibUsbAdaptor* const m_adaptor;
@@ -113,10 +113,10 @@ class ShowJockeyThreadedSender: public ThreadedUsbSender {
   bool TransmitBuffer(libusb_device_handle *handle,
                       const DmxBuffer &buffer);
   int bulkSync(libusb_device_handle *handle,
-                int endpoint,
-                int maxPacketSize,
-                unsigned char *buffer,
-                int size);
+               int endpoint,
+               int maxPacketSize,
+               unsigned char *buffer,
+               int size);
 };
 
 ShowJockeyThreadedSender::ShowJockeyThreadedSender(
@@ -132,7 +132,7 @@ ShowJockeyThreadedSender::ShowJockeyThreadedSender(
 }
 
 bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
-                                               const DmxBuffer &buffer) {
+                                              const DmxBuffer &buffer) {
   if (!handle) {
     return false;
   }
@@ -140,14 +140,13 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   int retVal = 0;
   int leftWriteSize = 512;
   uint16_t alreadyWrittenSize = 0;
-  int writeSize = 0;
+  unsigned int writeSize = 0;
   int maxPacketSizeOut = m_maxPacketSizeOut;
-
-  const uint8_t *writeBuffer = buffer.GetRaw();
 
   unsigned char *bulkBuffer = (unsigned char*)malloc(maxPacketSizeOut);
 
   int bulkDataSize = maxPacketSizeOut - 2;
+  unsigned int slot = 0;
 
   while (leftWriteSize > 0) {
     memset(bulkBuffer, 0, maxPacketSizeOut);
@@ -159,7 +158,7 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
       writeSize = leftWriteSize;
     }
 
-    memcpy((bulkBuffer+2), writeBuffer, writeSize);
+    buffer.GetRange(slot, bulkBuffer+2, &writeSize);
 
     retVal = bulkSync(handle, m_endpoint, maxPacketSizeOut,
                       bulkBuffer, writeSize+2);
@@ -170,7 +169,7 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 
     leftWriteSize -= writeSize;
     alreadyWrittenSize += writeSize;
-    writeBuffer += writeSize;
+    slot += writeSize;
   }
 
   if (bulkBuffer) {
@@ -184,8 +183,9 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
                                         int endpoint, int maxPacketSize,
                                         unsigned char *buffer, int size) {
-  if (!handle)
+  if (!handle) {
     return -1;
+  }
 
   if (size <= maxPacketSize) {
     int transferred = -1;
@@ -202,14 +202,16 @@ int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
     int transferredAll = 0;
 
     while (1) {
-      if (nLeft <= 0)
+      if (nLeft <= 0) {
         break;
+      }
 
       retVal = m_adaptor->BulkTransfer(handle, endpoint, buffer, nPacket,
                                         &transferred, URB_TIMEOUT_MS);
 
-      if (retVal)
+      if (retVal) {
         break;
+      }
 
       buf += transferred;
       nLeft -= transferred;
@@ -217,8 +219,9 @@ int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
       transferredAll += transferred;
     }
 
-    if (transferredAll == size)
+    if (transferredAll == size) {
       return transferredAll;
+    }
   }
 
   return -1;
@@ -240,10 +243,10 @@ bool SynchronousShowJockey::Init() {
   int endpoint;
   int maxPacketSize;
   if (!LocateInterface(m_adaptor,
-                        m_usb_device,
-                        &interface_number,
-                        &endpoint,
-                        &maxPacketSize)) {
+                       m_usb_device,
+                       &interface_number,
+                       &endpoint,
+                       &maxPacketSize)) {
     return false;
   }
 
@@ -256,19 +259,16 @@ bool SynchronousShowJockey::Init() {
 
   libusb_device_descriptor descriptor;
   libusb_get_device_descriptor(m_usb_device, &descriptor);
-  unsigned char serial[200];
-  libusb_get_string_descriptor_ascii(usb_handle, descriptor.iSerialNumber,
-                                      serial, 200);
-  std::ostringstream serial_str;
-  serial_str << serial;
-  m_serial = serial_str.str();
+  usb::AsyncronousLibUsbAdaptor::DeviceInformation deviceInfo;
+  m_adaptor->GetDeviceInfo(m_usb_device, descriptor, &deviceInfo);
+  m_serial = deviceInfo.serial;
 
   std::auto_ptr<ShowJockeyThreadedSender> sender(
       new ShowJockeyThreadedSender(m_adaptor,
-                                    m_usb_device,
-                                    usb_handle,
-                                    maxPacketSize,
-                                    endpoint));
+                                   m_usb_device,
+                                   usb_handle,
+                                   maxPacketSize,
+                                   endpoint));
   if (!sender->Start()) {
     return false;
   }
@@ -286,13 +286,13 @@ bool SynchronousShowJockey::SendDMX(const DmxBuffer &buffer) {
 class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
  public:
   ShowJockeyAsyncUsbSender(LibUsbAdaptor *adaptor,
-                            libusb_device *usb_device,
-                            int endpoint,
-                            int maxPacketSizeOut,
-                            libusb_device_handle *handle)
-                            : AsyncUsbSender(adaptor, usb_device),
-                              m_endpoint(endpoint),
-                              m_maxPacketSizeOut(maxPacketSizeOut) {
+                           libusb_device *usb_device,
+                           int endpoint,
+                           int maxPacketSizeOut,
+                           libusb_device_handle *handle)
+                           : AsyncUsbSender(adaptor, usb_device),
+                             m_endpoint(endpoint),
+                             m_maxPacketSizeOut(maxPacketSizeOut) {
     m_usb_handle = handle;
     m_tx_frame = NULL;
   }
@@ -307,14 +307,14 @@ class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
   }
 
   bool PerformTransfer(const DmxBuffer &buffer) {
-    uint16_t numberOfSequence = SHOWJOCKEY_FRAME_SIZE / (m_maxPacketSizeOut-2);
-    int finalSize = SHOWJOCKEY_FRAME_SIZE + 2*numberOfSequence;
+    uint16_t numberOfSequence = DMX_MAX_SLOT_NUMBER / (m_maxPacketSizeOut-2);
+    int finalSize = DMX_MAX_SLOT_NUMBER + 2*numberOfSequence;
     if (m_tx_frame == NULL) {
       m_tx_frame = new uint8_t[finalSize]();
     }
 
-    uint8_t *currentBuffer = new uint8_t[SHOWJOCKEY_FRAME_SIZE]();
-    memcpy(currentBuffer, buffer.GetRaw(), SHOWJOCKEY_FRAME_SIZE);
+    uint8_t *currentBuffer = new uint8_t[DMX_MAX_SLOT_NUMBER]();
+    memcpy(currentBuffer, buffer.GetRaw(), DMX_MAX_SLOT_NUMBER);
     uint8_t *p_currentBuffer = currentBuffer;
     uint8_t *p_finalBuffer = m_tx_frame;
     int toWriteSize = m_maxPacketSizeOut-2;
@@ -322,7 +322,7 @@ class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
     for (int i = 0; i <= numberOfSequence; ++i) {
       memcpy(p_finalBuffer, &writtenSize, 2);
       p_finalBuffer += 2;
-      int needToWriteSize = SHOWJOCKEY_FRAME_SIZE - writtenSize;
+      int needToWriteSize = DMX_MAX_SLOT_NUMBER - writtenSize;
       int willWriteSize;
       if (toWriteSize < needToWriteSize) {
         willWriteSize = toWriteSize;
@@ -364,10 +364,10 @@ bool AsynchronousShowJockey::Init() {
   int endpoint;
   int maxPacketSize;
   if (!LocateInterface(m_adaptor,
-                        m_usb_device,
-                        &interface_number,
-                        &endpoint,
-                        &maxPacketSize)) {
+                       m_usb_device,
+                       &interface_number,
+                       &endpoint,
+                       &maxPacketSize)) {
     return false;
   }
   libusb_device_handle *usb_handle;
@@ -380,19 +380,16 @@ bool AsynchronousShowJockey::Init() {
 
   libusb_device_descriptor descriptor;
   libusb_get_device_descriptor(m_usb_device, &descriptor);
-  unsigned char serial[200];
-  libusb_get_string_descriptor_ascii(usb_handle, descriptor.iSerialNumber,
-    serial, 200);
-  std::ostringstream serial_str;
-  serial_str << serial;
-  m_serial = serial_str.str();
+  usb::AsyncronousLibUsbAdaptor::DeviceInformation deviceInfo;
+  m_adaptor->GetDeviceInfo(m_usb_device, descriptor, &deviceInfo);
+  m_serial = deviceInfo.serial;
 
   std::auto_ptr<ShowJockeyAsyncUsbSender> sender(
       new ShowJockeyAsyncUsbSender(m_adaptor,
-                                    m_usb_device,
-                                    endpoint,
-                                    maxPacketSize,
-                                    usb_handle));
+                                   m_usb_device,
+                                   endpoint,
+                                   maxPacketSize,
+                                   usb_handle));
   m_sender.reset(sender.release());
   return true;
 }

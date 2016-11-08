@@ -48,7 +48,7 @@ class ShowJockey : public SimpleWidget {
    * @param serial the serial number of the widget.
    */
   ShowJockey(ola::usb::LibUsbAdaptor *adaptor,
-              libusb_device *usb_device)
+             libusb_device *usb_device)
       : SimpleWidget(adaptor, usb_device) {}
 
   /**
@@ -78,7 +78,7 @@ class SynchronousShowJockey: public ShowJockey {
    * @param serial the serial number of the widget.
    */
   SynchronousShowJockey(ola::usb::LibUsbAdaptor *adaptor,
-                         libusb_device *usb_device);
+                        libusb_device *usb_device);
 
   bool Init();
 
