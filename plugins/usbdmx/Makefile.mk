@@ -22,6 +22,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/DMXCProjectsNodleU1.h \
     plugins/usbdmx/DMXCProjectsNodleU1Factory.cpp \
     plugins/usbdmx/DMXCProjectsNodleU1Factory.h \
+    plugins/usbdmx/DMXCreator512Basic.cpp \
+    plugins/usbdmx/DMXCreator512Basic.h \
+    plugins/usbdmx/DMXCreator512BasicFactory.cpp \
+    plugins/usbdmx/DMXCreator512BasicFactory.h \
     plugins/usbdmx/EurolitePro.cpp \
     plugins/usbdmx/EurolitePro.h \
     plugins/usbdmx/EuroliteProFactory.cpp \

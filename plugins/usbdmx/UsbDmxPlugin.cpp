@@ -56,7 +56,7 @@ bool UsbDmxPlugin::StartHook() {
   }
 
   unsigned int debug_level;
-  if (!StringToInt(m_preferences->GetValue(LIBUSB_DEBUG_LEVEL_KEY) ,
+  if (!StringToInt(m_preferences->GetValue(LIBUSB_DEBUG_LEVEL_KEY),
                    &debug_level)) {
     debug_level = LIBUSB_DEFAULT_DEBUG_LEVEL;
   }
@@ -91,9 +91,10 @@ string UsbDmxPlugin::Description() const {
 "USB DMX Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, AVLdiy D512, DMXControl Projects e.V. Nodle U1, Eurolite, "
-"Fadecandy, Sunlite USBDMX2 and Velleman K8062.\n"
+"This plugin supports various USB DMX devices including the\n"
+"Anyma uDMXX, AVLdiy D512, DMXControl Projects e.V. Nodle U1,\n"
+"DMXCreator 512 Basic, Eurolite, Fadecandy, Sunlite USBDMX2 and\n"
+"Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"
