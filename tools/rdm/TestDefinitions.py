@@ -40,7 +40,6 @@ from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
 from TestHelpers import ContainsUnprintable
 import TestMixins
-from TestMixins import MAX_DMX_ADDRESS
 
 '''This defines all the tests for RDM responders.'''
 
@@ -549,7 +548,7 @@ class GetDeviceInfo(DeviceInfoTest, ResponderTestFixture):
       self.SetPropertyFromDict(fields, property_name)
 
     footprint = fields['dmx_footprint']
-    if footprint > MAX_DMX_ADDRESS:
+    if footprint > TestMixins.MAX_DMX_ADDRESS:
       self.AddWarning('DMX Footprint of %d, was more than 512' % footprint)
     if footprint > 0:
       personality_count = fields['personality_count']
@@ -566,7 +565,7 @@ class GetDeviceInfo(DeviceInfoTest, ResponderTestFixture):
 
     start_address = fields['dmx_start_address']
     if (start_address == 0 or
-        (start_address > MAX_DMX_ADDRESS and
+        (start_address > TestMixins.MAX_DMX_ADDRESS and
          start_address != RDM_ZERO_FOOTPRINT_DMX_ADDRESS)):
       self.AddWarning('Invalid DMX address %d in DEVICE_INFO' % start_address)
 
@@ -1046,7 +1045,7 @@ class ClearStatusMessages(OptionalParameterTestFixture):
 
 # Parameter Description
 # -----------------------------------------------------------------------------
-class GetParamDescription(ResponderTestFixture):
+class GetParamDescription(ParamDescriptionTestFixture):
   """Check that GET parameter description works for any manufacturer params."""
   CATEGORY = TestCategory.RDM_INFORMATION
   PID = 'PARAMETER_DESCRIPTION'
@@ -1056,6 +1055,7 @@ class GetParamDescription(ResponderTestFixture):
     self.params = self.Property('manufacturer_parameters')[:]
     if len(self.params) == 0:
       self.SetNotRun('No manufacturer params found')
+      # This case is tested in GetParamDescriptionForNonManufacturerPid
       return
     self._GetParam()
 
@@ -1092,7 +1092,7 @@ class GetParamDescription(ResponderTestFixture):
           (self.pid.name, fields['description'].encode('string-escape')))
 
 
-class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
+class GetParamDescriptionForNonManufacturerPid(ParamDescriptionTestFixture):
   """GET parameter description for a non-manufacturer pid."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PARAMETER_DESCRIPTION'
@@ -1114,7 +1114,8 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
-class GetParamDescriptionWithExtraData(ResponderTestFixture):
+class GetParamDescriptionWithExtraData(TestMixins.GetWithDataMixin,
+                                       ParamDescriptionTestFixture):
   """GET parameter description with extra param data."""
   PID = 'PARAMETER_DESCRIPTION'
   REQUIRES = ['manufacturer_parameters']
@@ -1130,7 +1131,7 @@ class GetParamDescriptionWithExtraData(ResponderTestFixture):
     if self.Property('manufacturer_parameters'):
       results = self.NackGetResult(RDMNack.NR_FORMAT_ERROR)
     self.AddExpectedResults(results)
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
 
 class SetParamDescription(TestMixins.UnsupportedSetMixin,
@@ -2197,7 +2198,7 @@ class SetOutOfRangeStartAddress(ResponderTestFixture):
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
       ])
-    data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
+    data = struct.pack('!H', TestMixins.MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
@@ -2692,10 +2693,6 @@ class GetSensorDefinitionWithExtraData(TestMixins.GetWithDataMixin,
   """Get the sensor definition with more than 1 byte of data."""
   PID = 'SENSOR_DEFINITION'
 
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
-
 
 class GetInvalidSensorDefinition(OptionalParameterTestFixture):
   """Get the sensor definition with the all sensor value (0xff)."""
@@ -2963,13 +2960,7 @@ class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
   PID = 'SENSOR_VALUE'
-
-  def Test(self):
-    self.AddIfSetSupported([
-        self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
-        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-    ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+  ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
 
 class AllSubDevicesGetSensorValue(TestMixins.AllSubDevicesGetMixin,
@@ -3906,14 +3897,6 @@ class SetPowerState(TestMixins.SetMixin, OptionalParameterTestFixture):
     length = len(GetPowerState.ALLOWED_STATES)
     return GetPowerState.ALLOWED_STATES[(old_value + 1) % length]
 
-  def ResetState(self):
-    if not self.OldValue():
-      return
-
-    # Reset back to the old value
-    self.SendSet(ROOT_DEVICE, self.pid, [self.OldValue()])
-    self._wrapper.Run()
-
 
 class SetPowerStateWithNoData(TestMixins.SetWithNoDataMixin,
                               OptionalParameterTestFixture):
@@ -4260,11 +4243,11 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
       footprint = fields['sub_device_footprint']
       base_address = fields['base_dmx_address']
 
-      if footprint > MAX_DMX_ADDRESS:
+      if footprint > TestMixins.MAX_DMX_ADDRESS:
         self.AddWarning('Sub device footprint > 512, was %d' % footprint)
 
       if (base_address == 0 or
-          (base_address > MAX_DMX_ADDRESS and
+          (base_address > TestMixins.MAX_DMX_ADDRESS and
            base_address != self.NON_CONTIGUOUS)):
         self.AddWarning('Base DMX address is outside range 1-512, was %d' %
                         base_address)
@@ -4341,7 +4324,7 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
       return 1
 
     new_address = base_address + 1
-    if new_address + footprint > MAX_DMX_ADDRESS:
+    if new_address + footprint > TestMixins.MAX_DMX_ADDRESS:
       new_address = 1
     return new_address
 
@@ -4365,7 +4348,7 @@ class SetOutOfRangeDMXBlockAddress(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
+    data = struct.pack('!H', TestMixins.MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
