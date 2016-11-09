@@ -52,6 +52,7 @@ class UndeclaredPropertyException(Error):
 
 class TestFixture(object):
   """The base responder test class, every test inherits from this."""
+  PID = None
   CATEGORY = TestCategory.UNCLASSIFIED
   DEPS = []
   PROVIDES = []
@@ -272,9 +273,14 @@ class ResponderTestFixture(TestFixture):
 
   def Run(self):
     """Call the test method and then start running the loop wrapper."""
+    # Try and fail early
+    if self.state == TestState.BROKEN:
+      return
+
     # the super call invokes self.Test()
     super(ResponderTestFixture, self).Run()
 
+    # Check if we've broken during self.Test()
     if self.state == TestState.BROKEN:
       return
 
@@ -290,6 +296,7 @@ class ResponderTestFixture(TestFixture):
     pass
 
   def ResetState(self):
+    """A hook to reset the responder after the test has run."""
     pass
 
   def Stop(self):
