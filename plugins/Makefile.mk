@@ -25,6 +25,3 @@ include plugins/uartdmx/Makefile.mk
 endif
 
 dist_noinst_SCRIPTS += plugins/convert_README_to_header.sh
-
-plugins/%/PluginDescription.h: plugins/%/README.md plugins/convert_README_to_header.sh plugins/Makefile.mk
-	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(shell dirname $<) $@

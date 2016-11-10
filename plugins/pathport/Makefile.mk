@@ -17,5 +17,4 @@ plugins_pathport_libolapathport_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la
 endif
 
-EXTRA_DIST += \
-    plugins/pathport/README.md
+EXTRA_DIST += plugins/pathport/README.md

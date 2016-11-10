@@ -40,5 +40,4 @@ plugins_spi_SPITester_LDADD = $(COMMON_TESTING_LIBS) \
 
 endif
 
-EXTRA_DIST += \
-    plugins/spi/README.md
+EXTRA_DIST += plugins/spi/README.md

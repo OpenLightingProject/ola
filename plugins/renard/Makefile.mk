@@ -16,5 +16,4 @@ plugins_renard_libolarenard_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la
 endif
 
-EXTRA_DIST += \
-    plugins/renard/README.md
+EXTRA_DIST += plugins/renard/README.md

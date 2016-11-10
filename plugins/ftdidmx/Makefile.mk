@@ -23,5 +23,4 @@ endif
 
 endif
 
-EXTRA_DIST += \
-    plugins/ftdidmx/README.md
+EXTRA_DIST += plugins/ftdidmx/README.md

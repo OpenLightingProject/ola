@@ -31,5 +31,4 @@ plugins_espnet_EspNetTester_LDADD = $(COMMON_TESTING_LIBS) \
                                     common/libolacommon.la
 endif
 
-EXTRA_DIST += \
-    plugins/espnet/README.md
+EXTRA_DIST += plugins/espnet/README.md
