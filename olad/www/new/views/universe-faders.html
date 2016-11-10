@@ -1,7 +1,7 @@
 <div ng-include="'/new/views/universe-header.html'"></div>
 <div class="row">
- <div class="col-xs-12 navigate">
-  <button ng-click="page(0)" class="col-xs-3 left-col">
+ <div class="col-xs-12 col-lg-6 col-lg-offset-3 navigate">
+  <button ng-click="page(-1)" class="col-xs-3 left-col">
    <span class="glyphicon glyphicon-arrow-left"></span>
   </button>
   <button title="Set all channels to 0" ng-click="light(OLA.MIN_CHANNEL_VALUE)" class="col-xs-2 off">
@@ -21,7 +21,7 @@
   <div ng-style="width" class="fader-group" ng-repeat="c in list | startFrom:offset*limit | limitTo:limit track by $index">
    <div class="channel-fader">{{c + 1}}</div>
    <input ng-change="change()" class="fader-fader" orient="vertical" min="{{OLA.MIN_CHANNEL_VALUE}}" max="{{OLA.MAX_CHANNEL_VALUE}}" type="range" ng-model="get[c]">
-   <div class="value-fader">{{get[c]}}</div>
+   <input ng-change="change()" class="value-fader" min="{{OLA.MIN_CHANNEL_VALUE}}" max="{{OLA.MAX_CHANNEL_VALUE}}" type="number" ng-model="get[c]" />
   </div>
  </div>
 </div>
