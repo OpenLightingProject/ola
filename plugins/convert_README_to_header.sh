@@ -5,14 +5,14 @@
 # The output file then contains one variable 'plugin_description'.
 
 if [ $# != 2 ]; then
-  echo "Usage: convert_README_to_header.sh <path> <dest file>";
+  echo "Usage: convert_README_to_header.sh <path> <file name>";
   echo "<path>: path to plugin dir, e.g. plugins/artnet";
-  echo "<dest file>: e.g. plugins/artnet/PluginDescription.h";
+  echo "<file name>: e.g. PluginDescription.h";
   exit 1;
 fi
 
 path="$1";
-outfile="$2";
+outfile="$path/$2";
 
 if [ ! -d $path ]; then
   echo "directory '$path' does not exist";

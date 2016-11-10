@@ -23,5 +23,4 @@ plugins_gpio_libolagpio_la_LIBADD = \
     plugins/gpio/libolagpiocore.la
 endif
 
-EXTRA_DIST += \
-    plugins/gpio/README.md
+EXTRA_DIST += plugins/gpio/README.md

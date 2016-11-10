@@ -15,5 +15,4 @@ plugins_dmx4linux_liboladmx4linux_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la
 endif
 
-EXTRA_DIST += \
-    plugins/dmx4linux/README.md
+EXTRA_DIST += plugins/dmx4linux/README.md

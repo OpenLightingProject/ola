@@ -18,5 +18,4 @@ plugins_ftdidmx_libolaftdidmx_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la
 endif
 
-EXTRA_DIST += \
-    plugins/ftdidmx/README.md
+EXTRA_DIST += plugins/ftdidmx/README.md
