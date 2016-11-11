@@ -33,7 +33,7 @@
 #include "olad/Preferences.h"
 #include "plugins/karate/KarateDevice.h"
 #include "plugins/karate/KaratePlugin.h"
-#include "plugins/karate/PluginDescription.h"
+#include "plugins/karate/KaratePluginDescription.h"
 
 namespace ola {
 namespace plugin {
