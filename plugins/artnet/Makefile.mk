@@ -12,14 +12,14 @@ plugins_artnet_libolaartnetnode_la_SOURCES = \
 plugins_artnet_libolaartnetnode_la_LIBADD = common/libolacommon.la
 
 # Plugin description is generated from README.md
-BUILT_SOURCES += plugins/artnet/PluginDescription.h
-plugins/artnet/PluginDescription.h: plugins/artnet/README.md plugins/artnet/Makefile.mk plugins/convert_README_to_header.sh
-	sh $(top_srcdir)/plugins/convert_README_to_header.sh plugins/artnet PluginDescription.h
+BUILT_SOURCES += plugins/artnet/ArtNetPluginDescription.h
+plugins/artnet/ArtNetPluginDescription.h: plugins/artnet/README.md plugins/artnet/Makefile.mk plugins/convert_README_to_header.sh
+	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/artnet $(top_builddir)/plugins/artnet/ArtNetPluginDescription.h
 
 # The OLA artnet plugin
 lib_LTLIBRARIES += plugins/artnet/libolaartnet.la
 plugins_artnet_libolaartnet_la_SOURCES = \
-    plugins/artnet/PluginDescription.h \
+    plugins/artnet/ArtNetPluginDescription.h \
     plugins/artnet/ArtNetPlugin.cpp \
     plugins/artnet/ArtNetPlugin.h \
     plugins/artnet/ArtNetDevice.cpp \
