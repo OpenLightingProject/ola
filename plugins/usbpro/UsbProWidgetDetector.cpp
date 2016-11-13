@@ -453,12 +453,15 @@ void UsbProWidgetDetector::HandleHardwareVersionResponse(
     return;
   }
 
+  OLA_DEBUG << "Hardware version response was " << ToHex(data[0]);
+
   WidgetStateMap::iterator iter = m_widgets.find(widget);
   if (iter == m_widgets.end()) {
     return;
   }
   RemoveTimeout(&iter->second);
-  if (data[0] == DMX_PRO_MKII_VERSION) {
+  if ((data[0] == DMX_PRO_MKII_VERSION) ||
+      (data[0] == DMX_PRO_MKII_B_VERSION)) {
     iter->second.information.dual_port = true;
     SendAPIRequest(widget);
   }

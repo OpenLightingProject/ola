@@ -24,7 +24,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <stdint.h>
 
@@ -35,8 +35,8 @@
 #include <uuid/uuid.h>
 #else
 #include <uuid.h>
-#endif
-#endif
+#endif  // HAVE_UUID_UUID_H
+#endif  // HAVE_OSSP_UUID_H
 
 #include <iostream>
 #include <string>
@@ -75,7 +75,7 @@ class CIDImpl {
 #else
   uuid_t m_uuid;
   explicit CIDImpl(uuid_t uuid);
-#endif
+#endif  // HAVE_OSSP_UUID
 };
 }  // namespace acn
 }  // namespace ola

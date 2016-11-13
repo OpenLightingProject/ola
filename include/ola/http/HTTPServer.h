@@ -38,7 +38,7 @@
 #else
 #include <sys/select.h>
 #include <sys/socket.h>
-#endif
+#endif  // _WIN32
 #include <microhttpd.h>
 #include <map>
 #include <set>

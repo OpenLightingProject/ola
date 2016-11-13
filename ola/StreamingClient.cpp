@@ -18,7 +18,8 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include <ola/AutoStart.h>
+#include <ola/AutoStart.h>  // NOLINT(build/include)
+// ola/StreamingClient.h deprecated
 #include <ola/Callback.h>
 #include <ola/Constants.h>
 #include <ola/DmxBuffer.h>

@@ -17,6 +17,7 @@ addons:
      - protobuf-compiler
      - libprotoc-dev
      - python-protobuf
+     - python-numpy
     packages: &core_build
      # This is all the bits we need to enable all options
      - *base_build
@@ -52,7 +53,7 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise
+           - llvm-toolchain-precise-3.8
     - os: linux
       compiler: gcc
       env: TASK='compile'
@@ -153,14 +154,16 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 install:
-  - pip install --user protobuf==2.4.1
+  - pip install --user protobuf==3.0.0
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex ossp-uuid protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd; fi
+#Fix a broken homebrew libtool install
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid already present
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi

@@ -28,12 +28,12 @@
 #include <winioctl.h>
 #else
 #include <sys/ioctl.h>
-#endif
+#endif  // _WIN32
 #include <unistd.h>
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <iomanip>
 #include <string>
@@ -69,8 +69,7 @@ bool GetPidFromFile(const string &lock_file, pid_t *pid) {
       *pid = 0;
       return true;
     }
-    OLA_INFO << "Failed to read PID from " << lock_file << ": "
-             << strerror(errno);
+    OLA_INFO << "Failed to open " << lock_file << ": " << strerror(errno);
     return false;
   }
 
@@ -78,6 +77,8 @@ bool GetPidFromFile(const string &lock_file, pid_t *pid) {
   int r = read(fd, buffer, arraysize(buffer));
   close(fd);
   if (r < 0) {
+    OLA_INFO << "Failed to read PID from " << lock_file << ": "
+             << strerror(errno);
     return false;
   }
 
@@ -100,7 +101,7 @@ bool ProcessExists(pid_t pid) {
     return true;
   }
   return errno != ESRCH;
-#endif
+#endif  // _WIN32
 }
 
 bool RemoveLockFile(const string &lock_file) {
@@ -155,6 +156,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   OLA_DEBUG << "Checking for " << lock_file;
   pid_t locked_pid;
   if (!GetPidFromFile(lock_file, &locked_pid)) {
+    OLA_INFO << "Failed to get PID from  " << lock_file;
     return false;
   }
 
@@ -163,11 +165,16 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
     // since different plugins may try to open the same serial port - see issue
     // #888.
     if (ProcessExists(locked_pid)) {
+      OLA_INFO << "Device " << path << " locked by PID " << locked_pid
+               << " and process exists, failed to acquire lock";
       return false;
     }
     // There is a race between the read & the unlink here. I'm not convinced it
     // can be solved.
     if (!RemoveLockFile(lock_file)) {
+      OLA_INFO << "Device " << path << " was locked by PID " << locked_pid
+               << " which is no longer active, however failed to remove stale "
+               << "lock file";
       return false;
     }
   }
@@ -179,9 +186,11 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
                      S_IRUSR | S_IWUSR
 #ifndef _WIN32
                      | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
-#endif
+#endif  // !_WIN32
                      );  // NOLINT(whitespace/parens)
   if (lock_fd < 0) {
+    OLA_INFO << "Failed to open " << lock_file << " in exclusive mode: "
+             << strerror(errno);
     return false;
   }
 
@@ -202,6 +211,8 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
 
   // Now try to open the serial device.
   if (!TryOpen(path, oflag, fd)) {
+    OLA_DEBUG << "Failed to open device " << path << " despite having the "
+              << "lock file";
     RemoveLockFile(lock_file);
     return false;
   }
@@ -215,7 +226,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
     RemoveLockFile(lock_file);
     return false;
   }
-#endif
+#endif  // HAVE_SYS_IOCTL_H
   return true;
 }
 

@@ -54,7 +54,7 @@ int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
   agent->HotPlugEvent(dev, event);
   return 0;
 }
-#endif
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 }  // namespace
 
 HotplugAgent::HotplugAgent(NotificationCallback* notification_cb,
@@ -91,7 +91,7 @@ bool HotplugAgent::Init() {
     m_usb_thread.reset(new ola::usb::LibUsbHotplugThread(
           m_context, hotplug_callback, this));
   }
-#endif
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 
   if (!m_usb_thread.get()) {
     m_usb_thread.reset(new ola::usb::LibUsbSimpleThread(m_context));
@@ -198,7 +198,7 @@ void HotplugAgent::HotPlugEvent(struct libusb_device *usb_device,
     m_notification_cb->Run(DEVICE_REMOVED, usb_device);
   }
 }
-#endif
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 
 /**
  * @brief Check if this platform supports hotplug.
@@ -210,7 +210,7 @@ bool HotplugAgent::HotplugSupported() {
   return libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) != 0;
 #else
   return false;
-#endif
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 }
 
 /*
