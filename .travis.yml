@@ -127,7 +127,7 @@ matrix:
 env:
   global:
    # -- BEGIN Coverity Scan ENV
-   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="autoreconf -i && ./configure --enable-ja-rule"
+   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 && autoreconf -i && ./configure --enable-ja-rule"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
    # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
@@ -180,7 +180,7 @@ after_success:
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
 
 after_script:
-  - if [ "$TASK" = "coverity" ]; then cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi
+  - if [ "$TASK" = "coverity" ]; then tail -n 10000 ${TRAVIS_BUILD_DIR}/cov-int/build-log.txt; cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi
 
 notifications:
   irc:
