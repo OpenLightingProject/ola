@@ -32,6 +32,9 @@ namespace usbdmx {
 
 using ola::usb::LibUsbAdaptor;
 
+const char ShowJockeyFactory::EXPECTED_MANUFACTURER[] = "Showjockey Co.,Ltd";
+const char ShowJockeyFactory::EXPECTED_PRODUCT[] =
+                                            "Showjockey Co.,Ltd.USB TO DMX51";
 const uint16_t ShowJockeyFactory::PRODUCT_ID = 0x57fe;
 const uint16_t ShowJockeyFactory::VENDOR_ID = 0x0483;
 
@@ -46,6 +49,14 @@ bool ShowJockeyFactory::DeviceAdded(
   OLA_INFO << "Found a new ShowJockey device";
   LibUsbAdaptor::DeviceInformation info;
   if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
+    return false;
+  }
+
+  if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER, info)) {
+    return false;
+  }
+
+  if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT, info)) {
     return false;
   }
 
