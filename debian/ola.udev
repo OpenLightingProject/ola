@@ -15,6 +15,9 @@ SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0962", GROUP="plug
 # udev rules for the velleman dmx device
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="8062", GROUP="plugdev", TAG+="uaccess"
 
+# udev rules for the showjockey dmx device
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="57fe", GROUP="plugdev"
+
 # udev rules for the DMXControl Projects e.V. Nodle U1
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0830", GROUP="plugdev", TAG+="uaccess"
 
