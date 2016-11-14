@@ -45,10 +45,13 @@ class ShowJockey : public SimpleWidget {
    * @brief Create a new ShowJockey.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
    */
   ShowJockey(ola::usb::LibUsbAdaptor *adaptor,
-             libusb_device *usb_device)
-      : SimpleWidget(adaptor, usb_device) {}
+             libusb_device *usb_device,
+             const std::string &serial)
+      : SimpleWidget(adaptor, usb_device),
+        m_serial(serial) {}
 
   /**
    * @brief Get the serial number of this widget.
@@ -74,9 +77,11 @@ class SynchronousShowJockey: public ShowJockey {
    * @brief Create a new SynchronousShowJockey.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
    */
   SynchronousShowJockey(ola::usb::LibUsbAdaptor *adaptor,
-                        libusb_device *usb_device);
+                        libusb_device *usb_device,
+                        const std::string &serial);
 
   bool Init();
 
@@ -97,9 +102,11 @@ class AsynchronousShowJockey: public ShowJockey {
    * @brief Create a new AsynchronousShowJockey.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param serial the serial number of the widget.
    */
   AsynchronousShowJockey(ola::usb::LibUsbAdaptor *adaptor,
-                         libusb_device *usb_device);
+                         libusb_device *usb_device,
+                         const std::string &serial);
 
   bool Init();
 

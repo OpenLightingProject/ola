@@ -51,9 +51,9 @@ bool ShowJockeyFactory::DeviceAdded(
 
   ShowJockey *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousShowJockey(m_adaptor, usb_device);
+    widget = new AsynchronousShowJockey(m_adaptor, usb_device, info.serial);
   } else {
-    widget = new SynchronousShowJockey(m_adaptor, usb_device);
+    widget = new SynchronousShowJockey(m_adaptor, usb_device, info.serial);
   }
   return AddWidget(observer, widget);
 }
