@@ -127,7 +127,7 @@ class HotplugAgent {
    */
   void HotPlugEvent(struct libusb_device *dev,
                     libusb_hotplug_event event);
-  #endif
+  #endif  // HAVE_LIBUSB_HOTPLUG_API
 
  private:
   typedef std::map<USBDeviceID, struct libusb_device*> DeviceMap;

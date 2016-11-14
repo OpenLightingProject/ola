@@ -25,7 +25,7 @@
 
 #ifdef _WIN32
 #include <Ws2tcpip.h>
-#endif
+#endif  // _WIN32
 
 namespace ola {
 namespace network {
@@ -36,7 +36,7 @@ SocketCloser::~SocketCloser() {
     closesocket(m_fd);
 #else
     close(m_fd);
-#endif
+#endif  // _WIN32
   }
 }
 

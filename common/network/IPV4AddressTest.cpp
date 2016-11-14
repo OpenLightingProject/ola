@@ -30,8 +30,8 @@
 #include <ola/win/CleanWinSock2.h>
 #ifndef in_addr_t
 #define in_addr_t uint32_t
-#endif
-#endif
+#endif  // !in_addr_t
+#endif  // _WIN32
 #include "common/network/NetworkUtilsInternal.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
