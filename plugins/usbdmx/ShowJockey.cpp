@@ -232,8 +232,9 @@ int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
 
 SynchronousShowJockey::SynchronousShowJockey(
     LibUsbAdaptor *adaptor,
-    libusb_device *usb_device)
-    : ShowJockey(adaptor, usb_device) {
+    libusb_device *usb_device,
+    const std::string &serial)
+    : ShowJockey(adaptor, usb_device, serial) {
 }
 
 bool SynchronousShowJockey::Init() {
@@ -256,12 +257,6 @@ bool SynchronousShowJockey::Init() {
   if (!ok) {
     return false;
   }
-
-  libusb_device_descriptor descriptor;
-  libusb_get_device_descriptor(m_usb_device, &descriptor);
-  usb::AsyncronousLibUsbAdaptor::DeviceInformation deviceInfo;
-  m_adaptor->GetDeviceInfo(m_usb_device, descriptor, &deviceInfo);
-  m_serial = deviceInfo.serial;
 
   std::auto_ptr<ShowJockeyThreadedSender> sender(
       new ShowJockeyThreadedSender(m_adaptor,
@@ -355,8 +350,9 @@ class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
 
 AsynchronousShowJockey::AsynchronousShowJockey(
     LibUsbAdaptor *adaptor,
-    libusb_device *usb_device)
-    : ShowJockey(adaptor, usb_device) {
+    libusb_device *usb_device,
+    const std::string &serial)
+    : ShowJockey(adaptor, usb_device, serial) {
 }
 
 bool AsynchronousShowJockey::Init() {
@@ -377,12 +373,6 @@ bool AsynchronousShowJockey::Init() {
   if (!ok) {
     return false;
   }
-
-  libusb_device_descriptor descriptor;
-  libusb_get_device_descriptor(m_usb_device, &descriptor);
-  usb::AsyncronousLibUsbAdaptor::DeviceInformation deviceInfo;
-  m_adaptor->GetDeviceInfo(m_usb_device, descriptor, &deviceInfo);
-  m_serial = deviceInfo.serial;
 
   std::auto_ptr<ShowJockeyAsyncUsbSender> sender(
       new ShowJockeyAsyncUsbSender(m_adaptor,
