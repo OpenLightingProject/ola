@@ -69,8 +69,8 @@ bool LocateInterface(LibUsbAdaptor *adaptor,
         const struct libusb_endpoint_descriptor *endpoint =
             &iface_descriptor->endpoint[k];
         OLA_DEBUG << "Interface " << i << ", altsetting " << j << ", endpoint "
-                  << static_cast<int>(k) << ", endpoint address 0x"
-                  << strings::ToHex(endpoint->bEndpointAddress);
+                  << static_cast<int>(k) << ", endpoint address "
+                  << ola::strings::ToHex(endpoint->bEndpointAddress);
         int current_endpoint_addr = endpoint->bEndpointAddress;
         bool isOutput = (current_endpoint_addr & LIBUSB_ENDPOINT_DIR_MASK) !=
                         LIBUSB_ENDPOINT_IN;
