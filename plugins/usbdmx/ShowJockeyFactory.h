@@ -46,6 +46,8 @@ class ShowJockeyFactory : public BaseWidgetFactory<class ShowJockey> {
  private:
   ola::usb::LibUsbAdaptor *m_adaptor;
 
+  static const char EXPECTED_MANUFACTURER[];
+  static const char EXPECTED_PRODUCT[];
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;
 
