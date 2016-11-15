@@ -663,8 +663,8 @@ void DisplaySetDmxHelp(const options &opts) {
           "  -h, --help                Display this help message and exit.\n"
           "  -u, --universe <universe> Universe number, e.g. 0.\n"
           "  -d, --dmx <values>        Comma separated DMX values, e.g. "
-          "0,255,128 sets first channel to 0, second channel to 255, "
-          "and third channel to 128.\n"
+          "0,255,128 sets first channel to 0, second channel to 255"
+          " and third channel to 128.\n"
        << endl;
 }
 
