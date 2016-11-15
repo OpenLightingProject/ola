@@ -12,7 +12,7 @@ plugins_artnet_libolaartnetnode_la_SOURCES = \
 plugins_artnet_libolaartnetnode_la_LIBADD = common/libolacommon.la
 
 # Plugin description is generated from README.md
-BUILT_SOURCES += plugins/artnet/ArtNetPluginDescription.h
+built_sources += plugins/artnet/ArtNetPluginDescription.h
 plugins/artnet/ArtNetPluginDescription.h: plugins/artnet/README.md plugins/artnet/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/artnet $(top_builddir)/plugins/artnet/ArtNetPluginDescription.h
 
