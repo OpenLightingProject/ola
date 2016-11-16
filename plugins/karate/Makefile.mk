@@ -2,7 +2,7 @@
 ##################################################
 if USE_KARATE
 # Plugin description is generated from README.md
-BUILT_SOURCES += plugins/karate/KaratePluginDescription.h
+built_sources += plugins/karate/KaratePluginDescription.h
 plugins/karate/KaratePluginDescription.h: plugins/karate/README.md plugins/karate/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/karate $(top_builddir)/plugins/karate/KaratePluginDescription.h
 
