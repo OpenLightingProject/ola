@@ -1,7 +1,8 @@
 Serial USB Plugin
 =================
 
-This plugin supports DMX USB devices that emulate a serial port. This includes:
+This plugin supports DMX USB devices that emulate a serial port. This
+includes:
 
 * Arduino RGB Mixer
 * DMX-TRI & RDM-TRI

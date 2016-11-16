@@ -2,13 +2,15 @@ Milford Instruments Plugin
 ==========================
 
 This plugin creates devices with one output port. It currently supports the
-1-463 DMX Protocol Converter and 1-553 512 Channel Serial to DMX Transmitter.
+1-463 DMX Protocol Converter and 1-553 512 Channel Serial to DMX
+Transmitter.
 
 
 ## Config file: `ola-milinst.conf`
 
 `device = /dev/ttyS0`  
-The device to use as a path for the serial port. Multiple devices are supported.
+The device to use as a path for the serial port. Multiple devices are
+supported.
 
 ### Per Device Settings
 

@@ -6,6 +6,7 @@ This plugin supports various USB DMX devices including:
 * Anyma uDMX
 * AVLdiy D512
 * DMXControl Projects e.V. Nodle U1
+* DMXCreator 512 Basic
 * Eurolite
 * Fadecandy
 * Sunlite USBDMX2
@@ -19,8 +20,8 @@ The debug level for libusb, see http://libusb.sourceforge.net/api-1.0/
 0 = No logging, 4 = Verbose debug.
 
 `nodle-<serial>-mode = {0,1,2,3,4,5,6,7}`  
-The mode for the Nodle U1 interface with serial number <serial> to operate in.
-Default = 6  
+The mode for the Nodle U1 interface with serial number `<serial>` to operate
+in. Default = 6  
 0 - Standby  
 1 - DMX In -> DMX Out  
 2 - PC Out -> DMX Out  

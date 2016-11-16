@@ -1,28 +1,28 @@
 SPI Plugin
 ==========
 
-This plugin enables control of LED pixel strings using SPI. Each SPI output is
-represented as an OLA Device. Devices can have multiple Ports, each of which
-controls a pixel string. Each Port can use a different personality (pixel type)
-and DMX start address, this allows a combination of various strings lengths &
-pixel hardware types. The start address and personality settings are
-controllable via RDM (each Port appears as a RDM responder).
+This plugin enables control of LED pixel strings using SPI. Each SPI output
+is represented as an OLA Device. Devices can have multiple Ports, each of
+which controls a pixel string. Each Port can use a different personality
+(pixel type) and DMX start address, this allows a combination of various
+strings lengths & pixel hardware types. The start address and personality
+settings are controllable via RDM (each Port appears as a RDM responder).
 
-To support multiple ports per SPI output, we use an SPI-Backend. Two backends
-are supported right now, a software backend which concatenates all the pixel
-data into a single buffer and a hardware multiplexer backend which uses the GPIO
-pins to control an off-host multiplexer. It's recommended to use the hardware
-multiplexer.
+To support multiple ports per SPI output, we use an SPI-Backend. Two
+backends are supported right now, a software backend which concatenates all
+the pixel data into a single buffer and a hardware multiplexer backend which
+uses the GPIO pins to control an off-host multiplexer. It's recommended to
+use the hardware multiplexer.
 
 
 ## Config file: `ola-spi.conf`
 
 `base_uid = <string>`  
-The starting UID to use for the SPI RDM , e.g. `7a70:00000100`.
+The starting UID to use for the SPI RDM, e.g. `7a70:00000100`.
 
 `device_prefix = <string>`  
-The prefix of files to match in `/dev`. Usually set to `spidev`. Each match will
-instantiate a Device.
+The prefix of files to match in `/dev`. Usually set to `spidev`. Each match
+will instantiate a Device.
 
 ### Per Device Settings
 
@@ -37,17 +37,17 @@ data. Set to true this will pull the pin high when writing.
 The backend to use to multiplex the SPI data.
 
 `<device>-gpio-pin = <int>`  
-The GPIO pins to use for the hardware multiplexer. Add one line for each pin.
-The number of ports will be 2 ** (# of pins).
+The GPIO pins to use for the hardware multiplexer. Add one line for each
+pin. The number of ports will be 2 ^ (# of pins).
 
 `<device>-ports = <int>`  
-If the software backend is used, this defines the number of ports which will be
-created.
+If the software backend is used, this defines the number of ports which will
+be created.
 
 `<device>-sync-ports = <int>`  
-Controls which port triggers a flush (write) of the SPI data. If set to -1 the
-SPI data is written when any port changes. This can result in a lot of data
-writes (slow) and partial frames. If set to -2, the last port is used.
+Controls which port triggers a flush (write) of the SPI data. If set to -1
+the SPI data is written when any port changes. This can result in a lot of
+data writes (slow) and partial frames. If set to -2, the last port is used.
 
 
 ### Per Port Settings

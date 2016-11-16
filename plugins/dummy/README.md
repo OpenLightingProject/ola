@@ -1,8 +1,8 @@
 Dummy Plugin
 ============
 
-The plugin creates a single device with one port. When used as an output port it
-prints the first two bytes of dmx data to stdout.
+The plugin creates a single device with one port. When used as an output
+port it prints the first two bytes of dmx data to stdout.
 
 The Dummy plugin can also emulate a range of RDM devices. It supports the
 following RDM device types:

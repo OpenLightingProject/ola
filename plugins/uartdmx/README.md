@@ -1,9 +1,9 @@
 Native UART DMX Plugin
 ======================
 
-This plugin drives a supported POSIX UART (plus extensions) to produce a direct
-DMX output stream. The host needs to create the DMX stream itself as there is no
-external microcontroller.
+This plugin drives a supported POSIX UART (plus extensions) to produce a
+direct DMX output stream. The host needs to create the DMX stream itself as
+there is no external microcontroller.
 
 This is tested with the on-board UART of the Raspberry Pi. See here for a
 possible schematic:
@@ -16,9 +16,9 @@ http://eastertrail.blogspot.co.uk/2014/04/command-and-control-ii.html
 Enable this plugin (DISABLED by default).
 
 `device = /dev/ttyACM0` 
-The device to use for DMX output (optional). Multiple devices are supported if
-the hardware exists. Using USB-serial adapters is not supported (try the ftdidmx
-plugin instead).
+The device to use for DMX output (optional). Multiple devices are supported
+if the hardware exists. Using USB-serial adapters is not supported (try the
+*ftdidmx* plugin instead).
 
 ### Per Device Settings (using above device name)
 
