@@ -1,8 +1,8 @@
 Enttec Open DMX Plugin
 ======================
 
-The plugin creates a single device with one output port using the Enttec Open
-DMX USB widget.
+The plugin creates a single device with one output port using the Enttec
+Open DMX USB widget.
 
 
 ## Config file: `ola-opendmx.conf`

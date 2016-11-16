@@ -1,9 +1,9 @@
 General Purpose I/O Plugin
 ==========================
 
-This plugin controls the General Purpose Digital I/O (GPIO) pins on devices like
-a Raspberry Pi. It creates a single device, with a single output port. The
-offset (start address) of the GPIO pins is configurable.
+This plugin controls the General Purpose Digital I/O (GPIO) pins on devices
+like a Raspberry Pi. It creates a single device, with a single output port.
+The offset (start address) of the GPIO pins is configurable.
 
 
 ## Config file: `ola-gpio.conf`

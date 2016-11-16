@@ -10,8 +10,8 @@ example, SandNet universe 1 is OLA universe 0.
 ## Config file: `ola-sandnet.conf`
 
 `ip = [a.b.c.d|<interface_name>]`  
-The ip address or interface name to bind to. If not specified it will use the
-first non-loopback interface.
+The ip address or interface name to bind to. If not specified it will use
+the first non-loopback interface.
 
 `name = ola-SandNet`  
 The name of the node.
