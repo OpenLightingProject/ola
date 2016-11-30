@@ -36,9 +36,13 @@
 
 #include "plugins/usbdmx/AnymauDMX.h"
 #include "plugins/usbdmx/AnymauDMXFactory.h"
+#include "plugins/usbdmx/AVLdiyD512.h"
+#include "plugins/usbdmx/AVLdiyD512Factory.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1Device.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1Factory.h"
+#include "plugins/usbdmx/DMXCreator512Basic.h"
+#include "plugins/usbdmx/DMXCreator512BasicFactory.h"
 #include "plugins/usbdmx/EurolitePro.h"
 #include "plugins/usbdmx/EuroliteProFactory.h"
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
@@ -67,8 +71,10 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
       m_preferences(preferences),
       m_context(NULL) {
   m_widget_factories.push_back(new AnymauDMXFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new AVLdiyD512Factory(&m_usb_adaptor));
   m_widget_factories.push_back(new DMXCProjectsNodleU1Factory(&m_usb_adaptor,
       m_plugin_adaptor, m_preferences));
+  m_widget_factories.push_back(new DMXCreator512BasicFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new ScanlimeFadecandyFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(&m_usb_adaptor));
@@ -123,6 +129,13 @@ bool SyncPluginImpl::NewWidget(AnymauDMX *widget) {
                         "anyma-" + widget->SerialNumber()));
 }
 
+bool SyncPluginImpl::NewWidget(AVLdiyD512 *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "AVLdiy USB Device",
+                        "avldiy-" + widget->SerialNumber()));
+}
+
 bool SyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
   return StartAndRegisterDevice(
       widget,
@@ -131,6 +144,13 @@ bool SyncPluginImpl::NewWidget(DMXCProjectsNodleU1 *widget) {
           "DMXControl Projects e.V. Nodle U1 (" + widget->SerialNumber() + ")",
           "nodleu1-" + widget->SerialNumber(),
           m_plugin_adaptor));
+}
+
+bool SyncPluginImpl::NewWidget(DMXCreator512Basic *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(m_plugin, widget, "DMXCreator 512 Basic USB Device",
+                        "dmxcreator512basic-" + widget->SerialNumber()));
 }
 
 bool SyncPluginImpl::NewWidget(EurolitePro *widget) {

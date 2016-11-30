@@ -3,6 +3,8 @@
 #include <utility>
 #include <vector>
 #include <ola/Logging.h>
+#include <ola/base/SysExits.h>
+#include <ola/strings/Format.h>
 #include "tools/ola_trigger/ConfigCommon.h"
 #include "tools/ola_trigger/ParserActions.h"
 int yyerror(const char *s);
@@ -27,6 +29,7 @@ int yylex(void);
 %token <int_val> INTEGER_LITERAL
 %token <str_val> QUOTED_VALUE
 %token <str_val> WORD_LITERAL
+%token <str_val> VARIABLE_LITERAL
 %type <str_val> value
 %type <str_val> program
 %type <str_val> full_path
@@ -68,8 +71,10 @@ assignment :
 ;
 
 value :
-      WORD_LITERAL
+      INTEGER_LITERAL { $$ = new std::string(ola::strings::IntToString($1)); } 
+    | WORD_LITERAL
     | QUOTED_VALUE
+    | VARIABLE_LITERAL
 ;
 
 optional_whitespace:
@@ -133,12 +138,14 @@ arguments:
     | arguments WHITESPACE argument {
         $$ = $1; $$->push_back(std::string(*$3));
         delete $3;
-    }
+      }
 ;
 
 argument:
-      WORD_LITERAL
+      INTEGER_LITERAL { $$ = new std::string(ola::strings::IntToString($1)); } 
+    | WORD_LITERAL
     | QUOTED_VALUE
+    | VARIABLE_LITERAL
 ;
 
 program:
@@ -168,9 +175,9 @@ int yyerror(std::string s) {
   extern int yylineno;  // defined and maintained in lex.yy.cpp
   extern char *yytext;  // defined and maintained in lex.yy.cpp
 
-  OLA_FATAL << "ERROR: " << s << " at symbol \"" << yytext <<
-      "\" on line " << yylineno << " column " << column;
-  exit(1);
+  OLA_FATAL << "ERROR: " << s << " at symbol \"" << yytext
+            << "\" on line " << yylineno << " column " << column;
+  exit(ola::EXIT_DATAERR);
 }
 
 int yyerror(const char *s) {

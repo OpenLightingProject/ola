@@ -8,6 +8,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/AnymauDMX.h \
     plugins/usbdmx/AnymauDMXFactory.cpp \
     plugins/usbdmx/AnymauDMXFactory.h \
+    plugins/usbdmx/AVLdiyD512.cpp \
+    plugins/usbdmx/AVLdiyD512.h \
+    plugins/usbdmx/AVLdiyD512Factory.cpp \
+    plugins/usbdmx/AVLdiyD512Factory.h \
     plugins/usbdmx/AsyncUsbReceiver.cpp \
     plugins/usbdmx/AsyncUsbReceiver.h \
     plugins/usbdmx/AsyncUsbSender.cpp \
@@ -18,6 +22,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/DMXCProjectsNodleU1.h \
     plugins/usbdmx/DMXCProjectsNodleU1Factory.cpp \
     plugins/usbdmx/DMXCProjectsNodleU1Factory.h \
+    plugins/usbdmx/DMXCreator512Basic.cpp \
+    plugins/usbdmx/DMXCreator512Basic.h \
+    plugins/usbdmx/DMXCreator512BasicFactory.cpp \
+    plugins/usbdmx/DMXCreator512BasicFactory.h \
     plugins/usbdmx/EurolitePro.cpp \
     plugins/usbdmx/EurolitePro.h \
     plugins/usbdmx/EuroliteProFactory.cpp \
