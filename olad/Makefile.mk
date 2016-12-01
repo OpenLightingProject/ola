@@ -90,7 +90,8 @@ COMMON_OLAD_TEST_LDADD = $(COMMON_TESTING_LIBS) $(libprotobuf_LIBS) \
 olad_OlaTester_SOURCES = \
     olad/PluginManagerTest.cpp \
     olad/OlaServerServiceImplTest.cpp
-olad_OlaTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+olad_OlaTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) \
+                          $(COMMON_PROTOBUF_CXXFLAGS)
 olad_OlaTester_LDADD = $(COMMON_OLAD_TEST_LDADD)
 
 CLEANFILES += olad/ola-output.conf
