@@ -11,10 +11,18 @@ x/y/2016 ola-0.10.3
  Bugs:
  * Work around a clang warning in our protobuf generator code
  * Force gnu++98 mode if compiler supports 98 and 11 modes so we keep
-   std::auto_ptr
+   std::auto_ptr #1028
+ * JsonPatchParser.h tries to include a project header file; move the
+   OptionalItem header to includes to resolve #1086
+ * Reset the client socket once we've closed it, so it can be re-used
+ * Silence a warning in the code so it builds with Protobuf 3 #1110 Debian
+   #835433
+ * Work around <ernno.h> include failure on MIPS Debian #836383
+ * Update GPIO and SPI pin limits for CHIP as its pin numbers are higher #1095
+ * Clarify some details in ola_set_dmx help #1109 Debian #830972
 
  Internal:
- *
+ * Add more debugging of opening and acquiring locks
 
 21/5/2016 ola-0.10.2
  Features:
