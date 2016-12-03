@@ -13,7 +13,7 @@ to ESP universe 10.
 ## Config file: `ola-espnet.conf`
 
 `ip = [a.b.c.d|<interface_name>]`  
-The ip address or interface name to bind to. If not specified it will use
+The IP address or interface name to bind to. If not specified it will use
 the first non-loopback interface.
 
 `name = ola-EspNet`  

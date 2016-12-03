@@ -14,7 +14,7 @@ universe 1 is xDMX channels 512 - 1023.
 Set the DSCP value for the packets. Range is 0-63.
 
 `ip = [a.b.c.d|<interface_name>]`  
-The ip address or interface name to bind to. If not specified it will use
+The IP address or interface name to bind to. If not specified it will use
 the first non-loopback interface.
 
 `name = ola-Pathport`  
