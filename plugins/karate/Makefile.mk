@@ -8,8 +8,8 @@ plugins/karate/KaratePluginDescription.h: plugins/karate/README.md plugins/karat
 
 lib_LTLIBRARIES += plugins/karate/libolakarate.la
 plugins_karate_libolakarate_la_SOURCES = \
-    plugins/karate/KaratePluginDescription.h \
     plugins/karate/KaratePlugin.cpp \
+    plugins/karate/KaratePluginDescription.h \
     plugins/karate/KarateDevice.cpp \
     plugins/karate/KarateThread.cpp \
     plugins/karate/KarateLight.cpp \

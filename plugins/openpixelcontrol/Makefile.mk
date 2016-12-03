@@ -49,4 +49,3 @@ plugins_openpixelcontrol_OPCServerTester_LDADD = \
 endif
 
 EXTRA_DIST += plugins/openpixelcontrol/README.md
-

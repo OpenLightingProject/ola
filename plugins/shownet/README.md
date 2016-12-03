@@ -11,7 +11,7 @@ input and output ports are channels 513 - 1024.
 ## Config file: `ola-shownet.conf`
 
 `ip = [a.b.c.d|<interface_name>]`  
-The ip address or interface name to bind to. If not specified it will use
+The IP address or interface name to bind to. If not specified it will use
 the first non-loopback interface.
 
 `name = ola-ShowNet`  

@@ -34,7 +34,7 @@ The Universe bits are the `OLA Universe number modulo 16`.
 | 1          | 15            | 0            | 496                 |
 | 1          | 15            | 15           | 511                 |
 
-That is `Port Address = (Net << 8) + (Subnet << 4) + (Universe % 4)`
+That is `Port Address = (Net << 8) + (Subnet << 4) + (Universe % 16)`
 
 
 ## Config file: `ola-artnet.conf`

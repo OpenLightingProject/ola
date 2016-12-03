@@ -15,7 +15,7 @@ following RDM device types:
 * Sensor Device, with a number of sensors implemented
 * Network Device, with E1.37-2 PIDs
 
-The number of each device is configurable.
+The number of each type of device is configurable.
 
 
 ## Config file: `ola-dummy.conf`

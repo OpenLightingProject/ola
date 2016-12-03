@@ -19,8 +19,8 @@ plugins/artnet/ArtNetPluginDescription.h: plugins/artnet/README.md plugins/artne
 # The OLA artnet plugin
 lib_LTLIBRARIES += plugins/artnet/libolaartnet.la
 plugins_artnet_libolaartnet_la_SOURCES = \
-    plugins/artnet/ArtNetPluginDescription.h \
     plugins/artnet/ArtNetPlugin.cpp \
+    plugins/artnet/ArtNetPluginDescription.h \
     plugins/artnet/ArtNetPlugin.h \
     plugins/artnet/ArtNetDevice.cpp \
     plugins/artnet/ArtNetDevice.h \
