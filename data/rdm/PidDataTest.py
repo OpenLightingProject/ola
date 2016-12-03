@@ -40,5 +40,6 @@ class PidDataTest(unittest.TestCase):
     pids = store.Pids()
     self.assertNotEqual(0, len(pids))
 
+
 if __name__ == '__main__':
   unittest.main()
