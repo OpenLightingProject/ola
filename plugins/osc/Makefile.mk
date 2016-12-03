@@ -40,4 +40,4 @@ endif
 
 EXTRA_DIST += \
     plugins/osc/README.md \
-    plugins/osc/README.developer
+    plugins/osc/README.developer.md
