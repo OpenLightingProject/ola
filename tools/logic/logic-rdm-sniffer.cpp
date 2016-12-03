@@ -20,11 +20,11 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_SALEAEDEVICEAPI_H
 #include <SaleaeDeviceApi.h>
-#endif
+#endif  // HAVE_SALEAEDEVICEAPI_H
 
 #include <string.h>
 #include <time.h>
