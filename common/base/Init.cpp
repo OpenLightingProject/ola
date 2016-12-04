@@ -372,7 +372,7 @@ void Daemonise() {
   }
 
   for (int fd = 0; fd < maxfd; fd++) {
-    close(fd);
+    close(fd); // ignore errors. Hope for the best. :-)
   }
 
   // send stdout, in and err to /dev/null

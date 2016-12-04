@@ -122,6 +122,8 @@ std::ostream& operator<<(std::ostream &stream, const DescriptorHandle &data) {
 }
 #endif  // _WIN32
 
+
+
 int ToFD(const DescriptorHandle &handle) {
 #ifdef _WIN32
   switch (handle.m_type) {
@@ -186,7 +188,7 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
       NULL);
   if (write_handle == INVALID_HANDLE_VALUE) {
     OLA_WARN << "Could not create write end of pipe: %d" << GetLastError();
-    CloseHandle(read_handle);
+    CloseHandle(read_handle); // ignore possible error: already on error path.
     return false;
   }
 
@@ -520,7 +522,9 @@ bool LoopbackDescriptor::Close() {
 #ifdef _WIN32
     CloseHandle(ToHandle(m_handle_pair[0]));
 #else
-    close(m_handle_pair[0]);
+    if (close(m_handle_pair[0])) {
+      OLA_WARN << "LoopbackDescriptor0 close: " << strerror(errno);
+    }
 #endif  // _WIN32
   }
 
@@ -528,7 +532,9 @@ bool LoopbackDescriptor::Close() {
 #ifdef _WIN32
     CloseHandle(ToHandle(m_handle_pair[1]));
 #else
-    close(m_handle_pair[1]);
+    if (close(m_handle_pair[1])) {
+      OLA_WARN << "LoopbackDescriptor1 close: " << strerror(errno);
+    }
 #endif  // _WIN32
   }
 
@@ -542,7 +548,9 @@ bool LoopbackDescriptor::CloseClient() {
 #ifdef _WIN32
     CloseHandle(ToHandle(m_handle_pair[1]));
 #else
-    close(m_handle_pair[1]);
+    if (close(m_handle_pair[1])) {
+      OLA_WARN << "LoopbackDescriptor closeclient close: " << strerror(errno);
+    }
 #endif  // _WIN32
   }
 
@@ -573,8 +581,12 @@ bool PipeDescriptor::Init() {
     CloseHandle(ToHandle(m_in_pair[0]));
     CloseHandle(ToHandle(m_in_pair[1]));
 #else
-    close(m_in_pair[0]);
-    close(m_in_pair[1]);
+    if (close(m_in_pair[0])) {
+      OLA_WARN << "PipeDescriptor0 close: " << strerror(errno);
+    }
+    if (close(m_in_pair[1])) {
+      OLA_WARN << "PipeDescriptor1 close: " << strerror(errno);
+    }
 #endif  // _WIN32
     m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
     return false;
@@ -602,7 +614,9 @@ bool PipeDescriptor::Close() {
 #ifdef _WIN32
     CloseHandle(ToHandle(m_in_pair[0]));
 #else
-    close(m_in_pair[0]);
+    if (close(m_in_pair[0])) {
+      OLA_WARN << "PipeDescriptor0 close: " << strerror(errno);
+    }
 #endif  // _WIN32
   }
 
@@ -610,7 +624,9 @@ bool PipeDescriptor::Close() {
 #ifdef _WIN32
     CloseHandle(ToHandle(m_out_pair[1]));
 #else
-    close(m_out_pair[1]);
+    if (close(m_out_pair[1])) {
+      OLA_WARN << "PipeDescriptor1 close: " << strerror(errno);
+    }
 #endif  // _WIN32
   }
 
@@ -624,7 +640,9 @@ bool PipeDescriptor::CloseClient() {
 #ifdef _WIN32
     CloseHandle(ToHandle(m_out_pair[1]));
 #else
-    close(m_out_pair[1]);
+    if (close(m_out_pair[1])) {
+      OLA_WARN << "PipeDescriptor closecllient: " << strerror(errno);
+    }
 #endif  // _WIN32
   }
 
@@ -680,7 +698,9 @@ bool UnixSocket::Close() {
   return true;
 #else
   if (m_handle != INVALID_DESCRIPTOR) {
-    close(m_handle);
+    if (close(m_handle)) {
+      OLA_WARN << "UnixSocket close: " << strerror(errno);
+    }
   }
 
   m_handle = INVALID_DESCRIPTOR;

@@ -158,7 +158,9 @@ EPoller::EPoller(ExportMap *export_map, Clock* clock)
 
 EPoller::~EPoller() {
   if (m_epoll_fd != INVALID_DESCRIPTOR) {
-    close(m_epoll_fd);
+    if (close(m_epoll_fd)) {
+      OLA_WARN << "close: " << strerror(errno);
+    }
   }
 
   {

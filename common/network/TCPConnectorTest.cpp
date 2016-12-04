@@ -303,7 +303,9 @@ void TCPConnectorTest::OnConnect(int fd, int error) {
 #ifdef _WIN32
     closesocket(fd);
 #else
-    close(fd);
+    if (close(fd)) {
+      OLA_WARN << "TCPConnectorTest close: " << strerror(errno);
+    }
 #endif  // _WIN32
   }
   m_sucessfull_calls++;

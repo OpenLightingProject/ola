@@ -69,8 +69,11 @@ SPIWriter::SPIWriter(const string &spi_device,
 }
 
 SPIWriter::~SPIWriter() {
-  if (m_fd >= 0)
-    close(m_fd);
+  if (m_fd >= 0) {
+    if (close(m_fd)) {
+      OLA_WARN << "close: " << strerror(errno);
+    }
+  }
 }
 
 bool SPIWriter::Init() {

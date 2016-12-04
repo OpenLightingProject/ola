@@ -93,7 +93,12 @@ bool MockUDPSocket::Close() {
 #ifdef _WIN32
     closesocket(m_dummy_handle.m_handle.m_fd);
 #else
-    close(m_dummy_handle);
+    if (close(m_dummy_handle)) {
+       OLA_WARN << "close: " << strerror(errno);
+       // XXX What can a caller do if it fails? -- REW
+       // Update: the UDPSocket close function also returns false when it fails. 
+       return false; 
+    }
 #endif  // _WIN32
   }
   return true;

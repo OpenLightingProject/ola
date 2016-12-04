@@ -75,7 +75,10 @@ bool GetPidFromFile(const string &lock_file, pid_t *pid) {
 
   char buffer[100];
   int r = read(fd, buffer, arraysize(buffer));
-  close(fd);
+  if (close(fd)) {
+    OLA_WARN << "GetPidFromFile close: " << strerror(errno);
+    // if the close failed, we might be able to continue. 
+  }
   if (r < 0) {
     OLA_INFO << "Failed to read PID from " << lock_file << ": "
              << strerror(errno);
@@ -146,7 +149,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
 
   // First, check if the path exists, there's no point trying to open it if not
   if (!FileExists(path)) {
-    OLA_INFO << "Device " << path << " doesn't exist, so there's no point "
+    OLA_DEBUG << "Device " << path << " doesn't exist, so there's no point "
                 "trying to acquire a lock";
     return false;
   }
@@ -202,7 +205,9 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   const string pid_file_contents = str.str();
   size_t r = write(lock_fd, pid_file_contents.c_str(),
                    pid_file_contents.size());
-  close(lock_fd);
+  if (close(lock_fd)) {
+    OLA_WARN << "AcquireUUCPLockAndOpen close: " << strerror(errno);
+  }
   if (r != pid_file_contents.size()) {
     OLA_WARN << "Failed to write complete LCK file: " << lock_file;
     RemoveLockFile(lock_file);
@@ -222,7 +227,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   // further opens.
   if (ioctl(*fd, TIOCEXCL) == -1) {
     OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
-    close(*fd);
+    close(*fd); // ignore error: already on error path.
     RemoveLockFile(lock_file);
     return false;
   }

@@ -106,7 +106,9 @@ KQueuePoller::KQueuePoller(ExportMap *export_map, Clock* clock)
 
 KQueuePoller::~KQueuePoller() {
   if (m_kqueue_fd != INVALID_DESCRIPTOR) {
-    close(m_kqueue_fd);
+    if (close(m_kqueue_fd)) {
+      OLA_WARN << "close: " << strerror(errno);
+    }
   }
 
   {

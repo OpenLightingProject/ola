@@ -103,7 +103,9 @@ bool TCPSocket::Close() {
 #ifdef _WIN32
     closesocket(m_handle.m_handle.m_fd);
 #else
-    close(m_handle);
+    if (close(m_handle)) {
+      OLA_WARN << "close: " << strerror(errno);
+    }
 #endif  // _WIN32
     m_handle = ola::io::INVALID_DESCRIPTOR;
   }

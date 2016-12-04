@@ -184,7 +184,7 @@ bool UDPSocket::Close() {
 #else
   if (close(fd)) {
 #endif  // _WIN32
-    OLA_WARN << "close() failed, " << strerror(errno);
+    OLA_WARN << "UDPSocket close() failed, " << strerror(errno);
     return false;
   }
   return true;
