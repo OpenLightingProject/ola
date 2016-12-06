@@ -38,6 +38,10 @@ AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
 # COMMON_TESTING_FLAGS_ONLY_WARNINGS
 # The common C++ flags for testing with (non-fatal) warnings enabled. Use this
 # for 3rd party code that does not build correctly with COMMON_TESTING_FLAGS.
+#
+# COMMON_TESTING_PROTOBUF_FLAGS
+# The common C++ flags for testing with some warnings protobuf code throws
+# disabled.
 COMMON_CXXFLAGS_ONLY_WARNINGS = \
     -I$(top_srcdir)/include \
     -I$(top_builddir)/include \
@@ -53,6 +57,7 @@ COMMON_TESTING_FLAGS_ONLY_WARNINGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS) \
                                      -DTEST_BUILD_DIR=\"$(builddir)\"
 
 COMMON_TESTING_FLAGS = $(COMMON_TESTING_FLAGS_ONLY_WARNINGS)
+COMMON_TESTING_PROTOBUF_FLAGS = $(COMMON_TESTING_FLAGS)
 
 # The genererated protobuf files don't compile with -Werror on win32 so we
 # disable fatal warnings on WIN32.
@@ -61,6 +66,7 @@ if FATAL_WARNINGS
   COMMON_CXXFLAGS += -Werror
   COMMON_PROTOBUF_CXXFLAGS += -Werror -Wno-error=unused-parameter
   COMMON_TESTING_FLAGS += -Werror
+  COMMON_TESTING_PROTOBUF_FLAGS += -Werror -Wno-error=unused-parameter
 endif
 endif
 
