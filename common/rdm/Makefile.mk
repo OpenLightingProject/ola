@@ -110,7 +110,7 @@ common_rdm_RDMMessageTester_SOURCES = \
     common/rdm/RDMMessageInterationTest.cpp \
     common/rdm/StringMessageBuilderTest.cpp \
     common/rdm/VariableFieldSizeCalculatorTest.cpp
-common_rdm_RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)\
+common_rdm_RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) \
                                        $(COMMON_PROTOBUF_CXXFLAGS)
 common_rdm_RDMMessageTester_LDADD = $(COMMON_TESTING_LIBS)
 
