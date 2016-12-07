@@ -74,8 +74,14 @@ class GetMixin(ResponderTestFixture):
     of allowed results for each entry.
   """
   ALLOWED_NACKS = []
+  EXPECTED_FIELDS = None
 
   def Test(self):
+    if self.EXPECTED_FIELDS is None:
+      self.SetBroken('No EXPECTED_FIELDS given for %s' %
+                     (self.__class__.__name__))
+      return
+
     results = [self.AckGetResult(field_names=self.EXPECTED_FIELDS)]
     for nack in self.ALLOWED_NACKS:
       results.append(self.NackGetResult(nack))
@@ -132,7 +138,14 @@ class GetRequiredMixin(ResponderTestFixture):
     This mixin also sets a property if PROVIDES is defined.  The target class
     needs to defined EXPECTED_FIELDS and optionally PROVIDES.
   """
+  EXPECTED_FIELDS = None
+
   def Test(self):
+    if self.EXPECTED_FIELDS is None:
+      self.SetBroken('No EXPECTED_FIELDS given for %s' %
+                     (self.__class__.__name__))
+      return
+
     self.AddExpectedResults(
         self.AckGetResult(field_names=self.EXPECTED_FIELDS))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
@@ -427,6 +440,7 @@ class SetOversizedLabelMixin(ResponderTestFixture):
 # -----------------------------------------------------------------------------
 class SetMixin(ResponderTestFixture):
   """The base class for set mixins."""
+  EXPECTED_FIELDS = None
 
   def OldValue(self):
     self.SetBroken('Base OldValue method of SetMixin called')
@@ -435,6 +449,11 @@ class SetMixin(ResponderTestFixture):
     self.SetBroken('Base NewValue method of SetMixin called')
 
   def Test(self):
+    if self.EXPECTED_FIELDS is None:
+      self.SetBroken('No EXPECTED_FIELDS given for %s' %
+                     (self.__class__.__name__))
+      return
+
     new_value = self.NewValue()
     if new_value is None:
       return
@@ -1013,13 +1032,14 @@ class SetZeroUInt32Mixin(SetZeroUInt8Mixin):
 class GetOutOfRangeByteMixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+  LABEL = None
 
   def NumberOfSettings(self):
     # By default we use the first property from REQUIRES
     return self.Property(self.REQUIRES[0])
 
   def Test(self):
-    if not hasattr(self, 'LABEL'):
+    if self.LABEL is None:
       self.SetBroken('No LABEL given for %s' % self.__class__.__name__)
       return
 
@@ -1039,13 +1059,14 @@ class GetOutOfRangeByteMixin(ResponderTestFixture):
 class SetOutOfRangeByteMixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+  LABEL = None
 
   def NumberOfSettings(self):
     # By default we use the first property from REQUIRES
     return self.Property(self.REQUIRES[0])
 
   def Test(self):
-    if not hasattr(self, 'LABEL'):
+    if self.LABEL is None:
       self.SetBroken('No LABEL given for %s' % self.__class__.__name__)
       return
 
@@ -1081,11 +1102,23 @@ class GetSettingDescriptionsMixin(ResponderTestFixture):
   """
   ALLOWED_NACKS = []
   FIRST_INDEX_OFFSET = 1
+  EXPECTED_FIELDS = None
+  DESCRIPTION_FIELD = None
 
   def ListOfSettings(self):
     self.SetBroken('Base method of GetSettingDescriptionsMixin called')
 
   def Test(self):
+    if self.EXPECTED_FIELDS is None:
+      self.SetBroken('No EXPECTED_FIELDS given for %s' %
+                     (self.__class__.__name__))
+      return
+
+    if self.DESCRIPTION_FIELD is None:
+      self.SetBroken('No DESCRIPTION_FIELD given for %s' %
+                     (self.__class__.__name__))
+      return
+
     self.items = self.ListOfSettings()
     if not self.items:
       # Try to GET first item, this should NACK
