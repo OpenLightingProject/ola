@@ -664,7 +664,7 @@ class DetermineMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
     self.SendPacket()
 
 
-class SetDeviceInfo(TestMixins.UnsupportedSetWithDataMixin,
+class SetDeviceInfo(TestMixins.UnsupportedSetMixin,
                     DeviceInfoTest,
                     ResponderTestFixture):
   """Attempt to SET device info with no data."""
@@ -4116,6 +4116,13 @@ class SetCapturePresetWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """Set capture preset with no data."""
   PID = 'CAPTURE_PRESET'
+
+
+class SetCapturePresetWithExtraData(TestMixins.SetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Set capture preset with extra data."""
+  PID = 'CAPTURE_PRESET'
+  DATA = 'foobarbaz'
 
 
 # PRESET_PLAYBACK
