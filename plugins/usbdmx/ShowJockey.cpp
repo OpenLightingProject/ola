@@ -302,8 +302,8 @@ class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
   }
 
   bool PerformTransfer(const DmxBuffer &buffer) {
-    uint16_t number_of_sequence = DMX_MAX_SLOT_NUMBER / (m_max_packet_size_out - 2);
-    int final_size = DMX_MAX_SLOT_NUMBER + 2 * number_of_sequence;
+    uint16_t nb_sequence = DMX_MAX_SLOT_NUMBER / (m_max_packet_size_out - 2);
+    int final_size = DMX_MAX_SLOT_NUMBER + 2 * nb_sequence;
     if (m_tx_frame == NULL) {
       m_tx_frame = new uint8_t[final_size]();
     }
@@ -315,7 +315,7 @@ class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
     uint8_t *p_final_buffer = m_tx_frame;
     int to_write_size = m_max_packet_size_out - 2;
     uint16_t written_size = 0;
-    for (int i = 0; i <= number_of_sequence; ++i) {
+    for (int i = 0; i <= nb_sequence; ++i) {
       memcpy(p_final_buffer, &written_size, 2);
       p_final_buffer += 2;
       int need_to_write_size = DMX_MAX_SLOT_NUMBER - written_size;
