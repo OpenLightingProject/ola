@@ -38,15 +38,15 @@ class VariableInterpolatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testNoInterpolation();
-    void testSimpleInterpolation();
-    void testNestedInterpolation();
-    void testEscaping();
-    void testMissingVariables();
+  void testNoInterpolation();
+  void testSimpleInterpolation();
+  void testNestedInterpolation();
+  void testEscaping();
+  void testMissingVariables();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
+  void setUp() {
+    ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  }
 };
 
 
