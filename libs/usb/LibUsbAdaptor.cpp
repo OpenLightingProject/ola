@@ -149,7 +149,7 @@ bool LibUsbAdaptor::CheckProduct(const string &expected,
                                  const DeviceInformation &device_info) {
   if (expected != device_info.product) {
     OLA_WARN << "Product mismatch: " << expected << " != "
-             << device_info.manufacturer;
+             << device_info.product;
     return false;
   }
   return true;
