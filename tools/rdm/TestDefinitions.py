@@ -1788,8 +1788,9 @@ class SetBootSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
 
 
-class SetBootSoftwareVersionLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
-                                          OptionalParameterTestFixture):
+class SetBootSoftwareVersionLabelWithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
   """SET the boot software label with data."""
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
 
@@ -1817,8 +1818,9 @@ class GetOutOfRangeDMXPersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
   LABEL = 'personalities'
 
 
-class AllSubDevicesGetDMXPersonalityDescription(TestMixins.AllSubDevicesGetMixin,
-                                                OptionalParameterTestFixture):
+class AllSubDevicesGetDMXPersonalityDescription(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
   """Send a Get DMX_PERSONALITY_DESCRIPTION to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_PERSONALITY_DESCRIPTION'
