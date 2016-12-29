@@ -14,7 +14,7 @@ PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   autoreconf -i;
-  ./configure --enable-rdm-tests --enable-ja-rule;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for linting to run against
   make builtfiles
@@ -49,7 +49,7 @@ if [[ $TASK = 'lint' ]]; then
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   autoreconf -i;
-  ./configure --enable-rdm-tests --enable-ja-rule;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for licence checking to run against
   make builtfiles
@@ -61,7 +61,7 @@ elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
   autoreconf -i;
   # Doxygen is C++ only, so don't bother with RDM tests
-  ./configure --enable-ja-rule;
+  ./configure --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
@@ -79,7 +79,7 @@ elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i;
   # Coverage is C++ only, so don't bother with RDM tests
-  ./configure --enable-gcov --enable-ja-rule;
+  ./configure --enable-gcov --enable-ja-rule --enable-e133;
   make;
   make check;
 elif [[ $TASK = 'coverity' ]]; then
@@ -130,7 +130,7 @@ elif [[ $TASK = 'pychecker-wip' ]]; then
   pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" \) | xargs)
 else
   # Otherwise compile and check as normal
-  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
+  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
   autoreconf -i;
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
   make distcheck;
