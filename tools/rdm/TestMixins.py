@@ -847,7 +847,7 @@ class DiscoveryMixin(ResponderTestFixture):
 
 # E1.37-1 Mixins
 # -----------------------------------------------------------------------------
-class SetDmxFailModeMixin(ResponderTestFixture):
+class SetDMXFailModeMixin(ResponderTestFixture):
   PID = 'DMX_FAIL_MODE'
   REQUIRES = ['dmx_fail_settings', 'preset_info', 'set_dmx_fail_mode_supported']
   CATEGORY = TestCategory.DMX_SETUP
@@ -876,7 +876,7 @@ class SetDmxFailModeMixin(ResponderTestFixture):
     self._wrapper.Run()
 
 
-class SetDmxStartupModeMixin(ResponderTestFixture):
+class SetDMXStartupModeMixin(ResponderTestFixture):
   PID = 'DMX_STARTUP_MODE'
   REQUIRES = ['dmx_startup_settings', 'preset_info',
               'set_dmx_startup_mode_supported']
