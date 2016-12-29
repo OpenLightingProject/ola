@@ -381,10 +381,10 @@ class SetLabelMixin(ResponderTestFixture):
     self._wrapper.Run()
 
 
-class NonUnicastSetLabelMixin(SetLabelMixin):
-  """Send a SET device label to a broadcast or vendorcast uid."""
+class SetNonUnicastLabelMixin(SetLabelMixin):
+  """Send a SET device label to a broadcast or vendorcast UID."""
   def Uid(self):
-    self.SetBroken('Base method of SetNonUnicastStartAddressMixin called')
+    self.SetBroken('Base method of SetNonUnicastLabelMixin called')
 
   def Test(self):
     target_uid = self.Uid()
@@ -541,7 +541,7 @@ class SetUInt32Mixin(SetMixin):
 
 # Start address mixins
 # -----------------------------------------------------------------------------
-class SetStartAddressMixin(ResponderTestFixture):
+class SetDMXStartAddressMixin(ResponderTestFixture):
   """Set the dmx start address."""
   SET, VERIFY, RESET = xrange(3)
   start_address = 1
@@ -581,11 +581,11 @@ class SetStartAddressMixin(ResponderTestFixture):
     self._wrapper.Run()
 
 
-class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
-  """Send a set dmx start address to a non unicast uid."""
+class SetNonUnicastDMXStartAddressMixin(SetDMXStartAddressMixin):
+  """Send a set dmx start address to a non unicast UID."""
 
   def Uid(self):
-    self.SetBroken('Base method of SetNonUnicastStartAddressMixin called')
+    self.SetBroken('Base method of SetNonUnicastDMXStartAddressMixin called')
 
   def Test(self):
     target_uid = self.Uid()
@@ -622,7 +622,7 @@ class SetNonUnicastIdentifyMixin(ResponderTestFixture):
   REQUIRES = ['identify_state']
 
   def Uid(self):
-    self.SetBroken('Base method of SetNonUnicastStartAddressMixin called')
+    self.SetBroken('Base method of SetNonUnicastIdentifyMixin called')
 
   def States(self):
     return [

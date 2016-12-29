@@ -1438,7 +1438,7 @@ class AllSubDevicesGetDeviceLabel(TestMixins.AllSubDevicesGetMixin,
   PID = 'DEVICE_LABEL'
 
 
-class SetVendorcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
+class SetVendorcastDeviceLabel(TestMixins.SetNonUnicastLabelMixin,
                                OptionalParameterTestFixture):
   """SET the device label using the vendorcast address."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1453,7 +1453,7 @@ class SetVendorcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
     return self.Property('device_label')
 
 
-class SetBroadcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
+class SetBroadcastDeviceLabel(TestMixins.SetNonUnicastLabelMixin,
                               OptionalParameterTestFixture):
   """SET the device label using the broadcast address."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1989,7 +1989,7 @@ class SetDMXPersonality(OptionalParameterTestFixture):
     if self._personalities[0]['slots_required'] == 0:
       # If this personality has a footprint of 0, verify the start address is
       # 0xffff
-      next_action = self.VerifyFootprint0StartAddress
+      next_action = self.VerifyFootprint0DMXStartAddress
 
     self.AddExpectedResults(
       AckGetResult(
@@ -2001,7 +2001,7 @@ class SetDMXPersonality(OptionalParameterTestFixture):
         action=next_action))
     self.SendGet(ROOT_DEVICE, device_info_pid)
 
-  def VerifyFootprint0StartAddress(self):
+  def VerifyFootprint0DMXStartAddress(self):
     address_pid = self.LookupPid('DMX_START_ADDRESS')
     expected_results = [
       AckGetResult(
@@ -2129,7 +2129,7 @@ class GetDMXStartAddressWithData(TestMixins.GetWithDataMixin,
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
-class SetDMXStartAddress(TestMixins.SetStartAddressMixin,
+class SetDMXStartAddress(TestMixins.SetDMXStartAddressMixin,
                          ResponderTestFixture):
   """Set the DMX start address."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -2160,7 +2160,7 @@ class SetDMXStartAddress(TestMixins.SetStartAddressMixin,
       self.SetProperty(self.PROVIDES[0], response.WasAcked())
 
 
-class SetVendorcastDMXStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
+class SetVendorcastDMXStartAddress(TestMixins.SetNonUnicastDMXStartAddressMixin,
                                    ResponderTestFixture):
   """SET the dmx start address using the vendorcast address."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -2171,7 +2171,7 @@ class SetVendorcastDMXStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
     return UID.VendorcastAddress(self._uid.manufacturer_id)
 
 
-class SetBroadcastDMXStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
+class SetBroadcastDMXStartAddress(TestMixins.SetNonUnicastDMXStartAddressMixin,
                                   ResponderTestFixture):
   """SET the dmx start address using the broadcast address."""
   CATEGORY = TestCategory.DMX_SETUP
