@@ -51,7 +51,15 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
+  bool NewWidget(class AVLdiyD512 *widget) {
+    return DispatchNewWidget(widget);
+  }
+
   bool NewWidget(class DMXCProjectsNodleU1 *widget) {
+    return DispatchNewWidget(widget);
+  }
+
+  bool NewWidget(class DMXCreator512Basic *widget) {
     return DispatchNewWidget(widget);
   }
 

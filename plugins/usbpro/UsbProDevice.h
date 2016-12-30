@@ -119,7 +119,7 @@ class UsbProInputPort: public BasicInputPort {
                   EnttecPort *port,
                   unsigned int id,
                   ola::PluginAdaptor *plugin_adaptor,
-                  const std::string &description)
+                  const std::string &description = "")
       : BasicInputPort(parent, id, plugin_adaptor),
         m_description(description),
         m_port(port) {}
@@ -156,16 +156,18 @@ class UsbProOutputPort: public BasicOutputPort {
         m_wake_time(wake_time) {}
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t) {
-    if (m_bucket.GetToken(*m_wake_time))
+    if (m_bucket.GetToken(*m_wake_time)) {
       return m_port->SendDMX(buffer);
-    else
+    } else {
       OLA_INFO << "Port rated limited, dropping frame";
+    }
     return true;
   }
 
   void PostSetUniverse(Universe*, Universe *new_universe) {
-    if (!new_universe)
+    if (!new_universe) {
       m_port->ChangeToReceiveMode(false);
+    }
   }
 
   void SendRDMRequest(ola::rdm::RDMRequest *request,
