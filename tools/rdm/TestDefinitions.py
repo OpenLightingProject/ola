@@ -6770,14 +6770,15 @@ class SetInterfaceLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
 
 # Interface hardware address type 1
 # -----------------------------------------------------------------------------
-class AllSubDevicesGetInterfaceHardwareAddressType1(TestMixins.AllSubDevicesGetMixin,
-                                                    OptionalParameterTestFixture):
+class AllSubDevicesGetInterfaceHardwareAddressType1(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
   """Send a get INTERFACE_HARDWARE_ADDRESS_TYPE1 to ALL_SUB_DEVICES."""
   PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
   DATA = [1]
 
-#class GetInterfaceHardwareAddressType1(TestMixins.,
-#                                       OptionalParameterTestFixture):
+# class GetInterfaceHardwareAddressType1(TestMixins.,
+#                                        OptionalParameterTestFixture):
 # TODO(peter): Test get
 
 
