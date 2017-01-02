@@ -39,9 +39,11 @@ matrix:
   fast_finish: true
   include:
     - os: osx
+      osx_image: xcode8.2
       compiler: clang
       env: TASK='compile'
     - os: osx
+      osx_image: xcode8.2
       compiler: gcc
       env: TASK='compile'
     - os: linux
