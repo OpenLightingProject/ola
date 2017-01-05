@@ -66,7 +66,7 @@ The ArtNet subnet to use (0-15).
 `use_limited_broadcast = [true|false]`  
 When broadcasting, use the limited broadcast address `255.255.255.255`
 rather than the subnet directed broadcast address. Some devices which don't
-follow the ArtNet spec require this.
+follow the ArtNet spec require this. This only affects ArtDMX packets.
 
 `use_loopback = [true|false]`  
 Enable use of the loopback device.
