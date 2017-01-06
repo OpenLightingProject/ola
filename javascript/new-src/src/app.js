@@ -18,7 +18,7 @@
  */
 /*jshint browser: true, jquery: true */
 /* global angular */
-var ola = angular.module('olaApp', ['ngRoute']);
+var ola = angular.module('olaApp', ['ngRoute', 'hc.marked']);
 
 ola.config(['$routeProvider',
   function($routeProvider) {
@@ -58,6 +58,16 @@ ola.config(['$routeProvider',
       controller: 'pluginInfoCtrl'
     }).otherwise({
       redirectTo: '/'
+    });
+  }
+]);
+
+ola.config(['markedProvider',
+  function(markedProvider) {
+    'use strict';
+    markedProvider.setOptions({
+      gfm: true,
+      tables: true
     });
   }
 ]);
