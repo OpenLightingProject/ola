@@ -46,6 +46,8 @@ MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
 # -----------------------------------------------------------------------------
 class UnsupportedGetMixin(ResponderTestFixture):
   """Check that Get fails with NR_UNSUPPORTED_COMMAND_CLASS."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddIfGetSupported(
         self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
@@ -56,6 +58,7 @@ class UnsupportedGetWithDataMixin(ResponderTestFixture):
   """Check that GET with random param data fails with
     NR_UNSUPPORTED_COMMAND_CLASS.
   """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
 
   def Test(self):
@@ -244,6 +247,7 @@ class GetWithNoDataMixin(ResponderTestFixture):
 
 class AllSubDevicesGetMixin(ResponderTestFixture):
   """Send a GET to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
   DATA = []
 
   def Test(self):
