@@ -1,8 +1,8 @@
 OSC (Open Sound Control) Plugin
 ===============================
 
-This plugin allows OLA to send and receive OSC
-(http://www.opensoundcontrol.org/) messages.
+This plugin allows OLA to send and receive
+[OSC](http://www.opensoundcontrol.org/) messages.
 
 OLA uses the blob type for transporting DMX data.
 

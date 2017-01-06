@@ -38,6 +38,12 @@ plugins_usbpro_libolausbprowidget_la_LIBADD = common/libolacommon.la
 if USE_USBPRO
 # The OLA USB Pro Plugin
 lib_LTLIBRARIES += plugins/usbpro/libolausbpro.la
+
+# Plugin description is generated from README.md
+built_sources += plugins/usbpro/UsbSerialPluginDescription.h
+plugins/usbpro/UsbSerialPluginDescription.h: plugins/usbpro/README.md plugins/usbpro/Makefile.mk plugins/convert_README_to_header.sh
+	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/usbpro $(top_builddir)/plugins/usbpro/UsbSerialPluginDescription.h
+
 plugins_usbpro_libolausbpro_la_SOURCES = \
     plugins/usbpro/ArduinoRGBDevice.cpp \
     plugins/usbpro/ArduinoRGBDevice.h \
@@ -53,7 +59,8 @@ plugins_usbpro_libolausbpro_la_SOURCES = \
     plugins/usbpro/UsbProDevice.h \
     plugins/usbpro/UsbSerialDevice.h \
     plugins/usbpro/UsbSerialPlugin.cpp \
-    plugins/usbpro/UsbSerialPlugin.h
+    plugins/usbpro/UsbSerialPlugin.h \
+    plugins/usbpro/UsbSerialPluginDescription.h
 plugins_usbpro_libolausbpro_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la \
     plugins/usbpro/libolausbprowidget.la \

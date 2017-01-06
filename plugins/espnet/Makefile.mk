@@ -2,6 +2,12 @@
 ##################################################
 if USE_ESPNET
 lib_LTLIBRARIES += plugins/espnet/libolaespnet.la
+
+# Plugin description is generated from README.md
+built_sources += plugins/espnet/EspNetPluginDescription.h
+plugins/espnet/EspNetPluginDescription.h: plugins/espnet/README.md plugins/espnet/Makefile.mk plugins/convert_README_to_header.sh
+	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/espnet $(top_builddir)/plugins/espnet/EspNetPluginDescription.h
+
 plugins_espnet_libolaespnet_la_SOURCES = \
     plugins/espnet/EspNetDevice.cpp \
     plugins/espnet/EspNetDevice.h \
@@ -10,6 +16,7 @@ plugins_espnet_libolaespnet_la_SOURCES = \
     plugins/espnet/EspNetPackets.h \
     plugins/espnet/EspNetPlugin.cpp \
     plugins/espnet/EspNetPlugin.h \
+    plugins/espnet/EspNetPluginDescription.h \
     plugins/espnet/EspNetPluginCommon.h \
     plugins/espnet/EspNetPort.cpp \
     plugins/espnet/EspNetPort.h \
