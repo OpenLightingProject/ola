@@ -38,4 +38,6 @@ plugins_osc_OSCTester_LDADD = $(COMMON_TESTING_LIBS) \
                   common/libolacommon.la
 endif
 
-EXTRA_DIST += plugins/osc/README
+EXTRA_DIST += \
+    plugins/osc/README.md \
+    plugins/osc/README.developer.md
