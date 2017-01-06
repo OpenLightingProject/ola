@@ -696,7 +696,6 @@ class AllSubDevicesGetDeviceInfo(TestMixins.AllSubDevicesGetMixin,
                                  DeviceInfoTest,
                                  ResponderTestFixture):
   """Send a Get Device Info to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
 
 
 # Supported Parameters Tests & Mixin
@@ -900,7 +899,6 @@ class SetSupportedParametersWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetSupportedParameters(TestMixins.AllSubDevicesGetMixin,
                                           ResponderTestFixture):
   """Send a Get SUPPORTED_PARAMETERS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SUPPORTED_PARAMETERS'
 
 
@@ -1149,7 +1147,6 @@ class SetParameterDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetParameterDescription(TestMixins.AllSubDevicesGetMixin,
                                            ParamDescriptionTestFixture):
   """Send a Get PARAMETER_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PARAMETER_DESCRIPTION'
   DATA = [0x8000]
 
@@ -1204,7 +1201,6 @@ class SetProxiedDeviceCountWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetProxiedDeviceCount(TestMixins.AllSubDevicesGetMixin,
                                          OptionalParameterTestFixture):
   """Send a Get PROXIED_DEVICE_COUNT to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PROXIED_DEVICE_COUNT'
 
 
@@ -1239,7 +1235,6 @@ class SetProxiedDevicesWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetProxiedDevices(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Send a Get PROXIED_DEVICES to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PROXIED_DEVICES'
 
 
@@ -1289,7 +1284,6 @@ class ClearCommsStatusWithData(TestMixins.SetWithDataMixin,
 class AllSubDevicesGetCommsStatus(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get COMMS_STATUS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'COMMS_STATUS'
 
 
@@ -1326,7 +1320,6 @@ class SetProductDetailIdListWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetProductDetailIdList(TestMixins.AllSubDevicesGetMixin,
                                           OptionalParameterTestFixture):
   """Send a Get PRODUCT_DETAIL_ID_LIST to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRODUCT_DETAIL_ID_LIST'
 
 
@@ -1362,7 +1355,6 @@ class SetDeviceModelDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetDeviceModelDescription(TestMixins.AllSubDevicesGetMixin,
                                              OptionalParameterTestFixture):
   """Send a Get DEVICE_MODEL_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_MODEL_DESCRIPTION'
 
 
@@ -1398,7 +1390,6 @@ class SetManufacturerLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetManufacturerLabel(TestMixins.AllSubDevicesGetMixin,
                                         OptionalParameterTestFixture):
   """Send a Get MANUFACTURER_LABEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MANUFACTURER_LABEL'
 
 
@@ -1434,7 +1425,6 @@ class SetDeviceLabel(TestMixins.SetLabelMixin,
 class AllSubDevicesGetDeviceLabel(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get DEVICE_LABEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_LABEL'
 
 
@@ -1579,7 +1569,6 @@ class SetLanguageCapabilitiesWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetLanguageCapabilities(TestMixins.AllSubDevicesGetMixin,
                                            OptionalParameterTestFixture):
   """Send a Get LANGUAGE_CAPABILITIES to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LANGUAGE_CAPABILITIES'
 
 
@@ -1669,7 +1658,6 @@ class SetUnsupportedLanguage(OptionalParameterTestFixture):
 class AllSubDevicesGetLanguage(TestMixins.AllSubDevicesGetMixin,
                                OptionalParameterTestFixture):
   """Send a Get LANGUAGE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LANGUAGE'
 
 
@@ -1704,7 +1692,6 @@ class SetSoftwareVersionLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
                                            ResponderTestFixture):
   """Send a Get SOFTWARE_VERSION_LABEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SOFTWARE_VERSION_LABEL'
 
 
@@ -1762,7 +1749,6 @@ class SetBootSoftwareVersionIdWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetBootSoftwareVersionId(TestMixins.AllSubDevicesGetMixin,
                                             OptionalParameterTestFixture):
   """Send a Get BOOT_SOFTWARE_VERSION_ID to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'BOOT_SOFTWARE_VERSION_ID'
 
 
@@ -1798,7 +1784,6 @@ class SetBootSoftwareVersionLabelWithData(
 class AllSubDevicesGetBootSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
                                                OptionalParameterTestFixture):
   """Send a Get BOOT_SOFTWARE_VERSION_LABEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
 
 
@@ -1822,7 +1807,6 @@ class AllSubDevicesGetDMXPersonalityDescription(
         TestMixins.AllSubDevicesGetMixin,
         OptionalParameterTestFixture):
   """Send a Get DMX_PERSONALITY_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_PERSONALITY_DESCRIPTION'
   DATA = [1]
 
@@ -2065,7 +2049,6 @@ class SetDMXPersonalityWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetDMXPersonality(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Send a Get DMX_PERSONALITY to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_PERSONALITY'
 
 
@@ -2249,7 +2232,6 @@ class SetDMXStartAddressWithExtraData(TestMixins.GetWithDataMixin,
 class AllSubDevicesGetDMXStartAddress(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Send a Get DMX_START_ADDRESS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_START_ADDRESS'
 
 
@@ -2322,7 +2304,6 @@ class SetSlotInfo(TestMixins.UnsupportedSetMixin,
 class AllSubDevicesGetSlotInfo(TestMixins.AllSubDevicesGetMixin,
                                OptionalParameterTestFixture):
   """Send a Get SLOT_INFO to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SLOT_INFO'
 
 
@@ -2458,7 +2439,6 @@ class SetSlotDescription(TestMixins.UnsupportedSetMixin,
 class AllSubDevicesGetSlotDescription(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Send a Get SLOT_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SLOT_DESCRIPTION'
   DATA = [1]
 
@@ -2511,7 +2491,6 @@ class SetDefaultSlotValue(TestMixins.UnsupportedSetMixin,
 class AllSubDevicesGetDefaultSlotValue(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a Get DEFAULT_SLOT_VALUE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEFAULT_SLOT_VALUE'
   DATA = [1]
 
@@ -2717,7 +2696,6 @@ class SetSensorDefinition(TestMixins.UnsupportedSetMixin,
 class AllSubDevicesGetSensorDefinition(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a Get SENSOR_DEFINITION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SENSOR_DEFINITION'
   DATA = [1]
 
@@ -2969,7 +2947,6 @@ class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetSensorValue(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get SENSOR_VALUE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SENSOR_VALUE'
   DATA = [1]
 
@@ -2979,7 +2956,6 @@ class AllSubDevicesGetSensorValue(TestMixins.AllSubDevicesGetMixin,
 class GetRecordSensors(TestMixins.UnsupportedGetMixin,
                        OptionalParameterTestFixture):
   """GET record sensors."""
-  CATEGORY = TestCategory.SENSORS
   PID = 'RECORD_SENSORS'
 
 
@@ -3114,7 +3090,6 @@ class SetDeviceHoursWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetDeviceHours(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get DEVICE_HOURS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_HOURS'
 
 
@@ -3172,7 +3147,6 @@ class SetLampHoursWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetLampHours(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Send a Get LAMP_HOURS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LAMP_HOURS'
 
 
@@ -3229,7 +3203,6 @@ class SetLampStrikesWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetLampStrikes(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get LAMP_STRIKES to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LAMP_STRIKES'
 
 
@@ -3271,7 +3244,6 @@ class SetLampStateWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetLampState(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Send a Get LAMP_STATE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LAMP_STATE'
 
 
@@ -3324,7 +3296,6 @@ class SetLampOnModeWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetLampOnMode(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Send a Get LAMP_ON_MODE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LAMP_ON_MODE'
 
 
@@ -3408,7 +3379,6 @@ class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetDevicePowerCycles(TestMixins.AllSubDevicesGetMixin,
                                         OptionalParameterTestFixture):
   """Send a Get DEVICE_POWER_CYCLES to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_POWER_CYCLES'
 
 
@@ -3464,7 +3434,6 @@ class SetDisplayInvertWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetDisplayInvert(TestMixins.AllSubDevicesGetMixin,
                                     OptionalParameterTestFixture):
   """Send a Get DISPLAY_INVERT to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DISPLAY_INVERT'
 
 
@@ -3506,7 +3475,6 @@ class SetDisplayLevelWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetDisplayLevel(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Send a Get DISPLAY_LEVEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DISPLAY_LEVEL'
 
 
@@ -3546,7 +3514,6 @@ class SetPanInvertWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetPanInvert(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Send a Get PAN_INVERT to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PAN_INVERT'
 
 
@@ -3586,7 +3553,6 @@ class SetTiltInvertWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetTiltInvert(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Send a Get TILT_INVERT to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'TILT_INVERT'
 
 
@@ -3626,7 +3592,6 @@ class SetPanTiltSwapWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetPanTiltSwap(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get PAN_TILT_SWAP to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PAN_TILT_SWAP'
 
 
@@ -3699,7 +3664,6 @@ class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
 class AllSubDevicesGetRealTimeClock(TestMixins.AllSubDevicesGetMixin,
                                     OptionalParameterTestFixture):
   """Send a Get REAL_TIME_CLOCK to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'REAL_TIME_CLOCK'
 
 
@@ -3826,7 +3790,6 @@ class SetIdentifyDeviceWithNoData(ResponderTestFixture):
 class AllSubDevicesGetIdentifyDevice(TestMixins.AllSubDevicesGetMixin,
                                      ResponderTestFixture):
   """Send a Get IDENTIFY_DEVICE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IDENTIFY_DEVICE'
 
 
@@ -3910,7 +3873,6 @@ class SetPowerStateWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetPowerState(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Send a Get POWER_STATE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'POWER_STATE'
 
 
@@ -3953,7 +3915,6 @@ class SetPerformSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetPerformSelfTest(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Send a Get PERFORM_SELFTEST to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PERFORM_SELFTEST'
 
 
@@ -4039,7 +4000,6 @@ class FindSelfTests(OptionalParameterTestFixture):
 class AllSubDevicesGetSelfTestDescription(TestMixins.AllSubDevicesGetMixin,
                                           OptionalParameterTestFixture):
   """Send a Get SELF_TEST_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SELF_TEST_DESCRIPTION'
   DATA = [1]
 
@@ -4088,7 +4048,6 @@ class ResetFactoryDefaultsWithData(TestMixins.SetWithDataMixin,
 class AllSubDevicesGetFactoryDefaults(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Send a Get FACTORY_DEFAULTS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'FACTORY_DEFAULTS'
 
 
@@ -4097,7 +4056,6 @@ class AllSubDevicesGetFactoryDefaults(TestMixins.AllSubDevicesGetMixin,
 class GetCapturePreset(TestMixins.UnsupportedGetMixin,
                        OptionalParameterTestFixture):
   """GET capture preset."""
-  CATEGORY = TestCategory.CONTROL
   PID = 'CAPTURE_PRESET'
 
 
@@ -4171,7 +4129,6 @@ class SetPresetPlayback(OptionalParameterTestFixture):
 class AllSubDevicesGetPresetPlayback(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Send a Get PRESET_PLAYBACK to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_PLAYBACK'
 
 
@@ -4226,7 +4183,6 @@ class SetIdentifyModeWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetIdentifyMode(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Get IDENTIFY_MODE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IDENTIFY_MODE'
 
 
@@ -4378,7 +4334,6 @@ class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetDmxBlockAddress(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Get DMX_BLOCK_ADDRESS addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_BLOCK_ADDRESS'
 
 
@@ -4648,7 +4603,6 @@ class SetFailModeWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetDMXFailMode(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Get DMX_FAIL_MODE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_FAIL_MODE'
 
 
@@ -4919,7 +4873,6 @@ class SetStartupModeWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetDMXStartupMode(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Get DMX_STARTUP_MODE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_STARTUP_MODE'
 
 
@@ -4960,7 +4913,6 @@ class SetPowerOnSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetPowerOnSelfTest(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Get POWER_ON_SELF_TEST addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'POWER_ON_SELF_TEST'
 
 
@@ -5001,7 +4953,6 @@ class GetLockStateWithData(TestMixins.GetWithDataMixin,
 class AllSubDevicesGetLockState(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Get LOCK_STATE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LOCK_STATE'
 
 
@@ -5097,7 +5048,6 @@ class SetLockStateDescription(TestMixins.UnsupportedSetMixin,
 class AllSubDevicesGetLockStateDescription(TestMixins.AllSubDevicesGetMixin,
                                            OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LOCK_STATE_DESCRIPTION'
   DATA = [1]
 
@@ -5125,7 +5075,6 @@ class GetLockPinWithData(TestMixins.GetWithDataMixin,
 class AllSubDevicesGetLockPin(TestMixins.AllSubDevicesGetMixin,
                               OptionalParameterTestFixture):
   """Get LOCK_PIN addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LOCK_PIN'
 
 
@@ -5262,7 +5211,6 @@ class SetBurnInWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetBurnIn(TestMixins.AllSubDevicesGetMixin,
                              OptionalParameterTestFixture):
   """Get BURN_IN addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'BURN_IN'
 
 
@@ -5341,7 +5289,6 @@ class SetDimmerInfo(TestMixins.UnsupportedSetMixin,
 class AllSubDevicesGetDimmerInfo(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Get DIMMER_INFO addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DIMMER_INFO'
 
 
@@ -5400,7 +5347,6 @@ class GetMinimumLevelWithData(TestMixins.GetWithDataMixin,
 class AllSubDevicesGetMinimumLevel(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Get MINIMUM_LEVEL addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MINIMUM_LEVEL'
 
 
@@ -5630,7 +5576,6 @@ class SetUpperOutOfRangeMaximumLevel(OptionalParameterTestFixture):
 class AllSubDevicesGetMaximumLevel(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Get MAXIMUM_LEVEL addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MAXIMUM_LEVEL'
 
 
@@ -5748,7 +5693,6 @@ class SetCurveWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetCurve(TestMixins.AllSubDevicesGetMixin,
                             OptionalParameterTestFixture):
   """Get CURVE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'CURVE'
 
 
@@ -5799,7 +5743,6 @@ class SetCurveDescription(TestMixins.UnsupportedSetMixin,
 class AllSubDevicesGetCurveDescription(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Get CURVE_DESCRIPTION addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'CURVE_DESCRIPTION'
   DATA = [1]
 
@@ -5912,7 +5855,6 @@ class SetOutputResponseTimeWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetOutputResponseTime(TestMixins.AllSubDevicesGetMixin,
                                          OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'OUTPUT_RESPONSE_TIME'
 
 
@@ -5967,7 +5909,6 @@ class AllSubDevicesGetOutputResponseTimeDescription(
         TestMixins.AllSubDevicesGetMixin,
         OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
   DATA = [1]
 
@@ -6082,7 +6023,6 @@ class SetModulationFrequencyWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetModulationFrequency(TestMixins.AllSubDevicesGetMixin,
                                           OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MODULATION_FREQUENCY'
 
 
@@ -6137,7 +6077,6 @@ class AllSubDevicesGetModulationFrequencyDescription(
         TestMixins.AllSubDevicesGetMixin,
         OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
   DATA = [1]
 
@@ -6231,7 +6170,6 @@ class SetPresetInfo(TestMixins.UnsupportedSetMixin,
 class AllSubDevicesGetPresetInfo(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Get PRESET_INFO addressed 0to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_INFO'
 
 
@@ -6527,7 +6465,6 @@ class ClearPresetStatus(OptionalParameterTestFixture):
 class AllSubDevicesGetPresetStatus(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Get PRESET_STATUS addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_STATUS'
   DATA = [1]
 
@@ -6644,7 +6581,6 @@ class SetPresetMergeModeWithNoData(TestMixins.SetWithNoDataMixin,
 class AllSubDevicesGetPresetMergeMode(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Get PRESET_MERGEMODE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_MERGEMODE'
 
 
@@ -6723,7 +6659,6 @@ class GetDNSHostnameWithData(TestMixins.GetWithDataMixin,
 class AllSubDevicesGetDNSHostname(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get DNS_HOSTNAME to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DNS_HOSTNAME'
 
 
@@ -6751,7 +6686,6 @@ class GetDNSDomainNameWithData(TestMixins.GetWithDataMixin,
 class AllSubDevicesGetDNSDomainName(TestMixins.AllSubDevicesGetMixin,
                                     OptionalParameterTestFixture):
   """Send a Get DNS_DOMAIN_NAME to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DNS_DOMAIN_NAME'
 
 
@@ -6788,7 +6722,6 @@ class GetIPv4DefaultRouteWithData(TestMixins.GetWithDataMixin,
 class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a Get IPV4_DEFAULT_ROUTE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IPV4_DEFAULT_ROUTE'
 
 
@@ -6833,6 +6766,45 @@ class SetInterfaceLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
                                 OptionalParameterTestFixture):
   """SET the interface label with data."""
   PID = 'INTERFACE_LABEL'
+
+
+# Interface hardware address type 1
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetInterfaceHardwareAddressType1(TestMixins.AllSubDevicesGetMixin,
+                                                    OptionalParameterTestFixture):
+  """Send a get INTERFACE_HARDWARE_ADDRESS_TYPE1 to ALL_SUB_DEVICES."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+  DATA = [1]
+
+#class GetInterfaceHardwareAddressType1(TestMixins.,
+#                                       OptionalParameterTestFixture):
+# TODO(peter): Test get
+
+
+class GetInterfaceHardwareAddressType1WithNoData(TestMixins.GetWithNoDataMixin,
+                                                 OptionalParameterTestFixture):
+  """GET INTERFACE_HARDWARE_ADDRESS_TYPE1 with no argument given."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+
+
+class GetInterfaceHardwareAddressType1WithExtraData(
+        TestMixins.GetWithDataMixin,
+        OptionalParameterTestFixture):
+  """GET INTERFACE_HARDWARE_ADDRESS_TYPE1 with more than 4 bytes of data."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+  DATA = 'foobar'
+
+
+class GetZeroInterfaceHardwareAddressType1(TestMixins.GetZeroUInt32Mixin,
+                                           OptionalParameterTestFixture):
+  """GET INTERFACE_HARDWARE_ADDRESS_TYPE1 for interface 0."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+
+
+class SetInterfaceHardwareAddressType1(TestMixins.UnsupportedSetMixin,
+                                       OptionalParameterTestFixture):
+  """SET INTERFACE_HARDWARE_ADDRESS_TYPE1."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
 
 
 # Cross check the control fields with various other properties
