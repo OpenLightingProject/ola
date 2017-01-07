@@ -28,6 +28,7 @@
 #include "plugins/usbdmx/AsyncPluginImpl.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncPluginImpl.h"
+#include "plugins/usbdmx/UsbDmxPluginDescription.h"
 
 DECLARE_bool(use_async_libusb);
 
