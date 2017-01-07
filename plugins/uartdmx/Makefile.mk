@@ -1,13 +1,13 @@
 # LIBRARIES
 ##################################################
-if USE_UART
-lib_LTLIBRARIES += plugins/uartdmx/libolauartdmx.la
 
 # Plugin description is generated from README.md
 built_sources += plugins/uartdmx/UartDmxPluginDescription.h
 plugins/uartdmx/UartDmxPluginDescription.h: plugins/uartdmx/README.md plugins/uartdmx/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/uartdmx $(top_builddir)/plugins/uartdmx/UartDmxPluginDescription.h
 
+if USE_UART
+lib_LTLIBRARIES += plugins/uartdmx/libolauartdmx.la
 plugins_uartdmx_libolauartdmx_la_SOURCES = \
     plugins/uartdmx/UartDmxDevice.cpp \
     plugins/uartdmx/UartDmxDevice.h \
