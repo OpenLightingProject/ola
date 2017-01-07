@@ -19,7 +19,6 @@
  */
 
 #include "plugins/openpixelcontrol/OPCPlugin.h"
-#include "plugins/openpixelcontrol/OPCPluginDescription.h"
 
 #include <memory>
 #include <string>
@@ -31,6 +30,7 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/openpixelcontrol/OPCDevice.h"
+#include "plugins/openpixelcontrol/OPCPluginDescription.h"
 
 namespace ola {
 namespace plugin {
