@@ -28,6 +28,7 @@
 #include "ola/StringUtils.h"
 #include "plugins/gpio/GPIODevice.h"
 #include "plugins/gpio/GPIODriver.h"
+#include "plugins/gpio/GPIOPluginDescription.h"
 
 namespace ola {
 namespace plugin {
