@@ -1,5 +1,11 @@
 # LIBRARIES
 ##################################################
+
+# Plugin description is generated from README.md
+built_sources += plugins/spi/SPIPluginDescription.h
+plugins/spi/SPIPluginDescription.h: plugins/spi/README.md plugins/spi/Makefile.mk plugins/convert_README_to_header.sh
+	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/spi $(top_builddir)/plugins/spi/SPIPluginDescription.h
+
 if USE_SPI
 # This is a library which isn't coupled to olad
 lib_LTLIBRARIES += plugins/spi/libolaspicore.la plugins/spi/libolaspi.la
@@ -11,12 +17,6 @@ plugins_spi_libolaspicore_la_SOURCES = \
     plugins/spi/SPIWriter.cpp \
     plugins/spi/SPIWriter.h
 plugins_spi_libolaspicore_la_LIBADD = common/libolacommon.la
-
-# Plugin description is generated from README.md
-built_sources += plugins/spi/SPIPluginDescription.h
-plugins/spi/SPIPluginDescription.h: plugins/spi/README.md plugins/spi/Makefile.mk plugins/convert_README_to_header.sh
-	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/spi $(top_builddir)/plugins/spi/SPIPluginDescription.h
-
 plugins_spi_libolaspi_la_SOURCES = \
     plugins/spi/SPIDevice.cpp \
     plugins/spi/SPIDevice.h \
