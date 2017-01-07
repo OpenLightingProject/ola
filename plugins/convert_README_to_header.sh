@@ -33,7 +33,7 @@ outfilename=`basename $outfile`;
 desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\\\n"\\
 "/g' "$path/README.md"`;
 
-identifier=`echo "PLUGINS_${plugin}_${plugin}PLUGINDESCRIPTION_H_" | tr '[:lower:]' '[:upper:]'`
+identifier=`echo "PLUGINS_${plugin}_${outfilename%.h}_H_" | tr '[:lower:]' '[:upper:]'`
 
 cat <<EOM > $outfile
 /*
