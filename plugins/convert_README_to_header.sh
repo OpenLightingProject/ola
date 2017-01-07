@@ -10,7 +10,7 @@ if [ $# != 2 ]; then
   echo "<outfile path>: e.g. plugins/artnet/ArtnetPluginDescription.h";
   exit 1;
 fi
- 
+
 path="$1";
 outfile="$2";
 
