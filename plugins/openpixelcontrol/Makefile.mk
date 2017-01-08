@@ -17,6 +17,8 @@ lib_LTLIBRARIES += plugins/openpixelcontrol/libolaopenpixelcontrol.la
 
 # Plugin description is generated from README.md
 built_sources += plugins/openpixelcontrol/OPCPluginDescription.h
+nodist_plugins_openpixelcontrol_libolaopenpixelcontrol_la_SOURCES = \
+    plugins/openpixelcontrol/OPCPluginDescription.h
 plugins/openpixelcontrol/OPCPluginDescription.h: plugins/openpixelcontrol/README.md plugins/openpixelcontrol/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/openpixelcontrol $(top_builddir)/plugins/openpixelcontrol/OPCPluginDescription.h
 
@@ -25,7 +27,6 @@ plugins_openpixelcontrol_libolaopenpixelcontrol_la_SOURCES = \
     plugins/openpixelcontrol/OPCDevice.h \
     plugins/openpixelcontrol/OPCPlugin.cpp \
     plugins/openpixelcontrol/OPCPlugin.h \
-    plugins/openpixelcontrol/OPCPluginDescription.h \
     plugins/openpixelcontrol/OPCPort.cpp \
     plugins/openpixelcontrol/OPCPort.h
 

@@ -16,6 +16,8 @@ lib_LTLIBRARIES += plugins/osc/libolaosc.la
 
 # Plugin description is generated from README.md
 built_sources += plugins/osc/OSCPluginDescription.h
+nodist_plugins_osc_libolaosc_la_SOURCES = \
+    plugins/osc/OSCPluginDescription.h
 plugins/osc/OSCPluginDescription.h: plugins/osc/README.md plugins/osc/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/osc $(top_builddir)/plugins/osc/OSCPluginDescription.h
 
@@ -24,7 +26,6 @@ plugins_osc_libolaosc_la_SOURCES = \
     plugins/osc/OSCDevice.h \
     plugins/osc/OSCPlugin.cpp \
     plugins/osc/OSCPlugin.h \
-    plugins/osc/OSCPluginDescription.h \
     plugins/osc/OSCPort.cpp \
     plugins/osc/OSCPort.h
 plugins_osc_libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)

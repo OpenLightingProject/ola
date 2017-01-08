@@ -5,6 +5,8 @@ lib_LTLIBRARIES += plugins/stageprofi/libolastageprofi.la
 
 # Plugin description is generated from README.md
 built_sources += plugins/stageprofi/StageProfiPluginDescription.h
+nodist_plugins_stageprofi_libolastageprofi_la_SOURCES = \
+    plugins/stageprofi/StageProfiPluginDescription.h
 plugins/stageprofi/StageProfiPluginDescription.h: plugins/stageprofi/README.md plugins/stageprofi/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/stageprofi $(top_builddir)/plugins/stageprofi/StageProfiPluginDescription.h
 
@@ -15,7 +17,6 @@ plugins_stageprofi_libolastageprofi_la_SOURCES = \
     plugins/stageprofi/StageProfiDevice.h \
     plugins/stageprofi/StageProfiPlugin.cpp \
     plugins/stageprofi/StageProfiPlugin.h \
-    plugins/stageprofi/StageProfiPluginDescription.h \
     plugins/stageprofi/StageProfiPort.cpp \
     plugins/stageprofi/StageProfiPort.h \
     plugins/stageprofi/StageProfiWidget.cpp \

@@ -5,6 +5,8 @@ lib_LTLIBRARIES += plugins/dummy/liboladummy.la
 
 # Plugin description is generated from README.md
 built_sources += plugins/dummy/DummyPluginDescription.h
+nodist_plugins_dummy_liboladummy_la_SOURCES = \
+    plugins/dummy/DummyPluginDescription.h
 plugins/dummy/DummyPluginDescription.h: plugins/dummy/README.md plugins/dummy/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/dummy $(top_builddir)/plugins/dummy/DummyPluginDescription.h
 
@@ -13,7 +15,6 @@ plugins_dummy_liboladummy_la_SOURCES = \
     plugins/dummy/DummyDevice.h \
     plugins/dummy/DummyPlugin.cpp \
     plugins/dummy/DummyPlugin.h \
-    plugins/dummy/DummyPluginDescription.h \
     plugins/dummy/DummyPort.cpp \
     plugins/dummy/DummyPort.h
 plugins_dummy_liboladummy_la_LIBADD = \

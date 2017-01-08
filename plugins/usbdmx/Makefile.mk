@@ -5,6 +5,8 @@ noinst_LTLIBRARIES += plugins/usbdmx/libolausbdmxwidget.la
 
 # Plugin description is generated from README.md
 built_sources += plugins/usbdmx/UsbDmxPluginDescription.h
+nodist_plugins_usbdmx_libolausbdmx_la_SOURCES = \
+    plugins/usbdmx/UsbDmxPluginDescription.h
 plugins/usbdmx/UsbDmxPluginDescription.h: plugins/usbdmx/README.md plugins/usbdmx/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/usbdmx $(top_builddir)/plugins/usbdmx/UsbDmxPluginDescription.h
 
@@ -90,8 +92,7 @@ plugins_usbdmx_libolausbdmx_la_SOURCES = \
     plugins/usbdmx/SyncPluginImpl.cpp \
     plugins/usbdmx/SyncPluginImpl.h \
     plugins/usbdmx/UsbDmxPlugin.cpp \
-    plugins/usbdmx/UsbDmxPlugin.h \
-    plugins/usbdmx/UsbDmxPluginDescription.h
+    plugins/usbdmx/UsbDmxPlugin.h
 plugins_usbdmx_libolausbdmx_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(libusb_CFLAGS)
 plugins_usbdmx_libolausbdmx_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la \

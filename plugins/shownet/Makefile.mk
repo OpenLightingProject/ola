@@ -5,6 +5,8 @@ lib_LTLIBRARIES += plugins/shownet/libolashownet.la
 
 # Plugin description is generated from README.md
 built_sources += plugins/shownet/ShowNetPluginDescription.h
+nodist_plugins_shownet_libolashownet_la_SOURCES = \
+    plugins/shownet/ShowNetPluginDescription.h
 plugins/shownet/ShowNetPluginDescription.h: plugins/shownet/README.md plugins/shownet/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/shownet $(top_builddir)/plugins/shownet/ShowNetPluginDescription.h
 
@@ -14,7 +16,6 @@ plugins_shownet_libolashownet_la_SOURCES = \
     plugins/shownet/ShowNetPort.cpp \
     plugins/shownet/ShowNetNode.cpp \
     plugins/shownet/ShowNetPlugin.h \
-    plugins/shownet/ShowNetPluginDescription.h \
     plugins/shownet/ShowNetDevice.h \
     plugins/shownet/ShowNetPort.h \
     plugins/shownet/ShowNetPackets.h \
