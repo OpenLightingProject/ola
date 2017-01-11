@@ -40,6 +40,7 @@
 
 #include "plugins/dmx4linux/Dmx4LinuxDevice.h"
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
+#include "plugins/dmx4linux/Dmx4LinuxPluginDescription.h"
 #include "plugins/dmx4linux/Dmx4LinuxPort.h"
 #include "plugins/dmx4linux/Dmx4LinuxSocket.h"
 
@@ -110,16 +111,7 @@ bool Dmx4LinuxPlugin::StopHook() {
  * Return the description for this plugin
  */
 string Dmx4LinuxPlugin::Description() const {
-    return
-"DMX 4 Linux Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin exposes DMX 4 Linux devices.\n"
-"\n"
-"--- Config file : ola-dmx4linux.conf ---\n"
-"\n"
-"in_device =  /dev/dmxin\n"
-"out_device = /dev/dmx\n";
+    return plugin_description;
 }
 
 

@@ -32,6 +32,7 @@
 #include "olad/Preferences.h"
 #include "plugins/opendmx/OpenDmxDevice.h"
 #include "plugins/opendmx/OpenDmxPlugin.h"
+#include "plugins/opendmx/OpenDmxPluginDescription.h"
 
 namespace ola {
 namespace plugin {
@@ -105,18 +106,7 @@ bool OpenDmxPlugin::StopHook() {
  * Return the description for this plugin
  */
 string OpenDmxPlugin::Description() const {
-    return
-"Enttec Open DMX Plugin\n"
-"----------------------------\n"
-"\n"
-"The plugin creates a single device with one output port using the Enttec\n"
-"Open DMX USB widget.\n"
-"\n"
-"--- Config file : ola-opendmx.conf ---\n"
-"\n"
-"device = /dev/dmx0\n"
-"The path to the Open DMX USB device. Multiple entries are supported.\n"
-"\n";
+    return plugin_description;
 }
 
 
