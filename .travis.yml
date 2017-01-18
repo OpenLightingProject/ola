@@ -39,9 +39,11 @@ matrix:
   fast_finish: true
   include:
     - os: osx
+      osx_image: xcode8.2
       compiler: clang
       env: TASK='compile'
     - os: osx
+      osx_image: xcode8.2
       compiler: gcc
       env: TASK='compile'
     - os: linux
@@ -127,7 +129,7 @@ matrix:
 env:
   global:
    # -- BEGIN Coverity Scan ENV
-   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 && autoreconf -i && ./configure --enable-ja-rule"
+   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 && autoreconf -i && ./configure --enable-ja-rule --enable-e133"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
    # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
@@ -174,7 +176,7 @@ before_install:
  - $CXX --version
 
 after_failure:
-  - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log
+  - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log
 
 after_success:
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
