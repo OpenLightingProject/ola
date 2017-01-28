@@ -3,6 +3,13 @@
 if USE_LIBUSB
 noinst_LTLIBRARIES += plugins/usbdmx/libolausbdmxwidget.la
 
+# Plugin description is generated from README.md
+built_sources += plugins/usbdmx/UsbDmxPluginDescription.h
+nodist_plugins_usbdmx_libolausbdmx_la_SOURCES = \
+    plugins/usbdmx/UsbDmxPluginDescription.h
+plugins/usbdmx/UsbDmxPluginDescription.h: plugins/usbdmx/README.md plugins/usbdmx/Makefile.mk plugins/convert_README_to_header.sh
+	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/usbdmx $(top_builddir)/plugins/usbdmx/UsbDmxPluginDescription.h
+
 plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/AnymauDMX.cpp \
     plugins/usbdmx/AnymauDMX.h \
@@ -92,4 +99,6 @@ plugins_usbdmx_libolausbdmx_la_LIBADD = \
     plugins/usbdmx/libolausbdmxwidget.la
 endif
 
-EXTRA_DIST += plugins/usbdmx/README.md
+EXTRA_DIST += \
+    plugins/usbdmx/README.md \
+    plugins/usbdmx/README.developer.md

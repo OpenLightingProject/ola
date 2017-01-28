@@ -28,6 +28,7 @@
 #include "ola/StringUtils.h"
 #include "plugins/gpio/GPIODevice.h"
 #include "plugins/gpio/GPIODriver.h"
+#include "plugins/gpio/GPIOPluginDescription.h"
 
 namespace ola {
 namespace plugin {
@@ -111,28 +112,7 @@ bool GPIOPlugin::StopHook() {
 }
 
 string GPIOPlugin::Description() const {
-  return
-"General Purpose I/O Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin controls the General Purpose Digital I/O (GPIO) pins on devices\n"
-"like a Raspberry Pi. It creates a single device, with a single output port.\n"
-"The offset (start address) of the GPIO pins is configurable.\n"
-"\n"
-"--- Config file : ola-gpio.conf ---\n"
-"\n"
-"gpio_pins = [int]\n"
-"The list of GPIO pins to control, each pin is mapped to a DMX512 slot.\n"
-"\n"
-"gpio_slot_offset = <int>\n"
-"The DMX512 slot for the first pin. Slots are indexed from 1\n."
-"\n"
-"gpio_turn_on = <int>\n"
-"The DMX512 value above which a GPIO pin will be turned on.\n"
-"\n"
-"gpio_turn_off = <int>\n"
-"The DMX512 value below which a GPIO pin will be turned off.\n"
-"\n";
+  return plugin_description;
 }
 
 bool GPIOPlugin::SetDefaultPreferences() {

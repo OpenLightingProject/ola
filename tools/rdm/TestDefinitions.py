@@ -2301,6 +2301,12 @@ class SetSlotInfo(TestMixins.UnsupportedSetMixin,
   PID = 'SLOT_INFO'
 
 
+class SetSlotInfoWithData(TestMixins.UnsupportedSetWithDataMixin,
+                          OptionalParameterTestFixture):
+  """Attempt to SET SLOT_INFO with data."""
+  PID = 'SLOT_INFO'
+
+
 class AllSubDevicesGetSlotInfo(TestMixins.AllSubDevicesGetMixin,
                                OptionalParameterTestFixture):
   """Send a Get SLOT_INFO to ALL_SUB_DEVICES."""
@@ -2433,6 +2439,12 @@ class GetUndefinedSecondarySlotTypeDescriptions(OptionalParameterTestFixture):
 class SetSlotDescription(TestMixins.UnsupportedSetMixin,
                          OptionalParameterTestFixture):
   """Set SLOT_DESCRIPTION."""
+  PID = 'SLOT_DESCRIPTION'
+
+
+class SetSlotDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Attempt to SET SLOT_DESCRIPTION with data."""
   PID = 'SLOT_DESCRIPTION'
 
 
@@ -3431,6 +3443,12 @@ class SetDisplayInvertWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'DISPLAY_INVERT'
 
 
+class SetDisplayInvertWithExtraData(TestMixins.SetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Send a SET DISPLAY_INVERT command with extra data."""
+  PID = 'DISPLAY_INVERT'
+
+
 class AllSubDevicesGetDisplayInvert(TestMixins.AllSubDevicesGetMixin,
                                     OptionalParameterTestFixture):
   """Send a Get DISPLAY_INVERT to ALL_SUB_DEVICES."""
@@ -3511,6 +3529,12 @@ class SetPanInvertWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'PAN_INVERT'
 
 
+class SetPanInvertWithExtraData(TestMixins.SetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Send a SET PAN_INVERT command with extra data."""
+  PID = 'PAN_INVERT'
+
+
 class AllSubDevicesGetPanInvert(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Send a Get PAN_INVERT to ALL_SUB_DEVICES."""
@@ -3550,6 +3574,12 @@ class SetTiltInvertWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'TILT_INVERT'
 
 
+class SetTiltInvertWithExtraData(TestMixins.SetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Send a SET TILT_INVERT command with extra data."""
+  PID = 'TILT_INVERT'
+
+
 class AllSubDevicesGetTiltInvert(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Send a Get TILT_INVERT to ALL_SUB_DEVICES."""
@@ -3586,6 +3616,12 @@ class SetPanTiltSwap(TestMixins.SetBoolMixin, OptionalParameterTestFixture):
 class SetPanTiltSwapWithNoData(TestMixins.SetWithNoDataMixin,
                                OptionalParameterTestFixture):
   """Set the pan tilt swap with no param data."""
+  PID = 'PAN_TILT_SWAP'
+
+
+class SetPanTiltSwapWithExtraData(TestMixins.SetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Send a SET PAN_TILT_SWAP command with extra data."""
   PID = 'PAN_TILT_SWAP'
 
 
@@ -3867,6 +3903,12 @@ class SetPowerState(TestMixins.SetMixin, OptionalParameterTestFixture):
 class SetPowerStateWithNoData(TestMixins.SetWithNoDataMixin,
                               OptionalParameterTestFixture):
   """Set the power state with no data."""
+  PID = 'POWER_STATE'
+
+
+class SetPowerStateWithExtraData(TestMixins.SetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Send a SET POWER_STATE command with extra data."""
   PID = 'POWER_STATE'
 
 
@@ -6164,6 +6206,12 @@ class GetPresetInfoWithData(TestMixins.GetWithDataMixin,
 class SetPresetInfo(TestMixins.UnsupportedSetMixin,
                     OptionalParameterTestFixture):
   """Set PRESET_INFO."""
+  PID = 'PRESET_INFO'
+
+
+class SetPresetInfoWithData(TestMixins.UnsupportedSetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """Attempt to SET PRESET_INFO with data."""
   PID = 'PRESET_INFO'
 
 
