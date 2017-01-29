@@ -5419,8 +5419,8 @@ class SetMinimumLevel(OptionalParameterTestFixture):
     self.SetProperty('set_minimum_level_supported', response.WasAcked())
 
 
-class SetLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
-                                    OptionalParameterTestFixture):
+class SetLowerIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
+                                     OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to the smallest value from DIMMER_INFO."""
   REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_lower']
 
@@ -5428,8 +5428,8 @@ class SetLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
     return self.Property('minimum_level_lower')
 
 
-class SetUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
-                                    OptionalParameterTestFixture):
+class SetUpperIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
+                                     OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to the largest value from DIMMER_INFO."""
   REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_upper']
 
@@ -5437,8 +5437,8 @@ class SetUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
     return self.Property('minimum_level_upper')
 
 
-class SetOutOfRangeLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
-                                              OptionalParameterTestFixture):
+class SetOutOfRangeLowerIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
+                                               OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to one less than the smallest value from DIMMER_INFO."""
   REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_lower']
 
@@ -5456,8 +5456,8 @@ class SetOutOfRangeLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
     return self.lower - 1
 
 
-class SetOutOfRangeUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
-                                              OptionalParameterTestFixture):
+class SetOutOfRangeUpperIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
+                                               OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to one more than the largest value from DIMMER_INFO."""
   REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_upper']
 
