@@ -4451,7 +4451,7 @@ class GetDmxFailMode(OptionalParameterTestFixture):
     self.SetProperty('dmx_fail_settings', fields)
 
 
-class GetFailUpModeWithData(TestMixins.GetWithDataMixin,
+class GetDMXFailModeWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """GET DMX_FAIL_MODE with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -4691,8 +4691,8 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
-class SetFailModeWithNoData(TestMixins.SetWithNoDataMixin,
-                            OptionalParameterTestFixture):
+class SetDMXFailModeWithNoData(TestMixins.SetWithNoDataMixin,
+                               OptionalParameterTestFixture):
   """Set DMX_FAIL_MODE with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_FAIL_MODE'
@@ -4723,8 +4723,8 @@ class GetDmxStartupMode(OptionalParameterTestFixture):
     self.SetProperty('dmx_startup_settings', fields)
 
 
-class GetStartUpModeWithData(TestMixins.GetWithDataMixin,
-                             OptionalParameterTestFixture):
+class GetDMXStartupModeWithData(TestMixins.GetWithDataMixin,
+                                OptionalParameterTestFixture):
   """Get DMX_STARTUP_MODE with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_STARTUP_MODE'
@@ -4964,8 +4964,8 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
-class SetStartupModeWithNoData(TestMixins.SetWithNoDataMixin,
-                               OptionalParameterTestFixture):
+class SetDMXStartupModeWithNoData(TestMixins.SetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
   """Set DMX_STARTUP_MODE with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_STARTUP_MODE'
