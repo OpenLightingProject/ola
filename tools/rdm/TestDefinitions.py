@@ -1655,6 +1655,18 @@ class SetUnsupportedLanguage(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, ['zz'])
 
 
+class SetLanguageWithNoData(TestMixins.SetWithNoDataMixin,
+                            OptionalParameterTestFixture):
+  """Set LANGUAGE command with no data."""
+  PID = 'LANGUAGE'
+
+
+class SetLanguageWithExtraData(TestMixins.SetWithDataMixin,
+                               OptionalParameterTestFixture):
+  """Send a SET LANGUAGE command with extra data."""
+  PID = 'LANGUAGE'
+
+
 class AllSubDevicesGetLanguage(TestMixins.AllSubDevicesGetMixin,
                                OptionalParameterTestFixture):
   """Send a Get LANGUAGE to ALL_SUB_DEVICES."""
@@ -4642,6 +4654,12 @@ class SetDMXFailModeWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'DMX_FAIL_MODE'
 
 
+class SetDMXFailModeWithExtraData(TestMixins.SetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Send a SET DMX_FAIL_MODE command with extra data."""
+  PID = 'DMX_FAIL_MODE'
+
+
 class AllSubDevicesGetDMXFailMode(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Get DMX_FAIL_MODE addressed to ALL_SUB_DEVICES."""
@@ -4912,6 +4930,12 @@ class SetDMXStartupModeWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'DMX_STARTUP_MODE'
 
 
+class SetDMXStartupModeWithExtraData(TestMixins.SetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """Send a SET DMX_STARTUP_MODE command with extra data."""
+  PID = 'DMX_STARTUP_MODE'
+
+
 class AllSubDevicesGetDMXStartupMode(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Get DMX_STARTUP_MODE addressed to ALL_SUB_DEVICES."""
@@ -5087,6 +5111,12 @@ class SetLockStateDescription(TestMixins.UnsupportedSetMixin,
   PID = 'LOCK_STATE_DESCRIPTION'
 
 
+class SetLockStateDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                      OptionalParameterTestFixture):
+  """Attempt to SET LOCK_STATE_DESCRIPTION with data."""
+  PID = 'LOCK_STATE_DESCRIPTION'
+
+
 class AllSubDevicesGetLockStateDescription(TestMixins.AllSubDevicesGetMixin,
                                            OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION addressed to ALL_SUB_DEVICES."""
@@ -5123,6 +5153,12 @@ class AllSubDevicesGetLockPin(TestMixins.AllSubDevicesGetMixin,
 class SetLockPinWithNoData(TestMixins.SetWithNoDataMixin,
                            OptionalParameterTestFixture):
   """Set LOCK_PIN with no param data."""
+  PID = 'LOCK_PIN'
+
+
+class SetLockPinWithExtraData(TestMixins.SetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """Send a SET LOCK_PIN command with extra data."""
   PID = 'LOCK_PIN'
 
 
