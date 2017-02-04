@@ -1583,7 +1583,7 @@ class GetLanguage(TestMixins.GetStringMixin, OptionalParameterTestFixture):
   MIN_LENGTH = 2
   MAX_LENGTH = 2
   # TODO(Peter): We should cross check this against the declared list of
-  # supported languages, and also that the langauage is alpha only
+  # supported languages, and also that the language is alpha only
 
 
 class GetLanguageWithData(TestMixins.GetWithDataMixin,
@@ -3992,6 +3992,12 @@ class GetSelfTestDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
   PID = 'SELF_TEST_DESCRIPTION'
 
 
+class GetSelfTestDescriptionWithExtraData(TestMixins.GetWithDataMixin,
+                                          OptionalParameterTestFixture):
+  """GET SELF_TEST_DESCRIPTION with more than 1 bytes of data."""
+  PID = 'SELF_TEST_DESCRIPTION'
+
+
 class FindSelfTests(OptionalParameterTestFixture):
   """Locate the self tests by sending SELF_TEST_DESCRIPTION messages."""
   CATEGORY = TestCategory.CONTROL
@@ -4126,6 +4132,12 @@ class SetCapturePresetWithExtraData(TestMixins.SetWithDataMixin,
   """Set capture preset with extra data."""
   PID = 'CAPTURE_PRESET'
   DATA = 'foobarbaz'
+
+
+class AllSubDevicesGetCapturePreset(TestMixins.AllSubDevicesUnsupportedGetMixin,
+                                    OptionalParameterTestFixture):
+  """Attempt to send a get CAPTURE_PRESET to ALL_SUB_DEVICES."""
+  PID = 'CAPTURE_PRESET'
 
 
 # PRESET_PLAYBACK
@@ -4949,6 +4961,12 @@ class SetPowerOnSelfTest(TestMixins.SetBoolMixin,
 class SetPowerOnSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set the POWER_ON_SELF_TEST with no param data."""
+  PID = 'POWER_ON_SELF_TEST'
+
+
+class SetPowerOnSelfTestWithExtraData(TestMixins.SetWithDataMixin,
+                                      OptionalParameterTestFixture):
+  """Send a SET POWER_ON_SELF_TEST command with extra data."""
   PID = 'POWER_ON_SELF_TEST'
 
 
@@ -6682,6 +6700,13 @@ class SetListInterfaces(TestMixins.UnsupportedSetMixin,
   PID = 'LIST_INTERFACES'
 
 
+class AllSubDevicesGetListInterfaces(TestMixins.AllSubDevicesGetMixin,
+                                     OptionalParameterTestFixture):
+  """Send a get LIST_INTERFACES to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'LIST_INTERFACES'
+
+
 # DNS_HOSTNAME
 # -----------------------------------------------------------------------------
 class GetDNSHostname(TestMixins.GetStringMixin,
@@ -6814,6 +6839,14 @@ class SetInterfaceLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
                                 OptionalParameterTestFixture):
   """SET the interface label with data."""
   PID = 'INTERFACE_LABEL'
+
+
+class AllSubDevicesGetInterfaceLabel(TestMixins.AllSubDevicesGetMixin,
+                                     OptionalParameterTestFixture):
+  """Send a get INTERFACE_LABEL to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'INTERFACE_LABEL'
+  DATA = [1]
 
 
 # Interface hardware address type 1
