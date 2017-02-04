@@ -2080,7 +2080,7 @@ class GetDmxPersonalityDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
 
 class GetDmxPersonalityDescriptionWithExtraData(TestMixins.GetWithDataMixin,
                                                 OptionalParameterTestFixture):
-  """GET DMX_PERSONALITY_DESCRIPTION with more than 1 bytes of data."""
+  """GET DMX_PERSONALITY_DESCRIPTION with more than 1 byte of data."""
   PID = 'DMX_PERSONALITY_DESCRIPTION'
 
 
@@ -4026,7 +4026,7 @@ class GetSelfTestDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
 
 class GetSelfTestDescriptionWithExtraData(TestMixins.GetWithDataMixin,
                                           OptionalParameterTestFixture):
-  """GET SELF_TEST_DESCRIPTION with more than 1 bytes of data."""
+  """GET SELF_TEST_DESCRIPTION with more than 1 byte of data."""
   PID = 'SELF_TEST_DESCRIPTION'
 
 
