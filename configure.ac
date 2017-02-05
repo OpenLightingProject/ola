@@ -175,10 +175,13 @@ AC_CACHE_VAL(ac_cv_readdir_r_deprecation,
   AC_COMPILE_IFELSE(
      [AC_LANG_PROGRAM([[#include <dirent.h>
 #include <unistd.h>
-]], [[DIR * dir;
-struct dirent *buf, *de;
-dir = opendir(argv[1]);
-readdir_r(dir,buf,&de);
+
+int main(int argc, char *argv[]){
+        DIR * dir;
+        struct dirent *buf, *de;
+        dir = opendir(argv[1]);
+        readdir_r(dir,buf,&de);
+};
 ]])],
      [ac_cv_readdir_r_deprecation=no],
      [ac_cv_readdir_r_deprecation=yes])
