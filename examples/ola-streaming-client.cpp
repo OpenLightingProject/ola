@@ -53,8 +53,9 @@ bool SendDataFromString(StreamingClient *client,
   ola::DmxBuffer buffer;
   bool status = buffer.SetFromString(data);
 
-  if (!status || buffer.Size() == 0)
+  if (!status || buffer.Size() == 0) {
     return false;
+  }
 
   if (!client->SendDMX(universe, buffer, args)) {
     cout << "Send DMX failed" << endl;
