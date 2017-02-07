@@ -40,7 +40,7 @@ DEFINE_s_string(dmx, d, "", "Comma separated DMX values to send, e.g. "
                             "channel to 255 and third channel to 128.");
 DEFINE_s_uint32(universe, u, 1, "The universe to send data for");
 DEFINE_uint8(priority, ola::dmx::SOURCE_PRIORITY_DEFAULT,
-             "The universe to send data for");
+             "The source priority to send data at");
 
 bool terminate = false;
 
