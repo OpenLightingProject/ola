@@ -170,7 +170,7 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
 
 AC_MSG_CHECKING(for readdir_r deprecation)
 old_cxxflags=$CXXFLAGS
-CXXFLAGS="-Werror=deprecated-declarations"
+CXXFLAGS="${CXXFLAGS} -Werror=deprecated-declarations"
 AC_CACHE_VAL(ac_cv_readdir_r_deprecation,
   AC_COMPILE_IFELSE(
      [AC_LANG_PROGRAM([[#include <dirent.h>
