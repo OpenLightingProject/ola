@@ -26,6 +26,7 @@
 #include "olad/Preferences.h"
 #include "plugins/renard/RenardDevice.h"
 #include "plugins/renard/RenardPlugin.h"
+#include "plugins/renard/RenardPluginDescription.h"
 
 namespace ola {
 namespace plugin {
@@ -96,37 +97,7 @@ bool RenardPlugin::StopHook() {
  * Return the description for this plugin
  */
 string RenardPlugin::Description() const {
-    return
-"Renard Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin creates devices with one output port. It supports multiple "
-"Renard SS boards directly connected, or daisy-chained. See this link "
-"for more information: "
-"http://www.doityourselfchristmas.com/wiki/index.php?title=Renard\n"
-"\n"
-"--- Config file : ola-renard.conf ---\n"
-"\n"
-"device = /dev/ttyUSB0\n"
-"The device to use as a path for the serial port or USB-Serial adapter. "
-"Renard boards don't have a built-in USB port, you will need an adapter ("
-"USB->RS232 or USB->RS485). Multiple devices are supported.\n"
-"\n"
-"--- Per Device Settings (using above device name without /dev/) ---\n"
-"<device>-baudrate = <int>\n"
-"The speed of the serial port, options are 9600, 19200, 38400, 57600, "
-"115200. Default is 57600.\n"
-"\n"
-"<device>-channels = <int>\n"
-"The number of channels connected to this device. Default 64.\n"
-"Note that the max number of channels vary by baud rate and "
-"the encoding.\n"
-"\n"
-"<device>-dmx-offset = <int>\n"
-"Which starting point in the DMX universe this device is mapped to. "
-"The default is 0, which means the first channel on Renard address "
-"128 (0x80) will be mapped to DMX channel 1.\n"
-"\n";
+    return plugin_description;
 }
 
 

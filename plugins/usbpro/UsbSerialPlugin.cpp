@@ -40,6 +40,7 @@
 #include "plugins/usbpro/UltraDMXProWidget.h"
 #include "plugins/usbpro/UsbProDevice.h"
 #include "plugins/usbpro/UsbSerialPlugin.h"
+#include "plugins/usbpro/UsbSerialPluginDescription.h"
 
 
 namespace ola {
@@ -75,42 +76,7 @@ UsbSerialPlugin::UsbSerialPlugin(PluginAdaptor *plugin_adaptor)
  * Return the description for this plugin
  */
 string UsbSerialPlugin::Description() const {
-    return
-"Serial USB Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin supports DMX USB devices that emulate a serial port. This \n"
-"includes:\n"
-" - Arduino RGB Mixer\n"
-" - DMX-TRI & RDM-TRI\n"
-" - DMXking USB DMX512-A, Ultra DMX, Ultra DMX Pro\n"
-" - DMXter4, DMXter4A & mini DMXter\n"
-" - Enttec DMX USB Pro & USB Pro Mk II\n"
-" - Robe Universe Interface\n"
-"\n"
-"See https://wiki.openlighting.org/index.php/USB_Protocol_Extensions for \n"
-"more info.\n"
-"\n"
-"--- Config file : ola-usbserial.conf ---\n"
-"\n"
-"device_dir = /dev\n"
-"The directory to look for devices in.\n"
-"\n"
-"device_prefix = ttyUSB\n"
-"The prefix of filenames to consider as devices. Multiple keys are allowed.\n"
-"\n"
-"ignore_device = /dev/ttyUSB\n"
-"Ignore the device matching this string. Multiple keys are allowed.\n"
-"\n"
-"pro_fps_limit = 190\n"
-"The max frames per second to send to a Usb Pro or DMXKing device.\n"
-"\n"
-"tri_use_raw_rdm = [true|false]\n"
-"Bypass RDM handling in the {DMX,RDM}-TRI widgets.\n"
-"\n"
-"ultra_fps_limit = 40\n"
-"The max frames per second to send to a Ultra DMX Pro device.\n"
-"\n";
+    return plugin_description;
 }
 
 

@@ -46,6 +46,8 @@ MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
 # -----------------------------------------------------------------------------
 class UnsupportedGetMixin(ResponderTestFixture):
   """Check that Get fails with NR_UNSUPPORTED_COMMAND_CLASS."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddIfGetSupported(
         self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
@@ -56,6 +58,7 @@ class UnsupportedGetWithDataMixin(ResponderTestFixture):
   """Check that GET with random param data fails with
     NR_UNSUPPORTED_COMMAND_CLASS.
   """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
 
   def Test(self):
@@ -244,6 +247,7 @@ class GetWithNoDataMixin(ResponderTestFixture):
 
 class AllSubDevicesGetMixin(ResponderTestFixture):
   """Send a GET to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
   DATA = []
 
   def Test(self):
@@ -381,10 +385,10 @@ class SetLabelMixin(ResponderTestFixture):
     self._wrapper.Run()
 
 
-class NonUnicastSetLabelMixin(SetLabelMixin):
-  """Send a SET device label to a broadcast or vendorcast uid."""
+class SetNonUnicastLabelMixin(SetLabelMixin):
+  """Send a SET device label to a broadcast or vendorcast UID."""
   def Uid(self):
-    self.SetBroken('Base method of SetNonUnicastStartAddressMixin called')
+    self.SetBroken('Base method of SetNonUnicastLabelMixin called')
 
   def Test(self):
     target_uid = self.Uid()
@@ -541,7 +545,7 @@ class SetUInt32Mixin(SetMixin):
 
 # Start address mixins
 # -----------------------------------------------------------------------------
-class SetStartAddressMixin(ResponderTestFixture):
+class SetDMXStartAddressMixin(ResponderTestFixture):
   """Set the dmx start address."""
   SET, VERIFY, RESET = xrange(3)
   start_address = 1
@@ -581,11 +585,11 @@ class SetStartAddressMixin(ResponderTestFixture):
     self._wrapper.Run()
 
 
-class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
-  """Send a set dmx start address to a non unicast uid."""
+class SetNonUnicastDMXStartAddressMixin(SetDMXStartAddressMixin):
+  """Send a set dmx start address to a non unicast UID."""
 
   def Uid(self):
-    self.SetBroken('Base method of SetNonUnicastStartAddressMixin called')
+    self.SetBroken('Base method of SetNonUnicastDMXStartAddressMixin called')
 
   def Test(self):
     target_uid = self.Uid()
@@ -622,7 +626,7 @@ class SetNonUnicastIdentifyMixin(ResponderTestFixture):
   REQUIRES = ['identify_state']
 
   def Uid(self):
-    self.SetBroken('Base method of SetNonUnicastStartAddressMixin called')
+    self.SetBroken('Base method of SetNonUnicastIdentifyMixin called')
 
   def States(self):
     return [
@@ -847,7 +851,7 @@ class DiscoveryMixin(ResponderTestFixture):
 
 # E1.37-1 Mixins
 # -----------------------------------------------------------------------------
-class SetDmxFailModeMixin(ResponderTestFixture):
+class SetDMXFailModeMixin(ResponderTestFixture):
   PID = 'DMX_FAIL_MODE'
   REQUIRES = ['dmx_fail_settings', 'preset_info', 'set_dmx_fail_mode_supported']
   CATEGORY = TestCategory.DMX_SETUP
@@ -876,7 +880,7 @@ class SetDmxFailModeMixin(ResponderTestFixture):
     self._wrapper.Run()
 
 
-class SetDmxStartupModeMixin(ResponderTestFixture):
+class SetDMXStartupModeMixin(ResponderTestFixture):
   PID = 'DMX_STARTUP_MODE'
   REQUIRES = ['dmx_startup_settings', 'preset_info',
               'set_dmx_startup_mode_supported']
