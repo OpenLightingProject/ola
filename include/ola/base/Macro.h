@@ -71,7 +71,7 @@
  *   switch (cond) {
  *     case 'foo':
  *       doFoo();
- *       //after foo fallthrough to bar because $REASON
+ *       // after foo fallthrough to bar because $REASON
  *       OLA_FALLTHROUGH
  *     case 'bar':
  *   @endcode
@@ -81,10 +81,10 @@
 #define OLA_FALLTHROUGH __attribute__ ((fallthrough));
 #else
 #define OLA_FALLTHROUGH
-#endif // __GNUC__ >= 7
+#endif  // __GNUC__ >= 7
 #else
 #define OLA_FALLTHROUGH
-#endif // __GNUC__
+#endif  // __GNUC__
 
 /**
  * @def STATIC_ASSERT
