@@ -69,7 +69,7 @@ if FATAL_WARNINGS
                               -Wno-error=sign-compare
   COMMON_TESTING_FLAGS += -Werror
   COMMON_TESTING_PROTOBUF_FLAGS += -Werror -Wno-error=unused-parameter \
-                                   -Wno-error=deprecated-declarations
+                                   -Wno-error=deprecated-declarations \
                                    -Wno-error=sign-compare
 endif
 endif
