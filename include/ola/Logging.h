@@ -206,7 +206,7 @@ class UnixSyslogDestination : public SyslogDestination {
   */
   void Write(log_level level, const std::string &log_line);
 };
-#endif
+#endif  // _WIN32
 
 /**@}*/
 

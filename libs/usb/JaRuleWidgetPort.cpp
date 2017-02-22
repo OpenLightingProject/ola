@@ -49,7 +49,7 @@ namespace {
 
 #ifdef _WIN32
 __attribute__((__stdcall__))
-#endif
+#endif  // _WIN32
 void InTransferCompleteHandler(struct libusb_transfer *transfer) {
   JaRuleWidgetPort *port = static_cast<JaRuleWidgetPort*>(transfer->user_data);
   return port->_InTransferComplete();
@@ -57,7 +57,7 @@ void InTransferCompleteHandler(struct libusb_transfer *transfer) {
 
 #ifdef _WIN32
 __attribute__((__stdcall__))
-#endif
+#endif  // _WIN32
 void OutTransferCompleteHandler(struct libusb_transfer *transfer) {
   JaRuleWidgetPort *port = static_cast<JaRuleWidgetPort*>(transfer->user_data);
   return port->_OutTransferComplete();

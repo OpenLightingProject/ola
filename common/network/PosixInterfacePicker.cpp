@@ -20,31 +20,31 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_GETIFADDRS
   #ifdef HAVE_LINUX_IF_PACKET_H
     #include <ifaddrs.h>
     #include <linux/types.h>
     #include <linux/if_packet.h>
-  #endif
-#endif
+  #endif  // HAVE_LINUX_IF_PACKET_H
+#endif  // HAVE_GETIFADDRS
 
 #ifdef HAVE_SYS_TYPES_H
   #include <sys/types.h>  // Required by OpenBSD
-#endif
+#endif  // HAVE_SYS_TYPES_H
 #ifdef HAVE_SYS_SOCKET_H
   #include <sys/socket.h>  // order is important for FreeBSD
-#endif
+#endif  // HAVE_SYS_SOCKET_H
 #include <arpa/inet.h>
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>  // Required by FreeBSD
-#endif
+#endif  // HAVE_NETINET_IN_H
 #include <errno.h>
 #include <net/if.h>
 #ifdef HAVE_SOCKADDR_DL_STRUCT
   #include <net/if_dl.h>
-#endif
+#endif  // HAVE_SOCKADDR_DL_STRUCT
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -77,7 +77,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
   string last_dl_iface_name;
   uint8_t hwlen = 0;
   char *hwaddr = NULL;
-#endif
+#endif  // HAVE_SOCKADDR_DL_STRUCT
 
   // create socket to get iface config
   int sd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -129,7 +129,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       hwaddr = sdl->sdl_data + sdl->sdl_nlen;
       hwlen = sdl->sdl_alen;
     }
-#endif
+#endif  // HAVE_SOCKADDR_DL_STRUCT
 
     // look for AF_INET interfaces only
     if (iface->ifr_addr.sa_family != AF_INET) {
@@ -175,7 +175,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
                  << ", expecting " << MACAddress::LENGTH;
       }
     }
-#endif
+#endif  // HAVE_SOCKADDR_DL_STRUCT
 
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
     interface.ip_address = IPV4Address(sin->sin_addr.s_addr);
@@ -190,7 +190,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
         interface.bcast_address = IPV4Address(sin->sin_addr.s_addr);
       }
     }
-#endif
+#endif  // SIOCGIFBRDADDR
 
     // fetch subnet address
 #ifdef  SIOCGIFNETMASK
@@ -200,7 +200,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       sin = (struct sockaddr_in *) &ifrcopy.ifr_broadaddr;
       interface.subnet_mask = IPV4Address(sin->sin_addr.s_addr);
     }
-#endif
+#endif  // SIOCGIFNETMASK
 
     // fetch hardware address
 #ifdef SIOCGIFHWADDR
@@ -214,7 +214,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
             reinterpret_cast<uint8_t*>(ifrcopy.ifr_hwaddr.sa_data));
       }
     }
-#endif
+#endif  // SIOCGIFHWADDR
 
     // fetch index
 #ifdef SIOCGIFINDEX
@@ -226,7 +226,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
         interface.index = ifrcopy.ifr_index;
 #else
         interface.index = ifrcopy.ifr_ifindex;
-#endif
+#endif  // SIOCGIFINDEX
       }
     }
 #elif defined(HAVE_IF_NAMETOINDEX)
@@ -235,7 +235,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     if (index != 0) {
       interface.index = index;
     }
-#endif
+#endif  // defined(HAVE_IF_NAMETOINDEX)
 
     /* ok, if that all failed we should prob try and use sysctl to work out the
      * broadcast and hardware addresses

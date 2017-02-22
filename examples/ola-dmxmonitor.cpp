@@ -23,7 +23,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 
 #include <curses.h>
@@ -41,7 +41,7 @@
 #include <unistd.h>
 #ifdef HAVE_FTIME
 #include <sys/timeb.h>
-#endif
+#endif  // HAVE_FTIME
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Constants.h>

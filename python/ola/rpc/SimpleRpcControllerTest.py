@@ -66,5 +66,6 @@ class SimpleRpcControllerTest(unittest.TestCase):
     self.assertEqual(None, controller.ErrorText())
     self.assertFalse(self.callback_run)
 
+
 if __name__ == '__main__':
   unittest.main()

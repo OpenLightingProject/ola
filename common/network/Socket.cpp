@@ -29,7 +29,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef _WIN32
 #include <ola/win/CleanWinSock2.h>
@@ -38,15 +38,15 @@
 #include <Mswsock.h>
 #else
 #include <sys/ioctl.h>
-#endif
+#endif  // _WIN32
 
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
-#endif
+#endif  // HAVE_SYS_SOCKET_H
 
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
-#endif
+#endif  // HAVE_NETINET_IN_H
 
 #include <string>
 
@@ -70,7 +70,7 @@ bool ReceiveFrom(int fd, uint8_t *buffer, ssize_t *data_read,
     OLA_WARN << "recvfrom fd: " << fd << " failed: " << WSAGetLastError();
 #else
     OLA_WARN << "recvfrom fd: " << fd << " failed: " << strerror(errno);
-#endif
+#endif  // _WIN32
     return false;
   }
   return true;
@@ -100,7 +100,7 @@ bool UDPSocket::Init() {
     ioctlsocket(sd, FIONBIO, &mode);
 #else
   m_handle = sd;
-#endif
+#endif  // _WIN32
   return true;
 }
 
@@ -124,7 +124,7 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
       strerror(errno);
     return false;
   }
-  #endif
+  #endif  // HAVE_DECL_SO_REUSEADDR
 
   #if HAVE_DECL_SO_REUSEPORT
   // turn on REUSEPORT if we can
@@ -139,7 +139,7 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
       strerror(errno);
     // This is non fatal, since Linux introduced this option in the 3.9 series.
   }
-  #endif
+  #endif  // HAVE_DECL_SO_REUSEPORT
 
   OLA_DEBUG << "Binding to " << endpoint;
 #ifdef _WIN32
@@ -147,7 +147,7 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
       == -1) {
 #else
   if (bind(m_handle, &server_address, sizeof(server_address)) == -1) {
-#endif
+#endif  // _WIN32
     OLA_WARN << "bind(" << endpoint << "): " << strerror(errno);
     return false;
   }
@@ -160,7 +160,7 @@ bool UDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
   GenericSocketAddress addr = GetLocalAddress(m_handle.m_handle.m_fd);
 #else
   GenericSocketAddress addr = GetLocalAddress(m_handle);
-#endif
+#endif  // _WIN32
   if (!addr.IsValid()) {
     return false;
   }
@@ -176,14 +176,14 @@ bool UDPSocket::Close() {
   int fd = m_handle.m_handle.m_fd;
 #else
   int fd = m_handle;
-#endif
+#endif  // _WIN32
   m_handle = ola::io::INVALID_DESCRIPTOR;
   m_bound_to_port = false;
 #ifdef _WIN32
   if (closesocket(fd)) {
 #else
   if (close(fd)) {
-#endif
+#endif  // _WIN32
     OLA_WARN << "close() failed, " << strerror(errno);
     return false;
   }
@@ -214,7 +214,7 @@ ssize_t UDPSocket::SendTo(const uint8_t *buffer,
     m_handle.m_handle.m_fd,
 #else
     m_handle,
-#endif
+#endif  // _WIN32
     reinterpret_cast<const char*>(buffer),
     size,
     0,
@@ -267,7 +267,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   message.msg_flags = 0;
 
   ssize_t bytes_sent = sendmsg(WriteDescriptor(), &message, 0);
-#endif
+#endif  // _WIN32
   data->FreeIOVec(iov);
 
   if (bytes_sent < 0) {
@@ -285,7 +285,7 @@ bool UDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
   return ReceiveFrom(m_handle.m_handle.m_fd, buffer, data_read, NULL, &length);
 #else
   return ReceiveFrom(m_handle, buffer, data_read, NULL, &length);
-#endif
+#endif  // _WIN32
 }
 
 bool UDPSocket::RecvFrom(
@@ -299,7 +299,7 @@ bool UDPSocket::RecvFrom(
                         &src_sockaddr, &src_size);
 #else
   bool ok = ReceiveFrom(m_handle, buffer, data_read, &src_sockaddr, &src_size);
-#endif
+#endif  // _WIN32
   if (ok)
     source = IPV4Address(src_sockaddr.sin_addr.s_addr);
   return ok;
@@ -316,7 +316,7 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
                         &src_sockaddr, &src_size);
 #else
   bool ok = ReceiveFrom(m_handle, buffer, data_read, &src_sockaddr, &src_size);
-#endif
+#endif  // _WIN32
   if (ok) {
     source = IPV4Address(src_sockaddr.sin_addr.s_addr);
     port = NetworkToHost(src_sockaddr.sin_port);
@@ -334,7 +334,7 @@ bool UDPSocket::RecvFrom(uint8_t *buffer,
                         &src_sockaddr, &src_size);
 #else
   bool ok = ReceiveFrom(m_handle, buffer, data_read, &src_sockaddr, &src_size);
-#endif
+#endif  // _WIN32
   if (ok) {
     *source = IPV4SocketAddress(IPV4Address(src_sockaddr.sin_addr.s_addr),
                                 NetworkToHost(src_sockaddr.sin_port));
@@ -351,7 +351,7 @@ bool UDPSocket::EnableBroadcast() {
   int ok = setsockopt(m_handle.m_handle.m_fd,
 #else
   int ok = setsockopt(m_handle,
-#endif
+#endif  // _WIN32
                       SOL_SOCKET,
                       SO_BROADCAST,
                       reinterpret_cast<char*>(&broadcast_flag),
@@ -371,7 +371,7 @@ bool UDPSocket::SetMulticastInterface(const IPV4Address &iface) {
   int ok = setsockopt(m_handle.m_handle.m_fd,
 #else
   int ok = setsockopt(m_handle,
-#endif
+#endif  // _WIN32
                       IPPROTO_IP,
                       IP_MULTICAST_IF,
                       reinterpret_cast<const char*>(&addr),
@@ -396,7 +396,7 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
   int ok = setsockopt(m_handle.m_handle.m_fd,
 #else
   int ok = setsockopt(m_handle,
-#endif
+#endif  // _WIN32
                       IPPROTO_IP,
                       IP_ADD_MEMBERSHIP,
                       reinterpret_cast<char*>(&mreq),
@@ -414,7 +414,7 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
 #else
     ok = setsockopt(m_handle, IPPROTO_IP, IP_MULTICAST_LOOP, &loop,
                     sizeof(loop));
-#endif
+#endif  // _WIN32
     if (ok < 0) {
       OLA_WARN << "Failed to disable looping for " << m_handle << ":" <<
         strerror(errno);
@@ -434,7 +434,7 @@ bool UDPSocket::LeaveMulticast(const IPV4Address &iface,
   int ok = setsockopt(m_handle.m_handle.m_fd,
 #else
   int ok = setsockopt(m_handle,
-#endif
+#endif  // _WIN32
                       IPPROTO_IP,
                       IP_DROP_MEMBERSHIP,
                       reinterpret_cast<char*>(&mreq),
@@ -453,7 +453,7 @@ bool UDPSocket::SetTos(uint8_t tos) {
   int ok = setsockopt(m_handle.m_handle.m_fd,
 #else
   int ok = setsockopt(m_handle,
-#endif
+#endif  // _WIN32
                       IPPROTO_IP,
                       IP_TOS,
                       reinterpret_cast<char*>(&value),
