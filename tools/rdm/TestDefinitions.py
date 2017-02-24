@@ -1019,14 +1019,13 @@ class FindSubDevices(ResponderTestFixture):
 class AllSubDevicesGetStatusIdDescription(TestMixins.AllSubDevicesGetMixin,
                                           OptionalParameterTestFixture):
   """Send a get STATUS_ID_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'STATUS_ID_DESCRIPTION'
   DATA = [0x0001]
 
 
 # class GetStatusIdDescription(TestMixins.,
 #                              OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.STATUS_COLLECTION
 #   PID = 'STATUS_ID_DESCRIPTION'
 # TODO(peter): Test get
 
@@ -7055,7 +7054,6 @@ class SetListInterfacesWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetListInterfaces(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Send a get LIST_INTERFACES to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LIST_INTERFACES'
 
 
@@ -7196,7 +7194,6 @@ class SetInterfaceLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
 class AllSubDevicesGetInterfaceLabel(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Send a get INTERFACE_LABEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'INTERFACE_LABEL'
   DATA = [1]
 
