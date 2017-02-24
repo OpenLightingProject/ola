@@ -1021,7 +1021,7 @@ class AllSubDevicesGetStatusIdDescription(TestMixins.AllSubDevicesGetMixin,
   """Send a get STATUS_ID_DESCRIPTION to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'STATUS_ID_DESCRIPTION'
-  #DATA = []  # TODO(peter): Specify some suitable data, 2 bytes
+  DATA = [0x0001]
 
 
 # class GetStatusIdDescription(TestMixins.,
@@ -2296,12 +2296,26 @@ class SetZeroDMXStartAddress(ResponderTestFixture):
 
 
 class SetDMXStartAddressWithNoData(TestMixins.SetWithNoDataMixin,
-                                   OptionalParameterTestFixture):
-  """Set DMX_START_ADDRESS command with no data."""
+                                   ResponderTestFixture):
+  """Send a SET dmx start address with no data."""
   PID = 'DMX_START_ADDRESS'
+  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  DEPS = [GetDMXStartAddress]
+  REQUIRES = ['dmx_footprint']
+
+  def Test(self):
+    if self.Property('dmx_footprint') > 0:
+      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
+    else:
+      self.AddExpectedResults([
+          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+          self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      ])
+    self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 
-class SetDMXStartAddressWithExtraData(TestMixins.GetWithDataMixin,
+class SetDMXStartAddressWithExtraData(TestMixins.SetWithDataMixin,
                                       ResponderTestFixture):
   """Send a SET dmx start address with extra data."""
   PID = 'DMX_START_ADDRESS'
