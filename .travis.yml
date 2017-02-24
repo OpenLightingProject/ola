@@ -17,7 +17,6 @@ addons:
      - libprotobuf-dev
      - protobuf-compiler
      - libprotoc-dev
-     - tree
     packages: &core_build
      # This is all the bits we need to enable all options
      - *base_build
@@ -159,7 +158,7 @@ matrix:
 env:
   global:
    # -- BEGIN Coverity Scan ENV
-   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 && autoreconf -i && ./configure --enable-ja-rule --enable-e133"
+   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 --template && autoreconf -i && ./configure --enable-ja-rule --enable-e133"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
    # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
@@ -187,7 +186,7 @@ before_cache:
 
 install:
 # Match the version of protobuf being installed via apt
-  - pip install --user protobuf==3.0.0
+  - pip install --user protobuf==3.1.0
 # We need to use pip rather than apt on Trusty
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
@@ -199,18 +198,18 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf protobuf-c libftdi libftdi0 libusb liblo libmicrohttpd tree; fi # ossp-uuid, homebrew/python/numpy already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf@3.1 libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-6" CC="ccache gcc-6"; fi
- - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="ccache g++-4.9" CC="ccache gcc-4.9"; fi
+ - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
 #Report the compiler version
  - $CXX --version
 
 after_failure:
-  - tree ${TRAVIS_BUILD_DIR}/ola-*/_build/
   - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log
 
 after_success:
