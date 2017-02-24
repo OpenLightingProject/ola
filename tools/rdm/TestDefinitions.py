@@ -2887,6 +2887,12 @@ class GetSensorValueWithNoData(TestMixins.GetWithNoDataMixin,
   PID = 'SENSOR_VALUE'
 
 
+class GetSensorValueWithExtraData(TestMixins.GetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """GET SENSOR_VALUE with more than 1 byte of data."""
+  PID = 'SENSOR_VALUE'
+
+
 class ResetSensorValue(OptionalParameterTestFixture):
   """Reset sensor values for all defined sensors."""
   CATEGORY = TestCategory.SENSORS
@@ -2986,6 +2992,12 @@ class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
   """SET sensor value without any sensor number."""
   PID = 'SENSOR_VALUE'
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
+
+
+class ResetSensorValueWithExtraData(TestMixins.SetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Send a SET SENSOR_VALUE command with extra data."""
+  PID = 'SENSOR_VALUE'
 
 
 class AllSubDevicesGetSensorValue(TestMixins.AllSubDevicesGetMixin,
@@ -3188,6 +3200,13 @@ class SetLampHoursWithNoData(TestMixins.SetWithNoDataMixin,
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 
+class SetLampHoursWithExtraData(TestMixins.SetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Send a SET LAMP_HOURS command with extra data."""
+  PID = 'LAMP_HOURS'
+  DATA = 'foobar'
+
+
 class AllSubDevicesGetLampHours(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Send a Get LAMP_HOURS to ALL_SUB_DEVICES."""
@@ -3244,6 +3263,13 @@ class SetLampStrikesWithNoData(TestMixins.SetWithNoDataMixin,
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 
+class SetLampStrikesWithExtraData(TestMixins.SetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Send a SET LAMP_STRIKES command with extra data."""
+  PID = 'LAMP_STRIKES'
+  DATA = 'foobar'
+
+
 class AllSubDevicesGetLampStrikes(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get LAMP_STRIKES to ALL_SUB_DEVICES."""
@@ -3282,6 +3308,12 @@ class SetLampState(TestMixins.SetBoolMixin, OptionalParameterTestFixture):
 class SetLampStateWithNoData(TestMixins.SetWithNoDataMixin,
                              OptionalParameterTestFixture):
   """Set the device state with no param data."""
+  PID = 'LAMP_STATE'
+
+
+class SetLampStateWithExtraData(TestMixins.SetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Send a SET LAMP_STATE command with extra data."""
   PID = 'LAMP_STATE'
 
 
@@ -3334,6 +3366,12 @@ class SetLampOnMode(TestMixins.SetMixin, OptionalParameterTestFixture):
 class SetLampOnModeWithNoData(TestMixins.SetWithNoDataMixin,
                               OptionalParameterTestFixture):
   """Set the device on mode with no param data."""
+  PID = 'LAMP_ON_MODE'
+
+
+class SetLampOnModeWithExtraData(TestMixins.SetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Send a SET LAMP_ON_MODE command with extra data."""
   PID = 'LAMP_ON_MODE'
 
 
@@ -4075,6 +4113,18 @@ class FindSelfTests(OptionalParameterTestFixture):
             'contains unprintable characters, was %s' %
             (fields['test_number'],
              fields['description'].encode('string-escape')))
+
+
+class SetSelfTestDescription(TestMixins.UnsupportedSetMixin,
+                             OptionalParameterTestFixture):
+  """Attempt to SET SELF_TEST_DESCRIPTION."""
+  PID = 'SELF_TEST_DESCRIPTION'
+
+
+class SetSelfTestDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """Attempt to SET SELF_TEST_DESCRIPTION with data."""
+  PID = 'SELF_TEST_DESCRIPTION'
 
 
 class AllSubDevicesGetSelfTestDescription(TestMixins.AllSubDevicesGetMixin,
@@ -5079,6 +5129,13 @@ class SetLockStateWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'LOCK_STATE'
 
 
+class SetLockStateWithExtraData(TestMixins.SetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Send a SET LOCK_STATE command with extra data."""
+  PID = 'LOCK_STATE'
+  DATA = 'foobar'
+
+
 class SetLockState(OptionalParameterTestFixture):
   """Set LOCK_STATE."""
   CATEGORY = TestCategory.CONFIGURATION
@@ -5987,6 +6044,12 @@ class SetOutputResponseTimeWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'OUTPUT_RESPONSE_TIME'
 
 
+class SetOutputResponseTimeWithExtraData(TestMixins.SetWithDataMixin,
+                                         OptionalParameterTestFixture):
+  """Send a SET OUTPUT_RESPONSE_TIME command with extra data."""
+  PID = 'OUTPUT_RESPONSE_TIME'
+
+
 class AllSubDevicesGetOutputResponseTime(TestMixins.AllSubDevicesGetMixin,
                                          OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME addressed to ALL_SUB_DEVICES."""
@@ -6037,6 +6100,13 @@ class GetOutOfRangeOutputResponseTimeDescription(
 class SetOutputResponseTimeDescription(TestMixins.UnsupportedSetMixin,
                                        OptionalParameterTestFixture):
   """SET OUTPUT_RESPONSE_TIME_DESCRIPTION."""
+  PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
+
+
+class SetOutputResponseTimeDescriptionWithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Attempt to SET OUTPUT_RESPONSE_TIME_DESCRIPTION with data."""
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
 
 
@@ -6155,6 +6225,12 @@ class SetModulationFrequencyWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'MODULATION_FREQUENCY'
 
 
+class SetModulationFrequencyWithExtraData(TestMixins.SetWithDataMixin,
+                                          OptionalParameterTestFixture):
+  """Send a SET MODULATION_FREQUENCY command with extra data."""
+  PID = 'MODULATION_FREQUENCY'
+
+
 class AllSubDevicesGetModulationFrequency(TestMixins.AllSubDevicesGetMixin,
                                           OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY addressed to ALL_SUB_DEVICES."""
@@ -6205,6 +6281,13 @@ class GetOutOfRangeModulationFrequencyDescription(
 class SetModulationFrequencyDescription(TestMixins.UnsupportedSetMixin,
                                         OptionalParameterTestFixture):
   """SET MODULATION_FREQUENCY_DESCRIPTION."""
+  PID = 'MODULATION_FREQUENCY_DESCRIPTION'
+
+
+class SetModulationFrequencyDescriptionWithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Attempt to SET MODULATION_FREQUENCY_DESCRIPTION with data."""
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
 
 
@@ -6790,6 +6873,12 @@ class GetListInterfacesWithData(TestMixins.GetWithDataMixin,
 class SetListInterfaces(TestMixins.UnsupportedSetMixin,
                         OptionalParameterTestFixture):
   """Attempt to SET list interfaces."""
+  PID = 'LIST_INTERFACES'
+
+
+class SetListInterfacesWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Attempt to SET LIST_INTERFACES with data."""
   PID = 'LIST_INTERFACES'
 
 
