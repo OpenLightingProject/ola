@@ -3873,7 +3873,7 @@ class SetRealTimeClock(OptionalParameterTestFixture):
 
 class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
   """Set the real time clock without any data."""
-  CATEGORY = TestCategory.CONFIGURATION
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'REAL_TIME_CLOCK'
 
   def Test(self):
@@ -3884,17 +3884,18 @@ class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 
-class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
+class SetRealTimeClockWithExtraData(OptionalParameterTestFixture):
   """Send a SET REAL_TIME_CLOCK command with extra data."""
-  CATEGORY = TestCategory.CONFIGURATION
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'REAL_TIME_CLOCK'
+  DATA = 'foobarbaz'
 
   def Test(self):
     self.AddIfSetSupported([
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
         self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
     ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, self.DATA)
 
 
 class AllSubDevicesGetRealTimeClock(TestMixins.AllSubDevicesGetMixin,
