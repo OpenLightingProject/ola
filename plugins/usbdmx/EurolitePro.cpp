@@ -23,11 +23,11 @@
 #include <string.h>
 #include <string>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/util/Utils.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
 namespace ola {
@@ -35,6 +35,7 @@ namespace plugin {
 namespace usbdmx {
 
 using std::string;
+using ola::usb::LibUsbAdaptor;
 
 namespace {
 
@@ -157,8 +158,7 @@ SynchronousEurolitePro::SynchronousEurolitePro(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial)
-    : EurolitePro(adaptor, serial),
-      m_usb_device(usb_device) {
+    : EurolitePro(adaptor, usb_device, serial) {
 }
 
 bool SynchronousEurolitePro::Init() {
@@ -233,7 +233,7 @@ AsynchronousEurolitePro::AsynchronousEurolitePro(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial)
-    : EurolitePro(adaptor, serial) {
+    : EurolitePro(adaptor, usb_device, serial) {
   m_sender.reset(new EuroliteProAsyncUsbSender(m_adaptor, usb_device));
 }
 

@@ -27,7 +27,7 @@ tools_e133_libolae133common_la_SOURCES = \
     tools/e133/E133Receiver.cpp \
     tools/e133/E133StatusHelper.cpp \
     tools/e133/MessageBuilder.cpp
-tools_e133_libolae133common_la_LIBADD = plugins/e131/e131/libolae131core.la
+tools_e133_libolae133common_la_LIBADD = libs/acn/libolae131core.la
 
 # libolae133controller
 # Controller side.
@@ -37,7 +37,7 @@ tools_e133_libolae133controller_la_SOURCES = \
     tools/e133/DeviceManagerImpl.h
 tools_e133_libolae133controller_la_LIBADD = \
     common/libolacommon.la \
-    plugins/e131/e131/libolae131core.la \
+    libs/acn/libolae131core.la \
     tools/e133/libolae133common.la
 
 # libolae133device
@@ -59,7 +59,7 @@ tools_e133_libolae133device_la_SOURCES = \
 
 tools_e133_libolae133device_la_LIBADD = \
     common/libolacommon.la \
-    plugins/e131/e131/libolae131core.la \
+    libs/acn/libolae131core.la \
     tools/e133/libolae133common.la
 
 
@@ -74,7 +74,7 @@ noinst_PROGRAMS += \
 
 tools_e133_e133_receiver_SOURCES = tools/e133/e133-receiver.cpp
 tools_e133_e133_receiver_LDADD = common/libolacommon.la \
-                                 plugins/e131/e131/libolaacn.la \
+                                 libs/acn/libolaacn.la \
                                  plugins/usbpro/libolausbprowidget.la \
                                  tools/e133/libolae133device.la
 
@@ -84,23 +84,23 @@ endif
 
 tools_e133_e133_monitor_SOURCES = tools/e133/e133-monitor.cpp
 tools_e133_e133_monitor_LDADD = common/libolacommon.la \
-                                plugins/e131/e131/libolaacn.la \
+                                libs/acn/libolaacn.la \
                                 tools/e133/libolae133common.la \
                                 tools/e133/libolae133controller.la
 
 tools_e133_e133_controller_SOURCES = tools/e133/e133-controller.cpp
 # required for PID_DATA_FILE
 tools_e133_e133_controller_LDADD = common/libolacommon.la \
-                                   plugins/e131/e131/libolae131core.la \
+                                   libs/acn/libolae131core.la \
                                    tools/e133/libolae133common.la \
                                    tools/e133/libolae133controller.la
 
 tools_e133_basic_controller_SOURCES = tools/e133/basic-controller.cpp
 tools_e133_basic_controller_LDADD = common/libolacommon.la \
-                                    plugins/e131/e131/libolaacn.la \
+                                    libs/acn/libolaacn.la \
                                     tools/e133/libolae133common.la
 
 tools_e133_basic_device_SOURCES = tools/e133/basic-device.cpp
 tools_e133_basic_device_LDADD = common/libolacommon.la \
-                                plugins/e131/e131/libolaacn.la \
+                                libs/acn/libolaacn.la \
                                 tools/e133/libolae133common.la

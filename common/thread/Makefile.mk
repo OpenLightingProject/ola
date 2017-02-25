@@ -4,6 +4,7 @@ common_libolacommon_la_SOURCES += \
     common/thread/ConsumerThread.cpp \
     common/thread/ExecutorThread.cpp \
     common/thread/Mutex.cpp \
+    common/thread/PeriodicThread.cpp \
     common/thread/SignalThread.cpp \
     common/thread/Thread.cpp \
     common/thread/ThreadPool.cpp \

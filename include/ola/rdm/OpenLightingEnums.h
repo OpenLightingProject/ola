@@ -35,8 +35,11 @@ namespace rdm {
 
 /**
  * Please discuss on open-lighting@googlegroups.com before claiming additional
- * manufacturer PIDs and update http://opendmx.net/index.php/Open_Lighting_PIDs
- * ANSI E1.20 section 6.2.10.2 Parameter ID (PID) for info on assigning
+ * manufacturer PIDs and update
+ * https://wiki.openlighting.org/index.php/Open_Lighting_PIDs
+ * N.B. This list may only include PIDs relevant to OLA, not other Open
+ * Lighting Project products.
+ * See ANSI E1.20 section 6.2.10.2 Parameter ID (PID) for info on assigning
  * manufacturer PIDs, although we're not currently sticking entirely to the
  * specification, like a number of other companies
  */
@@ -49,7 +52,7 @@ typedef enum {
 
 /**
  * Also see the list here
- * http://www.opendmx.net/index.php/Open_Lighting_Allocations#RDM_Model_Numbers
+ * https://wiki.openlighting.org/index.php/Open_Lighting_Allocations#RDM_Model_Numbers
  */
 typedef enum {
   // OLA Dummy RDM Responder

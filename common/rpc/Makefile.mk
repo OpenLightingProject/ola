@@ -51,7 +51,8 @@ common_rpc_RpcTester_SOURCES = \
 nodist_common_rpc_RpcTester_SOURCES = \
     common/rpc/TestService.pb.cc \
     common/rpc/TestServiceService.pb.cpp
-common_rpc_RpcTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+# required, otherwise we get build errors
+common_rpc_RpcTester_CXXFLAGS = $(COMMON_TESTING_FLAGS_ONLY_WARNINGS)
 common_rpc_RpcTester_LDADD = $(COMMON_TESTING_LIBS) \
                              $(libprotobuf_LIBS)
 
@@ -61,6 +62,7 @@ common_rpc_RpcServerTester_SOURCES = \
 nodist_common_rpc_RpcServerTester_SOURCES = \
     common/rpc/TestService.pb.cc \
     common/rpc/TestServiceService.pb.cpp
-common_rpc_RpcServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+# required, otherwise we get build errors
+common_rpc_RpcServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS_ONLY_WARNINGS)
 common_rpc_RpcServerTester_LDADD = $(COMMON_TESTING_LIBS) \
                                    $(libprotobuf_LIBS)

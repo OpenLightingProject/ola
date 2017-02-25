@@ -76,6 +76,16 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   const int FRAME_OPTION_VALUE = 256;
 
   opts->cmd = argv[0];
+  string cmd_name = ola::file::FilenameFromPathOrPath(opts->cmd);
+  // To skip the lt prefix during development
+  ola::StripPrefix(&cmd_name, "lt-");
+#ifdef _WIN32
+  // Strip the extension
+  size_t extension = cmd_name.find(".");
+  if (extension != string::npos) {
+    cmd_name = cmd_name.substr(0, extension);
+  }
+#endif  // _WIN32
   opts->set_mode = false;
   opts->pid_location = "";
   opts->list_pids = false;
@@ -85,7 +95,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   opts->sub_device = 0;
   opts->display_frames = false;
 
-  if (ola::file::FilenameFromPathOrPath(argv[0]) == "ola_rdm_set") {
+  if (cmd_name == "ola_rdm_set") {
     opts->set_mode = true;
   }
 
@@ -150,14 +160,14 @@ void DisplayGetPidHelp(const options &opts) {
   cout << "Usage: " << opts.cmd <<
   " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
-  "Get the value of a pid for a device.\n"
-  "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
+  "Get the value of a PID for a device.\n"
+  "Use '" << opts.cmd << " --list-pids' to get a list of PIDs.\n"
   "\n"
   "  --frames                  display the raw RDM frames if available.\n"
   "  --uid <uid>               the UID of the device to control.\n"
   "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
-  "  -l, --list-pids           display a list of pids\n"
+  "  -l, --list-pids           display a list of PIDs\n"
   "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
   << endl;
@@ -171,14 +181,14 @@ void DisplaySetPidHelp(const options &opts) {
   cout << "Usage: " << opts.cmd <<
   " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
-  "Set the value of a pid for a device.\n"
-  "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
+  "Set the value of a PID for a device.\n"
+  "Use '" << opts.cmd << " --list-pids' to get a list of PIDs.\n"
   "\n"
-  "  --frames                  display the raw RDM frames if available\n."
+  "  --frames                  display the raw RDM frames if available.\n"
   "  --uid <uid>               the UID of the device to control.\n"
   "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
-  "  -l, --list-pids           display a list of pids\n"
+  "  -l, --list-pids           display a list of PIDs\n"
   "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
   << endl;

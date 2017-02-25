@@ -28,6 +28,7 @@
 #include "plugins/usbdmx/AsyncPluginImpl.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncPluginImpl.h"
+#include "plugins/usbdmx/UsbDmxPluginDescription.h"
 
 DECLARE_bool(use_async_libusb);
 
@@ -56,7 +57,7 @@ bool UsbDmxPlugin::StartHook() {
   }
 
   unsigned int debug_level;
-  if (!StringToInt(m_preferences->GetValue(LIBUSB_DEBUG_LEVEL_KEY) ,
+  if (!StringToInt(m_preferences->GetValue(LIBUSB_DEBUG_LEVEL_KEY),
                    &debug_level)) {
     debug_level = LIBUSB_DEFAULT_DEBUG_LEVEL;
   }
@@ -64,10 +65,11 @@ bool UsbDmxPlugin::StartHook() {
   std::auto_ptr<PluginImplInterface> impl;
   if (FLAGS_use_async_libusb) {
     impl.reset(
-        new AsyncPluginImpl(m_plugin_adaptor, this, debug_level));
+        new AsyncPluginImpl(m_plugin_adaptor, this, debug_level,
+                            m_preferences));
   } else {
     impl.reset(
-        new SyncPluginImpl(m_plugin_adaptor, this, debug_level));
+        new SyncPluginImpl(m_plugin_adaptor, this, debug_level, m_preferences));
   }
 
   if (impl->Start()) {
@@ -86,19 +88,7 @@ bool UsbDmxPlugin::StopHook() {
 }
 
 string UsbDmxPlugin::Description() const {
-    return
-"USB DMX Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, Eurolite, Fadecandy, Sunlite USBDMX2 & Velleman K8062.\n"
-"\n"
-"--- Config file : ola-usbdmx.conf ---\n"
-"\n"
-"libusb_debug_level = {0,1,2,3,4}\n"
-"The debug level for libusb, see http://libusb.sourceforge.net/api-1.0/ .\n"
-"0 = No logging, 4 = Verbose debug.\n"
-"\n";
+    return plugin_description;
 }
 
 bool UsbDmxPlugin::SetDefaultPreferences() {

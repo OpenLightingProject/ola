@@ -16,13 +16,13 @@
 # MACAddressTest.py
 # Copyright (C) 2013 Peter Newman
 
-"""Test cases for the MACAddress class."""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import sys
 import unittest
 from ola.MACAddress import MACAddress
+
+"""Test cases for the MACAddress class."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class MACAddressTest(unittest.TestCase):
@@ -73,6 +73,7 @@ class MACAddressTest(unittest.TestCase):
     m1 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
     m2 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
     self.assertEqual(m1, m2)
+
 
 if __name__ == '__main__':
   unittest.main()

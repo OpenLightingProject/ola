@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -45,6 +44,7 @@ class TestState(object):
     strs.append(str(self._state))
     strs.append('\x1b[0m')
     return ''.join(strs)
+
 
 TestState.PASSED = TestState('Passed')
 TestState.FAILED = TestState('Failed')

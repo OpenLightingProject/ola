@@ -18,13 +18,16 @@
 
 """Lists the loaded plugins."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
+from __future__ import print_function
+from ola.ClientWrapper import ClientWrapper
 import getopt
 import textwrap
 import sys
-from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import Universe
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
+wrapper = None
+
 
 def Usage():
   print(textwrap.dedent("""
@@ -35,16 +38,31 @@ def Usage():
   -h, --help                Display this help message and exit.
   -p, --plugin <plugin_id>  Plugin ID number."""))
 
-def main():
-  def Plugins(state, plugins):
+
+def Plugins(status, plugins):
+  if status.Succeeded():
     for plugin in plugins:
       print('%d %s' % (plugin.id, plugin.name))
+  else:
+    print('Error: %s' % status.message, file=sys.stderr)
+
+  global wrapper
+  if wrapper:
     wrapper.Stop()
 
-  def PluginDescription(state, description):
-    print(description);
+
+def PluginDescription(status, description):
+  if status.Succeeded():
+    print(description)
+  else:
+    print('Error: %s' % status.message, file=sys.stderr)
+
+  global wrapper
+  if wrapper:
     wrapper.Stop()
 
+
+def main():
   try:
       opts, args = getopt.getopt(sys.argv[1:], "hp:", ["help", "plugin="])
   except getopt.GetoptError as err:
@@ -60,6 +78,7 @@ def main():
     elif o in ("-p", "--plugin"):
       plugin = int(a)
 
+  global wrapper
   wrapper = ClientWrapper()
   client = wrapper.Client()
 

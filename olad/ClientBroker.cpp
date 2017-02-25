@@ -54,6 +54,21 @@ void ClientBroker::SendRDMRequest(const Client *client,
                         callback));
 }
 
+void ClientBroker::RunRDMDiscovery(const Client *client,
+                                   Universe *universe,
+                                   bool full_discovery,
+                                   ola::rdm::RDMDiscoveryCallback *callback) {
+  if (!STLContains(m_clients, client)) {
+    OLA_WARN << "Running RDM discovery but the client doesn't exist in the "
+             << "broker!";
+  }
+
+  universe->RunRDMDiscovery(
+      NewSingleCallback(this, &ClientBroker::DiscoveryComplete, client,
+                        callback),
+      full_discovery);
+}
+
 /*
  * Return from an RDM call.
  * @param key the client associated with this request
@@ -69,6 +84,18 @@ void ClientBroker::RequestComplete(const Client *client,
     delete callback;
   } else {
     callback->Run(reply);
+  }
+}
+
+void ClientBroker::DiscoveryComplete(
+    const Client *client,
+    ola::rdm::RDMDiscoveryCallback *callback,
+    const ola::rdm::UIDSet &uids) {
+  if (!STLContains(m_clients, client)) {
+    OLA_DEBUG << "Client no longer exists, cleaning up from RDM discovery";
+    delete callback;
+  } else {
+    callback->Run(uids);
   }
 }
 }  // namespace ola

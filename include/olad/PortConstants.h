@@ -25,8 +25,9 @@
  * @{
  * @file PortConstants.h
  * @brief Different priority modes and priority capabilities. Please make sure
- * and visit [Merging Algorithms]
- * (http://opendmx.net/index.php/OLA_Merging_Algorithms) for more information.
+ * to visit [Merging Algorithms]
+ * (https://wiki.openlighting.org/index.php/OLA_Merging_Algorithms) for more
+ * information.
  * @}
  */
 

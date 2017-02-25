@@ -16,12 +16,13 @@
 # SimpleRpcControllerTest.py
 # Copyright (C) 2005 Simon Newton
 
+import unittest
+from SimpleRpcController import SimpleRpcController
+
 """Test cases for the SimpleRpcController."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-import unittest
-from SimpleRpcController import SimpleRpcController
 
 class SimpleRpcControllerTest(unittest.TestCase):
 
@@ -64,6 +65,7 @@ class SimpleRpcControllerTest(unittest.TestCase):
     self.assertFalse(controller.IsCanceled())
     self.assertEqual(None, controller.ErrorText())
     self.assertFalse(self.callback_run)
+
 
 if __name__ == '__main__':
   unittest.main()

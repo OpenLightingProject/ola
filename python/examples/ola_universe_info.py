@@ -18,31 +18,48 @@
 
 """Lists the active universes."""
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
+from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
+import sys
 
-def Universes(state, universes):
-  for uni in universes:
-    print('Universe {}'.format(uni.id))
-    print('  - Name: {}'.format(uni.name))
-    print('  - Merge mode: {}'.format(
-      'LTP' if uni.merge_mode == Universe.LTP else 'HTP'))
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
-    if len(uni.input_ports) > 0:
-      print('  - Input ports:')
-      for p in uni.input_ports:
-        print('    - {}'.format(p))
+wrapper = None
 
-    if len(uni.output_ports) > 0:
-      print('  - Output ports:')
-      for p in uni.output_ports:
-        print('    - {}'.format(p))
 
-  wrapper.Stop()
+def Universes(status, universes):
+  if status.Succeeded():
+    for uni in universes:
+      print('Universe %d' % uni.id)
+      print('  - Name: %s' % uni.name)
+      print('  - Merge mode: %s' %
+            ('LTP' if uni.merge_mode == Universe.LTP else 'HTP'))
 
-wrapper = ClientWrapper()
-client = wrapper.Client()
-client.FetchUniverses(Universes)
-wrapper.Run()
+      if len(uni.input_ports) > 0:
+        print('  - Input ports:')
+        for p in uni.input_ports:
+          print('    - %s' % p)
+
+      if len(uni.output_ports) > 0:
+        print('  - Output ports:')
+        for p in uni.output_ports:
+          print('    - %s' % p)
+  else:
+    print('Error: %s' % status.message, file=sys.stderr)
+
+  global wrapper
+  if wrapper:
+    wrapper.Stop()
+
+
+def main():
+  global wrapper
+  wrapper = ClientWrapper()
+  client = wrapper.Client()
+  client.FetchUniverses(Universes)
+  wrapper.Run()
+
+
+if __name__ == '__main__':
+  main()

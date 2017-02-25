@@ -37,10 +37,11 @@ class SunliteThreadedSender;
 /**
  * @brief The interface for the Sunlite Widgets
  */
-class Sunlite : public BaseWidget {
+class Sunlite : public SimpleWidget {
  public:
-  explicit Sunlite(LibUsbAdaptor *adaptor)
-     : BaseWidget(adaptor) {
+  explicit Sunlite(ola::usb::LibUsbAdaptor *adaptor,
+                   libusb_device *usb_device)
+     : SimpleWidget(adaptor, usb_device) {
   }
 };
 
@@ -57,7 +58,7 @@ class SynchronousSunlite: public Sunlite {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  SynchronousSunlite(LibUsbAdaptor *adaptor,
+  SynchronousSunlite(ola::usb::LibUsbAdaptor *adaptor,
                      libusb_device *usb_device);
 
   bool Init();
@@ -65,7 +66,6 @@ class SynchronousSunlite: public Sunlite {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  libusb_device* const m_usb_device;
   std::auto_ptr<class SunliteThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousSunlite);
@@ -81,7 +81,7 @@ class AsynchronousSunlite: public Sunlite {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    */
-  AsynchronousSunlite(LibUsbAdaptor *adaptor,
+  AsynchronousSunlite(ola::usb::LibUsbAdaptor *adaptor,
                       libusb_device *usb_device);
 
   bool Init();

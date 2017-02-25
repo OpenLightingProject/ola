@@ -22,7 +22,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <errno.h>
 #include <signal.h>
@@ -55,9 +55,9 @@ using ola::plugin::spi::SoftwareBackend;
 using ola::plugin::spi::SPIOutput;
 using ola::plugin::spi::SPIWriter;
 DEFINE_string(spi_device, "", "Path to the SPI device to use.");
-#endif
+#endif  // USE_SPI
 
-#include "plugins/e131/e131/E131Node.h"
+#include "libs/acn/E131Node.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "tools/e133/SimpleE133Node.h"
@@ -101,7 +101,7 @@ void HandleTriDMX(DmxBuffer *buffer, DmxTriWidget *widget) {
 void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *output) {
   output->WriteDMX(*buffer);
 }
-#endif
+#endif  // USE_SPI
 
 
 /*
@@ -149,11 +149,11 @@ int main(int argc, char *argv[]) {
   }
 
   // Setup E1.31 if required.
-  auto_ptr<ola::plugin::e131::E131Node> e131_node;
+  auto_ptr<ola::acn::E131Node> e131_node;
   if (FLAGS_e131) {
-    e131_node.reset(new ola::plugin::e131::E131Node(
-          node.SelectServer(), FLAGS_listen_ip,
-          ola::plugin::e131::E131Node::Options(), cid));
+    e131_node.reset(new ola::acn::E131Node(
+                    node.SelectServer(), FLAGS_listen_ip,
+                    ola::acn::E131Node::Options(), cid));
     if (!e131_node->Start()) {
       OLA_WARN << "Failed to start E1.31 node";
       exit(ola::EXIT_UNAVAILABLE);
@@ -244,7 +244,7 @@ int main(int argc, char *argv[]) {
           NewCallback(&HandleSpiDMX, &spi_buffer, spi_output.get()));
     }
   }
-#endif
+#endif  // USE_SPI
 
   for (unsigned int i = 0; i < endpoints.size(); i++) {
     node.AddEndpoint(i + 1, endpoints[i]);

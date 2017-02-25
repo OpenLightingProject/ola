@@ -32,10 +32,10 @@
 #include "ola/network/TCPSocket.h"
 #include "ola/network/TCPSocketFactory.h"
 #include "ola/util/SequenceNumber.h"
-#include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133StatusInflator.h"
-#include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/TCPTransport.h"
+#include "libs/acn/E133Inflator.h"
+#include "libs/acn/E133StatusInflator.h"
+#include "libs/acn/RootInflator.h"
+#include "libs/acn/TCPTransport.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/TCPConnectionStats.h"
 
@@ -72,16 +72,16 @@ class DesignatedControllerConnection {
     ola::network::TCPSocket *m_tcp_socket;
     E133HealthCheckedConnection *m_health_checked_connection;
     ola::io::NonBlockingSender *m_message_queue;
-    ola::plugin::e131::IncomingTCPTransport *m_incoming_tcp_transport;
+    ola::acn::IncomingTCPTransport *m_incoming_tcp_transport;
 
     // Listening Socket
     ola::network::TCPSocketFactory m_tcp_socket_factory;
     ola::network::TCPAcceptingSocket m_listening_tcp_socket;
 
     // Inflators
-    ola::plugin::e131::RootInflator m_root_inflator;
-    ola::plugin::e131::E133Inflator m_e133_inflator;
-    ola::plugin::e131::E133StatusInflator m_e133_status_inflator;
+    ola::acn::RootInflator m_root_inflator;
+    ola::acn::E133Inflator m_e133_inflator;
+    ola::acn::E133StatusInflator m_e133_status_inflator;
 
     // The message state.
     // Indicates if we have messages that haven't been sent on the
@@ -95,14 +95,14 @@ class DesignatedControllerConnection {
     void ReceiveTCPData();
     void TCPConnectionUnhealthy();
     void TCPConnectionClosed();
-    void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
+    void RLPDataReceived(const ola::acn::TransportHeader &header);
 
     bool SendRDMCommand(unsigned int sequence_number, uint16_t endpoint,
                         const ola::rdm::RDMResponse *rdm_response);
 
     void HandleStatusMessage(
-        const ola::plugin::e131::TransportHeader *transport_header,
-        const ola::plugin::e131::E133Header *e133_header,
+        const ola::acn::TransportHeader *transport_header,
+        const ola::acn::E133Header *e133_header,
         uint16_t status_code,
         const string &description);
 

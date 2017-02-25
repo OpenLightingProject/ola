@@ -9,6 +9,7 @@ module_files = \
     tools/rdm/TestLogger.py \
     tools/rdm/TestMixins.py \
     tools/rdm/TestRunner.py \
+    tools/rdm/TimingStats.py \
     tools/rdm/TestState.py \
     tools/rdm/__init__.py
 

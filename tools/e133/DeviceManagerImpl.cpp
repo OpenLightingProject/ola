@@ -35,9 +35,9 @@
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133StatusPDU.h"
-#include "plugins/e131/e131/TCPTransport.h"
+#include "libs/acn/E133Inflator.h"
+#include "libs/acn/E133StatusPDU.h"
+#include "libs/acn/TCPTransport.h"
 
 #include "tools/e133/DeviceManagerImpl.h"
 #include "tools/e133/E133Endpoint.h"
@@ -57,7 +57,7 @@ using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
-using ola::plugin::e131::IncomingTCPTransport;
+using ola::acn::IncomingTCPTransport;
 
 using std::auto_ptr;
 using std::string;
@@ -320,8 +320,8 @@ void DeviceManagerImpl::SocketClosed(IPV4Address ip_address) {
  * health checked connection.
  */
 void DeviceManagerImpl::RLPDataReceived(
-    const ola::plugin::e131::TransportHeader &header) {
-  if (header.Transport() != ola::plugin::e131::TransportHeader::TCP)
+    const ola::acn::TransportHeader &header) {
+  if (header.Transport() != ola::acn::TransportHeader::TCP)
     return;
   IPV4Address src_ip = header.Source().Host();
 
@@ -374,8 +374,8 @@ void DeviceManagerImpl::RLPDataReceived(
  * Handle a message on the TCP connection.
  */
 void DeviceManagerImpl::EndpointRequest(
-    const ola::plugin::e131::TransportHeader *transport_header,
-    const ola::plugin::e131::E133Header *e133_header,
+    const ola::acn::TransportHeader *transport_header,
+    const ola::acn::E133Header *e133_header,
     const string &raw_request) {
   if (!m_rdm_callback.get())
     return;

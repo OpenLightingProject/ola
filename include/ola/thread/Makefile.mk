@@ -7,6 +7,7 @@ olathreadinclude_HEADERS = \
     include/ola/thread/Future.h \
     include/ola/thread/FuturePrivate.h \
     include/ola/thread/Mutex.h \
+    include/ola/thread/PeriodicThread.h \
     include/ola/thread/SchedulerInterface.h \
     include/ola/thread/SchedulingExecutorInterface.h \
     include/ola/thread/SignalThread.h \

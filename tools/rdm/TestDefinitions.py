@@ -1,4 +1,3 @@
-# !/usr/bin/python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -16,32 +15,42 @@
 # TestDefinitions.py
 # Copyright (C) 2010 Simon Newton
 
-'''This defines all the tests for RDM responders.'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import datetime
 import operator
 import struct
-from ExpectedResults import *
+from ExpectedResults import (AckGetResult, BroadcastResult, NackGetResult,
+                             InvalidResponse, TimeoutResult, UnsupportedResult,
+                             RDM_GET, RDM_SET)
 from ResponderTest import ResponderTestFixture, TestFixture
-from ResponderTest import OptionalParameterTestFixture
+from ResponderTest import (ParamDescriptionTestFixture,
+                           OptionalParameterTestFixture)
 from TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
-from ola.RDMConstants import *
-from ola.OlaClient import RDMNack
+from ola.RDMConstants import (RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH,
+                              RDM_MAX_DOMAIN_NAME_LENGTH,
+                              RDM_MANUFACTURER_PID_MIN,
+                              RDM_MANUFACTURER_PID_MAX, RDM_INTERFACE_INDEX_MIN,
+                              RDM_INTERFACE_INDEX_MAX,
+                              INTERFACE_HARDWARE_TYPE_ETHERNET,
+                              RDM_ZERO_FOOTPRINT_DMX_ADDRESS,
+                              RDM_MANUFACTURER_SD_MIN, RDM_MANUFACTURER_SD_MAX)
+from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
 from TestHelpers import ContainsUnprintable
 import TestMixins
-from TestMixins import MAX_DMX_ADDRESS
+
+'''This defines all the tests for RDM responders.'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
 
 MAX_PERSONALITY_NUMBER = 255
 
 
 # Mute Tests
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class MuteDevice(ResponderTestFixture):
   """Mute device and verify response."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
@@ -131,7 +140,7 @@ class RequestsWhileUnmuted(ResponderTestFixture):
   """Unmute the device, send a GET DEVICE_INFO request, mute device again."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   PID = 'DISC_UN_MUTE'
-  # this requires sub_device_count so that we know DEVICE_INFO is supported
+  # This requires sub_device_count so that we know DEVICE_INFO is supported
   REQUIRES = ['mute_supported', 'unmute_supported', 'sub_device_count']
 
   def Test(self):
@@ -149,17 +158,20 @@ class RequestsWhileUnmuted(ResponderTestFixture):
     self.SendGet(ROOT_DEVICE, device_info_pid)
 
   def ResetState(self):
-    # mute the device again
+    # Mute the device again
     mute_pid = self.LookupPid('DISC_MUTE')
     self.SendDiscovery(ROOT_DEVICE, mute_pid)
     self._wrapper.Run()
 
 
 # Invalid DISCOVERY_PIDs
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class InvalidDiscoveryPID(ResponderTestFixture):
   """Send an invalid Discovery CC PID, see E1.20 6.3.4"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def PidRequired(self):
+    return False
 
   # We need to mock out a PID here
   class MockPid(object):
@@ -182,7 +194,33 @@ class InvalidDiscoveryPID(ResponderTestFixture):
 
 
 # DUB Tests
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+class MuteAllDevices(ResponderTestFixture):
+  """Mute all devices, so we can perform DUB tests"""
+  PID = 'DISC_MUTE'
+  REQUIRES = ['mute_supported']
+  # This is a fake property used to ensure this tests runs before the DUB tests.
+  PROVIDES = ['global_mute']
+
+  def Test(self):
+    # Set the fake property
+    self.SetProperty(self.PROVIDES[0], True)
+    if not (self.Property('mute_supported')):
+      self.SetNotRun('RDM Controller does not support DISCOVERY commands')
+      self.Stop()
+      return
+
+    self.AddExpectedResults([
+      BroadcastResult(),
+      UnsupportedResult()
+    ])
+
+    self.SendDirectedDiscovery(
+        UID.AllDevices(),
+        PidStore.ROOT_DEVICE,
+        self.pid)
+
+
 class DUBFullTree(TestMixins.DiscoveryMixin,
                   ResponderTestFixture):
   """Confirm the device responds within the entire DUB range."""
@@ -470,7 +508,7 @@ class DUBInvertedUpperUID(TestMixins.DiscoveryMixin,
 
 
 # Device Info tests
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class DeviceInfoTest(object):
   """The base device info test class."""
   PID = 'DEVICE_INFO'
@@ -484,7 +522,7 @@ class DeviceInfoTest(object):
   }
 
 
-class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
+class GetDeviceInfo(DeviceInfoTest, ResponderTestFixture):
   """GET device info & verify."""
   CATEGORY = TestCategory.CORE
 
@@ -506,11 +544,11 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
 
   def VerifyResult(self, unused_response, fields):
     """Check the footprint, personalities & sub devices."""
-    for property in self.PROVIDES:
-      self.SetPropertyFromDict(fields, property)
+    for property_name in self.PROVIDES:
+      self.SetPropertyFromDict(fields, property_name)
 
     footprint = fields['dmx_footprint']
-    if footprint > MAX_DMX_ADDRESS:
+    if footprint > TestMixins.MAX_DMX_ADDRESS:
       self.AddWarning('DMX Footprint of %d, was more than 512' % footprint)
     if footprint > 0:
       personality_count = fields['personality_count']
@@ -527,7 +565,7 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
 
     start_address = fields['dmx_start_address']
     if (start_address == 0 or
-        (start_address > MAX_DMX_ADDRESS and
+        (start_address > TestMixins.MAX_DMX_ADDRESS and
          start_address != RDM_ZERO_FOOTPRINT_DMX_ADDRESS)):
       self.AddWarning('Invalid DMX address %d in DEVICE_INFO' % start_address)
 
@@ -536,7 +574,7 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
       self.AddWarning('Sub device count > 512, was %d' % sub_devices)
 
 
-class GetDeviceInfoWithData(ResponderTestFixture, DeviceInfoTest):
+class GetDeviceInfoWithData(DeviceInfoTest, ResponderTestFixture):
   """GET device info with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PROVIDES = ['supports_over_sized_pdl']
@@ -555,7 +593,7 @@ class GetDeviceInfoWithData(ResponderTestFixture, DeviceInfoTest):
     self.SetProperty('supports_over_sized_pdl', True)
 
 
-class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
+class GetMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
   """Check if the responder can handle a packet of the maximum size."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   MAX_PDL = 231
@@ -565,7 +603,7 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
     self.AddExpectedResults([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.NackGetResult(RDMNack.NR_PACKET_SIZE_UNSUPPORTED),
-      self.AckGetResult(),  # some crazy devices continue to ack
+      self.AckGetResult(),  # Some crazy devices continue to ack
       InvalidResponse(
           advisory='Responder returned an invalid response to a command with '
                    'PDL of %d' % self.MAX_PDL
@@ -574,7 +612,11 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
           advisory='Responder timed out to a command with PDL of %d' %
                    self.MAX_PDL),
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self.MAX_PDL)
+    # Incrementing list, so we can find out which bit we have where in memory
+    data = ''
+    for i in xrange(0, self.MAX_PDL):
+      data += chr(i)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
   def VerifyResult(self, response, fields):
     ok = response not in [OlaClient.RDM_INVALID_RESPONSE,
@@ -583,7 +625,7 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
     self.SetProperty('supports_max_sized_pdl', ok)
 
 
-class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
+class DetermineMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
   """Binary search the pdl length space to determine the max packet size."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   REQUIRES = ['supports_over_sized_pdl', 'supports_max_sized_pdl']
@@ -595,9 +637,9 @@ class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
 
     self._lower = 1
     self._upper = GetMaxPacketSize.MAX_PDL
-    self.SendGet()
+    self.SendPacket()
 
-  def SendGet(self):
+  def SendPacket(self):
     if self._lower + 1 == self._upper:
       self.AddWarning('Max PDL supported is < %d, was %d' %
                       (GetMaxPacketSize.MAX_PDL, self._lower))
@@ -615,29 +657,49 @@ class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
 
   def GetPassed(self):
     self._lower = self._current
-    self.SendGet()
+    self.SendPacket()
 
   def GetFailed(self):
     self._upper = self._current
-    self.SendGet()
+    self.SendPacket()
 
-class SetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
-  """SET device info."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
 
+class SetDeviceInfo(TestMixins.UnsupportedSetMixin,
+                    DeviceInfoTest,
+                    ResponderTestFixture):
+  """Attempt to SET device info with no data."""
   def Test(self):
-    self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
-    self.SendRawSet(ROOT_DEVICE, self.pid)
+    self.AddExpectedResults([
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackSetResult(RDMNack.NR_UNKNOWN_PID,
+                         advisory='NR_UNSUPPORTED_COMMAND_CLASS would be more '
+                                  'appropriate for a mandatory PID')
+    ])
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class SetDeviceInfoWithData(TestMixins.UnsupportedSetWithDataMixin,
+                            DeviceInfoTest,
+                            ResponderTestFixture):
+  """SET device info with data."""
+  def Test(self):
+    self.AddExpectedResults([
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackSetResult(RDMNack.NR_UNKNOWN_PID,
+                         advisory='NR_UNSUPPORTED_COMMAND_CLASS would be more '
+                                  'appropriate for a mandatory PID')
+    ])
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
 class AllSubDevicesGetDeviceInfo(TestMixins.AllSubDevicesGetMixin,
-                                 OptionalParameterTestFixture):
+                                 DeviceInfoTest,
+                                 ResponderTestFixture):
   """Send a Get Device Info to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
-  PID = 'DEVICE_INFO'
+
 
 # Supported Parameters Tests & Mixin
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetSupportedParameters(ResponderTestFixture):
   """GET supported parameters."""
   CATEGORY = TestCategory.CORE
@@ -645,7 +707,7 @@ class GetSupportedParameters(ResponderTestFixture):
   PROVIDES = ['manufacturer_parameters', 'supported_parameters',
               'acks_supported_parameters']
 
-  # declaring support for any of these is a warning:
+  # Declaring support for any of these is a warning:
   MANDATORY_PIDS = ['SUPPORTED_PARAMETERS',
                     'PARAMETER_DESCRIPTION',
                     'DEVICE_INFO',
@@ -739,9 +801,7 @@ class GetSupportedParameters(ResponderTestFixture):
           param_id <= RDM_MANUFACTURER_PID_MAX):
         manufacturer_parameters.append(param_id)
 
-    pid_store = PidStore.GetStore()
-
-    # check for duplicate PIDs
+    # Check for duplicate PIDs
     for pid, count in count_by_pid.iteritems():
       if count > 1:
         pid_obj = self.LookupPidValue(pid)
@@ -761,9 +821,9 @@ class GetSupportedParameters(ResponderTestFixture):
       for pid_name in pid_names:
         pid = self.LookupPid(pid_name)
         if pid.value in supported_parameters:
-          supported_pids.append(pid_name)
+          supported_pids.append(pid.name)
         else:
-          unsupported_pids.append(pid_name)
+          unsupported_pids.append(pid.name)
 
       if supported_pids and unsupported_pids:
         self.AddAdvisory(
@@ -782,7 +842,7 @@ class GetSupportedParameters(ResponderTestFixture):
           return
 
         if pid.value not in supported_parameters:
-          unsupported_pids.append(pid_name)
+          unsupported_pids.append(pid.name)
       if unsupported_pids:
         self.AddAdvisory('%s supported but %s is not' %
                          (p, ','.join(unsupported_pids)))
@@ -799,16 +859,16 @@ class GetSupportedParameters(ResponderTestFixture):
           return
 
         if pid.value in supported_parameters:
-          dependent_pids.append(pid_name)
+          dependent_pids.append(pid.name)
       if (dependent_pids and
          (self.LookupPid(p).value in supported_parameters)):
         self.AddAdvisory('%s supported but %s is not' %
                          (','.join(unsupported_pids), p))
 
 
-class GetSupportedParametersWithData(ResponderTestFixture):
+class GetSupportedParametersWithData(TestMixins.GetWithDataMixin,
+                                     ResponderTestFixture):
   """GET supported parameters with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SUPPORTED_PARAMETERS'
   REQUIRES = ['acks_supported_parameters']
 
@@ -821,23 +881,26 @@ class GetSupportedParametersWithData(ResponderTestFixture):
       ])
     else:
       self.AddExpectedResults(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
 
-class SetSupportedParameters(ResponderTestFixture):
+class SetSupportedParameters(TestMixins.UnsupportedSetMixin,
+                             ResponderTestFixture):
   """Attempt to SET supported parameters."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SUPPORTED_PARAMETERS'
 
-  def Test(self):
-    self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
-    self.SendRawSet(ROOT_DEVICE, self.pid)
+
+class SetSupportedParametersWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                     ResponderTestFixture):
+  """SET supported parameters with data."""
+  PID = 'SUPPORTED_PARAMETERS'
+
 
 class AllSubDevicesGetSupportedParameters(TestMixins.AllSubDevicesGetMixin,
-                                          OptionalParameterTestFixture):
+                                          ResponderTestFixture):
   """Send a Get SUPPORTED_PARAMETERS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SUPPORTED_PARAMETERS'
+
 
 class GetSubDeviceSupportedParameters(ResponderTestFixture):
   """Check that SUPPORTED_PARAMETERS is consistent across sub devices."""
@@ -856,7 +919,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
     self._sub_devices = self.Property('sub_device_addresses').keys()
     self._sub_devices.reverse()
     self._params = {}
-    self._GetSupportedParams();
+    self._GetSupportedParams()
 
   def _GetSupportedParams(self):
     if not self._sub_devices:
@@ -890,14 +953,14 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
     missing_pids = mandatory_pids - supported_pids
     if missing_pids:
       self.SetFailed("Missing PIDs %s from sub device's supported pid list" %
-                     ', '.join('0x%04hx' % p for p in missing_pids));
+                     ', '.join('0x%04hx' % p for p in missing_pids))
       return
 
     self.SetProperty('sub_device_supported_parameters', supported_pids)
 
 
 # Sub Devices Test
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class FindSubDevices(ResponderTestFixture):
   """Locate the sub devices by sending DEVICE_INFO messages."""
   CATEGORY = TestCategory.SUB_DEVICES
@@ -907,8 +970,8 @@ class FindSubDevices(ResponderTestFixture):
 
   def Test(self):
     self._device_count = self.Property('sub_device_count')
-    self._sub_device_addresses = {}  # index to start address mapping
-    self._sub_device_footprints = {}  # index to footprint mapping
+    self._sub_device_addresses = {}  # Index to start address mapping
+    self._sub_device_footprints = {}  # Index to footprint mapping
     self._current_index = 0  # the current sub device we're trying to query
     self._CheckForSubDevice()
 
@@ -950,39 +1013,37 @@ class FindSubDevices(ResponderTestFixture):
           fields['dmx_start_address'])
       self._sub_device_footprints[self._current_index] = fields['dmx_footprint']
 
+
 # Clear Status ID
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetClearStatusMessages(TestMixins.UnsupportedGetMixin,
                              OptionalParameterTestFixture):
   """GET clear status id."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CLEAR_STATUS_ID'
 
 
 class ClearStatusMessagesWithData(TestMixins.SetWithDataMixin,
                                   OptionalParameterTestFixture):
   """Clear the status message queue with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CLEAR_STATUS_ID'
 
 
-class ClearStatusMessages(TestMixins.SetWithNoDataMixin,
-                          OptionalParameterTestFixture):
+class ClearStatusMessages(OptionalParameterTestFixture):
   """Clear the status message queue."""
   CATEGORY = TestCategory.STATUS_COLLECTION
   PID = 'CLEAR_STATUS_ID'
 
   def Test(self):
     # I don't believe there is a reliable way to check that the queue is
-    # cleared. Note that this pid should only clear status messages, not
+    # cleared. Note that this PID should only clear status messages, not
     # responses to ACK_TIMERS so we can't check if the message count is 0.
     self.AddIfSetSupported(self.AckSetResult())
     self.SendSet(ROOT_DEVICE, self.pid, [])
 
 
 # Parameter Description
-#------------------------------------------------------------------------------
-class GetParamDescription(ResponderTestFixture):
+# -----------------------------------------------------------------------------
+class GetParameterDescription(ParamDescriptionTestFixture):
   """Check that GET parameter description works for any manufacturer params."""
   CATEGORY = TestCategory.RDM_INFORMATION
   PID = 'PARAMETER_DESCRIPTION'
@@ -992,6 +1053,7 @@ class GetParamDescription(ResponderTestFixture):
     self.params = self.Property('manufacturer_parameters')[:]
     if len(self.params) == 0:
       self.SetNotRun('No manufacturer params found')
+      # This case is tested in GetParamDescriptionForNonManufacturerPid
       return
     self._GetParam()
 
@@ -1025,10 +1087,10 @@ class GetParamDescription(ResponderTestFixture):
     if ContainsUnprintable(fields['description']):
       self.AddAdvisory(
           'Description field in %s contains unprintable characters, was %s' %
-          (self.PID, fields['description'].encode('string-escape')))
+          (self.pid.name, fields['description'].encode('string-escape')))
 
 
-class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
+class GetParameterDescriptionForNonManufacturerPid(ParamDescriptionTestFixture):
   """GET parameter description for a non-manufacturer pid."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PARAMETER_DESCRIPTION'
@@ -1037,11 +1099,11 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
   def Test(self):
     device_info_pid = self.LookupPid('DEVICE_INFO')
     results = [
-        self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
-        self.NackGetResult(
-            RDMNack.NR_DATA_OUT_OF_RANGE,
-            advisory='Parameter Description appears to be supported but no'
-                     'manufacturer PIDs were declared'),
+      self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+      self.NackGetResult(
+          RDMNack.NR_DATA_OUT_OF_RANGE,
+          advisory='Parameter Description appears to be supported but no'
+                   'manufacturer PIDs were declared'),
     ]
     if self.Property('manufacturer_parameters'):
       results = self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
@@ -1050,41 +1112,47 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
-class GetParamDescriptionWithData(ResponderTestFixture):
-  """GET parameter description with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+class GetParameterDescriptionWithExtraData(TestMixins.GetWithDataMixin,
+                                           ParamDescriptionTestFixture):
+  """GET parameter description with extra param data."""
   PID = 'PARAMETER_DESCRIPTION'
   REQUIRES = ['manufacturer_parameters']
 
   def Test(self):
     results = [
-        self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
-        self.NackGetResult(RDMNack.NR_FORMAT_ERROR,
-                           advisory='Parameter Description appears to be '
-                                    'supported but no manufacturer PIDs were '
-                                    'declared'),
+      self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR,
+                         advisory='Parameter Description appears to be '
+                                  'supported but no manufacturer PIDs were '
+                                  'declared'),
     ]
     if self.Property('manufacturer_parameters'):
       results = self.NackGetResult(RDMNack.NR_FORMAT_ERROR)
     self.AddExpectedResults(results)
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
 
-class SetParamDescription(TestMixins.UnsupportedSetMixin,
-                          ResponderTestFixture):
+class SetParameterDescription(TestMixins.UnsupportedSetMixin,
+                              ParamDescriptionTestFixture):
   """SET the parameter description."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PARAMETER_DESCRIPTION'
 
-class AllSubDevicesGetParamDescription(TestMixins.AllSubDevicesGetMixin,
-                                       OptionalParameterTestFixture):
+
+class SetParameterDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                      ParamDescriptionTestFixture):
+  """SET the parameter description with data."""
+  PID = 'PARAMETER_DESCRIPTION'
+
+
+class AllSubDevicesGetParameterDescription(TestMixins.AllSubDevicesGetMixin,
+                                           ParamDescriptionTestFixture):
   """Send a Get PARAMETER_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PARAMETER_DESCRIPTION'
   DATA = [0x8000]
 
+
 # Proxied Device Count
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetProxiedDeviceCount(OptionalParameterTestFixture):
   """GET the proxied device count."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
@@ -1106,7 +1174,7 @@ class GetProxiedDeviceCount(OptionalParameterTestFixture):
       return
 
     if not unpacked_data['list_changed']:
-      # we expect the count to match the length of the list previously returned
+      # We expect the count to match the length of the list previously returned
       if unpacked_data['device_count'] != len(proxied_devices):
         self.SetFailed(
            'Proxied device count doesn\'t match number of devices returned')
@@ -1115,25 +1183,29 @@ class GetProxiedDeviceCount(OptionalParameterTestFixture):
 class GetProxiedDeviceCountWithData(TestMixins.GetWithDataMixin,
                                     OptionalParameterTestFixture):
   """GET the proxied device count with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PROXIED_DEVICE_COUNT'
 
 
 class SetProxiedDeviceCount(TestMixins.UnsupportedSetMixin,
-                            ResponderTestFixture):
+                            OptionalParameterTestFixture):
   """SET the count of proxied devices."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PROXIED_DEVICE_COUNT'
+
+
+class SetProxiedDeviceCountWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """SET the count of proxied devices with data."""
   PID = 'PROXIED_DEVICE_COUNT'
 
 
 class AllSubDevicesGetProxiedDeviceCount(TestMixins.AllSubDevicesGetMixin,
                                          OptionalParameterTestFixture):
   """Send a Get PROXIED_DEVICE_COUNT to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PROXIED_DEVICE_COUNT'
 
+
 # Proxied Devices
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetProxiedDevices(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the list of proxied devices."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
@@ -1145,24 +1217,29 @@ class GetProxiedDevices(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetProxiedDevicesWithData(TestMixins.GetWithDataMixin,
                                 OptionalParameterTestFixture):
   """GET the list of proxied devices with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PROXIED_DEVICES'
 
 
-class SetProxiedDevices(TestMixins.UnsupportedSetMixin, ResponderTestFixture):
+class SetProxiedDevices(TestMixins.UnsupportedSetMixin,
+                        OptionalParameterTestFixture):
   """SET the list of proxied devices."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PROXIED_DEVICES'
+
+
+class SetProxiedDevicesWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """SET the list of proxied devices with data."""
+  PID = 'PROXIED_DEVICES'
+
 
 class AllSubDevicesGetProxiedDevices(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Send a Get PROXIED_DEVICES to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PROXIED_DEVICES'
 
 
 # Comms Status
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetCommsStatus(OptionalParameterTestFixture):
   """GET the comms status."""
   CATEGORY = TestCategory.STATUS_COLLECTION
@@ -1176,7 +1253,6 @@ class GetCommsStatus(OptionalParameterTestFixture):
 class GetCommsStatusWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """GET the comms status with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'COMMS_STATUS'
 
 
@@ -1202,17 +1278,17 @@ class ClearCommsStatus(OptionalParameterTestFixture):
 class ClearCommsStatusWithData(TestMixins.SetWithDataMixin,
                                OptionalParameterTestFixture):
   """Clear the comms status with data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'COMMS_STATUS'
 
-class AllSubDevicesGetClearCommsStatus(TestMixins.AllSubDevicesGetMixin,
-                                       OptionalParameterTestFixture):
+
+class AllSubDevicesGetCommsStatus(TestMixins.AllSubDevicesGetMixin,
+                                  OptionalParameterTestFixture):
   """Send a Get COMMS_STATUS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'COMMS_STATUS'
+
 
 # Product Detail Id List
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetProductDetailIdList(OptionalParameterTestFixture):
   """GET the list of product detail ids."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1226,24 +1302,29 @@ class GetProductDetailIdList(OptionalParameterTestFixture):
 class GetProductDetailIdListWithData(TestMixins.GetWithDataMixin,
                                      OptionalParameterTestFixture):
   """GET product detail id list with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRODUCT_DETAIL_ID_LIST'
 
 
 class SetProductDetailIdList(TestMixins.UnsupportedSetMixin,
-                             ResponderTestFixture):
+                             OptionalParameterTestFixture):
   """SET product detail id list."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRODUCT_DETAIL_ID_LIST'
+
+
+class SetProductDetailIdListWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """SET product detail id list with data."""
+  PID = 'PRODUCT_DETAIL_ID_LIST'
+
 
 class AllSubDevicesGetProductDetailIdList(TestMixins.AllSubDevicesGetMixin,
                                           OptionalParameterTestFixture):
   """Send a Get PRODUCT_DETAIL_ID_LIST to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRODUCT_DETAIL_ID_LIST'
 
+
 # Device Model Description
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDeviceModelDescription(TestMixins.GetStringMixin,
                                 OptionalParameterTestFixture):
   """GET the device model description."""
@@ -1256,32 +1337,29 @@ class GetDeviceModelDescription(TestMixins.GetStringMixin,
 class GetDeviceModelDescriptionWithData(TestMixins.GetWithDataMixin,
                                         OptionalParameterTestFixture):
   """Get device model description with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_MODEL_DESCRIPTION'
 
 
 class SetDeviceModelDescription(TestMixins.UnsupportedSetMixin,
                                 OptionalParameterTestFixture):
   """Attempt to SET the device model description with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_MODEL_DESCRIPTION'
 
 
-class SetDeviceModelDescriptionWithData(TestMixins.UnsupportedSetMixin,
+class SetDeviceModelDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
                                         OptionalParameterTestFixture):
   """SET the device model description with data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_MODEL_DESCRIPTION'
-  DATA = 'FOO BAR'
 
-class AllSubDevicesGetModelDescription(TestMixins.AllSubDevicesGetMixin,
-                                       OptionalParameterTestFixture):
+
+class AllSubDevicesGetDeviceModelDescription(TestMixins.AllSubDevicesGetMixin,
+                                             OptionalParameterTestFixture):
   """Send a Get DEVICE_MODEL_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_MODEL_DESCRIPTION'
+
 
 # Manufacturer Label
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetManufacturerLabel(TestMixins.GetStringMixin,
                            OptionalParameterTestFixture):
   """GET the manufacturer label."""
@@ -1294,32 +1372,29 @@ class GetManufacturerLabel(TestMixins.GetStringMixin,
 class GetManufacturerLabelWithData(TestMixins.GetWithDataMixin,
                                    OptionalParameterTestFixture):
   """Get manufacturer label with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MANUFACTURER_LABEL'
 
 
 class SetManufacturerLabel(TestMixins.UnsupportedSetMixin,
                            OptionalParameterTestFixture):
   """Attempt to SET the manufacturer label with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MANUFACTURER_LABEL'
 
 
-class SetManufacturerLabelWithData(TestMixins.UnsupportedSetMixin,
+class SetManufacturerLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
                                    OptionalParameterTestFixture):
   """SET the manufacturer label with data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MANUFACTURER_LABEL'
-  DATA = 'FOO BAR'
+
 
 class AllSubDevicesGetManufacturerLabel(TestMixins.AllSubDevicesGetMixin,
                                         OptionalParameterTestFixture):
   """Send a Get MANUFACTURER_LABEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MANUFACTURER_LABEL'
 
+
 # Device Label
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDeviceLabel(TestMixins.GetStringMixin,
                      OptionalParameterTestFixture):
   """GET the device label."""
@@ -1332,7 +1407,6 @@ class GetDeviceLabel(TestMixins.GetStringMixin,
 class GetDeviceLabelWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """GET the device label with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_LABEL'
 
 
@@ -1347,13 +1421,14 @@ class SetDeviceLabel(TestMixins.SetLabelMixin,
   def OldValue(self):
     return self.Property('device_label')
 
+
 class AllSubDevicesGetDeviceLabel(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get DEVICE_LABEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_LABEL'
 
-class SetVendorcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
+
+class SetVendorcastDeviceLabel(TestMixins.SetNonUnicastLabelMixin,
                                OptionalParameterTestFixture):
   """SET the device label using the vendorcast address."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1368,7 +1443,7 @@ class SetVendorcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
     return self.Property('device_label')
 
 
-class SetBroadcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
+class SetBroadcastDeviceLabel(TestMixins.SetNonUnicastLabelMixin,
                               OptionalParameterTestFixture):
   """SET the device label using the broadcast address."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1430,7 +1505,6 @@ class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
 class SetOversizedDeviceLabel(TestMixins.SetOversizedLabelMixin,
                               OptionalParameterTestFixture):
   """SET the device label with more than 32 bytes of data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   REQUIRES = ['device_label']
   PID = 'DEVICE_LABEL'
 
@@ -1439,7 +1513,7 @@ class SetOversizedDeviceLabel(TestMixins.SetOversizedLabelMixin,
 
 
 # Language Capabilities
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetLanguageCapabilities(OptionalParameterTestFixture):
   """GET the language capabilities pid."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1476,30 +1550,45 @@ class GetLanguageCapabilities(OptionalParameterTestFixture):
 
 class GetLanguageCapabilitiesWithData(TestMixins.GetWithDataMixin,
                                       OptionalParameterTestFixture):
-  """GET the language capabilities pid with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+  """GET the language capabilities with extra data."""
   PID = 'LANGUAGE_CAPABILITIES'
 
-class AllSubDevicesGetLanguageCapablities(TestMixins.AllSubDevicesGetMixin,
-                                          OptionalParameterTestFixture):
-  """Send a Get LANGUAGE_CAPABILITIES to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
+
+class SetLanguageCapabilities(TestMixins.UnsupportedSetMixin,
+                              OptionalParameterTestFixture):
+  """Attempt to SET the language capabilities with no data."""
   PID = 'LANGUAGE_CAPABILITIES'
+
+
+class SetLanguageCapabilitiesWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                      OptionalParameterTestFixture):
+  """SET the language capabilities with data."""
+  PID = 'LANGUAGE_CAPABILITIES'
+
+
+class AllSubDevicesGetLanguageCapabilities(TestMixins.AllSubDevicesGetMixin,
+                                           OptionalParameterTestFixture):
+  """Send a Get LANGUAGE_CAPABILITIES to ALL_SUB_DEVICES."""
+  PID = 'LANGUAGE_CAPABILITIES'
+
 
 # Language
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetLanguage(TestMixins.GetStringMixin, OptionalParameterTestFixture):
   """GET the language."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'LANGUAGE'
   PROVIDES = ['language']
   EXPECTED_FIELDS = ['language']
+  MIN_LENGTH = 2
+  MAX_LENGTH = 2
+  # TODO(Peter): We should cross check this against the declared list of
+  # supported languages, and also that the langauage is alpha only
 
 
 class GetLanguageWithData(TestMixins.GetWithDataMixin,
                           OptionalParameterTestFixture):
   """GET the language with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LANGUAGE'
 
 
@@ -1516,7 +1605,7 @@ class SetLanguage(OptionalParameterTestFixture):
     available_langugages = list(self.Property('languages_capabilities'))
     if available_langugages:
       if len(available_langugages) > 1:
-        # if the responder only supports 1 lang, we may not be able to set it
+        # If the responder only supports 1 lang, we may not be able to set it
         self.AddIfSetSupported(ack)
         self.new_language = available_langugages[0]
         if self.new_language == self.Property('language'):
@@ -1565,14 +1654,15 @@ class SetUnsupportedLanguage(OptionalParameterTestFixture):
     ])
     self.SendSet(ROOT_DEVICE, self.pid, ['zz'])
 
+
 class AllSubDevicesGetLanguage(TestMixins.AllSubDevicesGetMixin,
                                OptionalParameterTestFixture):
   """Send a Get LANGUAGE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LANGUAGE'
 
+
 # Software Version Label
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetSoftwareVersionLabel(TestMixins.GetRequiredStringMixin,
                               ResponderTestFixture):
   """GET the software version label."""
@@ -1584,21 +1674,26 @@ class GetSoftwareVersionLabel(TestMixins.GetRequiredStringMixin,
 class GetSoftwareVersionLabelWithData(TestMixins.GetMandatoryPIDWithDataMixin,
                                       ResponderTestFixture):
   """GET the software_version_label with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SOFTWARE_VERSION_LABEL'
 
 
 class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
                               ResponderTestFixture):
   """Attempt to SET the software version label."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SOFTWARE_VERSION_LABEL'
 
-class AllSubDevicesGetSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
-                                           OptionalParameterTestFixture):
-  """Send a Get SOFTWARE_VERSION_LABEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
+
+class SetSoftwareVersionLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                      ResponderTestFixture):
+  """Attempt to SET the software version label with data."""
   PID = 'SOFTWARE_VERSION_LABEL'
+
+
+class AllSubDevicesGetSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
+                                           ResponderTestFixture):
+  """Send a Get SOFTWARE_VERSION_LABEL to ALL_SUB_DEVICES."""
+  PID = 'SOFTWARE_VERSION_LABEL'
+
 
 class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
   """Check that SOFTWARE_VERSION_LABEL is supported on all sub devices."""
@@ -1609,7 +1704,7 @@ class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
   def Test(self):
     self._sub_devices = self.Property('sub_device_addresses').keys()
     self._sub_devices.reverse()
-    self._GetSoftwareVersion();
+    self._GetSoftwareVersion()
 
   def _GetSoftwareVersion(self):
     if not self._sub_devices:
@@ -1620,9 +1715,10 @@ class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
     sub_device = self._sub_devices.pop()
     self.SendGet(sub_device, self.pid)
 
+
 # Boot Software Version
-#------------------------------------------------------------------------------
-class GetBootSoftwareVersion(OptionalParameterTestFixture):
+# -----------------------------------------------------------------------------
+class GetBootSoftwareVersionId(OptionalParameterTestFixture):
   """GET the boot software version."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'BOOT_SOFTWARE_VERSION_ID'
@@ -1632,74 +1728,90 @@ class GetBootSoftwareVersion(OptionalParameterTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
-class GetBootSoftwareVersionWithData(TestMixins.GetWithDataMixin,
-                                     OptionalParameterTestFixture):
+class GetBootSoftwareVersionIdWithData(TestMixins.GetWithDataMixin,
+                                       OptionalParameterTestFixture):
   """GET the boot software version with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BOOT_SOFTWARE_VERSION_ID'
 
 
-class SetBootSoftwareVersion(TestMixins.UnsupportedSetMixin,
-                             ResponderTestFixture):
+class SetBootSoftwareVersionId(TestMixins.UnsupportedSetMixin,
+                               OptionalParameterTestFixture):
   """Attempt to SET the boot software version."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BOOT_SOFTWARE_VERSION_ID'
 
-class AllSubDevicesGetBootSoftwareVersion(TestMixins.AllSubDevicesGetMixin,
-                                          OptionalParameterTestFixture):
-  """Send a Get BOOT_SOFTWARE_VERSION_ID to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
+
+class SetBootSoftwareVersionIdWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                       OptionalParameterTestFixture):
+  """Attempt to SET the boot software version with data."""
   PID = 'BOOT_SOFTWARE_VERSION_ID'
+
+
+class AllSubDevicesGetBootSoftwareVersionId(TestMixins.AllSubDevicesGetMixin,
+                                            OptionalParameterTestFixture):
+  """Send a Get BOOT_SOFTWARE_VERSION_ID to ALL_SUB_DEVICES."""
+  PID = 'BOOT_SOFTWARE_VERSION_ID'
+
 
 # Boot Software Version Label
-#------------------------------------------------------------------------------
-class GetBootSoftwareLabel(TestMixins.GetStringMixin, OptionalParameterTestFixture):
+# -----------------------------------------------------------------------------
+class GetBootSoftwareVersionLabel(TestMixins.GetStringMixin,
+                                  OptionalParameterTestFixture):
   """GET the boot software label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
   EXPECTED_FIELDS = ['label']
 
 
-class GetBootSoftwareLabelWithData(TestMixins.GetWithDataMixin,
-                                   OptionalParameterTestFixture):
+class GetBootSoftwareVersionLabelWithData(TestMixins.GetWithDataMixin,
+                                          OptionalParameterTestFixture):
   """GET the boot software label with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
 
 
-class SetBootSoftwareLabel(TestMixins.UnsupportedSetMixin,
-                           OptionalParameterTestFixture):
+class SetBootSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
+                                  OptionalParameterTestFixture):
   """SET the boot software label."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
+
+
+class SetBootSoftwareVersionLabelWithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
+  """SET the boot software label with data."""
+  PID = 'BOOT_SOFTWARE_VERSION_LABEL'
+
 
 class AllSubDevicesGetBootSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
                                                OptionalParameterTestFixture):
   """Send a Get BOOT_SOFTWARE_VERSION_LABEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
 
+
 # DMX Personality & DMX Personality Description
-#------------------------------------------------------------------------------
-class GetZeroPersonalityDescription(TestMixins.GetZeroUInt8Mixin,
-                                    OptionalParameterTestFixture):
+# -----------------------------------------------------------------------------
+class GetZeroDMXPersonalityDescription(TestMixins.GetZeroUInt8Mixin,
+                                       OptionalParameterTestFixture):
   """GET DMX_PERSONALITY_DESCRIPTION for personality 0."""
   PID = 'DMX_PERSONALITY_DESCRIPTION'
 
-class GetOutOfRangePersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
-                                          OptionalParameterTestFixture):
+
+class GetOutOfRangeDMXPersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
+                                             OptionalParameterTestFixture):
   """GET the personality description for the N + 1 personality."""
   PID = 'DMX_PERSONALITY_DESCRIPTION'
   REQUIRES = ['personality_count']
+  LABEL = 'personalities'
 
-class AllSubDevicesGetPersonalityDescription(TestMixins.AllSubDevicesGetMixin,
-                                             OptionalParameterTestFixture):
+
+class AllSubDevicesGetDMXPersonalityDescription(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
   """Send a Get DMX_PERSONALITY_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_PERSONALITY_DESCRIPTION'
   DATA = [1]
 
-class GetPersonalityDescription(OptionalParameterTestFixture):
+
+class GetDMXPersonalityDescription(OptionalParameterTestFixture):
   """GET the personality description for the current personality."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_PERSONALITY_DESCRIPTION'
@@ -1713,7 +1825,7 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
       current_personality = 1
 
     if personality_count > 0:
-      # cross check against what we got from device info
+      # Cross check against what we got from device info
       self.AddIfGetSupported(self.AckGetResult(field_values={
           'personality': current_personality,
           'slots_required': self.Property('dmx_footprint'),
@@ -1730,10 +1842,10 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
     if ContainsUnprintable(fields['name']):
       self.AddAdvisory(
           'Name field in %s contains unprintable characters, was %s' %
-          (self.PID, fields['name'].encode('string-escape')))
+          (self.pid.name, fields['name'].encode('string-escape')))
 
 
-class GetPersonality(OptionalParameterTestFixture):
+class GetDMXPersonality(OptionalParameterTestFixture):
   """Get the current personality settings."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_PERSONALITY'
@@ -1750,8 +1862,8 @@ class GetPersonality(OptionalParameterTestFixture):
 
     current_personality = self.Property('current_personality')
     personality_count = self.Property('personality_count')
-    warning_str = ("Personality information in device info doesn't match"
-      ' that in dmx_personality')
+    warning_str = ("Personality information in device info doesn't match that "
+                   "in dmx_personality")
 
     if current_personality != fields['current_personality']:
       self.SetFailed('%s: current_personality %d != %d' % (
@@ -1762,14 +1874,13 @@ class GetPersonality(OptionalParameterTestFixture):
         warning_str, personality_count, fields['personality_count']))
 
 
-class GetPersonalityWithData(TestMixins.GetWithDataMixin,
-                             OptionalParameterTestFixture):
+class GetDMXPersonalityWithData(TestMixins.GetWithDataMixin,
+                                OptionalParameterTestFixture):
   """Get DMX_PERSONALITY with invalid data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY'
 
 
-class GetPersonalityDescriptions(OptionalParameterTestFixture):
+class GetDMXPersonalityDescriptions(OptionalParameterTestFixture):
   """Get information about all the personalities."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_PERSONALITY_DESCRIPTION'
@@ -1811,10 +1922,10 @@ class GetPersonalityDescriptions(OptionalParameterTestFixture):
       if ContainsUnprintable(fields['name']):
         self.AddAdvisory(
             'Name field in %s contains unprintable characters, was %s' %
-            (self.PID, fields['name'].encode('string-escape')))
+            (self.pid.name, fields['name'].encode('string-escape')))
 
 
-class SetPersonality(OptionalParameterTestFixture):
+class SetDMXPersonality(OptionalParameterTestFixture):
   """Set the personality."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_PERSONALITY'
@@ -1832,14 +1943,14 @@ class SetPersonality(OptionalParameterTestFixture):
       self._CheckPersonality()
       return
 
-    # check we get a NR_UNKNOWN_PID
+    # Check we get a NR_UNKNOWN_PID
     self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
     self.new_personality = {'personality': 1}  # can use anything here really
     self.SendSet(ROOT_DEVICE, self.pid, [1])
 
   def _CheckPersonality(self):
     if not self._personalities:
-      # end of the list, we're done
+      # End of the list, we're done
       self.Stop()
       return
 
@@ -1862,9 +1973,9 @@ class SetPersonality(OptionalParameterTestFixture):
 
     next_action = self.NextPersonality
     if self._personalities[0]['slots_required'] == 0:
-      # if this personality has a footprint of 0, verify the start address is
+      # If this personality has a footprint of 0, verify the start address is
       # 0xffff
-      next_action = self.VerifyFootprint0StartAddress
+      next_action = self.VerifyFootprint0DMXStartAddress
 
     self.AddExpectedResults(
       AckGetResult(
@@ -1876,7 +1987,7 @@ class SetPersonality(OptionalParameterTestFixture):
         action=next_action))
     self.SendGet(ROOT_DEVICE, device_info_pid)
 
-  def VerifyFootprint0StartAddress(self):
+  def VerifyFootprint0DMXStartAddress(self):
     address_pid = self.LookupPid('DMX_START_ADDRESS')
     expected_results = [
       AckGetResult(
@@ -1898,7 +2009,7 @@ class SetPersonality(OptionalParameterTestFixture):
     self._CheckPersonality()
 
   def ResetState(self):
-    # reset back to the old value
+    # Reset back to the old value
     personality = self.Property('current_personality')
     if personality == 0 or personality > 255:
       return
@@ -1909,36 +2020,41 @@ class SetPersonality(OptionalParameterTestFixture):
     self._wrapper.Run()
 
 
-class SetZeroPersonality(TestMixins.SetZeroUInt8Mixin,
-                         OptionalParameterTestFixture):
+class SetZeroDMXPersonality(TestMixins.SetZeroUInt8Mixin,
+                            OptionalParameterTestFixture):
   """Set DMX_PERSONALITY for personality 0."""
   PID = 'DMX_PERSONALITY'
 
-class SetOutOfRangePersonality(TestMixins.SetOutOfRangeByteMixin,
-                               OptionalParameterTestFixture):
+
+class SetOutOfRangeDMXPersonality(TestMixins.SetOutOfRangeByteMixin,
+                                  OptionalParameterTestFixture):
   """Set DMX_PERSONALITY to an out-of-range value."""
   PID = 'DMX_PERSONALITY'
   REQUIRES = ['personality_count']
   LABEL = 'personalities'
 
-class SetOversizedPersonality(OptionalParameterTestFixture):
-  """Send an over-sized SET personality command."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+class SetDMXPersonalityWithExtraData(TestMixins.SetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """Send a SET DMX_PERSONALITY command with extra data."""
   PID = 'DMX_PERSONALITY'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
 
-class AllSubDevicesGetPersonality(TestMixins.AllSubDevicesGetMixin,
+class SetDMXPersonalityWithNoData(TestMixins.SetWithNoDataMixin,
                                   OptionalParameterTestFixture):
-  """Send a Get DMX_PERSONALITY to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
+  """Set DMX_PERSONALITY with no data."""
   PID = 'DMX_PERSONALITY'
+
+
+class AllSubDevicesGetDMXPersonality(TestMixins.AllSubDevicesGetMixin,
+                                     OptionalParameterTestFixture):
+  """Send a Get DMX_PERSONALITY to ALL_SUB_DEVICES."""
+  PID = 'DMX_PERSONALITY'
+
 
 # DMX Start Address tests
-#------------------------------------------------------------------------------
-class GetStartAddress(ResponderTestFixture):
+# -----------------------------------------------------------------------------
+class GetDMXStartAddress(ResponderTestFixture):
   """GET the DMX start address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_START_ADDRESS'
@@ -1950,10 +2066,10 @@ class GetStartAddress(ResponderTestFixture):
       results = self.AckGetResult(field_names=['dmx_address'])
     else:
       results = [
-          self.AckGetResult(field_values={
-              'dmx_address': RDM_ZERO_FOOTPRINT_DMX_ADDRESS}),
-          self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
-          self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+        self.AckGetResult(field_values={
+            'dmx_address': RDM_ZERO_FOOTPRINT_DMX_ADDRESS}),
+        self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+        self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
       ]
     self.AddExpectedResults(results)
     self.SendGet(ROOT_DEVICE, self.pid)
@@ -1970,9 +2086,9 @@ class GetStartAddress(ResponderTestFixture):
     self.SetPropertyFromDict(fields, 'dmx_address')
 
 
-class GetStartAddressWithData(ResponderTestFixture):
+class GetDMXStartAddressWithData(TestMixins.GetWithDataMixin,
+                                 ResponderTestFixture):
   """GET the DMX start address with data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
   REQUIRES = ['dmx_footprint']
 
@@ -1989,16 +2105,17 @@ class GetStartAddressWithData(ResponderTestFixture):
       # If we don't have a footprint, PID may return something, or may return
       # unsupported, as this PID becomes optional
       results = [
-          self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
-          self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-          self.AckGetResult(
-            warning='Get %s with data returned an ack' % self.pid.name),
+        self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+        self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+        self.AckGetResult(
+          warning='Get %s with data returned an ack' % self.pid.name),
       ]
     self.AddExpectedResults(results)
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
-class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
+class SetDMXStartAddress(TestMixins.SetDMXStartAddressMixin,
+                         ResponderTestFixture):
   """Set the DMX start address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_START_ADDRESS'
@@ -2008,13 +2125,12 @@ class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
   def Test(self):
     footprint = self.Property('dmx_footprint')
     current_address = self.Property('dmx_address')
-    self.start_address = 1
 
     if footprint == 0 or current_address == RDM_ZERO_FOOTPRINT_DMX_ADDRESS:
       results = [
-          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
-          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-          self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+        self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+        self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
       ]
     else:
       self.start_address = self.CalculateNewAddress(current_address, footprint)
@@ -2029,8 +2145,8 @@ class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
       self.SetProperty(self.PROVIDES[0], response.WasAcked())
 
 
-class SetVendorcastStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
-                                ResponderTestFixture):
+class SetVendorcastDMXStartAddress(TestMixins.SetNonUnicastDMXStartAddressMixin,
+                                   ResponderTestFixture):
   """SET the dmx start address using the vendorcast address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_START_ADDRESS'
@@ -2040,8 +2156,8 @@ class SetVendorcastStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
     return UID.VendorcastAddress(self._uid.manufacturer_id)
 
 
-class SetBroadcastStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
-                               ResponderTestFixture):
+class SetBroadcastDMXStartAddress(TestMixins.SetNonUnicastDMXStartAddressMixin,
+                                  ResponderTestFixture):
   """SET the dmx start address using the broadcast address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_START_ADDRESS'
@@ -2051,12 +2167,12 @@ class SetBroadcastStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
     return UID.AllDevices()
 
 
-class SetOutOfRangeStartAddress(ResponderTestFixture):
+class SetOutOfRangeDMXStartAddress(ResponderTestFixture):
   """Check that the DMX address can't be set to > 512."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  # we depend on dmx_address to make sure this runs after GetStartAddress
-  DEPS = [GetStartAddress]
+  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
   def Test(self):
@@ -2067,17 +2183,17 @@ class SetOutOfRangeStartAddress(ResponderTestFixture):
           self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
-                              ])
-    data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
+      ])
+    data = struct.pack('!H', TestMixins.MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
-class SetZeroStartAddress(ResponderTestFixture):
+class SetZeroDMXStartAddress(ResponderTestFixture):
   """Check the DMX address can't be set to 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  # we depend on dmx_address to make sure this runs after GetStartAddress
-  DEPS = [GetStartAddress]
+  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
   def Test(self):
@@ -2088,17 +2204,17 @@ class SetZeroStartAddress(ResponderTestFixture):
           self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
-                              ])
+      ])
     data = struct.pack('!H', 0)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
-class SetOversizedStartAddress(ResponderTestFixture):
-  """Send an over-sized SET dmx start address."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+class SetDMXStartAddressWithExtraData(TestMixins.GetWithDataMixin,
+                                      ResponderTestFixture):
+  """Send a SET dmx start address with extra data."""
   PID = 'DMX_START_ADDRESS'
-  # we depend on dmx_address to make sure this runs after GetStartAddress
-  DEPS = [GetStartAddress]
+  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
   def Test(self):
@@ -2109,18 +2225,18 @@ class SetOversizedStartAddress(ResponderTestFixture):
           self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
-                              ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
+      ])
+    self.SendRawSet(ROOT_DEVICE, self.pid, self.DATA)
 
-class AllSubDevicesGetStartAddress(TestMixins.AllSubDevicesGetMixin,
-                                   OptionalParameterTestFixture):
+
+class AllSubDevicesGetDMXStartAddress(TestMixins.AllSubDevicesGetMixin,
+                                      OptionalParameterTestFixture):
   """Send a Get DMX_START_ADDRESS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_START_ADDRESS'
 
 
 # Slot Info
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetSlotInfo(OptionalParameterTestFixture):
   """Get SLOT_INFO."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -2136,7 +2252,7 @@ class GetSlotInfo(OptionalParameterTestFixture):
     if not response.WasAcked():
       self.SetProperty('defined_slots', set())
       self.SetProperty('undefined_definition_slots', [])
-      self.SetProperty('undefined_type_sec_slots', [])			
+      self.SetProperty('undefined_type_sec_slots', [])
       return
 
     slots = [d['slot_offset'] for d in fields['slots']]
@@ -2151,9 +2267,10 @@ class GetSlotInfo(OptionalParameterTestFixture):
 
       if slot['slot_type'] == RDMConstants.SLOT_TYPES['ST_PRIMARY']:
         # slot_label_id must be valid
-        if ((slot['slot_label_id'] not in RDMConstants.SLOT_DEFINITION_TO_NAME)
-            and (slot['slot_label_id'] < RDM_MANUFACTURER_SD_MIN or
-                 slot['slot_label_id'] > RDM_MANUFACTURER_SD_MAX)):
+        if ((slot['slot_label_id'] not in
+             RDMConstants.SLOT_DEFINITION_TO_NAME) and
+            (slot['slot_label_id'] < RDM_MANUFACTURER_SD_MIN or
+             slot['slot_label_id'] > RDM_MANUFACTURER_SD_MAX)):
           self.AddWarning('Unknown slot id %d for slot %d' %
                           (slot['slot_label_id'], slot['slot_offset']))
         if (slot['slot_label_id'] ==
@@ -2175,25 +2292,29 @@ class GetSlotInfo(OptionalParameterTestFixture):
 class GetSlotInfoWithData(TestMixins.GetWithDataMixin,
                           OptionalParameterTestFixture):
   """Get SLOT_INFO with invalid data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SLOT_INFO'
 
 
 class SetSlotInfo(TestMixins.UnsupportedSetMixin,
                   OptionalParameterTestFixture):
   """Set SLOT_INFO."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SLOT_INFO'
+
+
+class SetSlotInfoWithData(TestMixins.UnsupportedSetWithDataMixin,
+                          OptionalParameterTestFixture):
+  """Attempt to SET SLOT_INFO with data."""
   PID = 'SLOT_INFO'
 
 
 class AllSubDevicesGetSlotInfo(TestMixins.AllSubDevicesGetMixin,
                                OptionalParameterTestFixture):
   """Send a Get SLOT_INFO to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SLOT_INFO'
 
+
 # Slot Description
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetSlotDescriptions(TestMixins.GetSettingDescriptionsRangeMixin,
                           OptionalParameterTestFixture):
   """Get the slot descriptions for all defined slots."""
@@ -2205,21 +2326,17 @@ class GetSlotDescriptions(TestMixins.GetSettingDescriptionsRangeMixin,
   DESCRIPTION_FIELD = 'name'
   ALLOWED_NACKS = [RDMNack.NR_DATA_OUT_OF_RANGE]
 
+
 class GetSlotDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Get the slot description with no slot number specified."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SLOT_DESCRIPTION'
 
 
-class GetSlotDescriptionWithTooMuchData(OptionalParameterTestFixture):
+class GetSlotDescriptionWithExtraData(TestMixins.GetWithDataMixin,
+                                      OptionalParameterTestFixture):
   """Get the slot description with more than 2 bytes of data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SLOT_DESCRIPTION'
-
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class GetUndefinedSlotDefinitionDescriptions(OptionalParameterTestFixture):
@@ -2256,7 +2373,7 @@ class GetUndefinedSlotDefinitionDescriptions(OptionalParameterTestFixture):
         self.AddWarning(
             '%s not supported for slot %d with undefined '
             'definition' %
-            (self.pid, self.current_slot))
+            (self.pid.name, self.current_slot))
       if response.nack_reason == RDMNack.NR_DATA_OUT_OF_RANGE:
         self.AddWarning(
             'Slot description for slot %d with undefined definition was missing'
@@ -2303,7 +2420,7 @@ class GetUndefinedSecondarySlotTypeDescriptions(OptionalParameterTestFixture):
       if response.nack_reason == RDMNack.NR_UNKNOWN_PID:
         self.AddAdvisory(
             '%s not supported for secondary slot %d with undefined type' %
-            (self.pid, self.current_slot))
+            (self.pid.name, self.current_slot))
       if response.nack_reason == RDMNack.NR_DATA_OUT_OF_RANGE:
         self.AddAdvisory(
             'Slot description for secondary slot %d with undefined type was '
@@ -2318,21 +2435,28 @@ class GetUndefinedSecondarySlotTypeDescriptions(OptionalParameterTestFixture):
           (self.current_slot))
       return
 
+
 class SetSlotDescription(TestMixins.UnsupportedSetMixin,
                          OptionalParameterTestFixture):
   """Set SLOT_DESCRIPTION."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SLOT_DESCRIPTION'
+
+
+class SetSlotDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Attempt to SET SLOT_DESCRIPTION with data."""
+  PID = 'SLOT_DESCRIPTION'
+
 
 class AllSubDevicesGetSlotDescription(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Send a Get SLOT_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SLOT_DESCRIPTION'
   DATA = [1]
 
+
 # Default Slot Value
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDefaultSlotValues(OptionalParameterTestFixture):
   """Get DEFAULT_SLOT_VALUE."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -2364,43 +2488,45 @@ class GetDefaultSlotValues(OptionalParameterTestFixture):
           slot_offset)
 
 
-class GetDefaultSlotInfoWithData(TestMixins.GetWithDataMixin,
-                                 OptionalParameterTestFixture):
+class GetDefaultSlotValueWithData(TestMixins.GetWithDataMixin,
+                                  OptionalParameterTestFixture):
   """Get DEFAULT_SLOT_VALUE with invalid data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEFAULT_SLOT_VALUE'
 
 
-class SetDefaultSlotInfo(TestMixins.UnsupportedSetMixin,
-                         OptionalParameterTestFixture):
+class SetDefaultSlotValue(TestMixins.UnsupportedSetMixin,
+                          OptionalParameterTestFixture):
   """Set DEFAULT_SLOT_VALUE."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEFAULT_SLOT_VALUE'
+
 
 class AllSubDevicesGetDefaultSlotValue(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a Get DEFAULT_SLOT_VALUE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEFAULT_SLOT_VALUE'
   DATA = [1]
 
+
 # Sensor Consistency Checks
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class CheckSensorConsistency(ResponderTestFixture):
   """Check that sensor support is consistent."""
   CATEGORY = TestCategory.SENSORS
   REQUIRES = ['sensor_count', 'sensor_recording_supported',
               'supported_parameters']
 
+  def PidRequired(self):
+    return False
+
   def IsSupported(self, pid):
     return pid.value in self.Property('supported_parameters')
 
-  def CheckConsistency(self, pid_name, check_for_support = True):
+  def CheckConsistency(self, pid_name, check_for_support=True):
     pid = self.LookupPid(pid_name)
     if (check_for_support and
         (not self.IsSupported(pid)) and
         self.Property('sensor_count')) > 0:
-      self.AddAdvisory('%s not supported but sensor count was  > 0' % pid)
+      self.AddAdvisory('%s not supported but sensor count was > 0' % pid)
     if self.IsSupported(pid) and self.Property('sensor_count') == 0:
       self.AddAdvisory('%s supported but sensor count was 0' % pid)
 
@@ -2412,8 +2538,9 @@ class CheckSensorConsistency(ResponderTestFixture):
     self.SetPassed()
     self.Stop()
 
+
 # Sensor Definition
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetSensorDefinition(OptionalParameterTestFixture):
   """Fetch all the sensor definitions."""
   CATEGORY = TestCategory.SENSORS
@@ -2430,10 +2557,10 @@ class GetSensorDefinition(OptionalParameterTestFixture):
   }
 
   def Test(self):
-    # default to false
-    self._sensors = {}  # stores the discovered sensors
-    self._current_index = -1  # the current sensor we're trying to query
-    self._sensor_holes = []  # indices of sensors that are missing
+    # Default to false
+    self._sensors = {}  # Stores the discovered sensors
+    self._current_index = -1  # The current sensor we're trying to query
+    self._sensor_holes = []  # Indices of sensors that are missing
 
     self._CheckForSensor()
 
@@ -2445,7 +2572,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
 
   def _CheckForSensor(self):
     if self.PidSupported():
-      # If this pid is supported we attempt to locate all sensors
+      # If this PID is supported we attempt to locate all sensors
       if self._current_index == self.MAX_SENSOR_INDEX:
         if len(self._sensors) < self.Property('sensor_count'):
           self.AddWarning('Only found %d/%d sensors' %
@@ -2473,7 +2600,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
         self.AckGetResult(action=self._CheckForSensor)
       ])
     else:
-      # not supported, just check we get a NR_UNKNOWN_PID
+      # Not supported, just check we get a NR_UNKNOWN_PID
       self.AddExpectedResults(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
       self.SetProperty('sensor_definitions', {})
 
@@ -2497,7 +2624,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
 
     self._sensors[self._current_index] = fields
 
-    # perform sanity checks on the sensor infomation
+    # Perform sanity checks on the sensor infomation
     if fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME:
       if fields['type'] >= 0x80:
         self.AddAdvisory('Using a manufacturer specific type %d for sensor %d,'
@@ -2552,18 +2679,13 @@ class GetSensorDefinition(OptionalParameterTestFixture):
 class GetSensorDefinitionWithNoData(TestMixins.GetWithNoDataMixin,
                                     OptionalParameterTestFixture):
   """Get the sensor definition with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SENSOR_DEFINITION'
 
 
-class GetSensorDefinitionWithTooMuchData(OptionalParameterTestFixture):
+class GetSensorDefinitionWithExtraData(TestMixins.GetWithDataMixin,
+                                       OptionalParameterTestFixture):
   """Get the sensor definition with more than 1 byte of data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SENSOR_DEFINITION'
-
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class GetInvalidSensorDefinition(OptionalParameterTestFixture):
@@ -2580,18 +2702,18 @@ class GetInvalidSensorDefinition(OptionalParameterTestFixture):
 class SetSensorDefinition(TestMixins.UnsupportedSetMixin,
                           OptionalParameterTestFixture):
   """SET the sensor definition."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SENSOR_DEFINITION'
+
 
 class AllSubDevicesGetSensorDefinition(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a Get SENSOR_DEFINITION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SENSOR_DEFINITION'
   DATA = [1]
 
+
 # Sensor Value
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetSensorValues(OptionalParameterTestFixture):
   """Get values for all defined sensors."""
   CATEGORY = TestCategory.SENSORS
@@ -2603,21 +2725,21 @@ class GetSensorValues(OptionalParameterTestFixture):
   RECORDED_VALUE_MASK = 0x01
 
   def Test(self):
-    # the head of the list is the current sensor we're querying
+    # The head of the list is the current sensor we're querying
     self._sensors = self.Property('sensor_definitions').values()
     self._sensor_values = []
 
     if self._sensors:
-      # loop and get all values
+      # Loop and get all values
       self._GetSensorValue()
     else:
-      # no sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
+      # No sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
       self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
       self.SendGet(ROOT_DEVICE, self.pid, [0])
 
   def _GetSensorValue(self):
     if not self._sensors:
-      # finished
+      # Finished
       self.SetProperty('sensor_values', self._sensor_values)
       self.Stop()
       return
@@ -2653,7 +2775,7 @@ class GetSensorValues(OptionalParameterTestFixture):
     range_min = sensor_def['range_min']
     range_max = sensor_def['range_max']
 
-    # perform sanity checks on the sensor infomation
+    # Perform sanity checks on the sensor infomation
     self._CheckValueWithinRange(sensor_number, fields, 'present_value',
                                 range_min, range_max)
 
@@ -2699,7 +2821,7 @@ class GetUndefinedSensorValues(OptionalParameterTestFixture):
         self._missing_sensors.append(i)
 
     if self._missing_sensors:
-      # loop and get all values
+      # Loop and get all values
       self._GetSensorValue()
     else:
       self.SetNotRun('All sensors declared')
@@ -2730,7 +2852,6 @@ class GetInvalidSensorValue(OptionalParameterTestFixture):
 class GetSensorValueWithNoData(TestMixins.GetWithNoDataMixin,
                                OptionalParameterTestFixture):
   """GET sensor value without any sensor number."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SENSOR_VALUE'
 
 
@@ -2741,24 +2862,24 @@ class ResetSensorValue(OptionalParameterTestFixture):
   REQUIRES = ['sensor_definitions']
 
   def Test(self):
-    # the head of the list is the current sensor we're querying
+    # The head of the list is the current sensor we're querying
     self._sensors = self.Property('sensor_definitions').values()
     self._sensor_values = []
 
     if self._sensors:
-      # loop and get all values
+      # Loop and get all values
       self._ResetSensor()
     else:
-      # no sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
-      self.AddIfSetSupported(
-          [self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
-           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-          ])
+      # No sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
+      self.AddIfSetSupported([
+          self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      ])
       self.SendSet(ROOT_DEVICE, self.pid, [0])
 
   def _ResetSensor(self):
     if not self._sensors:
-      # finished
+      # Finished
       self.Stop()
       return
 
@@ -2782,7 +2903,7 @@ class ResetSensorValue(OptionalParameterTestFixture):
   def VerifyResult(self, response, fields):
     # It's not clear at all what to expect in this case.
     # See http://www.rdmprotocol.org/showthread.php?p=2160
-    # TODO(simonn, e1.20 task group): figure this out
+    # TODO(simonn, E1.20 task group): figure this out
     pass
 
 
@@ -2801,17 +2922,21 @@ class ResetAllSensorValues(OptionalParameterTestFixture):
       supports_recording |= (
           sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
 
-    # some devices don't have set
+    # Some devices don't have set
     results = [self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
     if supports_recording:
-      results = [self.AckSetResult(),
-                 self.NackSetResult(
-                    RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-                    warning="One or more recorded sensors found but Set"
-                            " SENSOR_VALUE wasn't supported")]
+      results = [
+        self.AckSetResult(),
+        self.NackSetResult(
+            RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+            warning="One or more recorded sensors found but Set SENSOR_VALUE "
+                    "wasn't supported")
+      ]
     else:
-      results = [self.AckSetResult(),
-                 self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
+      results = [
+        self.AckSetResult(),
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+      ]
     self.AddIfSetSupported(results)
     self.SendSet(ROOT_DEVICE, self.pid, [self.ALL_SENSORS])
 
@@ -2824,31 +2949,25 @@ class ResetUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
   REQUIRES = ['sensor_definitions']
 
 
-class ResetSensorValueWithNoData(OptionalParameterTestFixture):
+class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SENSOR_VALUE'
+  ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
-  def Test(self):
-    self.AddIfSetSupported([
-        self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
-        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-    ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 class AllSubDevicesGetSensorValue(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get SENSOR_VALUE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SENSOR_VALUE'
   DATA = [1]
 
+
 # Record Sensors
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetRecordSensors(TestMixins.UnsupportedGetMixin,
                        OptionalParameterTestFixture):
   """GET record sensors."""
-  CATEGORY = TestCategory.SENSORS
   PID = 'RECORD_SENSORS'
 
 
@@ -2861,21 +2980,21 @@ class RecordSensorValues(OptionalParameterTestFixture):
   RECORDED_VALUE_MASK = 0x01
 
   def Test(self):
-    # the head of the list is the current sensor we're querying
+    # The head of the list is the current sensor we're querying
     self._sensors = self.Property('sensor_definitions').values()
     self._sensor_values = []
 
     if self._sensors:
-      # loop and get all values
+      # Loop and get all values
       self._RecordSensor()
     else:
-      # no sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
+      # No sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
       self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
       self.SendSet(ROOT_DEVICE, self.pid, [0])
 
   def _RecordSensor(self):
     if not self._sensors:
-      # finished
+      # Finished
       self.Stop()
       return
 
@@ -2926,11 +3045,11 @@ class RecordUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
 class RecordSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
                                   OptionalParameterTestFixture):
   """SET record sensors without any sensor number."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'RECORD_SENSORS'
 
+
 # Device Hours
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDeviceHours(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the device hours."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -2942,7 +3061,6 @@ class GetDeviceHours(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetDeviceHoursWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """GET the device hours with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_HOURS'
 
 
@@ -2965,9 +3083,10 @@ class SetDeviceHours(TestMixins.SetUInt32Mixin,
           response.nack_reason != RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
       self.SetProperty('set_device_hours_supported', set_supported)
 
-class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
+
+class SetDeviceHoursWithNoData(TestMixins.SetWithNoDataMixin,
+                               OptionalParameterTestFixture):
   """Set the device hours with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_HOURS'
   REQUIRES = ['set_device_hours_supported']
 
@@ -2979,15 +3098,15 @@ class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
     self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
+
 class AllSubDevicesGetDeviceHours(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get DEVICE_HOURS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_HOURS'
 
 
 # Lamp Hours
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetLampHours(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the device hours."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -2999,7 +3118,6 @@ class GetLampHours(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetLampHoursWithData(TestMixins.GetWithDataMixin,
                            OptionalParameterTestFixture):
   """GET the device hours with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_HOURS'
 
 
@@ -3023,9 +3141,9 @@ class SetLampHours(TestMixins.SetUInt32Mixin,
       self.SetProperty('set_lamp_hours_supported', set_supported)
 
 
-class SetLampHoursWithNoData(OptionalParameterTestFixture):
+class SetLampHoursWithNoData(TestMixins.SetWithNoDataMixin,
+                             OptionalParameterTestFixture):
   """Set the device hours with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_HOURS'
   REQUIRES = ['set_lamp_hours_supported']
 
@@ -3037,14 +3155,15 @@ class SetLampHoursWithNoData(OptionalParameterTestFixture):
     self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
+
 class AllSubDevicesGetLampHours(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Send a Get LAMP_HOURS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LAMP_HOURS'
 
+
 # Lamp Strikes
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetLampStrikes(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the lamp strikes."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -3056,7 +3175,6 @@ class GetLampStrikes(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetLampStrikesWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """GET the lamp strikes with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_STRIKES'
 
 
@@ -3079,9 +3197,9 @@ class SetLampStrikes(TestMixins.SetUInt32Mixin, OptionalParameterTestFixture):
       self.SetProperty('set_lamp_strikes_supported', set_supported)
 
 
-class SetLampStrikesWithNoData(OptionalParameterTestFixture):
+class SetLampStrikesWithNoData(TestMixins.SetWithNoDataMixin,
+                               OptionalParameterTestFixture):
   """Set the lamp strikes with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_STRIKES'
   REQUIRES = ['set_lamp_strikes_supported']
 
@@ -3093,14 +3211,15 @@ class SetLampStrikesWithNoData(OptionalParameterTestFixture):
     self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
+
 class AllSubDevicesGetLampStrikes(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get LAMP_STRIKES to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LAMP_STRIKES'
 
+
 # Lamp State
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetLampState(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the lamp state."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -3112,7 +3231,6 @@ class GetLampState(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetLampStateWithData(TestMixins.GetWithDataMixin,
                            OptionalParameterTestFixture):
   """GET the lamp state with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_STATE'
 
 
@@ -3130,19 +3248,19 @@ class SetLampState(TestMixins.SetBoolMixin, OptionalParameterTestFixture):
 
 
 class SetLampStateWithNoData(TestMixins.SetWithNoDataMixin,
-                               OptionalParameterTestFixture):
+                             OptionalParameterTestFixture):
   """Set the device state with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_STATE'
+
 
 class AllSubDevicesGetLampState(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Send a Get LAMP_STATE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LAMP_STATE'
 
+
 # Lamp On Mode
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetLampOnMode(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the lamp on mode."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -3154,7 +3272,6 @@ class GetLampOnMode(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetLampOnModeWithData(TestMixins.GetWithDataMixin,
                             OptionalParameterTestFixture):
   """GET the lamp on mode with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_ON_MODE'
 
 
@@ -3176,7 +3293,7 @@ class SetLampOnMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   def NewValue(self):
     old_value = self.OldValue()
     try:
-      index = self.ALLOWED_MODES.index(old_value)
+      self.ALLOWED_MODES.index(old_value)
     except ValueError:
       return self.ALLOWED_MODES[0]
     return self.ALLOWED_MODES[(old_value + 1) % len(self.ALLOWED_MODES)]
@@ -3185,17 +3302,17 @@ class SetLampOnMode(TestMixins.SetMixin, OptionalParameterTestFixture):
 class SetLampOnModeWithNoData(TestMixins.SetWithNoDataMixin,
                               OptionalParameterTestFixture):
   """Set the device on mode with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_ON_MODE'
+
 
 class AllSubDevicesGetLampOnMode(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Send a Get LAMP_ON_MODE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LAMP_ON_MODE'
 
+
 # Device Hours
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDevicePowerCycles(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the device power_cycles."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -3207,7 +3324,6 @@ class GetDevicePowerCycles(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetDevicePowerCyclesWithData(TestMixins.GetWithDataMixin,
                                    OptionalParameterTestFixture):
   """GET the device power_cycles with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_POWER_CYCLES'
 
 
@@ -3251,33 +3367,35 @@ class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
       self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
       self.NackSetResult(
         RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-        advisory='SET for %s returned unsupported command class' % self.PID),
+        advisory='SET for %s returned unsupported command class' %
+                 self.pid.name),
     ])
     self.SendSet(ROOT_DEVICE, self.pid, [self.NewValue()])
 
 
-class SetDevicePowerCyclesWithNoData(OptionalParameterTestFixture):
+class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,
+                                     OptionalParameterTestFixture):
   """Set the device power_cycles with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_POWER_CYCLES'
   REQUIRES = ['set_device_power_cycles_supported']
 
   def Test(self):
     if self.Property('set_device_power_cycles_supported'):
-      expected_result= RDMNack.NR_FORMAT_ERROR
+      expected_result = RDMNack.NR_FORMAT_ERROR
     else:
-      expected_result= RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
+      expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
+
 
 class AllSubDevicesGetDevicePowerCycles(TestMixins.AllSubDevicesGetMixin,
                                         OptionalParameterTestFixture):
   """Send a Get DEVICE_POWER_CYCLES to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_POWER_CYCLES'
 
+
 # Display Invert
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDisplayInvert(TestMixins.GetMixin,
                        OptionalParameterTestFixture):
   """GET the display invert setting."""
@@ -3290,7 +3408,6 @@ class GetDisplayInvert(TestMixins.GetMixin,
 class GetDisplayInvertWithData(TestMixins.GetWithDataMixin,
                                OptionalParameterTestFixture):
   """GET the pan invert setting with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DISPLAY_INVERT'
 
 
@@ -3301,7 +3418,7 @@ class SetDisplayInvert(TestMixins.SetMixin,
   PID = 'DISPLAY_INVERT'
   EXPECTED_FIELDS = ['invert_status']
   REQUIRES = ['display_invert']
-  # some devices can't do auto so we just use on and off here
+  # Some devices can't do auto so we just use on and off here
   ALLOWED_MODES = [0, 1]
   ALL_MODES = ALLOWED_MODES + [2]
 
@@ -3314,7 +3431,7 @@ class SetDisplayInvert(TestMixins.SetMixin,
   def NewValue(self):
     old_value = self.OldValue()
     try:
-      index = self.ALLOWED_MODES.index(old_value)
+      self.ALLOWED_MODES.index(old_value)
     except ValueError:
       return self.ALLOWED_MODES[0]
     return self.ALLOWED_MODES[(old_value + 1) % len(self.ALLOWED_MODES)]
@@ -3323,17 +3440,23 @@ class SetDisplayInvert(TestMixins.SetMixin,
 class SetDisplayInvertWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """Set the display invert with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DISPLAY_INVERT'
+
+
+class SetDisplayInvertWithExtraData(TestMixins.SetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Send a SET DISPLAY_INVERT command with extra data."""
+  PID = 'DISPLAY_INVERT'
+
 
 class AllSubDevicesGetDisplayInvert(TestMixins.AllSubDevicesGetMixin,
                                     OptionalParameterTestFixture):
   """Send a Get DISPLAY_INVERT to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DISPLAY_INVERT'
 
+
 # Display Level
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDisplayLevel(TestMixins.GetMixin,
                       OptionalParameterTestFixture):
   """GET the display level setting."""
@@ -3346,7 +3469,6 @@ class GetDisplayLevel(TestMixins.GetMixin,
 class GetDisplayLevelWithData(TestMixins.GetWithDataMixin,
                               OptionalParameterTestFixture):
   """GET the pan invert setting with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DISPLAY_LEVEL'
 
 
@@ -3365,17 +3487,17 @@ class SetDisplayLevel(TestMixins.SetUInt8Mixin,
 class SetDisplayLevelWithNoData(TestMixins.SetWithNoDataMixin,
                                 OptionalParameterTestFixture):
   """Set the display level with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DISPLAY_LEVEL'
+
 
 class AllSubDevicesGetDisplayLevel(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Send a Get DISPLAY_LEVEL to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DISPLAY_LEVEL'
 
+
 # Pan Invert
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetPanInvert(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the pan invert setting."""
   CATEGORY = TestCategory.CONFIGURATION
@@ -3387,7 +3509,6 @@ class GetPanInvert(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetPanInvertWithData(TestMixins.GetWithDataMixin,
                            OptionalParameterTestFixture):
   """GET the pan invert setting with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PAN_INVERT'
 
 
@@ -3405,17 +3526,23 @@ class SetPanInvert(TestMixins.SetBoolMixin, OptionalParameterTestFixture):
 class SetPanInvertWithNoData(TestMixins.SetWithNoDataMixin,
                              OptionalParameterTestFixture):
   """Set the pan invert with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PAN_INVERT'
+
+
+class SetPanInvertWithExtraData(TestMixins.SetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Send a SET PAN_INVERT command with extra data."""
+  PID = 'PAN_INVERT'
+
 
 class AllSubDevicesGetPanInvert(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Send a Get PAN_INVERT to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PAN_INVERT'
 
+
 # Tilt Invert
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetTiltInvert(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the tilt invert setting."""
   CATEGORY = TestCategory.CONFIGURATION
@@ -3427,7 +3554,6 @@ class GetTiltInvert(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetTiltInvertWithData(TestMixins.GetWithDataMixin,
                             OptionalParameterTestFixture):
   """GET the tilt invert setting with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'TILT_INVERT'
 
 
@@ -3445,17 +3571,23 @@ class SetTiltInvert(TestMixins.SetBoolMixin, OptionalParameterTestFixture):
 class SetTiltInvertWithNoData(TestMixins.SetWithNoDataMixin,
                               OptionalParameterTestFixture):
   """Set the tilt invert with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'TILT_INVERT'
+
+
+class SetTiltInvertWithExtraData(TestMixins.SetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Send a SET TILT_INVERT command with extra data."""
+  PID = 'TILT_INVERT'
+
 
 class AllSubDevicesGetTiltInvert(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Send a Get TILT_INVERT to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'TILT_INVERT'
 
-# Pan Tilt Swap Invert
-#------------------------------------------------------------------------------
+
+# Pan Tilt Swap
+# -----------------------------------------------------------------------------
 class GetPanTiltSwap(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the pan tilt swap setting."""
   CATEGORY = TestCategory.CONFIGURATION
@@ -3467,7 +3599,6 @@ class GetPanTiltSwap(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetPanTiltSwapWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """GET the pan tilt swap setting with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PAN_TILT_SWAP'
 
 
@@ -3485,17 +3616,23 @@ class SetPanTiltSwap(TestMixins.SetBoolMixin, OptionalParameterTestFixture):
 class SetPanTiltSwapWithNoData(TestMixins.SetWithNoDataMixin,
                                OptionalParameterTestFixture):
   """Set the pan tilt swap with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PAN_TILT_SWAP'
+
+
+class SetPanTiltSwapWithExtraData(TestMixins.SetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Send a SET PAN_TILT_SWAP command with extra data."""
+  PID = 'PAN_TILT_SWAP'
+
 
 class AllSubDevicesGetPanTiltSwap(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get PAN_TILT_SWAP to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PAN_TILT_SWAP'
 
+
 # Real time clock
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetRealTimeClock(OptionalParameterTestFixture):
   """GET the real time clock setting."""
   CATEGORY = TestCategory.CONFIGURATION
@@ -3518,17 +3655,16 @@ class GetRealTimeClock(OptionalParameterTestFixture):
     if not response.WasAcked():
       return
 
-    for field, range in self.ALLOWED_RANGES.iteritems():
+    for field, valid_range in self.ALLOWED_RANGES.iteritems():
       value = fields[field]
-      if value < range[0] or value > range[1]:
+      if value < valid_range[0] or value > valid_range[1]:
         self.AddWarning('%s in GET %s is out of range, was %d, expected %s' %
-                        (field, self.PID, value, range))
+                        (field, self.pid.name, value, valid_range))
 
 
 class GetRealTimeClockWithData(TestMixins.GetWithDataMixin,
                                OptionalParameterTestFixture):
   """GET the teal time clock with data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'REAL_TIME_CLOCK'
 
 
@@ -3539,9 +3675,9 @@ class SetRealTimeClock(OptionalParameterTestFixture):
 
   def Test(self):
     n = datetime.datetime.now()
-    self.AddIfSetSupported(
-        [self.AckSetResult(),
-         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    self.AddIfSetSupported([
+        self.AckSetResult(),
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
     ])
     args = [n.year, n.month, n.day, n.hour, n.minute, n.second]
     self.SendSet(ROOT_DEVICE, self.pid,
@@ -3560,14 +3696,15 @@ class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
     ])
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
+
 class AllSubDevicesGetRealTimeClock(TestMixins.AllSubDevicesGetMixin,
                                     OptionalParameterTestFixture):
   """Send a Get REAL_TIME_CLOCK to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'REAL_TIME_CLOCK'
 
+
 # Identify Device
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetIdentifyDevice(TestMixins.GetRequiredMixin, ResponderTestFixture):
   """Get the identify state."""
   CATEGORY = TestCategory.CONTROL
@@ -3579,7 +3716,6 @@ class GetIdentifyDevice(TestMixins.GetRequiredMixin, ResponderTestFixture):
 class GetIdentifyDeviceWithData(TestMixins.GetMandatoryPIDWithDataMixin,
                                 ResponderTestFixture):
   """Get the identify state with data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
 
 
@@ -3603,7 +3739,7 @@ class SetIdentifyDevice(ResponderTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def ResetState(self):
-    # reset back to the old value
+    # Reset back to the old value
     self.SendSet(ROOT_DEVICE, self.pid, [self.identify_mode])
     self._wrapper.Run()
 
@@ -3620,7 +3756,7 @@ class SetOutOfRangeIdentifyDevice(ResponderTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [2])
 
   def ResetState(self):
-    # reset back to the old value
+    # Reset back to the old value
     self.SendSet(ROOT_DEVICE,
                  self.pid,
                  [self.Property('identify_state')])
@@ -3662,7 +3798,7 @@ class SetOtherVendorcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
     ]
 
   def Uid(self):
-    # use a different vendor's vendorcast address
+    # Use a different vendor's vendorcast address
     vendorcast_id = self._uid.manufacturer_id
     if vendorcast_id == 0:
       vendorcast_id += 1
@@ -3686,11 +3822,12 @@ class SetIdentifyDeviceWithNoData(ResponderTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('identify_state')])
     self._wrapper.Run()
 
+
 class AllSubDevicesGetIdentifyDevice(TestMixins.AllSubDevicesGetMixin,
-                                     OptionalParameterTestFixture):
+                                     ResponderTestFixture):
   """Send a Get IDENTIFY_DEVICE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IDENTIFY_DEVICE'
+
 
 class GetSubDeviceIdentifyDevice(ResponderTestFixture):
   """Check that IDENTIFY_DEVICE is supported on all sub devices."""
@@ -3701,7 +3838,7 @@ class GetSubDeviceIdentifyDevice(ResponderTestFixture):
   def Test(self):
     self._sub_devices = self.Property('sub_device_addresses').keys()
     self._sub_devices.reverse()
-    self._GetIdentifyDevice();
+    self._GetIdentifyDevice()
 
   def _GetIdentifyDevice(self):
     if not self._sub_devices:
@@ -3712,8 +3849,9 @@ class GetSubDeviceIdentifyDevice(ResponderTestFixture):
     sub_device = self._sub_devices.pop()
     self.SendGet(sub_device, self.pid)
 
+
 # Power State
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetPowerState(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get the power state mode."""
   CATEGORY = TestCategory.CONTROL
@@ -3735,7 +3873,6 @@ class GetPowerState(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetPowerStateWithData(TestMixins.GetWithDataMixin,
                             OptionalParameterTestFixture):
   """Get the power state mode with data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'POWER_STATE'
 
 
@@ -3755,36 +3892,34 @@ class SetPowerState(TestMixins.SetMixin, OptionalParameterTestFixture):
   def NewValue(self):
     old_value = self.Property('power_state')
     try:
-      index = GetPowerState.ALLOWED_STATES.index(old_value)
+      GetPowerState.ALLOWED_STATES.index(old_value)
     except ValueError:
       return GetPowerState.ALLOWED_STATES[0]
 
     length = len(GetPowerState.ALLOWED_STATES)
     return GetPowerState.ALLOWED_STATES[(old_value + 1) % length]
 
-  def ResetState(self):
-    if not self.OldValue():
-      return
-
-    # reset back to the old value
-    self.SendSet(ROOT_DEVICE, self.pid, [self.OldValue()])
-    self._wrapper.Run()
-
 
 class SetPowerStateWithNoData(TestMixins.SetWithNoDataMixin,
                               OptionalParameterTestFixture):
   """Set the power state with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'POWER_STATE'
+
+
+class SetPowerStateWithExtraData(TestMixins.SetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Send a SET POWER_STATE command with extra data."""
+  PID = 'POWER_STATE'
+
 
 class AllSubDevicesGetPowerState(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Send a Get POWER_STATE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'POWER_STATE'
 
+
 # Self Test
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetPerformSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get the current self test settings."""
   CATEGORY = TestCategory.CONTROL
@@ -3795,7 +3930,6 @@ class GetPerformSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetPerformSelfTestWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """Get the current self test settings with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PERFORM_SELFTEST'
 
 
@@ -3810,23 +3944,24 @@ class SetPerformSelfTest(TestMixins.SetMixin,
     return False
 
   def ResetState(self):
-    # override this so we don't reset
+    # Override this so we don't reset
     pass
+
 
 class SetPerformSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set the perform self test setting but don't provide any data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PERFORM_SELFTEST'
+
 
 class AllSubDevicesGetPerformSelfTest(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Send a Get PERFORM_SELFTEST to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PERFORM_SELFTEST'
 
+
 # Self Test Description
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetSelfTestDescription(OptionalParameterTestFixture):
   """Get the self test description."""
   CATEGORY = TestCategory.CONTROL
@@ -3837,7 +3972,7 @@ class GetSelfTestDescription(OptionalParameterTestFixture):
       self.AckGetResult(),
       self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
     ])
-    # try to get a description for the first self test
+    # Try to get a description for the first self test
     self.SendGet(ROOT_DEVICE, self.pid, [1])
 
   def VerifyResult(self, response, fields):
@@ -3854,7 +3989,6 @@ class GetSelfTestDescription(OptionalParameterTestFixture):
 class GetSelfTestDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                        OptionalParameterTestFixture):
   """Get the self test description with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SELF_TEST_DESCRIPTION'
 
 
@@ -3865,8 +3999,8 @@ class FindSelfTests(OptionalParameterTestFixture):
   PROVIDES = ['self_test_descriptions']
 
   def Test(self):
-    self._self_tests = {}  # stores the discovered self tests
-    self._current_index = 0  # the current self test we're trying to query
+    self._self_tests = {}  # Stores the discovered self tests
+    self._current_index = 0  # The current self test we're trying to query
     self._CheckForSelfTest()
 
   def _CheckForSelfTest(self):
@@ -3901,17 +4035,19 @@ class FindSelfTests(OptionalParameterTestFixture):
         self.AddAdvisory(
             'Description field in self test description for test number %d '
             'contains unprintable characters, was %s' %
-            (fields['test_number'], fields['description'].encode('string-escape')))
+            (fields['test_number'],
+             fields['description'].encode('string-escape')))
+
 
 class AllSubDevicesGetSelfTestDescription(TestMixins.AllSubDevicesGetMixin,
                                           OptionalParameterTestFixture):
   """Send a Get SELF_TEST_DESCRIPTION to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SELF_TEST_DESCRIPTION'
   DATA = [1]
 
+
 # Factory Defaults
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetFactoryDefaults(OptionalParameterTestFixture):
   """GET the factory defaults pid."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -3925,7 +4061,6 @@ class GetFactoryDefaults(OptionalParameterTestFixture):
 class GetFactoryDefaultsWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """GET the factory defaults pid with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'FACTORY_DEFAULTS'
 
 
@@ -3934,7 +4069,7 @@ class ResetFactoryDefaults(OptionalParameterTestFixture):
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'FACTORY_DEFAULTS'
   # Dependencies so that we don't reset the fields before checking them.
-  DEPS = [GetStartAddress, GetPersonality]
+  DEPS = [GetDMXStartAddress, GetDMXPersonality]
 
   def Test(self):
     self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
@@ -3949,50 +4084,55 @@ class ResetFactoryDefaults(OptionalParameterTestFixture):
 class ResetFactoryDefaultsWithData(TestMixins.SetWithDataMixin,
                                    OptionalParameterTestFixture):
   """Reset to factory defaults with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'FACTORY_DEFAULTS'
+
 
 class AllSubDevicesGetFactoryDefaults(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Send a Get FACTORY_DEFAULTS to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'FACTORY_DEFAULTS'
 
+
 # CAPTURE_PRESET
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetCapturePreset(TestMixins.UnsupportedGetMixin,
                        OptionalParameterTestFixture):
   """GET capture preset."""
-  CATEGORY = TestCategory.CONTROL
   PID = 'CAPTURE_PRESET'
 
-class SetCapturePresetWithNoData(TestMixins.SetWithNoDataMixin,
-                                 OptionalParameterTestFixture):
-  """Set capture preset with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'CAPTURE_PRESET'
 
-class CapturePreset(TestMixins.SetWithNoDataMixin,
-                    OptionalParameterTestFixture):
-  """Capture preset information."""
+class SetCapturePreset(OptionalParameterTestFixture):
+  """Set Capture preset information."""
   CATEGORY = TestCategory.CONTROL
   PID = 'CAPTURE_PRESET'
 
   def Test(self):
-    # this test doesn't check much because the standard is rather vague in this
+    # This test doesn't check much because the standard is rather vague in this
     # area. There is also no way to read back preset data so it's impossible to
     # tell if this worked.
     self.AddIfSetSupported(self.AckSetResult())
-    # scene 1, no timing information
+    # Scene 1, no timing information
     self.SendSet(ROOT_DEVICE, self.pid, [1, 0, 0, 0])
 
 
+class SetCapturePresetWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
+  """Set capture preset with no data."""
+  PID = 'CAPTURE_PRESET'
+
+
+class SetCapturePresetWithExtraData(TestMixins.SetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Set capture preset with extra data."""
+  PID = 'CAPTURE_PRESET'
+  DATA = 'foobarbaz'
+
+
 # PRESET_PLAYBACK
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetPresetPlaybackWithData(TestMixins.GetWithDataMixin,
                                 OptionalParameterTestFixture):
   """Get the preset playback with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_PLAYBACK'
 
 
@@ -4006,7 +4146,6 @@ class GetPresetPlayback(TestMixins.GetMixin, OptionalParameterTestFixture):
 class SetPresetPlaybackWithNoData(TestMixins.SetWithNoDataMixin,
                                   OptionalParameterTestFixture):
   """Set preset playback with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_PLAYBACK'
 
 
@@ -4028,17 +4167,18 @@ class SetPresetPlayback(OptionalParameterTestFixture):
         'level': self.FULL}))
     self.SendGet(ROOT_DEVICE, self.pid)
 
+
 class AllSubDevicesGetPresetPlayback(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Send a Get PRESET_PLAYBACK to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_PLAYBACK'
 
+
 # E1.37 PIDS
-#==============================================================================
+# =============================================================================
 
 # IDENTIFY_MODE
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetIdentifyMode(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get IDENTIFY_MODE."""
   CATEGORY = TestCategory.CONTROL
@@ -4046,11 +4186,12 @@ class GetIdentifyMode(TestMixins.GetMixin, OptionalParameterTestFixture):
   PROVIDES = ['identify_mode']
   EXPECTED_FIELDS = ['identify_mode']
 
+
 class GetIdentifyModeWithData(TestMixins.GetWithDataMixin,
                               OptionalParameterTestFixture):
   """Get IDENTIFY_MODE with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_MODE'
+
 
 class SetIdentifyMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   """Set IDENTIFY_MODE with extra data."""
@@ -4074,20 +4215,21 @@ class SetIdentifyMode(TestMixins.SetMixin, OptionalParameterTestFixture):
     else:
       return self.LOUD
 
+
 class SetIdentifyModeWithNoData(TestMixins.SetWithNoDataMixin,
                                 OptionalParameterTestFixture):
   """Set IDENTIFY_MODE with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_MODE'
+
 
 class AllSubDevicesGetIdentifyMode(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Get IDENTIFY_MODE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IDENTIFY_MODE'
 
+
 # DMX_BLOCK_ADDRESS
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDMXBlockAddress(OptionalParameterTestFixture):
   """Get DMX_BLOCK_ADDRESS."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -4109,11 +4251,11 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
       footprint = fields['sub_device_footprint']
       base_address = fields['base_dmx_address']
 
-      if footprint > MAX_DMX_ADDRESS:
+      if footprint > TestMixins.MAX_DMX_ADDRESS:
         self.AddWarning('Sub device footprint > 512, was %d' % footprint)
 
       if (base_address == 0 or
-          (base_address > MAX_DMX_ADDRESS and
+          (base_address > TestMixins.MAX_DMX_ADDRESS and
            base_address != self.NON_CONTIGUOUS)):
         self.AddWarning('Base DMX address is outside range 1-512, was %d' %
                         base_address)
@@ -4142,32 +4284,33 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
     footprints = self.Property('sub_device_footprints')
     next_address = None
     for index in sorted(addresses):
-      if next_address == None:
+      if next_address is None:
         next_address = addresses[index] + footprints[index]
       elif addresses[index] != next_address:
         return False
       else:
         next_address += footprints[index]
-    return True;
+    return True
 
-class CheckBlockAddressConsistency(ResponderTestFixture):
+
+class CheckBlockAddressConsistency(OptionalParameterTestFixture):
   """Check that the device has subdevices if DMX_BLOCK_ADDRESS is supported."""
   CATEGORY = TestCategory.CONTROL
-  REQUIRES = ['sub_device_count', 'supported_parameters']
+  REQUIRES = ['sub_device_count']
+  PID = 'DMX_BLOCK_ADDRESS'
 
   def Test(self):
-    pid = self.LookupPid('DMX_BLOCK_ADDRESS')
-    if (pid.value in self.Property('supported_parameters') and
-        self.Property('sub_device_count') == 0):
+    if (self.PidSupported() and self.Property('sub_device_count') == 0):
       self.AddAdvisory('DMX_BLOCK_ADDRESS supported but sub device count was 0')
     self.SetPassed()
     self.Stop()
 
+
 class GetDMXBlockAddressWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """Get DMX_BLOCK_ADDRESS with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
+
 
 class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
   """SET the DMX_BLOCK_ADDRESS."""
@@ -4176,8 +4319,10 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
   REQUIRES = ['total_sub_device_footprint', 'base_dmx_address']
   EXPECTED_FIELDS = ['base_dmx_address']
 
+  # TODO(Peter): Allow Nack write protect when 0 sub device footprint or no
+  # addressable subs
   def NewValue(self):
-    base_address =  self.Property('base_dmx_address')
+    base_address = self.Property('base_dmx_address')
     footprint = self.Property('total_sub_device_footprint')
 
     if base_address is None or footprint is None:
@@ -4187,13 +4332,14 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
       return 1
 
     new_address = base_address + 1
-    if new_address + footprint > MAX_DMX_ADDRESS:
+    if new_address + footprint > TestMixins.MAX_DMX_ADDRESS:
       new_address = 1
     return new_address
 
   def ResetState(self):
-    # we can't reset as the addresses may not have been contiguous
+    # We can't reset as the addresses may not have been contiguous
     pass
+
 
 class SetZeroDMXBlockAddress(TestMixins.SetZeroUInt16Mixin,
                              OptionalParameterTestFixture):
@@ -4201,7 +4347,8 @@ class SetZeroDMXBlockAddress(TestMixins.SetZeroUInt16Mixin,
   PID = 'DMX_BLOCK_ADDRESS'
   DEPS = [SetDMXBlockAddress]
 
-class SetOversizedDMXBlockAddress(OptionalParameterTestFixture):
+
+class SetOutOfRangeDMXBlockAddress(OptionalParameterTestFixture):
   """Set DMX_BLOCK_ADDRESS to 513."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
@@ -4209,24 +4356,32 @@ class SetOversizedDMXBlockAddress(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
+    data = struct.pack('!H', TestMixins.MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+
+class SetDMXBlockAddressWithExtraData(TestMixins.SetWithDataMixin,
+                                      OptionalParameterTestFixture):
+  """Send a SET dmx block address with extra data."""
+  PID = 'DMX_BLOCK_ADDRESS'
+  DATA = 'foobar'
+
 
 class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set DMX_BLOCK_ADDRESS with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
+
 
 class AllSubDevicesGetDmxBlockAddress(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Get DMX_BLOCK_ADDRESS addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_BLOCK_ADDRESS'
 
+
 # DMX_FAIL_MODE
-#------------------------------------------------------------------------------
-class GetDmxFailMode(OptionalParameterTestFixture):
+# -----------------------------------------------------------------------------
+class GetDMXFailMode(OptionalParameterTestFixture):
   """GET DMX_FAIL_MODE."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_FAIL_MODE'
@@ -4241,13 +4396,14 @@ class GetDmxFailMode(OptionalParameterTestFixture):
       fields = {}
     self.SetProperty('dmx_fail_settings', fields)
 
+
 class GetFailUpModeWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """GET DMX_FAIL_MODE with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_FAIL_MODE'
 
-class SetDmxFailMode(OptionalParameterTestFixture):
+
+class SetDMXFailMode(OptionalParameterTestFixture):
   """Set DMX_FAIL_MODE without changing the settings."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_FAIL_MODE'
@@ -4266,13 +4422,14 @@ class SetDmxFailMode(OptionalParameterTestFixture):
         [settings.get('scene_number', 0),
          settings.get('hold_time', 0),
          settings.get('loss_of_signal_delay', 0),
-         settings.get('level', 0),
-        ])
+         settings.get('level', 0)]
+    )
 
   def VerifyResult(self, response, fields):
     self.SetProperty('set_dmx_fail_mode_supported', response.WasAcked())
 
-class SetDmxFailModeMinimumTime(TestMixins.SetDmxFailModeMixin,
+
+class SetDMXFailModeMinimumTime(TestMixins.SetDMXFailModeMixin,
                                 OptionalParameterTestFixture):
   """Verify the minimum times in PRESET_INFO are supported in DMX_FAIL_MODE."""
   def Test(self):
@@ -4302,7 +4459,8 @@ class SetDmxFailModeMinimumTime(TestMixins.SetDmxFailModeMixin,
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-class SetDmxFailModeMaximumTime(TestMixins.SetDmxFailModeMixin,
+
+class SetDMXFailModeMaximumTime(TestMixins.SetDMXFailModeMixin,
                                 OptionalParameterTestFixture):
   """Verify the maximum times in PRESET_INFO are supported in DMX_FAIL_MODE."""
   def Test(self):
@@ -4332,7 +4490,8 @@ class SetDmxFailModeMaximumTime(TestMixins.SetDmxFailModeMixin,
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-class SetDmxFailModeInfiniteTimes(TestMixins.SetDmxFailModeMixin,
+
+class SetDMXFailModeInfiniteTimes(TestMixins.SetDMXFailModeMixin,
                                   OptionalParameterTestFixture):
   """Check if infinite times are supported for DMX_FAIL_MODE."""
   def Test(self):
@@ -4368,7 +4527,7 @@ class SetDmxFailModeInfiniteTimes(TestMixins.SetDmxFailModeMixin,
   def CheckField(self, field_name, is_supported, new_value):
     if is_supported is None:
       # We can't tell is the new value is correct or not
-      return;
+      return
 
     if is_supported and new_value != self.INFINITE_TIME:
       self.SetFailed(
@@ -4380,7 +4539,8 @@ class SetDmxFailModeInfiniteTimes(TestMixins.SetDmxFailModeMixin,
           'infinite %s was not supported, but the value was not truncated '
           'after a set.' % field_name)
 
-class SetDmxFailModeOutOfRangeMaximumTime(TestMixins.SetDmxFailModeMixin,
+
+class SetDMXFailModeOutOfRangeMaximumTime(TestMixins.SetDMXFailModeMixin,
                                           OptionalParameterTestFixture):
   """Check that the maximum times for DMX_FAIL_MODE are honored."""
   def Test(self):
@@ -4399,14 +4559,14 @@ class SetDmxFailModeOutOfRangeMaximumTime(TestMixins.SetDmxFailModeMixin,
     # 0xffff means 'fail mode not supported'
     if delay_time_field.RawValue(self.max_delay_time) < 0xffff - 1:
       delay_time = delay_time_field.DisplayValue(
-          delay_time_field.RawValue(self.max_delay_time) + 1)  # increment by 1
+          delay_time_field.RawValue(self.max_delay_time) + 1)  # Increment by 1
 
     hold_time = self.max_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'fail mode not supported'
     if hold_time_field.RawValue(self.max_hold_time) < 0xffff - 1:
       hold_time = hold_time_field.DisplayValue(
-          hold_time_field.RawValue(self.max_hold_time) + 1)  # increment by 1
+          hold_time_field.RawValue(self.max_hold_time) + 1)  # Increment by 1
 
     if self.Property('set_dmx_fail_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
@@ -4426,7 +4586,8 @@ class SetDmxFailModeOutOfRangeMaximumTime(TestMixins.SetDmxFailModeMixin,
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
+
+class SetDMXFailModeOutOfRangeMinimumTime(TestMixins.SetDMXFailModeMixin,
                                           OptionalParameterTestFixture):
   """Check that the minimum times for DMX_FAIL_MODE are honored."""
   def Test(self):
@@ -4446,7 +4607,7 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
     if (delay_time_field.RawValue(self.min_delay_time) > 1 and
         delay_time_field.RawValue(self.min_delay_time) < 0xffff):
       delay_time = delay_time_field.DisplayValue(
-          delay_time_field.RawValue(self.min_delay_time) - 1)  # decrement by 1
+          delay_time_field.RawValue(self.min_delay_time) - 1)  # Decrement by 1
 
     hold_time = self.min_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
@@ -4454,7 +4615,7 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
     if (hold_time_field.RawValue(self.min_hold_time) > 1 and
         hold_time_field.RawValue(self.min_hold_time) < 0xffff):
       hold_time = hold_time_field.DisplayValue(
-          hold_time_field.RawValue(self.min_hold_time) - 1)  # decrement by 1
+          hold_time_field.RawValue(self.min_hold_time) - 1)  # Decrement by 1
 
     if self.Property('set_dmx_fail_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
@@ -4478,18 +4639,18 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
 class SetFailModeWithNoData(TestMixins.SetWithNoDataMixin,
                             OptionalParameterTestFixture):
   """Set DMX_FAIL_MODE with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_FAIL_MODE'
 
-class AllSubDevicesGetDmxFailMode(TestMixins.AllSubDevicesGetMixin,
+
+class AllSubDevicesGetDMXFailMode(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Get DMX_FAIL_MODE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_FAIL_MODE'
 
+
 # DMX_STARTUP_MODE
-#------------------------------------------------------------------------------
-class GetDmxStartupMode(OptionalParameterTestFixture):
+# -----------------------------------------------------------------------------
+class GetDMXStartupMode(OptionalParameterTestFixture):
   """Get DMX_STARTUP_MODE."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_STARTUP_MODE'
@@ -4504,13 +4665,14 @@ class GetDmxStartupMode(OptionalParameterTestFixture):
       fields = {}
     self.SetProperty('dmx_startup_settings', fields)
 
+
 class GetStartUpModeWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """Get DMX_STARTUP_MODE with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_STARTUP_MODE'
 
-class SetDmxStartupMode(OptionalParameterTestFixture):
+
+class SetDMXStartupMode(OptionalParameterTestFixture):
   """Set DMX_STARTUP_MODE without changing the settings."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_FAIL_MODE'
@@ -4529,13 +4691,14 @@ class SetDmxStartupMode(OptionalParameterTestFixture):
         [settings.get('scene_number', 0),
          settings.get('hold_time', 0),
          settings.get('startup_delay', 0),
-         settings.get('level', 0),
-        ])
+         settings.get('level', 0)]
+    )
 
   def VerifyResult(self, response, fields):
     self.SetProperty('set_dmx_startup_mode_supported', response.WasAcked())
 
-class SetDmxStartupModeMinimumTime(TestMixins.SetDmxStartupModeMixin,
+
+class SetDMXStartupModeMinimumTime(TestMixins.SetDMXStartupModeMixin,
                                    OptionalParameterTestFixture):
   """Verify DMX_STARTUP_MODE supports the min. times from PRESET_INFO."""
   def Test(self):
@@ -4565,7 +4728,8 @@ class SetDmxStartupModeMinimumTime(TestMixins.SetDmxStartupModeMixin,
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-class SetDmxStartupModeMaximumTime(TestMixins.SetDmxStartupModeMixin,
+
+class SetDMXStartupModeMaximumTime(TestMixins.SetDMXStartupModeMixin,
                                    OptionalParameterTestFixture):
   """Verify DMX_STARTUP_MODE supports the max. times from PRESET_INFO."""
   def Test(self):
@@ -4597,7 +4761,8 @@ class SetDmxStartupModeMaximumTime(TestMixins.SetDmxStartupModeMixin,
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-class SetDmxStartupModeInfiniteTimes(TestMixins.SetDmxStartupModeMixin,
+
+class SetDMXStartupModeInfiniteTimes(TestMixins.SetDMXStartupModeMixin,
                                      OptionalParameterTestFixture):
   """Check if infinite times are supported for DMX_STARTUP_MODE."""
   def Test(self):
@@ -4634,7 +4799,7 @@ class SetDmxStartupModeInfiniteTimes(TestMixins.SetDmxStartupModeMixin,
   def CheckField(self, field_name, is_supported, new_value):
     if is_supported is None:
       # We can't tell is the new value is correct or not
-      return;
+      return
 
     if is_supported and new_value != self.INFINITE_TIME:
       self.SetFailed(
@@ -4646,7 +4811,8 @@ class SetDmxStartupModeInfiniteTimes(TestMixins.SetDmxStartupModeMixin,
           'infinite %s was not supported, but the value was not truncated '
           'after a set.' % field_name)
 
-class SetDmxStartupModeOutOfRangeMaximumTime(TestMixins.SetDmxStartupModeMixin,
+
+class SetDMXStartupModeOutOfRangeMaximumTime(TestMixins.SetDMXStartupModeMixin,
                                              OptionalParameterTestFixture):
   """Check that the maximum times for DMX_STARTUP_MODE are honored."""
   def Test(self):
@@ -4664,14 +4830,14 @@ class SetDmxStartupModeOutOfRangeMaximumTime(TestMixins.SetDmxStartupModeMixin,
     # 0xffff means 'startup mode not supported'
     if delay_time_field.RawValue(self.max_delay_time) < (0xffff - 1):
       delay_time = delay_time_field.DisplayValue(
-          delay_time_field.RawValue(self.max_delay_time) + 1)  # increment by 1
+          delay_time_field.RawValue(self.max_delay_time) + 1)  # Increment by 1
 
     hold_time = self.max_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
     # 0xffff means 'startup mode not supported'
     if hold_time_field.RawValue(self.max_hold_time) < (0xffff - 1):
       hold_time = hold_time_field.DisplayValue(
-          hold_time_field.RawValue(self.max_hold_time) + 1)  # increment by 1
+          hold_time_field.RawValue(self.max_hold_time) + 1)  # Increment by 1
 
     if self.Property('set_dmx_startup_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
@@ -4691,7 +4857,8 @@ class SetDmxStartupModeOutOfRangeMaximumTime(TestMixins.SetDmxStartupModeMixin,
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
+
+class SetDMXStartupModeOutOfRangeMinimumTime(TestMixins.SetDMXStartupModeMixin,
                                              OptionalParameterTestFixture):
   """Check that the minimum times for DMX_STARTUP_MODE are honored."""
   def Test(self):
@@ -4710,7 +4877,7 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
     if (delay_time_field.RawValue(self.min_delay_time) > 1 and
         delay_time_field.RawValue(self.min_delay_time) < 0xffff):
       delay_time = delay_time_field.DisplayValue(
-          delay_time_field.RawValue(self.min_delay_time) - 1)  # decrement by 1
+          delay_time_field.RawValue(self.min_delay_time) - 1)  # Decrement by 1
 
     hold_time = self.min_hold_time
     hold_time_field = self.pid.GetRequestField(RDM_SET, 'hold_time')
@@ -4718,7 +4885,7 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
     if (hold_time_field.RawValue(self.min_hold_time) > 1 and
         hold_time_field.RawValue(self.min_hold_time) < 0xffff):
       hold_time = hold_time_field.DisplayValue(
-          hold_time_field.RawValue(self.min_hold_time) - 1)  # decrement by 1
+          hold_time_field.RawValue(self.min_hold_time) - 1)  # Decrement by 1
 
     if self.Property('set_dmx_startup_mode_supported'):
       self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
@@ -4738,20 +4905,21 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
     self.SendGet(ROOT_DEVICE, self.pid)
 
+
 class SetStartupModeWithNoData(TestMixins.SetWithNoDataMixin,
                                OptionalParameterTestFixture):
   """Set DMX_STARTUP_MODE with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_STARTUP_MODE'
 
-class AllSubDevicesGetDmxStartupMode(TestMixins.AllSubDevicesGetMixin,
+
+class AllSubDevicesGetDMXStartupMode(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Get DMX_STARTUP_MODE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_STARTUP_MODE'
 
+
 # POWER_ON_SELF_TEST
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetPowerOnSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get the POWER_ON_SELF_TEST."""
   CATEGORY = TestCategory.CONTROL
@@ -4759,11 +4927,12 @@ class GetPowerOnSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELDS = ['power_on_self_test']
   PROVIDES = ['power_on_self_test']
 
+
 class GetPowerOnSelfTestWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """Get the POWER_ON_SELF_TEST with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'POWER_ON_SELF_TEST'
+
 
 class SetPowerOnSelfTest(TestMixins.SetBoolMixin,
                          OptionalParameterTestFixture):
@@ -4776,20 +4945,21 @@ class SetPowerOnSelfTest(TestMixins.SetBoolMixin,
   def OldValue(self):
     return self.Property('power_on_self_test')
 
+
 class SetPowerOnSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set the POWER_ON_SELF_TEST with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'POWER_ON_SELF_TEST'
+
 
 class AllSubDevicesGetPowerOnSelfTest(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Get POWER_ON_SELF_TEST addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'POWER_ON_SELF_TEST'
 
+
 # LOCK_STATE
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetLockState(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get LOCK_STATE."""
   CATEGORY = TestCategory.CONFIGURATION
@@ -4815,23 +4985,24 @@ class GetLockState(TestMixins.GetMixin, OptionalParameterTestFixture):
                       fields['number_of_lock_states']))
       return
 
+
 class GetLockStateWithData(TestMixins.GetWithDataMixin,
                            OptionalParameterTestFixture):
   """Get LOCK_STATE with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE'
+
 
 class AllSubDevicesGetLockState(TestMixins.AllSubDevicesGetMixin,
                                 OptionalParameterTestFixture):
   """Get LOCK_STATE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LOCK_STATE'
+
 
 class SetLockStateWithNoData(TestMixins.SetWithNoDataMixin,
                              OptionalParameterTestFixture):
   """Set LOCK_STATE without no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE'
+
 
 class SetLockState(OptionalParameterTestFixture):
   """Set LOCK_STATE."""
@@ -4847,7 +5018,7 @@ class SetLockState(OptionalParameterTestFixture):
 
     self.pin = self.Property('pin_code')
     if self.pin is None:
-      # try setting to a static value, we make old and new the same just on the
+      # Try setting to a static value, we make old and new the same just on the
       # off chance this is actually the pin
       # http://www.datagenetics.com/blog/september32012/
       self.AddIfSetSupported([
@@ -4861,7 +5032,8 @@ class SetLockState(OptionalParameterTestFixture):
         self.AckSetResult(action=self.VerifySet),
         self.NackSetResult(
           RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-          advisory='SET for %s returned unsupported command class' % self.PID),
+          advisory='SET for %s returned unsupported command class' %
+                   self.pid.name),
       ])
       self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.pin, self.lock_state])
 
@@ -4870,8 +5042,9 @@ class SetLockState(OptionalParameterTestFixture):
         self.AckGetResult(field_values={'current_lock_state': self.lock_state}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
+
 # LOCK_STATE_DESCRIPTION
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetLockStateDescription(TestMixins.GetSettingDescriptionsRangeMixin,
                               OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION for all known states."""
@@ -4881,22 +5054,24 @@ class GetLockStateDescription(TestMixins.GetSettingDescriptionsRangeMixin,
   EXPECTED_FIELDS = ['lock_state']
   DESCRIPTION_FIELD = 'lock_state_description'
 
+
 class GetLockStateDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                         OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION with no lock state specified."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE_DESCRIPTION'
+
 
 class GetLockStateDescriptionWithExtraData(TestMixins.GetWithDataMixin,
                                            OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE_DESCRIPTION'
+
 
 class GetZeroLockStateDescription(TestMixins.GetZeroUInt8Mixin,
                                   OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION for lock state 0."""
   PID = 'LOCK_STATE_DESCRIPTION'
+
 
 class GetOutOfRangeLockStateDescription(TestMixins.GetOutOfRangeByteMixin,
                                         OptionalParameterTestFixture):
@@ -4905,50 +5080,51 @@ class GetOutOfRangeLockStateDescription(TestMixins.GetOutOfRangeByteMixin,
   REQUIRES = ['number_of_lock_states']
   LABEL = 'lock states'
 
+
 class SetLockStateDescription(TestMixins.UnsupportedSetMixin,
-                              ResponderTestFixture):
+                              OptionalParameterTestFixture):
   """Set the LOCK_STATE_DESCRIPTION."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE_DESCRIPTION'
+
 
 class AllSubDevicesGetLockStateDescription(TestMixins.AllSubDevicesGetMixin,
                                            OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LOCK_STATE_DESCRIPTION'
   DATA = [1]
 
+
 # LOCK_PIN
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetLockPin(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get LOCK_PIN."""
   CATEGORY = TestCategory.CONFIGURATION
   PID = 'LOCK_PIN'
   EXPECTED_FIELDS = ['pin_code']
   PROVIDES = ['pin_code']
-  # Some responders may not let you GET the pin. 
+  # Some responders may not let you GET the pin.
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
+
 
 class GetLockPinWithData(TestMixins.GetWithDataMixin,
                          OptionalParameterTestFixture):
   """Get LOCK_PIN with data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_PIN'
-  DATA = 'foo'
-  # Some responders may not let you GET the pin. 
+  # Some responders may not let you GET the pin.
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
+
 
 class AllSubDevicesGetLockPin(TestMixins.AllSubDevicesGetMixin,
                               OptionalParameterTestFixture):
   """Get LOCK_PIN addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'LOCK_PIN'
+
 
 class SetLockPinWithNoData(TestMixins.SetWithNoDataMixin,
                            OptionalParameterTestFixture):
   """Set LOCK_PIN with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_PIN'
+
 
 class SetLockPin(OptionalParameterTestFixture):
   """Set LOCK_PIN."""
@@ -4959,7 +5135,7 @@ class SetLockPin(OptionalParameterTestFixture):
   def Test(self):
     self.pin = self.Property('pin_code')
     if self.pin is None:
-      # try setting to a static value, we make old and new the same just on the
+      # Try setting to a static value, we make old and new the same just on the
       # off chance this is actually the pin
       # http://www.datagenetics.com/blog/september32012/
       self.AddIfSetSupported([
@@ -4973,7 +5149,8 @@ class SetLockPin(OptionalParameterTestFixture):
         self.AckSetResult(action=self.VerifySet),
         self.NackSetResult(
           RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-          advisory='SET for %s returned unsupported command class' % self.PID),
+          advisory='SET for %s returned unsupported command class' %
+                   self.pid.name),
       ])
       self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.pin, self.pin])
 
@@ -4983,6 +5160,7 @@ class SetLockPin(OptionalParameterTestFixture):
       self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
     ])
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
 
 class SetInvalidLockPin(OptionalParameterTestFixture):
   """Set LOCK_PIN with the wrong pin code."""
@@ -5000,6 +5178,7 @@ class SetInvalidLockPin(OptionalParameterTestFixture):
     bad_pin = (self.pin + 1) % 10000
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendSet(ROOT_DEVICE, self.pid, [0, bad_pin])
+
 
 class SetOutOfRangeLockPin(OptionalParameterTestFixture):
   """Set LOCK_PIN with an out-of-range pin code."""
@@ -5020,8 +5199,9 @@ class SetOutOfRangeLockPin(OptionalParameterTestFixture):
     data = struct.pack('!HH', 10001, self.pin)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
+
 # BURN_IN
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetBurnIn(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET BURN_IN."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -5029,11 +5209,12 @@ class GetBurnIn(TestMixins.GetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELDS = ['hours_remaining']
   PROVIDES = ['burn_in_hours']
 
+
 class GetBurnInWithData(TestMixins.GetWithDataMixin,
                         OptionalParameterTestFixture):
   """Get BURN_IN with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BURN_IN'
+
 
 class SetBurnIn(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
   """Set BURN_IN."""
@@ -5066,17 +5247,17 @@ class SetBurnIn(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
 class SetBurnInWithNoData(TestMixins.SetWithNoDataMixin,
                           OptionalParameterTestFixture):
   """Set BURN_IN with no param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BURN_IN'
+
 
 class AllSubDevicesGetBurnIn(TestMixins.AllSubDevicesGetMixin,
                              OptionalParameterTestFixture):
   """Get BURN_IN addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'BURN_IN'
 
+
 # DIMMER_INFO
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDimmerInfo(OptionalParameterTestFixture):
   """GET dimmer info."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5138,22 +5319,23 @@ class GetDimmerInfo(OptionalParameterTestFixture):
 class GetDimmerInfoWithData(TestMixins.GetWithDataMixin,
                             OptionalParameterTestFixture):
   """Get DIMMER_INFO with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DIMMER_INFO'
 
-class SetDimmerInfo(TestMixins.UnsupportedSetMixin, ResponderTestFixture):
+
+class SetDimmerInfo(TestMixins.UnsupportedSetMixin,
+                    OptionalParameterTestFixture):
   """Set DIMMER_INFO."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DIMMER_INFO'
+
 
 class AllSubDevicesGetDimmerInfo(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Get DIMMER_INFO addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DIMMER_INFO'
 
+
 # MINIMUM_LEVEL
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetMinimumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get MINIMUM_LEVEL."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5201,14 +5383,14 @@ class GetMinimumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
 class GetMinimumLevelWithData(TestMixins.GetWithDataMixin,
                               OptionalParameterTestFixture):
   """Get MINIMUM_LEVEL with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MINIMUM_LEVEL'
+
 
 class AllSubDevicesGetMinimumLevel(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Get MINIMUM_LEVEL addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MINIMUM_LEVEL'
+
 
 class SetMinimumLevel(OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL without changing the settings."""
@@ -5236,6 +5418,7 @@ class SetMinimumLevel(OptionalParameterTestFixture):
   def VerifyResult(self, response, fields):
     self.SetProperty('set_minimum_level_supported', response.WasAcked())
 
+
 class SetLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
                                     OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to the smallest value from DIMMER_INFO."""
@@ -5244,6 +5427,7 @@ class SetLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
   def MinLevelIncreasing(self):
     return self.Property('minimum_level_lower')
 
+
 class SetUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
                                     OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to the largest value from DIMMER_INFO."""
@@ -5251,6 +5435,7 @@ class SetUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
 
   def MinLevelIncreasing(self):
     return self.Property('minimum_level_upper')
+
 
 class SetOutOfRangeLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
                                               OptionalParameterTestFixture):
@@ -5269,6 +5454,7 @@ class SetOutOfRangeLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
 
   def MinLevelIncreasing(self):
     return self.lower - 1
+
 
 class SetOutOfRangeUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
                                               OptionalParameterTestFixture):
@@ -5290,7 +5476,7 @@ class SetOutOfRangeUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
 
 
 # MAXIMUM_LEVEL
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetMaximumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get MAXIMUM_LEVEL."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5298,11 +5484,12 @@ class GetMaximumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
   PROVIDES = ['maximum_level']
   EXPECTED_FIELDS = ['maximum_level']
 
+
 class GetMaximumLevelWithData(TestMixins.GetWithDataMixin,
                               OptionalParameterTestFixture):
   """Get MAXIMUM_LEVEL with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MAXIMUM_LEVEL'
+
 
 class SetMaximumLevel(OptionalParameterTestFixture):
   """Set MAXIMUM_LEVEL without changing the settings."""
@@ -5324,6 +5511,7 @@ class SetMaximumLevel(OptionalParameterTestFixture):
 
   def VerifyResult(self, response, fields):
     self.SetProperty('set_maximum_level_supported', response.WasAcked())
+
 
 class SetLowerMaximumLevel(TestMixins.SetMaximumLevelMixin,
                            OptionalParameterTestFixture):
@@ -5349,6 +5537,7 @@ class SetLowerMaximumLevel(TestMixins.SetMaximumLevelMixin,
         field_values={'maximum_level': self.value}))
     self.SendGet(ROOT_DEVICE, self.pid)
 
+
 class SetUpperMaximumLevel(TestMixins.SetMaximumLevelMixin,
                            OptionalParameterTestFixture):
   """Set MAXIMUM_LEVEL to the largest value from DIMMER_INFO."""
@@ -5372,6 +5561,7 @@ class SetUpperMaximumLevel(TestMixins.SetMaximumLevelMixin,
     self.AddIfGetSupported(self.AckGetResult(
         field_values={'maximum_level': self.value}))
     self.SendGet(ROOT_DEVICE, self.pid)
+
 
 class SetLowerOutOfRangeMaximumLevel(OptionalParameterTestFixture):
   """Set MAXIMUM_LEVEL a value smaller than the minimum."""
@@ -5398,6 +5588,7 @@ class SetLowerOutOfRangeMaximumLevel(OptionalParameterTestFixture):
 
     self.SendSet(ROOT_DEVICE, self.pid, [self.value])
 
+
 class SetUpperOutOfRangeMaximumLevel(OptionalParameterTestFixture):
   """Set MAXIMUM_LEVEL a value larger than the maximum."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5423,14 +5614,15 @@ class SetUpperOutOfRangeMaximumLevel(OptionalParameterTestFixture):
 
     self.SendSet(ROOT_DEVICE, self.pid, [self.value])
 
+
 class AllSubDevicesGetMaximumLevel(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Get MAXIMUM_LEVEL addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MAXIMUM_LEVEL'
 
+
 # CURVE
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetCurve(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get CURVE."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5468,11 +5660,12 @@ class GetCurve(TestMixins.GetMixin, OptionalParameterTestFixture):
             'match the number from CURVE (%d)' %
             (expected_curves, fields['number_curves']))
 
+
 class GetCurveWithData(TestMixins.GetWithDataMixin,
                        OptionalParameterTestFixture):
   """Get CURVE with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE'
+
 
 class SetCurve(OptionalParameterTestFixture):
   """Set CURVE."""
@@ -5486,14 +5679,14 @@ class SetCurve(OptionalParameterTestFixture):
       self.curves = [i + 1 for i in xrange(curves)]
       self._SetCurve()
     else:
-      # check we get a NR_UNKNOWN_PID
+      # Check we get a NR_UNKNOWN_PID
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
-      self.curve = 1  # can use anything here really
+      self.curve = 1  # Can use anything here really
       self.SendSet(ROOT_DEVICE, self.pid, [1])
 
   def _SetCurve(self):
     if not self.curves:
-      # end of the list, we're done
+      # End of the list, we're done
       self.Stop()
       return
 
@@ -5518,10 +5711,12 @@ class SetCurve(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_curve')])
     self._wrapper.Run()
 
+
 class SetZeroCurve(TestMixins.SetZeroUInt8Mixin,
                    OptionalParameterTestFixture):
   """Set CURVE to 0."""
   PID = 'CURVE'
+
 
 class SetOutOfRangeCurve(TestMixins.SetOutOfRangeByteMixin,
                          OptionalParameterTestFixture):
@@ -5530,20 +5725,21 @@ class SetOutOfRangeCurve(TestMixins.SetOutOfRangeByteMixin,
   REQUIRES = ['number_curves']
   LABEL = 'curves'
 
+
 class SetCurveWithNoData(TestMixins.SetWithNoDataMixin,
                          OptionalParameterTestFixture):
   """Set CURVE without any data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE'
+
 
 class AllSubDevicesGetCurve(TestMixins.AllSubDevicesGetMixin,
                             OptionalParameterTestFixture):
   """Get CURVE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'CURVE'
 
+
 # CURVE_DESCRIPTION
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetCurveDescription(TestMixins.GetSettingDescriptionsRangeMixin,
                           OptionalParameterTestFixture):
   """Get the CURVE_DESCRIPTION for all known curves."""
@@ -5553,22 +5749,24 @@ class GetCurveDescription(TestMixins.GetSettingDescriptionsRangeMixin,
   EXPECTED_FIELDS = ['curve_number']
   DESCRIPTION_FIELD = 'curve_description'
 
+
 class GetCurveDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                     OptionalParameterTestFixture):
   """Get CURVE_DESCRIPTION with no curve number specified."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
+
 
 class GetCurveDescriptionWithExtraData(TestMixins.GetWithDataMixin,
                                        OptionalParameterTestFixture):
   """Get CURVE_DESCRIPTION with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
+
 
 class GetZeroCurveDescription(TestMixins.GetZeroUInt8Mixin,
                               OptionalParameterTestFixture):
   """Get CURVE_DESCRIPTION for curve 0."""
   PID = 'CURVE_DESCRIPTION'
+
 
 class GetOutOfRangeCurveDescription(TestMixins.GetOutOfRangeByteMixin,
                                     OptionalParameterTestFixture):
@@ -5577,21 +5775,22 @@ class GetOutOfRangeCurveDescription(TestMixins.GetOutOfRangeByteMixin,
   REQUIRES = ['number_curves']
   LABEL = 'curves'
 
+
 class SetCurveDescription(TestMixins.UnsupportedSetMixin,
-                          ResponderTestFixture):
+                          OptionalParameterTestFixture):
   """Set the CURVE_DESCRIPTION."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
+
 
 class AllSubDevicesGetCurveDescription(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Get CURVE_DESCRIPTION addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'CURVE_DESCRIPTION'
   DATA = [1]
 
+
 # OUTPUT_RESPONSE_TIME
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetOutputResponseTime(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5622,11 +5821,12 @@ class GetOutputResponseTime(TestMixins.GetMixin, OptionalParameterTestFixture):
            fields['number_response_options']))
       return
 
+
 class GetOutputResponseTimeWithData(TestMixins.GetWithDataMixin,
                                     OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME'
+
 
 class SetOutputResponseTime(OptionalParameterTestFixture):
   """Set OUTPUT_RESPONSE_TIME."""
@@ -5640,14 +5840,14 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
       self.output_response_times = [i + 1 for i in xrange(times)]
       self._SetOutputResponseTime()
     else:
-      # check we get a NR_UNKNOWN_PID
+      # Check we get a NR_UNKNOWN_PID
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
-      self.current_response_time = 1  # can use anything here really
+      self.current_response_time = 1  # Can use anything here really
       self.SendSet(ROOT_DEVICE, self.pid, [1])
 
   def _SetOutputResponseTime(self):
     if not self.output_response_times:
-      # end of the list, we're done
+      # End of the list, we're done
       self.Stop()
       return
 
@@ -5669,13 +5869,16 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
     if not self.PidSupported() or not self.Property('current_response_time'):
       return
 
-    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_response_time')])
+    self.SendSet(ROOT_DEVICE, self.pid,
+                 [self.Property('current_response_time')])
     self._wrapper.Run()
+
 
 class SetZeroOutputResponseTime(TestMixins.SetZeroUInt8Mixin,
                                 OptionalParameterTestFixture):
   """Set OUTPUT_RESPONSE_TIME to 0."""
   PID = 'OUTPUT_RESPONSE_TIME'
+
 
 class SetOutOfRangeOutputResponseTime(TestMixins.SetOutOfRangeByteMixin,
                                       OptionalParameterTestFixture):
@@ -5684,23 +5887,24 @@ class SetOutOfRangeOutputResponseTime(TestMixins.SetOutOfRangeByteMixin,
   REQUIRES = ['number_response_options']
   LABEL = 'output response times'
 
+
 class SetOutputResponseTimeWithNoData(TestMixins.SetWithNoDataMixin,
                                       OptionalParameterTestFixture):
   """Set OUTPUT_RESPONSE_TIME without any data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME'
+
 
 class AllSubDevicesGetOutputResponseTime(TestMixins.AllSubDevicesGetMixin,
                                          OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'OUTPUT_RESPONSE_TIME'
 
+
 # OUTPUT_RESPONSE_TIME_DESCRIPTION
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetOutputResponseTimeDescription(
-    TestMixins.GetSettingDescriptionsRangeMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetSettingDescriptionsRangeMixin,
+        OptionalParameterTestFixture):
   """Get the OUTPUT_RESPONSE_TIME_DESCRIPTION for all response times."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
@@ -5708,48 +5912,51 @@ class GetOutputResponseTimeDescription(
   EXPECTED_FIELDS = ['response_time']
   DESCRIPTION_FIELD = 'response_time_description'
 
+
 class GetOutputResponseTimeDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                                  OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION with no response time number."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
 
+
 class GetOutputResponseTimeDescriptionWithExtraData(
-    TestMixins.GetWithDataMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetWithDataMixin,
+        OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
+
 
 class GetZeroOutputResponseTimeDescription(TestMixins.GetZeroUInt8Mixin,
                                            OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for response_time 0."""
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
 
+
 class GetOutOfRangeOutputResponseTimeDescription(
-    TestMixins.GetOutOfRangeByteMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetOutOfRangeByteMixin,
+        OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for an out-of-range response time."""
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
   REQUIRES = ['number_response_options']
-  LABEL = 'response times'
+  LABEL = 'output response times'
+
 
 class SetOutputResponseTimeDescription(TestMixins.UnsupportedSetMixin,
-                                       ResponderTestFixture):
+                                       OptionalParameterTestFixture):
   """SET OUTPUT_RESPONSE_TIME_DESCRIPTION."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
 
+
 class AllSubDevicesGetOutputResponseTimeDescription(
-    TestMixins.AllSubDevicesGetMixin,
-    OptionalParameterTestFixture):
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
   DATA = [1]
 
+
 # MODULATION_FREQUENCY
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetModulationFrequency(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -5773,18 +5980,20 @@ class GetModulationFrequency(TestMixins.GetMixin, OptionalParameterTestFixture):
       self.SetFailed('Modulation frequency must be numbered from 1')
       return
 
-    if fields['current_modulation_frequency'] > fields['number_modulation_frequencies']:
+    if (fields['current_modulation_frequency'] >
+        fields['number_modulation_frequencies']):
       self.SetFailed(
-          'Modulation frequency %d exceeded number of modulation frequencies %d' %
-          (fields['current_modulation_frequency'],
-           fields['number_modulation_frequencies']))
+          'Modulation frequency %d exceeded number of modulation frequencies %d'
+          % (fields['current_modulation_frequency'],
+             fields['number_modulation_frequencies']))
       return
+
 
 class GetModulationFrequencyWithData(TestMixins.GetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY'
+
 
 class SetModulationFrequency(OptionalParameterTestFixture):
   """Set MODULATION_FREQUENCY."""
@@ -5798,14 +6007,14 @@ class SetModulationFrequency(OptionalParameterTestFixture):
       self.frequencies = [i + 1 for i in xrange(items)]
       self._SetModulationFrequency()
     else:
-      # check we get a NR_UNKNOWN_PID
+      # Check we get a NR_UNKNOWN_PID
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
-      self.frequency = 1  # can use anything here really
+      self.frequency = 1  # Can use anything here really
       self.SendSet(ROOT_DEVICE, self.pid, [1])
 
   def _SetModulationFrequency(self):
     if not self.frequencies:
-      # end of the list, we're done
+      # End of the list, we're done
       self.Stop()
       return
 
@@ -5824,16 +6033,20 @@ class SetModulationFrequency(OptionalParameterTestFixture):
     self._SetModulationFrequency()
 
   def ResetState(self):
-    if not self.PidSupported() or not self.Property('current_modulation_frequency'):
+    if (not self.PidSupported() or
+        not self.Property('current_modulation_frequency')):
       return
 
-    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_modulation_frequency')])
+    self.SendSet(ROOT_DEVICE, self.pid,
+                 [self.Property('current_modulation_frequency')])
     self._wrapper.Run()
+
 
 class SetZeroModulationFrequency(TestMixins.SetZeroUInt8Mixin,
                                  OptionalParameterTestFixture):
   """Set MODULATION_FREQUENCY with a frequency setting of 0."""
   PID = 'MODULATION_FREQUENCY'
+
 
 class SetOutOfRangeModulationFrequency(TestMixins.SetOutOfRangeByteMixin,
                                        OptionalParameterTestFixture):
@@ -5842,23 +6055,24 @@ class SetOutOfRangeModulationFrequency(TestMixins.SetOutOfRangeByteMixin,
   REQUIRES = ['number_modulation_frequencies']
   LABEL = 'modulation frequencies'
 
+
 class SetModulationFrequencyWithNoData(TestMixins.SetWithNoDataMixin,
                                        OptionalParameterTestFixture):
   """Set MODULATION_FREQUENCY without any data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY'
+
 
 class AllSubDevicesGetModulationFrequency(TestMixins.AllSubDevicesGetMixin,
                                           OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MODULATION_FREQUENCY'
 
+
 # MODULATION_FREQUENCY_DESCRIPTION
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetModulationFrequencyDescription(
-    TestMixins.GetSettingDescriptionsRangeMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetSettingDescriptionsRangeMixin,
+        OptionalParameterTestFixture):
   """Get the MODULATION_FREQUENCY_DESCRIPTION for all frequencies."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
@@ -5866,53 +6080,57 @@ class GetModulationFrequencyDescription(
   EXPECTED_FIELDS = ['modulation_frequency']
   DESCRIPTION_FIELD = 'modulation_frequency_description'
 
+
 class GetModulationFrequencyDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                                   OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION with no frequency number."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
 
+
 class GetModulationFrequencyDescriptionWithExtraData(
-    TestMixins.GetWithDataMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetWithDataMixin,
+        OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
+
 
 class GetZeroModulationFrequencyDescription(TestMixins.GetZeroUInt8Mixin,
                                             OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION for frequency 0."""
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
 
+
 class GetOutOfRangeModulationFrequencyDescription(
-    TestMixins.GetOutOfRangeByteMixin,
-    OptionalParameterTestFixture):
+        TestMixins.GetOutOfRangeByteMixin,
+        OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION for an out-of-range frequency."""
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
   REQUIRES = ['number_modulation_frequencies']
   LABEL = 'modulation frequencies'
 
+
 class SetModulationFrequencyDescription(TestMixins.UnsupportedSetMixin,
-                                        ResponderTestFixture):
+                                        OptionalParameterTestFixture):
   """SET MODULATION_FREQUENCY_DESCRIPTION."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
 
+
 class AllSubDevicesGetModulationFrequencyDescription(
-    TestMixins.AllSubDevicesGetMixin,
-    OptionalParameterTestFixture):
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
   DATA = [1]
 
+
 # PRESET_INFO
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get PRESET_INFO."""
   CATEGORY = TestCategory.CONTROL
   PID = 'PRESET_INFO'
   PROVIDES = ['preset_info', 'max_scene_number']
+  REQUIRES = ['supported_parameters']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -5954,7 +6172,7 @@ class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
     self.SetProperty('max_scene_number', fields['max_scene_number'])
 
   def CrossCheckPidSupportIsZero(self, pid_name, fields, key):
-    if not (self.IsSupported(pid_name) or fields[key] == False):
+    if not (self.IsSupported(pid_name) or fields[key] is False):
       self.AddWarning('%s not supported, but %s in PRESET_INFO is non-0' %
                       (pid_name, key))
 
@@ -5978,27 +6196,33 @@ class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
       self.AddAdvisory('%s (%d) > %s (%d)'
                        % (min_key, fields[min_key], max_key, fields[max_key]))
 
+
 class GetPresetInfoWithData(TestMixins.GetWithDataMixin,
                             OptionalParameterTestFixture):
   """Get PRESET_INFO with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_INFO'
+
 
 class SetPresetInfo(TestMixins.UnsupportedSetMixin,
                     OptionalParameterTestFixture):
   """Set PRESET_INFO."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_INFO'
+
+
+class SetPresetInfoWithData(TestMixins.UnsupportedSetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """Attempt to SET PRESET_INFO with data."""
+  PID = 'PRESET_INFO'
+
 
 class AllSubDevicesGetPresetInfo(TestMixins.AllSubDevicesGetMixin,
                                  OptionalParameterTestFixture):
   """Get PRESET_INFO addressed 0to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_INFO'
 
-# PRESET_STATUS
-#------------------------------------------------------------------------------
 
+# PRESET_STATUS
+# -----------------------------------------------------------------------------
 class GetPresetStatusPresetOff(OptionalParameterTestFixture):
   """Get the PRESET_STATUS for PRESET_PLAYBACK_OFF."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -6008,6 +6232,7 @@ class GetPresetStatusPresetOff(OptionalParameterTestFixture):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     data = struct.pack('!H', 0)
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
+
 
 class GetPresetStatusPresetScene(OptionalParameterTestFixture):
   """Get the PRESET_STATUS for PRESET_PLAYBACK_SCENE."""
@@ -6019,6 +6244,7 @@ class GetPresetStatusPresetScene(OptionalParameterTestFixture):
     data = struct.pack('!H', 0xffff)
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
+
 class GetOutOfRangePresetStatus(OptionalParameterTestFixture):
   """Get the PRESET_STATUS for max_scene + 1."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -6027,12 +6253,16 @@ class GetOutOfRangePresetStatus(OptionalParameterTestFixture):
 
   def Test(self):
     max_scene = self.Property('max_scene_number')
-    if max_scene is None or max_scene == 0xfffe:
+    if max_scene is None:
+      # Set a default value, PID likely isn't supported anyway
+      max_scene = 0x0000
+    elif max_scene == 0xfffe:
       self.SetNotRun('Device supports all scenes')
       return
 
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendGet(ROOT_DEVICE, self.pid, [max_scene + 1])
+
 
 class GetPresetStatus(OptionalParameterTestFixture):
   """Get the PRESET_STATUS for all scenes."""
@@ -6084,7 +6314,7 @@ class GetPresetStatus(OptionalParameterTestFixture):
       self.Stop()
 
     if fields['programmed'] == self.NOT_PROGRAMMED:
-      # assume that NOT_PROGRAMMED means that it's writable.
+      # Assume that NOT_PROGRAMMED means that it's writable.
       self.scene_writable_states[self.index] = True
       self.CheckFieldIsZero(fields, 'down_fade_time')
       self.CheckFieldIsZero(fields, 'up_fade_time')
@@ -6120,53 +6350,50 @@ class GetPresetStatus(OptionalParameterTestFixture):
 class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,
                                 OptionalParameterTestFixture):
   """Get the PRESET_STATUS with no preset number specified."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_STATUS'
+
 
 class SetPresetStatusWithNoData(TestMixins.SetWithNoDataMixin,
                                 OptionalParameterTestFixture):
   """Set PRESET_STATUS without any data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_STATUS'
+
 
 class SetPresetStatusPresetOff(TestMixins.SetPresetStatusMixin,
                                OptionalParameterTestFixture):
   """Set the PRESET_STATUS for PRESET_PLAYBACK_OFF."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PRESET_STATUS'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = self.BuildPresetStatus(0)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+  def PresetStatusSceneNumber(self):
+    return 0
+
 
 class SetPresetStatusPresetScene(TestMixins.SetPresetStatusMixin,
                                  OptionalParameterTestFixture):
   """Set the PRESET_STATUS for PRESET_PLAYBACK_SCENE."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PRESET_STATUS'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = self.BuildPresetStatus(0xffff)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+  def PresetStatusSceneNumber(self):
+    return 0xffff
+
 
 class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
                                 OptionalParameterTestFixture):
   """Set the PRESET_STATUS for max_scene + 1."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'PRESET_STATUS'
-  REQUIRES = ['max_scene_number', 'preset_info']
+  REQUIRES = ['max_scene_number'] + TestMixins.SetPresetStatusMixin.REQUIRES
 
-  def Test(self):
+  def PresetStatusSceneNumber(self):
     max_scene = self.Property('max_scene_number')
-    if max_scene is None or max_scene == 0xfffe:
+    if max_scene is None:
+      # Set a default value, PID likely isn't supported anyway
+      max_scene = 0x0000
+    elif max_scene == 0xfffe:
       self.SetNotRun('Device supports all scenes')
-      return
+      return None
 
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = self.BuildPresetStatus(max_scene + 1)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+    return (max_scene + 1)
+
 
 class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
   """Attempt to clear a read only preset."""
@@ -6194,7 +6421,7 @@ class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
       fade_time = preset_info['min_preset_fade_time']
       wait_time = preset_info['min_preset_wait_time']
 
-    # don't use AddIfSetSupported here, because we don't want to log an
+    # Don't use AddIfSetSupported here, because we don't want to log an
     # advisory for NR_WRITE_PROTECT
     if self.PidSupported():
       results = self.NackSetResult(RDMNack.NR_WRITE_PROTECT)
@@ -6204,6 +6431,7 @@ class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
 
     self.SendSet(ROOT_DEVICE, self.pid,
                  [self.scene, fade_time, fade_time, wait_time, True])
+
 
 class SetPresetStatus(OptionalParameterTestFixture):
   """Set the PRESET_STATUS."""
@@ -6247,6 +6475,7 @@ class SetPresetStatus(OptionalParameterTestFixture):
     }))
     self.SendGet(ROOT_DEVICE, self.pid, [self.scene])
 
+
 class ClearPresetStatus(OptionalParameterTestFixture):
   """Set the PRESET_STATUS with clear preset = 1"""
   CATEGORY = TestCategory.CONTROL
@@ -6267,7 +6496,7 @@ class ClearPresetStatus(OptionalParameterTestFixture):
       return
 
     self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
-    # we use made up values here to check that the device doesn't use them
+    # We use made up values here to check that the device doesn't use them
     self.SendSet(ROOT_DEVICE, self.pid, [self.scene, 10, 10, 20, True])
 
   def VerifySet(self):
@@ -6280,15 +6509,16 @@ class ClearPresetStatus(OptionalParameterTestFixture):
     }))
     self.SendGet(ROOT_DEVICE, self.pid, [self.scene])
 
+
 class AllSubDevicesGetPresetStatus(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Get PRESET_STATUS addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_STATUS'
   DATA = [1]
 
+
 # PRESET_MERGEMODE
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetPresetMergeMode(TestMixins.GetMixin,
                          OptionalParameterTestFixture):
   """Get PRESET_MERGEMODE."""
@@ -6307,11 +6537,12 @@ class GetPresetMergeMode(TestMixins.GetMixin,
 
     self.SetProperty('preset_mergemode', fields['merge_mode'])
 
+
 class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """Get PRESET_MERGEMODE with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_MERGEMODE'
+
 
 class SetPresetMergeMode(OptionalParameterTestFixture):
   """Set PRESET_MERGEMODE."""
@@ -6330,7 +6561,8 @@ class SetPresetMergeMode(OptionalParameterTestFixture):
       self.AckSetResult(action=self.VerifySet),
       self.NackSetResult(
         RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-        advisory='SET for %s returned unsupported command class' % self.PID),
+        advisory='SET for %s returned unsupported command class' %
+                 self.pid.name),
     ])
     self.SendSet(ROOT_DEVICE, self.pid, [self.value])
 
@@ -6343,6 +6575,7 @@ class SetPresetMergeMode(OptionalParameterTestFixture):
     if self.in_set:
       self.SetProperty(self.PROVIDES[0], response.WasAcked())
       self.in_set = False
+
 
 class SetAllPresetMergeModes(OptionalParameterTestFixture):
   """Set PRESET_MERGEMODE to each of the defined values."""
@@ -6386,20 +6619,21 @@ class SetAllPresetMergeModes(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.old_value])
     self._wrapper.Run()
 
+
 class SetPresetMergeModeWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set PRESET_MERGEMODE without any data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_MERGEMODE'
+
 
 class AllSubDevicesGetPresetMergeMode(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Get PRESET_MERGEMODE addressed to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_MERGEMODE'
 
+
 # LIST_INTERFACES
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetListInterfaces(TestMixins.GetMixin,
                         OptionalParameterTestFixture):
   """Get LIST_INTERFACES."""
@@ -6435,20 +6669,21 @@ class GetListInterfaces(TestMixins.GetMixin,
 
     self.SetProperty(self.PROVIDES[0], interfaces)
 
+
 class GetListInterfacesWithData(TestMixins.GetWithDataMixin,
                                 OptionalParameterTestFixture):
   """Get LIST_INTERFACES with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LIST_INTERFACES'
+
 
 class SetListInterfaces(TestMixins.UnsupportedSetMixin,
                         OptionalParameterTestFixture):
   """Attempt to SET list interfaces."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LIST_INTERFACES'
 
+
 # DNS_HOSTNAME
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDNSHostname(TestMixins.GetStringMixin,
                      OptionalParameterTestFixture):
   """GET the DNS hostname."""
@@ -6459,22 +6694,24 @@ class GetDNSHostname(TestMixins.GetStringMixin,
   MIN_LENGTH = RDM_MIN_HOSTNAME_LENGTH
   MAX_LENGTH = RDM_MAX_HOSTNAME_LENGTH
 
+
 class GetDNSHostnameWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """Get DNS hostname with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DNS_HOSTNAME'
 
+
 # TODO(Peter): Need to test set
+
 
 class AllSubDevicesGetDNSHostname(TestMixins.AllSubDevicesGetMixin,
                                   OptionalParameterTestFixture):
   """Send a Get DNS_HOSTNAME to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DNS_HOSTNAME'
 
+
 # DNS_DOMAIN_NAME
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetDNSDomainName(TestMixins.GetStringMixin,
                        OptionalParameterTestFixture):
   """GET the DNS domain name."""
@@ -6484,22 +6721,24 @@ class GetDNSDomainName(TestMixins.GetStringMixin,
   ALLOWED_NACKS = [RDMNack.NR_HARDWARE_FAULT]
   MAX_LENGTH = RDM_MAX_DOMAIN_NAME_LENGTH
 
+
 class GetDNSDomainNameWithData(TestMixins.GetWithDataMixin,
                                OptionalParameterTestFixture):
   """Get DNS domain name with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DNS_DOMAIN_NAME'
 
+
 # TODO(Peter): Need to test set
+
 
 class AllSubDevicesGetDNSDomainName(TestMixins.AllSubDevicesGetMixin,
                                     OptionalParameterTestFixture):
   """Send a Get DNS_DOMAIN_NAME to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DNS_DOMAIN_NAME'
 
+
 # IPV4_DEFAULT_ROUTE
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetIPv4DefaultRoute(TestMixins.GetMixin,
                           OptionalParameterTestFixture):
   """GET the IPv4 default route."""
@@ -6508,35 +6747,34 @@ class GetIPv4DefaultRoute(TestMixins.GetMixin,
   PID = 'IPV4_DEFAULT_ROUTE'
   EXPECTED_FIELDS = ['ipv4_address', 'interface_identifier']
 
+
 class GetIPv4DefaultRouteWithData(TestMixins.GetWithDataMixin,
                                   OptionalParameterTestFixture):
   """Get IPv4 default route with param data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IPV4_DEFAULT_ROUTE'
 
+
 # TODO(Peter): Need to restrict these somehow so we don't saw off the branch
-#class SetIPv4DefaultRoute(TestMixins.UnsupportedSetMixin,
-#                          OptionalParameterTestFixture):
-#  """Attempt to SET the IPv4 default route with no data."""
-#  CATEGORY = TestCategory.ERROR_CONDITIONS
-#  PID = 'IPV4_DEFAULT_ROUTE'
+# class SetIPv4DefaultRoute(TestMixins.UnsupportedSetMixin,
+#                           OptionalParameterTestFixture):
+#   """Attempt to SET the IPv4 default route with no data."""
+#   PID = 'IPV4_DEFAULT_ROUTE'
 #
 #
-#class SetIPv4DefaultRouteWithData(TestMixins.UnsupportedSetMixin,
-#                                  OptionalParameterTestFixture):
-#  """SET the IPv4 default route with data."""
-#  CATEGORY = TestCategory.ERROR_CONDITIONS
-#  PID = 'IPV4_DEFAULT_ROUTE'
-#  DATA = 'FOOBAR'
+# class SetIPv4DefaultRouteWithData(TestMixins.UnsupportedSetWithDataMixin,
+#                                   OptionalParameterTestFixture):
+#   """SET the IPv4 default route with data."""
+#   PID = 'IPV4_DEFAULT_ROUTE'
+
 
 class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a Get IPV4_DEFAULT_ROUTE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IPV4_DEFAULT_ROUTE'
 
+
 # Interface label
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class GetInterfaceLabels(TestMixins.GetSettingDescriptionsListMixin,
                          OptionalParameterTestFixture):
   """Get the interface labels for all defined interfaces."""
@@ -6546,48 +6784,87 @@ class GetInterfaceLabels(TestMixins.GetSettingDescriptionsListMixin,
   EXPECTED_FIELDS = ['interface_identifier']
   DESCRIPTION_FIELD = 'interface_label'
 
+
 class GetInterfaceLabelWithNoData(TestMixins.GetWithNoDataMixin,
                                   OptionalParameterTestFixture):
   """Get the interface label with no interface id specified."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'INTERFACE_LABEL'
 
 
-class GetInterfaceLabelWithTooMuchData(OptionalParameterTestFixture):
+class GetInterfaceLabelWithExtraData(TestMixins.GetWithDataMixin,
+                                     OptionalParameterTestFixture):
   """Get the interface label with more than 4 bytes of data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'INTERFACE_LABEL'
+  DATA = 'foobar'
 
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foobar')
 
 class GetZeroInterfaceLabel(TestMixins.GetZeroUInt32Mixin,
                             OptionalParameterTestFixture):
   """GET INTERFACE_LABEL for interface 0."""
   PID = 'INTERFACE_LABEL'
 
+
 class SetInterfaceLabel(TestMixins.UnsupportedSetMixin,
                         OptionalParameterTestFixture):
   """Attempt to SET the interface label with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'INTERFACE_LABEL'
 
 
-class SetInterfaceLabelWithData(TestMixins.UnsupportedSetMixin,
+class SetInterfaceLabelWithData(TestMixins.UnsupportedSetWithDataMixin,
                                 OptionalParameterTestFixture):
   """SET the interface label with data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'INTERFACE_LABEL'
-  DATA = 'FOO BAR'
+
+
+# Interface hardware address type 1
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetInterfaceHardwareAddressType1(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
+  """Send a get INTERFACE_HARDWARE_ADDRESS_TYPE1 to ALL_SUB_DEVICES."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+  DATA = [1]
+
+# class GetInterfaceHardwareAddressType1(TestMixins.,
+#                                        OptionalParameterTestFixture):
+# TODO(peter): Test get
+
+
+class GetInterfaceHardwareAddressType1WithNoData(TestMixins.GetWithNoDataMixin,
+                                                 OptionalParameterTestFixture):
+  """GET INTERFACE_HARDWARE_ADDRESS_TYPE1 with no argument given."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+
+
+class GetInterfaceHardwareAddressType1WithExtraData(
+        TestMixins.GetWithDataMixin,
+        OptionalParameterTestFixture):
+  """GET INTERFACE_HARDWARE_ADDRESS_TYPE1 with more than 4 bytes of data."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+  DATA = 'foobar'
+
+
+class GetZeroInterfaceHardwareAddressType1(TestMixins.GetZeroUInt32Mixin,
+                                           OptionalParameterTestFixture):
+  """GET INTERFACE_HARDWARE_ADDRESS_TYPE1 for interface 0."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+
+
+class SetInterfaceHardwareAddressType1(TestMixins.UnsupportedSetMixin,
+                                       OptionalParameterTestFixture):
+  """SET INTERFACE_HARDWARE_ADDRESS_TYPE1."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
 
 
 # Cross check the control fields with various other properties
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class SubDeviceControlField(TestFixture):
   """Check that the sub device control field is correct."""
   CATEGORY = TestCategory.CORE
   REQUIRES = ['mute_control_fields', 'sub_device_count']
+
+  def PidRequired(self):
+    return False
 
   def Test(self):
     sub_device_field = self.Property('mute_control_fields') & 0x02
@@ -6602,23 +6879,21 @@ class SubDeviceControlField(TestFixture):
     self.SetPassed()
 
 
-class ProxiedDevicesControlField(TestFixture):
+class ProxiedDevicesControlField(OptionalParameterTestFixture):
   """Check that the proxied devices control field is correct."""
+  PID = 'PROXIED_DEVICES'
   CATEGORY = TestCategory.CORE
-  REQUIRES = ['mute_control_fields', 'supported_parameters']
+  REQUIRES = ['mute_control_fields']
 
   def Test(self):
-    proxied_devices_pid = self.LookupPid('PROXIED_DEVICES')
-    supports_proxied_devices_pid = (
-        proxied_devices_pid.value in self.Property('supported_parameters'))
     managed_proxy_field = self.Property('mute_control_fields') & 0x01
 
-    if supports_proxied_devices_pid and managed_proxy_field == 0:
+    if self.PidSupported() and managed_proxy_field == 0:
       self.AddWarning(
           "Support for PROXIED_DEVICES declared but the managed "
           "proxy control field isn't set")
       return
-    elif not supports_proxied_devices_pid and managed_proxy_field == 1:
+    elif not self.PidSupported() and managed_proxy_field == 1:
       self.SetFailed(
           "Managed proxy control bit is set, but proxied devices isn't "
           "supported")

@@ -33,12 +33,12 @@
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/E133Header.h"
-#include "plugins/e131/e131/E133PDU.h"
-#include "plugins/e131/e131/RDMPDU.h"
-#include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/E133StatusInflator.h"
-#include "plugins/e131/e131/UDPTransport.h"
+#include "libs/acn/E133Header.h"
+#include "libs/acn/E133PDU.h"
+#include "libs/acn/RDMPDU.h"
+#include "libs/acn/RDMInflator.h"
+#include "libs/acn/E133StatusInflator.h"
+#include "libs/acn/UDPTransport.h"
 
 #include "tools/e133/E133Device.h"
 #include "tools/e133/E133Endpoint.h"
@@ -51,7 +51,7 @@ using ola::io::IOStack;
 using ola::network::HealthCheckedConnection;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::plugin::e131::RDMPDU;
+using ola::acn::RDMPDU;
 using std::auto_ptr;
 using std::string;
 using std::vector;
@@ -155,7 +155,7 @@ bool E133Device::Init() {
 
   m_udp_socket.SetOnData(
         NewCallback(&m_incoming_udp_transport,
-                    &ola::plugin::e131::IncomingUDPTransport::Receive));
+                    &ola::acn::IncomingUDPTransport::Receive));
 
   m_ss->AddReadDescriptor(&m_udp_socket);
   return true;
@@ -200,8 +200,8 @@ bool E133Device::CloseTCPConnection() {
  * Handle requests to an endpoint.
  */
 void E133Device::EndpointRequest(
-    const ola::plugin::e131::TransportHeader *transport_header,
-    const ola::plugin::e131::E133Header *e133_header,
+    const ola::acn::TransportHeader *transport_header,
+    const ola::acn::E133Header *e133_header,
     const string &raw_request) {
   IPV4SocketAddress target = transport_header->Source();
   uint16_t endpoint_id = e133_header->Endpoint();

@@ -63,6 +63,10 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
       m_spi_device_name(spi_device) {
   m_spi_device_name = ola::file::FilenameFromPathOrPath(m_spi_device_name);
 
+  ostringstream str;
+  str << SPI_DEVICE_NAME << " " << m_spi_device_name;
+  SetName(str.str());
+
   SetDefaults();
   unsigned int port_count = 0;
 
@@ -243,7 +247,7 @@ void SPIDevice::PopulateHardwareBackendOptions(
   vector<string> pins = m_preferences->GetMultipleValue(GPIOPinKey());
   vector<string>::const_iterator iter = pins.begin();
   for (; iter != pins.end(); iter++) {
-    uint8_t pin;
+    uint16_t pin;
     if (!StringToInt(*iter, &pin)) {
       OLA_WARN << "Invalid GPIO pin " << *iter;
       continue;

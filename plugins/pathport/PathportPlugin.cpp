@@ -27,6 +27,7 @@
 #include "olad/Preferences.h"
 #include "plugins/pathport/PathportDevice.h"
 #include "plugins/pathport/PathportPlugin.h"
+#include "plugins/pathport/PathportPluginDescription.h"
 
 
 namespace ola {
@@ -81,31 +82,7 @@ bool PathportPlugin::StopHook() {
  * Return the description for this plugin
  */
 string PathportPlugin::Description() const {
-  return
-"Pathway Pathport Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin creates a single device with 5 input and 5 output ports.\n"
-"\n"
-"The universe the port is patched to corresponds with the DMX channels used \n"
-"in the PathPort protocol. For example universe 0 is xDMX channels 0 - 511, \n"
-"universe 1 is xDMX channels 512 - 1023.\n"
-"\n"
-"--- Config file : ola-pathport.conf ---\n"
-"\n"
-"dscp = <int>\n"
-"Set the DSCP value for the packets. Range is 0-63.\n"
-"\n"
-"ip = [a.b.c.d|<interface_name>]\n"
-"The ip address or interface name to bind to. If not specified it will\n"
-"use the first non-loopback interface.\n"
-"\n"
-"name = ola-Pathport\n"
-"The name of the node.\n"
-"\n"
-"node-id = <int>\n"
-"The pathport id of the node.\n"
-"\n";
+  return plugin_description;
 }
 
 

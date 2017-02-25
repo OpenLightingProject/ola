@@ -14,30 +14,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * JaRuleDevice.cpp
- * A JaRule device that creates a single port.
+ * A Ja Rule device.
  * Copyright (C) 2015 Simon Newton
  */
 
 #include "plugins/usbdmx/JaRuleDevice.h"
 
+#include <memory>
+#include <set>
 #include <string>
+
+#include "libs/usb/JaRuleWidget.h"
+#include "libs/usb/JaRulePortHandle.h"
 #include "plugins/usbdmx/JaRuleOutputPort.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
+using std::set;
+using std::auto_ptr;
+
 JaRuleDevice::JaRuleDevice(ola::AbstractPlugin *owner,
-                           JaRuleWidget *widget,
-                           const std::string &device_name,
-                           const std::string &device_id)
+                           ola::usb::JaRuleWidget *widget,
+                           const std::string &device_name)
     : Device(owner, device_name),
-      m_device_id(device_id),
-      m_port(new JaRuleOutputPort(this, 0, widget)) {
+      m_widget(widget),
+      m_device_id(widget->GetUID().ToString()) {
 }
 
 bool JaRuleDevice::StartHook() {
-  AddPort(m_port.release());
+  for (uint8_t i = 0; i < m_widget->PortCount(); i++) {
+    auto_ptr<JaRuleOutputPort> port(new JaRuleOutputPort(this, i, m_widget));
+
+    if (!port->Init()) {
+      continue;
+    }
+
+    AddPort(port.release());
+  }
   return true;
 }
 }  // namespace usbdmx

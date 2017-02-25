@@ -35,7 +35,9 @@ using std::endl;
 using std::string;
 using ola::client::StreamingClient;
 
-DEFINE_s_string(dmx, d, "", "DMX512 data, e.g. '1,240,0,255'");
+DEFINE_s_string(dmx, d, "", "Comma separated DMX values to send, e.g. "
+                            "0,255,128 sets first channel to 0, second "
+                            "channel to 255 and third channel to 128.");
 DEFINE_s_uint32(universe, u, 1, "The universe to send data for");
 DEFINE_uint8(priority, ola::dmx::SOURCE_PRIORITY_DEFAULT,
              "The universe to send data for");

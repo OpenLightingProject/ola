@@ -28,19 +28,33 @@
 using ola::file::FilenameFromPath;
 using ola::file::FilenameFromPathOrDefault;
 using ola::file::FilenameFromPathOrPath;
+using ola::file::JoinPaths;
 using std::string;
 
 class UtilTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UtilTest);
+  CPPUNIT_TEST(testJoinPaths);
   CPPUNIT_TEST(testFilenameFromPath);
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testFilenameFromPath();
+  void testFilenameFromPath();
+  void testJoinPaths();
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UtilTest);
+
+void UtilTest::testJoinPaths() {
+  // Same behaviour as os.path.join()
+  OLA_ASSERT_EQ(string("/tmp/1"), JoinPaths("/tmp", "1"));
+  OLA_ASSERT_EQ(string("/tmp/1"), JoinPaths("/tmp/", "1"));
+  OLA_ASSERT_EQ(string("1"), JoinPaths("", "1"));
+  OLA_ASSERT_EQ(string("/tmp/"), JoinPaths("/tmp/", ""));
+  OLA_ASSERT_EQ(string("/tmp"), JoinPaths("/tmp", ""));
+  OLA_ASSERT_EQ(string("/foo"), JoinPaths("/tmp", "/foo"));
+  OLA_ASSERT_EQ(string(""), JoinPaths("", ""));
+}
 
 /*
  * Test the FilenameFromPath function

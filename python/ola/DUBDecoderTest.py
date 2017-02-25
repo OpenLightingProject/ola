@@ -16,12 +16,12 @@
 # DUBDecoderTest.py
 # Copyright (C) Simon Newton
 
+import unittest
+from ola.DUBDecoder import DecodeResponse
+
 """Test cases for the DUBDecoder class."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
-
-import unittest
-from ola.DUBDecoder import DecodeResponse
 
 
 class UIDTest(unittest.TestCase):
@@ -57,6 +57,7 @@ class UIDTest(unittest.TestCase):
     self.assertNotEqual(None, uid)
     self.assertEqual(0x00a1, uid.manufacturer_id)
     self.assertEqual(0x00020020, uid.device_id)
+
 
 if __name__ == '__main__':
   unittest.main()

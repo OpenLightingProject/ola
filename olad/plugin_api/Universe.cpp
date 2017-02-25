@@ -690,7 +690,7 @@ void Universe::HTPMergeSources(const vector<DmxSource> &sources) {
 /*
  * Merge all port/client sources.
  * This does a priority based merge as documented at:
- * http://opendmx.net/index.php/OLA_Merging_Algorithms
+ * https://wiki.openlighting.org/index.php/OLA_Merging_Algorithms
  * @param port the input port that changed or NULL
  * @param client the client that changed or NULL
  * @returns true if the data for this universe changed, false otherwise

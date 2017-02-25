@@ -3,7 +3,7 @@
  *
  * [TOC]
  *
- * @section sec_Overview Overview
+ * @section rpc_Overview Overview
  * A common question that comes up is "How can I communicate with olad using
  * something other than C++, Python or Java?".
  *
@@ -13,7 +13,7 @@
  * library, we'll incorporate it into the OLA codebase and maintain it going
  * forward.
 
- * @section sec_Background Background
+ * @section rpc_Background Background
  * This section provides an introduction to Remote Procedure Calls (RPC).
  * If you have used RPCs in other situations (JMI, CORBA, Thrift, etc.) you may
  * want to skip this bit.
@@ -46,9 +46,9 @@
  * Asyncronous APIs take a callback, in much the same way as the stub itself
  * does.
  *
- * @section sec_Proto Use of Protocol Buffers
+ * @section rpc_Proto Use of Protocol Buffers
  *
- * OLA uses <a href="https://code.google.com/p/protobuf/">Protocol Buffers</a>
+ * OLA uses <a href="https://github.com/google/protobuf">Protocol Buffers</a>
  * as the data serialization format. Protocol buffers allow us to wrap the
  * request and response data up into a message (similar to a C struct) and then
  * serialize the message to binary data in a platform independent way. It's
@@ -137,10 +137,10 @@
  * \image html rpc.png "The control flow from the Client to the Server"
  *
  *
- * @section sec_OLA_RPC OLA's Model
+ * @section rpc_OLA_RPC OLA's Model
  *
  * By default, olad listens on localhost:9010 . Clients open a TCP connection
- * to this ip:port and write serialized protobufs (see \ref sec_RPCLayer) to
+ * to this ip:port and write serialized protobufs (see \ref rpc_RPCLayer) to
  * the connection.
  *
  * Why TCP and not UDP? Mostly because the original developer was lazy and
@@ -167,7 +167,7 @@
  * If you don't know C++ don't worry, we're happy to help. Once you know what
  * your generated code needs to look like we can build the generator for you.
  *
- * @section sec_RPCLayer RPC Layer
+ * @section rpc_RPCLayer RPC Layer
  *
  * To make the RPC system message-agnostic we wrap the serialized request /
  * response protobufs in an outer layer protobuf. This outer layer also
@@ -230,7 +230,7 @@
  * number, the reply message, the RpcController and the callback so you can do
  * the right thing when the response arrives.
  *
- * @section sec_RPCHeader RPC Header
+ * @section rpc_RPCHeader RPC Header
  *
  * Finally, since protobufs don't contain length information, we prepend a
  * 4 byte header to each message. The first 4 bits of the header is a version
@@ -249,17 +249,18 @@
  * the RDM Responder Tests, see commit
  * a80ce0ee1e714ffa3c036b14dc30cc0141c13363.
  *
- * @section sec_OLAServices OLA Methods
+ * @section rpc_OLAServices OLA Methods
  *
  * The methods exported by olad are defined in common/protocol/Ola.proto . If
  * you compare the RPC methods to those provided by the ola::client::OlaClient
  * class (the C++ API) you'll notice they are very similar.
  *
- * @section sec_NewClient Writing a new Client
+ * @section rpc_NewClient Writing a new Client
  *
  * To write a client in a new language you'll need the following:
  *   - An implementation of Protocol Buffers for your language. Luckily there
- *     are <a href="https://code.google.com/p/protobuf/wiki/ThirdPartyAddOns">
+ *     are <a
+ *     href="https://github.com/google/protobuf/blob/master/docs/third_party.md">
  *     many implementations</a> available. It doesn't have to have a service
  *     generator (see the first point below).
  *   - A sockets library.
@@ -282,7 +283,7 @@
  * The last part is the least technically challenging, but it does require good
  * API design so that new methods and arguments can be added later.
  *
- * @section sec_SimpleExample A Very Simple Example
+ * @section rpc_SimpleExample A Very Simple Example
  *
  * A quick example in Python style pseudo code. This constructs a DmxData
  * message, sends it to the server and the extracts the Ack response.

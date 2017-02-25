@@ -15,6 +15,20 @@
 # TestMixins.py
 # Copyright (C) 2010 Simon Newton
 
+import struct
+from ExpectedResults import (AckGetResult, AckDiscoveryResult, BroadcastResult,
+                             DUBResult, TimeoutResult, UnsupportedResult)
+from ResponderTest import ResponderTestFixture
+from TestCategory import TestCategory
+from TestHelpers import ContainsUnprintable
+from ola import PidStore
+from ola.DMXConstants import DMX_UNIVERSE_SIZE
+from ola.DUBDecoder import DecodeResponse
+from ola.OlaClient import OlaClient, RDMNack
+from ola.PidStore import ROOT_DEVICE
+from ola.RDMConstants import RDM_MAX_STRING_LENGTH
+from ola.UID import UID
+
 '''Mixins used by the test definitions.
 
 This module contains classes which can be inherited from to simplify writing
@@ -23,52 +37,54 @@ test definitions.
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-import struct
-from ExpectedResults import *
-from ResponderTest import ResponderTestFixture
-from TestCategory import TestCategory
-from TestHelpers import ContainsUnprintable
-from collections import deque
-from ola import PidStore
-from ola.DMXConstants import *
-from ola.DUBDecoder import DecodeResponse
-from ola.OlaClient import RDMNack
-from ola.PidStore import ROOT_DEVICE
-from ola.RDMConstants import *
-from ola.UID import UID
 
 MAX_DMX_ADDRESS = DMX_UNIVERSE_SIZE
-
-def UnsupportedSetNacks(pid):
-  """Responders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
-  return [
-    NackSetResult(pid.value, RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-    NackSetResult(pid.value, RDMNack.NR_UNKNOWN_PID),
-  ]
 
 
 # Generic GET Mixins
 # These don't care about the format of the message.
-#------------------------------------------------------------------------------
-class UnsupportedGetMixin(object):
+# -----------------------------------------------------------------------------
+class UnsupportedGetMixin(ResponderTestFixture):
   """Check that Get fails with NR_UNSUPPORTED_COMMAND_CLASS."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddIfGetSupported(
         self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
-class GetMixin(object):
+
+class UnsupportedGetWithDataMixin(ResponderTestFixture):
+  """Check that GET with random param data fails with
+    NR_UNSUPPORTED_COMMAND_CLASS.
+  """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  DATA = 'foo'
+
+  def Test(self):
+    self.AddIfGetSupported(
+        self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
+
+class GetMixin(ResponderTestFixture):
   """GET Mixin for an optional PID. Verify EXPECTED_FIELDS is in the response.
 
     This mixin also sets one or more properties if PROVIDES is defined.  The
     target class needs to defined EXPECTED_FIELDS and optionally PROVIDES.
 
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
   """
   ALLOWED_NACKS = []
+  EXPECTED_FIELDS = None
 
   def Test(self):
+    if self.EXPECTED_FIELDS is None:
+      self.SetBroken('No EXPECTED_FIELDS given for %s' %
+                     (self.__class__.__name__))
+      return
+
     results = [self.AckGetResult(field_names=self.EXPECTED_FIELDS)]
     for nack in self.ALLOWED_NACKS:
       results.append(self.NackGetResult(nack))
@@ -79,6 +95,7 @@ class GetMixin(object):
     if response.WasAcked() and self.PROVIDES:
       for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
+
 
 class GetStringMixin(GetMixin):
   """GET Mixin for an optional string PID. Verify EXPECTED_FIELDS are in the
@@ -102,28 +119,36 @@ class GetStringMixin(GetMixin):
     if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            string_field.encode('string-escape')))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
           '%s field in %s was shorter than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(string_field), self.MIN_LENGTH))
 
     if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
       self.SetFailed(
           '%s field in %s was longer than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(string_field), self.MAX_LENGTH))
 
-class GetRequiredMixin(object):
+
+class GetRequiredMixin(ResponderTestFixture):
   """GET Mixin for a required PID. Verify EXPECTED_FIELDS is in the response.
 
     This mixin also sets a property if PROVIDES is defined.  The target class
     needs to defined EXPECTED_FIELDS and optionally PROVIDES.
   """
+  EXPECTED_FIELDS = None
+
   def Test(self):
+    if self.EXPECTED_FIELDS is None:
+      self.SetBroken('No EXPECTED_FIELDS given for %s' %
+                     (self.__class__.__name__))
+      return
+
     self.AddExpectedResults(
         self.AckGetResult(field_names=self.EXPECTED_FIELDS))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
@@ -132,6 +157,7 @@ class GetRequiredMixin(object):
     if response.WasAcked() and self.PROVIDES:
       for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
+
 
 class GetRequiredStringMixin(GetRequiredMixin):
   """GET Mixin for a required string PID. Verify EXPECTED_FIELDS is in the
@@ -156,27 +182,29 @@ class GetRequiredStringMixin(GetRequiredMixin):
     if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            string_field.encode('string-escape')))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
           '%s field in %s was shorter than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(string_field), self.MIN_LENGTH))
 
     if self.MAX_LENGTH and len(string_field) > self.MAX_LENGTH:
       self.SetFailed(
           '%s field in %s was longer than expected, was %d, expected %d' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(string_field), self.MAX_LENGTH))
 
-class GetWithDataMixin(object):
+
+class GetWithDataMixin(ResponderTestFixture):
   """GET a PID with junk param data.
 
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
   """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
   ALLOWED_NACKS = []
 
@@ -191,8 +219,10 @@ class GetWithDataMixin(object):
     self.AddIfGetSupported(results)
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
-class GetMandatoryPIDWithDataMixin(object):
+
+class GetMandatoryPIDWithDataMixin(ResponderTestFixture):
   """GET a mandatory PID with junk param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
 
   def Test(self):
@@ -205,14 +235,19 @@ class GetMandatoryPIDWithDataMixin(object):
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
-class GetWithNoDataMixin(object):
+
+class GetWithNoDataMixin(ResponderTestFixture):
   """GET with no data, expect NR_FORMAT_ERROR."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
-class AllSubDevicesGetMixin(object):
+
+class AllSubDevicesGetMixin(ResponderTestFixture):
   """Send a GET to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
   DATA = []
 
   def Test(self):
@@ -224,29 +259,61 @@ class AllSubDevicesGetMixin(object):
     self.AddExpectedResults(results)
     self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, self.DATA)
 
+
 # Generic SET Mixins
 # These don't care about the format of the message.
-#------------------------------------------------------------------------------
-class UnsupportedSetMixin(object):
+# -----------------------------------------------------------------------------
+class UnsupportedSetMixin(ResponderTestFixture):
   """Check that SET fails with NR_UNSUPPORTED_COMMAND_CLASS."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
-    self.AddExpectedResults(UnsupportedSetNacks(self.pid))
+    self.AddIfSetSupported(
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
-class SetWithDataMixin(ResponderTestFixture):
-  """SET a PID with random param data."""
+
+class UnsupportedSetWithDataMixin(ResponderTestFixture):
+  """Check that SET with random param data fails with
+    NR_UNSUPPORTED_COMMAND_CLASS.
+  """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = 'foo'
 
   def Test(self):
-    self.AddIfSetSupported([
+    self.AddIfSetSupported(
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
+
+
+class SetWithDataMixin(ResponderTestFixture):
+  """SET a PID with junk param data.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackSetResult to the list
+    of allowed results for each entry.
+  """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  DATA = 'foo'
+  ALLOWED_NACKS = []
+
+  def Test(self):
+    results = [
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckSetResult(
         warning='Set %s with data returned an ack' % self.pid.name)
-    ])
+    ]
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackSetResult(nack))
+    self.AddIfSetSupported(results)
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
-class SetWithNoDataMixin(object):
+  # TODO(simon): add a method to check this didn't change the value
+
+
+class SetWithNoDataMixin(ResponderTestFixture):
   """Attempt a set with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
@@ -255,9 +322,8 @@ class SetWithNoDataMixin(object):
 
 
 # Generic Label Mixins
-# These all work in conjunction with the IsSupportedMixin
-#------------------------------------------------------------------------------
-class SetLabelMixin(object):
+# -----------------------------------------------------------------------------
+class SetLabelMixin(ResponderTestFixture):
   """Set a PID and make sure the label is updated.
 
   If PROVIDES is non empty, the first property will be used to indicate if the
@@ -268,6 +334,9 @@ class SetLabelMixin(object):
   PROVIDES = []
 
   SET, VERIFY, RESET = xrange(3)
+
+  def OldValue(self):
+    self.SetBroken('Base OldValue method of SetLabelMixin called')
 
   def ExpectedResults(self):
     return [
@@ -300,24 +369,32 @@ class SetLabelMixin(object):
     if (len(new_label) < len(self.TEST_LABEL) and
         self.TEST_LABEL.startswith(new_label)):
       self.AddAdvisory('Label for %s was truncated to %d characters' %
-                       (self.pid, len(new_label)))
+                       (self.pid.name, len(new_label)))
     else:
       self.SetFailed('Labels didn\'t match, expected "%s", got "%s"' %
                      (self.TEST_LABEL.encode('string-escape'),
                       new_label.encode('string-escape')))
 
   def ResetState(self):
-    if not self.OldValue():
+    old_value = self.OldValue()
+    if old_value is None:
       return
     self._test_state = self.RESET
     self.AddExpectedResults(self.AckSetResult())
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.OldValue()])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [old_value])
     self._wrapper.Run()
 
 
-class NonUnicastSetLabelMixin(SetLabelMixin):
-  """Send a SET device label to a broadcast or vendorcast uid."""
+class SetNonUnicastLabelMixin(SetLabelMixin):
+  """Send a SET device label to a broadcast or vendorcast UID."""
+  def Uid(self):
+    self.SetBroken('Base method of SetNonUnicastLabelMixin called')
+
   def Test(self):
+    target_uid = self.Uid()
+    if target_uid is None:
+      return
+
     if not self.Property('set_device_label_supported'):
       self.SetNotRun('Previous set label was nacked')
       self.Stop()
@@ -325,12 +402,13 @@ class NonUnicastSetLabelMixin(SetLabelMixin):
 
     self._test_state = self.SET
     self.AddExpectedResults(BroadcastResult(action=self.VerifySet))
-    self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid,
+    self.SendDirectedSet(target_uid, PidStore.ROOT_DEVICE, self.pid,
                          [self.TEST_LABEL])
 
 
-class SetOversizedLabelMixin(object):
+class SetOversizedLabelMixin(ResponderTestFixture):
   """Send an over-sized SET label command."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   LONG_STRING = 'this is a string which is more than 32 characters'
 
   def Test(self):
@@ -358,30 +436,40 @@ class SetOversizedLabelMixin(object):
     else:
       if fields['label'] != self.LONG_STRING[0:RDM_MAX_STRING_LENGTH]:
         self.AddWarning(
-            'Setting an oversized %s set the first %d characters' % (
-            self.PID, len(fields['label'])))
+            'Setting an oversized %s set the first %d characters' %
+            (self.pid.name, len(fields['label'])))
 
 
 # Generic Set Mixins
-# These all work in conjunction with the IsSupportedMixin
-#------------------------------------------------------------------------------
-class SetMixin(object):
+# -----------------------------------------------------------------------------
+class SetMixin(ResponderTestFixture):
   """The base class for set mixins."""
+  EXPECTED_FIELDS = None
 
   def OldValue(self):
-    self.SetBroken('base method of SetMixin called')
+    self.SetBroken('Base OldValue method of SetMixin called')
 
   def NewValue(self):
-    self.SetBroken('base method of SetMixin called')
+    self.SetBroken('Base NewValue method of SetMixin called')
 
   def Test(self):
+    if self.EXPECTED_FIELDS is None:
+      self.SetBroken('No EXPECTED_FIELDS given for %s' %
+                     (self.__class__.__name__))
+      return
+
+    new_value = self.NewValue()
+    if new_value is None:
+      return
+
     self.AddIfSetSupported([
       self.AckSetResult(action=self.VerifySet),
       self.NackSetResult(
         RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
-        advisory='SET for %s returned unsupported command class' % self.PID),
+        advisory='SET for %s returned unsupported command class' %
+                 self.pid.name),
     ])
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [new_value])
 
   def VerifySet(self):
     self.AddExpectedResults(
@@ -426,6 +514,7 @@ class SetUInt8Mixin(SetMixin):
       return (value + 1) % 0xff
     return self.VALUE
 
+
 class SetUInt16Mixin(SetMixin):
   """Attempt to SET a uint16 field."""
   VALUE = True
@@ -455,10 +544,11 @@ class SetUInt32Mixin(SetMixin):
 
 
 # Start address mixins
-#------------------------------------------------------------------------------
-class SetStartAddressMixin(object):
+# -----------------------------------------------------------------------------
+class SetDMXStartAddressMixin(ResponderTestFixture):
   """Set the dmx start address."""
   SET, VERIFY, RESET = xrange(3)
+  start_address = 1
 
   def CalculateNewAddress(self, current_address, footprint):
     if footprint == MAX_DMX_ADDRESS:
@@ -495,10 +585,17 @@ class SetStartAddressMixin(object):
     self._wrapper.Run()
 
 
-class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
-  """Send a set dmx start address to a non unicast uid."""
+class SetNonUnicastDMXStartAddressMixin(SetDMXStartAddressMixin):
+  """Send a set dmx start address to a non unicast UID."""
+
+  def Uid(self):
+    self.SetBroken('Base method of SetNonUnicastDMXStartAddressMixin called')
 
   def Test(self):
+    target_uid = self.Uid()
+    if target_uid is None:
+      return
+
     footprint = self.Property('dmx_footprint')
     current_address = self.Property('dmx_address')
     if footprint == 0 or current_address == 0xffff:
@@ -507,25 +604,29 @@ class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
       return
 
     if not self.Property('set_dmx_address_supported'):
-      self.SetNotRun('Previous set start address was nacked')
+      self.SetNotRun('Previous set start address was NAcked')
       self.Stop()
       return
 
     self._test_state = self.SET
     self.start_address = self.CalculateNewAddress(current_address, footprint)
     self.AddExpectedResults(BroadcastResult(action=self.VerifySet))
-    self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid,
+    self.SendDirectedSet(target_uid, PidStore.ROOT_DEVICE, self.pid,
                          [self.start_address])
 
+
 # Identify Device Mixin
-#------------------------------------------------------------------------------
-class SetNonUnicastIdentifyMixin(object):
+# -----------------------------------------------------------------------------
+class SetNonUnicastIdentifyMixin(ResponderTestFixture):
   """Sets the identify device state.
 
   To avoid sending a broadcast identify on (which may strike all lamps in a
   large rig), we instead turn identify on and then send a broadcast off.
   """
   REQUIRES = ['identify_state']
+
+  def Uid(self):
+    self.SetBroken('Base method of SetNonUnicastIdentifyMixin called')
 
   def States(self):
     return [
@@ -558,8 +659,13 @@ class SetNonUnicastIdentifyMixin(object):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def TurnOff(self):
+    target_uid = self.Uid()
+    if target_uid is None:
+      self.Stop()
+      return
+
     self.AddExpectedResults(BroadcastResult(action=self.NextState()))
-    self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid, [False])
+    self.SendDirectedSet(target_uid, PidStore.ROOT_DEVICE, self.pid, [False])
 
   def VerifyOff(self):
     self.AddExpectedResults(
@@ -567,15 +673,16 @@ class SetNonUnicastIdentifyMixin(object):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def ResetState(self):
-    # reset back to the old value
+    # reset back to the old value, this doesn't reset any other devices
+    # affected by the broadcast identify off
     self.SendSet(PidStore.ROOT_DEVICE, self.pid,
                  [self.Property('identify_state')])
     self._wrapper.Run()
 
 
 # Sensor mixins
-#------------------------------------------------------------------------------
-class SetUndefinedSensorValues(object):
+# -----------------------------------------------------------------------------
+class SetUndefinedSensorValues(ResponderTestFixture):
   """Attempt to set sensor values for all sensors that weren't defined."""
   def Test(self):
     sensors = self.Property('sensor_definitions')
@@ -603,12 +710,15 @@ class SetUndefinedSensorValues(object):
         # SET SENSOR_VALUE may not be supported
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
                            action=self._DoAction),
-                           ])
+    ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self._missing_sensors.pop(0)])
 
+
 # Preset Status mixins
-#------------------------------------------------------------------------------
-class SetPresetStatusMixin(object):
+# -----------------------------------------------------------------------------
+class SetPresetStatusMixin(ResponderTestFixture):
+  """Set an out of range scene for PRESET_STATUS"""
+  PID = 'PRESET_STATUS'
   REQUIRES = ['preset_info']
 
   def BuildPresetStatus(self, scene):
@@ -622,15 +732,28 @@ class SetPresetStatusMixin(object):
     return struct.pack('!HHHHB', scene, int(fade_time), int(fade_time),
                        int(wait_time), 0)
 
+  def PresetStatusSceneNumber(self):
+    self.SetBroken('Base method of SetPresetStatusMixin called')
+    return
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    scene_number = self.PresetStatusSceneNumber()
+    if scene_number is None:
+      return
+
+    data = self.BuildPresetStatus(scene_number)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
 
 # Discovery Mixins
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 class DiscoveryMixin(ResponderTestFixture):
   """UnMute the device, send a DUB, confirm the UID, then mute again.
 
     This mixin requires:
       LowerBound() the lower UID to use in the DUB
-      UpperBound() the upprt UID to use in the DUB
+      UpperBound() the upper UID to use in the DUB
 
     And Optionally:
       DUBResponseCode(response_code): called when the discovery request
@@ -644,7 +767,14 @@ class DiscoveryMixin(ResponderTestFixture):
         ffff:ffffffff
   """
   PID = 'DISC_UNIQUE_BRANCH'
-  REQUIRES = ['mute_supported', 'unmute_supported']
+  # Global Mute here ensures we run after all devices have been muted
+  REQUIRES = ['mute_supported', 'unmute_supported', 'global_mute']
+
+  def LowerBound(self):
+    self.SetBroken('Base LowerBound method of DiscoveryMixin called')
+
+  def UpperBound(self):
+    self.SetBroken('Base UpperBound method of DiscoveryMixin called')
 
   def DUBResponseCode(self, response_code):
     pass
@@ -673,6 +803,11 @@ class DiscoveryMixin(ResponderTestFixture):
     self.UnMuteDevice(self.SendDUB)
 
   def SendDUB(self):
+    lower_bound = self.LowerBound()
+    upper_bound = self.UpperBound()
+    if lower_bound is None or upper_bound is None:
+      return
+
     self._muting = False
     results = [UnsupportedResult()]
     if self.ExpectResponse():
@@ -683,7 +818,7 @@ class DiscoveryMixin(ResponderTestFixture):
     self.SendDirectedDiscovery(self.Target(),
                                PidStore.ROOT_DEVICE,
                                self.pid,
-                               [self.LowerBound(), self.UpperBound()])
+                               [lower_bound, upper_bound])
 
   def VerifyResult(self, response, fields):
     if self._muting:
@@ -713,14 +848,15 @@ class DiscoveryMixin(ResponderTestFixture):
     self.SendDiscovery(PidStore.ROOT_DEVICE, mute_pid)
     self._wrapper.Run()
 
+
 # E1.37-1 Mixins
-#------------------------------------------------------------------------------
-class SetDmxFailModeMixin(object):
+# -----------------------------------------------------------------------------
+class SetDMXFailModeMixin(ResponderTestFixture):
   PID = 'DMX_FAIL_MODE'
   REQUIRES = ['dmx_fail_settings', 'preset_info', 'set_dmx_fail_mode_supported']
   CATEGORY = TestCategory.DMX_SETUP
 
-  INFINITE_TIME = 6553.5 # 0xffff * 10^-1 (multiplier)
+  INFINITE_TIME = 6553.5  # 0xffff * 10^-1 (multiplier)
 
   def ResetState(self):
     if not self.PidSupported():
@@ -735,7 +871,7 @@ class SetDmxFailModeMixin(object):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_FAIL_MODE settings, missing %s' % key)
-        return;
+        return
 
     self.SendSet(
         ROOT_DEVICE, self.pid,
@@ -743,13 +879,14 @@ class SetDmxFailModeMixin(object):
          settings['hold_time'], settings['level']])
     self._wrapper.Run()
 
-class SetDmxStartupModeMixin(object):
+
+class SetDMXStartupModeMixin(ResponderTestFixture):
   PID = 'DMX_STARTUP_MODE'
   REQUIRES = ['dmx_startup_settings', 'preset_info',
               'set_dmx_startup_mode_supported']
   CATEGORY = TestCategory.DMX_SETUP
 
-  INFINITE_TIME = 6553.5 # 0xffff * 10^-1 (multiplier)
+  INFINITE_TIME = 6553.5  # 0xffff * 10^-1 (multiplier)
 
   def ResetState(self):
     if not self.PidSupported():
@@ -764,7 +901,7 @@ class SetDmxStartupModeMixin(object):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_STARTUP_MODE settings, missing %s' % key)
-        return;
+        return
 
     self.SendSet(
         ROOT_DEVICE, self.pid,
@@ -772,7 +909,8 @@ class SetDmxStartupModeMixin(object):
          settings['hold_time'], settings['level']])
     self._wrapper.Run()
 
-class SetMaximumLevelMixin(object):
+
+class SetMaximumLevelMixin(ResponderTestFixture):
   PID = 'MAXIMUM_LEVEL'
   REQUIRES = ['maximum_level', 'set_maximum_level_supported']
   CATEGORY = TestCategory.DIMMER_SETTINGS
@@ -787,7 +925,8 @@ class SetMaximumLevelMixin(object):
       self.SendSet(ROOT_DEVICE, self.pid, [level])
       self._wrapper.Run()
 
-class SetMinimumLevelMixin(object):
+
+class SetMinimumLevelMixin(ResponderTestFixture):
   PID = 'MINIMUM_LEVEL'
   REQUIRES = ['minimum_level_settings', 'set_minimum_level_supported',
               'split_levels_supported']
@@ -831,14 +970,15 @@ class SetMinimumLevelMixin(object):
 
   def GetMinLevel(self):
     min_level_decreasing = self.MinLevelDecreasing()
-    if self.Property('split_levels_supported'):
+    if not self.Property('split_levels_supported'):
       min_level_decreasing = self.MinLevelIncreasing()
     self.AddIfGetSupported(self.AckGetResult(
         field_values={
           'minimum_level_increasing': self.MinLevelIncreasing(),
           'minimum_level_decreasing': min_level_decreasing,
-          'on_below_minimum': self.OnBelowMin(),
-    }))
+          'on_below_minimum': self.OnBelowMin()
+        }
+    ))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def ResetState(self):
@@ -852,7 +992,8 @@ class SetMinimumLevelMixin(object):
          self.settings['on_below_minimum']])
     self._wrapper.Run()
 
-class GetZeroUInt8Mixin(object):
+
+class GetZeroUInt8Mixin(ResponderTestFixture):
   """Get a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = struct.pack('!B', 0)
@@ -861,15 +1002,18 @@ class GetZeroUInt8Mixin(object):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
+
 class GetZeroUInt16Mixin(GetZeroUInt8Mixin):
   """Get a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!H', 0)
+
 
 class GetZeroUInt32Mixin(GetZeroUInt8Mixin):
   """Get a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!I', 0)
 
-class SetZeroUInt8Mixin(object):
+
+class SetZeroUInt8Mixin(ResponderTestFixture):
   """Set a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = struct.pack('!B', 0)
@@ -878,23 +1022,31 @@ class SetZeroUInt8Mixin(object):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendRawSet(ROOT_DEVICE, self.pid, self.DATA)
 
+
 class SetZeroUInt16Mixin(SetZeroUInt8Mixin):
   """Set a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!H', 0)
+
 
 class SetZeroUInt32Mixin(SetZeroUInt8Mixin):
   """Set a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!I', 0)
 
-class GetOutOfRangeByteMixin(object):
+
+class GetOutOfRangeByteMixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+  LABEL = None
 
   def NumberOfSettings(self):
     # By default we use the first property from REQUIRES
     return self.Property(self.REQUIRES[0])
 
   def Test(self):
+    if self.LABEL is None:
+      self.SetBroken('No LABEL given for %s' % self.__class__.__name__)
+      return
+
     settings_supported = self.NumberOfSettings()
     if settings_supported is None:
       self.SetNotRun('Unable to determine number of %s' % self.LABEL)
@@ -907,15 +1059,21 @@ class GetOutOfRangeByteMixin(object):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendGet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
-class SetOutOfRangeByteMixin(object):
+
+class SetOutOfRangeByteMixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+  LABEL = None
 
   def NumberOfSettings(self):
     # By default we use the first property from REQUIRES
     return self.Property(self.REQUIRES[0])
 
   def Test(self):
+    if self.LABEL is None:
+      self.SetBroken('No LABEL given for %s' % self.__class__.__name__)
+      return
+
     settings_supported = self.NumberOfSettings()
     if settings_supported is None:
       self.SetNotRun('Unable to determine number of %s' % self.LABEL)
@@ -928,7 +1086,8 @@ class SetOutOfRangeByteMixin(object):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendSet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
-class GetSettingDescriptionsMixin(object):
+
+class GetSettingDescriptionsMixin(ResponderTestFixture):
   """Perform a GET for each setting in a list.
 
     The list is returned by ListOfSettings which subclasses must implement. See
@@ -942,20 +1101,32 @@ class GetSettingDescriptionsMixin(object):
     used to validate the index against and DESCRIPTION_FIELD, which is the
     field to check for unprintable characters.
 
-    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list of
-    allowed results for each entry.
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
   """
   ALLOWED_NACKS = []
   FIRST_INDEX_OFFSET = 1
+  EXPECTED_FIELDS = None
+  DESCRIPTION_FIELD = None
 
   def ListOfSettings(self):
-    self.SetBroken('base method of GetSettingDescriptionsMixin called')
+    self.SetBroken('Base method of GetSettingDescriptionsMixin called')
 
   def Test(self):
+    if self.EXPECTED_FIELDS is None:
+      self.SetBroken('No EXPECTED_FIELDS given for %s' %
+                     (self.__class__.__name__))
+      return
+
+    if self.DESCRIPTION_FIELD is None:
+      self.SetBroken('No DESCRIPTION_FIELD given for %s' %
+                     (self.__class__.__name__))
+      return
+
     self.items = self.ListOfSettings()
     if not self.items:
       # Try to GET first item, this should NACK
-      self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
       self.SendGet(ROOT_DEVICE, self.pid, [self.FIRST_INDEX_OFFSET])
       return
 
@@ -982,13 +1153,13 @@ class GetSettingDescriptionsMixin(object):
     if fields[self.EXPECTED_FIELDS[0]] != self.current_item:
       self.AddWarning(
           '%s mismatch, sent %d, received %d' %
-          (self.pid, self.current_item, fields[self.EXPECTED_FIELDS[0]]))
+          (self.pid.name, self.current_item, fields[self.EXPECTED_FIELDS[0]]))
 
     if ContainsUnprintable(fields[self.DESCRIPTION_FIELD]):
       self.AddAdvisory(
           '%s field in %s for %s %d contains unprintable characters, was %s' %
           (self.DESCRIPTION_FIELD.capitalize(),
-           self.PID,
+           self.pid.name,
            self.DESCRIPTION_FIELD,
            self.current_item,
            fields[self.DESCRIPTION_FIELD].encode('string-escape')))
@@ -1013,14 +1184,14 @@ class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
       return range(self.FIRST_INDEX_OFFSET,
                    self.NumberOfSettings() + self.FIRST_INDEX_OFFSET)
 
+
 class GetSettingDescriptionsListMixin(GetSettingDescriptionsMixin):
   """Perform a GET for each setting in a list.
 
-    The list is an array of settings, which don't need to be 
+    The list is an array of settings, which don't need to be
     sequential
   """
 
   def ListOfSettings(self):
     # By default we use the first property from REQUIRES
     return self.Property(self.REQUIRES[0])
-

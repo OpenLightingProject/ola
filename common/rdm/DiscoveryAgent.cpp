@@ -217,7 +217,9 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
   OLA_INFO << "BranchComplete, got " << length;
   if (length == 0) {
     // timeout
-    FreeCurrentRange();
+    if (!m_uid_ranges.empty()) {
+      FreeCurrentRange();
+    }
     SendDiscovery();
     return;
   }

@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -32,12 +33,14 @@
 #include "plugins/osc/OSCAddressTemplate.h"
 #include "plugins/osc/OSCDevice.h"
 #include "plugins/osc/OSCPlugin.h"
+#include "plugins/osc/OSCPluginDescription.h"
 
 namespace ola {
 namespace plugin {
 namespace osc {
 
 using ola::network::IPV4SocketAddress;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -127,42 +130,7 @@ bool OSCPlugin::StopHook() {
 
 
 string OSCPlugin::Description() const {
-  return
-"OSC (Open Sound Control) Plugin\n"
-"--------------------------------\n"
-"\n"
-"This plugin allows OLA to send and receive OSC\n"
-"( http://www.opensoundcontrol.org/ ) messages.\n"
-"\n"
-"OLA uses the blob type for transporting DMX data.\n"
-"\n"
-"--- Config file : ola-osc.conf ---\n"
-"\n"
-"input_ports = <int>\n"
-"The number of input ports to create.\n"
-"\n"
-"output_ports = <int>\n"
-"The number of output ports to create.\n"
-"\n"
-"port_N_targets = ip:port/address,ip:port/address,...\n"
-"For output port N, the list of targets to send OSC messages to. If the\n"
-"targets contain %d it's replaced by the universe number for port N\n"
-"\n"
-"port_N_address = /address\n"
-"The OSC address to listen on for port N. If the address contains %d\n"
-"it's replaced by the universe number for port N.\n"
-"\n"
-"port_N_format = [blob|float_array,individual_float,individual_int,int_array]\n"
-"The format (OSC Type) to send the DMX data in:\n"
-" - blob: a OSC-blob\n"
-" - float_array: an array of float values. 0.0 - 1.0\n"
-" - individual_float: one float message for each slot (channel). 0.0 - 1.0 \n"
-" - individual_int: one int message for each slot (channel). 0 - 255.\n"
-" - int_array: an array of int values. 0 - 255.\n"
-"\n"
-"udp_listen_port = <int>\n"
-"The UDP Port to listen on for OSC messages.\n"
-"\n";
+  return plugin_description;
 }
 
 
@@ -194,6 +162,15 @@ bool OSCPlugin::SetDefaultPreferences() {
                                            DEFAULT_ADDRESS_TEMPLATE);
   }
 
+  set<string> valid_formats;
+  valid_formats.insert(BLOB_FORMAT);
+  valid_formats.insert(FLOAT_ARRAY_FORMAT);
+  valid_formats.insert(FLOAT_INDIVIDUAL_FORMAT);
+  valid_formats.insert(INT_ARRAY_FORMAT);
+  valid_formats.insert(INT_INDIVIDUAL_FORMAT);
+
+  SetValidator<string> format_validator = SetValidator<string>(valid_formats);
+
   for (unsigned int i = 0; i < GetPortCount(OUTPUT_PORT_COUNT_KEY); i++) {
     save |= m_preferences->SetDefaultValue(
         ExpandTemplate(PORT_TARGETS_TEMPLATE, i),
@@ -202,7 +179,8 @@ bool OSCPlugin::SetDefaultPreferences() {
 
     save |= m_preferences->SetDefaultValue(
         ExpandTemplate(PORT_FORMAT_TEMPLATE, i),
-        StringValidator(true), BLOB_FORMAT);
+        format_validator,
+        BLOB_FORMAT);
   }
 
   if (save) {

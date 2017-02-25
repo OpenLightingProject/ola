@@ -18,14 +18,15 @@
 
 '''Show the UIDs for a universe.'''
 
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import getopt
 import textwrap
 import sys
 from ola.ClientWrapper import ClientWrapper
 
-def usage():
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
+
+def Usage():
   print(textwrap.dedent("""\
   Usage: ola_rdm_discover.py --universe <universe> [--force_discovery]
 
@@ -52,7 +53,7 @@ def main():
 
   for o, a in opts:
     if o in ('-h', '--help'):
-      usage()
+      Usage()
       sys.exit()
     elif o in ('-f', '--full'):
       full_discovery = True
@@ -62,7 +63,7 @@ def main():
       universe = int(a)
 
   if not universe:
-    usage()
+    Usage()
     sys.exit()
 
   if incremental_discovery and full_discovery:
@@ -85,6 +86,7 @@ def main():
   else:
     client.FetchUIDList(universe, show_uids)
   wrapper.Run()
+
 
 if __name__ == '__main__':
   main()

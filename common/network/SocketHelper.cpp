@@ -23,10 +23,11 @@
 
 #ifdef _WIN32
 #include <Ws2tcpip.h>
-#endif
+#endif  // _WIN32
 
 #include <ola/Logging.h>
 #include <ola/network/SocketAddress.h>
+#include "common/network/SocketHelper.h"
 
 namespace ola {
 namespace network {
