@@ -65,7 +65,8 @@
 /**
  * @def OLA_FALLTHROUGH
  * @brief Mark switch cases as fallthrough when required
- * @note we are not using [[fallthrough]]; because C++98 compatibility
+ * @note We are not currently using [[fallthrough]]; because we need C++98
+ * compatibility
  *
  * @examplepara
  *   @code
