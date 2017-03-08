@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     usleep(FLAGS_sleep);
     if (!ola_client.SendDmx(FLAGS_universe, buffer)) {
       cout << "Send DMX failed" << endl;
-      return false;
+      exit(1);
     }
   }
   return 0;
