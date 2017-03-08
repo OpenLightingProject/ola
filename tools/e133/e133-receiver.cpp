@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
   vector<E133Endpoint*> endpoints;
   auto_ptr<ola::rdm::DummyResponder> dummy_responder;
   auto_ptr<ola::rdm::DiscoverableRDMControllerAdaptor>
-    discoverable_dummy_responder;
+      discoverable_dummy_responder;
   auto_ptr<DmxTriWidget> tri_widget;
 
   ola::rdm::UIDAllocator uid_allocator(*uid);
@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
     dummy_responder.reset(new ola::rdm::DummyResponder(*dummy_uid));
     discoverable_dummy_responder.reset(
         new ola::rdm::DiscoverableRDMControllerAdaptor(
-          *dummy_uid, dummy_responder.get()));
+        *dummy_uid, dummy_responder.get()));
     endpoints.push_back(new E133Endpoint(discoverable_dummy_responder.get(),
                                          E133Endpoint::EndpointProperties()));
   }
@@ -251,12 +251,14 @@ int main(int argc, char *argv[]) {
   }
   simple_node = &node;
 
-  if (!node.Init())
+  if (!node.Init()) {
     exit(ola::EXIT_UNAVAILABLE);
+  }
 
   // signal handler
-  if (!ola::InstallSignal(SIGINT, &InteruptSignal))
-    return false;
+  if (!ola::InstallSignal(SIGINT, &InteruptSignal)) {
+    exit(ola::EXIT_OSERR);
+  }
 
   node.Run();
   if (e131_node.get()) {
