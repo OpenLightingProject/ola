@@ -64,11 +64,11 @@ def generate_class_header(commented, class_prefix, class_name, class_suffix, par
   end = ','
   if len(parent_classes) == 1:
     end = '):'
-  max_parent = max(parent_classes, key=len)
-  max_end = ','
-  if max_parent == parent_classes[-1]:
-    max_end = '):'
-  if len('%sclass %s(%s%s' % (comment, name, parent_classes[0], max_end)) <= 80:
+  longest_parent = max(parent_classes, key=len)
+  longest_end = ','
+  if longest_parent == parent_classes[-1]:
+    longest_end = '):'
+  if len('%sclass %s(%s%s' % (comment, name, parent_classes[0], longest_end)) <= 80:
     print('%sclass %s(%s%s' % (comment, name, parent_classes[0], end))
     if len(parent_classes) > 1:
       for parent_class in parent_classes[1:-1]:
@@ -122,22 +122,6 @@ def main():
 
   pid_store = PidStore.GetStore(pid_location, pid_files)
   for pid in pid_store.Pids():
-    #print(pid.name)
-    #if (pid.name != 'RESET_DEVICE') and (pid.name != 'SUPPORTED_PARAMETERS'):
-    #if ((pid.name != 'DMX_FAIL_MODE') and
-    #    (pid.name != 'DMX_PERSONALITY') and
-    #    (pid.name != 'DMX_PERSONALITY_DESCRIPTION') and
-    #    (pid.name != 'INTERFACE_HARDWARE_ADDRESS_TYPE1')):
-    #if (pid.name != 'INTERFACE_HARDWARE_ADDRESS_TYPE1'):
-    #if (pid.name != 'IPV4_STATIC_ADDRESS'):
-    #  print('Not %s' % (pid.name))
-    #  continue
-    #if (pid.name != 'PRESET_STATUS') and (pid.name != 'SELF_TEST_DESCRIPTION'):
-    #  print('Not %s' % (pid.name))
-    #  continue
-    #if pid.RequestSupported(PidStore.RDM_DISCOVERY):
-    #  continue
-
     pid_test_base_name = pid.name.lower().title().replace('_','')
 
     get_size = 0
