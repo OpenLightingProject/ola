@@ -19,7 +19,6 @@
 import getopt
 import getpass
 import logging
-import pprint
 import sys
 import textwrap
 from ola import PidStore
@@ -56,7 +55,8 @@ def generate_dummy_data(size):
     return None
 
 
-def generate_class_header(commented, class_prefix, class_name, class_suffix, parent_classes):
+def generate_class_header(commented, class_prefix, class_name, class_suffix,
+                          parent_classes):
   name = class_prefix + class_name + class_suffix
   comment = ''
   if commented:
@@ -68,7 +68,8 @@ def generate_class_header(commented, class_prefix, class_name, class_suffix, par
   longest_end = ','
   if longest_parent == parent_classes[-1]:
     longest_end = '):'
-  if len('%sclass %s(%s%s' % (comment, name, parent_classes[0], longest_end)) <= 80:
+  if len('%sclass %s(%s%s' %
+         (comment, name, parent_classes[0], longest_end)) <= 80:
     print('%sclass %s(%s%s' % (comment, name, parent_classes[0], end))
     if len(parent_classes) > 1:
       for parent_class in parent_classes[1:-1]:
@@ -94,7 +95,6 @@ def main():
     Usage()
     sys.exit(2)
 
-  universe = None
   pid_location = None
   level = logging.INFO
   names = False
@@ -122,13 +122,13 @@ def main():
 
   pid_store = PidStore.GetStore(pid_location, pid_files)
   for pid in pid_store.Pids():
-    pid_test_base_name = pid.name.lower().title().replace('_','')
+    pid_test_base_name = pid.name.lower().title().replace('_', '')
 
     get_size = 0
     if ((pid.RequestSupported(PidStore.RDM_GET)) and
         (pid.GetRequest(PidStore.RDM_GET).HasAtoms())):
       get_size = pid.GetRequest(PidStore.RDM_GET).GetAtoms()[0].size
-      #print('# Get requires %d bytes' % (get_size))
+      # print('# Get requires %d bytes' % (get_size))
 
     if names:
       print('AllSubDevicesGet%s' % (pid_test_base_name))
@@ -145,7 +145,8 @@ def main():
         print('  """Attempt to send a get %s to ALL_SUB_DEVICES."""' % (pid.name))
       print('  PID = \'%s\'' % (pid.name))
       if get_size > 0:
-        print('  #DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' % (getpass.getuser(), get_size, 's' if get_size > 1 else ''))
+        print('  #DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' %
+              (getpass.getuser(), get_size, 's' if get_size > 1 else ''))
       print('')
       print('')
 
@@ -172,8 +173,9 @@ def main():
         (pid.GetRequest(PidStore.RDM_GET).HasAtoms())):
       first_atom = pid.GetRequest(PidStore.RDM_GET).GetAtoms()[0]
 
-      if (first_atom.HasRanges() and (not first_atom.ValidateRawValueInRange(0) and
-          first_atom.ValidateRawValueInRange(1))):
+      if (first_atom.HasRanges() and
+          (not first_atom.ValidateRawValueInRange(0) and
+           first_atom.ValidateRawValueInRange(1))):
         if names:
           print('GetZero%s' % (pid_test_base_name))
         else:
@@ -181,15 +183,18 @@ def main():
             generate_class_header(True, 'GetZero', pid_test_base_name, '',
                                   ['TestMixins.',
                                    'OptionalParameterTestFixture'])
-            print('#   """GET %s for %s 0."""' % (pid.name, first_atom.name.replace('_',' ')))
+            print('#   """GET %s for %s 0."""' %
+                  (pid.name, first_atom.name.replace('_',' ')))
             print('#   CATEGORY = TestCategory.ERROR_CONDITIONS')
             print('#   PID = \'%s\'' % (pid.name))
             print('# TODO(%s): Test get zero' % (getpass.getuser()))
           else:
             generate_class_header(False, 'GetZero', pid_test_base_name, '',
-                                  ['TestMixins.GetZero%sMixin' % (first_atom.__class__.__name__),
+                                  ['TestMixins.GetZero%sMixin' %
+                                   (first_atom.__class__.__name__),
                                    'OptionalParameterTestFixture'])
-            print('  """GET %s for %s 0."""' % (pid.name, first_atom.name.replace('_',' ')))
+            print('  """GET %s for %s 0."""' %
+                  (pid.name, first_atom.name.replace('_', ' ')))
             print('  PID = \'%s\'' % (pid.name))
           print('')
           print('')
@@ -211,11 +216,13 @@ def main():
         generate_class_header(False, 'Get', pid_test_base_name, 'WithExtraData',
                               ['TestMixins.GetWithDataMixin',
                                'OptionalParameterTestFixture'])
-        print('  """GET %s with more than %d byte%s of data."""' % (pid.name, get_size, 's' if get_size > 1 else ''))
+        print('  """GET %s with more than %d byte%s of data."""' %
+              (pid.name, get_size, 's' if get_size > 1 else ''))
         print('  PID = \'%s\'' % (pid.name))
         dummy_data = generate_dummy_data(get_size)
         if dummy_data is None:
-          print("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't enough" % (getpass.getuser()))
+          print("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't enough" %
+                (getpass.getuser()))
         elif dummy_data != 'foo':
           # Doesn't match default
           print("  DATA = '%s'" % (dummy_data))
@@ -258,17 +265,18 @@ def main():
       print('')
       print('')
 
-    set_size = 0;
+    set_size = 0
     if ((pid.RequestSupported(PidStore.RDM_SET)) and
         (pid.GetRequest(PidStore.RDM_SET).HasAtoms())):
       for atom in pid.GetRequest(PidStore.RDM_SET).GetAtoms():
         set_size += atom.size
-      #print('# Set requires %d bytes' % (set_size))
+      # print('# Set requires %d bytes' % (set_size))
 
       first_atom = pid.GetRequest(PidStore.RDM_SET).GetAtoms()[0]
 
-      if (first_atom.HasRanges() and (not first_atom.ValidateRawValueInRange(0) and
-          first_atom.ValidateRawValueInRange(1))):
+      if (first_atom.HasRanges() and
+          (not first_atom.ValidateRawValueInRange(0) and
+           first_atom.ValidateRawValueInRange(1))):
         if names:
           print('SetZero%s' % (pid_test_base_name))
         else:
@@ -276,15 +284,18 @@ def main():
             generate_class_header(True, 'SetZero', pid_test_base_name, '',
                                   ['TestMixins.',
                                    'OptionalParameterTestFixture'])
-            print('#   """SET %s to %s 0."""' % (pid.name, first_atom.name.replace('_',' ')))
+            print('#   """SET %s to %s 0."""' %
+                  (pid.name, first_atom.name.replace('_', ' ')))
             print('#   CATEGORY = TestCategory.ERROR_CONDITIONS')
             print('#   PID = \'%s\'' % (pid.name))
             print('# TODO(%s): Test set zero' % (getpass.getuser()))
           else:
             generate_class_header(False, 'SetZero', pid_test_base_name, '',
-                                  ['TestMixins.SetZero%sMixin' % (first_atom.__class__.__name__),
+                                  ['TestMixins.SetZero%sMixin' %
+                                   (first_atom.__class__.__name__),
                                    'OptionalParameterTestFixture'])
-            print('  """SET %s to %s 0."""' % (pid.name, first_atom.name.replace('_',' ')))
+            print('  """SET %s to %s 0."""' %
+                  (pid.name, first_atom.name.replace('_', ' ')))
             print('  PID = \'%s\'' % (pid.name))
           print('')
           print('')
@@ -310,7 +321,8 @@ def main():
         print('  PID = \'%s\'' % (pid.name))
         dummy_data = generate_dummy_data(set_size)
         if dummy_data is None:
-          print("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't enough" % (getpass.getuser()))
+          print("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't enough" %
+                (getpass.getuser()))
         elif dummy_data != 'foo':
           # Doesn't match default
           print("  DATA = '%s'" % (dummy_data))
@@ -335,6 +347,7 @@ def main():
         print('')
 
   sys.exit(0)
+
 
 if __name__ == '__main__':
   main()
