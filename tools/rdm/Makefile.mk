@@ -82,7 +82,7 @@ dist_rdmtestsexec_SCRIPTS = \
     tools/rdm/rdm_responder_test.py \
     tools/rdm/rdm_test_server.py
 
-noinst_rdmtestsexec_SCRIPTS = \
+dist_noinst_rdmtestsexec_SCRIPTS = \
     tools/rdm/list_rdm_tests.py
 
 # Data files for the RDM Test Server
