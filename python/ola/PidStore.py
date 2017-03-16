@@ -230,6 +230,9 @@ class Atom(object):
   def GetDescription(self, indent=0):
     return str(self)
 
+  def HasRanges(self):
+    return False
+
 
 class FixedSizeAtom(Atom):
   def __init__(self, name, format_char):
@@ -337,6 +340,12 @@ class IntAtom(FixedSizeAtom):
     if not self._ranges:
       self._ranges.append(Range(0, max_value))
 
+  def ValidateRawValueInRange(self, value):
+    for valid_range in self._ranges:
+      if valid_range.Matches(value):
+        return True
+    return False
+
   def Pack(self, args):
     self.CheckForSingleArg(args)
     arg = args[0]
@@ -384,6 +393,9 @@ class IntAtom(FixedSizeAtom):
     This takes into account any multipliers set for the field.
     """
     return self._AccountForMultiplierPack(value)
+
+  def HasRanges(self):
+    return (len(self._ranges) > 0)
 
   def _GetAllowedRanges(self):
     values = list(self._labels.keys())
