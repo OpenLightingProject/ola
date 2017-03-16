@@ -23,7 +23,6 @@ import pprint
 import sys
 import textwrap
 from ola import PidStore
-from ola.ClientWrapper import ClientWrapper
 
 '''List RDM tests and autogenerate test code.'''
 
