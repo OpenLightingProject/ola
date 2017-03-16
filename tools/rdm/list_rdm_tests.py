@@ -142,7 +142,8 @@ def main():
         generate_class_header(False, 'AllSubDevicesGet', pid_test_base_name, '',
                               ['TestMixins.AllSubDevicesUnsupportedGetMixin',
                                'OptionalParameterTestFixture'])
-        print('  """Attempt to send a get %s to ALL_SUB_DEVICES."""' % (pid.name))
+        print('  """Attempt to send a get %s to ALL_SUB_DEVICES."""' %
+              (pid.name))
       print('  PID = \'%s\'' % (pid.name))
       if get_size > 0:
         print('  #DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' %
@@ -184,7 +185,7 @@ def main():
                                   ['TestMixins.',
                                    'OptionalParameterTestFixture'])
             print('#   """GET %s for %s 0."""' %
-                  (pid.name, first_atom.name.replace('_',' ')))
+                  (pid.name, first_atom.name.replace('_', ' ')))
             print('#   CATEGORY = TestCategory.ERROR_CONDITIONS')
             print('#   PID = \'%s\'' % (pid.name))
             print('# TODO(%s): Test get zero' % (getpass.getuser()))
@@ -336,7 +337,8 @@ def main():
           generate_class_header(False, 'Set', pid_test_base_name, 'WithData',
                                 ['TestMixins.SetWithDataMixin',
                                  'OptionalParameterTestFixture'])
-          print('  """Send a SET %s command with unnecessary data."""' % (pid.name))
+          print('  """Send a SET %s command with unnecessary data."""' %
+                (pid.name))
         else:
           generate_class_header(False, 'Set', pid_test_base_name, 'WithData',
                                 ['TestMixins.UnsupportedSetWithDataMixin',
