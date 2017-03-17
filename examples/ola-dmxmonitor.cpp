@@ -563,6 +563,7 @@ void DmxMonitor::ChangePalette(int p) {
     default:
       m_palette_number = 0;
       // fall through, use 0 as default palette
+      OLA_FALLTHROUGH
     case 0:
       init_pair(CHANNEL, COLOR_BLACK, COLOR_CYAN);
       init_pair(ZERO, COLOR_BLACK, COLOR_WHITE);
