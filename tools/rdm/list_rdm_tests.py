@@ -146,8 +146,9 @@ def main():
               (pid.name))
       print('  PID = \'%s\'' % (pid.name))
       if get_size > 0:
-        print('  #DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' %
-              (getpass.getuser(), get_size, 's' if get_size > 1 else ''))
+        print(('  #DATA = []  # TODO(%s): Specify some suitable data, %d '
+				       'byte%s') % (getpass.getuser(), get_size,
+							              's' if get_size > 1 else ''))
       print('')
       print('')
 
@@ -222,8 +223,8 @@ def main():
         print('  PID = \'%s\'' % (pid.name))
         dummy_data = generate_dummy_data(get_size)
         if dummy_data is None:
-          print("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't enough" %
-                (getpass.getuser()))
+          print(("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't "
+					       "enough") % (getpass.getuser()))
         elif dummy_data != 'foo':
           # Doesn't match default
           print("  DATA = '%s'" % (dummy_data))
@@ -322,8 +323,8 @@ def main():
         print('  PID = \'%s\'' % (pid.name))
         dummy_data = generate_dummy_data(set_size)
         if dummy_data is None:
-          print("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't enough" %
-                (getpass.getuser()))
+          print(("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't "
+					       "enough") % (getpass.getuser()))
         elif dummy_data != 'foo':
           # Doesn't match default
           print("  DATA = '%s'" % (dummy_data))
