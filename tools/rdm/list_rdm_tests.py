@@ -148,7 +148,7 @@ def main():
       if get_size > 0:
         print(('  #DATA = []  # TODO(%s): Specify some suitable data, %d '
                'byte%s') % (getpass.getuser(), get_size,
-               's' if get_size > 1 else ''))
+                            's' if get_size > 1 else ''))
       print('')
       print('')
 
