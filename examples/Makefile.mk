@@ -15,7 +15,7 @@ noinst_LTLIBRARIES += examples/libolaconfig.la
 examples_libolaconfig_la_SOURCES = \
     examples/OlaConfigurator.h \
     examples/OlaConfigurator.cpp
-
+examples_libolaconfig_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 
 # PROGRAMS
 ##################################################
@@ -31,6 +31,7 @@ bin_PROGRAMS += \
 if USE_E131
 bin_PROGRAMS += examples/ola_e131
 examples_ola_e131_SOURCES = examples/ola-e131.cpp
+examples_ola_e131_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 examples_ola_e131_LDADD = examples/libolaconfig.la \
                           $(EXAMPLE_COMMON_LIBS) \
                           plugins/e131/messages/libolae131conf.la \
@@ -40,6 +41,7 @@ endif
 if USE_USBPRO
 bin_PROGRAMS += examples/ola_usbpro
 examples_ola_usbpro_SOURCES = examples/ola-usbpro.cpp
+examples_ola_usbpro_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 examples_ola_usbpro_LDADD = examples/libolaconfig.la \
                             $(EXAMPLE_COMMON_LIBS) \
                             plugins/usbpro/messages/libolausbproconf.la \
@@ -49,6 +51,7 @@ endif
 if USE_ARTNET
 bin_PROGRAMS += examples/ola_artnet
 examples_ola_artnet_SOURCES = examples/ola-artnet.cpp
+examples_ola_artnet_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 examples_ola_artnet_LDADD = examples/libolaconfig.la \
                             $(EXAMPLE_COMMON_LIBS) \
                             plugins/artnet/messages/libolaartnetconf.la \
