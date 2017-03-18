@@ -27,6 +27,7 @@ ola_libola_la_SOURCES = \
     ola/OlaClientCore.cpp \
     ola/OlaClientWrapper.cpp \
     ola/StreamingClient.cpp
+ola_libola_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 ola_libola_la_LDFLAGS = -version-info 1:1:0
 ola_libola_la_LIBADD = common/libolacommon.la
 
