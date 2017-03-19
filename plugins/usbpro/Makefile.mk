@@ -62,6 +62,7 @@ plugins_usbpro_libolausbpro_la_SOURCES = \
     plugins/usbpro/UsbSerialDevice.h \
     plugins/usbpro/UsbSerialPlugin.cpp \
     plugins/usbpro/UsbSerialPlugin.h
+plugins_usbpro_libolausbpro_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 plugins_usbpro_libolausbpro_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la \
     plugins/usbpro/libolausbprowidget.la \
