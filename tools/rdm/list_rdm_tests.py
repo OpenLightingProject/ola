@@ -41,7 +41,7 @@ def Usage():
     --names                   Just output the test names.""")
 
 
-def generate_dummy_data(size):
+def GenerateDummyData(size):
   if size <= 2:
     return 'foo'
   elif size <= 5:
@@ -54,8 +54,8 @@ def generate_dummy_data(size):
     return None
 
 
-def generate_class_header(commented, class_prefix, class_name, class_suffix,
-                          parent_classes):
+def GenerateClassHeader(commented, class_prefix, class_name, class_suffix,
+                        parent_classes):
   name = class_prefix + class_name + class_suffix
   comment = ''
   if commented:
@@ -88,14 +88,14 @@ def AllSubDevicesGet(names, pid, pid_test_base_name, get_size):
     print('AllSubDevicesGet%s' % (pid_test_base_name))
   else:
     if pid.RequestSupported(PidStore.RDM_GET):
-      generate_class_header(False, 'AllSubDevicesGet', pid_test_base_name, '',
-                            ['TestMixins.AllSubDevicesGetMixin',
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(False, 'AllSubDevicesGet', pid_test_base_name, '',
+                          ['TestMixins.AllSubDevicesGetMixin',
+                           'OptionalParameterTestFixture'])
       print('  """Send a get %s to ALL_SUB_DEVICES."""' % (pid.name))
     else:
-      generate_class_header(False, 'AllSubDevicesGet', pid_test_base_name, '',
-                            ['TestMixins.AllSubDevicesUnsupportedGetMixin',
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(False, 'AllSubDevicesGet', pid_test_base_name, '',
+                          ['TestMixins.AllSubDevicesUnsupportedGetMixin',
+                           'OptionalParameterTestFixture'])
       print('  """Attempt to send a get %s to ALL_SUB_DEVICES."""' %
             (pid.name))
     print('  PID = \'%s\'' % (pid.name))
@@ -111,16 +111,16 @@ def Get(names, pid, pid_test_base_name):
     print('Get%s' % (pid_test_base_name))
   else:
     if pid.RequestSupported(PidStore.RDM_GET):
-      generate_class_header(True, 'Get', pid_test_base_name, '',
-                            ['TestMixins.',
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(True, 'Get', pid_test_base_name, '',
+                          ['TestMixins.',
+                           'OptionalParameterTestFixture'])
       print('#   CATEGORY = TestCategory.')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test get' % (getpass.getuser()))
     else:
-      generate_class_header(False, 'Get', pid_test_base_name, '',
-                            ['TestMixins.UnsupportedGetMixin',
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(False, 'Get', pid_test_base_name, '',
+                          ['TestMixins.UnsupportedGetMixin',
+                           'OptionalParameterTestFixture'])
       print('  """Attempt to GET %s."""' % (pid.name))
       print('  PID = \'%s\'' % (pid.name))
     print('')
@@ -131,9 +131,9 @@ def GetWithNoData(names, pid, pid_test_base_name):
   if names:
     print('Get%sWithNoData' % (pid_test_base_name))
   else:
-    generate_class_header(False, 'Get', pid_test_base_name, 'WithNoData',
-                          ['TestMixins.GetWithNoDataMixin',
-                           'OptionalParameterTestFixture'])
+    GenerateClassHeader(False, 'Get', pid_test_base_name, 'WithNoData',
+                        ['TestMixins.GetWithNoDataMixin',
+                         'OptionalParameterTestFixture'])
     print('  """GET %s with no argument given."""' % (pid.name))
     print('  PID = \'%s\'' % (pid.name))
     print('')
@@ -144,13 +144,13 @@ def GetWithExtraData(names, pid, pid_test_base_name, get_size):
   if names:
     print('Get%sWithExtraData' % (pid_test_base_name))
   else:
-    generate_class_header(False, 'Get', pid_test_base_name, 'WithExtraData',
-                          ['TestMixins.GetWithDataMixin',
-                           'OptionalParameterTestFixture'])
+    GenerateClassHeader(False, 'Get', pid_test_base_name, 'WithExtraData',
+                        ['TestMixins.GetWithDataMixin',
+                         'OptionalParameterTestFixture'])
     print('  """GET %s with more than %d byte%s of data."""' %
           (pid.name, get_size, 's' if get_size > 1 else ''))
     print('  PID = \'%s\'' % (pid.name))
-    dummy_data = generate_dummy_data(get_size)
+    dummy_data = GenerateDummyData(get_size)
     if dummy_data is None:
       print("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't enough" %
             (getpass.getuser()))
@@ -166,18 +166,18 @@ def GetZero(names, pid, pid_test_base_name, first_atom):
     print('GetZero%s' % (pid_test_base_name))
   else:
     if len(pid.GetRequest(PidStore.RDM_GET).GetAtoms()) > 1:
-      generate_class_header(True, 'GetZero', pid_test_base_name, '',
-                            ['TestMixins.', 'OptionalParameterTestFixture'])
+      GenerateClassHeader(True, 'GetZero', pid_test_base_name, '',
+                          ['TestMixins.', 'OptionalParameterTestFixture'])
       print('#   """GET %s for %s 0."""' %
             (pid.name, first_atom.name.replace('_', ' ')))
       print('#   CATEGORY = TestCategory.ERROR_CONDITIONS')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test get zero' % (getpass.getuser()))
     else:
-      generate_class_header(False, 'GetZero', pid_test_base_name, '',
-                            ['TestMixins.GetZero%sMixin' %
-                             (first_atom.__class__.__name__),
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(False, 'GetZero', pid_test_base_name, '',
+                          ['TestMixins.GetZero%sMixin' %
+                           (first_atom.__class__.__name__),
+                           'OptionalParameterTestFixture'])
       print('  """GET %s for %s 0."""' %
             (pid.name, first_atom.name.replace('_', ' ')))
       print('  PID = \'%s\'' % (pid.name))
@@ -190,11 +190,11 @@ def GetWithData(names, pid, pid_test_base_name):
     print('Get%sWithData' % (pid_test_base_name))
   else:
     if pid.RequestSupported(PidStore.RDM_GET):
-      generate_class_header(False, 'Get', pid_test_base_name, 'WithData',
-                            ['TestMixins.GetWithDataMixin',
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(False, 'Get', pid_test_base_name, 'WithData',
+                          ['TestMixins.GetWithDataMixin',
+                           'OptionalParameterTestFixture'])
     else:
-      generate_class_header(False, 'Get', pid_test_base_name, 'WithData',
+      GenerateClassHeader(False, 'Get', pid_test_base_name, 'WithData',
                             ['TestMixins.UnsupportedGetWithDataMixin',
                              'OptionalParameterTestFixture'])
     print('  """GET %s with data."""' % (pid.name))
@@ -208,15 +208,15 @@ def Set(names, pid, pid_test_base_name):
     print('Set%s' % (pid_test_base_name))
   else:
     if pid.RequestSupported(PidStore.RDM_SET):
-      generate_class_header(True, 'Set', pid_test_base_name, '',
-                            ['TestMixins.', 'OptionalParameterTestFixture'])
+      GenerateClassHeader(True, 'Set', pid_test_base_name, '',
+                          ['TestMixins.', 'OptionalParameterTestFixture'])
       print('#   CATEGORY = TestCategory.')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test set' % (getpass.getuser()))
     else:
-      generate_class_header(False, 'Set', pid_test_base_name, '',
-                            ['TestMixins.UnsupportedSetMixin',
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(False, 'Set', pid_test_base_name, '',
+                          ['TestMixins.UnsupportedSetMixin',
+                           'OptionalParameterTestFixture'])
       print('  """Attempt to SET %s."""' % (pid.name))
       print('  PID = \'%s\'' % (pid.name))
     print('')
@@ -228,18 +228,18 @@ def SetZero(names, pid, pid_test_base_name, first_atom):
     print('SetZero%s' % (pid_test_base_name))
   else:
     if len(pid.GetRequest(PidStore.RDM_SET).GetAtoms()) > 1:
-      generate_class_header(True, 'SetZero', pid_test_base_name, '',
-                            ['TestMixins.', 'OptionalParameterTestFixture'])
+      GenerateClassHeader(True, 'SetZero', pid_test_base_name, '',
+                          ['TestMixins.', 'OptionalParameterTestFixture'])
       print('#   """SET %s to %s 0."""' %
             (pid.name, first_atom.name.replace('_', ' ')))
       print('#   CATEGORY = TestCategory.ERROR_CONDITIONS')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test set zero' % (getpass.getuser()))
     else:
-      generate_class_header(False, 'SetZero', pid_test_base_name, '',
-                            ['TestMixins.SetZero%sMixin' %
-                             (first_atom.__class__.__name__),
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(False, 'SetZero', pid_test_base_name, '',
+                          ['TestMixins.SetZero%sMixin' %
+                           (first_atom.__class__.__name__),
+                           'OptionalParameterTestFixture'])
       print('  """SET %s to %s 0."""' %
             (pid.name, first_atom.name.replace('_', ' ')))
       print('  PID = \'%s\'' % (pid.name))
@@ -251,9 +251,9 @@ def SetWithNoData(names, pid, pid_test_base_name):
   if names:
     print('Set%sWithNoData' % (pid_test_base_name))
   else:
-    generate_class_header(False, 'Set', pid_test_base_name, 'WithNoData',
-                          ['TestMixins.SetWithNoDataMixin',
-                           'OptionalParameterTestFixture'])
+    GenerateClassHeader(False, 'Set', pid_test_base_name, 'WithNoData',
+                        ['TestMixins.SetWithNoDataMixin',
+                         'OptionalParameterTestFixture'])
     print('  """Set %s command with no data."""' % (pid.name))
     print('  PID = \'%s\'' % (pid.name))
     print('')
@@ -264,12 +264,12 @@ def SetWithExtraData(names, pid, pid_test_base_name, set_size):
   if names:
     print('Set%sWithExtraData' % (pid_test_base_name))
   else:
-    generate_class_header(False, 'Set', pid_test_base_name, 'WithExtraData',
-                          ['TestMixins.SetWithDataMixin',
-                           'OptionalParameterTestFixture'])
+    GenerateClassHeader(False, 'Set', pid_test_base_name, 'WithExtraData',
+                        ['TestMixins.SetWithDataMixin',
+                         'OptionalParameterTestFixture'])
     print('  """Send a SET %s command with extra data."""' % (pid.name))
     print('  PID = \'%s\'' % (pid.name))
-    dummy_data = generate_dummy_data(set_size)
+    dummy_data = GenerateDummyData(set_size)
     if dummy_data is None:
       print("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't enough" %
             (getpass.getuser()))
@@ -285,14 +285,14 @@ def SetWithData(names, pid, pid_test_base_name):
     print('Set%sWithData' % (pid_test_base_name))
   else:
     if pid.RequestSupported(PidStore.RDM_SET):
-      generate_class_header(False, 'Set', pid_test_base_name, 'WithData',
-                            ['TestMixins.SetWithDataMixin',
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(False, 'Set', pid_test_base_name, 'WithData',
+                          ['TestMixins.SetWithDataMixin',
+                           'OptionalParameterTestFixture'])
       print('  """Send a SET %s command with unnecessary data."""' % (pid.name))
     else:
-      generate_class_header(False, 'Set', pid_test_base_name, 'WithData',
-                            ['TestMixins.UnsupportedSetWithDataMixin',
-                             'OptionalParameterTestFixture'])
+      GenerateClassHeader(False, 'Set', pid_test_base_name, 'WithData',
+                          ['TestMixins.UnsupportedSetWithDataMixin',
+                           'OptionalParameterTestFixture'])
       print('  """Attempt to SET %s with data."""' % (pid.name))
     print('  PID = \'%s\'' % (pid.name))
     print('')
