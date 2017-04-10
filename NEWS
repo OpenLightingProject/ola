@@ -9,7 +9,8 @@ x/y/2017 ola-0.10.4
  * 
 
  Bugs:
- * 
+ * Implement OLA_FALLTHROUGH macro for adding fallthrough attributes to 
+   switchcases in gcc versions higher than 7 #1193 Debian #853583
 
  Internal:
  *
