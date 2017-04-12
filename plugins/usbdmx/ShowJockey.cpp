@@ -308,31 +308,25 @@ class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
       m_tx_frame = new uint8_t[final_size]();
     }
 
-    uint8_t *current_buffer = new uint8_t[DMX_MAX_SLOT_NUMBER]();
-    unsigned int dmx_max_slot_number = DMX_MAX_SLOT_NUMBER;
-    buffer.Get(current_buffer, &dmx_max_slot_number);
-    uint8_t *p_current_buffer = current_buffer;
     uint8_t *p_final_buffer = m_tx_frame;
-    int to_write_size = m_max_packet_size_out - 2;
+    unsigned int to_write_size = m_max_packet_size_out - 2;
     uint16_t written_size = 0;
     for (int i = 0; i <= nb_sequence; ++i) {
       memcpy(p_final_buffer, &written_size, 2);
       p_final_buffer += 2;
-      int need_to_write_size = DMX_MAX_SLOT_NUMBER - written_size;
-      int will_write_size;
+      unsigned int need_to_write_size = DMX_MAX_SLOT_NUMBER - written_size;
+      unsigned int will_write_size;
       if (to_write_size < need_to_write_size) {
         will_write_size = to_write_size;
       } else {
         will_write_size = need_to_write_size;
       }
 
-      memcpy(p_final_buffer, p_current_buffer, will_write_size);
+      buffer.GetRange(written_size, p_final_buffer, &to_write_size);
       p_final_buffer += to_write_size;
-      p_current_buffer += to_write_size;
       written_size += to_write_size;
     }
 
-    delete[] current_buffer;
     FillBulkTransfer(m_endpoint, m_tx_frame, final_size,
                      URB_TIMEOUT_MS);
     return SubmitTransfer() == 0;
