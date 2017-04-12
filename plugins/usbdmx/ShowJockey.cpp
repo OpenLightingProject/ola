@@ -302,7 +302,7 @@ class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
   }
 
   bool PerformTransfer(const DmxBuffer &buffer) {
-    uint16_t nb_sequence = DMX_MAX_SLOT_NUMBER / (m_max_packet_size_out - 2);
+    uint16_t nb_sequence = (DMX_MAX_SLOT_NUMBER / (m_max_packet_size_out - 2)) + 1;
     int final_size = DMX_MAX_SLOT_NUMBER + (2 * nb_sequence);
     if (m_tx_frame == NULL) {
       m_tx_frame = new uint8_t[final_size]();
