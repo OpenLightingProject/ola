@@ -138,7 +138,7 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   }
 
   int ret_val = 0;
-  int left_write_size = 512;
+  int left_write_size = DMX_UNIVERSE_SIZE;
   uint16_t already_written_size = 0;
   unsigned int write_size = 0;
   int max_packet_size_out = m_max_packet_size_out;
