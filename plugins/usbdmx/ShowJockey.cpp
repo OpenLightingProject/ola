@@ -161,7 +161,7 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
     buffer.GetRange(slot, bulk_buffer + 2, &write_size);
 
     ret_val = bulkSync(handle, m_endpoint, max_packet_size_out,
-                      bulk_buffer, write_size + 2);
+                       bulk_buffer, write_size + 2);
 
     if (ret_val < 0) {
       return ret_val;
