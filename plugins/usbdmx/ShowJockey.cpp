@@ -322,7 +322,7 @@ class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
         will_write_size = need_to_write_size;
       }
 
-      buffer.GetRange(written_size, p_final_buffer, &to_write_size);
+      buffer.GetRange(written_size, p_final_buffer, &will_write_size);
       p_final_buffer += to_write_size;
       written_size += to_write_size;
     }
