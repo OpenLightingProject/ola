@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * ShowJockey.h
- * The synchronous and asynchronous ShowJockey widgets.
+ * ShowJockeyDMXU1.h
+ * The synchronous and asynchronous ShowJockeyDMXU1 widgets.
  * Copyright (C) 2016 Nicolas Bertrand
  */
 
-#ifndef PLUGINS_USBDMX_SHOWJOCKEY_H_
-#define PLUGINS_USBDMX_SHOWJOCKEY_H_
+#ifndef PLUGINS_USBDMX_SHOWJOCKEYDMXU1_H_
+#define PLUGINS_USBDMX_SHOWJOCKEYDMXU1_H_
 
 #include <libusb.h>
 #include <memory>
@@ -34,27 +34,27 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-class ShowJockeyThreadedSender;
+class ShowJockeyDMXU1ThreadedSender;
 
 /**
- * @brief The ShowJockey Widget.
+ * @brief The ShowJockeyDMXU1 Widget.
  *
- * Stream value to the ShowJockey by respecting this packet format:
+ * Stream value to the ShowJockeyDMXU1 by respecting this packet format:
  * The first two bytes describe on a uint16_t the index of the first channel from which the
  * data start. Each following bytes correspond to the value of one channel.
  *
  */
-class ShowJockey : public SimpleWidget {
+class ShowJockeyDMXU1 : public SimpleWidget {
  public:
   /**
-   * @brief Create a new ShowJockey.
+   * @brief Create a new ShowJockeyDMXU1.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  ShowJockey(ola::usb::LibUsbAdaptor *adaptor,
-             libusb_device *usb_device,
-             const std::string &serial)
+  ShowJockeyDMXU1(ola::usb::LibUsbAdaptor *adaptor,
+                  libusb_device *usb_device,
+                  const std::string &serial)
       : SimpleWidget(adaptor, usb_device),
         m_serial(serial) {}
 
@@ -72,57 +72,57 @@ class ShowJockey : public SimpleWidget {
 
 
 /**
- * @brief An ShowJockey widget that uses synchronous libusb operations.
+ * @brief An ShowJockeyDMXU1 widget that uses synchronous libusb operations.
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
-class SynchronousShowJockey: public ShowJockey {
+class SynchronousShowJockeyDMXU1: public ShowJockeyDMXU1 {
  public:
   /**
-   * @brief Create a new SynchronousShowJockey.
+   * @brief Create a new SynchronousShowJockeyDMXU1.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  SynchronousShowJockey(ola::usb::LibUsbAdaptor *adaptor,
-                        libusb_device *usb_device,
-                        const std::string &serial);
+  SynchronousShowJockeyDMXU1(ola::usb::LibUsbAdaptor *adaptor,
+                             libusb_device *usb_device,
+                             const std::string &serial);
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class ShowJockeyThreadedSender> m_sender;
+  std::auto_ptr<class ShowJockeyDMXU1ThreadedSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousShowJockey);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousShowJockeyDMXU1);
 };
 
 /**
- * @brief An ShowJockey widget that uses asynchronous libusb operations.
+ * @brief An ShowJockeyDMXU1 widget that uses asynchronous libusb operations.
  */
-class AsynchronousShowJockey: public ShowJockey {
+class AsynchronousShowJockeyDMXU1: public ShowJockeyDMXU1 {
  public:
   /**
-   * @brief Create a new AsynchronousShowJockey.
+   * @brief Create a new AsynchronousShowJockeyDMXU1.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
    */
-  AsynchronousShowJockey(ola::usb::LibUsbAdaptor *adaptor,
-                         libusb_device *usb_device,
-                         const std::string &serial);
+  AsynchronousShowJockeyDMXU1(ola::usb::LibUsbAdaptor *adaptor,
+                              libusb_device *usb_device,
+                              const std::string &serial);
 
   bool Init();
 
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class ShowJockeyAsyncUsbSender> m_sender;
+  std::auto_ptr<class ShowJockeyDMXU1AsyncUsbSender> m_sender;
 
-  DISALLOW_COPY_AND_ASSIGN(AsynchronousShowJockey);
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousShowJockeyDMXU1);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SHOWJOCKEY_H_
+#endif  // PLUGINS_USBDMX_SHOWJOCKEYDMXU1_H_

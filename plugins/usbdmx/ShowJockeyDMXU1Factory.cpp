@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * ShowJockeyFactory.cpp
- * The WidgetFactory for ShowJockey widgets.
+ * ShowJockeyDMXU1Factory.cpp
+ * The WidgetFactory for ShowJockeyDMXU1 widgets.
  * Copyright (C) 2016 Nicolas Bertrand
  */
 
-#include "plugins/usbdmx/ShowJockeyFactory.h"
+#include "plugins/usbdmx/ShowJockeyDMXU1Factory.h"
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
@@ -32,13 +32,14 @@ namespace usbdmx {
 
 using ola::usb::LibUsbAdaptor;
 
-const char ShowJockeyFactory::EXPECTED_MANUFACTURER[] = "Showjockey Co.,Ltd";
-const char ShowJockeyFactory::EXPECTED_PRODUCT[] =
+const char ShowJockeyDMXU1Factory::EXPECTED_MANUFACTURER[] =
+    "Showjockey Co.,Ltd";
+const char ShowJockeyDMXU1Factory::EXPECTED_PRODUCT[] =
     "Showjockey Co.,Ltd.USB TO DMX51";
-const uint16_t ShowJockeyFactory::PRODUCT_ID = 0x57fe;
-const uint16_t ShowJockeyFactory::VENDOR_ID = 0x0483;
+const uint16_t ShowJockeyDMXU1Factory::PRODUCT_ID = 0x57fe;
+const uint16_t ShowJockeyDMXU1Factory::VENDOR_ID = 0x0483;
 
-bool ShowJockeyFactory::DeviceAdded(
+bool ShowJockeyDMXU1Factory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
@@ -60,11 +61,11 @@ bool ShowJockeyFactory::DeviceAdded(
     return false;
   }
 
-  ShowJockey *widget = NULL;
+  ShowJockeyDMXU1 *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousShowJockey(m_adaptor, usb_device, info.serial);
+    widget = new AsynchronousShowJockeyDMXU1(m_adaptor, usb_device, info.serial);
   } else {
-    widget = new SynchronousShowJockey(m_adaptor, usb_device, info.serial);
+    widget = new SynchronousShowJockeyDMXU1(m_adaptor, usb_device, info.serial);
   }
   return AddWidget(observer, widget);
 }

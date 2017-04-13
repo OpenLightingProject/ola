@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * ShowJockey.cpp
- * The synchronous and asynchronous ShowJockey widgets.
+ * ShowJockeyDMXU1.cpp
+ * The synchronous and asynchronous ShowJockeyDMXU1 widgets.
  * Copyright (C) 2016 Nicolas Bertrand
  */
 
-#include "plugins/usbdmx/ShowJockey.h"
+#include "plugins/usbdmx/ShowJockeyDMXU1.h"
 
 #include <string.h>
 #include <string>
@@ -85,21 +85,21 @@ bool LocateInterface(LibUsbAdaptor *adaptor,
       }
     }
   }
-  OLA_WARN << "Failed to locate endpoint for ShowJockey device.";
+  OLA_WARN << "Failed to locate endpoint for ShowJockeyDMXU1 device.";
   adaptor->FreeConfigDescriptor(device_config);
   return false;
 }
 }  // namespace
 
-// ShowJockeyThreadedSender
+// ShowJockeyDMXU1ThreadedSender
 // -----------------------------------------------------------------------------
 
 /*
- * Sends messages to a ShowJockey device in a separate thread.
+ * Sends messages to a ShowJockeyDMXU1 device in a separate thread.
  */
-class ShowJockeyThreadedSender: public ThreadedUsbSender {
+class ShowJockeyDMXU1ThreadedSender: public ThreadedUsbSender {
  public:
-  ShowJockeyThreadedSender(LibUsbAdaptor *adaptor,
+  ShowJockeyDMXU1ThreadedSender(LibUsbAdaptor *adaptor,
                            libusb_device *usb_device,
                            libusb_device_handle *usb_handle,
                            int max_packet_size_out,
@@ -119,7 +119,7 @@ class ShowJockeyThreadedSender: public ThreadedUsbSender {
                int size);
 };
 
-ShowJockeyThreadedSender::ShowJockeyThreadedSender(
+ShowJockeyDMXU1ThreadedSender::ShowJockeyDMXU1ThreadedSender(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     libusb_device_handle *usb_handle,
@@ -131,7 +131,7 @@ ShowJockeyThreadedSender::ShowJockeyThreadedSender(
       m_endpoint(endpoint) {
 }
 
-bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
+bool ShowJockeyDMXU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                               const DmxBuffer &buffer) {
   if (!handle) {
     return false;
@@ -180,7 +180,7 @@ bool ShowJockeyThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   return true;
 }
 
-int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
+int ShowJockeyDMXU1ThreadedSender::bulkSync(libusb_device_handle *handle,
                                        int endpoint, int max_packet_size,
                                        unsigned char *buffer, int size) {
   if (!handle) {
@@ -198,17 +198,17 @@ int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
   return -1;
 }
 
-// SynchronousShowJockey
+// SynchronousShowJockeyDMXU1
 // -----------------------------------------------------------------------------
 
-SynchronousShowJockey::SynchronousShowJockey(
+SynchronousShowJockeyDMXU1::SynchronousShowJockeyDMXU1(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const std::string &serial)
-    : ShowJockey(adaptor, usb_device, serial) {
+    : ShowJockeyDMXU1(adaptor, usb_device, serial) {
 }
 
-bool SynchronousShowJockey::Init() {
+bool SynchronousShowJockeyDMXU1::Init() {
   libusb_device_handle *usb_handle;
 
   int interface_number;
@@ -229,12 +229,12 @@ bool SynchronousShowJockey::Init() {
     return false;
   }
 
-  std::auto_ptr<ShowJockeyThreadedSender> sender(
-      new ShowJockeyThreadedSender(m_adaptor,
-                                   m_usb_device,
-                                   usb_handle,
-                                   max_packet_size,
-                                   endpoint));
+  std::auto_ptr<ShowJockeyDMXU1ThreadedSender> sender(
+      new ShowJockeyDMXU1ThreadedSender(m_adaptor,
+                                        m_usb_device,
+                                        usb_handle,
+                                        max_packet_size,
+                                        endpoint));
   if (!sender->Start()) {
     return false;
   }
@@ -243,27 +243,27 @@ bool SynchronousShowJockey::Init() {
   return true;
 }
 
-bool SynchronousShowJockey::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousShowJockeyDMXU1::SendDMX(const DmxBuffer &buffer) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
-// ShowJockeyAsyncUsbSender
+// ShowJockeyDMXU1AsyncUsbSender
 // -----------------------------------------------------------------------------
-class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
+class ShowJockeyDMXU1AsyncUsbSender : public AsyncUsbSender {
  public:
-  ShowJockeyAsyncUsbSender(LibUsbAdaptor *adaptor,
-                           libusb_device *usb_device,
-                           int endpoint,
-                           int max_packet_size_out,
-                           libusb_device_handle *handle)
-                           : AsyncUsbSender(adaptor, usb_device),
-                             m_endpoint(endpoint),
-                             m_max_packet_size_out(max_packet_size_out) {
+  ShowJockeyDMXU1AsyncUsbSender(LibUsbAdaptor *adaptor,
+                                libusb_device *usb_device,
+                                int endpoint,
+                                int max_packet_size_out,
+                                libusb_device_handle *handle)
+                                : AsyncUsbSender(adaptor, usb_device),
+                                  m_endpoint(endpoint),
+                                  m_max_packet_size_out(max_packet_size_out) {
     m_usb_handle = handle;
     m_tx_frame = NULL;
   }
 
-  ~ShowJockeyAsyncUsbSender() {
+  ~ShowJockeyDMXU1AsyncUsbSender() {
     CancelTransfer();
     delete[] m_tx_frame;
   }
@@ -309,20 +309,20 @@ class ShowJockeyAsyncUsbSender : public AsyncUsbSender {
   int m_endpoint;
   int m_max_packet_size_out;
 
-  DISALLOW_COPY_AND_ASSIGN(ShowJockeyAsyncUsbSender);
+  DISALLOW_COPY_AND_ASSIGN(ShowJockeyDMXU1AsyncUsbSender);
 };
 
-// AsynchronousShowJockey
+// AsynchronousShowJockeyDMXU1
 // -----------------------------------------------------------------------------
 
-AsynchronousShowJockey::AsynchronousShowJockey(
+AsynchronousShowJockeyDMXU1::AsynchronousShowJockeyDMXU1(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const std::string &serial)
-    : ShowJockey(adaptor, usb_device, serial) {
+    : ShowJockeyDMXU1(adaptor, usb_device, serial) {
 }
 
-bool AsynchronousShowJockey::Init() {
+bool AsynchronousShowJockeyDMXU1::Init() {
   int interface_number;
   int endpoint;
   int max_packet_size;
@@ -341,17 +341,17 @@ bool AsynchronousShowJockey::Init() {
     return false;
   }
 
-  std::auto_ptr<ShowJockeyAsyncUsbSender> sender(
-      new ShowJockeyAsyncUsbSender(m_adaptor,
-                                   m_usb_device,
-                                   endpoint,
-                                   max_packet_size,
-                                   usb_handle));
+  std::auto_ptr<ShowJockeyDMXU1AsyncUsbSender> sender(
+      new ShowJockeyDMXU1AsyncUsbSender(m_adaptor,
+                                        m_usb_device,
+                                        endpoint,
+                                        max_packet_size,
+                                        usb_handle));
   m_sender.reset(sender.release());
   return true;
 }
 
-bool AsynchronousShowJockey::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousShowJockeyDMXU1::SendDMX(const DmxBuffer &buffer) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx
