@@ -77,7 +77,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   bool NewWidget(class EurolitePro *widget);
   bool NewWidget(ola::usb::JaRuleWidget *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
-  bool NewWidget(class ShowJockey *widget);
+  bool NewWidget(class ShowJockeyDMXU1 *widget);
   bool NewWidget(class Sunlite *widget);
   bool NewWidget(class VellemanK8062 *widget);
 
@@ -87,7 +87,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   void WidgetRemoved(OLA_UNUSED class EurolitePro *widget) {}
   void WidgetRemoved(OLA_UNUSED ola::usb::JaRuleWidget *widget) {}
   void WidgetRemoved(OLA_UNUSED class ScanlimeFadecandy *widget) {}
-  void WidgetRemoved(OLA_UNUSED class ShowJockey *widget) {}
+  void WidgetRemoved(OLA_UNUSED class ShowJockeyDMXU1 *widget) {}
   void WidgetRemoved(OLA_UNUSED class Sunlite *widget) {}
   void WidgetRemoved(OLA_UNUSED class VellemanK8062 *widget) {}
 

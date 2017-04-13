@@ -13,17 +13,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * ShowJockeyFactory.h
- * The WidgetFactory for ShowJockey widgets.
+ * ShowJockeyDMXU1Factory.h
+ * The WidgetFactory for ShowJockeyDMXU1 widgets.
  * Copyright (C) 2016 Nicolas Bertrand
  */
 
-#ifndef PLUGINS_USBDMX_SHOWJOCKEYFACTORY_H_
-#define PLUGINS_USBDMX_SHOWJOCKEYFACTORY_H_
+#ifndef PLUGINS_USBDMX_SHOWJOCKEYDMXU1FACTORY_H_
+#define PLUGINS_USBDMX_SHOWJOCKEYDMXU1FACTORY_H_
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
-#include "plugins/usbdmx/ShowJockey.h"
+#include "plugins/usbdmx/ShowJockeyDMXU1.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
@@ -31,12 +31,12 @@ namespace plugin {
 namespace usbdmx {
 
 /**
- * @brief Creates ShowJockey widgets.
+ * @brief Creates ShowJockeyDMXU1 widgets.
  */
-class ShowJockeyFactory : public BaseWidgetFactory<class ShowJockey> {
+class ShowJockeyDMXU1Factory : public BaseWidgetFactory<class ShowJockeyDMXU1> {
  public:
-  explicit ShowJockeyFactory(ola::usb::LibUsbAdaptor *adaptor)
-      : BaseWidgetFactory<class ShowJockey>("ShowJockeyFactory"),
+  explicit ShowJockeyDMXU1Factory(ola::usb::LibUsbAdaptor *adaptor)
+      : BaseWidgetFactory<class ShowJockeyDMXU1>("ShowJockeyDMXU1Factory"),
         m_adaptor(adaptor) {}
 
   bool DeviceAdded(WidgetObserver *observer,
@@ -52,9 +52,9 @@ class ShowJockeyFactory : public BaseWidgetFactory<class ShowJockey> {
   static const uint16_t VENDOR_ID;
 
 
-  DISALLOW_COPY_AND_ASSIGN(ShowJockeyFactory);
+  DISALLOW_COPY_AND_ASSIGN(ShowJockeyDMXU1Factory);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SHOWJOCKEYFACTORY_H_
+#endif  // PLUGINS_USBDMX_SHOWJOCKEYDMXU1FACTORY_H_
