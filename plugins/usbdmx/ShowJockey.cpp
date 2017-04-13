@@ -193,35 +193,6 @@ int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
                             &transferred, URB_TIMEOUT_MS);
 
     return transferred;
-  } else {
-    int ret_val = 1;
-    unsigned char *buf = buffer;
-    int n_packet = max_packet_size;
-    int n_left = size;
-    int transferred = -1;
-    int transferredAll = 0;
-
-    while (1) {
-      if (n_left <= 0) {
-        break;
-      }
-
-      ret_val = m_adaptor->BulkTransfer(handle, endpoint, buffer, n_packet,
-                                        &transferred, URB_TIMEOUT_MS);
-
-      if (ret_val) {
-        break;
-      }
-
-      buf += transferred;
-      n_left -= transferred;
-      n_packet = max_packet_size;
-      transferredAll += transferred;
-    }
-
-    if (transferredAll == size) {
-      return transferredAll;
-    }
   }
 
   return -1;
