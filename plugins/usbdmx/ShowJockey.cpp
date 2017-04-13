@@ -207,7 +207,7 @@ int ShowJockeyThreadedSender::bulkSync(libusb_device_handle *handle,
       }
 
       ret_val = m_adaptor->BulkTransfer(handle, endpoint, buffer, n_packet,
-                                       &transferred, URB_TIMEOUT_MS);
+                                        &transferred, URB_TIMEOUT_MS);
 
       if (ret_val) {
         break;
