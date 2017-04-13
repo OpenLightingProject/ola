@@ -9,9 +9,9 @@ This plugin supports various USB DMX devices including:
 * DMXCreator 512 Basic
 * Eurolite
 * Fadecandy
+* ShowJockey
 * Sunlite USBDMX2
 * Velleman K8062.
-* ShowJockey
 
 
 ## Config file : `ola-usbdmx.conf`
