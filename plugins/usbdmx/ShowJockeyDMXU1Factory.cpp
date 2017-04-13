@@ -63,9 +63,13 @@ bool ShowJockeyDMXU1Factory::DeviceAdded(
 
   ShowJockeyDMXU1 *widget = NULL;
   if (FLAGS_use_async_libusb) {
-    widget = new AsynchronousShowJockeyDMXU1(m_adaptor, usb_device, info.serial);
+    widget = new AsynchronousShowJockeyDMXU1(m_adaptor,
+                                             usb_device,
+                                             info.serial);
   } else {
-    widget = new SynchronousShowJockeyDMXU1(m_adaptor, usb_device, info.serial);
+    widget = new SynchronousShowJockeyDMXU1(m_adaptor,
+                                            usb_device,
+                                            info.serial);
   }
   return AddWidget(observer, widget);
 }
