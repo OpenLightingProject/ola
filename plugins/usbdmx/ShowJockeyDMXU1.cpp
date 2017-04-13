@@ -15,6 +15,13 @@
  *
  * ShowJockeyDMXU1.cpp
  * The synchronous and asynchronous ShowJockeyDMXU1 widgets.
+
+ * Adapted from SJ-DMX, p3root - Patrik Pfaffenbauer,
+ * patrik.pfaffenbauer@p3.co.at,
+ * https://github.com/p3root/SJ-DMX.git
+ *
+ * by Nicolas Bertrand, nbe@anomes.com
+ *
  * Copyright (C) 2016 Nicolas Bertrand
  */
 
