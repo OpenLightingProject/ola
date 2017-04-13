@@ -38,6 +38,11 @@ class ShowJockeyThreadedSender;
 
 /**
  * @brief The ShowJockey Widget.
+ *
+ * Stream value to the ShowJockey by respecting this packet format:
+ * The first two bytes describe on a uint16_t the index of the first canal from which the
+ * data start. Each following bytes correspond to the value of one canal. 
+ *
  */
 class ShowJockey : public SimpleWidget {
  public:
