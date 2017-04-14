@@ -139,7 +139,7 @@ ShowJockeyDMXU1ThreadedSender::ShowJockeyDMXU1ThreadedSender(
 }
 
 bool ShowJockeyDMXU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
-                                              const DmxBuffer &buffer) {
+                                                   const DmxBuffer &buffer) {
   if (!handle) {
     return false;
   }
@@ -188,8 +188,8 @@ bool ShowJockeyDMXU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 }
 
 int ShowJockeyDMXU1ThreadedSender::bulkSync(libusb_device_handle *handle,
-                                       int endpoint, int max_packet_size,
-                                       unsigned char *buffer, int size) {
+                                            int endpoint, int max_packet_size,
+                                            unsigned char *buffer, int size) {
   if (!handle) {
     return -1;
   }

@@ -44,9 +44,9 @@ namespace usbdmx {
 class ShowJockeyDMXU1ThreadedSender;
 
 /**
- * @brief The ShowJockeyDMXU1 Widget.
+ * @brief The ShowJockey-DMX-U1 Widget.
  *
- * Stream value to the ShowJockeyDMXU1 by respecting this packet format:
+ * Stream value to the ShowJockey-DMX-U1 by respecting this packet format:
  * The first two bytes describe on a uint16_t the index of the first channel from which the
  * data start. Each following bytes correspond to the value of one channel.
  *
