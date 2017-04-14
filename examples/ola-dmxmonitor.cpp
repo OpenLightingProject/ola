@@ -23,7 +23,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 
 #include <curses.h>
@@ -41,7 +41,7 @@
 #include <unistd.h>
 #ifdef HAVE_FTIME
 #include <sys/timeb.h>
-#endif
+#endif  // HAVE_FTIME
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Constants.h>
@@ -563,6 +563,7 @@ void DmxMonitor::ChangePalette(int p) {
     default:
       m_palette_number = 0;
       // fall through, use 0 as default palette
+      OLA_FALLTHROUGH
     case 0:
       init_pair(CHANNEL, COLOR_BLACK, COLOR_CYAN);
       init_pair(ZERO, COLOR_BLACK, COLOR_WHITE);

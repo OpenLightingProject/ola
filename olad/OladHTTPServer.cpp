@@ -184,6 +184,12 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
       "/new/libs/angular/js/angular.min.js",
       HTTPServer::CONTENT_TYPE_JS);
   m_server.RegisterFile(
+      "/new/libs/marked/js/marked.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
+      "/new/libs/angular-marked/js/angular-marked.min.js",
+      HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile(
       "/new/libs/bootstrap/js/bootstrap.min.js",
       HTTPServer::CONTENT_TYPE_JS);
   m_server.RegisterFile(
@@ -433,7 +439,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   struct tm start_time;
   localtime_r(&m_start_time_t, &start_time);
   strftime(start_time_str, sizeof(start_time_str), "%c", &start_time);
-#endif
+#endif  // _WIN32
 
   JsonObject json;
   json.Add("hostname", ola::network::FQDN());

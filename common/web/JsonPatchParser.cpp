@@ -27,6 +27,7 @@
 #include "ola/stl/STLUtils.h"
 #include "ola/web/Json.h"
 #include "ola/web/JsonLexer.h"
+#include "ola/base/Macro.h"
 
 namespace ola {
 namespace web {
@@ -159,6 +160,7 @@ void JsonPatchParser::OpenArray() {
       m_parser_depth = 0;
       m_state = VALUE;
       // fall through
+      OLA_FALLTHROUGH
     case VALUE:
       m_parser_depth++;
       m_parser.OpenArray();
@@ -203,6 +205,7 @@ void JsonPatchParser::OpenObject() {
       m_parser_depth = 0;
       m_state = VALUE;
       // fall through
+      OLA_FALLTHROUGH
     case VALUE:
       m_parser_depth++;
       m_parser.OpenObject();

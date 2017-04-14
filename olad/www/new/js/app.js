@@ -18,7 +18,7 @@
  */
 /*jshint browser: true, jquery: true */
 /* global angular */
-var ola = angular.module('olaApp', ['ngRoute']);
+var ola = angular.module('olaApp', ['ngRoute', 'hc.marked']);
 
 ola.config(['$routeProvider',
   function($routeProvider) {
@@ -58,6 +58,16 @@ ola.config(['$routeProvider',
       controller: 'pluginInfoCtrl'
     }).otherwise({
       redirectTo: '/'
+    });
+  }
+]);
+
+ola.config(['markedProvider',
+  function(markedProvider) {
+    'use strict';
+    markedProvider.setOptions({
+      gfm: true,
+      tables: true
     });
   }
 ]);
@@ -201,17 +211,14 @@ ola.controller('faderUniverseCtrl',
       };
 
       $scope.page = function(d) {
-        if (d === 1) {
-          var offsetLimit =
-            $window.Math.ceil(OLA.MAX_CHANNEL_NUMBER / $scope.limit);
-          if (($scope.offset + 1) !== offsetLimit) {
-            $scope.offset++;
-          }
-        } else if (d === OLA.MIN_CHANNEL_VALUE) {
-          if ($scope.offset !== OLA.MIN_CHANNEL_VALUE) {
-            $scope.offset--;
-          }
+        var pageCount = $scope.getPageCount();
+        var offset = $scope.offset + d;
+        if (offset + 1 > pageCount) {
+          offset -= pageCount;
+        } else if (offset < 0) {
+          offset += pageCount;
         }
+        $scope.offset = offset;
       };
 
       $scope.getWidth = function() {
@@ -226,6 +233,11 @@ ola.controller('faderUniverseCtrl',
         return $window.Math.floor(width);
       };
 
+      $scope.getPageCount = function() {
+        var count = OLA.MAX_CHANNEL_NUMBER / $scope.limit;
+        return $window.Math.ceil(count);
+      };
+
       $scope.limit = $scope.getLimit();
 
       $scope.width = {
@@ -235,6 +247,10 @@ ola.controller('faderUniverseCtrl',
       $window.$($window).resize(function() {
         $scope.$apply(function() {
           $scope.limit = $scope.getLimit();
+          var pageCount = $scope.getPageCount();
+          if ($scope.offset + 1 > pageCount) {
+            $scope.offset = pageCount - 1;
+          }
           $scope.width = {
             width: $scope.getWidth()
           };
@@ -310,9 +326,57 @@ ola.controller('keypadUniverseCtrl',
         } else if (check.regexGroups(fields)) {
           $scope.field = fields[0];
         }
+        $scope.focusInput = true;
+      };
+
+      $scope.keypress = function($event) {
+        var key = $event.key;
+
+        // don't handle keyboard shortcuts and function keys
+        if ($event.altKey || $event.ctrlKey || $event.metaKey ||
+            ($event.which === 0 && key !== 'Enter' && key !== 'Backspace')) {
+          // $event.which is 0 for non-printable keys (like the F1 - F12 keys)
+          return;
+        }
+
+        $event.preventDefault();
+
+        switch (key) {
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+            $scope.input(key);
+            break;
+          case '@':
+          case 'a':
+            $scope.input(' @ ');
+            break;
+          case '>':
+          case 't':
+            $scope.input(' THRU ');
+            break;
+          case 'f':
+            $scope.input('FULL');
+            break;
+          case 'Backspace':
+            $scope.input('backspace');
+            break;
+          case 'Enter':
+            $scope.submit();
+            break;
+        }
       };
 
       $scope.submit = function() {
+        $scope.focusInput = true;
+
         var dmx = [];
         var input = $scope.field;
         var result = regexkeypad.exec(input);
@@ -345,6 +409,8 @@ ola.controller('keypadUniverseCtrl',
           return false;
         }
       };
+
+      $scope.focusInput = true;
     }
   ]);
 
@@ -464,18 +530,16 @@ ola.controller('addUniverseCtrl', ['$scope', '$ola', '$window', '$location',
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('pluginInfoCtrl',
-  ['$scope', '$routeParams', '$ola',
-    function($scope, $routeParams, $ola) {
+  ['$scope', '$routeParams', '$ola', '$sce', 'marked',
+    function($scope, $routeParams, $ola, $sce, marked) {
       'use strict';
       $ola.get.InfoPlugin($routeParams.id).then(function(data) {
         $scope.active = data.active;
         $scope.enabled = data.enabled;
         $scope.name = data.name;
-        //TODO(Dave_o): clean this up and use proper angular
-        var description = document.getElementById('description');
-        description.textContent = data.description;
-        description.innerHTML =
-          description.innerHTML.replace(/\\n/g, '<br />');
+        $scope.description = $sce.trustAsHtml(
+          marked(data.description.replace(/\\n/g, '\n'))
+        );
       });
 
       $scope.stateColor = function(val) {
@@ -614,6 +678,30 @@ ola.constant('OLA', {
   'MIN_CHANNEL_VALUE': 0,
   'MAX_CHANNEL_VALUE': 255
 });
+
+/*jshint browser: true, jquery: true*/
+/* global ola */
+ola.directive('autofocus', ['$timeout', '$parse',
+  function($timeout, $parse) {
+    'use strict';
+    return {
+      restrict: 'A',
+      link: function($scope, $element, $attrs) {
+        var model = $parse($attrs.autofocus);
+        $scope.$watch(model, function(value) {
+          if (value === true) {
+            $timeout(function() {
+              $element[0].focus();
+            });
+          }
+        });
+        $element.bind('blur', function() {
+          $scope.$apply(model.assign($scope, false));
+        });
+      }
+    };
+  }
+]);
 
 /*jshint browser: true, jquery: true*/
 /* global ola */

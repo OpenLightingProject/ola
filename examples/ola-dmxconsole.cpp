@@ -23,7 +23,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <curses.h>
 #include <errno.h>
@@ -37,7 +37,7 @@
 #include <sys/time.h>
 #ifdef HAVE_FTIME
 #include <sys/timeb.h>
-#endif
+#endif  // HAVE_FTIME
 #include <termios.h>
 #include <time.h>
 #include <math.h>
@@ -143,8 +143,8 @@ uint64_t timeGetTime() {
           static_cast<uint64_t>(t.millitm);
 # else
 
-# endif
-#endif
+# endif  // HAVE_FTIME
+#endif  // HAVE_GETTIMEOFDAY
 }
 
 
@@ -446,6 +446,7 @@ void changepalette(int p) {
     default:
       palette_number = 0;
       // fall through, use 0 as default palette
+      OLA_FALLTHROUGH
     case 0:
       init_pair(CHANNEL, COLOR_BLACK, COLOR_CYAN);
       init_pair(ZERO, COLOR_BLACK, COLOR_WHITE);

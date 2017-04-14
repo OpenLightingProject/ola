@@ -4,14 +4,14 @@
 ola_set_dmx \- Sets the DMX values for a universe.
 .SH SYNOPSIS
 .B ola_set_dmx
-\fI--universe <universe> --dmx 0,255,0,255\fR
+\fI--universe <universe> --dmx <values>\fR
 .SH DESCRIPTION
 Sets the DMX values for a universe.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Display this help message and exit.
 .HP
-\fB\-u\fR, \fB\-\-universe\fR <universe> Universe number.
+\fB\-u\fR, \fB\-\-universe\fR <universe> Universe number, e.g. 0.
 .TP
 \fB\-d\fR, \fB\-\-dmx\fR <values>
-Comma separated DMX values.
+Comma separated DMX values, e.g. 0,255,128 sets first channel to 0, second channel to 255 and third channel to 128.

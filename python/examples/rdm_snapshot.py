@@ -356,7 +356,7 @@ class ConfigWriter(object):
     self._NextState()
 
   def _NextState(self):
-    """Move to the next state of information fetching."""
+    """Move to the next state of information setting."""
     if self.work_state == self.DMX_START_ADDRESS:
       address = self.configuration[self.uid].get('dmx_start_address')
       self.work_state = self.DEVICE_LABEL
@@ -530,6 +530,7 @@ def main():
       WriteToFile(output_file, data)
     else:
       pprint.pprint(data)
+
 
 if __name__ == '__main__':
   main()

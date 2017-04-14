@@ -95,7 +95,7 @@ common_rdm_DiscoveryAgentTester_LDADD = $(COMMON_TESTING_LIBS)
 common_rdm_PidStoreTester_SOURCES = \
     common/rdm/DescriptorConsistencyCheckerTest.cpp \
     common/rdm/PidStoreTest.cpp
-common_rdm_PidStoreTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_PidStoreTester_CXXFLAGS = $(COMMON_TESTING_PROTOBUF_FLAGS)
 common_rdm_PidStoreTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_rdm_RDMHelperTester_SOURCES = common/rdm/RDMHelperTest.cpp
@@ -109,7 +109,7 @@ common_rdm_RDMMessageTester_SOURCES = \
     common/rdm/RDMMessageInterationTest.cpp \
     common/rdm/StringMessageBuilderTest.cpp \
     common/rdm/VariableFieldSizeCalculatorTest.cpp
-common_rdm_RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_PROTOBUF_FLAGS)
 common_rdm_RDMMessageTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_rdm_RDMAPITester_SOURCES = \

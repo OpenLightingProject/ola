@@ -75,8 +75,11 @@ AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
 AC_HEADER_DIRENT
 AC_HEADER_RESOLV
 AC_HEADER_STDC
+# Required headers (we cannot work without these)
+AC_CHECK_HEADERS([errno.h],[],[AC_MSG_ERROR([Missing a required header])])
+# Other headers (we can work without these, but may need to modify things slightly)
 AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
-AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h errno.h execinfo.h \
+AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h stropts.h \
                   sys/param.h sys/types.h sys/uio.h sysexits.h])
 AC_CHECK_HEADERS([winsock2.h])
@@ -164,6 +167,29 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
                 socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
                 getgrnam_r getgrgid_r secure_getenv])
+
+AC_MSG_CHECKING(for readdir_r deprecation)
+old_cxxflags=$CXXFLAGS
+CXXFLAGS="${CXXFLAGS} -Werror=deprecated-declarations"
+AC_CACHE_VAL(ac_cv_readdir_r_deprecation,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([[#include <dirent.h>
+#include <unistd.h>]],[[
+        const char* arg = "/";
+        DIR * dir;
+        struct dirent *buf, *de;
+        dir = opendir(arg);
+        readdir_r(dir,buf,&de);
+]])],
+     [ac_cv_readdir_r_deprecation=no],
+     [ac_cv_readdir_r_deprecation=yes])
+)
+CXXFLAGS=$old_cxxflags
+AC_MSG_RESULT($ac_cv_readdir_r_deprecation)
+
+AS_IF([test "x$ac_cv_readdir_r_deprecation" = xyes],
+      [CXXFLAGS="$CXXFLAGS -Wno-error=deprecated-declarations"],
+      [])
 
 LT_INIT([win32-dll])
 

@@ -86,7 +86,7 @@ class SPIDevice: public ola::Device {
   static const char SPI_DEVICE_NAME[];
   static const char HARDWARE_BACKEND[];
   static const char SOFTWARE_BACKEND[];
-  static const uint8_t MAX_GPIO_PIN = 25;
+  static const uint16_t MAX_GPIO_PIN = 1023;
 };
 }  // namespace spi
 }  // namespace plugin

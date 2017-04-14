@@ -64,7 +64,7 @@ bool MockUDPSocket::Init() {
 #else
     m_dummy_handle = socket(PF_INET, SOCK_DGRAM, 0);
     if (m_dummy_handle < 0) {
-#endif
+#endif  // _WIN32
       OLA_WARN << "Could not create socket " << strerror(errno);
       return false;
     }
@@ -94,7 +94,7 @@ bool MockUDPSocket::Close() {
     closesocket(m_dummy_handle.m_handle.m_fd);
 #else
     close(m_dummy_handle);
-#endif
+#endif  // _WIN32
   }
   return true;
 }

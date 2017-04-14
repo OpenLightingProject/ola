@@ -29,6 +29,7 @@
 #include "olad/Preferences.h"
 #include "plugins/e131/E131Device.h"
 #include "plugins/e131/E131Plugin.h"
+#include "plugins/e131/E131PluginDescription.h"
 
 namespace ola {
 namespace plugin {
@@ -126,46 +127,7 @@ bool E131Plugin::StopHook() {
  * Return the description for this plugin
  */
 string E131Plugin::Description() const {
-    return
-"E1.31 (Streaming DMX over ACN) Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin creates a single device with a configurable number of input \n"
-"and output ports.\n"
-"\n"
-"Each port can be assigned to a different E1.31 Universe.\n"
-"\n"
-"--- Config file : ola-e131.conf ---\n"
-"\n"
-"cid = 00010203-0405-0607-0809-0A0B0C0D0E0F\n"
-"The CID to use for this device.\n"
-"\n"
-"dscp = [int]\n"
-"The DSCP value to tag the packets with, range is 0 to 63.\n"
-"\n"
-"draft_discovery = [bool]\n"
-"Enable the draft (2014) E1.31 discovery protocol.\n"
-"\n"
-"ignore_preview = [true|false]\n"
-"Ignore preview data.\n"
-"\n"
-"input_ports = [int]\n"
-"The number of input ports to create up to a max of 32.\n"
-"\n"
-"ip = [a.b.c.d|<interface_name>]\n"
-"The ip address or interface name to bind to. If not specified it will\n"
-"use the first non-loopback interface.\n"
-"\n"
-"output_ports = [int]\n"
-"The number of output ports to create up to a max of 32.\n"
-"\n"
-"prepend_hostname = [true|false]\n"
-"Prepend the hostname to the source name when sending packets.\n"
-"\n"
-"revision = [0.2|0.46]\n"
-"Select which revision of the standard to use when sending data. 0.2 is the\n"
-" standardized revision, 0.46 (default) is the ANSI standard version.\n"
-"\n";
+    return plugin_description;
 }
 
 
