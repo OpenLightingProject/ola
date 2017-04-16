@@ -48,8 +48,7 @@ class ShowJockeyDMXU1ThreadedSender;
  *
  * Stream value to the ShowJockey-DMX-U1 by respecting this packet format:
  * The first two bytes describe on a uint16_t the index of the first channel from which the
- * data start. Each following bytes correspond to the value of one channel.
- *
+ * data starts. Each following bytes correspond to the value of one channel.
  */
 class ShowJockeyDMXU1 : public SimpleWidget {
  public:
@@ -79,7 +78,7 @@ class ShowJockeyDMXU1 : public SimpleWidget {
 
 
 /**
- * @brief An ShowJockeyDMXU1 widget that uses synchronous libusb operations.
+ * @brief A ShowJockeyDMXU1 widget that uses synchronous libusb operations.
  *
  * Internally this spawns a new thread to avoid blocking SendDMX() calls.
  */
@@ -106,7 +105,7 @@ class SynchronousShowJockeyDMXU1: public ShowJockeyDMXU1 {
 };
 
 /**
- * @brief An ShowJockeyDMXU1 widget that uses asynchronous libusb operations.
+ * @brief A ShowJockeyDMXU1 widget that uses asynchronous libusb operations.
  */
 class AsynchronousShowJockeyDMXU1: public ShowJockeyDMXU1 {
  public:
