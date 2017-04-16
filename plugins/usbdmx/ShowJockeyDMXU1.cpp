@@ -107,10 +107,10 @@ bool LocateInterface(LibUsbAdaptor *adaptor,
 class ShowJockeyDMXU1ThreadedSender: public ThreadedUsbSender {
  public:
   ShowJockeyDMXU1ThreadedSender(LibUsbAdaptor *adaptor,
-                           libusb_device *usb_device,
-                           libusb_device_handle *usb_handle,
-                           int max_packet_size_out,
-                           int endpoint);
+                                libusb_device *usb_device,
+                                libusb_device_handle *usb_handle,
+                                int max_packet_size_out,
+                                int endpoint);
 
  private:
   LibUsbAdaptor* const m_adaptor;
