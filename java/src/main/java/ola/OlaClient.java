@@ -18,6 +18,7 @@ package ola;
 
 import java.util.logging.Logger;
 
+import ola.proto.Ola.Ack;
 import ola.proto.Ola.DeviceConfigReply;
 import ola.proto.Ola.DeviceConfigRequest;
 import ola.proto.Ola.DeviceInfoReply;
@@ -26,6 +27,7 @@ import ola.proto.Ola.DiscoveryRequest;
 import ola.proto.Ola.DmxData;
 import ola.proto.Ola.MergeMode;
 import ola.proto.Ola.MergeModeRequest;
+import ola.proto.Ola.OlaClientService;
 import ola.proto.Ola.OlaServerService;
 import ola.proto.Ola.OptionalUniverseRequest;
 import ola.proto.Ola.PatchAction;
@@ -52,10 +54,10 @@ import ola.rpc.StreamRpcChannel;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
-import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import com.google.protobuf.Service;
 
-public class OlaClient {
+public class OlaClient implements OlaClientService.Interface {
 
     private static Logger logger = Logger.getLogger(OlaClient.class.getName());
 
@@ -63,16 +65,19 @@ public class OlaClient {
 
     private RpcController controller;
 
-    private RpcChannel channel;
+    private StreamRpcChannel channel;
 
 
     public OlaClient() throws Exception {
-
-        channel = new StreamRpcChannel();
-        controller = new SimpleRpcController();
-        serverService = OlaServerService.Stub.newStub(channel);
+	controller = new SimpleRpcController();
+	Service clientService = OlaClientService.newReflectiveService(this);
+	channel = new StreamRpcChannel(clientService);
+	serverService = OlaServerService.Stub.newStub(channel);
     }
 
+    public void stop() {
+	this.channel.close();
+    }
 
     /**
      * Generic method for making Rpc Calls.
@@ -426,5 +431,18 @@ public class OlaClient {
             signed[i] = (short) ((short) values[i] & 0xFF);
         }
         return signed;
+    }
+
+    @Override
+    public void updateDmxData(RpcController controller, DmxData response,
+          RpcCallback<Ack> done) {
+      onUpdateDmxData(response.getUniverse(), response.getPriority(),
+              convertFromUnsigned(response.getData()));
+
+      done.run(Ack.getDefaultInstance());
+    }
+
+    public void onUpdateDmxData(int universe, int priority, short[] dmxData) {
+      // Default implementation does nothing - this method can be overridden.
     }
 }

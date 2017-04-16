@@ -15,7 +15,6 @@
  *************************************************************************/
 package ola.rpc;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -23,15 +22,15 @@ import java.nio.ByteOrder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import ola.proto.Ola.STREAMING_NO_RESPONSE;
 import ola.rpc.Rpc.RpcMessage;
+import ola.rpc.StreamRpcChannelReadThread.ExpectedResponse;
 
 import com.google.protobuf.Descriptors.MethodDescriptor;
-import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcChannel;
 import com.google.protobuf.RpcController;
+import com.google.protobuf.Service;
 
 /**
  * Basic RPC Channel implementation.  All calls are done
@@ -58,7 +57,9 @@ public class StreamRpcChannel implements RpcChannel {
 
     private BufferedOutputStream bos;
 
-    private BufferedInputStream bis;
+    private StreamRpcChannelReadThread reader;
+
+    private final Service clientService;
 
     private int sequence = 0;
 
@@ -67,7 +68,8 @@ public class StreamRpcChannel implements RpcChannel {
      * Create new Rpc Channel Connection to olad.
      * @throws Exception
      */
-    public StreamRpcChannel() throws Exception {
+    public StreamRpcChannel(Service clientService) throws Exception {
+	this.clientService = clientService;
         connect();
     }
 
@@ -87,7 +89,8 @@ public class StreamRpcChannel implements RpcChannel {
         try {
             socket = new Socket(HOST, PORT);
             bos = new BufferedOutputStream(socket.getOutputStream());
-            bis = new BufferedInputStream(socket.getInputStream());
+            reader = new StreamRpcChannelReadThread(socket, clientService);
+            reader.start();
         } catch (Exception e) {
             logger.severe("Error connecting. Make sure the olad daemon is running on port 9010");
             throw e;
@@ -103,6 +106,9 @@ public class StreamRpcChannel implements RpcChannel {
         if (socket != null && socket.isConnected()) {
             try {
                 socket.close();
+                this.reader.join();
+            } catch (InterruptedException e) {
+        	logger.warning("Error closing reader. " + e.getMessage());
             } catch (Exception e) {
                 logger.warning("Error closing socket. " + e.getMessage());
             }
@@ -127,27 +133,18 @@ public class StreamRpcChannel implements RpcChannel {
 
         try {
 
-            sendMessage(message);
             if (responseMessage.getDescriptorForType().getName().equals("STREAMING_NO_RESPONSE")) {
                 // don't wait for response on streaming messages..
+        	sendMessage(message);
                 return;
             }
 
-            RpcMessage response = readMessage();
-
-            if (response.getType().equals(Rpc.Type.RESPONSE)) {
-                if (response.getId() != messageId) {
-                    controller.setFailed("Received message with id " + response.getId() + " , but was expecting " + messageId);
-                } else {
-                    responseMessage = DynamicMessage.parseFrom(responseMessage.getDescriptorForType(), response.getBuffer());
-                    if (done != null) {
-                        done.run(responseMessage);
-                    }
-                }
-            } else {
-                controller.setFailed("No valid response received !");
-            }
-
+            ExpectedResponse response = this.reader.scheduleExpectedResponse(
+    	            messageId, controller, done, responseMessage);
+    	    synchronized (response) {
+    	        sendMessage(message);
+    	        response.wait();
+    	    }
 
         } catch (Exception e) {
 
@@ -188,36 +185,5 @@ public class StreamRpcChannel implements RpcChannel {
         bos.write(header);
         bos.write(data);
         bos.flush();
-    }
-
-
-    /**
-     * @return RpcMessage read back from olad.
-     *
-     * @throws Exception
-     */
-    private RpcMessage readMessage() throws Exception {
-
-        byte[] header = new byte[4];
-        bis.read(header);
-
-        int headerValue = ByteBuffer.wrap(header).order(ByteOrder.nativeOrder()).getInt();
-        int size = headerValue  & SIZE_MASK;
-
-        byte[] data = new byte[size];
-        bis.read(data);
-
-        if (logger.isLoggable(Level.FINEST)) {
-            logger.info("Received header ");
-            for (byte b : header) {
-                    System.out.format("0x%x ", b);
-            }
-            logger.info("Received data ");
-            for (byte b : data) {
-                    System.out.format("0x%x ", b);
-            }
-        }
-
-        return RpcMessage.parseFrom(data);
     }
 }
