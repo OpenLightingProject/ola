@@ -10,6 +10,7 @@ You need to select:
 - mingw-developer-toolkit
 - mingw32-base
 - mingw32-gcc-g++
+- mingw32-libncurses
 - mingw32-pthreads-w32
 - msys-base
 - msys-coreutils
