@@ -105,7 +105,8 @@ TCPSocket *ConnectToServer(unsigned short port) {
 
     // Try to start the server, we pass --daemon (fork into background) and
     // --syslog (log to syslog).
-    execlp("olad", "olad", "--daemon", "--syslog", NULL);
+    execlp("olad", "olad", "--daemon", "--syslog",
+           reinterpret_cast<char*>(NULL));
     OLA_WARN << "Failed to exec: " << strerror(errno);
     _exit(1);
   }
