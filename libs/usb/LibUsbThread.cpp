@@ -20,6 +20,7 @@
 
 #include "libs/usb/LibUsbThread.h"
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/stl/STLUtils.h"
@@ -70,6 +71,12 @@ LibUsbHotplugThread::LibUsbHotplugThread(libusb_context *context,
 }
 
 bool LibUsbHotplugThread::Init() {
+  /* check for hotplug support */
+  if (!LibUsbAdaptor::HotplugSupported()) {
+    OLA_WARN << "No hotplug capability, giving up trying to start this thread";
+    return false;
+  }
+
   int rc = libusb_hotplug_register_callback(
       NULL,
       static_cast<libusb_hotplug_event>(LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
@@ -79,7 +86,8 @@ bool LibUsbHotplugThread::Init() {
       m_callback_fn, m_user_data, &m_hotplug_handle);
 
   if (LIBUSB_SUCCESS != rc) {
-    OLA_WARN << "Error creating a hotplug callback";
+    OLA_WARN << "Error creating a hotplug callback "
+             << LibUsbAdaptor::ErrorCodeToString(rc);
     return false;
   }
   LaunchThread();

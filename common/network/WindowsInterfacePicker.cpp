@@ -77,10 +77,15 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
   for (pAdapter = pAdapterInfo;
        pAdapter && pAdapter < pAdapterInfo + ulOutBufLen;
        pAdapter = pAdapter->Next) {
-    if (pAdapter->Type != MIB_IF_TYPE_ETHERNET) {
+    // Since Vista, wireless interfaces return a different type
+    // See https://msdn.microsoft.com/en-us/library/windows/desktop/aa366062(v=vs.85).aspx
+    if ((pAdapter->Type != MIB_IF_TYPE_ETHERNET) &&
+        (pAdapter->Type != IF_TYPE_IEEE80211)) {
       OLA_INFO << "Skipping " << pAdapter->AdapterName
+               << " (" << pAdapter->Description << ")"
                << " as it's not MIB_IF_TYPE_ETHERNET"
-               << " got " << pAdapter->Type << " instead";
+               << " or IF_TYPE_IEEE80211, got "
+               << pAdapter->Type << " instead";
       continue;
     }
 
