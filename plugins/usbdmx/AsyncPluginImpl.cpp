@@ -217,8 +217,10 @@ bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
 bool AsyncPluginImpl::NewWidget(ShowJockeyDMXU1 *widget) {
   return StartAndRegisterDevice(
       widget,
-      new GenericDevice(m_plugin, widget, "ShowJockey-DMX-U1 Device",
-                        "showjockey-dmx-u1-" + widget->SerialNumber()));
+      new GenericDevice(
+          m_plugin, widget,
+          "ShowJockey-DMX-U1 Device (" + widget->SerialNumber() + ")",
+          "showjockey-dmx-u1-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(Sunlite *widget) {
