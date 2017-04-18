@@ -48,7 +48,7 @@ class ShowJockeyDMXU1ThreadedSender;
  *
  * Stream value to the ShowJockey-DMX-U1 by respecting this packet format:
  * The first two bytes describe on a uint16_t the index of the first channel from which the
- * data starts. Each following bytes correspond to the value of one channel.
+ * data starts (MSB). Each following bytes correspond to the value of one channel.
  */
 class ShowJockeyDMXU1 : public SimpleWidget {
  public:
