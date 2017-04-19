@@ -46,9 +46,9 @@ class ShowJockeyDMXU1ThreadedSender;
 /**
  * @brief The ShowJockey-DMX-U1 Widget.
  *
- * Stream value to the ShowJockey-DMX-U1 by respecting this packet format:
+ * Stream data to the ShowJockey-DMX-U1 in the following packet format:
  * The first two bytes describe on a uint16_t the index of the first channel
- * starting by its LSB. Each following bytes correspond to the value of one
+ * starting with its LSB. Each following byte corresponds to the value of a
  * channel.
  */
 class ShowJockeyDMXU1 : public SimpleWidget {
