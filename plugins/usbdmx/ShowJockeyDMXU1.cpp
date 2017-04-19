@@ -29,6 +29,7 @@
 
 #include <string.h>
 #include <string>
+#include <algorithm>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Constants.h"
