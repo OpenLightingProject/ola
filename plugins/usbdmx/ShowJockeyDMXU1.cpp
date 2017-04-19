@@ -158,8 +158,7 @@ bool ShowJockeyDMXU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 
   while (left_write_size > 0) {
     memset(bulk_buffer, 0, max_packet_size_out);
-    memcpy(bulk_buffer, &already_written_size, 2);
-
+    utils::SplitUInt16(already_written_size, &bulk_buffer[1], &bulk_buffer[0]);
     write_size = std::min(bulk_data_size, left_write_size);
 
     buffer.GetRange(slot, bulk_buffer + 2, &write_size);
@@ -288,7 +287,7 @@ class ShowJockeyDMXU1AsyncUsbSender : public AsyncUsbSender {
     unsigned int to_write_size = m_max_packet_size_out - 2;
     uint16_t written_size = 0;
     for (int i = 0; i <= nb_sequence; ++i) {
-      memcpy(p_final_buffer, &written_size, 2);
+      utils::SplitUInt16(written_size, &p_final_buffer[1], &p_final_buffer[0]);
       p_final_buffer += 2;
       unsigned int need_to_write_size = DMX_MAX_SLOT_NUMBER - written_size;
       unsigned int will_write_size;
