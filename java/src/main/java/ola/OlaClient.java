@@ -180,7 +180,7 @@ public class OlaClient {
 
 
     /**
-     * Get list of all universe infos.
+     * Get a list of info about all universes.
      *
      * @return UniverseInfoReply
      * @since 0.0.2
