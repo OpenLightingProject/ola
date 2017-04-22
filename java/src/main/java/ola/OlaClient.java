@@ -180,6 +180,18 @@ public class OlaClient {
 
 
     /**
+     * Get list of all universe infos.
+     *
+     * @return UniverseInfoReply
+     * @since 0.0.2
+     */
+    public UniverseInfoReply getUniverseList() {
+        OptionalUniverseRequest request = OptionalUniverseRequest.newBuilder().build();
+        return (UniverseInfoReply) callRpcMethod("GetUniverseInfo", request);
+    }
+
+
+    /**
      * Get UID's.
      *
      * @param universe the id of the universe
