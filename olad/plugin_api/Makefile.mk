@@ -28,7 +28,8 @@ olad_plugin_api_libolaserverplugininterface_la_SOURCES = \
     olad/plugin_api/Universe.cpp \
     olad/plugin_api/UniverseStore.cpp \
     olad/plugin_api/UniverseStore.h
-olad_plugin_api_libolaserverplugininterface_la_CXXFLAGS = $(COMMON_CXXFLAGS)
+olad_plugin_api_libolaserverplugininterface_la_CXXFLAGS = \
+    $(COMMON_PROTOBUF_CXXFLAGS)
 olad_plugin_api_libolaserverplugininterface_la_LIBADD = \
     common/libolacommon.la \
     common/web/libolaweb.la \
@@ -51,7 +52,7 @@ COMMON_OLAD_PLUGIN_API_TEST_LDADD = \
     common/libolacommon.la
 
 olad_plugin_api_ClientTester_SOURCES = olad/plugin_api/ClientTest.cpp
-olad_plugin_api_ClientTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+olad_plugin_api_ClientTester_CXXFLAGS = $(COMMON_TESTING_PROTOBUF_FLAGS)
 olad_plugin_api_ClientTester_LDADD = $(COMMON_OLAD_PLUGIN_API_TEST_LDADD)
 
 olad_plugin_api_DeviceTester_SOURCES = olad/plugin_api/DeviceManagerTest.cpp \

@@ -51,6 +51,8 @@ IGNORED_FILES = [
   'olad/www/new/js/app.min.js.map',
   'olad/www/new/libs/jquery/js/jquery.min.js',
   'olad/www/new/libs/angular-route/js/angular-route.min.js',
+  'olad/www/new/libs/marked/js/marked.min.js',
+  'olad/www/new/libs/angular-marked/js/angular-marked.min.js',
   'olad/www/new/libs/angular/js/angular.min.js',
   'olad/www/new/libs/bootstrap/js/bootstrap.min.js',
   'python/ola/PidStoreLocation.py',
@@ -88,7 +90,6 @@ def ParseArgs():
     Usage(sys.argv[0])
     sys.exit(2)
 
-  help = False
   fix = False
   diff = False
   for o, a in opts:
@@ -98,11 +99,8 @@ def ParseArgs():
       fix = True
     elif o in ('-h', '--help'):
       Usage(sys.argv[0])
-      sys.exit()
+      sys.exit(0)
 
-  if help:
-    Usage(sys.argv[0])
-    sys.exit(0)
   return diff, fix
 
 

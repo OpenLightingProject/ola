@@ -79,7 +79,9 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
 
   // These are all run in the main SelectServer thread.
   bool NewWidget(class AnymauDMX *widget);
+  bool NewWidget(class AVLdiyD512 *widget);
   bool NewWidget(class DMXCProjectsNodleU1 *widget);
+  bool NewWidget(class DMXCreator512Basic *widget);
   bool NewWidget(class EurolitePro *widget);
   bool NewWidget(ola::usb::JaRuleWidget *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
