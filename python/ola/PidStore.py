@@ -230,7 +230,8 @@ class Atom(object):
   def GetDescription(self, indent=0):
     return str(self)
 
-  def HasRanges(self):
+  @staticmethod
+  def HasRanges():
     return False
 
 

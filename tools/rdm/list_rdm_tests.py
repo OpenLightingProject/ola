@@ -16,6 +16,8 @@
 # list_rdm_tests.py
 # Copyright (C) 2016 Peter Newman
 
+"""List RDM tests and autogenerate test code."""
+
 import getopt
 import getpass
 import logging
@@ -23,8 +25,6 @@ import sys
 import textwrap
 from ola import PidStore
 from ola.ClientWrapper import ClientWrapper
-
-'''List RDM tests and autogenerate test code.'''
 
 __author__ = 'Peter Newman'
 
