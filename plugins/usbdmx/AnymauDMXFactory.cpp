@@ -20,16 +20,18 @@
 
 #include "plugins/usbdmx/AnymauDMXFactory.h"
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
 #include "plugins/usbdmx/AnymauDMX.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
+
+using ola::usb::LibUsbAdaptor;
 
 const char AnymauDMXFactory::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
 const char AnymauDMXFactory::EXPECTED_PRODUCT[] = "uDMX";
@@ -40,8 +42,7 @@ bool AnymauDMXFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID ||
-      HasDevice(usb_device)) {
+  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID) {
     return false;
   }
 
@@ -81,7 +82,7 @@ bool AnymauDMXFactory::DeviceAdded(
   } else {
     widget = new SynchronousAnymauDMX(m_adaptor, usb_device, info.serial);
   }
-  return AddWidget(observer, usb_device, widget);
+  return AddWidget(observer, widget);
 }
 }  // namespace usbdmx
 }  // namespace plugin

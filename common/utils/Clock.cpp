@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * Clock.h
+ * Clock.cpp
  * Provides the TimeInterval and TimeStamp classes.
  * Copyright (C) 2005 Simon Newton
  *
@@ -32,7 +32,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <iomanip>
 #include <ostream>
@@ -166,13 +166,13 @@ void BaseTimeVal::Set(int64_t interval_useconds) {
       interval_useconds / USEC_IN_SECONDS);
 #else
   m_tv.tv_sec = interval_useconds / USEC_IN_SECONDS;
-#endif
+#endif  // HAVE_TIME_T
 
 #ifdef HAVE_SUSECONDS_T
   m_tv.tv_usec = static_cast<suseconds_t>(interval_useconds % USEC_IN_SECONDS);
 #else
     m_tv.tv_usec = interval_useconds % USEC_IN_SECONDS;
-#endif
+#endif  // HAVE_SUSECONDS_T
 }
 
 TimeInterval& TimeInterval::operator=(const TimeInterval& other) {

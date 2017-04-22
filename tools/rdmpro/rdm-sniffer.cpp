@@ -29,6 +29,7 @@
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
+#include <ola/base/Macro.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/CommandPrinter.h>
@@ -76,6 +77,8 @@ DEFINE_default_bool(display_asc, false,
                     "Display non-RDM alternate start code frames.");
 DEFINE_int16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
              "Only display the first N slots of DMX data.");
+DEFINE_string(pid_location, "",
+              "The directory containing the PID definitions.");
 
 /**
  * A list of bytes
@@ -233,10 +236,12 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
     switch (m_state) {
       case IDLE:
         // fall through
+        OLA_FALLTHROUGH
       case MAB:
         m_state = DATA;
         m_frame.Reset();
         // fall through
+        OLA_FALLTHROUGH
       case DATA:
         m_frame.AddByte(data_byte);
         break;
@@ -465,6 +470,7 @@ int main(int argc, char *argv[]) {
   sniffer_options.dmx_slot_limit = FLAGS_dmx_slot_limit;
   sniffer_options.timestamp = FLAGS_timestamp;
   sniffer_options.summarize_rdm_frames = !FLAGS_full_rdm;
+  sniffer_options.pid_location = FLAGS_pid_location.str();
   sniffer_options.write_file = FLAGS_savefile.str();
 
   // if we're writing to a file

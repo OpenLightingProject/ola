@@ -21,8 +21,8 @@
   ~~~~~~~~~~~~~~~~~~~~~
   while ((c = getchar()) != EOF) {
     switch (c) {
-      case 'a':
-        printf("'a' was pressed\n");
+      case 'q':
+        printf("'q' was pressed\n");
         break;
       default:
         printf("Something other than 'q' was pressed\n");

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -13,8 +13,20 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# setup_patch.py
+# launch_tests.py
 # Copyright (C) 2012 Simon Newton
+
+from optparse import OptionParser
+import logging
+import os
+import setup_patch  # The Port Autopatcher
+import shutil
+import signal
+import subprocess
+import sys
+import tempfile
+import textwrap
+import time
 
 """
 Launch the OLA RDM test environment.
@@ -27,19 +39,6 @@ Under the hood this does the following:
 """
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
-from optparse import OptionParser, OptionGroup, OptionValueError
-import logging
-import os
-import setup_patch  # The Port Autopatcher
-import shutil
-import signal
-import subprocess
-import sys
-import tempfile
-import textwrap
-import time
 
 
 olad_process = None
@@ -79,7 +78,7 @@ def main():
   config_dir = tempfile.mkdtemp()
 
   if not os.access(config_dir, os.W_OK):
-    print '%s is not writable' % skel_config
+    print '%s is not writable' % config_dir
     sys.exit()
 
   # copy the skeleton configs files over, no symlinks since we don't want to
@@ -116,6 +115,7 @@ def main():
 
   # wait for the signal, or olad to exit
   olad_process.wait()
+
 
 if __name__ == '__main__':
     main()

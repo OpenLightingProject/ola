@@ -37,8 +37,7 @@ using ola::network::IPV4Address;
 namespace ola {
 // We don't want to suck in all the ACN headers, so we forward declare these
 // and allocate the members on the heap.
-namespace plugin {
-namespace e131 {
+namespace acn {
 class E133Header;
 class E133Inflator;
 class E133StatusInflator;
@@ -46,8 +45,7 @@ class IncomingUDPTransport;
 class RDMInflator;
 class RootInflator;
 class TransportHeader;
-}  // namespace e131
-}  // namespace plugin
+}  // namespace acn
 
 namespace e133 {
 
@@ -127,21 +125,21 @@ class E133Receiver {
     StatusCallback *m_status_callback;
     RDMCallback *m_rdm_callback;
 
-    auto_ptr<ola::plugin::e131::RootInflator> m_root_inflator;
-    auto_ptr<ola::plugin::e131::E133Inflator> m_e133_inflator;
-    auto_ptr<ola::plugin::e131::RDMInflator> m_rdm_inflator;
-    auto_ptr<ola::plugin::e131::E133StatusInflator> m_e133_status_inflator;
-    auto_ptr<ola::plugin::e131::IncomingUDPTransport> m_incoming_udp_transport;
+    auto_ptr<ola::acn::RootInflator> m_root_inflator;
+    auto_ptr<ola::acn::E133Inflator> m_e133_inflator;
+    auto_ptr<ola::acn::RDMInflator> m_rdm_inflator;
+    auto_ptr<ola::acn::E133StatusInflator> m_e133_status_inflator;
+    auto_ptr<ola::acn::IncomingUDPTransport> m_incoming_udp_transport;
 
     void HandleStatusMessage(
-        const ola::plugin::e131::TransportHeader *transport_header,
-        const ola::plugin::e131::E133Header *e133_header,
+        const ola::acn::TransportHeader *transport_header,
+        const ola::acn::E133Header *e133_header,
         uint16_t status_code,
         const string &description);
 
     void HandlePacket(
-        const ola::plugin::e131::TransportHeader *transport_header,
-        const ola::plugin::e131::E133Header *e133_header,
+        const ola::acn::TransportHeader *transport_header,
+        const ola::acn::E133Header *e133_header,
         const std::string &raw_response);
 
     DISALLOW_COPY_AND_ASSIGN(E133Receiver);

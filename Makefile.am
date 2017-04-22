@@ -23,12 +23,25 @@ AM_DISTCHECK_CONFIGURE_FLAGS = --enable-python-libs
 # The common C++ flags. This may include -Werror if fatal-warning was enabled
 # in ./configure. AM_CXXFLAGS defaults to this, and it should be preferred.
 #
+# COMMON_PROTOBUF_CXXFLAGS
+# The common C++ flags with some warnings protobuf code throws disabled. Use
+# this for generated protobuf code that does not build correctly with
+# COMMON_CXXFLAGS.
+#
 # COMMON_CXXFLAGS_ONLY_WARNINGS
 # The common C++ flags with (non-fatal) warnings enabled. Use this for 3rd
 # party code that does not build correctly with COMMON_CXXFLAGS.
 #
 # COMMON_TESTING_FLAGS
 # The common C++ flags for testing.
+#
+# COMMON_TESTING_FLAGS_ONLY_WARNINGS
+# The common C++ flags for testing with (non-fatal) warnings enabled. Use this
+# for 3rd party code that does not build correctly with COMMON_TESTING_FLAGS.
+#
+# COMMON_TESTING_PROTOBUF_FLAGS
+# The common C++ flags for testing with some warnings protobuf code throws
+# disabled.
 COMMON_CXXFLAGS_ONLY_WARNINGS = \
     -I$(top_srcdir)/include \
     -I$(top_builddir)/include \
@@ -36,21 +49,32 @@ COMMON_CXXFLAGS_ONLY_WARNINGS = \
     $(libprotobuf_CFLAGS)
 
 COMMON_CXXFLAGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS)
+COMMON_PROTOBUF_CXXFLAGS = $(COMMON_CXXFLAGS)
+
+COMMON_TESTING_FLAGS_ONLY_WARNINGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS) \
+                                     $(CPPUNIT_CFLAGS) \
+                                     -DTEST_SRC_DIR=\"$(srcdir)\" \
+                                     -DTEST_BUILD_DIR=\"$(builddir)\"
+
+COMMON_TESTING_FLAGS = $(COMMON_TESTING_FLAGS_ONLY_WARNINGS)
+COMMON_TESTING_PROTOBUF_FLAGS = $(COMMON_TESTING_FLAGS)
 
 # The genererated protobuf files don't compile with -Werror on win32 so we
 # disable fatal warnings on WIN32.
 if ! USING_WIN32
 if FATAL_WARNINGS
   COMMON_CXXFLAGS += -Werror
+  COMMON_PROTOBUF_CXXFLAGS += -Werror -Wno-error=unused-parameter \
+                              -Wno-error=deprecated-declarations \
+                              -Wno-error=sign-compare
+  COMMON_TESTING_FLAGS += -Werror
+  COMMON_TESTING_PROTOBUF_FLAGS += -Werror -Wno-error=unused-parameter \
+                                   -Wno-error=deprecated-declarations
 endif
 endif
 
 # AM_CXXFLAGS is used when target_CXXFLAGS isn't specified.
 AM_CXXFLAGS = $(COMMON_CXXFLAGS)
-
-COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS) \
-                       -DTEST_SRC_DIR=\"$(srcdir)\" \
-                       -DTEST_BUILD_DIR=\"$(builddir)\"
 
 # LIBS variables
 # ------------------------------------------------------------------------------
@@ -122,7 +146,7 @@ test_scripts =
 # -----------------------------------------------------------------------------
 
 # Since `make install` relinks the libraries, this should be in the order in
-# which libraries depend on each other. e.g. common, plugins, server.
+# which libraries depend on each other. e.g. common, plugin_api, plugins, server.
 include common/Makefile.mk
 include data/Makefile.mk
 include debian/Makefile.mk
@@ -131,7 +155,12 @@ include examples/Makefile.mk
 include include/Makefile.mk
 include javascript/Makefile.mk
 include man/Makefile.mk
+include libs/Makefile.mk
 include ola/Makefile.mk
+# olad/plugin_api/Makefile.mk is included directly due to the order of
+# dependencies between them; we need to build olad/plugin_api, then the
+# plugins, then olad
+include olad/plugin_api/Makefile.mk
 include plugins/Makefile.mk
 include olad/Makefile.mk
 include protoc/Makefile.mk
@@ -181,7 +210,6 @@ EXTRA_DIST += \
   config/ac_python_devel.m4 \
   config/ac_saleae.m4 \
   config/ax_python_module.m4 \
-  config/cppunit.m4 \
   config/maven.m4 \
   config/ola.m4 \
   config/ola_version.m4 \
@@ -189,6 +217,4 @@ EXTRA_DIST += \
   config/resolv.m4 \
   config/stl_hash.m4 \
   mac_build.sh \
-  ola.spec \
-  tests/recvdmx.py \
-  tests/regression.py
+  ola.spec

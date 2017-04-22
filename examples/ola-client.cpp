@@ -313,35 +313,35 @@ void InitOptions(options *opts) {
  * Decide what mode we're running in
  */
 void SetMode(options *opts) {
-  opts->cmd = ola::file::FilenameFromPathOrPath(opts->cmd);
+  string cmd_name = ola::file::FilenameFromPathOrPath(opts->cmd);
   // To skip the lt prefix during development
-  ola::StripPrefix(&opts->cmd, "lt-");
+  ola::StripPrefix(&cmd_name, "lt-");
 #ifdef _WIN32
   // Strip the extension
-  size_t extension = opts->cmd.find(".");
+  size_t extension = cmd_name.find(".");
   if (extension != string::npos) {
-    opts->cmd = opts->cmd.substr(0, extension);
+    cmd_name = cmd_name.substr(0, extension);
   }
-#endif
+#endif  // _WIN32
 
-  if (opts->cmd == "ola_plugin_info") {
+  if (cmd_name == "ola_plugin_info") {
     opts->m = PLUGIN_INFO;
-  } else if (opts->cmd == "ola_plugin_state") {
+  } else if (cmd_name == "ola_plugin_state") {
     opts->m = PLUGIN_STATE;
-  } else if (opts->cmd == "ola_patch") {
+  } else if (cmd_name == "ola_patch") {
     opts->m = DEVICE_PATCH;
-  } else if (opts->cmd == "ola_ptch") {
+  } else if (cmd_name == "ola_ptch") {
     // Working around Windows UAC
     opts->m = DEVICE_PATCH;
-  } else if (opts->cmd == "ola_uni_info") {
+  } else if (cmd_name == "ola_uni_info") {
     opts->m = UNIVERSE_INFO;
-  } else if (opts->cmd == "ola_uni_name") {
+  } else if (cmd_name == "ola_uni_name") {
     opts->m = UNIVERSE_NAME;
-  } else if (opts->cmd == "ola_uni_merge") {
+  } else if (cmd_name == "ola_uni_merge") {
     opts->m = UNI_MERGE;
-  } else if (opts->cmd == "ola_set_dmx") {
+  } else if (cmd_name == "ola_set_dmx") {
     opts->m = SET_DMX;
-  } else if (opts->cmd == "ola_set_priority") {
+  } else if (cmd_name == "ola_set_priority") {
     opts->m = SET_PORT_PRIORITY;
   }
 }
@@ -656,13 +656,15 @@ void DisplayUniverseMergeHelp(const options &opts) {
  * Help message for set dmx
  */
 void DisplaySetDmxHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd << " --universe <universe> --dmx 0,255,0,255\n"
+  cout << "Usage: " << opts.cmd << " --universe <universe> --dmx <values>\n"
           "\n"
           "Sets the DMX values for a universe.\n"
           "\n"
           "  -h, --help                Display this help message and exit.\n"
-          "  -u, --universe <universe> Universe number.\n"
-          "  -d, --dmx <values>        Comma separated DMX values.\n"
+          "  -u, --universe <universe> Universe number, e.g. 0.\n"
+          "  -d, --dmx <values>        Comma separated DMX values, e.g. "
+          "0,255,128 sets first channel to 0, second channel to 255"
+          " and third channel to 128.\n"
        << endl;
 }
 

@@ -52,6 +52,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using ola::strings::IntToString;
 using ola::strings::ToHex;
 using std::auto_ptr;
 using std::string;
@@ -139,8 +140,6 @@ bool EnttecPortImpl::SendDMX(const DmxBuffer &buffer) {
   widget_dmx.start_code = DMX512_START_CODE;
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
-  OLA_DEBUG << "sending frame with label "
-            << static_cast<int>(m_ops.send_dmx);
   return m_send_cb->Run(m_ops.send_dmx, reinterpret_cast<uint8_t*>(&widget_dmx),
                         length + 1);
 }
@@ -609,8 +608,28 @@ void EnttecPortImpl::ClockWatchdog() {
 }
 
 void EnttecPortImpl::WatchdogFired() {
-  OLA_WARN << "Enttec watchdog fired";
-  // TODO(simon): think about what we want to do here.
+  if (m_branch_callback) {
+    OLA_WARN << "Timeout waiting for DUB response";
+    BranchCallback *callback = m_branch_callback;
+    m_branch_callback = NULL;
+    callback->Run(NULL, 0);
+  } else if (m_mute_callback) {
+    OLA_WARN << "Timeout waiting for mute response";
+    MuteDeviceCallback *callback = m_mute_callback;
+    m_mute_callback = NULL;
+    callback->Run(false);
+  } else if (m_unmute_callback) {
+    OLA_WARN << "Timeout waiting for unmute response";
+    UnMuteDeviceCallback *callback = m_unmute_callback;
+    m_unmute_callback = NULL;
+    callback->Run();
+  } else if (m_rdm_request_callback) {
+    OLA_WARN << "Timeout waiting for RDM response";
+    ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+    m_rdm_request_callback = NULL;
+    m_pending_request.reset();
+    RunRDMCallback(callback, ola::rdm::RDM_FAILED_TO_SEND);
+  }
 }
 
 
@@ -828,6 +847,7 @@ EnttecPort *EnttecUsbProWidgetImpl::GetPort(unsigned int i) {
  */
 bool EnttecUsbProWidgetImpl::SendCommand(uint8_t label, const uint8_t *data,
                                          unsigned int length) {
+  OLA_DEBUG << "TX: " << IntToString(label) << ", length " << length;
   return SendMessage(label, data, length);
 }
 
@@ -838,8 +858,7 @@ bool EnttecUsbProWidgetImpl::SendCommand(uint8_t label, const uint8_t *data,
 void EnttecUsbProWidgetImpl::HandleMessage(uint8_t label,
                                            const uint8_t *data,
                                            unsigned int length) {
-  OLA_DEBUG << "Enttec received label " << static_cast<uint32_t>(label)
-            << ", length " << length;
+  OLA_DEBUG << "RX: " << IntToString(label) << ", length " << length;
   if (label == PORT_ASSIGNMENT_LABEL) {
     HandlePortAssignment(data, length);
   } else if (label > 128 && m_ports.size() > 1) {

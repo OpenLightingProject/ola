@@ -20,17 +20,18 @@
 
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
-#include "plugins/usbdmx/LibUsbAdaptor.h"
 
 DECLARE_bool(use_async_libusb);
-
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
+
+using ola::usb::LibUsbAdaptor;
 
 const char ScanlimeFadecandyFactory::EXPECTED_MANUFACTURER[] = "scanlime";
 const char ScanlimeFadecandyFactory::EXPECTED_PRODUCT[] = "Fadecandy";
@@ -42,8 +43,7 @@ bool ScanlimeFadecandyFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID ||
-      HasDevice(usb_device)) {
+  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID) {
     return false;
   }
 
@@ -85,7 +85,7 @@ bool ScanlimeFadecandyFactory::DeviceAdded(
     widget = new SynchronousScanlimeFadecandy(m_adaptor, usb_device,
                                               info.serial);
   }
-  return AddWidget(observer, usb_device, widget);
+  return AddWidget(observer, widget);
 }
 }  // namespace usbdmx
 }  // namespace plugin

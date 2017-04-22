@@ -40,6 +40,7 @@
 #include "plugins/usbpro/UltraDMXProWidget.h"
 #include "plugins/usbpro/UsbProDevice.h"
 #include "plugins/usbpro/UsbSerialPlugin.h"
+#include "plugins/usbpro/UsbSerialPluginDescription.h"
 
 
 namespace ola {
@@ -64,9 +65,6 @@ const char UsbSerialPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbSerialPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
 const char UsbSerialPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
 const char UsbSerialPlugin::ULTRA_FPS_LIMIT_KEY[] = "ultra_fps_limit";
-const char UsbSerialPlugin::UUCP_LOCK_PATH_KEY[] = "uucp_lock_path";
-const char UsbSerialPlugin::UUCP_LINUX_PATH[] = "/tmp";
-const char UsbSerialPlugin::UUCP_MAC_PATH[] = "/var/lock";
 
 UsbSerialPlugin::UsbSerialPlugin(PluginAdaptor *plugin_adaptor)
     : Plugin(plugin_adaptor),
@@ -78,44 +76,7 @@ UsbSerialPlugin::UsbSerialPlugin(PluginAdaptor *plugin_adaptor)
  * Return the description for this plugin
  */
 string UsbSerialPlugin::Description() const {
-    return
-"Serial USB Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin supports DMX USB devices that emulate a serial port. This \n"
-"includes:\n"
-" - Arduino RGB Mixer\n"
-" - DMX-TRI & RDM-TRI\n"
-" - DMXking USB DMX512-A, Ultra DMX, Ultra DMX Pro\n"
-" - DMXter4, DMXter4A & mini DMXter\n"
-" - Enttec DMX USB Pro & USB Pro Mk II\n"
-" - Robe Universe Interface\n"
-"\n"
-"See http://opendmx.net/index.php/USB_Protocol_Extensions for more info.\n"
-"\n"
-"--- Config file : ola-usbserial.conf ---\n"
-"\n"
-"device_dir = /dev\n"
-"The directory to look for devices in.\n"
-"\n"
-"device_prefix = ttyUSB\n"
-"The prefix of filenames to consider as devices. Multiple keys are allowed.\n"
-"\n"
-"ignore_device = /dev/ttyUSB\n"
-"Ignore the device matching this string. Multiple keys are allowed.\n"
-"\n"
-"pro_fps_limit = 190\n"
-"The max frames per second to send to a Usb Pro or DMXKing device.\n"
-"\n"
-"tri_use_raw_rdm = [true|false]\n"
-"Bypass RDM handling in the {DMX,RDM}-TRI widgets.\n"
-"\n"
-"ultra_fps_limit = 40\n"
-"The max frames per second to send to a Ultra DMX Pro device.\n"
-"\n"
-"uucp_lock_path = /var/lock\n"
-"Path to check for UUCP Lock files."
-"\n";
+    return plugin_description;
 }
 
 
@@ -271,8 +232,6 @@ bool UsbSerialPlugin::StartHook() {
       m_preferences->GetValue(DEVICE_DIR_KEY));
   m_detector_thread.SetDevicePrefixes(
       m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY));
-  m_detector_thread.SetUUCPLockFilePaths(
-      m_preferences->GetMultipleValue(UUCP_LOCK_PATH_KEY));
   if (!m_detector_thread.Start()) {
     OLA_FATAL << "Failed to start the widget discovery thread";
     return false;
@@ -313,14 +272,6 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, LINUX_DEVICE_PREFIX);
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, MAC_DEVICE_PREFIX);
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, BSD_DEVICE_PREFIX);
-    save = true;
-  }
-
-  vector<string> lock_paths =
-    m_preferences->GetMultipleValue(UUCP_LOCK_PATH_KEY);
-  if (lock_paths.empty()) {
-    m_preferences->SetMultipleValue(UUCP_LOCK_PATH_KEY, UUCP_MAC_PATH);
-    m_preferences->SetMultipleValue(UUCP_LOCK_PATH_KEY, UUCP_LINUX_PATH);
     save = true;
   }
 

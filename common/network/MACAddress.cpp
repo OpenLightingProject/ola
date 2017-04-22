@@ -22,7 +22,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef _WIN32
 #include <ola/win/CleanWinSock2.h>
@@ -34,27 +34,27 @@ struct ether_addr {
 #include <sys/types.h>  // required for FreeBSD uchar - doesn't hurt others
 #ifdef HAVE_NET_ETHERNET_H
 #include <net/ethernet.h>
-#endif
+#endif  // HAVE_NET_ETHERNET_H
 // NetBSD and OpenBSD don't have net/ethernet.h
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
-#endif
+#endif  // HAVE_SYS_SOCKET_H
 #ifdef HAVE_NET_IF_H
 #include <net/if.h>
-#endif
+#endif  // HAVE_NET_IF_H
 #ifdef HAVE_NET_IF_ETHER_H
 #include <net/if_ether.h>
-#endif
+#endif  // HAVE_NET_IF_ETHER_H
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
-#endif
+#endif  // HAVE_NETINET_IN_H
 #ifdef HAVE_NET_IF_ARP_H
 #include <net/if_arp.h>
-#endif
+#endif  // HAVE_NET_IF_ARP_H
 #ifdef HAVE_NETINET_IF_ETHER_H
 #include <netinet/if_ether.h>
-#endif
-#endif
+#endif  // HAVE_NETINET_IF_ETHER_H
+#endif  // _WIN32
 
 #ifdef __FreeBSD__
 // In the FreeBSD struct ether_addr, the single field is named octet, instead
@@ -63,7 +63,7 @@ struct ether_addr {
 // header, for compatibility with linux and others:
 // http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/net/ethernet.h
 #define ether_addr_octet octet
-#endif
+#endif  // __FreeBSD__
 
 #include <assert.h>
 #include <string.h>
@@ -84,7 +84,7 @@ MACAddress::MACAddress() {
   memset(m_address, 0, LENGTH);
 }
 
-MACAddress::MACAddress(const uint8_t address[LENGTH]) {
+MACAddress::MACAddress(const uint8_t *address) {
   memcpy(m_address, address, LENGTH);
 }
 

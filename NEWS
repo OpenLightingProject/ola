@@ -1,7 +1,6 @@
-x/y/2015 ola-0.9.9
+x/y/2017 ola-0.10.4
  Features:
- * Add better logging for open()
- * Added more man pages.
+ * 
 
  API:
  * 
@@ -10,10 +9,105 @@ x/y/2015 ola-0.9.9
  * 
 
  Bugs:
- * 
+ * Implement OLA_FALLTHROUGH macro for adding fallthrough attributes to 
+   switchcases in gcc versions higher than 7 #1193 Debian #853583
 
  Internal:
  *
+
+06/12/2016 ola-0.10.3
+ Features:
+ * Add a message explaining why the auto start test may fail
+
+ Bugs:
+ * Work around a clang warning in our protobuf generator code
+ * Force gnu++98 mode if compiler supports 98 and 11 modes so we keep
+   std::auto_ptr #1028 Debian #831103
+ * JsonPatchParser.h tries to include a project header file; move the
+   OptionalItem header to includes to resolve #1086
+ * Reset the client socket once we've closed it, so it can be re-used
+ * Silence a warning in the code so it builds with Protobuf 3 #1110 Debian
+   #835433
+ * Work around <ernno.h> include failure on MIPS Debian #836383
+ * Update GPIO and SPI pin limits for CHIP as its pin numbers are higher #1095
+ * Clarify some details in ola_set_dmx and ola_streaming_client help #1109
+   Debian #830972
+ * Fix a logging error regarding USB product name detection
+
+ Internal:
+ * Add more debugging of opening and acquiring locks
+
+21/5/2016 ola-0.10.2
+ Features:
+ * Add support for Enttec USB Pro Mk 2 B
+ * Make DNS-SD functionality optional at build time
+ * Name multi-port Enttec Pro Mk 2 ports to match the labelling on the device
+
+ RDM Tests:
+ * Correct expected NAck type in GetSettingDescriptionsMixin, as spotted by ETC
+ * Fix the mute all devices test for controllers that don't support discovery
+
+ Bugs:
+ * Allow one slot devices to correctly be set to any start address, including
+   512
+ * Check Python numpy exists during configure if required
+ * Allow the PID location to be set in the rdmpro_sniffer
+ * Actually decode PID param data when requested when using the
+   logic_rdm_sniffer
+ * Correct the operation of the --full-rdm option in the logic_rdm_sniffer,
+   this inverts how it used to behave
+ * Fix a segfault with the client if auto start is off or olad fails to start
+
+29/2/2016 ola-0.10.1
+ Features:
+ * Add support for Osram Lightify products via a Philips Hue bridge
+ * Add Stellascapes Lightwidgets Number1 PIDs
+ * Add a warning to the Web UIs if Javascript is disabled.
+
+ Bugs:
+ * Check if a device exists before trying to acquire a UUCP lock file for it #1006
+ * Fix the build on FreeBSD
+ * Fix the build when using the musl C library
+ * Python RpcChannel incorrectly decodes message header on big-endian machines
+ * Fix a configure warning on OpenBSD
+ * Allow you to set DMX address of a one slot device to 512 #1042. The JSON API now returns min and max inclusive
+ * Switch to pkg-config for cppunit detection #1043
+
+3/1/2016 ola-0.10.0
+ Features:
+ * Add better logging for open()
+ * Added more man pages.
+ * Added a DMX keypad to the new web UI
+ * OLA Trigger config to control Philips Hue Lux lights
+ * Added hotplug support for usbdmx devices
+ * Add support for JaRule widgets.
+ * Add UUCP locking support #888
+ * Fix issues encountered when packaging for openSUSE and fedora #904
+ * Add support for the Nodle U1 widget
+ * Add validation of OSC output format types
+ * Add an example Stdin handler to the documentation
+ * Increase the port limit for E1.31 up to 512 from 128
+
+ RDM Tests:
+ * Add some more E1.37-2 tests
+ * Fix event handling in the RDM test server #948
+ * Mute all devices before running the DUB tests
+ * Add timing stats to the RDM responder tests
+
+ Bugs:
+ * Remove a number of obsolete Autotools macros, we now require Automake 1.11.2
+   #931
+ * Work around the case where an Enttec USB Pro widget doesn't respond #341
+ * Fix a crash if a client disconnects during RDM discovery #950
+ * Stop e131_transmit_test from segfaulting #966
+ * Fix the build on Windows
+ * Split libolaserver into two parts to stop dpkg-shlibdeps warnings
+
+ Internal:
+ * All the Python code now passes flake8 checking
+ * The new web UI now passes jscs checking
+ * Switched to using the new command line flags module in ola_rdm_discover
+ * Move the ACN code to libs/acn
 
 30/9/2015 ola-0.9.8
  Features:

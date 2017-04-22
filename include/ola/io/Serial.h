@@ -36,7 +36,7 @@
 typedef unsigned speed_t;
 #else
 #include <termios.h>
-#endif
+#endif  // _WIN32
 
 namespace ola {
 namespace io {
@@ -60,13 +60,23 @@ typedef enum {
 bool UIntToSpeedT(uint32_t value, speed_t *output);
 
 /**
- * @brief Check for UUCP lock files.
- * @param directories The directories to check for lock files.
- * @param serial_device The serial device to check.
- * @returns true if a lockfile exists, false otherwise.
+ * @brief Try to open the path, respecting UUCP locking.
+ * @param path the path to open
+ * @param oflag flags passed to open
+ * @param[out] fd a pointer to the fd which is returned.
+ * @returns true if the open succeeded, false otherwise.
+ *
+ * This fails-fast, it we can't get the lock immediately, we'll return false.
  */
-bool CheckForUUCPLockFile(const std::vector<std::string> &directories,
-                          const std::string &serial_device);
+bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd);
+
+/**
+ * @brief Remove a UUCP lock file for the device.
+ * @param path The path to unlock.
+ *
+ * The lock is only removed if the PID matches.
+ */
+void ReleaseUUCPLock(const std::string &path);
 }  // namespace io
 }  // namespace ola
 #endif  // INCLUDE_OLA_IO_SERIAL_H_

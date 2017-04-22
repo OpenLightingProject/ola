@@ -35,7 +35,7 @@
 #include <io.h>
 #else
 #include <syslog.h>
-#endif
+#endif  // _WIN32
 
 #include <unistd.h>
 
@@ -121,7 +121,7 @@ bool InitLogging(log_level level, log_output output) {
     SyslogDestination *syslog_dest = new WindowsSyslogDestination();
 #else
     SyslogDestination *syslog_dest = new UnixSyslogDestination();
-#endif
+#endif  // _WIN32
     if (!syslog_dest->Init()) {
       delete syslog_dest;
       return false;
@@ -253,7 +253,7 @@ void UnixSyslogDestination::Write(log_level level, const string &log_line) {
   }
   syslog(pri, "%s", log_line.data());
 }
-#endif
+#endif  // _WIN32
 
 }  // namespace  ola
 /**@}*/

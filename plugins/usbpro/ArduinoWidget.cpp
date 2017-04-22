@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * ArduinoRGBDevice.h
- * The Arduino RGB Mixer device.
+ * ArduinoWidget.cpp
+ * The Arduino RGB Mixer widget.
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -30,6 +30,7 @@
 #include "ola/strings/Format.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/ArduinoWidget.h"
 
 namespace ola {
 namespace plugin {

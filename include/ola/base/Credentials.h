@@ -39,11 +39,11 @@
 #ifdef _WIN32
 #ifndef uid_t
 #define uid_t int
-#endif
+#endif  // uid_t
 #ifndef gid_t
 #define gid_t int
-#endif
-#endif
+#endif  // gid_t
+#endif  // _WIN32
 
 namespace ola {
 
@@ -67,14 +67,14 @@ bool SupportsUIDs();
 
 /**
  * @brief Get the real UID of the process.
- * @param uid is the variable to receive the real UID
+ * @param[out] uid is the variable to receive the real UID
  * @return true on success, false otherwise
  */
 bool GetUID(uid_t* uid);
 
 /**
  * @brief Get the effective UID of the process.
- * @param euid is the variable to receive the effective UID
+ * @param[out] euid is the variable to receive the effective UID
  * @return true on success, false otherwise
  */
 bool GetEUID(uid_t* euid);
@@ -97,14 +97,14 @@ bool SetUID(uid_t new_uid);
 
 /**
  * @brief Get the real Group ID
- * @param gid is the variable to receive the real Group ID
+ * @param[out] gid is the variable to receive the real Group ID
  * @return true on success, false otherwise
  */
 bool GetGID(gid_t* gid);
 
 /**
  * @brief Get the effective group ID
- * @param egid is the variable to receive the effective Group ID
+ * @param[out] egid is the variable to receive the effective Group ID
  * @return true on success, false otherwise
  */
 bool GetEGID(gid_t* egid);
@@ -117,6 +117,32 @@ bool GetEGID(gid_t* egid);
  * @return true on success, false otherwise
  */
 bool SetGID(gid_t new_gid);
+
+/**
+ * @}
+ *
+ * @name Get / Set supplementary group IDs
+ * @{
+ */
+
+
+/**
+ * @brief Get the supplementary group ID's of the process
+ * @param size the size of the list to place group ID's in
+ * @param[out] list the list to place group ID's
+ * @note when size 0 is given, the list remain's untouched and only the
+ * number of group ID's is returned
+ * @return on error -1, otherwise the number of group ID's
+ */
+int GetGroups(int size, gid_t list[]);
+
+/**
+ * @brief Set the supplementary group ID's of the process
+ * @param size the size of the list of ID's
+ * @param list pointer to the list of ID's
+ * @return true on success, false otherwise
+ */
+bool SetGroups(size_t size, const gid_t *list);
 
 /**
  * @}

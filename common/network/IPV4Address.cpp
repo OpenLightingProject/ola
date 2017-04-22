@@ -20,21 +20,24 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_WINSOCK2_H
 #include <ola/win/CleanWinSock2.h>
 #ifndef in_addr_t
 #define in_addr_t uint32_t
-#endif
-#endif
+#endif  // !in_addr_t
+#endif  // HAVE_WINSOCK2_H
 
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>  // Required by FreeBSD
+#endif  // HAVE_SYS_SOCKET_H
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
-#endif
+#endif  // HAVE_ARPA_INET_H
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>  // Required by FreeBSD
-#endif
+#endif  // HAVE_NETINET_IN_H
 
 #include <assert.h>
 #include <math.h>
@@ -72,13 +75,15 @@ bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
     return false;
   }
 
-#ifdef HAVE_INET_ATON
+#ifdef HAVE_INET_PTON
+  ok = (1 == inet_pton(AF_INET, address.data(), addr));
+#elif HAVE_INET_ATON
   ok = (1 == inet_aton(address.data(), addr));
 #else
   in_addr_t ip_addr4 = inet_addr(address.c_str());
   ok = (INADDR_NONE != ip_addr4 || address == "255.255.255.255");
   addr->s_addr = ip_addr4;
-#endif
+#endif  // HAVE_INET_PTON
 
   if (!ok) {
     OLA_WARN << "Could not convert address " << address;
@@ -93,7 +98,17 @@ bool IPV4Address::IsWildcard() const {
 string IPV4Address::ToString() const {
   struct in_addr addr;
   addr.s_addr = m_address;
+#ifdef HAVE_INET_NTOP
+  char str[INET_ADDRSTRLEN];
+  if (inet_ntop(AF_INET, &addr, str, INET_ADDRSTRLEN) == NULL) {
+    OLA_WARN << "Failed to convert address to string using inet_ntop, failing "
+             << "back to inet_ntoa";
+    return inet_ntoa(addr);
+  }
+  return str;
+#else
   return inet_ntoa(addr);
+#endif  // HAVE_INET_NTOP
 }
 
 IPV4Address* IPV4Address::FromString(const string &address) {

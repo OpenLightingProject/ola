@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * SubDeviceDispatcher_h
+ * SubDeviceDispatcher.h
  * Handles dispatching RDM requests to the correct sub device.
  * Copyright (C) 2013 Simon Newton
  */

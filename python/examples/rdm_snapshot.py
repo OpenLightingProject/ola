@@ -16,11 +16,6 @@
 # rdm_snapshot.py
 # Copyright (C) 2012 Simon Newton
 
-'''Quick script to collect the settings from a rig.'''
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
 import getopt
 import logging
 import pickle
@@ -33,18 +28,26 @@ from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
 
+'''Quick script to collect the settings from a rig.'''
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
+
 
 class Error(Exception):
   """Base exception class."""
 
+
 class DiscoveryException(Error):
   """Raised when discovery fails."""
+
 
 class SaveException(Error):
   """Raised when we can't write to the output file."""
 
+
 class LoadException(Error):
   """Raised when we can't write to the output file."""
+
 
 class ConfigReader(object):
   """A controller that fetches data for responders."""
@@ -226,7 +229,8 @@ class ConfigReader(object):
 
     # at this stage the response is either a ack or nack
     if response.response_type == OlaClient.RDM_NACK_REASON:
-      print('Got nack with reason: %s' % response.nack_reason)
+      print('Got nack with reason for PID %d: %s' %
+            (response.pid, response.nack_reason))
       self._NextState()
     elif unpack_exception:
       print(unpack_exception)
@@ -352,7 +356,7 @@ class ConfigWriter(object):
     self._NextState()
 
   def _NextState(self):
-    """Move to the next state of information fetching."""
+    """Move to the next state of information setting."""
     if self.work_state == self.DMX_START_ADDRESS:
       address = self.configuration[self.uid].get('dmx_start_address')
       self.work_state = self.DEVICE_LABEL
@@ -414,9 +418,9 @@ class ConfigWriter(object):
 
 
 def Usage():
+  print("Usage: rdm_snapshot.py --universe <universe> [--input <file>] "
+        "[--output <file>]\n")
   print(textwrap.dedent("""\
-  Usage: rdm_snapshot.py --universe <universe> [--input <file>] [--output <file>]
-
   Save and restore RDM settings for a universe. This includes the start address,
   personality and device label.
 
@@ -526,6 +530,7 @@ def main():
       WriteToFile(output_file, data)
     else:
       pprint.pprint(data)
+
 
 if __name__ == '__main__':
   main()

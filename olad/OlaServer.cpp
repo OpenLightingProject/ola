@@ -20,7 +20,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <errno.h>
 #include <signal.h>
@@ -43,9 +43,7 @@
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/UID.h"
 #include "ola/stl/STLUtils.h"
-#include "olad/Client.h"
 #include "olad/ClientBroker.h"
-#include "olad/DeviceManager.h"
 #include "olad/DiscoveryAgent.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaServerServiceImpl.h"
@@ -54,14 +52,16 @@
 #include "olad/PluginManager.h"
 #include "olad/Port.h"
 #include "olad/PortBroker.h"
-#include "olad/PortManager.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
-#include "olad/UniverseStore.h"
+#include "olad/plugin_api/Client.h"
+#include "olad/plugin_api/DeviceManager.h"
+#include "olad/plugin_api/PortManager.h"
+#include "olad/plugin_api/UniverseStore.h"
 
 #ifdef HAVE_LIBMICROHTTPD
 #include "olad/OladHTTPServer.h"
-#endif
+#endif  // HAVE_LIBMICROHTTPD
 
 DEFINE_s_uint16(rpc_port, r, ola::OlaServer::DEFAULT_RPC_PORT,
                 "The port to listen for RPCs on. Defaults to 9010.");
@@ -118,7 +118,7 @@ OlaServer::~OlaServer() {
     m_httpd->Stop();
     m_httpd.reset();
   }
-#endif
+#endif  // HAVE_LIBMICROHTTPD
 
   // Order is important during shutdown.
   // Shutdown the RPC server first since it depends on almost everything else.
@@ -175,7 +175,7 @@ bool OlaServer::Init() {
 
 #ifndef _WIN32
   signal(SIGPIPE, SIG_IGN);
-#endif
+#endif  // _WIN32
 
   // fetch the interface info
   ola::network::Interface iface;
@@ -282,7 +282,7 @@ bool OlaServer::Init() {
       return false;
     }
   }
-#endif
+#endif  // HAVE_LIBMICROHTTPD
 
   if (web_server_started && discovery_agent.get()) {
     DiscoveryAgentInterface::RegisterOptions options;
@@ -441,7 +441,7 @@ bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
     return false;
   }
 }
-#endif
+#endif  // HAVE_LIBMICROHTTPD
 
 void OlaServer::StopPlugins() {
   if (m_plugin_manager.get()) {
@@ -483,7 +483,7 @@ void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {
   if (m_httpd.get()) {
     m_httpd->SetPidStore(pid_store);
   }
-#endif
+#endif  // HAVE_LIBMICROHTTPD
 
   m_pid_store.reset(pid_store);
   OLA_INFO << "PID store is at " << m_pid_store.get();

@@ -15,13 +15,12 @@
 # DUBDecoder.py
 # Copyright (C) 2012 Simon Newton
 
+import itertools
+from ola.UID import UID
+
 """Decodes a DUB response."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
-
-
-import itertools
-from ola.UID import UID
 
 
 def DecodeResponse(data):

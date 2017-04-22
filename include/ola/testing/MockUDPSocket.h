@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * MockUDPsocket.h
+ * MockUDPSocket.h
  * Header file for the Mock UDP Socket class
  * Copyright (C) 2010 Simon Newton
  */

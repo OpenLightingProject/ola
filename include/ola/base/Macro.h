@@ -60,7 +60,33 @@
 #define OLA_UNUSED __attribute__ ((unused))
 #else
 #define OLA_UNUSED
-#endif
+#endif  // __GNUC__
+
+/**
+ * @def OLA_FALLTHROUGH
+ * @brief Mark switch cases as fallthrough when required
+ * @note We are not currently using [[fallthrough]]; because we need C++98
+ * compatibility
+ *
+ * @examplepara
+ *   @code
+ *   switch (cond) {
+ *     case 'foo':
+ *       doFoo();
+ *       // after foo fallthrough to bar because $REASON
+ *       OLA_FALLTHROUGH
+ *     case 'bar':
+ *   @endcode
+ */
+#ifdef __GNUC__
+#if __GNUC__ >= 7
+#define OLA_FALLTHROUGH __attribute__ ((fallthrough));
+#else
+#define OLA_FALLTHROUGH
+#endif  // __GNUC__ >= 7
+#else
+#define OLA_FALLTHROUGH
+#endif  // __GNUC__
 
 /**
  * @def STATIC_ASSERT
@@ -139,9 +165,9 @@ namespace internal {
     _Pragma("pack(push, 1)") \
     __Declaration__; \
     _Pragma("pack(pop)")
-#endif
+#endif  // _MSC_VER
 #else
 #define PACK(__Declaration__) __Declaration__ __attribute__((__packed__))
-#endif
+#endif  // _WIN32
 
 #endif  // INCLUDE_OLA_BASE_MACRO_H_

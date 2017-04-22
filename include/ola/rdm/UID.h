@@ -29,6 +29,9 @@
 #define INCLUDE_OLA_RDM_UID_H_
 
 #include <stdint.h>
+
+#include <ola/util/Utils.h>
+
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -43,7 +46,7 @@ namespace rdm {
  * @brief Represents a RDM UID.
  *
  * UIDs are 6 bytes, the first two bytes are the
- * [manufacturer code](http://tsp.plasa.org/tsp/working_groups/CP/mfctrIDs.php)
+ * [manufacturer code](http://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php)
  * and the last 4 bytes are the device id. UIDs are written as:
  *
  * @code
@@ -80,11 +83,9 @@ class UID {
      * should be most significant byte first.
      */
     explicit UID(const uint8_t *data) {
-      m_uid.esta_id = static_cast<uint16_t>((data[0] << 8) + data[1]);
-      m_uid.device_id = static_cast<uint32_t>(data[2] << 24) +
-                        static_cast<uint32_t>(data[3] << 16) +
-                        static_cast<uint32_t>(data[4] << 8) +
-                        data[5];
+      m_uid.esta_id = ola::utils::JoinUInt8(data[0], data[1]);
+      m_uid.device_id = ola::utils::JoinUInt8(data[2], data[3], data[4],
+                                             data[5]);
     }
 
     /**

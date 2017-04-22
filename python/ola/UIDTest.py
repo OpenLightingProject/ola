@@ -16,13 +16,13 @@
 # UIDTest.py
 # Copyright (C) 2005 Simon Newton
 
-"""Test cases for the UID class."""
-
-__author__ = 'nomis52@gmail.com (Simon Newton)'
-
 import sys
 import unittest
 from ola.UID import UID, UIDOutOfRangeException
+
+"""Test cases for the UID class."""
+
+__author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class UIDTest(unittest.TestCase):
@@ -88,6 +88,7 @@ class UIDTest(unittest.TestCase):
 
     all_uids = UID.AllDevices()
     self.assertRaises(UIDOutOfRangeException, UID.NextUID, all_uids)
+
 
 if __name__ == '__main__':
   unittest.main()

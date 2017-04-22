@@ -49,7 +49,7 @@ static void Win32SignalHandler(int signo) {
     handler->Run();
   }
 }
-#endif
+#endif  // _WIN32
 
 SignalThread::SignalThread()
     : Thread(Thread::Options("signal-thread")) {}
@@ -78,7 +78,7 @@ void* SignalThread::Run() {
 #ifndef _WIN32
   sigset_t signals;
   int signo;
-#endif
+#endif  // _WIN32
 
 #ifdef _WIN32
   if (g_signal_map) {
@@ -90,7 +90,7 @@ void* SignalThread::Run() {
   for (; iter != m_signal_handlers.end(); ++iter) {
     signal(iter->first, Win32SignalHandler);
   }
-#endif
+#endif  // _WIN32
 
   while (true) {
 #ifndef _WIN32
@@ -107,7 +107,7 @@ void* SignalThread::Run() {
     if (handler) {
       handler->Run();
     }
-#endif
+#endif  // _WIN32
   }
   return NULL;
 }
@@ -125,7 +125,9 @@ bool SignalThread::AddSignals(sigset_t *signals) {
       return false;
     }
   }
-#endif
+#else
+  (void) signals;
+#endif  // _WIN32
   return true;
 }
 
@@ -152,7 +154,7 @@ bool SignalThread::BlockSignal(int signal) {
     OLA_WARN << "Failed to block signals: " << strerror(errno);
     return false;
   }
-#endif
+#endif  // _WIN32
   return true;
 }
 }  // namespace thread

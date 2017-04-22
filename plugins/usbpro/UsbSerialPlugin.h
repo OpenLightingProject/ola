@@ -84,9 +84,6 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     static const char USBPRO_DEVICE_NAME[];
     static const char USB_PRO_FPS_LIMIT_KEY[];
     static const char ULTRA_FPS_LIMIT_KEY[];
-    static const char UUCP_LINUX_PATH[];
-    static const char UUCP_LOCK_PATH_KEY[];
-    static const char UUCP_MAC_PATH[];
 
     static const uint8_t DEFAULT_PRO_FPS_LIMIT = 190;
     static const uint8_t DEFAULT_ULTRA_FPS_LIMIT = 40;

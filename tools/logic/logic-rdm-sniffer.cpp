@@ -20,11 +20,11 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_SALEAEDEVICEAPI_H
 #include <SaleaeDeviceApi.h>
-#endif
+#endif  // HAVE_SALEAEDEVICEAPI_H
 
 #include <string.h>
 #include <time.h>
@@ -104,6 +104,7 @@ class LogicReader {
                            sample_rate),
         m_pid_helper(FLAGS_pid_location.str(), 4),
         m_command_printer(&cout, &m_pid_helper) {
+      m_pid_helper.Init();
     }
     ~LogicReader();
 
@@ -275,10 +276,10 @@ void LogicReader::DisplayDMXFrame(const uint8_t *data, unsigned int length) {
 void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
   auto_ptr<RDMCommand> command(RDMCommand::Inflate(data, length));
   if (command.get()) {
-    if (FLAGS_full_rdm)
+    if (FLAGS_full_rdm) {
       cout << "---------------------------------------" << endl;
-
-    command->Print(&m_command_printer, FLAGS_full_rdm, true);
+    }
+    command->Print(&m_command_printer, !FLAGS_full_rdm, true);
   } else {
     DisplayRawData(data, length);
   }

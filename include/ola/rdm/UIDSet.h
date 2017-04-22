@@ -91,6 +91,14 @@ class UIDSet {
     }
 
     /**
+     * @brief Return whether the UID set is empty.
+     * @return true if there are no UIDs in the set.
+     */
+    bool Empty() const {
+      return m_uids.empty();
+    }
+
+    /**
      * @brief Add a UID to the set.
      * @param uid the UID to add.
      */

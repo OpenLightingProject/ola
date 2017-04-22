@@ -23,6 +23,7 @@
 #include "olad/Preferences.h"
 #include "plugins/shownet/ShowNetDevice.h"
 #include "plugins/shownet/ShowNetPlugin.h"
+#include "plugins/shownet/ShowNetPluginDescription.h"
 
 
 namespace ola {
@@ -72,25 +73,7 @@ bool ShowNetPlugin::StopHook() {
  *
  */
 string ShowNetPlugin::Description() const {
-  return
-"Strand ShowNet Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin creates a single device with 8 input and 8 output ports.\n"
-"\n"
-"The ports correspond to the DMX channels used in the shownet protocol.\n"
-"For example the first input and output port 0 is channels 1 - 512 and\n"
-"the second input and output ports are channels 513 - 1024.\n"
-"\n"
-"--- Config file : ola-shownet.conf ---\n"
-"\n"
-"ip = [a.b.c.d|<interface_name>]\n"
-"The ip address or interface name to bind to. If not specified it will\n"
-"use the first non-loopback interface.\n"
-"\n"
-"name = ola-ShowNet\n"
-"The name of the node.\n"
-"\n";
+  return plugin_description;
 }
 
 

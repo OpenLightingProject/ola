@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- *  ShowLoader.cpp
- *  A class that reads OLA show files
- *  Copyright (C) 2011 Simon Newton
+ * ShowLoader.cpp
+ * A class that reads OLA show files
+ * Copyright (C) 2011 Simon Newton
  *
  * The data file is in the form:
  * universe-number channel1,channel2,channel3
@@ -98,8 +98,9 @@ void ShowLoader::Reset() {
 ShowLoader::State ShowLoader::NextTimeout(unsigned int *timeout) {
   string line;
   ReadLine(&line);
-  if (line.empty())
+  if (line.empty()) {
     return END_OF_FILE;
+  }
 
   if (!ola::StringToInt(line, timeout, true)) {
     OLA_WARN << "Line " << m_line << ": Invalid timeout: " << line;
@@ -119,8 +120,9 @@ ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
   string line;
   ReadLine(&line);
 
-  if (line.empty())
+  if (line.empty()) {
     return END_OF_FILE;
+  }
 
   vector<string> inputs;
   ola::StringSplit(line, &inputs);

@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SandnetPackets.h
- * Datagram definitions for Sandnet
+ * SandNetPackets.h
+ * Datagram definitions for SandNet
  * Copyright (C) 2005 Simon Newton
  */
 
@@ -25,7 +25,7 @@
 #include <stdint.h>
 #ifndef _WIN32
 #include <netinet/in.h>
-#endif
+#endif  // _WIN32
 
 #include <ola/Constants.h>
 #include "ola/network/IPV4Address.h"
@@ -39,15 +39,15 @@ namespace sandnet {
 enum { SANDNET_NAME_LENGTH = 31};
 
 /*
- * Sandnet opcodes.
- * These are transmitted as little-endian which why they appear strange.
+ * SandNet opcodes.
+ * These are transmitted as little-endian which is why they appear strange.
  */
 // We can't use the PACK macro for enums
 #ifdef _WIN32
 #pragma pack(push, 1)
-#endif
+#endif  // _WIN32
 enum packet_type_e {
-  SANDNET_ADVERTISMENT = 0x0100,
+  SANDNET_ADVERTISEMENT = 0x0100,
   SANDNET_CONTROL = 0x0200,
   SANDNET_DMX = 0x0300,
   SANDNET_NAME = 0x0400,
@@ -60,14 +60,14 @@ enum packet_type_e {
 #pragma pack(pop)
 #else
 } __attribute__((packed));
-#endif
+#endif  // _WIN32
 
 typedef enum packet_type_e packet_type_t;
 
 // We can't use the PACK macro for enums
 #ifdef _WIN32
 #pragma pack(push, 1)
-#endif
+#endif  // _WIN32
 enum protocol_id_e {
   SANDNET_SANDNET = 0x02,
   SANDNET_ARTNET = 0x04,
@@ -80,7 +80,7 @@ enum protocol_id_e {
 #pragma pack(pop)
 #else
 } __attribute__((packed));
-#endif
+#endif  // _WIN32
 
 typedef enum protocol_id_e protocol_id_t;
 
@@ -97,7 +97,7 @@ struct sandnet_packet_advertisement_port_s {
 
 
 /*
- * A Sandnet Advertisment
+ * A Sandnet Advertisement
  */
 PACK(
 struct sandnet_advertisement_s {

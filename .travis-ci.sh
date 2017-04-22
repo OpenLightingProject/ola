@@ -5,12 +5,19 @@
 
 set -e
 
-CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py";
+CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py";
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
+PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand"
+
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for linting to run against
+  make builtfiles
   # first check we've not got any generic NOLINTs
   # count the number of generic NOLINTs
   nolints=$(grep -IR NOLINT * | grep -v "NOLINT(" | wc -l)
@@ -27,12 +34,25 @@ if [[ $TASK = 'lint' ]]; then
   chmod u+x cpplint.py;
   ./cpplint.py \
     --filter=-legal/copyright,-readability/streams,-runtime/arrays \
-    $(find ./ -name "*.h" -or -name "*.cpp" | xargs)
+    $(find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
+        -wholename "./common/protocol/Ola.pb.*" -or \
+        -wholename "./common/rpc/Rpc.pb.*" -or \
+        -wholename "./common/rpc/TestService.pb.*" -or \
+        -wholename "./common/rdm/Pids.pb.*" -or \
+        -wholename "./config.h" -or \
+        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
+        -wholename "./tools/ola_trigger/config.tab.*" -or \
+        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for licence checking to run against
+  make builtfiles
   ./scripts/enforce_licence.py
   if [[ $? -ne 0 ]]; then
     exit 1;
@@ -40,7 +60,8 @@ elif [[ $TASK = 'check-licences' ]]; then
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
   autoreconf -i;
-  ./configure --enable-ja-rule;
+  # Doxygen is C++ only, so don't bother with RDM tests
+  ./configure --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
@@ -57,7 +78,8 @@ elif [[ $TASK = 'doxygen' ]]; then
 elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i;
-  ./configure --enable-ja-rule --enable-gcov;
+  # Coverage is C++ only, so don't bother with RDM tests
+  ./configure --enable-gcov --enable-ja-rule --enable-e133;
   make;
   make check;
 elif [[ $TASK = 'coverity' ]]; then
@@ -73,11 +95,45 @@ elif [[ $TASK = 'jshint' ]]; then
   cd ./javascript/new-src;
   npm install;
   grunt test
+elif [[ $TASK = 'flake8' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for flake8 to run against
+  make builtfiles
+  flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129 data/rdm include/ola python scripts tools/ola_mon tools/rdm
+elif [[ $TASK = 'pychecker' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for pychecker to run against
+  make builtfiles
+  PYTHONPATH=./python/:$PYTHONPATH
+  export PYTHONPATH
+  mkdir ./python/ola/testing/
+  ln -s ./tools/rdm ./python/ola/testing/rdm
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and \( -wholename "./data/*" -or -wholename "./include/*" -or -wholename "./scripts/*" -or -wholename "./python/examples/rdm_compare.py" -or -wholename "./python/ola/*" \) -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -wholename "./scripts/enforce_licence.py" -or -wholename "./python/ola/rpc/*" -or -wholename "./python/ola/ClientWrapper.py" -or -wholename "./python/ola/PidStore.py" -or -wholename "./python/ola/RDMAPI.py" \) | xargs)
+  # More restricted checking for files that import files that break pychecker
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only $(find ./ -name "*.py" -and \( -wholename "./tools/rdm/ModelCollector.py" -or -wholename "./tools/rdm/DMXSender.py" -or -wholename "./tools/rdm/TestCategory.py" -or -wholename "./tools/rdm/TestHelpers.py" -or -wholename "./tools/rdm/TestState.py" -or -wholename "./tools/rdm/TimingStats.py" \) | xargs)
+  # Even more restricted checking for files that import files that break pychecker and have unused parameters
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only --no-argsused $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -name "ola_universe_info.py" -or -name "rdm_snapshot.py" -or -name "ClientWrapper.py" -or -name "PidStore.py" -or -name "enforce_licence.py" -or -name "ola_mon.py" -or -name "TestLogger.py" -or -name "TestRunner.py" -or -name "rdm_model_collector.py" -or -name "rdm_responder_test.py" -or -name "rdm_test_server.py" \) | xargs)
+elif [[ $TASK = 'pychecker-wip' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for pychecker to run against
+  make builtfiles
+  PYTHONPATH=./python/:$PYTHONPATH
+  export PYTHONPATH
+  mkdir ./python/ola/testing/
+  ln -s ./tools/rdm ./python/ola/testing/rdm
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" \) | xargs)
 else
   # Otherwise compile and check as normal
+  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
   autoreconf -i;
-  ./configure --enable-rdm-tests --enable-ja-rule;
-  make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule';
+  ./configure $DISTCHECK_CONFIGURE_FLAGS;
+  make distcheck;
   make dist;
   tarball=$(ls -Ut ola*.tar.gz | head -1)
   tar -zxf $tarball;

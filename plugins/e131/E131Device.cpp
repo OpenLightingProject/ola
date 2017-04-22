@@ -37,7 +37,7 @@
 #include "olad/Preferences.h"
 #include "plugins/e131/E131Device.h"
 #include "plugins/e131/E131Port.h"
-#include "plugins/e131/e131/E131Node.h"
+#include "libs/acn/E131Node.h"
 
 namespace ola {
 namespace plugin {
@@ -45,6 +45,7 @@ namespace e131 {
 
 const char E131Device::DEVICE_NAME[] = "E1.31 (DMX over ACN)";
 
+using ola::acn::E131Node;
 using ola::rpc::RpcController;
 using std::ostringstream;
 using std::set;

@@ -35,9 +35,9 @@ namespace utils {
  * @param[out] low the low byte
  */
 inline void SplitUInt16(uint16_t input, uint8_t *high, uint8_t *low) {
-  *high = (input >> std::numeric_limits<uint8_t>::digits) &
-      std::numeric_limits<uint8_t>::max();
-  *low = input & std::numeric_limits<uint8_t>::max();
+  *high = static_cast<uint8_t>((input >> std::numeric_limits<uint8_t>::digits) &
+      std::numeric_limits<uint8_t>::max());
+  *low = static_cast<uint8_t>(input & std::numeric_limits<uint8_t>::max());
 }
 
 
@@ -48,8 +48,29 @@ inline void SplitUInt16(uint16_t input, uint8_t *high, uint8_t *low) {
  * @return the combined uint16_t
  */
 inline uint16_t JoinUInt8(uint8_t high, uint8_t low)  {
-  return ((static_cast<uint16_t>(high) << std::numeric_limits<uint8_t>::digits)
+  return static_cast<uint16_t>(
+      (static_cast<uint16_t>(high) << std::numeric_limits<uint8_t>::digits)
       | low);
+}
+
+
+/**
+ * @brief Convert four uint8_t's to a uint32_t
+ * @param byte0 the highest byte
+ * @param byte1 the high middle byte
+ * @param byte2 the low middle byte
+ * @param byte3 the lowest byte
+ * @return the combined uint32_t
+ */
+inline uint32_t JoinUInt8(uint8_t byte0, uint8_t byte1, uint8_t byte2,
+                          uint8_t byte3)  {
+  return ((static_cast<uint32_t>(byte0) <<
+           (std::numeric_limits<uint8_t>::digits * 3))
+          | (static_cast<uint32_t>(byte1) <<
+             (std::numeric_limits<uint8_t>::digits * 2))
+          | (static_cast<uint32_t>(byte2) <<
+             (std::numeric_limits<uint8_t>::digits))
+          | byte3);
 }
 }  // namespace utils
 }  // namespace ola

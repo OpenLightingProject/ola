@@ -280,6 +280,129 @@ manufacturer {
   }
 }
 manufacturer {
+  manufacturer_id: 11720
+  manufacturer_name: "Stellascapes"
+  pid {
+    name: "MODEL_ID"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "model_id"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "model_id"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "MODEL_ID_LIST"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: GROUP
+        name: "models"
+        field {
+          type: UINT16
+          name: "model_id"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PIXEL_TYPE"
+    value: 32773
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "pixel_type"
+        label {
+          value: 1
+          label: "LPD8806"
+        }
+        label {
+          value: 2
+          label: "WS2801"
+        }
+        label {
+          value: 3
+          label: "P9813"
+        }
+        label {
+          value: 4
+          label: "APA102"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "pixel_type"
+        label {
+          value: 1
+          label: "LPD8806"
+        }
+        label {
+          value: 2
+          label: "WS2801"
+        }
+        label {
+          value: 3
+          label: "P9813"
+        }
+        label {
+          value: 4
+          label: "APA102"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PIXEL_COUNT"
+    value: 32774
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "pixel_count"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "pixel_count"
+        range {
+          min: 1
+          max: 65535
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
   manufacturer_id: 16761
   manufacturer_name: "AYRTON"
   pid {
@@ -5043,6 +5166,198 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
+    name: "GOBO3_ANIMATION_START"
+    value: 33567
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "gobo3_animation_start"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "gobo3_animation_start"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "GOBO3_ANIMATION_END"
+    value: 33568
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "gobo3_animation_end"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+        label {
+          value: 9
+          label: "Position 9"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "gobo3_animation_start"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
     name: "PAN_TILT_SPEED"
     value: 33792
     get_request {
@@ -8263,4 +8578,4 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-version: 1438559429
+version: 1458491190

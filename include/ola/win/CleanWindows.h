@@ -27,10 +27,10 @@
 // Some preprocessor magic to reduce Windows.h namespace pollution
 #  ifdef AddPort
 #    undef AddPort
-#  endif
+#  endif  // AddPort
 #  ifdef SendMessage
 #    undef SendMessage
-#  endif
+#  endif  // SendMessage
 #endif  // _WIN32
 #endif  // INCLUDE_OLA_WIN_CLEANWINDOWS_H_
 
