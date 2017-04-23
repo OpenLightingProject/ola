@@ -167,6 +167,7 @@ java/generated-src/main/java/ola/proto/Ola.java
 java/generated-src/main/java/ola/rpc/Rpc.java
 java/maven-archiver/
 java/ola-java-client-*.*.*.jar
+java/surefire-reports/
 java/test-classes/
 javascript/compiler.jar
 javascript/trunk/
