@@ -480,10 +480,21 @@ RDMTests.prototype.update_device_list = function() {
     'u': universe_options.val() }, function(data) {
     if (data['status'] == true) {
       devices_list.empty();
-      var uids = data.uids;
-      $.each(uids, function(item) {
-        devices_list.append($('<option />').val(uids[item]).text(uids[item]));
-      });
+      if (data['nameduids'] != undefined) {
+        var uids = data.uids;
+        $.each(uids, function(item) {
+          var uid_text = uids[item];
+          if (data['nameduids'][uids[item]] != undefined) {
+            uid_text = uids[item] + ' (' + data['nameduids'][uids[item]] + ')';
+          }
+          devices_list.append($('<option />').val(uids[item]).text(uid_text));
+        });
+      } else {
+        var uids = data.uids;
+        $.each(uids, function(item) {
+          devices_list.append($('<option />').val(uids[item]).text(uids[item]));
+        });
+      }
     }
   });
 };
