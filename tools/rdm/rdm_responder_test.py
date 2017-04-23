@@ -167,7 +167,7 @@ def DisplayTiming(timing_stats):
   LogAllTimingParams('DISCOVERY_UNIQUE_BRANCH', stats)
 
 
-def DisplaySummary(options, runner, tests, device):
+def DisplaySummary(options, runner, tests, device, pid_store):
   """Log a summary of the tests."""
   by_category = {}
   warnings = []
@@ -191,6 +191,9 @@ def DisplaySummary(options, runner, tests, device):
   logging.info('UID: %s' % options.uid)
 
   manufacturer_label = getattr(device, 'manufacturer_label', None)
+  if not manufacturer_label:
+    manufacturer_label = str(
+        pid_store.ManufacturerIdToName(options.uid.manufacturer_id))
   if manufacturer_label:
     logging.info('Manufacturer: %s' %
                  manufacturer_label.encode('string-escape'))
@@ -247,8 +250,7 @@ def main():
 
   SetupLogging(options)
   logging.info('OLA Responder Tests Version %s' % Version.version)
-  pid_store = PidStore.GetStore(options.pid_location,
-                                ('pids.proto', 'draft_pids.proto'))
+  pid_store = PidStore.GetStore(options.pid_location)
   wrapper = ClientWrapper()
 
   global uid_ok
@@ -319,7 +321,7 @@ def main():
 
   tests, device = runner.RunTests(test_filter, options.no_factory_defaults)
 
-  DisplaySummary(options, runner, tests, device)
+  DisplaySummary(options, runner, tests, device, pid_store)
 
 
 if __name__ == '__main__':
