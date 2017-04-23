@@ -162,10 +162,12 @@ include/ola/base/Version.h
 include/ola/plugin_id.h
 include/ola/rdm/RDMResponseCodes.h
 include/ola/timecode/TimeCodeEnums.h
-java/classes
+java/classes/
 java/generated-src/main/java/ola/proto/Ola.java
 java/generated-src/main/java/ola/rpc/Rpc.java
-java/test-classes
+java/maven-archiver/
+java/ola-java-client-*.*.*.jar
+java/test-classes/
 javascript/compiler.jar
 javascript/trunk/
 libs/acn/e131_loadtest
