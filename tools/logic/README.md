@@ -1,4 +1,8 @@
-In order to compile the logic rdm sniffer, you need to set the include path to your SaleaeDeviceSDK. Example:
+In order to compile the logic rdm sniffer, you need the SaleaeDeviceSDK, there
+is a version available from:
+http://downloads.saleae.com/SDK/SaleaeDeviceSdk-1.1.14.zip
+
+You will also need to set the include path to your SaleaeDeviceSDK. Example:
 
 ```
 ./configure CPPFLAGS="-I/path/to/your/SaleaeDeviceSdk-1.1.9/include"
