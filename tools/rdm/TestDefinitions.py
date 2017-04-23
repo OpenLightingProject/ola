@@ -206,7 +206,6 @@ class MuteAllDevices(ResponderTestFixture):
     self.SetProperty(self.PROVIDES[0], True)
     if not (self.Property('mute_supported')):
       self.SetNotRun('RDM Controller does not support DISCOVERY commands')
-      self.Stop()
       return
 
     self.AddExpectedResults([
@@ -812,7 +811,12 @@ class GetSupportedParameters(ResponderTestFixture):
             (','.join(supported_pids), ','.join(unsupported_pids)))
 
     for p, dependent_pids in self.PID_DEPENDENCIES:
-      if self.LookupPid(p).value not in supported_parameters:
+      pid = self.LookupPid(p)
+      if pid is None:
+        self.SetBroken('Failed to lookup info for PID %s' % p)
+        return
+
+      if pid.value not in supported_parameters:
         continue
 
       unsupported_pids = []
@@ -932,7 +936,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
     mandatory_pids = set(self.LookupPid(p).value for p in self.MANDATORY_PIDS)
     missing_pids = mandatory_pids - supported_pids
     if missing_pids:
-      self.SetFailed("Missing PIDs %s from sub device's supported pid list" %
+      self.SetFailed("Missing PIDs %s from sub device's supported pid list " %
                      ', '.join('0x%04hx' % p for p in missing_pids))
       return
 
@@ -969,7 +973,6 @@ class FindSubDevices(ResponderTestFixture):
     if self._current_index >= PidStore.MAX_VALID_SUB_DEVICE:
       self.SetFailed('Only found %d of %d sub devices' %
                      (len(self._sub_device_addresses), self._device_count))
-      self.Stop()
       return
 
     self.AddExpectedResults([
@@ -988,7 +991,6 @@ class FindSubDevices(ResponderTestFixture):
             ' but the root device reported %s. See section 10.5.1' %
             (self._current_index, fields['sub_device_count'],
              self._device_count))
-        self.Stop()
       self._sub_device_addresses[self._current_index] = (
           fields['dmx_start_address'])
       self._sub_device_footprints[self._current_index] = fields['dmx_footprint']
@@ -1637,7 +1639,6 @@ class SetUnsupportedLanguage(OptionalParameterTestFixture):
   def Test(self):
     if 'zz' in self.Property('languages_capabilities'):
       self.SetBroken('zz exists in the list of available languages')
-      self.Stop()
       return
 
     self.AddIfSetSupported([
@@ -1889,7 +1890,6 @@ class GetPersonalityDescriptions(OptionalParameterTestFixture):
     if self._current_index >= MAX_PERSONALITY_NUMBER:
       # This should never happen because personality_count is a uint8
       self.SetFailed('Could not find all personalities')
-      self.Stop()
       return
 
     self.AddIfGetSupported(self.AckGetResult(
@@ -2533,7 +2533,6 @@ class CheckSensorConsistency(ResponderTestFixture):
     self.CheckConsistency('RECORD_SENSORS',
                           self.Property('sensor_recording_supported'))
     self.SetPassed()
-    self.Stop()
 
 
 # Sensor Definition
@@ -4363,7 +4362,6 @@ class CheckBlockAddressConsistency(OptionalParameterTestFixture):
     if (self.PidSupported() and self.Property('sub_device_count') == 0):
       self.AddAdvisory('DMX_BLOCK_ADDRESS supported but sub device count was 0')
     self.SetPassed()
-    self.Stop()
 
 
 class GetDMXBlockAddressWithData(TestMixins.GetWithDataMixin,
@@ -6416,7 +6414,6 @@ class GetPresetStatus(OptionalParameterTestFixture):
     if fields['scene_number'] != self.index:
       self.SetFailed('Scene number mismatch, expected %d, got %d' %
                      (self.index, fields['scene_number']))
-      self.Stop()
 
     if fields['programmed'] == self.NOT_PROGRAMMED:
       # Assume that NOT_PROGRAMMED means that it's writable.
