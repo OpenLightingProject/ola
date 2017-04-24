@@ -16,7 +16,7 @@
 # Copyright (C) 2010 Simon Newton
 # Holds all the information about RDM PIDs
 
-from __future__ import print_function
+
 import binascii
 import math
 import ola.RDMConstants
@@ -41,7 +41,7 @@ MAX_VALID_SUB_DEVICE = 0x0200
 ALL_SUB_DEVICES = 0xffff
 
 # The two types of commands classes
-RDM_GET, RDM_SET, RDM_DISCOVERY = range(3)
+RDM_GET, RDM_SET, RDM_DISCOVERY = list(range(3))
 
 
 class Error(Exception):

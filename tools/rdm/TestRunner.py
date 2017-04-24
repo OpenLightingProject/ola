@@ -19,7 +19,7 @@ import datetime
 import inspect
 import logging
 import time
-from TimingStats import TimingStats
+from .TimingStats import TimingStats
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
@@ -276,7 +276,7 @@ class TestRunner(object):
       A tuple in the form (tests, device), where tests is a list of tests that
       exectuted, and device is an instance of DeviceProperties.
     """
-    device = DeviceProperties(self._property_map.keys())
+    device = DeviceProperties(list(self._property_map.keys()))
     if whitelist is None:
       tests_to_run = self._all_tests
     else:
@@ -420,9 +420,9 @@ class TestRunner(object):
     tests = []
 
     remaining_tests = [
-        test for test, deps in deps_dict.iteritems() if len(deps)]
+        test for test, deps in deps_dict.items() if len(deps)]
     no_deps = set(
-        test for test, deps in deps_dict.iteritems() if len(deps) == 0)
+        test for test, deps in deps_dict.items() if len(deps) == 0)
 
     while len(no_deps) > 0:
       current_test = no_deps.pop()

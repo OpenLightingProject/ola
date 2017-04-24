@@ -359,7 +359,7 @@ class RequestStatus(object):
     state: the state of the operation
     message: an error message if it failed
   """
-  SUCCESS, FAILED, CANCELLED = range(3)
+  SUCCESS, FAILED, CANCELLED = list(range(3))
 
   def __init__(self, controller):
     if controller.Failed():
@@ -448,7 +448,7 @@ class RDMNack(object):
     return obj
 
 
-for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.items():
+for symbol, (value, description) in list(RDMNack.NACK_SYMBOLS_TO_VALUES.items()):
   nack = RDMNack(value, description)
   setattr(RDMNack, symbol, nack)
   RDMNack._CODE_TO_OBJECT[value] = nack

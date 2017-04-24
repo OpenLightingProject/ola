@@ -22,7 +22,7 @@ def ContainsUnprintable(s):
   """Check if a string s contain unprintable characters."""
   if type(s) == str:
     return s != s.encode('string-escape')
-  elif type(s) == unicode:
+  elif type(s) == str:
     return s != s.encode('unicode-escape')
   else:
     return False

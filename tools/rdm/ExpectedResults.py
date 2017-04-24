@@ -337,7 +337,7 @@ class AckResult(SuccessfulResult):
         if field not in field_keys:
           return False
 
-    for field, value in self._field_values.iteritems():
+    for field, value in self._field_values.items():
       if field not in unpacked_data:
         return False
       if value != unpacked_data[field]:

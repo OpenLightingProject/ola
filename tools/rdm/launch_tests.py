@@ -19,7 +19,7 @@
 from optparse import OptionParser
 import logging
 import os
-import setup_patch  # The Port Autopatcher
+from . import setup_patch  # The Port Autopatcher
 import shutil
 import signal
 import subprocess
@@ -78,14 +78,14 @@ def main():
   config_dir = tempfile.mkdtemp()
 
   if not os.access(config_dir, os.W_OK):
-    print '%s is not writable' % config_dir
+    print('%s is not writable' % config_dir)
     sys.exit()
 
   # copy the skeleton configs files over, no symlinks since we don't want to
   # change the originals when olad writes settings.
   skel_config = options.skel
   if not os.path.isdir(skel_config):
-    print '%s is not a directory' % skel_config
+    print('%s is not a directory' % skel_config)
     sys.exit()
 
   for file_name in os.listdir(skel_config):

@@ -26,11 +26,11 @@
 
 import logging
 import time
-from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
+from .ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
                              NackDiscoveryResult, NackGetResult, NackSetResult)
-from TestCategory import TestCategory
-from TestState import TestState
-from TimingStats import TimingStats
+from .TestCategory import TestCategory
+from .TestState import TestState
+from .TimingStats import TimingStats
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 
@@ -578,12 +578,12 @@ class ResponderTestFixture(TestFixture):
       return [self._EscapeData(i) for i in data]
     elif type(data) == dict:
       d = {}
-      for k, v in data.iteritems():
+      for k, v in data.items():
         d[k] = self._EscapeData(v)
       return d
     elif type(data) == str:
       return data.encode('string-escape')
-    elif type(data) == unicode:
+    elif type(data) == str:
       return data.encode('unicode-escape')
     else:
       return data

@@ -17,7 +17,7 @@
 # Copyright (C) 2010 Simon Newton
 
 import getopt
-import httplib
+import http.client
 import rrdtool
 import time
 import os.path
@@ -48,7 +48,7 @@ class OlaFetcher(object):
 
   def _FetchDebug(self):
     """Fetch the contents of the debug page."""
-    connection = httplib.HTTPConnection('%s:%d' % (self._host, self._port))
+    connection = http.client.HTTPConnection('%s:%d' % (self._host, self._port))
     try:
       connection.request('GET', '/debug')
     except socket.error:
@@ -58,7 +58,7 @@ class OlaFetcher(object):
       response = connection.getresponse()
       if response.status == 200:
         return response.read()
-    except httplib.BadStatusLine:
+    except http.client.BadStatusLine:
       return None
     return None
 
@@ -187,20 +187,20 @@ def LoadConfig(config_file):
     A dict with the config parameters.
   """
   locals = {}
-  execfile(config_file, {}, locals)
+  exec(compile(open(config_file).read(), config_file, 'exec'), {}, locals)
 
   keys = set(['OLAD_SERVERS', 'DATA_DIRECTORY', 'VARIABLES', 'WWW_DIRECTORY',
               'CDEFS'])
-  if not keys.issubset(locals.keys()):
-    print 'Invalid config file'
+  if not keys.issubset(list(locals.keys())):
+    print('Invalid config file')
     sys.exit(2)
 
   if not len(locals['OLAD_SERVERS']):
-    print 'No hosts defined'
+    print('No hosts defined')
     sys.exit(2)
 
   if not len(locals['VARIABLES']):
-    print 'No variables defined'
+    print('No variables defined')
     sys.exit(2)
 
   return locals
@@ -208,20 +208,20 @@ def LoadConfig(config_file):
 
 def Usage(binary):
   """Display the usage information."""
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
     Usage: %s [options]
 
     Start the OLAD monitoring system
       -h, --help   Display this help message
       -c, --config The config file to use
-    """ % binary)
+    """ % binary))
 
 
 def main():
   try:
     opts, args = getopt.getopt(sys.argv[1:], "hc:v", ["help", "config="])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage(sys.argv[0])
     sys.exit(2)
 

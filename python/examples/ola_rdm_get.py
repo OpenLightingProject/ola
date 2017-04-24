@@ -34,7 +34,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 def Usage():
-  print(textwrap.dedent("""\
+  print((textwrap.dedent("""\
   Usage: ola_rdm_get.py --universe <universe> --uid <uid> <pid>
 
   Get the value of a pid for a device.
@@ -46,7 +46,7 @@ def Usage():
     -l, --list-pids           display a list of pids
     -p, --pid-location        the directory to read PID definitions from
     --uid                     the UID to send to
-    -u, --universe <universe> Universe number."""))
+    -u, --universe <universe> Universe number.""")))
 
 
 wrapper = None
@@ -64,10 +64,10 @@ class ResponsePrinter(object):
   def PrintResponse(self, uid, pid_value, response_data):
     pid = self.pid_store.GetPid(pid_value, uid.manufacturer_id)
     if pid is None:
-      print('PID: 0x%04hx' % pid_value)
+      print(('PID: 0x%04hx' % pid_value))
       self.Default(uid, response_data)
     else:
-      print('PID: %s' % pid)
+      print(('PID: %s' % pid))
       if pid.name in self._handlers:
         self._handlers[pid.name](uid, response_data)
       else:
@@ -80,7 +80,7 @@ class ResponsePrinter(object):
       if pid:
         print(pid)
       else:
-        print('0x%hx' % pid_value)
+        print(('0x%hx' % pid_value))
 
   def ProxiedDevices(self, uid, response_data):
     uids = []
@@ -91,8 +91,8 @@ class ResponsePrinter(object):
 
   def Default(self, uid, response_data):
     if isinstance(response_data, dict):
-      for key, value in response_data.items():
-        print('%s: %r' % (key, value))
+      for key, value in list(response_data.items()):
+        print(('%s: %r' % (key, value)))
     else:
       print(response_data)
 
@@ -178,20 +178,20 @@ class InteractiveModeController(cmd.Cmd):
       return
 
     if sub_device < 0 or sub_device > PidStore.ALL_SUB_DEVICES:
-      print('*** Argument must be between 0 and 0x%hx' %
-            PidStore.ALL_SUB_DEVICES)
+      print(('*** Argument must be between 0 and 0x%hx' %
+            PidStore.ALL_SUB_DEVICES))
       return
     self._sub_device = sub_device
 
   def do_print(self, l):
     """Prints the current universe, UID and sub device."""
-    print(textwrap.dedent("""\
+    print((textwrap.dedent("""\
       Universe: %d
       UID: %s
       Sub Device: %d""" % (
         self._universe,
         self._uid,
-        self._sub_device)))
+        self._sub_device))))
 
   def do_uids(self, l):
     """List the UIDs for this universe."""
@@ -203,7 +203,7 @@ class InteractiveModeController(cmd.Cmd):
     if state.Succeeded():
       self._UpdateUids(uids)
       for uid in uids:
-        print(str(uid))
+        print((str(uid)))
     self.wrapper.Stop()
 
   def do_full_discovery(self, l):
@@ -235,7 +235,7 @@ class InteractiveModeController(cmd.Cmd):
       for pid in self.pid_store.ManufacturerPids(self._uid.manufacturer_id):
         names.append('%s (0x%04hx)' % (pid.name.lower(), pid.value))
     names.sort()
-    print('\n'.join(names))
+    print(('\n'.join(names)))
 
   def do_queued(self, line):
     """Fetch all the queued messages."""
@@ -282,7 +282,7 @@ class InteractiveModeController(cmd.Cmd):
     if request_type == PidStore.RDM_SET:
       command = 'set'
     if len(args) < 1:
-      print('%s <pid> [args]' % command)
+      print(('%s <pid> [args]' % command))
       return
 
     pid = None
@@ -291,7 +291,7 @@ class InteractiveModeController(cmd.Cmd):
     except ValueError:
       pid = self.pid_store.GetName(args[0].upper(), self._uid.manufacturer_id)
     if pid is None:
-      print('*** Unknown pid %s' % args[0])
+      print(('*** Unknown pid %s' % args[0]))
       return
 
     if not pid.RequestSupported(request_type):
@@ -314,10 +314,10 @@ class InteractiveModeController(cmd.Cmd):
         self.wrapper.Run()
     except PidStore.ArgsValidationError as e:
       args, help_string = pid.GetRequestDescription(request_type)
-      print('Usage: %s %s %s' % (command, pid.name.lower(), args))
+      print(('Usage: %s %s %s' % (command, pid.name.lower(), args)))
       print(help_string)
       print('')
-      print('*** %s' % e)
+      print(('*** %s' % e))
       return
 
   def _FetchQueuedMessages(self):
@@ -339,7 +339,7 @@ class InteractiveModeController(cmd.Cmd):
     self.wrapper.Stop()
 
     if response.response_type == OlaClient.RDM_NACK_REASON:
-      print('Got nack with reason: %s' % response.nack_reason)
+      print(('Got nack with reason: %s' % response.nack_reason))
     elif unpack_exception:
       print(unpack_exception)
     else:
@@ -347,7 +347,7 @@ class InteractiveModeController(cmd.Cmd):
                                            unpacked_data)
 
     if response.queued_messages:
-      print('%d queued messages remain' % response.queued_messages)
+      print(('%d queued messages remain' % response.queued_messages))
 
   def _QueuedMessageComplete(self, response, unpacked_data, unpack_exception):
     if not self._CheckForAckOrNack(response):
@@ -367,11 +367,11 @@ class InteractiveModeController(cmd.Cmd):
         print('Device doesn\'t support queued messages')
         self.wrapper.StopIfNoEvents()
       else:
-        print('Got nack for 0x%04hx with reason: %s' % (
-            response.pid, response.nack_reason))
+        print(('Got nack for 0x%04hx with reason: %s' % (
+            response.pid, response.nack_reason)))
 
     elif unpack_exception:
-      print('Invalid Param data: %s' % unpack_exception)
+      print(('Invalid Param data: %s' % unpack_exception))
     else:
       status_messages_pid = self.pid_store.GetName('STATUS_MESSAGES')
       if (response.pid == status_messages_pid.value and
@@ -395,12 +395,12 @@ class InteractiveModeController(cmd.Cmd):
       True if this response was an ACK or NACK, False for all other cases.
     """
     if not response.status.Succeeded():
-      print(response.status.message)
+      print((response.status.message))
       self.wrapper.Stop()
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print(response.ResponseCodeAsString())
+      print((response.ResponseCodeAsString()))
       self.wrapper.Stop()
       return False
 
@@ -420,7 +420,7 @@ def main():
                                 'list-pids', 'pid-location=', 'uid=',
                                 'universe='])
   except getopt.GetoptError as err:
-    print(str(err))
+    print((str(err)))
     Usage()
     sys.exit(2)
 
@@ -459,7 +459,7 @@ def main():
   try:
     PidStore.GetStore(pid_location)
   except PidStore.MissingPLASAPIDs as e:
-    print e
+    print(e)
     sys.exit()
 
   controller = InteractiveModeController(universe,

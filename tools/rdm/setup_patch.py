@@ -148,10 +148,10 @@ def main():
   patch_results = PatchPorts()
 
   if patch_results.status:
-    print ('Patched %d of %d ports' %
-           (patch_results.ports_patched, patch_results.ports_found))
+    print(('Patched %d of %d ports' %
+           (patch_results.ports_patched, patch_results.ports_found)))
   else:
-    print 'Failed to patch'
+    print('Failed to patch')
 
 
 if __name__ == '__main__':

@@ -27,7 +27,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 def Usage():
-  print(textwrap.dedent("""\
+  print((textwrap.dedent("""\
   Usage: ola_rdm_discover.py --universe <universe> [--force_discovery]
 
   Fetch the UID list for a universe.
@@ -35,7 +35,7 @@ def Usage():
     -h, --help                Display this help message and exit.
     -f, --full                Full RDM Discovery for this universe.
     -i, --incremental         Incremental RDM Discovery for this universe.
-    -u, --universe <universe> Universe number."""))
+    -u, --universe <universe> Universe number.""")))
 
 
 def main():
@@ -43,7 +43,7 @@ def main():
       opts, args = getopt.getopt(sys.argv[1:], 'fjiu:',
                                  ['help', 'full', 'incremental', 'universe='])
   except getopt.GetoptError as err:
-    print(str(err))
+    print((str(err)))
     Usage()
     sys.exit(2)
 
@@ -76,7 +76,7 @@ def main():
   def show_uids(state, uids):
     if state.Succeeded():
       for uid in uids:
-        print(str(uid))
+        print((str(uid)))
     wrapper.Stop()
 
   if full_discovery:

@@ -18,12 +18,12 @@
 import datetime
 import operator
 import struct
-from ExpectedResults import (AckGetResult, BroadcastResult, NackGetResult,
+from .ExpectedResults import (AckGetResult, BroadcastResult, NackGetResult,
                              InvalidResponse, TimeoutResult, UnsupportedResult,
                              RDM_GET, RDM_SET)
-from ResponderTest import ResponderTestFixture, TestFixture
-from ResponderTest import OptionalParameterTestFixture
-from TestCategory import TestCategory
+from .ResponderTest import ResponderTestFixture, TestFixture
+from .ResponderTest import OptionalParameterTestFixture
+from .TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
 from ola.RDMConstants import (RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH,
@@ -37,9 +37,9 @@ from ola.RDMConstants import (RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH,
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
-from TestHelpers import ContainsUnprintable
-import TestMixins
-from TestMixins import MAX_DMX_ADDRESS
+from .TestHelpers import ContainsUnprintable
+from . import TestMixins
+from .TestMixins import MAX_DMX_ADDRESS
 
 '''This defines all the tests for RDM responders.'''
 
@@ -777,7 +777,7 @@ class GetSupportedParameters(ResponderTestFixture):
         manufacturer_parameters.append(param_id)
 
     # Check for duplicate PIDs
-    for pid, count in count_by_pid.iteritems():
+    for pid, count in count_by_pid.items():
       if count > 1:
         pid_obj = self.LookupPidValue(pid)
         if pid_obj:
@@ -890,7 +890,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
                     'IDENTIFY_DEVICE']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._params = {}
     self._GetSupportedParams()
@@ -916,7 +916,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
       return
 
     supported_pids = set()
-    for pids in self._params.itervalues():
+    for pids in self._params.values():
       if not supported_pids:
         supported_pids = pids
       elif supported_pids != pids:
@@ -1665,7 +1665,7 @@ class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
   REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._GetSoftwareVersion()
 
@@ -2538,7 +2538,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
         self.SetProperty('sensor_definitions', self._sensors)
 
         supports_recording = False
-        for sensor_def in self._sensors.itervalues():
+        for sensor_def in self._sensors.values():
           supports_recording |= (
               sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
         self.SetProperty('sensor_recording_supported', supports_recording)
@@ -2687,7 +2687,7 @@ class GetSensorValues(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -2777,7 +2777,7 @@ class GetUndefinedSensorValues(OptionalParameterTestFixture):
   def Test(self):
     sensors = self.Property('sensor_definitions')
     self._missing_sensors = []
-    for i in xrange(0, 0xff):
+    for i in range(0, 0xff):
       if i not in sensors:
         self._missing_sensors.append(i)
 
@@ -2825,7 +2825,7 @@ class ResetSensorValue(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -2880,7 +2880,7 @@ class ResetAllSensorValues(OptionalParameterTestFixture):
 
   def Test(self):
     supports_recording = False
-    for sensor_def in self.Property('sensor_definitions').values():
+    for sensor_def in list(self.Property('sensor_definitions').values()):
       supports_recording |= (
           sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
 
@@ -2951,7 +2951,7 @@ class RecordSensorValues(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -3263,7 +3263,7 @@ class SetLampOnMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELDS = ['mode']
   REQUIRES = ['lamp_on_mode']
   ALLOWED_MODES = [0, 1, 2]
-  ALL_MODES = ALLOWED_MODES + [3] + range(0x80, 0xe0)
+  ALL_MODES = ALLOWED_MODES + [3] + list(range(0x80, 0xe0))
 
   def OldValue(self):
     old = self.Property('lamp_on_mode')
@@ -3623,14 +3623,14 @@ class GetRealTimeClock(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(
-      self.AckGetResult(field_names=self.ALLOWED_RANGES.keys() + ['second']))
+      self.AckGetResult(field_names=list(self.ALLOWED_RANGES.keys()) + ['second']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
       return
 
-    for field, range in self.ALLOWED_RANGES.iteritems():
+    for field, range in self.ALLOWED_RANGES.items():
       value = fields[field]
       if value < range[0] or value > range[1]:
         self.AddWarning('%s in GET %s is out of range, was %d, expected %s' %
@@ -3815,7 +3815,7 @@ class GetSubDeviceIdentifyDevice(ResponderTestFixture):
   REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._GetIdentifyDevice()
 
@@ -5319,7 +5319,7 @@ class GetDimmerInfo(OptionalParameterTestFixture):
     if self.LookupPid(pid_name).value in self.Property('supported_parameters'):
       return
 
-    for key, expected_value in keys.iteritems():
+    for key, expected_value in keys.items():
       if fields[key] != expected_value:
         self.AddWarning(
             "%s isn't supported but %s in DIMMER_INFO was not %hx" %
@@ -5693,7 +5693,7 @@ class SetCurve(OptionalParameterTestFixture):
   def Test(self):
     curves = self.Property('number_curves')
     if curves:
-      self.curves = [i + 1 for i in xrange(curves)]
+      self.curves = [i + 1 for i in range(curves)]
       self._SetCurve()
     else:
       # Check we get a NR_UNKNOWN_PID
@@ -5861,7 +5861,7 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
   def Test(self):
     times = self.Property('number_response_options')
     if times:
-      self.output_response_times = [i + 1 for i in xrange(times)]
+      self.output_response_times = [i + 1 for i in range(times)]
       self._SetOutputResponseTime()
     else:
       # Check we get a NR_UNKNOWN_PID
@@ -6035,7 +6035,7 @@ class SetModulationFrequency(OptionalParameterTestFixture):
   def Test(self):
     items = self.Property('number_modulation_frequencies')
     if items:
-      self.frequencies = [i + 1 for i in xrange(items)]
+      self.frequencies = [i + 1 for i in range(items)]
       self._SetModulationFrequency()
     else:
       # Check we get a NR_UNKNOWN_PID
@@ -6443,7 +6443,7 @@ class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
     self.scene = None
     scene_writable_states = self.Property('scene_writable_states')
     if scene_writable_states is not None:
-      for scene_number, is_writeable in scene_writable_states.iteritems():
+      for scene_number, is_writeable in scene_writable_states.items():
         if not is_writeable:
           self.scene = scene_number
           break
@@ -6481,7 +6481,7 @@ class SetPresetStatus(OptionalParameterTestFixture):
     self.scene = None
     scene_writable_states = self.Property('scene_writable_states')
     if scene_writable_states is not None:
-      for scene_number, is_writeable in scene_writable_states.iteritems():
+      for scene_number, is_writeable in scene_writable_states.items():
         if is_writeable:
           self.scene = scene_number
           break
@@ -6524,7 +6524,7 @@ class ClearPresetStatus(OptionalParameterTestFixture):
     self.scene = None
     scene_writable_states = self.Property('scene_writable_states')
     if scene_writable_states is not None:
-      for scene_number, is_writeable in scene_writable_states.iteritems():
+      for scene_number, is_writeable in scene_writable_states.items():
         if is_writeable:
           self.scene = scene_number
           break

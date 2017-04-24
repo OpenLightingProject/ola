@@ -189,9 +189,9 @@ class SelectServer(object):
       if len(self._events):
         sleep_time = min(1.0, self._events[0].TimeLeft(now))
 
-      i, o, e = select.select(self._read_descriptors.keys(),
-                              self._write_descriptors.keys(),
-                              self._error_descriptors.keys(),
+      i, o, e = select.select(list(self._read_descriptors.keys()),
+                              list(self._write_descriptors.keys()),
+                              list(self._error_descriptors.keys()),
                               sleep_time)
       now = datetime.datetime.now()
       self._CheckTimeouts(now)
@@ -226,7 +226,7 @@ class SelectServer(object):
 
   def _CheckDescriptors(self, ready_set, all_descriptors):
     runnables = []
-    for fd, runnable in all_descriptors.items():
+    for fd, runnable in list(all_descriptors.items()):
       if fd in ready_set:
         runnables.append(runnable)
     for runnable in runnables:

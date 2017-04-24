@@ -18,7 +18,7 @@
 
 """List candidate ports for patching."""
 
-from __future__ import print_function
+
 from ola.ClientWrapper import ClientWrapper
 import argparse
 import sys

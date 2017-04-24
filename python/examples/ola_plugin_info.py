@@ -18,7 +18,7 @@
 
 """Lists the loaded plugins."""
 
-from __future__ import print_function
+
 from ola.ClientWrapper import ClientWrapper
 import getopt
 import textwrap

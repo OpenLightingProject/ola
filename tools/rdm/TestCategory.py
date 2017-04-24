@@ -59,7 +59,7 @@ class TestCategory(object):
 
 
 # Make the symbols accessible, i.e. TestCategory.STATUS_COLLECTION
-for symbol, description in TestCategory.SYMBOLS_TO_VALUES.iteritems():
+for symbol, description in TestCategory.SYMBOLS_TO_VALUES.items():
   obj = TestCategory(description)
   setattr(TestCategory, symbol, obj)
   TestCategory.CATEGORIES_.append(obj)

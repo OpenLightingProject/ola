@@ -27,7 +27,7 @@ import stat
 import sys
 import textwrap
 import traceback
-import urlparse
+import urllib.parse
 
 from datetime import datetime
 from optparse import OptionParser
@@ -142,8 +142,8 @@ class RDMTestThread(Thread):
      need to run this all in a separate thread. This is all a bit of a hack and
      you'll get into trouble if multiple things are running at once...
   """
-  RUNNING, COMPLETED, ERROR = range(3)
-  TESTS, COLLECTOR = range(2)
+  RUNNING, COMPLETED, ERROR = list(range(3))
+  TESTS, COLLECTOR = list(range(2))
 
   def __init__(self, pid_store, logs_directory):
     super(RDMTestThread, self).__init__()
@@ -369,7 +369,7 @@ class HTTPRequest(object):
     """
     if self._params is None:
       self._params = {}
-      get_params = urlparse.parse_qs(self._environ['QUERY_STRING'])
+      get_params = urllib.parse.parse_qs(self._environ['QUERY_STRING'])
       for p in get_params:
         self._params[p] = get_params[p][0]
     return self._params.get(param, default)
@@ -392,7 +392,7 @@ class HTTPRequest(object):
         request_body_size = 0
 
       request_body = self._environ['wsgi.input'].read(request_body_size)
-      post_params = urlparse.parse_qs(request_body)
+      post_params = urllib.parse.parse_qs(request_body)
       for p in post_params:
         self._post_params[p] = post_params[p][0]
     return self._post_params.get(param, default)
@@ -423,7 +423,7 @@ class HTTPResponse(object):
 
   def GetHeaders(self):
     headers = []
-    for header, value in self._headers.iteritems():
+    for header, value in self._headers.items():
       headers.append((header, value))
     return headers
 
@@ -623,7 +623,7 @@ class DownloadModelDataHandler(RequestHandler):
   """Take the data in the form and return it as a downloadable file."""
 
   def HandleRequest(self, request, response):
-    print dir(request)
+    print(dir(request))
     model_data = request.PostParam('model_data') or ''
     logging.info(model_data)
 
@@ -794,7 +794,7 @@ class RunTestsHandler(OLAServerRequestHandler):
       slot_count = int(slot_count)
     except ValueError:
       raise ServerException('Invalid slot count')
-    if slot_count not in range(0, 513):
+    if slot_count not in list(range(0, 513)):
       raise ServerException('Slot count not in range 0..512')
 
     dmx_frame_rate = request.GetParam('dmx_frame_rate')

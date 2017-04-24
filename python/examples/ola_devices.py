@@ -18,7 +18,7 @@
 
 """Lists the devices / ports."""
 
-from __future__ import print_function
+
 from ola.ClientWrapper import ClientWrapper
 import sys
 

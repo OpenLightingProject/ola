@@ -25,7 +25,7 @@ import re
 import sys
 import textwrap
 import time
-from TimingStats import TimingStats
+from .TimingStats import TimingStats
 from ola import PidStore
 from ola import Version
 from ola.ClientWrapper import ClientWrapper
@@ -97,7 +97,7 @@ def ParseOptions():
   uid = UID.FromString(args[0])
   if uid is None:
     parser.print_usage()
-    print 'Invalid UID: %s' % args[0]
+    print('Invalid UID: %s' % args[0])
     sys.exit(2)
 
   options.uid = uid
@@ -218,7 +218,7 @@ def DisplaySummary(options, runner, tests, device):
 
   logging.info('------------------ By Category ------------------')
 
-  for category, counts in by_category.iteritems():
+  for category, counts in by_category.items():
     passed = counts.get(TestState.PASSED, 0)
     total_run = (passed + counts.get(TestState.FAILED, 0))
     if total_run == 0:
@@ -242,7 +242,7 @@ def main():
   test_classes = TestRunner.GetTestClasses(TestDefinitions)
   if options.list_tests:
     for test_name in sorted(c.__name__ for c in test_classes):
-      print test_name
+      print(test_name)
     sys.exit(0)
 
   SetupLogging(options)
@@ -279,7 +279,7 @@ def main():
 
       if not options.skip_check:
         logging.info('Continue ? [Y/n]')
-        response = raw_input().strip().lower()
+        response = input().strip().lower()
         uid_ok = response == 'y' or response == ''
 
   logging.debug('Fetching UID list from server')

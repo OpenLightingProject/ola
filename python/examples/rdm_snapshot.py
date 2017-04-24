@@ -52,7 +52,7 @@ class LoadException(Error):
 class ConfigReader(object):
   """A controller that fetches data for responders."""
 
-  (EMPTYING_QUEUE, DMX_START_ADDRESS, DEVICE_LABEL, PERSONALITY) = range(4)
+  (EMPTYING_QUEUE, DMX_START_ADDRESS, DEVICE_LABEL, PERSONALITY) = list(range(4))
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -229,8 +229,8 @@ class ConfigReader(object):
 
     # at this stage the response is either a ack or nack
     if response.response_type == OlaClient.RDM_NACK_REASON:
-      print('Got nack with reason for PID %d: %s' %
-            (response.pid, response.nack_reason))
+      print(('Got nack with reason for PID %d: %s' %
+            (response.pid, response.nack_reason)))
       self._NextState()
     elif unpack_exception:
       print(unpack_exception)
@@ -257,11 +257,11 @@ class ConfigReader(object):
         logging.debug('Device doesn\'t support queued messages')
         self._NextState()
       else:
-        print('Got nack for 0x%04hx with reason: %s' % (
-            response.pid, response.nack_reason))
+        print(('Got nack for 0x%04hx with reason: %s' % (
+            response.pid, response.nack_reason)))
 
     elif unpack_exception:
-      print('Invalid Param data: %s' % unpack_exception)
+      print(('Invalid Param data: %s' % unpack_exception))
     else:
       status_messages_pid = self.pid_store.GetName('STATUS_MESSAGES')
       queued_message_pid = self.pid_store.GetName('QUEUED_MESSAGE')
@@ -288,12 +288,12 @@ class ConfigReader(object):
       True if this response was an ACK or NACK, False for all other cases.
     """
     if not response.status.Succeeded():
-      print(response.status.message)
+      print((response.status.message))
       self.wrapper.Stop()
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print(response.ResponseCodeAsString())
+      print((response.ResponseCodeAsString()))
       self.wrapper.Stop()
       return False
 
@@ -307,7 +307,7 @@ class ConfigReader(object):
 
 class ConfigWriter(object):
   """A controller that applies configuration to a universe."""
-  (DMX_START_ADDRESS, DEVICE_LABEL, PERSONALITY, COMPLETE) = range(4)
+  (DMX_START_ADDRESS, DEVICE_LABEL, PERSONALITY, COMPLETE) = list(range(4))
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -339,9 +339,9 @@ class ConfigWriter(object):
       found_uids.add(uid)
       logging.debug(uid)
 
-    for uid in self.configuration.keys():
+    for uid in list(self.configuration.keys()):
       if uid not in found_uids:
-        print('Device %s has been removed' % uid)
+        print(('Device %s has been removed' % uid))
     self._SetNextUID()
 
   def _SetNextUID(self):
@@ -351,7 +351,7 @@ class ConfigWriter(object):
       return
 
     self.uid = self.uids.pop()
-    print('Doing %s' % self.uid)
+    print(('Doing %s' % self.uid))
     self.work_state = self.DMX_START_ADDRESS
     self._NextState()
 
@@ -396,12 +396,12 @@ class ConfigWriter(object):
 
   def _RDMRequestComplete(self, response, unpacked_data, unpack_exception):
     if not response.status.Succeeded():
-      print(response.status.message)
+      print((response.status.message))
       self.wrapper.Stop()
       return
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print(response.ResponseCodeAsString())
+      print((response.ResponseCodeAsString()))
       self.wrapper.Stop()
       return
 
@@ -413,14 +413,14 @@ class ConfigWriter(object):
 
     # at this stage the response is either a ack or nack
     if response.response_type == OlaClient.RDM_NACK_REASON:
-      print('Got nack with reason: %s' % response.nack_reason)
+      print(('Got nack with reason: %s' % response.nack_reason))
     self._NextState()
 
 
 def Usage():
   print("Usage: rdm_snapshot.py --universe <universe> [--input <file>] "
         "[--output <file>]\n")
-  print(textwrap.dedent("""\
+  print((textwrap.dedent("""\
   Save and restore RDM settings for a universe. This includes the start address,
   personality and device label.
 
@@ -437,7 +437,7 @@ def Usage():
     -o, --output              File to save configuration to.
     --skip-queued-messages    Don't attempt to fetch queued messages for the
                               device.
-    -u, --universe <universe> Universe number."""))
+    -u, --universe <universe> Universe number.""")))
 
 
 def WriteToFile(filename, output):
@@ -461,7 +461,7 @@ def ReadFile(filename):
   raw_data = pickle.load(f)
   f.close()
   data = {}
-  for uid, settings in raw_data.items():
+  for uid, settings in list(raw_data.items()):
     data[UID.FromString(uid)] = settings
   return data
 
@@ -474,7 +474,7 @@ def main():
         ['debug', 'help', 'input=', 'skip-queued-messages', 'output=',
          'pid-location=', 'universe='])
   except getopt.GetoptError as err:
-    print(str(err))
+    print((str(err)))
     Usage()
     sys.exit(2)
 

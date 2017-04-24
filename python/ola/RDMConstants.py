@@ -42,7 +42,7 @@ RDM_DNS_NAME_SERVER_MAX_INDEX = 2
 
 def _ReverseDict(input):
   output = {}
-  for key, value in input.items():
+  for key, value in list(input.items()):
     output[value] = key
   return output
 

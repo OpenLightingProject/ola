@@ -79,7 +79,7 @@ class FrameTypeStats(object):
 
 class TimingStats(object):
   """Holds the timing stats for all frame types."""
-  GET, SET, DISCOVERY, DUB = range(4)
+  GET, SET, DISCOVERY, DUB = list(range(4))
 
   def __init__(self):
     self._stats_by_type = {}

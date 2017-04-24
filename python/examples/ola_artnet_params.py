@@ -18,7 +18,7 @@
 
 """Fetch some ArtNet parameters."""
 
-from __future__ import print_function
+
 from ola.ClientWrapper import ClientWrapper
 from ola import ArtNetConfigMessages_pb2
 import sys
