@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import com.google.protobuf.ByteString;
 import ola.OlaClient;
 
-import org.junit.Before;
 import org.junit.Test;
 
 /**
