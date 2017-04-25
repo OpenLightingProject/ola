@@ -419,7 +419,7 @@ public class OlaClient {
     /**
      * Convert short array to bytestring
      */
-    public ByteString convertToUnsigned(short[] values) {
+    public static ByteString convertToUnsigned(short[] values) {
         byte[] unsigned = new byte[values.length];
         for (int i = 0; i < values.length; i++) {
             unsigned[i] = (byte) values[i];
@@ -431,7 +431,7 @@ public class OlaClient {
     /**
      * Convert bytestring to short array.
      */
-    public short[] convertFromUnsigned(ByteString data) {
+    public static short[] convertFromUnsigned(ByteString data) {
         byte[] values = data.toByteArray();
         short[] signed = new short[values.length];
         for (int i = 0; i < values.length; i++) {
