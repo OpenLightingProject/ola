@@ -67,6 +67,24 @@ class UnsupportedGetWithDataMixin(ResponderTestFixture):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
+class AllSubDevicesUnsupportedGetMixin(ResponderTestFixture):
+  """Check that a GET to ALL_SUB_DEVICES fails with
+    NR_UNSUPPORTED_COMMAND_CLASS.
+  """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def Test(self):
+    # E1.20, section 9.2.2
+    results = [self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE),
+               # Some devices check the command class before the sub device.
+               self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
+    if not self.PidSupported():
+      # Some devices check the PID first.
+      results.append(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
+    self.AddExpectedResults(results)
+    self.SendRawGet(PidStore.ALL_SUB_DEVICES, self.pid)
+
+
 class GetMixin(ResponderTestFixture):
   """GET Mixin for an optional PID. Verify EXPECTED_FIELDS is in the response.
 
