@@ -66,7 +66,8 @@ if FATAL_WARNINGS
   COMMON_CXXFLAGS += -Werror
   COMMON_PROTOBUF_CXXFLAGS += -Werror -Wno-error=unused-parameter \
                               -Wno-error=deprecated-declarations \
-                              -Wno-error=sign-compare
+                              -Wno-error=sign-compare \
+                              -Wno-error=ignored-qualifiers
   COMMON_TESTING_FLAGS += -Werror
   COMMON_TESTING_PROTOBUF_FLAGS += -Werror -Wno-error=unused-parameter \
                                    -Wno-error=deprecated-declarations
