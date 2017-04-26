@@ -317,6 +317,7 @@ class SetWithDataMixin(ResponderTestFixture):
   def Test(self):
     results = [
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS), # Fix this, ideally we change behaviour based on past support of the PID
       self.AckSetResult(
         warning='Set %s with data returned an ack' % self.pid.name)
     ]
@@ -333,7 +334,11 @@ class SetWithNoDataMixin(ResponderTestFixture):
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
+    results = [
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS), # Fix this, ideally we change behaviour based on past support of the PID
+      self.NackSetResult(RDMNack.NR_FORMAT_ERROR)
+    ]
+    self.AddIfSetSupported(results)
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
   # TODO(simon): add a method to check this didn't change the value
