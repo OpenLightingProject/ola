@@ -5553,6 +5553,19 @@ class SetOutOfRangeUpperIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
     return self.upper + 1
 
 
+class SetMinimumLevelWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set MINIMUM_LEVEL command with no data."""
+  PID = 'MINIMUM_LEVEL'
+
+
+class SetMinimumLevelWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET MINIMUM_LEVEL command with extra data."""
+  PID = 'MINIMUM_LEVEL'
+  DATA = 'foobar'
+
+
 # MAXIMUM_LEVEL
 # -----------------------------------------------------------------------------
 class GetMaximumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
@@ -5692,6 +5705,18 @@ class SetUpperOutOfRangeMaximumLevel(OptionalParameterTestFixture):
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
 
     self.SendSet(ROOT_DEVICE, self.pid, [self.value])
+
+
+class SetMaximumLevelWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set MAXIMUM_LEVEL command with no data."""
+  PID = 'MAXIMUM_LEVEL'
+
+
+class SetMaximumLevelWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET MAXIMUM_LEVEL command with extra data."""
+  PID = 'MAXIMUM_LEVEL'
 
 
 class AllSubDevicesGetMaximumLevel(TestMixins.AllSubDevicesGetMixin,
@@ -6850,6 +6875,54 @@ class AllSubDevicesGetDNSDomainName(TestMixins.AllSubDevicesGetMixin,
   PID = 'DNS_DOMAIN_NAME'
 
 
+# DNS_IPV4_NAME_SERVER
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetDNSIPv4NameServer(TestMixins.AllSubDevicesGetMixin,
+                                        OptionalParameterTestFixture):
+  """Send a get DNS_IPV4_NAME_SERVER to ALL_SUB_DEVICES."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+  DATA = [0]
+
+
+# class GetDNSIPv4NameServer(TestMixins.,
+#                            OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+#   PID = 'DNS_IPV4_NAME_SERVER'
+# TODO(peter): Test get
+
+
+class GetDNSIPv4NameServerWithNoData(TestMixins.GetWithNoDataMixin,
+                                     OptionalParameterTestFixture):
+  """GET DNS_IPV4_NAME_SERVER with no argument given."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+
+
+class GetDNSIPv4NameServerWithExtraData(TestMixins.GetWithDataMixin,
+                                        OptionalParameterTestFixture):
+  """GET DNS_IPV4_NAME_SERVER with more than 1 byte of data."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+
+
+# class SetDNSIPv4NameServer(TestMixins.,
+#                            OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+#   PID = 'DNS_IPV4_NAME_SERVER'
+# TODO(peter): Test set
+
+
+class SetDNSIPv4NameServerWithNoData(TestMixins.SetWithNoDataMixin,
+                                     OptionalParameterTestFixture):
+  """Set DNS_IPV4_NAME_SERVER command with no data."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+
+
+class SetDNSIPv4NameServerWithExtraData(TestMixins.SetWithDataMixin,
+                                        OptionalParameterTestFixture):
+  """Send a SET DNS_IPV4_NAME_SERVER command with extra data."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+  DATA = 'foobar'
+
+
 # IPV4_DEFAULT_ROUTE
 # -----------------------------------------------------------------------------
 class GetIPv4DefaultRoute(TestMixins.GetMixin,
@@ -6889,6 +6962,69 @@ class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
   """Send a Get IPV4_DEFAULT_ROUTE to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IPV4_DEFAULT_ROUTE'
+
+
+# IPV4_DHCP_MODE
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetIPv4DHCPMode(TestMixins.AllSubDevicesGetMixin,
+                                   OptionalParameterTestFixture):
+  """Send a get IPV4_DHCP_MODE to ALL_SUB_DEVICES."""
+  PID = 'IPV4_DHCP_MODE'
+  DATA = [1]
+
+
+# class GetIPv4DHCPMode(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'IPV4_DHCP_MODE'
+# TODO(peter): Test get
+
+
+class GetZeroIPv4DHCPMode(TestMixins.GetZeroUInt32Mixin,
+                          OptionalParameterTestFixture):
+  """GET IPV4_DHCP_MODE for interface identifier 0."""
+  PID = 'IPV4_DHCP_MODE'
+
+
+class GetIPv4DHCPModeWithNoData(TestMixins.GetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """GET IPV4_DHCP_MODE with no argument given."""
+  PID = 'IPV4_DHCP_MODE'
+
+
+class GetIPv4DHCPModeWithExtraData(TestMixins.GetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """GET IPV4_DHCP_MODE with more than 4 bytes of data."""
+  PID = 'IPV4_DHCP_MODE'
+  DATA = 'foobar'
+
+
+# class SetIPv4DHCPMode(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'IPV4_DHCP_MODE'
+# TODO(peter): Test set
+
+
+# class SetZeroIPv4DHCPMode(TestMixins.,
+#                           OptionalParameterTestFixture):
+#   """SET IPV4_DHCP_MODE to interface identifier 0."""
+#   CATEGORY = TestCategory.ERROR_CONDITIONS
+#   PID = 'IPV4_DHCP_MODE'
+# TODO(peter): Test set zero
+
+
+class SetIPv4DHCPModeWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set IPV4_DHCP_MODE command with no data."""
+  PID = 'IPV4_DHCP_MODE'
+
+
+class SetIPv4DHCPModeWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET IPV4_DHCP_MODE command with extra data."""
+  PID = 'IPV4_DHCP_MODE'
+  DATA = 'foobar'
 
 
 # Interface label

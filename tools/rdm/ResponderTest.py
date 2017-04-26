@@ -611,7 +611,7 @@ class ResponderTestFixture(TestFixture):
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      self.LogDebug(' Request status: %s' % response.ResponseCodeAsString())
+      self.LogDebug(' Response status: %s' % response.ResponseCodeAsString())
       if response.response_code == OlaClient.RDM_DUB_RESPONSE:
         # track timing for DUB responses.
         self._RecordFrameTiming(response, TimingStats.DUB)
