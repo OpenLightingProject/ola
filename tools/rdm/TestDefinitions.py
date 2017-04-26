@@ -4364,6 +4364,18 @@ class SetCapturePreset(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [1, 0, 0, 0])
 
 
+class SetZeroCapturePreset(OptionalParameterTestFixture):
+  """SET CAPTURE_PRESET to scene 0 and expect a data out of range."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CAPTURE_PRESET'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    # Scene 0, no timing information
+    data = struct.pack('!HHHH', 0, 0, 0, 0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+
 class SetCapturePresetWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """Set capture preset with no data."""
@@ -6604,6 +6616,7 @@ class AllSubDevicesGetPresetInfo(TestMixins.AllSubDevicesGetMixin,
 # -----------------------------------------------------------------------------
 class GetPresetStatusPresetOff(OptionalParameterTestFixture):
   """Get the PRESET_STATUS for PRESET_PLAYBACK_OFF."""
+  # AKA GetZeroPresetStatus
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_STATUS'
 
@@ -6749,16 +6762,17 @@ class SetPresetStatusWithExtraData(TestMixins.SetWithDataMixin,
   PID = 'PRESET_STATUS'
 
 
-class SetPresetStatusPresetOff(TestMixins.SetPresetStatusMixin,
+class SetPresetStatusPresetOff(TestMixins.SetOutOfRangePresetStatusMixin,
                                OptionalParameterTestFixture):
   """Set the PRESET_STATUS for PRESET_PLAYBACK_OFF."""
+  # AKA SetZeroPresetStatus
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def PresetStatusSceneNumber(self):
     return 0
 
 
-class SetPresetStatusPresetScene(TestMixins.SetPresetStatusMixin,
+class SetPresetStatusPresetScene(TestMixins.SetOutOfRangePresetStatusMixin,
                                  OptionalParameterTestFixture):
   """Set the PRESET_STATUS for PRESET_PLAYBACK_SCENE."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -6767,11 +6781,11 @@ class SetPresetStatusPresetScene(TestMixins.SetPresetStatusMixin,
     return 0xffff
 
 
-class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
+class SetOutOfRangePresetStatus(TestMixins.SetOutOfRangePresetStatusMixin,
                                 OptionalParameterTestFixture):
   """Set the PRESET_STATUS for max_scene + 1."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  REQUIRES = ['max_scene_number'] + TestMixins.SetPresetStatusMixin.REQUIRES
+  REQUIRES = ['max_scene_number'] + TestMixins.SetOutOfRangePresetStatusMixin.REQUIRES
 
   def PresetStatusSceneNumber(self):
     max_scene = self.Property('max_scene_number')
