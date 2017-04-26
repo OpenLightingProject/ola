@@ -4352,7 +4352,7 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
     return True
 
 
-class CheckBlockAddressConsistency(OptionalParameterTestFixture):
+class CheckDMXBlockAddressConsistency(OptionalParameterTestFixture):
   """Check that the device has subdevices if DMX_BLOCK_ADDRESS is supported."""
   CATEGORY = TestCategory.CONTROL
   REQUIRES = ['sub_device_count']
