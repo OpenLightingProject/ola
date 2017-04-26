@@ -7270,7 +7270,7 @@ class AllSubDevicesGetIPv4DHCPMode(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Send a get IPV4_DHCP_MODE to ALL_SUB_DEVICES."""
   PID = 'IPV4_DHCP_MODE'
-  DATA = [1]
+  DATA = [0x00000001]
 
 
 # class GetIPv4DHCPMode(TestMixins.,
@@ -7327,6 +7327,179 @@ class SetIPv4DHCPModeWithExtraData(TestMixins.SetWithDataMixin,
   DATA = 'foobar'
 
 
+# IPV4_ZEROCONF_MODE
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetIPv4ZeroconfMode(TestMixins.AllSubDevicesGetMixin,
+                                       OptionalParameterTestFixture):
+  """Send a get IPV4_ZEROCONF_MODE to ALL_SUB_DEVICES."""
+  PID = 'IPV4_ZEROCONF_MODE'
+  DATA = [0x00000001]
+
+
+# class GetIPv4ZeroconfMode(TestMixins.,
+#                           OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'IPV4_ZEROCONF_MODE'
+# TODO(peter): Test get
+
+
+class GetZeroIPv4ZeroconfMode(TestMixins.GetZeroUInt32Mixin,
+                              OptionalParameterTestFixture):
+  """GET IPV4_ZEROCONF_MODE for interface identifier 0."""
+  PID = 'IPV4_ZEROCONF_MODE'
+
+
+class GetIPv4ZeroconfModeWithNoData(TestMixins.GetWithNoDataMixin,
+                                    OptionalParameterTestFixture):
+  """GET IPV4_ZEROCONF_MODE with no argument given."""
+  PID = 'IPV4_ZEROCONF_MODE'
+
+
+class GetIPv4ZeroconfModeWithExtraData(TestMixins.GetWithDataMixin,
+                                       OptionalParameterTestFixture):
+  """GET IPV4_ZEROCONF_MODE with more than 4 bytes of data."""
+  PID = 'IPV4_ZEROCONF_MODE'
+  DATA = 'foobar'
+
+
+# class SetIPv4ZeroconfMode(TestMixins.,
+#                           OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'IPV4_ZEROCONF_MODE'
+# TODO(peter): Test set
+
+
+# class SetZeroIPv4ZeroconfMode(TestMixins.,
+#                               OptionalParameterTestFixture):
+#   """SET IPV4_ZEROCONF_MODE to interface identifier 0."""
+#   CATEGORY = TestCategory.ERROR_CONDITIONS
+#   PID = 'IPV4_ZEROCONF_MODE'
+# TODO(peter): Test set zero
+
+
+class SetIPv4ZeroconfModeWithNoData(TestMixins.SetWithNoDataMixin,
+                                    OptionalParameterTestFixture):
+  """Set IPV4_ZEROCONF_MODE command with no data."""
+  PID = 'IPV4_ZEROCONF_MODE'
+
+
+class SetIPv4ZeroconfModeWithExtraData(TestMixins.SetWithDataMixin,
+                                       OptionalParameterTestFixture):
+  """Send a SET IPV4_ZEROCONF_MODE command with extra data."""
+  PID = 'IPV4_ZEROCONF_MODE'
+  DATA = 'foobar'
+
+
+# IPV4_CURRENT_ADDRESS
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetIPv4CurrentAddress(TestMixins.AllSubDevicesGetMixin,
+                                         OptionalParameterTestFixture):
+  """Send a get IPV4_CURRENT_ADDRESS to ALL_SUB_DEVICES."""
+  PID = 'IPV4_CURRENT_ADDRESS'
+  DATA = [0x00000001]
+
+
+# class GetIPv4CurrentAddress(TestMixins.,
+#                             OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'IPV4_CURRENT_ADDRESS'
+# TODO(peter): Test get
+
+
+class GetZeroIPv4CurrentAddress(TestMixins.GetZeroUInt32Mixin,
+                                OptionalParameterTestFixture):
+  """GET IPV4_CURRENT_ADDRESS for interface identifier 0."""
+  PID = 'IPV4_CURRENT_ADDRESS'
+
+
+class GetIPv4CurrentAddressWithNoData(TestMixins.GetWithNoDataMixin,
+                                      OptionalParameterTestFixture):
+  """GET IPV4_CURRENT_ADDRESS with no argument given."""
+  PID = 'IPV4_CURRENT_ADDRESS'
+
+
+class GetIPv4CurrentAddressWithExtraData(TestMixins.GetWithDataMixin,
+                                         OptionalParameterTestFixture):
+  """GET IPV4_CURRENT_ADDRESS with more than 4 bytes of data."""
+  PID = 'IPV4_CURRENT_ADDRESS'
+  DATA = 'foobar'
+
+
+class SetIPv4CurrentAddress(TestMixins.UnsupportedSetMixin,
+                            OptionalParameterTestFixture):
+  """Attempt to SET IPV4_CURRENT_ADDRESS."""
+  PID = 'IPV4_CURRENT_ADDRESS'
+
+
+class SetIPv4CurrentAddressWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Attempt to SET IPV4_CURRENT_ADDRESS with data."""
+  PID = 'IPV4_CURRENT_ADDRESS'
+
+
+# IPV4_STATIC_ADDRESS
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetIPv4StaticAddress(TestMixins.AllSubDevicesGetMixin,
+                                        OptionalParameterTestFixture):
+  """Send a get IPV4_STATIC_ADDRESS to ALL_SUB_DEVICES."""
+  PID = 'IPV4_STATIC_ADDRESS'
+  DATA = [0x00000001]
+
+
+# class GetIPv4StaticAddress(TestMixins.,
+#                            OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'IPV4_STATIC_ADDRESS'
+# TODO(peter): Test get
+
+
+class GetZeroIPv4StaticAddress(TestMixins.GetZeroUInt32Mixin,
+                               OptionalParameterTestFixture):
+  """GET IPV4_STATIC_ADDRESS for interface identifier 0."""
+  PID = 'IPV4_STATIC_ADDRESS'
+
+
+class GetIPv4StaticAddressWithNoData(TestMixins.GetWithNoDataMixin,
+                                     OptionalParameterTestFixture):
+  """GET IPV4_STATIC_ADDRESS with no argument given."""
+  PID = 'IPV4_STATIC_ADDRESS'
+
+
+class GetIPv4StaticAddressWithExtraData(TestMixins.GetWithDataMixin,
+                                        OptionalParameterTestFixture):
+  """GET IPV4_STATIC_ADDRESS with more than 4 bytes of data."""
+  PID = 'IPV4_STATIC_ADDRESS'
+  DATA = 'foobar'
+
+
+# class SetIPv4StaticAddress(TestMixins.,
+#                            OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'IPV4_STATIC_ADDRESS'
+# TODO(peter): Test set
+
+
+# class SetZeroIPv4StaticAddress(TestMixins.,
+#                                OptionalParameterTestFixture):
+#   """SET IPV4_STATIC_ADDRESS to interface identifier 0."""
+#   CATEGORY = TestCategory.ERROR_CONDITIONS
+#   PID = 'IPV4_STATIC_ADDRESS'
+# TODO(peter): Test set zero
+
+
+class SetIPv4StaticAddressWithNoData(TestMixins.SetWithNoDataMixin,
+                                     OptionalParameterTestFixture):
+  """Set IPV4_STATIC_ADDRESS command with no data."""
+  PID = 'IPV4_STATIC_ADDRESS'
+
+
+class SetIPv4StaticAddressWithExtraData(TestMixins.SetWithDataMixin,
+                                        OptionalParameterTestFixture):
+  """Send a SET IPV4_STATIC_ADDRESS command with extra data."""
+  PID = 'IPV4_STATIC_ADDRESS'
+  DATA = 'foobarbazqux'
+
+
 # Interface label
 # -----------------------------------------------------------------------------
 class GetInterfaceLabels(TestMixins.GetSettingDescriptionsListMixin,
@@ -7374,7 +7547,7 @@ class AllSubDevicesGetInterfaceLabel(TestMixins.AllSubDevicesGetMixin,
                                      OptionalParameterTestFixture):
   """Send a get INTERFACE_LABEL to ALL_SUB_DEVICES."""
   PID = 'INTERFACE_LABEL'
-  DATA = [1]
+  DATA = [0x00000001]
 
 
 # Interface hardware address type 1
@@ -7384,7 +7557,7 @@ class AllSubDevicesGetInterfaceHardwareAddressType1(
         OptionalParameterTestFixture):
   """Send a get INTERFACE_HARDWARE_ADDRESS_TYPE1 to ALL_SUB_DEVICES."""
   PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
-  DATA = [1]
+  DATA = [0x00000001]
 
 # class GetInterfaceHardwareAddressType1(TestMixins.,
 #                                        OptionalParameterTestFixture):
