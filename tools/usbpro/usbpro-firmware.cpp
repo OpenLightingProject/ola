@@ -71,9 +71,11 @@ class FirmwareTransferer {
                        unsigned int length);
     bool SendNextChunk();
     void AbortTransfer() {
+      OLA_INFO << "Abort transfer";
       m_ss->Terminate();
     }
     void StartTransfer() {
+      OLA_INFO << "Start transfer";
       SendNextChunk();
     }
     bool WasSucessfull() const { return m_sucessful; }
@@ -114,8 +116,10 @@ void FirmwareTransferer::HandleMessage(uint8_t label,
     return;
 
   if (0 == memcmp(data, REPLY_SUCCESS, sizeof(FLASH_STATUS_LENGTH))) {
-    if (!SendNextChunk() || m_sucessful)
+    if (!SendNextChunk() || m_sucessful) {
+      OLA_INFO << "No chunk or successful";
       m_ss->Terminate();
+    }
   } else {
     OLA_FATAL << "Bad response from widget:" << string((const char*) data, 4);
     m_ss->Terminate();
@@ -231,6 +235,7 @@ void DisplayHelpAndExit(char *argv[]) {
 
 
 void Stop(SelectServer *ss) {
+  OLA_INFO << "Stopping select server";
   ss->Terminate();
 }
 
