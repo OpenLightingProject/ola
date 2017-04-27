@@ -199,8 +199,7 @@ void CommandPrinter::DisplayDiscoveryRequest(
 
   if (summarize) {
     AppendUIDsAndType(request, "DISCOVERY_COMMAND");
-    *m_output << ", PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
-        request->ParamId();
+    *m_output << ", PID " << ToHex(request->ParamId());
     if (!param_name.empty())
       *m_output << " (" << param_name << ")";
     if (request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH &&
@@ -224,13 +223,22 @@ void CommandPrinter::DisplayDiscoveryRequest(
     }
     *m_output << endl;
     *m_output << "  Param data len : " << std::dec << request->ParamDataSize()
-      << endl;
-    DisplayParamData(NULL,
-                     unpack_param_data,
-                     true,
-                     false,
-                     request->ParamData(),
-                     request->ParamDataSize());
+              << endl;
+    if (request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH &&
+        request->ParamDataSize() == 2 * UID::UID_SIZE) {
+      const uint8_t *param_data = request->ParamData();
+      UID lower(param_data);
+      UID upper(param_data + UID::UID_SIZE);
+      *m_output << "  Lower UID      : " << lower << endl;
+      *m_output << "  Upper UID      : " << upper << endl;
+    } else {
+      DisplayParamData(NULL,
+                       unpack_param_data,
+                       true,
+                       false,
+                       request->ParamData(),
+                       request->ParamDataSize());
+    }
   }
 }
 
@@ -288,7 +296,7 @@ void CommandPrinter::DisplayDiscoveryResponse(
     }
     *m_output << endl;
     *m_output << "  Param data len : " << response->ParamDataSize()
-      << endl;
+              << endl;
     DisplayParamData(NULL,
                      unpack_param_data,
                      true,
