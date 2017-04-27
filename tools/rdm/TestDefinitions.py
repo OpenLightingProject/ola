@@ -2585,7 +2585,7 @@ class GetDefaultSlotValues(OptionalParameterTestFixture):
 
     for slot in fields['slot_values']:
       if slot['slot_offset'] not in defined_slots:
-        self.AddAdvisory(
+        self.AddWarning(
           "DEFAULT_SLOT_VALUE contained slot %d, which wasn't in SLOT_INFO" %
           slot['slot_offset'])
       default_slots.add(slot['slot_offset'])
