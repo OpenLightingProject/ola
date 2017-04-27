@@ -83,7 +83,7 @@ enum PluginIds {
 enum RDMResponseCode {
   // The request/response completed correctly
   RDM_COMPLETED_OK = 0;
-  // The request was broadcast, no respone expected
+  // The request was broadcast, no response expected
   RDM_WAS_BROADCAST = 1;
   // We failed to send this request
   RDM_FAILED_TO_SEND = 2;
