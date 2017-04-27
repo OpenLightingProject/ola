@@ -46,6 +46,7 @@
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
+#include <ola/StringUtils.h>
 
 #include <iostream>
 #include <fstream>
@@ -69,6 +70,7 @@ using ola::rdm::CommandPrinter;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
+using ola::strings::ToHex;
 
 
 using ola::thread::Mutex;
@@ -294,8 +296,8 @@ void LogicReader::DisplayAlternateFrame(const uint8_t *data,
     return;
 
   unsigned int slot_count = length - 1;
-  cout << "SC 0x" << std::hex << std::setw(2) << static_cast<int>(data[0])
-       << " " << std::dec << slot_count << ":" << std::hex;
+  cout << "SC " << ToHex(static_cast<int>(data[0]))
+       << " " << slot_count << ":";
   DisplayRawData(data + 1, slot_count);
 }
 
