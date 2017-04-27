@@ -8578,4 +8578,95 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-version: 1458491190
+manufacturer {
+  manufacturer_id: 13364
+  manufacturer_name: "Global Design Solutions, Ltd."
+  pid {
+    name: "SERIAL_NUMBER"
+    value: 0xffdf
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "serial_number"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "LED_DRIVE_CURRENT"
+    value: 0x8020
+    get_request {
+      field {
+        type: UINT8
+        name: "channel"
+        label {
+          value: 0xff
+          label: "All"
+        }
+        range {
+          min: 1
+          max: 4
+        }
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "channel"
+        label {
+          value: 0x00
+          label: "All"
+        }
+        range {
+          min: 1
+          max: 4
+        }
+      }
+      field {
+        type: UINT8
+        name: "value"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "channel"
+        label {
+          value: 0xff
+          label: "All"
+        }
+        range {
+          min: 1
+          max: 4
+        }
+      }
+      field {
+        type: UINT8
+        name: "value"
+      }
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "channel"
+        label {
+          value: 0x00
+          label: "All"
+        }
+        range {
+          min: 1
+          max: 4
+        }
+      }
+      field {
+        type: UINT8
+        name: "value"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+version: 1458491191
