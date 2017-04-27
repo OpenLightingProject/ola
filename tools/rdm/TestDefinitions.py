@@ -2819,6 +2819,12 @@ class SetSensorDefinition(TestMixins.UnsupportedSetMixin,
   PID = 'SENSOR_DEFINITION'
 
 
+class SetSensorDefinitionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Attempt to SET SENSOR_DEFINITION with data."""
+  PID = 'SENSOR_DEFINITION'
+
+
 class AllSubDevicesGetSensorDefinition(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a Get SENSOR_DEFINITION to ALL_SUB_DEVICES."""
@@ -3069,14 +3075,14 @@ class ResetUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
   REQUIRES = ['sensor_definitions']
 
 
-class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
+class SetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
   PID = 'SENSOR_VALUE'
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
 
-class ResetSensorValueWithExtraData(TestMixins.SetWithDataMixin,
+class SetSensorValueWithExtraData(TestMixins.SetWithDataMixin,
                                     OptionalParameterTestFixture):
   """Send a SET SENSOR_VALUE command with extra data."""
   PID = 'SENSOR_VALUE'
@@ -3174,13 +3180,13 @@ class RecordUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
   REQUIRES = ['sensor_definitions']
 
 
-class RecordSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
-                                  OptionalParameterTestFixture):
+class SetRecordSensorsWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
   """SET record sensors without any sensor number."""
   PID = 'RECORD_SENSORS'
 
 
-class RecordSensorValueWithExtraData(TestMixins.SetWithDataMixin,
+class SetRecordSensorsWithExtraData(TestMixins.SetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Send a SET RECORD_SENSORS command with extra data."""
   PID = 'RECORD_SENSORS'
