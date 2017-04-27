@@ -509,8 +509,9 @@ class ModelCollector(object):
              (response.pid, response.nack_reason))
       self._NextState()
     elif unpack_exception:
-      print unpack_exception
-      self.wrapper.Stop()
+      print ('Unpack error: %s' % (unpack_exception))
+      self._NextState()
+      #self.wrapper.Stop()
     else:
       self._HandleResponse(unpacked_data)
 
