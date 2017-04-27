@@ -34,6 +34,7 @@ namespace rdm {
 using ola::messaging::Descriptor;
 using ola::messaging::Message;
 using ola::network::NetworkToHost;
+using ola::strings::ToHex;
 using std::auto_ptr;
 using std::endl;
 using std::string;
@@ -110,13 +111,12 @@ void CommandPrinter::DisplayRequest(const RDMRequest *request,
     AppendPortId(request);
     AppendHeaderFields(request, (is_get ? "GET" : "SET"));
 
-    *m_output << "  Param ID       : 0x" << std::setfill('0') << std::setw(4)
-      << std::hex << request->ParamId();
-    if (descriptor)
+    *m_output << "  Param ID       : " << ToHex(request->ParamId());
+    if (descriptor) {
       *m_output << " (" << descriptor->Name() << ")";
+    }
     *m_output << endl;
-    *m_output << "  Param data len : " << std::dec << request->ParamDataSize()
-      << endl;
+    *m_output << "  Param data len : " << request->ParamDataSize() << endl;
     DisplayParamData(descriptor,
                      unpack_param_data,
                      true,
@@ -154,12 +154,12 @@ void CommandPrinter::DisplayResponse(const RDMResponse *response,
     AppendVerboseResponseType(response);
     AppendHeaderFields(response, (is_get ? "GET_RESPONSE" : "SET_RESPONSE"));
 
-    *m_output << "  Param ID       : 0x" << std::setfill('0') << std::setw(4)
-      << std::hex << response->ParamId();
-    if (descriptor)
+    *m_output << "  Param ID       : " << ToHex(response->ParamId());
+    if (descriptor) {
       *m_output << " (" << descriptor->Name() << ")";
+    }
     *m_output << endl;
-    *m_output << "  Param data len : " << std::dec << response->ParamDataSize()
+    *m_output << "  Param data len : " << response->ParamDataSize()
       << endl;
     DisplayParamData(descriptor,
                      unpack_param_data,
@@ -182,6 +182,8 @@ void CommandPrinter::DisplayDiscoveryRequest(
     const RDMDiscoveryRequest *request,
     bool summarize,
     bool unpack_param_data) {
+  // We can't just get a descriptor here like the other code as we don't store
+  // them for discovery commands
   string param_name;
   switch (request->ParamId()) {
     case ola::rdm::PID_DISC_UNIQUE_BRANCH:
@@ -216,10 +218,10 @@ void CommandPrinter::DisplayDiscoveryRequest(
     AppendPortId(request);
     AppendHeaderFields(request, "DISCOVERY_COMMAND");
 
-    *m_output << "  Param ID       : 0x" << std::setfill('0') << std::setw(4)
-      << std::hex << request->ParamId();
-    if (!param_name.empty())
+    *m_output << "  Param ID       : " << ToHex(request->ParamId());
+    if (!param_name.empty()) {
       *m_output << " (" << param_name << ")";
+    }
     *m_output << endl;
     *m_output << "  Param data len : " << std::dec << request->ParamDataSize()
       << endl;
@@ -244,6 +246,8 @@ void CommandPrinter::DisplayDiscoveryResponse(
     const RDMDiscoveryResponse *response,
     bool summarize,
     bool unpack_param_data) {
+  // We can't just get a descriptor here like the other code as we don't store
+  // them for discovery commands
   string param_name;
   switch (response->ParamId()) {
     case ola::rdm::PID_DISC_UNIQUE_BRANCH:
@@ -259,10 +263,10 @@ void CommandPrinter::DisplayDiscoveryResponse(
 
   if (summarize) {
     AppendUIDsAndType(response, "DISCOVERY_COMMAND_RESPONSE");
-    *m_output << ", PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
-        response->ParamId();
-    if (!param_name.empty())
+    *m_output << ", PID " << ToHex(response->ParamId());
+    if (!param_name.empty()) {
       *m_output << " (" << param_name << ")";
+    }
     if (response->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH &&
         response->ParamDataSize() == 2 * UID::UID_SIZE) {
       const uint8_t *param_data = response->ParamData();
@@ -270,7 +274,7 @@ void CommandPrinter::DisplayDiscoveryResponse(
       UID upper(param_data + UID::UID_SIZE);
       *m_output << ", (" << lower << ", " << upper << ")";
     } else {
-      *m_output << ", pdl: " << std::dec << response->ParamDataSize();
+      *m_output << ", pdl: " << response->ParamDataSize();
     }
     *m_output << endl;
   } else {
@@ -278,12 +282,12 @@ void CommandPrinter::DisplayDiscoveryResponse(
     AppendVerboseResponseType(response);
     AppendHeaderFields(response, "DISCOVERY_COMMAND_RESPONSE");
 
-    *m_output << "  Param ID       : 0x" << std::setfill('0') << std::setw(4)
-      << std::hex << response->ParamId();
-    if (!param_name.empty())
+    *m_output << "  Param ID       : " << ToHex(response->ParamId());
+    if (!param_name.empty()) {
       *m_output << " (" << param_name << ")";
+    }
     *m_output << endl;
-    *m_output << "  Param data len : " << std::dec << response->ParamDataSize()
+    *m_output << "  Param data len : " << response->ParamDataSize()
       << endl;
     DisplayParamData(NULL,
                      unpack_param_data,
@@ -357,10 +361,9 @@ void CommandPrinter::AppendVerboseResponseType(
 void CommandPrinter::AppendHeaderFields(
     const RDMCommand *command,
     const char *command_class) {
-  *m_output << "  Message count  : " << std::dec <<
-    static_cast<unsigned int>(command->MessageCount()) << endl;
-  *m_output << "  Sub device     : " << std::dec << command->SubDevice()
-    << endl;
+  *m_output << "  Message count  : "
+            << static_cast<unsigned int>(command->MessageCount()) << endl;
+  *m_output << "  Sub device     : " << command->SubDevice() << endl;
   *m_output << "  Command class  : " << command_class << endl;
 }
 
@@ -370,11 +373,11 @@ void CommandPrinter::AppendHeaderFields(
  */
 void CommandPrinter::AppendPidString(const RDMCommand *command,
                                      const PidDescriptor *descriptor) {
-  *m_output << "PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
-      command->ParamId();
-  if (descriptor)
+  *m_output << "PID " << ToHex(command->ParamId());
+  if (descriptor) {
     *m_output << " (" << descriptor->Name() << ")";
-  *m_output << ", pdl: " << std::dec << command->ParamDataSize() << endl;
+  }
+  *m_output << ", pdl: " << command->ParamDataSize() << endl;
 }
 
 
