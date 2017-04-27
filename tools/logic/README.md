@@ -1,3 +1,7 @@
+This currently only works with the original Saleae Logic and Logic 16.
+The more recent Logic 4, Logic 8, Logic Pro 8 and Logic Pro 16 are not supported by the SDK.
+http://support.saleae.com/hc/en-us/articles/210245633-Device-SDK-status-for-the-new-products
+
 In order to compile the logic rdm sniffer, you need to set the include path to your SaleaeDeviceSDK. Example:
 
 ```
