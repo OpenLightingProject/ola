@@ -8629,7 +8629,7 @@ manufacturer {
         name: "value"
       }
     }
-    get_sub_device_range: ROOT_DEVICE
+    get_sub_device_range: ROOT_OR_SUBDEVICE
     set_request {
       field {
         type: UINT8
@@ -8666,7 +8666,7 @@ manufacturer {
         name: "value"
       }
     }
-    set_sub_device_range: ROOT_DEVICE
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
 version: 1458491191
