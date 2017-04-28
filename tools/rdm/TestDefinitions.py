@@ -7165,6 +7165,23 @@ class GetDNSHostnameWithData(TestMixins.GetWithDataMixin,
 
 
 # TODO(Peter): Need to test set
+# class SetDNSHostname(TestMixins.,
+#                      OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+#   PID = 'DNS_HOSTNAME'
+# TODO(peter): Test set
+
+
+class SetDNSHostnameWithNoData(TestMixins.SetWithNoDataMixin,
+                               OptionalParameterTestFixture):
+  """Set DNS_HOSTNAME command with no data."""
+  PID = 'DNS_HOSTNAME'
+
+
+class SetDNSHostnameWithExtraData(TestMixins.SetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Send a SET DNS_HOSTNAME command with extra data."""
+  PID = 'DNS_HOSTNAME'
 
 
 class AllSubDevicesGetDNSHostname(TestMixins.AllSubDevicesGetMixin,
@@ -7192,6 +7209,23 @@ class GetDNSDomainNameWithData(TestMixins.GetWithDataMixin,
 
 
 # TODO(Peter): Need to test set
+# class SetDNSDomainName(TestMixins.,
+#                        OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+#   PID = 'DNS_DOMAIN_NAME'
+# TODO(peter): Test set
+
+
+class SetDNSDomainNameWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
+  """Set DNS_DOMAIN_NAME command with no data."""
+  PID = 'DNS_DOMAIN_NAME'
+
+
+class SetDNSDomainNameWithExtraData(TestMixins.SetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Send a SET DNS_DOMAIN_NAME command with extra data."""
+  PID = 'DNS_DOMAIN_NAME'
 
 
 class AllSubDevicesGetDNSDomainName(TestMixins.AllSubDevicesGetMixin,
@@ -7295,7 +7329,7 @@ class AllSubDevicesGetIPv4DHCPMode(TestMixins.AllSubDevicesGetMixin,
 
 # class GetIPv4DHCPMode(TestMixins.,
 #                       OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'IPV4_DHCP_MODE'
 # TODO(peter): Test get
 
@@ -7321,17 +7355,16 @@ class GetIPv4DHCPModeWithExtraData(TestMixins.GetWithDataMixin,
 
 # class SetIPv4DHCPMode(TestMixins.,
 #                       OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'IPV4_DHCP_MODE'
 # TODO(peter): Test set
 
 
-# class SetZeroIPv4DHCPMode(TestMixins.,
-#                           OptionalParameterTestFixture):
-#   """SET IPV4_DHCP_MODE to interface identifier 0."""
-#   CATEGORY = TestCategory.ERROR_CONDITIONS
-#   PID = 'IPV4_DHCP_MODE'
-# TODO(peter): Test set zero
+class SetZeroIPv4DHCPMode(TestMixins.SetZeroMixin,
+                          OptionalParameterTestFixture):
+  """SET IPV4_DHCP_MODE to interface identifier 0."""
+  PID = 'IPV4_DHCP_MODE'
+  DATA = struct.pack('!IB', 0x00000000, 0x00)
 
 
 class SetIPv4DHCPModeWithNoData(TestMixins.SetWithNoDataMixin,
@@ -7358,7 +7391,7 @@ class AllSubDevicesGetIPv4ZeroconfMode(TestMixins.AllSubDevicesGetMixin,
 
 # class GetIPv4ZeroconfMode(TestMixins.,
 #                           OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'IPV4_ZEROCONF_MODE'
 # TODO(peter): Test get
 
@@ -7384,7 +7417,7 @@ class GetIPv4ZeroconfModeWithExtraData(TestMixins.GetWithDataMixin,
 
 # class SetIPv4ZeroconfMode(TestMixins.,
 #                           OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'IPV4_ZEROCONF_MODE'
 # TODO(peter): Test set
 
@@ -7421,7 +7454,7 @@ class AllSubDevicesGetIPv4CurrentAddress(TestMixins.AllSubDevicesGetMixin,
 
 # class GetIPv4CurrentAddress(TestMixins.,
 #                             OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'IPV4_CURRENT_ADDRESS'
 # TODO(peter): Test get
 
@@ -7468,7 +7501,7 @@ class AllSubDevicesGetIPv4StaticAddress(TestMixins.AllSubDevicesGetMixin,
 
 # class GetIPv4StaticAddress(TestMixins.,
 #                            OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'IPV4_STATIC_ADDRESS'
 # TODO(peter): Test get
 
@@ -7494,7 +7527,7 @@ class GetIPv4StaticAddressWithExtraData(TestMixins.GetWithDataMixin,
 
 # class SetIPv4StaticAddress(TestMixins.,
 #                            OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'IPV4_STATIC_ADDRESS'
 # TODO(peter): Test set
 
@@ -7543,7 +7576,7 @@ class GetInterfaceRenewDHCPWithData(TestMixins.UnsupportedGetWithDataMixin,
 
 # class SetInterfaceRenewDHCP(TestMixins.,
 #                             OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'INTERFACE_RENEW_DHCP'
 # TODO(peter): Test set
 
@@ -7590,7 +7623,7 @@ class GetInterfaceReleaseDHCPWithData(TestMixins.UnsupportedGetWithDataMixin,
 
 # class SetInterfaceReleaseDHCP(TestMixins.,
 #                               OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'INTERFACE_RELEASE_DHCP'
 # TODO(peter): Test set
 
@@ -7638,7 +7671,7 @@ class GetInterfaceApplyConfigurationWithData(
 
 # class SetInterfaceApplyConfiguration(TestMixins.,
 #                                      OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
 #   PID = 'INTERFACE_APPLY_CONFIGURATION'
 # TODO(peter): Test set
 
