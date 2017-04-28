@@ -1011,14 +1011,23 @@ class SetMinimumLevelMixin(ResponderTestFixture):
     self._wrapper.Run()
 
 
-class GetZeroUInt8Mixin(ResponderTestFixture):
-  """Get a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+class GetZeroMixin(ResponderTestFixture):
+  """Send a get to index 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = struct.pack('!B', 0)
+  DATA = None
 
   def Test(self):
+    if self.DATA is None:
+      self.SetBroken('No DATA given for %s' % self.__class__.__name__)
+      return
+
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
+
+
+class GetZeroUInt8Mixin(GetZeroMixin):
+  """Get a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!B', 0)
 
 
 class GetZeroUInt16Mixin(GetZeroUInt8Mixin):
@@ -1031,14 +1040,23 @@ class GetZeroUInt32Mixin(GetZeroUInt8Mixin):
   DATA = struct.pack('!I', 0)
 
 
-class SetZeroUInt8Mixin(ResponderTestFixture):
-  """Set a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+class SetZeroMixin(ResponderTestFixture):
+  """Send a set to index 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = struct.pack('!B', 0)
+  DATA = None
 
   def Test(self):
+    if self.DATA is None:
+      self.SetBroken('No DATA given for %s' % self.__class__.__name__)
+      return
+
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendRawSet(ROOT_DEVICE, self.pid, self.DATA)
+
+
+class SetZeroUInt8Mixin(SetZeroMixin):
+  """Set a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!B', 0)
 
 
 class SetZeroUInt16Mixin(SetZeroUInt8Mixin):
