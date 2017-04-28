@@ -325,6 +325,12 @@ void CommandPrinter::AppendPortId(const class RDMRequest *request) {
 }
 
 
+void CommandPrinter::AppendMessageLength(const class RDMRequest *request) {
+  *m_output << "  Message Length : " << std::dec <<
+    static_cast<unsigned int>(request->MessageLength()) << endl;
+}
+
+
 void CommandPrinter::AppendVerboseUIDs(const class RDMCommand *command) {
   *m_output << "  Source UID     : " << command->SourceUID() << endl;
   *m_output << "  Dest UID       : " << command->DestinationUID() << endl;
@@ -372,6 +378,8 @@ void CommandPrinter::AppendHeaderFields(
   *m_output << "  Message count  : "
             << static_cast<unsigned int>(command->MessageCount()) << endl;
   *m_output << "  Sub device     : " << command->SubDevice() << endl;
+  *m_output << "  Message length : "
+            << static_cast<unsigned int>(command->MessageLength()) << endl;
   *m_output << "  Command class  : " << command_class << endl;
 }
 
