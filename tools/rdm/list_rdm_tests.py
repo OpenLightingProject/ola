@@ -167,10 +167,9 @@ def GetZero(names, pid, pid_test_base_name, first_atom):
   else:
     if len(pid.GetRequest(PidStore.RDM_GET).GetAtoms()) > 1:
       GenerateClassHeader(True, 'GetZero', pid_test_base_name, '',
-                          ['TestMixins.', 'OptionalParameterTestFixture'])
+                          ['TestMixins.GetZero', 'OptionalParameterTestFixture'])
       print('#   """GET %s for %s 0."""' %
             (pid.name, first_atom.name.replace('_', ' ')))
-      print('#   CATEGORY = TestCategory.ERROR_CONDITIONS')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test get zero' % (getpass.getuser()))
     else:
@@ -229,10 +228,10 @@ def SetZero(names, pid, pid_test_base_name, first_atom):
   else:
     if len(pid.GetRequest(PidStore.RDM_SET).GetAtoms()) > 1:
       GenerateClassHeader(True, 'SetZero', pid_test_base_name, '',
-                          ['TestMixins.', 'OptionalParameterTestFixture'])
-      print('#   """SET %s to %s 0."""' %
+                          ['TestMixins.SetZero',
+                           'OptionalParameterTestFixture'])
+      print('#   """SET %s for %s 0."""' %
             (pid.name, first_atom.name.replace('_', ' ')))
-      print('#   CATEGORY = TestCategory.ERROR_CONDITIONS')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test set zero' % (getpass.getuser()))
     else:
