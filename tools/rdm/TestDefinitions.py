@@ -7520,6 +7520,148 @@ class SetIPv4StaticAddressWithExtraData(TestMixins.SetWithDataMixin,
   DATA = 'foobarbazqux'
 
 
+# INTERFACE_RENEW_DHCP
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetInterfaceRenewDHCP(
+        TestMixins.AllSubDevicesUnsupportedGetMixin,
+        OptionalParameterTestFixture):
+  """Attempt to send a get INTERFACE_RENEW_DHCP to ALL_SUB_DEVICES."""
+  PID = 'INTERFACE_RENEW_DHCP'
+
+
+class GetInterfaceRenewDHCP(TestMixins.UnsupportedGetMixin,
+                            OptionalParameterTestFixture):
+  """Attempt to GET INTERFACE_RENEW_DHCP."""
+  PID = 'INTERFACE_RENEW_DHCP'
+
+
+class GetInterfaceRenewDHCPWithData(TestMixins.UnsupportedGetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """GET INTERFACE_RENEW_DHCP with data."""
+  PID = 'INTERFACE_RENEW_DHCP'
+
+
+# class SetInterfaceRenewDHCP(TestMixins.,
+#                             OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'INTERFACE_RENEW_DHCP'
+# TODO(peter): Test set
+
+
+class SetZeroInterfaceRenewDHCP(TestMixins.SetZeroUInt32Mixin,
+                                OptionalParameterTestFixture):
+  """SET INTERFACE_RENEW_DHCP to interface identifier 0."""
+  PID = 'INTERFACE_RENEW_DHCP'
+
+
+class SetInterfaceRenewDHCPWithNoData(TestMixins.SetWithNoDataMixin,
+                                      OptionalParameterTestFixture):
+  """Set INTERFACE_RENEW_DHCP command with no data."""
+  PID = 'INTERFACE_RENEW_DHCP'
+
+
+class SetInterfaceRenewDHCPWithExtraData(TestMixins.SetWithDataMixin,
+                                         OptionalParameterTestFixture):
+  """Send a SET INTERFACE_RENEW_DHCP command with extra data."""
+  PID = 'INTERFACE_RENEW_DHCP'
+  DATA = 'foobar'
+
+
+# INTERFACE_RELEASE_DHCP
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetInterfaceReleaseDHCP(
+        TestMixins.AllSubDevicesUnsupportedGetMixin,
+        OptionalParameterTestFixture):
+  """Attempt to send a get INTERFACE_RELEASE_DHCP to ALL_SUB_DEVICES."""
+  PID = 'INTERFACE_RELEASE_DHCP'
+
+
+class GetInterfaceReleaseDHCP(TestMixins.UnsupportedGetMixin,
+                              OptionalParameterTestFixture):
+  """Attempt to GET INTERFACE_RELEASE_DHCP."""
+  PID = 'INTERFACE_RELEASE_DHCP'
+
+
+class GetInterfaceReleaseDHCPWithData(TestMixins.UnsupportedGetWithDataMixin,
+                                      OptionalParameterTestFixture):
+  """GET INTERFACE_RELEASE_DHCP with data."""
+  PID = 'INTERFACE_RELEASE_DHCP'
+
+
+# class SetInterfaceReleaseDHCP(TestMixins.,
+#                               OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'INTERFACE_RELEASE_DHCP'
+# TODO(peter): Test set
+
+
+class SetZeroInterfaceReleaseDHCP(TestMixins.SetZeroUInt32Mixin,
+                                  OptionalParameterTestFixture):
+  """SET INTERFACE_RELEASE_DHCP to interface identifier 0."""
+  PID = 'INTERFACE_RELEASE_DHCP'
+
+
+class SetInterfaceReleaseDHCPWithNoData(TestMixins.SetWithNoDataMixin,
+                                        OptionalParameterTestFixture):
+  """Set INTERFACE_RELEASE_DHCP command with no data."""
+  PID = 'INTERFACE_RELEASE_DHCP'
+
+
+class SetInterfaceReleaseDHCPWithExtraData(TestMixins.SetWithDataMixin,
+                                           OptionalParameterTestFixture):
+  """Send a SET INTERFACE_RELEASE_DHCP command with extra data."""
+  PID = 'INTERFACE_RELEASE_DHCP'
+  DATA = 'foobar'
+
+
+# INTERFACE_APPLY_CONFIGURATION
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetInterfaceApplyConfiguration(
+        TestMixins.AllSubDevicesUnsupportedGetMixin,
+        OptionalParameterTestFixture):
+  """Attempt to send a get INTERFACE_APPLY_CONFIGURATION to ALL_SUB_DEVICES."""
+  PID = 'INTERFACE_APPLY_CONFIGURATION'
+
+
+class GetInterfaceApplyConfiguration(TestMixins.UnsupportedGetMixin,
+                                     OptionalParameterTestFixture):
+  """Attempt to GET INTERFACE_APPLY_CONFIGURATION."""
+  PID = 'INTERFACE_APPLY_CONFIGURATION'
+
+
+class GetInterfaceApplyConfigurationWithData(
+        TestMixins.UnsupportedGetWithDataMixin,
+        OptionalParameterTestFixture):
+  """GET INTERFACE_APPLY_CONFIGURATION with data."""
+  PID = 'INTERFACE_APPLY_CONFIGURATION'
+
+
+# class SetInterfaceApplyConfiguration(TestMixins.,
+#                                      OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'INTERFACE_APPLY_CONFIGURATION'
+# TODO(peter): Test set
+
+
+class SetZeroInterfaceApplyConfiguration(TestMixins.SetZeroUInt32Mixin,
+                                         OptionalParameterTestFixture):
+  """SET INTERFACE_APPLY_CONFIGURATION to interface identifier 0."""
+  PID = 'INTERFACE_APPLY_CONFIGURATION'
+
+
+class SetInterfaceApplyConfigurationWithNoData(TestMixins.SetWithNoDataMixin,
+                                               OptionalParameterTestFixture):
+  """Set INTERFACE_APPLY_CONFIGURATION command with no data."""
+  PID = 'INTERFACE_APPLY_CONFIGURATION'
+
+
+class SetInterfaceApplyConfigurationWithExtraData(TestMixins.SetWithDataMixin,
+                                                  OptionalParameterTestFixture):
+  """Send a SET INTERFACE_APPLY_CONFIGURATION command with extra data."""
+  PID = 'INTERFACE_APPLY_CONFIGURATION'
+  DATA = 'foobar'
+
+
 # Interface label
 # -----------------------------------------------------------------------------
 class GetInterfaceLabels(TestMixins.GetSettingDescriptionsListMixin,
