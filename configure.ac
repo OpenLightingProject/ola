@@ -693,7 +693,7 @@ AS_IF([test "x$enable_root_check" = xno],
 # Use tcmalloc. This is used by the buildbot leak checks.
 AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 AS_IF([test "x$enable_tcmalloc" = xyes],
-      [LDFLAGS="$LDFLAGS -ltcmalloc"])
+      [AC_CHECK_LIB([tcmalloc], [malloc], [LDFLAGS="$LDFLAGS -ltcmalloc"], [AS_ERROR([tcmalloc not found, but enabled on command line])])])
 
 # Optionally set the Doxygen version to "Latest Git" for website latest
 # version.
