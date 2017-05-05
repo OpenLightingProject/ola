@@ -82,6 +82,9 @@ dist_rdmtestsexec_SCRIPTS = \
     tools/rdm/rdm_responder_test.py \
     tools/rdm/rdm_test_server.py
 
+dist_noinst_SCRIPTS = \
+    tools/rdm/list_rdm_tests.py
+
 # Data files for the RDM Test Server
 tools_rdm_testserver_staticdir = $(datadir)/ola/rdm-server
 dist_tools_rdm_testserver_static_DATA = $(testserver_static_files)
