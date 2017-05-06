@@ -155,6 +155,14 @@ bool LibUsbAdaptor::CheckProduct(const string &expected,
   return true;
 }
 
+bool LibUsbAdaptor::HotplugSupported() {
+#ifdef HAVE_LIBUSB_HOTPLUG_API
+  return libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) != 0;
+#else
+  return false;
+#endif  // HAVE_LIBUSB_HOTPLUG_API
+}
+
 string LibUsbAdaptor::ErrorCodeToString(const int error_code) {
 #ifdef HAVE_LIBUSB_ERROR_NAME
   return libusb_error_name(error_code);
