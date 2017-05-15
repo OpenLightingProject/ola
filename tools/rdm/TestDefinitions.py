@@ -1655,6 +1655,18 @@ class SetUnsupportedLanguage(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, ['zz'])
 
 
+class SetLanguageWithNoData(TestMixins.SetWithNoDataMixin,
+                            OptionalParameterTestFixture):
+  """Set LANGUAGE command with no data."""
+  PID = 'LANGUAGE'
+
+
+class SetLanguageWithExtraData(TestMixins.SetWithDataMixin,
+                               OptionalParameterTestFixture):
+  """Send a SET LANGUAGE command with extra data."""
+  PID = 'LANGUAGE'
+
+
 class AllSubDevicesGetLanguage(TestMixins.AllSubDevicesGetMixin,
                                OptionalParameterTestFixture):
   """Send a Get LANGUAGE to ALL_SUB_DEVICES."""
@@ -4397,7 +4409,7 @@ class GetDMXFailMode(OptionalParameterTestFixture):
     self.SetProperty('dmx_fail_settings', fields)
 
 
-class GetFailUpModeWithData(TestMixins.GetWithDataMixin,
+class GetDMXFailModeWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
   """GET DMX_FAIL_MODE with extra data."""
   PID = 'DMX_FAIL_MODE'
@@ -4636,9 +4648,15 @@ class SetDMXFailModeOutOfRangeMinimumTime(TestMixins.SetDMXFailModeMixin,
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
-class SetFailModeWithNoData(TestMixins.SetWithNoDataMixin,
-                            OptionalParameterTestFixture):
+class SetDMXFailModeWithNoData(TestMixins.SetWithNoDataMixin,
+                               OptionalParameterTestFixture):
   """Set DMX_FAIL_MODE with no data."""
+  PID = 'DMX_FAIL_MODE'
+
+
+class SetDMXFailModeWithExtraData(TestMixins.SetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Send a SET DMX_FAIL_MODE command with extra data."""
   PID = 'DMX_FAIL_MODE'
 
 
@@ -4666,8 +4684,8 @@ class GetDMXStartupMode(OptionalParameterTestFixture):
     self.SetProperty('dmx_startup_settings', fields)
 
 
-class GetStartUpModeWithData(TestMixins.GetWithDataMixin,
-                             OptionalParameterTestFixture):
+class GetDMXStartupModeWithData(TestMixins.GetWithDataMixin,
+                                OptionalParameterTestFixture):
   """Get DMX_STARTUP_MODE with extra data."""
   PID = 'DMX_STARTUP_MODE'
 
@@ -4906,9 +4924,15 @@ class SetDMXStartupModeOutOfRangeMinimumTime(TestMixins.SetDMXStartupModeMixin,
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
-class SetStartupModeWithNoData(TestMixins.SetWithNoDataMixin,
-                               OptionalParameterTestFixture):
+class SetDMXStartupModeWithNoData(TestMixins.SetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
   """Set DMX_STARTUP_MODE with no data."""
+  PID = 'DMX_STARTUP_MODE'
+
+
+class SetDMXStartupModeWithExtraData(TestMixins.SetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """Send a SET DMX_STARTUP_MODE command with extra data."""
   PID = 'DMX_STARTUP_MODE'
 
 
@@ -5087,6 +5111,12 @@ class SetLockStateDescription(TestMixins.UnsupportedSetMixin,
   PID = 'LOCK_STATE_DESCRIPTION'
 
 
+class SetLockStateDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                      OptionalParameterTestFixture):
+  """Attempt to SET LOCK_STATE_DESCRIPTION with data."""
+  PID = 'LOCK_STATE_DESCRIPTION'
+
+
 class AllSubDevicesGetLockStateDescription(TestMixins.AllSubDevicesGetMixin,
                                            OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION addressed to ALL_SUB_DEVICES."""
@@ -5123,6 +5153,12 @@ class AllSubDevicesGetLockPin(TestMixins.AllSubDevicesGetMixin,
 class SetLockPinWithNoData(TestMixins.SetWithNoDataMixin,
                            OptionalParameterTestFixture):
   """Set LOCK_PIN with no param data."""
+  PID = 'LOCK_PIN'
+
+
+class SetLockPinWithExtraData(TestMixins.SetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """Send a SET LOCK_PIN command with extra data."""
   PID = 'LOCK_PIN'
 
 
@@ -5419,8 +5455,8 @@ class SetMinimumLevel(OptionalParameterTestFixture):
     self.SetProperty('set_minimum_level_supported', response.WasAcked())
 
 
-class SetLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
-                                    OptionalParameterTestFixture):
+class SetLowerIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
+                                     OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to the smallest value from DIMMER_INFO."""
   REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_lower']
 
@@ -5428,8 +5464,8 @@ class SetLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
     return self.Property('minimum_level_lower')
 
 
-class SetUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
-                                    OptionalParameterTestFixture):
+class SetUpperIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
+                                     OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to the largest value from DIMMER_INFO."""
   REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_upper']
 
@@ -5437,8 +5473,8 @@ class SetUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
     return self.Property('minimum_level_upper')
 
 
-class SetOutOfRangeLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
-                                              OptionalParameterTestFixture):
+class SetOutOfRangeLowerIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
+                                               OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to one less than the smallest value from DIMMER_INFO."""
   REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_lower']
 
@@ -5456,8 +5492,8 @@ class SetOutOfRangeLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
     return self.lower - 1
 
 
-class SetOutOfRangeUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
-                                              OptionalParameterTestFixture):
+class SetOutOfRangeUpperIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
+                                               OptionalParameterTestFixture):
   """Set MINIMUM_LEVEL to one more than the largest value from DIMMER_INFO."""
   REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_upper']
 
