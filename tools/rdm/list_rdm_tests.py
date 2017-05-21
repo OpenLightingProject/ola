@@ -167,7 +167,8 @@ def GetZero(names, pid, pid_test_base_name, first_atom):
   else:
     if len(pid.GetRequest(PidStore.RDM_GET).GetAtoms()) > 1:
       GenerateClassHeader(True, 'GetZero', pid_test_base_name, '',
-                          ['TestMixins.GetZero', 'OptionalParameterTestFixture'])
+                          ['TestMixins.GetZero',
+                           'OptionalParameterTestFixture'])
       print('#   """GET %s for %s 0."""' %
             (pid.name, first_atom.name.replace('_', ' ')))
       print('#   PID = \'%s\'' % (pid.name))
