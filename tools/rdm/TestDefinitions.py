@@ -1883,50 +1883,6 @@ class GetDMXPersonalityWithData(TestMixins.GetWithDataMixin,
   PID = 'DMX_PERSONALITY'
 
 
-class GetDMXPersonalityDescriptions(OptionalParameterTestFixture):
-  """Get information about all the personalities."""
-  CATEGORY = TestCategory.DMX_SETUP
-  PID = 'DMX_PERSONALITY_DESCRIPTION'
-  REQUIRES = ['personality_count']
-  PROVIDES = ['personalities']
-
-  def Test(self):
-    self._personalities = []
-    self._personality_count = self.Property('personality_count')
-    self._current_index = 0
-    self._GetPersonality()
-
-  def _GetPersonality(self):
-    self._current_index += 1
-    if self._current_index > self._personality_count:
-      if self._personality_count == 0:
-        self.SetNotRun('No personalities declared')
-      self.SetProperty('personalities', self._personalities)
-      self.Stop()
-      return
-
-    if self._current_index >= MAX_PERSONALITY_NUMBER:
-      # This should never happen because personality_count is a uint8
-      self.SetFailed('Could not find all personalities')
-      return
-
-    self.AddIfGetSupported(self.AckGetResult(
-        field_names=['slots_required', 'name'],
-        field_values={'personality': self._current_index},
-        action=self._GetPersonality))
-    self.SendGet(ROOT_DEVICE, self.pid, [self._current_index])
-
-  def VerifyResult(self, response, fields):
-    """Save the personality for other tests to use."""
-    if response.WasAcked():
-      self._personalities.append(fields)
-
-      if ContainsUnprintable(fields['name']):
-        self.AddAdvisory(
-            'Name field in %s contains unprintable characters, was %s' %
-            (self.pid.name, fields['name'].encode('string-escape')))
-
-
 class SetDMXPersonality(OptionalParameterTestFixture):
   """Set the personality."""
   CATEGORY = TestCategory.DMX_SETUP

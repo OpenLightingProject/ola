@@ -511,7 +511,6 @@ class ModelCollector(object):
     elif unpack_exception:
       print ('Unpack error: %s' % (unpack_exception))
       self._NextState()
-      #self.wrapper.Stop()
     else:
       self._HandleResponse(unpacked_data)
 
