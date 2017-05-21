@@ -1,12 +1,6 @@
-x/y/2017 ola-0.10.4
+21/05/2017 ola-0.10.4
  Features:
  * Add more help regarding the ArtNet use_limited_broadcast option
-
- API:
- * 
-
- RDM Tests:
- * 
 
  Bugs:
  * Ensure Pathport node actually uses configured IP #1166
@@ -28,9 +22,8 @@ x/y/2017 ola-0.10.4
  * Add a cast to fix an error when running execlp
  * Ensure configure checks for tcmalloc's presence before adding it to the libs
    when asked for #1201
-
- Internal:
- *
+ * Add some more detail to the Logic RDM sniffer and Enttec RDM USB Pro sniffer
+   documentation
 
 06/12/2016 ola-0.10.3
  Features:
