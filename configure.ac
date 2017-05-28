@@ -510,8 +510,8 @@ AC_ARG_ENABLE(
   [unittests],
   [AS_HELP_STRING([--disable-unittests], [Disable all unittests])])
 AS_IF([test "x$enable_unittests" != xno],
-      [PKG_CHECK_MODULES([CPPUNIT], [cppunit >= 1.9.6], [],
-          [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
+      [PKG_CHECK_MODULES([CPPUNIT], [cppunit >= 1.9.6 cppunit < 1.14.0], [],
+          [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6 and < 1.14.0])])
       ])
 AM_CONDITIONAL([BUILD_TESTS], [test "x$enable_unittests" != xno])
 
