@@ -112,11 +112,13 @@ class ShowJockeyDMXU1ThreadedSender: public ThreadedUsbSender {
                                 libusb_device_handle *usb_handle,
                                 int max_packet_size_out,
                                 int endpoint);
+  ~ShowJockeyDMXU1ThreadedSender();
 
  private:
   LibUsbAdaptor* const m_adaptor;
   int m_max_packet_size_out;
   int m_endpoint;
+  unsigned char *m_bulk_buffer;
 
   bool TransmitBuffer(libusb_device_handle *handle,
                       const DmxBuffer &buffer);
@@ -137,6 +139,14 @@ ShowJockeyDMXU1ThreadedSender::ShowJockeyDMXU1ThreadedSender(
       m_adaptor(adaptor),
       m_max_packet_size_out(max_packet_size_out),
       m_endpoint(endpoint) {
+  m_bulk_buffer = new unsigned char[m_max_packet_size_out]();
+}
+
+ShowJockeyDMXU1ThreadedSender::~ShowJockeyDMXU1ThreadedSender(){
+  if (m_bulk_buffer) {
+    delete[] m_bulk_buffer;
+    m_bulk_buffer = 0;
+  }
 }
 
 bool ShowJockeyDMXU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
@@ -151,7 +161,6 @@ bool ShowJockeyDMXU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   unsigned int write_size = 0;
   int max_packet_size_out = m_max_packet_size_out;
 
-  unsigned char *bulk_buffer = new unsigned char[max_packet_size_out]();
 
   int bulk_data_size = max_packet_size_out - 2;
   unsigned int slot = 0;
@@ -159,14 +168,14 @@ bool ShowJockeyDMXU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   while (left_write_size > 0) {
     memset(bulk_buffer, 0, max_packet_size_out);
     ola::utils::SplitUInt16(already_written_size,
-                            &bulk_buffer[1],
-                            &bulk_buffer[0]);
     write_size = std::min(bulk_data_size, left_write_size);
+                            &m_bulk_buffer[1],
+                            &m_bulk_buffer[0]);
 
-    buffer.GetRange(slot, bulk_buffer + 2, &write_size);
+    buffer.GetRange(slot, m_bulk_buffer + 2, &write_size);
 
     ret_val = bulkSync(handle, m_endpoint, max_packet_size_out,
-                       bulk_buffer, write_size + 2);
+                       m_bulk_buffer, write_size + 2);
 
     if (ret_val < 0) {
       return ret_val;
@@ -175,11 +184,6 @@ bool ShowJockeyDMXU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
     left_write_size -= write_size;
     already_written_size += write_size;
     slot += write_size;
-  }
-
-  if (bulk_buffer) {
-    delete[] bulk_buffer;
-    bulk_buffer = 0;
   }
 
   return true;
