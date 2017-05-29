@@ -118,6 +118,7 @@ class ShowJockeyDMXU1ThreadedSender: public ThreadedUsbSender {
   LibUsbAdaptor* const m_adaptor;
   int m_max_packet_size_out;
   int m_endpoint;
+  int m_bulk_data_size;
   unsigned char *m_bulk_buffer;
 
   bool TransmitBuffer(libusb_device_handle *handle,
@@ -138,7 +139,8 @@ ShowJockeyDMXU1ThreadedSender::ShowJockeyDMXU1ThreadedSender(
     : ThreadedUsbSender(usb_device, usb_handle),
       m_adaptor(adaptor),
       m_max_packet_size_out(max_packet_size_out),
-      m_endpoint(endpoint) {
+      m_endpoint(endpoint),
+      m_bulk_data_size(max_packet_size_out-2) {
   m_bulk_buffer = new unsigned char[m_max_packet_size_out]();
 }
 
@@ -159,22 +161,19 @@ bool ShowJockeyDMXU1ThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   int left_write_size = DMX_UNIVERSE_SIZE;
   uint16_t already_written_size = 0;
   unsigned int write_size = 0;
-  int max_packet_size_out = m_max_packet_size_out;
 
-
-  int bulk_data_size = max_packet_size_out - 2;
   unsigned int slot = 0;
 
   while (left_write_size > 0) {
-    memset(bulk_buffer, 0, max_packet_size_out);
+    memset(m_bulk_buffer, 0, m_max_packet_size_out);
     ola::utils::SplitUInt16(already_written_size,
-    write_size = std::min(bulk_data_size, left_write_size);
                             &m_bulk_buffer[1],
                             &m_bulk_buffer[0]);
+    write_size = std::min(m_bulk_data_size, left_write_size);
 
     buffer.GetRange(slot, m_bulk_buffer + 2, &write_size);
 
-    ret_val = bulkSync(handle, m_endpoint, max_packet_size_out,
+    ret_val = bulkSync(handle, m_endpoint, m_max_packet_size_out,
                        m_bulk_buffer, write_size + 2);
 
     if (ret_val < 0) {
@@ -270,6 +269,10 @@ class ShowJockeyDMXU1AsyncUsbSender : public AsyncUsbSender {
                                   m_max_packet_size_out(max_packet_size_out) {
     m_usb_handle = handle;
     m_tx_frame = NULL;
+    m_nb_sequence = DMX_MAX_SLOT_NUMBER / (m_max_packet_size_out - 2);
+    m_nb_sequence += 1;
+    m_final_size = DMX_MAX_SLOT_NUMBER + (2 * m_nb_sequence);
+    m_tx_frame = new uint8_t[m_final_size]();
   }
 
   ~ShowJockeyDMXU1AsyncUsbSender() {
@@ -282,17 +285,11 @@ class ShowJockeyDMXU1AsyncUsbSender : public AsyncUsbSender {
   }
 
   bool PerformTransfer(const DmxBuffer &buffer) {
-    uint16_t nb_sequence = DMX_MAX_SLOT_NUMBER / (m_max_packet_size_out - 2);
-    nb_sequence += 1;
-    int final_size = DMX_MAX_SLOT_NUMBER + (2 * nb_sequence);
-    if (m_tx_frame == NULL) {
-      m_tx_frame = new uint8_t[final_size]();
-    }
 
     uint8_t *p_final_buffer = m_tx_frame;
     unsigned int to_write_size = m_max_packet_size_out - 2;
     uint16_t written_size = 0;
-    for (int i = 0; i <= nb_sequence; ++i) {
+    for (int i = 0; i <= m_nb_sequence; ++i) {
       ola::utils::SplitUInt16(written_size,
                               &p_final_buffer[1],
                               &p_final_buffer[0]);
@@ -306,15 +303,17 @@ class ShowJockeyDMXU1AsyncUsbSender : public AsyncUsbSender {
       written_size += to_write_size;
     }
 
-    FillBulkTransfer(m_endpoint, m_tx_frame, final_size,
+    FillBulkTransfer(m_endpoint, m_tx_frame, m_final_size,
                      URB_TIMEOUT_MS);
     return SubmitTransfer() == 0;
   }
 
  private:
   uint8_t *m_tx_frame;
+  uint16_t m_nb_sequence;
   int m_endpoint;
   int m_max_packet_size_out;
+  int m_final_size;
 
   DISALLOW_COPY_AND_ASSIGN(ShowJockeyDMXU1AsyncUsbSender);
 };
