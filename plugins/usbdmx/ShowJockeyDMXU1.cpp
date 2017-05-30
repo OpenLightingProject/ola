@@ -145,7 +145,7 @@ ShowJockeyDMXU1ThreadedSender::ShowJockeyDMXU1ThreadedSender(
   m_bulk_buffer = new unsigned char[m_max_packet_size_out]();
 }
 
-ShowJockeyDMXU1ThreadedSender::~ShowJockeyDMXU1ThreadedSender(){
+ShowJockeyDMXU1ThreadedSender::~ShowJockeyDMXU1ThreadedSender() {
   if (m_bulk_buffer) {
     delete[] m_bulk_buffer;
     m_bulk_buffer = 0;
@@ -286,7 +286,6 @@ class ShowJockeyDMXU1AsyncUsbSender : public AsyncUsbSender {
   }
 
   bool PerformTransfer(const DmxBuffer &buffer) {
-
     uint8_t *p_final_buffer = m_tx_frame;
     unsigned int to_write_size = m_max_packet_size_out - 2;
     uint16_t written_size = 0;
