@@ -26,7 +26,7 @@ CLEANFILES = generated-src/main/java/ola/proto/Ola.java \
              test-classes/ola/*.class \
              maven-archiver/pom.properties \
              surefire-reports/ola.*.txt \
-	         surefire-reports/TEST-*.xml \
+             surefire-reports/TEST-*.xml \
              ola-java-client-*.jar
 
 if BUILD_JAVA_LIBS
