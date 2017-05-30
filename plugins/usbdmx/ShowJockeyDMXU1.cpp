@@ -83,7 +83,8 @@ bool LocateInterface(LibUsbAdaptor *adaptor,
         bool isOutput = (current_endpoint_addr & LIBUSB_ENDPOINT_DIR_MASK) !=
                         LIBUSB_ENDPOINT_IN;
         if (endpoint->bmAttributes == LIBUSB_TRANSFER_TYPE_BULK && isOutput) {
-          OLA_INFO << "Using interface " << i <<"at address "<<current_endpoint_addr;
+          OLA_INFO << "Using interface " << i
+                   << " at address " << current_endpoint_addr;
           *interface_number = i;
           *endpoint_addr = current_endpoint_addr;
           *max_packet_size = endpoint->wMaxPacketSize;
