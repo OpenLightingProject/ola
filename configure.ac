@@ -65,11 +65,26 @@ AC_MSG_RESULT($ac_cv_gnu_plus_plus_11)
 AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = xyes])
 
 # force us into gnu++98 mode if necessary
+# If gnu++11 and gnu++98 then
+#   If no unit tests, force to gnu++98
+#   If unittests and cppunit < 1.14.0, force to gnu++98
+#   Else turn off deprecation messages for std::auto_ptr and run gnu++11
+disable_gnu_plus_plus_11_deprecations="no"
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
       [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
-             [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-             [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+             [AS_IF([test "x$enable_unittests" = xno],
+                    [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                    [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+                                       [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                       [PKG_CHECK_MODULES([CPPUNIT2], [cppunit > 1.14.0],
+                                                          [disable_gnu_plus_plus_11_deprecations="yes"],
+                                                          [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                       ])
+                    ])
+             ])
       ])
+
+AM_CONDITIONAL([GNU_PLUS_PLUS_11_DEPRECATIONS], [test "x$disable_gnu_plus_plus_11_deprecations" = xyes])
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -78,7 +93,10 @@ AC_HEADER_STDC
 # Required headers (we cannot work without these)
 AC_CHECK_HEADERS([errno.h],[],[AC_MSG_ERROR([Missing a required header])])
 # Other headers (we can work without these, but may need to modify things slightly)
-AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h \
+                  malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h \
+                  sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h \
+                  syslog.h termios.h unistd.h])
 AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h stropts.h \
                   sys/param.h sys/types.h sys/uio.h sysexits.h])
@@ -510,8 +528,8 @@ AC_ARG_ENABLE(
   [unittests],
   [AS_HELP_STRING([--disable-unittests], [Disable all unittests])])
 AS_IF([test "x$enable_unittests" != xno],
-      [PKG_CHECK_MODULES([CPPUNIT], [cppunit >= 1.9.6 cppunit < 1.14.0], [],
-          [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6 and < 1.14.0])])
+      [PKG_CHECK_MODULES([CPPUNIT], [cppunit >= 1.9.6], [],
+          [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
       ])
 AM_CONDITIONAL([BUILD_TESTS], [test "x$enable_unittests" != xno])
 
