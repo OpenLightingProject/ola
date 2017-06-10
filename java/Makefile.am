@@ -25,9 +25,9 @@ CLEANFILES = generated-src/main/java/ola/proto/Ola.java \
              classes/ola/*.class \
              test-classes/ola/*.class \
              maven-archiver/pom.properties \
-	     surefire-reports/ola.*.txt \
-	     surefire-reports/TEST-*.xml \
-             ola-java-client-0.0.1.jar
+             surefire-reports/ola.*.txt \
+             surefire-reports/TEST-*.xml \
+             ola-java-client-*.jar
 
 if BUILD_JAVA_LIBS
 # .jars aren't really data, but it sure ain't a program.
