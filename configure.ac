@@ -510,8 +510,8 @@ AC_ARG_ENABLE(
   [unittests],
   [AS_HELP_STRING([--disable-unittests], [Disable all unittests])])
 AS_IF([test "x$enable_unittests" != xno],
-      [PKG_CHECK_MODULES([CPPUNIT], [cppunit >= 1.9.6], [],
-          [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
+      [PKG_CHECK_MODULES([CPPUNIT], [cppunit >= 1.9.6 cppunit < 1.14.0], [],
+          [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6 and < 1.14.0])])
       ])
 AM_CONDITIONAL([BUILD_TESTS], [test "x$enable_unittests" != xno])
 
@@ -693,7 +693,7 @@ AS_IF([test "x$enable_root_check" = xno],
 # Use tcmalloc. This is used by the buildbot leak checks.
 AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 AS_IF([test "x$enable_tcmalloc" = xyes],
-      [LDFLAGS="$LDFLAGS -ltcmalloc"])
+      [AC_CHECK_LIB([tcmalloc], [malloc], [LDFLAGS="$LDFLAGS -ltcmalloc"], [AS_ERROR([tcmalloc not found, but enabled on command line])])])
 
 # Optionally set the Doxygen version to "Latest Git" for website latest
 # version.
