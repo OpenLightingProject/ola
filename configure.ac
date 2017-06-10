@@ -69,7 +69,7 @@ AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = x
 #   If no unit tests, force to gnu++98
 #   If unittests and cppunit < 1.14.0, force to gnu++98
 #   Else turn off deprecation messages for std::auto_ptr and run gnu++11
-disable_gnu_plus_plus_11_deprecations="no"
+require_gnu_plus_plus_11="no"
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
       [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
              [AS_IF([test "x$enable_unittests" = xno],
@@ -77,14 +77,15 @@ AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
                     [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
                                        [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
                                        [PKG_CHECK_MODULES([CPPUNIT2], [cppunit > 1.14.0],
-                                                          [disable_gnu_plus_plus_11_deprecations="yes"],
+                                                          [require_gnu_plus_plus_11="yes"],
                                                           [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
                                        ])
                     ])
              ])
       ])
-
-AM_CONDITIONAL([GNU_PLUS_PLUS_11_DEPRECATIONS], [test "x$disable_gnu_plus_plus_11_deprecations" = xyes])
+AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
+      [CXXFLAGS="$CXXFLAGS -std=gnu++11"])
+AM_CONDITIONAL([GNU_PLUS_PLUS_11_DEPRECATIONS], [test "x$require_gnu_plus_plus_11" = xyes])
 
 # Checks for header files.
 AC_HEADER_DIRENT
