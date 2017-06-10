@@ -54,7 +54,7 @@ using std::vector;
 
 
 /**
- * A count number of responders of type T.
+ * @brief Add count number of responders of type T.
  */
 template <typename T>
 void AddResponders(map<UID, ola::rdm::RDMControllerInterface*> *responders,
@@ -77,15 +77,11 @@ DummyPort::DummyPort(DummyDevice *parent,
   UID first_uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress);
   ola::rdm::UIDAllocator allocator(first_uid);
 
-  for (unsigned int i = 0; i < options.number_of_dummy_responders; i++) {
-    auto_ptr<UID> uid(allocator.AllocateNext());
-    if (!uid.get()) {
-      OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
-      break;
-    }
-    STLReplaceAndDelete(&m_responders, *uid, new DummyResponder(*uid));
-  }
+  AddResponders<ola::rdm::DummyResponder>(
+      &m_responders, &allocator, options.number_of_dummy_responders);
 
+  // This can't be done via AddResponders as we need to also tell it how many
+  // sub devices to add
   for (unsigned int i = 0; i < options.number_of_dimmers; i++) {
     auto_ptr<UID> uid(allocator.AllocateNext());
     if (!uid.get()) {
