@@ -76,7 +76,7 @@ AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
                     [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
                     [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
                                        [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                                       [PKG_CHECK_MODULES([CPPUNIT2], [cppunit > 1.14.0],
+                                       [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
                                                           [require_gnu_plus_plus_11="yes"],
                                                           [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
                                        ])
