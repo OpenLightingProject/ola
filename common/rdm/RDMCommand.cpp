@@ -325,6 +325,8 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
     return NULL;
   }
 
+  UID source_uid(command_message.source_uid);
+  UID destination_uid(command_message.destination_uid);
   uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
                                   command_message.sub_device[1]);
   uint16_t param_id = JoinUInt8(command_message.param_id[0],
@@ -340,8 +342,8 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
   switch (command_class) {
     case DISCOVER_COMMAND:
       return new RDMDiscoveryRequest(
-          UID(command_message.source_uid),
-          UID(command_message.destination_uid),
+          source_uid,
+          destination_uid,
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
           sub_device,
@@ -351,8 +353,8 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
           options);
     case GET_COMMAND:
       return new RDMGetRequest(
-          UID(command_message.source_uid),
-          UID(command_message.destination_uid),
+          source_uid,
+          destination_uid,
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
           sub_device,
@@ -362,8 +364,8 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
           options);
     case SET_COMMAND:
       return new RDMSetRequest(
-          UID(command_message.source_uid),
-          UID(command_message.destination_uid),
+          source_uid,
+          destination_uid,
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
           sub_device,
@@ -372,7 +374,10 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
           command_message.param_data_length,  // data length
           options);
     default:
-      OLA_WARN << "Expected a RDM request command but got " << command_class;
+      OLA_WARN << "Expected a RDM request command but got " << ToHex(command_class)
+               << ", from " << source_uid << " to " << destination_uid
+               << ", TN "
+               << static_cast<int>(command_message.transaction_number);
       return NULL;
   }
 }
@@ -509,7 +514,9 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
           data + sizeof(RDMCommandHeader),
           command_message.param_data_length);  // data length
     default:
-      OLA_WARN << "Command class isn't valid, got " << ToHex(command_class);
+      OLA_WARN << "Command class isn't valid, got " << ToHex(command_class)
+               << ", from " << source_uid << " to " << destination_uid
+               << ", TN " << static_cast<int>(return_transaction_number);
       *status_code = RDM_INVALID_COMMAND_CLASS;
       return NULL;
   }
@@ -525,7 +532,8 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
              << ", request size is " << combined_length;
     return NULL;
   } else if (response1->SourceUID() != response2->SourceUID()) {
-    OLA_WARN << "Source UIDs don't match";
+    OLA_WARN << "Source UIDs don't match, got " << response1->SourceUID()
+             << " and " << response2->SourceUID();
     return NULL;
   }
 
@@ -561,8 +569,9 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
         combined_data,
         combined_length);
   } else {
-    OLA_WARN << "Expected a RDM request command but got "
-             << ToHex(response1->CommandClass());
+    OLA_WARN << "Expected a pair of RDM response commands but got "
+             << ToHex(response1->CommandClass()) << " and "
+             << ToHex(response2->CommandClass());
   }
   delete[] combined_data;
   return response;
