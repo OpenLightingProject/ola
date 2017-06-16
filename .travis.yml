@@ -38,11 +38,11 @@ matrix:
   fast_finish: true
   include:
     - os: osx
-      osx_image: xcode8.2
+      osx_image: xcode8.3
       compiler: clang
       env: TASK='compile'
     - os: osx
-      osx_image: xcode8.2
+      osx_image: xcode8.3
       compiler: gcc
       env: TASK='compile'
     - os: linux
@@ -198,9 +198,10 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf@3.1 libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy already present
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex protobuf@2.6 libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f protobuf@2.6; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@2.6/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-6" CC="ccache gcc-6"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
