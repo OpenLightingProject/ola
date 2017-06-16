@@ -7,8 +7,8 @@
 The Open Lighting Architecture (OLA) is a framework for controlling
 entertainment lighting equipment. Within the entertainment lighting industry,
 the [Digital Multiplex protocol](https://en.wikipedia.org/wiki/DMX512)
-(DMX-512) and IP variants such as [Streaming ACN]
-(https://en.wikipedia.org/wiki/Architecture_for_Control_Networks#External_Extensions)
+(DMX-512) and IP variants such as [Streaming
+ACN](https://en.wikipedia.org/wiki/Architecture_for_Control_Networks#External_Extensions)
 (sACN) are used to control lighting fixtures.
 
 OLA provides the distribution layer that abstracts away the various protocols
@@ -24,17 +24,18 @@ OLA consists of three parts, the daemon olad, the olad plugins and the client
 library, libola.
 
 Documentation on OLA, including examples on how to get started, are
-provided on the [Open Lighting Architecture Docs]
-(https://docs.openlighting.org/ola/doc/latest/) site. The pages are
+provided on the [Open Lighting Architecture
+Docs](https://docs.openlighting.org/ola/doc/latest/)
+site. The pages are
 automatically updated from the git repository.
 
 ## Downloading OLA
 
 OLA is distributed in a number of formats, including
 [Debian](https://www.debian.org/) / [Ubuntu](http://www.ubuntu.com/) Packages
-and [MacPorts](https://www.macports.org/). The [OLA Downloads]
-(https://www.openlighting.org/ola/getting-started/downloads/) page has more
-information.
+and [MacPorts](https://www.macports.org/). The [OLA
+Downloads](https://www.openlighting.org/ola/getting-started/downloads/)
+page has more information.
 
 Tagged releases in the git repository are signed. To import the public key, run:
 
@@ -58,8 +59,8 @@ plugins/osc/README.
 
 ### C++ Library
 
-The C++ Client is in ./ola. The [C++ DMX Client API Tutorial]
-(https://docs.openlighting.org/ola/doc/latest/dmx_cpp_client_tutorial.html)
+The C++ Client is in ./ola. The [C++ DMX Client API
+Tutorial](https://docs.openlighting.org/ola/doc/latest/dmx_cpp_client_tutorial.html)
 has various examples on how one can use the client.
 
 ### Python Module
