@@ -1,5 +1,6 @@
 {
   "name": "OLA",
+  "licence": "GPL-2.0+",
   "repository": "OpenLightingProject/ola",
   "devDependencies": {
     "olp-javascript-style": "OpenLightingProject/javascript-style",
