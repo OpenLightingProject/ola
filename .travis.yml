@@ -33,19 +33,35 @@ addons:
      - g++-5
     packages: &core_build_clang_latest
      - *core_build
-     - clang-3.9
+     - clang-5.0
 
 matrix:
   fast_finish: true
   include:
     - os: osx
-      osx_image: xcode8.2
+      osx_image: xcode8.3
       compiler: clang
-      env: TASK='compile'
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
     - os: osx
-      osx_image: xcode8.2
+      osx_image: xcode8.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+    - os: osx
+      osx_image: xcode8.3
       compiler: gcc
-      env: TASK='compile'
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+    - os: osx
+      osx_image: xcode8.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
     - os: linux
       compiler: clang
       env: TASK='compile'
@@ -55,7 +71,7 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise-3.9
+           - llvm-toolchain-precise
     - os: linux
       compiler: gcc
       env: TASK='compile'
@@ -165,14 +181,16 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache cppunit bison flex protobuf@3.1 libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex protobuf@3.1 libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid already present
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
 #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-5" CC="ccache gcc-5"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-3.9" CC="clang-3.9"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
 #Report the compiler version
  - $CXX --version
 
