@@ -144,6 +144,8 @@ matrix:
 
 env:
   global:
+   # Parallel make build
+   - MAKEFLAGS="-j 2"
    # -- BEGIN Coverity Scan ENV
    - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 --template && autoreconf -i && ./configure --enable-ja-rule --enable-e133"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
