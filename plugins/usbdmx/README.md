@@ -9,6 +9,7 @@ This plugin supports various USB DMX devices including:
 * DMXCreator 512 Basic
 * Eurolite
 * Fadecandy
+* ShowJockey SJ-DMX-U1
 * Sunlite USBDMX2
 * Velleman K8062.
 
