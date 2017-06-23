@@ -374,9 +374,9 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
           command_message.param_data_length,  // data length
           options);
     default:
-      OLA_WARN << "Expected a RDM request command but got " << ToHex(command_class)
-               << ", from " << source_uid << " to " << destination_uid
-               << ", TN "
+      OLA_WARN << "Expected a RDM request command but got "
+               << ToHex(command_class) << ", from " << source_uid << " to "
+               << destination_uid << ", TN "
                << static_cast<int>(command_message.transaction_number);
       return NULL;
   }
