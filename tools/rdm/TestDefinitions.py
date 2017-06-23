@@ -6785,7 +6785,8 @@ class SetOutOfRangePresetStatus(TestMixins.SetOutOfRangePresetStatusMixin,
                                 OptionalParameterTestFixture):
   """Set the PRESET_STATUS for max_scene + 1."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  REQUIRES = ['max_scene_number'] + TestMixins.SetOutOfRangePresetStatusMixin.REQUIRES
+  REQUIRES = (['max_scene_number'] +
+              TestMixins.SetOutOfRangePresetStatusMixin.REQUIRES)
 
   def PresetStatusSceneNumber(self):
     max_scene = self.Property('max_scene_number')
