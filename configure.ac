@@ -588,7 +588,7 @@ if test "x$have_microhttpd" = xyes; then
   # Check if we have MHD_create_response_from_buffer
   old_cflags=$CFLAGS
   old_libs=$LIBS
-  CFLAGS="${CPPFLAGS} ${libprotobuf_CFLAGS}"
+  CFLAGS="${CPPFLAGS} ${libmicrohttpd_CFLAGS}"
   LIBS="${LIBS} ${libmicrohttpd_LIBS}"
   AC_CHECK_FUNCS([MHD_create_response_from_buffer])
   # restore CFLAGS
