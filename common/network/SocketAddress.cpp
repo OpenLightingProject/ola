@@ -20,14 +20,14 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
-#endif
+#endif  // HAVE_ARPA_INET_H
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>  // Required by FreeBSD
-#endif
+#endif  // HAVE_NETINET_IN_H
 
 #include <assert.h>
 #include <ola/Logging.h>

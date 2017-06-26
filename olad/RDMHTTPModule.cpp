@@ -2104,8 +2104,8 @@ void RDMHTTPModule::GetStartAddressHandler(
   } else {
     UIntItem *uint_item = new UIntItem("DMX Start Address", address,
                                        ADDRESS_FIELD);
-    uint_item->SetMin(0);
-    uint_item->SetMax(DMX_UNIVERSE_SIZE - 1);
+    uint_item->SetMin(DMX_MIN_SLOT_NUMBER);
+    uint_item->SetMax(DMX_MAX_SLOT_NUMBER);
     item = uint_item;
   }
   section.AddItem(item);
@@ -2990,7 +2990,7 @@ string RDMHTTPModule::SyncClock(HTTPResponse *response,
   memcpy(&now_tm, localtime(&now), sizeof(now_tm));
 #else
   localtime_r(&now, &now_tm);
-#endif
+#endif  // _WIN32
   ola::rdm::ClockValue clock_value;
 
   clock_value.year = now_tm.tm_year + 1900;

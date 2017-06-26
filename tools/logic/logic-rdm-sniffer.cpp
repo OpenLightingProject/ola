@@ -20,11 +20,11 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_SALEAEDEVICEAPI_H
 #include <SaleaeDeviceApi.h>
-#endif
+#endif  // HAVE_SALEAEDEVICEAPI_H
 
 #include <string.h>
 #include <time.h>
@@ -46,6 +46,7 @@
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
+#include <ola/StringUtils.h>
 
 #include <iostream>
 #include <fstream>
@@ -69,6 +70,7 @@ using ola::rdm::CommandPrinter;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
+using ola::strings::ToHex;
 
 
 using ola::thread::Mutex;
@@ -104,6 +106,7 @@ class LogicReader {
                            sample_rate),
         m_pid_helper(FLAGS_pid_location.str(), 4),
         m_command_printer(&cout, &m_pid_helper) {
+      m_pid_helper.Init();
     }
     ~LogicReader();
 
@@ -275,10 +278,10 @@ void LogicReader::DisplayDMXFrame(const uint8_t *data, unsigned int length) {
 void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
   auto_ptr<RDMCommand> command(RDMCommand::Inflate(data, length));
   if (command.get()) {
-    if (FLAGS_full_rdm)
+    if (FLAGS_full_rdm) {
       cout << "---------------------------------------" << endl;
-
-    command->Print(&m_command_printer, FLAGS_full_rdm, true);
+    }
+    command->Print(&m_command_printer, !FLAGS_full_rdm, true);
   } else {
     DisplayRawData(data, length);
   }
@@ -291,8 +294,8 @@ void LogicReader::DisplayAlternateFrame(const uint8_t *data,
     return;
 
   unsigned int slot_count = length - 1;
-  cout << "SC 0x" << std::hex << std::setw(2) << static_cast<int>(data[0])
-       << " " << std::dec << slot_count << ":" << std::hex;
+  cout << "SC " << ToHex(static_cast<int>(data[0]))
+       << " " << slot_count << ":";
   DisplayRawData(data + 1, slot_count);
 }
 

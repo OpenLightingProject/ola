@@ -149,10 +149,18 @@ bool LibUsbAdaptor::CheckProduct(const string &expected,
                                  const DeviceInformation &device_info) {
   if (expected != device_info.product) {
     OLA_WARN << "Product mismatch: " << expected << " != "
-             << device_info.manufacturer;
+             << device_info.product;
     return false;
   }
   return true;
+}
+
+bool LibUsbAdaptor::HotplugSupported() {
+#ifdef HAVE_LIBUSB_HOTPLUG_API
+  return libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) != 0;
+#else
+  return false;
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 }
 
 string LibUsbAdaptor::ErrorCodeToString(const int error_code) {
@@ -162,7 +170,7 @@ string LibUsbAdaptor::ErrorCodeToString(const int error_code) {
   ostringstream str;
   str << "Error code " << error_code;
   return str.str();
-#endif
+#endif  // HAVE_LIBUSB_ERROR_NAME
 }
 
 // BaseLibUsbAdaptor

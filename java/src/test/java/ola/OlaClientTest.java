@@ -78,6 +78,13 @@ public class OlaClientTest {
     }
 
     @Test
+    public void testGetUniverseList() {
+        UniverseInfoReply reply = client.getUniverseList();
+        assertNotNull(reply);
+        System.out.println(reply);
+    }
+
+    @Test
     public void testGetUIDs() {
         UIDListReply reply = client.getUIDs(0);
         assertNotNull(reply);

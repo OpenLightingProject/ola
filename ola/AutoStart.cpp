@@ -28,7 +28,7 @@
 #else
 #include <sys/wait.h>
 #include <unistd.h>
-#endif
+#endif  // _WIN32
 
 #include <ola/AutoStart.h>
 #include <ola/network/IPV4Address.h>
@@ -105,7 +105,8 @@ TCPSocket *ConnectToServer(unsigned short port) {
 
     // Try to start the server, we pass --daemon (fork into background) and
     // --syslog (log to syslog).
-    execlp("olad", "olad", "--daemon", "--syslog", NULL);
+    execlp("olad", "olad", "--daemon", "--syslog",
+           reinterpret_cast<char*>(NULL));
     OLA_WARN << "Failed to exec: " << strerror(errno);
     _exit(1);
   }
@@ -115,7 +116,7 @@ TCPSocket *ConnectToServer(unsigned short port) {
 
   // wait a bit here for the server to come up
   sleep(1);
-#endif
+#endif  // _WIN32
 
   return TCPSocket::Connect(server_address);
 }

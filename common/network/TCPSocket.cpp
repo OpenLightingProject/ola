@@ -20,7 +20,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <errno.h>
 #include <fcntl.h>
@@ -28,7 +28,7 @@
 #include <sys/types.h>
 #ifndef _WIN32
 #include <netinet/tcp.h>
-#endif
+#endif  // !_WIN32
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -39,14 +39,14 @@
 #include <winioctl.h>
 #else
 #include <sys/ioctl.h>
-#endif
+#endif  // _WIN32
 
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
-#endif
+#endif  // HAVE_ARPA_INET_H
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>  // Required by FreeBSD
-#endif
+#endif  // HAVE_NETINET_IN_H
 
 #include <string>
 
@@ -74,7 +74,7 @@ GenericSocketAddress TCPSocket::GetPeerAddress() const {
   return ola::network::GetPeerAddress(m_handle.m_handle.m_fd);
 #else
   return ola::network::GetPeerAddress(m_handle);
-#endif
+#endif  // _WIN32
 }
 
 GenericSocketAddress TCPSocket::GetLocalAddress() const {
@@ -82,7 +82,7 @@ GenericSocketAddress TCPSocket::GetLocalAddress() const {
   return ola::network::GetLocalAddress(m_handle.m_handle.m_fd);
 #else
   return ola::network::GetLocalAddress(m_handle);
-#endif
+#endif  // _WIN32
 }
 
 TCPSocket::TCPSocket(int sd) {
@@ -91,7 +91,7 @@ TCPSocket::TCPSocket(int sd) {
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
 #else
   m_handle = sd;
-#endif
+#endif  // _WIN32
   SetNoSigPipe(m_handle);
 }
 
@@ -104,7 +104,7 @@ bool TCPSocket::Close() {
     closesocket(m_handle.m_handle.m_fd);
 #else
     close(m_handle);
-#endif
+#endif  // _WIN32
     m_handle = ola::io::INVALID_DESCRIPTOR;
   }
   return true;
@@ -119,7 +119,7 @@ bool TCPSocket::SetNoDelay() {
   int sd = m_handle.m_handle.m_fd;
 #else
   int sd = m_handle;
-#endif
+#endif  // _WIN32
   int result = setsockopt(sd, IPPROTO_TCP, TCP_NODELAY,
                           reinterpret_cast<char*>(&flag),
                           sizeof(flag));
@@ -216,7 +216,7 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
   if (!ola::io::ConnectedDescriptor::SetNonBlocking(temp_handle)) {
 #else
   if (!ola::io::ConnectedDescriptor::SetNonBlocking(sd)) {
-#endif
+#endif  // _WIN32
     OLA_WARN << "Failed to mark TCP accept socket as non-blocking";
     return false;
   }
@@ -245,7 +245,7 @@ bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
 #else
   m_handle = closer.Release();
-#endif
+#endif  // _WIN32
   return true;
 }
 
@@ -261,7 +261,7 @@ bool TCPAcceptingSocket::Close() {
     if (closesocket(m_handle.m_handle.m_fd)) {
 #else
     if (close(m_handle)) {
-#endif
+#endif  // _WIN32
       OLA_WARN << "close() failed " << strerror(errno);
       ret = false;
     }
@@ -288,13 +288,13 @@ void TCPAcceptingSocket::PerformRead() {
                     &length);
 #else
     int sd = accept(m_handle, (struct sockaddr*) &cli_address, &length);
-#endif
+#endif  // _WIN32
     if (sd < 0) {
 #ifdef _WIN32
       if (WSAGetLastError() == WSAEWOULDBLOCK) {
 #else
       if (errno == EWOULDBLOCK) {
-#endif
+#endif  // _WIN32
         return;
       }
 
@@ -312,7 +312,7 @@ void TCPAcceptingSocket::PerformRead() {
       closesocket(sd);
 #else
       close(sd);
-#endif
+#endif  // _WIN32
     }
   }
 }
@@ -325,7 +325,7 @@ GenericSocketAddress TCPAcceptingSocket::GetLocalAddress() const {
   return ola::network::GetLocalAddress(m_handle.m_handle.m_fd);
 #else
   return ola::network::GetLocalAddress(m_handle);
-#endif
+#endif  // _WIN32
 }
 }  // namespace network
 }  // namespace ola

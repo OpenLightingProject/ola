@@ -19,18 +19,16 @@
 /*jshint browser: true, jquery: true*/
 /* global ola */
 ola.controller('pluginInfoCtrl',
-  ['$scope', '$routeParams', '$ola',
-    function($scope, $routeParams, $ola) {
+  ['$scope', '$routeParams', '$ola', '$sce', 'marked',
+    function($scope, $routeParams, $ola, $sce, marked) {
       'use strict';
       $ola.get.InfoPlugin($routeParams.id).then(function(data) {
         $scope.active = data.active;
         $scope.enabled = data.enabled;
         $scope.name = data.name;
-        //TODO(Dave_o): clean this up and use proper angular
-        var description = document.getElementById('description');
-        description.textContent = data.description;
-        description.innerHTML =
-          description.innerHTML.replace(/\\n/g, '<br />');
+        $scope.description = $sce.trustAsHtml(
+          marked(data.description.replace(/\\n/g, '\n'))
+        );
       });
 
       $scope.stateColor = function(val) {

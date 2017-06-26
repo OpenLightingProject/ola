@@ -320,9 +320,10 @@ void UsbProWidgetDetector::DiscoveryTimeout(DispatchingUsbProWidget *widget) {
         CompleteWidgetDiscovery(widget);
         break;
       default:
-        OLA_WARN << "Usb Widget didn't respond to messages, esta id "
+        OLA_WARN << "USB Widget didn't respond to messages, esta id "
                  << iter->second.information.esta_id << ", device id "
                  << iter->second.information.device_id;
+        OLA_WARN << "Is device in USB Controller mode if it's a Goddard?";
         ola::io::ConnectedDescriptor *descriptor =
             widget->GetDescriptor();
         descriptor->SetOnClose(NULL);
@@ -453,12 +454,15 @@ void UsbProWidgetDetector::HandleHardwareVersionResponse(
     return;
   }
 
+  OLA_DEBUG << "Hardware version response was " << ToHex(data[0]);
+
   WidgetStateMap::iterator iter = m_widgets.find(widget);
   if (iter == m_widgets.end()) {
     return;
   }
   RemoveTimeout(&iter->second);
-  if (data[0] == DMX_PRO_MKII_VERSION) {
+  if ((data[0] == DMX_PRO_MKII_VERSION) ||
+      (data[0] == DMX_PRO_MKII_B_VERSION)) {
     iter->second.information.dual_port = true;
     SendAPIRequest(widget);
   }

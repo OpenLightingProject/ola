@@ -78,7 +78,7 @@ class BaseClientWrapper {
 
   /**
    * @brief Reset the connection to the server.
-   * @returns true if the setup succeeded, false otherwise.
+   * @returns true if the reset succeeded, false otherwise.
    */
   bool Cleanup();
 
@@ -145,7 +145,9 @@ class GenericClientWrapper: public BaseClientWrapper {
             ola::network::IPV4Address::Loopback(),
            OLA_DEFAULT_PORT)));
     }
-    m_socket->SetNoDelay();
+    if (m_socket.get()) {
+      m_socket->SetNoDelay();
+    }
   }
 };
 

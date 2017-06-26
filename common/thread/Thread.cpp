@@ -20,7 +20,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <errno.h>
 #include <pthread.h>
@@ -28,7 +28,7 @@
 
 #ifdef HAVE_PTHREAD_NP_H
 #include <pthread_np.h>
-#endif
+#endif  // HAVE_PTHREAD_NP_H
 
 
 #include <string>
@@ -171,19 +171,21 @@ void *Thread::_InternalRun() {
 // There are 4 different variants of pthread_setname_np !
 #ifdef HAVE_PTHREAD_SETNAME_NP_2
   pthread_setname_np(pthread_self(), truncated_name.c_str());
-#endif
+#endif  // HAVE_PTHREAD_SETNAME_NP_2
 
-#ifdef HAVE_PTHREAD_SET_NAME_NP_2
+#if defined(HAVE_PTHREAD_SET_NAME_NP_2) || \
+    defined(HAVE_PTHREAD_SET_NAME_NP_2_VOID)
   pthread_set_name_np(pthread_self(), truncated_name.c_str());
-#endif
+#endif  // defined(HAVE_PTHREAD_SET_NAME_NP_2) ||
+// defined(HAVE_PTHREAD_SET_NAME_NP_2_VOID)
 
 #ifdef HAVE_PTHREAD_SETNAME_NP_1
   pthread_setname_np(truncated_name.c_str());
-#endif
+#endif  // HAVE_PTHREAD_SETNAME_NP_1
 
 #ifdef HAVE_PTHREAD_SETNAME_NP_3
   pthread_setname_np(pthread_self(), truncated_name.c_str(), NULL);
-#endif
+#endif  // HAVE_PTHREAD_SETNAME_NP_3
 
   int policy;
   struct sched_param param;

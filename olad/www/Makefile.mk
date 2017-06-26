@@ -7,6 +7,8 @@ imgdir = $(www_datadir)/new/img
 jquerydir = $(www_datadir)/new/libs/jquery/js
 angularroutedir = $(www_datadir)/new/libs/angular-route/js
 angulardir = $(www_datadir)/new/libs/angular/js
+markeddir = $(www_datadir)/new/libs/marked/js
+angularmarkeddir = $(www_datadir)/new/libs/angular-marked/js
 bootcssdir = $(www_datadir)/new/libs/bootstrap/css
 bootjsdir = $(www_datadir)/new/libs/bootstrap/js
 bootfontsdir = $(www_datadir)/new/libs/bootstrap/fonts
@@ -61,6 +63,7 @@ dist_views_DATA = \
     olad/www/new/views/universe-settings.html \
     olad/www/new/views/universes.html
 dist_js_DATA = \
+    olad/www/new/js/app.js \
     olad/www/new/js/app.min.js \
     olad/www/new/js/app.min.js.map
 dist_css_DATA = \
@@ -126,6 +129,10 @@ dist_angularroute_DATA = \
     olad/www/new/libs/angular-route/js/angular-route.min.js
 dist_angular_DATA = \
     olad/www/new/libs/angular/js/angular.min.js
+dist_marked_DATA = \
+    olad/www/new/libs/marked/js/marked.min.js
+dist_angularmarked_DATA = \
+    olad/www/new/libs/angular-marked/js/angular-marked.min.js
 dist_bootjs_DATA = \
     olad/www/new/libs/bootstrap/js/bootstrap.min.js
 dist_bootfonts_DATA = \
