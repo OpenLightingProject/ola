@@ -3,10 +3,10 @@ EXTRA_DIST += \
     tools/ola_trigger/config.ypp
 
 dist_noinst_DATA += \
+    tools/ola_trigger/contrib/crelay.conf \
     tools/ola_trigger/contrib/mac_itunes.conf \
     tools/ola_trigger/contrib/mac_volume.conf \
     tools/ola_trigger/contrib/philips_hue_osram_lightify.conf \
-    tools/ola_trigger/contrib/crelay.conf \
     tools/ola_trigger/example.conf \
     tools/ola_trigger/test_file.conf
 
@@ -74,7 +74,7 @@ tools_ola_trigger_ActionTester_LDADD = $(COMMON_TESTING_LIBS) \
 test_scripts += tools/ola_trigger/FileValidateTest.sh
 
 tools/ola_trigger/FileValidateTest.sh: tools/ola_trigger/Makefile.mk
-	echo "for FILE in ${srcdir}/tools/ola_trigger/example.conf ${srcdir}/tools/ola_trigger/test_file.conf ${srcdir}/tools/ola_trigger/contrib/mac_volume.conf ${srcdir}/tools/ola_trigger/contrib/mac_itunes.conf ${srcdir}/tools/ola_trigger/contrib/philips_hue_osram_lightify.conf ${srcdir}/tools/ola_trigger/contrib/crelay.conf; do echo \"Checking \$$FILE\"; ${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate \$$FILE; STATUS=\$$?; if [ \$$STATUS -ne 0 ]; then echo \"FAIL: \$$FILE caused ola_trigger to exit with status \$$STATUS\"; exit \$$STATUS; fi; done; exit 0" > tools/ola_trigger/FileValidateTest.sh
+	echo "for FILE in ${srcdir}/tools/ola_trigger/example.conf ${srcdir}/tools/ola_trigger/test_file.conf ${srcdir}/tools/ola_trigger/contrib/crelay.conf ${srcdir}/tools/ola_trigger/contrib/mac_volume.conf ${srcdir}/tools/ola_trigger/contrib/mac_itunes.conf ${srcdir}/tools/ola_trigger/contrib/philips_hue_osram_lightify.conf; do echo \"Checking \$$FILE\"; ${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate \$$FILE; STATUS=\$$?; if [ \$$STATUS -ne 0 ]; then echo \"FAIL: \$$FILE caused ola_trigger to exit with status \$$STATUS\"; exit \$$STATUS; fi; done; exit 0" > tools/ola_trigger/FileValidateTest.sh
 	chmod +x tools/ola_trigger/FileValidateTest.sh
 
 CLEANFILES += tools/ola_trigger/FileValidateTest.sh
