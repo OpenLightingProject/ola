@@ -239,6 +239,12 @@ class ModelCollector(object):
       'description': data['name'],
       'type': data['type'],
       'supports_recording': data['supports_recording'],
+      'range_min':data['range_min'],
+      'range_max':data['range_max'],
+      'normal_min':data['normal_min'],
+      'normal_max':data['normal_max'],
+      'unit':data['unit'],
+
     })
     self._FetchNextSensor()
 
