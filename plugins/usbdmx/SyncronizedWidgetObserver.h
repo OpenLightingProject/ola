@@ -75,6 +75,10 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
+  bool NewWidget(class ShowJockeyDMXU1 *widget) {
+    return DispatchNewWidget(widget);
+  }
+
   bool NewWidget(class Sunlite *widget) {
     return DispatchNewWidget(widget);
   }
