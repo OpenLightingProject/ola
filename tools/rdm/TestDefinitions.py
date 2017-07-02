@@ -1153,6 +1153,12 @@ class GetParameterDescriptionForNonManufacturerPid(ParamDescriptionTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
+class GetParameterDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
+                                        ParamDescriptionTestFixture):
+  """GET PARAMETER_DESCRIPTION with no argument given."""
+  PID = 'PARAMETER_DESCRIPTION'
+
+
 class GetParameterDescriptionWithExtraData(TestMixins.GetWithDataMixin,
                                            ParamDescriptionTestFixture):
   """GET parameter description with extra param data."""
@@ -1840,64 +1846,8 @@ class AllSubDevicesGetBootSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
   PID = 'BOOT_SOFTWARE_VERSION_LABEL'
 
 
-# DMX Personality & DMX Personality Description
+# DMX Personality
 # -----------------------------------------------------------------------------
-class GetZeroDMXPersonalityDescription(TestMixins.GetZeroUInt8Mixin,
-                                       OptionalParameterTestFixture):
-  """GET DMX_PERSONALITY_DESCRIPTION for personality 0."""
-  PID = 'DMX_PERSONALITY_DESCRIPTION'
-
-
-class GetOutOfRangeDMXPersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
-                                             OptionalParameterTestFixture):
-  """GET the personality description for the N + 1 personality."""
-  PID = 'DMX_PERSONALITY_DESCRIPTION'
-  REQUIRES = ['personality_count']
-  LABEL = 'personalities'
-
-
-class AllSubDevicesGetDMXPersonalityDescription(
-        TestMixins.AllSubDevicesGetMixin,
-        OptionalParameterTestFixture):
-  """Send a Get DMX_PERSONALITY_DESCRIPTION to ALL_SUB_DEVICES."""
-  PID = 'DMX_PERSONALITY_DESCRIPTION'
-  DATA = [1]
-
-
-class GetDMXPersonalityDescription(OptionalParameterTestFixture):
-  """GET the personality description for the current personality."""
-  CATEGORY = TestCategory.DMX_SETUP
-  PID = 'DMX_PERSONALITY_DESCRIPTION'
-  REQUIRES = ['current_personality', 'dmx_footprint', 'personality_count']
-
-  def Test(self):
-    personality_count = self.Property('personality_count')
-    current_personality = self.Property('current_personality')
-    if current_personality == 0 and personality_count > 0:
-      # It's probably off by one, so fix it
-      current_personality = 1
-
-    if personality_count > 0:
-      # Cross check against what we got from device info
-      self.AddIfGetSupported(self.AckGetResult(field_values={
-          'personality': current_personality,
-          'slots_required': self.Property('dmx_footprint'),
-        }))
-      self.SendGet(ROOT_DEVICE, self.pid, [current_personality])
-    else:
-      self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-      self.SendGet(ROOT_DEVICE, self.pid, [1])
-
-  def VerifyResult(self, response, fields):
-    if not response.WasAcked():
-      return
-
-    if ContainsUnprintable(fields['name']):
-      self.AddAdvisory(
-          'Name field in %s contains unprintable characters, was %s' %
-          (self.pid.name, fields['name'].encode('string-escape')))
-
-
 class GetDMXPersonality(OptionalParameterTestFixture):
   """Get the current personality settings."""
   CATEGORY = TestCategory.DMX_SETUP
@@ -1931,51 +1881,6 @@ class GetDMXPersonalityWithData(TestMixins.GetWithDataMixin,
                                 OptionalParameterTestFixture):
   """Get DMX_PERSONALITY with invalid data."""
   PID = 'DMX_PERSONALITY'
-
-
-class GetDMXPersonalityDescriptions(OptionalParameterTestFixture):
-  """Get information about all the personalities."""
-  CATEGORY = TestCategory.DMX_SETUP
-  PID = 'DMX_PERSONALITY_DESCRIPTION'
-  REQUIRES = ['personality_count']
-  PROVIDES = ['personalities']
-
-  def Test(self):
-    self._personalities = []
-    self._personality_count = self.Property('personality_count')
-    self._current_index = 0
-    self._GetPersonality()
-
-  def _GetPersonality(self):
-    self._current_index += 1
-    if self._current_index > self._personality_count:
-      if self._personality_count == 0:
-        self.SetNotRun('No personalities declared')
-      self.SetProperty('personalities', self._personalities)
-      self.Stop()
-      return
-
-    if self._current_index >= MAX_PERSONALITY_NUMBER:
-      # This should never happen because personality_count is a uint8
-      self.SetFailed('Could not find all personalities')
-      self.Stop()
-      return
-
-    self.AddIfGetSupported(self.AckGetResult(
-        field_names=['slots_required', 'name'],
-        field_values={'personality': self._current_index},
-        action=self._GetPersonality))
-    self.SendGet(ROOT_DEVICE, self.pid, [self._current_index])
-
-  def VerifyResult(self, response, fields):
-    """Save the personality for other tests to use."""
-    if response.WasAcked():
-      self._personalities.append(fields)
-
-      if ContainsUnprintable(fields['name']):
-        self.AddAdvisory(
-            'Name field in %s contains unprintable characters, was %s' %
-            (self.pid.name, fields['name'].encode('string-escape')))
 
 
 class SetDMXPersonality(OptionalParameterTestFixture):
@@ -4360,6 +4265,12 @@ class GetCapturePreset(TestMixins.UnsupportedGetMixin,
   PID = 'CAPTURE_PRESET'
 
 
+class GetCapturePresetWithData(TestMixins.UnsupportedGetWithDataMixin,
+                               OptionalParameterTestFixture):
+  """GET CAPTURE_PRESET with data."""
+  PID = 'CAPTURE_PRESET'
+
+
 class SetCapturePreset(OptionalParameterTestFixture):
   """Set Capture preset information."""
   CATEGORY = TestCategory.CONTROL
@@ -4406,6 +4317,13 @@ class SetPresetPlaybackWithNoData(TestMixins.SetWithNoDataMixin,
                                   OptionalParameterTestFixture):
   """Set preset playback with no data."""
   PID = 'PRESET_PLAYBACK'
+
+
+class SetPresetPlaybackWithExtraData(TestMixins.SetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """Send a SET PRESET_PLAYBACK command with extra data."""
+  PID = 'PRESET_PLAYBACK'
+  DATA = 'foobar'
 
 
 class SetPresetPlayback(OptionalParameterTestFixture):
@@ -5539,6 +5457,12 @@ class SetBurnInWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'BURN_IN'
 
 
+class SetBurnInWithExtraData(TestMixins.SetWithDataMixin,
+                             OptionalParameterTestFixture):
+  """Send a SET BURN_IN command with extra data."""
+  PID = 'BURN_IN'
+
+
 class AllSubDevicesGetBurnIn(TestMixins.AllSubDevicesGetMixin,
                              OptionalParameterTestFixture):
   """Get BURN_IN addressed to ALL_SUB_DEVICES."""
@@ -6660,9 +6584,21 @@ class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,
   PID = 'PRESET_STATUS'
 
 
+class GetPresetStatusWithExtraData(TestMixins.GetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """GET PRESET_STATUS with more than 2 bytes of data."""
+  PID = 'PRESET_STATUS'
+
+
 class SetPresetStatusWithNoData(TestMixins.SetWithNoDataMixin,
                                 OptionalParameterTestFixture):
   """Set PRESET_STATUS without any data."""
+  PID = 'PRESET_STATUS'
+
+
+class SetPresetStatusWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET PRESET_STATUS command with extra data."""
   PID = 'PRESET_STATUS'
 
 
@@ -6930,6 +6866,12 @@ class SetAllPresetMergeModes(OptionalParameterTestFixture):
 class SetPresetMergeModeWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set PRESET_MERGEMODE without any data."""
+  PID = 'PRESET_MERGEMODE'
+
+
+class SetPresetMergemodeWithExtraData(TestMixins.SetWithDataMixin,
+                                      OptionalParameterTestFixture):
+  """Send a SET PRESET_MERGEMODE command with extra data."""
   PID = 'PRESET_MERGEMODE'
 
 
