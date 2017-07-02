@@ -10,6 +10,7 @@ includes:
 * DMXter4, DMXter4A & mini DMXter
 * Enttec DMX USB Pro & USB Pro Mk II
 * Robe Universe Interface
+* LumenRadio CRMX Nova TX USB
 
 See https://wiki.openlighting.org/index.php/USB_Protocol_Extensions for 
 more info.

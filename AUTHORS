@@ -14,7 +14,7 @@ Contributors:
   Heikki Junnila, bug fixes for the debian packaging files
   Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
   Lukas Erlinghagen, win32 port.
-  Johan Nilsson, Philips Hue trigger config
+  Johan Nilsson, Philips Hue, Osram Lightify & crelay trigger config
   Joshua Moyerman, ArtNet fixes.
   Masaki Muranaka, various patches
   Nicolas, for the win32 port of libartnet
