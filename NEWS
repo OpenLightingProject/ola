@@ -1,6 +1,6 @@
 x/y/2017 ola-0.10.5
  Features:
- * 
+ * Make some error logs more verbose
 
  API:
  * 
@@ -9,7 +9,10 @@ x/y/2017 ola-0.10.5
  * 
 
  Bugs:
- * 
+ * C++11 compatibility fix (for cppunit 1.14.0) #1244
+ * Always print frames in ola_rdm_get/set, even if we get an error
+ * Ensure man files ship in the correct packages #1276
+ * Check protobuf is old enough, until we fix #1192
 
  Internal:
  *
