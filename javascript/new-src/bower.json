@@ -9,7 +9,9 @@
   "dependencies": {
     "angular": "~1.3.14",
     "bootstrap": "~3.3.1",
-    "angular-route": "~1.3.14"
+    "angular-route": "~1.3.14",
+    "marked": "~0.3.6",
+    "angular-marked": "~1.2.2"
   },
   "exportsOverride": {
     "angular": {
@@ -24,6 +26,12 @@
       "fonts": "dist/fonts/"
     },
     "angular-route": {
+      "js": ["*.min.js"]
+    },
+    "marked": {
+      "js": ["*.min.js"]
+    },
+    "angular-marked": {
       "js": ["*.min.js"]
     }
   }

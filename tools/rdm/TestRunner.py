@@ -19,6 +19,7 @@ import datetime
 import inspect
 import logging
 import time
+from TestState import TestState
 from TimingStats import TimingStats
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
@@ -196,6 +197,7 @@ def GetTestClasses(module):
       continue
     base_classes = [
         ResponderTest.OptionalParameterTestFixture,
+        ResponderTest.ParamDescriptionTestFixture,
         ResponderTest.ResponderTestFixture,
         ResponderTest.TestFixture
     ]
@@ -322,11 +324,15 @@ class TestRunner(object):
 
       logging.debug('%s%s: %s' % (start_header, test, test.__doc__))
 
+      if test.state is TestState.BROKEN:
+        test.LogDebug(' Test broken after init, skipping test.')
+        continue
+
       try:
         for property in test.Requires():
           getattr(device, property)
       except AttributeError:
-        test.LogDebug('Property: %s not found, skipping test.' % property)
+        test.LogDebug(' Property: %s not found, skipping test.' % property)
         tests_completed += 1
         continue
 

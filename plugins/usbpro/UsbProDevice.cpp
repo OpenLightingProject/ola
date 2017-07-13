@@ -146,8 +146,9 @@ void UsbProDevice::Configure(RpcController *controller,
  */
 void UsbProDevice::UpdateParams(unsigned int port_id, bool status,
                                 const usb_pro_parameters &params) {
-  if (port_id >= m_port_params.size())
+  if (port_id >= m_port_params.size()) {
     return;
+  }
 
   if (status) {
     PortParams &port_params = m_port_params[port_id];

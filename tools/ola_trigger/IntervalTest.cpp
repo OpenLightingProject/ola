@@ -34,10 +34,10 @@ class IntervalTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testLowerUpper();
-    void testContains();
-    void testIntersects();
-    void testLessThan();
+  void testLowerUpper();
+  void testContains();
+  void testIntersects();
+  void testLessThan();
 };
 
 
@@ -72,8 +72,9 @@ void IntervalTest::testContains() {
   ValueInterval interval3(234, 255);
   OLA_ASSERT_FALSE(interval3.Contains(0));
   OLA_ASSERT_FALSE(interval3.Contains(233));
-  for (uint8_t i = 234; i != 0; i++)
+  for (uint8_t i = 234; i != 0; i++) {
     OLA_ASSERT(interval3.Contains(i));
+  }
 }
 
 

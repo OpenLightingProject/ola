@@ -93,6 +93,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
   CPPUNIT_TEST(testDmxterWidget);
   CPPUNIT_TEST(testUsbProWidget);
   CPPUNIT_TEST(testUsbProMkIIWidget);
+  CPPUNIT_TEST(testUsbProMkIIBWidget);
   CPPUNIT_TEST(testRobeWidget);
   CPPUNIT_TEST(testUltraDmxWidget);
   CPPUNIT_TEST(testTimeout);
@@ -108,6 +109,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void testDmxterWidget();
     void testUsbProWidget();
     void testUsbProMkIIWidget();
+    void testUsbProMkIIBWidget();
     void testRobeWidget();
     void testUltraDmxWidget();
     void testTimeout();
@@ -393,6 +395,51 @@ void WidgetDetectorThreadTest::testUsbProMkIIWidget() {
       sizeof(get_params_response));
 
   const uint8_t hardware_version = 2;
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::HARDWARE_VERSION_LABEL, NULL, 0,
+      BaseUsbProWidget::HARDWARE_VERSION_LABEL,
+      &hardware_version, sizeof(hardware_version));
+
+  // expect the unlock message and then the port enable
+  const uint8_t unlock_key[] = {0xd7, 0xb2, 0x11, 0x0d};
+  m_endpoint->AddExpectedUsbProMessage(USB_PRO_MKII_API_LABEL, unlock_key,
+                                       sizeof(unlock_key));
+  const uint8_t port_enable[] = {1, 1};
+  m_endpoint->AddExpectedUsbProMessage(SET_PORT_ASSIGNMENTS, port_enable,
+                                       sizeof(port_enable));
+
+  m_expect_dual_port_enttec_widget = true;
+  m_thread->Start();
+  m_thread->WaitUntilRunning();
+  m_ss.Run();
+  OLA_ASSERT_EQ(ENTTEC, m_received_widget_type);
+}
+
+
+/**
+ * Check that we can locate a Usb Pro MK II B widget
+ */
+void WidgetDetectorThreadTest::testUsbProMkIIBWidget() {
+  const uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  uint8_t get_params_request[] = {0, 0};
+  uint8_t get_params_response[] = {4, 1, 9, 1, 1};
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::MANUFACTURER_LABEL,
+                                       NULL, 0);
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::DEVICE_LABEL,
+                                       NULL, 0);
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
+      BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::GET_PARAMS,
+      &get_params_request[0],
+      sizeof(get_params_request),
+      BaseUsbProWidget::GET_PARAMS,
+      get_params_response,
+      sizeof(get_params_response));
+
+  const uint8_t hardware_version = 3;
   m_endpoint->AddExpectedUsbProDataAndReturn(
       BaseUsbProWidget::HARDWARE_VERSION_LABEL, NULL, 0,
       BaseUsbProWidget::HARDWARE_VERSION_LABEL,

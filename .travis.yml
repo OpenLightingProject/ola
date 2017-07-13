@@ -1,5 +1,6 @@
 language: cpp
-sudo: false
+# To get the Trusty image, not actually required
+sudo: required
 script:
  - "bash -ex .travis-ci.sh"
 
@@ -143,6 +144,20 @@ matrix:
         apt:
           packages:
            - *base_build
+    - os: linux
+      dist: trusty
+      env: TASK='pychecker'
+      addons:
+        apt:
+          packages:
+           - *base_build
+    - os: linux
+      dist: trusty
+      env: TASK='pychecker-wip'
+      addons:
+        apt:
+          packages:
+           - *base_build
   allow_failures:
     - os: linux
       dist: trusty
@@ -152,6 +167,9 @@ matrix:
       dist: trusty
       compiler: gcc
       env: TASK='coverity'
+    - os: linux
+      dist: trusty
+      env: TASK='pychecker-wip'
 
 env:
   global:
@@ -192,6 +210,7 @@ install:
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
+  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
