@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * GPIOPort.h
+ * GpioPort.h
  * An OLA GPIO Port.
  * Copyright (C) 2014 Simon Newton
  */
@@ -24,8 +24,8 @@
 #include <string>
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
-#include "plugins/gpio/GPIODevice.h"
-#include "plugins/gpio/GPIODriver.h"
+#include "plugins/gpio/GpioDevice.h"
+#include "plugins/gpio/GpioDriver.h"
 
 namespace ola {
 namespace plugin {
@@ -34,20 +34,20 @@ namespace gpio {
 /**
  * @brief The GPIO Output port.
  */
-class GPIOOutputPort: public BasicOutputPort {
+class GpioOutputPort: public BasicOutputPort {
  public:
   /**
-   * @brief Create a new GPIOOutputPort.
+   * @brief Create a new GpioOutputPort.
    * @param parent The parent device.
-   * @param options the Options for the GPIODriver.
+   * @param options the Options for the GpioDriver.
    */
-  GPIOOutputPort(GPIODevice *parent,
-                 const GPIODriver::Options &options);
+  GpioOutputPort(GpioDevice *parent,
+                 const GpioDriver::Options &options);
 
   /**
    * @brief Destructor.
    */
-  ~GPIOOutputPort() {}
+  ~GpioOutputPort() {}
 
   /**
    * @brief Initialize the port.
@@ -60,9 +60,9 @@ class GPIOOutputPort: public BasicOutputPort {
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
  private:
-  std::auto_ptr<GPIODriver> m_driver;
+  std::auto_ptr<GpioDriver> m_driver;
 
-  DISALLOW_COPY_AND_ASSIGN(GPIOOutputPort);
+  DISALLOW_COPY_AND_ASSIGN(GpioOutputPort);
 };
 }  // namespace gpio
 }  // namespace plugin

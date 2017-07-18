@@ -13,37 +13,45 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * GPIODevice.cpp
- * The GPIO Device.
+ * GpioPort.cpp
+ * An OLA GPIO Port.
  * Copyright (C) 2014 Simon Newton
  */
-#include "plugins/gpio/GPIODevice.h"
 
-#include "plugins/gpio/GPIOPort.h"
-#include "plugins/gpio/GPIOPlugin.h"
-#include "plugins/gpio/GPIODriver.h"
+#include "plugins/gpio/GpioPort.h"
+
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include "ola/StringUtils.h"
+#include "plugins/gpio/GpioDriver.h"
 
 namespace ola {
 namespace plugin {
 namespace gpio {
 
-/*
- * Create a new device
- */
-GPIODevice::GPIODevice(GPIOPlugin *owner,
-                       const GPIODriver::Options &options)
-    : Device(owner, "General Purpose I/O Device"),
-      m_options(options) {
+using std::string;
+using std::vector;
+
+GpioOutputPort::GpioOutputPort(GpioDevice *parent,
+                               const GpioDriver::Options &options)
+    : BasicOutputPort(parent, 1),
+      m_driver(new GpioDriver(options)) {
 }
 
-bool GPIODevice::StartHook() {
-  GPIOOutputPort *port = new GPIOOutputPort(this, m_options);
-  if (!port->Init()) {
-    delete port;
-    return false;
-  }
-  AddPort(port);
-  return true;
+bool GpioOutputPort::Init() {
+  return m_driver->Init();
+}
+
+string GpioOutputPort::Description() const {
+  vector<uint16_t> pins = m_driver->PinList();
+  return "Pins " + ola::StringJoin(", ", pins);
+}
+
+bool GpioOutputPort::WriteDMX(const DmxBuffer &buffer,
+                              OLA_UNUSED uint8_t priority) {
+  return m_driver->SendDmx(buffer);
 }
 }  // namespace gpio
 }  // namespace plugin

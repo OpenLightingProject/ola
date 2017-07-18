@@ -44,7 +44,7 @@
 #endif  // USE_ESPNET
 
 #ifdef USE_GPIO
-#include "plugins/gpio/GPIOPlugin.h"
+#include "plugins/gpio/GpioPlugin.h"
 #endif  // USE_GPIO
 
 #ifdef USE_KARATE
@@ -156,7 +156,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 #endif  // USE_ESPNET
 
 #ifdef USE_GPIO
-  m_plugins.push_back(new ola::plugin::gpio::GPIOPlugin(m_plugin_adaptor));
+  m_plugins.push_back(new ola::plugin::gpio::GpioPlugin(m_plugin_adaptor));
 #endif  // USE_GPIO
 
 #ifdef USE_KARATE

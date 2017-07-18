@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * GPIOPlugin.h
+ * GpioPlugin.h
  * The General Purpose digital I/O plugin.
  * Copyright (C) 2014 Simon Newton
  */
@@ -32,13 +32,13 @@ namespace gpio {
 /**
  * @brief A plugin that drives general purpose digital I/O lines.
  */
-class GPIOPlugin: public ola::Plugin {
+class GpioPlugin: public ola::Plugin {
  public:
   /**
-   * @brief Create a new GPIOPlugin.
+   * @brief Create a new GpioPlugin.
    * @param plugin_adaptor the PluginAdaptor to use
    */
-  explicit GPIOPlugin(class ola::PluginAdaptor *plugin_adaptor)
+  explicit GpioPlugin(class ola::PluginAdaptor *plugin_adaptor)
       : Plugin(plugin_adaptor),
         m_device(NULL) {}
 
@@ -48,7 +48,7 @@ class GPIOPlugin: public ola::Plugin {
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-  class GPIODevice *m_device;
+  class GpioDevice *m_device;
 
   bool StartHook();
   bool StopHook();
@@ -61,7 +61,7 @@ class GPIOPlugin: public ola::Plugin {
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
 
-  DISALLOW_COPY_AND_ASSIGN(GPIOPlugin);
+  DISALLOW_COPY_AND_ASSIGN(GpioPlugin);
 };
 }  // namespace gpio
 }  // namespace plugin

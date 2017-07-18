@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * GPIODriver.cpp
+ * GpioDriver.cpp
  * Uses data in a DMXBuffer to drive GPIO pins.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/gpio/GPIODriver.h"
+#include "plugins/gpio/GpioDriver.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -40,19 +40,19 @@ namespace ola {
 namespace plugin {
 namespace gpio {
 
-const char GPIODriver::GPIO_BASE_DIR[] = "/sys/class/gpio/gpio";
+const char GpioDriver::GPIO_BASE_DIR[] = "/sys/class/gpio/gpio";
 
 using ola::thread::MutexLocker;
 using std::string;
 using std::vector;
 
-GPIODriver::GPIODriver(const Options &options)
+GpioDriver::GpioDriver(const Options &options)
     : m_options(options),
       m_term(false),
       m_dmx_changed(false) {
 }
 
-GPIODriver::~GPIODriver() {
+GpioDriver::~GpioDriver() {
   {
     MutexLocker locker(&m_mutex);
     m_term = true;
@@ -60,18 +60,18 @@ GPIODriver::~GPIODriver() {
   m_cond.Signal();
   Join();
 
-  CloseGPIOFDs();
+  CloseGpioFDs();
 }
 
-bool GPIODriver::Init() {
-  if (!SetupGPIO()) {
+bool GpioDriver::Init() {
+  if (!SetupGpio()) {
     return false;
   }
 
   return Start();
 }
 
-bool GPIODriver::SendDmx(const DmxBuffer &dmx) {
+bool GpioDriver::SendDmx(const DmxBuffer &dmx) {
   {
     MutexLocker locker(&m_mutex);
     // avoid the reference counting
@@ -82,7 +82,7 @@ bool GPIODriver::SendDmx(const DmxBuffer &dmx) {
   return true;
 }
 
-void *GPIODriver::Run() {
+void *GpioDriver::Run() {
   Clock clock;
   DmxBuffer output;
 
@@ -109,13 +109,13 @@ void *GPIODriver::Run() {
     }
     m_mutex.Unlock();
     if (update_pins) {
-      UpdateGPIOPins(output);
+      UpdateGpioPins(output);
     }
   }
   return NULL;
 }
 
-bool GPIODriver::SetupGPIO() {
+bool GpioDriver::SetupGpio() {
   /**
    * This relies on the pins being exported:
    *   echo N > /sys/class/gpio/export
@@ -133,7 +133,7 @@ bool GPIODriver::SetupGPIO() {
       break;
     }
 
-    GPIOPin pin = {pin_fd, UNDEFINED, false};
+    GpioPin pin = {pin_fd, UNDEFINED, false};
 
     // Set dir
     str.str("");
@@ -154,13 +154,13 @@ bool GPIODriver::SetupGPIO() {
   }
 
   if (failed) {
-    CloseGPIOFDs();
+    CloseGpioFDs();
     return false;
   }
   return true;
 }
 
-bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
+bool GpioDriver::UpdateGpioPins(const DmxBuffer &dmx) {
   enum Action {
     TURN_ON,
     TURN_OFF,
@@ -202,8 +202,8 @@ bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
   return true;
 }
 
-void GPIODriver::CloseGPIOFDs() {
-  GPIOPins::iterator iter = m_gpio_pins.begin();
+void GpioDriver::CloseGpioFDs() {
+  GpioPins::iterator iter = m_gpio_pins.begin();
   for (; iter != m_gpio_pins.end(); ++iter) {
     close(iter->fd);
   }

@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * GPIOPlugin.cpp
+ * GpioPlugin.cpp
  * The General Purpose digital I/O plugin.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/gpio/GPIOPlugin.h"
+#include "plugins/gpio/GpioPlugin.h"
 
 #include <memory>
 #include <string>
@@ -26,9 +26,9 @@
 #include "olad/Preferences.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
-#include "plugins/gpio/GPIODevice.h"
-#include "plugins/gpio/GPIODriver.h"
-#include "plugins/gpio/GPIOPluginDescription.h"
+#include "plugins/gpio/GpioDevice.h"
+#include "plugins/gpio/GpioDriver.h"
+#include "plugins/gpio/GpioPluginDescription.h"
 
 namespace ola {
 namespace plugin {
@@ -38,15 +38,15 @@ using std::auto_ptr;
 using std::string;
 using std::vector;
 
-const char GPIOPlugin::GPIO_PINS_KEY[] = "gpio_pins";
-const char GPIOPlugin::GPIO_SLOT_OFFSET_KEY[] = "gpio_slot_offset";
-const char GPIOPlugin::GPIO_TURN_OFF_KEY[] = "gpio_turn_off";
-const char GPIOPlugin::GPIO_TURN_ON_KEY[] = "gpio_turn_on";
-const char GPIOPlugin::PLUGIN_NAME[] = "GPIO";
-const char GPIOPlugin::PLUGIN_PREFIX[] = "gpio";
+const char GpioPlugin::GPIO_PINS_KEY[] = "gpio_pins";
+const char GpioPlugin::GPIO_SLOT_OFFSET_KEY[] = "gpio_slot_offset";
+const char GpioPlugin::GPIO_TURN_OFF_KEY[] = "gpio_turn_off";
+const char GpioPlugin::GPIO_TURN_ON_KEY[] = "gpio_turn_on";
+const char GpioPlugin::PLUGIN_NAME[] = "GPIO";
+const char GpioPlugin::PLUGIN_PREFIX[] = "gpio";
 
-bool GPIOPlugin::StartHook() {
-  GPIODriver::Options options;
+bool GpioPlugin::StartHook() {
+  GpioDriver::Options options;
   if (!StringToInt(m_preferences->GetValue(GPIO_TURN_ON_KEY),
                    &options.turn_on)) {
     OLA_WARN << "Invalid value for " << GPIO_TURN_ON_KEY;
@@ -91,7 +91,7 @@ bool GPIOPlugin::StartHook() {
     return true;
   }
 
-  std::auto_ptr<GPIODevice> device(new GPIODevice(this, options));
+  std::auto_ptr<GpioDevice> device(new GpioDevice(this, options));
   if (!device->Start()) {
     return false;
   }
@@ -101,7 +101,7 @@ bool GPIOPlugin::StartHook() {
   return true;
 }
 
-bool GPIOPlugin::StopHook() {
+bool GpioPlugin::StopHook() {
   if (m_device) {
     m_plugin_adaptor->UnregisterDevice(m_device);
     m_device->Stop();
@@ -111,11 +111,11 @@ bool GPIOPlugin::StopHook() {
   return true;
 }
 
-string GPIOPlugin::Description() const {
+string GpioPlugin::Description() const {
   return plugin_description;
 }
 
-bool GPIOPlugin::SetDefaultPreferences() {
+bool GpioPlugin::SetDefaultPreferences() {
   bool save = false;
 
   if (!m_preferences)

@@ -13,49 +13,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * GPIODevice.h
+ * GpioDevice.cpp
  * The GPIO Device.
  * Copyright (C) 2014 Simon Newton
  */
+#include "plugins/gpio/GpioDevice.h"
 
-#ifndef PLUGINS_GPIO_GPIODEVICE_H_
-#define PLUGINS_GPIO_GPIODEVICE_H_
-
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "olad/Device.h"
-#include "plugins/gpio/GPIODriver.h"
+#include "plugins/gpio/GpioPort.h"
+#include "plugins/gpio/GpioPlugin.h"
+#include "plugins/gpio/GpioDriver.h"
 
 namespace ola {
 namespace plugin {
 namespace gpio {
 
-/**
- * @brief The GPIO Device
+/*
+ * Create a new device
  */
-class GPIODevice: public ola::Device {
- public:
-  /**
-   * @brief Create a new GPIODevice.
-   * @param owner The Plugin that owns this device.
-   * @param options the options to use for the new device.
-   */
-  GPIODevice(class GPIOPlugin *owner,
-             const GPIODriver::Options &options);
+GpioDevice::GpioDevice(GpioPlugin *owner,
+                       const GpioDriver::Options &options)
+    : Device(owner, "General Purpose I/O Device"),
+      m_options(options) {
+}
 
-  std::string DeviceId() const { return "1"; }
-
- protected:
-  bool StartHook();
-
- private:
-  const GPIODriver::Options m_options;
-
-  DISALLOW_COPY_AND_ASSIGN(GPIODevice);
-};
+bool GpioDevice::StartHook() {
+  GpioOutputPort *port = new GpioOutputPort(this, m_options);
+  if (!port->Init()) {
+    delete port;
+    return false;
+  }
+  AddPort(port);
+  return true;
+}
 }  // namespace gpio
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_GPIO_GPIODEVICE_H_

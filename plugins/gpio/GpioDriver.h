@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * GPIODriver.h
+ * GpioDriver.h
  * Uses data in a DMXBuffer to drive GPIO pins.
  * Copyright (C) 2014 Simon Newton
  */
@@ -35,7 +35,7 @@ namespace gpio {
 /**
  * @brief Uses data in a DMXBuffer to drive GPIO pins.
  */
-class GPIODriver : private ola::thread::Thread {
+class GpioDriver : private ola::thread::Thread {
  public:
   /**
    * @brief The Options.
@@ -66,18 +66,18 @@ class GPIODriver : private ola::thread::Thread {
   };
 
   /**
-   * @brief Create a new GPIODriver.
+   * @brief Create a new GpioDriver.
    * @param options the Options struct.
    */
-  explicit GPIODriver(const Options &options);
+  explicit GpioDriver(const Options &options);
 
   /**
    * @brief Destructor.
    */
-  ~GPIODriver();
+  ~GpioDriver();
 
   /**
-   * @brief Initialize the GPIODriver.
+   * @brief Initialize the GpioDriver.
    * @returns true is successful, false otherwise.
    */
   bool Init();
@@ -98,22 +98,22 @@ class GPIODriver : private ola::thread::Thread {
   void *Run();
 
  private:
-  enum GPIOState {
+  enum GpioState {
     ON,
     OFF,
     UNDEFINED,
   };
 
-  struct GPIOPin {
+  struct GpioPin {
     int fd;
-    GPIOState state;
+    GpioState state;
     bool last_value;
   };
 
-  typedef std::vector<GPIOPin> GPIOPins;
+  typedef std::vector<GpioPin> GpioPins;
 
   const Options m_options;
-  GPIOPins m_gpio_pins;
+  GpioPins m_gpio_pins;
 
   DmxBuffer m_buffer;
   bool m_term;  // GUARDED_BY(m_mutex);
@@ -121,13 +121,13 @@ class GPIODriver : private ola::thread::Thread {
   ola::thread::Mutex m_mutex;
   ola::thread::ConditionVariable m_cond;
 
-  bool SetupGPIO();
-  bool UpdateGPIOPins(const DmxBuffer &dmx);
-  void CloseGPIOFDs();
+  bool SetupGpio();
+  bool UpdateGpioPins(const DmxBuffer &dmx);
+  void CloseGpioFDs();
 
   static const char GPIO_BASE_DIR[];
 
-  DISALLOW_COPY_AND_ASSIGN(GPIODriver);
+  DISALLOW_COPY_AND_ASSIGN(GpioDriver);
 };
 }  // namespace gpio
 }  // namespace plugin
