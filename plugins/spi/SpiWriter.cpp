@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIWriter.cpp
+ * SpiWriter.cpp
  * This writes data to a SPI device.
  * Copyright (C) 2013 Simon Newton
  */
@@ -32,7 +32,7 @@
 #include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
-#include "plugins/spi/SPIWriter.h"
+#include "plugins/spi/SpiWriter.h"
 
 namespace ola {
 namespace plugin {
@@ -41,13 +41,13 @@ namespace spi {
 using ola::thread::MutexLocker;
 using std::string;
 
-const uint8_t SPIWriter::SPI_BITS_PER_WORD = 8;
-const uint8_t SPIWriter::SPI_MODE = 0;
-const char SPIWriter::SPI_DEVICE_KEY[] = "device";
-const char SPIWriter::SPI_ERROR_VAR[] = "spi-write-errors";
-const char SPIWriter::SPI_WRITE_VAR[] = "spi-writes";
+const uint8_t SpiWriter::SPI_BITS_PER_WORD = 8;
+const uint8_t SpiWriter::SPI_MODE = 0;
+const char SpiWriter::SPI_DEVICE_KEY[] = "device";
+const char SpiWriter::SPI_ERROR_VAR[] = "spi-write-errors";
+const char SpiWriter::SPI_WRITE_VAR[] = "spi-writes";
 
-SPIWriter::SPIWriter(const string &spi_device,
+SpiWriter::SpiWriter(const string &spi_device,
                      const Options &options,
                      ExportMap *export_map)
     : m_device_path(spi_device),
@@ -68,12 +68,12 @@ SPIWriter::SPIWriter(const string &spi_device,
   }
 }
 
-SPIWriter::~SPIWriter() {
+SpiWriter::~SpiWriter() {
   if (m_fd >= 0)
     close(m_fd);
 }
 
-bool SPIWriter::Init() {
+bool SpiWriter::Init() {
   int fd;
   if (!ola::io::Open(m_device_path, O_RDWR, &fd)) {
     return false;
@@ -104,7 +104,7 @@ bool SPIWriter::Init() {
   return true;
 }
 
-bool SPIWriter::WriteSPIData(const uint8_t *data, unsigned int length) {
+bool SpiWriter::WriteSpiData(const uint8_t *data, unsigned int length) {
   struct spi_ioc_transfer spi;
   memset(&spi, 0, sizeof(spi));
   spi.tx_buf = reinterpret_cast<__u64>(data);

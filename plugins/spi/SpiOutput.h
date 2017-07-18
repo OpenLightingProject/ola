@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIOutput.h
+ * SpiOutput.h
  * An RDM-controllable SPI device. Takes up to one universe of DMX.
  * Copyright (C) 2013 Simon Newton
  */
@@ -36,7 +36,7 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
+class SpiOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
   struct Options {
     std::string device_label;
@@ -50,10 +50,10 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     }
   };
 
-  SPIOutput(const ola::rdm::UID &uid,
-            class SPIBackendInterface *backend,
+  SpiOutput(const ola::rdm::UID &uid,
+            class SpiBackendInterface *backend,
             const Options &options);
-  ~SPIOutput();
+  ~SpiOutput();
 
   std::string GetDeviceLabel() const;
   bool SetDeviceLabel(const std::string &device_label);
@@ -75,7 +75,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   /**
    * The RDM Operations for the MovingLightResponder.
    */
-  class RDMOps : public ola::rdm::ResponderOps<SPIOutput> {
+  class RDMOps : public ola::rdm::ResponderOps<SpiOutput> {
    public:
     static RDMOps *Instance() {
       if (!instance)
@@ -84,12 +84,12 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     }
 
    private:
-    RDMOps() : ola::rdm::ResponderOps<SPIOutput>(PARAM_HANDLERS) {}
+    RDMOps() : ola::rdm::ResponderOps<SpiOutput>(PARAM_HANDLERS) {}
 
     static RDMOps *instance;
   };
 
-  class SPIBackendInterface *m_backend;
+  class SpiBackendInterface *m_backend;
   const uint8_t m_output_number;
   std::string m_spi_device_name;
   const ola::rdm::UID m_uid;
@@ -115,7 +115,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   void CombinedAPA102Control(const DmxBuffer &buffer);
 
   unsigned int LPD8806BufferSize() const;
-  void WriteSPIData(const uint8_t *data, unsigned int length);
+  void WriteSpiData(const uint8_t *data, unsigned int length);
 
   // RDM methods
   ola::rdm::RDMResponse *GetDeviceInfo(
@@ -187,7 +187,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   static const uint16_t APA102_SPI_BYTES_PER_PIXEL;
   static const uint16_t APA102_START_FRAME_BYTES;
 
-  static const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
+  static const ola::rdm::ResponderOps<SpiOutput>::ParamHandler
       PARAM_HANDLERS[];
 };
 }  // namespace spi

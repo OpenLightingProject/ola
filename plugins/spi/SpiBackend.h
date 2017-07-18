@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIBackend.h
+ * SpiBackend.h
  * The backend for SPI output. These are the classes which write the data to
  * the SPI bus.
  * Copyright (C) 2013 Simon Newton
@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-#include "plugins/spi/SPIWriter.h"
+#include "plugins/spi/SpiWriter.h"
 
 namespace ola {
 namespace plugin {
@@ -37,9 +37,9 @@ namespace spi {
 /**
  * The interface for all SPI Backends.
  */
-class SPIBackendInterface {
+class SpiBackendInterface {
  public:
-  virtual ~SPIBackendInterface() {}
+  virtual ~SpiBackendInterface() {}
 
   virtual uint8_t *Checkout(uint8_t output, unsigned int length) = 0;
   virtual uint8_t *Checkout(uint8_t output,
@@ -61,7 +61,7 @@ class SPIBackendInterface {
  * A HardwareBackend which uses GPIO pins and an external de-multiplexer
  */
 class HardwareBackend : public ola::thread::Thread,
-                        public SPIBackendInterface {
+                        public SpiBackendInterface {
  public:
   struct Options {
     // Which GPIO bits to use to select the output. The number of outputs
@@ -70,7 +70,7 @@ class HardwareBackend : public ola::thread::Thread,
   };
 
   HardwareBackend(const Options &options,
-                  SPIWriterInterface *writer,
+                  SpiWriterInterface *writer,
                   ExportMap *export_map);
   ~HardwareBackend();
 
@@ -126,7 +126,7 @@ class HardwareBackend : public ola::thread::Thread,
   typedef std::vector<int> GPIOFds;
   typedef std::vector<OutputData*> Outputs;
 
-  SPIWriterInterface *m_spi_writer;
+  SpiWriterInterface *m_spi_writer;
   UIntMap *m_drop_map;
   const uint8_t m_output_count;
   ola::thread::Mutex m_mutex;
@@ -151,7 +151,7 @@ class HardwareBackend : public ola::thread::Thread,
  * An SPI Backend which uses a software multipliexer. This accumulates all data
  * into a single buffer and then writes it to the SPI bus.
  */
-class SoftwareBackend : public SPIBackendInterface,
+class SoftwareBackend : public SpiBackendInterface,
                         public ola::thread::Thread {
  public:
   struct Options {
@@ -170,7 +170,7 @@ class SoftwareBackend : public SPIBackendInterface,
   };
 
   SoftwareBackend(const Options &options,
-                  SPIWriterInterface *writer,
+                  SpiWriterInterface *writer,
                   ExportMap *export_map);
   ~SoftwareBackend();
 
@@ -191,7 +191,7 @@ class SoftwareBackend : public SPIBackendInterface,
   void* Run();
 
  private:
-  SPIWriterInterface *m_spi_writer;
+  SpiWriterInterface *m_spi_writer;
   UIntMap *m_drop_map;
   ola::thread::Mutex m_mutex;
   ola::thread::ConditionVariable m_cond_var;
@@ -210,10 +210,10 @@ class SoftwareBackend : public SPIBackendInterface,
  * A fake backend used for testing. If we had gmock this would be much
  * easier...
  */
-class FakeSPIBackend : public SPIBackendInterface {
+class FakeSpiBackend : public SpiBackendInterface {
  public:
-  explicit FakeSPIBackend(unsigned int outputs);
-  ~FakeSPIBackend();
+  explicit FakeSpiBackend(unsigned int outputs);
+  ~FakeSpiBackend();
 
   uint8_t *Checkout(uint8_t output, unsigned int length) {
     return Checkout(output, length, 0);

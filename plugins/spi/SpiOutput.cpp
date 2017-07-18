@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIOutput.cpp
+ * SpiOutput.cpp
  * An RDM-controllable SPI device. Takes up to one universe of DMX.
  * Copyright (C) 2013 Simon Newton
  *
@@ -46,8 +46,8 @@
 #include "ola/rdm/UIDSet.h"
 #include "ola/stl/STLUtils.h"
 
-#include "plugins/spi/SPIBackend.h"
-#include "plugins/spi/SPIOutput.h"
+#include "plugins/spi/SpiBackend.h"
+#include "plugins/spi/SpiOutput.h"
 
 namespace ola {
 namespace plugin {
@@ -74,101 +74,101 @@ using std::min;
 using std::string;
 using std::vector;
 
-const uint16_t SPIOutput::SPI_DELAY = 0;
-const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;
-const uint8_t SPIOutput::SPI_MODE = 0;
+const uint16_t SpiOutput::SPI_DELAY = 0;
+const uint8_t SpiOutput::SPI_BITS_PER_WORD = 8;
+const uint8_t SpiOutput::SPI_MODE = 0;
 
 /**
  * These constants are used to determine the number of DMX Slots per pixel
  * The p9813 uses another byte preceding each of the three bytes as a kind
  * of header.
  */
-const uint16_t SPIOutput::WS2801_SLOTS_PER_PIXEL = 3;
-const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
-const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
-const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
+const uint16_t SpiOutput::WS2801_SLOTS_PER_PIXEL = 3;
+const uint16_t SpiOutput::LPD8806_SLOTS_PER_PIXEL = 3;
+const uint16_t SpiOutput::P9813_SLOTS_PER_PIXEL = 3;
+const uint16_t SpiOutput::APA102_SLOTS_PER_PIXEL = 3;
 
 // Number of bytes that each pixel uses on the SPI wires
 // (if it differs from 1:1 with colors)
-const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
-const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
+const uint16_t SpiOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
+const uint16_t SpiOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
 
-const uint16_t SPIOutput::APA102_START_FRAME_BYTES = 4;
+const uint16_t SpiOutput::APA102_START_FRAME_BYTES = 4;
 
-SPIOutput::RDMOps *SPIOutput::RDMOps::instance = NULL;
+SpiOutput::RDMOps *SpiOutput::RDMOps::instance = NULL;
 
-const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
-    SPIOutput::PARAM_HANDLERS[] = {
+const ola::rdm::ResponderOps<SpiOutput>::ParamHandler
+    SpiOutput::PARAM_HANDLERS[] = {
   { ola::rdm::PID_DEVICE_INFO,
-    &SPIOutput::GetDeviceInfo,
+    &SpiOutput::GetDeviceInfo,
     NULL},
   { ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
-    &SPIOutput::GetProductDetailList,
+    &SpiOutput::GetProductDetailList,
     NULL},
   { ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
-    &SPIOutput::GetDeviceModelDescription,
+    &SpiOutput::GetDeviceModelDescription,
     NULL},
   { ola::rdm::PID_MANUFACTURER_LABEL,
-    &SPIOutput::GetManufacturerLabel,
+    &SpiOutput::GetManufacturerLabel,
     NULL},
   { ola::rdm::PID_DEVICE_LABEL,
-    &SPIOutput::GetDeviceLabel,
-    &SPIOutput::SetDeviceLabel},
+    &SpiOutput::GetDeviceLabel,
+    &SpiOutput::SetDeviceLabel},
   { ola::rdm::PID_SOFTWARE_VERSION_LABEL,
-    &SPIOutput::GetSoftwareVersionLabel,
+    &SpiOutput::GetSoftwareVersionLabel,
     NULL},
   { ola::rdm::PID_DMX_PERSONALITY,
-    &SPIOutput::GetDmxPersonality,
-    &SPIOutput::SetDmxPersonality},
+    &SpiOutput::GetDmxPersonality,
+    &SpiOutput::SetDmxPersonality},
   { ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
-    &SPIOutput::GetPersonalityDescription,
+    &SpiOutput::GetPersonalityDescription,
     NULL},
   { ola::rdm::PID_DMX_START_ADDRESS,
-    &SPIOutput::GetDmxStartAddress,
-    &SPIOutput::SetDmxStartAddress},
+    &SpiOutput::GetDmxStartAddress,
+    &SpiOutput::SetDmxStartAddress},
   { ola::rdm::PID_IDENTIFY_DEVICE,
-    &SPIOutput::GetIdentify,
-    &SPIOutput::SetIdentify},
+    &SpiOutput::GetIdentify,
+    &SpiOutput::SetIdentify},
 #ifdef HAVE_GETLOADAVG
   { ola::rdm::PID_SENSOR_DEFINITION,
-    &SPIOutput::GetSensorDefinition,
+    &SpiOutput::GetSensorDefinition,
     NULL},
   { ola::rdm::PID_SENSOR_VALUE,
-    &SPIOutput::GetSensorValue,
-    &SPIOutput::SetSensorValue},
+    &SpiOutput::GetSensorValue,
+    &SpiOutput::SetSensorValue},
   { ola::rdm::PID_RECORD_SENSORS,
     NULL,
-    &SPIOutput::RecordSensor},
+    &SpiOutput::RecordSensor},
 #endif  // HAVE_GETLOADAVG
   { ola::rdm::PID_LIST_INTERFACES,
-    &SPIOutput::GetListInterfaces,
+    &SpiOutput::GetListInterfaces,
     NULL},
   { ola::rdm::PID_INTERFACE_LABEL,
-    &SPIOutput::GetInterfaceLabel,
+    &SpiOutput::GetInterfaceLabel,
     NULL},
   { ola::rdm::PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
-    &SPIOutput::GetInterfaceHardwareAddressType1,
+    &SpiOutput::GetInterfaceHardwareAddressType1,
     NULL},
   { ola::rdm::PID_IPV4_CURRENT_ADDRESS,
-    &SPIOutput::GetIPV4CurrentAddress,
+    &SpiOutput::GetIPV4CurrentAddress,
     NULL},
   { ola::rdm::PID_IPV4_DEFAULT_ROUTE,
-    &SPIOutput::GetIPV4DefaultRoute,
+    &SpiOutput::GetIPV4DefaultRoute,
     NULL},
   { ola::rdm::PID_DNS_HOSTNAME,
-    &SPIOutput::GetDNSHostname,
+    &SpiOutput::GetDNSHostname,
     NULL},
   { ola::rdm::PID_DNS_DOMAIN_NAME,
-    &SPIOutput::GetDNSDomainName,
+    &SpiOutput::GetDNSDomainName,
     NULL},
   { ola::rdm::PID_DNS_NAME_SERVER,
-    &SPIOutput::GetDNSNameServer,
+    &SpiOutput::GetDNSNameServer,
     NULL},
   { 0, NULL, NULL},
 };
 
 
-SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
+SpiOutput::SpiOutput(const UID &uid, SpiBackendInterface *backend,
                      const Options &options)
     : m_backend(backend),
       m_output_number(options.output_number),
@@ -213,33 +213,33 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   m_network_manager.reset(new ola::rdm::NetworkManager());
 }
 
-SPIOutput::~SPIOutput() {
+SpiOutput::~SpiOutput() {
   STLDeleteElements(&m_sensors);
 }
 
 
-string SPIOutput::GetDeviceLabel() const {
+string SpiOutput::GetDeviceLabel() const {
   return m_device_label;
 }
 
-bool SPIOutput::SetDeviceLabel(const string &device_label) {
+bool SpiOutput::SetDeviceLabel(const string &device_label) {
   m_device_label = device_label;
   return true;
 }
 
-uint8_t SPIOutput::GetPersonality() const {
+uint8_t SpiOutput::GetPersonality() const {
   return m_personality_manager->ActivePersonalityNumber();
 }
 
-bool SPIOutput::SetPersonality(uint16_t personality) {
+bool SpiOutput::SetPersonality(uint16_t personality) {
   return m_personality_manager->SetActivePersonality(personality);
 }
 
-uint16_t SPIOutput::GetStartAddress() const {
+uint16_t SpiOutput::GetStartAddress() const {
   return m_start_address;
 }
 
-bool SPIOutput::SetStartAddress(uint16_t address) {
+bool SpiOutput::SetStartAddress(uint16_t address) {
   uint16_t footprint = m_personality_manager->ActivePersonalityFootprint();
   uint16_t end_address = DMX_UNIVERSE_SIZE - footprint + 1;
   if (address == 0 || address > end_address || footprint == 0) {
@@ -249,7 +249,7 @@ bool SPIOutput::SetStartAddress(uint16_t address) {
   return true;
 }
 
-string SPIOutput::Description() const {
+string SpiOutput::Description() const {
   std::ostringstream str;
   str << "Output " << static_cast<int>(m_output_number) << ", "
       << m_personality_manager->ActivePersonalityDescription() << ", "
@@ -261,7 +261,7 @@ string SPIOutput::Description() const {
 /*
  * Send DMX data over SPI.
  */
-bool SPIOutput::WriteDMX(const DmxBuffer &buffer) {
+bool SpiOutput::WriteDMX(const DmxBuffer &buffer) {
   if (m_identify_mode) {
     return true;
   }
@@ -269,14 +269,14 @@ bool SPIOutput::WriteDMX(const DmxBuffer &buffer) {
 }
 
 
-void SPIOutput::RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+void SpiOutput::RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
   UIDSet uids;
   uids.AddUID(m_uid);
   callback->Run(uids);
 }
 
 
-void SPIOutput::RunIncrementalDiscovery(
+void SpiOutput::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   UIDSet uids;
   uids.AddUID(m_uid);
@@ -284,13 +284,13 @@ void SPIOutput::RunIncrementalDiscovery(
 }
 
 
-void SPIOutput::SendRDMRequest(RDMRequest *request,
+void SpiOutput::SendRDMRequest(RDMRequest *request,
                                RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ola::rdm::ROOT_RDM_DEVICE,
                                        request, callback);
 }
 
-bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
+bool SpiOutput::InternalWriteDMX(const DmxBuffer &buffer) {
   switch (m_personality_manager->ActivePersonalityNumber()) {
     case 1:
       IndividualWS2801Control(buffer);
@@ -322,7 +322,7 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
   return true;
 }
 
-void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
+void SpiOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   // We always check out the entire string length, even if we only have data
   // for part of it
   const unsigned int output_length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
@@ -336,7 +336,7 @@ void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
-void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
+void SpiOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
   unsigned int pixel_data_length = WS2801_SLOTS_PER_PIXEL;
   uint8_t pixel_data[WS2801_SLOTS_PER_PIXEL];
   buffer.GetRange(m_start_address - 1, pixel_data, &pixel_data_length);
@@ -359,7 +359,7 @@ void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
-void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
+void SpiOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
   const uint8_t latch_bytes = (m_pixel_count + 31) / 32;
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
   if (buffer.Size() - first_slot < LPD8806_SLOTS_PER_PIXEL) {
@@ -391,7 +391,7 @@ void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
-void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
+void SpiOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
   const uint8_t latch_bytes = (m_pixel_count + 31) / 32;
   unsigned int pixel_data_length = LPD8806_SLOTS_PER_PIXEL;
 
@@ -421,7 +421,7 @@ void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
-void SPIOutput::IndividualP9813Control(const DmxBuffer &buffer) {
+void SpiOutput::IndividualP9813Control(const DmxBuffer &buffer) {
   // We need 4 bytes of zeros in the beginning and 8 bytes at
   // the end
   const uint8_t latch_bytes = 3 * P9813_SPI_BYTES_PER_PIXEL;
@@ -463,7 +463,7 @@ void SPIOutput::IndividualP9813Control(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
-void SPIOutput::CombinedP9813Control(const DmxBuffer &buffer) {
+void SpiOutput::CombinedP9813Control(const DmxBuffer &buffer) {
   const uint8_t latch_bytes = 3 * P9813_SPI_BYTES_PER_PIXEL;
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
 
@@ -497,7 +497,7 @@ void SPIOutput::CombinedP9813Control(const DmxBuffer &buffer) {
  * For more information please visit:
  * https://github.com/CoolNeon/elinux-tcl/blob/master/README.txt
  */
-uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
+uint8_t SpiOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
   uint8_t flag = 0;
   flag =  (red & 0xc0) >> 6;
   flag |= (green & 0xc0) >> 4;
@@ -506,7 +506,7 @@ uint8_t SPIOutput::P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue) {
 }
 
 
-void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
+void SpiOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   // some detailed information on the protocol:
   // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
   // Data-Struct
@@ -579,7 +579,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
-void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
+void SpiOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   // for Protocol details see IndividualAPA102Control
 
   // calculate DMX-start-address
@@ -604,7 +604,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
       output_length,
       CalculateAPA102LatchBytes(m_pixel_count));
 
-  // only update SPI data if possible
+  // only update Spi data if possible
   if (!output) {
     return;
   }
@@ -646,7 +646,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
  * the function is valid up to 4080 pixels. (255*8*2)
  * ( otherwise the return type must be changed to uint16_t)
  */
-uint8_t SPIOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
+uint8_t SpiOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
   // round up so that we get definitely enough bits
   const uint8_t latch_bits = (pixel_count + 1) / 2;
   const uint8_t latch_bytes = (latch_bits + 7) / 8;
@@ -654,7 +654,7 @@ uint8_t SPIOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
 }
 
 
-RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
       ola::rdm::PRODUCT_CATEGORY_FIXTURE, 4,
@@ -663,64 +663,64 @@ RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
       0, m_sensors.size());
 }
 
-RDMResponse *SPIOutput::GetProductDetailList(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetProductDetailList(const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
     vector<ola::rdm::rdm_product_detail>
         (1, ola::rdm::PRODUCT_DETAIL_LED));
 }
 
-RDMResponse *SPIOutput::GetDeviceModelDescription(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetDeviceModelDescription(const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA SPI Device");
 }
 
-RDMResponse *SPIOutput::GetManufacturerLabel(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetManufacturerLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(
       request,
       ola::rdm::OLA_MANUFACTURER_LABEL);
 }
 
-RDMResponse *SPIOutput::GetDeviceLabel(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, m_device_label);
 }
 
-RDMResponse *SPIOutput::SetDeviceLabel(const RDMRequest *request) {
+RDMResponse *SpiOutput::SetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::SetString(request, &m_device_label);
 }
 
-RDMResponse *SPIOutput::GetSoftwareVersionLabel(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetSoftwareVersionLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-RDMResponse *SPIOutput::GetDmxPersonality(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetDmxPersonality(const RDMRequest *request) {
   return ResponderHelper::GetPersonality(request, m_personality_manager.get());
 }
 
-RDMResponse *SPIOutput::SetDmxPersonality(const RDMRequest *request) {
+RDMResponse *SpiOutput::SetDmxPersonality(const RDMRequest *request) {
   return ResponderHelper::SetPersonality(request, m_personality_manager.get(),
                                          m_start_address);
 }
 
-RDMResponse *SPIOutput::GetPersonalityDescription(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetPersonalityDescription(const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, m_personality_manager.get());
 }
 
-RDMResponse *SPIOutput::GetDmxStartAddress(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetDmxStartAddress(const RDMRequest *request) {
   return ResponderHelper::GetDmxAddress(request, m_personality_manager.get(),
                                         m_start_address);
 }
 
-RDMResponse *SPIOutput::SetDmxStartAddress(const RDMRequest *request) {
+RDMResponse *SpiOutput::SetDmxStartAddress(const RDMRequest *request) {
   return ResponderHelper::SetDmxAddress(request, m_personality_manager.get(),
                                         &m_start_address);
 }
 
-RDMResponse *SPIOutput::GetIdentify(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
-RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
+RDMResponse *SpiOutput::SetIdentify(const RDMRequest *request) {
   bool old_value = m_identify_mode;
   RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_mode);
@@ -742,69 +742,69 @@ RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
 /**
  * PID_SENSOR_DEFINITION
  */
-RDMResponse *SPIOutput::GetSensorDefinition(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetSensorDefinition(const RDMRequest *request) {
   return ResponderHelper::GetSensorDefinition(request, m_sensors);
 }
 
 /**
  * PID_SENSOR_VALUE
  */
-RDMResponse *SPIOutput::GetSensorValue(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetSensorValue(const RDMRequest *request) {
   return ResponderHelper::GetSensorValue(request, m_sensors);
 }
 
-RDMResponse *SPIOutput::SetSensorValue(const RDMRequest *request) {
+RDMResponse *SpiOutput::SetSensorValue(const RDMRequest *request) {
   return ResponderHelper::SetSensorValue(request, m_sensors);
 }
 
 /**
  * PID_RECORD_SENSORS
  */
-RDMResponse *SPIOutput::RecordSensor(const RDMRequest *request) {
+RDMResponse *SpiOutput::RecordSensor(const RDMRequest *request) {
   return ResponderHelper::RecordSensor(request, m_sensors);
 }
 
 /**
  * E1.37-2 PIDs
  */
-RDMResponse *SPIOutput::GetListInterfaces(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetListInterfaces(const RDMRequest *request) {
   return ResponderHelper::GetListInterfaces(request,
                                             m_network_manager.get());
 }
 
-RDMResponse *SPIOutput::GetInterfaceLabel(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetInterfaceLabel(const RDMRequest *request) {
   return ResponderHelper::GetInterfaceLabel(request,
                                             m_network_manager.get());
 }
 
-RDMResponse *SPIOutput::GetInterfaceHardwareAddressType1(
+RDMResponse *SpiOutput::GetInterfaceHardwareAddressType1(
     const RDMRequest *request) {
   return ResponderHelper::GetInterfaceHardwareAddressType1(
       request,
       m_network_manager.get());
 }
 
-RDMResponse *SPIOutput::GetIPV4CurrentAddress(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetIPV4CurrentAddress(const RDMRequest *request) {
   return ResponderHelper::GetIPV4CurrentAddress(request,
                                                 m_network_manager.get());
 }
 
-RDMResponse *SPIOutput::GetIPV4DefaultRoute(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetIPV4DefaultRoute(const RDMRequest *request) {
   return ResponderHelper::GetIPV4DefaultRoute(request,
                                               m_network_manager.get());
 }
 
-RDMResponse *SPIOutput::GetDNSHostname(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetDNSHostname(const RDMRequest *request) {
   return ResponderHelper::GetDNSHostname(request,
                                          m_network_manager.get());
 }
 
-RDMResponse *SPIOutput::GetDNSDomainName(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetDNSDomainName(const RDMRequest *request) {
   return ResponderHelper::GetDNSDomainName(request,
                                            m_network_manager.get());
 }
 
-RDMResponse *SPIOutput::GetDNSNameServer(const RDMRequest *request) {
+RDMResponse *SpiOutput::GetDNSNameServer(const RDMRequest *request) {
   return ResponderHelper::GetDNSNameServer(request,
                                            m_network_manager.get());
 }

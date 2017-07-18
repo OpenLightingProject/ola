@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * FakeSPIWriter.cpp
- * The SPIWriter used for testing.
+ * FakeSpiWriter.cpp
+ * The SpiWriter used for testing.
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -23,7 +23,7 @@
 #include <string>
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
-#include "plugins/spi/FakeSPIWriter.h"
+#include "plugins/spi/FakeSpiWriter.h"
 
 namespace ola {
 namespace plugin {
@@ -31,7 +31,7 @@ namespace spi {
 
 using ola::thread::MutexLocker;
 
-bool FakeSPIWriter::WriteSPIData(const uint8_t *data, unsigned int length) {
+bool FakeSpiWriter::WriteSpiData(const uint8_t *data, unsigned int length) {
   {
     MutexLocker lock(&m_mutex);
 
@@ -51,37 +51,37 @@ bool FakeSPIWriter::WriteSPIData(const uint8_t *data, unsigned int length) {
   return true;
 }
 
-void FakeSPIWriter::BlockWriter() {
+void FakeSpiWriter::BlockWriter() {
   m_write_lock.Lock();
 }
 
-void FakeSPIWriter::UnblockWriter() {
+void FakeSpiWriter::UnblockWriter() {
   m_write_lock.Unlock();
 }
 
-void FakeSPIWriter::ResetWrite() {
+void FakeSpiWriter::ResetWrite() {
   MutexLocker lock(&m_mutex);
   m_write_pending = false;
 }
 
-void FakeSPIWriter::WaitForWrite() {
+void FakeSpiWriter::WaitForWrite() {
   MutexLocker lock(&m_mutex);
   if (m_write_pending)
     return;
   m_cond_var.Wait(&m_mutex);
 }
 
-unsigned int FakeSPIWriter::WriteCount() const {
+unsigned int FakeSpiWriter::WriteCount() const {
   MutexLocker lock(&m_mutex);
   return m_writes;
 }
 
-unsigned int FakeSPIWriter::LastWriteSize() const {
+unsigned int FakeSpiWriter::LastWriteSize() const {
   MutexLocker lock(&m_mutex);
   return m_last_write_size;
 }
 
-void FakeSPIWriter::CheckDataMatches(
+void FakeSpiWriter::CheckDataMatches(
     const ola::testing::SourceLine &source_line,
     const uint8_t *expected,
     unsigned int length) {

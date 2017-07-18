@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIDevice.h
+ * SpiDevice.h
  * The SPI Device class
  * Copyright (C) 2013 Simon Newton
  */
@@ -29,17 +29,17 @@
 #include "ola/io/SelectServer.h"
 #include "ola/rdm/UIDAllocator.h"
 #include "ola/rdm/UID.h"
-#include "plugins/spi/SPIBackend.h"
-#include "plugins/spi/SPIWriter.h"
+#include "plugins/spi/SpiBackend.h"
+#include "plugins/spi/SpiWriter.h"
 
 namespace ola {
 namespace plugin {
 namespace spi {
 
 
-class SPIDevice: public ola::Device {
+class SpiDevice: public ola::Device {
  public:
-  SPIDevice(class SPIPlugin *owner,
+  SpiDevice(class SpiPlugin *owner,
             class Preferences *preferences,
             class PluginAdaptor *plugin_adaptor,
             const std::string &spi_device,
@@ -54,19 +54,19 @@ class SPIDevice: public ola::Device {
   void PrePortStop();
 
  private:
-  typedef std::vector<class SPIOutputPort*> SPIPorts;
+  typedef std::vector<class SpiOutputPort*> SpiPorts;
 
-  std::auto_ptr<SPIWriterInterface> m_writer;
-  std::auto_ptr<SPIBackendInterface> m_backend;
+  std::auto_ptr<SpiWriterInterface> m_writer;
+  std::auto_ptr<SpiBackendInterface> m_backend;
   class Preferences *m_preferences;
   class PluginAdaptor *m_plugin_adaptor;
-  SPIPorts m_spi_ports;
+  SpiPorts m_spi_ports;
   std::string m_spi_device_name;
 
   // Per device options
-  std::string SPIBackendKey() const;
-  std::string SPISpeedKey() const;
-  std::string SPICEKey() const;
+  std::string SpiBackendKey() const;
+  std::string SpiSpeedKey() const;
+  std::string SpiCEKey() const;
   std::string PortCountKey() const;
   std::string SyncPortKey() const;
   std::string GPIOPinKey() const;
@@ -81,7 +81,7 @@ class SPIDevice: public ola::Device {
   void SetDefaults();
   void PopulateHardwareBackendOptions(HardwareBackend::Options *options);
   void PopulateSoftwareBackendOptions(SoftwareBackend::Options *options);
-  void PopulateWriterOptions(SPIWriter::Options *options);
+  void PopulateWriterOptions(SpiWriter::Options *options);
 
   static const char SPI_DEVICE_NAME[];
   static const char HARDWARE_BACKEND[];

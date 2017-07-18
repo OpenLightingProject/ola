@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIPlugin.cpp
+ * SpiPlugin.cpp
  * The SPI plugin for ola
  * Copyright (C) 2013 Simon Newton
  */
@@ -28,9 +28,9 @@
 #include "ola/rdm/UIDAllocator.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
-#include "plugins/spi/SPIDevice.h"
-#include "plugins/spi/SPIPlugin.h"
-#include "plugins/spi/SPIPluginDescription.h"
+#include "plugins/spi/SpiDevice.h"
+#include "plugins/spi/SpiPlugin.h"
+#include "plugins/spi/SpiPluginDescription.h"
 
 
 namespace ola {
@@ -42,18 +42,18 @@ using std::auto_ptr;
 using std::string;
 using std::vector;
 
-const char SPIPlugin::DEFAULT_BASE_UID[] = "7a70:00000100";
-const char SPIPlugin::DEFAULT_SPI_DEVICE_PREFIX[] = "spidev";
-const char SPIPlugin::PLUGIN_NAME[] = "SPI";
-const char SPIPlugin::PLUGIN_PREFIX[] = "spi";
-const char SPIPlugin::SPI_BASE_UID_KEY[] = "base_uid";
-const char SPIPlugin::SPI_DEVICE_PREFIX_KEY[] = "device_prefix";
+const char SpiPlugin::DEFAULT_BASE_UID[] = "7a70:00000100";
+const char SpiPlugin::DEFAULT_SPI_DEVICE_PREFIX[] = "spidev";
+const char SpiPlugin::PLUGIN_NAME[] = "SPI";
+const char SpiPlugin::PLUGIN_PREFIX[] = "spi";
+const char SpiPlugin::SPI_BASE_UID_KEY[] = "base_uid";
+const char SpiPlugin::SPI_DEVICE_PREFIX_KEY[] = "device_prefix";
 
 /*
  * Start the plugin
  * For now we just have one device.
  */
-bool SPIPlugin::StartHook() {
+bool SpiPlugin::StartHook() {
   const string uid_str = m_preferences->GetValue(SPI_BASE_UID_KEY);
   auto_ptr<UID> base_uid(UID::FromString(uid_str));
   if (!base_uid.get()) {
@@ -76,7 +76,7 @@ bool SPIPlugin::StartHook() {
   ola::rdm::UIDAllocator uid_allocator(*base_uid);
   vector<string>::const_iterator iter = spi_files.begin();
   for (; iter != spi_files.end(); ++iter) {
-    SPIDevice *device = new SPIDevice(this, m_preferences, m_plugin_adaptor,
+    SpiDevice *device = new SpiDevice(this, m_preferences, m_plugin_adaptor,
                                       *iter, &uid_allocator);
 
     if (!device) {
@@ -98,8 +98,8 @@ bool SPIPlugin::StartHook() {
  * Stop the plugin
  * @return true on success, false on failure
  */
-bool SPIPlugin::StopHook() {
-  vector<SPIDevice*>::iterator iter = m_devices.begin();
+bool SpiPlugin::StopHook() {
+  vector<SpiDevice*>::iterator iter = m_devices.begin();
   bool ok = true;
   for (; iter != m_devices.end(); ++iter) {
     m_plugin_adaptor->UnregisterDevice(*iter);
@@ -113,7 +113,7 @@ bool SPIPlugin::StopHook() {
 /*
  * Return the description for this plugin
  */
-string SPIPlugin::Description() const {
+string SpiPlugin::Description() const {
   return plugin_description;
 }
 
@@ -121,7 +121,7 @@ string SPIPlugin::Description() const {
 /*
  * Load the plugin prefs and default to sensible values
  */
-bool SPIPlugin::SetDefaultPreferences() {
+bool SpiPlugin::SetDefaultPreferences() {
   bool save = false;
 
   if (!m_preferences) {

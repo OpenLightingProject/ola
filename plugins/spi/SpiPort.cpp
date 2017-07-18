@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIPort.cpp
+ * SpiPort.cpp
  * The SPI plugin for ola
  * Copyright (C) 2013 Simon Newton
  */
@@ -23,8 +23,8 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
 
-#include "plugins/spi/SPIBackend.h"
-#include "plugins/spi/SPIPort.h"
+#include "plugins/spi/SpiBackend.h"
+#include "plugins/spi/SpiPort.h"
 
 namespace ola {
 namespace plugin {
@@ -36,59 +36,59 @@ using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using std::string;
 
-SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackendInterface *backend,
+SpiOutputPort::SpiOutputPort(SpiDevice *parent, SpiBackendInterface *backend,
                              const UID &uid,
-                             const SPIOutput::Options &options)
+                             const SpiOutput::Options &options)
     : BasicOutputPort(parent, options.output_number, true),
       m_spi_output(uid, backend, options) {
 }
 
 
-string SPIOutputPort::GetDeviceLabel() const {
+string SpiOutputPort::GetDeviceLabel() const {
   return m_spi_output.GetDeviceLabel();
 }
 
-bool SPIOutputPort::SetDeviceLabel(const string &device_label) {
+bool SpiOutputPort::SetDeviceLabel(const string &device_label) {
   return m_spi_output.SetDeviceLabel(device_label);
 }
 
-uint8_t SPIOutputPort::GetPersonality() const {
+uint8_t SpiOutputPort::GetPersonality() const {
   return m_spi_output.GetPersonality();
 }
 
-bool SPIOutputPort::SetPersonality(uint16_t personality) {
+bool SpiOutputPort::SetPersonality(uint16_t personality) {
   return m_spi_output.SetPersonality(personality);
 }
 
-uint16_t SPIOutputPort::GetStartAddress() const {
+uint16_t SpiOutputPort::GetStartAddress() const {
   return m_spi_output.GetStartAddress();
 }
 
-bool SPIOutputPort::SetStartAddress(uint16_t address) {
+bool SpiOutputPort::SetStartAddress(uint16_t address) {
   return m_spi_output.SetStartAddress(address);
 }
 
-unsigned int SPIOutputPort::PixelCount() const {
+unsigned int SpiOutputPort::PixelCount() const {
   return m_spi_output.PixelCount();
 }
 
-string SPIOutputPort::Description() const {
+string SpiOutputPort::Description() const {
   return m_spi_output.Description();
 }
 
-bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
+bool SpiOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   return m_spi_output.WriteDMX(buffer);
 }
 
-void SPIOutputPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {
+void SpiOutputPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {
   return m_spi_output.RunFullDiscovery(callback);
 }
 
-void SPIOutputPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
+void SpiOutputPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
   return m_spi_output.RunIncrementalDiscovery(callback);
 }
 
-void SPIOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request,
+void SpiOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                    ola::rdm::RDMCallback *callback) {
   return m_spi_output.SendRDMRequest(request, callback);
 }

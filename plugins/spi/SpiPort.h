@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIPort.h
- * An OLA SPI Port. This simply wraps the SPIOutput.
+ * SpiPort.h
+ * An OLA SPI Port. This simply wraps the SpiOutput.
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -24,18 +24,18 @@
 #include <string>
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
-#include "plugins/spi/SPIDevice.h"
-#include "plugins/spi/SPIOutput.h"
+#include "plugins/spi/SpiDevice.h"
+#include "plugins/spi/SpiOutput.h"
 
 namespace ola {
 namespace plugin {
 namespace spi {
 
-class SPIOutputPort: public BasicOutputPort {
+class SpiOutputPort: public BasicOutputPort {
  public:
-  SPIOutputPort(SPIDevice *parent, class SPIBackendInterface *backend,
-                const ola::rdm::UID &uid, const SPIOutput::Options &options);
-  ~SPIOutputPort() {}
+  SpiOutputPort(SpiDevice *parent, class SpiBackendInterface *backend,
+                const ola::rdm::UID &uid, const SpiOutput::Options &options);
+  ~SpiOutputPort() {}
 
   std::string GetDeviceLabel() const;
   bool SetDeviceLabel(const std::string &device_label);
@@ -54,7 +54,7 @@ class SPIOutputPort: public BasicOutputPort {
                       ola::rdm::RDMCallback *callback);
 
  private:
-  SPIOutput m_spi_output;
+  SpiOutput m_spi_output;
 };
 }  // namespace spi
 }  // namespace plugin

@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIBackendTest.cpp
- * Test fixture for the SPIBackendTests.
+ * SpiBackendTest.cpp
+ * Test fixture for the SpiBackendTests.
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -26,19 +26,19 @@
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
-#include "plugins/spi/FakeSPIWriter.h"
-#include "plugins/spi/SPIBackend.h"
+#include "plugins/spi/FakeSpiWriter.h"
+#include "plugins/spi/SpiBackend.h"
 
 using ola::DmxBuffer;
 using ola::ExportMap;
-using ola::plugin::spi::FakeSPIWriter;
+using ola::plugin::spi::FakeSpiWriter;
 using ola::plugin::spi::HardwareBackend;
 using ola::plugin::spi::SoftwareBackend;
-using ola::plugin::spi::SPIBackendInterface;
+using ola::plugin::spi::SpiBackendInterface;
 using ola::UIntMap;
 
-class SPIBackendTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(SPIBackendTest);
+class SpiBackendTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(SpiBackendTest);
   CPPUNIT_TEST(testHardwareDrops);
   CPPUNIT_TEST(testHardwareVariousFrameLengths);
   CPPUNIT_TEST(testInvalidOutputs);
@@ -47,11 +47,11 @@ class SPIBackendTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-  SPIBackendTest();
+  SpiBackendTest();
 
   void setUp();
   unsigned int DropCount();
-  bool SendSomeData(SPIBackendInterface *backend,
+  bool SendSomeData(SpiBackendInterface *backend,
                     uint8_t output,
                     const uint8_t *data,
                     unsigned int length,
@@ -66,7 +66,7 @@ class SPIBackendTest: public CppUnit::TestFixture {
 
  private:
   ExportMap m_export_map;
-  FakeSPIWriter m_writer;
+  FakeSpiWriter m_writer;
   unsigned int m_total_size;
 
   static const uint8_t DATA1[];
@@ -81,61 +81,61 @@ class SPIBackendTest: public CppUnit::TestFixture {
   static const char SPI_DROP_VAR_KEY[];
 };
 
-const uint8_t SPIBackendTest::DATA1[] = {
+const uint8_t SpiBackendTest::DATA1[] = {
   1, 2, 3, 4, 5, 6, 7, 8, 9, 0
 };
 
-const uint8_t SPIBackendTest::DATA2[] = {
+const uint8_t SpiBackendTest::DATA2[] = {
   0xa, 0xb, 0xc, 0xd, 0xe, 0xf
 };
 
-const uint8_t SPIBackendTest::DATA3[] = {
+const uint8_t SpiBackendTest::DATA3[] = {
   1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
   0xa, 0xb, 0xc, 0xd, 0xe, 0xf
 };
 
-const uint8_t SPIBackendTest::EXPECTED1[] = {
+const uint8_t SpiBackendTest::EXPECTED1[] = {
   1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0
 };
 
-const uint8_t SPIBackendTest::EXPECTED2[] = {
+const uint8_t SpiBackendTest::EXPECTED2[] = {
   0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0
 };
 
-const uint8_t SPIBackendTest::EXPECTED3[] = {
+const uint8_t SpiBackendTest::EXPECTED3[] = {
   1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf,
   0, 0, 0, 0,
 };
 
-const uint8_t SPIBackendTest::EXPECTED4[] = {
+const uint8_t SpiBackendTest::EXPECTED4[] = {
   1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0,
   0, 0, 0, 0
 };
 
-const char SPIBackendTest::DEVICE_NAME[] = "Fake Device";
-const char SPIBackendTest::SPI_DROP_VAR[] = "spi-drops";
-const char SPIBackendTest::SPI_DROP_VAR_KEY[] = "device";
+const char SpiBackendTest::DEVICE_NAME[] = "Fake Device";
+const char SpiBackendTest::SPI_DROP_VAR[] = "spi-drops";
+const char SpiBackendTest::SPI_DROP_VAR_KEY[] = "device";
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION(SPIBackendTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(SpiBackendTest);
 
-SPIBackendTest::SPIBackendTest()
+SpiBackendTest::SpiBackendTest()
     : CppUnit::TestFixture(),
       m_writer(DEVICE_NAME) {
   m_total_size = arraysize(DATA3);
 }
 
-void SPIBackendTest::setUp() {
+void SpiBackendTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
 }
 
-unsigned int SPIBackendTest::DropCount() {
+unsigned int SpiBackendTest::DropCount() {
   UIntMap *drop_map = m_export_map.GetUIntMapVar(SPI_DROP_VAR,
                                                  SPI_DROP_VAR_KEY);
   return (*drop_map)[DEVICE_NAME];
 }
 
-bool SPIBackendTest::SendSomeData(SPIBackendInterface *backend,
+bool SpiBackendTest::SendSomeData(SpiBackendInterface *backend,
                                   uint8_t output,
                                   const uint8_t *data,
                                   unsigned int length,
@@ -152,7 +152,7 @@ bool SPIBackendTest::SendSomeData(SPIBackendInterface *backend,
 /**
  * Check that we increment the exported variable when we drop frames.
  */
-void SPIBackendTest::testHardwareDrops() {
+void SpiBackendTest::testHardwareDrops() {
   HardwareBackend backend(HardwareBackend::Options(), &m_writer,
                           &m_export_map);
   OLA_ASSERT(backend.Init());
@@ -175,7 +175,7 @@ void SPIBackendTest::testHardwareDrops() {
 /**
  * Check that we handle the case of frame lengths changing.
  */
-void SPIBackendTest::testHardwareVariousFrameLengths() {
+void SpiBackendTest::testHardwareVariousFrameLengths() {
   HardwareBackend backend(HardwareBackend::Options(), &m_writer,
                           &m_export_map);
   OLA_ASSERT(backend.Init());
@@ -229,7 +229,7 @@ void SPIBackendTest::testHardwareVariousFrameLengths() {
 /**
  * Check we can't send to invalid outputs.
  */
-void SPIBackendTest::testInvalidOutputs() {
+void SpiBackendTest::testInvalidOutputs() {
   // HardwareBackend
   HardwareBackend hw_backend(HardwareBackend::Options(), &m_writer,
                              &m_export_map);
@@ -251,7 +251,7 @@ void SPIBackendTest::testInvalidOutputs() {
 /**
  * Check that we increment the exported variable when we drop frames.
  */
-void SPIBackendTest::testSoftwareDrops() {
+void SpiBackendTest::testSoftwareDrops() {
   SoftwareBackend backend(SoftwareBackend::Options(), &m_writer,
                           &m_export_map);
   OLA_ASSERT(backend.Init());
@@ -274,7 +274,7 @@ void SPIBackendTest::testSoftwareDrops() {
 /**
  * Check that we handle the case of frame lengths changing.
  */
-void SPIBackendTest::testSoftwareVariousFrameLengths() {
+void SpiBackendTest::testSoftwareVariousFrameLengths() {
   SoftwareBackend backend(SoftwareBackend::Options(), &m_writer,
                           &m_export_map);
   OLA_ASSERT(backend.Init());

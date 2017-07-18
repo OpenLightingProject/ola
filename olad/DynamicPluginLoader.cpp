@@ -88,7 +88,7 @@
 #endif  // USE_SHOWNET
 
 #ifdef USE_SPI
-#include "plugins/spi/SPIPlugin.h"
+#include "plugins/spi/SpiPlugin.h"
 #endif  // USE_SPI
 
 #ifdef USE_STAGEPROFI
@@ -205,7 +205,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_SPI
   m_plugins.push_back(
-      new ola::plugin::spi::SPIPlugin(m_plugin_adaptor));
+      new ola::plugin::spi::SpiPlugin(m_plugin_adaptor));
 #endif  // USE_SPI
 
 #ifdef USE_STAGEPROFI

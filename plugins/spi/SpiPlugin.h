@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIPlugin.h
+ * SpiPlugin.h
  * An SPI plugin.
  * Copyright (C) 2013 Simon Newton
  */
@@ -30,9 +30,9 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-class SPIPlugin: public ola::Plugin {
+class SpiPlugin: public ola::Plugin {
  public:
-  explicit SPIPlugin(class ola::PluginAdaptor *plugin_adaptor)
+  explicit SpiPlugin(class ola::PluginAdaptor *plugin_adaptor)
       : Plugin(plugin_adaptor) {}
 
   std::string Name() const { return PLUGIN_NAME; }
@@ -41,7 +41,7 @@ class SPIPlugin: public ola::Plugin {
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-  std::vector<class SPIDevice*> m_devices;
+  std::vector<class SpiDevice*> m_devices;
 
   bool StartHook();
   bool StopHook();

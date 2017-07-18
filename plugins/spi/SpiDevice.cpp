@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIDevice.cpp
+ * SpiDevice.cpp
  * SPI device
  * Copyright (C) 2013 Simon Newton
  */
@@ -30,9 +30,9 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
-#include "plugins/spi/SPIDevice.h"
-#include "plugins/spi/SPIPort.h"
-#include "plugins/spi/SPIPlugin.h"
+#include "plugins/spi/SpiDevice.h"
+#include "plugins/spi/SpiPort.h"
+#include "plugins/spi/SpiPlugin.h"
 
 namespace ola {
 namespace plugin {
@@ -45,14 +45,14 @@ using std::set;
 using std::string;
 using std::vector;
 
-const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Device";
-const char SPIDevice::HARDWARE_BACKEND[] = "hardware";
-const char SPIDevice::SOFTWARE_BACKEND[] = "software";
+const char SpiDevice::SPI_DEVICE_NAME[] = "SPI Device";
+const char SpiDevice::HARDWARE_BACKEND[] = "hardware";
+const char SpiDevice::SOFTWARE_BACKEND[] = "software";
 
 /*
  * Create a new device
  */
-SPIDevice::SPIDevice(SPIPlugin *owner,
+SpiDevice::SpiDevice(SpiPlugin *owner,
                      Preferences *prefs,
                      PluginAdaptor *plugin_adaptor,
                      const string &spi_device,
@@ -70,10 +70,10 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
   SetDefaults();
   unsigned int port_count = 0;
 
-  string backend_type = m_preferences->GetValue(SPIBackendKey());
-  SPIWriter::Options writer_options;
+  string backend_type = m_preferences->GetValue(SpiBackendKey());
+  SpiWriter::Options writer_options;
   PopulateWriterOptions(&writer_options);
-  m_writer.reset(new SPIWriter(spi_device, writer_options,
+  m_writer.reset(new SpiWriter(spi_device, writer_options,
                                plugin_adaptor->GetExportMap()));
 
 
@@ -103,7 +103,7 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
   }
 
   for (uint8_t i = 0; i < port_count; i++) {
-    SPIOutput::Options spi_output_options(i, m_spi_device_name);
+    SpiOutput::Options spi_output_options(i, m_spi_device_name);
 
     if (m_preferences->HasKey(DeviceLabelKey(i))) {
       spi_output_options.device_label =
@@ -123,13 +123,13 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
     }
 
     m_spi_ports.push_back(
-        new SPIOutputPort(this, m_backend.get(), *uid.get(),
+        new SpiOutputPort(this, m_backend.get(), *uid.get(),
                           spi_output_options));
   }
 }
 
 
-string SPIDevice::DeviceId() const {
+string SpiDevice::DeviceId() const {
   return m_spi_device_name;
 }
 
@@ -137,13 +137,13 @@ string SPIDevice::DeviceId() const {
 /*
  * Start this device
  */
-bool SPIDevice::StartHook() {
+bool SpiDevice::StartHook() {
   if (!m_backend->Init()) {
     STLDeleteElements(&m_spi_ports);
     return false;
   }
 
-  SPIPorts::iterator iter = m_spi_ports.begin();
+  SpiPorts::iterator iter = m_spi_ports.begin();
   for (uint8_t i = 0; iter != m_spi_ports.end(); iter++, i++) {
     uint8_t personality;
     if (StringToInt(m_preferences->GetValue(PersonalityKey(i)),
@@ -163,8 +163,8 @@ bool SPIDevice::StartHook() {
 }
 
 
-void SPIDevice::PrePortStop() {
-  SPIPorts::iterator iter = m_spi_ports.begin();
+void SpiDevice::PrePortStop() {
+  SpiPorts::iterator iter = m_spi_ports.begin();
   for (uint8_t i = 0; iter != m_spi_ports.end(); iter++, i++) {
     ostringstream str;
     m_preferences->SetValue(DeviceLabelKey(i), (*iter)->GetDeviceLabel());
@@ -180,69 +180,69 @@ void SPIDevice::PrePortStop() {
   m_preferences->Save();
 }
 
-string SPIDevice::SPIBackendKey() const {
+string SpiDevice::SpiBackendKey() const {
   return m_spi_device_name + "-backend";
 }
 
-string SPIDevice::SPISpeedKey() const {
+string SpiDevice::SpiSpeedKey() const {
   return m_spi_device_name + "-spi-speed";
 }
 
-string SPIDevice::SPICEKey() const {
+string SpiDevice::SpiCEKey() const {
   return m_spi_device_name + "-spi-ce-high";
 }
 
-string SPIDevice::PortCountKey() const {
+string SpiDevice::PortCountKey() const {
   return m_spi_device_name + "-ports";
 }
 
-string SPIDevice::SyncPortKey() const {
+string SpiDevice::SyncPortKey() const {
   return m_spi_device_name + "-sync-port";
 }
 
-string SPIDevice::GPIOPinKey() const {
+string SpiDevice::GPIOPinKey() const {
   return m_spi_device_name + "-gpio-pin";
 }
 
-string SPIDevice::DeviceLabelKey(uint8_t port) const {
+string SpiDevice::DeviceLabelKey(uint8_t port) const {
   return GetPortKey("device-label", port);
 }
 
-string SPIDevice::PersonalityKey(uint8_t port) const {
+string SpiDevice::PersonalityKey(uint8_t port) const {
   return GetPortKey("personality", port);
 }
 
-string SPIDevice::StartAddressKey(uint8_t port) const {
+string SpiDevice::StartAddressKey(uint8_t port) const {
   return GetPortKey("dmx-address", port);
 }
 
-string SPIDevice::PixelCountKey(uint8_t port) const {
+string SpiDevice::PixelCountKey(uint8_t port) const {
   return GetPortKey("pixel-count", port);
 }
 
-string SPIDevice::GetPortKey(const string &suffix, uint8_t port) const {
+string SpiDevice::GetPortKey(const string &suffix, uint8_t port) const {
   std::ostringstream str;
   str << m_spi_device_name << "-" << static_cast<int>(port) << "-" << suffix;
   return str.str();
 }
 
-void SPIDevice::SetDefaults() {
+void SpiDevice::SetDefaults() {
   // Set device options
   set<string> valid_backends;
   valid_backends.insert(HARDWARE_BACKEND);
   valid_backends.insert(SOFTWARE_BACKEND);
-  m_preferences->SetDefaultValue(SPIBackendKey(),
+  m_preferences->SetDefaultValue(SpiBackendKey(),
                                  SetValidator<string>(valid_backends),
                                  SOFTWARE_BACKEND);
-  m_preferences->SetDefaultValue(SPISpeedKey(), UIntValidator(0, 32000000),
+  m_preferences->SetDefaultValue(SpiSpeedKey(), UIntValidator(0, 32000000),
                                  1000000);
-  m_preferences->SetDefaultValue(SPICEKey(), BoolValidator(), false);
+  m_preferences->SetDefaultValue(SpiCEKey(), BoolValidator(), false);
   m_preferences->SetDefaultValue(PortCountKey(), UIntValidator(1, 8), 1);
   m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 8), 0);
   m_preferences->Save();
 }
 
-void SPIDevice::PopulateHardwareBackendOptions(
+void SpiDevice::PopulateHardwareBackendOptions(
     HardwareBackend::Options *options) {
   vector<string> pins = m_preferences->GetMultipleValue(GPIOPinKey());
   vector<string>::const_iterator iter = pins.begin();
@@ -263,7 +263,7 @@ void SPIDevice::PopulateHardwareBackendOptions(
   }
 }
 
-void SPIDevice::PopulateSoftwareBackendOptions(
+void SpiDevice::PopulateSoftwareBackendOptions(
     SoftwareBackend::Options *options) {
   if (!StringToInt(m_preferences->GetValue(PortCountKey()),
                                            &options->outputs)) {
@@ -279,13 +279,13 @@ void SPIDevice::PopulateSoftwareBackendOptions(
   }
 }
 
-void SPIDevice::PopulateWriterOptions(SPIWriter::Options *options) {
+void SpiDevice::PopulateWriterOptions(SpiWriter::Options *options) {
   uint32_t spi_speed;
-  if (StringToInt(m_preferences->GetValue(SPISpeedKey()), &spi_speed)) {
+  if (StringToInt(m_preferences->GetValue(SpiSpeedKey()), &spi_speed)) {
     options->spi_speed = spi_speed;
   }
   bool ce_high;
-  if (StringToBool(m_preferences->GetValue(SPICEKey()), &ce_high)) {
+  if (StringToBool(m_preferences->GetValue(SpiCEKey()), &ce_high)) {
     options->cs_enable_high = ce_high;
   }
 }

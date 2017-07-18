@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIWriter.h
+ * SpiWriter.h
  * This writes data to a SPI device.
  * Copyright (C) 2013 Simon Newton
  */
@@ -33,22 +33,22 @@ namespace spi {
 /**
  * The interface for the SPI Writer
  */
-class SPIWriterInterface {
+class SpiWriterInterface {
  public:
-  virtual ~SPIWriterInterface() {}
+  virtual ~SpiWriterInterface() {}
 
   virtual std::string DevicePath() const = 0;
   virtual bool Init() = 0;
-  virtual bool WriteSPIData(const uint8_t *data, unsigned int length) = 0;
+  virtual bool WriteSpiData(const uint8_t *data, unsigned int length) = 0;
 };
 
 /**
  * The SPI Writer, this writes data to a SPI device
  */
-class SPIWriter : public SPIWriterInterface {
+class SpiWriter : public SpiWriterInterface {
  public:
   /**
-   * SPIWriter Options
+   * SpiWriter Options
    */
   struct Options {
     uint32_t spi_speed;
@@ -57,19 +57,19 @@ class SPIWriter : public SPIWriterInterface {
     Options() : spi_speed(1000000), cs_enable_high(false) {}
   };
 
-  SPIWriter(const std::string &spi_device, const Options &options,
+  SpiWriter(const std::string &spi_device, const Options &options,
             ExportMap *export_map);
-  ~SPIWriter();
+  ~SpiWriter();
 
   std::string DevicePath() const { return m_device_path; }
 
   /**
-   * Init the SPIWriter
+   * Init the SpiWriter
    * @returns false if initialization failed.
    */
   bool Init();
 
-  bool WriteSPIData(const uint8_t *data, unsigned int length);
+  bool WriteSpiData(const uint8_t *data, unsigned int length);
 
  private:
   const std::string m_device_path;

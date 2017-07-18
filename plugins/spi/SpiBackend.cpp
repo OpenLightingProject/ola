@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIBackend.cpp
+ * SpiBackend.cpp
  * The backend for SPI output. These are the classes which write the data to
  * the SPI bus.
  * Copyright (C) 2013 Simon Newton
@@ -35,7 +35,7 @@
 #include "ola/io/IOUtils.h"
 #include "ola/network/SocketCloser.h"
 #include "ola/stl/STLUtils.h"
-#include "plugins/spi/SPIBackend.h"
+#include "plugins/spi/SpiBackend.h"
 
 namespace ola {
 namespace plugin {
@@ -45,8 +45,8 @@ using ola::thread::MutexLocker;
 using std::string;
 using std::vector;
 
-const char SPIBackendInterface::SPI_DROP_VAR[] = "spi-drops";
-const char SPIBackendInterface::SPI_DROP_VAR_KEY[] = "device";
+const char SpiBackendInterface::SPI_DROP_VAR[] = "spi-drops";
+const char SpiBackendInterface::SPI_DROP_VAR_KEY[] = "device";
 
 uint8_t *HardwareBackend::OutputData::Resize(unsigned int length) {
   if (length < m_size) {
@@ -95,7 +95,7 @@ HardwareBackend::OutputData& HardwareBackend::OutputData::operator=(
 }
 
 HardwareBackend::HardwareBackend(const Options &options,
-                                 SPIWriterInterface *writer,
+                                 SpiWriterInterface *writer,
                                  ExportMap *export_map)
     : m_spi_writer(writer),
       m_drop_map(NULL),
@@ -247,7 +247,7 @@ void HardwareBackend::WriteOutput(uint8_t output_id, OutputData *output) {
     }
   }
 
-  m_spi_writer->WriteSPIData(output->GetData(), output->Size());
+  m_spi_writer->WriteSpiData(output->GetData(), output->Size());
 }
 
 bool HardwareBackend::SetupGPIO() {
@@ -301,7 +301,7 @@ void HardwareBackend::CloseGPIOFDs() {
 }
 
 SoftwareBackend::SoftwareBackend(const Options &options,
-                                 SPIWriterInterface *writer,
+                                 SpiWriterInterface *writer,
                                  ExportMap *export_map)
     : m_spi_writer(writer),
       m_drop_map(NULL),
@@ -442,22 +442,22 @@ void *SoftwareBackend::Run() {
     m_mutex.Unlock();
 
     if (write_pending) {
-      m_spi_writer->WriteSPIData(output_data, length);
+      m_spi_writer->WriteSpiData(output_data, length);
     }
   }
 }
 
-FakeSPIBackend::FakeSPIBackend(unsigned int outputs) {
+FakeSpiBackend::FakeSpiBackend(unsigned int outputs) {
   for (unsigned int i = 0; i < outputs; i++) {
     m_outputs.push_back(new Output());
   }
 }
 
-FakeSPIBackend::~FakeSPIBackend() {
+FakeSpiBackend::~FakeSpiBackend() {
   STLDeleteElements(&m_outputs);
 }
 
-uint8_t *FakeSPIBackend::Checkout(uint8_t output_id,
+uint8_t *FakeSpiBackend::Checkout(uint8_t output_id,
                                   unsigned int length,
                                   unsigned int latch_bytes) {
   if (output_id >= m_outputs.size()) {
@@ -475,14 +475,14 @@ uint8_t *FakeSPIBackend::Checkout(uint8_t output_id,
   return output->data;
 }
 
-void FakeSPIBackend::Commit(uint8_t output) {
+void FakeSpiBackend::Commit(uint8_t output) {
   if (output >= m_outputs.size()) {
     return;
   }
   m_outputs[output]->writes++;
 }
 
-const uint8_t *FakeSPIBackend::GetData(uint8_t output_id,
+const uint8_t *FakeSpiBackend::GetData(uint8_t output_id,
                                        unsigned int *length) {
   if (output_id >= m_outputs.size()) {
     return NULL;
@@ -493,7 +493,7 @@ const uint8_t *FakeSPIBackend::GetData(uint8_t output_id,
 }
 
 
-unsigned int FakeSPIBackend::Writes(uint8_t output) const {
+unsigned int FakeSpiBackend::Writes(uint8_t output) const {
   if (output >= m_outputs.size()) {
     return 0;
   }

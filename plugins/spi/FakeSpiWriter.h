@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * FakeSPIWriter.h
- * The SPIWriter used for testing.
+ * FakeSpiWriter.h
+ * The SpiWriter used for testing.
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -25,7 +25,7 @@
 #include <ola/thread/Mutex.h>
 #include <stdint.h>
 #include <string>
-#include "plugins/spi/SPIWriter.h"
+#include "plugins/spi/SpiWriter.h"
 
 namespace ola {
 namespace plugin {
@@ -34,9 +34,9 @@ namespace spi {
 /**
  * A Fake SPI Writer used for testing
  */
-class FakeSPIWriter : public SPIWriterInterface {
+class FakeSpiWriter : public SpiWriterInterface {
  public:
-  explicit FakeSPIWriter(const std::string &device_path)
+  explicit FakeSpiWriter(const std::string &device_path)
     : m_device_path(device_path),
       m_write_pending(0),
       m_writes(0),
@@ -44,7 +44,7 @@ class FakeSPIWriter : public SPIWriterInterface {
       m_data(NULL) {
   }
 
-  ~FakeSPIWriter() {
+  ~FakeSpiWriter() {
     delete[] m_data;
   }
 
@@ -52,7 +52,7 @@ class FakeSPIWriter : public SPIWriterInterface {
 
   std::string DevicePath() const { return m_device_path; }
 
-  bool WriteSPIData(const uint8_t *data, unsigned int length);
+  bool WriteSpiData(const uint8_t *data, unsigned int length);
 
   // Methods used for testing
   void BlockWriter();
