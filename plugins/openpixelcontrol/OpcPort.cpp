@@ -13,19 +13,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCPort.cpp
+ * OpcPort.cpp
  * The OPC Port for ola
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/openpixelcontrol/OPCPort.h"
+#include "plugins/openpixelcontrol/OpcPort.h"
 
 #include <string>
 #include "ola/base/Macro.h"
-#include "plugins/openpixelcontrol/OPCClient.h"
-#include "plugins/openpixelcontrol/OPCConstants.h"
-#include "plugins/openpixelcontrol/OPCDevice.h"
-#include "plugins/openpixelcontrol/OPCServer.h"
+#include "plugins/openpixelcontrol/OpcClient.h"
+#include "plugins/openpixelcontrol/OpcConstants.h"
+#include "plugins/openpixelcontrol/OpcDevice.h"
+#include "plugins/openpixelcontrol/OpcServer.h"
 
 namespace ola {
 namespace plugin {
@@ -33,17 +33,17 @@ namespace openpixelcontrol {
 
 using std::string;
 
-OPCInputPort::OPCInputPort(OPCServerDevice *parent,
+OpcInputPort::OpcInputPort(OpcServerDevice *parent,
                            uint8_t channel,
                            class PluginAdaptor *plugin_adaptor,
-                           class OPCServer *server)
+                           class OpcServer *server)
     : BasicInputPort(parent, channel, plugin_adaptor),
       m_channel(channel),
       m_server(server) {
-  m_server->SetCallback(channel, NewCallback(this, &OPCInputPort::NewData));
+  m_server->SetCallback(channel, NewCallback(this, &OpcInputPort::NewData));
 }
 
-void OPCInputPort::NewData(uint8_t command,
+void OpcInputPort::NewData(uint8_t command,
                            const uint8_t *data,
                            unsigned int length) {
   if (command != SET_PIXEL_COMMAND) {
@@ -55,27 +55,27 @@ void OPCInputPort::NewData(uint8_t command,
   DmxChanged();
 }
 
-string OPCInputPort::Description() const {
+string OpcInputPort::Description() const {
   std::ostringstream str;
   str << m_server->ListenAddress() << ", Channel "
       << static_cast<int>(m_channel);
   return str.str();
 }
 
-OPCOutputPort::OPCOutputPort(OPCClientDevice *parent,
+OpcOutputPort::OpcOutputPort(OpcClientDevice *parent,
                              uint8_t channel,
-                             OPCClient *client)
+                             OpcClient *client)
     : BasicOutputPort(parent, channel),
       m_client(client),
       m_channel(channel) {
 }
 
-bool OPCOutputPort::WriteDMX(const DmxBuffer &buffer,
+bool OpcOutputPort::WriteDMX(const DmxBuffer &buffer,
                              OLA_UNUSED uint8_t priority) {
   return m_client->SendDmx(m_channel, buffer);
 }
 
-string OPCOutputPort::Description() const {
+string OpcOutputPort::Description() const {
   std::ostringstream str;
   str << m_client->GetRemoteAddress() << ", Channel "
       << static_cast<int>(m_channel);

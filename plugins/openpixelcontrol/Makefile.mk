@@ -5,30 +5,30 @@ if USE_OPENPIXELCONTROL
 # This is a library which isn't coupled to olad
 noinst_LTLIBRARIES += plugins/openpixelcontrol/libolaopc.la
 plugins_openpixelcontrol_libolaopc_la_SOURCES = \
-    plugins/openpixelcontrol/OPCClient.cpp \
-    plugins/openpixelcontrol/OPCClient.h \
-    plugins/openpixelcontrol/OPCConstants.h \
-    plugins/openpixelcontrol/OPCServer.cpp \
-    plugins/openpixelcontrol/OPCServer.h
+    plugins/openpixelcontrol/OpcClient.cpp \
+    plugins/openpixelcontrol/OpcClient.h \
+    plugins/openpixelcontrol/OpcConstants.h \
+    plugins/openpixelcontrol/OpcServer.cpp \
+    plugins/openpixelcontrol/OpcServer.h
 plugins_openpixelcontrol_libolaopc_la_LIBADD = \
     common/libolacommon.la
 
 lib_LTLIBRARIES += plugins/openpixelcontrol/libolaopenpixelcontrol.la
 
 # Plugin description is generated from README.md
-built_sources += plugins/openpixelcontrol/OPCPluginDescription.h
+built_sources += plugins/openpixelcontrol/OpcPluginDescription.h
 nodist_plugins_openpixelcontrol_libolaopenpixelcontrol_la_SOURCES = \
-    plugins/openpixelcontrol/OPCPluginDescription.h
-plugins/openpixelcontrol/OPCPluginDescription.h: plugins/openpixelcontrol/README.md plugins/openpixelcontrol/Makefile.mk plugins/convert_README_to_header.sh
-	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/openpixelcontrol $(top_builddir)/plugins/openpixelcontrol/OPCPluginDescription.h
+    plugins/openpixelcontrol/OpcPluginDescription.h
+plugins/openpixelcontrol/OpcPluginDescription.h: plugins/openpixelcontrol/README.md plugins/openpixelcontrol/Makefile.mk plugins/convert_README_to_header.sh
+	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/openpixelcontrol $(top_builddir)/plugins/openpixelcontrol/OpcPluginDescription.h
 
 plugins_openpixelcontrol_libolaopenpixelcontrol_la_SOURCES = \
-    plugins/openpixelcontrol/OPCDevice.cpp \
-    plugins/openpixelcontrol/OPCDevice.h \
-    plugins/openpixelcontrol/OPCPlugin.cpp \
-    plugins/openpixelcontrol/OPCPlugin.h \
-    plugins/openpixelcontrol/OPCPort.cpp \
-    plugins/openpixelcontrol/OPCPort.h
+    plugins/openpixelcontrol/OpcDevice.cpp \
+    plugins/openpixelcontrol/OpcDevice.h \
+    plugins/openpixelcontrol/OpcPlugin.cpp \
+    plugins/openpixelcontrol/OpcPlugin.h \
+    plugins/openpixelcontrol/OpcPort.cpp \
+    plugins/openpixelcontrol/OpcPort.h
 
 plugins_openpixelcontrol_libolaopenpixelcontrol_la_LIBADD = \
     common/libolacommon.la \
@@ -38,20 +38,20 @@ plugins_openpixelcontrol_libolaopenpixelcontrol_la_LIBADD = \
 # TESTS
 ##################################################
 test_programs += \
-    plugins/openpixelcontrol/OPCClientTester \
-    plugins/openpixelcontrol/OPCServerTester
+    plugins/openpixelcontrol/OpcClientTester \
+    plugins/openpixelcontrol/OpcServerTester
 
-plugins_openpixelcontrol_OPCClientTester_SOURCES = \
-    plugins/openpixelcontrol/OPCClientTest.cpp
-plugins_openpixelcontrol_OPCClientTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-plugins_openpixelcontrol_OPCClientTester_LDADD = \
+plugins_openpixelcontrol_OpcClientTester_SOURCES = \
+    plugins/openpixelcontrol/OpcClientTest.cpp
+plugins_openpixelcontrol_OpcClientTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+plugins_openpixelcontrol_OpcClientTester_LDADD = \
     $(COMMON_TESTING_LIBS) \
     plugins/openpixelcontrol/libolaopc.la
 
-plugins_openpixelcontrol_OPCServerTester_SOURCES = \
-    plugins/openpixelcontrol/OPCServerTest.cpp
-plugins_openpixelcontrol_OPCServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-plugins_openpixelcontrol_OPCServerTester_LDADD = \
+plugins_openpixelcontrol_OpcServerTester_SOURCES = \
+    plugins/openpixelcontrol/OpcServerTest.cpp
+plugins_openpixelcontrol_OpcServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+plugins_openpixelcontrol_OpcServerTester_LDADD = \
     $(COMMON_TESTING_LIBS) \
     plugins/openpixelcontrol/libolaopc.la
 endif

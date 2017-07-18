@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCDevice.h
+ * OpcDevice.h
  * The Open Pixel Control Device.
  * Copyright (C) 2014 Simon Newton
  */
@@ -26,8 +26,8 @@
 
 #include "ola/network/Socket.h"
 #include "olad/Device.h"
-#include "plugins/openpixelcontrol/OPCClient.h"
-#include "plugins/openpixelcontrol/OPCServer.h"
+#include "plugins/openpixelcontrol/OpcClient.h"
+#include "plugins/openpixelcontrol/OpcServer.h"
 
 namespace ola {
 
@@ -36,7 +36,7 @@ class AbstractPlugin;
 namespace plugin {
 namespace openpixelcontrol {
 
-class OPCServerDevice: public ola::Device {
+class OpcServerDevice: public ola::Device {
  public:
   /**
    * @brief Create a new OPC server device.
@@ -45,7 +45,7 @@ class OPCServerDevice: public ola::Device {
    * @param preferences the Preferences container.
    * @param listen_addr the IP:port to listen on.
    */
-  OPCServerDevice(AbstractPlugin *owner,
+  OpcServerDevice(AbstractPlugin *owner,
                   PluginAdaptor *plugin_adaptor,
                   Preferences *preferences,
                   const ola::network::IPV4SocketAddress listen_addr);
@@ -61,12 +61,12 @@ class OPCServerDevice: public ola::Device {
   PluginAdaptor* const m_plugin_adaptor;
   Preferences* const m_preferences;
   const ola::network::IPV4SocketAddress m_listen_addr;
-  std::auto_ptr<class OPCServer> m_server;
+  std::auto_ptr<class OpcServer> m_server;
 
-  DISALLOW_COPY_AND_ASSIGN(OPCServerDevice);
+  DISALLOW_COPY_AND_ASSIGN(OpcServerDevice);
 };
 
-class OPCClientDevice: public ola::Device {
+class OpcClientDevice: public ola::Device {
  public:
   /**
    * @brief Create a new OPC client device.
@@ -75,7 +75,7 @@ class OPCClientDevice: public ola::Device {
    * @param preferences the Preferences container.
    * @param target the IP:port to connect to.
    */
-  OPCClientDevice(AbstractPlugin *owner,
+  OpcClientDevice(AbstractPlugin *owner,
                   PluginAdaptor *plugin_adaptor,
                   Preferences *preferences,
                   const ola::network::IPV4SocketAddress target);
@@ -91,9 +91,9 @@ class OPCClientDevice: public ola::Device {
   PluginAdaptor* const m_plugin_adaptor;
   Preferences* const m_preferences;
   const ola::network::IPV4SocketAddress m_target;
-  std::auto_ptr<class OPCClient> m_client;
+  std::auto_ptr<class OpcClient> m_client;
 
-  DISALLOW_COPY_AND_ASSIGN(OPCClientDevice);
+  DISALLOW_COPY_AND_ASSIGN(OpcClientDevice);
 };
 }  // namespace openpixelcontrol
 }  // namespace plugin

@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCClient.cpp
+ * OpcClient.cpp
  * The Open Pixel Control Client.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/openpixelcontrol/OPCClient.h"
+#include "plugins/openpixelcontrol/OpcClient.h"
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -28,7 +28,7 @@
 #include "ola/io/NonBlockingSender.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/util/Utils.h"
-#include "plugins/openpixelcontrol/OPCConstants.h"
+#include "plugins/openpixelcontrol/OpcConstants.h"
 
 namespace ola {
 namespace plugin {
@@ -37,25 +37,25 @@ namespace openpixelcontrol {
 using ola::TimeInterval;
 using ola::network::TCPSocket;
 
-OPCClient::OPCClient(ola::io::SelectServerInterface *ss,
+OpcClient::OpcClient(ola::io::SelectServerInterface *ss,
                      const ola::network::IPV4SocketAddress &target)
     : m_ss(ss),
       m_target(target),
       m_backoff(TimeInterval(1, 0), TimeInterval(300, 0)),
       m_pool(OPC_FRAME_SIZE),
-      m_socket_factory(NewCallback(this, &OPCClient::SocketConnected)),
+      m_socket_factory(NewCallback(this, &OpcClient::SocketConnected)),
       m_tcp_connector(ss, &m_socket_factory, TimeInterval(3, 0)) {
   m_tcp_connector.AddEndpoint(target, &m_backoff);
 }
 
-OPCClient::~OPCClient() {
+OpcClient::~OpcClient() {
   if (m_client_socket.get()) {
     m_ss->RemoveReadDescriptor(m_client_socket.get());
     m_tcp_connector.Disconnect(m_target, true);
   }
 }
 
-bool OPCClient::SendDmx(uint8_t channel, const DmxBuffer &buffer) {
+bool OpcClient::SendDmx(uint8_t channel, const DmxBuffer &buffer) {
   if (!m_sender.get()) {
     return false;  // not connected
   }
@@ -69,15 +69,15 @@ bool OPCClient::SendDmx(uint8_t channel, const DmxBuffer &buffer) {
   return m_sender->SendMessage(&queue);
 }
 
-void OPCClient::SetSocketCallback(SocketEventCallback *callback) {
+void OpcClient::SetSocketCallback(SocketEventCallback *callback) {
   m_socket_callback.reset(callback);
 }
 
-void OPCClient::SocketConnected(TCPSocket *socket) {
+void OpcClient::SocketConnected(TCPSocket *socket) {
   m_client_socket.reset(socket);
-  m_client_socket->SetOnData(NewCallback(this, &OPCClient::NewData));
+  m_client_socket->SetOnData(NewCallback(this, &OpcClient::NewData));
   m_client_socket->SetOnClose(
-      NewSingleCallback(this, &OPCClient::SocketClosed));
+      NewSingleCallback(this, &OpcClient::SocketClosed));
   m_ss->AddReadDescriptor(socket);
 
   m_sender.reset(
@@ -87,7 +87,7 @@ void OPCClient::SocketConnected(TCPSocket *socket) {
   }
 }
 
-void OPCClient::NewData() {
+void OpcClient::NewData() {
   // The OPC protocol seems to be unidirectional. The other clients don't even
   // bother reading from the socket.
   // Rather than letting the data buffer we read and discard any incoming data
@@ -98,7 +98,7 @@ void OPCClient::NewData() {
   m_client_socket->Receive(discard, arraysize(discard), data_received);
 }
 
-void OPCClient::SocketClosed() {
+void OpcClient::SocketClosed() {
   m_sender.reset();
   m_client_socket.reset();
 

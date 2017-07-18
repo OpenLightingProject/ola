@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCPlugin.h
+ * OpcPlugin.h
  * The Open Pixel Control Plugin.
  * Copyright (C) 2014 Simon Newton
  */
@@ -31,11 +31,11 @@ namespace ola {
 namespace plugin {
 namespace openpixelcontrol {
 
-class OPCPlugin: public Plugin {
+class OpcPlugin: public Plugin {
  public:
-  explicit OPCPlugin(PluginAdaptor *plugin_adaptor)
+  explicit OpcPlugin(PluginAdaptor *plugin_adaptor)
       : Plugin(plugin_adaptor) {}
-  ~OPCPlugin();
+  ~OpcPlugin();
 
   std::string Name() const { return PLUGIN_NAME; }
   ola_plugin_id Id() const { return OLA_PLUGIN_OPENPIXELCONTROL; }
@@ -43,8 +43,8 @@ class OPCPlugin: public Plugin {
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-  typedef std::vector<ola::Device*> OPCDevices;
-  OPCDevices m_devices;
+  typedef std::vector<ola::Device*> OpcDevices;
+  OpcDevices m_devices;
 
   bool StartHook();
   bool StopHook();

@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCPort.h
+ * OpcPort.h
  * Ports for the Open Pixel Control plugin.
  * Copyright (C) 2014 Simon Newton
  */
@@ -24,7 +24,7 @@
 #include <string>
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
-#include "plugins/openpixelcontrol/OPCDevice.h"
+#include "plugins/openpixelcontrol/OpcDevice.h"
 
 namespace ola {
 namespace plugin {
@@ -33,21 +33,21 @@ namespace openpixelcontrol {
 /**
  * @brief An InputPort for the OPC plugin.
  *
- * OPCInputPorts correspond to a listening TCP socket.
+ * OpcInputPorts correspond to a listening TCP socket.
  */
-class OPCInputPort: public BasicInputPort {
+class OpcInputPort: public BasicInputPort {
  public:
   /**
    * @brief Create a new OPC Input Port.
-   * @param parent the OPCDevice this port belongs to
+   * @param parent the OpcDevice this port belongs to
    * @param channel the OPC channel for the port.
    * @param plugin_adaptor the PluginAdaptor to use
-   * @param server the OPCServer to use, ownership is not transferred.
+   * @param server the OpcServer to use, ownership is not transferred.
    */
-  OPCInputPort(OPCServerDevice *parent,
+  OpcInputPort(OpcServerDevice *parent,
                uint8_t channel,
                class PluginAdaptor *plugin_adaptor,
-               class OPCServer *server);
+               class OpcServer *server);
 
   const DmxBuffer &ReadDMX() const { return m_buffer; }
 
@@ -57,39 +57,39 @@ class OPCInputPort: public BasicInputPort {
 
  private:
   const uint8_t m_channel;
-  class OPCServer* const m_server;
+  class OpcServer* const m_server;
   DmxBuffer m_buffer;
 
   void NewData(uint8_t command, const uint8_t *data, unsigned int length);
 
-  DISALLOW_COPY_AND_ASSIGN(OPCInputPort);
+  DISALLOW_COPY_AND_ASSIGN(OpcInputPort);
 };
 
 /**
  * @brief An OutputPort for the OPC plugin.
  */
-class OPCOutputPort: public BasicOutputPort {
+class OpcOutputPort: public BasicOutputPort {
  public:
   /**
    * @brief Create a new OPC Output Port.
-   * @param parent the OPCDevice this port belongs to
+   * @param parent the OpcDevice this port belongs to
    * @param channel the OPC channel for the port.
-   * @param client the OPCClient to use for this port, ownership is not
+   * @param client the OpcClient to use for this port, ownership is not
    *   transferred.
    */
-  OPCOutputPort(OPCClientDevice *parent,
+  OpcOutputPort(OpcClientDevice *parent,
                 uint8_t channel,
-                class OPCClient *client);
+                class OpcClient *client);
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
   std::string Description() const;
 
  private:
-  class OPCClient* const m_client;
+  class OpcClient* const m_client;
   const uint8_t m_channel;
 
-  DISALLOW_COPY_AND_ASSIGN(OPCOutputPort);
+  DISALLOW_COPY_AND_ASSIGN(OpcOutputPort);
 };
 }  // namespace openpixelcontrol
 }  // namespace plugin

@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCClient.h
+ * OpcClient.h
  * The Open Pixel Control Client.
  * Copyright (C) 2014 Simon Newton
  */
@@ -46,7 +46,7 @@ namespace openpixelcontrol {
  *
  * The OPC client connects to a remote IP:port and sends OPC messages.
  */
-class OPCClient {
+class OpcClient {
  public:
   /**
    * @brief Called when the socket changes state.
@@ -54,17 +54,17 @@ class OPCClient {
   typedef ola::Callback1<void, bool> SocketEventCallback;
 
   /**
-   * @brief Create a new OPCClient.
+   * @brief Create a new OpcClient.
    * @param ss The SelectServer to use
    * @param target the remote IP:port to connect to.
    */
-  OPCClient(ola::io::SelectServerInterface *ss,
+  OpcClient(ola::io::SelectServerInterface *ss,
             const ola::network::IPV4SocketAddress &target);
 
   /**
    * @brief Destructor.
    */
-  ~OPCClient();
+  ~OpcClient();
 
   /**
    * @brief Return the remote address for this Client.
@@ -102,7 +102,7 @@ class OPCClient {
   void NewData();
   void SocketClosed();
 
-  DISALLOW_COPY_AND_ASSIGN(OPCClient);
+  DISALLOW_COPY_AND_ASSIGN(OpcClient);
 };
 }  // namespace openpixelcontrol
 }  // namespace plugin

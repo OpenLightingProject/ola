@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCServer.h
+ * OpcServer.h
  * The Open Pixel Server.
  * Copyright (C) 2014 Simon Newton
  */
@@ -30,7 +30,7 @@
 #include "ola/network/SocketAddress.h"
 #include "ola/network/TCPSocket.h"
 #include "ola/network/TCPSocketFactory.h"
-#include "plugins/openpixelcontrol/OPCConstants.h"
+#include "plugins/openpixelcontrol/OpcConstants.h"
 
 namespace ola {
 namespace plugin {
@@ -41,7 +41,7 @@ namespace openpixelcontrol {
  *
  * The server listens on a TCP port and receives OPC data.
  */
-class OPCServer {
+class OpcServer {
  public:
   /**
    * @brief The callback executed when new OPC data arrives.
@@ -50,20 +50,20 @@ class OPCServer {
       ChannelCallback;
 
   /**
-   * @brief Create a new OPCServer.
+   * @brief Create a new OpcServer.
    * @param ss The SelectServer to use
    * @param listen_addr the IP:port to listen on.
    */
-  OPCServer(ola::io::SelectServerInterface *ss,
+  OpcServer(ola::io::SelectServerInterface *ss,
             const ola::network::IPV4SocketAddress &listen_addr);
 
   /**
    * @brief Destructor.
    */
-  ~OPCServer();
+  ~OpcServer();
 
   /**
-   * @brief Initialize the OPCServer.
+   * @brief Initialize the OpcServer.
    * @returns true if the server is now listening for new connections, false
    *   otherwise.
    */
@@ -120,7 +120,7 @@ class OPCServer {
   void SocketReady(ola::network::TCPSocket *socket, RxState *rx_state);
   void SocketClosed(ola::network::TCPSocket *socket);
 
-  DISALLOW_COPY_AND_ASSIGN(OPCServer);
+  DISALLOW_COPY_AND_ASSIGN(OpcServer);
 };
 }  // namespace openpixelcontrol
 }  // namespace plugin

@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCClientTest.cpp
- * Test fixture for the OPCClient class
+ * OpcClientTest.cpp
+ * Test fixture for the OpcClient class
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -30,24 +30,24 @@
 #include "ola/network/SocketAddress.h"
 #include "ola/testing/TestUtils.h"
 #include "ola/util/Utils.h"
-#include "plugins/openpixelcontrol/OPCClient.h"
-#include "plugins/openpixelcontrol/OPCServer.h"
+#include "plugins/openpixelcontrol/OpcClient.h"
+#include "plugins/openpixelcontrol/OpcServer.h"
 
 
 using ola::DmxBuffer;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::plugin::openpixelcontrol::OPCClient;
-using ola::plugin::openpixelcontrol::OPCServer;
+using ola::plugin::openpixelcontrol::OpcClient;
+using ola::plugin::openpixelcontrol::OpcServer;
 using std::auto_ptr;
 
-class OPCClientTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(OPCClientTest);
+class OpcClientTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(OpcClientTest);
   CPPUNIT_TEST(testTransmit);
   CPPUNIT_TEST_SUITE_END();
 
  public:
-  OPCClientTest()
+  OpcClientTest()
       : CppUnit::TestFixture(),
         m_ss(NULL) {
   }
@@ -57,7 +57,7 @@ class OPCClientTest: public CppUnit::TestFixture {
 
  private:
   ola::io::SelectServer m_ss;
-  auto_ptr<OPCServer> m_server;
+  auto_ptr<OpcServer> m_server;
   DmxBuffer m_received_data;
   uint8_t m_command;
 
@@ -67,7 +67,7 @@ class OPCClientTest: public CppUnit::TestFixture {
     m_ss.Terminate();
   }
 
-  void SendDMX(OPCClient *client, DmxBuffer *buffer, bool connected) {
+  void SendDMX(OpcClient *client, DmxBuffer *buffer, bool connected) {
     if (connected) {
       OLA_ASSERT_TRUE(client->SendDmx(CHANNEL, *buffer));
     } else {
@@ -78,20 +78,20 @@ class OPCClientTest: public CppUnit::TestFixture {
   static const uint8_t CHANNEL = 1;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(OPCClientTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(OpcClientTest);
 
-void OPCClientTest::setUp() {
+void OpcClientTest::setUp() {
   IPV4SocketAddress listen_addr(IPV4Address::Loopback(), 0);
-  m_server.reset(new OPCServer(&m_ss, listen_addr));
+  m_server.reset(new OpcServer(&m_ss, listen_addr));
   m_server->SetCallback(
       CHANNEL,
-      ola::NewCallback(this, &OPCClientTest::CaptureData));
+      ola::NewCallback(this, &OpcClientTest::CaptureData));
 
   OLA_ASSERT_TRUE(m_server->Init());
 }
 
-void OPCClientTest::testTransmit() {
-  OPCClient client(&m_ss, m_server->ListenAddress());
+void OpcClientTest::testTransmit() {
+  OpcClient client(&m_ss, m_server->ListenAddress());
   OLA_ASSERT_EQ(m_server->ListenAddress().ToString(),
                 client.GetRemoteAddress());
 
@@ -99,7 +99,7 @@ void OPCClientTest::testTransmit() {
   buffer.SetFromString("1,2,3,4");
 
   client.SetSocketCallback(
-      ola::NewCallback(this, &OPCClientTest::SendDMX, &client, &buffer));
+      ola::NewCallback(this, &OpcClientTest::SendDMX, &client, &buffer));
 
   m_ss.Run();
   OLA_ASSERT_EQ(m_received_data, buffer);

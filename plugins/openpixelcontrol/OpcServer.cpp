@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCServer.cpp
+ * OpcServer.cpp
  * The Open Pixel Server.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/openpixelcontrol/OPCServer.h"
+#include "plugins/openpixelcontrol/OpcServer.h"
 
 #include <string>
 #include "ola/Callback.h"
@@ -45,7 +45,7 @@ void CleanupSocket(TCPSocket *socket) {
 }
 }  // namespace
 
-void OPCServer::RxState::CheckSize() {
+void OpcServer::RxState::CheckSize() {
   expected_size = utils::JoinUInt8(data[2], data[3]);
   if (static_cast<unsigned int>(expected_size) + OPC_HEADER_SIZE >
       buffer_size) {
@@ -57,15 +57,15 @@ void OPCServer::RxState::CheckSize() {
   }
 }
 
-OPCServer::OPCServer(ola::io::SelectServerInterface *ss,
+OpcServer::OpcServer(ola::io::SelectServerInterface *ss,
                      const ola::network::IPV4SocketAddress &listen_addr)
     : m_ss(ss),
       m_listen_addr(listen_addr),
       m_tcp_socket_factory(
-          ola::NewCallback(this, &OPCServer::NewTCPConnection)) {
+          ola::NewCallback(this, &OpcServer::NewTCPConnection)) {
 }
 
-OPCServer::~OPCServer() {
+OpcServer::~OpcServer() {
   if (m_listening_socket.get()) {
     m_ss->RemoveReadDescriptor(m_listening_socket.get());
     m_listening_socket.reset();
@@ -81,7 +81,7 @@ OPCServer::~OPCServer() {
   STLDeleteValues(&m_callbacks);
 }
 
-bool OPCServer::Init() {
+bool OpcServer::Init() {
   std::auto_ptr<TCPAcceptingSocket> listening_socket(
       new TCPAcceptingSocket(&m_tcp_socket_factory));
   if (!listening_socket->Listen(m_listen_addr)) {
@@ -92,7 +92,7 @@ bool OPCServer::Init() {
   return true;
 }
 
-IPV4SocketAddress OPCServer::ListenAddress() const {
+IPV4SocketAddress OpcServer::ListenAddress() const {
   if (m_listening_socket.get()) {
     GenericSocketAddress addr = m_listening_socket->GetLocalAddress();
     if (addr.Family() == AF_INET) {
@@ -102,11 +102,11 @@ IPV4SocketAddress OPCServer::ListenAddress() const {
   return IPV4SocketAddress();
 }
 
-void OPCServer::SetCallback(uint8_t channel, ChannelCallback *callback) {
+void OpcServer::SetCallback(uint8_t channel, ChannelCallback *callback) {
   STLReplaceAndDelete(&m_callbacks, channel, callback);
 }
 
-void OPCServer::NewTCPConnection(TCPSocket *socket) {
+void OpcServer::NewTCPConnection(TCPSocket *socket) {
   if (!socket)
     return;
 
@@ -114,14 +114,14 @@ void OPCServer::NewTCPConnection(TCPSocket *socket) {
 
   socket->SetNoDelay();
   socket->SetOnData(
-      NewCallback(this, &OPCServer::SocketReady, socket, rx_state));
+      NewCallback(this, &OpcServer::SocketReady, socket, rx_state));
   socket->SetOnClose(
-      NewSingleCallback(this, &OPCServer::SocketClosed, socket));
+      NewSingleCallback(this, &OpcServer::SocketClosed, socket));
   m_ss->AddReadDescriptor(socket);
   STLReplaceAndDelete(&m_clients, socket, rx_state);
 }
 
-void OPCServer::SocketReady(TCPSocket *socket, RxState *rx_state) {
+void OpcServer::SocketReady(TCPSocket *socket, RxState *rx_state) {
   unsigned int data_received = 0;
   if (socket->Receive(rx_state->data + rx_state->offset,
                       rx_state->buffer_size - rx_state->offset,
@@ -154,7 +154,7 @@ void OPCServer::SocketReady(TCPSocket *socket, RxState *rx_state) {
   rx_state->expected_size = 0;
 }
 
-void OPCServer::SocketClosed(TCPSocket *socket) {
+void OpcServer::SocketClosed(TCPSocket *socket) {
   m_ss->RemoveReadDescriptor(socket);
   STLRemoveAndDelete(&m_clients, socket);
 

@@ -64,7 +64,7 @@
 #endif  // USE_OPENDMX
 
 #ifdef USE_OPENPIXELCONTROL
-#include "plugins/openpixelcontrol/OPCPlugin.h"
+#include "plugins/openpixelcontrol/OpcPlugin.h"
 #endif  // USE_OPENPIXELCONTROL
 
 #ifdef USE_OSC
@@ -180,7 +180,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_OPENPIXELCONTROL
   m_plugins.push_back(
-      new ola::plugin::openpixelcontrol::OPCPlugin(m_plugin_adaptor));
+      new ola::plugin::openpixelcontrol::OpcPlugin(m_plugin_adaptor));
 #endif  // USE_OPENPIXELCONTROL
 
 #ifdef USE_OSC

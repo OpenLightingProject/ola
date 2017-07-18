@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCPlugin.cpp
+ * OpcPlugin.cpp
  * The Open Pixel Control Plugin.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/openpixelcontrol/OPCPlugin.h"
+#include "plugins/openpixelcontrol/OpcPlugin.h"
 
 #include <memory>
 #include <string>
@@ -29,8 +29,8 @@
 #include "olad/Device.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
-#include "plugins/openpixelcontrol/OPCDevice.h"
-#include "plugins/openpixelcontrol/OPCPluginDescription.h"
+#include "plugins/openpixelcontrol/OpcDevice.h"
+#include "plugins/openpixelcontrol/OpcPluginDescription.h"
 
 namespace ola {
 namespace plugin {
@@ -40,24 +40,24 @@ using ola::network::IPV4SocketAddress;
 using std::string;
 using std::vector;
 
-const char OPCPlugin::LISTEN_KEY[] = "listen";
-const char OPCPlugin::PLUGIN_NAME[] = "Open Pixel Control";
-const char OPCPlugin::PLUGIN_PREFIX[] = "openpixelcontrol";
-const char OPCPlugin::TARGET_KEY[] = "target";
+const char OpcPlugin::LISTEN_KEY[] = "listen";
+const char OpcPlugin::PLUGIN_NAME[] = "Open Pixel Control";
+const char OpcPlugin::PLUGIN_PREFIX[] = "openpixelcontrol";
+const char OpcPlugin::TARGET_KEY[] = "target";
 
-OPCPlugin::~OPCPlugin() {}
+OpcPlugin::~OpcPlugin() {}
 
-bool OPCPlugin::StartHook() {
+bool OpcPlugin::StartHook() {
   // Start Target (output) devices.
-  AddDevices<OPCClientDevice>(TARGET_KEY);
+  AddDevices<OpcClientDevice>(TARGET_KEY);
 
   // Start listen (input) devices.
-  AddDevices<OPCServerDevice>(LISTEN_KEY);
+  AddDevices<OpcServerDevice>(LISTEN_KEY);
   return true;
 }
 
-bool OPCPlugin::StopHook() {
-  OPCDevices::iterator iter = m_devices.begin();
+bool OpcPlugin::StopHook() {
+  OpcDevices::iterator iter = m_devices.begin();
   for (; iter != m_devices.end(); ++iter) {
     m_plugin_adaptor->UnregisterDevice(*iter);
     (*iter)->Stop();
@@ -67,11 +67,11 @@ bool OPCPlugin::StopHook() {
   return true;
 }
 
-string OPCPlugin::Description() const {
+string OpcPlugin::Description() const {
     return plugin_description;
 }
 
-bool OPCPlugin::SetDefaultPreferences() {
+bool OpcPlugin::SetDefaultPreferences() {
   if (!m_preferences) {
     return false;
   }
@@ -80,7 +80,7 @@ bool OPCPlugin::SetDefaultPreferences() {
 }
 
 template <typename DeviceClass>
-void OPCPlugin::AddDevices(const std::string &key) {
+void OpcPlugin::AddDevices(const std::string &key) {
   vector<string> addresses = m_preferences->GetMultipleValue(key);
   vector<string>::const_iterator iter = addresses.begin();
   for (; iter != addresses.end(); ++iter) {
@@ -94,7 +94,7 @@ void OPCPlugin::AddDevices(const std::string &key) {
         this, m_plugin_adaptor, m_preferences, target));
 
     if (!device->Start()) {
-      OLA_INFO << "Failed to start OPCDevice";
+      OLA_INFO << "Failed to start OpcDevice";
       continue;
     }
 

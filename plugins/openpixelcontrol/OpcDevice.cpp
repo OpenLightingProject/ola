@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCDevice.cpp
+ * OpcDevice.cpp
  * The Open Pixel Control Device.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/openpixelcontrol/OPCDevice.h"
+#include "plugins/openpixelcontrol/OpcDevice.h"
 
 #include <sstream>
 #include <set>
@@ -27,7 +27,7 @@
 
 #include "ola/Logging.h"
 #include "olad/Preferences.h"
-#include "plugins/openpixelcontrol/OPCPort.h"
+#include "plugins/openpixelcontrol/OpcPort.h"
 
 namespace ola {
 namespace plugin {
@@ -57,7 +57,7 @@ set<uint8_t> DeDupChannels(const vector<string> &channels) {
 }
 }  // namespace
 
-OPCServerDevice::OPCServerDevice(
+OpcServerDevice::OpcServerDevice(
     AbstractPlugin *owner,
     PluginAdaptor *plugin_adaptor,
     Preferences *preferences,
@@ -66,14 +66,14 @@ OPCServerDevice::OPCServerDevice(
       m_plugin_adaptor(plugin_adaptor),
       m_preferences(preferences),
       m_listen_addr(listen_addr),
-      m_server(new OPCServer(plugin_adaptor, listen_addr)) {
+      m_server(new OpcServer(plugin_adaptor, listen_addr)) {
 }
 
-string OPCServerDevice::DeviceId() const {
+string OpcServerDevice::DeviceId() const {
   return m_listen_addr.ToString();
 }
 
-bool OPCServerDevice::StartHook() {
+bool OpcServerDevice::StartHook() {
   if (!m_server->Init()) {
     return false;
   }
@@ -84,14 +84,14 @@ bool OPCServerDevice::StartHook() {
       m_preferences->GetMultipleValue(str.str()));
   set<uint8_t>::const_iterator iter = channels.begin();
   for (; iter != channels.end(); ++iter) {
-    OPCInputPort *port = new OPCInputPort(this, *iter, m_plugin_adaptor,
+    OpcInputPort *port = new OpcInputPort(this, *iter, m_plugin_adaptor,
                                           m_server.get());
     AddPort(port);
   }
   return true;
 }
 
-OPCClientDevice::OPCClientDevice(AbstractPlugin *owner,
+OpcClientDevice::OpcClientDevice(AbstractPlugin *owner,
                                  PluginAdaptor *plugin_adaptor,
                                  Preferences *preferences,
                                  const ola::network::IPV4SocketAddress target)
@@ -99,21 +99,21 @@ OPCClientDevice::OPCClientDevice(AbstractPlugin *owner,
       m_plugin_adaptor(plugin_adaptor),
       m_preferences(preferences),
       m_target(target),
-      m_client(new OPCClient(plugin_adaptor, target)) {
+      m_client(new OpcClient(plugin_adaptor, target)) {
 }
 
-string OPCClientDevice::DeviceId() const {
+string OpcClientDevice::DeviceId() const {
   return m_target.ToString();
 }
 
-bool OPCClientDevice::StartHook() {
+bool OpcClientDevice::StartHook() {
   ostringstream str;
   str << "target_" << m_target << "_channel";
   set<uint8_t> channels = DeDupChannels(
       m_preferences->GetMultipleValue(str.str()));
   set<uint8_t>::const_iterator iter = channels.begin();
   for (; iter != channels.end(); ++iter) {
-    OPCOutputPort *port = new OPCOutputPort(this, *iter, m_client.get());
+    OpcOutputPort *port = new OpcOutputPort(this, *iter, m_client.get());
     AddPort(port);
   }
   return true;

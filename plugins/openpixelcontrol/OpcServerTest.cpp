@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OPCServerTest.cpp
- * Test fixture for the OPCServer class
+ * OpcServerTest.cpp
+ * Test fixture for the OpcServer class
  * Copyright (C) 2014 Simon Newton
  */
 
@@ -31,18 +31,18 @@
 #include "ola/network/TCPSocket.h"
 #include "ola/testing/TestUtils.h"
 #include "ola/util/Utils.h"
-#include "plugins/openpixelcontrol/OPCServer.h"
+#include "plugins/openpixelcontrol/OpcServer.h"
 
 
 using ola::DmxBuffer;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
-using ola::plugin::openpixelcontrol::OPCServer;
+using ola::plugin::openpixelcontrol::OpcServer;
 using std::auto_ptr;
 
-class OPCServerTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(OPCServerTest);
+class OpcServerTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(OpcServerTest);
   CPPUNIT_TEST(testReceiveDmx);
   CPPUNIT_TEST(testUnknownCommand);
   CPPUNIT_TEST(testLargeFrame);
@@ -50,7 +50,7 @@ class OPCServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-  OPCServerTest()
+  OpcServerTest()
       : CppUnit::TestFixture(),
         m_ss(NULL) {
   }
@@ -63,7 +63,7 @@ class OPCServerTest: public CppUnit::TestFixture {
 
  private:
   ola::io::SelectServer m_ss;
-  auto_ptr<OPCServer> m_server;
+  auto_ptr<OpcServer> m_server;
   auto_ptr<TCPSocket> m_client_socket;
   DmxBuffer m_received_data;
   uint8_t m_command;
@@ -81,21 +81,21 @@ class OPCServerTest: public CppUnit::TestFixture {
   static const uint8_t SET_PIXELS_COMMAND = 0;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(OPCServerTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(OpcServerTest);
 
-void OPCServerTest::setUp() {
+void OpcServerTest::setUp() {
   IPV4SocketAddress listen_addr(IPV4Address::Loopback(), 0);
-  m_server.reset(new OPCServer(&m_ss, listen_addr));
+  m_server.reset(new OpcServer(&m_ss, listen_addr));
   m_server->SetCallback(
       CHANNEL,
-      ola::NewCallback(this, &OPCServerTest::CaptureData));
+      ola::NewCallback(this, &OpcServerTest::CaptureData));
 
   OLA_ASSERT_TRUE(m_server->Init());
 
   m_client_socket.reset(TCPSocket::Connect(m_server->ListenAddress()));
 }
 
-void OPCServerTest::SendDataAndCheck(uint8_t channel,
+void OpcServerTest::SendDataAndCheck(uint8_t channel,
                                      const DmxBuffer &buffer) {
   unsigned int dmx_size = buffer.Size();
   uint8_t data[dmx_size + 4];
@@ -109,7 +109,7 @@ void OPCServerTest::SendDataAndCheck(uint8_t channel,
   OLA_ASSERT_EQ(m_received_data, buffer);
 }
 
-void OPCServerTest::testReceiveDmx() {
+void OpcServerTest::testReceiveDmx() {
   DmxBuffer buffer;
   buffer.SetFromString("1,2,3,4");
   SendDataAndCheck(CHANNEL, buffer);
@@ -119,7 +119,7 @@ void OPCServerTest::testReceiveDmx() {
   SendDataAndCheck(CHANNEL, buffer);
 }
 
-void OPCServerTest::testUnknownCommand() {
+void OpcServerTest::testUnknownCommand() {
   uint8_t data[] = {1, 1, 0, 2, 3, 4};
   m_client_socket->Send(data, arraysize(data));
   m_ss.Run();
@@ -130,7 +130,7 @@ void OPCServerTest::testUnknownCommand() {
   OLA_ASSERT_EQ(m_received_data, buffer);
 }
 
-void OPCServerTest::testLargeFrame() {
+void OpcServerTest::testLargeFrame() {
   uint8_t data[1028];
   data[0] = 1;
   data[1] = 0;
@@ -147,7 +147,7 @@ void OPCServerTest::testLargeFrame() {
   OLA_ASSERT_EQ(m_received_data, buffer);
 }
 
-void OPCServerTest::testHangingFrame() {
+void OpcServerTest::testHangingFrame() {
   uint8_t data[] = {1, 0};
   m_client_socket->Send(data, arraysize(data));
 }
