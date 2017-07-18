@@ -13,14 +13,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCAddressTemplate.cpp
+ * OscAddressTemplate.cpp
  * Expand a template, substituting values.
  * Copyright (C) 2012 Simon Newton
  */
 
 #include <string>
 #include "ola/StringUtils.h"
-#include "plugins/osc/OSCAddressTemplate.h"
+#include "plugins/osc/OscAddressTemplate.h"
 
 namespace ola {
 namespace plugin {

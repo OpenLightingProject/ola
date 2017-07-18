@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCNodeTest.cpp
- * Test fixture for the OSCNode class
+ * OscNodeTest.cpp
+ * Test fixture for the OscNode class
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -30,8 +30,8 @@
 #include "ola/network/Socket.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/testing/TestUtils.h"
-#include "plugins/osc/OSCNode.h"
-#include "plugins/osc/OSCTarget.h"
+#include "plugins/osc/OscNode.h"
+#include "plugins/osc/OscTarget.h"
 
 using ola::DmxBuffer;
 using ola::NewCallback;
@@ -39,30 +39,30 @@ using ola::io::SelectServer;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
-using ola::plugin::osc::OSCNode;
-using ola::plugin::osc::OSCTarget;
+using ola::plugin::osc::OscNode;
+using ola::plugin::osc::OscTarget;
 using std::auto_ptr;
 
 
 /**
- * The test fixture for the OSCNode.
+ * The test fixture for the OscNode.
  */
-class OSCNodeTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(OSCNodeTest);
+class OscNodeTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(OscNodeTest);
   CPPUNIT_TEST(testSendBlob);
   CPPUNIT_TEST(testReceive);
   CPPUNIT_TEST_SUITE_END();
 
  public:
     /**
-     * Initilize the OSCNode and the timeout_id
+     * Initilize the OscNode and the timeout_id
      */
-    OSCNodeTest()
+    OscNodeTest()
         : CppUnit::TestFixture(),
           m_timeout_id(ola::thread::INVALID_TIMEOUT) {
-      OSCNode::OSCNodeOptions options;
+      OscNode::OscNodeOptions options;
       options.listen_port = 0;
-      m_osc_node.reset(new OSCNode(&m_ss, NULL, options));
+      m_osc_node.reset(new OscNode(&m_ss, NULL, options));
     }
 
     // The setUp and tearDown methods. These are run before and after each test
@@ -79,7 +79,7 @@ class OSCNodeTest: public CppUnit::TestFixture {
 
  private:
     ola::io::SelectServer m_ss;
-    auto_ptr<OSCNode> m_osc_node;
+    auto_ptr<OscNode> m_osc_node;
     UDPSocket m_udp_socket;
     ola::thread::timeout_id m_timeout_id;
     DmxBuffer m_dmx_data;
@@ -100,11 +100,11 @@ class OSCNodeTest: public CppUnit::TestFixture {
     static const char TEST_OSC_ADDRESS[];
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(OSCNodeTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(OscNodeTest);
 
 // A OSC blob packet. See http://opensoundcontrol.org/ for what each
 // byte means.
-const uint8_t OSCNodeTest::OSC_BLOB_DATA[] = {
+const uint8_t OscNodeTest::OSC_BLOB_DATA[] = {
   // osc address
   '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
   'v', 'e', 'r', 's', 'e', '/', '1', '0',
@@ -117,7 +117,7 @@ const uint8_t OSCNodeTest::OSC_BLOB_DATA[] = {
 };
 
 // An OSC single float packet for slot 1
-const uint8_t OSCNodeTest::OSC_SINGLE_FLOAT_DATA[] = {
+const uint8_t OscNodeTest::OSC_SINGLE_FLOAT_DATA[] = {
   // osc address
   '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
   'v', 'e', 'r', 's', 'e', '/', '1', '0',
@@ -129,7 +129,7 @@ const uint8_t OSCNodeTest::OSC_SINGLE_FLOAT_DATA[] = {
 };
 
 // An OSC single int packet for slot 5
-const uint8_t OSCNodeTest::OSC_SINGLE_INT_DATA[] = {
+const uint8_t OscNodeTest::OSC_SINGLE_INT_DATA[] = {
   // osc address
   '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
   'v', 'e', 'r', 's', 'e', '/', '1', '0',
@@ -141,7 +141,7 @@ const uint8_t OSCNodeTest::OSC_SINGLE_INT_DATA[] = {
 };
 
 // An OSC 'ii' packet for slot 7
-const uint8_t OSCNodeTest::OSC_INT_TUPLE_DATA[] = {
+const uint8_t OscNodeTest::OSC_INT_TUPLE_DATA[] = {
   // osc address
   '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
   'v', 'e', 'r', 's', 'e', '/', '1', '0',
@@ -154,7 +154,7 @@ const uint8_t OSCNodeTest::OSC_INT_TUPLE_DATA[] = {
 };
 
 // An OSC 'if' packet for slot 8
-const uint8_t OSCNodeTest::OSC_FLOAT_TUPLE_DATA[] = {
+const uint8_t OscNodeTest::OSC_FLOAT_TUPLE_DATA[] = {
   // osc address
   '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
   'v', 'e', 'r', 's', 'e', '/', '1', '0',
@@ -167,9 +167,9 @@ const uint8_t OSCNodeTest::OSC_FLOAT_TUPLE_DATA[] = {
 };
 
 // An OSC Address used for testing.
-const char OSCNodeTest::TEST_OSC_ADDRESS[] = "/dmx/universe/10";
+const char OscNodeTest::TEST_OSC_ADDRESS[] = "/dmx/universe/10";
 
-void OSCNodeTest::setUp() {
+void OscNodeTest::setUp() {
   // Init logging
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   ola::NetworkInit();
@@ -177,7 +177,7 @@ void OSCNodeTest::setUp() {
   // Setup and register the Timeout.
   m_timeout_id = m_ss.RegisterSingleTimeout(
         ABORT_TIMEOUT_IN_MS,
-        ola::NewSingleCallback(this, &OSCNodeTest::Timeout));
+        ola::NewSingleCallback(this, &OscNodeTest::Timeout));
   OLA_ASSERT_TRUE(m_timeout_id);
 
   // Init our UDP socket.
@@ -185,7 +185,7 @@ void OSCNodeTest::setUp() {
   // Put some data into the DMXBuffer
   m_dmx_data.SetFromString("0,1,2,3,4,5,6,7,8,9,10");
 
-  // Initialize the OSCNode
+  // Initialize the OscNode
   OLA_ASSERT_TRUE(m_osc_node->Init());
 }
 
@@ -193,7 +193,7 @@ void OSCNodeTest::setUp() {
  * Called when data arrives on our UDP socket. We check that this data matches
  * the expected OSC packet
  */
-void OSCNodeTest::UDPSocketReady() {
+void OscNodeTest::UDPSocketReady() {
   uint8_t data[500];  // 500 bytes is more than enough
   ssize_t data_read = sizeof(data);
   // Read the received packet into 'data'.
@@ -208,7 +208,7 @@ void OSCNodeTest::UDPSocketReady() {
  * Called when we receive DMX data via OSC. We check this matches what we
  * expect, and then stop the SelectServer.
  */
-void OSCNodeTest::DMXHandler(const DmxBuffer &dmx) {
+void OscNodeTest::DMXHandler(const DmxBuffer &dmx) {
   m_received_data = dmx;
   m_ss.Terminate();
 }
@@ -217,24 +217,24 @@ void OSCNodeTest::DMXHandler(const DmxBuffer &dmx) {
 /**
  * Check that we send OSC messages correctly.
  */
-void OSCNodeTest::testSendBlob() {
+void OscNodeTest::testSendBlob() {
   // First up create a UDP socket to receive the messages on.
   // Port 0 means 'ANY'
   IPV4SocketAddress socket_address(IPV4Address::Loopback(), 0);
   // Bind the socket, set the callback, and register with the select server.
   OLA_ASSERT_TRUE(m_udp_socket.Bind(socket_address));
-  m_udp_socket.SetOnData(NewCallback(this, &OSCNodeTest::UDPSocketReady));
+  m_udp_socket.SetOnData(NewCallback(this, &OscNodeTest::UDPSocketReady));
   OLA_ASSERT_TRUE(m_ss.AddReadDescriptor(&m_udp_socket));
   // Store the local address of the UDP socket so we know where to tell the
-  // OSCNode to send to.
+  // OscNode to send to.
   OLA_ASSERT_TRUE(m_udp_socket.GetSocketAddress(&socket_address));
 
-  // Setup the OSCTarget pointing to the local socket address
-  OSCTarget target(socket_address, TEST_OSC_ADDRESS);
+  // Setup the OscTarget pointing to the local socket address
+  OscTarget target(socket_address, TEST_OSC_ADDRESS);
   // Add the target to the node.
   m_osc_node->AddTarget(TEST_GROUP, target);
   // Send the data
-  OLA_ASSERT_TRUE(m_osc_node->SendData(TEST_GROUP, OSCNode::FORMAT_BLOB,
+  OLA_ASSERT_TRUE(m_osc_node->SendData(TEST_GROUP, OscNode::FORMAT_BLOB,
                   m_dmx_data));
 
   // Run the SelectServer this will return either when UDPSocketReady
@@ -254,22 +254,22 @@ void OSCNodeTest::testSendBlob() {
 /**
  * Check that we receive OSC messages correctly.
  */
-void OSCNodeTest::testReceive() {
+void OscNodeTest::testReceive() {
   DmxBuffer expected_data;
 
-  // Register the test OSC Address with the OSCNode using the DMXHandler as the
+  // Register the test OSC Address with the OscNode using the DMXHandler as the
   // callback.
   OLA_ASSERT_TRUE(m_osc_node->RegisterAddress(
-      TEST_OSC_ADDRESS, NewCallback(this, &OSCNodeTest::DMXHandler)));
+      TEST_OSC_ADDRESS, NewCallback(this, &OscNodeTest::DMXHandler)));
 
   // Attempt to register the same address with a different path, this should
   // return false
   OLA_ASSERT_FALSE(m_osc_node->RegisterAddress(
       TEST_OSC_ADDRESS,
-      NewCallback(this, &OSCNodeTest::DMXHandler)));
+      NewCallback(this, &OscNodeTest::DMXHandler)));
 
   // Using our test UDP socket, send the OSC_BLOB_DATA to the default OSC
-  // port. The OSCNode should receive the packet and call DMXHandler.
+  // port. The OscNode should receive the packet and call DMXHandler.
   IPV4SocketAddress dest_address(IPV4Address::Loopback(),
                                  m_osc_node->ListeningPort());
 

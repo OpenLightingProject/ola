@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCNode.cpp
+ * OscNode.cpp
  * A self contained object for sending and receiving OSC messages.
  * Copyright (C) 2012 Simon Newton
  */
@@ -32,7 +32,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "plugins/osc/OSCNode.h"
+#include "plugins/osc/OscNode.h"
 
 namespace ola {
 namespace plugin {
@@ -61,12 +61,12 @@ using std::min;
 using std::string;
 using std::vector;
 
-const char OSCNode::OSC_PORT_VARIABLE[] = "osc-listen-port";
+const char OscNode::OSC_PORT_VARIABLE[] = "osc-listen-port";
 
 /*
  * The Error handler for the OSC server.
  */
-void OSCErrorHandler(int error_code, const char *msg, const char *stack) {
+void OscErrorHandler(int error_code, const char *msg, const char *stack) {
   string msg_str, stack_str;
   if (msg) {
     msg_str.assign(msg);
@@ -138,13 +138,13 @@ bool ExtractSlotValueFromPair(const string &type, lo_arg **argv,
  * @param types the OSC data type for the data
  * @param argv the data itself
  * @param argc the number of data blocks
- * @param user_data a pointer to the OSCNode object.
+ * @param user_data a pointer to the OscNode object.
  */
-int OSCDataHandler(const char *osc_address, const char *types, lo_arg **argv,
+int OscDataHandler(const char *osc_address, const char *types, lo_arg **argv,
                    int argc, void *, void *user_data) {
   OLA_DEBUG << "Got OSC message for " << osc_address << ", types are " << types;
 
-  OSCNode *node = reinterpret_cast<OSCNode*>(user_data);
+  OscNode *node = reinterpret_cast<OscNode*>(user_data);
   const string type(types);
   uint16_t slot;
 
@@ -187,7 +187,7 @@ int OSCDataHandler(const char *osc_address, const char *types, lo_arg **argv,
 }
 
 
-OSCNode::NodeOSCTarget::NodeOSCTarget(const OSCTarget &target)
+OscNode::NodeOscTarget::NodeOscTarget(const OscTarget &target)
   : socket_address(target.socket_address),
     osc_address(target.osc_address),
     liblo_address(lo_address_new(
@@ -195,20 +195,20 @@ OSCNode::NodeOSCTarget::NodeOSCTarget(const OSCTarget &target)
       IntToString(socket_address.Port()).c_str())) {
 }
 
-OSCNode::NodeOSCTarget::~NodeOSCTarget() {
+OscNode::NodeOscTarget::~NodeOscTarget() {
   lo_address_free(liblo_address);
 }
 
 
 /**
- * Create a new OSCNode.
+ * Create a new OscNode.
  * @param ss the SelectServer to use
  * @param export_map a pointer to an ExportMap (may be NULL)
- * @param options the OSCNodeOptions
+ * @param options the OscNodeOptions
  */
-OSCNode::OSCNode(SelectServerInterface *ss,
+OscNode::OscNode(SelectServerInterface *ss,
                  ExportMap *export_map,
-                 const OSCNodeOptions &options)
+                 const OscNodeOptions &options)
     : m_ss(ss),
       m_listen_port(options.listen_port),
       m_osc_server(NULL) {
@@ -224,7 +224,7 @@ OSCNode::OSCNode(SelectServerInterface *ss,
 /**
  * Cleanup
  */
-OSCNode::~OSCNode() {
+OscNode::~OscNode() {
   Stop();
 }
 
@@ -232,15 +232,15 @@ OSCNode::~OSCNode() {
 /*
  * Setup the Node
  */
-bool OSCNode::Init() {
+bool OscNode::Init() {
   // create a new lo_server
   // lo_server_new_with_proto doesn't understand that "0" means "any port".
   // Instead you have to pass in NULL. Weird.
   if (m_listen_port) {
     m_osc_server = lo_server_new_with_proto(IntToString(m_listen_port).c_str(),
-                                            LO_UDP, OSCErrorHandler);
+                                            LO_UDP, OscErrorHandler);
   } else {
-    m_osc_server = lo_server_new_with_proto(NULL, LO_UDP, OSCErrorHandler);
+    m_osc_server = lo_server_new_with_proto(NULL, LO_UDP, OscErrorHandler);
   }
 
   if (!m_osc_server)
@@ -255,7 +255,7 @@ bool OSCNode::Init() {
 #else
   m_descriptor.reset(new ola::io::UnmanagedFileDescriptor(fd));
 #endif  // _WIN32
-  m_descriptor->SetOnData(NewCallback(this, &OSCNode::DescriptorReady));
+  m_descriptor->SetOnData(NewCallback(this, &OscNode::DescriptorReady));
   m_ss->AddReadDescriptor(m_descriptor.get());
 
   // liblo doesn't support address pattern matching. So rather than registering
@@ -263,7 +263,7 @@ bool OSCNode::Init() {
   // we want, and handle the dispatching ourselves. NULL means 'any address'
   // Similarly liblo tries to coerce types so rather than letting it do
   // anything we just register for all types and sort it out ourselves.
-  lo_server_add_method(m_osc_server, NULL, NULL, OSCDataHandler, this);
+  lo_server_add_method(m_osc_server, NULL, NULL, OscDataHandler, this);
   return true;
 }
 
@@ -271,7 +271,7 @@ bool OSCNode::Init() {
 /**
  * Stop this node. This removes all registrations and targets.
  */
-void OSCNode::Stop() {
+void OscNode::Stop() {
   if (m_osc_server) {
     lo_server_del_method(m_osc_server, NULL, NULL);
   }
@@ -306,20 +306,20 @@ void OSCNode::Stop() {
  * @param group the group to add this target to
  * @param target the OSC address for the target
  */
-void OSCNode::AddTarget(unsigned int group, const OSCTarget &target) {
-  OSCOutputGroup *output_group = STLFindOrNull(m_output_map, group);
+void OscNode::AddTarget(unsigned int group, const OscTarget &target) {
+  OscOutputGroup *output_group = STLFindOrNull(m_output_map, group);
 
   if (!output_group) {
     // not found, create a new one
-    output_group = new OSCOutputGroup();
+    output_group = new OscOutputGroup();
     STLReplaceAndDelete(&m_output_map, group, output_group);
   }
 
-  OSCTargetVector &targets = output_group->targets;
+  OscTargetVector &targets = output_group->targets;
 
   // Check if this target already exists in the group. If it does log a warning
   // and return
-  OSCTargetVector::iterator target_iter = targets.begin();
+  OscTargetVector::iterator target_iter = targets.begin();
   for (; target_iter != targets.end(); ++target_iter) {
     if (**target_iter == target) {
       OLA_WARN << "Attempted to add " << target.socket_address
@@ -329,28 +329,28 @@ void OSCNode::AddTarget(unsigned int group, const OSCTarget &target) {
   }
 
   // Add to the list of targets
-  output_group->targets.push_back(new NodeOSCTarget(target));
+  output_group->targets.push_back(new NodeOscTarget(target));
 }
 
 
 /**
  * De-Register a target from this group.
  * @param group the group to remove the target from
- * @param target the OSCTarget to remove
+ * @param target the OscTarget to remove
  * @returns true if the target was removed, false if it wasn't in the group
  */
-bool OSCNode::RemoveTarget(unsigned int group, const OSCTarget &target) {
-  OSCOutputGroup *output_group = STLFindOrNull(m_output_map, group);
+bool OscNode::RemoveTarget(unsigned int group, const OscTarget &target) {
+  OscOutputGroup *output_group = STLFindOrNull(m_output_map, group);
 
   if (!output_group) {
     return false;
   }
 
-  OSCTargetVector &targets = output_group->targets;
-  OSCTargetVector::iterator target_iter = targets.begin();
+  OscTargetVector &targets = output_group->targets;
+  OscTargetVector::iterator target_iter = targets.begin();
   for (; target_iter != targets.end(); ++target_iter) {
     if (**target_iter == target) {
-      // the target was found, delete the NodeOSCTarget and remove the entry
+      // the target was found, delete the NodeOscTarget and remove the entry
       // from the vector.
       delete *target_iter;
       targets.erase(target_iter);
@@ -368,9 +368,9 @@ bool OSCNode::RemoveTarget(unsigned int group, const OSCTarget &target) {
  * @param dmx_data the DmxBuffer to send
  * @returns true if sucesfully sent, false if any error occured.
  */
-bool OSCNode::SendData(unsigned int group, DataFormat data_format,
+bool OscNode::SendData(unsigned int group, DataFormat data_format,
                        const ola::DmxBuffer &dmx_data) {
-  OSCOutputGroup *output_group = STLFindOrNull(m_output_map, group);
+  OscOutputGroup *output_group = STLFindOrNull(m_output_map, group);
   if (!output_group) {
     OLA_WARN << "failed to find " << group;
     // group doesn't exist, just return
@@ -405,11 +405,11 @@ bool OSCNode::SendData(unsigned int group, DataFormat data_format,
  * @returns false if callback was non-NULL, but the address was already
  *   registered. true otherwise.
  */
-bool OSCNode::RegisterAddress(const string &osc_address,
+bool OscNode::RegisterAddress(const string &osc_address,
                               DMXCallback *callback) {
   if (callback) {
     // register
-    OSCInputGroup *universe_data = STLFindOrNull(m_input_map, osc_address);
+    OscInputGroup *universe_data = STLFindOrNull(m_input_map, osc_address);
     if (universe_data) {
       OLA_WARN << "Attempt to register a second callback for " << osc_address;
       // delete the callback, since we have ownership of it
@@ -419,7 +419,7 @@ bool OSCNode::RegisterAddress(const string &osc_address,
       // This is a new registration, insert into the AddressCallbackMap and
       // register with liblo.
       m_input_map.insert(
-          make_pair(osc_address, new OSCInputGroup(callback)));
+          make_pair(osc_address, new OscInputGroup(callback)));
     }
   } else {
     // deregister
@@ -430,14 +430,14 @@ bool OSCNode::RegisterAddress(const string &osc_address,
 
 
 /**
- * Called by OSCDataHandler when there is new data.
+ * Called by OscDataHandler when there is new data.
  * @param osc_address the OSC address this data arrived on
  * @param data the DmxBuffer containing the data.
  * @param size the number of slots.
  */
-void OSCNode::SetUniverse(const string &osc_address, const uint8_t *data,
+void OscNode::SetUniverse(const string &osc_address, const uint8_t *data,
                           unsigned int size) {
-  OSCInputGroup *universe_data = STLFindOrNull(m_input_map, osc_address);
+  OscInputGroup *universe_data = STLFindOrNull(m_input_map, osc_address);
   if (!universe_data)
     return;
 
@@ -448,13 +448,13 @@ void OSCNode::SetUniverse(const string &osc_address, const uint8_t *data,
 }
 
 /**
- * Called by OSCDataHandler when there is new data.
+ * Called by OscDataHandler when there is new data.
  * @param osc_address the OSC address this data arrived on
  * @param slot the slot offset to set.
  * @param value the DMX value for the slot
  */
-void OSCNode::SetSlot(const string &osc_address, uint16_t slot, uint8_t value) {
-  OSCInputGroup *universe_data = STLFindOrNull(m_input_map, osc_address);
+void OscNode::SetSlot(const string &osc_address, uint16_t slot, uint8_t value) {
+  OscInputGroup *universe_data = STLFindOrNull(m_input_map, osc_address);
   if (!universe_data)
     return;
 
@@ -469,7 +469,7 @@ void OSCNode::SetSlot(const string &osc_address, uint16_t slot, uint8_t value) {
 /**
  * Return the listening port. Will be 0 if the node isn't setup.
  */
-uint16_t OSCNode::ListeningPort() const {
+uint16_t OscNode::ListeningPort() const {
   if (m_osc_server) {
     return lo_server_get_port(m_osc_server);
   }
@@ -480,7 +480,7 @@ uint16_t OSCNode::ListeningPort() const {
 /**
  * Called when the OSC FD is readable.
  */
-void OSCNode::DescriptorReady() {
+void OscNode::DescriptorReady() {
   // Call into liblo with a timeout of 0 so we don't block.
   lo_server_recv_noblock(m_osc_server, 0);
 }
@@ -489,14 +489,14 @@ void OSCNode::DescriptorReady() {
 /**
  * Send a DMXBuffer as a blob to a set of targets
  */
-bool OSCNode::SendBlob(const DmxBuffer &dmx_data,
-                       const OSCTargetVector &targets) {
+bool OscNode::SendBlob(const DmxBuffer &dmx_data,
+                       const OscTargetVector &targets) {
   // create the new OSC blob
   lo_blob osc_data = lo_blob_new(dmx_data.Size(), dmx_data.GetRaw());
 
   bool ok = true;
   // iterate over all the targets, and send to each one.
-  OSCTargetVector::const_iterator target_iter = targets.begin();
+  OscTargetVector::const_iterator target_iter = targets.begin();
   for (; target_iter != targets.end(); ++target_iter) {
     OLA_DEBUG << "Sending to " << (*target_iter)->socket_address;
     int ret = lo_send_from((*target_iter)->liblo_address,
@@ -516,24 +516,24 @@ bool OSCNode::SendBlob(const DmxBuffer &dmx_data,
 /**
  * Send a DMXBuffer as individual float messages to a set of targets.
  */
-bool OSCNode::SendIndividualFloats(const DmxBuffer &dmx_data,
-                                   OSCOutputGroup *group) {
+bool OscNode::SendIndividualFloats(const DmxBuffer &dmx_data,
+                                   OscOutputGroup *group) {
   return SendIndividualMessages(dmx_data, group, "f");
 }
 
 /**
  * Send a DMXBuffer as individual int messages to a set of targets.
  */
-bool OSCNode::SendIndividualInts(const DmxBuffer &dmx_data,
-                                 OSCOutputGroup *group) {
+bool OscNode::SendIndividualInts(const DmxBuffer &dmx_data,
+                                 OscOutputGroup *group) {
   return SendIndividualMessages(dmx_data, group, "i");
 }
 
 /**
  * Send the DmxBuffer as an array of ints.
  */
-bool OSCNode::SendIntArray(const DmxBuffer &dmx_data,
-                           const OSCTargetVector &targets) {
+bool OscNode::SendIntArray(const DmxBuffer &dmx_data,
+                           const OscTargetVector &targets) {
   lo_message message = lo_message_new();
 
   for (size_t i = 0; i < dmx_data.Size(); ++i) {
@@ -548,8 +548,8 @@ bool OSCNode::SendIntArray(const DmxBuffer &dmx_data,
 /**
  * Send the DmxBuffer as an array of normalized floats.
  */
-bool OSCNode::SendFloatArray(const DmxBuffer &dmx_data,
-                             const OSCTargetVector &targets) {
+bool OscNode::SendFloatArray(const DmxBuffer &dmx_data,
+                             const OscTargetVector &targets) {
   lo_message message = lo_message_new();
 
   for (size_t i = 0; i < dmx_data.Size(); ++i) {
@@ -566,10 +566,10 @@ bool OSCNode::SendFloatArray(const DmxBuffer &dmx_data,
  * @param message the lo_message to send.
  * @param targets the list of targets to send the message to.
  */
-bool OSCNode::SendMessageToTargets(lo_message message,
-                                   const OSCTargetVector &targets) {
+bool OscNode::SendMessageToTargets(lo_message message,
+                                   const OscTargetVector &targets) {
   bool ok = true;
-  OSCTargetVector::const_iterator target_iter = targets.begin();
+  OscTargetVector::const_iterator target_iter = targets.begin();
   for (; target_iter != targets.end(); ++target_iter) {
     int ret = lo_send_message_from(
         (*target_iter)->liblo_address,
@@ -585,14 +585,14 @@ bool OSCNode::SendMessageToTargets(lo_message message,
 /**
  * Send individual messages (one slot per message) to a set of targets.
  * @param dmx_data the DmxBuffer to send
- * @param group the OSCOutputGroup with the targets.
+ * @param group the OscOutputGroup with the targets.
  * @param osc_type the type of OSC message, either "i" or "f"
  */
-bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
-                                     OSCOutputGroup *group,
+bool OscNode::SendIndividualMessages(const DmxBuffer &dmx_data,
+                                     OscOutputGroup *group,
                                      const string &osc_type) {
   bool ok = true;
-  const OSCTargetVector &targets = group->targets;
+  const OscTargetVector &targets = group->targets;
 
   vector<SlotMessage> messages;
 
@@ -611,7 +611,7 @@ bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
   group->dmx.Set(dmx_data);
 
   // Send all messages to each target.
-  OSCTargetVector::const_iterator target_iter = targets.begin();
+  OscTargetVector::const_iterator target_iter = targets.begin();
   for (; target_iter != targets.end(); ++target_iter) {
     OLA_DEBUG << "Sending to " << (*target_iter)->socket_address;
 

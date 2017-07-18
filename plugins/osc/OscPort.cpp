@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCPort.cpp
- * The OSCInputPort and OSCOutputPort classes.
+ * OscPort.cpp
+ * The OscInputPort and OscOutputPort classes.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -23,10 +23,10 @@
 #include <vector>
 #include "ola/Logging.h"
 #include "olad/Port.h"
-#include "plugins/osc/OSCAddressTemplate.h"
-#include "plugins/osc/OSCDevice.h"
-#include "plugins/osc/OSCNode.h"
-#include "plugins/osc/OSCPort.h"
+#include "plugins/osc/OscAddressTemplate.h"
+#include "plugins/osc/OscDevice.h"
+#include "plugins/osc/OscNode.h"
+#include "plugins/osc/OscPort.h"
 
 namespace ola {
 namespace plugin {
@@ -36,11 +36,11 @@ using std::ostringstream;
 using std::string;
 using std::vector;
 
-OSCInputPort::OSCInputPort(
-    OSCDevice *parent,
+OscInputPort::OscInputPort(
+    OscDevice *parent,
     unsigned int port_id,
     PluginAdaptor *plugin_adaptor,
-    OSCNode *node,
+    OscNode *node,
     const string &address)
     : BasicInputPort(parent, port_id, plugin_adaptor),
       m_node(node),
@@ -48,7 +48,7 @@ OSCInputPort::OSCInputPort(
       m_actual_address(address) {
 }
 
-bool OSCInputPort::PreSetUniverse(Universe *old_universe,
+bool OscInputPort::PreSetUniverse(Universe *old_universe,
                                   Universe *new_universe) {
   // if the old_universe is not NULL, we need to de-register
   if (old_universe) {
@@ -62,7 +62,7 @@ bool OSCInputPort::PreSetUniverse(Universe *old_universe,
     string osc_address = ExpandTemplate(m_address, new_universe->UniverseId());
     bool ok = m_node->RegisterAddress(
         osc_address,
-        NewCallback(this, &OSCInputPort::NewDMXData));
+        NewCallback(this, &OscInputPort::NewDMXData));
 
     if (!ok)
       // means that another port is registered with the same address
@@ -73,18 +73,18 @@ bool OSCInputPort::PreSetUniverse(Universe *old_universe,
   return true;
 }
 
-void OSCInputPort::NewDMXData(const DmxBuffer &data) {
+void OscInputPort::NewDMXData(const DmxBuffer &data) {
   m_buffer = data;  // store the data
   DmxChanged();  // signal that our data has changed
 }
 
 
-OSCOutputPort::OSCOutputPort(
-    OSCDevice *device,
+OscOutputPort::OscOutputPort(
+    OscDevice *device,
     unsigned int port_id,
-    OSCNode *node,
-    const vector<OSCTarget> &targets,
-    OSCNode::DataFormat data_format)
+    OscNode *node,
+    const vector<OscTarget> &targets,
+    OscNode::DataFormat data_format)
     : BasicOutputPort(device, port_id),
       m_node(node),
       m_template_targets(targets),
@@ -92,22 +92,22 @@ OSCOutputPort::OSCOutputPort(
   SetUnpatchedDescription();
 }
 
-OSCOutputPort::~OSCOutputPort() {
+OscOutputPort::~OscOutputPort() {
   RemoveTargets();
 }
 
-bool OSCOutputPort::PreSetUniverse(Universe *,
+bool OscOutputPort::PreSetUniverse(Universe *,
                                    Universe *new_universe) {
   RemoveTargets();
 
-  vector<OSCTarget>::const_iterator iter = m_template_targets.begin();
+  vector<OscTarget>::const_iterator iter = m_template_targets.begin();
 
   if (new_universe) {
     ostringstream str;
     for (; iter != m_template_targets.end(); ++iter) {
       string osc_address = ExpandTemplate(iter->osc_address,
                                           new_universe->UniverseId());
-      OSCTarget new_target(iter->socket_address, osc_address);
+      OscTarget new_target(iter->socket_address, osc_address);
 
       m_node->AddTarget(PortId(), new_target);
       m_registered_targets.push_back(new_target);
@@ -124,17 +124,17 @@ bool OSCOutputPort::PreSetUniverse(Universe *,
   return true;
 }
 
-void OSCOutputPort::RemoveTargets() {
-  vector<OSCTarget>::const_iterator iter = m_registered_targets.begin();
+void OscOutputPort::RemoveTargets() {
+  vector<OscTarget>::const_iterator iter = m_registered_targets.begin();
   for (; iter != m_registered_targets.end(); ++iter) {
     m_node->RemoveTarget(PortId(), *iter);
   }
   m_registered_targets.clear();
 }
 
-void OSCOutputPort::SetUnpatchedDescription() {
+void OscOutputPort::SetUnpatchedDescription() {
   ostringstream str;
-  vector<OSCTarget>::const_iterator iter = m_template_targets.begin();
+  vector<OscTarget>::const_iterator iter = m_template_targets.begin();
   for (; iter != m_template_targets.end(); ++iter) {
     if (iter != m_template_targets.begin())
       str << ", ";

@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCPlugin.cpp
+ * OscPlugin.cpp
  * The OSC plugin for ola. This creates a single OSC device.
  * Copyright (C) 2012 Simon Newton
  */
@@ -30,10 +30,10 @@
 #include "ola/StringUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
-#include "plugins/osc/OSCAddressTemplate.h"
-#include "plugins/osc/OSCDevice.h"
-#include "plugins/osc/OSCPlugin.h"
-#include "plugins/osc/OSCPluginDescription.h"
+#include "plugins/osc/OscAddressTemplate.h"
+#include "plugins/osc/OscDevice.h"
+#include "plugins/osc/OscPlugin.h"
+#include "plugins/osc/OscPluginDescription.h"
 
 namespace ola {
 namespace plugin {
@@ -44,27 +44,27 @@ using std::set;
 using std::string;
 using std::vector;
 
-const char OSCPlugin::DEFAULT_ADDRESS_TEMPLATE[] = "/dmx/universe/%d";
-const char OSCPlugin::DEFAULT_TARGETS_TEMPLATE[] = "";
-const char OSCPlugin::INPUT_PORT_COUNT_KEY[] = "input_ports";
-const char OSCPlugin::OUTPUT_PORT_COUNT_KEY[] = "output_ports";
-const char OSCPlugin::PLUGIN_NAME[] = "OSC";
-const char OSCPlugin::PLUGIN_PREFIX[] = "osc";
-const char OSCPlugin::PORT_ADDRESS_TEMPLATE[] = "port_%d_address";
-const char OSCPlugin::PORT_TARGETS_TEMPLATE[] = "port_%d_targets";
-const char OSCPlugin::PORT_FORMAT_TEMPLATE[] = "port_%d_output_format";
-const char OSCPlugin::UDP_PORT_KEY[] = "udp_listen_port";
+const char OscPlugin::DEFAULT_ADDRESS_TEMPLATE[] = "/dmx/universe/%d";
+const char OscPlugin::DEFAULT_TARGETS_TEMPLATE[] = "";
+const char OscPlugin::INPUT_PORT_COUNT_KEY[] = "input_ports";
+const char OscPlugin::OUTPUT_PORT_COUNT_KEY[] = "output_ports";
+const char OscPlugin::PLUGIN_NAME[] = "OSC";
+const char OscPlugin::PLUGIN_PREFIX[] = "osc";
+const char OscPlugin::PORT_ADDRESS_TEMPLATE[] = "port_%d_address";
+const char OscPlugin::PORT_TARGETS_TEMPLATE[] = "port_%d_targets";
+const char OscPlugin::PORT_FORMAT_TEMPLATE[] = "port_%d_output_format";
+const char OscPlugin::UDP_PORT_KEY[] = "udp_listen_port";
 
-const char OSCPlugin::BLOB_FORMAT[] = "blob";
-const char OSCPlugin::FLOAT_ARRAY_FORMAT[] = "float_array";
-const char OSCPlugin::FLOAT_INDIVIDUAL_FORMAT[] = "individual_float";
-const char OSCPlugin::INT_ARRAY_FORMAT[] = "int_array";
-const char OSCPlugin::INT_INDIVIDUAL_FORMAT[] = "individual_int";
+const char OscPlugin::BLOB_FORMAT[] = "blob";
+const char OscPlugin::FLOAT_ARRAY_FORMAT[] = "float_array";
+const char OscPlugin::FLOAT_INDIVIDUAL_FORMAT[] = "individual_float";
+const char OscPlugin::INT_ARRAY_FORMAT[] = "int_array";
+const char OscPlugin::INT_INDIVIDUAL_FORMAT[] = "individual_int";
 
 /*
  * Start the plugin.
  */
-bool OSCPlugin::StartHook() {
+bool OscPlugin::StartHook() {
   // Get the value of UDP_PORT_KEY or use the default value if it isn't valid.
   uint16_t udp_port = StringToIntOrDefault(
       m_preferences->GetValue(UDP_PORT_KEY),
@@ -77,11 +77,11 @@ bool OSCPlugin::StartHook() {
     port_addresses.push_back(m_preferences->GetValue(key));
   }
 
-  // For each ouput port, extract the list of OSCTargets and store them in
+  // For each ouput port, extract the list of OscTargets and store them in
   // port_targets.
-  OSCDevice::PortConfigs port_configs;
+  OscDevice::PortConfigs port_configs;
   for (unsigned int i = 0; i < GetPortCount(OUTPUT_PORT_COUNT_KEY); i++) {
-    OSCDevice::PortConfig port_config;
+    OscDevice::PortConfig port_config;
 
     const string format_key = ExpandTemplate(PORT_FORMAT_TEMPLATE, i);
     SetDataFormat(m_preferences->GetValue(format_key), &port_config);
@@ -92,8 +92,8 @@ bool OSCPlugin::StartHook() {
 
     vector<string>::const_iterator iter = tokens.begin();
     for (; iter != tokens.end(); ++iter) {
-      OSCTarget target;
-      if (ExtractOSCTarget(*iter, &target)) {
+      OscTarget target;
+      if (ExtractOscTarget(*iter, &target)) {
         port_config.targets.push_back(target);
       }
     }
@@ -101,9 +101,9 @@ bool OSCPlugin::StartHook() {
     port_configs.push_back(port_config);
   }
 
-  // Finally create the new OSCDevice, start it and register the device.
-  std::auto_ptr<OSCDevice> device(
-    new OSCDevice(this, m_plugin_adaptor, udp_port, port_addresses,
+  // Finally create the new OscDevice, start it and register the device.
+  std::auto_ptr<OscDevice> device(
+    new OscDevice(this, m_plugin_adaptor, udp_port, port_addresses,
                   port_configs));
   if (!device->Start()) {
     return false;
@@ -118,7 +118,7 @@ bool OSCPlugin::StartHook() {
  * Stop the plugin
  * @return true on success, false on failure
  */
-bool OSCPlugin::StopHook() {
+bool OscPlugin::StopHook() {
   if (m_device) {
     m_plugin_adaptor->UnregisterDevice(m_device);
     bool ret = m_device->Stop();
@@ -129,7 +129,7 @@ bool OSCPlugin::StopHook() {
 }
 
 
-string OSCPlugin::Description() const {
+string OscPlugin::Description() const {
   return plugin_description;
 }
 
@@ -137,7 +137,7 @@ string OSCPlugin::Description() const {
 /**
  * Set the default preferences for the OSC plugin.
  */
-bool OSCPlugin::SetDefaultPreferences() {
+bool OscPlugin::SetDefaultPreferences() {
   if (!m_preferences) {
     return false;
   }
@@ -196,7 +196,7 @@ bool OSCPlugin::SetDefaultPreferences() {
  *
  * Defaults to DEFAULT_PORT_COUNT if the value was invalid.
  */
-unsigned int OSCPlugin::GetPortCount(const string& key) const {
+unsigned int OscPlugin::GetPortCount(const string& key) const {
   unsigned int port_count;
   if (!StringToInt(m_preferences->GetValue(key), &port_count)) {
     return DEFAULT_PORT_COUNT;
@@ -208,8 +208,8 @@ unsigned int OSCPlugin::GetPortCount(const string& key) const {
 /**
  * Try to parse the string as an OSC Target.
  */
-bool OSCPlugin::ExtractOSCTarget(const string &str,
-                                 OSCTarget *target) {
+bool OscPlugin::ExtractOscTarget(const string &str,
+                                 OscTarget *target) {
   size_t pos = str.find_first_of("/");
   if (pos == string::npos) {
     return false;
@@ -227,20 +227,20 @@ bool OSCPlugin::ExtractOSCTarget(const string &str,
 /**
  * Set the PortConfig data format based on the option the user provides
  */
-void OSCPlugin::SetDataFormat(const string &format_option,
-                              OSCDevice::PortConfig *port_config) {
+void OscPlugin::SetDataFormat(const string &format_option,
+                              OscDevice::PortConfig *port_config) {
   if (format_option == BLOB_FORMAT) {
-    port_config->data_format = OSCNode::FORMAT_BLOB;
+    port_config->data_format = OscNode::FORMAT_BLOB;
   } else if (format_option == FLOAT_ARRAY_FORMAT) {
-    port_config->data_format = OSCNode::FORMAT_FLOAT_ARRAY;
+    port_config->data_format = OscNode::FORMAT_FLOAT_ARRAY;
   } else if (format_option == FLOAT_INDIVIDUAL_FORMAT) {
-    port_config->data_format = OSCNode::FORMAT_FLOAT_INDIVIDUAL;
+    port_config->data_format = OscNode::FORMAT_FLOAT_INDIVIDUAL;
   } else if (format_option == INT_ARRAY_FORMAT) {
-    port_config->data_format = OSCNode::FORMAT_INT_ARRAY;
+    port_config->data_format = OscNode::FORMAT_INT_ARRAY;
   } else if (format_option == INT_INDIVIDUAL_FORMAT) {
-    port_config->data_format = OSCNode::FORMAT_INT_INDIVIDUAL;
+    port_config->data_format = OscNode::FORMAT_INT_INDIVIDUAL;
   } else {
-    OLA_WARN << "Unknown OSC format " << format_option
+    OLA_WARN << "Unknown Osc format " << format_option
              << ", defaulting to blob";
   }
 }

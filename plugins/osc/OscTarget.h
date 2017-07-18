@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCTarget.h
+ * OscTarget.h
  * Represents a IP:Port & OSC Address pair used to direct OSC messages.
  * Copyright (C) 2012 Simon Newton
  */
@@ -28,21 +28,21 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
-struct OSCTarget {
+struct OscTarget {
   ola::network::IPV4SocketAddress socket_address;
   std::string osc_address;
 
   // The default constructor.
-  OSCTarget() {}
+  OscTarget() {}
 
   // The copy constructor
-  OSCTarget(const OSCTarget &target)
+  OscTarget(const OscTarget &target)
       : socket_address(target.socket_address),
         osc_address(target.osc_address) {
   }
 
   // A constuctor that initializes the member variables as well.
-  OSCTarget(const ola::network::IPV4SocketAddress &socket_address,
+  OscTarget(const ola::network::IPV4SocketAddress &socket_address,
             const std::string &osc_address)
       : socket_address(socket_address),
         osc_address(osc_address) {
@@ -53,11 +53,11 @@ struct OSCTarget {
   }
 
   /**
-   * @brief A helper function to write a OSCTarget to an ostream.
+   * @brief A helper function to write a OscTarget to an ostream.
    * @param out the ostream
-   * @param target the OSCTarget to write.
+   * @param target the OscTarget to write.
    */
-  friend std::ostream& operator<<(std::ostream &out, const OSCTarget &target) {
+  friend std::ostream& operator<<(std::ostream &out, const OscTarget &target) {
     return out << target.ToString();
   }
 };

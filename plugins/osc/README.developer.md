@@ -140,8 +140,8 @@ This sets the destination install directory for the shared object (the OSC
 plugin in this case) to the plugin directory. By default that's
 `/usr/local/lib/olad` but the user may have changed it.
 
-    EXTRA_DIST = OSCAddressTemplate.h OSCDevice.h OSCNode.h OSCPlugin.h \
-                 OSCPort.h OSCTarget.h
+    EXTRA_DIST = OscAddressTemplate.h OscDevice.h OscNode.h OscPlugin.h \
+                 OscPort.h OscTarget.h
 
 This specifies the header files that need to be included in the tarball.
 
@@ -150,34 +150,34 @@ This specifies the header files that need to be included in the tarball.
 Everything from this point onwards is only run if `HAVE_LIBLO` was true.
 
     noinst_LTLIBRARIES = libolaoscnode.la
-    libolaoscnode_la_SOURCES = OSCAddressTemplate.cpp OSCNode.cpp
+    libolaoscnode_la_SOURCES = OscAddressTemplate.cpp OscNode.cpp
     libolaoscnode_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
     libolaoscnode_la_LIBADD = $(liblo_LIBS)
 
 This sets up our first build target, a shared library called
-`libolaoscnode.la`. This library contains the `OSCNode` class, along with
-the functions in `OSCAddressTemplate.cpp`. The `libolaoscnode.la` is a
+`libolaoscnode.la`. This library contains the `OscNode` class, along with
+the functions in `OscAddressTemplate.cpp`. The `libolaoscnode.la` is a
 helper library, it's not installed when the user runs `make install`(the
 `noinst_` prefix does this) but it simplifies the build rules since both the
 OSC plugin and the tests depend on it. Because we depend on liblo we need to
 add `liblo_CFLAGS` and `liblo_LIBS` to the appropriate lines.
 
     lib_LTLIBRARIES = libolaosc.la
-    libolaosc_la_SOURCES = OSCDevice.cpp OSCPlugin.cpp
+    libolaosc_la_SOURCES = OscDevice.cpp OscPlugin.cpp
     libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
     libolaosc_la_LIBADD = libolaoscnode.la
 
-Here is our `llibolaosc.la` plugin. This contains code from `OSCDevice.cpp`
-and `OSCPlugin.cpp`. Note that because the code in `OSCPort` is simple, all
-the code lives in `OSCPort.h` and there is no corresponding `.cpp` file. If
+Here is our `llibolaosc.la` plugin. This contains code from `OscDevice.cpp`
+and `OscPlugin.cpp`. Note that because the code in `OscPort` is simple, all
+the code lives in `OscPort.h` and there is no corresponding `.cpp` file. If
 there was we'd need to list it here as well. This depends on the
 `libolaoscnode.la` helper library.
 
     if BUILD_TESTS
-      TESTS = OSCTester
+      TESTS = OscTester
     endif
 
-On to the tests, These three lines add the OSCTester program to the list of
+On to the tests, These three lines add the OscTester program to the list of
 tests to execute when `make check` is run. If the user ran `./configure`
 with `--disable-unittests` we don't build or run any of the unittesting
 code.
@@ -186,16 +186,16 @@ code.
 
 This sets `check_PROGRAMS` to what's contained in the `$TESTS` variable.
 
-    OSCTester_SOURCES = OSCAddressTemplateTest.cpp \
-                        OSCNodeTest.cpp \
-                        OSCTester.cpp
-    OSCTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-    OSCTester_LDADD = $(CPPUNIT_LIBS) \
+    OscTester_SOURCES = OscAddressTemplateTest.cpp \
+                        OscNodeTest.cpp \
+                        OscTester.cpp
+    OscTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+    OscTester_LDADD = $(CPPUNIT_LIBS) \
                       libolaoscnode.la \
                       ../../common/libolacommon.la \
                       ../../common/testing/libolatesting.la
 
-Here are the rules for OSCTester. This specifies the 3 source files as well
+Here are the rules for OscTester. This specifies the 3 source files as well
 as the libraries the code depends on.
 
     endif
@@ -244,7 +244,7 @@ We need to tell the Plugin Loader to load our new OSC plugin. Remember the
 In `olad/DynamicPluginLoader.cpp` we add:
 
     #ifdef HAVE_LIBLO
-    #include "plugins/osc/OSCPlugin.h"
+    #include "plugins/osc/OscPlugin.h"
     #endif  // HAVE_LIBLO
 
 `DynamicPluginLoader.cpp` includes `config.h` at the top of the file, which
@@ -252,10 +252,10 @@ is how `HAVE_LIBLO` is defined.
 
     #ifdef HAVE_LIBLO
       m_plugins.push_back(
-          new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
+          new ola::plugin::osc::OscPlugin(m_plugin_adaptor));
     #endif  // HAVE_LIBLO
 
-If `HAVE_LIBLO` is defined, we go ahead and add the OSCPlugin to the vector
+If `HAVE_LIBLO` is defined, we go ahead and add the OscPlugin to the vector
 of plugins to load.
 
 That's it for the boilerplate.
@@ -266,18 +266,18 @@ Chapter 3, Helper Code
 
 The OSC code is divided into two parts:
 
-* OSCNode is a C++ & DMX orientated wrapper around liblo.
-* OSCPlugin, OSCDevice & OSCPort are the glue between OLA and the OSCNode.
+* OscNode is a C++ & DMX orientated wrapper around liblo.
+* OscPlugin, OscDevice & OscPort are the glue between OLA and the OscNode.
 
 There is a little bit of support code that is used in both parts, so we
 factor that out here.
 
-3.1 OSCTarget
+3.1 OscTarget
 -------------
 
-`OSCTarget.h` contains a struct used to represent OSC targets. Each target
+`OscTarget.h` contains a struct used to represent OSC targets. Each target
 has an IP & UDP Port, along with a string that holds the OSC address for the
-target. We also provide three constructors to help us create `OSCTarget`
+target. We also provide three constructors to help us create `OscTarget`
 structs. The first is the default constructor, the second is the copy
 constructor and the third takes an `IPV4SocketAddress` and string and
 initializes the member variables.
@@ -297,14 +297,14 @@ classes and code in other plugins.
 3.2 ExpandTemplate()
 --------------------
 
-`OSCAddressTemplate.h` provides a single method, `ExpandTemplate()` which
+`OscAddressTemplate.h` provides a single method, `ExpandTemplate()` which
 behaves a bit like `printf`. Why don't we just use `printf` you ask? Because
 the strings to expand are provided in the config file by the user and using
 `printf` for user specified strings is dangerous (see
 http://www.cis.syr.edu/~wedu/Teaching/cis643/LectureNotes_New/Format_String.pdf).
 
 At this point it's worth mentioning testing. Have a look at the
-`OSCAddressTemplateTest.cpp` file. We define a single test method
+`OscAddressTemplateTest.cpp` file. We define a single test method
 `testExpand` that confirms `ExpandTemplate()` behaves as we expect.
 
 If you're in the mood for experimentation, change
@@ -318,17 +318,17 @@ to
 Watch the tests fail and make sure you understand why.
 
 
-Chapter 4, OSCNode
+Chapter 4, OscNode
 ==================
 
-As mentioned, OSCNode is the C++ wrapper around liblo. It uses the OLA
+As mentioned, OscNode is the C++ wrapper around liblo. It uses the OLA
 network & IO classes so that it integrates nicely with OLA. As one would
-expect, the code is split across `OSCNode.h` and `OSCNode.cpp`.
+expect, the code is split across `OscNode.h` and `OscNode.cpp`.
 
-4.1 `OSCNode.h`
+4.1 `OscNode.h`
 ---------------
 
-Lets step through the interface to the `OSCNode` class. First we include all
+Lets step through the interface to the `OscNode` class. First we include all
 the headers we're going to depend on. Since all our code exists in the
 `ola::plugin::osc` namespace, we need to either add `using ...` directives
 or fully qualify the data types in the rest of the file. Generally if I'm
@@ -338,7 +338,7 @@ going to use a data type more than once in a file I'll typically add a
 Options Structure
 -----------------
 
-The `OSCNode` constructor takes a const reference to a `OSCNodeOptions`
+The `OscNode` constructor takes a const reference to a `OscNodeOptions`
 structure. Often the number of options passed to a constructor grows over
 the lifetime of the code. Consider a class `Foo`, which starts off with:
 
@@ -370,7 +370,7 @@ Ok, back to the code, the next line typedefs a
 `Callback1<void, const DmxBuffer&>` to `DMXCallback`. This shortens the code
 a bit, shorter code is usually easier to understand.
 
-The `OSCNode` constructor takes a `SelectServer`, `ExportMap` as well as the
+The `OscNode` constructor takes a `SelectServer`, `ExportMap` as well as the
 previously described options struct.
 
 Methods
@@ -383,7 +383,7 @@ Sending Data
 
 The next three methods (`AddTarget`, `RemoveTarget` & `SendData`) are used
 for sending DMX data using OSC. To ease the burden on the caller, we group
-`OSCTarget`s into groups (one target may exist in more than one group but
+`OscTarget`s into groups (one target may exist in more than one group but
 that's rare). In OLA, each group can be thought of as a universe.
 
 Groups are identified by their `group_id`, which is just an integer.
@@ -407,9 +407,9 @@ Finally `HandleDMXData()` is a method called by liblo.
 Private Types, Variables & Methods
 ----------------------------------
 
-Let's go over the internal data members of the `OSCNode` class.
+Let's go over the internal data members of the `OscNode` class.
 
-`NodeOSCTarget` is derived from `OSCTarget`. It includes a `lo_address`
+`NodeOscTarget` is derived from `OscTarget`. It includes a `lo_address`
 member. We do this because liblo doesn't provide a way to create
 `lo_address`es from a socket address, rather `lo_address_new()` takes
 strings, and then calls `inet_aton` to convert to the network data types. We
@@ -418,7 +418,7 @@ the `lo_address` object once for each target in `AddTarget()`.
 
 Next we have three typedefs, which are used with our internal data
 structures. On the sending side, we need to track a collection of
-`OSCTarget`s for each group. We do this with a map of vectors, so you can
+`OscTarget`s for each group. We do this with a map of vectors, so you can
 think of it like this:
 
     Group 1 ->
@@ -426,7 +426,7 @@ think of it like this:
     Group 2 ->
       [ target4 ]
 
-We could have used a set rather than a vector to hold the `NodeOSCTarget`
+We could have used a set rather than a vector to hold the `NodeOscTarget`
 objects, but then we'd need to define a `<` operator since the set container
 stores it's elements in sorted order. Using a set would also require us to
 store the objects directly rather than pointers to the objects, This would
@@ -434,9 +434,9 @@ incur additional copying when elements are inserted into the set but since
 we only do this once when the plugin starts and the number of elements (OSC
 Targets) is small it wouldn't matter.
 
-We typedef a vector of pointers to `NodeOSCTarget`s to `OSCTargetVector`,
-and then typedef a map of unsigned ints to pointers to `OSCTargetVector`s as
-a `OSCTargetMap`.
+We typedef a vector of pointers to `NodeOscTarget`s to `OscTargetVector`,
+and then typedef a map of unsigned ints to pointers to `OscTargetVector`s as
+a `OscTargetMap`.
 
 On the receiving side, we have a map of OSC addresses to callbacks:
 
@@ -447,13 +447,13 @@ On the receiving side, we have a map of OSC addresses to callbacks:
 
 We typedef a map of strings to callback objects to `AddressCallbackMap`.
 
-That's it for the types, the members are documented in the `OSCNode.h` file
+That's it for the types, the members are documented in the `OscNode.h` file
 itself. We store pointers to the `SelectServer` and `ExportMap` objects
 passed in to the constructor as well as the UDP port to listen on.
 
 We also hold a pointer to a `UnmanagedFileDescriptor` which is how we add
 the socket description used by liblo to the `SelectServer`. There is also
-the `lo_server` data, as well as the `OSCTargetMap` and `AddressCallbackMap`
+the `lo_server` data, as well as the `OscTargetMap` and `AddressCallbackMap`
 discussed above. On Windows, we need to create an
 `UnmanagedSocketDescriptor` instead.
 
@@ -464,25 +464,25 @@ Finally there are two static variables, `DEFAULT_OSC_PORT` which is the
 default UDP port to listen on and `OSC_PORT_VARIABLE`, which is what we use
 with the `ExportMap`.
 
-4.2 `OSCNode.cpp`
+4.2 `OscNode.cpp`
 -----------------
 
 Onwards to the implementation! Most of this is documented in the file itself
 so I'll just point out the interesting bits.
 
-    void OSCErrorHandler(int error_code, const char *msg, const char *stack)
+    void OscErrorHandler(int error_code, const char *msg, const char *stack)
 
 The call to `lo_server_new_with_proto()` takes a pointer to a function which
 is called when liblo wants to log an error message. We pass a pointer to
-`OSCErrorHandler` which uses the OLA logging mechanism.
+`OscErrorHandler` which uses the OLA logging mechanism.
 
-`OSCDataHandler` is what liblo calls when there is new OSC data. The last
-argument is a pointer back to the `OSCNode` object, so after we perform some
+`OscDataHandler` is what liblo calls when there is new OSC data. The last
+argument is a pointer back to the `OscNode` object, so after we perform some
 checks we call `HandleDMXData()`. We return 0 so that liblo doesn't try to
 find other OSC handlers to process the same data (see the liblo API for more
 info on this).
 
-In the `OSCNode` constructor, if an `ExportMap` was provided, we export the
+In the `OscNode` constructor, if an `ExportMap` was provided, we export the
 UDP port that liblo is listening on. If olad is built with the web server
 then users can navigate to http://<ip>:9090/debug and see the internal state
 of the server. The `ExportMap` provides an easy method to export this
@@ -495,7 +495,7 @@ previously, so we need to account for that.
 The `Init` method sets up the node. It creates a new `lo_server` and
 associates the socket description with the `SelectServer`.
 
-`Stop` deletes any of the entries in the `OSCTargetMap` and
+`Stop` deletes any of the entries in the `OscTargetMap` and
 `AddressCallbackMap`, cleans up the socket description and frees the
 `lo_server`. It's important to clear both maps once the entries have been
 deleted since `Stop()` may be called more than once. Similarly, once the
@@ -515,7 +515,7 @@ a detour and discuss about testing.
 
 All good code comes with tests and OLA is no exception. Well written tests
 increases the chance of having your plugin accepted into OLA. The
-`OSCNodeTest.cpp` contains the unittests for the `OSCNode` class.
+`OscNodeTest.cpp` contains the unittests for the `OscNode` class.
 
 To test the node, we create a second UDP socket (liblo creates the first
 one) which we then use to send and receive OSC messages. For each test we
@@ -526,14 +526,14 @@ shouldn't be since it's all localhost communication).
 In this test code we just use `OLA_ASSERT_TRUE`. `ola/testing/TestUtils.h`
 provides many more testing macros so take a look.
 
-Finally we need the `OSCTester.cpp` to pull it all together. This is just
+Finally we need the `OscTester.cpp` to pull it all together. This is just
 boiler plate code that sets up the unittests.
 
 
 Chapter 6, Plugins, Devices & Ports
 ===================================
 
-Now it's just a matter of building the OLA classes around the `OSCNode`. In
+Now it's just a matter of building the OLA classes around the `OscNode`. In
 OLA a Plugin creates objects of the Device type (if you use Java or other
 object orientated languages think of the Plugin class as a factory). Each
 device then has one of more input and output ports. For the OSC plugin, we
@@ -551,7 +551,7 @@ Each output port is configured with a list of OSC Targets in the form
 6.1 Plugin
 ----------
 
-The OSCPlugin is pretty simple. Like all OLA plugins, it inherits from the
+The OscPlugin is pretty simple. Like all OLA plugins, it inherits from the
 base `ola::Plugin` class. It's passed a pointer to a `PluginAdaptor` object,
 which is how the plugins interface with the rest of OLA.
 
@@ -570,49 +570,49 @@ changed, since if they do we need to write out the changes.
 
 Once `SetDefaultPreferences()` is called, the next method to run is
 `StartHook()`. This reads the configuration options, extracts the
-`OSCTarget`s from the string (by calling `ExtractOSCTarget()`) and adds them
+`OscTarget`s from the string (by calling `ExtractOscTarget()`) and adds them
 to a vector.
 
 Once the configuration options have been processed we create a new
-`OSCDevice`, call `Start()` and register it with OLA.
+`OscDevice`, call `Start()` and register it with OLA.
 
 The `StopHook()` method unregisters the device and deletes it.
 
 `GetPortCount()` is a helper method to save duplicating similar code more
 than once.
 
-`ExtractOSCTarget` unpacks a string in the form `ip:port/address` into a
-`OSCTarget` structure.
+`ExtractOscTarget` unpacks a string in the form `ip:port/address` into a
+`OscTarget` structure.
 
 6.2 Device
 ----------
 
-Like the Plugin, the device is also pretty simple. Each `OSCDevice` owns a
-`OSCNode` object. In the constructor, the `OSCDevice` takes a pointer to the
+Like the Plugin, the device is also pretty simple. Each `OscDevice` owns a
+`OscNode` object. In the constructor, the `OscDevice` takes a pointer to the
 plugin which created the device, as well as the UDP port to listen on, and a
 list of addresses (for the input ports) and targets (for the output ports).
 These data structures are saved as member variables since they are required
 in `StartHook()`.
 
-The `OSCDevice` uses the static ID of 1, which means we can only ever have
-one `OSCDevice`. This is probably fine unless people are doing fancy things
+The `OscDevice` uses the static ID of 1, which means we can only ever have
+one `OscDevice`. This is probably fine unless people are doing fancy things
 with multiple network interfaces.
 
 `AllowMultiPortPatching()` returns true, which means that multiple ports of
 the same type can be patched to the same universe. This is fine because the
-`RegisterAddress` method in `OSCNode` detects if we try to register the same
+`RegisterAddress` method in `OscNode` detects if we try to register the same
 address more than once.
 
 The only interesting method is `StartHook()`. This calls `Init` on the
-`OSCNode` and then sets up the ports. We call `Init()` from within
+`OscNode` and then sets up the ports. We call `Init()` from within
 `StartHook()` rather than in the constructor so that we can propagate a
 failure up the call change (constructors don't have return values so there
 is no way to notify the caller of an error). In general it's best to avoid
 any code that may fail in a constructor.
 
 `StartHook` iterates over the vector of addresses and creates an
-`OSCInputPort` for each. Similarly it iterates over the vector of vectors
-contains `OSCTarget`s and sets up an `OSCOutputPort` for each.
+`OscInputPort` for each. Similarly it iterates over the vector of vectors
+contains `OscTarget`s and sets up an `OscOutputPort` for each.
 
 For both the input and output ports we create a description string which
 shows up in `ola_dev_info` and on the web UI. For the input port this is the
@@ -623,11 +623,11 @@ targets it's sending to.
 ---------
 
 Since there isn't much code for the `Port` classes I put it all in
-`OSCPort.h` rather than splitting over two files.
+`OscPort.h` rather than splitting over two files.
 
-The `OSCInputPort` is the more complex of the two. Firstly the
+The `OscInputPort` is the more complex of the two. Firstly the
 `PreSetUniverse()` method is called, which is where we register a callback
-with the `OSCNode` (if needed). If the registration fails (say another port
+with the `OscNode` (if needed). If the registration fails (say another port
 has the same address) we return false, and OLA informs the user that
 patching failed.
 
@@ -641,8 +641,8 @@ calls `DmxChanged()`. This notifies the universe that the port is bound to
 that new data has arrived. The universe then calls `ReadDMX()` to collect
 the new data.
 
-`OSCOutputPort` is much more simple, when the `WriteDMX()` method is called
-we call `SendData()` on the `OSCNode` object. Note that our simple DMX over
+`OscOutputPort` is much more simple, when the `WriteDMX()` method is called
+we call `SendData()` on the `OscNode` object. Note that our simple DMX over
 OSC format has no notion of priority, so we ignore the priority argument.
 
 

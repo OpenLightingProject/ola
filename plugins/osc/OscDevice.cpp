@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCDevice.cpp
+ * OscDevice.cpp
  * The OSC Device.
  * Copyright (C) 2012 Simon Newton
  */
@@ -23,8 +23,8 @@
 
 #include "ola/Logging.h"
 #include "ola/io/SelectServerInterface.h"
-#include "plugins/osc/OSCDevice.h"
-#include "plugins/osc/OSCPort.h"
+#include "plugins/osc/OscDevice.h"
+#include "plugins/osc/OscPort.h"
 
 namespace ola {
 namespace plugin {
@@ -33,10 +33,10 @@ namespace osc {
 using std::string;
 using std::vector;
 
-const char OSCDevice::DEVICE_NAME[] = "OSC Device";
+const char OscDevice::DEVICE_NAME[] = "OSC Device";
 
 /**
- * Constructor for the OSCDevice
+ * Constructor for the OscDevice
  * @param owner the plugin which created this device
  * @param plugin_adaptor a pointer to a PluginAdaptor object
  * @param udp_port the UDP port to listen on
@@ -44,7 +44,7 @@ const char OSCDevice::DEVICE_NAME[] = "OSC Device";
  *   ports.
  * @param port_configs config to use for the ports
  */
-OSCDevice::OSCDevice(AbstractPlugin *owner,
+OscDevice::OscDevice(AbstractPlugin *owner,
                      PluginAdaptor *plugin_adaptor,
                      uint16_t udp_port,
                      const vector<string> &addresses,
@@ -53,10 +53,10 @@ OSCDevice::OSCDevice(AbstractPlugin *owner,
       m_plugin_adaptor(plugin_adaptor),
       m_port_addresses(addresses),
       m_port_configs(port_configs) {
-  OSCNode::OSCNodeOptions options;
+  OscNode::OscNodeOptions options;
   options.listen_port = udp_port;
-  // allocate a new OSCNode but delay the call to Init() until later
-  m_osc_node.reset(new OSCNode(plugin_adaptor, plugin_adaptor->GetExportMap(),
+  // allocate a new OscNode but delay the call to Init() until later
+  m_osc_node.reset(new OscNode(plugin_adaptor, plugin_adaptor->GetExportMap(),
                                options));
 }
 
@@ -64,14 +64,14 @@ OSCDevice::OSCDevice(AbstractPlugin *owner,
  * Start this device.
  * @returns true if the device started successfully, false otherwise.
  */
-bool OSCDevice::StartHook() {
+bool OscDevice::StartHook() {
   bool ok = true;
   if (!m_osc_node->Init())
     return false;
 
   // Create an input port for each OSC Address.
   for (unsigned int i = 0; i < m_port_addresses.size(); ++i) {
-    OSCInputPort *port = new OSCInputPort(this, i, m_plugin_adaptor,
+    OscInputPort *port = new OscInputPort(this, i, m_plugin_adaptor,
                                           m_osc_node.get(),
                                           m_port_addresses[i]);
     if (!AddPort(port)) {
@@ -89,7 +89,7 @@ bool OSCDevice::StartHook() {
       continue;
     }
 
-    OSCOutputPort *port = new OSCOutputPort(this, i, m_osc_node.get(),
+    OscOutputPort *port = new OscOutputPort(this, i, m_osc_node.get(),
                                             port_config.targets,
                                             port_config.data_format);
     if (!AddPort(port)) {

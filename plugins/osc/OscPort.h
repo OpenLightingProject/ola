@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCPort.h
- * The OSCInputPort and OSCOutputPort classes.
+ * OscPort.h
+ * The OscInputPort and OscOutputPort classes.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -24,9 +24,9 @@
 #include <string>
 #include <vector>
 #include "olad/Port.h"
-#include "plugins/osc/OSCAddressTemplate.h"
-#include "plugins/osc/OSCDevice.h"
-#include "plugins/osc/OSCNode.h"
+#include "plugins/osc/OscAddressTemplate.h"
+#include "plugins/osc/OscDevice.h"
+#include "plugins/osc/OscNode.h"
 
 namespace ola {
 namespace plugin {
@@ -39,20 +39,20 @@ namespace osc {
  * unpatched from a universe (since the description can contain %d). Therefore
  * we store the description as a template, as well as the current value.
  */
-class OSCInputPort: public BasicInputPort {
+class OscInputPort: public BasicInputPort {
  public:
   /**
-   * Create an OSCInputPort.
+   * Create an OscInputPort.
    * @param parent the parent device
    * @param port_id the id for this port
    * @param plugin_adaptor a PluginAdaptor object, used by the base class.
-   * @param node the OSCNode object to use
+   * @param node the OscNode object to use
    * @param address the OSC address string for this port
    */
-  OSCInputPort(OSCDevice *parent,
+  OscInputPort(OscDevice *parent,
                unsigned int port_id,
                PluginAdaptor *plugin_adaptor,
-               OSCNode *node,
+               OscNode *node,
                const std::string &address);
 
   /**
@@ -72,7 +72,7 @@ class OSCInputPort: public BasicInputPort {
   std::string Description() const { return m_actual_address; }
 
  private:
-  OSCNode *m_node;
+  OscNode *m_node;
   DmxBuffer m_buffer;
   const std::string m_address;
   std::string m_actual_address;
@@ -87,22 +87,22 @@ class OSCInputPort: public BasicInputPort {
 /**
  * The Output Port class, for sending DMX via OSC.
  */
-class OSCOutputPort: public BasicOutputPort {
+class OscOutputPort: public BasicOutputPort {
  public:
   /**
-   * @brief Create an OSCOutputPort.
+   * @brief Create an OscOutputPort.
    * @param device the parent device
    * @param port_id the id for this port
-   * @param node the OSCNode object to use
+   * @param node the OscNode object to use
    * @param targets the OSC targets to send to
    * @param data_format the format of OSC to send
    */
-  OSCOutputPort(OSCDevice *device,
+  OscOutputPort(OscDevice *device,
                 unsigned int port_id,
-                OSCNode *node,
-                const std::vector<OSCTarget> &targets,
-                OSCNode::DataFormat data_format);
-  ~OSCOutputPort();
+                OscNode *node,
+                const std::vector<OscTarget> &targets,
+                OscNode::DataFormat data_format);
+  ~OscOutputPort();
 
   /**
    * Called during the patch process, just before the Universe of this port
@@ -125,11 +125,11 @@ class OSCOutputPort: public BasicOutputPort {
   std::string Description() const { return m_description; }
 
  private:
-  OSCNode *m_node;
-  const std::vector<OSCTarget> m_template_targets;
-  std::vector<OSCTarget> m_registered_targets;
+  OscNode *m_node;
+  const std::vector<OscTarget> m_template_targets;
+  std::vector<OscTarget> m_registered_targets;
   std::string m_description;
-  OSCNode::DataFormat m_data_format;
+  OscNode::DataFormat m_data_format;
 
   void RemoveTargets();
   void SetUnpatchedDescription();

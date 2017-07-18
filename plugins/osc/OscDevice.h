@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCDevice.h
+ * OscDevice.h
  * The OSC Device.
  * Copyright (C) 2012 Simon Newton
  */
@@ -27,8 +27,8 @@
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/SocketAddress.h"
 #include "olad/Device.h"
-#include "plugins/osc/OSCTarget.h"
-#include "plugins/osc/OSCNode.h"
+#include "plugins/osc/OscTarget.h"
+#include "plugins/osc/OscNode.h"
 
 namespace ola {
 
@@ -37,18 +37,18 @@ class AbstractPlugin;
 namespace plugin {
 namespace osc {
 
-class OSCDevice: public Device {
+class OscDevice: public Device {
  public:
     struct PortConfig {
-      PortConfig() : data_format(OSCNode::FORMAT_BLOB) {}
+      PortConfig() : data_format(OscNode::FORMAT_BLOB) {}
 
-      std::vector<OSCTarget> targets;
-      OSCNode::DataFormat data_format;
+      std::vector<OscTarget> targets;
+      OscNode::DataFormat data_format;
     };
 
     typedef std::vector<PortConfig> PortConfigs;
 
-    OSCDevice(AbstractPlugin *owner,
+    OscDevice(AbstractPlugin *owner,
               PluginAdaptor *plugin_adaptor,
               uint16_t udp_port,
               const std::vector<std::string> &addresses,
@@ -62,7 +62,7 @@ class OSCDevice: public Device {
     PluginAdaptor *m_plugin_adaptor;
     const std::vector<std::string> m_port_addresses;
     const PortConfigs m_port_configs;
-    std::auto_ptr<class OSCNode> m_osc_node;
+    std::auto_ptr<class OscNode> m_osc_node;
 
     bool StartHook();
 

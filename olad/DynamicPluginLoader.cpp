@@ -68,7 +68,7 @@
 #endif  // USE_OPENPIXELCONTROL
 
 #ifdef USE_OSC
-#include "plugins/osc/OSCPlugin.h"
+#include "plugins/osc/OscPlugin.h"
 #endif  // USE_OSC
 
 #ifdef USE_PATHPORT
@@ -185,7 +185,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_OSC
   m_plugins.push_back(
-      new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
+      new ola::plugin::osc::OscPlugin(m_plugin_adaptor));
 #endif  // USE_OSC
 
 #ifdef USE_RENARD

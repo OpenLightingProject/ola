@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCPlugin.h
+ * OscPlugin.h
  * Interface for the OSC plugin.
  * Copyright (C) 2012 Simon Newton
  */
@@ -24,18 +24,18 @@
 #include <string>
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
-#include "plugins/osc/OSCDevice.h"
-#include "plugins/osc/OSCTarget.h"
+#include "plugins/osc/OscDevice.h"
+#include "plugins/osc/OscTarget.h"
 
 namespace ola {
 namespace plugin {
 namespace osc {
 
-class OSCDevice;
+class OscDevice;
 
-class OSCPlugin: public ola::Plugin {
+class OscPlugin: public ola::Plugin {
  public:
-    explicit OSCPlugin(ola::PluginAdaptor *plugin_adaptor):
+    explicit OscPlugin(ola::PluginAdaptor *plugin_adaptor):
       ola::Plugin(plugin_adaptor),
       m_device(NULL) {}
 
@@ -50,11 +50,11 @@ class OSCPlugin: public ola::Plugin {
     bool SetDefaultPreferences();
 
     unsigned int GetPortCount(const std::string &key) const;
-    bool ExtractOSCTarget(const std::string &str, OSCTarget *target);
+    bool ExtractOscTarget(const std::string &str, OscTarget *target);
     void SetDataFormat(const std::string &format_option,
-                       OSCDevice::PortConfig *port_config);
+                       OscDevice::PortConfig *port_config);
 
-    OSCDevice *m_device;
+    OscDevice *m_device;
     static const uint8_t DEFAULT_PORT_COUNT = 5;
     static const uint16_t DEFAULT_UDP_PORT = 7770;
 

@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * OSCAddressTemplateTest.cpp
- * Test fixture for the OSCAddressTemplate function.
+ * OscAddressTemplateTest.cpp
+ * Test fixture for the OscAddressTemplate function.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -22,13 +22,13 @@
 #include <string>
 
 #include "ola/testing/TestUtils.h"
-#include "plugins/osc/OSCAddressTemplate.h"
+#include "plugins/osc/OscAddressTemplate.h"
 
 using ola::plugin::osc::ExpandTemplate;
 using std::string;
 
-class OSCAddressTemplateTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(OSCAddressTemplateTest);
+class OscAddressTemplateTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(OscAddressTemplateTest);
   // The tests to run.
   CPPUNIT_TEST(testExpand);
   CPPUNIT_TEST_SUITE_END();
@@ -39,12 +39,12 @@ class OSCAddressTemplateTest: public CppUnit::TestFixture {
 };
 
 // Register this test class
-CPPUNIT_TEST_SUITE_REGISTRATION(OSCAddressTemplateTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(OscAddressTemplateTest);
 
 /**
  * Check that ExpandTemplate() works.
  */
-void OSCAddressTemplateTest::testExpand() {
+void OscAddressTemplateTest::testExpand() {
   OLA_ASSERT_EQ(string(""), ExpandTemplate("", 0));
   OLA_ASSERT_EQ(string("foo"), ExpandTemplate("foo", 0));
   OLA_ASSERT_EQ(string("/dmx/universe/0"),
