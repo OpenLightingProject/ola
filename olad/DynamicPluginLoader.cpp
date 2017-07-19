@@ -91,6 +91,10 @@
 #include "plugins/spi/SPIPlugin.h"
 #endif  // USE_SPI
 
+#ifdef USE_SPIDMX
+#include "plugins/spidmx/SpiDmxPlugin.h"
+#endif  // USE_SPIDMX
+
 #ifdef USE_STAGEPROFI
 #include "plugins/stageprofi/StageProfiPlugin.h"
 #endif  // USE_STAGEPROFI
@@ -207,6 +211,11 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(
       new ola::plugin::spi::SPIPlugin(m_plugin_adaptor));
 #endif  // USE_SPI
+
+#ifdef USE_SPIDMX
+  m_plugins.push_back(
+      new ola::plugin::spidmx::SpiDmxPlugin(m_plugin_adaptor));
+#endif  // USE_SPIDMX
 
 #ifdef USE_STAGEPROFI
   m_plugins.push_back(
