@@ -28,7 +28,8 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Device.h"
 #include "olad/Preferences.h"
-//#include "plugins/spidmx/SpiWidget.h"
+#include "plugins/spidmx/SpiDmxWidget.h"
+#include "plugins/spidmx/SpiDmxThread.h"
 
 namespace ola {
 namespace plugin {
@@ -38,12 +39,13 @@ class SpiDmxDevice : public Device {
  public:
   SpiDmxDevice(AbstractPlugin *owner,
                class Preferences *preferences,
+               PluginAdaptor *plugin_adaptor,
                const std::string &name,
                const std::string &path);
   ~SpiDmxDevice();
 
   std::string DeviceId() const { return m_path; }
-  //SpiWidget* GetWidget() { return m_widget.get(); }
+  SpiDmxWidget* GetWidget() { return m_widget.get(); }
 
  protected:
   bool StartHook();
@@ -53,8 +55,11 @@ class SpiDmxDevice : public Device {
   std::string DeviceBlocklength() const;
   void SetDefaults();
 
-  //std::auto_ptr<SpiWidget> m_widget;
+
+  std::auto_ptr<SpiDmxWidget> m_widget;
+  std::auto_ptr<SpiDmxThread> m_thread;
   class Preferences *m_preferences;
+  PluginAdaptor *m_plugin_adaptor;
   const std::string m_name;
   const std::string m_path;
   unsigned int m_blocklength;
@@ -64,6 +69,7 @@ class SpiDmxDevice : public Device {
 
   DISALLOW_COPY_AND_ASSIGN(SpiDmxDevice);
 };
+
 }  // namespace spidmx
 }  // namespace plugin
 }  // namespace ola
