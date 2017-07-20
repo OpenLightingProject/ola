@@ -14,7 +14,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIDMXParser.h
- * The SPI DMX plugin samples the Serial Peripheral Interface for DMX data.
+ * This parses a SPI buffer into a DmxBuffer and notifies a callback when a
+ * packet is received completely.
  * Copyright (C) 2017 Florian Edelmann
  */
 

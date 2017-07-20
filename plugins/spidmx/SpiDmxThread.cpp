@@ -14,9 +14,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SpiDmxThread.cpp
- * The DMX through a SPI plugin for ola
- * Copyright (C) 2011 Rui Barreiros
- * Copyright (C) 2014 Richard Ash
+ * This thread runs while one or more ports are registered. It constantly reads
+ * and writes SPI data and calls the parser.
+ * Copyright (C) 2017 Florian Edelmann
  */
 
 #include <string>
@@ -147,7 +147,7 @@ void *SpiDmxThread::Run() {
       buffer.Set(m_dmx_tx_buffer);
     }
 
-    if (!m_widget->ReadWrite(NULL, m_spi_rx_buffer, m_blocklength)) {
+    if (!m_widget->ReadWrite(m_spi_tx_buffer, m_spi_rx_buffer, m_blocklength)) {
       OLA_WARN << "SPIDMX Read / Write failed, stopping thread...";
       break;
     }

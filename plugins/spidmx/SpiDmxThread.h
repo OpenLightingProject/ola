@@ -14,9 +14,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SpiDmxThread.h
- * The DMX through a SPI plugin for ola
- * Copyright (C) 2011 Rui Barreiros
- * Copyright (C) 2014 Richard Ash
+ * This thread runs while one or more ports are registered. It constantly reads
+ * and writes SPI data and calls the parser.
+ * Copyright (C) 2017 Florian Edelmann
  */
 
 #ifndef PLUGINS_SPIDMX_SPIDMXTHREAD_H_

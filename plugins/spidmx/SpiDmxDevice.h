@@ -14,9 +14,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SpiDmxDevice.h
- * The DMX through a SPI plugin for ola
- * Copyright (C) 2011 Rui Barreiros
- * Copyright (C) 2014 Richard Ash
+ * This represents a device and manages thread, widget and input/output ports.
+ * Copyright (C) 2017 Florian Edelmann
  */
 
 #ifndef PLUGINS_SPIDMX_SPIDMXDEVICE_H_
