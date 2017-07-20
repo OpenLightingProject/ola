@@ -37,8 +37,9 @@ namespace spidmx {
 
 class SpiDmxPlugin : public Plugin {
  public:
-  explicit SpiDmxPlugin(ola::PluginAdaptor *plugin_adaptor)
-      : Plugin(plugin_adaptor) {
+  explicit SpiDmxPlugin(PluginAdaptor *plugin_adaptor)
+      : Plugin(plugin_adaptor),
+        m_plugin_adaptor(plugin_adaptor) {
   }
 
   ola_plugin_id Id() const { return OLA_PLUGIN_EXPERIMENTAL; }
@@ -53,6 +54,8 @@ class SpiDmxPlugin : public Plugin {
  private:
   typedef std::vector<SpiDmxDevice*> SpiDmxDeviceVector;
   SpiDmxDeviceVector m_devices;
+
+  PluginAdaptor *m_plugin_adaptor;
 
   void AddDevice(SpiDmxDevice *device);
   bool StartHook();

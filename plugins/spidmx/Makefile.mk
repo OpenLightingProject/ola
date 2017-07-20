@@ -13,13 +13,15 @@ plugins/spidmx/SpiDmxPluginDescription.h: plugins/spidmx/README.md plugins/spidm
 plugins_spidmx_libolaspidmx_la_SOURCES = \
     plugins/spidmx/SpiDmxDevice.cpp \
     plugins/spidmx/SpiDmxDevice.h \
+    plugins/spidmx/SpiDmxParser.cpp \
+    plugins/spidmx/SpiDmxParser.h \
     plugins/spidmx/SpiDmxPlugin.cpp \
     plugins/spidmx/SpiDmxPlugin.h \
     plugins/spidmx/SpiDmxPort.h \
     plugins/spidmx/SpiDmxThread.cpp \
     plugins/spidmx/SpiDmxThread.h \
-    plugins/spidmx/SpiWidget.cpp \
-    plugins/spidmx/SpiWidget.h
+    plugins/spidmx/SpiDmxWidget.cpp \
+    plugins/spidmx/SpiDmxWidget.h
 plugins_spidmx_libolaspidmx_la_LIBADD = \
     common/libolacommon.la \
     olad/plugin_api/libolaserverplugininterface.la

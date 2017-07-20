@@ -24,7 +24,7 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "plugins/spidmx/SpiDmxDevice.h"
-//#include "plugins/spidmx/SpiDmxPort.h"
+#include "plugins/spidmx/SpiDmxPort.h"
 
 namespace ola {
 namespace plugin {
@@ -38,32 +38,37 @@ const char SpiDmxDevice::BLOCKLENGTH_KEY[] = "-blocklength";
 
 SpiDmxDevice::SpiDmxDevice(AbstractPlugin *owner,
                            class Preferences *preferences,
+                           PluginAdaptor *plugin_adaptor,
                            const string &name,
                            const string &path)
     : Device(owner, name),
       m_preferences(preferences),
+      m_plugin_adaptor(plugin_adaptor),
       m_name(name),
       m_path(path) {
   // set up some per-device default configuration if not already set
   SetDefaults();
+  OLA_DEBUG << "SpiDmxDevice constructor called. name=" << name << ", path=" << path;
   // now read per-device configuration
   if (!StringToInt(m_preferences->GetValue(DeviceBlocklength()),
                                            &m_blocklength)) {
     m_blocklength = DEFAULT_BLOCKLENGTH;
   }
-  // m_widget.reset(new SpiWidget(path));
-  OLA_DEBUG << "SpiDmxDevice constructor called";
+  m_widget.reset(new SpiDmxWidget(path));
+  m_thread.reset(new SpiDmxThread(m_widget.get(), m_blocklength));
 }
 
 SpiDmxDevice::~SpiDmxDevice() {
-  /*if (m_widget->IsOpen()) {
+  if (m_widget->IsOpen()) {
     m_widget->Close();
-  }*/
+  }
+  m_thread->Stop();
   OLA_DEBUG << "SpiDmxDevice destructor called";
 }
 
 bool SpiDmxDevice::StartHook() {
-  // AddPort(new SpiDmxOutputPort(this, 0, m_widget.get(), m_breakt, m_malft));
+  AddPort(new SpiDmxInputPort(this, 0, m_plugin_adaptor, m_widget.get(),
+                              m_thread.get()));
   OLA_DEBUG << "SpiDmxDevice::StartHook called";
   return true;
 }
@@ -89,6 +94,7 @@ void SpiDmxDevice::SetDefaults() {
     m_preferences->Save();
   }
 }
+
 }  // namespace spidmx
 }  // namespace plugin
 }  // namespace ola

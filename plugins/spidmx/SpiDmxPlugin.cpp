@@ -61,7 +61,8 @@ bool SpiDmxPlugin::StartHook() {
   vector<string>::const_iterator iter;  // iterate over devices
 
   for (iter = spi_devices.begin(); iter != spi_devices.end(); ++iter) {
-    SpiDmxDevice *device = new SpiDmxDevice(this, m_preferences, PLUGIN_NAME,
+    SpiDmxDevice *device = new SpiDmxDevice(this, m_preferences,
+                                            m_plugin_adaptor, PLUGIN_NAME,
                                             *iter);
 
     if (!device) {
