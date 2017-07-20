@@ -14,18 +14,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SpiDmxWidget.h
- * This class is based on QLCFTDI class from
- *
- * Q Light Controller
- * qlcftdi.h
- *
- * Copyright (C) Heikki Junnila
- *
- * Only standard CPP conversion was changed and function name changed
- * to follow OLA coding standards.
- *
- * by Rui Barreiros
- * Copyright (C) 2014 Richard Ash
+ * This is a wrapper around the needed SPIDEV calls.
+ * Copyright (C) 2017 Florian Edelmann
  */
 
 #ifndef PLUGINS_SPIDMX_SPIDMXWIDGET_H_
