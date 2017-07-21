@@ -47,7 +47,8 @@ SpiDmxDevice::SpiDmxDevice(AbstractPlugin *owner,
       m_path(path) {
   // set up some per-device default configuration if not already set
   SetDefaults();
-  OLA_DEBUG << "SpiDmxDevice constructor called. name=" << name << ", path=" << path;
+  OLA_DEBUG << "SpiDmxDevice constructor called. name=" << name << ", path="
+            << path;
   // now read per-device configuration
   if (!StringToInt(m_preferences->GetValue(DeviceBlocklength()),
                                            &m_blocklength)) {

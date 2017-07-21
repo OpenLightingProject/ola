@@ -100,8 +100,8 @@ bool SpiDmxWidget::ReadWrite(uint8_t *tx_buf, uint8_t *rx_buf,
   tr.speed_hz      = SPI_SPEED;
   tr.delay_usecs   = SPI_DELAY;
   tr.bits_per_word = SPI_BITS_PER_WORD;
-	tr.cs_change     = SPI_CS_CHANGE;
-	tr.pad           = SPI_PAD;
+  tr.cs_change     = SPI_CS_CHANGE;
+  tr.pad           = SPI_PAD;
 
   int ret = ioctl(m_fd, SPI_IOC_MESSAGE(1), &tr);
   if (ret < 1) {
