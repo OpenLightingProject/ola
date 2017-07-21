@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPIDMXParser.h
+ * SpiDmxParser.h
  * This parses a SPI buffer into a DmxBuffer and notifies a callback when a
  * packet is received completely.
  * Copyright (C) 2017 Florian Edelmann
@@ -188,8 +188,7 @@ void SpiDmxParser::InBreak() {
     if (state_bitcount > 165) {
       ChangeState(WAIT_FOR_MAB);
     }
-  }
-  else {
+  } else {
     ChangeState(WAIT_FOR_BREAK);
   }
   chunk_bitcount++;
@@ -205,8 +204,7 @@ void SpiDmxParser::WaitForMab() {
     if (ones > 0) {
       ChangeState(IN_MAB);
       state_bitcount = ones;
-    }
-    else {
+    } else {
       ChangeState(WAIT_FOR_BREAK);
     }
   }
@@ -220,8 +218,7 @@ void SpiDmxParser::InMab() {
   uint8_t byte = chunk[chunk_bitcount];
   if (byte == 0xff) {
     state_bitcount += 8;
-  }
-  else {
+  } else {
     int8_t zeros = DetectFallingEdge(byte);
     int8_t ones = 8 - zeros;
 
@@ -231,7 +228,7 @@ void SpiDmxParser::InMab() {
       chunk_bitcount++;
       return;
     }
-    
+
     ChangeState(IN_STARTCODE);
     state_bitcount = zeros;
   }
@@ -246,8 +243,7 @@ void SpiDmxParser::InStartcode() {
   uint8_t byte = chunk[chunk_bitcount];
   if (byte == 0x00) {
     state_bitcount += 8;
-  }
-  else {
+  } else {
     int8_t ones = DetectRisingEdge(byte);
     int8_t zeros = 8 - ones;
 
@@ -260,7 +256,7 @@ void SpiDmxParser::InStartcode() {
       chunk_bitcount++;
       return;
     }
-    
+
     ChangeState(IN_STARTCODE_STOPBITS);
     state_bitcount = ones;
   }
@@ -275,8 +271,7 @@ void SpiDmxParser::InStartcodeStopbits() {
   uint8_t byte = chunk[chunk_bitcount];
   if (byte == 0xff) {
     state_bitcount += 8;
-  }
-  else {
+  } else {
     int8_t zeros = DetectFallingEdge(byte);
     int8_t ones = 8 - zeros;
 
@@ -286,7 +281,7 @@ void SpiDmxParser::InStartcodeStopbits() {
       chunk_bitcount++;
       return;
     }
-    
+
     ChangeState(IN_DATA_STARTBIT);
     state_bitcount = zeros;
   }
@@ -326,8 +321,7 @@ void SpiDmxParser::InDataStartbit() {
     // look at the last byte again and don't increase chunk_bitcount
     byte = chunk[chunk_bitcount - 1];
     sampling_position = state_bitcount - 4;
-  }
-  else {
+  } else {
     // next byte will be handled in next step as usual
     chunk_bitcount++;
     sampling_position = state_bitcount + 8 - 4;
@@ -336,8 +330,7 @@ void SpiDmxParser::InDataStartbit() {
   // start bit must be zero
   if ((byte & (1 << sampling_position))) {
     ChangeState(WAIT_FOR_BREAK);
-  }
-  else {
+  } else {
     current_dmx_value = 0x00;
     ChangeState(IN_DATA_BITS);
   }
@@ -365,13 +358,11 @@ void SpiDmxParser::InLastDataBit() {
 
   ChangeState(IN_DATA_STOPBITS);
   // assume that bit after sample position belongs to stop bits
-  //if (read_bit == 1) {
   if (sampling_position >= 4) {
     state_bitcount = sampling_position;
-  }
-  else {
+  } else {
     state_bitcount = sampling_position + 8;
-    chunk_bitcount++; // assume next byte is 0xff
+    chunk_bitcount++;  // assume next byte is 0xff
   }
   chunk_bitcount++;
 }
@@ -383,10 +374,8 @@ void SpiDmxParser::InDataStopbits() {
   uint8_t byte = chunk[chunk_bitcount];
   if (byte == 0xff) {
     state_bitcount += 8;
-  }
-  else if (byte == 0x00 && state_bitcount <= 11 && current_dmx_value == 0x00) {
-    // we are actually in a break
-
+  } else if (byte == 0x00 && state_bitcount <= 11
+      && current_dmx_value == 0x00) {  // we are actually in a break
     // all later channels are definitely zero
     m_dmx_buffer->SetRangeToValue(channel_count + 1, 0x00, 511 - channel_count);
     channel_count = 511;
@@ -394,8 +383,7 @@ void SpiDmxParser::InDataStopbits() {
 
     ChangeState(IN_BREAK);
     state_bitcount = 10 * 8;
-  }
-  else {
+  } else {
     int8_t zeros = DetectFallingEdge(byte);
     int8_t ones = 8 - zeros;
 
@@ -425,16 +413,15 @@ void SpiDmxParser::InDataStopbits() {
       }
     }
 
-    channel_count++; // mark channel receive as complete
+    channel_count++;  // mark channel receive as complete
     m_dmx_buffer->SetChannel(channel_count, current_dmx_value);
-    Debug("                                 DMX channel %d: %d", channel_count+1, current_dmx_value);
-    
+    Debug("DMX channel %d: %d", channel_count+1, current_dmx_value);
+
     if (channel_count == 511) {
       // last channel filled
       ReceiveComplete();
       ChangeState(IN_BREAK);
-    }
-    else {
+    } else {
       ChangeState(IN_DATA_STARTBIT);
     }
     state_bitcount = zeros;
@@ -457,57 +444,66 @@ void SpiDmxParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
   while (chunk_bitcount < buffersize) {
     switch (state) {
       case WAIT_FOR_BREAK:
-        Debug("%6ld  0x%02x  wait for break (%d)", chunk_bitcount, chunk[chunk_bitcount], state);
+        Debug("%6ld  0x%02x  wait for break (%d)", chunk_bitcount,
+              chunk[chunk_bitcount], state);
         WaitForBreak();
         break;
 
       case IN_BREAK:
-        Debug("%6ld  0x%02x  in break (%d)", chunk_bitcount, chunk[chunk_bitcount], state);
+        Debug("%6ld  0x%02x  in break (%d)", chunk_bitcount,
+              chunk[chunk_bitcount], state);
         InBreak();
         break;
 
       case WAIT_FOR_MAB:
-        Debug("%6ld  0x%02x  wait for MAB (%d)", chunk_bitcount, chunk[chunk_bitcount], state);
+        Debug("%6ld  0x%02x  wait for MAB (%d)", chunk_bitcount,
+              chunk[chunk_bitcount], state);
         WaitForMab();
         break;
 
       case IN_MAB:
-        Debug("%6ld  0x%02x  in MAB (%d)", chunk_bitcount, chunk[chunk_bitcount], state);
+        Debug("%6ld  0x%02x  in MAB (%d)", chunk_bitcount,
+              chunk[chunk_bitcount], state);
         InMab();
         break;
 
       case IN_STARTCODE:
-        Debug("%6ld  0x%02x  in startcode (%d)", chunk_bitcount, chunk[chunk_bitcount], state);
+        Debug("%6ld  0x%02x  in startcode (%d)", chunk_bitcount,
+              chunk[chunk_bitcount], state);
         InStartcode();
         break;
 
       case IN_STARTCODE_STOPBITS:
-        Debug("%6ld  0x%02x  in startcode stopbits (%d)", chunk_bitcount, chunk[chunk_bitcount], state);
+        Debug("%6ld  0x%02x  in startcode stopbits (%d)", chunk_bitcount,
+              chunk[chunk_bitcount], state);
         InStartcodeStopbits();
         break;
 
       case IN_DATA_STARTBIT:
-        Debug("%6ld  0x%02x  in data startbit (%d)", chunk_bitcount, chunk[chunk_bitcount], state);
+        Debug("%6ld  0x%02x  in data startbit (%d)", chunk_bitcount,
+              chunk[chunk_bitcount], state);
         InDataStartbit();
         break;
 
       case IN_DATA_BITS:
-        Debug("%6ld  0x%02x  in data bit %ld (%d)", chunk_bitcount, chunk[chunk_bitcount], state_bitcount, state);
+        Debug("%6ld  0x%02x  in data bit %ld (%d)", chunk_bitcount,
+              chunk[chunk_bitcount], state_bitcount, state);
         if (state_bitcount < 7) {
           InDataBits();
-        }
-        else {
+        } else {
           InLastDataBit();
         }
         break;
 
       case IN_DATA_STOPBITS:
-        Debug("%6ld  0x%02x  in data stopbits (%d), state_bitcount = %ld", chunk_bitcount, chunk[chunk_bitcount], state, state_bitcount);
+        Debug("%6ld  0x%02x  in data stopbits (%d), state_bitcount = %ld",
+              chunk_bitcount, chunk[chunk_bitcount], state, state_bitcount);
         InDataStopbits();
         break;
 
       default:
-        Debug("%6ld  0x%02x  default (%d)", chunk_bitcount, chunk[chunk_bitcount], state);
+        Debug("%6ld  0x%02x  default (%d)", chunk_bitcount,
+              chunk[chunk_bitcount], state);
         chunk_bitcount++;
     }
   }

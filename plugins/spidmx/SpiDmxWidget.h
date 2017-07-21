@@ -21,9 +21,9 @@
 #ifndef PLUGINS_SPIDMX_SPIDMXWIDGET_H_
 #define PLUGINS_SPIDMX_SPIDMXWIDGET_H_
 
+#include <linux/spi/spidev.h>
 #include <string>
 #include <vector>
-#include <linux/spi/spidev.h>
 
 #include "ola/base/Macro.h"
 #include "ola/DmxBuffer.h"
@@ -41,7 +41,7 @@ class SpiDmxWidget {
     * Construct a new SpiDmxWidget instance for one widget.
     * @param path The device file path of the serial port
     */
-  SpiDmxWidget(const std::string &path);
+  explicit SpiDmxWidget(const std::string &path);
 
   /** Destructor */
   ~SpiDmxWidget();
