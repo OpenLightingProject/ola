@@ -14,8 +14,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SpiDmxThread.h
- * This thread runs while one or more ports are registered. It constantly reads
- * and writes SPI data and calls the parser.
+ * This thread runs while one or more ports are registered. It simultaneously
+ * reads / writes SPI data and then calls the parser. This is repeated forever.
  * Copyright (C) 2017 Florian Edelmann
  */
 
@@ -58,8 +58,8 @@ class SpiDmxThread : public ola::thread::Thread {
   DmxBuffer m_dmx_rx_buffer;
   DmxBuffer m_dmx_tx_buffer;
 
-  uint8_t *m_spi_rx_buffer;
-  uint8_t *m_spi_tx_buffer;
+  std::vector<uint8_t> m_spi_rx_buffer;
+  std::vector<uint8_t> m_spi_tx_buffer;
 
   std::auto_ptr<Callback0<void> > m_receive_callback;
 
