@@ -55,12 +55,17 @@ class SpiDmxThread : public ola::thread::Thread {
   bool m_term;
   int m_registered_ports;
 
+  /** receive DMX buffer to give to InputPort's callback */
   DmxBuffer m_dmx_rx_buffer;
+  /** transmit DMX buffer that is set from WriteDMX */
   DmxBuffer m_dmx_tx_buffer;
 
+  /** receive buffer with raw SPI bytes */
   std::vector<uint8_t> m_spi_rx_buffer;
+  /** transmit buffer with raw SPI bytes */
   std::vector<uint8_t> m_spi_tx_buffer;
 
+  /** called when a new m_dmx_rx_buffer is ready */
   std::auto_ptr<Callback0<void> > m_receive_callback;
 
   ola::thread::Mutex m_term_mutex;

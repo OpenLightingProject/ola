@@ -43,8 +43,8 @@ using std::vector;
 
 const char SpiDmxPlugin::PLUGIN_NAME[] = "SPI native DMX";
 const char SpiDmxPlugin::PLUGIN_PREFIX[] = "spidmx";
-const char SpiDmxPlugin::DEFAULT_DEVICE_PREFIX[] = "spidev";
-const char SpiDmxPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
+const char SpiDmxPlugin::PREF_DEVICE_PREFIX_DEFAULT[] = "spidev";
+const char SpiDmxPlugin::PREF_DEVICE_PREFIX_KEY[] = "device_prefix";
 
 /*
  * Start the plugin by finding all SPI devices.
@@ -52,7 +52,7 @@ const char SpiDmxPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
 bool SpiDmxPlugin::StartHook() {
   vector<string> spi_devices;
   vector<string> spi_prefixes = m_preferences->GetMultipleValue(
-      DEVICE_PREFIX_KEY);
+      PREF_DEVICE_PREFIX_KEY);
   if (!ola::file::FindMatchingFiles("/dev", spi_prefixes, &spi_devices)) {
     return false;
   }
@@ -72,9 +72,11 @@ bool SpiDmxPlugin::StartHook() {
       delete device;
       continue;
     }
+
     m_devices.push_back(device);
     m_plugin_adaptor->RegisterDevice(device);
   }
+
   return true;
 }
 
@@ -105,20 +107,18 @@ string SpiDmxPlugin::Description() const {
  * Load the plugin prefs and default to sensible values
  */
 bool SpiDmxPlugin::SetDefaultPreferences() {
-  bool save = false;
-
   if (!m_preferences) {
     return false;
   }
 
-  save |= m_preferences->SetDefaultValue(DEVICE_PREFIX_KEY,
-                                         StringValidator(),
-                                         DEFAULT_DEVICE_PREFIX);
+  bool save = m_preferences->SetDefaultValue(PREF_DEVICE_PREFIX_KEY,
+                                             StringValidator(),
+                                             PREF_DEVICE_PREFIX_DEFAULT);
   if (save) {
     m_preferences->Save();
   }
 
-  if (m_preferences->GetValue(DEVICE_PREFIX_KEY).empty()) {
+  if (m_preferences->GetValue(PREF_DEVICE_PREFIX_KEY).empty()) {
     return false;
   }
 

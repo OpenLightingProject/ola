@@ -31,8 +31,8 @@ namespace spidmx {
 
 using std::string;
 
-const unsigned int SpiDmxDevice::DEFAULT_BLOCKLENGTH = 4096;
-const char SpiDmxDevice::BLOCKLENGTH_KEY[] = "-blocklength";
+const unsigned int SpiDmxDevice::PREF_BLOCKLENGTH_DEFAULT = 4096;
+const char SpiDmxDevice::PREF_BLOCKLENGTH_KEY[] = "-blocklength";
 
 
 SpiDmxDevice::SpiDmxDevice(AbstractPlugin *owner,
@@ -47,13 +47,13 @@ SpiDmxDevice::SpiDmxDevice(AbstractPlugin *owner,
       m_path(path) {
   // set up some per-device default configuration if not already set
   SetDefaults();
-  OLA_DEBUG << "SpiDmxDevice constructor called. name=" << name << ", path="
-            << path;
+
   // now read per-device configuration
   if (!StringToInt(m_preferences->GetValue(DeviceBlocklength()),
                                            &m_blocklength)) {
-    m_blocklength = DEFAULT_BLOCKLENGTH;
+    m_blocklength = PREF_BLOCKLENGTH_DEFAULT;
   }
+
   m_widget.reset(new SpiDmxWidget(path));
   m_thread.reset(new SpiDmxThread(m_widget.get(), m_blocklength));
 }
@@ -63,18 +63,16 @@ SpiDmxDevice::~SpiDmxDevice() {
     m_widget->Close();
   }
   m_thread->Stop();
-  OLA_DEBUG << "SpiDmxDevice destructor called";
 }
 
 bool SpiDmxDevice::StartHook() {
   AddPort(new SpiDmxInputPort(this, 0, m_plugin_adaptor, m_widget.get(),
                               m_thread.get()));
-  OLA_DEBUG << "SpiDmxDevice::StartHook called";
   return true;
 }
 
 string SpiDmxDevice::DeviceBlocklength() const {
-  return m_path + BLOCKLENGTH_KEY;
+  return m_path + PREF_BLOCKLENGTH_KEY;
 }
 
 /**
@@ -85,11 +83,9 @@ void SpiDmxDevice::SetDefaults() {
     return;
   }
 
-  bool save = false;
-
-  save |= m_preferences->SetDefaultValue(DeviceBlocklength(),
-                                         UIntValidator(0, 65535),
-                                         DEFAULT_BLOCKLENGTH);
+  bool save = m_preferences->SetDefaultValue(DeviceBlocklength(),
+                                             UIntValidator(0, 65535),
+                                             PREF_BLOCKLENGTH_DEFAULT);
   if (save) {
     m_preferences->Save();
   }

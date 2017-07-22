@@ -64,10 +64,10 @@ bool SpiDmxWidget::Open() {
     m_fd = FAILED_OPEN;
     OLA_WARN << Name() << " failed to open";
     return false;
-  } else {
-    OLA_DEBUG << "Opened SPI port " << Name();
-    return true;
   }
+
+  OLA_DEBUG << "Opened SPI port " << Name();
+  return true;
 }
 
 bool SpiDmxWidget::Close() {
@@ -79,16 +79,22 @@ bool SpiDmxWidget::Close() {
     OLA_WARN << Name() << " error closing";
     m_fd = NOT_OPEN;
     return false;
-  } else {
-    m_fd = NOT_OPEN;
-    return true;
   }
+
+  m_fd = NOT_OPEN;
+  return true;
 }
 
 bool SpiDmxWidget::IsOpen() const {
   return m_fd >= 0;
 }
 
+/**
+ * Transmit tx_buf to the SPI bus and read data from the SPI bus into rx_buf.
+ * Both must be of the specified blocklength.
+ *
+ * @returns false if send/receive operation failed, true otherwise
+ */
 bool SpiDmxWidget::ReadWrite(uint8_t *tx_buf, uint8_t *rx_buf,
                              uint32_t blocklength) {
   struct spi_ioc_transfer tr;
@@ -113,7 +119,6 @@ bool SpiDmxWidget::ReadWrite(uint8_t *tx_buf, uint8_t *rx_buf,
 
 /**
  * Setup our device for DMX receive.
- * Also used to test if device is working correctly before AddDevice()
  */
 bool SpiDmxWidget::SetupOutput() {
   if (!IsOpen()) {

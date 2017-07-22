@@ -63,8 +63,8 @@ class SpiDmxPlugin : public Plugin {
 
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
-  static const char DEFAULT_DEVICE_PREFIX[];
-  static const char DEVICE_PREFIX_KEY[];
+  static const char PREF_DEVICE_PREFIX_DEFAULT[];
+  static const char PREF_DEVICE_PREFIX_KEY[];
 
   DISALLOW_COPY_AND_ASSIGN(SpiDmxPlugin);
 };

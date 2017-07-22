@@ -36,7 +36,6 @@ SpiDmxThread::SpiDmxThread(SpiDmxWidget *widget, unsigned int blocklength)
     m_registered_ports(0),
     m_spi_rx_buffer(blocklength),
     m_spi_tx_buffer(blocklength) {
-  OLA_DEBUG << "SpiDmxThread constructor called";
 }
 
 SpiDmxThread::~SpiDmxThread() {
@@ -76,7 +75,7 @@ bool SpiDmxThread::Stop() {
 
 
 /**
- * Copy a DMXBuffer to the output thread
+ * Copy a DmxBuffer to the output thread
  */
 bool SpiDmxThread::WriteDMX(const DmxBuffer &buffer) {
   ola::thread::MutexLocker locker(&m_buffer_mutex);
@@ -98,7 +97,6 @@ const DmxBuffer &SpiDmxThread::GetDmxInBuffer() const {
   * @param callback The callback to call.
   */
 bool SpiDmxThread::SetReceiveCallback(Callback0<void> *callback) {
-  OLA_INFO << "SpiDmxThread::SetReceiveCallback called";
   m_receive_callback.reset(callback);
 
   if (!callback) {
@@ -120,7 +118,6 @@ bool SpiDmxThread::SetReceiveCallback(Callback0<void> *callback) {
  * The method called by the thread
  */
 void *SpiDmxThread::Run() {
-  OLA_INFO << "SpiDmxThread::Run called";
   DmxBuffer dmx_buffer;
 
   uint8_t *spi_rx_ptr;
@@ -129,7 +126,7 @@ void *SpiDmxThread::Run() {
   // Setup the widget
   if (!m_widget->IsOpen()) {
     if (!m_widget->SetupOutput()) {
-      OLA_INFO << "SpiDmxThread::Run stopped";
+      OLA_INFO << "SpiDmxThread stopped because SPI widget could not be opened";
       return NULL;
     }
   }
