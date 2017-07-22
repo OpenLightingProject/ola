@@ -14,8 +14,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SpiDmxThread.cpp
- * This thread runs while one or more ports are registered. It constantly reads
- * and writes SPI data and calls the parser.
+ * This thread runs while one or more ports are registered. It simultaneously
+ * reads / writes SPI data and then calls the parser. This is repeated forever.
  * Copyright (C) 2017 Florian Edelmann
  */
 
@@ -33,17 +33,14 @@ SpiDmxThread::SpiDmxThread(SpiDmxWidget *widget, unsigned int blocklength)
   : m_widget(widget),
     m_blocklength(blocklength),
     m_term(false),
-    m_registered_ports(0) {
+    m_registered_ports(0),
+    m_spi_rx_buffer(blocklength),
+    m_spi_tx_buffer(blocklength) {
   OLA_DEBUG << "SpiDmxThread constructor called";
-
-  m_spi_rx_buffer = new uint8_t[m_blocklength];
-  m_spi_tx_buffer = new uint8_t[m_blocklength];
 }
 
 SpiDmxThread::~SpiDmxThread() {
   Stop();
-  delete[] m_spi_rx_buffer;
-  delete[] m_spi_tx_buffer;
 }
 
 /**
@@ -110,8 +107,12 @@ bool SpiDmxThread::SetReceiveCallback(Callback0<void> *callback) {
     return true;
   }
 
-  RegisterPort();
-  return m_widget->SetupOutput();
+  if (m_widget->SetupOutput()) {
+    RegisterPort();
+    return true;
+  }
+
+  return false;
 }
 
 
@@ -120,7 +121,10 @@ bool SpiDmxThread::SetReceiveCallback(Callback0<void> *callback) {
  */
 void *SpiDmxThread::Run() {
   OLA_INFO << "SpiDmxThread::Run called";
-  DmxBuffer buffer;
+  DmxBuffer dmx_buffer;
+
+  uint8_t *spi_rx_ptr;
+  uint8_t *spi_tx_ptr;
 
   // Setup the widget
   if (!m_widget->IsOpen()) {
@@ -144,16 +148,26 @@ void *SpiDmxThread::Run() {
 
     {
       ola::thread::MutexLocker locker(&m_buffer_mutex);
-      buffer.Set(m_dmx_tx_buffer);
+      dmx_buffer.Set(m_dmx_tx_buffer);
     }
 
-    if (!m_widget->ReadWrite(m_spi_tx_buffer, m_spi_rx_buffer, m_blocklength)) {
+    // TODO fill m_spi_tx_buffer with the correct values from dmx_buffer
+
+    // vectors store their contents contiguously,
+    // so we can get a pointer to the elements like so
+    spi_rx_ptr = &m_spi_rx_buffer[0];
+    spi_tx_ptr = &m_spi_tx_buffer[0];
+
+    if (!m_widget->ReadWrite(spi_tx_ptr, spi_rx_ptr, m_blocklength)) {
       OLA_WARN << "SPIDMX Read / Write failed, stopping thread...";
       break;
     }
 
-    parser->ParseDmx(m_spi_rx_buffer, (uint64_t) m_blocklength);
+    parser->ParseDmx(spi_rx_ptr, (uint64_t) m_blocklength);
   }
+
+  delete parser;
+
   return NULL;
 }
 

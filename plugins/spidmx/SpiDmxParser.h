@@ -22,7 +22,6 @@
 #ifndef PLUGINS_SPIDMX_SPIDMXPARSER_H_
 #define PLUGINS_SPIDMX_SPIDMXPARSER_H_
 
-#include <memory>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
@@ -65,8 +64,6 @@ class SpiDmxParser {
   void InDataStopbits();
   void ReceiveComplete();
 
-  void Debug(const char *message, ...);
-
   SpiDmxParser::dmx_state_t state;
   uint8_t *chunk;
   uint64_t chunk_bitcount;
@@ -75,7 +72,7 @@ class SpiDmxParser {
   uint8_t current_dmx_value;
   int16_t channel_count;
   uint8_t sampling_position;
-  std::auto_ptr<Callback0<void> > m_callback;
+  Callback0<void> *m_callback;
 
   DISALLOW_COPY_AND_ASSIGN(SpiDmxParser);
 };

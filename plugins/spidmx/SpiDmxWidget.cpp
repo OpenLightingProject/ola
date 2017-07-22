@@ -96,7 +96,7 @@ bool SpiDmxWidget::ReadWrite(uint8_t *tx_buf, uint8_t *rx_buf,
 
   tr.tx_buf        = (uint64_t) tx_buf;
   tr.rx_buf        = (uint64_t) rx_buf;
-  tr.len           = (uint32_t) blocklength;
+  tr.len           = blocklength;
   tr.speed_hz      = SPI_SPEED;
   tr.delay_usecs   = SPI_DELAY;
   tr.bits_per_word = SPI_BITS_PER_WORD;
