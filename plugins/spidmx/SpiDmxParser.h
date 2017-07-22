@@ -32,7 +32,10 @@ namespace spidmx {
 
 class SpiDmxParser {
  public:
-  SpiDmxParser(DmxBuffer *buffer, Callback0<void> *callback);
+  SpiDmxParser(DmxBuffer *buffer, Callback0<void> *callback)
+    : m_dmx_buffer(buffer),
+      m_callback(callback) {
+  };
   void ParseDmx(uint8_t *buffer, uint64_t chunksize);
 
  private:
@@ -48,10 +51,14 @@ class SpiDmxParser {
     IN_DATA_STOPBITS
   } dmx_state_t;
 
+  // helper functions
   int8_t DetectFallingEdge(uint8_t byte);
   int8_t DetectRisingEdge(uint8_t byte);
 
   void ChangeState(SpiDmxParser::dmx_state_t new_state);
+  void PacketComplete();
+
+  // handle one state each
   void WaitForBreak();
   void InBreak();
   void WaitForMab();
@@ -62,16 +69,35 @@ class SpiDmxParser {
   void InDataBits();
   void InLastDataBit();
   void InDataStopbits();
-  void ReceiveComplete();
 
+  /** current state */
   SpiDmxParser::dmx_state_t state;
+
+  /** the raw SPI data */
   uint8_t *chunk;
+
+  /** the current SPI byte */
   uint64_t chunk_bitcount;
+
+  /**
+   * Count how many SPI bits the current state is already active. Not used
+   * in all states.
+   */
   uint64_t state_bitcount;
+
+  /** a DmxBuffer that is filled and returned when ready */
   DmxBuffer *m_dmx_buffer;
+
+  /** The current DMX channel value (gets assembled from multiple SPI bytes) */
   uint8_t current_dmx_value;
+
+  /** The current DMX channel count */
   int16_t channel_count;
+
+  /** The currently used bit offset to sample the DMX bits */
   uint8_t sampling_position;
+
+  /** The callback to call when a packet end is detected or the chunk ends */
   Callback0<void> *m_callback;
 
   DISALLOW_COPY_AND_ASSIGN(SpiDmxParser);

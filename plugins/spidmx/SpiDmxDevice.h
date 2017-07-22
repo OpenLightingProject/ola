@@ -63,8 +63,8 @@ class SpiDmxDevice : public Device {
   const std::string m_path;
   unsigned int m_blocklength;
 
-  static const unsigned int DEFAULT_BLOCKLENGTH;
-  static const char BLOCKLENGTH_KEY[];
+  static const unsigned int PREF_BLOCKLENGTH_DEFAULT;
+  static const char PREF_BLOCKLENGTH_KEY[];
 
   DISALLOW_COPY_AND_ASSIGN(SpiDmxDevice);
 };
