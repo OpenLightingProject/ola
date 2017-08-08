@@ -157,8 +157,9 @@ bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
 SynchronousEurolitePro::SynchronousEurolitePro(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
-    const string &serial)
-    : EurolitePro(adaptor, usb_device, serial) {
+    const string &serial,
+    bool isMK2)
+    : EurolitePro(adaptor, usb_device, serial, isMK2) {
 }
 
 bool SynchronousEurolitePro::Init() {
@@ -173,6 +174,23 @@ bool SynchronousEurolitePro::Init() {
       m_usb_device, interface_number, &usb_handle);
   if (!ok) {
     return false;
+  }
+
+  // USB-DMX512-PRO MK2: set baudrate to 250000
+  if (m_isMK2) {
+    unsigned short divisor = 12; // = 3000000 / 250000
+    unsigned short value = (divisor & 0xFFFF);
+    unsigned short index = (divisor >> 8) & 0xFF00;
+    int err = m_adaptor->ControlTransfer(
+        usb_handle,
+        LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_OUT,  // bmRequestType
+        3,  // bRequest: set baudrate
+        value,  // wValue
+        index,  // wIndex
+        NULL,  // data
+        0,  // wLength
+        500);  // timeout
+    if (err) return false;
   }
 
   std::auto_ptr<EuroliteProThreadedSender> sender(
@@ -193,8 +211,10 @@ bool SynchronousEurolitePro::SendDMX(const DmxBuffer &buffer) {
 class EuroliteProAsyncUsbSender : public AsyncUsbSender {
  public:
   EuroliteProAsyncUsbSender(LibUsbAdaptor *adaptor,
-                            libusb_device *usb_device)
-      : AsyncUsbSender(adaptor, usb_device) {
+                            libusb_device *usb_device,
+                            bool isMK2)
+      : AsyncUsbSender(adaptor, usb_device),
+        m_isMK2(isMK2) {
   }
 
   ~EuroliteProAsyncUsbSender() {
@@ -210,7 +230,26 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
     libusb_device_handle *usb_handle;
     bool ok = m_adaptor->OpenDeviceAndClaimInterface(
         m_usb_device, interface_number, &usb_handle);
-    return ok ? usb_handle : NULL;
+    if (!ok) return NULL;
+
+    // USB-DMX512-PRO MK2: set baudrate to 250000
+    if (m_isMK2) {
+      unsigned short divisor = 12; // = 3000000 / 250000
+      unsigned short value = (divisor & 0xFFFF);
+      unsigned short index = (divisor >> 8) & 0xFF00;
+      int err = m_adaptor->ControlTransfer(
+          usb_handle,
+          LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_OUT,  // bmRequestType
+          3,  // bRequest: set baudrate
+          value,  // wValue
+          index,  // wIndex
+          NULL,  // data
+          0,  // wLength
+          500);  // timeout
+      if (err) return NULL;
+    }
+
+    return usb_handle;
   }
 
   bool PerformTransfer(const DmxBuffer &buffer) {
@@ -222,6 +261,7 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
 
  private:
   uint8_t m_tx_frame[EUROLITE_PRO_FRAME_SIZE];
+  bool m_isMK2;
 
   DISALLOW_COPY_AND_ASSIGN(EuroliteProAsyncUsbSender);
 };
@@ -232,9 +272,10 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
 AsynchronousEurolitePro::AsynchronousEurolitePro(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
-    const string &serial)
-    : EurolitePro(adaptor, usb_device, serial) {
-  m_sender.reset(new EuroliteProAsyncUsbSender(m_adaptor, usb_device));
+    const string &serial,
+    bool isMK2)
+    : EurolitePro(adaptor, usb_device, serial, isMK2) {
+  m_sender.reset(new EuroliteProAsyncUsbSender(m_adaptor, usb_device, m_isMK2));
 }
 
 bool AsynchronousEurolitePro::Init() {

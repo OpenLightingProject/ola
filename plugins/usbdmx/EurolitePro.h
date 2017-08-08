@@ -49,9 +49,11 @@ class EurolitePro : public SimpleWidget {
    */
   EurolitePro(ola::usb::LibUsbAdaptor *adaptor,
               libusb_device *usb_device,
-              const std::string &serial)
+              const std::string &serial,
+              bool isMK2)
       : SimpleWidget(adaptor, usb_device),
-        m_serial(serial) {}
+        m_serial(serial),
+        m_isMK2(isMK2) {}
 
   /**
    * @brief Get the serial number of this widget.
@@ -63,6 +65,8 @@ class EurolitePro : public SimpleWidget {
 
  private:
   std::string m_serial;
+ protected:
+  bool m_isMK2;
 };
 
 
@@ -81,7 +85,8 @@ class SynchronousEurolitePro: public EurolitePro {
    */
   SynchronousEurolitePro(ola::usb::LibUsbAdaptor *adaptor,
                          libusb_device *usb_device,
-                         const std::string &serial);
+                         const std::string &serial,
+                         bool isMK2);
 
   bool Init();
 
@@ -106,7 +111,8 @@ class AsynchronousEurolitePro: public EurolitePro {
    */
   AsynchronousEurolitePro(ola::usb::LibUsbAdaptor *adaptor,
                           libusb_device *usb_device,
-                          const std::string &serial);
+                          const std::string &serial,
+                          bool isMK2);
 
   bool Init();
 

@@ -51,6 +51,10 @@ class EuroliteProFactory : public BaseWidgetFactory<class EurolitePro> {
   static const char EXPECTED_MANUFACTURER[];
   static const char EXPECTED_PRODUCT[];
 
+  static const uint16_t PRODUCT_ID_MK2;
+  static const uint16_t VENDOR_ID_MK2;
+  static const char EXPECTED_MANUFACTURER_MK2[];
+  static const char EXPECTED_PRODUCT_MK2[];
 
   DISALLOW_COPY_AND_ASSIGN(EuroliteProFactory);
 };
