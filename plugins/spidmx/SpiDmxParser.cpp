@@ -50,8 +50,8 @@ namespace spidmx {
  * Loop through the given SPI raw bytes and call in every iteration the
  * respective function that handles the byte in the current state.
  *
- * @param uint8_t *buffer - The buffer with SPI bytes to read from
- * @param uint64_t buffersize - Size of the buffer
+ * @param *buffer - The buffer with SPI bytes to read from
+ * @param buffersize - Size of the buffer
  */
 void SpiDmxParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
   chunk = buffer;

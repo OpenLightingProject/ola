@@ -35,7 +35,7 @@ class SpiDmxParser {
   SpiDmxParser(DmxBuffer *buffer, Callback0<void> *callback)
     : m_dmx_buffer(buffer),
       m_callback(callback) {
-  };
+  }
   void ParseDmx(uint8_t *buffer, uint64_t chunksize);
 
  private:

@@ -148,7 +148,8 @@ void *SpiDmxThread::Run() {
       dmx_buffer.Set(m_dmx_tx_buffer);
     }
 
-    // TODO fill m_spi_tx_buffer with the correct values from dmx_buffer
+    // TODO(FloEdelmann) fill m_spi_tx_buffer with the values from dmx_buffer
+    //                   (each bit repeated 8 times)
 
     // vectors store their contents contiguously,
     // so we can get a pointer to the elements like so

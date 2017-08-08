@@ -23,6 +23,7 @@
 #define PLUGINS_SPIDMX_SPIDMXTHREAD_H_
 
 #include <memory>
+#include <vector>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
