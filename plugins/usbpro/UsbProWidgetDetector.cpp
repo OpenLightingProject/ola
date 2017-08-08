@@ -320,9 +320,10 @@ void UsbProWidgetDetector::DiscoveryTimeout(DispatchingUsbProWidget *widget) {
         CompleteWidgetDiscovery(widget);
         break;
       default:
-        OLA_WARN << "Usb Widget didn't respond to messages, esta id "
+        OLA_WARN << "USB Widget didn't respond to messages, esta id "
                  << iter->second.information.esta_id << ", device id "
                  << iter->second.information.device_id;
+        OLA_WARN << "Is device in USB Controller mode if it's a Goddard?";
         ola::io::ConnectedDescriptor *descriptor =
             widget->GetDescriptor();
         descriptor->SetOnClose(NULL);

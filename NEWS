@@ -1,4 +1,4 @@
-x/y/2017 ola-0.10.4
+x/y/2017 ola-0.10.6
  Features:
  * 
 
@@ -9,11 +9,47 @@ x/y/2017 ola-0.10.4
  * 
 
  Bugs:
- * Implement OLA_FALLTHROUGH macro for adding fallthrough attributes to 
-   switchcases in gcc versions higher than 7 #1193 Debian #853583
+ * 
 
  Internal:
  *
+
+17/07/2017 ola-0.10.5
+ Features:
+ * Make some error logs more verbose
+
+ Bugs:
+ * C++11 compatibility fix (for cppunit 1.14.0) #1244
+ * Always print frames in ola_rdm_get/set, even if we get an error
+ * Ensure man files ship in the correct packages #1276
+ * Check protobuf is old enough, until we fix #1192
+
+21/05/2017 ola-0.10.4
+ Features:
+ * Add more help regarding the ArtNet use_limited_broadcast option
+
+ Bugs:
+ * Ensure Pathport node actually uses configured IP #1166
+ * Improve some debugging around flag parsing #1198
+ * Disable warnings for readdir_r deprecation until we can rewrite our code to
+   stop using it. Related to #1055
+ * Stop replacing -I with -isystem and correctly work around the resultant
+   errors #1125
+ * Exit, rather than continuing, if ola_throughput failed to send DMX
+ * Implement OLA_FALLTHROUGH macro for adding fallthrough attributes to 
+   switchcases in gcc versions higher than 7 #1193 Debian #853583
+ * Fix Protobuf 2.6 not building on the latest OS X
+ * Update some URLs in the Windows build documentation
+ * Skip interface count checks on Windows, as it may fail them if it's not on a
+   network due to a lack of loopback interface
+ * Fix LibUSB code on Windows, especially when the Hotplug functionality exists
+   but isn't available
+ * Support wireless interfaces on Windows since Vista
+ * Add a cast to fix an error when running execlp
+ * Ensure configure checks for tcmalloc's presence before adding it to the libs
+   when asked for #1201
+ * Add some more detail to the Logic RDM sniffer and Enttec RDM USB Pro sniffer
+   documentation
 
 06/12/2016 ola-0.10.3
  Features:

@@ -229,7 +229,8 @@ void JaRulePortHandleImpl::MuteDeviceComplete(
         response->CommandClass() == RDMCommand::DISCOVER_COMMAND_RESPONSE &&
         response->ResponseType() == rdm::RDM_ACK);
   } else {
-    OLA_INFO << "Mute failed!";
+    OLA_INFO << "Mute failed! Result: " << result << ", RC: " << return_code
+             << ", payload size: " << payload.size();
   }
   mute_complete->Run(muted_ok);
 }
