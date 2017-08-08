@@ -37,25 +37,25 @@ matrix:
   fast_finish: true
   include:
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9
       compiler: gcc
       env:
       - TASK='compile'
