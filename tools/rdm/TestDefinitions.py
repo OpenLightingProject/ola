@@ -1014,6 +1014,47 @@ class FindSubDevices(ResponderTestFixture):
       self._sub_device_footprints[self._current_index] = fields['dmx_footprint']
 
 
+# Status ID Description
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetStatusIdDescription(TestMixins.AllSubDevicesGetMixin,
+                                          OptionalParameterTestFixture):
+  """Send a get STATUS_ID_DESCRIPTION to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'STATUS_ID_DESCRIPTION'
+  DATA = [0x0001]
+
+
+# class GetStatusIdDescription(TestMixins.,
+#                              OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'STATUS_ID_DESCRIPTION'
+# TODO(peter): Test get
+
+
+class GetStatusIdDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
+                                       OptionalParameterTestFixture):
+  """GET STATUS_ID_DESCRIPTION with no argument given."""
+  PID = 'STATUS_ID_DESCRIPTION'
+
+
+class GetStatusIdDescriptionWithExtraData(TestMixins.GetWithDataMixin,
+                                          OptionalParameterTestFixture):
+  """GET STATUS_ID_DESCRIPTION with more than 2 bytes of data."""
+  PID = 'STATUS_ID_DESCRIPTION'
+
+
+class SetStatusIdDescription(TestMixins.UnsupportedSetMixin,
+                             OptionalParameterTestFixture):
+  """Attempt to SET STATUS_ID_DESCRIPTION."""
+  PID = 'STATUS_ID_DESCRIPTION'
+
+
+class SetStatusIdDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """Attempt to SET STATUS_ID_DESCRIPTION with data."""
+  PID = 'STATUS_ID_DESCRIPTION'
+
+
 # Clear Status ID
 # -----------------------------------------------------------------------------
 class GetClearStatusMessages(TestMixins.UnsupportedGetMixin,
@@ -1110,6 +1151,12 @@ class GetParameterDescriptionForNonManufacturerPid(ParamDescriptionTestFixture):
 
     self.AddExpectedResults(results)
     self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
+
+
+class GetParameterDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
+                                        ParamDescriptionTestFixture):
+  """GET PARAMETER_DESCRIPTION with no argument given."""
+  PID = 'PARAMETER_DESCRIPTION'
 
 
 class GetParameterDescriptionWithExtraData(TestMixins.GetWithDataMixin,
