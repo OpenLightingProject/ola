@@ -3745,7 +3745,7 @@ class SetRealTimeClock(OptionalParameterTestFixture):
 
 class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
   """Set the real time clock without any data."""
-  CATEGORY = TestCategory.CONFIGURATION
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'REAL_TIME_CLOCK'
 
   def Test(self):
@@ -5351,6 +5351,12 @@ class SetBurnInWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'BURN_IN'
 
 
+class SetBurnInWithExtraData(TestMixins.SetWithDataMixin,
+                             OptionalParameterTestFixture):
+  """Send a SET BURN_IN command with extra data."""
+  PID = 'BURN_IN'
+
+
 class AllSubDevicesGetBurnIn(TestMixins.AllSubDevicesGetMixin,
                              OptionalParameterTestFixture):
   """Get BURN_IN addressed to ALL_SUB_DEVICES."""
@@ -5426,6 +5432,12 @@ class GetDimmerInfoWithData(TestMixins.GetWithDataMixin,
 class SetDimmerInfo(TestMixins.UnsupportedSetMixin,
                     OptionalParameterTestFixture):
   """Set DIMMER_INFO."""
+  PID = 'DIMMER_INFO'
+
+
+class SetDimmerInfoWithData(TestMixins.UnsupportedSetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """Attempt to SET DIMMER_INFO with data."""
   PID = 'DIMMER_INFO'
 
 
@@ -5833,6 +5845,12 @@ class SetCurveWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'CURVE'
 
 
+class SetCurveWithExtraData(TestMixins.SetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """Send a SET CURVE command with extra data."""
+  PID = 'CURVE'
+
+
 class AllSubDevicesGetCurve(TestMixins.AllSubDevicesGetMixin,
                             OptionalParameterTestFixture):
   """Get CURVE addressed to ALL_SUB_DEVICES."""
@@ -5880,6 +5898,12 @@ class GetOutOfRangeCurveDescription(TestMixins.GetOutOfRangeByteMixin,
 class SetCurveDescription(TestMixins.UnsupportedSetMixin,
                           OptionalParameterTestFixture):
   """Set the CURVE_DESCRIPTION."""
+  PID = 'CURVE_DESCRIPTION'
+
+
+class SetCurveDescriptionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Attempt to SET CURVE_DESCRIPTION with data."""
   PID = 'CURVE_DESCRIPTION'
 
 
@@ -6454,9 +6478,21 @@ class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,
   PID = 'PRESET_STATUS'
 
 
+class GetPresetStatusWithExtraData(TestMixins.GetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """GET PRESET_STATUS with more than 2 bytes of data."""
+  PID = 'PRESET_STATUS'
+
+
 class SetPresetStatusWithNoData(TestMixins.SetWithNoDataMixin,
                                 OptionalParameterTestFixture):
   """Set PRESET_STATUS without any data."""
+  PID = 'PRESET_STATUS'
+
+
+class SetPresetStatusWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET PRESET_STATUS command with extra data."""
   PID = 'PRESET_STATUS'
 
 
@@ -6724,6 +6760,12 @@ class SetAllPresetMergeModes(OptionalParameterTestFixture):
 class SetPresetMergeModeWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set PRESET_MERGEMODE without any data."""
+  PID = 'PRESET_MERGEMODE'
+
+
+class SetPresetMergemodeWithExtraData(TestMixins.SetWithDataMixin,
+                                      OptionalParameterTestFixture):
+  """Send a SET PRESET_MERGEMODE command with extra data."""
   PID = 'PRESET_MERGEMODE'
 
 
