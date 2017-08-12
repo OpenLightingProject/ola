@@ -3988,7 +3988,7 @@ class SetIdentifyDeviceWithNoData(ResponderTestFixture):
 
 
 class SetIdentifyDeviceWithExtraData(ResponderTestFixture):
-  """Set the identify state with no data."""
+  """Set the identify state with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
   REQUIRES = ['identify_state']
