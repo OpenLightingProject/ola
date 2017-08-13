@@ -2232,7 +2232,7 @@ class SetDMXStartAddress(TestMixins.SetDMXStartAddressMixin,
 
 class SetVendorcastDMXStartAddress(TestMixins.SetNonUnicastDMXStartAddressMixin,
                                    ResponderTestFixture):
-  """SET the dmx start address using the vendorcast address."""
+  """SET the DMX start address using the vendorcast address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_START_ADDRESS'
   REQUIRES = ['dmx_footprint', 'dmx_address', 'set_dmx_address_supported']
@@ -2256,7 +2256,8 @@ class SetOutOfRangeDMXStartAddress(ResponderTestFixture):
   """Check that the DMX address can't be set to > 512."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  # We depend on GetDMXStartAddress to make sure this runs after it, while
+  # still allowing this test to run if the other test fails.
   DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -2277,7 +2278,8 @@ class SetZeroDMXStartAddress(ResponderTestFixture):
   """Check the DMX address can't be set to 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  # We depend on GetDMXStartAddress to make sure this runs after it, while
+  # still allowing this test to run if the other test fails.
   DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -2298,7 +2300,8 @@ class SetDMXStartAddressWithNoData(TestMixins.SetWithNoDataMixin,
                                    ResponderTestFixture):
   """Send a SET dmx start address with no data."""
   PID = 'DMX_START_ADDRESS'
-  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  # We depend on GetDMXStartAddress to make sure this runs after it, while
+  # still allowing this test to run if the other test fails.
   DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -2318,7 +2321,8 @@ class SetDMXStartAddressWithExtraData(TestMixins.SetWithDataMixin,
                                       ResponderTestFixture):
   """Send a SET dmx start address with extra data."""
   PID = 'DMX_START_ADDRESS'
-  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  # We depend on GetDMXStartAddress to make sure this runs after it, while
+  # still allowing this test to run if the other test fails.
   DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -4025,7 +4029,7 @@ class SetIdentifyDeviceWithNoData(ResponderTestFixture):
 
 
 class SetIdentifyDeviceWithExtraData(ResponderTestFixture):
-  """Set the identify state with no data."""
+  """Set the identify state with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
   REQUIRES = ['identify_state']
