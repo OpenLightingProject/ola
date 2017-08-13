@@ -7064,6 +7064,54 @@ class AllSubDevicesGetDNSDomainName(TestMixins.AllSubDevicesGetMixin,
   PID = 'DNS_DOMAIN_NAME'
 
 
+# DNS_IPV4_NAME_SERVER
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetDNSIPv4NameServer(TestMixins.AllSubDevicesGetMixin,
+                                        OptionalParameterTestFixture):
+  """Send a get DNS_IPV4_NAME_SERVER to ALL_SUB_DEVICES."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+  DATA = [0]
+
+
+# class GetDNSIPv4NameServer(TestMixins.,
+#                            OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+#   PID = 'DNS_IPV4_NAME_SERVER'
+# TODO(peter): Test get
+
+
+class GetDNSIPv4NameServerWithNoData(TestMixins.GetWithNoDataMixin,
+                                     OptionalParameterTestFixture):
+  """GET DNS_IPV4_NAME_SERVER with no argument given."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+
+
+class GetDNSIPv4NameServerWithExtraData(TestMixins.GetWithDataMixin,
+                                        OptionalParameterTestFixture):
+  """GET DNS_IPV4_NAME_SERVER with more than 1 byte of data."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+
+
+# class SetDNSIPv4NameServer(TestMixins.,
+#                            OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.IP_DNS_CONFIGURATION
+#   PID = 'DNS_IPV4_NAME_SERVER'
+# TODO(peter): Test set
+
+
+class SetDNSIPv4NameServerWithNoData(TestMixins.SetWithNoDataMixin,
+                                     OptionalParameterTestFixture):
+  """Set DNS_IPV4_NAME_SERVER command with no data."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+
+
+class SetDNSIPv4NameServerWithExtraData(TestMixins.SetWithDataMixin,
+                                        OptionalParameterTestFixture):
+  """Send a SET DNS_IPV4_NAME_SERVER command with extra data."""
+  PID = 'DNS_IPV4_NAME_SERVER'
+  DATA = 'foobar'
+
+
 # IPV4_DEFAULT_ROUTE
 # -----------------------------------------------------------------------------
 class GetIPv4DefaultRoute(TestMixins.GetMixin,
@@ -7525,7 +7573,7 @@ class AllSubDevicesGetInterfaceLabel(TestMixins.AllSubDevicesGetMixin,
   """Send a get INTERFACE_LABEL to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'INTERFACE_LABEL'
-  DATA = [1]
+  DATA = [0x00000001]
 
 
 # Interface hardware address type 1
@@ -7535,7 +7583,7 @@ class AllSubDevicesGetInterfaceHardwareAddressType1(
         OptionalParameterTestFixture):
   """Send a get INTERFACE_HARDWARE_ADDRESS_TYPE1 to ALL_SUB_DEVICES."""
   PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
-  DATA = [1]
+  DATA = [0x00000001]
 
 # class GetInterfaceHardwareAddressType1(TestMixins.,
 #                                        OptionalParameterTestFixture):
