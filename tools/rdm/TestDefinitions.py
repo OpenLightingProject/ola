@@ -2206,7 +2206,7 @@ class SetDMXStartAddress(TestMixins.SetDMXStartAddressMixin,
 
 class SetVendorcastDMXStartAddress(TestMixins.SetNonUnicastDMXStartAddressMixin,
                                    ResponderTestFixture):
-  """SET the dmx start address using the vendorcast address."""
+  """SET the DMX start address using the vendorcast address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_START_ADDRESS'
   REQUIRES = ['dmx_footprint', 'dmx_address', 'set_dmx_address_supported']
@@ -2230,7 +2230,8 @@ class SetOutOfRangeDMXStartAddress(ResponderTestFixture):
   """Check that the DMX address can't be set to > 512."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  # We depend on GetDMXStartAddress to make sure this runs after it, while
+  # still allowing this test to run if the other test fails.
   DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -2251,7 +2252,8 @@ class SetZeroDMXStartAddress(ResponderTestFixture):
   """Check the DMX address can't be set to 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  # We depend on GetDMXStartAddress to make sure this runs after it, while
+  # still allowing this test to run if the other test fails.
   DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -2268,11 +2270,33 @@ class SetZeroDMXStartAddress(ResponderTestFixture):
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
+class SetDMXStartAddressWithNoData(TestMixins.SetWithNoDataMixin,
+                                   ResponderTestFixture):
+  """Send a SET dmx start address with no data."""
+  PID = 'DMX_START_ADDRESS'
+  # We depend on GetDMXStartAddress to make sure this runs after it, while
+  # still allowing this test to run if the other test fails.
+  DEPS = [GetDMXStartAddress]
+  REQUIRES = ['dmx_footprint']
+
+  def Test(self):
+    if self.Property('dmx_footprint') > 0:
+      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
+    else:
+      self.AddExpectedResults([
+          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+          self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      ])
+    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+
+
 class SetDMXStartAddressWithExtraData(TestMixins.GetWithDataMixin,
                                       ResponderTestFixture):
   """Send a SET dmx start address with extra data."""
   PID = 'DMX_START_ADDRESS'
-  # We depend on dmx_address to make sure this runs after GetDMXStartAddress
+  # We depend on GetDMXStartAddress to make sure this runs after it, while
+  # still allowing this test to run if the other test fails.
   DEPS = [GetDMXStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -2556,6 +2580,12 @@ class GetDefaultSlotValueWithData(TestMixins.GetWithDataMixin,
 class SetDefaultSlotValue(TestMixins.UnsupportedSetMixin,
                           OptionalParameterTestFixture):
   """Set DEFAULT_SLOT_VALUE."""
+  PID = 'DEFAULT_SLOT_VALUE'
+
+
+class SetDefaultSlotValueWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Attempt to SET DEFAULT_SLOT_VALUE with data."""
   PID = 'DEFAULT_SLOT_VALUE'
 
 
@@ -3030,6 +3060,12 @@ class GetRecordSensors(TestMixins.UnsupportedGetMixin,
   PID = 'RECORD_SENSORS'
 
 
+class GetRecordSensorsWithData(TestMixins.UnsupportedGetWithDataMixin,
+                               OptionalParameterTestFixture):
+  """GET RECORD_SENSORS with data."""
+  PID = 'RECORD_SENSORS'
+
+
 class RecordSensorValues(OptionalParameterTestFixture):
   """Record values for all defined sensors."""
   CATEGORY = TestCategory.SENSORS
@@ -3107,6 +3143,18 @@ class RecordSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'RECORD_SENSORS'
 
 
+class RecordSensorValueWithExtraData(TestMixins.SetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """Send a SET RECORD_SENSORS command with extra data."""
+  PID = 'RECORD_SENSORS'
+
+
+class AllSubDevicesGetRecordSensors(TestMixins.AllSubDevicesUnsupportedGetMixin,
+                                    OptionalParameterTestFixture):
+  """Attempt to send a get RECORD_SENSORS to ALL_SUB_DEVICES."""
+  PID = 'RECORD_SENSORS'
+
+
 # Device Hours
 # -----------------------------------------------------------------------------
 class GetDeviceHours(TestMixins.GetMixin, OptionalParameterTestFixture):
@@ -3156,6 +3204,13 @@ class SetDeviceHoursWithNoData(TestMixins.SetWithNoDataMixin,
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
+
+
+class SetDeviceHoursWithExtraData(TestMixins.SetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Send a SET DEVICE_HOURS command with extra data."""
+  PID = 'DEVICE_HOURS'
+  DATA = 'foobar'
 
 
 class AllSubDevicesGetDeviceHours(TestMixins.AllSubDevicesGetMixin,
