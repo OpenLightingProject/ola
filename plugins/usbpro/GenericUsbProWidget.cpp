@@ -270,8 +270,8 @@ void GenericUsbProWidget::HandleDMXDiff(const uint8_t *data,
     uint8_t data[40];
   } widget_data_changed;
 
-  if (length < sizeof(widget_data_changed)) {
-    OLA_WARN << "Change of state packet was too small: " << length;
+  if ((length < 7) || (length > sizeof(widget_data_changed))) {
+    OLA_WARN << "Change of state packet was invalid: " << length;
     return;
   }
 
