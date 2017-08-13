@@ -148,7 +148,9 @@ bool GPIODriver::SetupGPIO() {
                << strerror(errno);
       failed = true;
     }
-    close(fd);
+    if (close(fd)) {
+       OLA_WARN << "setupGPIO close: " << strerror(errno);
+    }
 
     m_gpio_pins.push_back(pin);
   }
@@ -205,7 +207,9 @@ bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
 void GPIODriver::CloseGPIOFDs() {
   GPIOPins::iterator iter = m_gpio_pins.begin();
   for (; iter != m_gpio_pins.end(); ++iter) {
-    close(iter->fd);
+    if (close(iter->fd)) {
+      OLA_WARN << "closeGPIOFDs: " << strerror(errno);
+    }
   }
   m_gpio_pins.clear();
 }

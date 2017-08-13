@@ -83,7 +83,9 @@ void PendingTCPConnection::Close() {
 #ifdef _WIN32
   close(m_handle.m_handle.m_fd);
 #else
-  close(m_handle);
+  if (close(m_handle)) {
+    OLA_WARN << "PendingTCPConnection close: " << strerror(errno);
+  }
 #endif  // _WIN32
 }
 
@@ -145,7 +147,7 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
       int error = errno;
       OLA_WARN << "connect() to " << endpoint << " returned, "
                << strerror(error);
-      close(sd);
+      close(sd); // we're already on an error return path, don't report followup errors.
       callback->Run(-1, error);
       return 0;
     }

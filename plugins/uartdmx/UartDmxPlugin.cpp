@@ -73,7 +73,9 @@ bool UartDmxPlugin::StartHook() {
     }
 
     // can open device, so shut the temporary file descriptor
-    close(fd);
+    if (close(fd)) {  
+      OLA_WARN << "StartHook close: " << strerror(errno);
+    }
     std::auto_ptr<UartDmxDevice> device(new UartDmxDevice(
         this, m_preferences, PLUGIN_NAME, *iter));
 

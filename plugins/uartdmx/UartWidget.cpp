@@ -83,14 +83,14 @@ bool UartWidget::Close() {
     return true;
   }
 
-  if (close(m_fd) > 0) {
+  if (close(m_fd)) {
     OLA_WARN << Name() << " error closing";
     m_fd = NOT_OPEN;
     return false;
-  } else {
-    m_fd = NOT_OPEN;
-    return true;
   }
+
+  m_fd = NOT_OPEN;
+  return true;
 }
 
 bool UartWidget::IsOpen() const {

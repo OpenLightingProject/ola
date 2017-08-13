@@ -102,8 +102,10 @@ void *OpenDmxThread::Run() {
         // if you unplug the dongle
         OLA_WARN << "Error writing to device: " << strerror(errno);
 
-        if (close(m_fd) < 0)
-          OLA_WARN << "Close failed " << strerror(errno);
+        if (close(m_fd)) {
+	  // XXX policy throughout is now: don't warn if the close fails on the error path. -- REW
+          OLA_WARN << "OpenDmxThread: close failed: " << strerror(errno);
+	}
         m_fd = INVALID_FD;
       }
     }
