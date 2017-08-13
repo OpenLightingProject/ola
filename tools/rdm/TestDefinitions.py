@@ -3206,7 +3206,6 @@ class SetDeviceHoursWithNoData(TestMixins.SetWithNoDataMixin,
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 
-
 class SetDeviceHoursWithExtraData(TestMixins.SetWithDataMixin,
                                   OptionalParameterTestFixture):
   """Send a SET DEVICE_HOURS command with extra data."""
