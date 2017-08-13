@@ -7525,69 +7525,6 @@ class SetInterfaceApplyConfigurationWithExtraData(TestMixins.SetWithDataMixin,
   DATA = 'foobar'
 
 
-# IPV4_DHCP_MODE
-# -----------------------------------------------------------------------------
-class AllSubDevicesGetIPv4DHCPMode(TestMixins.AllSubDevicesGetMixin,
-                                   OptionalParameterTestFixture):
-  """Send a get IPV4_DHCP_MODE to ALL_SUB_DEVICES."""
-  PID = 'IPV4_DHCP_MODE'
-  DATA = [1]
-
-
-# class GetIPv4DHCPMode(TestMixins.,
-#                       OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
-#   PID = 'IPV4_DHCP_MODE'
-# TODO(peter): Test get
-
-
-class GetZeroIPv4DHCPMode(TestMixins.GetZeroUInt32Mixin,
-                          OptionalParameterTestFixture):
-  """GET IPV4_DHCP_MODE for interface identifier 0."""
-  PID = 'IPV4_DHCP_MODE'
-
-
-class GetIPv4DHCPModeWithNoData(TestMixins.GetWithNoDataMixin,
-                                OptionalParameterTestFixture):
-  """GET IPV4_DHCP_MODE with no argument given."""
-  PID = 'IPV4_DHCP_MODE'
-
-
-class GetIPv4DHCPModeWithExtraData(TestMixins.GetWithDataMixin,
-                                   OptionalParameterTestFixture):
-  """GET IPV4_DHCP_MODE with more than 4 bytes of data."""
-  PID = 'IPV4_DHCP_MODE'
-  DATA = 'foobar'
-
-
-# class SetIPv4DHCPMode(TestMixins.,
-#                       OptionalParameterTestFixture):
-#   CATEGORY = TestCategory.
-#   PID = 'IPV4_DHCP_MODE'
-# TODO(peter): Test set
-
-
-# class SetZeroIPv4DHCPMode(TestMixins.,
-#                           OptionalParameterTestFixture):
-#   """SET IPV4_DHCP_MODE to interface identifier 0."""
-#   CATEGORY = TestCategory.ERROR_CONDITIONS
-#   PID = 'IPV4_DHCP_MODE'
-# TODO(peter): Test set zero
-
-
-class SetIPv4DHCPModeWithNoData(TestMixins.SetWithNoDataMixin,
-                                OptionalParameterTestFixture):
-  """Set IPV4_DHCP_MODE command with no data."""
-  PID = 'IPV4_DHCP_MODE'
-
-
-class SetIPv4DHCPModeWithExtraData(TestMixins.SetWithDataMixin,
-                                   OptionalParameterTestFixture):
-  """Send a SET IPV4_DHCP_MODE command with extra data."""
-  PID = 'IPV4_DHCP_MODE'
-  DATA = 'foobar'
-
-
 # Interface label
 # -----------------------------------------------------------------------------
 class GetInterfaceLabels(TestMixins.GetSettingDescriptionsListMixin,
