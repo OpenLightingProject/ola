@@ -7573,7 +7573,7 @@ class AllSubDevicesGetInterfaceLabel(TestMixins.AllSubDevicesGetMixin,
   """Send a get INTERFACE_LABEL to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'INTERFACE_LABEL'
-  DATA = [1]
+  DATA = [0x00000001]
 
 
 # Interface hardware address type 1
@@ -7583,7 +7583,7 @@ class AllSubDevicesGetInterfaceHardwareAddressType1(
         OptionalParameterTestFixture):
   """Send a get INTERFACE_HARDWARE_ADDRESS_TYPE1 to ALL_SUB_DEVICES."""
   PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
-  DATA = [1]
+  DATA = [0x00000001]
 
 # class GetInterfaceHardwareAddressType1(TestMixins.,
 #                                        OptionalParameterTestFixture):
