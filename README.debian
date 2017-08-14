@@ -1,3 +1,5 @@
+This readme should also apply to Ubuntu and probably
+other debian-based distributions as well.
 
 If you extracted a tarball you should be able to run
 
@@ -15,3 +17,18 @@ $ cd /tmp
 $ tar -zxf ola-0.X.Y.tar.gz
 $ cd ola-0.X.Y
 $ debuild
+
+If the autoreconf reports missing things, you can add the -i option.
+The configure might report missing utilities and libraries. You
+can install them with apt-get.
+
+The list below is probably not complete. Some of the package-names
+may differ between debian and debian-like distributions. Adjust
+as necessary.
+
+$ sudo apt-get install bison flex libcppunit-dev libprotobuf-dev protobuf-compiler libprotoc-dev
+
+The build system allows for checks/tests to be run.
+$ make check
+
+
