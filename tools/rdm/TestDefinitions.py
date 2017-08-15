@@ -2585,7 +2585,7 @@ class GetDefaultSlotValues(OptionalParameterTestFixture):
 
     for slot in fields['slot_values']:
       if slot['slot_offset'] not in defined_slots:
-        self.AddAdvisory(
+        self.AddWarning(
           "DEFAULT_SLOT_VALUE contained slot %d, which wasn't in SLOT_INFO" %
           slot['slot_offset'])
       default_slots.add(slot['slot_offset'])
@@ -2816,6 +2816,12 @@ class GetInvalidSensorDefinition(OptionalParameterTestFixture):
 class SetSensorDefinition(TestMixins.UnsupportedSetMixin,
                           OptionalParameterTestFixture):
   """SET the sensor definition."""
+  PID = 'SENSOR_DEFINITION'
+
+
+class SetSensorDefinitionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Attempt to SET SENSOR_DEFINITION with data."""
   PID = 'SENSOR_DEFINITION'
 
 
@@ -3069,14 +3075,14 @@ class ResetUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
   REQUIRES = ['sensor_definitions']
 
 
-class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
+class SetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
   PID = 'SENSOR_VALUE'
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
 
-class ResetSensorValueWithExtraData(TestMixins.SetWithDataMixin,
+class SetSensorValueWithExtraData(TestMixins.SetWithDataMixin,
                                     OptionalParameterTestFixture):
   """Send a SET SENSOR_VALUE command with extra data."""
   PID = 'SENSOR_VALUE'
@@ -3174,13 +3180,13 @@ class RecordUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
   REQUIRES = ['sensor_definitions']
 
 
-class RecordSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
-                                  OptionalParameterTestFixture):
+class SetRecordSensorsWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
   """SET record sensors without any sensor number."""
   PID = 'RECORD_SENSORS'
 
 
-class RecordSensorValueWithExtraData(TestMixins.SetWithDataMixin,
+class SetRecordSensorsWithExtraData(TestMixins.SetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Send a SET RECORD_SENSORS command with extra data."""
   PID = 'RECORD_SENSORS'
@@ -4555,7 +4561,7 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
     return True
 
 
-class CheckBlockAddressConsistency(OptionalParameterTestFixture):
+class CheckDMXBlockAddressConsistency(OptionalParameterTestFixture):
   """Check that the device has subdevices if DMX_BLOCK_ADDRESS is supported."""
   CATEGORY = TestCategory.CONTROL
   REQUIRES = ['sub_device_count']
