@@ -207,7 +207,6 @@ class MuteAllDevices(ResponderTestFixture):
     self.SetProperty(self.PROVIDES[0], True)
     if not (self.Property('mute_supported')):
       self.SetNotRun('RDM Controller does not support DISCOVERY commands')
-      self.Stop()
       return
 
     self.AddExpectedResults([
@@ -831,7 +830,12 @@ class GetSupportedParameters(ResponderTestFixture):
             (','.join(supported_pids), ','.join(unsupported_pids)))
 
     for p, dependent_pids in self.PID_DEPENDENCIES:
-      if self.LookupPid(p).value not in supported_parameters:
+      pid = self.LookupPid(p)
+      if pid is None:
+        self.SetBroken('Failed to lookup info for PID %s' % p)
+        return
+
+      if pid.value not in supported_parameters:
         continue
 
       unsupported_pids = []
@@ -952,7 +956,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
     mandatory_pids = set(self.LookupPid(p).value for p in self.MANDATORY_PIDS)
     missing_pids = mandatory_pids - supported_pids
     if missing_pids:
-      self.SetFailed("Missing PIDs %s from sub device's supported pid list" %
+      self.SetFailed("Missing PIDs %s from sub device's supported pid list " %
                      ', '.join('0x%04hx' % p for p in missing_pids))
       return
 
@@ -989,7 +993,6 @@ class FindSubDevices(ResponderTestFixture):
     if self._current_index >= PidStore.MAX_VALID_SUB_DEVICE:
       self.SetFailed('Only found %d of %d sub devices' %
                      (len(self._sub_device_addresses), self._device_count))
-      self.Stop()
       return
 
     self.AddExpectedResults([
@@ -1008,7 +1011,6 @@ class FindSubDevices(ResponderTestFixture):
             ' but the root device reported %s. See section 10.5.1' %
             (self._current_index, fields['sub_device_count'],
              self._device_count))
-        self.Stop()
       self._sub_device_addresses[self._current_index] = (
           fields['dmx_start_address'])
       self._sub_device_footprints[self._current_index] = fields['dmx_footprint']
@@ -1142,7 +1144,7 @@ class GetParameterDescriptionForNonManufacturerPid(ParamDescriptionTestFixture):
       self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
       self.NackGetResult(
           RDMNack.NR_DATA_OUT_OF_RANGE,
-          advisory='Parameter Description appears to be supported but no'
+          advisory='Parameter Description appears to be supported but no '
                    'manufacturer PIDs were declared'),
     ]
     if self.Property('manufacturer_parameters'):
@@ -1691,7 +1693,6 @@ class SetUnsupportedLanguage(OptionalParameterTestFixture):
   def Test(self):
     if 'zz' in self.Property('languages_capabilities'):
       self.SetBroken('zz exists in the list of available languages')
-      self.Stop()
       return
 
     self.AddIfSetSupported([
@@ -2092,7 +2093,6 @@ class GetDMXPersonalityDescriptions(OptionalParameterTestFixture):
     if self._current_index >= MAX_PERSONALITY_NUMBER:
       # This should never happen because personality_count is a uint8
       self.SetFailed('Could not find all personalities')
-      self.Stop()
       return
 
     self.AddIfGetSupported(self.AckGetResult(
@@ -2585,7 +2585,7 @@ class GetDefaultSlotValues(OptionalParameterTestFixture):
 
     for slot in fields['slot_values']:
       if slot['slot_offset'] not in defined_slots:
-        self.AddAdvisory(
+        self.AddWarning(
           "DEFAULT_SLOT_VALUE contained slot %d, which wasn't in SLOT_INFO" %
           slot['slot_offset'])
       default_slots.add(slot['slot_offset'])
@@ -2651,7 +2651,6 @@ class CheckSensorConsistency(ResponderTestFixture):
     self.CheckConsistency('RECORD_SENSORS',
                           self.Property('sensor_recording_supported'))
     self.SetPassed()
-    self.Stop()
 
 
 # Sensor Definition
@@ -2817,6 +2816,12 @@ class GetInvalidSensorDefinition(OptionalParameterTestFixture):
 class SetSensorDefinition(TestMixins.UnsupportedSetMixin,
                           OptionalParameterTestFixture):
   """SET the sensor definition."""
+  PID = 'SENSOR_DEFINITION'
+
+
+class SetSensorDefinitionWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """Attempt to SET SENSOR_DEFINITION with data."""
   PID = 'SENSOR_DEFINITION'
 
 
@@ -3070,14 +3075,14 @@ class ResetUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
   REQUIRES = ['sensor_definitions']
 
 
-class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
+class SetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
   PID = 'SENSOR_VALUE'
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
 
-class ResetSensorValueWithExtraData(TestMixins.SetWithDataMixin,
+class SetSensorValueWithExtraData(TestMixins.SetWithDataMixin,
                                     OptionalParameterTestFixture):
   """Send a SET SENSOR_VALUE command with extra data."""
   PID = 'SENSOR_VALUE'
@@ -3175,13 +3180,13 @@ class RecordUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
   REQUIRES = ['sensor_definitions']
 
 
-class RecordSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
-                                  OptionalParameterTestFixture):
+class SetRecordSensorsWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
   """SET record sensors without any sensor number."""
   PID = 'RECORD_SENSORS'
 
 
-class RecordSensorValueWithExtraData(TestMixins.SetWithDataMixin,
+class SetRecordSensorsWithExtraData(TestMixins.SetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Send a SET RECORD_SENSORS command with extra data."""
   PID = 'RECORD_SENSORS'
@@ -4556,7 +4561,7 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
     return True
 
 
-class CheckBlockAddressConsistency(OptionalParameterTestFixture):
+class CheckDMXBlockAddressConsistency(OptionalParameterTestFixture):
   """Check that the device has subdevices if DMX_BLOCK_ADDRESS is supported."""
   CATEGORY = TestCategory.CONTROL
   REQUIRES = ['sub_device_count']
@@ -4566,7 +4571,6 @@ class CheckBlockAddressConsistency(OptionalParameterTestFixture):
     if (self.PidSupported() and self.Property('sub_device_count') == 0):
       self.AddAdvisory('DMX_BLOCK_ADDRESS supported but sub device count was 0')
     self.SetPassed()
-    self.Stop()
 
 
 class GetDMXBlockAddressWithData(TestMixins.GetWithDataMixin,
@@ -6661,7 +6665,6 @@ class GetPresetStatus(OptionalParameterTestFixture):
     if fields['scene_number'] != self.index:
       self.SetFailed('Scene number mismatch, expected %d, got %d' %
                      (self.index, fields['scene_number']))
-      self.Stop()
 
     if fields['programmed'] == self.NOT_PROGRAMMED:
       # Assume that NOT_PROGRAMMED means that it's writable.
