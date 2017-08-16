@@ -270,8 +270,8 @@ string PrefixToString(uint8_t prefix) {
       return "Nano";
     case PREFIX_PICO:
       return "Pico";
-    case PREFIX_FEMPTO:
-      return "Fempto";
+    case PREFIX_FEMTO:
+      return "Femto";
     case PREFIX_ATTO:
       return "Atto";
     case PREFIX_ZEPTO:
