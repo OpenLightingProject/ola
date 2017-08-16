@@ -10,6 +10,7 @@ x/y/2017 ola-0.10.6
 
  Bugs:
  * Renamed fempto(sic) to femto in the RDM code (C++ and Python)
+ * Renamed terra(sic) to tera in the RDM code (C++ and Python)
 
  Internal:
  *

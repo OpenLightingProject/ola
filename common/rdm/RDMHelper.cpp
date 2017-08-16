@@ -288,8 +288,8 @@ string PrefixToString(uint8_t prefix) {
       return "Mega";
     case PREFIX_GIGA:
       return "Giga";
-    case PREFIX_TERRA:
-      return "Terra";
+    case PREFIX_TERA:
+      return "Tera";
     case PREFIX_PETA:
       return "Peta";
     case PREFIX_EXA:
