@@ -1037,12 +1037,12 @@ class GetZeroUInt8Mixin(GetZeroMixin):
   DATA = struct.pack('!B', 0)
 
 
-class GetZeroUInt16Mixin(GetZeroUInt8Mixin):
+class GetZeroUInt16Mixin(GetZeroMixin):
   """Get a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!H', 0)
 
 
-class GetZeroUInt32Mixin(GetZeroUInt8Mixin):
+class GetZeroUInt32Mixin(GetZeroMixin):
   """Get a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!I', 0)
 
@@ -1066,12 +1066,12 @@ class SetZeroUInt8Mixin(SetZeroMixin):
   DATA = struct.pack('!B', 0)
 
 
-class SetZeroUInt16Mixin(SetZeroUInt8Mixin):
+class SetZeroUInt16Mixin(SetZeroMixin):
   """Set a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!H', 0)
 
 
-class SetZeroUInt32Mixin(SetZeroUInt8Mixin):
+class SetZeroUInt32Mixin(SetZeroMixin):
   """Set a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!I', 0)
 
