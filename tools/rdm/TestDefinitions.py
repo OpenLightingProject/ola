@@ -3083,7 +3083,7 @@ class SetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
 
 
 class SetSensorValueWithExtraData(TestMixins.SetWithDataMixin,
-                                    OptionalParameterTestFixture):
+                                  OptionalParameterTestFixture):
   """Send a SET SENSOR_VALUE command with extra data."""
   PID = 'SENSOR_VALUE'
 
