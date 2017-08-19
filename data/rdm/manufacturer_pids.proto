@@ -50,7 +50,7 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 776
-  manufacturer_name: "ImageCue LLC"
+  manufacturer_name: "ImageCue LLC "
   pid {
     name: "SERIAL_NUMBER"
     value: 32976
@@ -407,15 +407,11 @@ manufacturer {
   manufacturer_name: "Global Design Solutions, Ltd."
   pid {
     name: "LED_DRIVE_CURRENT"
-    value: 0x8020
+    value: 32800
     get_request {
       field {
         type: UINT8
         name: "channel"
-        label {
-          value: 0xff
-          label: "All"
-        }
         range {
           min: 1
           max: 4
@@ -426,10 +422,6 @@ manufacturer {
       field {
         type: UINT8
         name: "channel"
-        label {
-          value: 0x00
-          label: "All"
-        }
         range {
           min: 1
           max: 4
@@ -446,12 +438,16 @@ manufacturer {
         type: UINT8
         name: "channel"
         label {
-          value: 0xff
+          value: 255
           label: "All"
         }
         range {
           min: 1
           max: 4
+        }
+        range {
+          min: 255
+          max: 255
         }
       }
       field {
@@ -464,11 +460,11 @@ manufacturer {
         type: UINT8
         name: "channel"
         label {
-          value: 0x00
+          value: 0
           label: "All"
         }
         range {
-          min: 1
+          min: 0
           max: 4
         }
       }
@@ -481,7 +477,7 @@ manufacturer {
   }
   pid {
     name: "SERIAL_NUMBER"
-    value: 0xffdf
+    value: 65503
     get_request {
     }
     get_response {
@@ -8778,15 +8774,13 @@ manufacturer {
       field {
         type: UINT16
         name: "dali_group_membership"
-        #bitset
       }
     }
     get_sub_device_range: ROOT_OR_SUBDEVICE
     set_request {
       field {
         type: UINT16
-        name: "dali_short_address"
-        #bitset
+        name: "dali_group_membership"
       }
     }
     set_response {
@@ -8992,4 +8986,4 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-version: 1458491192
+version: 1503179153
