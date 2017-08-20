@@ -7434,12 +7434,12 @@ class GetIPv4ZeroconfModeWithExtraData(TestMixins.GetWithDataMixin,
 # TODO(peter): Test set
 
 
-# class SetZeroIPv4ZeroconfMode(TestMixins.,
-#                               OptionalParameterTestFixture):
-#   """SET IPV4_ZEROCONF_MODE to interface identifier 0."""
-#   CATEGORY = TestCategory.ERROR_CONDITIONS
-#   PID = 'IPV4_ZEROCONF_MODE'
-# TODO(peter): Test set zero
+class SetZeroIPv4ZeroconfMode(TestMixins.SetZeroMixin,
+                              OptionalParameterTestFixture):
+   """SET IPV4_ZEROCONF_MODE to interface identifier 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IPV4_ZEROCONF_MODE'
+  DATA = struct.pack('!IB', 0x00000000, 0x00)
 
 
 class SetIPv4ZeroconfModeWithNoData(TestMixins.SetWithNoDataMixin,
@@ -7544,12 +7544,13 @@ class GetIPv4StaticAddressWithExtraData(TestMixins.GetWithDataMixin,
 # TODO(peter): Test set
 
 
-# class SetZeroIPv4StaticAddress(TestMixins.,
-#                                OptionalParameterTestFixture):
-#   """SET IPV4_STATIC_ADDRESS to interface identifier 0."""
-#   CATEGORY = TestCategory.ERROR_CONDITIONS
-#   PID = 'IPV4_STATIC_ADDRESS'
-# TODO(peter): Test set zero
+class SetZeroIPv4StaticAddress(TestMixins.SetZeroMixin,
+                               OptionalParameterTestFixture):
+  """SET IPV4_STATIC_ADDRESS to interface identifier 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IPV4_STATIC_ADDRESS'
+  # 192.168.0.1
+  DATA = struct.pack('!IIB', 0x00000000, 0xc0a80001, 24)
 
 
 class SetIPv4StaticAddressWithNoData(TestMixins.SetWithNoDataMixin,
