@@ -4351,7 +4351,7 @@ class GetFactoryDefaultsWithData(TestMixins.GetWithDataMixin,
   PID = 'FACTORY_DEFAULTS'
 
 
-class ResetFactoryDefaults(OptionalParameterTestFixture):
+class SetFactoryDefaults(OptionalParameterTestFixture):
   """Reset to factory defaults."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'FACTORY_DEFAULTS'
