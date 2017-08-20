@@ -317,7 +317,8 @@ class SetWithDataMixin(ResponderTestFixture):
   def Test(self):
     results = [
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
-      # Fix this, ideally we change behaviour based on past support of the PID
+      # TODO(Peter): Fix this, ideally we change behaviour based on past
+      # support of the PID
       self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       self.AckSetResult(
         warning='Set %s with data returned an ack' % self.pid.name)
@@ -336,7 +337,8 @@ class SetWithNoDataMixin(ResponderTestFixture):
 
   def Test(self):
     results = [
-      # Fix this, ideally we change behaviour based on past support of the PID
+      # TODO(Peter): Fix this, ideally we change behaviour based on past
+      # support of the PID
       self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR)
     ]
