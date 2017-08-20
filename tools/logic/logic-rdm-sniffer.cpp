@@ -269,8 +269,9 @@ void LogicReader::ProcessData(U8 *data, uint32_t data_length) {
 
 
 void LogicReader::DisplayDMXFrame(const uint8_t *data, unsigned int length) {
-  if (!FLAGS_display_dmx)
+  if (!FLAGS_display_dmx) {
     return;
+  }
 
   cout << "DMX " << std::dec;
   cout << length << ":" << std::hex;
@@ -285,6 +286,8 @@ void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
     }
     command->Print(&m_command_printer, !FLAGS_full_rdm, true);
   } else {
+    cout << "RDM " << std::dec;
+    cout << length << ":" << std::hex;
     DisplayRawData(data, length);
   }
 }
@@ -292,8 +295,9 @@ void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
 
 void LogicReader::DisplayAlternateFrame(const uint8_t *data,
                                         unsigned int length) {
-  if (!FLAGS_display_asc || length == 0)
+  if (!FLAGS_display_asc || length == 0) {
     return;
+  }
 
   unsigned int slot_count = length - 1;
   cout << "SC " << ToHex(static_cast<int>(data[0]))
@@ -307,7 +311,8 @@ void LogicReader::DisplayAlternateFrame(const uint8_t *data,
  */
 void LogicReader::DisplayRawData(const uint8_t *data, unsigned int length) {
   for (unsigned int i = 0; i < length; i++) {
-    cout << std::hex << std::setw(2) << static_cast<int>(data[i]) << " ";
+    cout << std::hex << std::setw(2) << std::setfill('0')
+         << static_cast<int>(data[i]) << " ";
   }
   cout << endl;
 }
