@@ -1083,6 +1083,48 @@ class ClearStatusMessages(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [])
 
 
+# Sub device status report threshold
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetSubDeviceStatusReportThreshold(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
+  """Send a get SUB_DEVICE_STATUS_REPORT_THRESHOLD to ALL_SUB_DEVICES."""
+  PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+
+
+# class GetSubDeviceStatusReportThreshold(TestMixins.,
+#                                         OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+# TODO(peter): Test get
+
+
+class GetSubDeviceStatusReportThresholdWithData(TestMixins.GetWithDataMixin,
+                                                OptionalParameterTestFixture):
+  """GET SUB_DEVICE_STATUS_REPORT_THRESHOLD with data."""
+  PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+
+
+# class SetSubDeviceStatusReportThreshold(TestMixins.,
+#                                         OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+# TODO(peter): Test set
+
+
+class SetSubDeviceStatusReportThresholdWithNoData(TestMixins.SetWithNoDataMixin,
+                                                  OptionalParameterTestFixture):
+  """Set SUB_DEVICE_STATUS_REPORT_THRESHOLD command with no data."""
+  PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+
+
+class SetSubDeviceStatusReportThresholdWithExtraData(
+        TestMixins.SetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Send a SET SUB_DEVICE_STATUS_REPORT_THRESHOLD command with extra data."""
+  PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+
+
 # Parameter Description
 # -----------------------------------------------------------------------------
 class GetParameterDescription(ParamDescriptionTestFixture):
@@ -1541,6 +1583,7 @@ class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
 class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
                           OptionalParameterTestFixture):
   """SET the device label with no data."""
+  # AKA SetDeviceLabelWithNoData
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   REQUIRES = ['device_label']
@@ -1553,6 +1596,7 @@ class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
 class SetOversizedDeviceLabel(TestMixins.SetOversizedLabelMixin,
                               OptionalParameterTestFixture):
   """SET the device label with more than 32 bytes of data."""
+  # AKA SetDeviceLabelWithExtraData
   REQUIRES = ['device_label']
   PID = 'DEVICE_LABEL'
 
@@ -7260,16 +7304,24 @@ class GetIPv4DefaultRouteWithData(TestMixins.GetWithDataMixin,
 
 
 # TODO(Peter): Need to restrict these somehow so we don't saw off the branch
-# class SetIPv4DefaultRoute(TestMixins.UnsupportedSetMixin,
+# class SetIPv4DefaultRoute(TestMixins.,
 #                           OptionalParameterTestFixture):
-#   """Attempt to SET the IPv4 default route with no data."""
+#   CATEGORY = TestCategory.
 #   PID = 'IPV4_DEFAULT_ROUTE'
-#
-#
-# class SetIPv4DefaultRouteWithData(TestMixins.UnsupportedSetWithDataMixin,
-#                                   OptionalParameterTestFixture):
-#   """SET the IPv4 default route with data."""
-#   PID = 'IPV4_DEFAULT_ROUTE'
+# TODO(peter): Test set
+
+
+class SetIPv4DefaultRouteWithNoData(TestMixins.SetWithNoDataMixin,
+                                    OptionalParameterTestFixture):
+  """Set IPV4_DEFAULT_ROUTE command with no data."""
+  PID = 'IPV4_DEFAULT_ROUTE'
+
+
+class SetIPv4DefaultRouteWithExtraData(TestMixins.SetWithDataMixin,
+                                       OptionalParameterTestFixture):
+  """Send a SET IPV4_DEFAULT_ROUTE command with extra data."""
+  PID = 'IPV4_DEFAULT_ROUTE'
+  DATA = 'foobarbaz'
 
 
 class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
