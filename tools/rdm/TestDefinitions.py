@@ -5791,6 +5791,19 @@ class SetOutOfRangeUpperIncreasingMinimumLevel(TestMixins.SetMinimumLevelMixin,
     return self.upper + 1
 
 
+class SetMinimumLevelWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set MINIMUM_LEVEL command with no data."""
+  PID = 'MINIMUM_LEVEL'
+
+
+class SetMinimumLevelWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET MINIMUM_LEVEL command with extra data."""
+  PID = 'MINIMUM_LEVEL'
+  DATA = 'foobar'
+
+
 # MAXIMUM_LEVEL
 # -----------------------------------------------------------------------------
 class GetMaximumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
@@ -5929,6 +5942,18 @@ class SetUpperOutOfRangeMaximumLevel(OptionalParameterTestFixture):
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
 
     self.SendSet(ROOT_DEVICE, self.pid, [self.value])
+
+
+class SetMaximumLevelWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set MAXIMUM_LEVEL command with no data."""
+  PID = 'MAXIMUM_LEVEL'
+
+
+class SetMaximumLevelWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET MAXIMUM_LEVEL command with extra data."""
+  PID = 'MAXIMUM_LEVEL'
 
 
 class AllSubDevicesGetMaximumLevel(TestMixins.AllSubDevicesGetMixin,
