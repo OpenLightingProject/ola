@@ -7436,7 +7436,7 @@ class GetIPv4ZeroconfModeWithExtraData(TestMixins.GetWithDataMixin,
 
 class SetZeroIPv4ZeroconfMode(TestMixins.SetZeroMixin,
                               OptionalParameterTestFixture):
-   """SET IPV4_ZEROCONF_MODE to interface identifier 0."""
+  """SET IPV4_ZEROCONF_MODE to interface identifier 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IPV4_ZEROCONF_MODE'
   DATA = struct.pack('!IB', 0x00000000, 0x00)
