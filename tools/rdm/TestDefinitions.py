@@ -7119,6 +7119,13 @@ class SetInterfaceLabelWithData(TestMixins.UnsupportedSetMixin,
   DATA = 'FOO BAR'
 
 
+class SetInterfaceHardwareAddressType1WithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Attempt to SET INTERFACE_HARDWARE_ADDRESS_TYPE1 with data."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+
+
 # Cross check the control fields with various other properties
 # -----------------------------------------------------------------------------
 class SubDeviceControlField(TestFixture):
