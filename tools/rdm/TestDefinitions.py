@@ -3161,7 +3161,7 @@ class ResetUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
 
 
 class SetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
-                                 OptionalParameterTestFixture):
+                               OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
   PID = 'SENSOR_VALUE'
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
