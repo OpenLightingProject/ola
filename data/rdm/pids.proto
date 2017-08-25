@@ -374,10 +374,226 @@ pid {
     field {
       type: UINT8
       name: "unit"
+      label {
+        value: 0
+        label: "None"
+      }
+      label {
+        value: 1
+        label: "Centigrade"
+      }
+      label {
+        value: 2
+        label: "Volts (DC)"
+      }
+      label {
+        value: 3
+        label: "Volts (AC Peak)"
+      }
+      label {
+        value: 4
+        label: "Volts (AC RMS)"
+      }
+      label {
+        value: 5
+        label: "Amps (DC)"
+      }
+      label {
+        value: 6
+        label: "Amps (AC Peak)"
+      }
+      label {
+        value: 7
+        label: "Amps (AC RMS)"
+      }
+      label {
+        value: 8
+        label: "Hertz"
+      }
+      label {
+        value: 9
+        label: "Ohms"
+      }
+      label {
+        value: 10
+        label: "Watts"
+      }
+      label {
+        value: 11
+        label: "Kilograms"
+      }
+      label {
+        value: 12
+        label: "Meters"
+      }
+      label {
+        value: 13
+        label: "Meters Squared"
+      }
+      label {
+        value: 14
+        label: "Meters Cubed"
+      }
+      label {
+        value: 15
+        label: "Kilograms per Meter Cubed"
+      }
+      label {
+        value: 16
+        label: "Meters per Second"
+      }
+      label {
+        value: 17
+        label: "Meters per Second Squared"
+      }
+      label {
+        value: 18
+        label: "Newtons"
+      }
+      label {
+        value: 19
+        label: "Joules"
+      }
+      label {
+        value: 20
+        label: "Pascals"
+      }
+      label {
+        value: 21
+        label: "Seconds"
+      }
+      label {
+        value: 22
+        label: "Degrees"
+      }
+      label {
+        value: 23
+        label: "Steradian"
+      }
+      label {
+        value: 24
+        label: "Candela"
+      }
+      label {
+        value: 25
+        label: "Lumens"
+      }
+      label {
+        value: 26
+        label: "Lux"
+      }
+      label {
+        value: 27
+        label: "Ire"
+      }
+      label {
+        value: 28
+        label: "Bytes"
+      }
+      range {
+        min: 0
+        max: 28
+      }
+      range {
+        min: 128
+        max: 255
+      }
     }
     field {
       type: UINT8
       name: "prefix"
+      label {
+        value: 0
+        label: "None"
+      }
+      label {
+        value: 1
+        label: "Deci"
+      }
+      label {
+        value: 2
+        label: "Centi"
+      }
+      label {
+        value: 3
+        label: "Milli"
+      }
+      label {
+        value: 4
+        label: "Micro"
+      }
+      label {
+        value: 5
+        label: "Nano"
+      }
+      label {
+        value: 6
+        label: "Pico"
+      }
+      label {
+        value: 7
+        label: "Femto"
+      }
+      label {
+        value: 8
+        label: "Atto"
+      }
+      label {
+        value: 9
+        label: "Zepto"
+      }
+      label {
+        value: 10
+        label: "Yocto"
+      }
+      label {
+        value: 17
+        label: "Deca"
+      }
+      label {
+        value: 18
+        label: "Hecto"
+      }
+      label {
+        value: 19
+        label: "Kilo"
+      }
+      label {
+        value: 20
+        label: "Mega"
+      }
+      label {
+        value: 21
+        label: "Giga"
+      }
+      label {
+        value: 22
+        label: "Tera"
+      }
+      label {
+        value: 23
+        label: "Peta"
+      }
+      label {
+        value: 24
+        label: "Exa"
+      }
+      label {
+        value: 25
+        label: "Zetta"
+      }
+      label {
+        value: 26
+        label: "Yotta"
+      }
+      range {
+        min: 0
+        max: 10
+      }
+      range {
+        min: 17
+        max: 26
+      }
     }
     field {
       type: UINT32
@@ -1873,10 +2089,226 @@ pid {
     field {
       type: UINT8
       name: "unit"
+      label {
+        value: 0
+        label: "None"
+      }
+      label {
+        value: 1
+        label: "Centigrade"
+      }
+      label {
+        value: 2
+        label: "Volts (DC)"
+      }
+      label {
+        value: 3
+        label: "Volts (AC Peak)"
+      }
+      label {
+        value: 4
+        label: "Volts (AC RMS)"
+      }
+      label {
+        value: 5
+        label: "Amps (DC)"
+      }
+      label {
+        value: 6
+        label: "Amps (AC Peak)"
+      }
+      label {
+        value: 7
+        label: "Amps (AC RMS)"
+      }
+      label {
+        value: 8
+        label: "Hertz"
+      }
+      label {
+        value: 9
+        label: "Ohms"
+      }
+      label {
+        value: 10
+        label: "Watts"
+      }
+      label {
+        value: 11
+        label: "Kilograms"
+      }
+      label {
+        value: 12
+        label: "Meters"
+      }
+      label {
+        value: 13
+        label: "Meters Squared"
+      }
+      label {
+        value: 14
+        label: "Meters Cubed"
+      }
+      label {
+        value: 15
+        label: "Kilograms per Meter Cubed"
+      }
+      label {
+        value: 16
+        label: "Meters per Second"
+      }
+      label {
+        value: 17
+        label: "Meters per Second Squared"
+      }
+      label {
+        value: 18
+        label: "Newtons"
+      }
+      label {
+        value: 19
+        label: "Joules"
+      }
+      label {
+        value: 20
+        label: "Pascals"
+      }
+      label {
+        value: 21
+        label: "Seconds"
+      }
+      label {
+        value: 22
+        label: "Degrees"
+      }
+      label {
+        value: 23
+        label: "Steradian"
+      }
+      label {
+        value: 24
+        label: "Candela"
+      }
+      label {
+        value: 25
+        label: "Lumens"
+      }
+      label {
+        value: 26
+        label: "Lux"
+      }
+      label {
+        value: 27
+        label: "Ire"
+      }
+      label {
+        value: 28
+        label: "Bytes"
+      }
+      range {
+        min: 0
+        max: 28
+      }
+      range {
+        min: 128
+        max: 255
+      }
     }
     field {
       type: UINT8
       name: "prefix"
+      label {
+        value: 0
+        label: "None"
+      }
+      label {
+        value: 1
+        label: "Deci"
+      }
+      label {
+        value: 2
+        label: "Centi"
+      }
+      label {
+        value: 3
+        label: "Milli"
+      }
+      label {
+        value: 4
+        label: "Micro"
+      }
+      label {
+        value: 5
+        label: "Nano"
+      }
+      label {
+        value: 6
+        label: "Pico"
+      }
+      label {
+        value: 7
+        label: "Femto"
+      }
+      label {
+        value: 8
+        label: "Atto"
+      }
+      label {
+        value: 9
+        label: "Zepto"
+      }
+      label {
+        value: 10
+        label: "Yocto"
+      }
+      label {
+        value: 17
+        label: "Deca"
+      }
+      label {
+        value: 18
+        label: "Hecto"
+      }
+      label {
+        value: 19
+        label: "Kilo"
+      }
+      label {
+        value: 20
+        label: "Mega"
+      }
+      label {
+        value: 21
+        label: "Giga"
+      }
+      label {
+        value: 22
+        label: "Tera"
+      }
+      label {
+        value: 23
+        label: "Peta"
+      }
+      label {
+        value: 24
+        label: "Exa"
+      }
+      label {
+        value: 25
+        label: "Zetta"
+      }
+      label {
+        value: 26
+        label: "Yotta"
+      }
+      range {
+        min: 0
+        max: 10
+      }
+      range {
+        min: 17
+        max: 26
+      }
     }
     field {
       type: INT16
@@ -3936,4 +4368,4 @@ pid {
   }
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
-version: 1438559429
+version: 1503271492
