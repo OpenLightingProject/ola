@@ -125,8 +125,8 @@ class LogicReader {
 
  private:
     const unsigned int m_sample_rate;
-    U64 m_device_id;  // GUARDED_BY(mu_);
-    LogicInterface *m_logic;  // GUARDED_BY(mu_);
+    U64 m_device_id;  // GUARDED_BY(m_mu);
+    LogicInterface *m_logic;  // GUARDED_BY(m_mu);
     mutable Mutex m_mu;
     SelectServer *m_ss;
     DMXSignalProcessor m_signal_processor;
@@ -183,8 +183,6 @@ void LogicReader::DeviceDisconnected(U64 device) {
   m_logic = NULL;
 
   m_ss->Terminate();
-
-  //
 }
 
 /**
@@ -198,6 +196,8 @@ void LogicReader::DataReceived(U64 device, U8 *data, uint32_t data_length) {
   {
     MutexLocker lock(&m_mu);
     if (device != m_device_id) {
+      OLA_WARN << "Received data from another device, expecting "
+               << m_device_id << " got " << device;
       DevicesManagerInterface::DeleteU8ArrayPtr(data);
       return;
     }
@@ -233,9 +233,7 @@ void LogicReader::FrameReceived(const uint8_t *data, unsigned int length) {
   }
 }
 
-/**
- *
- */
+
 void LogicReader::Stop() {
   MutexLocker lock(&m_mu);
   if (m_logic) {
@@ -319,8 +317,9 @@ void LogicReader::DisplayRawData(const uint8_t *data, unsigned int length) {
 // SaleaeDeviceApi callbacks
 void OnConnect(U64 device_id, GenericInterface* device_interface,
                void* user_data) {
-  if (!user_data)
+  if (!user_data) {
     return;
+  }
 
   LogicReader *reader =
       (LogicReader*) user_data;  // NOLINT(readability/casting)
@@ -328,8 +327,9 @@ void OnConnect(U64 device_id, GenericInterface* device_interface,
 }
 
 void OnDisconnect(U64 device_id, void *user_data) {
-  if (!user_data)
+  if (!user_data) {
     return;
+  }
 
   LogicReader *reader =
       (LogicReader*) user_data;  // NOLINT(readability/casting)
@@ -348,8 +348,7 @@ void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
 }
 
 void OnError(U64 device_id, void *user_data) {
-  OLA_WARN << "A device reported an Error.";
-  (void) device_id;
+  OLA_WARN << "Device " << device_id << " reported an error.";
   (void) user_data;
 }
 
