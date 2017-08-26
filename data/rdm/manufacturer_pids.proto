@@ -412,17 +412,9 @@ manufacturer {
       field {
         type: UINT8
         name: "channel"
-        label {
-          value: 255
-          label: "All"
-        }
         range {
           min: 1
           max: 4
-        }
-        range {
-          min: 255
-          max: 255
         }
       }
     }
@@ -430,12 +422,8 @@ manufacturer {
       field {
         type: UINT8
         name: "channel"
-        label {
-          value: 0
-          label: "All"
-        }
         range {
-          min: 0
+          min: 1
           max: 4
         }
       }
@@ -454,8 +442,12 @@ manufacturer {
           label: "All"
         }
         range {
-          min: 0
+          min: 1
           max: 4
+        }
+        range {
+          min: 255
+          max: 255
         }
       }
       field {
@@ -8994,4 +8986,4 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-version: 1500332040
+version: 1503271492
