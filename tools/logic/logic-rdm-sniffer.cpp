@@ -31,6 +31,7 @@
 
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
+#include <ola/base/Macro.h>
 #include <ola/base/SysExits.h>
 #include <ola/Callback.h>
 #include <ola/Constants.h>
@@ -347,9 +348,8 @@ void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
   reader->DataReceived(device_id, data, data_length);
 }
 
-void OnError(U64 device_id, void *user_data) {
+void OnError(U64 device_id, OLA_UNUSED void *user_data) {
   OLA_WARN << "Device " << device_id << " reported an error.";
-  (void) user_data;
 }
 
 void DisplayReminder(LogicReader *reader) {
