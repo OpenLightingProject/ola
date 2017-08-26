@@ -81,6 +81,7 @@ using ola::NewSingleCallback;
 DEFINE_default_bool(display_asc, false,
                     "Display non-RDM alternate start code frames.");
 DEFINE_s_default_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+// TODO(Peter): Implement this!
 DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
 DEFINE_s_default_bool(display_dmx, d, false,
                       "Display DMX Frames. Defaults to false.");
@@ -172,7 +173,7 @@ void LogicReader::DeviceConnected(U64 device, GenericInterface *interface) {
 }
 
 void LogicReader::DeviceDisconnected(U64 device) {
-  OLA_INFO << "Device " << device << " disconnected";
+  OLA_FATAL << "Device " << device << " disconnected";
 
   MutexLocker lock(&m_mu);
   if (device != m_device_id) {
@@ -347,7 +348,7 @@ void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
 }
 
 void OnError(U64 device_id, void *user_data) {
-  OLA_INFO << "A device reported an Error.";
+  OLA_WARN << "A device reported an Error.";
   (void) device_id;
   (void) user_data;
 }
