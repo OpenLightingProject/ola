@@ -1016,6 +1016,47 @@ class FindSubDevices(ResponderTestFixture):
       self._sub_device_footprints[self._current_index] = fields['dmx_footprint']
 
 
+# Status Messages
+# -----------------------------------------------------------------------------
+# TODO(Peter): These might all upset queued messages?
+class AllSubDevicesGetStatusMessages(TestMixins.AllSubDevicesGetMixin,
+                                     OptionalParameterTestFixture):
+  """Send a get STATUS_MESSAGES to ALL_SUB_DEVICES."""
+  PID = 'STATUS_MESSAGES'
+  DATA = [0x00]
+
+
+# class GetStatusMessages(TestMixins.,
+#                         OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'STATUS_MESSAGES'
+# TODO(peter): Test get, use STATUS_NONE (0x00)
+
+
+class GetStatusMessagesWithNoData(TestMixins.GetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
+  """GET STATUS_MESSAGES with no argument given."""
+  PID = 'STATUS_MESSAGES'
+
+
+class GetStatusMessagesWithExtraData(TestMixins.GetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """GET STATUS_MESSAGES with more than 1 byte of data."""
+  PID = 'STATUS_MESSAGES'
+
+
+class SetStatusMessages(TestMixins.UnsupportedSetMixin,
+                        OptionalParameterTestFixture):
+  """Attempt to SET STATUS_MESSAGES."""
+  PID = 'STATUS_MESSAGES'
+
+
+class SetStatusMessagesWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Attempt to SET STATUS_MESSAGES with data."""
+  PID = 'STATUS_MESSAGES'
+
+
 # Status ID Description
 # -----------------------------------------------------------------------------
 class AllSubDevicesGetStatusIdDescription(TestMixins.AllSubDevicesGetMixin,
@@ -7795,6 +7836,13 @@ class GetZeroInterfaceHardwareAddressType1(TestMixins.GetZeroUInt32Mixin,
 class SetInterfaceHardwareAddressType1(TestMixins.UnsupportedSetMixin,
                                        OptionalParameterTestFixture):
   """SET INTERFACE_HARDWARE_ADDRESS_TYPE1."""
+  PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+
+
+class SetInterfaceHardwareAddressType1WithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Attempt to SET INTERFACE_HARDWARE_ADDRESS_TYPE1 with data."""
   PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
 
 
