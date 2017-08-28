@@ -1083,6 +1083,48 @@ class ClearStatusMessages(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [])
 
 
+# Sub device status report threshold
+# -----------------------------------------------------------------------------
+class AllSubDevicesGetSubDeviceStatusReportThreshold(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
+  """Send a get SUB_DEVICE_STATUS_REPORT_THRESHOLD to ALL_SUB_DEVICES."""
+  PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+
+
+# class GetSubDeviceStatusReportThreshold(TestMixins.,
+#                                         OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+# TODO(peter): Test get
+
+
+class GetSubDeviceStatusReportThresholdWithData(TestMixins.GetWithDataMixin,
+                                                OptionalParameterTestFixture):
+  """GET SUB_DEVICE_STATUS_REPORT_THRESHOLD with data."""
+  PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+
+
+# class SetSubDeviceStatusReportThreshold(TestMixins.,
+#                                         OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+# TODO(peter): Test set
+
+
+class SetSubDeviceStatusReportThresholdWithNoData(TestMixins.SetWithNoDataMixin,
+                                                  OptionalParameterTestFixture):
+  """Set SUB_DEVICE_STATUS_REPORT_THRESHOLD command with no data."""
+  PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+
+
+class SetSubDeviceStatusReportThresholdWithExtraData(
+        TestMixins.SetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Send a SET SUB_DEVICE_STATUS_REPORT_THRESHOLD command with extra data."""
+  PID = 'SUB_DEVICE_STATUS_REPORT_THRESHOLD'
+
+
 # Parameter Description
 # -----------------------------------------------------------------------------
 class GetParameterDescription(ParamDescriptionTestFixture):
@@ -1541,6 +1583,7 @@ class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
 class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
                           OptionalParameterTestFixture):
   """SET the device label with no data."""
+  # AKA SetDeviceLabelWithNoData
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   REQUIRES = ['device_label']
@@ -1553,6 +1596,7 @@ class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
 class SetOversizedDeviceLabel(TestMixins.SetOversizedLabelMixin,
                               OptionalParameterTestFixture):
   """SET the device label with more than 32 bytes of data."""
+  # AKA SetDeviceLabelWithExtraData
   REQUIRES = ['device_label']
   PID = 'DEVICE_LABEL'
 
@@ -3076,14 +3120,14 @@ class ResetUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
 
 
 class SetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
-                                 OptionalParameterTestFixture):
+                               OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
   PID = 'SENSOR_VALUE'
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
 
 class SetSensorValueWithExtraData(TestMixins.SetWithDataMixin,
-                                    OptionalParameterTestFixture):
+                                  OptionalParameterTestFixture):
   """Send a SET SENSOR_VALUE command with extra data."""
   PID = 'SENSOR_VALUE'
 
@@ -4307,7 +4351,7 @@ class GetFactoryDefaultsWithData(TestMixins.GetWithDataMixin,
   PID = 'FACTORY_DEFAULTS'
 
 
-class ResetFactoryDefaults(OptionalParameterTestFixture):
+class SetFactoryDefaults(OptionalParameterTestFixture):
   """Reset to factory defaults."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'FACTORY_DEFAULTS'
@@ -4362,6 +4406,18 @@ class SetCapturePreset(OptionalParameterTestFixture):
     self.AddIfSetSupported(self.AckSetResult())
     # Scene 1, no timing information
     self.SendSet(ROOT_DEVICE, self.pid, [1, 0, 0, 0])
+
+
+class SetZeroCapturePreset(OptionalParameterTestFixture):
+  """SET CAPTURE_PRESET to scene 0 and expect a data out of range."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CAPTURE_PRESET'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    # Scene 0, no timing information
+    data = struct.pack('!HHHH', 0, 0, 0, 0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
 class SetCapturePresetWithNoData(TestMixins.SetWithNoDataMixin,
@@ -6604,6 +6660,7 @@ class AllSubDevicesGetPresetInfo(TestMixins.AllSubDevicesGetMixin,
 # -----------------------------------------------------------------------------
 class GetPresetStatusPresetOff(OptionalParameterTestFixture):
   """Get the PRESET_STATUS for PRESET_PLAYBACK_OFF."""
+  # AKA GetZeroPresetStatus
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_STATUS'
 
@@ -6749,16 +6806,17 @@ class SetPresetStatusWithExtraData(TestMixins.SetWithDataMixin,
   PID = 'PRESET_STATUS'
 
 
-class SetPresetStatusPresetOff(TestMixins.SetPresetStatusMixin,
+class SetPresetStatusPresetOff(TestMixins.SetOutOfRangePresetStatusMixin,
                                OptionalParameterTestFixture):
   """Set the PRESET_STATUS for PRESET_PLAYBACK_OFF."""
+  # AKA SetZeroPresetStatus
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def PresetStatusSceneNumber(self):
     return 0
 
 
-class SetPresetStatusPresetScene(TestMixins.SetPresetStatusMixin,
+class SetPresetStatusPresetScene(TestMixins.SetOutOfRangePresetStatusMixin,
                                  OptionalParameterTestFixture):
   """Set the PRESET_STATUS for PRESET_PLAYBACK_SCENE."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -6767,11 +6825,12 @@ class SetPresetStatusPresetScene(TestMixins.SetPresetStatusMixin,
     return 0xffff
 
 
-class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
+class SetOutOfRangePresetStatus(TestMixins.SetOutOfRangePresetStatusMixin,
                                 OptionalParameterTestFixture):
   """Set the PRESET_STATUS for max_scene + 1."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  REQUIRES = ['max_scene_number'] + TestMixins.SetPresetStatusMixin.REQUIRES
+  REQUIRES = (['max_scene_number'] +
+              TestMixins.SetOutOfRangePresetStatusMixin.REQUIRES)
 
   def PresetStatusSceneNumber(self):
     max_scene = self.Property('max_scene_number')
@@ -7245,16 +7304,24 @@ class GetIPv4DefaultRouteWithData(TestMixins.GetWithDataMixin,
 
 
 # TODO(Peter): Need to restrict these somehow so we don't saw off the branch
-# class SetIPv4DefaultRoute(TestMixins.UnsupportedSetMixin,
+# class SetIPv4DefaultRoute(TestMixins.,
 #                           OptionalParameterTestFixture):
-#   """Attempt to SET the IPv4 default route with no data."""
+#   CATEGORY = TestCategory.
 #   PID = 'IPV4_DEFAULT_ROUTE'
-#
-#
-# class SetIPv4DefaultRouteWithData(TestMixins.UnsupportedSetWithDataMixin,
-#                                   OptionalParameterTestFixture):
-#   """SET the IPv4 default route with data."""
-#   PID = 'IPV4_DEFAULT_ROUTE'
+# TODO(peter): Test set
+
+
+class SetIPv4DefaultRouteWithNoData(TestMixins.SetWithNoDataMixin,
+                                    OptionalParameterTestFixture):
+  """Set IPV4_DEFAULT_ROUTE command with no data."""
+  PID = 'IPV4_DEFAULT_ROUTE'
+
+
+class SetIPv4DefaultRouteWithExtraData(TestMixins.SetWithDataMixin,
+                                       OptionalParameterTestFixture):
+  """Send a SET IPV4_DEFAULT_ROUTE command with extra data."""
+  PID = 'IPV4_DEFAULT_ROUTE'
+  DATA = 'foobarbaz'
 
 
 class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
@@ -7367,12 +7434,12 @@ class GetIPv4ZeroconfModeWithExtraData(TestMixins.GetWithDataMixin,
 # TODO(peter): Test set
 
 
-# class SetZeroIPv4ZeroconfMode(TestMixins.,
-#                               OptionalParameterTestFixture):
-#   """SET IPV4_ZEROCONF_MODE to interface identifier 0."""
-#   CATEGORY = TestCategory.ERROR_CONDITIONS
-#   PID = 'IPV4_ZEROCONF_MODE'
-# TODO(peter): Test set zero
+class SetZeroIPv4ZeroconfMode(TestMixins.SetZeroMixin,
+                              OptionalParameterTestFixture):
+  """SET IPV4_ZEROCONF_MODE to interface identifier 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IPV4_ZEROCONF_MODE'
+  DATA = struct.pack('!IB', 0x00000000, 0x00)
 
 
 class SetIPv4ZeroconfModeWithNoData(TestMixins.SetWithNoDataMixin,
@@ -7477,12 +7544,13 @@ class GetIPv4StaticAddressWithExtraData(TestMixins.GetWithDataMixin,
 # TODO(peter): Test set
 
 
-# class SetZeroIPv4StaticAddress(TestMixins.,
-#                                OptionalParameterTestFixture):
-#   """SET IPV4_STATIC_ADDRESS to interface identifier 0."""
-#   CATEGORY = TestCategory.ERROR_CONDITIONS
-#   PID = 'IPV4_STATIC_ADDRESS'
-# TODO(peter): Test set zero
+class SetZeroIPv4StaticAddress(TestMixins.SetZeroMixin,
+                               OptionalParameterTestFixture):
+  """SET IPV4_STATIC_ADDRESS to interface identifier 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IPV4_STATIC_ADDRESS'
+  # 192.168.0.1
+  DATA = struct.pack('!IIB', 0x00000000, 0xc0a80001, 24)
 
 
 class SetIPv4StaticAddressWithNoData(TestMixins.SetWithNoDataMixin,

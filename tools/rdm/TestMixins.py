@@ -743,7 +743,7 @@ class SetUndefinedSensorValues(ResponderTestFixture):
 
 # Preset Status mixins
 # -----------------------------------------------------------------------------
-class SetPresetStatusMixin(ResponderTestFixture):
+class SetOutOfRangePresetStatusMixin(ResponderTestFixture):
   """Set an out of range scene for PRESET_STATUS"""
   PID = 'PRESET_STATUS'
   REQUIRES = ['preset_info']
@@ -760,7 +760,7 @@ class SetPresetStatusMixin(ResponderTestFixture):
                        int(wait_time), 0)
 
   def PresetStatusSceneNumber(self):
-    self.SetBroken('Base method of SetPresetStatusMixin called')
+    self.SetBroken('Base method of SetOutOfRangePresetStatusMixin called')
     return
 
   def Test(self):
