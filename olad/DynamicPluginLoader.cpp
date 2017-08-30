@@ -44,7 +44,7 @@
 #endif  // USE_ESPNET
 
 #ifdef USE_GPIO
-#include "plugins/gpio/GPIOPlugin.h"
+#include "plugins/gpio/GpioPlugin.h"
 #endif  // USE_GPIO
 
 #ifdef USE_KARATE
@@ -64,11 +64,11 @@
 #endif  // USE_OPENDMX
 
 #ifdef USE_OPENPIXELCONTROL
-#include "plugins/openpixelcontrol/OPCPlugin.h"
+#include "plugins/openpixelcontrol/OpcPlugin.h"
 #endif  // USE_OPENPIXELCONTROL
 
 #ifdef USE_OSC
-#include "plugins/osc/OSCPlugin.h"
+#include "plugins/osc/OscPlugin.h"
 #endif  // USE_OSC
 
 #ifdef USE_PATHPORT
@@ -88,7 +88,7 @@
 #endif  // USE_SHOWNET
 
 #ifdef USE_SPI
-#include "plugins/spi/SPIPlugin.h"
+#include "plugins/spi/SpiPlugin.h"
 #endif  // USE_SPI
 
 #ifdef USE_STAGEPROFI
@@ -156,7 +156,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 #endif  // USE_ESPNET
 
 #ifdef USE_GPIO
-  m_plugins.push_back(new ola::plugin::gpio::GPIOPlugin(m_plugin_adaptor));
+  m_plugins.push_back(new ola::plugin::gpio::GpioPlugin(m_plugin_adaptor));
 #endif  // USE_GPIO
 
 #ifdef USE_KARATE
@@ -180,12 +180,12 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_OPENPIXELCONTROL
   m_plugins.push_back(
-      new ola::plugin::openpixelcontrol::OPCPlugin(m_plugin_adaptor));
+      new ola::plugin::openpixelcontrol::OpcPlugin(m_plugin_adaptor));
 #endif  // USE_OPENPIXELCONTROL
 
 #ifdef USE_OSC
   m_plugins.push_back(
-      new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
+      new ola::plugin::osc::OscPlugin(m_plugin_adaptor));
 #endif  // USE_OSC
 
 #ifdef USE_RENARD
@@ -205,7 +205,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_SPI
   m_plugins.push_back(
-      new ola::plugin::spi::SPIPlugin(m_plugin_adaptor));
+      new ola::plugin::spi::SpiPlugin(m_plugin_adaptor));
 #endif  // USE_SPI
 
 #ifdef USE_STAGEPROFI

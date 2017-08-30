@@ -48,12 +48,12 @@
 #include <vector>
 
 #ifdef USE_SPI
-#include "plugins/spi/SPIBackend.h"
-#include "plugins/spi/SPIOutput.h"
-#include "plugins/spi/SPIWriter.h"
+#include "plugins/spi/SpiBackend.h"
+#include "plugins/spi/SpiOutput.h"
+#include "plugins/spi/SpiWriter.h"
 using ola::plugin::spi::SoftwareBackend;
-using ola::plugin::spi::SPIOutput;
-using ola::plugin::spi::SPIWriter;
+using ola::plugin::spi::SpiOutput;
+using ola::plugin::spi::SpiWriter;
 DEFINE_string(spi_device, "", "Path to the SPI device to use.");
 #endif  // USE_SPI
 
@@ -98,7 +98,7 @@ void HandleTriDMX(DmxBuffer *buffer, DmxTriWidget *widget) {
 
 
 #ifdef USE_SPI
-void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *output) {
+void HandleSpiDMX(DmxBuffer *buffer, SpiOutput *output) {
   output->WriteDMX(*buffer);
 }
 #endif  // USE_SPI
@@ -207,9 +207,9 @@ int main(int argc, char *argv[]) {
   // uber hack for now.
   // TODO(simon): fix this
 #ifdef USE_SPI
-  auto_ptr<SPIWriter> spi_writer;
+  auto_ptr<SpiWriter> spi_writer;
   auto_ptr<SoftwareBackend> spi_backend;
-  auto_ptr<SPIOutput> spi_output;
+  auto_ptr<SpiOutput> spi_output;
   DmxBuffer spi_buffer;
 
   if (FLAGS_spi_device.present() && !FLAGS_spi_device.str().empty()) {
@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
     }
 
     spi_writer.reset(
-        new SPIWriter(FLAGS_spi_device, SPIWriter::Options(), NULL));
+        new SpiWriter(FLAGS_spi_device, SpiWriter::Options(), NULL));
 
     SoftwareBackend::Options options;
     spi_backend.reset(new SoftwareBackend(options, spi_writer.get(), NULL));
@@ -229,10 +229,10 @@ int main(int argc, char *argv[]) {
       exit(ola::EXIT_USAGE);
     }
 
-    spi_output.reset(new SPIOutput(
+    spi_output.reset(new SpiOutput(
         *spi_uid,
         spi_backend.get(),
-        SPIOutput::Options(0, FLAGS_spi_device.str())));
+        SpiOutput::Options(0, FLAGS_spi_device.str())));
     E133Endpoint::EndpointProperties properties;
     properties.is_physical = true;
     endpoints.push_back(new E133Endpoint(spi_output.get(), properties));
