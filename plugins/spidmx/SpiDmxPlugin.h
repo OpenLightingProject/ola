@@ -41,7 +41,7 @@ class SpiDmxPlugin : public Plugin {
         m_plugin_adaptor(plugin_adaptor) {
   }
 
-  ola_plugin_id Id() const { return OLA_PLUGIN_EXPERIMENTAL; }
+  ola_plugin_id Id() const { return OLA_PLUGIN_SPIDMX; }
   std::string Name() const { return PLUGIN_NAME; }
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 

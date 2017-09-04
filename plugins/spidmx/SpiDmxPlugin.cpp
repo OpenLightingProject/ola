@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SpiDmxPlugin.cpp
- * This looks for possible SPI devices to instanciate and is managed by OLAD.
+ * This looks for possible SPI devices to instantiate and is managed by OLAD.
  * Copyright (C) 2017 Florian Edelmann
  */
 
