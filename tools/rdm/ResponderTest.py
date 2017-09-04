@@ -214,21 +214,23 @@ class TestFixture(object):
     self.SetBroken('stop method not defined')
 
   def SetNotRun(self, message=None):
-    """Set the state of the test to NOT_RUN and stop further processing."""
+    """Set the state of the test to NOT_RUN."""
     self._state = TestState.NOT_RUN
     if message:
       self.LogDebug(' ' + message)
-    self.Stop()
 
   def SetBroken(self, message):
+    """Set the state of the test to BROKEN."""
     self.LogDebug(' Broken: %s' % message)
     self._state = TestState.BROKEN
 
   def SetFailed(self, message):
+    """Set the state of the test to FAILED."""
     self.LogDebug(' Failed: %s' % message)
     self._state = TestState.FAILED
 
   def SetPassed(self):
+    """Set the state of the test to PASSED."""
     self._state = TestState.PASSED
 
 
@@ -302,6 +304,26 @@ class ResponderTestFixture(TestFixture):
   def Stop(self):
     self._should_run_wrapper = False
     self._wrapper.Stop()
+
+  def SetNotRun(self, message=None):
+    """Set the state of the test to NOT_RUN and stop further processing."""
+    super(ResponderTestFixture, self).SetNotRun(message)
+    self.Stop()
+
+  def SetBroken(self, message):
+    """Set the state of the test to BROKEN and stop further processing."""
+    super(ResponderTestFixture, self).SetBroken(message)
+    self.Stop()
+
+  def SetFailed(self, message):
+    """Set the state of the test to FAILED and stop further processing."""
+    super(ResponderTestFixture, self).SetFailed(message)
+    self.Stop()
+
+  def SetPassed(self):
+    """Set the state of the test to PASSED and stop further processing."""
+    super(ResponderTestFixture, self).SetPassed()
+    self.Stop()
 
   def AddExpectedResults(self, results):
     """Add a set of expected results."""
@@ -593,7 +615,7 @@ class ResponderTestFixture(TestFixture):
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      self.LogDebug(' Request status: %s' % response.ResponseCodeAsString())
+      self.LogDebug(' Response status: %s' % response.ResponseCodeAsString())
       if response.response_code == OlaClient.RDM_DUB_RESPONSE:
         # track timing for DUB responses.
         self._RecordFrameTiming(response, TimingStats.DUB)

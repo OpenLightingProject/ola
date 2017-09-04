@@ -26,6 +26,7 @@
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "ola/util/Utils.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
@@ -91,8 +92,8 @@ bool LocateInterface(LibUsbAdaptor *adaptor,
         const struct libusb_endpoint_descriptor *endpoint =
             &iface_descriptor->endpoint[k];
         OLA_DEBUG << "Interface " << i << ", altsetting " << j << ", endpoint "
-                  << static_cast<int>(k) << ", endpoint address 0x" << std::hex
-                  << static_cast<int>(endpoint->bEndpointAddress);
+                  << static_cast<int>(k) << ", endpoint address "
+                  << ola::strings::ToHex(endpoint->bEndpointAddress);
         if (endpoint->bEndpointAddress == ENDPOINT) {
           OLA_INFO << "Using interface " << i;
           *interface_number = i;
