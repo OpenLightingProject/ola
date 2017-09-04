@@ -151,7 +151,7 @@ void SpiDmxParser::ChangeState(SpiDmxParser::dmx_state_t new_state) {
 
 /**
  * Helper function that returns the number of zeros if a falling edge is
- * detected in the given byte or -1 if the byte is no falling edge.
+ * detected in the given byte or -1 if the byte is not a falling edge.
  *
  * Note: A falling edge can be between two bytes.
  * Note 2: If -1 is returned, this byte can either contain random spikes or
@@ -190,7 +190,7 @@ int8_t SpiDmxParser::DetectFallingEdge(uint8_t byte) {
 
 /**
  * Helper function that returns the number of ones if a rising edge is
- * detected in the given byte or -1 if the byte is no rising edge.
+ * detected in the given byte or -1 if the byte is not a rising edge.
  *
  * Note: A rising edge can be between two bytes.
  * Note 2: If -1 is returned, this byte can either contain random spikes or

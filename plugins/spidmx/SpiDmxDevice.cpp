@@ -84,7 +84,7 @@ void SpiDmxDevice::SetDefaults() {
   }
 
   bool save = m_preferences->SetDefaultValue(DeviceBlocklength(),
-                                             UIntValidator(0, 65535),
+                                             UIntValidator(1, 65535),
                                              PREF_BLOCKLENGTH_DEFAULT);
   if (save) {
     m_preferences->Save();

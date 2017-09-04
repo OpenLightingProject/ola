@@ -49,14 +49,14 @@ SpiDmxThread::~SpiDmxThread() {
 void SpiDmxThread::RegisterPort() {
   m_registered_ports++;
 
-  if (m_registered_ports == 1) {
+  if (m_registered_ports >= 1) {
     Start();
   }
 }
 void SpiDmxThread::UnregisterPort() {
   m_registered_ports--;
 
-  if (m_registered_ports == 0) {
+  if (m_registered_ports <= 0) {
     Stop();
   }
 }
