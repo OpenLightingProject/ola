@@ -1,5 +1,6 @@
 language: cpp
 sudo: false
+group: edge
 script:
  - "bash -ex .travis-ci.sh"
 
