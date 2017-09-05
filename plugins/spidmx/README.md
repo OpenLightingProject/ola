@@ -43,4 +43,5 @@ will instantiate a device.
 
 `<device>-blocklength = 4096`  
 How many SPI bytes (= DMX bits) should be received (optional). The default
-is 4096, but 8192 is recommended.
+is 4096, but 8192 is recommended. You may need to make further
+configurations on the Raspberry Pi (see above).
