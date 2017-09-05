@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxParser.cpp
+ * SPIDMXParser.cpp
  * This parses a SPI buffer into a DmxBuffer and notifies a callback when a
  * packet is received completely.
  * Copyright (C) 2017 Florian Edelmann
@@ -24,7 +24,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
-#include "plugins/spidmx/SpiDmxParser.h"
+#include "plugins/spidmx/SPIDMXParser.h"
 
 namespace ola {
 namespace plugin {
@@ -53,7 +53,7 @@ namespace spidmx {
  * @param *buffer - The buffer with SPI bytes to read from
  * @param buffersize - Size of the buffer
  */
-void SpiDmxParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
+void SPIDMXParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
   chunk = buffer;
 
   chunk_bitcount = 0;
@@ -135,7 +135,7 @@ void SpiDmxParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
 /**
  * Changes the current state and resets other depending variables.
  */
-void SpiDmxParser::ChangeState(SpiDmxParser::dmx_state_t new_state) {
+void SPIDMXParser::ChangeState(SPIDMXParser::dmx_state_t new_state) {
   OLA_DEBUG << "iteration: " << chunk_bitcount
             << ", change state to " << state
             << ", data=" << chunk[chunk_bitcount]
@@ -157,7 +157,7 @@ void SpiDmxParser::ChangeState(SpiDmxParser::dmx_state_t new_state) {
  * Note 2: If -1 is returned, this byte can either contain random spikes or
  *         be all ones.
  */
-int8_t SpiDmxParser::DetectFallingEdge(uint8_t byte) {
+int8_t SPIDMXParser::DetectFallingEdge(uint8_t byte) {
   switch (byte) {
     case 0b11111110:
       return 1;
@@ -196,7 +196,7 @@ int8_t SpiDmxParser::DetectFallingEdge(uint8_t byte) {
  * Note 2: If -1 is returned, this byte can either contain random spikes or
  *         be all zeros.
  */
-int8_t SpiDmxParser::DetectRisingEdge(uint8_t byte) {
+int8_t SPIDMXParser::DetectRisingEdge(uint8_t byte) {
   switch (byte) {
     case 0b00000001:
       return 1;
@@ -231,7 +231,7 @@ int8_t SpiDmxParser::DetectRisingEdge(uint8_t byte) {
  * Calls the callback to inform a registered InputPort about new data.
  * Warning: This does not reset the current state!
  */
-void SpiDmxParser::PacketComplete() {
+void SPIDMXParser::PacketComplete() {
   channel_count++;
 
   OLA_DEBUG << "DMX packet complete (" << channel_count << " channels).";
@@ -244,7 +244,7 @@ void SpiDmxParser::PacketComplete() {
 /**
  * Stay in this state until we find a falling edge, then change to IN_BREAK.
  */
-void SpiDmxParser::WaitForBreak() {
+void SPIDMXParser::WaitForBreak() {
   int8_t zeros = DetectFallingEdge(chunk[chunk_bitcount]);
   if (zeros > 0) {
     ChangeState(IN_BREAK);
@@ -257,7 +257,7 @@ void SpiDmxParser::WaitForBreak() {
  * We have to find at least 88µs low = 165 SPI bits to be sure we have a break.
  * If so, change to WAIT_FOR_MAB, else stay here.
  */
-void SpiDmxParser::InBreak() {
+void SPIDMXParser::InBreak() {
   if (chunk[chunk_bitcount] == 0) {
     state_bitcount += 8;
 
@@ -275,7 +275,7 @@ void SpiDmxParser::InBreak() {
  * We are still in a break, so we have to either find a rising edge and change
  * to IN_MAB or stay here.
  */
-void SpiDmxParser::WaitForMab() {
+void SPIDMXParser::WaitForMab() {
   uint8_t byte = chunk[chunk_bitcount];
   if (byte != 0) {
     int8_t ones = DetectRisingEdge(byte);
@@ -294,7 +294,7 @@ void SpiDmxParser::WaitForMab() {
  * first handled byte. Then change to IN_STARTCODE, otherwise stay here. If we
  * get unexpected spikes, go back to WAIT_FOR_BREAK.
  */
-void SpiDmxParser::InMab() {
+void SPIDMXParser::InMab() {
   uint8_t byte = chunk[chunk_bitcount];
   if (byte == 0xff) {
     state_bitcount += 8;
@@ -322,7 +322,7 @@ void SpiDmxParser::InMab() {
  * start of a valid DMX packet. If we find the right amount, change to
  * IN_STARTCODE_STOPBITS, else go back to WAIT_FOR_BREAK.
  */
-void SpiDmxParser::InStartcode() {
+void SPIDMXParser::InStartcode() {
   uint8_t byte = chunk[chunk_bitcount];
   if (byte == 0x00) {
     state_bitcount += 8;
@@ -352,7 +352,7 @@ void SpiDmxParser::InStartcode() {
  * that, we are in the first slot's start bit (IN_DATA_STARTBIT). If the stop
  * bits are too short, go back to WAIT_FOR_BREAK.
  */
-void SpiDmxParser::InStartcodeStopbits() {
+void SPIDMXParser::InStartcodeStopbits() {
   uint8_t byte = chunk[chunk_bitcount];
   if (byte == 0xff) {
     state_bitcount += 8;
@@ -401,7 +401,7 @@ void SpiDmxParser::InStartcodeStopbits() {
  * 11111110 0000000x   -> nop:         0000000x
  *                                       ^       SP = 5
  */
-void SpiDmxParser::InDataStartbit() {
+void SPIDMXParser::InDataStartbit() {
   uint8_t byte = chunk[chunk_bitcount];
 
   if (state_bitcount >= 4) {
@@ -431,7 +431,7 @@ void SpiDmxParser::InDataStartbit() {
  * Note: state_bitcount is abused in this state because it doesn't count SPI
  * bits but DMX bits here.
  */
-void SpiDmxParser::InDataBits() {
+void SPIDMXParser::InDataBits() {
   uint8_t byte = chunk[chunk_bitcount];
   uint8_t read_bit = ((byte & (1 << sampling_position)) ? 1 : 0);
   current_dmx_value |= read_bit << state_bitcount;
@@ -444,7 +444,7 @@ void SpiDmxParser::InDataBits() {
  * In the slot's last (eight) bit, we have to synchronize again to be able to
  * find the stop bits. Change to IN_DATA_STOPBITS in every case.
  */
-void SpiDmxParser::InLastDataBit() {
+void SPIDMXParser::InLastDataBit() {
   uint8_t byte = chunk[chunk_bitcount];
   uint8_t read_bit = ((byte & (1 << sampling_position)) ? 1 : 0);
   current_dmx_value |= read_bit << 7;
@@ -474,7 +474,7 @@ void SpiDmxParser::InLastDataBit() {
  * IN_BREAK. However, 1 start bit + 8 data bits + the current stop bit = 10*8
  * SPI bits can already be counted to the break.
  */
-void SpiDmxParser::InDataStopbits() {
+void SPIDMXParser::InDataStopbits() {
   uint8_t byte = chunk[chunk_bitcount];
   if (byte == 0xff) {
     state_bitcount += 8;

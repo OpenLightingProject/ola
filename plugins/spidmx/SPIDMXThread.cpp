@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxThread.cpp
+ * SPIDMXThread.cpp
  * This thread runs while one or more ports are registered. It simultaneously
  * reads / writes SPI data and then calls the parser. This is repeated forever.
  * Copyright (C) 2017 Florian Edelmann
@@ -21,15 +21,15 @@
 
 #include <string>
 #include "ola/Logging.h"
-#include "plugins/spidmx/SpiDmxWidget.h"
-#include "plugins/spidmx/SpiDmxThread.h"
-#include "plugins/spidmx/SpiDmxParser.h"
+#include "plugins/spidmx/SPIDMXWidget.h"
+#include "plugins/spidmx/SPIDMXThread.h"
+#include "plugins/spidmx/SPIDMXParser.h"
 
 namespace ola {
 namespace plugin {
 namespace spidmx {
 
-SpiDmxThread::SpiDmxThread(SpiDmxWidget *widget, unsigned int blocklength)
+SPIDMXThread::SPIDMXThread(SPIDMXWidget *widget, unsigned int blocklength)
   : m_widget(widget),
     m_blocklength(blocklength),
     m_term(false),
@@ -38,7 +38,7 @@ SpiDmxThread::SpiDmxThread(SpiDmxWidget *widget, unsigned int blocklength)
     m_spi_tx_buffer(blocklength) {
 }
 
-SpiDmxThread::~SpiDmxThread() {
+SPIDMXThread::~SPIDMXThread() {
   Stop();
 }
 
@@ -46,14 +46,14 @@ SpiDmxThread::~SpiDmxThread() {
  * This thread does only have to run if ports using it are patched to a
  * universe. Thus, they must register and unregister to notify this thread.
  */
-void SpiDmxThread::RegisterPort() {
+void SPIDMXThread::RegisterPort() {
   m_registered_ports++;
 
   if (m_registered_ports >= 1) {
     Start();
   }
 }
-void SpiDmxThread::UnregisterPort() {
+void SPIDMXThread::UnregisterPort() {
   m_registered_ports--;
 
   if (m_registered_ports <= 0) {
@@ -65,7 +65,7 @@ void SpiDmxThread::UnregisterPort() {
 /**
  * Stop this thread
  */
-bool SpiDmxThread::Stop() {
+bool SPIDMXThread::Stop() {
   {
     ola::thread::MutexLocker locker(&m_term_mutex);
     m_term = true;
@@ -77,7 +77,7 @@ bool SpiDmxThread::Stop() {
 /**
  * Copy a DmxBuffer to the output thread
  */
-bool SpiDmxThread::WriteDMX(const DmxBuffer &buffer) {
+bool SPIDMXThread::WriteDMX(const DmxBuffer &buffer) {
   ola::thread::MutexLocker locker(&m_buffer_mutex);
   m_dmx_tx_buffer.Set(buffer);
   return true;
@@ -87,7 +87,7 @@ bool SpiDmxThread::WriteDMX(const DmxBuffer &buffer) {
   * @brief Get DMX Buffer
   * @returns DmxBuffer with current input values.
   */
-const DmxBuffer &SpiDmxThread::GetDmxInBuffer() const {
+const DmxBuffer &SPIDMXThread::GetDmxInBuffer() const {
   return m_dmx_rx_buffer;
 }
 
@@ -96,7 +96,7 @@ const DmxBuffer &SpiDmxThread::GetDmxInBuffer() const {
   * @brief Set the callback to be called when the receive buffer is updated.
   * @param callback The callback to call.
   */
-bool SpiDmxThread::SetReceiveCallback(Callback0<void> *callback) {
+bool SPIDMXThread::SetReceiveCallback(Callback0<void> *callback) {
   m_receive_callback.reset(callback);
 
   if (!callback) {
@@ -117,7 +117,7 @@ bool SpiDmxThread::SetReceiveCallback(Callback0<void> *callback) {
 /**
  * The method called by the thread
  */
-void *SpiDmxThread::Run() {
+void *SPIDMXThread::Run() {
   DmxBuffer dmx_buffer;
 
   uint8_t *spi_rx_ptr;
@@ -126,13 +126,13 @@ void *SpiDmxThread::Run() {
   // Setup the widget
   if (!m_widget->IsOpen()) {
     if (!m_widget->SetupOutput()) {
-      OLA_INFO << "SpiDmxThread stopped because SPI widget could not be opened";
+      OLA_INFO << "SPIDMXThread stopped because SPI widget could not be opened";
       return NULL;
     }
   }
 
   // Setup the parser
-  SpiDmxParser *parser = new SpiDmxParser(&m_dmx_rx_buffer,
+  SPIDMXParser *parser = new SPIDMXParser(&m_dmx_rx_buffer,
                                           m_receive_callback.get());
 
   while (1) {

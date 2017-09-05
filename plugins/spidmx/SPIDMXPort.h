@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxPort.h
+ * SPIDMXPort.h
  * This represents the input / output ports that hook into the thread.
  * Copyright (C) 2017 Florian Edelmann
  */
@@ -26,26 +26,26 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
 #include "olad/Preferences.h"
-#include "plugins/spidmx/SpiDmxDevice.h"
-#include "plugins/spidmx/SpiDmxWidget.h"
-#include "plugins/spidmx/SpiDmxThread.h"
+#include "plugins/spidmx/SPIDMXDevice.h"
+#include "plugins/spidmx/SPIDMXWidget.h"
+#include "plugins/spidmx/SPIDMXThread.h"
 
 namespace ola {
 namespace plugin {
 namespace spidmx {
 
-class SpiDmxInputPort : public ola::BasicInputPort {
+class SPIDMXInputPort : public ola::BasicInputPort {
  public:
-  SpiDmxInputPort(SpiDmxDevice *parent,
+  SPIDMXInputPort(SPIDMXDevice *parent,
                   unsigned int id,
                   PluginAdaptor *plugin_adaptor,
-                  SpiDmxWidget *widget,
-                  SpiDmxThread *thread)
+                  SPIDMXWidget *widget,
+                  SPIDMXThread *thread)
       : BasicInputPort(parent, id, plugin_adaptor, false),
         m_widget(widget),
         m_thread(thread) {
   }
-  ~SpiDmxInputPort() {}
+  ~SPIDMXInputPort() {}
 
   const DmxBuffer &ReadDMX() const {
     return m_thread->GetDmxInBuffer();
@@ -68,10 +68,10 @@ class SpiDmxInputPort : public ola::BasicInputPort {
   }
 
  private:
-  SpiDmxWidget *m_widget;
-  SpiDmxThread *m_thread;
+  SPIDMXWidget *m_widget;
+  SPIDMXThread *m_thread;
 
-  DISALLOW_COPY_AND_ASSIGN(SpiDmxInputPort);
+  DISALLOW_COPY_AND_ASSIGN(SPIDMXInputPort);
 };
 
 }  // namespace spidmx

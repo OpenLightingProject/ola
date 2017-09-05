@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxPlugin.cpp
+ * SPIDMXPlugin.cpp
  * This looks for possible SPI devices to instantiate and is managed by OLAD.
  * Copyright (C) 2017 Florian Edelmann
  */
@@ -30,9 +30,9 @@
 #include "ola/file/Util.h"
 #include "olad/Preferences.h"
 #include "olad/PluginAdaptor.h"
-#include "plugins/spidmx/SpiDmxPlugin.h"
-#include "plugins/spidmx/SpiDmxPluginDescription.h"
-#include "plugins/spidmx/SpiDmxDevice.h"
+#include "plugins/spidmx/SPIDMXPlugin.h"
+#include "plugins/spidmx/SPIDMXPluginDescription.h"
+#include "plugins/spidmx/SPIDMXDevice.h"
 
 namespace ola {
 namespace plugin {
@@ -41,15 +41,15 @@ namespace spidmx {
 using std::string;
 using std::vector;
 
-const char SpiDmxPlugin::PLUGIN_NAME[] = "SPI native DMX";
-const char SpiDmxPlugin::PLUGIN_PREFIX[] = "spidmx";
-const char SpiDmxPlugin::PREF_DEVICE_PREFIX_DEFAULT[] = "spidev";
-const char SpiDmxPlugin::PREF_DEVICE_PREFIX_KEY[] = "device_prefix";
+const char SPIDMXPlugin::PLUGIN_NAME[] = "SPI native DMX";
+const char SPIDMXPlugin::PLUGIN_PREFIX[] = "spidmx";
+const char SPIDMXPlugin::PREF_DEVICE_PREFIX_DEFAULT[] = "spidev";
+const char SPIDMXPlugin::PREF_DEVICE_PREFIX_KEY[] = "device_prefix";
 
 /*
  * Start the plugin by finding all SPI devices.
  */
-bool SpiDmxPlugin::StartHook() {
+bool SPIDMXPlugin::StartHook() {
   vector<string> spi_devices;
   vector<string> spi_prefixes = m_preferences->GetMultipleValue(
       PREF_DEVICE_PREFIX_KEY);
@@ -60,7 +60,7 @@ bool SpiDmxPlugin::StartHook() {
   vector<string>::const_iterator iter;  // iterate over devices
 
   for (iter = spi_devices.begin(); iter != spi_devices.end(); ++iter) {
-    SpiDmxDevice *device = new SpiDmxDevice(this, m_preferences,
+    SPIDMXDevice *device = new SPIDMXDevice(this, m_preferences,
                                             m_plugin_adaptor, PLUGIN_NAME,
                                             *iter);
 
@@ -83,8 +83,8 @@ bool SpiDmxPlugin::StartHook() {
 /**
  * Stop all the devices.
  */
-bool SpiDmxPlugin::StopHook() {
-  SpiDmxDeviceVector::iterator iter;
+bool SPIDMXPlugin::StopHook() {
+  SPIDMXDeviceVector::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     m_plugin_adaptor->UnregisterDevice(*iter);
     (*iter)->Stop();
@@ -98,7 +98,7 @@ bool SpiDmxPlugin::StopHook() {
 /**
  * Return a description for this plugin.
  */
-string SpiDmxPlugin::Description() const {
+string SPIDMXPlugin::Description() const {
   return plugin_description;
 }
 
@@ -106,7 +106,7 @@ string SpiDmxPlugin::Description() const {
 /*
  * Load the plugin prefs and default to sensible values
  */
-bool SpiDmxPlugin::SetDefaultPreferences() {
+bool SPIDMXPlugin::SetDefaultPreferences() {
   if (!m_preferences) {
     return false;
   }

@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxThread.h
+ * SPIDMXThread.h
  * This thread runs while one or more ports are registered. It simultaneously
  * reads / writes SPI data and then calls the parser. This is repeated forever.
  * Copyright (C) 2017 Florian Edelmann
@@ -33,10 +33,10 @@ namespace ola {
 namespace plugin {
 namespace spidmx {
 
-class SpiDmxThread : public ola::thread::Thread {
+class SPIDMXThread : public ola::thread::Thread {
  public:
-  SpiDmxThread(SpiDmxWidget *widget, unsigned int blocklength);
-  ~SpiDmxThread();
+  SPIDMXThread(SPIDMXWidget *widget, unsigned int blocklength);
+  ~SPIDMXThread();
 
   void RegisterPort();
   void UnregisterPort();
@@ -50,7 +50,7 @@ class SpiDmxThread : public ola::thread::Thread {
   bool SetReceiveCallback(Callback0<void> *callback);
 
  private:
-  SpiDmxWidget *m_widget;
+  SPIDMXWidget *m_widget;
   unsigned int m_blocklength;
 
   bool m_term;
@@ -72,7 +72,7 @@ class SpiDmxThread : public ola::thread::Thread {
   ola::thread::Mutex m_term_mutex;
   ola::thread::Mutex m_buffer_mutex;
 
-  DISALLOW_COPY_AND_ASSIGN(SpiDmxThread);
+  DISALLOW_COPY_AND_ASSIGN(SPIDMXThread);
 };
 
 }  // namespace spidmx

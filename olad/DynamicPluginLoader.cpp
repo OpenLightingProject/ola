@@ -92,7 +92,7 @@
 #endif  // USE_SPI
 
 #ifdef USE_SPIDMX
-#include "plugins/spidmx/SpiDmxPlugin.h"
+#include "plugins/spidmx/SPIDMXPlugin.h"
 #endif  // USE_SPIDMX
 
 #ifdef USE_STAGEPROFI
@@ -214,7 +214,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_SPIDMX
   m_plugins.push_back(
-      new ola::plugin::spidmx::SpiDmxPlugin(m_plugin_adaptor));
+      new ola::plugin::spidmx::SPIDMXPlugin(m_plugin_adaptor));
 #endif  // USE_SPIDMX
 
 #ifdef USE_STAGEPROFI
