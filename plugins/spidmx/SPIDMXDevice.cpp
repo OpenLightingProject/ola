@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxDevice.cpp
+ * SPIDMXDevice.cpp
  * This represents a device and manages thread, widget and input/output ports.
  * Copyright (C) 2017 Florian Edelmann
  */
@@ -22,8 +22,8 @@
 #include <memory>
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
-#include "plugins/spidmx/SpiDmxDevice.h"
-#include "plugins/spidmx/SpiDmxPort.h"
+#include "plugins/spidmx/SPIDMXDevice.h"
+#include "plugins/spidmx/SPIDMXPort.h"
 
 namespace ola {
 namespace plugin {
@@ -31,11 +31,11 @@ namespace spidmx {
 
 using std::string;
 
-const unsigned int SpiDmxDevice::PREF_BLOCKLENGTH_DEFAULT = 4096;
-const char SpiDmxDevice::PREF_BLOCKLENGTH_KEY[] = "-blocklength";
+const unsigned int SPIDMXDevice::PREF_BLOCKLENGTH_DEFAULT = 4096;
+const char SPIDMXDevice::PREF_BLOCKLENGTH_KEY[] = "-blocklength";
 
 
-SpiDmxDevice::SpiDmxDevice(AbstractPlugin *owner,
+SPIDMXDevice::SPIDMXDevice(AbstractPlugin *owner,
                            class Preferences *preferences,
                            PluginAdaptor *plugin_adaptor,
                            const string &name,
@@ -54,31 +54,31 @@ SpiDmxDevice::SpiDmxDevice(AbstractPlugin *owner,
     m_blocklength = PREF_BLOCKLENGTH_DEFAULT;
   }
 
-  m_widget.reset(new SpiDmxWidget(path));
-  m_thread.reset(new SpiDmxThread(m_widget.get(), m_blocklength));
+  m_widget.reset(new SPIDMXWidget(path));
+  m_thread.reset(new SPIDMXThread(m_widget.get(), m_blocklength));
 }
 
-SpiDmxDevice::~SpiDmxDevice() {
+SPIDMXDevice::~SPIDMXDevice() {
   if (m_widget->IsOpen()) {
     m_widget->Close();
   }
   m_thread->Stop();
 }
 
-bool SpiDmxDevice::StartHook() {
-  AddPort(new SpiDmxInputPort(this, 0, m_plugin_adaptor, m_widget.get(),
+bool SPIDMXDevice::StartHook() {
+  AddPort(new SPIDMXInputPort(this, 0, m_plugin_adaptor, m_widget.get(),
                               m_thread.get()));
   return true;
 }
 
-string SpiDmxDevice::DeviceBlocklength() const {
+string SPIDMXDevice::DeviceBlocklength() const {
   return m_path + PREF_BLOCKLENGTH_KEY;
 }
 
 /**
  * Set the default preferences for this one Device
  */
-void SpiDmxDevice::SetDefaults() {
+void SPIDMXDevice::SetDefaults() {
   if (!m_preferences) {
     return;
   }

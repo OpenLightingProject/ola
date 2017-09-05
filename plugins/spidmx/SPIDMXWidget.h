@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxWidget.h
+ * SPIDMXWidget.h
  * This is a wrapper around the needed SPIDEV calls.
  * Copyright (C) 2017 Florian Edelmann
  */
@@ -35,16 +35,16 @@ namespace spidmx {
 /**
  * An SPI widget (i.e. a serial port with suitable hardware attached)
  */
-class SpiDmxWidget {
+class SPIDMXWidget {
  public:
   /**
-    * Construct a new SpiDmxWidget instance for one widget.
+    * Construct a new SPIDMXWidget instance for one widget.
     * @param path The device file path of the serial port
     */
-  explicit SpiDmxWidget(const std::string &path);
+  explicit SPIDMXWidget(const std::string &path);
 
   /** Destructor */
-  ~SpiDmxWidget();
+  ~SPIDMXWidget();
 
   /** Get the widget's device name */
   std::string Name() const { return m_path; }
@@ -101,7 +101,7 @@ class SpiDmxWidget {
   /** Not relevant since we don't use the clock signal. */
   static const uint8_t SPI_MODE = SPI_MODE_0;
 
-  DISALLOW_COPY_AND_ASSIGN(SpiDmxWidget);
+  DISALLOW_COPY_AND_ASSIGN(SPIDMXWidget);
 };
 
 }  // namespace spidmx

@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxWidget.cpp
+ * SPIDMXWidget.cpp
  * This is a wrapper around the needed SPIDEV calls.
  * Copyright (C) 2017 Florian Edelmann
  */
@@ -37,7 +37,7 @@
 #include "ola/io/ExtendedSerial.h"
 #include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
-#include "plugins/spidmx/SpiDmxWidget.h"
+#include "plugins/spidmx/SPIDMXWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -46,19 +46,19 @@ namespace spidmx {
 using std::string;
 using std::vector;
 
-SpiDmxWidget::SpiDmxWidget(const string& path)
+SPIDMXWidget::SPIDMXWidget(const string& path)
     : m_path(path),
       m_fd(NOT_OPEN) {
 }
 
-SpiDmxWidget::~SpiDmxWidget() {
+SPIDMXWidget::~SPIDMXWidget() {
   if (IsOpen()) {
     Close();
   }
 }
 
 
-bool SpiDmxWidget::Open() {
+bool SPIDMXWidget::Open() {
   OLA_DEBUG << "Opening SPI port " << Name();
   if (!ola::io::Open(m_path, O_RDWR, &m_fd)) {
     m_fd = FAILED_OPEN;
@@ -70,7 +70,7 @@ bool SpiDmxWidget::Open() {
   return true;
 }
 
-bool SpiDmxWidget::Close() {
+bool SPIDMXWidget::Close() {
   if (!IsOpen()) {
     return true;
   }
@@ -85,7 +85,7 @@ bool SpiDmxWidget::Close() {
   return true;
 }
 
-bool SpiDmxWidget::IsOpen() const {
+bool SPIDMXWidget::IsOpen() const {
   return m_fd >= 0;
 }
 
@@ -95,7 +95,7 @@ bool SpiDmxWidget::IsOpen() const {
  *
  * @returns false if send/receive operation failed, true otherwise
  */
-bool SpiDmxWidget::ReadWrite(uint8_t *tx_buf, uint8_t *rx_buf,
+bool SPIDMXWidget::ReadWrite(uint8_t *tx_buf, uint8_t *rx_buf,
                              uint32_t blocklength) {
   struct spi_ioc_transfer tr;
   memset(&tr, 0, sizeof(spi_ioc_transfer));
@@ -120,7 +120,7 @@ bool SpiDmxWidget::ReadWrite(uint8_t *tx_buf, uint8_t *rx_buf,
 /**
  * Setup our device for DMX receive.
  */
-bool SpiDmxWidget::SetupOutput() {
+bool SPIDMXWidget::SetupOutput() {
   if (!IsOpen()) {
     if (!Open()) {
       return false;

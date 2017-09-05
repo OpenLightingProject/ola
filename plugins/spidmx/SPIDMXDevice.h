@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxDevice.h
+ * SPIDMXDevice.h
  * This represents a device and manages thread, widget and input/output ports.
  * Copyright (C) 2017 Florian Edelmann
  */
@@ -27,24 +27,24 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Device.h"
 #include "olad/Preferences.h"
-#include "plugins/spidmx/SpiDmxWidget.h"
-#include "plugins/spidmx/SpiDmxThread.h"
+#include "plugins/spidmx/SPIDMXWidget.h"
+#include "plugins/spidmx/SPIDMXThread.h"
 
 namespace ola {
 namespace plugin {
 namespace spidmx {
 
-class SpiDmxDevice : public Device {
+class SPIDMXDevice : public Device {
  public:
-  SpiDmxDevice(AbstractPlugin *owner,
+  SPIDMXDevice(AbstractPlugin *owner,
                class Preferences *preferences,
                PluginAdaptor *plugin_adaptor,
                const std::string &name,
                const std::string &path);
-  ~SpiDmxDevice();
+  ~SPIDMXDevice();
 
   std::string DeviceId() const { return m_path; }
-  SpiDmxWidget* GetWidget() { return m_widget.get(); }
+  SPIDMXWidget* GetWidget() { return m_widget.get(); }
 
  protected:
   bool StartHook();
@@ -55,8 +55,8 @@ class SpiDmxDevice : public Device {
   void SetDefaults();
 
 
-  std::auto_ptr<SpiDmxWidget> m_widget;
-  std::auto_ptr<SpiDmxThread> m_thread;
+  std::auto_ptr<SPIDMXWidget> m_widget;
+  std::auto_ptr<SPIDMXThread> m_thread;
   class Preferences *m_preferences;
   PluginAdaptor *m_plugin_adaptor;
   const std::string m_name;
@@ -66,7 +66,7 @@ class SpiDmxDevice : public Device {
   static const unsigned int PREF_BLOCKLENGTH_DEFAULT;
   static const char PREF_BLOCKLENGTH_KEY[];
 
-  DISALLOW_COPY_AND_ASSIGN(SpiDmxDevice);
+  DISALLOW_COPY_AND_ASSIGN(SPIDMXDevice);
 };
 
 }  // namespace spidmx

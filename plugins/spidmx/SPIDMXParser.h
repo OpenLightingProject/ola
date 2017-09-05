@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxParser.h
+ * SPIDMXParser.h
  * This parses a SPI buffer into a DmxBuffer and notifies a callback when a
  * packet is received completely.
  * Copyright (C) 2017 Florian Edelmann
@@ -30,9 +30,9 @@ namespace ola {
 namespace plugin {
 namespace spidmx {
 
-class SpiDmxParser {
+class SPIDMXParser {
  public:
-  SpiDmxParser(DmxBuffer *buffer, Callback0<void> *callback)
+  SPIDMXParser(DmxBuffer *buffer, Callback0<void> *callback)
     : m_dmx_buffer(buffer),
       m_callback(callback) {
   }
@@ -55,7 +55,7 @@ class SpiDmxParser {
   int8_t DetectFallingEdge(uint8_t byte);
   int8_t DetectRisingEdge(uint8_t byte);
 
-  void ChangeState(SpiDmxParser::dmx_state_t new_state);
+  void ChangeState(SPIDMXParser::dmx_state_t new_state);
   void PacketComplete();
 
   // handle one state each
@@ -71,7 +71,7 @@ class SpiDmxParser {
   void InDataStopbits();
 
   /** current state */
-  SpiDmxParser::dmx_state_t state;
+  SPIDMXParser::dmx_state_t state;
 
   /** the raw SPI data */
   uint8_t *chunk;
@@ -100,7 +100,7 @@ class SpiDmxParser {
   /** The callback to call when a packet end is detected or the chunk ends */
   Callback0<void> *m_callback;
 
-  DISALLOW_COPY_AND_ASSIGN(SpiDmxParser);
+  DISALLOW_COPY_AND_ASSIGN(SPIDMXParser);
 };
 
 }  // namespace spidmx

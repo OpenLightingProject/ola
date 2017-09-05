@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SpiDmxPlugin.h
+ * SPIDMXPlugin.h
  * This looks for possible SPI devices to instanciate and is managed by OLAD.
  * Copyright (C) 2017 Florian Edelmann
  */
@@ -28,15 +28,15 @@
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
 
-#include "plugins/spidmx/SpiDmxDevice.h"
+#include "plugins/spidmx/SPIDMXDevice.h"
 
 namespace ola {
 namespace plugin {
 namespace spidmx {
 
-class SpiDmxPlugin : public Plugin {
+class SPIDMXPlugin : public Plugin {
  public:
-  explicit SpiDmxPlugin(PluginAdaptor *plugin_adaptor)
+  explicit SPIDMXPlugin(PluginAdaptor *plugin_adaptor)
       : Plugin(plugin_adaptor),
         m_plugin_adaptor(plugin_adaptor) {
   }
@@ -51,12 +51,12 @@ class SpiDmxPlugin : public Plugin {
   std::string Description() const;
 
  private:
-  typedef std::vector<SpiDmxDevice*> SpiDmxDeviceVector;
-  SpiDmxDeviceVector m_devices;
+  typedef std::vector<SPIDMXDevice*> SPIDMXDeviceVector;
+  SPIDMXDeviceVector m_devices;
 
   PluginAdaptor *m_plugin_adaptor;
 
-  void AddDevice(SpiDmxDevice *device);
+  void AddDevice(SPIDMXDevice *device);
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();
@@ -66,7 +66,7 @@ class SpiDmxPlugin : public Plugin {
   static const char PREF_DEVICE_PREFIX_DEFAULT[];
   static const char PREF_DEVICE_PREFIX_KEY[];
 
-  DISALLOW_COPY_AND_ASSIGN(SpiDmxPlugin);
+  DISALLOW_COPY_AND_ASSIGN(SPIDMXPlugin);
 };
 
 }  // namespace spidmx
