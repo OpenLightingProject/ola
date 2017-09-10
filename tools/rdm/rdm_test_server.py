@@ -1027,7 +1027,9 @@ def SetupLogDirectory(options):
 def main():
   options = parse_options()
   settings.update(options.__dict__)
-  pid_store = PidStore.GetStore(options.pid_location)
+  pid_store = PidStore.GetStore(options.pid_location,
+                                ('pids.proto', 'draft_pids.proto',
+                                 'manufacturer_names.proto'))
 
   logging.basicConfig(level=logging.INFO, format='%(message)s')
 

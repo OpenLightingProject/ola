@@ -252,7 +252,9 @@ def main():
 
   SetupLogging(options)
   logging.info('OLA Responder Tests Version %s' % Version.version)
-  pid_store = PidStore.GetStore(options.pid_location)
+  pid_store = PidStore.GetStore(options.pid_location,
+                                ('pids.proto', 'draft_pids.proto',
+                                 'manufacturer_names.proto'))
   wrapper = ClientWrapper()
 
   global uid_ok
