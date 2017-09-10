@@ -3,6 +3,7 @@
 dist_piddata_DATA = \
     data/rdm/draft_pids.proto \
     data/rdm/pids.proto \
+    data/rdm/manufacturer_names.proto \
     data/rdm/manufacturer_pids.proto
 
 # SCRIPTS
