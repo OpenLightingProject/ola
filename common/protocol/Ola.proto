@@ -73,7 +73,7 @@ enum PluginIds {
    * https://github.com/OpenLightingProject/ola/issues/new
    * Plugin IDs are usually assigned just prior to merging the code into the
    * mainline. During development of new plugins, please use a value of 10000
-   * in a plugin ID you define above.
+   * or greater in a plugin ID you define above.
    */
 }
 
