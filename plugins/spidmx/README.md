@@ -16,7 +16,8 @@ between two SPI read operation increases).
 
 ## Raspberry Pi configuration
 
-On the Raspberry Pi, you need to enable SPI and increase the buffer size:
+On the Raspberry Pi, you need to enable SPI and increase `spidev`'s
+read / transmit buffer size:
 
 * Run `sudo raspi-config` and enable SPI.
 * Add `spidev.bufsiz=65536` to `/etc/cmdline.txt` (in the same line). This
@@ -25,6 +26,8 @@ On the Raspberry Pi, you need to enable SPI and increase the buffer size:
 * Reboot.
 * Check `cat /sys/module/spidev/parameters/bufsiz` that it now returns the
   new value.
+
+Only SPI device `/dev/spidev0.1` is available via the GPIO pins.
 
 
 ## Config file: `ola-spidmx.conf`

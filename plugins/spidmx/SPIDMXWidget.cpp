@@ -111,7 +111,8 @@ bool SPIDMXWidget::ReadWrite(uint8_t *tx_buf, uint8_t *rx_buf,
 
   int ret = ioctl(m_fd, SPI_IOC_MESSAGE(1), &tr);
   if (ret < 1) {
-    OLA_WARN << Name() << " ioctl read/write error";
+    OLA_WARN << Name() << " ioctl read/write error. Maybe this is due to a"
+             << " wrong configuration; see SPI plugin's README.";
     return false;
   }
   return true;
