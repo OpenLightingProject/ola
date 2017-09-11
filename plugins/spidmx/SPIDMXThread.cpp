@@ -97,16 +97,16 @@ const DmxBuffer &SPIDMXThread::GetDmxInBuffer() const {
   * @param callback The callback to call.
   */
 bool SPIDMXThread::SetReceiveCallback(Callback0<void> *callback) {
-  m_receive_callback.reset(callback);
-
   if (!callback) {
     // InputPort unregistered
     UnregisterPort();
+    m_receive_callback.reset(callback);
     return true;
   }
 
   if (m_widget->SetupOutput()) {
     RegisterPort();
+    m_receive_callback.reset(callback);
     return true;
   }
 
@@ -139,6 +139,7 @@ void *SPIDMXThread::Run() {
     {
       ola::thread::MutexLocker locker(&m_term_mutex);
       if (m_term) {
+        parser->SetCallback(NULL);
         break;
       }
     }

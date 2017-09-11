@@ -37,6 +37,9 @@ class SPIDMXParser {
       m_callback(callback) {
   }
   void ParseDmx(uint8_t *buffer, uint64_t chunksize);
+  void SetCallback(Callback0<void> *callback) {
+    m_callback = callback;
+  }
 
  private:
   typedef enum {
