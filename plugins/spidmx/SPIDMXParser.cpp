@@ -63,50 +63,34 @@ void SPIDMXParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
   while (chunk_bitcount < buffersize) {
     switch (state) {
       case WAIT_FOR_BREAK:
-        // printf("%6ld  0x%02x  wait for break (%d)\n", chunk_bitcount,
-        //        chunk[chunk_bitcount], state);
         WaitForBreak();
         break;
 
       case IN_BREAK:
-        // printf("%6ld  0x%02x  in break (%d)\n", chunk_bitcount,
-        //        chunk[chunk_bitcount], state);
         InBreak();
         break;
 
       case WAIT_FOR_MAB:
-        // printf("%6ld  0x%02x  wait for MAB (%d)\n", chunk_bitcount,
-        //        chunk[chunk_bitcount], state);
         WaitForMab();
         break;
 
       case IN_MAB:
-        // printf("%6ld  0x%02x  in MAB (%d)\n", chunk_bitcount,
-        //        chunk[chunk_bitcount], state);
         InMab();
         break;
 
       case IN_STARTCODE:
-        // printf("%6ld  0x%02x  in startcode (%d)\n", chunk_bitcount,
-        //        chunk[chunk_bitcount], state);
         InStartcode();
         break;
 
       case IN_STARTCODE_STOPBITS:
-        // printf("%6ld  0x%02x  in startcode stopbits (%d)\n", chunk_bitcount,
-        //        chunk[chunk_bitcount], state);
         InStartcodeStopbits();
         break;
 
       case IN_DATA_STARTBIT:
-        // printf("%6ld  0x%02x  in data startbit (%d)\n", chunk_bitcount,
-        //        chunk[chunk_bitcount], state);
         InDataStartbit();
         break;
 
       case IN_DATA_BITS:
-        // printf("%6ld  0x%02x  in data bit %ld (%d)\n", chunk_bitcount,
-        //        chunk[chunk_bitcount], state_bitcount, state);
         if (state_bitcount < 7) {
           InDataBits();
         } else {
@@ -115,14 +99,11 @@ void SPIDMXParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
         break;
 
       case IN_DATA_STOPBITS:
-        // printf("%6ld  0x%02x  in data stopbits (%d), state_bitcount = %ld\n",
-        //        chunk_bitcount, chunk[chunk_bitcount], state, state_bitcount);
         InDataStopbits();
         break;
 
       default:
-        // printf("%6ld  0x%02x  default (%d)\n", chunk_bitcount,
-        //        chunk[chunk_bitcount], state);
+        // should not happen, but prevent an infinite loop anyways
         chunk_bitcount++;
     }
   }
