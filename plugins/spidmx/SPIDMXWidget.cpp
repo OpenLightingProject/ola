@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIDMXWidget.cpp
- * This is a wrapper around the needed SPIDEV calls.
+ * This is a wrapper around the required SPIDEV calls.
  * Copyright (C) 2017 Florian Edelmann
  */
 

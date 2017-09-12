@@ -43,8 +43,8 @@ SPIDMXThread::~SPIDMXThread() {
 }
 
 /**
- * This thread does only have to run if ports using it are patched to a
- * universe. Thus, they must register and unregister to notify this thread.
+ * This thread only has to run if ports using it are patched to a universe.
+ * Thus, they must register and unregister to notify this thread.
  */
 void SPIDMXThread::RegisterPort() {
   m_registered_ports++;
@@ -94,13 +94,14 @@ const DmxBuffer &SPIDMXThread::GetDmxInBuffer() const {
 
 /**
   * @brief Set the callback to be called when the receive buffer is updated.
-  * @param callback The callback to call.
+  * @param callback The callback to call or NULL to unregister.
+  * @return false if there was an error, true otherwise.
   */
 bool SPIDMXThread::SetReceiveCallback(Callback0<void> *callback) {
   if (!callback) {
     // InputPort unregistered
     UnregisterPort();
-    m_receive_callback.reset(callback);
+    m_receive_callback.reset(NULL);
     return true;
   }
 

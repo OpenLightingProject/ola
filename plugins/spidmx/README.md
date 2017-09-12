@@ -37,7 +37,8 @@ Enable this plugin (DISABLED by default).
 
 `device_prefix = <string>`  
 The prefix of files to match in `/dev`. Usually set to `spidev`. Each match
-will instantiate a device.
+will instantiate a device. Multiple values are supported by repeating this
+line.
 
 ### Per Device Settings
 
