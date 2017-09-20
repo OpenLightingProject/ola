@@ -1,6 +1,7 @@
 language: cpp
-# To get the Trusty image, not actually required
+# Default to the fully visualised "sudo" GCE environments, as they are faster for longer running jobs. We don't actually need sudo
 sudo: required
+# Use the latest Travis images since they are more up to date than the stable release.
 group: edge
 script:
  - "bash -ex .travis-ci.sh"
@@ -109,6 +110,8 @@ matrix:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='doxygen'
       addons:
         apt:
@@ -120,6 +123,8 @@ matrix:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='lint'
       addons:
         apt:
@@ -127,6 +132,8 @@ matrix:
            - *core_build
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='check-licences'
       addons:
         apt:
@@ -134,12 +141,16 @@ matrix:
            - *core_build
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='flake8'
       addons:
         apt:
