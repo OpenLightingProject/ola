@@ -158,6 +158,8 @@ matrix:
            - *base_build
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='pychecker'
       addons:
         apt:
@@ -165,6 +167,8 @@ matrix:
            - *base_build
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='pychecker-wip'
       addons:
         apt:
@@ -181,6 +185,8 @@ matrix:
       env: TASK='coverity'
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='pychecker-wip'
 
 env:
