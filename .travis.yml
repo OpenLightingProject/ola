@@ -1,6 +1,7 @@
 language: cpp
 # To get the Trusty image, not actually required
 sudo: required
+group: edge
 script:
  - "bash -ex .travis-ci.sh"
 
