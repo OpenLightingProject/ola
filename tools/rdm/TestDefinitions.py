@@ -197,6 +197,7 @@ class InvalidDiscoveryPID(ResponderTestFixture):
 class MuteAllDevices(ResponderTestFixture):
   """Mute all devices, so we can perform DUB tests"""
   PID = 'DISC_MUTE'
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['mute_supported']
   # This is a fake property used to ensure this tests runs before the DUB tests.
   PROVIDES = ['global_mute']
@@ -268,7 +269,6 @@ class DUBSingleLowerUID(TestMixins.DiscoveryMixin,
                         ResponderTestFixture):
   """DUB from <UID> - 1 to <UID> - 1."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
@@ -284,7 +284,6 @@ class DUBSingleLowerUID(TestMixins.DiscoveryMixin,
 class DUBSingleUpperUID(TestMixins.DiscoveryMixin,
                         ResponderTestFixture):
   """DUB from <UID> + 1 to <UID> + 1."""
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
