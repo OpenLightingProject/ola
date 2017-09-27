@@ -45,6 +45,7 @@ class TestState(object):
     strs.append('\x1b[0m')
     return ''.join(strs)
 
+
 TestState.PASSED = TestState('Passed')
 TestState.FAILED = TestState('Failed')
 TestState.BROKEN = TestState('Broken')

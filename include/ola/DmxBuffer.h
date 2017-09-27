@@ -50,7 +50,7 @@ class DmxBuffer {
  public:
     /**
      * Constructor
-     * This initializes and empty DmxBuffer, Size() == 0
+     * This initializes an empty DmxBuffer, Size() == 0
      */
     DmxBuffer();
 

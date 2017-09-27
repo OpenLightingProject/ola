@@ -89,5 +89,6 @@ class UIDTest(unittest.TestCase):
     all_uids = UID.AllDevices()
     self.assertRaises(UIDOutOfRangeException, UID.NextUID, all_uids)
 
+
 if __name__ == '__main__':
   unittest.main()

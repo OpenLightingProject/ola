@@ -25,7 +25,10 @@ using std::string;
 
 
 /**
- * Interpolate variables within the Context input the input string.
+ * @brief Interpolate variables within the Context
+ * @param input the input string.
+ * @param[out] output the output string.
+ * @param context the Context to use.
  */
 bool InterpolateVariables(const string &input,
                           string *output,
@@ -39,8 +42,9 @@ bool InterpolateVariables(const string &input,
   size_t pos = output->size();
   while (true) {
     pos = output->rfind(START_VARIABLE_STRING, pos);
-    if (pos == string::npos)
+    if (pos == string::npos) {
       break;
+    }
 
     // found a ${
     if (pos != 0 && (*output)[pos - 1] == ESCAPE_CHARACTER) {
@@ -54,7 +58,7 @@ bool InterpolateVariables(const string &input,
     if (closing == string::npos) {
       // not found
       OLA_WARN << "Variable expansion failed for " << *output << ", missing "
-        << END_VARIABLE_STRING << " after character " << pos;
+               << END_VARIABLE_STRING << " after character " << pos;
       return false;
     }
 
@@ -74,8 +78,9 @@ bool InterpolateVariables(const string &input,
   for (unsigned i = 0; i < output->size(); i++) {
     char c = (*output)[i];
     if (c == START_VARIABLE_STRING[0] || c == END_VARIABLE_STRING[0]) {
-      if (i != 0 && (*output)[i - 1] == ESCAPE_CHARACTER)
+      if (i != 0 && (*output)[i - 1] == ESCAPE_CHARACTER) {
         output->erase(i - 1, 1);
+      }
     }
   }
   return true;

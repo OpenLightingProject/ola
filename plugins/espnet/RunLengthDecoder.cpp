@@ -19,6 +19,7 @@
  */
 
 #include <ola/Constants.h>
+#include <ola/base/Macro.h>
 #include "plugins/espnet/RunLengthDecoder.h"
 
 namespace ola {
@@ -49,6 +50,7 @@ void RunLengthDecoder::Decode(DmxBuffer *dst,
       case ESCAPE_VALUE:
         value++;
         // fall through
+        OLA_FALLTHROUGH
       default:
         dst->SetChannel(i, *value);
         i++;

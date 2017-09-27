@@ -56,7 +56,7 @@
 #define EX_NOHOST   68  /**< @brief host name unknown */
 #define EX_UNAVAILABLE  69  /**< @brief service unavailable */
 #define EX_SOFTWARE 70  /**< @brief internal software error */
-#define EX_OSERR    71  /**< @brief system error (e.g., can't fork) */
+#define EX_OSERR    71  /**< @brief system error (e.g. can't fork) */
 #define EX_OSFILE   72  /**< @brief critical OS file missing */
 #define EX_CANTCREAT    73  /**< @brief can't create (user) output file */
 #define EX_IOERR    74  /**< @brief input/output error */

@@ -1,6 +1,6 @@
-x/y/2016 ola-0.10.3
+x/y/2017 ola-0.10.6
  Features:
- * Add a message explaining why the auto start test may fail
+ * 
 
  API:
  * 
@@ -9,12 +9,70 @@ x/y/2016 ola-0.10.3
  * 
 
  Bugs:
- * Work around a clang warning in our protobuf generator code
- * Force gnu++98 mode if compiler supports 98 and 11 modes so we keep
-   std::auto_ptr
+ * Renamed fempto(sic) to femto in the RDM code (C++ and Python)
+ * Renamed terra(sic) to tera in the RDM code (C++ and Python)
 
  Internal:
  *
+
+17/07/2017 ola-0.10.5
+ Features:
+ * Make some error logs more verbose
+
+ Bugs:
+ * C++11 compatibility fix (for cppunit 1.14.0) #1244
+ * Always print frames in ola_rdm_get/set, even if we get an error
+ * Ensure man files ship in the correct packages #1276
+ * Check protobuf is old enough, until we fix #1192
+
+21/05/2017 ola-0.10.4
+ Features:
+ * Add more help regarding the ArtNet use_limited_broadcast option
+
+ Bugs:
+ * Ensure Pathport node actually uses configured IP #1166
+ * Improve some debugging around flag parsing #1198
+ * Disable warnings for readdir_r deprecation until we can rewrite our code to
+   stop using it. Related to #1055
+ * Stop replacing -I with -isystem and correctly work around the resultant
+   errors #1125
+ * Exit, rather than continuing, if ola_throughput failed to send DMX
+ * Implement OLA_FALLTHROUGH macro for adding fallthrough attributes to 
+   switchcases in gcc versions higher than 7 #1193 Debian #853583
+ * Fix Protobuf 2.6 not building on the latest OS X
+ * Update some URLs in the Windows build documentation
+ * Skip interface count checks on Windows, as it may fail them if it's not on a
+   network due to a lack of loopback interface
+ * Fix LibUSB code on Windows, especially when the Hotplug functionality exists
+   but isn't available
+ * Support wireless interfaces on Windows since Vista
+ * Add a cast to fix an error when running execlp
+ * Ensure configure checks for tcmalloc's presence before adding it to the libs
+   when asked for #1201
+ * Add some more detail to the Logic RDM sniffer and Enttec RDM USB Pro sniffer
+   documentation
+
+06/12/2016 ola-0.10.3
+ Features:
+ * Add a message explaining why the auto start test may fail
+
+ Bugs:
+ * Work around a clang warning in our protobuf generator code
+ * Force gnu++98 mode if compiler supports 98 and 11 modes so we keep
+   std::auto_ptr #1028 Debian #831103
+ * JsonPatchParser.h tries to include a project header file; move the
+   OptionalItem header to includes to resolve #1086
+ * Reset the client socket once we've closed it, so it can be re-used
+ * Silence a warning in the code so it builds with Protobuf 3 #1110 Debian
+   #835433
+ * Work around <ernno.h> include failure on MIPS Debian #836383
+ * Update GPIO and SPI pin limits for CHIP as its pin numbers are higher #1095
+ * Clarify some details in ola_set_dmx and ola_streaming_client help #1109
+   Debian #830972
+ * Fix a logging error regarding USB product name detection
+
+ Internal:
+ * Add more debugging of opening and acquiring locks
 
 21/5/2016 ola-0.10.2
  Features:

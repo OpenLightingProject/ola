@@ -64,7 +64,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
 void InterfacePickerTest::testGetInterfaces() {
   auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
   vector<Interface> interfaces = picker->GetInterfaces(true);
-  OLA_ASSERT_TRUE(interfaces.size() > 0);
+#ifndef _WIN32
+  // If a Windows box is not on a network, and doesn't have it's loopback, there
+  // may be zero interfaces present so we skip this check
+  OLA_ASSERT_GT(interfaces.size(), 0);
+#else
+  OLA_WARN << "Windows found " << interfaces.size() << " interfaces";
+#endif  // _WIN32
 
   vector<Interface>::iterator iter;
   cout << endl;
@@ -88,7 +94,13 @@ void InterfacePickerTest::testGetInterfaces() {
 void InterfacePickerTest::testGetLoopbackInterfaces() {
   auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
   vector<Interface> interfaces = picker->GetInterfaces(true);
-  OLA_ASSERT_TRUE(interfaces.size() > 0);
+#ifndef _WIN32
+  // If a Windows box is not on a network, and doesn't have it's loopback, there
+  // may be zero interfaces present so we skip this check
+  OLA_ASSERT_GT(interfaces.size(), 0);
+#else
+  OLA_WARN << "Windows found " << interfaces.size() << " interfaces";
+#endif  // _WIN32
 
   vector<Interface>::iterator iter;
   unsigned int loopback_count = 0;

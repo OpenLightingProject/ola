@@ -656,13 +656,15 @@ void DisplayUniverseMergeHelp(const options &opts) {
  * Help message for set dmx
  */
 void DisplaySetDmxHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd << " --universe <universe> --dmx 0,255,0,255\n"
+  cout << "Usage: " << opts.cmd << " --universe <universe> --dmx <values>\n"
           "\n"
           "Sets the DMX values for a universe.\n"
           "\n"
           "  -h, --help                Display this help message and exit.\n"
-          "  -u, --universe <universe> Universe number.\n"
-          "  -d, --dmx <values>        Comma separated DMX values.\n"
+          "  -u, --universe <universe> Universe number, e.g. 0.\n"
+          "  -d, --dmx <values>        Comma separated DMX values, e.g. "
+          "0,255,128 sets first channel to 0, second channel to 255"
+          " and third channel to 128.\n"
        << endl;
 }
 

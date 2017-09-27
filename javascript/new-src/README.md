@@ -25,6 +25,9 @@ to generate the minified versions of app.js and style.css
 ## Karma and Coveralls.io
 in the future there is the ability to do coverage tests with grunt plug-ins such as [grunt-karma-coveralls](https://github.com/mattjmorrison/grunt-karma-coveralls) which is a plugin for [karma](http://karma-runner.github.io/)
 
+### Favicons
+
+Favicons were generated with [gulp-favicons](https://github.com/haydenbleasel/favicons) from `src/img/ola-favicon.png`.
 
 
 ## Angular JS License

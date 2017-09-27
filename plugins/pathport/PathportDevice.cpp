@@ -81,7 +81,7 @@ bool PathportDevice::StartHook() {
     dscp = dscp << 2;
   }
 
-  m_node = new PathportNode(m_preferences->GetValue(K_NODE_ID_KEY),
+  m_node = new PathportNode(m_preferences->GetValue(K_NODE_IP_KEY),
                             product_id, dscp);
 
   if (!m_node->Start()) {

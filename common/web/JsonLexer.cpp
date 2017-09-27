@@ -31,6 +31,7 @@
 #include <string>
 #include "ola/Logging.h"
 #include "ola/web/Json.h"
+#include "ola/base/Macro.h"
 
 namespace ola {
 namespace web {
@@ -196,6 +197,7 @@ static bool ParseNumber(const char **input, JsonParserInterface *parser) {
       case '-':
         negative_exponent = true;
         // fall through
+        OLA_FALLTHROUGH
       case '+':
         (*input)++;
         break;

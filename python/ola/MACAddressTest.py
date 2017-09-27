@@ -74,5 +74,6 @@ class MACAddressTest(unittest.TestCase):
     m2 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
     self.assertEqual(m1, m2)
 
+
 if __name__ == '__main__':
   unittest.main()

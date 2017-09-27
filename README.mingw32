@@ -49,7 +49,7 @@ Python (optional)
 
 msys-git
 --------
-- Download msysgit from https://code.google.com/p/msysgit/downloads/list
+- Download msysgit from https://msysgit.github.com/
 - Install and make sure to select "Check-out as is, commit UNIX-style"
 
 libuuid
@@ -59,7 +59,7 @@ libuuid
 
 protobuf
 --------
-- Download and extract the latest protobuf tarball from https://code.google.com/p/protobuf/downloads/list
+- Download and extract the latest protobuf tarball from https://github.com/google/protobuf
 - Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 - if you want to use the OLA Python api, install the protobuf Python bindings from the 'python' subdirectory
 
@@ -80,7 +80,7 @@ liblo (optional)
 
 libusb (optional)
 ----------------
-- Download and extract the latest version of libusb from http://www.libusb.org/
+- Download and extract the latest version of libusb from http://libusb.info/
 - Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 
 ============

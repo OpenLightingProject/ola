@@ -9,10 +9,12 @@ CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cppli
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
+PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand"
+
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   autoreconf -i;
-  ./configure --enable-rdm-tests --enable-ja-rule;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for linting to run against
   make builtfiles
@@ -47,7 +49,7 @@ if [[ $TASK = 'lint' ]]; then
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   autoreconf -i;
-  ./configure --enable-rdm-tests --enable-ja-rule;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for licence checking to run against
   make builtfiles
@@ -59,7 +61,7 @@ elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
   autoreconf -i;
   # Doxygen is C++ only, so don't bother with RDM tests
-  ./configure --enable-ja-rule;
+  ./configure --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
@@ -77,7 +79,7 @@ elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i;
   # Coverage is C++ only, so don't bother with RDM tests
-  ./configure --enable-gcov --enable-ja-rule;
+  ./configure --enable-gcov --enable-ja-rule --enable-e133;
   make;
   make check;
 elif [[ $TASK = 'coverity' ]]; then
@@ -100,9 +102,35 @@ elif [[ $TASK = 'flake8' ]]; then
   # the build, so they are present for flake8 to run against
   make builtfiles
   flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129 data/rdm include/ola python scripts tools/ola_mon tools/rdm
+elif [[ $TASK = 'pychecker' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for pychecker to run against
+  make builtfiles
+  PYTHONPATH=./python/:$PYTHONPATH
+  export PYTHONPATH
+  mkdir ./python/ola/testing/
+  ln -s ./tools/rdm ./python/ola/testing/rdm
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and \( -wholename "./data/*" -or -wholename "./include/*" -or -wholename "./scripts/*" -or -wholename "./python/examples/rdm_compare.py" -or -wholename "./python/ola/*" \) -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -wholename "./scripts/enforce_licence.py" -or -wholename "./python/ola/rpc/*" -or -wholename "./python/ola/ClientWrapper.py" -or -wholename "./python/ola/PidStore.py" -or -wholename "./python/ola/RDMAPI.py" \) | xargs)
+  # More restricted checking for files that import files that break pychecker
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only $(find ./ -name "*.py" -and \( -wholename "./tools/rdm/ModelCollector.py" -or -wholename "./tools/rdm/DMXSender.py" -or -wholename "./tools/rdm/TestCategory.py" -or -wholename "./tools/rdm/TestHelpers.py" -or -wholename "./tools/rdm/TestState.py" -or -wholename "./tools/rdm/TimingStats.py" -or -wholename "./tools/rdm/list_rdm_tests.py" \) | xargs)
+  # Even more restricted checking for files that import files that break pychecker and have unused parameters
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only --no-argsused $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -name "ola_universe_info.py" -or -name "rdm_snapshot.py" -or -name "ClientWrapper.py" -or -name "PidStore.py" -or -name "enforce_licence.py" -or -name "ola_mon.py" -or -name "TestLogger.py" -or -name "TestRunner.py" -or -name "rdm_model_collector.py" -or -name "rdm_responder_test.py" -or -name "rdm_test_server.py" \) | xargs)
+elif [[ $TASK = 'pychecker-wip' ]]; then
+  autoreconf -i;
+  ./configure --enable-rdm-tests
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for pychecker to run against
+  make builtfiles
+  PYTHONPATH=./python/:$PYTHONPATH
+  export PYTHONPATH
+  mkdir ./python/ola/testing/
+  ln -s ./tools/rdm ./python/ola/testing/rdm
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" \) | xargs)
 else
   # Otherwise compile and check as normal
-  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
+  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-java-libs --enable-ja-rule --enable-e133'
   autoreconf -i;
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
   make distcheck;

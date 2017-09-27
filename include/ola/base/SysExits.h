@@ -24,7 +24,7 @@
 /**
  * @defgroup sysexit System Exit Values
  * @brief Exit codes
- * @details Some platforms (android) don't provide sysexits.h. To work around
+ * @details Some platforms (Android) don't provide sysexits.h. To work around
  * this we define our own exit codes, which use the system values if provided
  * or otherwise our default values.
  */

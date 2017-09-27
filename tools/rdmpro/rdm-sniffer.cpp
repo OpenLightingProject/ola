@@ -29,6 +29,7 @@
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
+#include <ola/base/Macro.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/CommandPrinter.h>
@@ -235,10 +236,12 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
     switch (m_state) {
       case IDLE:
         // fall through
+        OLA_FALLTHROUGH
       case MAB:
         m_state = DATA;
         m_frame.Reset();
         // fall through
+        OLA_FALLTHROUGH
       case DATA:
         m_frame.AddByte(data_byte);
         break;

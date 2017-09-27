@@ -16,7 +16,7 @@
  * ParserActions.h
  * Copyright (C) 2011 Simon Newton
  *
- * These functions all called by the parser.
+ * These functions are all called by the parser.
  */
 
 #ifndef TOOLS_OLA_TRIGGER_PARSERACTIONS_H_

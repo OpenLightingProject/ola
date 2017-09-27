@@ -21,6 +21,7 @@
 #include <string.h>
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/base/Macro.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
 
 namespace ola {
@@ -118,16 +119,25 @@ void BaseRobeWidget::ReceiveMessage() {
           return;
       } while (m_header.som != SOM);
       m_state = RECV_PACKET_TYPE;
+
+      // if we don't return, fallthrough
+      OLA_FALLTHROUGH
     case RECV_PACKET_TYPE:
       m_descriptor->Receive(&m_header.packet_type, 1, count);
       if (count != 1)
         return;
       m_state = RECV_SIZE_LO;
+
+      // if we don't return, fallthrough
+      OLA_FALLTHROUGH
     case RECV_SIZE_LO:
       m_descriptor->Receive(&m_header.len, 1, count);
       if (count != 1)
         return;
       m_state = RECV_SIZE_HI;
+
+      // if we don't return, fallthrough
+      OLA_FALLTHROUGH
     case RECV_SIZE_HI:
       m_descriptor->Receive(&m_header.len_hi, 1, count);
       if (count != 1)
@@ -141,6 +151,9 @@ void BaseRobeWidget::ReceiveMessage() {
 
       m_bytes_received = 0;
       m_state = RECV_HEADER_CRC;
+
+      // if we don't return, fallthrough
+      OLA_FALLTHROUGH
     case RECV_HEADER_CRC:
       m_descriptor->Receive(&m_header.header_crc, 1, count);
       if (count != 1)
@@ -160,6 +173,9 @@ void BaseRobeWidget::ReceiveMessage() {
         m_state = RECV_BODY;
       else
         m_state = RECV_CRC;
+
+      // if we don't return, fallthrough
+      OLA_FALLTHROUGH
     case RECV_BODY:
       m_descriptor->Receive(
           reinterpret_cast<uint8_t*>(&m_recv_buffer) + m_bytes_received,
@@ -174,6 +190,9 @@ void BaseRobeWidget::ReceiveMessage() {
         return;
 
       m_state = RECV_CRC;
+
+      // if we don't return, fallthrough
+      OLA_FALLTHROUGH
     case RECV_CRC:
       // check this is a valid frame
       uint8_t crc;
@@ -194,6 +213,9 @@ void BaseRobeWidget::ReceiveMessage() {
                       m_data_size);
       }
       m_state = PRE_SOM;
+
+      // if we don't return, fallthrough
+      OLA_FALLTHROUGH
   }
   return;
 }

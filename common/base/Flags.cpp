@@ -205,7 +205,7 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
         }
       } else {
         if (!flag->SetValue("1")) {
-          cerr << "Invalid value " << optarg << endl;
+          cerr << "Failed to set value of 1 for flag " << flag->name() << endl;
           exit(EXIT_USAGE);
         }
       }

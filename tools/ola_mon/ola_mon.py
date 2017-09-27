@@ -88,8 +88,8 @@ class RRDStore(object):
     self._variables = variables
 
     data_sources = []
-    for type, variable, _ in variables:
-      data_sources.append('DS:%s:%s:30:0:U' % (variable, type))
+    for data_type, variable, _ in variables:
+      data_sources.append('DS:%s:%s:30:0:U' % (variable, data_type))
 
     if not os.path.exists(filename):
       rrdtool.create(filename,
@@ -106,7 +106,7 @@ class RRDStore(object):
 
 
 class Monitor(threading.Thread):
-  def __init__(self, rrd_directory, output_directory, host, port, variables):
+  def __init__(self, rrd_directory, host, port, variables):
     threading.Thread.__init__(self)
     self._fetcher = OlaFetcher(host, port)
     rrd_file = os.path.join(rrd_directory, '%s.rrd' % host)
@@ -147,7 +147,7 @@ class Grapher(threading.Thread):
       time.sleep(5)
 
   def _MakeGraphs(self):
-    for type, variable, title in self._variables:
+    for data_type, variable, title in self._variables:
       output_file = os.path.join(self._directory, '%s.png' % variable)
       rrdtool.graph(output_file,
                     '--imgformat', 'PNG',
@@ -186,8 +186,8 @@ def LoadConfig(config_file):
   Returns:
     A dict with the config parameters.
   """
-  locals = {}
-  execfile(config_file, {}, locals)
+  locals_dict = {}
+  execfile(config_file, {}, locals_dict)
 
   keys = set(['OLAD_SERVERS', 'DATA_DIRECTORY', 'VARIABLES', 'WWW_DIRECTORY',
               'CDEFS'])
@@ -249,7 +249,7 @@ def main():
     port = DEFAULT_PORT
     if ':' in host:
       host, port = host.split(':')
-    monitor = Monitor(rrd_directory, www_directory, host, port, variables)
+    monitor = Monitor(rrd_directory, host, port, variables)
     monitor.start()
     threads.append(monitor)
 
@@ -259,6 +259,7 @@ def main():
 
   for thread in threads:
     thread.join()
+
 
 if __name__ == "__main__":
       main()

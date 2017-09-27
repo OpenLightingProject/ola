@@ -25,6 +25,8 @@ import sys
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+wrapper = None
+
 
 def ArtNetConfigureReply(status, response):
   if status.Succeeded():
@@ -52,6 +54,7 @@ def main():
   client.ConfigureDevice(device_alias, artnet_request.SerializeToString(),
                          ArtNetConfigureReply)
   wrapper.Run()
+
 
 if __name__ == '__main__':
   main()

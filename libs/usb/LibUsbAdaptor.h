@@ -415,6 +415,13 @@ class LibUsbAdaptor {
                            const DeviceInformation &device_info);
 
   /**
+   * @brief Check if this platform supports hotplug.
+   * @returns true if hotplug is supported and enabled on this platform, false
+   *   otherwise.
+   */
+  static bool HotplugSupported();
+
+  /**
    * @brief Try and convert an error code to a string
    * @param error_code The error code.
    * @returns A string representing the error code.

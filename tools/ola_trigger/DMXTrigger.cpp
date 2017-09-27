@@ -28,7 +28,7 @@ using ola::DmxBuffer;
 
 
 /**
- * Create a new trigger
+ * @brief Create a new trigger
  */
 DMXTrigger::DMXTrigger(Context *context,
                        const SlotVector &actions)
@@ -39,7 +39,7 @@ DMXTrigger::DMXTrigger(Context *context,
 
 
 /**
- * Called when new DMX arrives.
+ * @brief Called when new DMX arrives.
  */
 void DMXTrigger::NewDMX(const DmxBuffer &data) {
   SlotVector::iterator iter = m_slots.begin();
