@@ -228,11 +228,10 @@ install:
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
-  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user --trusted-host sourceforge.net http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
+  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then wget https://downloads.sourceforge.net/project/pychecker/pychecker/0.8.19/pychecker-0.8.19.tar.gz; pip install --user --trusted-host downloads.sourceforge.net https://downloads.sourceforge.net/project/pychecker/pychecker/0.8.19/pychecker-0.8.19.tar.gz; fi
 
 before_install:
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-#Fix a broken homebrew libtool install
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew https://downloads.sourceforge.net/project/pychecker/pychecker/0.8.19/pychecker-0.8.19.tar.gztall
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex protobuf@3.1 libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy already present
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
