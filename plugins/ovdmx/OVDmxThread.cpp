@@ -97,8 +97,8 @@ void *OVDmxThread::Run() {
   dmx_packet.type  = 'D';
   dmx_packet.data_length_parts[0] = ((((uint16_t)DMX_UNIVERSE_SIZE)>>8) & 0xff);
   dmx_packet.data_length_parts[1] = ((((uint16_t)DMX_UNIVERSE_SIZE)) & 0xff);
-  dmx_packet.crc_parts[0] = 'V';
-  dmx_packet.crc_parts[1] = 'O';
+  dmx_packet.crc_parts[0] = 0;
+  dmx_packet.crc_parts[1] = 0;
 
   Clock clock;
 
