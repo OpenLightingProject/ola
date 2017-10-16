@@ -27,7 +27,7 @@ read / transmit buffer size:
 * Check `cat /sys/module/spidev/parameters/bufsiz` that it now returns the
   new value.
 
-Only SPI device `/dev/spidev0.1` is available via the GPIO pins.
+Only SPI device `/dev/spidev0.0` is available via the GPIO pins.
 
 
 ## Config file: `ola-spidmx.conf`
