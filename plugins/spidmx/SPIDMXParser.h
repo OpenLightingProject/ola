@@ -35,6 +35,13 @@ class SPIDMXParser {
   SPIDMXParser(DmxBuffer *buffer, Callback0<void> *callback)
     : m_dmx_buffer(buffer),
       m_callback(callback) {
+    state = WAIT_FOR_BREAK;  // reset in ChangeState()
+    chunk = NULL;  // reset in ParseDmx()
+    chunk_bitcount = 0;  // first reset in ParseDmx()
+    state_bitcount = 0;  // first reset in ChangeState()
+    current_dmx_value = 0;  // first reset in InDataStartbit()
+    channel_count = 0;  // first reset in ChangeState()
+    sampling_position = 0;  // reset in InDataStartbit()
   }
   void ParseDmx(uint8_t *buffer, uint64_t chunksize);
   void SetCallback(Callback0<void> *callback) {
