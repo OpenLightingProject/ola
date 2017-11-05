@@ -136,11 +136,10 @@ void ArduinoWidgetTest::ValidateResponse(RDMReply *reply) {
   OLA_ASSERT(reply->Response());
 
   const ola::rdm::RDMResponse *response = reply->Response();
-  OLA_ASSERT_EQ(
-      static_cast<unsigned int>(sizeof(TEST_RDM_DATA)),
-      response->ParamDataSize());
-  OLA_ASSERT(0 == memcmp(TEST_RDM_DATA, response->ParamData(),
-                         response->ParamDataSize()));
+  OLA_ASSERT_DATA_EQUALS(TEST_RDM_DATA,
+                         static_cast<unsigned int>(sizeof(TEST_RDM_DATA)),
+                         response->ParamData(),
+                         response->ParamDataSize());
 
   OLA_ASSERT_EQ((size_t) 1, reply->Frames().size());
   const ola::rdm::RDMFrame frame = reply->Frames()[0];
