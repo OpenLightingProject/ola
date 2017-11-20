@@ -1,6 +1,8 @@
 language: cpp
-# To get the Trusty image, not actually required
+# Default to the fully visualised "sudo" GCE environments, as they are faster for longer running jobs. We don't actually need sudo
 sudo: required
+# Use the latest Travis images since they are more up to date than the stable release.
+group: edge
 script:
  - "bash -ex .travis-ci.sh"
 
@@ -38,25 +40,25 @@ matrix:
   fast_finish: true
   include:
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode9
       compiler: gcc
       env:
       - TASK='compile'
@@ -108,6 +110,8 @@ matrix:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='doxygen'
       addons:
         apt:
@@ -119,6 +123,8 @@ matrix:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='lint'
       addons:
         apt:
@@ -126,6 +132,8 @@ matrix:
            - *core_build
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='check-licences'
       addons:
         apt:
@@ -133,12 +141,16 @@ matrix:
            - *core_build
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='flake8'
       addons:
         apt:
@@ -146,6 +158,8 @@ matrix:
            - *base_build
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='pychecker'
       addons:
         apt:
@@ -153,6 +167,8 @@ matrix:
            - *base_build
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='pychecker-wip'
       addons:
         apt:
@@ -169,6 +185,8 @@ matrix:
       env: TASK='coverity'
     - os: linux
       dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
       env: TASK='pychecker-wip'
 
 env:
@@ -210,6 +228,7 @@ install:
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
+# If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 
 before_install:
