@@ -969,7 +969,7 @@ class OlaClient(Ola_pb2.OlaClientService):
           lambda x, y: self._AckMessageComplete(callback, x, y))
     except socket.error:
       raise OLADNotRunningException()
-    if action == self.PATCH:
+    if action == self.REGISTER:
       self._universe_callbacks[universe] = data_callback
     elif universe in self._universe_callbacks:
       del self._universe_callbacks[universe]
