@@ -357,30 +357,33 @@ void SPIDMXParser::InStartcodeStopbits() {
 
 /**
  * Now, we're close to the actual data. We always want to sample in the middle
- * of a SPI byte, so we have to calculate the sampling position. Additionally,
+ * of an SPI byte, so we have to calculate the sampling position. Additionally,
  * we could have to look at the last byte again. See the following table:
  *
- * x denotes the first DMX data bit, SP the sampling position
+ * d denotes the first DMX data bit
+ * ^ is the desired sampling position
+ * SP = sampling position
+ * SBC = m_state_spi_bitcount
  *
- * last & current byte               new current byte
- * -------------------               ----------------
+ * SBC  last & current byte               new current byte
+ * ---  -------------------               ----------------
  *
- * 00000000 xxxxxxxx   -> backtrack:   00000000
- *                                        ^      SP = 4
- * 10000000 0xxxxxxx   -> backtrack:   10000000
- *                                         ^     SP = 3
- * 11000000 00xxxxxx   -> backtrack:   11000000
- *                                          ^    SP = 2
- * 11100000 000xxxxx   -> backtrack:   11100000
- *                                           ^   SP = 1
- * 11110000 0000xxxx   -> backtrack:   11110000
- *                                            ^  SP = 0
- * 11111000 00000xxx   -> nop:         00000xxx
- *                                     ^         SP = 7
- * 11111100 000000xx   -> nop:         000000xx
- *                                      ^        SP = 6
- * 11111110 0000000x   -> nop:         0000000x
- *                                       ^       SP = 5
+ *  8    00000000 dddddddd   -> backtrack:   00000000
+ *          ^                                   ^      SP = 4
+ *  7    10000000 0ddddddd   -> backtrack:   10000000
+ *           ^                                   ^     SP = 3
+ *  6    11000000 00dddddd   -> backtrack:   11000000
+ *            ^                                   ^    SP = 2
+ *  5    11100000 000ddddd   -> backtrack:   11100000
+ *             ^                                   ^   SP = 1
+ *  4    11110000 0000dddd   -> backtrack:   11110000
+ *              ^                                   ^  SP = 0
+ *  3    11111000 00000ddd   -> nop:         00000ddd
+ *                ^                          ^         SP = 7
+ *  2    11111100 000000dd   -> nop:         000000dd
+ *                 ^                          ^        SP = 6
+ *  1    11111110 0000000d   -> nop:         0000000d
+ *                  ^                          ^       SP = 5
  */
 void SPIDMXParser::InDataStartbit() {
   uint8_t byte = m_chunk[m_chunk_spi_bytecount];
