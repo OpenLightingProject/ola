@@ -83,9 +83,19 @@ class PidStoreLoader {
   bool ReadFile(const std::string &file_path,
                 ola::rdm::pid::PidStore *proto);
 
-  const RootPidStore *BuildStore(const ola::rdm::pid::PidStore &store_pb,
-                                 const ola::rdm::pid::PidStore &override_pb,
-                                 bool validate);
+  const RootPidStore *BuildStore(
+      const ola::rdm::pid::PidStore &store_pb,
+      const ola::rdm::pid::PidStore &override_pb,
+      const ola::rdm::pid::PidStore &manufacturer_names_pb,
+      bool validate);
+
+  inline const RootPidStore *BuildStore(
+      const ola::rdm::pid::PidStore &store_pb,
+      const ola::rdm::pid::PidStore &override_pb,
+      bool validate) {
+    ola::rdm::pid::PidStore manufacturer_names_pb;
+    return BuildStore(store_pb, override_pb, manufacturer_names_pb, validate);
+  }
 
   bool LoadFromProto(ManufacturerMap *pid_data,
                      const ola::rdm::pid::PidStore &proto,
@@ -119,6 +129,7 @@ class PidStoreLoader {
   void FreeManufacturerMap(ManufacturerMap *data);
 
   static const char OVERRIDE_FILE_NAME[];
+  static const char MANUFACTURER_NAMES_FILE_NAME[];
   static const uint16_t ESTA_MANUFACTURER_ID;
   static const uint16_t MANUFACTURER_PID_MIN;
   static const uint16_t MANUFACTURER_PID_MAX;

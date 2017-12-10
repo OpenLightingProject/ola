@@ -1084,6 +1084,17 @@ class PidStore(object):
       return pid.value
     return pid
 
+  def ManufacturerIdToName(self, esta_id):
+    """A helper method to convert a manufacturer ID to a name
+
+    Args:
+      esta_id: The 2-byte esta / manufacturer ID.
+
+    Returns:
+      The name of the manufacturer, or None if it wasn't found.
+    """
+    return self._manufacturer_id_to_name.get(esta_id, None)
+
   def _PidProtoToObject(self, pid_pb):
     """Convert the protobuf representation of a PID to a PID object.
 
