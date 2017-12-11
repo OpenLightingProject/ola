@@ -202,20 +202,6 @@ matrix:
       # Short duration job, use the container/without sudo image as it boots faster
       sudo: false
       env: TASK='pychecker-wip'
-    - os: osx
-      osx_image: xcode9.1
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='3.5'
-    - os: osx
-      osx_image: xcode9.1
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='3.5'
 
 env:
   global:
