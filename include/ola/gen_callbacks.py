@@ -59,7 +59,7 @@ USA
    *
    * Callbacks are powerful objects that behave like function pointers. They
    * can be constructed with a pointer to a either plain function or member
-   * function. Argments can be provided at either creation time or execution
+   * function. Arguments can be provided at either creation time or execution
    * time.
    *
    * The SingleUse variant of a Callback automatically delete itself after it
