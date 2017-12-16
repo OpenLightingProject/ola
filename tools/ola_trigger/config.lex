@@ -27,6 +27,10 @@ whitespace   [ \t]
                     yylval.str_val = new std::string(yytext);
                     return WORD_LITERAL;
                   }
+\$\{{word}\}       { count();
+                    yylval.str_val = new std::string(yytext);
+                    return VARIABLE_LITERAL;
+                  }
 \"(\\.|[^\\"])*\" { count();
                     std::string *s = new std::string(++yytext);
                     s->erase(s->size() - 1, 1);
@@ -40,7 +44,7 @@ whitespace   [ \t]
 ^#[^\n]*             {}
 {whitespace}+#[^\n]* {}
 {whitespace}+     { count(); return WHITESPACE; }
-\n                { count(); yylineno++; return NEW_LINE; }
+\n                { count(); return NEW_LINE; }
 [%=,`\-/+]         { count(); return (int) yytext[0]; }
 
 %%

@@ -55,7 +55,7 @@ details.
 ### Plugins
 
 The OLA plugins are located in ./plugins. For a walkthrough of an example see
-plugins/osc/README.
+plugins/osc/README.developer.md.
 
 ### C++ Library
 

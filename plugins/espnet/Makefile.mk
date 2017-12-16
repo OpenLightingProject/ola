@@ -2,6 +2,14 @@
 ##################################################
 if USE_ESPNET
 lib_LTLIBRARIES += plugins/espnet/libolaespnet.la
+
+# Plugin description is generated from README.md
+built_sources += plugins/espnet/EspNetPluginDescription.h
+nodist_plugins_espnet_libolaespnet_la_SOURCES = \
+    plugins/espnet/EspNetPluginDescription.h
+plugins/espnet/EspNetPluginDescription.h: plugins/espnet/README.md plugins/espnet/Makefile.mk plugins/convert_README_to_header.sh
+	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/espnet $(top_builddir)/plugins/espnet/EspNetPluginDescription.h
+
 plugins_espnet_libolaespnet_la_SOURCES = \
     plugins/espnet/EspNetDevice.cpp \
     plugins/espnet/EspNetDevice.h \
@@ -30,3 +38,5 @@ plugins_espnet_EspNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 plugins_espnet_EspNetTester_LDADD = $(COMMON_TESTING_LIBS) \
                                     common/libolacommon.la
 endif
+
+EXTRA_DIST += plugins/espnet/README.md

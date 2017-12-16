@@ -27,6 +27,7 @@
 #include "olad/Preferences.h"
 #include "plugins/kinet/KiNetDevice.h"
 #include "plugins/kinet/KiNetPlugin.h"
+#include "plugins/kinet/KiNetPluginDescription.h"
 
 
 namespace ola {
@@ -99,20 +100,7 @@ bool KiNetPlugin::StopHook() {
  * @return a string description of the plugin
  */
 string KiNetPlugin::Description() const {
-    return
-"KiNET Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin creates a single device with multiple output ports. Each port\n"
-"represents a power supply. This plugin uses the V1 DMX-Out version of the\n"
-"KiNET protocol\n"
-"\n"
-"--- Config file : ola-kinet.conf ---\n"
-"\n"
-"power_supply = <ip>\n"
-"The IP of the power supply to send to. You can communicate with more than\n"
-"one power supply by adding multiple power_supply = lines\n"
-"\n";
+    return plugin_description;
 }
 
 

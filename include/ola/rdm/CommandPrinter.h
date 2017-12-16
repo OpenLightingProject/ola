@@ -74,6 +74,7 @@ class CommandPrinter {
     void AppendUIDsAndType(const class RDMCommand *command,
                            const char *message_type);
     void AppendPortId(const class RDMRequest *request);
+    void AppendMessageLength(const class RDMRequest *request);
     void AppendVerboseUIDs(const class RDMCommand *command);
     void AppendPidString(const class RDMCommand *command,
                          const class PidDescriptor *pid_descriptor);

@@ -54,5 +54,5 @@ void RunLengthDecoderTest::testDecode() {
   buffer.Reset();
   OLA_ASSERT_EQ((unsigned int) 0, buffer.Size());
   decoder.Decode(&buffer, data, sizeof(data));
-  OLA_ASSERT(buffer == expected);
+  OLA_ASSERT_DMX_EQUALS(buffer, expected);
 }

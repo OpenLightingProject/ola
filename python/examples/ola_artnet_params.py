@@ -25,6 +25,8 @@ import sys
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+wrapper = None
+
 
 def ArtNetConfigureReply(status, response):
   if status.Succeeded():

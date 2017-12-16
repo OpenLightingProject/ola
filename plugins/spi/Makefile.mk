@@ -12,6 +12,13 @@ plugins_spi_libolaspicore_la_SOURCES = \
     plugins/spi/SPIWriter.h
 plugins_spi_libolaspicore_la_LIBADD = common/libolacommon.la
 
+# Plugin description is generated from README.md
+built_sources += plugins/spi/SPIPluginDescription.h
+nodist_plugins_spi_libolaspi_la_SOURCES = \
+    plugins/spi/SPIPluginDescription.h
+plugins/spi/SPIPluginDescription.h: plugins/spi/README.md plugins/spi/Makefile.mk plugins/convert_README_to_header.sh
+	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/spi $(top_builddir)/plugins/spi/SPIPluginDescription.h
+
 plugins_spi_libolaspi_la_SOURCES = \
     plugins/spi/SPIDevice.cpp \
     plugins/spi/SPIDevice.h \
@@ -39,3 +46,5 @@ plugins_spi_SPITester_LDADD = $(COMMON_TESTING_LIBS) \
                               common/libolacommon.la
 
 endif
+
+EXTRA_DIST += plugins/spi/README.md

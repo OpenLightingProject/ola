@@ -8,15 +8,17 @@ Contributors:
   Bastien Andrès, contributed to the dmx4linux plugin
   Carsten Presser, Karate USB plugin
   Dave Olsthoorn, working on a new web-ui
+  Florian Edelmann, added DMXCreator 512 Basic USB and native SPI DMX support
   Hakan Lindestaf, Renard plugin
   Harry F, for the Eurolite USB Pro code
   Heikki Junnila, bug fixes for the debian packaging files
   Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
   Lukas Erlinghagen, win32 port.
-  Johan Nilsson, Philips Hue trigger config
+  Johan Nilsson, Philips Hue, Osram Lightify & crelay trigger config
   Joshua Moyerman, ArtNet fixes.
   Masaki Muranaka, various patches
   Nicolas, for the win32 port of libartnet
+  Nicolas Bertrand, added ShowJockey DMX-U1 support
   Peter Newman, MilInst Plugin, Scanlime Fadecandy support and numerous fixes
   Ravindra Nath Kakarla, RDM Test Server (Google Summer of Code 2012)
   Rowan Maclachlan (hippy) for various changes
@@ -24,3 +26,4 @@ Contributors:
   Sean Sill, various fixes.
   Stefan Krüger, added APA102 support to the SPI Plugin
   Tobi Schäfer, for the MacPort files
+  Tor Håkon Gjerde, added AVLdiy D512 support

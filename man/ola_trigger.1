@@ -30,6 +30,18 @@ Disable the use of kqueue(), revert to select()
 The thread scheduling policy, one of {fifo, rr}.
 .IP "--scheduler-priority <priority>"
 The thread priority, only used if --scheduler-policy is set.
+.SH BUILT-IN VARIABLES
+As well as being able to assign your own, the following variables are built-in.
+.IP "config_file"
+The config file that was loaded.
+.IP "overall_offset"
+The offset applied to the config file.
+.IP "slot_offset"
+The offset (DMX address) of the slot currently being processed.
+.IP "slot_value"
+The value of the slot currently being processed.
+.IP "universe"
+The universe being triggered from.
 .SH SEE ALSO
 .BR olad(1)
 .
