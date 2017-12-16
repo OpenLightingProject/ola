@@ -63,10 +63,10 @@ elif [[ $TASK = 'spellchecker' ]]; then
   # the build, so they are present for linting to run against
   make builtfiles
   # count the number of spellchecker errors
-  spellingerrors=$(zrun spellintian $(find ./ | xargs) 2>&1 | grep -v "is not a file" | wc -l)
+  spellingerrors=$(zrun spellintian $(find ./ -type f | xargs) 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
     # print the output for info
-    zrun spellintian $(find ./ | xargs) 2>&1 | grep -v "is not a file"
+    zrun spellintian $(find ./ -type f | xargs)
     echo "Found $spellingerrors spelling errors"
     exit 1;
   else
