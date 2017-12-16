@@ -66,7 +66,7 @@ elif [[ $TASK = 'spellchecker' ]]; then
   spellingerrors=$(zrun spellintian $(find ./ | xargs) 2>&1 | grep -v "is not a file" | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
     # print the output for info
-    echo $(zrun spellintian $(find ./ | xargs) 2>&1 | grep -v "is not a file")
+    zrun spellintian $(find ./ | xargs) 2>&1 | grep -v "is not a file"
     echo "Found $spellingerrors spelling errors"
     exit 1;
   else
