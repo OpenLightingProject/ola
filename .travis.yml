@@ -175,6 +175,9 @@ matrix:
       dist: trusty
       compiler: gcc
       env: TASK='coverity'
+    - os: linux
+      dist: trusty
+      env: TASK='spellchecker'
 
 env:
   global:
