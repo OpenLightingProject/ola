@@ -30,7 +30,7 @@
  * function. Argments can be provided at either creation time or execution
  * time.
  *
- * The SingleUse varient of a Callback automatically delete itself after it
+ * The SingleUse variant of a Callback automatically delete itself after it
  * has been executed.
  *
  * Callbacks are used throughout OLA to reduce the coupling between classes
