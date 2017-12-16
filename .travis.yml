@@ -139,7 +139,6 @@ matrix:
         apt:
           packages:
            - *core_build
-           - lintian
     - os: linux
       dist: trusty
       # Short duration job, use the container/without sudo image as it boots faster
@@ -149,6 +148,8 @@ matrix:
         apt:
           packages:
            - *core_build
+           - moreutils
+           - lintian
     - os: linux
       dist: trusty
       # Short duration job, use the container/without sudo image as it boots faster
