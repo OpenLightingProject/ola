@@ -712,7 +712,7 @@ AS_IF([test "x$enable_root_check" = xno],
 # Use tcmalloc. This is used by the buildbot leak checks.
 AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 AS_IF([test "x$enable_tcmalloc" = xyes],
-      [AC_CHECK_LIB([tcmalloc], [malloc], [LDFLAGS="$LDFLAGS -ltcmalloc"], [AS_ERROR([tcmalloc not found, but enabled on command line])])])
+      [AC_CHECK_LIB([tcmalloc], [malloc], [AM_LDFLAGS="$AM_LDFLAGS -ltcmalloc"], [AS_ERROR([tcmalloc not found, but enabled on command line])])])
 
 # Optionally set the Doxygen version to "Latest Git" for website latest
 # version.
@@ -833,6 +833,7 @@ PLUGIN_SUPPORT(renard, USE_RENARD)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
+PLUGIN_SUPPORT(spidmx, USE_SPIDMX, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
 PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_uart])
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
@@ -911,6 +912,7 @@ AC_CONFIG_FILES([include/ola/base/Version.h
                  ])
 # Makefiles
 AC_CONFIG_FILES([Makefile java/Makefile])
+AC_SUBST(AM_LDFLAGS)
 AC_OUTPUT
 
 echo \
@@ -919,7 +921,7 @@ ${PACKAGE_NAME} Version ${PACKAGE_VERSION}
 
 Prefix: '${prefix}'
 Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
-Linker: '${LD} ${LDFLAGS} ${LIBS}'
+Linker: '${LD} ${AM_LDFLAGS} ${LIBS}'
 Python: ${PYTHON}
 
 Python API: ${enable_python_libs}

@@ -37,19 +37,20 @@ class BaseInflatorTest;
 
 
 /**
- * The inflator interface.
+ * @brief The inflator interface.
  */
 class InflatorInterface {
  public:
     virtual ~InflatorInterface() {}
 
-    /*
-     * Return the id for this inflator
+    /**
+     * @brief
+     * @returns the id for this inflator
      */
     virtual uint32_t Id() const = 0;
 
-    /*
-     * Parse a block of PDU data
+    /**
+     * @brief Parse a block of PDU data
      */
     virtual unsigned int InflatePDUBlock(HeaderSet *headers,
                                          const uint8_t *data,
@@ -57,8 +58,8 @@ class InflatorInterface {
 };
 
 
-/*
- * An abstract PDU inflator
+/**
+ * @brief An abstract PDU inflator
  */
 class BaseInflator : public InflatorInterface {
   friend class BaseInflatorTest;
@@ -67,18 +68,19 @@ class BaseInflator : public InflatorInterface {
     explicit BaseInflator(PDU::vector_size v_size = PDU::FOUR_BYTES);
     virtual ~BaseInflator() {}
 
-    /*
-     * Add another inflator as a handler. Ownership is not transferred.
+    /**
+     * @brief Add another inflator as a handler. Ownership is not transferred.
      */
     bool AddInflator(InflatorInterface *inflator);
 
-    /*
-     * Return the inflator used for a particular vector.
+    /**
+     * @brief Get the inflator used for a particular vector
+     * @returns The inflator used for the vector
      */
     class InflatorInterface *GetInflator(uint32_t vector) const;
 
-    /*
-     * Parse a block of PDU data
+    /**
+     * @brief Parse a block of PDU data
      */
     virtual unsigned int InflatePDUBlock(HeaderSet *headers,
                                          const uint8_t *data,

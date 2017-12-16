@@ -16,8 +16,7 @@
 # Copyright (C) 2011 Simon Newton
 
 import logging
-import ola.RDMConstants
-from ola import PidStore
+from ola import PidStore, RDMConstants
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 
@@ -210,9 +209,9 @@ class ModelCollector(object):
     for param_info in data['params']:
       this_version['supported_parameters'].append(param_info['param_id'])
       if (param_info['param_id'] >=
-          ola.RDMConstants.RDM_MANUFACTURER_PID_MIN and
+          RDMConstants.RDM_MANUFACTURER_PID_MIN and
           param_info['param_id'] <=
-          ola.RDMConstants.RDM_MANUFACTURER_PID_MAX):
+          RDMConstants.RDM_MANUFACTURER_PID_MAX):
         self.manufacturer_pids.append(param_info['param_id'])
     self._NextState()
 
@@ -240,6 +239,11 @@ class ModelCollector(object):
       'description': data['name'],
       'type': data['type'],
       'supports_recording': data['supports_recording'],
+      'range_min': data['range_min'],
+      'range_max': data['range_max'],
+      'normal_min': data['normal_min'],
+      'normal_max': data['normal_max'],
+      'unit': data['unit'],
     })
     self._FetchNextSensor()
 
@@ -510,8 +514,8 @@ class ModelCollector(object):
              (response.pid, response.nack_reason))
       self._NextState()
     elif unpack_exception:
-      print unpack_exception
-      self.wrapper.Stop()
+      print ('Unpack error: %s' % (unpack_exception))
+      self._NextState()
     else:
       self._HandleResponse(unpacked_data)
 

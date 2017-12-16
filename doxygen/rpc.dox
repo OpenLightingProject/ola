@@ -48,7 +48,7 @@
  *
  * @section rpc_Proto Use of Protocol Buffers
  *
- * OLA uses <a href="https://code.google.com/p/protobuf/">Protocol Buffers</a>
+ * OLA uses <a href="https://github.com/google/protobuf">Protocol Buffers</a>
  * as the data serialization format. Protocol buffers allow us to wrap the
  * request and response data up into a message (similar to a C struct) and then
  * serialize the message to binary data in a platform independent way. It's
@@ -259,7 +259,8 @@
  *
  * To write a client in a new language you'll need the following:
  *   - An implementation of Protocol Buffers for your language. Luckily there
- *     are <a href="https://code.google.com/p/protobuf/wiki/ThirdPartyAddOns">
+ *     are <a
+ *     href="https://github.com/google/protobuf/blob/master/docs/third_party.md">
  *     many implementations</a> available. It doesn't have to have a service
  *     generator (see the first point below).
  *   - A sockets library.

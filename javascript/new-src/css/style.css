@@ -53,6 +53,15 @@
  margin: 1px;
 }
 
+.value-fader {
+ display: block;
+ border: 0;
+ padding: 0;
+ text-align: center;
+ width: 100%;
+ height: 2em;
+}
+
 .faders {
  text-align: center;
  padding: 1px;

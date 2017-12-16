@@ -23,7 +23,7 @@
  *     provide timeradd and timersub.
  *   - Reduces bugs by using the compiler to check if the value was supposed
  *     to be an interval or absolute time. For example, passing an absolute
- *     time intstead of an Interval to RegisterTimeout would be bad.
+ *     time instead of an Interval to RegisterTimeout would be bad.
  */
 
 #ifndef INCLUDE_OLA_CLOCK_H_
@@ -81,15 +81,27 @@ class BaseTimeVal {
   bool IsSet() const;
   void AsTimeval(struct timeval *tv) const;
 
-  // Returns the seconds portion.
+  /**
+   * @brief Returns the seconds portion of the BaseTimeVal
+   * @return The seconds portion of the BaseTimeVal
+   */
   time_t Seconds() const { return m_tv.tv_sec; }
-  // Returns the microseconds portion
+  /**
+   * @brief Returns the microseconds portion of the BaseTimeVal
+   * @return The microseconds portion of the BaseTimeVal
+   */
   int32_t MicroSeconds() const { return static_cast<int32_t>(m_tv.tv_usec); }
 
-  // Returns the entire BaseTimeVal as milliseconds
+  /**
+   * @brief Returns the entire BaseTimeVal as milliseconds
+   * @return The entire BaseTimeVal in milliseconds
+   */
   int64_t InMilliSeconds() const;
 
-  // Returns the entire BaseTimeVal as microseconds.
+  /**
+   * @brief Returns the entire BaseTimeVal as microseconds
+   * @return The entire BaseTimeVal in microseconds
+   */
   int64_t AsInt() const;
 
   std::string ToString() const;
@@ -98,13 +110,13 @@ class BaseTimeVal {
   struct timeval m_tv;
 
   /**
-   * We don't use timeradd here because windows doesn't define it.
+   * We don't use timeradd here because Windows doesn't define it.
    */
   void TimerAdd(const struct timeval &tv1, const struct timeval &tv2,
                 struct timeval *result) const;
 
   /**
-   * We don't use timersub here because windows doesn't define it.
+   * We don't use timersub here because Windows doesn't define it.
    */
   void TimerSub(const struct timeval &tv1, const struct timeval &tv2,
                 struct timeval *result) const;
@@ -112,8 +124,8 @@ class BaseTimeVal {
   void Set(int64_t interval_useconds);
 };
 
-/*
- * A time interval, with usecond accuracy.
+/**
+ * @brief A time interval, with usecond accuracy.
  */
 class TimeInterval {
  public:
@@ -165,8 +177,8 @@ class TimeInterval {
 };
 
 
-/*
- * Represents a point in time with usecond accuracy.
+/**
+ * @brief Represents a point in time with microsecond accuracy.
  */
 class TimeStamp {
  public:

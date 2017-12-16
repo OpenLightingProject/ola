@@ -34,9 +34,9 @@ class ContextTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testContext();
-    void testSlotOffsetAndValue();
-    void testAsString();
+  void testContext();
+  void testSlotOffsetAndValue();
+  void testAsString();
 };
 
 

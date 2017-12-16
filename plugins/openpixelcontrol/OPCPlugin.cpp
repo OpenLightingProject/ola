@@ -30,6 +30,7 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/openpixelcontrol/OPCDevice.h"
+#include "plugins/openpixelcontrol/OPCPluginDescription.h"
 
 namespace ola {
 namespace plugin {
@@ -67,35 +68,7 @@ bool OPCPlugin::StopHook() {
 }
 
 string OPCPlugin::Description() const {
-    return
-"OPC Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin creates OPC Client and/or OPC Server Devices.\n"
-"\n"
-"--- Config file : ola-opc.conf ---\n"
-"\n"
-"target = <IP>:<port>\n"
-"Create a Open Pixel Control client, connected to the IP:port.\n"
-"Multiple targets can be specified and a device will be created\n"
-"for each.\n"
-"\n"
-"listen = <IP>:<port>\n"
-"Create an Open Pixel Control server, listening on IP:port.\n"
-"To listen on any address use listen = 0.0.0.0.\n"
-"Multiple listen keys can be specified and a device will be created\n"
-"for each.\n"
-"\n"
-"target_<IP>:<port>_channel = <channel>\n"
-"The Open Pixel Control channels to use for the specified device.\n"
-"Multiple channels can be specified and an output port will be created\n"
-"for each.\n"
-"\n"
-"listen_<IP>:<port>_channel = <channel>\n"
-"The Open Pixel Control channels to use for the specified device.\n"
-"Multiple channels can be specified and an input port will be created\n"
-"for each.\n"
-"\n";
+    return plugin_description;
 }
 
 bool OPCPlugin::SetDefaultPreferences() {

@@ -7,9 +7,12 @@ imgdir = $(www_datadir)/new/img
 jquerydir = $(www_datadir)/new/libs/jquery/js
 angularroutedir = $(www_datadir)/new/libs/angular-route/js
 angulardir = $(www_datadir)/new/libs/angular/js
+markeddir = $(www_datadir)/new/libs/marked/js
+angularmarkeddir = $(www_datadir)/new/libs/angular-marked/js
 bootcssdir = $(www_datadir)/new/libs/bootstrap/css
 bootjsdir = $(www_datadir)/new/libs/bootstrap/js
 bootfontsdir = $(www_datadir)/new/libs/bootstrap/fonts
+favicondir = $(www_datadir)/new/img/favicons
 
 dist_www_DATA = \
     olad/www/back.png \
@@ -60,6 +63,7 @@ dist_views_DATA = \
     olad/www/new/views/universe-settings.html \
     olad/www/new/views/universes.html
 dist_js_DATA = \
+    olad/www/new/js/app.js \
     olad/www/new/js/app.min.js \
     olad/www/new/js/app.min.js.map
 dist_css_DATA = \
@@ -68,13 +72,67 @@ dist_img_DATA = \
     olad/www/new/img/light_bulb_off.png \
     olad/www/new/img/light_bulb.png \
     olad/www/new/img/logo-mini.png \
+    olad/www/new/img/logo-mini@2x.png \
     olad/www/new/img/logo.png
+dist_favicon_DATA = \
+    olad/www/new/img/favicons/android-chrome-144x144.png \
+    olad/www/new/img/favicons/android-chrome-192x192.png \
+    olad/www/new/img/favicons/android-chrome-36x36.png \
+    olad/www/new/img/favicons/android-chrome-48x48.png \
+    olad/www/new/img/favicons/android-chrome-72x72.png \
+    olad/www/new/img/favicons/android-chrome-96x96.png \
+    olad/www/new/img/favicons/apple-touch-icon-114x114.png \
+    olad/www/new/img/favicons/apple-touch-icon-120x120.png \
+    olad/www/new/img/favicons/apple-touch-icon-144x144.png \
+    olad/www/new/img/favicons/apple-touch-icon-152x152.png \
+    olad/www/new/img/favicons/apple-touch-icon-180x180.png \
+    olad/www/new/img/favicons/apple-touch-icon-57x57.png \
+    olad/www/new/img/favicons/apple-touch-icon-60x60.png \
+    olad/www/new/img/favicons/apple-touch-icon-72x72.png \
+    olad/www/new/img/favicons/apple-touch-icon-76x76.png \
+    olad/www/new/img/favicons/apple-touch-icon-precomposed.png \
+    olad/www/new/img/favicons/apple-touch-icon.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-1182x2208.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-1242x2148.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-1496x2048.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-1536x2008.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-320x460.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-640x1096.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-640x920.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-748x1024.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-750x1294.png \
+    olad/www/new/img/favicons/apple-touch-startup-image-768x1004.png \
+    olad/www/new/img/favicons/browserconfig.xml \
+    olad/www/new/img/favicons/coast-228x228.png \
+    olad/www/new/img/favicons/favicon-16x16.png \
+    olad/www/new/img/favicons/favicon-230x230.png \
+    olad/www/new/img/favicons/favicon-32x32.png \
+    olad/www/new/img/favicons/favicon-96x96.png \
+    olad/www/new/img/favicons/favicon.ico \
+    olad/www/new/img/favicons/firefox_app_128x128.png \
+    olad/www/new/img/favicons/firefox_app_512x512.png \
+    olad/www/new/img/favicons/firefox_app_60x60.png \
+    olad/www/new/img/favicons/manifest.json \
+    olad/www/new/img/favicons/manifest.webapp \
+    olad/www/new/img/favicons/mstile-144x144.png \
+    olad/www/new/img/favicons/mstile-150x150.png \
+    olad/www/new/img/favicons/mstile-310x150.png \
+    olad/www/new/img/favicons/mstile-310x310.png \
+    olad/www/new/img/favicons/mstile-70x70.png \
+    olad/www/new/img/favicons/open-graph.png \
+    olad/www/new/img/favicons/twitter.png \
+    olad/www/new/img/favicons/yandex-browser-50x50.png \
+    olad/www/new/img/favicons/yandex-browser-manifest.json
 dist_jquery_DATA = \
     olad/www/new/libs/jquery/js/jquery.min.js
 dist_angularroute_DATA = \
     olad/www/new/libs/angular-route/js/angular-route.min.js
 dist_angular_DATA = \
     olad/www/new/libs/angular/js/angular.min.js
+dist_marked_DATA = \
+    olad/www/new/libs/marked/js/marked.min.js
+dist_angularmarked_DATA = \
+    olad/www/new/libs/angular-marked/js/angular-marked.min.js
 dist_bootjs_DATA = \
     olad/www/new/libs/bootstrap/js/bootstrap.min.js
 dist_bootfonts_DATA = \
