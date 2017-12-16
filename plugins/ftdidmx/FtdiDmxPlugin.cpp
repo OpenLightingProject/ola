@@ -47,7 +47,7 @@ const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
 /**
  * @brief Attempt to start a device and, if successful, register it
  *
- * Ownership of the FtdiDmxDevice is transfered to us here.
+ * Ownership of the FtdiDmxDevice is transferred to us here.
  */
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
   if (device->Start()) {

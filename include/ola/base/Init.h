@@ -78,7 +78,7 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map);
  * @param argc argument count
  * @param argv pointer to argument strings
  * @param export_map an optional pointer to an ExportMap
- * @param first_line the inital line that is displayed in the help section.
+ * @param first_line the initial line that is displayed in the help section.
  * This is displayed after argv[0].
  * @param description a multiline description of the program
  * @return true on success and false otherwise
@@ -97,7 +97,7 @@ bool ServerInit(int *argc,
  * program, parses flags and initialises logging from flags.
  * @param argc argument count
  * @param argv pointer to the argument strings
- * @param first_line the inital line that is displayed in the help section.
+ * @param first_line the initial line that is displayed in the help section.
  * This is displayed after argv[0].
  * @param description a multiline description of the program
  * @return true on success and false otherwise

@@ -99,7 +99,7 @@ class HotplugAgent {
   bool Start();
 
   /**
-   * @brief Prevent any further notifications from occuring.
+   * @brief Prevent any further notifications from occurring.
    *
    * Once this returns, the NotificationCallback will not be called.
    */

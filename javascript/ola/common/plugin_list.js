@@ -94,7 +94,7 @@ ola.PluginControl.prototype.enterDocument = function() {
 
 /**
  * A factory which produces PluginControls
- * @param {function()} callback the funtion called when the control is clicked.
+ * @param {function()} callback the function called when the control is clicked.
  * @constructor
  */
 ola.common.PluginControlFactory = function(callback) {
