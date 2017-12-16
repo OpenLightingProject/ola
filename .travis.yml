@@ -140,16 +140,15 @@ matrix:
           packages:
            - *core_build
     - os: linux
-      dist: xenial
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: trusty
+      # Short duration job, would use the container/without sudo image as it boots faster, but we need a backported lintian, so don't
+      sudo: required
       env: TASK='spellchecker'
       addons:
         apt:
           packages:
            - *core_build
            - moreutils
-           - lintian
     - os: linux
       dist: trusty
       # Short duration job, use the container/without sudo image as it boots faster
@@ -234,6 +233,7 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
 #Report the compiler version
  - $CXX --version
+ - if [[ "$TASK" == "spellchecker" ]]; then sudo add-apt-repository ppa:waja/trusty-backports; sudo apt-get update; sudo apt-get install lintian; fi # Install a late enough lintian
 
 after_failure:
   - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log
