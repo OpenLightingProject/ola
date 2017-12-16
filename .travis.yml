@@ -140,7 +140,7 @@ matrix:
           packages:
            - *core_build
     - os: linux
-      dist: trusty
+      dist: xenial
       # Short duration job, use the container/without sudo image as it boots faster
       sudo: false
       env: TASK='spellchecker'
