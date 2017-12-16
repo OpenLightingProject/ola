@@ -137,7 +137,7 @@ bool InstallSEGVHandler();
 /**
  * @brief Populate the ExportMap with a couple of basic variables.
  * @param argc argument count
- * @param argv pointer to the arugment strings
+ * @param argv pointer to the argument strings
  * @param export_map ExportMap to populate
  *
  * This is called by ServerInit(). It sets the following variables:

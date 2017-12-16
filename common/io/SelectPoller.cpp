@@ -359,7 +359,7 @@ bool SelectPoller::AddDescriptorsToSet(fd_set *r_set,
 /*
  * Check all the registered descriptors:
  *  - Execute the callback for descriptors with data
- *  - Excute OnClose if a remote end closed the connection
+ *  - Execute OnClose if a remote end closed the connection
  */
 void SelectPoller::CheckDescriptors(fd_set *r_set, fd_set *w_set) {
   // Remember the add / remove methods above may be called during
