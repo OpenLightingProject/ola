@@ -63,7 +63,7 @@ void DmxSourceTest::testDmxSource() {
 
   DmxSource source(buffer, timestamp, 100);
   OLA_ASSERT(source.IsSet());
-  OLA_ASSERT(buffer == source.Data());
+  OLA_ASSERT_DMX_EQUALS(buffer, source.Data());
   OLA_ASSERT_EQ(timestamp, source.Timestamp());
   OLA_ASSERT_EQ((uint8_t) 100, source.Priority());
 
@@ -73,7 +73,7 @@ void DmxSourceTest::testDmxSource() {
   OLA_ASSERT_TRUE(timestamp <= timestamp2);
 
   source.UpdateData(buffer2, timestamp2, 120);
-  OLA_ASSERT(buffer2 == source.Data());
+  OLA_ASSERT_DMX_EQUALS(buffer2, source.Data());
   OLA_ASSERT_EQ(timestamp2, source.Timestamp());
   OLA_ASSERT_EQ((uint8_t) 120, source.Priority());
 

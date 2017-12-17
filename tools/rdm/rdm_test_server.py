@@ -595,7 +595,10 @@ class GetDevicesHandler(OLAServerRequestHandler):
     response.SetStatus(HTTPResponse.OK)
     return {
       'uids': [str(u) for u in uids],
-      'nameduids': dict((str(u), self.GetPidStore().ManufacturerIdToName(u.manufacturer_id)) for u in uids),
+      'nameduids': dict(
+        (str(u),
+         self.GetPidStore().ManufacturerIdToName(u.manufacturer_id))
+        for u in uids),
       'status': True,
     }
 
@@ -1024,7 +1027,9 @@ def SetupLogDirectory(options):
 def main():
   options = parse_options()
   settings.update(options.__dict__)
-  pid_store = PidStore.GetStore(options.pid_location)
+  pid_store = PidStore.GetStore(options.pid_location,
+                                ('pids.proto', 'draft_pids.proto',
+                                 'manufacturer_names.proto'))
 
   logging.basicConfig(level=logging.INFO, format='%(message)s')
 

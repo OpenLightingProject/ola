@@ -192,8 +192,10 @@ def DisplaySummary(options, runner, tests, device, pid_store):
 
   manufacturer_label = getattr(device, 'manufacturer_label', None)
   if not manufacturer_label:
-    manufacturer_label = str(
+    manufacturer_label = (
         pid_store.ManufacturerIdToName(options.uid.manufacturer_id))
+    if manufacturer_label:
+      manufacturer_label = str(manufacturer_label)
   if manufacturer_label:
     logging.info('Manufacturer: %s' %
                  manufacturer_label.encode('string-escape'))
@@ -250,7 +252,9 @@ def main():
 
   SetupLogging(options)
   logging.info('OLA Responder Tests Version %s' % Version.version)
-  pid_store = PidStore.GetStore(options.pid_location)
+  pid_store = PidStore.GetStore(options.pid_location,
+                                ('pids.proto', 'draft_pids.proto',
+                                 'manufacturer_names.proto'))
   wrapper = ClientWrapper()
 
   global uid_ok
