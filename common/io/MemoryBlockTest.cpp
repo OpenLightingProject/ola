@@ -92,7 +92,7 @@ void MemoryBlockTest::testPrepend() {
   uint8_t *data = new uint8_t[size];
   MemoryBlock block(data, size);
 
-  // by default the insertion point is at the begining
+  // by default the insertion point is at the beginning
   const uint8_t data1[] = {1, 2, 3, 4};
   OLA_ASSERT_EQ(0u, block.Prepend(data1, arraysize(data1)));
 

@@ -164,7 +164,7 @@ class JsonPointer {
   }
 
   /**
-   * @brief Return the token at the specifed index.
+   * @brief Return the token at the specified index.
    * @param i the index of the token to return.
    * @returns the un-encoded representation of the token.
    */

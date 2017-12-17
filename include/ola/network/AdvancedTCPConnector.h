@@ -63,7 +63,7 @@ class AdvancedTCPConnector {
    * @brief Add an endpoint to manage a connection to.
    *
    * If the IP:Port already exists this won't do anything.
-   * When the connection is successfull the on_connect callback will be run, and
+   * When the connection is successful the on_connect callback will be run, and
    * ownership of the TCPSocket object is transferred.
 
    * @param endpoint the IPV4SocketAddress to connect to.

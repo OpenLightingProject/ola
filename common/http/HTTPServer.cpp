@@ -215,7 +215,7 @@ HTTPRequest::HTTPRequest(const string &url,
 
 /*
  * @brief Initialize this request
- * @return true if succesful, false otherwise.
+ * @return true if successful, false otherwise.
  */
 bool HTTPRequest::Init() {
   MHD_get_connection_values(m_connection, MHD_HEADER_KIND, AddHeaders, this);
@@ -717,7 +717,7 @@ void HTTPServer::Handlers(vector<string> *handlers) const {
 
 /**
  * @brief Serve an error.
- * @param response the reponse to use.
+ * @param response the response to use.
  * @param details the error description
  */
 int HTTPServer::ServeError(HTTPResponse *response, const string &details) {

@@ -3419,7 +3419,7 @@ void RDMHTTPModule::GenericBoolHandler(HTTPResponse *response,
 
 /**
  * @brief Check for an RDM error, and if it occurs, return a JSON response.
- * @return true if an error occured.
+ * @return true if an error occurred.
  */
 bool RDMHTTPModule::CheckForRDMError(HTTPResponse *response,
                                      const ola::rdm::ResponseStatus &status) {

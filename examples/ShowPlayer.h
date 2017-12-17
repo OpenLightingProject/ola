@@ -43,7 +43,7 @@ class ShowPlayer {
 
   /**
    * @brief Initialize the show player.
-   * @return EXIT_OK if successfull.
+   * @return EXIT_OK if successful.
    */
   int Init();
 

@@ -216,7 +216,7 @@ void DmxBufferTest::testAssign() {
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, result_length));
   OLA_ASSERT_TRUE(assignment_buffer2 == buffer);
 
-  // now try assigning an unitialized buffer
+  // now try assigning an uninitialized buffer
   DmxBuffer uninitialized_buffer;
   DmxBuffer assignment_buffer3;
 

@@ -121,7 +121,7 @@ bool KarateLight::Init() {
   // Try to get a lock on the device, making access exclusive
   if (flock(m_fd, LOCK_EX | LOCK_NB) != 0) {
     OLA_WARN << "Error getting a lock on " << m_devname
-             << "Maybe a other programm is accessing the device."
+             << "Maybe another program is accessing the device."
              << "Errorcode: " << strerror(errno);
     return false;
   }
@@ -140,7 +140,7 @@ bool KarateLight::Init() {
     return false;
   }
 
-  // if an older Firware-Version is used. quit. the communication wont work
+  // if an older Firware-Version is used. quit. the communication won't work
   if (m_fw_version < 0x33) {
     OLA_WARN << "Firmware 0x" << static_cast<int>(m_fw_version) \
               << "is to old!";
@@ -189,7 +189,7 @@ bool KarateLight::Init() {
     m_dmx_offset = 0;
   }
 
-  OLA_INFO << "successfully initalized device " << m_devname
+  OLA_INFO << "successfully initialized device " << m_devname
            << " with firmware version 0x"
            << strings::ToHex(m_fw_version)
            << ", hardware-revision = 0x"

@@ -41,7 +41,7 @@ namespace usbdmx {
  * @brief Receives notifications when Widgets are added or removed.
  *
  * Classes implementing the WidgetObserver can be used with WidgetFactories to
- * receive notifcations when widgets are added.
+ * receive notifications when widgets are added.
  *
  * On adding a new Widget, the appropriate NewWidget() method is called. The
  * observer can mark a widget as in-use by returning true.

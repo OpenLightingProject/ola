@@ -16,7 +16,7 @@
  * NonBlockingSender.h
  * Copyright (C) 2013 Simon Newton
  *
- * Explaination:
+ * Explanation:
  *  If we just write IOStacks directly to ConnectedDescriptors, we may not be
  *  able to write the entire message. This can happen if the remote end is slow
  *  to ack and data builds up in the kernel socket buffer.

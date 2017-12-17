@@ -55,6 +55,23 @@ elif [[ $TASK = 'check-licences' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
+elif [[ $TASK = 'spellchecker' ]]; then
+  # run the spellchecker only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for linting to run against
+  make builtfiles
+  # count the number of spellchecker errors
+  spellingerrors=$(zrun spellintian $(find ./ -type f | xargs) 2>&1 | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun spellintian $(find ./ -type f | xargs)
+    echo "Found $spellingerrors spelling errors"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors"
+  fi;
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
   autoreconf -i;
