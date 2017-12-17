@@ -228,7 +228,6 @@ matrix:
       - PROTOBUF='3.5'
     - os: linux
       dist: trusty
-      compiler: gcc
       env: TASK='spellchecker'
 
 env:
