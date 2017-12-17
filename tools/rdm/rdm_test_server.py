@@ -623,6 +623,10 @@ class RunDiscoveryHandler(OLAServerRequestHandler):
     response.SetStatus(HTTPResponse.OK)
     return {
       'uids': [str(u) for u in uids],
+      'nameduids': dict(
+        (str(u),
+         self.GetPidStore().ManufacturerIdToName(u.manufacturer_id))
+        for u in uids),
       'status': True,
     }
 
