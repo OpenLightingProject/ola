@@ -304,7 +304,7 @@ void DesignatedControllerConnection::TCPConnectionUnhealthy() {
  *  - the heartbeats time out
  */
 void DesignatedControllerConnection::TCPConnectionClosed() {
-  OLA_INFO << "TCP conection closed";
+  OLA_INFO << "TCP connection closed";
 
   // zero out the master's IP
   m_tcp_stats->ip_address = IPV4Address();

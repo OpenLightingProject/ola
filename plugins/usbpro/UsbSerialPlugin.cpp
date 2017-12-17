@@ -243,7 +243,7 @@ bool UsbSerialPlugin::StartHook() {
 
 /*
  * Stop the plugin
- * @return true on sucess, false on failure
+ * @return true on success, false on failure
  */
 bool UsbSerialPlugin::StopHook() {
   vector<UsbSerialDevice*>::iterator iter;

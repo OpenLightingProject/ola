@@ -178,7 +178,7 @@ class StreamRpcChannel(service.RpcChannel):
     return True
 
   def _SendRequestFailed(self, request):
-    """Send a response indiciating this request failed.
+    """Send a response indicating this request failed.
 
     Args:
       request: An OutstandingRequest object.

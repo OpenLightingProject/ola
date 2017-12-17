@@ -691,7 +691,7 @@ class Group(Atom):
       For now we support the following cases:
        - Fixed size group. This is easy to unpack
        - Groups of variable size. We enforce two conditions for these, i) the
-         variable sized field MUST be the last one ii) Only a single occurance
+         variable sized field MUST be the last one ii) Only a single occurrence
          is allowed. This means you can't do things like:
 
            [(string, int)]   # variable sized types must be last

@@ -74,7 +74,7 @@ class BaseExpectedResult(object):
     return self._advisory_message
 
   def Matches(self, response, unpacked_data):
-    """Check if the response we receieved matches this object.
+    """Check if the response we received matches this object.
 
     Args:
       response: An RDMResponse object
