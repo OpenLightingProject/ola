@@ -142,7 +142,7 @@ bool UIntToSpeedT(uint32_t value, speed_t *output) {
 bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   // This is rather tricky since there is no real convention for LCK files.
   // If it was only a single process doing the locking we could use fnctl as
-  // described in 55.6 of the Linux Programing Interface book.
+  // described in 55.6 of the Linux Programming Interface book.
 
   // First, check if the path exists, there's no point trying to open it if not
   if (!FileExists(path)) {

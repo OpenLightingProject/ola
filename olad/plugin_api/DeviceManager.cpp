@@ -296,7 +296,7 @@ void DeviceManager::RestorePortPriority(Port *port) const {
   }
 
   uint8_t priority, priority_mode;
-  // setting the priority to overide mode first means we remember the over
+  // setting the priority to override mode first means we remember the over
   // value even if it's in inherit mode
   if (StringToInt(priority_str, &priority)) {
     m_port_manager->SetPriorityStatic(port, priority);

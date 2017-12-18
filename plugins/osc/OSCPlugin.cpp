@@ -77,7 +77,7 @@ bool OSCPlugin::StartHook() {
     port_addresses.push_back(m_preferences->GetValue(key));
   }
 
-  // For each ouput port, extract the list of OSCTargets and store them in
+  // For each output port, extract the list of OSCTargets and store them in
   // port_targets.
   OSCDevice::PortConfigs port_configs;
   for (unsigned int i = 0; i < GetPortCount(OUTPUT_PORT_COUNT_KEY); i++) {

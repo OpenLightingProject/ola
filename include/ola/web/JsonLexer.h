@@ -57,7 +57,7 @@ class JsonLexer {
    * @brief Parse a string containing JSON data.
    * @param input the input string
    * @param handler the JsonParserInterface to pass tokens to.
-   * @return true if parsing was successfull, false otherwise.
+   * @return true if parsing was successful, false otherwise.
    */
   static bool Parse(const std::string &input,
                     class JsonParserInterface *handler);

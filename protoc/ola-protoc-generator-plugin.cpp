@@ -23,11 +23,11 @@
  * Generates the service & stub code for an RPC service based on a protocol
  * buffer description.
  *
- * The orginal open source Protocol Buffers library came with a protoc that
+ * The original open source Protocol Buffers library came with a protoc that
  * would generate Service & Stub classes for services defined in a .proto file.
  *
  * From https://developers.google.com/protocol-buffers/docs/proto#services, as
- * of version 2.3.0 (January 2010), it is considered preferrable for RPC
+ * of version 2.3.0 (January 2010), it is considered preferable for RPC
  * implementations to provide their own code to generate these files.
  *
  * The main advantage to generating the code ourselves is that we can define

@@ -182,7 +182,7 @@ void IOQueueTest::testPop() {
   OLA_ASSERT_EQ(0u, queue.Size());
   OLA_ASSERT_TRUE(queue.Empty());
 
-  // test the block boundry
+  // test the block boundary
   uint8_t *output_data = new uint8_t[4];
   m_buffer.reset(new IOQueue(&pool));
   queue.Write(data1, 4);
@@ -251,7 +251,7 @@ void IOQueueTest::testPeek() {
   OLA_ASSERT_EQ(9u, queue.Size());
   OLA_ASSERT_FALSE(queue.Empty());
 
-  // peek at data on the two block boundry
+  // peek at data on the two block boundary
   output_size = queue.Peek(output_data, 8);
   OLA_ASSERT_DATA_EQUALS(data1, 8, output_data, output_size);
   OLA_ASSERT_EQ(9u, queue.Size());

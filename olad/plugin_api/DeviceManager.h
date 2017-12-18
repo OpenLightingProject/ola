@@ -86,14 +86,14 @@ class DeviceManager {
   /**
    * @brief Unregister a device by id.
    * @param device_id the id of the device to remove
-   * @returns true on sucess, false on failure
+   * @returns true on success, false on failure
    */
   bool UnregisterDevice(const std::string &device_id);
 
   /**
    * @brief Unregister a device by pointer.
    * @param device a pointer to the device.
-   * @returns true on sucess, false on failure
+   * @returns true on success, false on failure
    */
   bool UnregisterDevice(const AbstractDevice *device);
 
