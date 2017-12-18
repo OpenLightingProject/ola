@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * JsonTest.cpp
- * Unittest for Json classses.
+ * Unittest for Json classes.
  * Copyright (C) 2012 Simon Newton
  */
 

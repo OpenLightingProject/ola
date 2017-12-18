@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * ClientRDMAPIShim.h
- * An implemention of RDMAPIImplInterface that uses the OlaClient.
+ * An implementation of RDMAPIImplInterface that uses the OlaClient.
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -34,7 +34,7 @@ namespace client {
 class OlaClient;
 
 /**
- * An implemention of RDMAPIImplInterface that uses the OlaClient.
+ * An implementation of RDMAPIImplInterface that uses the OlaClient.
  */
 class ClientRDMAPIShim : public ola::rdm::RDMAPIImplInterface {
  public:

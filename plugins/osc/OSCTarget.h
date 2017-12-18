@@ -41,7 +41,7 @@ struct OSCTarget {
         osc_address(target.osc_address) {
   }
 
-  // A constuctor that initializes the member variables as well.
+  // A constructor that initializes the member variables as well.
   OSCTarget(const ola::network::IPV4SocketAddress &socket_address,
             const std::string &osc_address)
       : socket_address(socket_address),

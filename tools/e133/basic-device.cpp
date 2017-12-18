@@ -184,7 +184,7 @@ void SimpleE133Device::SocketClosed() {
 SimpleE133Device *device = NULL;
 
 /**
- * Interupt handler
+ * Interrupt handler
  */
 static void InteruptSignal(OLA_UNUSED int signo) {
   int old_errno = errno;

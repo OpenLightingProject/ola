@@ -55,7 +55,7 @@ class OlaClient {
 
   /*
    * @brief Close the ola connection.
-   * @return true on sucess, false on failure
+   * @return true on success, false on failure
    */
   bool Stop();
 
