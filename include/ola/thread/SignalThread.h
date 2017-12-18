@@ -35,7 +35,7 @@ namespace thread {
  *  - thread1,  acquires mutex M
  *  - signal triggers
  *  - thread1 runs the signal handler
- *  - signal handler attempts to aqcuire mutex M
+ *  - signal handler attempts to acquire mutex M
  *  - deadlock...
  *
  * The recommended way to deal with this is to run a separate thread, whose

@@ -33,7 +33,7 @@
  * @brief RDM UID Storage and allocation
  *
  * @defgroup rdm_api RDM API
- * @brief Old interface for RDM mesage handling.
+ * @brief Old interface for RDM message handling.
  * @deprecated This is only used by the Web Server. New code should
  * use ola::rdm::PidStore.
  *

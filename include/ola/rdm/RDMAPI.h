@@ -320,7 +320,7 @@ class RDMAPI {
                                 const std::vector<UID>&> *callback,
         std::string *error);
 
-    // Network Managment Methods
+    // Network Management Methods
     bool GetCommStatus(
         unsigned int universe,
         const UID &uid,
