@@ -65,7 +65,7 @@ typedef enum {
   COMMAND_RESULT_MALFORMED,
 
   /**
-   * @brief An error occured when trying to send the command.
+   * @brief An error occurred when trying to send the command.
    */
   COMMAND_RESULT_SEND_ERROR,
 

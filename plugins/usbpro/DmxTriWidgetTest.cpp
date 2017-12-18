@@ -582,7 +582,7 @@ void DmxTriWidgetTest::testSendRDMErrors() {
   m_ss.Run();
   m_endpoint->Verify();
 
-  // confirm a invalid reponse behaves
+  // confirm a invalid response behaves
   request = NewRequest(source, destination, NULL, 0);
 
   uint8_t invalid_response[] = {0x38, 0x15};

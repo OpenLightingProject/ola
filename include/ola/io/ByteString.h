@@ -34,7 +34,7 @@ namespace io {
  * mean that string stores it's data in a contiguous block.
  *
  * In some implementations, basic_string may be reference counted, but with the
- * additional contraints added by C++11 this will not be the case, so think
+ * additional constraints added by C++11 this will not be the case, so think
  * twice about copying ByteStrings.
  */
 typedef std::basic_string<uint8_t> ByteString;

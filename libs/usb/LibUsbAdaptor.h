@@ -118,7 +118,7 @@ class LibUsbAdaptor {
                              int interface_number) = 0;
 
   /**
-   * @brief Detatch a kernel driver.
+   * @brief Detach a kernel driver.
    * @param dev a device handle
    * @param interface_number the interface to detach the driver from
    * @returns 0 on success

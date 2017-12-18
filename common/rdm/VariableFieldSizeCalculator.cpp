@@ -39,7 +39,7 @@ using ola::messaging::StringFieldDescriptor;
  * @param data_size the size in bytes of the data in this message
  * @param descriptor The descriptor to use to build the Message
  * @param variable_field_size a pointer to a int which is set to the length of
- * the variable field within this mesage.
+ * the variable field within this message.
  * @returns A enum which indicates if one (or more) variable length fields
  * exist, and if only one exists, what type it is.
  */

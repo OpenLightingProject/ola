@@ -471,7 +471,7 @@ ola.RDMPatcher.prototype.render_ = function() {
 
     var slot = 0;
     // updating in place leads to less chances of memory leaks in crappy
-    // browers
+    // browsers
     while (slot < slots.length) {
       if (tr == undefined) {
         tr = goog.dom.createElement('tr');
