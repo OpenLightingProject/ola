@@ -114,7 +114,7 @@
  * @brief Code used for unit testing.
  *
  * @namespace ola::thread
- * @brief Threads and syncronization mechanisms.
+ * @brief Threads and synchronization mechanisms.
  *
  * @namespace ola::timecode
  * @brief Timecode
