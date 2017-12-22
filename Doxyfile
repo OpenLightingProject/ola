@@ -255,7 +255,7 @@ EXTENSION_MAPPING      =
 
 # When enabled doxygen tries to link words that correspond to documented classes,
 # or namespaces to their corresponding documentation. Such a link can be
-# prevented in individual cases by by putting a % sign in front of the word or
+# prevented in individual cases by putting a % sign in front of the word or
 # globally by setting AUTOLINK_SUPPORT to NO.
 
 # Commented out due to lack of support on Travis and causing spurious errors
