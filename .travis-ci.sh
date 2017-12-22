@@ -79,8 +79,7 @@ elif [[ $TASK = 'spellchecker' ]]; then
         -wholename "./autom4te.cache/*" -or \
         -wholename "./java/Makefile" -or \
         -wholename "./java/Makefile.in" -or \
-        -wholename "./configure" -or \
-        -wholename "./Doxyfile" \
+        -wholename "./configure" \
         \) \
       | xargs) 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
@@ -101,8 +100,7 @@ elif [[ $TASK = 'spellchecker' ]]; then
       -wholename "./autom4te.cache/*" -or \
       -wholename "./java/Makefile" -or \
       -wholename "./java/Makefile.in" -or \
-      -wholename "./configure" -or \
-      -wholename "./Doxyfile" \
+      -wholename "./configure" \
       \) \
     | xargs)
     echo "Found $spellingerrors spelling errors"
