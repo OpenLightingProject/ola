@@ -6,7 +6,7 @@ is due to the fact that the USB-Endpoint-Buffers on the Pic-Microcontroller are
 only 64 bytes large.
 
 After each command send, the controller responds with an ACK-Message using the
-same format convention as for data send to the contoller.
+same format convention as for data send to the controller.
 
 Structure of the 4-Byte-Header:
 Pos     Value
