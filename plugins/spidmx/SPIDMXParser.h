@@ -34,7 +34,7 @@ class SPIDMXParser {
  public:
   SPIDMXParser(DmxBuffer *buffer, Callback0<void> *callback)
     : m_dmx_buffer(buffer),
-      m_callback(callback) {
+      m_callback(callback),
       m_state(WAIT_FOR_BREAK),   // reset in ChangeState()
       m_chunk(NULL),             // reset in ParseDmx()
       m_chunk_spi_bytecount(0),  // first reset in ParseDmx()
