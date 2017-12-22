@@ -67,6 +67,7 @@ elif [[ $TASK = 'spellchecker' ]]; then
       $(find ./ -type f -and ! \( \
         -wholename "./.git/*" -or \
         -wholename "./aclocal.m4" -or \
+        -wholename "./config/depcomp" -or \
         -wholename "./config/ltmain.sh" -or \
         -wholename "./config/config.guess" -or \
         -wholename "./config/install-sh" -or \
@@ -90,6 +91,7 @@ elif [[ $TASK = 'spellchecker' ]]; then
     $(find ./ -type f -and ! \( \
       -wholename "./.git/*" -or \
       -wholename "./aclocal.m4" -or \
+      -wholename "./config/depcomp" -or \
       -wholename "./config/ltmain.sh" -or \
       -wholename "./config/config.guess" -or \
       -wholename "./config/install-sh" -or \
