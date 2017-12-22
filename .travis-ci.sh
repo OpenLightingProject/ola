@@ -63,10 +63,48 @@ elif [[ $TASK = 'spellchecker' ]]; then
   # the build, so they are present for linting to run against
   make builtfiles
   # count the number of spellchecker errors
-  spellingerrors=$(zrun spellintian $(find ./ -type f | xargs) 2>&1 | wc -l)
+  spellingerrors=$(zrun spellintian \
+      $(find ./ -type f -and ! \( \
+        -wholename "./.git/*" -or \
+        -wholename "./aclocal.m4" -or \
+        -wholename "./config/ltmain.sh" -or \
+        -wholename "./config/config.guess" -or \
+        -wholename "./config/install-sh" -or \
+        -wholename "./config/libtool.m4" -or \
+        -wholename "./config/ltoptions.m4" -or \
+        -wholename "./libtool" -or \
+        -wholename "./config.status" -or \
+        -wholename "./Makefile" -or \
+        -wholename "./Makefile.in" -or \
+        -wholename "./autom4te.cache/*" -or \
+        -wholename "./java/Makefile" -or \
+        -wholename "./java/Makefile.in" -or \
+        -wholename "./configure" -or \
+        -wholename "./Doxyfile" \
+        \) \
+      | xargs) 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
     # print the output for info
-    zrun spellintian $(find ./ -type f | xargs)
+    zrun spellintian \
+    $(find ./ -type f -and ! \( \
+      -wholename "./.git/*" -or \
+      -wholename "./aclocal.m4" -or \
+      -wholename "./config/ltmain.sh" -or \
+      -wholename "./config/config.guess" -or \
+      -wholename "./config/install-sh" -or \
+      -wholename "./config/libtool.m4" -or \
+      -wholename "./config/ltoptions.m4" -or \
+      -wholename "./libtool" -or \
+      -wholename "./config.status" -or \
+      -wholename "./Makefile" -or \
+      -wholename "./Makefile.in" -or \
+      -wholename "./autom4te.cache/*" -or \
+      -wholename "./java/Makefile" -or \
+      -wholename "./java/Makefile.in" -or \
+      -wholename "./configure" -or \
+      -wholename "./Doxyfile" \
+      \) \
+    | xargs)
     echo "Found $spellingerrors spelling errors"
     exit 1;
   else
