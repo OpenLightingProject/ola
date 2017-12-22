@@ -34,7 +34,7 @@ class SPIDMXParser {
  public:
   SPIDMXParser(DmxBuffer *buffer, Callback0<void> *callback)
     : m_dmx_buffer(buffer),
-      m_callback(callback),
+      m_callback(callback) {
       m_state(WAIT_FOR_BREAK),   // reset in ChangeState()
       m_chunk(NULL),             // reset in ParseDmx()
       m_chunk_spi_bytecount(0),  // first reset in ParseDmx()
@@ -80,6 +80,12 @@ class SPIDMXParser {
   void InLastDataBit();
   void InDataStopbits();
 
+  /** a DmxBuffer that is filled and returned when ready */
+  DmxBuffer *m_dmx_buffer;
+
+  /** The callback to call when a packet end is detected or the chunk ends */
+  Callback0<void> *m_callback;
+
   /** current state */
   SPIDMXParser::dmx_state_t m_state;
 
@@ -95,9 +101,6 @@ class SPIDMXParser {
    */
   uint64_t m_state_spi_bitcount;
 
-  /** a DmxBuffer that is filled and returned when ready */
-  DmxBuffer *m_dmx_buffer;
-
   /** The current DMX channel value (gets assembled from multiple SPI bytes) */
   uint8_t m_current_dmx_value;
 
@@ -106,9 +109,6 @@ class SPIDMXParser {
 
   /** The currently used bit offset to sample the DMX bits */
   uint8_t m_sampling_position;
-
-  /** The callback to call when a packet end is detected or the chunk ends */
-  Callback0<void> *m_callback;
 
   DISALLOW_COPY_AND_ASSIGN(SPIDMXParser);
 };
