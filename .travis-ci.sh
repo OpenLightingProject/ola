@@ -79,7 +79,9 @@ elif [[ $TASK = 'spellchecker' ]]; then
         -wholename "./autom4te.cache/*" -or \
         -wholename "./java/Makefile" -or \
         -wholename "./java/Makefile.in" -or \
-        -wholename "./configure" \
+        -wholename "./configure" -or \
+        -wholename "tools/ola_trigger/config.tab.*" -or \
+        -wholename "tools/ola_trigger/lex.yy.cpp" \
         \) \
       | xargs) 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
@@ -100,7 +102,9 @@ elif [[ $TASK = 'spellchecker' ]]; then
       -wholename "./autom4te.cache/*" -or \
       -wholename "./java/Makefile" -or \
       -wholename "./java/Makefile.in" -or \
-      -wholename "./configure" \
+      -wholename "./configure" -or \
+      -wholename "tools/ola_trigger/config.tab.*" -or \
+      -wholename "tools/ola_trigger/lex.yy.cpp" \
       \) \
     | xargs)
     echo "Found $spellingerrors spelling errors"
