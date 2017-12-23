@@ -40,7 +40,7 @@ namespace usbdmx {
  *
  * Fadecandy devices have 8 physical ports. Each port can drive 64 RGB pixels.
  * Ideally this means we'd model each Fadecandy port as an OLA port, but that
- * introduces syncronization issues, since the underlying protocol models all 8
+ * introduces synchronization issues, since the underlying protocol models all 8
  * ports as a flat pixel array. For now we just expose the first 170 pixels.
  *
  * See https://github.com/scanlime/fadecandy/blob/master/README.md for more
