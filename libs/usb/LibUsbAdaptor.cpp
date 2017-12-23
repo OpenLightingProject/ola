@@ -108,7 +108,7 @@ bool LibUsbAdaptor::GetDeviceInfo(
     struct libusb_device *usb_device,
     const struct libusb_device_descriptor &device_descriptor,
     DeviceInformation *device_info) {
-  // Since the calls on the handle are syncronous, we don't bother adding the
+  // Since the calls on the handle are synchronous, we don't bother adding the
   // handle to the thread.
   libusb_device_handle *usb_handle;
   if (!Open(usb_device, &usb_handle)) {

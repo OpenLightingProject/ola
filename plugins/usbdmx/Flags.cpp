@@ -21,5 +21,5 @@
 #include "ola/base/Flags.h"
 
 DEFINE_default_bool(use_async_libusb, true,
-    "Disable the use of the asyncronous libusb calls, revert to syncronous");
+    "Disable the use of the asynchronous libusb calls, revert to synchronous");
 
