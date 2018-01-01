@@ -64,7 +64,7 @@ struct EndpointCapabilties {
 }  // namespace
 
 JaRuleWidget::JaRuleWidget(ola::thread::ExecutorInterface *executor,
-                           AsyncronousLibUsbAdaptor *adaptor,
+                           AsynchronousLibUsbAdaptor *adaptor,
                            libusb_device *usb_device)
   : m_executor(executor),
     m_adaptor(adaptor),
@@ -221,7 +221,7 @@ bool JaRuleWidget::InternalInit() {
     return false;
   }
 
-  AsyncronousLibUsbAdaptor::DeviceInformation device_info;
+  AsynchronousLibUsbAdaptor::DeviceInformation device_info;
   if (!m_adaptor->GetDeviceInfo(m_device, device_descriptor, &device_info)) {
     return false;
   }

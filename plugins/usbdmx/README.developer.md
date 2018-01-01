@@ -91,7 +91,7 @@ guide assumes the new USB Device has a single DMX512 Interface.
  - Write the `DeviceAdded()` method, to detect the new USB Device and create
    either a synchronous or asynchronous widget, depending on the
    `--use-async-libusb` flag.
-3. Extend the `SyncronizedWidgetObserver` with new `NewWidget()` and
+3. Extend the `SynchronizedWidgetObserver` with new `NewWidget()` and
    `WidgetRemoved()` removed methods for the new FooWidget.
 4. Implement the new `NewWidget()` and `WidgetRemoved()` methods in both the
    SyncPluginImpl and AsyncPluginImpl.
