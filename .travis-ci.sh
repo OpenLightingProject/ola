@@ -9,6 +9,28 @@ CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cppli
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
+SPELLINGBLACKLIST=$(cat <<-BLACKLIST
+      -wholename "./.git/*" -or \
+      -wholename "./aclocal.m4" -or \
+      -wholename "./config/depcomp" -or \
+      -wholename "./config/ltmain.sh" -or \
+      -wholename "./config/config.guess" -or \
+      -wholename "./config/install-sh" -or \
+      -wholename "./config/libtool.m4" -or \
+      -wholename "./config/ltoptions.m4" -or \
+      -wholename "./libtool" -or \
+      -wholename "./config.status" -or \
+      -wholename "./Makefile" -or \
+      -wholename "./Makefile.in" -or \
+      -wholename "./autom4te.cache/*" -or \
+      -wholename "./java/Makefile" -or \
+      -wholename "./java/Makefile.in" -or \
+      -wholename "./configure" -or \
+      -wholename "./tools/ola_trigger/config.tab.*" -or \
+      -wholename "./tools/ola_trigger/lex.yy.cpp"
+BLACKLIST
+)
+
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   autoreconf -i;
@@ -55,34 +77,37 @@ elif [[ $TASK = 'check-licences' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
-elif [[ $TASK = 'spellchecker' ]]; then
-  # run the spellchecker only if it is the requested task
+elif [[ $TASK = 'spellintian' ]]; then
+  # run spellintian only if it is the requested task, ignoring duplicate words
   autoreconf -i;
   ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for linting to run against
   make builtfiles
   spellingfiles=$(find ./ -type f -and ! \( \
-      -wholename "./.git/*" -or \
-      -wholename "./aclocal.m4" -or \
-      -wholename "./config/depcomp" -or \
-      -wholename "./config/ltmain.sh" -or \
-      -wholename "./config/config.guess" -or \
-      -wholename "./config/install-sh" -or \
-      -wholename "./config/libtool.m4" -or \
-      -wholename "./config/ltoptions.m4" -or \
-      -wholename "./libtool" -or \
-      -wholename "./config.status" -or \
-      -wholename "./Makefile" -or \
-      -wholename "./Makefile.in" -or \
-      -wholename "./autom4te.cache/*" -or \
-      -wholename "./java/Makefile" -or \
-      -wholename "./java/Makefile.in" -or \
-      -wholename "./configure" -or \
-      -wholename "./tools/ola_trigger/config.tab.*" -or \
-      -wholename "./tools/ola_trigger/lex.yy.cpp" \
+      $SPELLINGBLACKLIST \
       \) | xargs)
-  # count the number of spellchecker errors
+  # count the number of spellintian errors, ignoring duplicate words
+  spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | grep -v "\(duplicate word\)" | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun spellintian $spellingfiles | grep -v "\(duplicate word\)"
+    echo "Found $spellingerrors spelling errors, ignoring duplicates"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors, ignoring duplicates"
+  fi;
+elif [[ $TASK = 'spellintian-duplicates' ]]; then
+  # run spellintian only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for linting to run against
+  make builtfiles
+  spellingfiles=$(find ./ -type f -and ! \( \
+      $SPELLINGBLACKLIST \
+      \) | xargs)
+  # count the number of spellintian errors
   spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
     # print the output for info
