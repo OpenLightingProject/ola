@@ -62,7 +62,9 @@ bool NanoleafPlugin::StartHook() {
     }
     IPV4Address target;
     if (IPV4Address::FromString(*iter, &target)) {
-      NanoleafDevice *device = new NanoleafDevice(this, m_preferences, m_plugin_adaptor,
+      NanoleafDevice *device = new NanoleafDevice(this,
+                                                  m_preferences,
+                                                  m_plugin_adaptor,
                                                   target);
 
       if (!device) {
@@ -79,7 +81,7 @@ bool NanoleafPlugin::StartHook() {
       OLA_WARN << "Invalid controller IP address : " << *iter;
     }
   }
-  // TODO: Check we got at least one good device?
+  // TODO(Peter): Check we got at least one good device?
   return true;
 }
 

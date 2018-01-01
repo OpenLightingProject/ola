@@ -92,7 +92,8 @@ void NanoleafNodeTest::testSendDMX() {
 
   DmxBuffer buffer;
   buffer.SetFromString("1,5,8,10,14,45");
-  OLA_ASSERT_TRUE(node.SendDMX(IPV4SocketAddress(target_ip, NANOLEAF_PORT), buffer));
+  OLA_ASSERT_TRUE(node.SendDMX(IPV4SocketAddress(target_ip, NANOLEAF_PORT),
+                               buffer));
   m_socket->Verify();
   OLA_ASSERT(node.Stop());
 }

@@ -182,7 +182,8 @@ void DynamicPluginLoader::PopulatePlugins() {
 #endif  // USE_MILINST
 
 #ifdef USE_NANOLEAF
-  m_plugins.push_back(new ola::plugin::nanoleaf::NanoleafPlugin(m_plugin_adaptor));
+  m_plugins.push_back(
+      new ola::plugin::nanoleaf::NanoleafPlugin(m_plugin_adaptor));
 #endif  // USE_NANOLEAF
 
 #ifdef USE_OPENDMX

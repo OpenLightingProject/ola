@@ -97,7 +97,8 @@ bool NanoleafNode::Stop() {
 /*
  * Send some DMX data
  */
-bool NanoleafNode::SendDMX(const IPV4SocketAddress &target, const DmxBuffer &buffer) {
+bool NanoleafNode::SendDMX(const IPV4SocketAddress &target,
+                           const DmxBuffer &buffer) {
   if (!buffer.Size()) {
     OLA_DEBUG << "Not sending 0 length packet";
     return true;
@@ -114,7 +115,8 @@ bool NanoleafNode::SendDMX(const IPV4SocketAddress &target, const DmxBuffer &buf
   m_output_stream << panel_count;
   for (uint8_t i = 0; i < panel_count; i++) {
     m_output_stream << m_panels[i] << NANOLEAF_FRAME_COUNT;
-    m_output_stream.Write(buffer.GetRaw() + (i * NANOLEAF_SLOTS_PER_PANEL), NANOLEAF_SLOTS_PER_PANEL);
+    m_output_stream.Write(buffer.GetRaw() + (i * NANOLEAF_SLOTS_PER_PANEL),
+                          NANOLEAF_SLOTS_PER_PANEL);
     m_output_stream << NANOLEAF_WHITE_LEVEL << NANOLEAF_TRANSITION_TIME;
   }
 
@@ -166,9 +168,10 @@ bool NanoleafNode::InitNetwork() {
     return false;
   }
 
-  //if (!socket->Bind(IPV4SocketAddress(IPV4Address::WildCard(), NANOLEAF_PORT))) {
-  //  return false;
-  //}
+  // if (!socket->Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+  //                   NANOLEAF_PORT))) {
+  //   return false;
+  // }
 
   // Do we need to call this if we don't bind?
   socket->SetOnData(NewCallback(this, &NanoleafNode::SocketReady));
