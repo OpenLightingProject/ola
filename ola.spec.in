@@ -81,11 +81,11 @@ sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 #we can't fix this upstream (I think)
 sed -i "s|\$(LN_S) -f \$(bindir)\/|\$(LN_S) -f |g" Makefile
-make %{!?el6:%{?_smp_mflags}} #el6 has problems with parralel building
+make %{!?el6:%{?_smp_mflags}} #el6 has problems with parallel building
 
 %check
 export LD_LIBRARY_PATH="%buildroot%{_libdir}"
-make check %{!?el6:%{?_smp_mflags}} #el6 has problems with parralel building
+make check %{!?el6:%{?_smp_mflags}} #el6 has problems with parallel building
 find %buildroot -name "*\.la" -delete
 find %buildroot -name "*\.a" -delete
 
