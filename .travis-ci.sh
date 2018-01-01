@@ -92,10 +92,10 @@ elif [[ $TASK = 'spellintian' ]]; then
   if [[ $spellingerrors -ne 0 ]]; then
     # print the output for info
     zrun spellintian $spellingfiles | grep -v "\(duplicate word\)"
-    echo "Found $spellingerrors spelling errors, ignoring duplicates"
+    echo "Found $spellingerrors spelling errors via spellintian, ignoring duplicates"
     exit 1;
   else
-    echo "Found $spellingerrors spelling errors, ignoring duplicates"
+    echo "Found $spellingerrors spelling errors via spellintian, ignoring duplicates"
   fi;
 elif [[ $TASK = 'spellintian-duplicates' ]]; then
   # run spellintian only if it is the requested task
@@ -112,10 +112,30 @@ elif [[ $TASK = 'spellintian-duplicates' ]]; then
   if [[ $spellingerrors -ne 0 ]]; then
     # print the output for info
     zrun spellintian $spellingfiles
-    echo "Found $spellingerrors spelling errors"
+    echo "Found $spellingerrors spelling errors via spellintian"
     exit 1;
   else
-    echo "Found $spellingerrors spelling errors"
+    echo "Found $spellingerrors spelling errors via spellintian"
+  fi;
+elif [[ $TASK = 'codespell' ]]; then
+  # run codespell only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for codespell to run against
+  make builtfiles
+  spellingfiles=$(eval "find ./ -type f -and ! \( \
+      $SPELLINGBLACKLIST \
+      \) | xargs")
+  # count the number of codespell errors
+  spellingerrors=$(zrun codespell --quiet 2 $spellingfiles 2>&1 | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun codespell --quiet 2 $spellingfiles
+    echo "Found $spellingerrors spelling errors via codespell"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors via codespell"
   fi;
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
