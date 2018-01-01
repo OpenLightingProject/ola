@@ -73,13 +73,13 @@ class USBDeviceManager {
   ~USBDeviceManager();
 
   /**
-   * @brief Get the AsyncronousLibUsbAdaptor to use.
-   * @returns An AsyncronousLibUsbAdaptor, ownership is not transferred.
+   * @brief Get the AsynchronousLibUsbAdaptor to use.
+   * @returns An AsynchronousLibUsbAdaptor, ownership is not transferred.
    * @pre Must be called after Start()
    *
    * The adaptor is valid until the call to Stop().
    */
-  ola::usb::AsyncronousLibUsbAdaptor *GetUSBAdaptor() const;
+  ola::usb::AsynchronousLibUsbAdaptor *GetUSBAdaptor() const;
 
   /**
    * @brief Start the device manager.

@@ -352,28 +352,28 @@ USBDeviceID BaseLibUsbAdaptor::GetDeviceId(libusb_device *device) const {
                      libusb_get_device_address(device));
 }
 
-// SyncronousLibUsbAdaptor
+// SynchronousLibUsbAdaptor
 // -----------------------------------------------------------------------------
-bool SyncronousLibUsbAdaptor::OpenDevice(libusb_device *usb_device,
-                                         libusb_device_handle **usb_handle) {
+bool SynchronousLibUsbAdaptor::OpenDevice(libusb_device *usb_device,
+                                          libusb_device_handle **usb_handle) {
   return Open(usb_device, usb_handle);
 }
 
-bool SyncronousLibUsbAdaptor::OpenDeviceAndClaimInterface(
+bool SynchronousLibUsbAdaptor::OpenDeviceAndClaimInterface(
     libusb_device *usb_device,
     int interface,
     libusb_device_handle **usb_handle) {
   return OpenHandleAndClaimInterface(usb_device, interface, usb_handle);
 }
 
-void SyncronousLibUsbAdaptor::Close(libusb_device_handle *usb_handle) {
+void SynchronousLibUsbAdaptor::Close(libusb_device_handle *usb_handle) {
   libusb_close(usb_handle);
 }
 
-// AsyncronousLibUsbAdaptor
+// AsynchronousLibUsbAdaptor
 // -----------------------------------------------------------------------------
-bool AsyncronousLibUsbAdaptor::OpenDevice(libusb_device *usb_device,
-                                          libusb_device_handle **usb_handle) {
+bool AsynchronousLibUsbAdaptor::OpenDevice(libusb_device *usb_device,
+                                           libusb_device_handle **usb_handle) {
   bool ok = Open(usb_device, usb_handle);
   if (ok) {
     m_thread->OpenHandle();
@@ -381,7 +381,7 @@ bool AsyncronousLibUsbAdaptor::OpenDevice(libusb_device *usb_device,
   return ok;
 }
 
-bool AsyncronousLibUsbAdaptor::OpenDeviceAndClaimInterface(
+bool AsynchronousLibUsbAdaptor::OpenDeviceAndClaimInterface(
     libusb_device *usb_device,
     int interface,
     libusb_device_handle **usb_handle) {
@@ -392,11 +392,11 @@ bool AsyncronousLibUsbAdaptor::OpenDeviceAndClaimInterface(
   return ok;
 }
 
-void AsyncronousLibUsbAdaptor::Close(libusb_device_handle *handle) {
+void AsynchronousLibUsbAdaptor::Close(libusb_device_handle *handle) {
   m_thread->CloseHandle(handle);
 }
 
-int AsyncronousLibUsbAdaptor::ControlTransfer(
+int AsynchronousLibUsbAdaptor::ControlTransfer(
     OLA_UNUSED libusb_device_handle *dev_handle,
     OLA_UNUSED uint8_t bmRequestType,
     OLA_UNUSED uint8_t bRequest,
@@ -405,32 +405,32 @@ int AsyncronousLibUsbAdaptor::ControlTransfer(
     OLA_UNUSED unsigned char *data,
     OLA_UNUSED uint16_t wLength,
     OLA_UNUSED unsigned int timeout) {
-  OLA_DEBUG << "libusb_control_transfer in an AsyncronousLibUsbAdaptor";
+  OLA_DEBUG << "libusb_control_transfer in an AsynchronousLibUsbAdaptor";
   return BaseLibUsbAdaptor::ControlTransfer(dev_handle, bmRequestType,
                                             bRequest, wValue, wIndex, data,
                                             wLength, timeout);
 }
 
-int AsyncronousLibUsbAdaptor::BulkTransfer(
+int AsynchronousLibUsbAdaptor::BulkTransfer(
     struct libusb_device_handle *dev_handle,
     unsigned char endpoint,
     unsigned char *data,
     int length,
     int *transferred,
     unsigned int timeout) {
-  OLA_DEBUG << "libusb_bulk_transfer in an AsyncronousLibUsbAdaptor";
+  OLA_DEBUG << "libusb_bulk_transfer in an AsynchronousLibUsbAdaptor";
   return BaseLibUsbAdaptor::BulkTransfer(dev_handle, endpoint, data, length,
                                          transferred, timeout);
 }
 
-int AsyncronousLibUsbAdaptor::InterruptTransfer(
+int AsynchronousLibUsbAdaptor::InterruptTransfer(
     OLA_UNUSED libusb_device_handle *dev_handle,
     OLA_UNUSED unsigned char endpoint,
     OLA_UNUSED unsigned char *data,
     OLA_UNUSED int length,
     OLA_UNUSED int *actual_length,
     OLA_UNUSED unsigned int timeout) {
-  OLA_DEBUG << "libusb_interrupt_transfer in an AsyncronousLibUsbAdaptor";
+  OLA_DEBUG << "libusb_interrupt_transfer in an AsynchronousLibUsbAdaptor";
   return BaseLibUsbAdaptor::InterruptTransfer(dev_handle, endpoint, data,
                                               length, actual_length, timeout);
 }

@@ -27,6 +27,7 @@
 #include "ola/io/BigEndianStream.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/SelectServerInterface.h"
+#include "ola/network/Interface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
 
