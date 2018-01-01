@@ -470,8 +470,8 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
   /**
    * Notify the blocked thread we're done
    */
-  void CompleteSyncronization(ola::thread::ConditionVariable *condition,
-                              ola::thread::Mutex *mutex);
+  void CompleteSynchronization(ola::thread::ConditionVariable *condition,
+                               ola::thread::Mutex *mutex);
 };
 
 
