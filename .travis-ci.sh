@@ -84,9 +84,9 @@ elif [[ $TASK = 'spellintian' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for linting to run against
   make builtfiles
-  spellingfiles=$(find ./ -type f -and ! \( \
+  spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
-      \) | xargs)
+      \) | xargs")
   # count the number of spellintian errors, ignoring duplicate words
   spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | grep -v "\(duplicate word\)" | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
@@ -104,9 +104,9 @@ elif [[ $TASK = 'spellintian-duplicates' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for linting to run against
   make builtfiles
-  spellingfiles=$(find ./ -type f -and ! \( \
+  spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
-      \) | xargs)
+      \) | xargs")
   # count the number of spellintian errors
   spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
