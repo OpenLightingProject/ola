@@ -82,7 +82,7 @@ void DescriptorConsistencyCheckerTest::testOkDescriptors() {
 
 
 /*
- * Verify that the check fails if the descriptor contains mutiple, variable
+ * Verify that the check fails if the descriptor contains multiple, variable
  * length strings. Also check that it passes if there are multiple, fixed
  * length strings.
  */

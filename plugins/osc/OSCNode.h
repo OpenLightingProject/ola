@@ -43,7 +43,7 @@ namespace osc {
  *
  * Sending:
  *   For sending, OSC Targets are assigned to groups. A group ID is just an
- *   arbitary integer used to identify the group. It's not sent in the OSC
+ *   arbitrary integer used to identify the group. It's not sent in the OSC
  *   packets. For example:
  *
  *   OSCNode node(OSCNode::OSCNodeOptions(), ...);

@@ -54,14 +54,14 @@ namespace spidmx {
  * @param buffersize - Size of the buffer
  */
 void SPIDMXParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
-  chunk = buffer;
+  m_chunk = buffer;
 
-  chunk_bitcount = 0;
+  m_chunk_spi_bytecount = 0;
 
   ChangeState(WAIT_FOR_BREAK);
 
-  while (chunk_bitcount < buffersize) {
-    switch (state) {
+  while (m_chunk_spi_bytecount < buffersize) {
+    switch (m_state) {
       case WAIT_FOR_BREAK:
         WaitForBreak();
         break;
@@ -91,7 +91,7 @@ void SPIDMXParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
         break;
 
       case IN_DATA_BITS:
-        if (state_bitcount < 7) {
+        if (m_state_spi_bitcount < 7) {
           InDataBits();
         } else {
           InLastDataBit();
@@ -104,11 +104,11 @@ void SPIDMXParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
 
       default:
         // should not happen, but prevent an infinite loop anyways
-        chunk_bitcount++;
+        m_chunk_spi_bytecount++;
     }
   }
 
-  if (state >= IN_DATA_STARTBIT) {
+  if (m_state >= IN_DATA_STARTBIT) {
     PacketComplete();
   }
 }
@@ -117,16 +117,16 @@ void SPIDMXParser::ParseDmx(uint8_t *buffer, uint64_t buffersize) {
  * Changes the current state and resets other depending variables.
  */
 void SPIDMXParser::ChangeState(SPIDMXParser::dmx_state_t new_state) {
-  OLA_DEBUG << "iteration: " << chunk_bitcount
-            << ", change state to " << state
-            << ", data=" << chunk[chunk_bitcount]
-            << ", state_bitcount=" << state_bitcount;
+  OLA_DEBUG << "iteration: " << m_chunk_spi_bytecount
+            << ", change state to " << m_state
+            << ", data=" << m_chunk[m_chunk_spi_bytecount]
+            << ", m_state_spi_bitcount=" << m_state_spi_bitcount;
 
-  state = new_state;
-  state_bitcount = 0;
+  m_state = new_state;
+  m_state_spi_bitcount = 0;
 
-  if (state == WAIT_FOR_MAB) {
-    channel_count = -1;
+  if (m_state == WAIT_FOR_MAB) {
+    m_channel_count = -1;
   }
 }
 
@@ -213,9 +213,9 @@ int8_t SPIDMXParser::DetectRisingEdge(uint8_t byte) {
  * Warning: This does not reset the current state!
  */
 void SPIDMXParser::PacketComplete() {
-  channel_count++;
+  m_channel_count++;
 
-  OLA_DEBUG << "DMX packet complete (" << channel_count << " channels).";
+  OLA_DEBUG << "DMX packet complete (" << m_channel_count << " channels).";
 
   if (m_callback) {
     m_callback->Run();
@@ -226,12 +226,12 @@ void SPIDMXParser::PacketComplete() {
  * Stay in this state until we find a falling edge, then change to IN_BREAK.
  */
 void SPIDMXParser::WaitForBreak() {
-  int8_t zeros = DetectFallingEdge(chunk[chunk_bitcount]);
+  int8_t zeros = DetectFallingEdge(m_chunk[m_chunk_spi_bytecount]);
   if (zeros > 0) {
     ChangeState(IN_BREAK);
-    state_bitcount = zeros;
+    m_state_spi_bitcount = zeros;
   }
-  chunk_bitcount++;
+  m_chunk_spi_bytecount++;
 }
 
 /**
@@ -239,17 +239,17 @@ void SPIDMXParser::WaitForBreak() {
  * If so, change to WAIT_FOR_MAB, else stay here.
  */
 void SPIDMXParser::InBreak() {
-  if (chunk[chunk_bitcount] == 0) {
-    state_bitcount += 8;
+  if (m_chunk[m_chunk_spi_bytecount] == 0) {
+    m_state_spi_bitcount += 8;
 
     // (88µs break / 4µs per DMX bit) * 7.5 SPI bits = 165
-    if (state_bitcount > 165) {
+    if (m_state_spi_bitcount > 165) {
       ChangeState(WAIT_FOR_MAB);
     }
   } else {
     ChangeState(WAIT_FOR_BREAK);
   }
-  chunk_bitcount++;
+  m_chunk_spi_bytecount++;
 }
 
 /**
@@ -257,17 +257,17 @@ void SPIDMXParser::InBreak() {
  * to IN_MAB or stay here.
  */
 void SPIDMXParser::WaitForMab() {
-  uint8_t byte = chunk[chunk_bitcount];
+  uint8_t byte = m_chunk[m_chunk_spi_bytecount];
   if (byte != 0) {
     int8_t ones = DetectRisingEdge(byte);
     if (ones > 0) {
       ChangeState(IN_MAB);
-      state_bitcount = ones;
+      m_state_spi_bitcount = ones;
     } else {
       ChangeState(WAIT_FOR_BREAK);
     }
   }
-  chunk_bitcount++;
+  m_chunk_spi_bytecount++;
 }
 
 /**
@@ -276,25 +276,25 @@ void SPIDMXParser::WaitForMab() {
  * get unexpected spikes, go back to WAIT_FOR_BREAK.
  */
 void SPIDMXParser::InMab() {
-  uint8_t byte = chunk[chunk_bitcount];
+  uint8_t byte = m_chunk[m_chunk_spi_bytecount];
   if (byte == 0xff) {
-    state_bitcount += 8;
+    m_state_spi_bitcount += 8;
   } else {
     int8_t zeros = DetectFallingEdge(byte);
     int8_t ones = 8 - zeros;
 
     // (8µs MAB / 4µs per DMX bit) * 7.5 SPI bits = 15
-    if (zeros < 0 || state_bitcount + ones <= 15) {
+    if (zeros < 0 || m_state_spi_bitcount + ones <= 15) {
       ChangeState(WAIT_FOR_BREAK);
-      chunk_bitcount++;
+      m_chunk_spi_bytecount++;
       return;
     }
 
     ChangeState(IN_STARTCODE);
-    state_bitcount = zeros;
+    m_state_spi_bitcount = zeros;
   }
 
-  chunk_bitcount++;
+  m_chunk_spi_bytecount++;
 }
 
 /**
@@ -304,28 +304,28 @@ void SPIDMXParser::InMab() {
  * IN_STARTCODE_STOPBITS, else go back to WAIT_FOR_BREAK.
  */
 void SPIDMXParser::InStartcode() {
-  uint8_t byte = chunk[chunk_bitcount];
+  uint8_t byte = m_chunk[m_chunk_spi_bytecount];
   if (byte == 0x00) {
-    state_bitcount += 8;
+    m_state_spi_bitcount += 8;
   } else {
     int8_t ones = DetectRisingEdge(byte);
     int8_t zeros = 8 - ones;
 
-    state_bitcount += zeros;
+    m_state_spi_bitcount += zeros;
 
     // (1 start bit + 8 NULL code bits) * 7.5 SPI bits >= 67
     // (1 start bit + 8 NULL code bits) * 8.5 SPI bits <= 77
-    if (zeros < 0 || state_bitcount <= 67 || state_bitcount >= 77) {
+    if (zeros < 0 || m_state_spi_bitcount <= 67 || m_state_spi_bitcount >= 77) {
       ChangeState(WAIT_FOR_BREAK);
-      chunk_bitcount++;
+      m_chunk_spi_bytecount++;
       return;
     }
 
     ChangeState(IN_STARTCODE_STOPBITS);
-    state_bitcount = ones;
+    m_state_spi_bitcount = ones;
   }
 
-  chunk_bitcount++;
+  m_chunk_spi_bytecount++;
 }
 
 /**
@@ -334,72 +334,75 @@ void SPIDMXParser::InStartcode() {
  * bits are too short, go back to WAIT_FOR_BREAK.
  */
 void SPIDMXParser::InStartcodeStopbits() {
-  uint8_t byte = chunk[chunk_bitcount];
+  uint8_t byte = m_chunk[m_chunk_spi_bytecount];
   if (byte == 0xff) {
-    state_bitcount += 8;
+    m_state_spi_bitcount += 8;
   } else {
     int8_t zeros = DetectFallingEdge(byte);
     int8_t ones = 8 - zeros;
 
     // (8µs stop bits / 4µs per DMX bit) * 7.5 SPI bits = 15
-    if (zeros < 0 || state_bitcount + ones <= 15) {
+    if (zeros < 0 || m_state_spi_bitcount + ones <= 15) {
       ChangeState(WAIT_FOR_BREAK);
-      chunk_bitcount++;
+      m_chunk_spi_bytecount++;
       return;
     }
 
     ChangeState(IN_DATA_STARTBIT);
-    state_bitcount = zeros;
+    m_state_spi_bitcount = zeros;
   }
 
-  chunk_bitcount++;
+  m_chunk_spi_bytecount++;
 }
 
 /**
  * Now, we're close to the actual data. We always want to sample in the middle
- * of a SPI byte, so we have to calculate the sampling position. Additionally,
+ * of an SPI byte, so we have to calculate the sampling position. Additionally,
  * we could have to look at the last byte again. See the following table:
- * 
- * x denotes the first DMX data bit, SP the sampling position
  *
- * last & current byte               new current byte
- * -------------------               ----------------
+ * d denotes the first DMX data bit
+ * ^ is the desired sampling position
+ * SP = sampling position
+ * SBC = m_state_spi_bitcount
  *
- * 00000000 xxxxxxxx   -> backtrack:   00000000
- *                                        ^      SP = 4
- * 10000000 0xxxxxxx   -> backtrack:   10000000
- *                                         ^     SP = 3
- * 11000000 00xxxxxx   -> backtrack:   11000000
- *                                          ^    SP = 2
- * 11100000 000xxxxx   -> backtrack:   11100000
- *                                           ^   SP = 1
- * 11110000 0000xxxx   -> backtrack:   11110000
- *                                            ^  SP = 0
- * 11111000 00000xxx   -> nop:         00000xxx
- *                                     ^         SP = 7
- * 11111100 000000xx   -> nop:         000000xx
- *                                      ^        SP = 6
- * 11111110 0000000x   -> nop:         0000000x
- *                                       ^       SP = 5
+ * SBC  last & current byte               new current byte
+ * ---  -------------------               ----------------
+ *
+ *  8    00000000 dddddddd   -> backtrack:   00000000
+ *          ^                                   ^      SP = 4
+ *  7    10000000 0ddddddd   -> backtrack:   10000000
+ *           ^                                   ^     SP = 3
+ *  6    11000000 00dddddd   -> backtrack:   11000000
+ *            ^                                   ^    SP = 2
+ *  5    11100000 000ddddd   -> backtrack:   11100000
+ *             ^                                   ^   SP = 1
+ *  4    11110000 0000dddd   -> backtrack:   11110000
+ *              ^                                   ^  SP = 0
+ *  3    11111000 00000ddd   -> nop:         00000ddd
+ *                ^                          ^         SP = 7
+ *  2    11111100 000000dd   -> nop:         000000dd
+ *                 ^                          ^        SP = 6
+ *  1    11111110 0000000d   -> nop:         0000000d
+ *                  ^                          ^       SP = 5
  */
 void SPIDMXParser::InDataStartbit() {
-  uint8_t byte = chunk[chunk_bitcount];
+  uint8_t byte = m_chunk[m_chunk_spi_bytecount];
 
-  if (state_bitcount >= 4) {
-    // look at the last byte again and don't increase chunk_bitcount
-    byte = chunk[chunk_bitcount - 1];
-    sampling_position = state_bitcount - 4;
+  if (m_state_spi_bitcount >= 4) {
+    // look at the last byte again and don't increase m_chunk_spi_bytecount
+    byte = m_chunk[m_chunk_spi_bytecount - 1];
+    m_sampling_position = m_state_spi_bitcount - 4;
   } else {
     // next byte will be handled in next step as usual
-    chunk_bitcount++;
-    sampling_position = state_bitcount + 8 - 4;
+    m_chunk_spi_bytecount++;
+    m_sampling_position = m_state_spi_bitcount + 8 - 4;
   }
 
   // start bit must be zero
-  if ((byte & (1 << sampling_position))) {
+  if ((byte & (1 << m_sampling_position))) {
     ChangeState(WAIT_FOR_BREAK);
   } else {
-    current_dmx_value = 0x00;
+    m_current_dmx_value = 0x00;
     ChangeState(IN_DATA_BITS);
   }
 }
@@ -409,16 +412,16 @@ void SPIDMXParser::InDataStartbit() {
  *
  * Sample the current DMX bit at the calculated position and update the current
  * DMX value accordingly.
- * Note: state_bitcount is abused in this state because it doesn't count SPI
- * bits but DMX bits here.
+ * Note: m_state_spi_bitcount is abused in this state because it doesn't count
+ * SPI bits but DMX bits here.
  */
 void SPIDMXParser::InDataBits() {
-  uint8_t byte = chunk[chunk_bitcount];
-  uint8_t read_bit = ((byte & (1 << sampling_position)) ? 1 : 0);
-  current_dmx_value |= read_bit << state_bitcount;
+  uint8_t byte = m_chunk[m_chunk_spi_bytecount];
+  uint8_t read_bit = ((byte & (1 << m_sampling_position)) ? 1 : 0);
+  m_current_dmx_value |= read_bit << m_state_spi_bitcount;
 
-  state_bitcount++;
-  chunk_bitcount++;
+  m_state_spi_bitcount++;
+  m_chunk_spi_bytecount++;
 }
 
 /**
@@ -426,19 +429,19 @@ void SPIDMXParser::InDataBits() {
  * find the stop bits. Change to IN_DATA_STOPBITS in every case.
  */
 void SPIDMXParser::InLastDataBit() {
-  uint8_t byte = chunk[chunk_bitcount];
-  uint8_t read_bit = ((byte & (1 << sampling_position)) ? 1 : 0);
-  current_dmx_value |= read_bit << 7;
+  uint8_t byte = m_chunk[m_chunk_spi_bytecount];
+  uint8_t read_bit = ((byte & (1 << m_sampling_position)) ? 1 : 0);
+  m_current_dmx_value |= read_bit << 7;
 
   ChangeState(IN_DATA_STOPBITS);
   // assume that bit after sample position belongs to stop bits
-  if (sampling_position >= 4) {
-    state_bitcount = sampling_position;
+  if (m_sampling_position >= 4) {
+    m_state_spi_bitcount = m_sampling_position;
   } else {
-    state_bitcount = sampling_position + 8;
-    chunk_bitcount++;  // assume next byte is 0xff
+    m_state_spi_bitcount = m_sampling_position + 8;
+    m_chunk_spi_bytecount++;  // assume next byte is 0xff
   }
-  chunk_bitcount++;
+  m_chunk_spi_bytecount++;
 }
 
 /**
@@ -456,29 +459,30 @@ void SPIDMXParser::InLastDataBit() {
  * SPI bits can already be counted to the break.
  */
 void SPIDMXParser::InDataStopbits() {
-  uint8_t byte = chunk[chunk_bitcount];
+  uint8_t byte = m_chunk[m_chunk_spi_bytecount];
   if (byte == 0xff) {
-    state_bitcount += 8;
-  } else if (byte == 0x00 && state_bitcount <= 11
-      && current_dmx_value == 0x00) {  // we are actually in a break
+    m_state_spi_bitcount += 8;
+  } else if (byte == 0x00 && m_state_spi_bitcount <= 11
+      && m_current_dmx_value == 0x00) {  // we are actually in a break
     // all later channels are definitely zero
-    m_dmx_buffer->SetRangeToValue(channel_count + 1, 0x00, 511 - channel_count);
-    channel_count = 511;
+    m_dmx_buffer->SetRangeToValue(m_channel_count + 1, 0x00,
+                                  511 - m_channel_count);
+    m_channel_count = 511;
     PacketComplete();
 
     ChangeState(IN_BREAK);
-    state_bitcount = 10 * 8;
+    m_state_spi_bitcount = 10 * 8;
   } else {
     int8_t zeros = DetectFallingEdge(byte);
     int8_t ones = 8 - zeros;
 
     // (8µs stop bits / 4µs per DMX bit) * 7.5 SPI bits = 15
-    if (state_bitcount + ones <= 15) {
+    if (m_state_spi_bitcount + ones <= 15) {
       // stop bits were too short
       PacketComplete();
 
       ChangeState(WAIT_FOR_BREAK);
-      chunk_bitcount++;
+      m_chunk_spi_bytecount++;
       return;
     }
 
@@ -493,25 +497,25 @@ void SPIDMXParser::InDataStopbits() {
         PacketComplete();
 
         ChangeState(WAIT_FOR_BREAK);
-        chunk_bitcount++;
+        m_chunk_spi_bytecount++;
         return;
       }
     }
 
-    channel_count++;  // mark channel receive as complete
-    m_dmx_buffer->SetChannel(channel_count, current_dmx_value);
+    m_channel_count++;  // mark channel receive as complete
+    m_dmx_buffer->SetChannel(m_channel_count, m_current_dmx_value);
 
-    if (channel_count == 511) {
+    if (m_channel_count == 511) {
       // last channel filled
       PacketComplete();
       ChangeState(IN_BREAK);
     } else {
       ChangeState(IN_DATA_STARTBIT);
     }
-    state_bitcount = zeros;
+    m_state_spi_bitcount = zeros;
   }
 
-  chunk_bitcount++;
+  m_chunk_spi_bytecount++;
 }
 
 }  // namespace spidmx

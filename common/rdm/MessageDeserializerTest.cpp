@@ -448,7 +448,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
   // now setup the inputs
   const uint8_t data[] = {0, 0, 0, 1, 0, 1, 2, 1, 0, 3, 1, 1};
 
-  // an empty mesage
+  // an empty message
   auto_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       data,

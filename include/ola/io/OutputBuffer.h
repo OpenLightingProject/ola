@@ -29,7 +29,7 @@ namespace io {
 
 /**
  * OutputBufferInterface.
- * Output buffers allow appending arbitary data to the end. An important
+ * Output buffers allow appending arbitrary data to the end. An important
  * property of an OutputBuffer is that it doesn't have a fixed length. You can
  * append as much data as you want.
  */
