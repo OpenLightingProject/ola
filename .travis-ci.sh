@@ -82,7 +82,7 @@ elif [[ $TASK = 'spellintian' ]]; then
   autoreconf -i;
   ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
-  # the build, so they are present for linting to run against
+  # the build, so they are present for spellintian to run against
   make builtfiles
   spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
@@ -102,7 +102,7 @@ elif [[ $TASK = 'spellintian-duplicates' ]]; then
   autoreconf -i;
   ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
-  # the build, so they are present for linting to run against
+  # the build, so they are present for spellintian to run against
   make builtfiles
   spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
