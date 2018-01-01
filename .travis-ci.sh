@@ -15,9 +15,11 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./config/depcomp" -or \
       -wholename "./config/ltmain.sh" -or \
       -wholename "./config/config.guess" -or \
+      -wholename "./config/config.sub" -or \
       -wholename "./config/install-sh" -or \
       -wholename "./config/libtool.m4" -or \
       -wholename "./config/ltoptions.m4" -or \
+      -wholename "./config/ltsugar.m4" -or \
       -wholename "./libtool" -or \
       -wholename "./config.status" -or \
       -wholename "./Makefile" -or \
@@ -25,7 +27,12 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./autom4te.cache/*" -or \
       -wholename "./java/Makefile" -or \
       -wholename "./java/Makefile.in" -or \
+      -wholename "./olad/www/new/libs/angular/js/angular.min.js" -or \
+      -wholename "./olad/www/mobile.js" -or \
+      -wholename "./olad/www/ola.js" -or \
       -wholename "./configure" -or \
+      -wholename "./common/protocol/Ola.pb.*" -or \
+      -wholename "./plugins/artnet/messages/ArtNetConfigMessages.pb.*" -or \
       -wholename "./tools/ola_trigger/config.tab.*" -or \
       -wholename "./tools/ola_trigger/lex.yy.cpp"
 BLACKLIST
