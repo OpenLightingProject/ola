@@ -291,8 +291,8 @@ bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
     }
   }
   if (checksum != rd_buffer[CMD_HD_CHECK]) {
-    OLA_WARN << "Checkum verification of incoming data failed. "
-             << "Data-checkum is: " << strings::ToHex(checksum)
+    OLA_WARN << "Checksum verification of incoming data failed. "
+             << "Data-checksum is: " << strings::ToHex(checksum)
              << " but the device said it would be 0x"
              << static_cast<int>(rd_buffer[CMD_HD_CHECK]);
     KarateLight::Close();

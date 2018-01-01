@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * DMXCProjectsNodleU1Port.cpp
- * Output and input ports that use a widget and give the serial as desciption.
+ * Output and input ports that use a widget and give the serial as description.
  * Copyright (C) 2015 Stefan Krupop
  */
 

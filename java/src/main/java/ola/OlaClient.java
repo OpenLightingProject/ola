@@ -77,7 +77,7 @@ public class OlaClient {
     /**
      * Generic method for making Rpc Calls.
      *
-     * @param method Name of te Rpc Method to call
+     * @param method Name of the Rpc Method to call
      * @param inputMessage Input RpcMessage
      * @return Message result message or null if the call failed.
      */
