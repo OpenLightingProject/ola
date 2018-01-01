@@ -532,14 +532,14 @@ class BaseLibUsbAdaptor : public LibUsbAdaptor {
 };
 
 /**
- * @brief A LibUsbAdaptor for use with Syncronous widgets.
+ * @brief A LibUsbAdaptor for use with Synchronous widgets.
  *
- * When using syncronous mode, we don't have the requirement of interacting
+ * When using synchronous mode, we don't have the requirement of interacting
  * with a LibUsbThread.
  */
-class SyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
+class SynchronousLibUsbAdaptor : public BaseLibUsbAdaptor {
  public:
-  SyncronousLibUsbAdaptor() {}
+  SynchronousLibUsbAdaptor() {}
 
   bool OpenDevice(libusb_device *usb_device,
                   libusb_device_handle **usb_handle);
@@ -551,18 +551,18 @@ class SyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
   void Close(libusb_device_handle *usb_handle);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SyncronousLibUsbAdaptor);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousLibUsbAdaptor);
 };
 
 /**
- * @brief A LibUsbAdaptor for use with Asyncronous widgets.
+ * @brief A LibUsbAdaptor for use with Asynchronous widgets.
  *
- * Asyncronous mode requires notifying the LibUsbThread when handles are opened
+ * Asynchronous mode requires notifying the LibUsbThread when handles are opened
  * and closed.
  */
-class AsyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
+class AsynchronousLibUsbAdaptor : public BaseLibUsbAdaptor {
  public:
-  explicit AsyncronousLibUsbAdaptor(class LibUsbThread *thread)
+  explicit AsynchronousLibUsbAdaptor(class LibUsbThread *thread)
       : m_thread(thread) {
   }
 
@@ -601,7 +601,7 @@ class AsyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
  private:
   class LibUsbThread *m_thread;
 
-  DISALLOW_COPY_AND_ASSIGN(AsyncronousLibUsbAdaptor);
+  DISALLOW_COPY_AND_ASSIGN(AsynchronousLibUsbAdaptor);
 };
 }  // namespace usb
 }  // namespace ola
