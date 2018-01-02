@@ -324,7 +324,7 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
 }
 
 /*
- * Called when we successfull mute a device during the branch stage.
+ * Called when we successful mute a device during the branch stage.
  */
 void DiscoveryAgent::BranchMuteComplete(bool status) {
   m_mute_attempts++;

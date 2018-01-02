@@ -40,7 +40,7 @@ using ola::NewSingleCallback;
 using ola::io::SelectServer;
 using ola::thread::Future;
 using ola::thread::Thread;
-using ola::usb::AsyncronousLibUsbAdaptor;
+using ola::usb::AsynchronousLibUsbAdaptor;
 using ola::usb::JaRuleWidget;
 using ola::usb::LibUsbAdaptor;
 using ola::usb::USBDeviceID;

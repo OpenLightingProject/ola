@@ -1724,7 +1724,7 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(InputPort *port,
 
     // mark this node as complete
     if (port->discovery_node_set.erase(source_address)) {
-      // if the set is now 0, and it was non-0 initally and we have a
+      // if the set is now 0, and it was non-0 initially and we have a
       // discovery_callback, then we can short circuit the discovery
       // process
       if (port->discovery_node_set.empty() && port->discovery_callback) {

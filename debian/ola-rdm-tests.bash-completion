@@ -26,7 +26,7 @@ have rdm_responder_test.py && _rdm_responder_test.py()
       return 0
       ;;
     -t | --tests)
-      #TODO: Get this working with the comma seperated list of tests
+      #TODO: Get this working with the comma separated list of tests
       #We're not interested in supplying opts, so set compreply and break out with a return
       COMPREPLY=( $( compgen -W '$( command ${COMP_WORDS[0]} --list-tests 2>/dev/null )' -- $cur  ) )
       return 0;

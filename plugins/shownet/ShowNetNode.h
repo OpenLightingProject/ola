@@ -86,7 +86,7 @@ class ShowNetNode {
 
     static const uint16_t SHOWNET_PORT = 2501;
     // In the shownet spec, the pass(2) and name(9) fields are combined with the
-    // compressed data. This means the indicies referenced in indexBlocks are
+    // compressed data. This means the indices referenced in indexBlocks are
     // off by 11.
     static const uint16_t MAGIC_INDEX_OFFSET = 11;
 

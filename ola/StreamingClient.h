@@ -31,7 +31,7 @@
 
 namespace ola {
 
-// For backwards compatability:
+// For backwards compatibility:
 typedef ola::client::StreamingClient StreamingClient;
 
 }  // namespace ola

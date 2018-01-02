@@ -11,6 +11,35 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 
 PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand"
 
+SPELLINGBLACKLIST=$(cat <<-BLACKLIST
+      -wholename "./.git/*" -or \
+      -wholename "./aclocal.m4" -or \
+      -wholename "./config/depcomp" -or \
+      -wholename "./config/ltmain.sh" -or \
+      -wholename "./config/config.guess" -or \
+      -wholename "./config/config.sub" -or \
+      -wholename "./config/install-sh" -or \
+      -wholename "./config/libtool.m4" -or \
+      -wholename "./config/ltoptions.m4" -or \
+      -wholename "./config/ltsugar.m4" -or \
+      -wholename "./libtool" -or \
+      -wholename "./config.status" -or \
+      -wholename "./Makefile" -or \
+      -wholename "./Makefile.in" -or \
+      -wholename "./autom4te.cache/*" -or \
+      -wholename "./java/Makefile" -or \
+      -wholename "./java/Makefile.in" -or \
+      -wholename "./olad/www/new/libs/angular/js/angular.min.js" -or \
+      -wholename "./olad/www/mobile.js" -or \
+      -wholename "./olad/www/ola.js" -or \
+      -wholename "./configure" -or \
+      -wholename "./common/protocol/Ola.pb.*" -or \
+      -wholename "./plugins/artnet/messages/ArtNetConfigMessages.pb.*" -or \
+      -wholename "./tools/ola_trigger/config.tab.*" -or \
+      -wholename "./tools/ola_trigger/lex.yy.cpp"
+BLACKLIST
+)
+
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   autoreconf -i;
@@ -56,6 +85,66 @@ elif [[ $TASK = 'check-licences' ]]; then
   ./scripts/enforce_licence.py
   if [[ $? -ne 0 ]]; then
     exit 1;
+  fi;
+elif [[ $TASK = 'spellintian' ]]; then
+  # run spellintian only if it is the requested task, ignoring duplicate words
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for spellintian to run against
+  make builtfiles
+  spellingfiles=$(eval "find ./ -type f -and ! \( \
+      $SPELLINGBLACKLIST \
+      \) | xargs")
+  # count the number of spellintian errors, ignoring duplicate words
+  spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | grep -v "\(duplicate word\)" | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun spellintian $spellingfiles | grep -v "\(duplicate word\)"
+    echo "Found $spellingerrors spelling errors via spellintian, ignoring duplicates"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors via spellintian, ignoring duplicates"
+  fi;
+elif [[ $TASK = 'spellintian-duplicates' ]]; then
+  # run spellintian only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for spellintian to run against
+  make builtfiles
+  spellingfiles=$(eval "find ./ -type f -and ! \( \
+      $SPELLINGBLACKLIST \
+      \) | xargs")
+  # count the number of spellintian errors
+  spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun spellintian $spellingfiles
+    echo "Found $spellingerrors spelling errors via spellintian"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors via spellintian"
+  fi;
+elif [[ $TASK = 'codespell' ]]; then
+  # run codespell only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for codespell to run against
+  make builtfiles
+  spellingfiles=$(eval "find ./ -type f -and ! \( \
+      $SPELLINGBLACKLIST \
+      \) | xargs")
+  # count the number of codespell errors
+  spellingerrors=$(zrun codespell --quiet 2 $spellingfiles 2>&1 | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun codespell --quiet 2 $spellingfiles
+    echo "Found $spellingerrors spelling errors via codespell"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors via codespell"
   fi;
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task

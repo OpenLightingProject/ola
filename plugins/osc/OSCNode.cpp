@@ -366,7 +366,7 @@ bool OSCNode::RemoveTarget(unsigned int group, const OSCTarget &target) {
  * @param group the group to send the data to
  * @param data_format the format of data to send
  * @param dmx_data the DmxBuffer to send
- * @returns true if sucesfully sent, false if any error occured.
+ * @returns true if successfully sent, false if any error occurred.
  */
 bool OSCNode::SendData(unsigned int group, DataFormat data_format,
                        const ola::DmxBuffer &dmx_data) {

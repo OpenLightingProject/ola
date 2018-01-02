@@ -353,7 +353,7 @@ class Universe(object):
 
 
 class RequestStatus(object):
-  """Represents the status of an reqeust.
+  """Represents the status of an request.
 
   Attributes:
     state: the state of the operation
@@ -1081,7 +1081,7 @@ class OlaClient(Ola_pb2.OlaClientService):
 
     Args:
       controller: An RpcController object
-      reqeust: A DmxData message
+      request: A DmxData message
       callback: The callback to run once complete
 
     Returns:
