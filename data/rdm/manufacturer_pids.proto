@@ -3200,7 +3200,7 @@ manufacturer {
         }
         label {
           value: 2
-          label: "Syncronized fixture"
+          label: "Synchronized fixture"
         }
       }
     }
@@ -3208,7 +3208,7 @@ manufacturer {
     set_request {
       field {
         type: UINT8
-        name: "sycronization_mode"
+        name: "synchronization_mode"
         label {
           value: 0
           label: "Single Fixture"
@@ -3219,7 +3219,7 @@ manufacturer {
         }
         label {
           value: 2
-          label: "Syncronized fixture"
+          label: "Synchronized fixture"
         }
       }
     }

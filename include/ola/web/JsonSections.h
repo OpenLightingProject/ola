@@ -37,7 +37,7 @@ namespace web {
  *  - A type, which controls how the item is renders
  *  - The value.
  *  - Optional id. A non-empty id makes this item editable
- *  - Optional button text. Non-empty means this item get's it own button.
+ *  - Optional button text. Non-empty means this item gets it own button.
  */
 class GenericItem {
  public:
