@@ -273,7 +273,7 @@ void MockEndpoint::SendUnsolicitedRobeData(
 void MockEndpoint::Verify() {
   std::ostringstream str;
   str << m_expected_data.size() << " messages remain, "
-      << m_descriptor->DataRemaining() << " bytes remaing";
+      << m_descriptor->DataRemaining() << " bytes remaining";
   OLA_ASSERT_EQ_MSG(static_cast<size_t>(0), m_expected_data.size(), str.str());
 }
 

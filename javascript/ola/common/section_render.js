@@ -67,7 +67,7 @@ ola.common.SectionRenderer.RenderItem = function(table, item_info) {
       goog.dom.appendChild(td, input);
 
       if (item_info['button']) {
-        // this item get's it's own button
+        // this item gets it's own button
         var button = new goog.ui.CustomButton(item_info['button']);
         button.render(td);
       }
