@@ -22,6 +22,7 @@
 #define LIBS_ACN_ROOTSENDER_H_
 
 #include "ola/acn/CID.h"
+#include "ola/base/Macro.h"
 #include "libs/acn/PDU.h"
 #include "libs/acn/RootPDU.h"
 #include "libs/acn/Transport.h"
@@ -59,8 +60,7 @@ class RootSender {
     PDUBlock<PDU> m_root_block;
     RootPDU m_root_pdu;
 
-    RootSender(const RootSender&);
-    RootSender& operator=(const RootSender&);
+    DISALLOW_COPY_AND_ASSIGN(RootSender);
 };
 }  // namespace acn
 }  // namespace ola
