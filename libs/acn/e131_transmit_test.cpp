@@ -106,10 +106,10 @@ TestState s11("Single Source Terminate with data",
 
 // now test sequence handling
 TestState s12("Single Source Sequence Test",
-              // 1 in 4 change of sending a packet with 0s rather than 255s
+              // 1 in 4 chance of sending a packet with 0s rather than 255s
               new NodeVarySequenceNumber(255, 0, 4),
               new NodeInactive(),
-              "512x255, any 0s indicate a problem ith seq #",
+              "512x255, any 0s indicate a problem with seq #",
               BufferFromValue(255));
 TestState s13("Single Source Terminate",
               new NodeTerminate(),
