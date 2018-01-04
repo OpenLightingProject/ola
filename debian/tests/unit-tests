@@ -1,0 +1,3 @@
+#!/bin/sh
+
+make check || (cat test-suite.log && false)

@@ -1,0 +1,3 @@
+Tests: unit-tests
+Depends: @, build-essential
+Restrictions: build-needed
