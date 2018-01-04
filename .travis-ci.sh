@@ -28,6 +28,7 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./java/Makefile" -or \
       -wholename "./java/Makefile.in" -or \
       -wholename "./olad/www/new/js/app.min.js" -or \
+      -wholename "./olad/www/new/js/app.min.js.map" -or \
       -wholename "./olad/www/new/libs/angular/js/angular.min.js" -or \
       -wholename "./olad/www/mobile.js" -or \
       -wholename "./olad/www/ola.js" -or \
