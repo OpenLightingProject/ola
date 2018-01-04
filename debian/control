@@ -1,5 +1,5 @@
 Source: ola
-Priority: extra
+Priority: optional
 Maintainer: Wouter Verhelst <wouter@debian.org>
 Uploaders: RenZO <renzo@imaginux.com>
 Build-Depends: debhelper (>= 9), autotools-dev, dh-autoreconf, bash-completion, libcppunit-dev, bison, flex, pkg-config, uuid-dev, python, python-protobuf, python-numpy, libprotobuf-dev, protobuf-compiler, libprotoc-dev, libusb-1.0-0-dev, libftdi-dev, liblo-dev, libmicrohttpd-dev, libncurses5-dev
