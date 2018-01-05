@@ -1,4 +1,4 @@
-x/y/2017 ola-0.10.6
+x/y/2018 ola-0.10.6
  Features:
  * 
 
@@ -11,6 +11,12 @@ x/y/2017 ola-0.10.6
  Bugs:
  * Renamed fempto(sic) to femto in the RDM code (C++ and Python)
  * Renamed terra(sic) to tera in the RDM code (C++ and Python)
+ * Fixes for RDM test server forward compatibility with later JQuery versions
+ * Fix a man page typo
+ * Fix a longstanding copy-paste typo in the Python client's RegisterUniverse
+   function
+ * Fix lots of minor documentation spelling errors found by spellintian and
+   codespell
 
  Internal:
  *
