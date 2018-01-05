@@ -87,6 +87,7 @@ const uint16_t SPIOutput::WS2801_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
+const uint16_t SPIOutput::APA102PB_SLOTS_PER_PIXEL = 4;
 
 // Number of bytes that each pixel uses on the SPI wires
 // (if it differs from 1:1 with colors)
@@ -196,6 +197,8 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                                       "APA102 Individual Control"));
   personalities.push_back(Personality(APA102_SLOTS_PER_PIXEL,
                                       "APA102 Combined Control"));
+  personalities.push_back(Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
+                          "APA102 with pixel brightness Individual Control"));
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
       m_personality_collection.get()));
@@ -315,6 +318,9 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
       break;
     case 8:
       CombinedAPA102Control(buffer);
+      break;
+    case 9:
+      IndividualAPA102ControlPixelBrightness(buffer);
       break;
     default:
       break;
@@ -579,6 +585,85 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
+
+void SPIOutput::IndividualAPA102ControlPixelBrightness(
+  const DmxBuffer &buffer
+) {
+  // some detailed information on the protocol:
+  // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
+  // Data-Struct
+  // StartFrame: 4 bytes = 32 bits zeros (APA102_START_FRAME_BYTES)
+  // LEDFrame: 1 byte FF ; 3 bytes color info (Blue, Green, Red)
+  // EndFrame: (n/2)bits; n = pixel_count
+
+  // calculate DMX-start-address
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+
+  // only do something if at least 1 pixel can be updated..
+  if (buffer.Size() - first_slot < APA102PB_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << APA102PB_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
+    return;
+  }
+
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  uint16_t output_length = (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
+  // only add the APA102_START_FRAME_BYTES on the first port!!
+  if (m_output_number == 0) {
+    output_length += APA102_START_FRAME_BYTES;
+  }
+  uint8_t *output = m_backend->Checkout(
+      m_output_number,
+      output_length,
+      CalculateAPA102LatchBytes(m_pixel_count));
+
+  // only update SPI data if possible
+  if (!output) {
+    return;
+  }
+
+  // only write to APA102_START_FRAME_BYTES on the first port!!
+  if (m_output_number == 0) {
+    // set APA102_START_FRAME_BYTES to zero
+    memset(output, 0, APA102_START_FRAME_BYTES);
+  }
+
+  for (uint16_t i = 0; i < m_pixel_count; i++) {
+    // Convert RGB to APA102 Pixel
+    uint16_t offset = first_slot + (i * APA102PB_SLOTS_PER_PIXEL);
+
+
+    uint16_t spi_offset = (i * APA102_SPI_BYTES_PER_PIXEL);
+    // only skip APA102_START_FRAME_BYTES on the first port!!
+    if (m_output_number == 0) {
+      // We need to avoid the first 4 bytes of the buffer since that acts as a
+      // start of frame delimiter
+      spi_offset += APA102_START_FRAME_BYTES;
+    }
+    // set pixel data
+    // only write pixel data if buffer has complete data for this pixel:
+    if ((buffer.Size() - offset) >= APA102PB_SLOTS_PER_PIXEL) {
+      // first Byte contains:
+      // 3 bits start mark (111) + 5 bits pixel brightness
+      // (datasheet name: global brightness)
+      uint8_t pixel_brightness = CalculateAPA102PixelBrightness(
+        buffer.Get(offset + 0));
+      // merge 3 bits start mark (111): can be written as 0xE0
+      uint8_t first_byte = 0xE0 && pixel_brightness;
+      // set first_byte to output buffer
+      output[spi_offset + 0] = first_byte;
+      // Convert RGB to APA102 Pixel
+      output[spi_offset + 1] = buffer.Get(offset + 3);  // blue
+      output[spi_offset + 2] = buffer.Get(offset + 2);  // green
+      output[spi_offset + 3] = buffer.Get(offset + 1);  // red
+    }
+  }
+
+  // write output back
+  m_backend->Commit(m_output_number);
+}
+
 void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   // for Protocol details see IndividualAPA102Control
 
@@ -651,6 +736,19 @@ uint8_t SPIOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
   const uint8_t latch_bits = (pixel_count + 1) / 2;
   const uint8_t latch_bytes = (latch_bits + 7) / 8;
   return latch_bytes;
+}
+
+/**
+ * Calculate Pixel Brightness for APA102:
+ * Map Input to Output range:
+ * Input is 8bit value (0..255)
+ * Output is 5bit value (0..31)
+ */
+uint8_t SPIOutput::CalculateAPA102PixelBrightness(uint8_t brightness) {
+  // brightness == 255
+  // x == 31
+  // x = brightness * 31 / 255
+  return brightness * 31 / 255;
 }
 
 
