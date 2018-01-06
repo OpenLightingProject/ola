@@ -752,10 +752,12 @@ uint8_t SPIOutput::CalculateAPA102PixelBrightness(uint8_t brightness) {
 }
 
 
+
 RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
-      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 4,
+      ola::rdm::PRODUCT_CATEGORY_FIXTURE,
+      5,  // RDM software version (increment on personality changes)
       m_personality_manager.get(),
       m_start_address,
       0, m_sensors.size());
