@@ -54,6 +54,8 @@ class NanoleafDevice: public ola::Device {
     void SetDefaults();
     std::string IPPortKey() const;
     std::string PanelsKey() const;
+
+    static const uint16_t DEFAULT_STREAMING_PORT = 60221;
 };
 }  // namespace nanoleaf
 }  // namespace plugin

@@ -19,6 +19,7 @@
  */
 
 #include <memory>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -100,7 +101,7 @@ bool NanoleafDevice::StartHook() {
 
   uint16_t ip_port;
   if (!StringToInt(m_preferences->GetValue(IPPortKey()), &ip_port)) {
-    ip_port = 60221;
+    ip_port = DEFAULT_STREAMING_PORT;
   }
   IPV4SocketAddress socket_address = IPV4SocketAddress(m_controller, ip_port);
   AddPort(new NanoleafOutputPort(this, socket_address, m_node, 0));
@@ -126,8 +127,10 @@ string NanoleafDevice::PanelsKey() const {
 void NanoleafDevice::SetDefaults() {
   // Set device options
   m_preferences->SetDefaultValue(PanelsKey(), StringValidator(), "");
-  m_preferences->SetDefaultValue(IPPortKey(), UIntValidator(1, 65535),
-                                 60221);
+  m_preferences->SetDefaultValue(
+      IPPortKey(),
+      UIntValidator(1, std::numeric_limits<uint16_t>::max()),
+      DEFAULT_STREAMING_PORT);
   m_preferences->Save();
 }
 
