@@ -47,6 +47,7 @@ class SPIOutputTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCombinedP9813Control);
   CPPUNIT_TEST(testIndividualAPA102Control);
   CPPUNIT_TEST(testCombinedAPA102Control);
+  CPPUNIT_TEST(testIndividualAPA102ControlPixelBrightness);
   CPPUNIT_TEST_SUITE_END();
 
  public:
