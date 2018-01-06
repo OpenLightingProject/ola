@@ -33,6 +33,7 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./olad/www/new/js/app.min.js" -or \
       -wholename "./olad/www/new/js/app.min.js.map" -or \
       -wholename "./olad/www/new/libs/angular/js/angular.min.js" -or \
+      -wholename "./olad/www/new/libs/marked/js/marked.min.js" -or \
       -wholename "./olad/www/mobile.js" -or \
       -wholename "./olad/www/ola.js" -or \
       -wholename "./configure" -or \
