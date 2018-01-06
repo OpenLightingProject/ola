@@ -217,7 +217,7 @@ void E133Device::EndpointRequest(
   if (!endpoint) {
     OLA_INFO << "Request to non-existent endpoint " << endpoint_id;
     SendStatusMessage(target, e133_header->Sequence(), endpoint_id,
-                      ola::e133::SC_E133_NONEXISTANT_ENDPOINT,
+                      ola::e133::SC_E133_NONEXISTENT_ENDPOINT,
                       "No such endpoint");
     return;
   }
