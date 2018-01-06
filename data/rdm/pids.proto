@@ -1011,7 +1011,7 @@ pid {
         }
         label {
           value: 5
-          label: "Fluroescent"
+          label: "Fluorescent"
         }
         label {
           value: 6
