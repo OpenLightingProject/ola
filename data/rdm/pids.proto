@@ -1255,7 +1255,7 @@ pid {
         }
         label {
           value: 1793
-          label: "Protocol Convertor"
+          label: "Protocol Converter"
         }
         label {
           value: 1794
