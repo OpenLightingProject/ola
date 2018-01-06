@@ -31,5 +31,4 @@ EXTRA_DIST += \
     debian/source/lintian-overrides \
     debian/source/local-options \
     debian/tests/control \
-    debian/tests/unit-tests \
     debian/watch
