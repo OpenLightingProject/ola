@@ -1,13 +1,4 @@
-x/y/2018 ola-0.10.6
- Features:
- * 
-
- API:
- * 
-
- RDM Tests:
- * 
-
+06/01/2018 ola-0.10.6
  Bugs:
  * Renamed fempto(sic) to femto in the RDM code (C++ and Python)
  * Renamed terra(sic) to tera in the RDM code (C++ and Python)
@@ -17,9 +8,8 @@ x/y/2018 ola-0.10.6
    function
  * Fix lots of minor documentation spelling errors found by spellintian and
    codespell
-
- Internal:
- *
+ * Renamed protocol convertor(sic) to protocol converter in the RDM code (C++
+   and Python)
 
 17/07/2017 ola-0.10.5
  Features:
