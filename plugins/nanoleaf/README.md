@@ -3,7 +3,7 @@ Nanoleaf Plugin
 
 This plugin creates a device per IP, each with one output port. Each port
 represents a Nanoleaf Aurora controller, with up to 30 panels attached. This
-plugin uses the streaming external control effects aspect of the Aurora
+plugin uses the streaming external control effects functionality of the Aurora
 OpenAPI.
 
 Currently only the [Nanoleaf
