@@ -741,13 +741,12 @@ void SPIOutputTest::testCombinedAPA102Control() {
   OLA_ASSERT_EQ(1u, backend.Writes(1));
 }
 
-
 /**
  * Test DMX writes in the individual APA102 Pixel Brightness mode.
  */
 void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   // personality 7= Individual APA102
-  const uint16_t this_test_personality = 7;
+  const uint16_t this_test_personality = 9;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
