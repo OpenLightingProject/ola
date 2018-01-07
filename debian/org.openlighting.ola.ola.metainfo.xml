@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component>
+  <id>org.openlighting.ola.ola</id>
+  <metadata_license>MIT</metadata_license>
+  <name>ola</name>
+  <developer_name>Open Lighting Project</developer_name>
+  <summary>Interface between DMX protocols via USB, network and more</summary>
+  <description>
+    <p>
+      The DMX512 standard for Digital MultipleX is used for digital
+      communication networks commonly used to control stage lighting and
+      effects.
+    </p>
+    <p>
+      The Open Lighting Architecture (OLA) provides a plugin framework for
+      distributing DMX512 control signals.
+    </p>
+  </description>
+  <url type="homepage">https://www.openlighting.org/ola/</url>
+  <url type="bugtracker">https://github.com/openlightingproject/ola/issues</url>
+  <launchable type="service">olad</launchable>
+  <launchable type="url">http://localhost:9090/</launchable>
+  <provides>
+    <modalias>lkmodule:dmx_usb</modalias> <!-- dmx_usb kernel module -->
+    <modalias>usb:v0403p6001d*</modalias> <!-- FTDI -->
+    <modalias>usb:v16C0p05DCd*</modalias> <!-- Anyma DMX -->
+    <modalias>usb:v0962p*</modalias> <!-- USBDMX2 -->
+    <modalias>usb:v10CFp8062d*</modalias> <!-- Velleman -->
+    <modalias>usb:v16D0p0830d*</modalias> <!-- DMXControl Projects e.V. Nodle U1 -->
+    <modalias>usb:v04D8pFA63d*</modalias> <!-- Eurolite -->
+    <!--<modalias>usb:vpd*</modalias>--> <!-- Karate -->
+    <modalias>usb:v1D50p607Ad*</modalias> <!-- Scanlime Fadecandy -->
+    <modalias>usb:v109pACEDd*</modalias> <!-- Ja Rule -->
+    <modalias>usb:v109pACEEd*</modalias> <!-- Ja Rule Bootloader -->
+    <modalias>lkmodule:spidev</modalias> <!-- spidev kernel module -->
+    <modalias>lkmodule:dmxi2c</modalias> <!-- dmx4linux I2C kernel module -->
+    <modalias>lkmodule:okdmx</modalias> <!-- dmx4linux kernel module -->
+    <modalias>lkmodule:dmxsoundlight</modalias> <!-- dmx4linux kernel module -->
+  </provides>
+</component>
