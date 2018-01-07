@@ -95,7 +95,7 @@ const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
 const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
 
 const uint16_t SPIOutput::APA102_START_FRAME_BYTES = 4;
-static const uint8_t APA102_LEDFRAME_START_MARK = 0xE0;
+const uint8_t APA102_LEDFRAME_START_MARK = 0xE0;
 
 SPIOutput::RDMOps *SPIOutput::RDMOps::instance = NULL;
 
