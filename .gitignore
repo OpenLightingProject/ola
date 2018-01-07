@@ -3,7 +3,7 @@
 *.gcda
 *.gcno
 *.gcov
-.gch
+*.gch
 *.la
 *.lo
 *.log
