@@ -594,7 +594,9 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
   // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
   // Data-Struct
   // StartFrame: 4 bytes = 32 bits zeros (APA102_START_FRAME_BYTES)
-  // LEDFrame: 1 byte FF ; 3 bytes color info (Blue, Green, Red)
+  // LEDFrame:
+  //    1 byte START_MARK + pixel brightness
+  //    3 bytes color info (Blue, Green, Red)
   // EndFrame: (n/2)bits; n = pixel_count
 
   // calculate DMX-start-address
@@ -645,14 +647,11 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
     // set pixel data
     // only write pixel data if buffer has complete data for this pixel:
     if ((buffer.Size() - offset) >= APA102PB_SLOTS_PER_PIXEL) {
-      // first Byte contains:
-      // 3 bits start mark (111) + 5 bits pixel brightness
-      // (datasheet name: global brightness)
-      uint8_t pixel_brightness = CalculateAPA102PixelBrightness(
-        buffer.Get(offset + 0));
-      // merge 3 bits start mark (APA102_LEDFRAME_START_MARK)
-      // and set as first byte to output buffer
-      output[spi_offset + 0] = APA102_LEDFRAME_START_MARK & pixel_brightness;;
+      // first Byte:
+      // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
+      // 5 bits pixel brightness (datasheet name: global brightness)
+      output[spi_offset + 0] = APA102_LEDFRAME_START_MARK &
+        CalculateAPA102PixelBrightness(buffer.Get(offset + 0));
       // Convert RGB to APA102 Pixel
       output[spi_offset + 1] = buffer.Get(offset + 3);  // blue
       output[spi_offset + 2] = buffer.Get(offset + 2);  // green
