@@ -773,7 +773,7 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   // this is the expected spi data stream:
   const uint8_t EXPECTED1[] = { 0, 0, 0, 0,               // StartFrame
                                 0xFF, 0x64, 0x0A, 0x01,   // first Pixel
-                                0xFF, 0x00, 0x00, 0x00,   // second Pixel
+                                0x00, 0x00, 0x00, 0x00,   // second Pixel
                                 0};                       // EndFrame
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
