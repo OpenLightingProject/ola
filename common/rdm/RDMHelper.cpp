@@ -581,8 +581,8 @@ string ProductDetailToString(uint16_t detail) {
       return "Data Patch";
     case PRODUCT_DETAIL_WIRELESS_LINK:
       return "Wireless link";
-    case PRODUCT_DETAIL_PROTOCOL_CONVERTOR:
-      return "Protocol Convertor";
+    case PRODUCT_DETAIL_PROTOCOL_CONVERTER:
+      return "Protocol Converter";
     case PRODUCT_DETAIL_ANALOG_DEMULTIPLEX:
       return "DMX512 to DC Voltage";
     case PRODUCT_DETAIL_ANALOG_MULTIPLEX:

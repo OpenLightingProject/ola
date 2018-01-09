@@ -33,7 +33,7 @@ following license:
  */
 
 On Debian GNU/Linux systems, the text of the LGPL can be found under
-/usr/share/common-licenses/LGPL-2.1
+'/usr/share/common-licenses/LGPL-2.1'
 
 The files under the java directory are licensed under the following
 license:
@@ -55,7 +55,7 @@ license:
  *************************************************************************/
 
 On Debian GNU/Linux, the text of the Apache 2 license can be found in
-/usr/share/common-licenses/Apache-2.0
+'/usr/share/common-licenses/Apache-2.0'
 
 Everything else is licensed under the following license:
 
@@ -76,4 +76,4 @@ The Debian packaging is (C) 2010, Simon Newton <nomis52@gmail.com> and
 is also licensed under the GPL.
 
 On Debian GNU/Linux, the full text of the GPL can be found in
-'/usr/share/common-licenses/GPL'.
+'/usr/share/common-licenses/GPL-2'.
