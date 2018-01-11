@@ -74,6 +74,8 @@ using std::min;
 using std::string;
 using std::vector;
 
+
+
 const uint16_t SPIOutput::SPI_DELAY = 0;
 const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIOutput::SPI_MODE = 0;
@@ -95,7 +97,7 @@ const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
 const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
 
 const uint16_t SPIOutput::APA102_START_FRAME_BYTES = 4;
-const uint8_t APA102_LEDFRAME_START_MARK = 0xE0;
+const uint8_t SPIOutput::APA102_LEDFRAME_START_MARK = 0xE0;
 
 SPIOutput::RDMOps *SPIOutput::RDMOps::instance = NULL;
 
@@ -650,8 +652,7 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
       // first Byte:
       // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
       // 5 bits pixel brightness (datasheet name: global brightness)
-      // output[spi_offset + 0] = APA102_LEDFRAME_START_MARK &
-      output[spi_offset + 0] = 0xE0 +
+      output[spi_offset + 0] = SPIOutput::APA102_LEDFRAME_START_MARK +
         CalculateAPA102PixelBrightness(buffer.Get(offset + 0));
       // Convert RGB to APA102 Pixel
       output[spi_offset + 1] = buffer.Get(offset + 3);  // blue
