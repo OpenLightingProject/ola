@@ -335,7 +335,7 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
     case PERS_APA102PB_INDIVIDUAL:
       IndividualAPA102ControlPixelBrightness(buffer);
       break;
-    case 10:
+    case PERS_APA102PB_COMBINED:
       CombinedAPA102ControlPixelBrightness(buffer);
       break;
     default:
@@ -343,6 +343,7 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
   }
   return true;
 }
+
 
 void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   // We always check out the entire string length, even if we only have data
