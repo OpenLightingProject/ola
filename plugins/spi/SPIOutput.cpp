@@ -202,6 +202,8 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                                       "APA102 Combined Control"));
   personalities.push_back(Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
                           "APA102 with pixel brightness Individual Control"));
+  personalities.push_back(Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
+                          "APA102 with pixel brightness Combined Control"));
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
       m_personality_collection.get()));
@@ -324,6 +326,9 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
       break;
     case 9:
       IndividualAPA102ControlPixelBrightness(buffer);
+      break;
+    case 10:
+      CombinedAPA102ControlPixelBrightness(buffer);
       break;
     default:
       break;
@@ -707,6 +712,68 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   pixel_data[1] = buffer.Get(first_slot + 2);  // Get Blue
   pixel_data[2] = buffer.Get(first_slot + 1);  // Get Green
   pixel_data[3] = buffer.Get(first_slot);      // Get Red
+
+  // set all pixel to same value
+  for (uint16_t i = 0; i < m_pixel_count; i++) {
+    uint16_t spi_offset = (i * APA102_SPI_BYTES_PER_PIXEL);
+    if (m_output_number == 0) {
+      spi_offset += APA102_START_FRAME_BYTES;
+    }
+    memcpy(&output[spi_offset], pixel_data,
+           APA102_SPI_BYTES_PER_PIXEL);
+  }
+
+  // write output back...
+  m_backend->Commit(m_output_number);
+}
+
+
+void SPIOutput::CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer) {
+  // for Protocol details see IndividualAPA102Control
+  // calculate DMX-start-address
+  const uint16_t first_slot = m_start_address - 1;  // 0 offset
+
+  // check if enough data is there.
+  if (buffer.Size() - first_slot < APA102PB_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << APA102PB_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
+    return;
+  }
+
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  uint16_t output_length = (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
+  // only add the APA102_START_FRAME_BYTES on the first port!!
+  if (m_output_number == 0) {
+    output_length += APA102_START_FRAME_BYTES;
+  }
+  uint8_t *output = m_backend->Checkout(
+      m_output_number,
+      output_length,
+      CalculateAPA102LatchBytes(m_pixel_count));
+
+  // only update SPI data if possible
+  if (!output) {
+    return;
+  }
+
+  // only write to APA102_START_FRAME_BYTES on the first port!!
+  if (m_output_number == 0) {
+    // set APA102_START_FRAME_BYTES to zero
+    memset(output, 0, APA102_START_FRAME_BYTES);
+  }
+
+  // create Pixel Data
+  uint8_t pixel_data[APA102_SPI_BYTES_PER_PIXEL];
+  // first Byte:
+  // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
+  // 5 bits pixel brightness (datasheet name: global brightness)
+  pixel_data[0] = SPIOutput::APA102_LEDFRAME_START_MARK +
+    CalculateAPA102PixelBrightness(buffer.Get(first_slot + 0));
+  // color data
+  pixel_data[1] = buffer.Get(first_slot + 3);  // Get Blue
+  pixel_data[2] = buffer.Get(first_slot + 2);  // Get Green
+  pixel_data[3] = buffer.Get(first_slot + 1);  // Get Red
 
   // set all pixel to same value
   for (uint16_t i = 0; i < m_pixel_count; i++) {
