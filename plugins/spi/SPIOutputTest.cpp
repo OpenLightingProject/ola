@@ -990,7 +990,7 @@ void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
   // setup pixel_count to 2 (enough to test all cases)
-  options.pixel_count = 3;
+  options.pixel_count = 2;
   // setup SPIOutput
   SPIOutput output(m_uid, &backend, options);
   // set personality
@@ -1144,11 +1144,11 @@ void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
  */
 void SPIOutputTest::testIndividualTLC5971Control() {
   // personality 9= Individual TLC5971
-  const uint16_t this_test_personality = 9;
+  const uint16_t this_test_personality = SPIOutput::PERS_TLC5971_INDIVIDUAL;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
-  // setup pixel_count to 2 (enough to test all cases)
+  // setup pixel_count to 3 (enough to test all cases)
   options.pixel_count = 3;
   // setup SPIOutput
   SPIOutput output(m_uid, &backend, options);
@@ -1357,7 +1357,7 @@ void SPIOutputTest::testIndividualTLC5971Control() {
 
   // test8
   // create new output with pixel_count=16 and check data length
-  // setup pixel_count to 16
+  // setup pixel_count to 6
   options.pixel_count = 6;
   // setup SPIOutput
   SPIOutput output2(m_uid, &backend, options);
