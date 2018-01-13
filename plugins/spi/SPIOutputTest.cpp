@@ -111,16 +111,15 @@ void SPIOutputTest::testDescription() {
 
   // change the start address & personality
   output1.SetStartAddress(10);
-  // output1.SetPersonality(SPIOutput::PERS_LDP8806_INDIVIDUAL);
-  output1.SetPersonality(3);
+  output1.SetPersonality(SPIOutput::PERS_LDP8806_INDIVIDUAL);
   OLA_ASSERT_EQ(
       string("Output 0, LPD8806 Individual Control, 75 slots @ 10."
              " (707a:00000000)"),
       output1.Description());
   OLA_ASSERT_EQ(static_cast<uint16_t>(10), output1.GetStartAddress());
-  // OLA_ASSERT_EQ(static_cast<uint16_t>(SPIOutput::PERS_LDP8806_INDIVIDUAL),
-    // output1.GetPersonality());
-  OLA_ASSERT_EQ(static_cast<uint8_t>(3), output1.GetPersonality());
+  OLA_ASSERT_EQ(
+    static_cast<uint8_t>(SPIOutput::PERS_LDP8806_INDIVIDUAL),
+    output1.GetPersonality());
 }
 
 
