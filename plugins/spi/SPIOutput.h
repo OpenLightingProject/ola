@@ -141,6 +141,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   void IndividualAPA102Control(const DmxBuffer &buffer);
   void CombinedAPA102Control(const DmxBuffer &buffer);
   void IndividualAPA102ControlPixelBrightness(const DmxBuffer &buffer);
+  void CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer);
 
   unsigned int LPD8806BufferSize() const;
   void WriteSPIData(const uint8_t *data, unsigned int length);
