@@ -85,16 +85,22 @@ void SPIOutputTest::setUp() {
 void SPIOutputTest::testDescription() {
   FakeSPIBackend backend(2);
   SPIOutput output1(m_uid, &backend, SPIOutput::Options(0, "Test SPI Device"));
+
   SPIOutput::Options options(1, "Test SPI Device");
   options.pixel_count = 32;
   SPIOutput output2(m_uid, &backend, options);
 
+  // check default constructor values
   OLA_ASSERT_EQ(
       string("Output 0, WS2801 Individual Control, 75 slots @ 1."
              " (707a:00000000)"),
       output1.Description());
   OLA_ASSERT_EQ(static_cast<uint16_t>(1), output1.GetStartAddress());
-  OLA_ASSERT_EQ(static_cast<uint8_t>(1), output1.GetPersonality());
+  // OLA_ASSERT_EQ(static_cast<uint8_t>(1), output1.GetPersonality());
+  OLA_ASSERT_EQ(
+    static_cast<uint8_t>(SPIOutput::PERS_WS2801_INDIVIDUAL),
+    output1.GetPersonality());
+
   OLA_ASSERT_EQ(
       string("Output 1, WS2801 Individual Control, 96 slots @ 1."
              " (707a:00000000)"),
@@ -102,13 +108,16 @@ void SPIOutputTest::testDescription() {
 
   // change the start address & personality
   output1.SetStartAddress(10);
+  // output1.SetPersonality(SPIOutput::PERS_LDP8806_INDIVIDUAL);
   output1.SetPersonality(3);
   OLA_ASSERT_EQ(
       string("Output 0, LPD8806 Individual Control, 75 slots @ 10."
              " (707a:00000000)"),
       output1.Description());
   OLA_ASSERT_EQ(static_cast<uint16_t>(10), output1.GetStartAddress());
-  OLA_ASSERT_EQ(static_cast<uint8_t>(3), output1.GetPersonality());
+  // OLA_ASSERT_EQ(static_cast<uint16_t>(SPIOutput::PERS_LDP8806_INDIVIDUAL),
+    // output1.GetPersonality());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(3), output1.GetPersonality());
 }
 
 
@@ -120,6 +129,7 @@ void SPIOutputTest::testIndividualWS2801Control() {
   SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
+  output.SetPersonality(SPIOutput::PERS_WS2801_INDIVIDUAL);
 
   DmxBuffer buffer;
   unsigned int length = 0;
@@ -176,7 +186,7 @@ void SPIOutputTest::testCombinedWS2801Control() {
   SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
-  output.SetPersonality(2);
+  output.SetPersonality(SPIOutput::PERS_WS2801_COMBINED);
 
   DmxBuffer buffer;
   buffer.SetFromString("255,128,0,10,20,30");
@@ -225,7 +235,7 @@ void SPIOutputTest::testIndividualLPD8806Control() {
   SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
-  output.SetPersonality(3);
+  output.SetPersonality(SPIOutput::PERS_LDP8806_INDIVIDUAL);
 
   DmxBuffer buffer;
   unsigned int length = 0;
@@ -280,7 +290,7 @@ void SPIOutputTest::testCombinedLPD8806Control() {
   SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
-  output.SetPersonality(4);
+  output.SetPersonality(SPIOutput::PERS_LDP8806_COMBINED);
 
   DmxBuffer buffer;
   buffer.SetFromString("255,128,0,10,20,30");
@@ -327,7 +337,7 @@ void SPIOutputTest::testIndividualP9813Control() {
   SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
-  output.SetPersonality(5);
+  output.SetPersonality(SPIOutput::PERS_P9813_INDIVIDUAL);
 
   DmxBuffer buffer;
   unsigned int length = 0;
@@ -386,7 +396,7 @@ void SPIOutputTest::testCombinedP9813Control() {
   SPIOutput::Options options(0, "Test SPI Device");
   options.pixel_count = 2;
   SPIOutput output(m_uid, &backend, options);
-  output.SetPersonality(6);
+  output.SetPersonality(SPIOutput::PERS_P9813_COMBINED);
 
   DmxBuffer buffer;
   buffer.SetFromString("255,128,0,10,20,30");
@@ -432,8 +442,8 @@ void SPIOutputTest::testCombinedP9813Control() {
  * Test DMX writes in the individual APA102 mode.
  */
 void SPIOutputTest::testIndividualAPA102Control() {
-  // personality 7= Individual APA102
-  const uint16_t this_test_personality = 7;
+  // personality Individual APA102
+  const uint16_t this_test_personality = SPIOutput::PERS_APA102_INDIVIDUAL;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
@@ -626,8 +636,7 @@ void SPIOutputTest::testIndividualAPA102Control() {
  * Test DMX writes in the combined APA102 mode.
  */
 void SPIOutputTest::testCombinedAPA102Control() {
-  // personality 8= Combined APA102
-  const uint16_t this_test_personality = 8;
+  const uint16_t this_test_personality = SPIOutput::PERS_APA102_COMBINED;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
@@ -746,7 +755,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
  */
 void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   // personality 9= Individual APA102
-  const uint16_t this_test_personality = 9;
+  const uint16_t this_test_personality = SPIOutput::PERS_APA102PB_INDIVIDUAL;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");

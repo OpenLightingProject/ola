@@ -184,28 +184,38 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
 
   PersonalityCollection::PersonalityList personalities;
-  personalities.push_back(Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
-                                      "WS2801 Individual Control"));
-  personalities.push_back(Personality(WS2801_SLOTS_PER_PIXEL,
-                                      "WS2801 Combined Control"));
-  personalities.push_back(Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
-                                      "LPD8806 Individual Control"));
-  personalities.push_back(Personality(LPD8806_SLOTS_PER_PIXEL,
-                                      "LPD8806 Combined Control"));
-  personalities.push_back(Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
-                                      "P9813 Individual Control"));
-  personalities.push_back(Personality(P9813_SLOTS_PER_PIXEL,
-                                      "P9813 Combined Control"));
-  personalities.push_back(Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
-                                      "APA102 Individual Control"));
-  personalities.push_back(Personality(APA102_SLOTS_PER_PIXEL,
-                                      "APA102 Combined Control"));
-  personalities.push_back(Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
-                          "APA102 with pixel brightness Individual Control"));
+  personalities.insert(personalities.begin() + PERS_WS2801_INDIVIDUAL,
+    Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
+      "WS2801 Individual Control"));
+  personalities.insert(personalities.begin() + PERS_WS2801_COMBINED,
+    Personality(WS2801_SLOTS_PER_PIXEL,
+      "WS2801 Combined Control"));
+  personalities.insert(personalities.begin() + PERS_LDP8806_INDIVIDUAL,
+    Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
+      "LPD8806 Individual Control"));
+  personalities.insert(personalities.begin() + PERS_LDP8806_COMBINED,
+    Personality(LPD8806_SLOTS_PER_PIXEL,
+      "LPD8806 Combined Control"));
+  personalities.insert(personalities.begin() + PERS_P9813_INDIVIDUAL,
+    Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
+      "P9813 Individual Control"));
+  personalities.insert(personalities.begin() + PERS_P9813_COMBINED,
+    Personality(P9813_SLOTS_PER_PIXEL,
+      "P9813 Combined Control"));
+  personalities.insert(personalities.begin() + PERS_APA102_INDIVIDUAL,
+    Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
+      "APA102 Individual Control"));
+  personalities.insert(personalities.begin() + PERS_APA102_COMBINED,
+    Personality(APA102_SLOTS_PER_PIXEL,
+      "APA102 Combined Control"));
+  personalities.insert(personalities.begin() + PERS_APA102PB_INDIVIDUAL,
+    Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
+      "APA102 with pixel brightness Individual Control"));
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
       m_personality_collection.get()));
-  m_personality_manager->SetActivePersonality(1);
+  // m_personality_manager->SetActivePersonality(1);
+  m_personality_manager->SetActivePersonality(PERS_WS2801_INDIVIDUAL);
 
 #ifdef HAVE_GETLOADAVG
   m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_1_MIN,
@@ -298,31 +308,31 @@ void SPIOutput::SendRDMRequest(RDMRequest *request,
 
 bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
   switch (m_personality_manager->ActivePersonalityNumber()) {
-    case 1:
+    case PERS_WS2801_INDIVIDUAL:
       IndividualWS2801Control(buffer);
       break;
-    case 2:
+    case PERS_WS2801_COMBINED:
       CombinedWS2801Control(buffer);
       break;
-    case 3:
+    case PERS_LDP8806_INDIVIDUAL:
       IndividualLPD8806Control(buffer);
       break;
-    case 4:
+    case PERS_LDP8806_COMBINED:
       CombinedLPD8806Control(buffer);
       break;
-    case 5:
+    case PERS_P9813_INDIVIDUAL:
       IndividualP9813Control(buffer);
       break;
-    case 6:
+    case PERS_P9813_COMBINED:
       CombinedP9813Control(buffer);
       break;
-    case 7:
+    case PERS_APA102_INDIVIDUAL:
       IndividualAPA102Control(buffer);
       break;
-    case 8:
+    case PERS_APA102_COMBINED:
       CombinedAPA102Control(buffer);
       break;
-    case 9:
+    case PERS_APA102PB_INDIVIDUAL:
       IndividualAPA102ControlPixelBrightness(buffer);
       break;
     default:
