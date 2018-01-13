@@ -24,6 +24,7 @@
 #include <map>
 #include <string>
 
+#include "ola/base/Macro.h"
 #include "ola/e133/MessageBuilder.h"
 #include "ola/io/NonBlockingSender.h"
 #include "ola/io/SelectServerInterface.h"
@@ -108,8 +109,6 @@ class DesignatedControllerConnection {
 
     static const unsigned int MAX_QUEUE_SIZE;
 
-    DesignatedControllerConnection(const DesignatedControllerConnection&);
-    DesignatedControllerConnection& operator=(
-        const DesignatedControllerConnection&);
+    DISALLOW_COPY_AND_ASSIGN(DesignatedControllerConnection);
 };
 #endif  // TOOLS_E133_DESIGNATEDCONTROLLERCONNECTION_H_
