@@ -39,31 +39,20 @@ namespace spi {
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
   // definitions for all SPI Personalities
+  // this hardcoded mapping is needed for backwards compatibility
   // enum class SPI_PERSONALITY : unsigned int {
   enum SPI_PERSONALITY {
-    PERS_WS2801_INDIVIDUAL,
-    PERS_WS2801_COMBINED,
-    PERS_LDP8806_INDIVIDUAL,
-    PERS_LDP8806_COMBINED,
-    PERS_P9813_INDIVIDUAL,
-    PERS_P9813_COMBINED,
-    PERS_APA102_INDIVIDUAL,
-    PERS_APA102_COMBINED,
-    PERS_APA102PB_INDIVIDUAL,
-    PERS_APA102PB_COMBINED,
+    PERS_WS2801_INDIVIDUAL = 1,
+    PERS_WS2801_COMBINED = 2,
+    PERS_LDP8806_INDIVIDUAL = 3,
+    PERS_LDP8806_COMBINED = 4,
+    PERS_P9813_INDIVIDUAL = 5,
+    PERS_P9813_COMBINED = 6,
+    PERS_APA102_INDIVIDUAL = 7,
+    PERS_APA102_COMBINED = 8,
+    PERS_APA102PB_INDIVIDUAL = 9,
+    PERS_APA102PB_COMBINED = 10
   };
-  // enum SPI_PERSONALITY {
-  //   PERS_WS2801_INDIVIDUAL = 1,
-  //   PERS_WS2801_COMBINED = 2,
-  //   PERS_LDP8806_INDIVIDUAL = 3,
-  //   PERS_LDP8806_COMBINED = 4,
-  //   PERS_P9813_INDIVIDUAL = 5,
-  //   PERS_P9813_COMBINED = 6,
-  //   PERS_APA102_INDIVIDUAL = 7,
-  //   PERS_APA102_COMBINED = 8,
-  //   PERS_APA102PB_INDIVIDUAL = 9,
-  //   PERS_APA102PB_COMBINED = 10
-  // };
 
   struct Options {
     std::string device_label;

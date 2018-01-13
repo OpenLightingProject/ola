@@ -92,6 +92,17 @@ void SPIOutputTest::testDescription() {
   options.pixel_count = 32;
   SPIOutput output2(m_uid, &backend, options);
 
+
+  OLA_INFO << "output1.Description() '" << output1.Description() << "'";
+  OLA_INFO << "output1.GetPersonality() '" << +output1.GetPersonality() << "'";
+
+  OLA_INFO << "output2.Description() '" << output2.Description() << "'";
+  OLA_INFO << "output2.GetPersonality() '" << +output2.GetPersonality() << "'";
+
+  OLA_INFO << "SPIOutput::PERS_WS2801_INDIVIDUAL '"
+    << +SPIOutput::PERS_WS2801_INDIVIDUAL << "'";
+
+
   // check default constructor values
   OLA_ASSERT_EQ(
       string("Output 0, WS2801 Individual Control, 75 slots @ 1."
@@ -103,6 +114,7 @@ void SPIOutputTest::testDescription() {
     static_cast<uint8_t>(SPIOutput::PERS_WS2801_INDIVIDUAL),
     output1.GetPersonality());
 
+  // check default constructor values with variant 2 (output2)
   OLA_ASSERT_EQ(
       string("Output 1, WS2801 Individual Control, 96 slots @ 1."
              " (707a:00000000)"),
@@ -119,7 +131,17 @@ void SPIOutputTest::testDescription() {
   OLA_ASSERT_EQ(static_cast<uint16_t>(10), output1.GetStartAddress());
   // OLA_ASSERT_EQ(static_cast<uint16_t>(SPIOutput::PERS_LDP8806_INDIVIDUAL),
     // output1.GetPersonality());
-  OLA_ASSERT_EQ(static_cast<uint16_t>(3), output1.GetPersonality());
+  OLA_ASSERT_EQ(static_cast<uint8_t>(3), output1.GetPersonality());
+
+  OLA_INFO << "output1.GetPersonality() '" << +output1.GetPersonality() << "'";
+  // OLA_INFO << "SPIOutput::PERS_APA102PB_COMBINED '"
+  //   << +SPIOutput::PERS_APA102PB_COMBINED << "'";
+  //
+  // // test0
+  // // check personality
+  // OLA_ASSERT_EQ(
+  //   (uint8_t)SPIOutput::PERS_APA102PB_COMBINED,
+  //   output1.GetPersonality());
 }
 
 
@@ -756,7 +778,6 @@ void SPIOutputTest::testCombinedAPA102Control() {
  * Test DMX writes in the individual APA102 Pixel Brightness mode.
  */
 void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
-  // personality 9= Individual APA102
   const uint16_t this_test_personality = SPIOutput::PERS_APA102PB_INDIVIDUAL;
   // setup Backend
   FakeSPIBackend backend(2);
@@ -985,8 +1006,7 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
  * Test DMX writes in the combined APA102 mode.
  */
 void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
-  // personality 10= Combined APA102 Pixel Brightness
-  const uint16_t this_test_personality = 10;
+  const uint16_t this_test_personality = SPIOutput::PERS_APA102PB_COMBINED;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");

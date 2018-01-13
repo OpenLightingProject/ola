@@ -184,37 +184,40 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
 
   PersonalityCollection::PersonalityList personalities;
-  personalities.insert(personalities.begin() + PERS_WS2801_INDIVIDUAL,
+  personalities.insert(personalities.begin() + PERS_WS2801_INDIVIDUAL - 1,
     Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
       "WS2801 Individual Control"));
-  personalities.insert(personalities.begin() + PERS_WS2801_COMBINED,
+  personalities.insert(personalities.begin() + PERS_WS2801_COMBINED - 1,
     Personality(WS2801_SLOTS_PER_PIXEL,
       "WS2801 Combined Control"));
-  personalities.insert(personalities.begin() + PERS_LDP8806_INDIVIDUAL,
+  personalities.insert(personalities.begin() + PERS_LDP8806_INDIVIDUAL - 1,
     Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
       "LPD8806 Individual Control"));
-  personalities.insert(personalities.begin() + PERS_LDP8806_COMBINED,
+  personalities.insert(personalities.begin() + PERS_LDP8806_COMBINED - 1,
     Personality(LPD8806_SLOTS_PER_PIXEL,
       "LPD8806 Combined Control"));
-  personalities.insert(personalities.begin() + PERS_P9813_INDIVIDUAL,
+  personalities.insert(personalities.begin() + PERS_P9813_INDIVIDUAL - 1,
     Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
       "P9813 Individual Control"));
-  personalities.insert(personalities.begin() + PERS_P9813_COMBINED,
+  personalities.insert(personalities.begin() + PERS_P9813_COMBINED - 1,
     Personality(P9813_SLOTS_PER_PIXEL,
       "P9813 Combined Control"));
-  personalities.insert(personalities.begin() + PERS_APA102_INDIVIDUAL,
+  personalities.insert(personalities.begin() + PERS_APA102_INDIVIDUAL - 1,
     Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
       "APA102 Individual Control"));
-  personalities.insert(personalities.begin() + PERS_APA102_COMBINED,
+  personalities.insert(personalities.begin() + PERS_APA102_COMBINED - 1,
     Personality(APA102_SLOTS_PER_PIXEL,
       "APA102 Combined Control"));
-  personalities.insert(personalities.begin() + PERS_APA102PB_INDIVIDUAL,
+  personalities.insert(personalities.begin() + PERS_APA102PB_INDIVIDUAL - 1,
     Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
       "APA102 with pixel brightness Individual Control"));
+  personalities.insert(personalities.begin() + PERS_APA102PB_COMBINED - 1,
+    Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
+      "APA102 with pixel brightness Combined Control"));
+
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
       m_personality_collection.get()));
-  // m_personality_manager->SetActivePersonality(1);
   m_personality_manager->SetActivePersonality(PERS_WS2801_INDIVIDUAL);
 
 #ifdef HAVE_GETLOADAVG
