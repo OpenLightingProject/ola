@@ -38,6 +38,22 @@ namespace spi {
 
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
+  // definitions for all SPI Personalities
+  // this hardcoded mapping is needed for backwards compatibility
+  // enum class SPI_PERSONALITY : unsigned int {
+  enum SPI_PERSONALITY {
+    PERS_WS2801_INDIVIDUAL = 1,
+    PERS_WS2801_COMBINED = 2,
+    PERS_LDP8806_INDIVIDUAL = 3,
+    PERS_LDP8806_COMBINED = 4,
+    PERS_P9813_INDIVIDUAL = 5,
+    PERS_P9813_COMBINED = 6,
+    PERS_APA102_INDIVIDUAL = 7,
+    PERS_APA102_COMBINED = 8,
+    PERS_APA102PB_INDIVIDUAL = 9,
+    PERS_APA102PB_COMBINED = 10
+  };
+
   struct Options {
     std::string device_label;
     uint8_t pixel_count;
@@ -114,6 +130,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   void IndividualAPA102Control(const DmxBuffer &buffer);
   void CombinedAPA102Control(const DmxBuffer &buffer);
   void IndividualAPA102ControlPixelBrightness(const DmxBuffer &buffer);
+  void CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer);
 
   unsigned int LPD8806BufferSize() const;
   void WriteSPIData(const uint8_t *data, unsigned int length);
@@ -189,6 +206,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   static const uint16_t APA102PB_SLOTS_PER_PIXEL;
   static const uint16_t APA102_SPI_BYTES_PER_PIXEL;
   static const uint16_t APA102_START_FRAME_BYTES;
+  static const uint8_t APA102_LEDFRAME_START_MARK;
 
   static const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
       PARAM_HANDLERS[];
