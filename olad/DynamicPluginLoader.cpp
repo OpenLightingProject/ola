@@ -59,6 +59,10 @@
 #include "plugins/milinst/MilInstPlugin.h"
 #endif  // USE_MILINST
 
+#ifdef USE_NANOLEAF
+#include "plugins/nanoleaf/NanoleafPlugin.h"
+#endif  // USE_NANOLEAF
+
 #ifdef USE_OPENDMX
 #include "plugins/opendmx/OpenDmxPlugin.h"
 #endif  // USE_OPENDMX
@@ -176,6 +180,11 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(
       new ola::plugin::milinst::MilInstPlugin(m_plugin_adaptor));
 #endif  // USE_MILINST
+
+#ifdef USE_NANOLEAF
+  m_plugins.push_back(
+      new ola::plugin::nanoleaf::NanoleafPlugin(m_plugin_adaptor));
+#endif  // USE_NANOLEAF
 
 #ifdef USE_OPENDMX
   m_plugins.push_back(

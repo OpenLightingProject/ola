@@ -24,6 +24,7 @@
 #include <lo/lo.h>
 #include <ola/DmxBuffer.h>
 #include <ola/ExportMap.h>
+#include <ola/base/Macro.h>
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/SocketAddress.h>
@@ -133,8 +134,7 @@ class OSCNode {
     lo_address liblo_address;
 
    private:
-    NodeOSCTarget(const NodeOSCTarget&);
-    NodeOSCTarget& operator=(const NodeOSCTarget&);
+    DISALLOW_COPY_AND_ASSIGN(NodeOSCTarget);
   };
 
   typedef std::vector<NodeOSCTarget*> OSCTargetVector;
