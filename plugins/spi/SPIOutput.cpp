@@ -86,7 +86,7 @@ const uint16_t SPIOutput::WS2801_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
-const uint16_t SPIOutput::APA102PB_SLOTS_PER_PIXEL = 4;
+const uint16_t SPIOutput::APA102_PB_SLOTS_PER_PIXEL = 4;
 
 // Number of bytes that each pixel uses on the SPI wires
 // (if it differs from 1:1 with colors)
@@ -206,11 +206,11 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   personalities.insert(personalities.begin() + PERS_APA102_COMBINED - 1,
     Personality(APA102_SLOTS_PER_PIXEL,
       "APA102 Combined Control"));
-  personalities.insert(personalities.begin() + PERS_APA102PB_INDIVIDUAL - 1,
-    Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
+  personalities.insert(personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
+    Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
       "APA102 PB Individual Control"));
-  personalities.insert(personalities.begin() + PERS_APA102PB_COMBINED - 1,
-    Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
+  personalities.insert(personalities.begin() + PERS_APA102_PB_COMBINED - 1,
+    Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
       "APA102 PB Combined Control"));
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
@@ -333,10 +333,10 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
     case PERS_APA102_COMBINED:
       CombinedAPA102Control(buffer);
       break;
-    case PERS_APA102PB_INDIVIDUAL:
+    case PERS_APA102_PB_INDIVIDUAL:
       IndividualAPA102ControlPixelBrightness(buffer);
       break;
-    case PERS_APA102PB_COMBINED:
+    case PERS_APA102_PB_COMBINED:
       CombinedAPA102ControlPixelBrightness(buffer);
       break;
     default:
@@ -620,8 +620,8 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
 
   // only do something if at least 1 pixel can be updated..
-  if (buffer.Size() - first_slot < APA102PB_SLOTS_PER_PIXEL) {
-    OLA_INFO << "Insufficient DMX data, required " << APA102PB_SLOTS_PER_PIXEL
+  if (buffer.Size() - first_slot < APA102_PB_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << APA102_PB_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
     return;
   }
@@ -651,7 +651,7 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
 
   for (uint16_t i = 0; i < m_pixel_count; i++) {
     // Convert RGB to APA102 Pixel
-    uint16_t offset = first_slot + (i * APA102PB_SLOTS_PER_PIXEL);
+    uint16_t offset = first_slot + (i * APA102_PB_SLOTS_PER_PIXEL);
 
     uint16_t spi_offset = (i * APA102_SPI_BYTES_PER_PIXEL);
     // only skip APA102_START_FRAME_BYTES on the first port!!
@@ -662,7 +662,7 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
     }
     // set pixel data
     // only write pixel data if buffer has complete data for this pixel:
-    if ((buffer.Size() - offset) >= APA102PB_SLOTS_PER_PIXEL) {
+    if ((buffer.Size() - offset) >= APA102_PB_SLOTS_PER_PIXEL) {
       // first Byte:
       // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
       // 5 bits pixel brightness (datasheet name: global brightness)
@@ -743,8 +743,8 @@ void SPIOutput::CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer) {
   const uint16_t first_slot = m_start_address - 1;  // 0 offset
 
   // check if enough data is there.
-  if (buffer.Size() - first_slot < APA102PB_SLOTS_PER_PIXEL) {
-    OLA_INFO << "Insufficient DMX data, required " << APA102PB_SLOTS_PER_PIXEL
+  if (buffer.Size() - first_slot < APA102_PB_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << APA102_PB_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
     return;
   }

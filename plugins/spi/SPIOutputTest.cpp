@@ -98,10 +98,11 @@ void SPIOutputTest::testDescription() {
              " (707a:00000000)"),
       output1.Description());
   OLA_ASSERT_EQ(static_cast<uint16_t>(1), output1.GetStartAddress());
-  // OLA_ASSERT_EQ(static_cast<uint8_t>(1), output1.GetPersonality());
   OLA_ASSERT_EQ(
     static_cast<uint8_t>(SPIOutput::PERS_WS2801_INDIVIDUAL),
     output1.GetPersonality());
+  // Test for backwards compatibility
+  OLA_ASSERT_EQ(static_cast<uint8_t>(1), output1.GetPersonality());
 
   // check default constructor values for output2
   OLA_ASSERT_EQ(
@@ -120,6 +121,8 @@ void SPIOutputTest::testDescription() {
   OLA_ASSERT_EQ(
     static_cast<uint8_t>(SPIOutput::PERS_LDP8806_INDIVIDUAL),
     output1.GetPersonality());
+  // Test for backwards compatibility
+  OLA_ASSERT_EQ(static_cast<uint8_t>(3), output1.GetPersonality());
 }
 
 
@@ -756,7 +759,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
  * Test DMX writes in the individual APA102 Pixel Brightness mode.
  */
 void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
-  const uint16_t this_test_personality = SPIOutput::PERS_APA102PB_INDIVIDUAL;
+  const uint16_t this_test_personality = SPIOutput::PERS_APA102_PB_INDIVIDUAL;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
@@ -984,7 +987,7 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
  * Test DMX writes in the combined APA102 mode.
  */
 void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
-  const uint16_t this_test_personality = SPIOutput::PERS_APA102PB_COMBINED;
+  const uint16_t this_test_personality = SPIOutput::PERS_APA102_PB_COMBINED;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
