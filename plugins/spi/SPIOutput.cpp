@@ -70,9 +70,6 @@ using ola::rdm::ResponderHelper;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::auto_ptr;
-using std::min;
-using std::string;
-using std::vector;
 
 
 
@@ -234,11 +231,11 @@ SPIOutput::~SPIOutput() {
 }
 
 
-string SPIOutput::GetDeviceLabel() const {
+std::string SPIOutput::GetDeviceLabel() const {
   return m_device_label;
 }
 
-bool SPIOutput::SetDeviceLabel(const string &device_label) {
+bool SPIOutput::SetDeviceLabel(const std::string &device_label) {
   m_device_label = device_label;
   return true;
 }
@@ -265,7 +262,7 @@ bool SPIOutput::SetStartAddress(uint16_t address) {
   return true;
 }
 
-string SPIOutput::Description() const {
+std::string SPIOutput::Description() const {
   std::ostringstream str;
   str << "Output " << static_cast<int>(m_output_number) << ", "
       << m_personality_manager->ActivePersonalityDescription() << ", "
@@ -774,7 +771,7 @@ RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
 RDMResponse *SPIOutput::GetProductDetailList(const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
-    vector<ola::rdm::rdm_product_detail>
+    std::vector<ola::rdm::rdm_product_detail>
         (1, ola::rdm::PRODUCT_DETAIL_LED));
 }
 
@@ -797,7 +794,9 @@ RDMResponse *SPIOutput::SetDeviceLabel(const RDMRequest *request) {
 }
 
 RDMResponse *SPIOutput::GetSoftwareVersionLabel(const RDMRequest *request) {
-  return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
+  return ResponderHelper::GetString(
+    request,
+    std::string("OLA Version ") + VERSION);
 }
 
 RDMResponse *SPIOutput::GetDmxPersonality(const RDMRequest *request) {
