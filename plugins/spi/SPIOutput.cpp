@@ -181,6 +181,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
 
   PersonalityCollection::PersonalityList personalities;
+  // personality description is max 32 characters
   personalities.insert(personalities.begin() + PERS_WS2801_INDIVIDUAL - 1,
     Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
       "WS2801 Individual Control"));
@@ -207,10 +208,10 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       "APA102 Combined Control"));
   personalities.insert(personalities.begin() + PERS_APA102PB_INDIVIDUAL - 1,
     Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
-      "APA102 with pixel brightness Individual Control"));
+      "APA102 PB Individual Control"));
   personalities.insert(personalities.begin() + PERS_APA102PB_COMBINED - 1,
     Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
-      "APA102 with pixel brightness Combined Control"));
+      "APA102 PB Combined Control"));
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
@@ -651,7 +652,6 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
   for (uint16_t i = 0; i < m_pixel_count; i++) {
     // Convert RGB to APA102 Pixel
     uint16_t offset = first_slot + (i * APA102PB_SLOTS_PER_PIXEL);
-
 
     uint16_t spi_offset = (i * APA102_SPI_BYTES_PER_PIXEL);
     // only skip APA102_START_FRAME_BYTES on the first port!!
