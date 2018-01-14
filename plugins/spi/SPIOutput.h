@@ -39,9 +39,13 @@ namespace spi {
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
   // definitions for all SPI Personalities
-  // keep this order - it is important for backwards compatibility!
-  // (the integer representation is used to store the configuration in files.)
+  // keep personality order
+  // - it is important for backwards compatibility
+  // the integer representation is used to store the configuration in files
+  // and RDM Personality IDs should also be stable.
   // new ones can be added at end.
+  // remember to increment RDM-Version in
+  // SPIOutput.cpp SPIOutput::GetDeviceInfo()
   // enum class SPI_PERSONALITY : unsigned int {
   enum SPI_PERSONALITY {
     PERS_WS2801_INDIVIDUAL = 1,

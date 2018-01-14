@@ -211,10 +211,10 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       "APA102 Combined Control"));
   personalities.insert(personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
     Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
-      "APA102 PB Individual Control"));
+      "APA102 Pixel Brightness Individ."));
   personalities.insert(personalities.begin() + PERS_APA102_PB_COMBINED - 1,
     Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
-      "APA102 PB Combined Control"));
+      "APA102 Pixel Brightness Combined"));
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
