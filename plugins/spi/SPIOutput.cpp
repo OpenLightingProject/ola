@@ -666,7 +666,7 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
       // first Byte:
       // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
       // 5 bits pixel brightness (datasheet name: global brightness)
-      output[spi_offset + 0] = SPIOutput::APA102_LEDFRAME_START_MARK +
+      output[spi_offset + 0] = SPIOutput::APA102_LEDFRAME_START_MARK |
         CalculateAPA102PixelBrightness(buffer.Get(offset + 0));
       // Convert RGB to APA102 Pixel
       output[spi_offset + 1] = buffer.Get(offset + 3);  // blue
@@ -777,7 +777,7 @@ void SPIOutput::CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer) {
   // first Byte:
   // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
   // 5 bits pixel brightness (datasheet name: global brightness)
-  pixel_data[0] = SPIOutput::APA102_LEDFRAME_START_MARK +
+  pixel_data[0] = SPIOutput::APA102_LEDFRAME_START_MARK |
     CalculateAPA102PixelBrightness(buffer.Get(first_slot + 0));
   // color data
   pixel_data[1] = buffer.Get(first_slot + 3);  // Get Blue
