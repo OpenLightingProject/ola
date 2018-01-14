@@ -693,8 +693,8 @@ void SPIOutputTest::testCombinedAPA102Control() {
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
   // test4
-  // tests what happens if fewer then needed color information are received
-  buffer.SetFromString("7, 9");
+  // tests what happens if fewer then needed information are received
+  buffer.SetFromString("7, 9, 11");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   // check that the returns are the same as test2 (nothing changed)
@@ -814,8 +814,8 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
   // test4
-  // tests what happens if fewer then needed color information are received
-  buffer.SetFromString("7, 9");
+  // tests what happens if fewer then needed information are received
+  buffer.SetFromString("7, 9, 11");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   // check that the returns are the same as test3 (nothing changed)
@@ -881,10 +881,10 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   // set personality
   output2.SetPersonality(this_test_personality);
   buffer.SetFromString(
-        std::string("255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,") +
-                    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0");
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0");
   output2.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED8[] = { 0, 0, 0, 0,
@@ -918,10 +918,10 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   output3.SetPersonality(this_test_personality);
   // generate dmx data
   buffer.SetFromString(
-        std::string("255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,") +
-                    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0, 255,0,0,0");
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0");
   output3.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED9[] = { 0, 0, 0, 0,
@@ -950,10 +950,10 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   // test different pixel brightness levels
   // generate dmx data
   buffer.SetFromString(
-        std::string("  0,0,0,0,   8,0,0,0,  16,0,0,0,  42,0,0,0,  84,0,0,0,") +
-                    "127,0,0,0, 167,0,0,0, 206,0,0,0, 240,0,0,0, 247,0,0,0," +
-                    "248,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0, 255,0,0,0");
+    "  0,0,0,0,   8,0,0,0,  16,0,0,0,  42,0,0,0,  84,0,0,0,"
+    "127,0,0,0, 167,0,0,0, 206,0,0,0, 240,0,0,0, 247,0,0,0,"
+    "248,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0");
   output3.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED10[] = { 0, 0, 0, 0,
