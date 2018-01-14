@@ -162,6 +162,8 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
       const ola::rdm::RDMRequest *request);
   ola::rdm::RDMResponse *GetPersonalityDescription(
       const ola::rdm::RDMRequest *request);
+  ola::rdm::RDMResponse *GetSlotInfo(
+      const ola::rdm::RDMRequest *request);
   ola::rdm::RDMResponse *GetDmxStartAddress(
       const ola::rdm::RDMRequest *request);
   ola::rdm::RDMResponse *SetDmxStartAddress(

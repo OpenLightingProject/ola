@@ -74,8 +74,6 @@ using std::min;
 using std::string;
 using std::vector;
 
-
-
 const uint16_t SPIOutput::SPI_DELAY = 0;
 const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIOutput::SPI_MODE = 0;
@@ -126,6 +124,9 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
     &SPIOutput::SetDmxPersonality},
   { ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
     &SPIOutput::GetPersonalityDescription,
+    NULL},
+  { ola::rdm::PID_SLOT_INFO,
+    &SPIOutput::GetSlotInfo,
     NULL},
   { ola::rdm::PID_DMX_START_ADDRESS,
     &SPIOutput::GetDmxStartAddress,
@@ -211,28 +212,35 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
     Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
       "APA102 Individual Control"));
 
-  SlotDataCollection::SlotDataList sd_APA102_COMBINED;
-  sd_APA102_COMBINED.push_back(SlotData::PrimarySlot(SD_COLOR_ADD_RED, 0));
-  sd_APA102_COMBINED.push_back(SlotData::PrimarySlot(SD_COLOR_ADD_GREEN, 0));
-  sd_APA102_COMBINED.push_back(SlotData::PrimarySlot(SD_COLOR_ADD_BLUE, 0));
+  ola::rdm::SlotDataCollection::SlotDataList sd_APA102_COMBINED;
+  sd_APA102_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
+  sd_APA102_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
+  sd_APA102_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
   personalities.insert(personalities.begin() + PERS_APA102_COMBINED - 1,
     Personality(APA102_SLOTS_PER_PIXEL,
       "APA102 Combined Control",
-      SlotDataCollection(sd_APA102_PB_COMBINED)));
+      ola::rdm::SlotDataCollection(sd_APA102_COMBINED)));
 
   personalities.insert(personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
     Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
       "APA102 Pixel Brightness Individ."));
 
-  SlotDataCollection::SlotDataList sd_APA102_PB_COMBINED;
-  sd_APA102_PB_COMBINED.push_back(SlotData::PrimarySlot(SD_INTENSITY, 0));
-  sd_APA102_PB_COMBINED.push_back(SlotData::PrimarySlot(SD_COLOR_ADD_RED, 0));
-  sd_APA102_PB_COMBINED.push_back(SlotData::PrimarySlot(SD_COLOR_ADD_GREEN, 0));
-  sd_APA102_PB_COMBINED.push_back(SlotData::PrimarySlot(SD_COLOR_ADD_BLUE, 0));
+  ola::rdm::SlotDataCollection::SlotDataList sd_APA102_PB_COMBINED;
+  sd_APA102_PB_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_INTENSITY, 0));
+  sd_APA102_PB_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
+  sd_APA102_PB_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
+  sd_APA102_PB_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
   personalities.insert(personalities.begin() + PERS_APA102_PB_COMBINED - 1,
     Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
       "APA102 Pixel Brightness Combined",
-      SlotDataCollection(sd_APA102_PB_COMBINED)));
+      ola::rdm::SlotDataCollection(sd_APA102_PB_COMBINED)));
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
@@ -901,6 +909,10 @@ RDMResponse *SPIOutput::SetDmxPersonality(const RDMRequest *request) {
 RDMResponse *SPIOutput::GetPersonalityDescription(const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, m_personality_manager.get());
+}
+
+RDMResponse *SPIOutput::GetSlotInfo(const RDMRequest *request) {
+  return ResponderHelper::GetSlotInfo(request, m_personality_manager.get());
 }
 
 RDMResponse *SPIOutput::GetDmxStartAddress(const RDMRequest *request) {
