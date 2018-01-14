@@ -24,6 +24,7 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/acn/ACNVectors.h"
+#include "ola/base/Macro.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/HealthCheckedConnection.h"
 #include "ola/stl/STLUtils.h"
@@ -72,8 +73,7 @@ class OutstandingMessage {
     bool m_message_sent;
     auto_ptr<const RDMResponse> m_rdm_response;
 
-    OutstandingMessage(const OutstandingMessage&);
-    OutstandingMessage& operator=(const OutstandingMessage&);
+    DISALLOW_COPY_AND_ASSIGN(OutstandingMessage);
 };
 
 
