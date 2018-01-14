@@ -22,6 +22,7 @@ x/y/2018 ola-0.10.7
  * Fix a man page typo
  * Fix a longstanding copy-paste typo in the Python client's RegisterUniverse
    function
+ * Increment the Transaction Number for each Art-Net RDM packet #189
  * Fix lots of minor documentation spelling errors found by spellintian and
    codespell
  * Renamed protocol convertor(sic) to protocol converter in the RDM code (C++
