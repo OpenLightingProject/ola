@@ -39,7 +39,7 @@ namespace network {
 /**
  * @brief The interface for UDPSockets.
  *
- * This only supports IPv4 sockets. Its an Interface so we can mock it out for
+ * This only supports IPv4 sockets. Its an %Interface so we can mock it out for
  * testing.
  */
 class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
