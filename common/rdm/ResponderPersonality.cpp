@@ -40,6 +40,10 @@ using std::string;
 Personality::Personality(uint16_t footprint, const string &description)
     : m_footprint(footprint),
       m_description(description) {
+        STATIC_ASSERT(sizeof(description) <= 32);
+        // static_assert(
+        //   sizeof(description) <= 32,
+        //   "Personality Description is to long (must be <= 32 chars)");
 }
 
 Personality::Personality(uint16_t footprint, const string &description,
