@@ -238,7 +238,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   sd_APA102_PB_COMBINED.push_back(
     ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
   personalities.insert(personalities.begin() + PERS_APA102_PB_COMBINED - 1,
-    Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
+    Personality(APA102_PB_SLOTS_PER_PIXEL,
       "APA102 Pixel Brightness Combined",
       ola::rdm::SlotDataCollection(sd_APA102_PB_COMBINED)));
 
