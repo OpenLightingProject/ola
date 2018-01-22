@@ -74,8 +74,6 @@ using std::min;
 using std::string;
 using std::vector;
 
-
-
 const uint16_t SPIOutput::SPI_DELAY = 0;
 const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIOutput::SPI_MODE = 0;
@@ -163,6 +161,9 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
   { ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
     &SPIOutput::GetPersonalityDescription,
     NULL},
+  { ola::rdm::PID_SLOT_INFO,
+    &SPIOutput::GetSlotInfo,
+    NULL},
   { ola::rdm::PID_DMX_START_ADDRESS,
     &SPIOutput::GetDmxStartAddress,
     &SPIOutput::SetDmxStartAddress},
@@ -220,36 +221,63 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
 
   PersonalityCollection::PersonalityList personalities;
+  // personality description is max 32 characters
+
   personalities.insert(personalities.begin() + PERS_WS2801_INDIVIDUAL - 1,
     Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
       "WS2801 Individual Control"));
   personalities.insert(personalities.begin() + PERS_WS2801_COMBINED - 1,
     Personality(WS2801_SLOTS_PER_PIXEL,
       "WS2801 Combined Control"));
+
   personalities.insert(personalities.begin() + PERS_LDP8806_INDIVIDUAL - 1,
     Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
       "LPD8806 Individual Control"));
   personalities.insert(personalities.begin() + PERS_LDP8806_COMBINED - 1,
     Personality(LPD8806_SLOTS_PER_PIXEL,
       "LPD8806 Combined Control"));
+
   personalities.insert(personalities.begin() + PERS_P9813_INDIVIDUAL - 1,
     Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
       "P9813 Individual Control"));
   personalities.insert(personalities.begin() + PERS_P9813_COMBINED - 1,
     Personality(P9813_SLOTS_PER_PIXEL,
       "P9813 Combined Control"));
+
   personalities.insert(personalities.begin() + PERS_APA102_INDIVIDUAL - 1,
     Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
       "APA102 Individual Control"));
+
+  ola::rdm::SlotDataCollection::SlotDataList sd_APA102_COMBINED;
+  sd_APA102_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
+  sd_APA102_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
+  sd_APA102_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
   personalities.insert(personalities.begin() + PERS_APA102_COMBINED - 1,
     Personality(APA102_SLOTS_PER_PIXEL,
-      "APA102 Combined Control"));
-  personalities.insert(personalities.begin() + PERS_APA102PB_INDIVIDUAL - 1,
-    Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
-      "APA102 with pixel brightness Individual Control"));
-  personalities.insert(personalities.begin() + PERS_APA102PB_COMBINED - 1,
-    Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
-      "APA102 with pixel brightness Combined Control"));
+      "APA102 Combined Control",
+      ola::rdm::SlotDataCollection(sd_APA102_COMBINED)));
+
+  personalities.insert(personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
+    Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
+      "APA102 Pixel Brightness Individ.TEST"));
+
+  ola::rdm::SlotDataCollection::SlotDataList sd_APA102_PB_COMBINED;
+  sd_APA102_PB_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_INTENSITY, 0));
+  sd_APA102_PB_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
+  sd_APA102_PB_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
+  sd_APA102_PB_COMBINED.push_back(
+    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
+  personalities.insert(personalities.begin() + PERS_APA102_PB_COMBINED - 1,
+    Personality(APA102_PB_SLOTS_PER_PIXEL,
+      "APA102 Pixel Brightness Combined",
+      ola::rdm::SlotDataCollection(sd_APA102_PB_COMBINED)));
+
   personalities.insert(personalities.begin() + PERS_TLC5971_INDIVIDUAL - 1,
     Personality(m_pixel_count * TLC5971_SLOTS_PER_DEVICE,
       "TLC5971 Individual Control (16bit per channel)"));
@@ -374,10 +402,10 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
     case PERS_APA102_COMBINED:
       CombinedAPA102Control(buffer);
       break;
-    case PERS_APA102PB_INDIVIDUAL:
+    case PERS_APA102_PB_INDIVIDUAL:
       IndividualAPA102ControlPixelBrightness(buffer);
       break;
-    case PERS_APA102PB_COMBINED:
+    case PERS_APA102_PB_COMBINED:
       CombinedAPA102ControlPixelBrightness(buffer);
       break;
     case PERS_TLC5971_INDIVIDUAL:
@@ -443,7 +471,7 @@ void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
   if (!output)
     return;
 
-  const unsigned int length = std::min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
+  const unsigned int length = min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
                                        buffer.Size() - first_slot);
 
   for (unsigned int i = 0; i < length / LPD8806_SLOTS_PER_PIXEL; i++) {
@@ -664,8 +692,8 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
 
   // only do something if at least 1 pixel can be updated..
-  if (buffer.Size() - first_slot < APA102PB_SLOTS_PER_PIXEL) {
-    OLA_INFO << "Insufficient DMX data, required " << APA102PB_SLOTS_PER_PIXEL
+  if (buffer.Size() - first_slot < APA102_PB_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << APA102_PB_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
     return;
   }
@@ -695,8 +723,7 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
 
   for (uint16_t i = 0; i < m_pixel_count; i++) {
     // Convert RGB to APA102 Pixel
-    uint16_t offset = first_slot + (i * APA102PB_SLOTS_PER_PIXEL);
-
+    uint16_t offset = first_slot + (i * APA102_PB_SLOTS_PER_PIXEL);
 
     uint16_t spi_offset = (i * APA102_SPI_BYTES_PER_PIXEL);
     // only skip APA102_START_FRAME_BYTES on the first port!!
@@ -707,11 +734,11 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
     }
     // set pixel data
     // only write pixel data if buffer has complete data for this pixel:
-    if ((buffer.Size() - offset) >= APA102PB_SLOTS_PER_PIXEL) {
+    if ((buffer.Size() - offset) >= APA102_PB_SLOTS_PER_PIXEL) {
       // first Byte:
       // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
       // 5 bits pixel brightness (datasheet name: global brightness)
-      output[spi_offset + 0] = SPIOutput::APA102_LEDFRAME_START_MARK +
+      output[spi_offset + 0] = SPIOutput::APA102_LEDFRAME_START_MARK |
         CalculateAPA102PixelBrightness(buffer.Get(offset + 0));
       // Convert RGB to APA102 Pixel
       output[spi_offset + 1] = buffer.Get(offset + 3);  // blue
@@ -788,8 +815,8 @@ void SPIOutput::CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer) {
   const uint16_t first_slot = m_start_address - 1;  // 0 offset
 
   // check if enough data is there.
-  if (buffer.Size() - first_slot < APA102PB_SLOTS_PER_PIXEL) {
-    OLA_INFO << "Insufficient DMX data, required " << APA102PB_SLOTS_PER_PIXEL
+  if (buffer.Size() - first_slot < APA102_PB_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << APA102_PB_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
     return;
   }
@@ -822,7 +849,7 @@ void SPIOutput::CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer) {
   // first Byte:
   // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
   // 5 bits pixel brightness (datasheet name: global brightness)
-  pixel_data[0] = SPIOutput::APA102_LEDFRAME_START_MARK +
+  pixel_data[0] = SPIOutput::APA102_LEDFRAME_START_MARK |
     CalculateAPA102PixelBrightness(buffer.Get(first_slot + 0));
   // color data
   pixel_data[1] = buffer.Get(first_slot + 3);  // Get Blue
@@ -1141,7 +1168,9 @@ RDMResponse *SPIOutput::SetDeviceLabel(const RDMRequest *request) {
 }
 
 RDMResponse *SPIOutput::GetSoftwareVersionLabel(const RDMRequest *request) {
-  return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
+  return ResponderHelper::GetString(
+    request,
+    string("OLA Version ") + VERSION);
 }
 
 RDMResponse *SPIOutput::GetDmxPersonality(const RDMRequest *request) {
@@ -1156,6 +1185,10 @@ RDMResponse *SPIOutput::SetDmxPersonality(const RDMRequest *request) {
 RDMResponse *SPIOutput::GetPersonalityDescription(const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
       request, m_personality_manager.get());
+}
+
+RDMResponse *SPIOutput::GetSlotInfo(const RDMRequest *request) {
+  return ResponderHelper::GetSlotInfo(request, m_personality_manager.get());
 }
 
 RDMResponse *SPIOutput::GetDmxStartAddress(const RDMRequest *request) {

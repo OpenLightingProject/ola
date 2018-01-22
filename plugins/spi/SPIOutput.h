@@ -39,7 +39,13 @@ namespace spi {
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
   // definitions for all SPI Personalities
-  // this hardcoded mapping is needed for backwards compatibility
+  // keep personality order
+  // - it is important for backwards compatibility
+  // the integer representation is used to store the configuration in files
+  // and RDM Personality IDs should also be stable.
+  // new ones can be added at end.
+  // remember to increment RDM-Version in
+  // SPIOutput.cpp SPIOutput::GetDeviceInfo()
   // enum class SPI_PERSONALITY : unsigned int {
   enum SPI_PERSONALITY {
     PERS_WS2801_INDIVIDUAL = 1,
@@ -50,9 +56,9 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     PERS_P9813_COMBINED = 6,
     PERS_APA102_INDIVIDUAL = 7,
     PERS_APA102_COMBINED = 8,
-    PERS_APA102PB_INDIVIDUAL = 9,
-    PERS_APA102PB_COMBINED = 10,
-    PERS_TLC5971_INDIVIDUAL = 11,
+    PERS_APA102_PB_INDIVIDUAL,
+    PERS_APA102_PB_COMBINED,
+    PERS_TLC5971_INDIVIDUAL,
   };
 
   struct Options {
@@ -159,6 +165,8 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
       const ola::rdm::RDMRequest *request);
   ola::rdm::RDMResponse *GetPersonalityDescription(
       const ola::rdm::RDMRequest *request);
+  ola::rdm::RDMResponse *GetSlotInfo(
+      const ola::rdm::RDMRequest *request);
   ola::rdm::RDMResponse *GetDmxStartAddress(
       const ola::rdm::RDMRequest *request);
   ola::rdm::RDMResponse *SetDmxStartAddress(
@@ -206,7 +214,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   static const uint16_t P9813_SLOTS_PER_PIXEL;
   static const uint16_t P9813_SPI_BYTES_PER_PIXEL;
   static const uint16_t APA102_SLOTS_PER_PIXEL;
-  static const uint16_t APA102PB_SLOTS_PER_PIXEL;
+  static const uint16_t APA102_PB_SLOTS_PER_PIXEL;
   static const uint16_t APA102_SPI_BYTES_PER_PIXEL;
   static const uint16_t APA102_START_FRAME_BYTES;
   static const uint8_t  APA102_LEDFRAME_START_MARK;

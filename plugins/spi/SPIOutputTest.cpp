@@ -100,10 +100,11 @@ void SPIOutputTest::testDescription() {
              " (707a:00000000)"),
       output1.Description());
   OLA_ASSERT_EQ(static_cast<uint16_t>(1), output1.GetStartAddress());
-  // OLA_ASSERT_EQ(static_cast<uint8_t>(1), output1.GetPersonality());
   OLA_ASSERT_EQ(
     static_cast<uint8_t>(SPIOutput::PERS_WS2801_INDIVIDUAL),
     output1.GetPersonality());
+  // Test for backwards compatibility
+  OLA_ASSERT_EQ(static_cast<uint8_t>(1), output1.GetPersonality());
 
   // check default constructor values for output2
   OLA_ASSERT_EQ(
@@ -122,6 +123,8 @@ void SPIOutputTest::testDescription() {
   OLA_ASSERT_EQ(
     static_cast<uint8_t>(SPIOutput::PERS_LDP8806_INDIVIDUAL),
     output1.GetPersonality());
+  // Test for backwards compatibility
+  OLA_ASSERT_EQ(static_cast<uint8_t>(3), output1.GetPersonality());
 }
 
 
@@ -656,6 +659,13 @@ void SPIOutputTest::testCombinedAPA102Control() {
   unsigned int length = 0;
   const uint8_t *data = NULL;
 
+  // test0
+  // check GetSlotInfo()
+  // OLA_INFO << output.GetSlotInfo();
+  // OLA_ASSERT_EQ(
+  //     string("??"),
+  //     output1.GetSlotInfo());
+
   // test1
   // setup some 'DMX' data
   buffer.SetFromString("1, 10, 100");
@@ -757,7 +767,7 @@ void SPIOutputTest::testCombinedAPA102Control() {
  * Test DMX writes in the individual APA102 Pixel Brightness mode.
  */
 void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
-  const uint16_t this_test_personality = SPIOutput::PERS_APA102PB_INDIVIDUAL;
+  const uint16_t this_test_personality = SPIOutput::PERS_APA102_PB_INDIVIDUAL;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
@@ -816,8 +826,8 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
   // test4
-  // tests what happens if fewer then needed color information are received
-  buffer.SetFromString("7, 9");
+  // tests what happens if fewer then needed information are received
+  buffer.SetFromString("7, 9, 11");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   // check that the returns are the same as test3 (nothing changed)
@@ -883,10 +893,10 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   // set personality
   output2.SetPersonality(this_test_personality);
   buffer.SetFromString(
-        std::string("255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,") +
-                    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0");
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0");
   output2.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED8[] = { 0, 0, 0, 0,
@@ -920,10 +930,10 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   output3.SetPersonality(this_test_personality);
   // generate dmx data
   buffer.SetFromString(
-        std::string("255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,") +
-                    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0, 255,0,0,0");
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0");
   output3.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED9[] = { 0, 0, 0, 0,
@@ -952,30 +962,30 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
   // test different pixel brightness levels
   // generate dmx data
   buffer.SetFromString(
-        std::string("  0,0,0,0,   8,0,0,0,  16,0,0,0,  42,0,0,0,  84,0,0,0,") +
-                    "127,0,0,0, 167,0,0,0, 206,0,0,0, 240,0,0,0, 247,0,0,0," +
-                    "248,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0," +
-                    "255,0,0,0, 255,0,0,0");
+    "  0,0,0,0,   8,0,0,0,  16,0,0,0,  42,0,0,0,  84,0,0,0,"
+    "127,0,0,0, 167,0,0,0, 206,0,0,0, 240,0,0,0, 247,0,0,0,"
+    "248,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0, 255,0,0,0,"
+    "255,0,0,0, 255,0,0,0");
   output3.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED10[] = { 0, 0, 0, 0,
-                                0xE0 +  0, 0, 0, 0,  // Pixel 1
-                                0xE0 +  1, 0, 0, 0,  // Pixel 2
-                                0xE0 +  2, 0, 0, 0,  // Pixel 3
-                                0xE0 +  5, 0, 0, 0,  // Pixel 4
-                                0xE0 + 10, 0, 0, 0,  // Pixel 5
-                                0xE0 + 15, 0, 0, 0,  // Pixel 6
-                                0xE0 + 20, 0, 0, 0,  // Pixel 7
-                                0xE0 + 25, 0, 0, 0,  // Pixel 8
-                                0xE0 + 30, 0, 0, 0,  // Pixel 9
-                                0xE0 + 30, 0, 0, 0,  // Pixel 10
-                                0xE0 + 31, 0, 0, 0,  // Pixel 11
-                                0xE0 + 31, 0, 0, 0,  // Pixel 12
-                                0xE0 + 31, 0, 0, 0,  // Pixel 13
-                                0xE0 + 31, 0, 0, 0,  // Pixel 14
-                                0xE0 + 31, 0, 0, 0,  // Pixel 15
-                                0xE0 + 31, 0, 0, 0,  // Pixel 16
-                                0xE0 + 31, 0, 0, 0,  // Pixel 17
+                                0xE0 |  0, 0, 0, 0,  // Pixel 1
+                                0xE0 |  1, 0, 0, 0,  // Pixel 2
+                                0xE0 |  2, 0, 0, 0,  // Pixel 3
+                                0xE0 |  5, 0, 0, 0,  // Pixel 4
+                                0xE0 | 10, 0, 0, 0,  // Pixel 5
+                                0xE0 | 15, 0, 0, 0,  // Pixel 6
+                                0xE0 | 20, 0, 0, 0,  // Pixel 7
+                                0xE0 | 25, 0, 0, 0,  // Pixel 8
+                                0xE0 | 30, 0, 0, 0,  // Pixel 9
+                                0xE0 | 30, 0, 0, 0,  // Pixel 10
+                                0xE0 | 31, 0, 0, 0,  // Pixel 11
+                                0xE0 | 31, 0, 0, 0,  // Pixel 12
+                                0xE0 | 31, 0, 0, 0,  // Pixel 13
+                                0xE0 | 31, 0, 0, 0,  // Pixel 14
+                                0xE0 | 31, 0, 0, 0,  // Pixel 15
+                                0xE0 | 31, 0, 0, 0,  // Pixel 16
+                                0xE0 | 31, 0, 0, 0,  // Pixel 17
                                 0, 0};  // now we have two latch bytes...
   OLA_ASSERT_DATA_EQUALS(EXPECTED10, arraysize(EXPECTED10), data, length);
   OLA_ASSERT_EQ(7u, backend.Writes(0));
@@ -985,7 +995,7 @@ void SPIOutputTest::testIndividualAPA102ControlPixelBrightness() {
  * Test DMX writes in the combined APA102 mode.
  */
 void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
-  const uint16_t this_test_personality = SPIOutput::PERS_APA102PB_COMBINED;
+  const uint16_t this_test_personality = SPIOutput::PERS_APA102_PB_COMBINED;
   // setup Backend
   FakeSPIBackend backend(2);
   SPIOutput::Options options(0, "Test SPI Device");
@@ -1042,8 +1052,8 @@ void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
   OLA_ASSERT_EQ(3u, backend.Writes(0));
 
   // test4
-  // tests what happens if fewer then needed color information are received
-  buffer.SetFromString("7, 9");
+  // tests what happens if fewer then needed information are received
+  buffer.SetFromString("7, 9, 11");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   // check that the returns are the same as test2 (nothing changed)
@@ -1112,26 +1122,26 @@ void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
   output2.WriteDMX(buffer);
   data = backend.GetData(0, &length);
   const uint8_t EXPECTED8[] = { 0, 0, 0, 0,
-                                0xE0 + 15, 0, 0, 0,  // Pixel 1
-                                0xE0 + 15, 0, 0, 0,  // Pixel 2
-                                0xE0 + 15, 0, 0, 0,  // Pixel 3
-                                0xE0 + 15, 0, 0, 0,  // Pixel 4
-                                0xE0 + 15, 0, 0, 0,  // Pixel 5
-                                0xE0 + 15, 0, 0, 0,  // Pixel 6
-                                0xE0 + 15, 0, 0, 0,  // Pixel 7
-                                0xE0 + 15, 0, 0, 0,  // Pixel 8
-                                0xE0 + 15, 0, 0, 0,  // Pixel 9
-                                0xE0 + 15, 0, 0, 0,  // Pixel 10
-                                0xE0 + 15, 0, 0, 0,  // Pixel 11
-                                0xE0 + 15, 0, 0, 0,  // Pixel 12
-                                0xE0 + 15, 0, 0, 0,  // Pixel 13
-                                0xE0 + 15, 0, 0, 0,  // Pixel 14
-                                0xE0 + 15, 0, 0, 0,  // Pixel 15
-                                0xE0 + 15, 0, 0, 0,  // Pixel 16
-                                0xE0 + 15, 0, 0, 0,  // Pixel 17
-                                0xE0 + 15, 0, 0, 0,  // Pixel 18
-                                0xE0 + 15, 0, 0, 0,  // Pixel 19
-                                0xE0 + 15, 0, 0, 0,  // Pixel 20
+                                0xE0 | 15, 0, 0, 0,  // Pixel 1
+                                0xE0 | 15, 0, 0, 0,  // Pixel 2
+                                0xE0 | 15, 0, 0, 0,  // Pixel 3
+                                0xE0 | 15, 0, 0, 0,  // Pixel 4
+                                0xE0 | 15, 0, 0, 0,  // Pixel 5
+                                0xE0 | 15, 0, 0, 0,  // Pixel 6
+                                0xE0 | 15, 0, 0, 0,  // Pixel 7
+                                0xE0 | 15, 0, 0, 0,  // Pixel 8
+                                0xE0 | 15, 0, 0, 0,  // Pixel 9
+                                0xE0 | 15, 0, 0, 0,  // Pixel 10
+                                0xE0 | 15, 0, 0, 0,  // Pixel 11
+                                0xE0 | 15, 0, 0, 0,  // Pixel 12
+                                0xE0 | 15, 0, 0, 0,  // Pixel 13
+                                0xE0 | 15, 0, 0, 0,  // Pixel 14
+                                0xE0 | 15, 0, 0, 0,  // Pixel 15
+                                0xE0 | 15, 0, 0, 0,  // Pixel 16
+                                0xE0 | 15, 0, 0, 0,  // Pixel 17
+                                0xE0 | 15, 0, 0, 0,  // Pixel 18
+                                0xE0 | 15, 0, 0, 0,  // Pixel 19
+                                0xE0 | 15, 0, 0, 0,  // Pixel 20
                                 0, 0};
                                 // with > 16 Pixel we have two latch bytes...
   OLA_ASSERT_DATA_EQUALS(EXPECTED8, arraysize(EXPECTED8), data, length);
