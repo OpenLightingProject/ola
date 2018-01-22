@@ -88,7 +88,7 @@ const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
 // 3 ch color + 1 pixel brightness
-const uint16_t SPIOutput::APA102PB_SLOTS_PER_PIXEL = 4;
+const uint16_t SPIOutput::APA102_PB_SLOTS_PER_PIXEL = 4;
 // 12 channels @ 16bit = 24 dmx channels
 const uint16_t SPIOutput::TLC5971_SLOTS_PER_DEVICE = 24;
 
