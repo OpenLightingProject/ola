@@ -3200,7 +3200,7 @@ manufacturer {
         }
         label {
           value: 2
-          label: "Syncronized fixture"
+          label: "Synchronized fixture"
         }
       }
     }
@@ -3208,7 +3208,7 @@ manufacturer {
     set_request {
       field {
         type: UINT8
-        name: "sycronization_mode"
+        name: "synchronization_mode"
         label {
           value: 0
           label: "Single Fixture"
@@ -3219,7 +3219,7 @@ manufacturer {
         }
         label {
           value: 2
-          label: "Syncronized fixture"
+          label: "Synchronized fixture"
         }
       }
     }
@@ -8984,6 +8984,74 @@ manufacturer {
     set_response {
     }
     set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 17742
+  manufacturer_name: "Enttec"
+  pid {
+    name: "PWM_OUTPUT_FREQUENCY"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "frequency"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "frequency"
+        range {
+          min: 500
+          max: 2000
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "FAN_ON_PERCENTAGE"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "percentage"
+        label {
+          value: 0
+          label: "Auto"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "percentage"
+        label {
+          value: 0
+          label: "Auto"
+        }
+        range {
+          min: 0
+          max: 0
+        }
+        range {
+          min: 50
+          max: 100
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
 version: 1503271492
