@@ -8988,7 +8988,7 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 17742
-  manufacturer_name: "Enttec"
+  manufacturer_name: "Enttec Pty Ltd"
   pid {
     name: "PWM_OUTPUT_FREQUENCY"
     value: 32770
