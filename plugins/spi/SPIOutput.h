@@ -46,7 +46,6 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   // new ones can be added at end.
   // remember to increment RDM-Version in
   // SPIOutput.cpp SPIOutput::GetDeviceInfo()
-  // enum class SPI_PERSONALITY : unsigned int {
   enum SPI_PERSONALITY {
     PERS_WS2801_INDIVIDUAL = 1,
     PERS_WS2801_COMBINED = 2,
