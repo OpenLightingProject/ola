@@ -224,58 +224,58 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   // personality description is max 32 characters
 
   personalities.insert(personalities.begin() + PERS_WS2801_INDIVIDUAL - 1,
-    Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
-      "WS2801 Individual Control"));
+                      Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
+                                  "WS2801 Individual Control"));
   personalities.insert(personalities.begin() + PERS_WS2801_COMBINED - 1,
-    Personality(WS2801_SLOTS_PER_PIXEL,
-      "WS2801 Combined Control"));
+                      Personality(WS2801_SLOTS_PER_PIXEL,
+                                  "WS2801 Combined Control"));
 
   personalities.insert(personalities.begin() + PERS_LDP8806_INDIVIDUAL - 1,
-    Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
-      "LPD8806 Individual Control"));
+                      Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
+                                  "LPD8806 Individual Control"));
   personalities.insert(personalities.begin() + PERS_LDP8806_COMBINED - 1,
-    Personality(LPD8806_SLOTS_PER_PIXEL,
-      "LPD8806 Combined Control"));
+                      Personality(LPD8806_SLOTS_PER_PIXEL,
+                                  "LPD8806 Combined Control"));
 
   personalities.insert(personalities.begin() + PERS_P9813_INDIVIDUAL - 1,
-    Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
-      "P9813 Individual Control"));
+                      Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
+                                  "P9813 Individual Control"));
   personalities.insert(personalities.begin() + PERS_P9813_COMBINED - 1,
-    Personality(P9813_SLOTS_PER_PIXEL,
-      "P9813 Combined Control"));
+                      Personality(P9813_SLOTS_PER_PIXEL,
+                                  "P9813 Combined Control"));
 
   personalities.insert(personalities.begin() + PERS_APA102_INDIVIDUAL - 1,
-    Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
-      "APA102 Individual Control"));
+                      Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
+                                  "APA102 Individual Control"));
 
   ola::rdm::SlotDataCollection::SlotDataList sd_APA102_COMBINED;
   sd_APA102_COMBINED.push_back(
-    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
   sd_APA102_COMBINED.push_back(
-    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
   sd_APA102_COMBINED.push_back(
-    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
   personalities.insert(personalities.begin() + PERS_APA102_COMBINED - 1,
-    Personality(APA102_SLOTS_PER_PIXEL,
-      "APA102 Combined Control",
+                      Personality(APA102_SLOTS_PER_PIXEL,
+                                  "APA102 Combined Control",
       ola::rdm::SlotDataCollection(sd_APA102_COMBINED)));
 
   personalities.insert(personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
-    Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
-      "APA102 Pixel Brightness Individ.TEST"));
+                      Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
+                                  "APA102 Pixel Brightness Individ.TEST"));
 
   ola::rdm::SlotDataCollection::SlotDataList sd_APA102_PB_COMBINED;
   sd_APA102_PB_COMBINED.push_back(
-    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_INTENSITY, 0));
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_INTENSITY, 0));
   sd_APA102_PB_COMBINED.push_back(
-    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
   sd_APA102_PB_COMBINED.push_back(
-    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
   sd_APA102_PB_COMBINED.push_back(
-    ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
   personalities.insert(personalities.begin() + PERS_APA102_PB_COMBINED - 1,
-    Personality(APA102_PB_SLOTS_PER_PIXEL,
-      "APA102 Pixel Brightness Combined",
+                      Personality(APA102_PB_SLOTS_PER_PIXEL,
+                                  "APA102 Pixel Brightness Combined",
       ola::rdm::SlotDataCollection(sd_APA102_PB_COMBINED)));
 
   personalities.insert(personalities.begin() + PERS_TLC5971_INDIVIDUAL - 1,
@@ -614,7 +614,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
 
   // only do something if at least 1 pixel can be updated..
-  if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
+  if ((buffer.Size() - first_slot) < APA102_SLOTS_PER_PIXEL) {
     OLA_INFO << "Insufficient DMX data, required " << APA102_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
     return;
@@ -677,8 +677,7 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
 
 
 void SPIOutput::IndividualAPA102ControlPixelBrightness(
-  const DmxBuffer &buffer
-) {
+    const DmxBuffer &buffer) {
   // some detailed information on the protocol:
   // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
   // Data-Struct
@@ -692,7 +691,7 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
 
   // only do something if at least 1 pixel can be updated..
-  if (buffer.Size() - first_slot < APA102_PB_SLOTS_PER_PIXEL) {
+  if ((buffer.Size() - first_slot) < APA102_PB_SLOTS_PER_PIXEL) {
     OLA_INFO << "Insufficient DMX data, required " << APA102_PB_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
     return;
@@ -738,8 +737,8 @@ void SPIOutput::IndividualAPA102ControlPixelBrightness(
       // first Byte:
       // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
       // 5 bits pixel brightness (datasheet name: global brightness)
-      output[spi_offset + 0] = SPIOutput::APA102_LEDFRAME_START_MARK |
-        CalculateAPA102PixelBrightness(buffer.Get(offset + 0));
+      output[spi_offset + 0] = (SPIOutput::APA102_LEDFRAME_START_MARK |
+          CalculateAPA102PixelBrightness(buffer.Get(offset + 0)));
       // Convert RGB to APA102 Pixel
       output[spi_offset + 1] = buffer.Get(offset + 3);  // blue
       output[spi_offset + 2] = buffer.Get(offset + 2);  // green
@@ -758,7 +757,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   const uint16_t first_slot = m_start_address - 1;  // 0 offset
 
   // check if enough data is there.
-  if (buffer.Size() - first_slot < APA102_SLOTS_PER_PIXEL) {
+  if ((buffer.Size() - first_slot) < APA102_SLOTS_PER_PIXEL) {
     OLA_INFO << "Insufficient DMX data, required " << APA102_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
     return;
@@ -815,7 +814,7 @@ void SPIOutput::CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer) {
   const uint16_t first_slot = m_start_address - 1;  // 0 offset
 
   // check if enough data is there.
-  if (buffer.Size() - first_slot < APA102_PB_SLOTS_PER_PIXEL) {
+  if ((buffer.Size() - first_slot) < APA102_PB_SLOTS_PER_PIXEL) {
     OLA_INFO << "Insufficient DMX data, required " << APA102_PB_SLOTS_PER_PIXEL
              << ", got " << buffer.Size() - first_slot;
     return;
@@ -849,8 +848,8 @@ void SPIOutput::CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer) {
   // first Byte:
   // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
   // 5 bits pixel brightness (datasheet name: global brightness)
-  pixel_data[0] = SPIOutput::APA102_LEDFRAME_START_MARK |
-    CalculateAPA102PixelBrightness(buffer.Get(first_slot + 0));
+  pixel_data[0] = (SPIOutput::APA102_LEDFRAME_START_MARK |
+      CalculateAPA102PixelBrightness(buffer.Get(first_slot + 0)));
   // color data
   pixel_data[1] = buffer.Get(first_slot + 3);  // Get Blue
   pixel_data[2] = buffer.Get(first_slot + 2);  // Get Green
@@ -1168,9 +1167,7 @@ RDMResponse *SPIOutput::SetDeviceLabel(const RDMRequest *request) {
 }
 
 RDMResponse *SPIOutput::GetSoftwareVersionLabel(const RDMRequest *request) {
-  return ResponderHelper::GetString(
-    request,
-    string("OLA Version ") + VERSION);
+  return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
 RDMResponse *SPIOutput::GetDmxPersonality(const RDMRequest *request) {
