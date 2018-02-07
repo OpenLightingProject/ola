@@ -13,62 +13,64 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * KiNetNode.h
- * Header file for the KiNetNode class.
- * Copyright (C) 2013 Simon Newton
+ * NanoleafNode.h
+ * Header file for the NanoleafNode class.
+ * Copyright (C) 2017 Peter Newman
  */
 
-#ifndef PLUGINS_KINET_KINETNODE_H_
-#define PLUGINS_KINET_KINETNODE_H_
+#ifndef PLUGINS_NANOLEAF_NANOLEAFNODE_H_
+#define PLUGINS_NANOLEAF_NANOLEAFNODE_H_
 
 #include <memory>
+#include <vector>
 
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
-#include "ola/io/BigEndianStream.h"
+#include "ola/io/OutputStream.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/Interface.h"
-#include "ola/network/IPV4Address.h"
+#include "ola/network/SocketAddress.h"
 #include "ola/network/Socket.h"
 
 namespace ola {
 namespace plugin {
-namespace kinet {
+namespace nanoleaf {
 
-class KiNetNode {
+class NanoleafNode {
  public:
-    KiNetNode(ola::io::SelectServerInterface *ss,
-              ola::network::UDPSocketInterface *socket = NULL);
-    virtual ~KiNetNode();
+    NanoleafNode(ola::io::SelectServerInterface *ss,
+                 std::vector<uint8_t> panels,
+                 ola::network::UDPSocketInterface *socket = NULL);
+    virtual ~NanoleafNode();
 
     bool Start();
     bool Stop();
 
     // The following apply to Input Ports (those which send data)
-    bool SendDMX(const ola::network::IPV4Address &target,
+    bool SendDMX(const ola::network::IPV4SocketAddress &target,
                  const ola::DmxBuffer &buffer);
 
  private:
     bool m_running;
     ola::io::SelectServerInterface *m_ss;
+    std::vector<uint8_t> m_panels;
     ola::io::IOQueue m_output_queue;
-    ola::io::BigEndianOutputStream m_output_stream;
+    ola::io::OutputStream m_output_stream;
     ola::network::Interface m_interface;
     std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
 
     void SocketReady();
-    void PopulatePacketHeader(uint16_t msg_type);
     bool InitNetwork();
 
-    static const uint16_t KINET_PORT = 6038;
-    static const uint32_t KINET_MAGIC_NUMBER = 0x0401dc4a;
-    static const uint16_t KINET_VERSION_ONE = 0x0100;
-    static const uint16_t KINET_DMX_MSG = 0x0101;
+    static const uint8_t NANOLEAF_FRAME_COUNT = 0x01;
+    static const uint8_t NANOLEAF_WHITE_LEVEL = 0x00;
+    static const uint8_t NANOLEAF_TRANSITION_TIME = 0x01;
+    static const uint8_t NANOLEAF_SLOTS_PER_PANEL = 3;
 
-    DISALLOW_COPY_AND_ASSIGN(KiNetNode);
+    DISALLOW_COPY_AND_ASSIGN(NanoleafNode);
 };
-}  // namespace kinet
+}  // namespace nanoleaf
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_KINET_KINETNODE_H_
+#endif  // PLUGINS_NANOLEAF_NANOLEAFNODE_H_

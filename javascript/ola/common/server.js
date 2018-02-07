@@ -115,7 +115,7 @@ ola.common.Server.STOP_SERVER_URL = 'quit';
  * The url for the universe info.
  * @type {string}
  */
-ola.common.Server.AVAILBLE_PORTS_URL = 'json/get_ports';
+ola.common.Server.AVAILABLE_PORTS_URL = 'json/get_ports';
 
 /**
  * The url to fetch the list of UIDs.
@@ -360,7 +360,7 @@ ola.common.Server.prototype.FetchUniverseInfo = function(universe_id) {
  */
 ola.common.Server.prototype.fetchAvailablePorts = function(opt_universe,
                                                            callback) {
-  var url = ola.common.Server.AVAILBLE_PORTS_URL;
+  var url = ola.common.Server.AVAILABLE_PORTS_URL;
   if (opt_universe != undefined) {
     url += '?id=' + opt_universe;
   }
