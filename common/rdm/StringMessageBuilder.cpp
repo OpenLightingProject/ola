@@ -313,7 +313,7 @@ void StringMessageBuilder::Visit(
 
 
 /**
- * This is a noop since we handle decending ourselfs in Visit()
+ * This is a noop since we handle decending ourselves in Visit()
  */
 void StringMessageBuilder::PostVisit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
