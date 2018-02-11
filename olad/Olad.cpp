@@ -32,6 +32,10 @@
 #include <iostream>
 #include <memory>
 
+// On MinGW, OlaDaemon.h pulls in SocketAddress.h which pulls in WinSock2.h,
+// which needs to be after WinSock2.h, hence this order
+#include "olad/OlaDaemon.h"
+
 #include "ola/Logging.h"
 #include "ola/base/Credentials.h"
 #include "ola/base/Flags.h"
@@ -39,7 +43,6 @@
 #include "ola/base/SysExits.h"
 #include "ola/base/Version.h"
 #include "ola/thread/SignalThread.h"
-#include "olad/OlaDaemon.h"
 
 using ola::OlaDaemon;
 using ola::thread::SignalThread;
