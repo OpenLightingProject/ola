@@ -53,7 +53,7 @@ class InvalidPidFormat(Error):
 
 
 class PidStructureException(Error):
-  """Raised if the PID structure isn't vaild."""
+  """Raised if the PID structure isn't valid."""
 
 
 class ArgsValidationError(Error):
