@@ -18,22 +18,24 @@
  * Copyright (C) 2014 Peter Newman
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <string.h>
 #include <sys/stat.h>
 #ifdef _WIN32
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
 #include <ola/win/CleanWindows.h>
 #include <winioctl.h>
 #else
 #include <sys/ioctl.h>
 #endif  // _WIN32
 #include <unistd.h>
-
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif  // HAVE_CONFIG_H
 
 #include <iomanip>
 #include <string>

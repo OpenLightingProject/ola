@@ -18,6 +18,12 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+// On MinGW, Thread.h pulls in pthread.h which pulls in Windows.h, which needs
+// to be after WinSock2.h, hence this order
+#include "examples/ShowPlayer.h"
+#include "examples/ShowLoader.h"
+#include "examples/ShowRecorder.h"
+
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
@@ -32,10 +38,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "examples/ShowPlayer.h"
-#include "examples/ShowLoader.h"
-#include "examples/ShowRecorder.h"
 
 using std::auto_ptr;
 using std::cout;
