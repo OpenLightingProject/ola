@@ -38,7 +38,7 @@
 
 // On MinGW, SignalThread.h pulls in pthread.h which pulls in Windows.h, which
 // needs to be after WinSock2.h, hence this order
-#include <ola/thread/SignalThread.h>
+#include <ola/thread/SignalThread.h>  // NOLINT(build/include_order)
 
 using std::auto_ptr;
 using std::cout;
