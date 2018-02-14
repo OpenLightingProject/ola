@@ -1,6 +1,13 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 # Fetch the new PIDs definition files from the RDM PID Index
-wget -O pids.proto http://rdm.openlighting.org/download?pids=esta
-wget -O draft_pids.proto http://rdm.openlighting.org/download?pids=esta-draft
-wget -O manufacturer_pids.proto http://rdm.openlighting.org/download?pids=manufacturers
+datahost="rdm.openlighting.org"
+if [ ! -z $1 ]; then
+	datahost=$1
+fi
+
+echo "Fetching PID data from $datahost"
+
+curl -o pids.proto -f http://$datahost/download?pids=esta
+curl -o draft_pids.proto -f http://$datahost/download?pids=esta-draft
+curl -o manufacturer_pids.proto -f http://$datahost/download?pids=manufacturers
