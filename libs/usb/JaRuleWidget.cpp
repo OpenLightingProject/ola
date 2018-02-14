@@ -241,10 +241,10 @@ bool JaRuleWidget::InternalInit() {
   EndpointMap::const_iterator endpoint_iter = endpoint_map.begin();
   uint8_t port_index = 0;
   for (; endpoint_iter != endpoint_map.end(); ++endpoint_iter) {
-    const EndpointCapabilties &capabilites = endpoint_iter->second;
-    if (capabilites.in_supported && capabilites.out_supported) {
-      interfaces_to_claim.insert(capabilites.in_interface);
-      interfaces_to_claim.insert(capabilites.out_interface);
+    const EndpointCapabilties &capabilities = endpoint_iter->second;
+    if (capabilities.in_supported && capabilities.out_supported) {
+      interfaces_to_claim.insert(capabilities.in_interface);
+      interfaces_to_claim.insert(capabilities.out_interface);
       OLA_INFO << "Found Ja Rule port at "
                << static_cast<int>(endpoint_iter->first);
       m_ports.push_back(new JaRuleWidgetPort(

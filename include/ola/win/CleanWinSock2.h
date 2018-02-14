@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * CleanWinSock2.h
- * A common header that removes many of the name-space clutter that windows.h
+ * A common header that removes much of the name-space clutter that windows.h
  * and WinSock2.h creates
  * Copyright (C) 2014 Sean Sill
  */
