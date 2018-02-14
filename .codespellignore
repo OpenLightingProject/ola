@@ -1,0 +1,54 @@
+  int lock_fd = open(lock_file.c_str(), O_RDWR | O_CREAT | O_EXCL,
+    if (!(ifrcopy.ifr_flags & IFF_UP)) {
+    if (ifrcopy.ifr_flags & IFF_LOOPBACK) {
+    if (ifrcopy.ifr_flags & IFF_BROADCAST) {
+      string("  00 48 65 6c  .Hel\n"
+ * Renamed valiator(sic) to validator, incomming(sic) to incoming, mimimun(sic)
+        /^(?:([0-9]{1,3})(?:\s(THRU)\s(?:([0-9]{1,3}))?)?(?:\s(@)\s(?:([0-9]{1,3}|FULL))?)?)/;
+ *   channel_range ::= "ALL" | "*" | channel "THRU" channel | channel > channel
+      /(?:([0-9]{1,3})(?:\s+THRU\s+([0-9]{0,3}))?)\s+@\s+([0-9]{0,3})$/);
+     /(?:([0-9]{1,3})(?:\s+THRU\s+([0-9]{0,3}))?)(?:\s+@\s+([0-9]{0,3}))?$/);
+  str = str.replace('>', 'THRU');
+                    ' THRU ' + ola.common.DmxConstants.MAX_CHANNEL_NUMBER);
+                    ' THRU ' + ola.common.DmxConstants.MAX_CHANNEL_NUMBER);
+    // If it's the T or > keys, autocomplete 'THRU'
+         case 'U': // THRU
+  var values = ['7', '8', '9', ' THRU ', '4', '5', '6', ' @ ', '1', '2', '3',
+    // This is true iff all fields in a group are of a fixed size and the
+    <button ng-click="input(' THRU ')" class="btn btn-keypad">THRU</button>
+      state(AVAHI_ENTRY_GROUP_UNCOMMITED),
+    case AVAHI_ENTRY_GROUP_UNCOMMITED:
+    if (iter->second->state == AVAHI_ENTRY_GROUP_UNCOMMITED) {
+    iter->second->state = AVAHI_ENTRY_GROUP_UNCOMMITED;
+    case AVAHI_ENTRY_GROUP_UNCOMMITED:
+      return "AVAHI_ENTRY_GROUP_UNCOMMITED";
+      PRE_SOM,
+      uint8_t som;
+    static const uint8_t SOM = 0xa5;
+    PRE_SOM,
+    uint8_t som;
+  static const uint8_t SOM = 0x7e;
+  frame[0] = 0x7e;  // som
+  frame[0] = 0xa5;  // som
+  frame[0] = 0x7e;  // som
+const uint8_t BaseRobeWidget::SOM;
+      m_state(PRE_SOM),
+  header->som = SOM;
+  uint8_t crc = SOM + packet_type + (length & 0xFF) + ((length & 0xFF00) >> 8);
+    case PRE_SOM:
+        m_descriptor->Receive(&m_header.som, 1, count);
+      } while (m_header.som != SOM);
+        m_state = PRE_SOM;
+      m_crc = SOM + m_header.packet_type + m_header.len + m_header.len_hi;
+        m_state = PRE_SOM;
+      m_state = PRE_SOM;
+      m_state(PRE_SOM),
+  header->som = SOM;
+    case PRE_SOM:
+        m_descriptor->Receive(&m_header.som, 1, count);
+      } while (m_header.som != SOM);
+        m_state = PRE_SOM;
+      m_state = PRE_SOM;
+        '%s attempted to get %s which wasn\'t declared' %
+        '%s attempted to set %s which wasn\'t declared' %
+        'min': numpy.amin(array),
