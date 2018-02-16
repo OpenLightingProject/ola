@@ -31,6 +31,9 @@ typedef uint32_t in_addr_t;
 #define WIN_32_LEAN_AND_MEAN
 #include <ola/win/CleanWinSock2.h>
 #include <Iphlpapi.h>
+#if HAVE_WINERROR_H
+#include <winerror.h>
+#endif  // HAVE_WINERROR_H
 #else
 #include <netinet/in.h>
 #endif  // _WIN32
