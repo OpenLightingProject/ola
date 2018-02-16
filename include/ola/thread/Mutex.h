@@ -21,6 +21,12 @@
 #ifndef INCLUDE_OLA_THREAD_MUTEX_H_
 #define INCLUDE_OLA_THREAD_MUTEX_H_
 
+#ifdef _WIN32
+// On MinGW, pthread.h pulls in Windows.h, which in turn pollutes the global
+// namespace. We define VC_EXTRALEAN and WIN32_LEAN_AND_MEAN to reduce this.
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // _WIN32
 #include <pthread.h>
 #include <ola/Clock.h>
 #include <ola/base/Macro.h>
