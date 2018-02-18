@@ -275,7 +275,7 @@ before_cache:
 
 install:
 # Match the version of protobuf being installed via apt
-  - if [[ "$PROTOBUF" == "3.5" ]]; then pip install --user protobuf==3.5.0; fi
+  - if [[ "$PROTOBUF" == "3.5" ]]; then pip install --user protobuf==3.5.1; fi
   - if [[ "$PROTOBUF" != "3.5" ]]; then pip install --user protobuf==3.1.0; fi
 # We need to use pip rather than apt on Trusty
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
