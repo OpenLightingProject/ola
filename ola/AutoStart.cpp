@@ -21,6 +21,12 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+// On MinGW, SocketAddress.h pulls in WinSock2.h, which needs to be after
+// WinSock2.h, hence this order
+#include <ola/network/SocketAddress.h>
+#include <ola/AutoStart.h>
+
 #ifdef _WIN32
 #define VC_EXTRALEAN
 #include <ola/win/CleanWindows.h>
@@ -30,9 +36,7 @@
 #include <unistd.h>
 #endif  // _WIN32
 
-#include <ola/AutoStart.h>
 #include <ola/network/IPV4Address.h>
-#include <ola/network/SocketAddress.h>
 #include <ola/Logging.h>
 
 namespace ola {

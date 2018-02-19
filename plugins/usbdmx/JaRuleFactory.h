@@ -41,7 +41,7 @@ namespace usbdmx {
 class JaRuleFactory : public BaseWidgetFactory<ola::usb::JaRuleWidget> {
  public:
   explicit JaRuleFactory(ola::io::SelectServerInterface *ss,
-                         ola::usb::AsyncronousLibUsbAdaptor *adaptor)
+                         ola::usb::AsynchronousLibUsbAdaptor *adaptor)
       : BaseWidgetFactory<ola::usb::JaRuleWidget>("JaRuleFactory"),
         m_ss(ss),
         m_adaptor(adaptor) {
@@ -53,7 +53,7 @@ class JaRuleFactory : public BaseWidgetFactory<ola::usb::JaRuleWidget> {
 
  private:
   ola::io::SelectServerInterface *m_ss;
-  ola::usb::AsyncronousLibUsbAdaptor *m_adaptor;
+  ola::usb::AsynchronousLibUsbAdaptor *m_adaptor;
 
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;

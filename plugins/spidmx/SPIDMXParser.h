@@ -34,7 +34,14 @@ class SPIDMXParser {
  public:
   SPIDMXParser(DmxBuffer *buffer, Callback0<void> *callback)
     : m_dmx_buffer(buffer),
-      m_callback(callback) {
+      m_callback(callback),
+      m_state(WAIT_FOR_BREAK),   // reset in ChangeState()
+      m_chunk(NULL),             // reset in ParseDmx()
+      m_chunk_spi_bytecount(0),  // first reset in ParseDmx()
+      m_state_spi_bitcount(0),   // first reset in ChangeState()
+      m_current_dmx_value(0),    // first reset in InDataStartbit()
+      m_channel_count(0),        // first reset in ChangeState()
+      m_sampling_position(0) {   // reset in InDataStartbit()
   }
   void ParseDmx(uint8_t *buffer, uint64_t chunksize);
   void SetCallback(Callback0<void> *callback) {
@@ -73,35 +80,35 @@ class SPIDMXParser {
   void InLastDataBit();
   void InDataStopbits();
 
+  /** a DmxBuffer that is filled and returned when ready */
+  DmxBuffer *m_dmx_buffer;
+
+  /** The callback to call when a packet end is detected or the chunk ends */
+  Callback0<void> *m_callback;
+
   /** current state */
-  SPIDMXParser::dmx_state_t state;
+  SPIDMXParser::dmx_state_t m_state;
 
   /** the raw SPI data */
-  uint8_t *chunk;
+  uint8_t *m_chunk;
 
   /** the current SPI byte */
-  uint64_t chunk_bitcount;
+  uint64_t m_chunk_spi_bytecount;
 
   /**
    * Count how many SPI bits the current state is already active. Not used
    * in all states.
    */
-  uint64_t state_bitcount;
-
-  /** a DmxBuffer that is filled and returned when ready */
-  DmxBuffer *m_dmx_buffer;
+  uint64_t m_state_spi_bitcount;
 
   /** The current DMX channel value (gets assembled from multiple SPI bytes) */
-  uint8_t current_dmx_value;
+  uint8_t m_current_dmx_value;
 
   /** The current DMX channel count */
-  int16_t channel_count;
+  int16_t m_channel_count;
 
   /** The currently used bit offset to sample the DMX bits */
-  uint8_t sampling_position;
-
-  /** The callback to call when a packet end is detected or the chunk ends */
-  Callback0<void> *m_callback;
+  uint8_t m_sampling_position;
 
   DISALLOW_COPY_AND_ASSIGN(SPIDMXParser);
 };

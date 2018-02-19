@@ -109,7 +109,7 @@ class TestState {
 
 
 /*
- * This is similar to a TestStart but it checks for a particular first packet.
+ * This is similar to a TestState but it checks for a particular first packet.
  * It's useful for state transitions.
  */
 class RelaxedTestState: public TestState {
@@ -145,7 +145,7 @@ class RelaxedTestState: public TestState {
 
 
 /*
- * This is similar to a TestStart but it checks for one style of packet,
+ * This is similar to a TestState but it checks for one style of packet,
  * followed by another. It's useful for state transitions.
  */
 class OrderedTestState: public TestState {
@@ -194,7 +194,7 @@ class NodeInactive: public NodeAction {
 
 
 /*
- * This action just sends some data wil the selected priority.
+ * This action just sends some data with the selected priority.
  */
 class NodeSimpleSend: public NodeAction {
  public:
@@ -216,7 +216,7 @@ class NodeSimpleSend: public NodeAction {
 
 
 /*
- * This action sends a terminated msg the does nothing.
+ * This action sends a terminated msg that does nothing.
  */
 class NodeTerminate: public NodeAction {
  public:

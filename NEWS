@@ -1,4 +1,4 @@
-x/y/2017 ola-0.10.6
+x/y/2018 ola-0.10.7
  Features:
  * 
 
@@ -9,11 +9,24 @@ x/y/2017 ola-0.10.6
  * 
 
  Bugs:
- * Renamed fempto(sic) to femto in the RDM code (C++ and Python)
- * Renamed terra(sic) to tera in the RDM code (C++ and Python)
+ * 
 
  Internal:
  *
+
+07/01/2018 ola-0.10.6
+ Bugs:
+ * Renamed fempto(sic) to femto in the RDM code (C++ and Python)
+ * Renamed terra(sic) to tera in the RDM code (C++ and Python)
+ * Fixes for RDM test server forward compatibility with later JQuery versions
+ * Fix a man page typo
+ * Fix a longstanding copy-paste typo in the Python client's RegisterUniverse
+   function
+ * Increment the Transaction Number for each Art-Net RDM packet #189
+ * Fix lots of minor documentation spelling errors found by spellintian and
+   codespell
+ * Renamed protocol convertor(sic) to protocol converter in the RDM code (C++
+   and Python)
 
 17/07/2017 ola-0.10.5
  Features:
@@ -174,7 +187,7 @@ x/y/2017 ola-0.10.6
  * Fix endian issues on s390x and PPC architectures.
  * Fix ShowNet endian issues.
  * Add some missing files to the tarball.
- * Restore binary compatability with 0.9.5 #826
+ * Restore binary compatibility with 0.9.5 #826
 
 30/6/2015 ola-0.9.6
  Features:
@@ -191,7 +204,7 @@ x/y/2017 ola-0.10.6
 
  API:
  * Python: Fix a bug where callbacks weren't run if the operation failed.
- * Python: improve Python 3 compatability.
+ * Python: improve Python 3 compatibility.
  * Add patched ports in Universe protobuf message.
  * Python: Add a patch/unpatch example.
  * Python Add GetCandidatePorts and an example.

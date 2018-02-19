@@ -465,7 +465,7 @@ class StaticFileHandler(RequestHandler):
 
     # Strip off /static
     path = path[len(self.PREFIX):]
-    # This is important as it ensures we can't access arbitary files
+    # This is important as it ensures we can't access arbitrary files
     filename = os.path.abspath(os.path.join(self._static_dir, path))
     if (not filename.startswith(self._static_dir) or
          not os.path.exists(filename) or
@@ -623,6 +623,10 @@ class RunDiscoveryHandler(OLAServerRequestHandler):
     response.SetStatus(HTTPResponse.OK)
     return {
       'uids': [str(u) for u in uids],
+      'nameduids': dict(
+        (str(u),
+         self.GetPidStore().ManufacturerIdToName(u.manufacturer_id))
+        for u in uids),
       'status': True,
     }
 
@@ -824,7 +828,7 @@ class RunTestsHandler(OLAServerRequestHandler):
     return {'status': True}
 
   def _CheckValidUniverse(self, request):
-    """Check that the universe paramter is present and refers to a valid
+    """Check that the universe parameter is present and refers to a valid
        universe.
 
     Args:
@@ -1050,7 +1054,7 @@ def main():
   app = BuildApplication(ola_thread, test_thread, pid_store)
 
   httpd = make_server('', settings['PORT'], app.HandleRequest)
-  logging.info('Running RDM Tests Server on %s:%s' %
+  logging.info('Running RDM Tests Server on http://%s:%s' %
                ('127.0.0.1', httpd.server_port))
 
   try:

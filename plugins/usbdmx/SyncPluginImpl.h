@@ -100,7 +100,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
   const unsigned int m_debug_level;
-  ola::usb::SyncronousLibUsbAdaptor m_usb_adaptor;
+  ola::usb::SynchronousLibUsbAdaptor m_usb_adaptor;
   Preferences* const m_preferences;
   WidgetFactories m_widget_factories;
 

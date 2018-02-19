@@ -859,7 +859,7 @@ _slp_sa_test()
       opts='0 1 2 3 4'
       ;;
     -t | --tests)
-      #TODO: Check if this needs to work with a comma seperated list of tests
+      #TODO: Check if this needs to work with a comma separated list of tests
       opts="$( command ${COMP_WORDS[0]} --list-tests 2>/dev/null )"
       ;;
   esac;

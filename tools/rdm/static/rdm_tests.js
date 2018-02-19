@@ -297,10 +297,10 @@ RDMTests.prototype.save_results = function() {
   var url = ('/DownloadResults?uid=' + uid + '&timestamp=' + this.timestamp +
              '&state=' + $('#rdm-tests-save-state').val() + '&category=' +
              $('#rdm-tests-save-catg').val());
-  if ($('#rdm-tests-include-debug').attr('checked')) {
+  if ($('#rdm-tests-include-debug').prop('checked')) {
     url += '&debug=1';
   }
-  if ($('#rdm-tests-include-description').attr('checked')) {
+  if ($('#rdm-tests-include-description').prop('checked')) {
     url += '&description=1';
   }
   $('#rdm-tests-download').attr('src', url);
@@ -456,17 +456,35 @@ RDMTests.prototype.run_discovery = function() {
     'message': RDMTests.ajax_loader
   });
   rdmtests.query_server('/RunDiscovery', {'u': universe}, function(data) {
-    var devices_list = $('#devices_list');
+    rdmtests.populate_device_list(data);
+    rdmtests.clear_notification();
+  });
+};
+
+
+/**
+ * Populate the device list from a HTTP response
+ */
+RDMTests.prototype.populate_device_list = function(data) {
+  var devices_list = $('#devices_list');
+  if (data['status'] == true) {
     devices_list.empty();
-    if (data['status'] == true) {
+    if (data['nameduids'] != undefined) {
       var uids = data.uids;
       $.each(uids, function(item) {
-        devices_list.append($('<option />').val(uids[item])
-                              .text(uids[item]));
+        var uid_text = uids[item];
+        if (data['nameduids'][uids[item]] != undefined) {
+          uid_text = uids[item] + ' (' + data['nameduids'][uids[item]] + ')';
+        }
+        devices_list.append($('<option />').val(uids[item]).text(uid_text));
       });
-      rdmtests.clear_notification();
+    } else {
+      var uids = data.uids;
+      $.each(uids, function(item) {
+        devices_list.append($('<option />').val(uids[item]).text(uids[item]));
+      });
     }
-  });
+  }
 };
 
 
@@ -475,27 +493,9 @@ RDMTests.prototype.run_discovery = function() {
  */
 RDMTests.prototype.update_device_list = function() {
   var universe_options = $('#universe_options');
-  var devices_list = $('#devices_list');
   this.query_server('/GetDevices', {
     'u': universe_options.val() }, function(data) {
-    if (data['status'] == true) {
-      devices_list.empty();
-      if (data['nameduids'] != undefined) {
-        var uids = data.uids;
-        $.each(uids, function(item) {
-          var uid_text = uids[item];
-          if (data['nameduids'][uids[item]] != undefined) {
-            uid_text = uids[item] + ' (' + data['nameduids'][uids[item]] + ')';
-          }
-          devices_list.append($('<option />').val(uids[item]).text(uid_text));
-        });
-      } else {
-        var uids = data.uids;
-        $.each(uids, function(item) {
-          devices_list.append($('<option />').val(uids[item]).text(uids[item]));
-        });
-      }
-    }
+      rdmtests.populate_device_list(data);
   });
 };
 
@@ -504,7 +504,7 @@ RDMTests.prototype.update_device_list = function() {
  * Called when the selected device changes.
  */
 RDMTests.prototype.device_list_changed = function() {
-  $('#rdm-tests-selection-subset').attr('checked', true);
+  $('#rdm-tests-selection-subset').prop('checked', true);
   this._reset_failed_tests_list();
 };
 
@@ -550,9 +550,9 @@ RDMTests.prototype.run_tests = function(test_filter) {
           'uid': $('#devices_list').val(),
           'broadcast_write_delay': $('#write_delay').val(),
           'inter_test_delay': $('#inter_test_delay').val(),
-          'dmx_frame_rate': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
+          'dmx_frame_rate': ($('#rdm-tests-send_dmx_in_bg').prop('checked') ?
                              $('#dmx_frame_rate').val() : 0),
-          'slot_count': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
+          'slot_count': ($('#rdm-tests-send_dmx_in_bg').prop('checked') ?
                          $('#slot_count').val() : 0),
           't': test_filter.join(',')
       },
@@ -782,7 +782,7 @@ RDMTests.prototype.validate_form = function() {
     }
   };
 
-  if ($('#devices_list option').size() < 1) {
+  if ($('#devices_list option').length < 1) {
     rdmtests.display_dialog_message(
         'Error',
         'There are no devices patched to the selected universe!');
@@ -791,7 +791,7 @@ RDMTests.prototype.validate_form = function() {
 
   if (!this.isNumberField($('#write_delay')) ||
       !this.isNumberField($('#inter_test_delay')) ||
-      ($('#rdm-tests-send_dmx_in_bg').attr('checked') &&
+      ($('#rdm-tests-send_dmx_in_bg').prop('checked') &&
        (!this.isNumberField($('#dmx_frame_rate')) ||
         !this.isNumberField($('#slot_count'))))) {
     rdmtests.display_dialog_message('Error', 'Invalid options entered');
@@ -799,7 +799,7 @@ RDMTests.prototype.validate_form = function() {
   }
 
   var slot_count_val = parseFloat($('#slot_count').val());
-  if ($('#rdm-tests-send_dmx_in_bg').attr('checked') &&
+  if ($('#rdm-tests-send_dmx_in_bg').prop('checked') &&
       (slot_count_val < 1 || slot_count_val > 512)) {
     rdmtests.display_dialog_message(
         'Error',
@@ -809,7 +809,7 @@ RDMTests.prototype.validate_form = function() {
 
   var test_filter = ['all'];
 
-  if ($('#rdm-tests-selection-subset').attr('checked')) {
+  if ($('#rdm-tests-selection-subset').prop('checked')) {
     if ($('select[name="subset_test_defs"]').val() == null) {
       rdmtests.display_dialog_message('Error',
                                       'There are no tests selected to run');
@@ -817,7 +817,7 @@ RDMTests.prototype.validate_form = function() {
     } else {
       test_filter = $('select[name="subset_test_defs"]').val();
     }
-  } else if ($('#rdm-tests-selection-previously_failed').attr('checked')) {
+  } else if ($('#rdm-tests-selection-previously_failed').prop('checked')) {
     if ($('select[name="failed_test_defs"]').val() == null) {
       rdmtests.display_dialog_message(
         'Error',
@@ -843,7 +843,7 @@ RDMTests.prototype.collect_data = function() {
   this.query_server(
       '/RunCollector',
       { 'u': $('#publisher-universe-list').val(),
-        'skip_queued': $('#publisher-skip-queued-messages').attr('checked') ?  true : false,
+        'skip_queued': $('#publisher-skip-queued-messages').prop('checked') ?  true : false,
       },
       function(data) {
         window.setTimeout(function() { rdmtests.stat_collector(); },

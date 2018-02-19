@@ -39,7 +39,7 @@
 namespace ola {
 namespace usb {
 
-using ola::usb::AsyncronousLibUsbAdaptor;
+using ola::usb::AsynchronousLibUsbAdaptor;
 using ola::usb::LibUsbAdaptor;
 using std::auto_ptr;
 using std::pair;
@@ -72,7 +72,7 @@ HotplugAgent::~HotplugAgent() {
   }
 }
 
-AsyncronousLibUsbAdaptor *HotplugAgent::GetUSBAdaptor() const {
+AsynchronousLibUsbAdaptor *HotplugAgent::GetUSBAdaptor() const {
   return m_usb_adaptor.get();
 }
 
@@ -97,7 +97,7 @@ bool HotplugAgent::Init() {
     m_usb_thread.reset(new ola::usb::LibUsbSimpleThread(m_context));
   }
   m_usb_adaptor.reset(
-      new ola::usb::AsyncronousLibUsbAdaptor(m_usb_thread.get()));
+      new ola::usb::AsynchronousLibUsbAdaptor(m_usb_thread.get()));
   return true;
 }
 

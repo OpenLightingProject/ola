@@ -29,6 +29,7 @@
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/UID.h>
 #include <ola/rdm/UIDSet.h>
+#include <ola/util/SequenceNumber.h>
 #include <olad/DmxSource.h>
 
 #include <set>
@@ -132,6 +133,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     void NewUIDList(OutputPort *port, const ola::rdm::UIDSet &uids);
     void GetUIDs(ola::rdm::UIDSet *uids) const;
     unsigned int UIDCount() const;
+    uint8_t GetRDMTransactionNumber();
 
     bool operator==(const Universe &other) {
       return m_universe_id == other.UniverseId();
@@ -180,6 +182,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     Clock *m_clock;
     TimeInterval m_rdm_discovery_interval;
     TimeStamp m_last_discovery_time;
+    ola::SequenceNumber<uint8_t> m_transaction_number_sequence;
 
     void HandleBroadcastAck(broadcast_request_tracker *tracker,
                             ola::rdm::RDMReply *reply);
