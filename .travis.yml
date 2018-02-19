@@ -238,9 +238,6 @@ matrix:
     - os: linux
       dist: trusty
       env: TASK='spellintian-duplicates'
-    - os: linux
-      dist: trusty
-      env: TASK='codespell'
 
 env:
   global:
