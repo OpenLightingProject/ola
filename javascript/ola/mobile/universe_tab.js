@@ -23,6 +23,7 @@ goog.require('goog.ui.Button');
 goog.require('goog.ui.Container');
 
 goog.require('ola.BaseFrame');
+goog.require('ola.Dialog');
 goog.require('ola.UniverseControl');
 goog.require('ola.UniverseItem');
 goog.require('ola.common.RdmSectionControl');
@@ -372,19 +373,19 @@ ola.mobile.UniverseTab.prototype.saveSection_ = function() {
         var value = form.elements[id].value;
         var int_val = parseInt(value);
         if (isNaN(int_val)) {
-          this._showErrorDialog('Invalid Value',
+          this.showErrorDialog_('Invalid Value',
              items[i]['description'] + ' must be an integer');
           return;
         }
         var min = items[i]['min'];
         if (min != undefined && int_val < min) {
-          this._showErrorDialog('Invalid Value',
+          this.showErrorDialog_('Invalid Value',
              items[i]['description'] + ' must be > ' + (min - 1));
           return;
         }
         var max = items[i]['max'];
         if (max != undefined && int_val > max) {
-          this._showErrorDialog('Invalid Value',
+          this.showErrorDialog_('Invalid Value',
              items[i]['description'] + ' must be < ' + (max + 1));
           return;
         }
@@ -427,4 +428,17 @@ ola.mobile.UniverseTab.prototype.saveSectionComplete_ = function(e) {
     // reload data
     this.loadSection_();
   }
+};
+
+
+/**
+ * Show the dialog with an error message
+ * @private
+ */
+ola.mobile.UniverseTab.prototype.showErrorDialog_ = function(title, error) {
+  var dialog = ola.Dialog.getInstance();
+  dialog.setTitle(title);
+  dialog.setContent(error);
+  dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+  dialog.setVisible(true);
 };
