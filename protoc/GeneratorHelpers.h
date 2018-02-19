@@ -67,9 +67,6 @@ string StripProto(const string& filename);
 // Convert a file name into a valid identifier.
 string FilenameIdentifier(const string& filename);
 
-// Return the name of the AddDescriptors() function for a given file.
-string GlobalAddDescriptorsName(const string& filename);
-
 // Return the name of the AssignDescriptors() function for a given file.
 string GlobalAssignDescriptorsName(const string& filename);
 
