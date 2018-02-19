@@ -11,6 +11,7 @@ x/y/2018 ola-0.10.7
  Bugs:
  * Fix the build on Windows
  * Entire codebase now passes codespell testing
+ * Fix the error dialog not displaying in the old web UI
  * 
 
  Internal:
@@ -124,7 +125,6 @@ x/y/2018 ola-0.10.7
  * Fix a configure warning on OpenBSD
  * Allow you to set DMX address of a one slot device to 512 #1042. The JSON API now returns min and max inclusive
  * Switch to pkg-config for cppunit detection #1043
- * Fix the error dialog not displaying in the old web UI
 
 3/1/2016 ola-0.10.0
  Features:
