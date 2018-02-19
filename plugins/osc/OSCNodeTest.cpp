@@ -55,7 +55,7 @@ class OSCNodeTest: public CppUnit::TestFixture {
 
  public:
     /**
-     * Initilize the OSCNode and the timeout_id
+     * Initialize the OSCNode and the timeout_id
      */
     OSCNodeTest()
         : CppUnit::TestFixture(),

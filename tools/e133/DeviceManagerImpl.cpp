@@ -22,6 +22,7 @@
 #include <ola/Logging.h>
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/CID.h>
+#include <ola/base/Macro.h>
 #include <ola/e133/E133Enums.h>
 #include <ola/io/NonBlockingSender.h>
 #include <ola/io/SelectServer.h>
@@ -88,8 +89,7 @@ class DeviceState {
     bool am_designated_controller;
 
  private:
-    DeviceState(const DeviceState&);
-    DeviceState& operator=(const DeviceState&);
+    DISALLOW_COPY_AND_ASSIGN(DeviceState);
 };
 
 

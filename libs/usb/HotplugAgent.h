@@ -77,13 +77,13 @@ class HotplugAgent {
   ~HotplugAgent();
 
   /**
-   * @brief Get the AsyncronousLibUsbAdaptor to use.
-   * @returns An AsyncronousLibUsbAdaptor, ownership is not transferred.
+   * @brief Get the AsynchronousLibUsbAdaptor to use.
+   * @returns An AsynchronousLibUsbAdaptor, ownership is not transferred.
    * @pre Must be called after Init()
    *
    * The adaptor is valid until the call to Stop().
    */
-  AsyncronousLibUsbAdaptor *GetUSBAdaptor() const;
+  AsynchronousLibUsbAdaptor *GetUSBAdaptor() const;
 
   /**
    * @brief Initialize the hotplug agent.
@@ -99,7 +99,7 @@ class HotplugAgent {
   bool Start();
 
   /**
-   * @brief Prevent any further notifications from occuring.
+   * @brief Prevent any further notifications from occurring.
    *
    * Once this returns, the NotificationCallback will not be called.
    */
@@ -137,7 +137,7 @@ class HotplugAgent {
   bool m_use_hotplug;
   libusb_context *m_context;
   std::auto_ptr<ola::usb::LibUsbThread> m_usb_thread;
-  std::auto_ptr<ola::usb::AsyncronousLibUsbAdaptor> m_usb_adaptor;
+  std::auto_ptr<ola::usb::AsynchronousLibUsbAdaptor> m_usb_adaptor;
   std::auto_ptr<ola::thread::PeriodicThread> m_scanner_thread;
 
   ola::thread::Mutex m_mutex;

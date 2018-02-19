@@ -38,8 +38,8 @@ namespace ola {
 
 class AbstractPlugin;
 
-/*
- * The interface for a Device
+/**
+ * @brief The interface for a Device
  */
 class AbstractDevice {
  public:
@@ -48,34 +48,40 @@ class AbstractDevice {
   AbstractDevice() {}
   virtual ~AbstractDevice() {}
 
-  // return the name of this device
+  /** @brief The name of this Device */
   virtual const std::string Name() const = 0;
-  // return the plugin that owns this device
+
+  /** @brief The Plugin that owns this Device */
   virtual AbstractPlugin *Owner() const = 0;
 
-  // return the a unique id of this device, this is guaranteed to be unique
-  // and persist across restarts.
+  /**
+   * @brief The unique id of this Device
+   * @note This is guaranteed to be unique and persist across restarts.
+   */
   virtual std::string UniqueId() const = 0;
 
-  // stop the device
+  /** @brief Stop the Device */
   virtual bool Stop() = 0;
 
-  // allow input and output ports to be patched to the same univese
+  /** @brief Allow input and output ports to be patched to the same universe */
   virtual bool AllowLooping() const = 0;
 
-  // allow multiple ports of the same type to be patched to the same
-  // universe.
+  /**
+   * @brief Allow multiple ports of the same type to be patched to the same
+   * universe.
+   */
   virtual bool AllowMultiPortPatching() const = 0;
 
-  // Fetch a list of all ports in this device
+  /** @brief Fetch a list of all ports in this Device */
   virtual void InputPorts(std::vector<InputPort*> *ports) const = 0;
   virtual void OutputPorts(std::vector<OutputPort*> *ports) const = 0;
 
-  // Lookup a particular port in this device
+  /** @brief Lookup a particular InputPort in this Device */
   virtual InputPort *GetInputPort(unsigned int port_id) const = 0;
+  /** @brief Lookup a particular OutputPort in this Device */
   virtual OutputPort *GetOutputPort(unsigned int port_id) const = 0;
 
-  // configure this device
+  /** @brief Configure this Device */
   virtual void Configure(ola::rpc::RpcController *controller,
                          const std::string &request,
                          std::string *response,
@@ -83,7 +89,7 @@ class AbstractDevice {
 };
 
 
-/*
+/**
  * A partial implementation of a Device.
  */
 class Device: public AbstractDevice {
@@ -92,6 +98,8 @@ class Device: public AbstractDevice {
   virtual ~Device();
 
   const std::string Name() const { return m_name; }
+
+  /** @brief Sets the name of this Device */
   void SetName(const std::string &name) { m_name = name; }
 
   AbstractPlugin *Owner() const { return m_owner; }
@@ -105,6 +113,7 @@ class Device: public AbstractDevice {
 
   bool IsEnabled() const { return m_enabled; }
 
+  /** @brief Start the Device */
   bool Start();
   bool Stop();
 
@@ -120,7 +129,7 @@ class Device: public AbstractDevice {
   InputPort *GetInputPort(unsigned int port_id) const;
   OutputPort *GetOutputPort(unsigned int port_id) const;
 
-  // Free all ports
+  /** @brief Free all ports */
   void DeleteAllPorts();
 
   // Handle a Configure request

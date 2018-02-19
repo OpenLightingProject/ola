@@ -131,7 +131,7 @@ ola.common.KeypadParser.prototype.parsePartialCommand = function(str) {
  * Parse a full command
  * @param {string} str the input string.
  * @return {KeypadCommand|undefined} Returns a KeypadCommand or undefined on
- * error. If returned, the KeypadCommand is guarenteed to be valid.
+ * error. If returned, the KeypadCommand is guaranteed to be valid.
  */
 ola.common.KeypadParser.prototype.parseFullCommand = function(str) {
   // It's empty so we can return true really

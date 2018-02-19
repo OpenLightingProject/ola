@@ -1155,7 +1155,7 @@ void OladHTTPServer::SendModifyUniverseResponse(HTTPResponse *response,
 
 /**
  * @brief Serve usage information.
- * @param response the reponse to use.
+ * @param response the response to use.
  * @param details the usage information
  */
 int OladHTTPServer::ServeUsage(HTTPResponse *response, const string &details) {

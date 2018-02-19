@@ -306,7 +306,7 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
 /*
  * Check all the registered descriptors:
  *  - Execute the callback for descriptors with data
- *  - Excute OnClose if a remote end closed the connection
+ *  - Execute OnClose if a remote end closed the connection
  */
 void KQueuePoller::CheckDescriptor(struct kevent *event) {
   KQueueData *kqueue_data = reinterpret_cast<KQueueData*>(

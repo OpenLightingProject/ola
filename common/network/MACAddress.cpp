@@ -140,8 +140,8 @@ string MACAddress::ToString() const {
  */
 bool StringToEther(const string &address, ether_addr *target) {
   /**
-   * ether_aton_r doesn't exist on Mac, so can't use it (it also might not
-   * handle dots as well as colons as seperators)
+   * ether_aton_r doesn't exist on Mac, so can't use it (also it might not
+   * handle dots as well as colons as separators)
    */
   vector<string> tokens;
   ola::StringSplit(address, &tokens, ":.");

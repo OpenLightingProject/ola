@@ -63,7 +63,7 @@ class JaRuleWidget {
    * @param usb_device the libusb_device for the Ja Rule widget.
    */
   JaRuleWidget(ola::thread::ExecutorInterface *executor,
-               AsyncronousLibUsbAdaptor *adaptor,
+               AsynchronousLibUsbAdaptor *adaptor,
                libusb_device *usb_device);
 
   /**

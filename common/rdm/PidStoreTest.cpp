@@ -392,7 +392,7 @@ void PidStoreTest::testPidStoreFileLoad() {
 
 /**
  * Check that loading from a directory works. This also tests the override
- * mechanism.
+ * mechanism and manufacturer names.
  */
 void PidStoreTest::testPidStoreDirectoryLoad() {
   PidStoreLoader loader;

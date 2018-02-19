@@ -22,7 +22,7 @@
  * implement the SendConfigRequest() and HandleConfigResponse() methods.
  * Upon calling Setup() the Configurator will send a DeviceInfo
  * request to check that the device type matches the plugin_id given in the
- * constructor. On successfull match, it will call SendConfigRequest() which
+ * constructor. On successful match, it will call SendConfigRequest() which
  * the subclass uses to send the desired request.
  *
  * Once the response is returned, HandleConfigResponse() is called in the

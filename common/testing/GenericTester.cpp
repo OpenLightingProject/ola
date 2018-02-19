@@ -72,6 +72,6 @@ int main(int argc, char* argv[]) {
 
   runner.setOutputter(
       new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
-  bool wasSucessful = runner.run();
-  return wasSucessful ? 0 : 1;
+  bool wasSuccessful = runner.run();
+  return wasSuccessful ? 0 : 1;
 }

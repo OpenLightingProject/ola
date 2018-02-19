@@ -151,14 +151,14 @@ class ArtNetNodeImpl {
   std::string LongName() const { return m_long_name; }
 
   /**
-   * @brief Set the the net address for this node
+   * @brief Set the net address for this node
    * @param net_address the ArtNet 'net' address
    */
   bool SetNetAddress(uint8_t net_address);
   uint8_t NetAddress() const { return m_net_address; }
 
   /**
-   * @brief Set the the subnet address for this node
+   * @brief Set the subnet address for this node
    * @param subnet_address the ArtNet 'subnet' address, 4 bits.
    */
   bool SetSubnetAddress(uint8_t subnet_address);

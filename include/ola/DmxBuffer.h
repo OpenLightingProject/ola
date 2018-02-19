@@ -247,7 +247,7 @@ class DmxBuffer {
     bool Blackout();
 
     /**
-     * @brief Reset the bufer to hold no data.
+     * @brief Reset the buffer to hold no data.
      * @post Size() == 0
      */
     void Reset();

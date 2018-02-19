@@ -106,10 +106,10 @@ class DiscoveryTargetInterface {
 
 
 /**
- * @brief An asyncronous RDM Discovery algorithm.
+ * @brief An asynchronous RDM Discovery algorithm.
  *
  * This implements the binary search algorithm from the E1.20 standard. The
- * implementation is asyncronous and relies on callbacks to indicate when each
+ * implementation is asynchronous and relies on callbacks to indicate when each
  * step completes.
  *
  * To use the DiscoveryAgent, one should write a class that implements the
