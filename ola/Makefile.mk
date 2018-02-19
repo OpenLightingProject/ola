@@ -27,6 +27,7 @@ ola_libola_la_SOURCES = \
     ola/OlaClientCore.cpp \
     ola/OlaClientWrapper.cpp \
     ola/StreamingClient.cpp
+ola_libola_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 ola_libola_la_LDFLAGS = -version-info 1:1:0
 ola_libola_la_LIBADD = common/libolacommon.la
 
@@ -34,7 +35,8 @@ ola_libola_la_LIBADD = common/libolacommon.la
 ##################################################
 test_programs += ola/OlaClientTester
 
-ola_OlaClientTester_SOURCES = ola/StreamingClientTest.cpp
+ola_OlaClientTester_SOURCES = ola/OlaClientWrapperTest.cpp \
+                              ola/StreamingClientTest.cpp
 ola_OlaClientTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 ola_OlaClientTester_LDADD = $(COMMON_TESTING_LIBS) \
                             $(PLUGIN_LIBS) \

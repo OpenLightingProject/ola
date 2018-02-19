@@ -22,7 +22,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <errno.h>
 #include <signal.h>
@@ -55,7 +55,7 @@ using ola::plugin::spi::SoftwareBackend;
 using ola::plugin::spi::SPIOutput;
 using ola::plugin::spi::SPIWriter;
 DEFINE_string(spi_device, "", "Path to the SPI device to use.");
-#endif
+#endif  // USE_SPI
 
 #include "libs/acn/E131Node.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
@@ -101,7 +101,7 @@ void HandleTriDMX(DmxBuffer *buffer, DmxTriWidget *widget) {
 void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *output) {
   output->WriteDMX(*buffer);
 }
-#endif
+#endif  // USE_SPI
 
 
 /*
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
   vector<E133Endpoint*> endpoints;
   auto_ptr<ola::rdm::DummyResponder> dummy_responder;
   auto_ptr<ola::rdm::DiscoverableRDMControllerAdaptor>
-    discoverable_dummy_responder;
+      discoverable_dummy_responder;
   auto_ptr<DmxTriWidget> tri_widget;
 
   ola::rdm::UIDAllocator uid_allocator(*uid);
@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
     dummy_responder.reset(new ola::rdm::DummyResponder(*dummy_uid));
     discoverable_dummy_responder.reset(
         new ola::rdm::DiscoverableRDMControllerAdaptor(
-          *dummy_uid, dummy_responder.get()));
+        *dummy_uid, dummy_responder.get()));
     endpoints.push_back(new E133Endpoint(discoverable_dummy_responder.get(),
                                          E133Endpoint::EndpointProperties()));
   }
@@ -244,19 +244,21 @@ int main(int argc, char *argv[]) {
           NewCallback(&HandleSpiDMX, &spi_buffer, spi_output.get()));
     }
   }
-#endif
+#endif  // USE_SPI
 
   for (unsigned int i = 0; i < endpoints.size(); i++) {
     node.AddEndpoint(i + 1, endpoints[i]);
   }
   simple_node = &node;
 
-  if (!node.Init())
+  if (!node.Init()) {
     exit(ola::EXIT_UNAVAILABLE);
+  }
 
   // signal handler
-  if (!ola::InstallSignal(SIGINT, &InteruptSignal))
-    return false;
+  if (!ola::InstallSignal(SIGINT, &InteruptSignal)) {
+    exit(ola::EXIT_OSERR);
+  }
 
   node.Run();
   if (e131_node.get()) {

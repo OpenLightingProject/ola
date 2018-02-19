@@ -28,7 +28,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <ola/win/CleanWindows.h>
-#endif
+#endif  // _WIN32
 
 using ola::io::SelectServer;
 using ola::NewSingleCallback;
@@ -113,7 +113,7 @@ int main(int, char *[]) {
   Sleep(1000);
 #else
   sleep(1);
-#endif
+#endif  // _WIN32
 
   // When it's time to exit, Stop the OLA thread.
   ola_thread.Stop();

@@ -82,7 +82,7 @@ class UniverseStore {
   void DeleteAll();
 
   /**
-   * @brief Mark a universe as a candiate for garbage collection.
+   * @brief Mark a universe as a candidate for garbage collection.
    * @param universe the Universe which has no clients or ports bound.
    */
   void AddUniverseGarbageCollection(Universe *universe);

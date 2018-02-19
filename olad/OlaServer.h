@@ -23,7 +23,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <ola/Constants.h>
 #include <ola/ExportMap.h>
@@ -53,7 +53,7 @@ class RpcServer;
 typedef class OladHTTPServer OladHTTPServer_t;
 #else
 typedef int OladHTTPServer_t;
-#endif
+#endif  // HAVE_LIBMICROHTTPD
 
 /**
  * @brief The main OlaServer class.
@@ -205,7 +205,7 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
 #ifdef HAVE_LIBMICROHTTPD
   bool StartHttpServer(ola::rpc::RpcServer *server,
                        const ola::network::Interface &iface);
-#endif
+#endif  // HAVE_LIBMICROHTTPD
   /**
    * @brief Stop and unload all the plugins
    */

@@ -20,6 +20,7 @@ built_sources += plugins/artnet/messages/ArtNetConfigMessages.pb.cc \
 
 nodist_plugins_artnet_messages_libolaartnetconf_la_SOURCES = \
     plugins/artnet/messages/ArtNetConfigMessages.pb.cc
+plugins_artnet_messages_libolaartnetconf_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 plugins_artnet_messages_libolaartnetconf_la_LIBADD = $(libprotobuf_LIBS)
 
 plugins/artnet/messages/ArtNetConfigMessages.pb.cc plugins/artnet/messages/ArtNetConfigMessages.pb.h: plugins/artnet/messages/Makefile.mk plugins/artnet/messages/ArtNetConfigMessages.proto

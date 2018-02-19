@@ -26,7 +26,7 @@
 // namespace. We define VC_EXTRALEAN and WIN32_LEAN_AND_MEAN to reduce this.
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
-#endif
+#endif  // _WIN32
 #include <pthread.h>
 #include <ola/base/Macro.h>
 #include <ola/thread/Mutex.h>
@@ -39,7 +39,7 @@ inline std::ostream& operator<<(std::ostream &stream,
   stream << handle.p;
   return stream;
 }
-#endif
+#endif  // defined(_WIN32) && defined(__GNUC__)
 
 namespace ola {
 namespace thread {

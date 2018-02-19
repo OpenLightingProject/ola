@@ -58,5 +58,6 @@ class UIDTest(unittest.TestCase):
     self.assertEqual(0x00a1, uid.manufacturer_id)
     self.assertEqual(0x00020020, uid.device_id)
 
+
 if __name__ == '__main__':
   unittest.main()

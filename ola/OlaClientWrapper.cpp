@@ -44,20 +44,26 @@ bool BaseClientWrapper::Setup() {
   if (!m_socket.get()) {
     InitSocket();
 
-    if (!m_socket.get())
+    if (!m_socket.get()) {
       return false;
+    }
   }
 
   CreateClient();
 
-  m_ss.AddReadDescriptor(m_socket.get());
+  if (!m_ss.AddReadDescriptor(m_socket.get())) {
+    return false;
+  }
+
   return StartupClient();
 }
 
 
 bool BaseClientWrapper::Cleanup() {
-  if (m_socket.get())
+  if (m_socket.get()) {
     m_socket->Close();
+    m_socket.reset();
+  }
   return true;
 }
 

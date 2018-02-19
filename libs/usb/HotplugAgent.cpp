@@ -46,15 +46,15 @@ using std::pair;
 
 namespace {
 #ifdef HAVE_LIBUSB_HOTPLUG_API
-int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
-                     struct libusb_device *dev,
-                     libusb_hotplug_event event,
-                     void *user_data) {
+int LIBUSB_CALL hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
+                                 struct libusb_device *dev,
+                                 libusb_hotplug_event event,
+                                 void *user_data) {
   HotplugAgent *agent = reinterpret_cast<HotplugAgent*>(user_data);
   agent->HotPlugEvent(dev, event);
   return 0;
 }
-#endif
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 }  // namespace
 
 HotplugAgent::HotplugAgent(NotificationCallback* notification_cb,
@@ -84,14 +84,14 @@ bool HotplugAgent::Init() {
   OLA_DEBUG << "libusb_set_debug(" << m_debug_level << ")";
   libusb_set_debug(m_context, m_debug_level);
 
-  m_use_hotplug = HotplugSupported();
+  m_use_hotplug = ola::usb::LibUsbAdaptor::HotplugSupported();
   OLA_DEBUG << "HotplugSupported(): " << m_use_hotplug;
 #ifdef HAVE_LIBUSB_HOTPLUG_API
   if (m_use_hotplug) {
     m_usb_thread.reset(new ola::usb::LibUsbHotplugThread(
           m_context, hotplug_callback, this));
   }
-#endif
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 
   if (!m_usb_thread.get()) {
     m_usb_thread.reset(new ola::usb::LibUsbSimpleThread(m_context));
@@ -198,19 +198,17 @@ void HotplugAgent::HotPlugEvent(struct libusb_device *usb_device,
     m_notification_cb->Run(DEVICE_REMOVED, usb_device);
   }
 }
-#endif
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 
 /**
  * @brief Check if this platform supports hotplug.
  * @returns true if hotplug is supported and enabled on this platform, false
  *   otherwise.
+ * @deprecated This is only here for backwards compatibility. New code should
+ *   use ola::usb::LibUsbAdaptor::HotplugSupported().
  */
 bool HotplugAgent::HotplugSupported() {
-#ifdef HAVE_LIBUSB_HOTPLUG_API
-  return libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) != 0;
-#else
-  return false;
-#endif
+  return ola::usb::LibUsbAdaptor::HotplugSupported();
 }
 
 /*

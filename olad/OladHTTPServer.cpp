@@ -284,7 +284,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   struct tm start_time;
   localtime_r(&m_start_time_t, &start_time);
   strftime(start_time_str, sizeof(start_time_str), "%c", &start_time);
-#endif
+#endif  // _WIN32
 
   JsonObject json;
   json.Add("hostname", ola::network::FQDN());
@@ -1000,7 +1000,7 @@ void OladHTTPServer::SendModifyUniverseResponse(HTTPResponse *response,
 
 /**
  * @brief Serve usage information.
- * @param response the reponse to use.
+ * @param response the response to use.
  * @param details the usage information
  */
 int OladHTTPServer::ServeUsage(HTTPResponse *response, const string &details) {

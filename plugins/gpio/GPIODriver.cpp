@@ -123,7 +123,7 @@ bool GPIODriver::SetupGPIO() {
    */
   const string direction("out");
   bool failed = false;
-  vector<uint8_t>::const_iterator iter = m_options.gpio_pins.begin();
+  vector<uint16_t>::const_iterator iter = m_options.gpio_pins.begin();
   for (; iter != m_options.gpio_pins.end(); ++iter) {
     std::ostringstream str;
     str << GPIO_BASE_DIR << static_cast<int>(*iter) << "/value";

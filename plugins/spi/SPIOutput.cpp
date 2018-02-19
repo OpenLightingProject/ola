@@ -23,7 +23,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <string.h>
 #include <algorithm>
@@ -139,7 +139,7 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
   { ola::rdm::PID_RECORD_SENSORS,
     NULL,
     &SPIOutput::RecordSensor},
-#endif
+#endif  // HAVE_GETLOADAVG
   { ola::rdm::PID_LIST_INTERFACES,
     &SPIOutput::GetListInterfaces,
     NULL},
@@ -208,7 +208,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                                      "Load Average 5 minutes"));
   m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_15_MINS,
                                      "Load Average 15 minutes"));
-#endif
+#endif  // HAVE_GETLOADAVG
 
   m_network_manager.reset(new ola::rdm::NetworkManager());
 }
@@ -637,7 +637,7 @@ void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
  * Use at least half the pixel count bits
  * round up to next full byte count.
  * datasheet says endframe should consist of 4 bytes -
- * but thats only valid for up to 64 pixels/leds. (4Byte*8Bit*2=64)
+ * but that's only valid for up to 64 pixels/leds. (4Byte*8Bit*2=64)
  *
  * the function is valid up to 4080 pixels. (255*8*2)
  * ( otherwise the return type must be changed to uint16_t)

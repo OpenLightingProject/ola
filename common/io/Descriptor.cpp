@@ -27,7 +27,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef _WIN32
 #include <ola/win/CleanWinSock2.h>
@@ -36,7 +36,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
-#endif
+#endif  // _WIN32
 
 #include <algorithm>
 #include <string>
@@ -51,7 +51,7 @@ namespace io {
 #ifndef _WIN32
 // Check binary compatibility between IOVec and iovec
 STATIC_ASSERT(sizeof(struct iovec) == sizeof(struct IOVec));
-#endif
+#endif  // _WIN32
 
 
 #ifdef _WIN32
@@ -120,7 +120,7 @@ std::ostream& operator<<(std::ostream &stream, const DescriptorHandle &data) {
   stream << data.m_handle.m_fd;
   return stream;
 }
-#endif
+#endif  // _WIN32
 
 int ToFD(const DescriptorHandle &handle) {
 #ifdef _WIN32
@@ -132,7 +132,7 @@ int ToFD(const DescriptorHandle &handle) {
   }
 #else
   return handle;
-#endif
+#endif  // _WIN32
 }
 
 /**
@@ -202,7 +202,7 @@ bool CreatePipe(DescriptorHandle handle_pair[2]) {
     OLA_WARN << "pipe() failed, " << strerror(errno);
     return false;
   }
-#endif
+#endif  // _WIN32
   return true;
 }
 
@@ -236,7 +236,7 @@ UnmanagedFileDescriptor::UnmanagedFileDescriptor(int fd)
   m_handle.m_type = GENERIC_DESCRIPTOR;
 #else
   m_handle = fd;
-#endif
+#endif  // _WIN32
 }
 
 
@@ -256,7 +256,7 @@ bool ConnectedDescriptor::SetNonBlocking(DescriptorHandle fd) {
 #else
   int val = fcntl(fd, F_GETFL, 0);
   bool success =  fcntl(fd, F_SETFL, val | O_NONBLOCK) == 0;
-#endif
+#endif  // _WIN32
   if (!success) {
     OLA_WARN << "failed to set " << fd << " non-blocking: " << strerror(errno);
     return false;
@@ -282,7 +282,7 @@ bool ConnectedDescriptor::SetNoSigPipe(DescriptorHandle fd) {
   }
 #else
   (void) fd;
-#endif
+#endif  // HAVE_DECL_SO_NOSIGPIPE
   return true;
 }
 
@@ -306,7 +306,7 @@ int ConnectedDescriptor::DataRemaining() const {
   }
 #else
   bool failed = ioctl(ReadDescriptor(), FIONREAD, &unread) < 0;
-#endif
+#endif  // _WIN32
   if (failed) {
     OLA_WARN << "ioctl error for " << ReadDescriptor() << ", "
       << strerror(errno);
@@ -349,13 +349,13 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
   if (IsSocket()) {
     bytes_sent = send(WriteDescriptor(), buffer, size, MSG_NOSIGNAL);
   } else {
-#endif
+#endif  // HAVE_DECL_MSG_NOSIGNAL
     bytes_sent = write(WriteDescriptor(), buffer, size);
 #if HAVE_DECL_MSG_NOSIGNAL
   }
-#endif
+#endif  // HAVE_DECL_MSG_NOSIGNAL
 
-#endif
+#endif  // _WIN32
 
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size) {
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
@@ -403,11 +403,11 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
   } else {
 #else
   {
-#endif
+#endif  // HAVE_DECL_MSG_NOSIGNAL
     bytes_sent = writev(WriteDescriptor(),
                         reinterpret_cast<const struct iovec*>(iov), iocnt);
   }
-#endif
+#endif  // _WIN32
 
   ioqueue->FreeIOVec(iov);
   if (bytes_sent < 0) {
@@ -486,7 +486,7 @@ int ConnectedDescriptor::Receive(
     data_read += ret;
     data += data_read;
   }
-#endif
+#endif  // _WIN32
   return 0;
 }
 
@@ -521,7 +521,7 @@ bool LoopbackDescriptor::Close() {
     CloseHandle(ToHandle(m_handle_pair[0]));
 #else
     close(m_handle_pair[0]);
-#endif
+#endif  // _WIN32
   }
 
   if (m_handle_pair[1] != INVALID_DESCRIPTOR) {
@@ -529,7 +529,7 @@ bool LoopbackDescriptor::Close() {
     CloseHandle(ToHandle(m_handle_pair[1]));
 #else
     close(m_handle_pair[1]);
-#endif
+#endif  // _WIN32
   }
 
   m_handle_pair[0] = INVALID_DESCRIPTOR;
@@ -543,7 +543,7 @@ bool LoopbackDescriptor::CloseClient() {
     CloseHandle(ToHandle(m_handle_pair[1]));
 #else
     close(m_handle_pair[1]);
-#endif
+#endif  // _WIN32
   }
 
   m_handle_pair[1] = INVALID_DESCRIPTOR;
@@ -575,7 +575,7 @@ bool PipeDescriptor::Init() {
 #else
     close(m_in_pair[0]);
     close(m_in_pair[1]);
-#endif
+#endif  // _WIN32
     m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
     return false;
   }
@@ -603,7 +603,7 @@ bool PipeDescriptor::Close() {
     CloseHandle(ToHandle(m_in_pair[0]));
 #else
     close(m_in_pair[0]);
-#endif
+#endif  // _WIN32
   }
 
   if (m_out_pair[1] != INVALID_DESCRIPTOR) {
@@ -611,7 +611,7 @@ bool PipeDescriptor::Close() {
     CloseHandle(ToHandle(m_out_pair[1]));
 #else
     close(m_out_pair[1]);
-#endif
+#endif  // _WIN32
   }
 
   m_in_pair[0] = INVALID_DESCRIPTOR;
@@ -625,7 +625,7 @@ bool PipeDescriptor::CloseClient() {
     CloseHandle(ToHandle(m_out_pair[1]));
 #else
     close(m_out_pair[1]);
-#endif
+#endif  // _WIN32
   }
 
   m_out_pair[1] = INVALID_DESCRIPTOR;
@@ -665,7 +665,7 @@ bool UnixSocket::Init() {
   m_other_end = new UnixSocket(pair[1], this);
   m_other_end->SetReadNonBlocking();
   return true;
-#endif
+#endif  // _WIN32
 }
 
 UnixSocket *UnixSocket::OppositeEnd() {
@@ -685,14 +685,14 @@ bool UnixSocket::Close() {
 
   m_handle = INVALID_DESCRIPTOR;
   return true;
-#endif
+#endif  // _WIN32
 }
 
 bool UnixSocket::CloseClient() {
 #ifndef _WIN32
   if (m_handle != INVALID_DESCRIPTOR)
     shutdown(m_handle, SHUT_WR);
-#endif
+#endif  // !_WIN32
 
   m_handle = INVALID_DESCRIPTOR;
   return true;
@@ -703,7 +703,7 @@ UnixSocket::UnixSocket(int socket, UnixSocket *other_end) {
   m_handle.m_handle.m_fd = socket;
 #else
   m_handle = socket;
-#endif
+#endif  // _WIN32
   m_other_end = other_end;
 }
 
@@ -715,7 +715,7 @@ DeviceDescriptor::DeviceDescriptor(int fd) {
   m_handle.m_type = GENERIC_DESCRIPTOR;
 #else
   m_handle = fd;
-#endif
+#endif  // _WIN32
 }
 
 bool DeviceDescriptor::Close() {
@@ -726,7 +726,7 @@ bool DeviceDescriptor::Close() {
   int ret = close(m_handle.m_handle.m_fd);
 #else
   int ret = close(m_handle);
-#endif
+#endif  // _WIN32
   m_handle = INVALID_DESCRIPTOR;
   return ret == 0;
 }

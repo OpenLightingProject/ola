@@ -205,7 +205,7 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
         }
       } else {
         if (!flag->SetValue("1")) {
-          cerr << "Invalid value " << optarg << endl;
+          cerr << "Failed to set value of 1 for flag " << flag->name() << endl;
           exit(EXIT_USAGE);
         }
       }
@@ -303,7 +303,7 @@ void FlagRegistry::GenManPage() {
   loctime = *gmtime(&curtime);  // NOLINT(runtime/threadsafe_fn)
 #else
   gmtime_r(&curtime, &loctime);
-#endif
+#endif  // _WIN32
   strftime(date_str, arraysize(date_str), "%B %Y", &loctime);
 
   string exe_name = ola::file::FilenameFromPathOrPath(m_argv0);

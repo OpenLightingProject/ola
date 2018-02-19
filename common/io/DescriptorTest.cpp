@@ -25,7 +25,7 @@
 
 #ifdef _WIN32
 #include <ola/win/CleanWinSock2.h>
-#endif
+#endif  // _WIN32
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -40,7 +40,7 @@ using ola::io::LoopbackDescriptor;
 using ola::io::PipeDescriptor;
 #ifndef _WIN32
 using ola::io::UnixSocket;
-#endif
+#endif  // !_WIN32
 using ola::io::SelectServer;
 
 static const unsigned char test_cstring[] = "Foo";
@@ -56,7 +56,7 @@ class DescriptorTest: public CppUnit::TestFixture {
 #ifndef _WIN32
   CPPUNIT_TEST(testUnixSocketClientClose);
   CPPUNIT_TEST(testUnixSocketServerClose);
-#endif
+#endif  // !_WIN32
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -68,7 +68,7 @@ class DescriptorTest: public CppUnit::TestFixture {
 #ifndef _WIN32
     void testUnixSocketClientClose();
     void testUnixSocketServerClose();
-#endif
+#endif  // !_WIN32
 
     // timing out indicates something went wrong
     void Timeout() {
@@ -114,7 +114,7 @@ void DescriptorTest::setUp() {
   WSADATA wsa_data;
   int result = WSAStartup(MAKEWORD(2, 0), &wsa_data);
   OLA_ASSERT_EQ(result, 0);
-#endif
+#endif  // _WIN32
 }
 
 
@@ -126,7 +126,7 @@ void DescriptorTest::tearDown() {
 
 #ifdef _WIN32
   WSACleanup();
-#endif
+#endif  // _WIN32
 }
 
 
@@ -203,7 +203,7 @@ void DescriptorTest::testUnixSocketServerClose() {
   SocketServerClose(&socket, socket.OppositeEnd());
 }
 
-#endif
+#endif  // !_WIN32
 
 /*
  * Receive some data and close the socket

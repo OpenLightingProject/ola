@@ -120,7 +120,7 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
         if (port_iter->PriorityMode() == ola::PRIORITY_MODE_INHERIT) {
           cout << "inherited";
         } else {
-          cout << "overide " << static_cast<int>(port_iter->Priority());
+          cout << "override " << static_cast<int>(port_iter->Priority());
         }
         break;
       default:
@@ -322,7 +322,7 @@ void SetMode(options *opts) {
   if (extension != string::npos) {
     cmd_name = cmd_name.substr(0, extension);
   }
-#endif
+#endif  // _WIN32
 
   if (cmd_name == "ola_plugin_info") {
     opts->m = PLUGIN_INFO;
@@ -656,13 +656,15 @@ void DisplayUniverseMergeHelp(const options &opts) {
  * Help message for set dmx
  */
 void DisplaySetDmxHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd << " --universe <universe> --dmx 0,255,0,255\n"
+  cout << "Usage: " << opts.cmd << " --universe <universe> --dmx <values>\n"
           "\n"
           "Sets the DMX values for a universe.\n"
           "\n"
           "  -h, --help                Display this help message and exit.\n"
-          "  -u, --universe <universe> Universe number.\n"
-          "  -d, --dmx <values>        Comma separated DMX values.\n"
+          "  -u, --universe <universe> Universe number, e.g. 0.\n"
+          "  -d, --dmx <values>        Comma separated DMX values, e.g. "
+          "0,255,128 sets first channel to 0, second channel to 255"
+          " and third channel to 128.\n"
        << endl;
 }
 

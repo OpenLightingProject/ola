@@ -27,6 +27,7 @@
 #include "olad/Preferences.h"
 #include "plugins/renard/RenardPort.h"
 #include "plugins/renard/RenardWidget.h"
+#include "plugins/renard/RenardDevice.h"
 
 namespace ola {
 namespace plugin {

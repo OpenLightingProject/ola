@@ -19,6 +19,7 @@ built_sources += plugins/e131/messages/E131ConfigMessages.pb.cc \
 
 nodist_plugins_e131_messages_libolae131conf_la_SOURCES = \
     plugins/e131/messages/E131ConfigMessages.pb.cc
+plugins_e131_messages_libolae131conf_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 plugins_e131_messages_libolae131conf_la_LIBADD = $(libprotobuf_LIBS)
 
 plugins/e131/messages/E131ConfigMessages.pb.cc plugins/e131/messages/E131ConfigMessages.pb.h: plugins/e131/messages/Makefile.mk plugins/e131/messages/E131ConfigMessages.proto

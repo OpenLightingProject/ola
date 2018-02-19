@@ -108,7 +108,7 @@ bool LibUsbAdaptor::GetDeviceInfo(
     struct libusb_device *usb_device,
     const struct libusb_device_descriptor &device_descriptor,
     DeviceInformation *device_info) {
-  // Since the calls on the handle are syncronous, we don't bother adding the
+  // Since the calls on the handle are synchronous, we don't bother adding the
   // handle to the thread.
   libusb_device_handle *usb_handle;
   if (!Open(usb_device, &usb_handle)) {
@@ -149,10 +149,18 @@ bool LibUsbAdaptor::CheckProduct(const string &expected,
                                  const DeviceInformation &device_info) {
   if (expected != device_info.product) {
     OLA_WARN << "Product mismatch: " << expected << " != "
-             << device_info.manufacturer;
+             << device_info.product;
     return false;
   }
   return true;
+}
+
+bool LibUsbAdaptor::HotplugSupported() {
+#ifdef HAVE_LIBUSB_HOTPLUG_API
+  return libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) != 0;
+#else
+  return false;
+#endif  // HAVE_LIBUSB_HOTPLUG_API
 }
 
 string LibUsbAdaptor::ErrorCodeToString(const int error_code) {
@@ -162,7 +170,7 @@ string LibUsbAdaptor::ErrorCodeToString(const int error_code) {
   ostringstream str;
   str << "Error code " << error_code;
   return str.str();
-#endif
+#endif  // HAVE_LIBUSB_ERROR_NAME
 }
 
 // BaseLibUsbAdaptor

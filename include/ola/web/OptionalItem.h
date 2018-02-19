@@ -18,8 +18,8 @@
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef COMMON_WEB_OPTIONALITEM_H_
-#define COMMON_WEB_OPTIONALITEM_H_
+#ifndef INCLUDE_OLA_WEB_OPTIONALITEM_H_
+#define INCLUDE_OLA_WEB_OPTIONALITEM_H_
 
 #include <ola/base/Macro.h>
 #include <string>
@@ -63,4 +63,4 @@ OptionalItem<T>::OptionalItem()
 
 }  // namespace web
 }  // namespace ola
-#endif  // COMMON_WEB_OPTIONALITEM_H_
+#endif  // INCLUDE_OLA_WEB_OPTIONALITEM_H_

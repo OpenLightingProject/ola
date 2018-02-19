@@ -20,7 +20,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -37,11 +37,11 @@ using std::string;
 
 #ifdef HAVE_EPOLL
 DECLARE_bool(use_epoll);
-#endif
+#endif  // HAVE_EPOLL
 
 #ifdef HAVE_KQUEUE
 DECLARE_bool(use_kqueue);
-#endif
+#endif  // HAVE_KQUEUE
 
 DECLARE_uint8(log_level);
 
@@ -58,11 +58,11 @@ int main(int argc, char* argv[]) {
 
 #ifdef HAVE_EPOLL
   FLAGS_use_epoll = GetBoolEnvVar("OLA_USE_EPOLL");
-#endif
+#endif  // HAVE_EPOLL
 
 #ifdef HAVE_KQUEUE
   FLAGS_use_kqueue = GetBoolEnvVar("OLA_USE_KQUEUE");
-#endif
+#endif  // HAVE_KQUEUE
 
   ola::AppInit(&argc, argv, "[options]", "");
 
@@ -72,6 +72,6 @@ int main(int argc, char* argv[]) {
 
   runner.setOutputter(
       new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
-  bool wasSucessful = runner.run();
-  return wasSucessful ? 0 : 1;
+  bool wasSuccessful = runner.run();
+  return wasSuccessful ? 0 : 1;
 }

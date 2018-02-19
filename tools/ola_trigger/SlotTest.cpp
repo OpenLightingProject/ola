@@ -95,7 +95,7 @@ void SlotTest::testIntervalAddition() {
   OLA_ASSERT(slot.AddAction(ValueInterval(10, 20), NULL, NULL));
   OLA_ASSERT_EQ(string("[10, 20]"), slot.IntervalsAsString());
 
-  // add before the begining
+  // add before the beginning
   OLA_ASSERT(slot.AddAction(ValueInterval(5, 6), NULL, NULL));
   OLA_ASSERT_EQ(string("[5, 6], [10, 20]"),
                        slot.IntervalsAsString());

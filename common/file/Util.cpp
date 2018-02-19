@@ -25,12 +25,13 @@
 #include <string.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
 #include <ola/win/CleanWindows.h>
-#endif
+#endif  // _WIN32
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <algorithm>
 #include <sstream>
@@ -47,7 +48,7 @@ using std::vector;
 const char PATH_SEPARATOR = '\\';
 #else
 const char PATH_SEPARATOR = '/';
-#endif
+#endif  // _WIN32
 
 string ConvertPathSeparators(const string &path) {
   string result = path;
@@ -55,7 +56,7 @@ string ConvertPathSeparators(const string &path) {
   std::replace(result.begin(), result.end(), '/', PATH_SEPARATOR);
 #else
   std::replace(result.begin(), result.end(), '\\', PATH_SEPARATOR);
-#endif
+#endif  // _WIN32
   return result;
 }
 
@@ -160,7 +161,7 @@ bool FindMatchingFiles(const string &directory,
     OLA_WARN << "closedir(" << directory << "): " << strerror(errno);
     return false;
   }
-#endif
+#endif  // _WIN32
   return true;
 }
 

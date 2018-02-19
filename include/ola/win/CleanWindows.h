@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * CleanWindows.h
- * A common header that removes many of the name-space clutter that windows.h
+ * A common header that removes much of the name-space clutter that windows.h
  * creates
  * Copyright (C) 2014 Sean Sill
  */
@@ -27,10 +27,10 @@
 // Some preprocessor magic to reduce Windows.h namespace pollution
 #  ifdef AddPort
 #    undef AddPort
-#  endif
+#  endif  // AddPort
 #  ifdef SendMessage
 #    undef SendMessage
-#  endif
+#  endif  // SendMessage
 #endif  // _WIN32
 #endif  // INCLUDE_OLA_WIN_CLEANWINDOWS_H_
 

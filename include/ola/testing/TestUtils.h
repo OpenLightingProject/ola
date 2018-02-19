@@ -125,6 +125,9 @@ inline void _FailIf(const SourceLine &source_line,
 #define OLA_ASSERT_FALSE(condition)  \
   CPPUNIT_ASSERT(!(condition))
 
+#define OLA_ASSERT_FALSE_MSG(condition, msg)  \
+  CPPUNIT_ASSERT_MESSAGE(msg, !(condition))
+
 #define OLA_ASSERT_EQ(expected, output)  \
   CPPUNIT_ASSERT_EQUAL(expected, output)
 

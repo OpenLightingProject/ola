@@ -50,7 +50,7 @@
   * Fixed the Usb Pro last-channel-corrupt bug
 
 30/12/2006 Simon Newton <<nomis52@westnet.com.au>
-  * Fixed problems so that it would acutally compile again
+  * Fixed problems so that it would actually compile again
 
 25/12/2006 Simon Newton <<nomis52@westnet.com.au>
   * universes now save names and merge mode

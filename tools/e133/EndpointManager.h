@@ -19,7 +19,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifndef TOOLS_E133_ENDPOINTMANAGER_H_
 #define TOOLS_E133_ENDPOINTMANAGER_H_

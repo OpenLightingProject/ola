@@ -25,7 +25,7 @@
 #include <stdint.h>
 #ifndef _WIN32
 #include <netinet/in.h>
-#endif
+#endif  // _WIN32
 
 #include "ola/network/MACAddress.h"
 #include "ola/Constants.h"
@@ -40,7 +40,7 @@ enum { ESPNET_DATA_LENGTH = 200 };
 // We can't use the PACK macro for enums
 #ifdef _WIN32
 #pragma pack(push, 1)
-#endif
+#endif  // _WIN32
 enum espnet_packet_type_e {
   ESPNET_POLL = 'E' << 24 | 'S' << 16 | 'P' << 8 | 'P',
   ESPNET_REPLY = 'E' << 24 | 'S' << 16 | 'P' << 8 | 'R',
@@ -51,7 +51,7 @@ enum espnet_packet_type_e {
 #pragma pack(pop)
 #else
 } __attribute__((packed));
-#endif
+#endif  // _WIN32
 
 typedef enum espnet_packet_type_e espnet_packet_type_t;
 
@@ -73,7 +73,7 @@ typedef struct espnet_poll_s espnet_poll_t;
 struct espnet_node_config_s {
   uint8_t listen;
   uint8_t ip[4];
-  uint8_t universe;  // bit bizzare that nodes only listen to one universe??
+  uint8_t universe;  // bit bizare that nodes only listen to one universe??
 };
 
 typedef struct espnet_node_config_s espnet_node_config_t;

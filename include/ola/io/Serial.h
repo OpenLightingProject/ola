@@ -36,7 +36,7 @@
 typedef unsigned speed_t;
 #else
 #include <termios.h>
-#endif
+#endif  // _WIN32
 
 namespace ola {
 namespace io {

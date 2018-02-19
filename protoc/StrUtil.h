@@ -50,7 +50,7 @@ using std::string;
 // HP C++ on Tru64 does not have strtoll, but strtol is already 64-bit.
 #define strtoll strtol
 #define strtoull strtoul
-#endif
+#endif  // _MSC_VER
 
 // ----------------------------------------------------------------------
 // ascii_isalnum()

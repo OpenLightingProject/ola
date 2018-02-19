@@ -25,7 +25,10 @@ EXTRA_DIST += \
     debian/ola.postinst \
     debian/ola.templates \
     debian/ola.udev \
+    debian/org.openlighting.ola.ola.metainfo.xml \
     debian/rules \
     debian/source/format \
     debian/source/lintian-overrides \
-    debian/source/local-options
+    debian/source/local-options \
+    debian/tests/control \
+    debian/watch

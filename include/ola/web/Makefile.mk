@@ -10,4 +10,5 @@ olawebinclude_HEADERS = \
     include/ola/web/JsonSchema.h \
     include/ola/web/JsonSections.h \
     include/ola/web/JsonTypes.h \
-    include/ola/web/JsonWriter.h
+    include/ola/web/JsonWriter.h \
+    include/ola/web/OptionalItem.h

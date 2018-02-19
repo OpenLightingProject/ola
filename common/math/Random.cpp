@@ -20,7 +20,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -29,7 +29,7 @@
 
 #ifdef HAVE_RANDOM
 #include <random>
-#endif
+#endif  // HAVE_RANDOM
 
 #include "ola/Clock.h"
 #include "ola/math/Random.h"
@@ -39,7 +39,7 @@ namespace math {
 
 #ifdef HAVE_RANDOM
 std::default_random_engine generator_;
-#endif
+#endif  // HAVE_RANDOM
 
 void InitRandom() {
   Clock clock;
@@ -54,7 +54,7 @@ void InitRandom() {
   srand(seed);
 #else
   srandom(seed);
-#endif
+#endif  // HAVE_RANDOM
 }
 
 int Random(int lower, int upper) {
@@ -66,7 +66,7 @@ int Random(int lower, int upper) {
           (rand() % (upper - lower + 1)));  // NOLINT(runtime/threadsafe_fn)
 #else
   return (lower + (random() % (upper - lower + 1)));
-#endif
+#endif  // HAVE_RANDOM
 }
 }  // namespace math
 }  // namespace ola

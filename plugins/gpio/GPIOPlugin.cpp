@@ -78,7 +78,7 @@ bool GPIOPlugin::StartHook() {
       continue;
     }
 
-    uint8_t pin;
+    uint16_t pin;
     if (!StringToInt(*iter, &pin)) {
       OLA_WARN << "Invalid value for GPIO pin: " << *iter;
       return false;

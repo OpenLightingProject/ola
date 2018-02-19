@@ -22,7 +22,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 
 #ifdef _WIN32
@@ -31,13 +31,16 @@ typedef uint32_t in_addr_t;
 #define WIN_32_LEAN_AND_MEAN
 #include <ola/win/CleanWinSock2.h>
 #include <Iphlpapi.h>
+#if HAVE_WINERROR_H
+#include <winerror.h>
+#endif  // HAVE_WINERROR_H
 #else
 #include <netinet/in.h>
-#endif
+#endif  // _WIN32
 
 #ifdef HAVE_RESOLV_H
 #include <resolv.h>
-#endif
+#endif  // HAVE_RESOLV_H
 
 #if defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
 #define USE_NETLINK_FOR_DEFAULT_ROUTE 1
@@ -49,15 +52,15 @@ typedef uint32_t in_addr_t;
 #include <net/route.h>
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
-#endif
+#endif  // HAVE_SYS_PARAM_H
 #include <sys/sysctl.h>
 #else
-// Do something else if we don't have Netlink/on Windows
-#endif
+// TODO(Peter): Do something else if we don't have Netlink/on Windows
+#endif  // defined(HAVE_LINUX_NETLINK_H) && defined(HAVE_LINUX_RTNETLINK_H)
 
 #ifdef HAVE_ENDIAN_H
 #include <endian.h>
-#endif
+#endif  // HAVE_ENDIAN_H
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -98,8 +101,8 @@ inline bool IsBigEndian() {
   return (*(uint16_t*)"\0\xff" < 0x100);  // NOLINT(readability/casting)
 #else
   return BYTE_ORDER == BIG_ENDIAN;
-#endif
-#endif
+#endif  // _WIN32
+#endif  // HAVE_ENDIAN_H
 }
 
 inline uint32_t ByteSwap32(uint32_t value) {
@@ -124,16 +127,16 @@ unsigned int SockAddrLen(const struct sockaddr &sa) {
 #ifdef IPV6
     case AF_INET6:
       return sizeof(struct sockaddr_in6);
-#endif
+#endif  // IPV6
 #ifdef HAVE_SOCKADDR_DL_STRUCT
     case AF_LINK:
       return sizeof(struct sockaddr_dl);
-#endif
+#endif  // HAVE_SOCKADDR_DL_STRUCT
     default:
       OLA_WARN << "Can't determine size of sockaddr: " << sa.sa_family;
       return sizeof(struct sockaddr);
   }
-#endif
+#endif  // HAVE_SOCKADDR_SA_LEN
 }
 
 uint16_t NetworkToHost(uint16_t value) {
@@ -263,7 +266,7 @@ string FQDN() {
   char hostname[_POSIX_HOST_NAME_MAX];
 #else
   char hostname[256];
-#endif
+#endif  // _POSIX_HOST_NAME_MAX
   int ret = gethostname(hostname, sizeof(hostname));
 
   if (ret) {
@@ -342,7 +345,7 @@ bool NameServers(vector<IPV4Address> *name_servers) {
     OLA_DEBUG << "Found Nameserver " << i << ": " << addr;
     name_servers->push_back(addr);
   }
-#endif
+#endif  // HAVE_DECL_RES_NINIT
 
   return true;
 }
@@ -595,7 +598,7 @@ static bool GetDefaultRouteWithNetlink(int32_t *if_index,
            << *if_index;
   return true;
 }
-#endif
+#endif  // USE_SYSCTL_FOR_DEFAULT_ROUTE
 
 bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
   *default_gateway = IPV4Address();
@@ -628,7 +631,7 @@ bool DefaultRoute(int32_t *if_index, IPV4Address *default_gateway) {
   // TODO(Peter): Do something else on machines without Netlink
   // No Netlink, can't do anything
   return false;
-#endif
+#endif  // USE_SYSCTL_FOR_DEFAULT_ROUTE
 }
 }  // namespace network
 }  // namespace ola

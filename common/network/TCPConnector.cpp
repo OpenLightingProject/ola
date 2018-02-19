@@ -23,8 +23,8 @@
 #include <Ws2tcpip.h>
 #ifndef ETIMEDOUT
 #define ETIMEDOUT WSAETIMEDOUT
-#endif
-#endif
+#endif  // !ETIMEDOUT
+#endif  // _WIN32
 
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -73,7 +73,7 @@ PendingTCPConnection::PendingTCPConnection(
   m_handle.m_type = ola::io::SOCKET_DESCRIPTOR;
 #else
   m_handle = fd;
-#endif
+#endif  // _WIN32
 }
 
 /*
@@ -84,7 +84,7 @@ void PendingTCPConnection::Close() {
   close(m_handle.m_handle.m_fd);
 #else
   close(m_handle);
-#endif
+#endif  // _WIN32
 }
 
 /*
@@ -131,7 +131,7 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
   descriptor.m_type = ola::io::SOCKET_DESCRIPTOR;
 #else
   ola::io::DescriptorHandle descriptor = sd;
-#endif
+#endif  // _WIN32
   ola::io::ConnectedDescriptor::SetNonBlocking(descriptor);
 
   int r = connect(sd, &server_address, sizeof(server_address));
@@ -141,7 +141,7 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
     if (WSAGetLastError() != WSAEWOULDBLOCK) {
 #else
     if (errno != EINPROGRESS) {
-#endif
+#endif  // _WIN32
       int error = errno;
       OLA_WARN << "connect() to " << endpoint << " returned, "
                << strerror(error);
@@ -220,7 +220,7 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
   int sd = connection->WriteDescriptor().m_handle.m_fd;
 #else
   int sd = connection->WriteDescriptor();
-#endif
+#endif  // _WIN32
   int error = 0;
   socklen_t len;
   len = sizeof(error);
@@ -229,7 +229,7 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
                      reinterpret_cast<char*>(&error), &len);
 #else
   int r = getsockopt(sd, SOL_SOCKET, SO_ERROR, &error, &len);
-#endif
+#endif  // _WIN32
   if (r < 0) {
     error = errno;
   }
@@ -253,7 +253,7 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
     connection->callback->Run(connection->WriteDescriptor().m_handle.m_fd, 0);
 #else
     connection->callback->Run(connection->WriteDescriptor(), 0);
-#endif
+#endif  // _WIN32
   }
 }
 

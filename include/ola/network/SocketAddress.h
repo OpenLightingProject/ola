@@ -34,10 +34,11 @@
 #include <stdint.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
 #include <ola/win/CleanWinSock2.h>
 #else
 #include <sys/socket.h>
-#endif
+#endif  // _WIN32
 #include <sstream>
 #include <string>
 

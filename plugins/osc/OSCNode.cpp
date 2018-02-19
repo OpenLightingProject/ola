@@ -20,7 +20,7 @@
 
 #ifdef _WIN32
 #include <ola/win/CleanWinSock2.h>
-#endif
+#endif  // _WIN32
 
 #include <ola/Callback.h>
 #include <ola/Constants.h>
@@ -51,7 +51,7 @@ class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
  private:
   DISALLOW_COPY_AND_ASSIGN(UnmanagedSocketDescriptor);
 };
-#endif
+#endif  // _WIN32
 
 using ola::IntToString;
 using ola::io::SelectServerInterface;
@@ -254,7 +254,7 @@ bool OSCNode::Init() {
   m_descriptor.reset(new UnmanagedSocketDescriptor(fd));
 #else
   m_descriptor.reset(new ola::io::UnmanagedFileDescriptor(fd));
-#endif
+#endif  // _WIN32
   m_descriptor->SetOnData(NewCallback(this, &OSCNode::DescriptorReady));
   m_ss->AddReadDescriptor(m_descriptor.get());
 
@@ -366,7 +366,7 @@ bool OSCNode::RemoveTarget(unsigned int group, const OSCTarget &target) {
  * @param group the group to send the data to
  * @param data_format the format of data to send
  * @param dmx_data the DmxBuffer to send
- * @returns true if sucesfully sent, false if any error occured.
+ * @returns true if successfully sent, false if any error occurred.
  */
 bool OSCNode::SendData(unsigned int group, DataFormat data_format,
                        const ola::DmxBuffer &dmx_data) {

@@ -20,7 +20,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <stdio.h>
 #include <ola/Logging.h>
@@ -33,7 +33,7 @@
 
 #ifdef _WIN32
 #include <ola/win/CleanWinSock2.h>
-#endif
+#endif  // _WIN32
 
 #include <fstream>
 #include <iostream>
@@ -59,7 +59,7 @@ class UnmanagedSocketDescriptor : public ola::io::UnmanagedFileDescriptor {
  private:
   DISALLOW_COPY_AND_ASSIGN(UnmanagedSocketDescriptor);
 };
-#endif
+#endif  // _WIN32
 
 using std::ifstream;
 using std::map;
@@ -215,7 +215,7 @@ HTTPRequest::HTTPRequest(const string &url,
 
 /*
  * @brief Initialize this request
- * @return true if succesful, false otherwise.
+ * @return true if successful, false otherwise.
  */
 bool HTTPRequest::Init() {
   MHD_get_connection_values(m_connection, MHD_HEADER_KIND, AddHeaders, this);
@@ -502,7 +502,7 @@ void *HTTPServer::Run() {
 #else
   // set a long poll interval so we don't spin
   m_select_server->SetDefaultInterval(TimeInterval(60, 0));
-#endif
+#endif  // _WIN32
   m_select_server->Run();
 
   // clean up any remaining sockets
@@ -551,7 +551,7 @@ void HTTPServer::UpdateSockets() {
                                reinterpret_cast<MHD_socket*>(&max_fd))) {
 #else
   if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set, &max_fd)) {
-#endif
+#endif  // MHD_SOCKET_DEFINED
     OLA_WARN << "Failed to get a list of the file descriptors for MHD";
     return;
   }
@@ -717,7 +717,7 @@ void HTTPServer::Handlers(vector<string> *handlers) const {
 
 /**
  * @brief Serve an error.
- * @param response the reponse to use.
+ * @param response the response to use.
  * @param details the error description
  */
 int HTTPServer::ServeError(HTTPResponse *response, const string &details) {
@@ -824,7 +824,7 @@ void HTTPServer::InsertSocket(bool is_readable, bool is_writeable, int fd) {
   UnmanagedSocketDescriptor *socket = new UnmanagedSocketDescriptor(fd);
 #else
   UnmanagedFileDescriptor *socket = new UnmanagedFileDescriptor(fd);
-#endif
+#endif  // _WIN32
   socket->SetOnData(NewCallback(this, &HTTPServer::HandleHTTPIO));
   socket->SetOnWritable(NewCallback(this, &HTTPServer::HandleHTTPIO));
 
@@ -861,7 +861,7 @@ struct MHD_Response *HTTPServer::BuildResponse(void *data, size_t size) {
   return MHD_create_response_from_buffer(size, data, MHD_RESPMEM_MUST_COPY);
 #else
   return MHD_create_response_from_data(size, data, MHD_NO, MHD_YES);
-#endif
+#endif  // HAVE_MHD_CREATE_RESPONSE_FROM_BUFFER
 }
 }  // namespace http
 }  // namespace ola

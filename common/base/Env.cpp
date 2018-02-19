@@ -32,7 +32,7 @@ bool GetEnv(const string &var, string *value) {
   v = secure_getenv(var.c_str());
 #else
   v = getenv(var.c_str());
-#endif
+#endif  // HAVE_SECURE_GETENV
   if (v) {
     value->assign(v);
     return true;

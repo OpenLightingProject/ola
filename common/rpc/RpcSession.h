@@ -33,7 +33,7 @@ class RpcChannel;
  * of. For each RPC method on the server side, the RPCSession can be accessed
  * via the RpcController::Session() method.
  *
- * Sessions can have arbitary user data associated with them, similar to a
+ * Sessions can have arbitrary user data associated with them, similar to a
  * cookie in an HTTP request. The user data is usually set in the call to
  * RpcSessionHandlerInterface::NewClient() but can be set or modified in any of
  * the RPC calls themselves.

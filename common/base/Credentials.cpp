@@ -27,13 +27,13 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <errno.h>
 #ifndef _WIN32
 #include <grp.h>
 #include <pwd.h>
-#endif
+#endif  // _WIN32
 #include <string.h>
 #include <unistd.h>
 
@@ -55,7 +55,7 @@ bool SupportsUIDs() {
   return false;
 #else
   return true;
-#endif
+#endif  // _WIN32
 }
 
 bool GetUID(uid_t* uid) {
@@ -69,7 +69,7 @@ bool GetUID(uid_t* uid) {
   } else {
     return false;
   }
-#endif
+#endif  // _WIN32
 }
 
 
@@ -84,7 +84,7 @@ bool GetEUID(uid_t* euid) {
   } else {
     return false;
   }
-#endif
+#endif  // _WIN32
 }
 
 
@@ -99,7 +99,7 @@ bool GetGID(gid_t* gid) {
   } else {
     return false;
   }
-#endif
+#endif  // _WIN32
 }
 
 
@@ -114,7 +114,7 @@ bool GetEGID(gid_t* egid) {
   } else {
     return false;
   }
-#endif
+#endif  // _WIN32
 }
 
 
@@ -128,7 +128,7 @@ bool SetUID(uid_t new_uid) {
     return false;
   }
   return true;
-#endif
+#endif  // _WIN32
 }
 
 
@@ -142,7 +142,7 @@ bool SetGID(gid_t new_gid) {
     return false;
   }
   return true;
-#endif
+#endif  // _WIN32
 }
 
 int GetGroups(int size, gid_t list[]) {
@@ -152,7 +152,7 @@ int GetGroups(int size, gid_t list[]) {
   return -1;
 #else
   return getgroups(size, list);
-#endif
+#endif  // _WIN32
 }
 
 bool SetGroups(size_t size, const gid_t *list) {
@@ -166,7 +166,7 @@ bool SetGroups(size_t size, const gid_t *list) {
     return false;
   }
   return true;
-#endif
+#endif  // _WIN32
 }
 
 /**
@@ -250,8 +250,8 @@ bool GetPasswdName(const string &name, PasswdEntry *passwd) {
   return GenericGetPasswdReentrant(getpwnam_r, name.c_str(), passwd);
 #else
   return GenericGetPasswd(getpwnam, name.c_str(), passwd);
-#endif
-#endif
+#endif  // HAVE_GETPWNAM_R
+#endif  // _WIN32
 }
 
 
@@ -265,8 +265,8 @@ bool GetPasswdUID(uid_t uid, PasswdEntry *passwd) {
   return GenericGetPasswdReentrant(getpwuid_r, uid, passwd);
 #else
   return GenericGetPasswd(getpwuid, uid, passwd);
-#endif
-#endif
+#endif  // HAVE_GETPWUID_R
+#endif  // _WIN32
 }
 
 #ifndef _WIN32
@@ -330,7 +330,7 @@ bool GenericGetGroup(F f, arg a, GroupEntry *group_entry) {
   return true;
 }
 
-#endif  // !Win32
+#endif  // !_WIN32
 
 
 bool GetGroupName(const string &name, GroupEntry *group_entry) {
@@ -343,8 +343,8 @@ bool GetGroupName(const string &name, GroupEntry *group_entry) {
   return GenericGetGroupReentrant(getgrnam_r, name.c_str(), group_entry);
 #else
   return GenericGetGroup(getgrnam, name.c_str(), group_entry);
-#endif
-#endif
+#endif  // HAVE_GETGRNAM_R
+#endif  // _WIN32
 }
 
 
@@ -358,7 +358,7 @@ bool GetGroupGID(gid_t gid, GroupEntry *group_entry) {
   return GenericGetGroupReentrant(getgrgid_r, gid, group_entry);
 #else
   return GenericGetGroup(getgrgid, gid, group_entry);
-#endif
-#endif
+#endif  // HAVE_GETGRGID_R
+#endif  // _WIN32
 }
 }  // namespace ola

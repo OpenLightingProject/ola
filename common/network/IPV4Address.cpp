@@ -20,24 +20,24 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_WINSOCK2_H
 #include <ola/win/CleanWinSock2.h>
 #ifndef in_addr_t
 #define in_addr_t uint32_t
-#endif
-#endif
+#endif  // !in_addr_t
+#endif  // HAVE_WINSOCK2_H
 
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>  // Required by FreeBSD
-#endif
+#endif  // HAVE_SYS_SOCKET_H
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
-#endif
+#endif  // HAVE_ARPA_INET_H
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>  // Required by FreeBSD
-#endif
+#endif  // HAVE_NETINET_IN_H
 
 #include <assert.h>
 #include <math.h>
@@ -83,7 +83,7 @@ bool IPV4StringToAddress(const string &address, struct in_addr *addr) {
   in_addr_t ip_addr4 = inet_addr(address.c_str());
   ok = (INADDR_NONE != ip_addr4 || address == "255.255.255.255");
   addr->s_addr = ip_addr4;
-#endif
+#endif  // HAVE_INET_PTON
 
   if (!ok) {
     OLA_WARN << "Could not convert address " << address;
@@ -108,7 +108,7 @@ string IPV4Address::ToString() const {
   return str;
 #else
   return inet_ntoa(addr);
-#endif
+#endif  // HAVE_INET_NTOP
 }
 
 IPV4Address* IPV4Address::FromString(const string &address) {

@@ -21,6 +21,12 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+// On MinGW, SocketAddress.h pulls in WinSock2.h, which needs to be after
+// WinSock2.h, hence this order
+#include <ola/network/SocketAddress.h>
+#include <ola/AutoStart.h>
+
 #ifdef _WIN32
 #define VC_EXTRALEAN
 #include <ola/win/CleanWindows.h>
@@ -28,11 +34,9 @@
 #else
 #include <sys/wait.h>
 #include <unistd.h>
-#endif
+#endif  // _WIN32
 
-#include <ola/AutoStart.h>
 #include <ola/network/IPV4Address.h>
-#include <ola/network/SocketAddress.h>
 #include <ola/Logging.h>
 
 namespace ola {
@@ -105,7 +109,8 @@ TCPSocket *ConnectToServer(unsigned short port) {
 
     // Try to start the server, we pass --daemon (fork into background) and
     // --syslog (log to syslog).
-    execlp("olad", "olad", "--daemon", "--syslog", NULL);
+    execlp("olad", "olad", "--daemon", "--syslog",
+           reinterpret_cast<char*>(NULL));
     OLA_WARN << "Failed to exec: " << strerror(errno);
     _exit(1);
   }
@@ -115,7 +120,7 @@ TCPSocket *ConnectToServer(unsigned short port) {
 
   // wait a bit here for the server to come up
   sleep(1);
-#endif
+#endif  // _WIN32
 
   return TCPSocket::Connect(server_address);
 }

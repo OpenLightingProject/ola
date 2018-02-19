@@ -35,7 +35,7 @@ namespace network {
  */
 
 /**
- * @brief Given some intial parameters, find the best network interface to use.
+ * @brief Given some initial parameters, find the best network interface to use.
  *
  * The InterfacePicker tries to find a valid network interface that matches:
  *  - an interface name i.e. eth0

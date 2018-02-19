@@ -21,25 +21,25 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_DNSSD
 #include "olad/BonjourDiscoveryAgent.h"
-#endif
+#endif  // HAVE_DNSSD
 
 #ifdef HAVE_AVAHI
 #include "olad/AvahiDiscoveryAgent.h"
-#endif
+#endif  // HAVE_AVAHI
 
 namespace ola {
 
 DiscoveryAgentInterface* DiscoveryAgentFactory::New() {
 #ifdef HAVE_DNSSD
   return new BonjourDiscoveryAgent();
-#endif
+#endif  // HAVE_DNSSD
 #ifdef HAVE_AVAHI
   return new AvahiDiscoveryAgent();
-#endif
+#endif  // HAVE_AVAHI
   return NULL;
 }
 }  // namespace ola

@@ -85,7 +85,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   if (extension != string::npos) {
     cmd_name = cmd_name.substr(0, extension);
   }
-#endif
+#endif  // _WIN32
   opts->set_mode = false;
   opts->pid_location = "";
   opts->list_pids = false;
@@ -244,6 +244,8 @@ class RDMController {
                       const ola::client::RDMMetadata &metadata,
                       const ola::rdm::RDMResponse *response);
 
+  void ShowFrames(const ola::client::RDMMetadata &metadata);
+
  private:
   struct PendingRequest {
    public:
@@ -299,16 +301,19 @@ void RDMController::HandleResponse(const ola::client::Result &result,
                                    const ola::rdm::RDMResponse *response) {
   if (!result.Success()) {
     cerr << "Error: " << result.Error() << endl;
+    ShowFrames(metadata);
     m_ola_client.GetSelectServer()->Terminate();
     return;
   }
 
   if (metadata.response_code == ola::rdm::RDM_WAS_BROADCAST) {
     m_ola_client.GetSelectServer()->Terminate();
+    // Broadcast, there shouldn't be any frames
     return;
   } else if (metadata.response_code != ola::rdm::RDM_COMPLETED_OK) {
     cerr << "Error: "
          << ola::rdm::StatusCodeToString(metadata.response_code) << endl;
+    ShowFrames(metadata);
     m_ola_client.GetSelectServer()->Terminate();
     return;
   }
@@ -317,6 +322,7 @@ void RDMController::HandleResponse(const ola::client::Result &result,
     cerr << "Error: Missing RDM Response but response_code was "
             "RDM_COMPLETED_OK, this is a bug, please report it!"
          << endl;
+    ShowFrames(metadata);
     return;
   }
 
@@ -371,6 +377,15 @@ void RDMController::HandleResponse(const ola::client::Result &result,
   }
   PrintRemainingMessages(response->MessageCount());
 
+  ShowFrames(metadata);
+  m_ola_client.GetSelectServer()->Terminate();
+}
+
+
+/**
+ * Show frames if asked for
+ */
+void RDMController::ShowFrames(const ola::client::RDMMetadata &metadata) {
   if (m_show_frames && !metadata.frames.empty()) {
     cout << "------- Frame Information --------" << endl;
     ola::rdm::RDMFrames::const_iterator iter = metadata.frames.begin();
@@ -398,7 +413,6 @@ void RDMController::HandleResponse(const ola::client::Result &result,
       ola::strings::FormatData(&cout, iter->data.data(), iter->data.size());
     }
   }
-  m_ola_client.GetSelectServer()->Terminate();
 }
 
 

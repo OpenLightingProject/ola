@@ -118,7 +118,7 @@ class LibUsbAdaptor {
                              int interface_number) = 0;
 
   /**
-   * @brief Detatch a kernel driver.
+   * @brief Detach a kernel driver.
    * @param dev a device handle
    * @param interface_number the interface to detach the driver from
    * @returns 0 on success
@@ -413,6 +413,13 @@ class LibUsbAdaptor {
    */
   static bool CheckProduct(const std::string &expected,
                            const DeviceInformation &device_info);
+
+  /**
+   * @brief Check if this platform supports hotplug.
+   * @returns true if hotplug is supported and enabled on this platform, false
+   *   otherwise.
+   */
+  static bool HotplugSupported();
 
   /**
    * @brief Try and convert an error code to a string

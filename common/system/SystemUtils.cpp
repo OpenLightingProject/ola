@@ -20,7 +20,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include "ola/Logging.h"
 #include "ola/system/SystemUtils.h"
@@ -51,7 +51,7 @@ bool LoadAverage(load_averages average, double *value) {
   (void) average;
   *value = 0;
   return false;
-#endif
+#endif  // HAVE_GETLOADAVG
 }
 
 }  // namespace system

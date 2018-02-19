@@ -45,7 +45,7 @@ namespace io {
  * The UnmanagedFileDescriptor allows socket descriptors created by other
  * libraries to be used with the SelectServer.
  *
- * ConnectedDescriptor is a socket with tighter intergration with the
+ * ConnectedDescriptor is a socket with tighter integration with the
  * SelectServer. This allows the SelectServer to detect when the socket is
  * closed and call the OnClose() handler. It also provides methods to disable
  * SIGPIPE, control the blocking attributes and check how much data remains to
@@ -117,7 +117,7 @@ std::ostream& operator<<(std::ostream &stream, const DescriptorHandle &data);
 #else
 typedef int DescriptorHandle;
 static DescriptorHandle INVALID_DESCRIPTOR = -1;
-#endif
+#endif  // _WIN32
 
 /**
  * @addtogroup io

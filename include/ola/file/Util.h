@@ -30,9 +30,9 @@ namespace file {
 extern const char PATH_SEPARATOR;
 
 /**
- * @brief Convert all seperators in a path to the OS's version.
+ * @brief Convert all separators in a path to the OS's version.
  * @param path the path to convert
- * @returns the path with all path seperators switched to the OS's version
+ * @returns the path with all path separators switched to the OS's version
  */
 std::string ConvertPathSeparators(const std::string &path);
 

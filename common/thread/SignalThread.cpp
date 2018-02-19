@@ -18,8 +18,18 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
 #include <errno.h>
 #include <string.h>
+#ifdef _WIN32
+// On MinGW, pthread.h pulls in Windows.h, which in turn pollutes the global
+// namespace. We define VC_EXTRALEAN and WIN32_LEAN_AND_MEAN to reduce this.
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // _WIN32
 #include <pthread.h>
 #include <signal.h>
 #include <map>
@@ -49,7 +59,7 @@ static void Win32SignalHandler(int signo) {
     handler->Run();
   }
 }
-#endif
+#endif  // _WIN32
 
 SignalThread::SignalThread()
     : Thread(Thread::Options("signal-thread")) {}
@@ -78,7 +88,7 @@ void* SignalThread::Run() {
 #ifndef _WIN32
   sigset_t signals;
   int signo;
-#endif
+#endif  // _WIN32
 
 #ifdef _WIN32
   if (g_signal_map) {
@@ -90,7 +100,7 @@ void* SignalThread::Run() {
   for (; iter != m_signal_handlers.end(); ++iter) {
     signal(iter->first, Win32SignalHandler);
   }
-#endif
+#endif  // _WIN32
 
   while (true) {
 #ifndef _WIN32
@@ -107,7 +117,7 @@ void* SignalThread::Run() {
     if (handler) {
       handler->Run();
     }
-#endif
+#endif  // _WIN32
   }
   return NULL;
 }
@@ -127,7 +137,7 @@ bool SignalThread::AddSignals(sigset_t *signals) {
   }
 #else
   (void) signals;
-#endif
+#endif  // _WIN32
   return true;
 }
 
@@ -154,7 +164,7 @@ bool SignalThread::BlockSignal(int signal) {
     OLA_WARN << "Failed to block signals: " << strerror(errno);
     return false;
   }
-#endif
+#endif  // _WIN32
   return true;
 }
 }  // namespace thread

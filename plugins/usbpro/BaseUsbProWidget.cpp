@@ -33,6 +33,7 @@
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
 #include "ola/io/Serial.h"
+#include "ola/base/Macro.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
@@ -158,18 +159,21 @@ void BaseUsbProWidget::ReceiveMessage() {
       } while (m_header.som != SOM);
       m_state = RECV_LABEL;
       // fall through
+      OLA_FALLTHROUGH
     case RECV_LABEL:
       m_descriptor->Receive(&m_header.label, 1, count);
       if (count != 1)
         return;
       m_state = RECV_SIZE_LO;
       // fall through
+      OLA_FALLTHROUGH
     case RECV_SIZE_LO:
       m_descriptor->Receive(&m_header.len, 1, count);
       if (count != 1)
         return;
       m_state = RECV_SIZE_HI;
       // fall through
+      OLA_FALLTHROUGH
     case RECV_SIZE_HI:
       m_descriptor->Receive(&m_header.len_hi, 1, count);
       if (count != 1)
@@ -187,6 +191,7 @@ void BaseUsbProWidget::ReceiveMessage() {
       m_bytes_received = 0;
       m_state = RECV_BODY;
       // fall through
+      OLA_FALLTHROUGH
     case RECV_BODY:
       packet_length = (m_header.len_hi << 8) + m_header.len;
       m_descriptor->Receive(
@@ -203,6 +208,7 @@ void BaseUsbProWidget::ReceiveMessage() {
 
       m_state = RECV_EOM;
       // fall through
+      OLA_FALLTHROUGH
     case RECV_EOM:
       // check this is a valid frame with an end byte
       uint8_t eom;

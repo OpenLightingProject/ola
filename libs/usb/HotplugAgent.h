@@ -99,7 +99,7 @@ class HotplugAgent {
   bool Start();
 
   /**
-   * @brief Prevent any further notifications from occuring.
+   * @brief Prevent any further notifications from occurring.
    *
    * Once this returns, the NotificationCallback will not be called.
    */
@@ -127,7 +127,7 @@ class HotplugAgent {
    */
   void HotPlugEvent(struct libusb_device *dev,
                     libusb_hotplug_event event);
-  #endif
+  #endif  // HAVE_LIBUSB_HOTPLUG_API
 
  private:
   typedef std::map<USBDeviceID, struct libusb_device*> DeviceMap;

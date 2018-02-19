@@ -20,6 +20,7 @@ plugins_artnet_libolaartnet_la_SOURCES = \
     plugins/artnet/ArtNetDevice.h \
     plugins/artnet/ArtNetPort.cpp \
     plugins/artnet/ArtNetPort.h
+plugins_artnet_libolaartnet_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 plugins_artnet_libolaartnet_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la \
     plugins/artnet/libolaartnetnode.la \

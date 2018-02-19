@@ -70,7 +70,7 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
                                  bool delete_on_close = false) = 0;
 
   /**
-   * @brief Remove a RemoveReadDescriptor for read-events.
+   * @brief Remove a ReadFileDescriptor for read-events.
    * @param descriptor the descriptor to remove.
    *
    * @warning Descriptors must be removed from the SelectServer before they are

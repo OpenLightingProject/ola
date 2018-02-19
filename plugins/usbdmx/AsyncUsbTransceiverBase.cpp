@@ -36,7 +36,7 @@ namespace {
  */
 #ifdef _WIN32
 __attribute__((__stdcall__))
-#endif
+#endif  // _WIN32
 void AsyncCallback(struct libusb_transfer *transfer) {
   AsyncUsbTransceiverBase *widget = reinterpret_cast<AsyncUsbTransceiverBase*>(
     transfer->user_data);

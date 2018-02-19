@@ -355,7 +355,7 @@ bool EPoller::Poll(TimeoutManager *timeout_manager,
 /*
  * Check all the registered descriptors:
  *  - Execute the callback for descriptors with data
- *  - Excute OnClose if a remote end closed the connection
+ *  - Execute OnClose if a remote end closed the connection
  */
 void EPoller::CheckDescriptor(struct epoll_event *event,
                               EPollData *epoll_data) {

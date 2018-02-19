@@ -26,6 +26,7 @@
 #include "plugins/milinst/MilInstPort.h"
 #include "plugins/milinst/MilInstWidget1463.h"
 #include "plugins/milinst/MilInstWidget1553.h"
+#include "plugins/milinst/MilInstDevice.h"
 
 namespace ola {
 namespace plugin {

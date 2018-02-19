@@ -34,15 +34,74 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 
+# check if the compiler supports -std=gnu++98
+AC_MSG_CHECKING(for -std=gnu++98 support)
+old_cxxflags=$CXXFLAGS
+CXXFLAGS="${CXXFLAGS} -std=gnu++98 -Wall -Werror"
+AC_CACHE_VAL(ac_cv_gnu_plus_plus_98,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([], [])],
+     [ac_cv_gnu_plus_plus_98=yes],
+     [ac_cv_gnu_plus_plus_98=no])
+)
+CXXFLAGS=$old_cxxflags
+AC_MSG_RESULT($ac_cv_gnu_plus_plus_98)
+
+AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_98], [test "x$ac_cv_gnu_plus_plus_98" = xyes])
+
+# check if the compiler supports -std=gnu++11
+AC_MSG_CHECKING(for -std=gnu++11 support)
+old_cxxflags=$CXXFLAGS
+CXXFLAGS="${CXXFLAGS} -std=gnu++11 -Wall -Werror"
+AC_CACHE_VAL(ac_cv_gnu_plus_plus_11,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([], [])],
+     [ac_cv_gnu_plus_plus_11=yes],
+     [ac_cv_gnu_plus_plus_11=no])
+)
+CXXFLAGS=$old_cxxflags
+AC_MSG_RESULT($ac_cv_gnu_plus_plus_11)
+
+AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = xyes])
+
+# force us into gnu++98 mode if necessary
+# If gnu++11 and gnu++98 then
+#   If no unit tests, force to gnu++98
+#   If unittests and cppunit < 1.14.0, force to gnu++98
+#   Else turn off deprecation messages for std::auto_ptr and run gnu++11
+require_gnu_plus_plus_11="no"
+AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
+      [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
+             [AS_IF([test "x$enable_unittests" = xno],
+                    [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                    [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+                                       [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                       [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
+                                                          [require_gnu_plus_plus_11="yes"],
+                                                          [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                       ])
+                    ])
+             ])
+      ])
+AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
+      [CXXFLAGS="$CXXFLAGS -std=gnu++11"])
+AM_CONDITIONAL([GNU_PLUS_PLUS_11_DEPRECATIONS], [test "x$require_gnu_plus_plus_11" = xyes])
+
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_RESOLV
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h])
-AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h errno.h execinfo.h \
+# Required headers (we cannot work without these)
+AC_CHECK_HEADERS([errno.h],[],[AC_MSG_ERROR([Missing a required header])])
+# Other headers (we can work without these, but may need to modify things slightly)
+AC_CHECK_HEADERS([arpa/inet.h bits/sockaddr.h fcntl.h float.h limits.h \
+                  malloc.h netinet/in.h stdint.h stdlib.h string.h strings.h \
+                  sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h \
+                  syslog.h termios.h unistd.h])
+AC_CHECK_HEADERS([asm/termios.h assert.h dlfcn.h endian.h execinfo.h \
                   linux/if_packet.h math.h net/ethernet.h stropts.h \
                   sys/param.h sys/types.h sys/uio.h sysexits.h])
-AC_CHECK_HEADERS([winsock2.h])
+AC_CHECK_HEADERS([winsock2.h winerror.h])
 AC_CHECK_HEADERS([random])
 
 # This needs stuff in sys/param.h on OpenBSD
@@ -127,6 +186,29 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
                 socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
                 getgrnam_r getgrgid_r secure_getenv])
+
+AC_MSG_CHECKING(for readdir_r deprecation)
+old_cxxflags=$CXXFLAGS
+CXXFLAGS="${CXXFLAGS} -Werror=deprecated-declarations"
+AC_CACHE_VAL(ac_cv_readdir_r_deprecation,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([[#include <dirent.h>
+#include <unistd.h>]],[[
+        const char* arg = "/";
+        DIR * dir;
+        struct dirent *buf, *de;
+        dir = opendir(arg);
+        readdir_r(dir,buf,&de);
+]])],
+     [ac_cv_readdir_r_deprecation=no],
+     [ac_cv_readdir_r_deprecation=yes])
+)
+CXXFLAGS=$old_cxxflags
+AC_MSG_RESULT($ac_cv_readdir_r_deprecation)
+
+AS_IF([test "x$ac_cv_readdir_r_deprecation" = xyes],
+      [CXXFLAGS="$CXXFLAGS -Wno-error=deprecated-declarations"],
+      [])
 
 LT_INIT([win32-dll])
 
@@ -411,22 +493,25 @@ AS_IF([test "x$use_ossp_uuid" = xyes],
 
 # DNS-SD support
 # We use either avahi or the Apple DNS-SD library.
+AC_ARG_WITH(dns-sd,
+[AS_HELP_STRING([--without-dns-sd], [disable DNS-SD support])],,)
+if test "x$with_dns_sd" != "xno"; then
+	# dns_sd
+	AC_CHECK_HEADER(
+	  [dns_sd.h],
+	  [AC_SEARCH_LIBS(DNSServiceRegister, [dns_sd], [have_dnssd="yes"])])
 
-# dns_sd
-AC_CHECK_HEADER(
-  [dns_sd.h],
-  [AC_SEARCH_LIBS(DNSServiceRegister, [dns_sd], [have_dnssd="yes"])])
+	# avahi
+	PKG_CHECK_MODULES(
+	  avahi,
+	  [avahi-client],
+	  [have_avahi="yes"],
+	  [true])
+fi
 
 AS_IF([test "x$have_dnssd" = xyes],
       [AC_DEFINE([HAVE_DNSSD], [1], [Defined to use Bonjour DNS_SD])])
 AM_CONDITIONAL([HAVE_DNSSD], [test "x$have_dnssd" = xyes])
-
-# avahi
-PKG_CHECK_MODULES(
-  avahi,
-  [avahi-client],
-  [have_avahi="yes"],
-  [true])
 
 AS_IF([test "x$have_avahi" = xyes],
       [AC_DEFINE([HAVE_AVAHI], [1], [Defined to use Avahi])])
@@ -503,7 +588,7 @@ if test "x$have_microhttpd" = xyes; then
   # Check if we have MHD_create_response_from_buffer
   old_cflags=$CFLAGS
   old_libs=$LIBS
-  CFLAGS="${CPPFLAGS} ${libprotobuf_CFLAGS}"
+  CFLAGS="${CPPFLAGS} ${libmicrohttpd_CFLAGS}"
   LIBS="${LIBS} ${libmicrohttpd_LIBS}"
   AC_CHECK_FUNCS([MHD_create_response_from_buffer])
   # restore CFLAGS
@@ -627,7 +712,7 @@ AS_IF([test "x$enable_root_check" = xno],
 # Use tcmalloc. This is used by the buildbot leak checks.
 AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 AS_IF([test "x$enable_tcmalloc" = xyes],
-      [LDFLAGS="$LDFLAGS -ltcmalloc"])
+      [AC_CHECK_LIB([tcmalloc], [malloc], [LDFLAGS="$LDFLAGS -ltcmalloc"], [AS_ERROR([tcmalloc not found, but enabled on command line])])])
 
 # Optionally set the Doxygen version to "Latest Git" for website latest
 # version.
@@ -677,6 +762,13 @@ AS_IF([test "${enable_python_libs}" = "yes"],
           [ac_cv_have_pymod_google_protobuf],
           [AX_PYTHON_MODULE([google.protobuf], [fatal])
            eval ac_cv_have_pymod_google_protobuf=\$AS_TR_CPP([HAVE_PYMOD_google.protobuf])])
+     ])
+
+AS_IF([test "${enable_rdm_tests}" = "yes"],
+      [AC_CACHE_CHECK([for $PYTHON_NAME module: numpy],
+          [ac_cv_have_pymod_numpy],
+          [AX_PYTHON_MODULE([numpy], [fatal])
+           eval ac_cv_have_pymod_numpy=\$AS_TR_CPP([HAVE_PYMOD_numpy])])
      ])
 
 # Libraries, that depend on the feature args above.

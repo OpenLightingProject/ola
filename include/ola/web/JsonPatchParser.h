@@ -33,11 +33,10 @@
 #include <ola/web/JsonLexer.h>
 #include <ola/web/JsonPatch.h>
 #include <ola/web/JsonParser.h>
+#include <ola/web/OptionalItem.h>
 #include <memory>
 #include <stack>
 #include <string>
-
-#include "common/web/OptionalItem.h"
 
 namespace ola {
 namespace web {

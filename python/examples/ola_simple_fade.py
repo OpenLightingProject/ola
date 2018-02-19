@@ -61,6 +61,7 @@ class SimpleFadeController(object):
     # Add our event again so it becomes periodic
     self._wrapper.AddEvent(self._update_interval, self.UpdateDmx)
 
+
 if __name__ == '__main__':
   wrapper = ClientWrapper()
   controller = SimpleFadeController(UNIVERSE, UPDATE_INTERVAL, wrapper,

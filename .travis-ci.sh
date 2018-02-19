@@ -9,10 +9,41 @@ CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cppli
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
+SPELLINGBLACKLIST=$(cat <<-BLACKLIST
+      -wholename "./.git/*" -or \
+      -wholename "./aclocal.m4" -or \
+      -wholename "./config/depcomp" -or \
+      -wholename "./config/ltmain.sh" -or \
+      -wholename "./config/config.guess" -or \
+      -wholename "./config/config.sub" -or \
+      -wholename "./config/install-sh" -or \
+      -wholename "./config/libtool.m4" -or \
+      -wholename "./config/ltoptions.m4" -or \
+      -wholename "./config/ltsugar.m4" -or \
+      -wholename "./libtool" -or \
+      -wholename "./config.status" -or \
+      -wholename "./Makefile" -or \
+      -wholename "./Makefile.in" -or \
+      -wholename "./autom4te.cache/*" -or \
+      -wholename "./java/Makefile" -or \
+      -wholename "./java/Makefile.in" -or \
+      -wholename "./olad/www/new/js/app.min.js" -or \
+      -wholename "./olad/www/new/js/app.min.js.map" -or \
+      -wholename "./olad/www/new/libs/angular/js/angular.min.js" -or \
+      -wholename "./olad/www/mobile.js" -or \
+      -wholename "./olad/www/ola.js" -or \
+      -wholename "./configure" -or \
+      -wholename "./common/protocol/Ola.pb.*" -or \
+      -wholename "./plugins/artnet/messages/ArtNetConfigMessages.pb.*" -or \
+      -wholename "./tools/ola_trigger/config.tab.*" -or \
+      -wholename "./tools/ola_trigger/lex.yy.cpp"
+BLACKLIST
+)
+
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   autoreconf -i;
-  ./configure --enable-rdm-tests --enable-ja-rule;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for linting to run against
   make builtfiles
@@ -47,7 +78,7 @@ if [[ $TASK = 'lint' ]]; then
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   autoreconf -i;
-  ./configure --enable-rdm-tests --enable-ja-rule;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for licence checking to run against
   make builtfiles
@@ -55,11 +86,71 @@ elif [[ $TASK = 'check-licences' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
+elif [[ $TASK = 'spellintian' ]]; then
+  # run spellintian only if it is the requested task, ignoring duplicate words
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for spellintian to run against
+  make builtfiles
+  spellingfiles=$(eval "find ./ -type f -and ! \( \
+      $SPELLINGBLACKLIST \
+      \) | xargs")
+  # count the number of spellintian errors, ignoring duplicate words
+  spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | grep -v "\(duplicate word\)" | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun spellintian $spellingfiles | grep -v "\(duplicate word\)"
+    echo "Found $spellingerrors spelling errors via spellintian, ignoring duplicates"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors via spellintian, ignoring duplicates"
+  fi;
+elif [[ $TASK = 'spellintian-duplicates' ]]; then
+  # run spellintian only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for spellintian to run against
+  make builtfiles
+  spellingfiles=$(eval "find ./ -type f -and ! \( \
+      $SPELLINGBLACKLIST \
+      \) | xargs")
+  # count the number of spellintian errors
+  spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun spellintian $spellingfiles
+    echo "Found $spellingerrors spelling errors via spellintian"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors via spellintian"
+  fi;
+elif [[ $TASK = 'codespell' ]]; then
+  # run codespell only if it is the requested task
+  autoreconf -i;
+  ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for codespell to run against
+  make builtfiles
+  spellingfiles=$(eval "find ./ -type f -and ! \( \
+      $SPELLINGBLACKLIST \
+      \) | xargs")
+  # count the number of codespell errors
+  spellingerrors=$(zrun codespell --check-filenames --quiet 2 --regex "[\\-'a-zA-Z0-9]+" --exclude-file .codespellignore $spellingfiles 2>&1 | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun codespell --check-filenames --quiet 2 --regex "[\\-'a-zA-Z0-9]+" --exclude-file .codespellignore $spellingfiles
+    echo "Found $spellingerrors spelling errors via codespell"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors via codespell"
+  fi;
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
   autoreconf -i;
   # Doxygen is C++ only, so don't bother with RDM tests
-  ./configure --enable-ja-rule;
+  ./configure --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   make builtfiles
@@ -77,7 +168,7 @@ elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i;
   # Coverage is C++ only, so don't bother with RDM tests
-  ./configure --enable-gcov --enable-ja-rule;
+  ./configure --enable-gcov --enable-ja-rule --enable-e133;
   make;
   make check;
 elif [[ $TASK = 'coverity' ]]; then
@@ -102,7 +193,7 @@ elif [[ $TASK = 'flake8' ]]; then
   flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129 data/rdm include/ola python scripts tools/ola_mon tools/rdm
 else
   # Otherwise compile and check as normal
-  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule'
+  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
   autoreconf -i;
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
   make distcheck;

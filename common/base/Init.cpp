@@ -30,11 +30,11 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
-#endif
+#endif  // HAVE_EXECINFO_H
 
 #include <errno.h>
 #include <fcntl.h>
@@ -47,7 +47,7 @@
 #include <ola/win/CleanWinSock2.h>
 #else
 #include <sys/resource.h>
-#endif
+#endif  // _WIN32
 #include <unistd.h>
 
 #include <ola/ExportMap.h>
@@ -84,14 +84,14 @@ static void _DumpStackAndExit(int sig) {
   cout << "Received " << sig << endl;
 #else
   cout << "Received " << strsignal(sig) << endl;
-#endif
+#endif  // _WIN32
   #ifdef HAVE_EXECINFO_H
   enum {STACK_SIZE = 64};
   void *array[STACK_SIZE];
   size_t size = backtrace(array, STACK_SIZE);
 
   backtrace_symbols_fd(array, size, STDERR_FILENO);
-  #endif
+  #endif  // HAVE_EXECINFO_H
   exit(ola::EXIT_SOFTWARE);
 }
 
@@ -137,7 +137,7 @@ bool SetThreadScheduling() {
     OLA_WARN << "Maximum value for --scheduler-priority is " << max;
     return false;
   }
-#endif
+#endif  // _POSIX_PRORITY_SCHEDULING
 
   // Set the scheduling parameters.
   struct sched_param param;
@@ -169,7 +169,7 @@ bool SetThreadScheduling() {
   if (!ola::InstallSignal(SIGXCPU, _DumpStackAndExit)) {
     return false;
   }
-#endif
+#endif  // HAVE_DECL_RLIMIT_RTTIME
   return true;
 }
 }  // namespace
@@ -233,7 +233,7 @@ bool AppInit(int *argc,
 static void NetworkShutdown() {
   WSACleanup();
 }
-#endif
+#endif  // _WIN32
 
 bool NetworkInit() {
 #ifdef _WIN32
@@ -248,7 +248,7 @@ bool NetworkInit() {
   }
 #else
   return true;
-#endif
+#endif  // _WIN32
 }
 
 bool InstallSignal(int sig, void(*fp)(int signo)) {

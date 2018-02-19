@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "ola/StringUtils.h"
 #include "plugins/gpio/GPIODriver.h"
 
 namespace ola {
@@ -44,17 +45,8 @@ bool GPIOOutputPort::Init() {
 }
 
 string GPIOOutputPort::Description() const {
-  vector<uint8_t> pins = m_driver->PinList();
-  std::ostringstream str;
-  str << "Pins ";
-
-  vector<uint8_t>::const_iterator iter = pins.begin();
-  while (iter != pins.end()) {
-    str << static_cast<unsigned int>(*iter++);
-    if (iter != pins.end())
-      str << ", ";
-  }
-  return str.str();
+  vector<uint16_t> pins = m_driver->PinList();
+  return "Pins " + ola::StringJoin(", ", pins);
 }
 
 bool GPIOOutputPort::WriteDMX(const DmxBuffer &buffer,

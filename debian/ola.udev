@@ -1,3 +1,5 @@
+# Remember to update debian/org.openlighting.ola.ola.metainfo.xml when adding new devices
+
 # udev rules for ftdi devices
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", GROUP="plugdev"
 

@@ -30,12 +30,15 @@
 #ifndef INCLUDE_OLA_CLIENT_CLIENTWRAPPER_H_
 #define INCLUDE_OLA_CLIENT_CLIENTWRAPPER_H_
 
+// On MinGW, SocketAddress.h pulls in WinSock2.h, which needs to be after
+// WinSock2.h, hence this order
+#include <ola/network/SocketAddress.h>
+#include <ola/network/TCPSocket.h>
+
 #include <ola/AutoStart.h>
 #include <ola/Callback.h>
 #include <ola/client/OlaClient.h>
 #include <ola/io/SelectServer.h>
-#include <ola/network/SocketAddress.h>
-#include <ola/network/TCPSocket.h>
 
 #include <memory>
 
@@ -78,7 +81,7 @@ class BaseClientWrapper {
 
   /**
    * @brief Reset the connection to the server.
-   * @returns true if the setup succeeded, false otherwise.
+   * @returns true if the reset succeeded, false otherwise.
    */
   bool Cleanup();
 
@@ -145,7 +148,9 @@ class GenericClientWrapper: public BaseClientWrapper {
             ola::network::IPV4Address::Loopback(),
            OLA_DEFAULT_PORT)));
     }
-    m_socket->SetNoDelay();
+    if (m_socket.get()) {
+      m_socket->SetNoDelay();
+    }
   }
 };
 

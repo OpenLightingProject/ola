@@ -25,7 +25,7 @@
 #include <stdint.h>
 #ifndef _WIN32
 #include <netinet/in.h>
-#endif
+#endif  // _WIN32
 
 #include <ola/Constants.h>
 #include "ola/network/IPV4Address.h"
@@ -45,7 +45,7 @@ enum { SANDNET_NAME_LENGTH = 31};
 // We can't use the PACK macro for enums
 #ifdef _WIN32
 #pragma pack(push, 1)
-#endif
+#endif  // _WIN32
 enum packet_type_e {
   SANDNET_ADVERTISEMENT = 0x0100,
   SANDNET_CONTROL = 0x0200,
@@ -60,14 +60,14 @@ enum packet_type_e {
 #pragma pack(pop)
 #else
 } __attribute__((packed));
-#endif
+#endif  // _WIN32
 
 typedef enum packet_type_e packet_type_t;
 
 // We can't use the PACK macro for enums
 #ifdef _WIN32
 #pragma pack(push, 1)
-#endif
+#endif  // _WIN32
 enum protocol_id_e {
   SANDNET_SANDNET = 0x02,
   SANDNET_ARTNET = 0x04,
@@ -80,7 +80,7 @@ enum protocol_id_e {
 #pragma pack(pop)
 #else
 } __attribute__((packed));
-#endif
+#endif  // _WIN32
 
 typedef enum protocol_id_e protocol_id_t;
 

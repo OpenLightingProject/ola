@@ -26,9 +26,10 @@
 
 #ifdef _WIN32
 #define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
 #include <ola/win/CleanWindows.h>
 #include <tchar.h>
-#endif
+#endif  // _WIN32
 
 #include <ola/stl/STLUtils.h>
 #include "tools/ola_trigger/Action.h"
@@ -134,7 +135,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
   }
 
   execvp(m_command.c_str(), args);
-#endif
+#endif  // _WIN32
 }
 
 

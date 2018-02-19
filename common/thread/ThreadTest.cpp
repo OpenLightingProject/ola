@@ -20,14 +20,14 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <errno.h>
 #include <string.h>
 #ifndef _WIN32
 #include <sys/resource.h>
-#endif
+#endif  // _WIN32
 #include <algorithm>
 
 #include "ola/Logging.h"
@@ -155,7 +155,7 @@ void ThreadTest::testSchedulingOptions() {
 #else
   const int max_priority = 31;
   const int other_priority = 15;
-#endif
+#endif  // HAVE_DECL_RLIMIT_RTPRIO
 
   SchedulingParams default_params = GetCurrentParams();
 
@@ -222,8 +222,8 @@ void ThreadTest::testSchedulingOptions() {
                   thread.GetSchedulingParams().priority);
   }
 #else
-  OLA_WARN << "Scheduling options are not supported on Windows..";
-#endif  // #ifndef _WIN32
+  OLA_WARN << "Scheduling options are not supported on Windows.";
+#endif  // !_WIN32
 }
 
 class MockConditionThread: public Thread {

@@ -24,11 +24,11 @@
 #include <ola/win/CleanWinSock2.h>
 #else
 #include <sys/select.h>
-#endif
+#endif  // _WIN32
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <string.h>
 #include <errno.h>
@@ -45,7 +45,7 @@
 
 
 #include "common/io/SelectPoller.h"
-#endif
+#endif  // _WIN32
 
 #include "ola/io/Descriptor.h"
 #include "ola/Logging.h"
@@ -56,13 +56,13 @@
 #include "common/io/EPoller.h"
 DEFINE_default_bool(use_epoll, true,
                     "Disable the use of epoll(), revert to select()");
-#endif
+#endif  // HAVE_EPOLL
 
 #ifdef HAVE_KQUEUE
 #include "common/io/KQueuePoller.h"
 DEFINE_default_bool(use_kqueue, false,
                     "Use kqueue() rather than select()");
-#endif
+#endif  // HAVE_KQUEUE
 
 namespace ola {
 namespace io {
@@ -304,7 +304,7 @@ void SelectServer::Init(const Options &options) {
   if (m_export_map) {
     m_export_map->GetBoolVar("using-epoll")->Set(FLAGS_use_epoll);
   }
-#endif
+#endif  // HAVE_EPOLL
 
 #ifdef HAVE_KQUEUE
   bool using_kqueue = false;
@@ -315,13 +315,13 @@ void SelectServer::Init(const Options &options) {
   if (m_export_map) {
     m_export_map->GetBoolVar("using-kqueue")->Set(using_kqueue);
   }
-#endif
+#endif  // HAVE_KQUEUE
 
   // Default to the SelectPoller
   if (!m_poller.get()) {
     m_poller.reset(new SelectPoller(m_export_map, m_clock));
   }
-#endif
+#endif  // _WIN32
 
   // TODO(simon): this should really be in an Init() method that returns a
   // bool.

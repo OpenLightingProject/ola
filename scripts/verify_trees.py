@@ -37,6 +37,7 @@ IGNORE_PATTERNS = [
   '*/Makefile',
   '*_pb2.py',
   '*~',
+  '.codespellignore',
   '.git',
   '.git/*',
   '.gitignore',
@@ -123,6 +124,7 @@ def main():
     sys.exit(1)
 
   sys.exit()
+
 
 if __name__ == '__main__':
   main()

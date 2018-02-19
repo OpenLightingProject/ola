@@ -131,7 +131,11 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     WidgetType m_received_widget_type;
     bool m_expect_dual_port_enttec_widget;
 
-    void Timeout() { m_ss.Terminate(); }
+    void Timeout() {
+      OLA_INFO << "Timeout triggered";
+      m_ss.Terminate();
+    }
+
     // widget handlers follow
     void NewWidget(ArduinoWidget *widget,
                    const UsbProWidgetInformation &information) {
@@ -151,8 +155,9 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       OLA_ASSERT_EQ(static_cast<uint16_t>(0), information.device_id);
       OLA_ASSERT_EQ(string(""), information.device);
       OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
-      if (m_expect_dual_port_enttec_widget)
+      if (m_expect_dual_port_enttec_widget) {
         OLA_ASSERT(information.dual_port);
+      }
       m_thread->FreeWidget(widget);
       m_received_widget_type = ENTTEC;
       m_ss.Terminate();
@@ -185,8 +190,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       OLA_ASSERT_EQ(static_cast<uint8_t>(1), information.hardware_version);
       OLA_ASSERT_EQ(static_cast<uint8_t>(11), information.software_version);
       OLA_ASSERT_EQ(static_cast<uint8_t>(3), information.eeprom_version);
-      OLA_ASSERT_EQ(UID(0x5253, 0x200000a),
-                           information.uid);
+      OLA_ASSERT_EQ(UID(0x5253, 0x200000a), information.uid);
       m_received_widget_type = ROBE;
       m_ss.Terminate();
     }

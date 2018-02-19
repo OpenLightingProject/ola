@@ -30,7 +30,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif  // __cplusplus
 
 /**
  * @brief The number of slots in a DMX512 universe.
@@ -80,6 +80,6 @@ static const uint32_t MAX_UNIVERSE = ola::MAX_UNIVERSE;
 
 #ifdef __cplusplus
 }
-#endif
+#endif  // __cplusplus
 
 #endif  // INCLUDE_OLA_BASETYPES_H_

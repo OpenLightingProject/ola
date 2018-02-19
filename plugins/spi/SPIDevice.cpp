@@ -243,7 +243,7 @@ void SPIDevice::PopulateHardwareBackendOptions(
   vector<string> pins = m_preferences->GetMultipleValue(GPIOPinKey());
   vector<string>::const_iterator iter = pins.begin();
   for (; iter != pins.end(); iter++) {
-    uint8_t pin;
+    uint16_t pin;
     if (!StringToInt(*iter, &pin)) {
       OLA_WARN << "Invalid GPIO pin " << *iter;
       continue;

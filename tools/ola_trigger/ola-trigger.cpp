@@ -22,7 +22,7 @@
 #include <stdio.h>
 #ifndef _WIN32
 #include <sys/wait.h>
-#endif
+#endif  // _WIN32
 
 #include <ola/Callback.h>
 #include <ola/Constants.h>
@@ -84,7 +84,7 @@ static void CatchSIGCHLD(OLA_UNUSED int signo) {
   } while (pid > 0);
   errno = old_errno;
 }
-#endif
+#endif  // _WIN32
 
 
 /*
@@ -105,12 +105,12 @@ static void CatchSIGINT(OLA_UNUSED int signo) {
  * Install the SIGCHLD handler.
  */
 bool InstallSignals() {
-#ifndef WIN32
+#ifndef _WIN32
   // There's no SIGCHILD on Windows
   if (!ola::InstallSignal(SIGCHLD, CatchSIGCHLD)) {
     return false;
   }
-#endif
+#endif  // _WIN32
   return ola::InstallSignal(SIGINT, CatchSIGINT) &&
          ola::InstallSignal(SIGTERM, CatchSIGINT);
 }

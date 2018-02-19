@@ -23,7 +23,7 @@
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 
 #include <curses.h>
@@ -41,7 +41,7 @@
 #include <unistd.h>
 #ifdef HAVE_FTIME
 #include <sys/timeb.h>
-#endif
+#endif  // HAVE_FTIME
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Constants.h>
@@ -219,7 +219,7 @@ void DmxMonitor::NewDmx(OLA_UNUSED const ola::client::DMXMetadata &meta,
     m_data_loss_window = NULL;
     Mask();
   }
-  move(0, COLS - 1);
+  move(0, COLS - 1);  // NOLINT(build/include_what_you_use) This is ncurses.h's
   switch (m_counter % 4) {
     case 0:
       printw("/");
@@ -421,7 +421,7 @@ void DmxMonitor::Mask() {
 
   /* clear headline */
   (void) attrset(palette[HEADLINE]);
-  move(0, 0);
+  move(0, 0);  // NOLINT(build/include_what_you_use) This is ncurses.h's move
   for (x = 0; static_cast<int>(x) < COLS; x++)
     addch(' ');
 
@@ -437,7 +437,7 @@ void DmxMonitor::Mask() {
        static_cast<int>(channel) < ola::DMX_UNIVERSE_SIZE &&
        i < channels_per_screen;
        y += ROWS_PER_CHANNEL_ROW) {
-    move(y, 0);
+    move(y, 0);  // NOLINT(build/include_what_you_use) This is ncurses.h's move
     for (x = 0;
          static_cast<int>(x) < static_cast<int>(channels_per_line) &&
          static_cast<int>(channel) < ola::DMX_UNIVERSE_SIZE &&
@@ -469,7 +469,7 @@ void DmxMonitor::Values() {
        y < LINES && z < ola::DMX_UNIVERSE_SIZE &&
        i < static_cast<int>(channels_per_screen);
        y += ROWS_PER_CHANNEL_ROW) {
-    move(y, 0);
+    move(y, 0);  // NOLINT(build/include_what_you_use) This is ncurses.h's move
     for (x = 0;
          x < static_cast<int>(channels_per_line) &&
          z < ola::DMX_UNIVERSE_SIZE &&
@@ -563,6 +563,7 @@ void DmxMonitor::ChangePalette(int p) {
     default:
       m_palette_number = 0;
       // fall through, use 0 as default palette
+      OLA_FALLTHROUGH
     case 0:
       init_pair(CHANNEL, COLOR_BLACK, COLOR_CYAN);
       init_pair(ZERO, COLOR_BLACK, COLOR_WHITE);

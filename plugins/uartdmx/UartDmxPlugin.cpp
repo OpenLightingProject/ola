@@ -60,7 +60,7 @@ bool UartDmxPlugin::StartHook() {
     // first check if device configured
     if (iter->empty()) {
       OLA_DEBUG << "No path configured for device, please set one in "
-          "ola-uartdmx.conf";
+                << "ola-uartdmx.conf";
       continue;
     }
 
@@ -134,7 +134,7 @@ string UartDmxPlugin::Description() const {
 "The device to use for DMX output (optional). Multiple devices are supported "
 "if the hardware exists. Using USB-serial adapters is not supported (try the "
 "ftdidmx plugin instead).\n"
-"--- Per Device Settings (using above device name without /dev/) ---\n"
+"--- Per Device Settings (using above device name) ---\n"
 "<device>-break = 100\n"
 "The DMX break time in microseconds for this device (optional).\n"
 "<device>-malf = 100\n"

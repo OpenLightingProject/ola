@@ -39,11 +39,11 @@
 #ifdef _WIN32
 #ifndef uid_t
 #define uid_t int
-#endif
+#endif  // uid_t
 #ifndef gid_t
 #define gid_t int
-#endif
-#endif
+#endif  // gid_t
+#endif  // _WIN32
 
 namespace ola {
 

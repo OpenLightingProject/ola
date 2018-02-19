@@ -216,7 +216,7 @@ void DmxBufferTest::testAssign() {
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, result_length));
   OLA_ASSERT_TRUE(assignment_buffer2 == buffer);
 
-  // now try assigning an unitialized buffer
+  // now try assigning an uninitialized buffer
   DmxBuffer uninitialized_buffer;
   DmxBuffer assignment_buffer3;
 
@@ -386,7 +386,7 @@ void DmxBufferTest::testCopyOnWrite() {
   // Check the SetChannel() method, this should force a copy.
   dest_buffer.SetChannel(0, 244);
   string expected_change = initial_data;
-  expected_change[0] = 244;
+  expected_change[0] = (uint8_t) 244;
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
   OLA_ASSERT_EQ(expected_change, dest_buffer.Get());
   dest_buffer = src_buffer;
@@ -394,7 +394,7 @@ void DmxBufferTest::testCopyOnWrite() {
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
   OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer.SetChannel(0, 234);
-  expected_change[0] = 234;
+  expected_change[0] = (uint8_t) 234;
   OLA_ASSERT_EQ(expected_change, src_buffer.Get());
   OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer.Set(initial_data);

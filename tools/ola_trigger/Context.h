@@ -23,7 +23,7 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #include <stdint.h>
 #include <sstream>
@@ -40,7 +40,7 @@ template<> struct hash<std::string> {
   }
 };
 }  // namespace HASH_NAMESPACE
-#endif
+#endif  // HAVE_UNORDERED_MAP
 
 /**
  * A context is a collection of variables and their values.

@@ -36,7 +36,7 @@ namespace pathport {
 // We can't use the PACK macro for enums
 #ifdef _WIN32
 #pragma pack(push, 1)
-#endif
+#endif  // _WIN32
 enum pathport_packet_type_e {
   PATHPORT_DATA = 0x0100,
   PATHPORT_PATCH = 0x0200,
@@ -51,7 +51,7 @@ enum pathport_packet_type_e {
 #pragma pack(pop)
 #else
 } __attribute__((packed));
-#endif
+#endif  // _WIN32
 
 typedef enum pathport_packet_type_e pathport_packet_type_t;
 

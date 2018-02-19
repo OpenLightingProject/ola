@@ -23,16 +23,16 @@
 
 #if HAVE_CONFIG_H
 #include <config.h>
-#endif
+#endif  // HAVE_CONFIG_H
 
 #ifdef HAVE_WINSOCK2_H
 #define VC_EXTRALEAN
 #include <ola/win/CleanWinSock2.h>
-#endif
+#endif  // HAVE_WINSOCK2_H
 
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
-#endif
+#endif  // HAVE_ARPA_INET_H
 
 #include <string>
 

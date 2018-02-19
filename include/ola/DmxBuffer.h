@@ -50,7 +50,7 @@ class DmxBuffer {
  public:
     /**
      * Constructor
-     * This initializes and empty DmxBuffer, Size() == 0
+     * This initializes an empty DmxBuffer, Size() == 0
      */
     DmxBuffer();
 
@@ -247,7 +247,7 @@ class DmxBuffer {
     bool Blackout();
 
     /**
-     * @brief Reset the bufer to hold no data.
+     * @brief Reset the buffer to hold no data.
      * @post Size() == 0
      */
     void Reset();

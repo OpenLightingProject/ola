@@ -7,6 +7,7 @@
 *.lo
 *.log
 *.o
+*.o-????????
 *.pb.cc
 *.pb.cpp
 *.pb.h
@@ -33,6 +34,7 @@ Makefile.in
 aclocal.m4
 autom4te.cache/
 build-stamp
+conf??????/
 confdefs.h
 conftest.c
 conftest.i
@@ -123,6 +125,9 @@ examples/ola_e131
 examples/ola_e131.exe
 examples/ola_latency
 examples/ola_latency.exe
+examples/ola_patch
+examples/ola_patch.exe
+examples/ola_ptch.exe
 examples/ola_plugin_info
 examples/ola_plugin_info.exe
 examples/ola_plugin_state
