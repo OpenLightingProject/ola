@@ -37,6 +37,7 @@ IGNORE_PATTERNS = [
   '*/Makefile',
   '*_pb2.py',
   '*~',
+  '.codespellignore',
   '.git',
   '.git/*',
   '.gitignore',
