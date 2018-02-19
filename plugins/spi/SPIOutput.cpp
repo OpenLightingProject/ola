@@ -188,29 +188,29 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   // personality description is max 32 characters
 
   personalities.insert(personalities.begin() + PERS_WS2801_INDIVIDUAL - 1,
-                      Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
-                                  "WS2801 Individual Control"));
+                       Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
+                                   "WS2801 Individual Control"));
   personalities.insert(personalities.begin() + PERS_WS2801_COMBINED - 1,
                       Personality(WS2801_SLOTS_PER_PIXEL,
                                   "WS2801 Combined Control"));
 
   personalities.insert(personalities.begin() + PERS_LDP8806_INDIVIDUAL - 1,
-                      Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
-                                  "LPD8806 Individual Control"));
+                       Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
+                                   "LPD8806 Individual Control"));
   personalities.insert(personalities.begin() + PERS_LDP8806_COMBINED - 1,
-                      Personality(LPD8806_SLOTS_PER_PIXEL,
-                                  "LPD8806 Combined Control"));
+                       Personality(LPD8806_SLOTS_PER_PIXEL,
+                                   "LPD8806 Combined Control"));
 
   personalities.insert(personalities.begin() + PERS_P9813_INDIVIDUAL - 1,
-                      Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
-                                  "P9813 Individual Control"));
+                       Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
+                                   "P9813 Individual Control"));
   personalities.insert(personalities.begin() + PERS_P9813_COMBINED - 1,
                       Personality(P9813_SLOTS_PER_PIXEL,
                                   "P9813 Combined Control"));
 
   personalities.insert(personalities.begin() + PERS_APA102_INDIVIDUAL - 1,
-                      Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
-                                  "APA102 Individual Control"));
+                       Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
+                                   "APA102 Individual Control"));
 
   ola::rdm::SlotDataCollection::SlotDataList sd_APA102_COMBINED;
   sd_APA102_COMBINED.push_back(
@@ -222,11 +222,11 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   personalities.insert(personalities.begin() + PERS_APA102_COMBINED - 1,
                       Personality(APA102_SLOTS_PER_PIXEL,
                                   "APA102 Combined Control",
-      ola::rdm::SlotDataCollection(sd_APA102_COMBINED)));
+                                  sd_APA102_COMBINED));
 
   personalities.insert(personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
-                      Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
-                                  "APA102 Pixel Brightness Individ.TEST"));
+                       Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
+                                   "APA102 Pixel Brightness Individ.TEST"));
 
   ola::rdm::SlotDataCollection::SlotDataList sd_APA102_PB_COMBINED;
   sd_APA102_PB_COMBINED.push_back(
@@ -238,9 +238,9 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   sd_APA102_PB_COMBINED.push_back(
       ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
   personalities.insert(personalities.begin() + PERS_APA102_PB_COMBINED - 1,
-                      Personality(APA102_PB_SLOTS_PER_PIXEL,
-                                  "APA102 Pixel Brightness Combined",
-      ola::rdm::SlotDataCollection(sd_APA102_PB_COMBINED)));
+                       Personality(APA102_PB_SLOTS_PER_PIXEL,
+                                   "APA102 Pixel Brightness Combined",
+                                   sd_APA102_PB_COMBINED));
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
