@@ -42,7 +42,7 @@ class JaRuleDevice: public Device {
   /**
    * @brief Create a new JaRuleDevice.
    * @param owner The plugin this device belongs to.
-   * @param widget An initalized JaRuleWidget.
+   * @param widget An initialized JaRuleWidget.
    * @param device_name The name of the device.
    */
   JaRuleDevice(ola::AbstractPlugin *owner,

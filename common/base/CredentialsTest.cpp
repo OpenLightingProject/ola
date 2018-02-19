@@ -152,7 +152,7 @@ void CredentialsTest::testGetPasswd() {
 
     PasswdEntry passwd_entry;
     OLA_ASSERT_TRUE(GetPasswdUID(uid, &passwd_entry));
-    // at the very least we shoud have a name
+    // at the very least we should have a name
     OLA_ASSERT_FALSE(passwd_entry.pw_name.empty());
     OLA_ASSERT_EQ(uid, passwd_entry.pw_uid);
 
@@ -185,7 +185,7 @@ void CredentialsTest::testGetGroup() {
     // failure.
     bool ok = GetGroupGID(gid, &group_entry);
     if (ok) {
-      // at the very least we shoud have a name
+      // at the very least we should have a name
       OLA_ASSERT_FALSE(group_entry.gr_name.empty());
       OLA_ASSERT_EQ(gid, group_entry.gr_gid);
 

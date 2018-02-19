@@ -324,7 +324,7 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
 }
 
 /*
- * Called when we successfull mute a device during the branch stage.
+ * Called when we successful mute a device during the branch stage.
  */
 void DiscoveryAgent::BranchMuteComplete(bool status) {
   m_mute_attempts++;
@@ -371,7 +371,7 @@ void DiscoveryAgent::HandleCollision() {
   UID mid_uid(mid >> 32, mid);
   mid++;
   UID mid_plus_one_uid(mid >> 32, mid);
-  OLA_INFO << "Collision, spliting into: " << lower_uid << " - " << mid_uid
+  OLA_INFO << "Collision, splitting into: " << lower_uid << " - " << mid_uid
            << " , " << mid_plus_one_uid << " - " << upper_uid;
 
   range->uids_discovered = 0;

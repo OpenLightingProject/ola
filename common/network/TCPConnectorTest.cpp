@@ -91,7 +91,7 @@ class TCPConnectorTest: public CppUnit::TestFixture {
     SelectServer *m_ss;
     IPV4Address m_localhost;
     ola::SingleUseCallback0<void> *m_timeout_closure;
-    unsigned int m_sucessfull_calls;
+    unsigned int m_successful_calls;
     unsigned int m_failure_calls;
 
     void AcceptedConnection(TCPSocket *socket);
@@ -109,7 +109,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TCPConnectorTest);
 void TCPConnectorTest::setUp() {
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &TCPConnectorTest::Timeout);
-  m_sucessfull_calls = 0;
+  m_successful_calls = 0;
   m_failure_calls = 0;
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                               m_timeout_closure));
@@ -168,7 +168,7 @@ void TCPConnectorTest::testNonBlockingConnect() {
     OLA_ASSERT_EQ(0u, connector.ConnectionsPending());
   }
 
-  OLA_ASSERT_EQ(1u, m_sucessfull_calls);
+  OLA_ASSERT_EQ(1u, m_successful_calls);
   OLA_ASSERT_EQ(0u, m_failure_calls);
   m_ss->RemoveReadDescriptor(&listening_socket);
 }
@@ -195,7 +195,7 @@ void TCPConnectorTest::testNonBlockingConnectFailure() {
     m_ss->Run();
     OLA_ASSERT_EQ(0u, connector.ConnectionsPending());
   }
-  OLA_ASSERT_EQ(0u, m_sucessfull_calls);
+  OLA_ASSERT_EQ(0u, m_successful_calls);
   OLA_ASSERT_EQ(1u, m_failure_calls);
 }
 
@@ -215,7 +215,7 @@ void TCPConnectorTest::testNonBlockingConnectError() {
       ola::NewSingleCallback(this, &TCPConnectorTest::OnConnectFailure));
   OLA_ASSERT_FALSE(id);
   OLA_ASSERT_EQ(0u, connector.ConnectionsPending());
-  OLA_ASSERT_EQ(0u, m_sucessfull_calls);
+  OLA_ASSERT_EQ(0u, m_successful_calls);
   OLA_ASSERT_EQ(1u, m_failure_calls);
 }
 
@@ -241,7 +241,7 @@ void TCPConnectorTest::testNonBlockingCancel() {
     OLA_ASSERT_TRUE(connector.Cancel(id));
     OLA_ASSERT_EQ(0u, connector.ConnectionsPending());
   }
-  OLA_ASSERT_EQ(0u, m_sucessfull_calls);
+  OLA_ASSERT_EQ(0u, m_successful_calls);
   OLA_ASSERT_EQ(1u, m_failure_calls);
 }
 
@@ -267,7 +267,7 @@ void TCPConnectorTest::testEarlyDestruction() {
       OLA_ASSERT_EQ(1u, connector.ConnectionsPending());
       m_ss->RunOnce(TimeInterval(1, 0));
     }
-    OLA_ASSERT_EQ(0u, m_sucessfull_calls);
+    OLA_ASSERT_EQ(0u, m_successful_calls);
     OLA_ASSERT_EQ(1u, m_failure_calls);
   }
 }
@@ -306,7 +306,7 @@ void TCPConnectorTest::OnConnect(int fd, int error) {
     close(fd);
 #endif  // _WIN32
   }
-  m_sucessfull_calls++;
+  m_successful_calls++;
 }
 
 

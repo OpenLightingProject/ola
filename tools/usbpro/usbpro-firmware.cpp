@@ -58,7 +58,7 @@ class FirmwareTransferer {
     FirmwareTransferer(ifstream *file,
                        DispatchingUsbProWidget *widget,
                        SelectServer *ss):
-        m_sucessful(false),
+        m_successful(false),
         m_firmware(file),
         m_widget(widget),
         m_ss(ss) {
@@ -71,20 +71,18 @@ class FirmwareTransferer {
                        unsigned int length);
     bool SendNextChunk();
     void AbortTransfer() {
-      OLA_INFO << "Abort transfer";
       m_ss->Terminate();
     }
     void StartTransfer() {
-      OLA_INFO << "Start transfer";
       SendNextChunk();
     }
-    bool WasSucessfull() const { return m_sucessful; }
+    bool WasSuccessful() const { return m_successful; }
 
  private:
     enum { FLASH_STATUS_LENGTH = 4 };
     enum { FLASH_PAGE_LENGTH = 64 };
 
-    bool m_sucessful;
+    bool m_successful;
     ifstream *m_firmware;
     DispatchingUsbProWidget *m_widget;
     SelectServer *m_ss;
@@ -116,10 +114,8 @@ void FirmwareTransferer::HandleMessage(uint8_t label,
     return;
 
   if (0 == memcmp(data, REPLY_SUCCESS, sizeof(FLASH_STATUS_LENGTH))) {
-    if (!SendNextChunk() || m_sucessful) {
-      OLA_INFO << "No chunk or successful";
+    if (!SendNextChunk() || m_successful)
       m_ss->Terminate();
-    }
   } else {
     OLA_FATAL << "Bad response from widget:" << string((const char*) data, 4);
     m_ss->Terminate();
@@ -137,7 +133,7 @@ bool FirmwareTransferer::SendNextChunk() {
   std::streamsize size = m_firmware->gcount();
 
   if (!size) {
-    m_sucessful = true;
+    m_successful = true;
     cout << endl;
     return true;
   }
@@ -235,7 +231,6 @@ void DisplayHelpAndExit(char *argv[]) {
 
 
 void Stop(SelectServer *ss) {
-  OLA_INFO << "Stopping select server";
   ss->Terminate();
 }
 
@@ -293,5 +288,5 @@ int main(int argc, char *argv[]) {
   ss.Run();
 
   firmware_file.close();
-  return !transferer.WasSucessfull();
+  return !transferer.WasSuccessful();
 }

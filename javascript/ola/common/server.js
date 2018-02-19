@@ -115,7 +115,7 @@ ola.common.Server.STOP_SERVER_URL = 'quit';
  * The url for the universe info.
  * @type {string}
  */
-ola.common.Server.AVAILBLE_PORTS_URL = 'json/get_ports';
+ola.common.Server.AVAILABLE_PORTS_URL = 'json/get_ports';
 
 /**
  * The url to fetch the list of UIDs.
@@ -360,7 +360,7 @@ ola.common.Server.prototype.FetchUniverseInfo = function(universe_id) {
  */
 ola.common.Server.prototype.fetchAvailablePorts = function(opt_universe,
                                                            callback) {
-  var url = ola.common.Server.AVAILBLE_PORTS_URL;
+  var url = ola.common.Server.AVAILABLE_PORTS_URL;
   if (opt_universe != undefined) {
     url += '?id=' + opt_universe;
   }
@@ -429,7 +429,7 @@ ola.common.Server.prototype.rdmGetSupportedSections = function(universe_id,
  * @param {number} universe_id the ID of the universe.
  * @param {string} uid the string representation of a UID.
  * @param {string} section_name the section to get.
- * @param {string} hint an arbitary string passed back to the server.
+ * @param {string} hint an arbitrary string passed back to the server.
  * @param {function(Object)} callback the function to call when the discovery
  *   request is ack'ed.
  */
@@ -623,10 +623,10 @@ ola.common.Server.prototype.checkStatusDialog = function(e) {
 
 /**
  * Check if a request completed properly and if not, show a dialog.
- * This checks both the HTTP code, and the existance of the 'error' property in
+ * This checks both the HTTP code, and the existence of the 'error' property in
  * the response.
  * @param {Object} e the event object.
- * @return {object} The JSON output, or undefined if an error occured.
+ * @return {object} The JSON output, or undefined if an error occurred.
  */
 ola.common.Server.prototype.checkForErrorDialog = function(e) {
   if (e.target.getStatus() == goog.net.HttpStatus.OK) {
@@ -646,10 +646,10 @@ ola.common.Server.prototype.checkForErrorDialog = function(e) {
 
 /**
  * Check if a request completed properly and if not log the error
- * This checks both the HTTP code, and the existance of the 'error' property in
+ * This checks both the HTTP code, and the existence of the 'error' property in
  * the response.
  * @param {Object} e the event object.
- * @return {object} The JSON output, or undefined if an error occured.
+ * @return {object} The JSON output, or undefined if an error occurred.
  */
 ola.common.Server.prototype.checkForErrorLog = function(e) {
   if (e.target.getStatus() == goog.net.HttpStatus.OK) {

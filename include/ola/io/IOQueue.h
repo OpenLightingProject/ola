@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_IO_IOQUEUE_H_
 #define INCLUDE_OLA_IO_IOQUEUE_H_
 
+#include <ola/base/Macro.h>
 #include <ola/io/IOVecInterface.h>
 #include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
@@ -91,8 +92,7 @@ class IOQueue: public InputBufferInterface,
     void AppendBlock();
 
     // no copying / assignment for now
-    IOQueue(const IOQueue&);
-    IOQueue& operator=(const IOQueue&);
+    DISALLOW_COPY_AND_ASSIGN(IOQueue);
 };
 }  // namespace io
 }  // namespace ola

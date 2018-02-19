@@ -25,7 +25,6 @@
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
-#include <ola/thread/SignalThread.h>
 #include <signal.h>
 #include <iostream>
 #include <map>
@@ -36,6 +35,10 @@
 #include "examples/ShowPlayer.h"
 #include "examples/ShowLoader.h"
 #include "examples/ShowRecorder.h"
+
+// On MinGW, SignalThread.h pulls in pthread.h which pulls in Windows.h, which
+// needs to be after WinSock2.h, hence this order
+#include <ola/thread/SignalThread.h>  // NOLINT(build/include_order)
 
 using std::auto_ptr;
 using std::cout;

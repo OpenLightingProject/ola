@@ -66,15 +66,16 @@ enum PluginIds {
   OLA_PLUGIN_UARTDMX = 20;
   OLA_PLUGIN_OPENPIXELCONTROL = 21;
   OLA_PLUGIN_GPIO = 22;
+  OLA_PLUGIN_SPIDMX = 23;
+  OLA_PLUGIN_NANOLEAF = 10000;
 
   /*
    * To obtain a new plugin ID, open a ticket at
    * https://github.com/OpenLightingProject/ola/issues/new
    * Plugin IDs are usually assigned just prior to merging the code into the
-   * mainline. For development of plugins please use the value of
-   * OLA_PLUGIN_EXPERIMENTAL in a plugin ID you define above.
+   * mainline. During development of new plugins, please use a value of 10000
+   * or greater in a plugin ID you define above.
    */
-  OLA_PLUGIN_EXPERIMENTAL = 10000;
 }
 
 /**

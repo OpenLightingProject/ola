@@ -48,7 +48,7 @@ class AbstractPlugin {
   /**
    * @brief The location for preferences.
    *
-   * This can be anything really but should indicate to the user how how the
+   * This can be anything really but should indicate to the user how the
    * preferences were loaded.
    */
   virtual std::string PreferenceConfigLocation() const = 0;

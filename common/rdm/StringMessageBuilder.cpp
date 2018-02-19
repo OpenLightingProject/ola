@@ -106,7 +106,7 @@ const ola::messaging::Message *StringMessageBuilder::GetMessage(
   descriptor->Accept(this);
 
   if (m_error) {
-    OLA_WARN << "Error building mesage, field is: " << m_error_string;
+    OLA_WARN << "Error building message, field is: " << m_error_string;
     return NULL;
   }
 
@@ -313,7 +313,7 @@ void StringMessageBuilder::Visit(
 
 
 /**
- * This is a noop since we handle decending ourselfs in Visit()
+ * This is a noop since we handle decending ourselves in Visit()
  */
 void StringMessageBuilder::PostVisit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {

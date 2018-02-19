@@ -133,7 +133,7 @@ class StreamingClient : public StreamingClientInterface {
 
   /**
    * Initialize the client and connect to olad.
-   * @returns true if the initialization completed sucessfully, false if
+   * @returns true if the initialization completed successfully, false if
    *   there was a failure.
    */
   bool Setup();
@@ -149,7 +149,7 @@ class StreamingClient : public StreamingClientInterface {
    * Send a DmxBuffer to the olad server.
    * @param universe the universe to send on.
    * @param data the DMX512 data.
-   * @returns true if sent sucessfully, false if the connection to the server
+   * @returns true if sent successfully, false if the connection to the server
    *   has been closed.
    */
   bool SendDmx(unsigned int universe, const DmxBuffer &data);

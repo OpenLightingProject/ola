@@ -47,7 +47,7 @@ class AbstractPlugin;
  * rest of the conflicting plugins are ignored.
  *
  * Plugins are active if they weren't disabled, there were no conflicts that
- * prevented them from loading, and the call to Start() was successfull.
+ * prevented them from loading, and the call to Start() was successful.
  */
 class PluginManager {
  public:

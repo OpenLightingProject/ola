@@ -29,7 +29,7 @@
  *
  * There are a number of interesting cases which we need to handle:
  *
- * Varible bit length
+ * Variable bit length
  *
  * Start bit vs Break.
  *  After the stop bits comes an optional mark time between slots, that can
