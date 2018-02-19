@@ -222,7 +222,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   personalities.insert(personalities.begin() + PERS_APA102_COMBINED - 1,
                       Personality(APA102_SLOTS_PER_PIXEL,
                                   "APA102 Combined Control",
-                                  sd_APA102_COMBINED));
+       ola::rdm::SlotDataCollection(sd_APA102_COMBINED)));
 
   personalities.insert(personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
                        Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
@@ -240,7 +240,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   personalities.insert(personalities.begin() + PERS_APA102_PB_COMBINED - 1,
                        Personality(APA102_PB_SLOTS_PER_PIXEL,
                                    "APA102 Pixel Brightness Combined",
-                                   sd_APA102_PB_COMBINED));
+      ola::rdm::SlotDataCollection(sd_APA102_PB_COMBINED)));
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
