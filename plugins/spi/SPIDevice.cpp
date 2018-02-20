@@ -237,8 +237,8 @@ void SPIDevice::SetDefaults() {
   m_preferences->SetDefaultValue(SPISpeedKey(), UIntValidator(0, 32000000),
                                  1000000);
   m_preferences->SetDefaultValue(SPICEKey(), BoolValidator(), false);
-  m_preferences->SetDefaultValue(PortCountKey(), UIntValidator(1, 8), 1);
-  m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 8), 0);
+  m_preferences->SetDefaultValue(PortCountKey(), UIntValidator(1, 255), 1);
+  m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 255), 0);
   m_preferences->Save();
 }
 
