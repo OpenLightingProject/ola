@@ -226,7 +226,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
 
   personalities.insert(personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
                        Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
-                                   "APA102 Pixel Brightness Individ.TEST"));
+                                   "APA102 Pixel Brightness Individ."));
 
   ola::rdm::SlotDataCollection::SlotDataList sd_APA102_PB_COMBINED;
   sd_APA102_PB_COMBINED.push_back(
