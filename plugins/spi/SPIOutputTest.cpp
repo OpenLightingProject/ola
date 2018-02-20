@@ -659,13 +659,6 @@ void SPIOutputTest::testCombinedAPA102Control() {
   unsigned int length = 0;
   const uint8_t *data = NULL;
 
-  // test0
-  // check GetSlotInfo()
-  // OLA_INFO << output.GetSlotInfo();
-  // OLA_ASSERT_EQ(
-  //     string("??"),
-  //     output1.GetSlotInfo());
-
   // test1
   // setup some 'DMX' data
   buffer.SetFromString("1, 10, 100");
