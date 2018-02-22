@@ -69,7 +69,6 @@ using ola::rdm::RDMResponse;
 using ola::rdm::ResponderHelper;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using std::auto_ptr;
 using std::min;
 using std::string;
 using std::vector;
