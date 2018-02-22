@@ -186,11 +186,34 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   PersonalityCollection::PersonalityList personalities;
   // personality description is max 32 characters
 
+  ola::rdm::SlotDataCollection::SlotDataList sd_rgb_combined;
+  sd_rgb_combined.push_back(
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
+  sd_rgb_combined.push_back(
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
+  sd_rgb_combined.push_back(
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
+  ola::rdm::SlotDataCollection sdc_rgb_combined;
+  sdc_rgb_combined = ola::rdm::SlotDataCollection(sd_rgb_combined);
+
+
+  ola::rdm::SlotDataCollection::SlotDataList sd_irgb_combined;
+  sd_irgb_combined.push_back(
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_INTENSITY, 0));
+  sd_irgb_combined.push_back(
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
+  sd_irgb_combined.push_back(
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
+  sd_irgb_combined.push_back(
+      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
+  ola::rdm::SlotDataCollection sdc_irgb_combined;
+  sdc_irgb_combined = ola::rdm::SlotDataCollection(sd_irgb_combined);
+
   personalities.insert(personalities.begin() + PERS_WS2801_INDIVIDUAL - 1,
                        Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
                                    "WS2801 Individual Control"));
   personalities.insert(personalities.begin() + PERS_WS2801_COMBINED - 1,
-                      Personality(WS2801_SLOTS_PER_PIXEL,
+                       Personality(WS2801_SLOTS_PER_PIXEL,
                                   "WS2801 Combined Control"));
 
   personalities.insert(personalities.begin() + PERS_LDP8806_INDIVIDUAL - 1,
@@ -204,42 +227,26 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                        Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
                                    "P9813 Individual Control"));
   personalities.insert(personalities.begin() + PERS_P9813_COMBINED - 1,
-                      Personality(P9813_SLOTS_PER_PIXEL,
+                       Personality(P9813_SLOTS_PER_PIXEL,
                                   "P9813 Combined Control"));
 
   personalities.insert(personalities.begin() + PERS_APA102_INDIVIDUAL - 1,
                        Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
                                    "APA102 Individual Control"));
 
-  ola::rdm::SlotDataCollection::SlotDataList sd_APA102_COMBINED;
-  sd_APA102_COMBINED.push_back(
-      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
-  sd_APA102_COMBINED.push_back(
-      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
-  sd_APA102_COMBINED.push_back(
-      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
   personalities.insert(personalities.begin() + PERS_APA102_COMBINED - 1,
-                      Personality(APA102_SLOTS_PER_PIXEL,
+                       Personality(APA102_SLOTS_PER_PIXEL,
                                   "APA102 Combined Control",
-       ola::rdm::SlotDataCollection(sd_APA102_COMBINED)));
+                                  sdc_rgb_combined));
 
   personalities.insert(personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
                        Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
                                    "APA102 Pixel Brightness Individ."));
 
-  ola::rdm::SlotDataCollection::SlotDataList sd_APA102_PB_COMBINED;
-  sd_APA102_PB_COMBINED.push_back(
-      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_INTENSITY, 0));
-  sd_APA102_PB_COMBINED.push_back(
-      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
-  sd_APA102_PB_COMBINED.push_back(
-      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_GREEN, 0));
-  sd_APA102_PB_COMBINED.push_back(
-      ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_BLUE, 0));
   personalities.insert(personalities.begin() + PERS_APA102_PB_COMBINED - 1,
                        Personality(APA102_PB_SLOTS_PER_PIXEL,
                                    "APA102 Pixel Brightness Combined",
-      ola::rdm::SlotDataCollection(sd_APA102_PB_COMBINED)));
+                                  sdc_irgb_combined));
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
