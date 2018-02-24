@@ -271,7 +271,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       personalities.begin() + PERS_WS2812B_COMBINED - 1,
       Personality(WS2812B_SLOTS_PER_PIXEL,
                   "WS2812b Combined Control",
-                  sdc_irgb_combined));
+                  sdc_rgb_combined));
 
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
@@ -988,6 +988,14 @@ void SPIOutput::CombinedWS2812bControl(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
+/*
+ * Converting to WS2811/12b format.
+ *
+ * The format sends each bit with a leading 1 and a trailing 0.
+ * This function spaces out the bits of a byte and inserts them into a
+ *  hexadecimal version (0x924924) of the octal 44444444, ending up with
+ *  three bytes of information per byte input.
+ */
 void SPIOutput::WS2812bByteMapper(uint8_t input,
     uint8_t *low, uint8_t *mid, uint8_t *high) {
   *low = 0x24 | ((input & 0x1) << 1) | ((input & 0x2) << 3)
