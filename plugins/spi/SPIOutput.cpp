@@ -263,13 +263,13 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                   sdc_irgb_combined));
 
   personalities.insert(
-      personalities.begin() + PERS_WS2812B_PB_INDIVIDUAL - 1,
-      Personality(m_pixel_count * WS2812B_PB_SLOTS_PER_PIXEL,
+      personalities.begin() + PERS_WS2812B_INDIVIDUAL - 1,
+      Personality(m_pixel_count * WS2812B_SLOTS_PER_PIXEL,
                   "WS2812b Individual Control"));
 
   personalities.insert(
-      personalities.begin() + PERS_WS2812B_PB_COMBINED - 1,
-      Personality(WS2812B_PB_SLOTS_PER_PIXEL,
+      personalities.begin() + PERS_WS2812B_COMBINED - 1,
+      Personality(WS2812B_SLOTS_PER_PIXEL,
                   "WS2812b Combined Control",
                   sdc_irgb_combined));
 
@@ -913,17 +913,17 @@ void SPIOutput::IndividualWS2812bControl(const DmxBuffer &buffer) {
     uint8_t b = buffer.Get(offset + 2);
     uint8_t low = 0, mid = 0, high = 0;
 
-    WS2812bByteMapper(g, *low, *mid, *high);
+    WS2812bByteMapper(g, low, mid, high);
     output[i * WS2812B_SPI_BYTES_PER_PIXEL] = low;
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 1] = mid;
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 2] = high;
 
-    WS2812bByteMapper(r, *low, *mid, *high);
+    WS2812bByteMapper(r, low, mid, high);
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 3] = low;
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 4] = mid;
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 5] = high;
 
-    WS2812bByteMapper(b, *low, *mid, *high);
+    WS2812bByteMapper(b, low, mid, high);
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 6] = low;
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 7] = mid;
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 8] = high;
@@ -943,7 +943,7 @@ void SPIOutput::CombinedWS2812bControl(const DmxBuffer &buffer) {
 
   // We always check out the entire string length, even if we only have data
   // for part of it
-  const unsigned int output_length = m_pixel_count * WS2801_SPI_BYTES_PER_PIXEL;
+  const unsigned int output_length = m_pixel_count * WS2812B_SPI_BYTES_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length);
   if (!output) {
     OLA_INFO << "Unable to create output buffer of required length: " << output_length;
@@ -959,17 +959,17 @@ void SPIOutput::CombinedWS2812bControl(const DmxBuffer &buffer) {
   // create Pixel Data
   uint8_t pixel_data[WS2812B_SPI_BYTES_PER_PIXEL];
 
-  WS2812bByteMapper(g, *low, *mid, *high);
+  WS2812bByteMapper(g, low, mid, high);
   pixel_data[0] = low;
   pixel_data[1] = mid;
   pixel_data[2] = high;
 
-  WS2812bByteMapper(r, *low, *mid, *high);
+  WS2812bByteMapper(r, low, mid, high);
   pixel_data[3] = low;
   pixel_data[4] = mid;
   pixel_data[5] = high;
 
-  WS2812bByteMapper(b, *low, *mid, *high);
+  WS2812bByteMapper(b, low, mid, high);
   pixel_data[6] = low;
   pixel_data[7] = mid;
   pixel_data[8] = high;
