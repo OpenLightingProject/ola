@@ -205,7 +205,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   static uint8_t CalculateAPA102LatchBytes(uint16_t pixel_count);
   static uint8_t CalculateAPA102PixelBrightness(uint8_t brightness);
   void WS2812bByteMapper(uint8_t input,
-    uint8_t *low, uint8_t *mid, uint8_t *high);
+                         uint8_t *low, uint8_t *mid, uint8_t *high);
 
   static const uint8_t SPI_MODE;
   static const uint8_t SPI_BITS_PER_WORD;

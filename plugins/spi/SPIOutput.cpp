@@ -273,7 +273,6 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                   "WS2812b Combined Control",
                   sdc_rgb_combined));
 
-
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
       m_personality_collection.get()));
@@ -399,6 +398,12 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
       break;
     case PERS_APA102_PB_COMBINED:
       CombinedAPA102ControlPixelBrightness(buffer);
+      break;
+    case PERS_WS2812B_INDIVIDUAL:
+      IndividualWS2812bControl(buffer);
+      break;
+    case PERS_WS2812B_COMBINED:
+      CombinedWS2812bControl(buffer);
       break;
     default:
       break;
@@ -900,7 +905,7 @@ void SPIOutput::IndividualWS2812bControl(const DmxBuffer &buffer) {
   uint8_t *output = m_backend->Checkout(m_output_number, output_length);
   if (!output) {
     OLA_INFO << "Unable to create output buffer of required length: "
-        << output_length;
+             << output_length;
     return;
   }
 
@@ -950,7 +955,7 @@ void SPIOutput::CombinedWS2812bControl(const DmxBuffer &buffer) {
   uint8_t *output = m_backend->Checkout(m_output_number, output_length);
   if (!output) {
     OLA_INFO << "Unable to create output buffer of required length: "
-        << output_length;
+             << output_length;
     return;
   }
 
