@@ -273,7 +273,6 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
                   "WS2812b Combined Control",
                   sdc_irgb_combined));
 
-
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
       m_personality_collection.get()));
@@ -990,7 +989,6 @@ void SPIOutput::WS2812bByteMapper(uint8_t input, uint8_t &low, uint8_t &mid, uin
   mid = 0x49 | ((input & 0x8) >> 1) | ((input & 0x10) << 1);
   high = 0x92 | ((input & 0x20) >> 5) | ((input & 0x40) >> 3) | ((input & 0x80) >> 1);
 }
-
 
 RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
