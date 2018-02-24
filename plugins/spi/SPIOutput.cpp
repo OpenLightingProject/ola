@@ -87,11 +87,13 @@ const uint16_t SPIOutput::WS2801_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
+const uint16_t SPIOutput::WS2812b_SLOTS_PER_PIXEL = 3;
 
 // Number of bytes that each pixel uses on the SPI wires
 // (if it differs from 1:1 with colors)
 const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
 const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
+const uint16_t SPIOutput::WS2812b_SPI_BYTES_PER_PIXEL = 9;
 
 const uint16_t SPIOutput::APA102_START_FRAME_BYTES = 4;
 
@@ -316,6 +318,12 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
     case 8:
       CombinedAPA102Control(buffer);
       break;
+     case 9:
+       IndividualWS2812bControl(buffer);
+       break;
+     case 10:
+       CombinedWS2812bControl(buffer);
+       break;
     default:
       break;
   }
@@ -653,6 +661,91 @@ uint8_t SPIOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
   return latch_bytes;
 }
 
+void SPIOutput::IndividualWS2812bControl(const DmxBuffer &buffer) {
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+  if (buffer.Size() - first_slot < WS2812b_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << WS2812b_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
+    return;
+  }
+
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  const unsigned int output_length = m_pixel_count * WS2812b_SLOTS_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, output_length);
+  if (!output) {
+    OLA_INFO << "Unable to create output buffer of required length: " << output_length;
+    return;
+  }
+
+  const unsigned int length = std::min(m_pixel_count * WS2812b_SLOTS_PER_PIXEL,
+                                       buffer.Size() - first_slot);
+
+  for (unsigned int i = 0; i < length / WS2812b_SLOTS_PER_PIXEL; i++) {
+    // Convert RGB to GRB
+    unsigned int offset = first_slot + i * WS2812b_SLOTS_PER_PIXEL;
+    uint8_t r = buffer.Get(offset);
+    uint8_t g = buffer.Get(offset + 1);
+    uint8_t b = buffer.Get(offset + 2);
+    output[i * WS2812b_SPI_BYTES_PER_PIXEL] = 0x24 | ((g & 0x1) << 1) | ((g & 0x2) << 3) | ((g & 0x4) << 5);
+    output[i * WS2812b_SPI_BYTES_PER_PIXEL + 1] = 0x49 | ((g & 0x8) >> 1) | ((g & 0x10) << 1);
+    output[i * WS2812b_SPI_BYTES_PER_PIXEL + 2] = 0x92 | ((g & 0x20) >> 5) | ((g & 0x40) >> 3) | ((g & 0x80) >> 1);
+    output[i * WS2812b_SPI_BYTES_PER_PIXEL + 3] = 0x24 | ((r & 0x1) << 1) | ((r & 0x2) << 3) | ((r & 0x4) << 5);
+    output[i * WS2812b_SPI_BYTES_PER_PIXEL + 4] = 0x49 | ((r & 0x8) >> 1) | ((r & 0x10) << 1);
+    output[i * WS2812b_SPI_BYTES_PER_PIXEL + 5] = 0x92 | ((r & 0x20) >> 5) | ((r & 0x40) >> 3) | ((r & 0x80) >> 1);
+    output[i * WS2812b_SPI_BYTES_PER_PIXEL + 6] = 0x24 | ((b & 0x1) << 1) | ((b & 0x2) << 3) | ((b & 0x4) << 5);
+    output[i * WS2812b_SPI_BYTES_PER_PIXEL + 7] = 0x49 | ((b & 0x8) >> 1) | ((b & 0x10) << 1);
+    output[i * WS2812b_SPI_BYTES_PER_PIXEL + 8] = 0x92 | ((b & 0x20) >> 5) | ((b & 0x40) >> 3) | ((b & 0x80) >> 1);
+  }
+
+  // write output back...
+  m_backend->Commit(m_output_number);  
+}
+
+void SPIOutput::CombinedWS2812bControl(const DmxBuffer &buffer) {
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+  if (buffer.Size() - first_slot < WS2812b_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << WS2812b_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
+    return;
+  }
+
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  const unsigned int output_length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, output_length);
+  if (!output) {
+    OLA_INFO << "Unable to create output buffer of required length: " << output_length;
+    return;
+  }
+
+  // Grab RGB data for conversion to GBR
+  uint8_t r = buffer.Get(first_slot);
+  uint8_t g = buffer.Get(first_slot + 1);
+  uint8_t b = buffer.Get(first_slot + 2);
+
+  // create Pixel Data
+  uint8_t pixel_data[WS2812b_SPI_BYTES_PER_PIXEL];
+  pixel_data[0] = 0x24 | ((g & 0x1) << 1) | ((g & 0x2) << 3) | ((g & 0x4) << 5);
+  pixel_data[1] = 0x49 | ((g & 0x8) >> 1) | ((g & 0x10) << 1);
+  pixel_data[2] = 0x92 | ((g & 0x20) >> 5) | ((g & 0x40) >> 3) | ((g & 0x80) >> 1);
+  pixel_data[3] = 0x24 | ((r & 0x1) << 1) | ((r & 0x2) << 3) | ((r & 0x4) << 5);
+  pixel_data[4] = 0x49 | ((r & 0x8) >> 1) | ((r & 0x10) << 1);
+  pixel_data[5] = 0x92 | ((r & 0x20) >> 5) | ((r & 0x40) >> 3) | ((r & 0x80) >> 1);
+  pixel_data[6] = 0x24 | ((b & 0x1) << 1) | ((b & 0x2) << 3) | ((b & 0x4) << 5);
+  pixel_data[7] = 0x49 | ((b & 0x8) >> 1) | ((b & 0x10) << 1);
+  pixel_data[8] = 0x92 | ((b & 0x20) >> 5) | ((b & 0x40) >> 3) | ((b & 0x80) >> 1);
+
+  // set all pixel to same value
+  for (uint16_t i = 0; i < m_pixel_count; i++) {
+    uint16_t spi_offset = (i * WS2812b_SPI_BYTES_PER_PIXEL);
+    memcpy(&output[spi_offset], pixel_data,
+           WS2812b_SPI_BYTES_PER_PIXEL);
+  }
+
+  // write output back...
+  m_backend->Commit(m_output_number);
+}
 
 RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
