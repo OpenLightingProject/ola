@@ -909,31 +909,39 @@ void SPIOutput::IndividualWS2812bControl(const DmxBuffer &buffer) {
     return;
   }
 
-  const unsigned int length = std::min(m_pixel_count * WS2812B_SLOTS_PER_PIXEL,
-                                       buffer.Size() - first_slot);
+  const unsigned int length = m_pixel_count;
 
-  for (unsigned int i = 0; i < length / WS2812B_SLOTS_PER_PIXEL; i++) {
+  for (unsigned int i = 0; i < length; i++) {
     // Convert RGB to GRB
     unsigned int offset = first_slot + i * WS2812B_SLOTS_PER_PIXEL;
-    uint8_t r = buffer.Get(offset);
-    uint8_t g = buffer.Get(offset + 1);
-    uint8_t b = buffer.Get(offset + 2);
+
+    //Get DMX data
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
+    if(offset < buffer.Size() - 2) {
+      r = buffer.Get(offset);
+      g = buffer.Get(offset + 1);
+      b = buffer.Get(offset + 2);
+    } // fill further pixel data only if the pixel data is empty
+    else if(output[i * WS2812B_SPI_BYTES_PER_PIXEL] != 0)
+        break;
     uint8_t low = 0, mid = 0, high = 0;
 
     WS2812bByteMapper(g, &low, &mid, &high);
-    output[i * WS2812B_SPI_BYTES_PER_PIXEL] = low;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL] = high;
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 1] = mid;
-    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 2] = high;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 2] = low;
 
     WS2812bByteMapper(r, &low, &mid, &high);
-    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 3] = low;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 3] = high;
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 4] = mid;
-    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 5] = high;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 5] = low;
 
     WS2812bByteMapper(b, &low, &mid, &high);
-    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 6] = low;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 6] = high;
     output[i * WS2812B_SPI_BYTES_PER_PIXEL + 7] = mid;
-    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 8] = high;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 8] = low;
   }
 
   // write output back...
@@ -969,19 +977,19 @@ void SPIOutput::CombinedWS2812bControl(const DmxBuffer &buffer) {
   uint8_t pixel_data[WS2812B_SPI_BYTES_PER_PIXEL];
 
   WS2812bByteMapper(g, &low, &mid, &high);
-  pixel_data[0] = low;
+  pixel_data[0] = high;
   pixel_data[1] = mid;
-  pixel_data[2] = high;
+  pixel_data[2] = low;
 
   WS2812bByteMapper(r, &low, &mid, &high);
-  pixel_data[3] = low;
+  pixel_data[3] = high;
   pixel_data[4] = mid;
-  pixel_data[5] = high;
+  pixel_data[5] = low;
 
   WS2812bByteMapper(b, &low, &mid, &high);
-  pixel_data[6] = low;
+  pixel_data[6] = high;
   pixel_data[7] = mid;
-  pixel_data[8] = high;
+  pixel_data[8] = low;
 
   // set all pixel to same value
   for (uint16_t i = 0; i < m_pixel_count; i++) {
