@@ -923,10 +923,10 @@ void SPIOutput::IndividualWS2812bControl(const DmxBuffer &buffer) {
       r = buffer.Get(offset);
       g = buffer.Get(offset + 1);
       b = buffer.Get(offset + 2);
-
-    // fill further pixel data only if the pixel data is empty
-    } else if ( output[i * WS2812B_SPI_BYTES_PER_PIXEL] != 0 )
+    } else if ( output[i * WS2812B_SPI_BYTES_PER_PIXEL] != 0 ) {
+        // fill further pixel data only if the pixel data is empty
         break;
+    }
 
     uint8_t low = 0, mid = 0, high = 0;
 
