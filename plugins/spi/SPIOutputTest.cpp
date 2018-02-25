@@ -1173,13 +1173,13 @@ void SPIOutputTest::testIndividualWS2812bControl() {
   // get fake SPI data stream
   data = backend.GetData(0, &length);
   // this is the expected spi data stream:
-  const uint8_t EXPECTED1[] = { 0x92, 0x4D, 0x34,   //Pixel 1 Green (10)
-                                0x92, 0x49, 0x26,   //Pixel 1 Red (1)
-                                0x9B, 0x49, 0xA4,   //Pixel 1 Blue (100)
-                                0x92, 0x49, 0x24,   //Pixel 2 Green (0)
-                                0x92, 0x49, 0x24,   //Pixel 2 Red (0)
-                                0x92, 0x49, 0x24    //Pixel 2 Blue (0)
-                            };                       
+  const uint8_t EXPECTED1[] = { 0x92, 0x4D, 0x34,   // Pixel 1 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 1 Red (1)
+                                0x9B, 0x49, 0xA4,   // Pixel 1 Blue (100)
+                                0x92, 0x49, 0x24,   // Pixel 2 Green (0)
+                                0x92, 0x49, 0x24,   // Pixel 2 Red (0)
+                                0x92, 0x49, 0x24    // Pixel 2 Blue (0)
+                            };
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   // check if the output writes are 1
@@ -1189,12 +1189,12 @@ void SPIOutputTest::testIndividualWS2812bControl() {
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED2[] = { 0xD2, 0x49, 0x24,   //Pixel 1 Green (128)
-                                0xDB, 0x6D, 0xB6,   //Pixel 1 Red (255)
-                                0x92, 0x49, 0x24,   //Pixel 1 Blue (0)
-                                0x92, 0x69, 0xA4,   //Pixel 2 Green (20)
-                                0x92, 0x4D, 0x34,   //Pixel 2 Red (10)
-                                0x92, 0x6D, 0xB4    //Pixel 2 Blue (30)
+  const uint8_t EXPECTED2[] = { 0xD2, 0x49, 0x24,   // Pixel 1 Green (128)
+                                0xDB, 0x6D, 0xB6,   // Pixel 1 Red (255)
+                                0x92, 0x49, 0x24,   // Pixel 1 Blue (0)
+                                0x92, 0x69, 0xA4,   // Pixel 2 Green (20)
+                                0x92, 0x4D, 0x34,   // Pixel 2 Red (10)
+                                0x92, 0x6D, 0xB4    // Pixel 2 Blue (30)
                               };
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
@@ -1205,12 +1205,12 @@ void SPIOutputTest::testIndividualWS2812bControl() {
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED3[] = { 0x93, 0x6D, 0x24,   //Pixel 1 Green (56)
-                                0x93, 0x49, 0x34,   //Pixel 1 Red (34)
-                                0x9A, 0x4D, 0xB4,   //Pixel 1 Blue (78)
-                                0x92, 0x69, 0xA4,   //Pixel 2 Green (20)
-                                0x92, 0x4D, 0x34,   //Pixel 2 Red (10)
-                                0x92, 0x6D, 0xB4    //Pixel 2 Blue (30)
+  const uint8_t EXPECTED3[] = { 0x93, 0x6D, 0x24,   // Pixel 1 Green (56)
+                                0x93, 0x49, 0x34,   // Pixel 1 Red (34)
+                                0x9A, 0x4D, 0xB4,   // Pixel 1 Blue (78)
+                                0x92, 0x69, 0xA4,   // Pixel 2 Green (20)
+                                0x92, 0x4D, 0x34,   // Pixel 2 Red (10)
+                                0x92, 0x6D, 0xB4    // Pixel 2 Blue (30)
                               };
   OLA_ASSERT_DATA_EQUALS(EXPECTED3, arraysize(EXPECTED3), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
@@ -1232,12 +1232,12 @@ void SPIOutputTest::testIndividualWS2812bControl() {
   buffer.SetFromString("1,2,3,4,5,6,7,8");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED5[] = { 0x92, 0x49, 0xA4,   //Pixel 1 Green (4)
-                                0x92, 0x49, 0x36,   //Pixel 1 Red (3)
-                                0x92, 0x49, 0xA6,   //Pixel 1 Blue (5)
-                                0x92, 0x49, 0xB6,   //Pixel 2 Green (7)
-                                0x92, 0x49, 0xB4,   //Pixel 2 Red (6)
-                                0x92, 0x4D, 0x24    //Pixel 2 Blue (8)
+  const uint8_t EXPECTED5[] = { 0x92, 0x49, 0xA4,   // Pixel 1 Green (4)
+                                0x92, 0x49, 0x36,   // Pixel 1 Red (3)
+                                0x92, 0x49, 0xA6,   // Pixel 1 Blue (5)
+                                0x92, 0x49, 0xB6,   // Pixel 2 Green (7)
+                                0x92, 0x49, 0xB4,   // Pixel 2 Red (6)
+                                0x92, 0x4D, 0x24    // Pixel 2 Blue (8)
                               };
   OLA_ASSERT_DATA_EQUALS(EXPECTED5, arraysize(EXPECTED5), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
@@ -1268,13 +1268,13 @@ void SPIOutputTest::testIndividualWS2812bControl() {
   data = backend.GetData(1, &length);
   // this is the expected spi data stream:
   // StartFrame is missing --> port is >0 !
-  const uint8_t EXPECTED7[] = { 0x92, 0x4D, 0x34,   //Pixel 1 Green (10)
-                                0x92, 0x49, 0x26,   //Pixel 1 Red (1)
-                                0x9B, 0x49, 0xA4,   //Pixel 1 Blue (100)
-                                0x92, 0x49, 0x24,   //Pixel 2 Green (0)
-                                0x92, 0x49, 0x24,   //Pixel 2 Red (0)
-                                0x92, 0x49, 0x24    //Pixel 2 Blue (0)
-                            };                       
+  const uint8_t EXPECTED7[] = { 0x92, 0x4D, 0x34,   // Pixel 1 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 1 Red (1)
+                                0x9B, 0x49, 0xA4,   // Pixel 1 Blue (100)
+                                0x92, 0x49, 0x24,   // Pixel 2 Green (0)
+                                0x92, 0x49, 0x24,   // Pixel 2 Red (0)
+                                0x92, 0x49, 0x24    // Pixel 2 Blue (0)
+                            };
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
   // check if the output writes are 1
@@ -1307,13 +1307,13 @@ void SPIOutputTest::testCombinedWS2812bControl() {
   // get fake SPI data stream
   data = backend.GetData(0, &length);
   // this is the expected spi data stream:
-  const uint8_t EXPECTED1[] = { 0x92, 0x4D, 0x34,   //Pixel 1 Green (10)
-                                0x92, 0x49, 0x26,   //Pixel 1 Red (1)
-                                0x9B, 0x49, 0xA4,   //Pixel 1 Blue (100)
-                                0x92, 0x4D, 0x34,   //Pixel 2 Green (10)
-                                0x92, 0x49, 0x26,   //Pixel 2 Red (1)
-                                0x9B, 0x49, 0xA4    //Pixel 2 Blue (100)
-                            };                       
+  const uint8_t EXPECTED1[] = { 0x92, 0x4D, 0x34,   // Pixel 1 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 1 Red (1)
+                                0x9B, 0x49, 0xA4,   // Pixel 1 Blue (100)
+                                0x92, 0x4D, 0x34,   // Pixel 2 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 2 Red (1)
+                                0x9B, 0x49, 0xA4    // Pixel 2 Blue (100)
+                            };
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   // check if the output writes are 1
@@ -1323,12 +1323,12 @@ void SPIOutputTest::testCombinedWS2812bControl() {
   buffer.SetFromString("255,128,0,10,20,30");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED2[] = { 0xD2, 0x49, 0x24,   //Pixel 1 Green (128)
-                                0xDB, 0x6D, 0xB6,   //Pixel 1 Red (255)
-                                0x92, 0x49, 0x24,   //Pixel 1 Blue (0)
-                                0xD2, 0x49, 0x24,   //Pixel 2 Green (128)
-                                0xDB, 0x6D, 0xB6,   //Pixel 2 Red (255)
-                                0x92, 0x49, 0x24    //Pixel 2 Blue (0)
+  const uint8_t EXPECTED2[] = { 0xD2, 0x49, 0x24,   // Pixel 1 Green (128)
+                                0xDB, 0x6D, 0xB6,   // Pixel 1 Red (255)
+                                0x92, 0x49, 0x24,   // Pixel 1 Blue (0)
+                                0xD2, 0x49, 0x24,   // Pixel 2 Green (128)
+                                0xDB, 0x6D, 0xB6,   // Pixel 2 Red (255)
+                                0x92, 0x49, 0x24    // Pixel 2 Blue (0)
                               };
   OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
   OLA_ASSERT_EQ(2u, backend.Writes(0));
@@ -1339,12 +1339,12 @@ void SPIOutputTest::testCombinedWS2812bControl() {
   buffer.SetFromString("34,56,78");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED3[] = { 0x93, 0x6D, 0x24,   //Pixel 1 Green (56)
-                                0x93, 0x49, 0x34,   //Pixel 1 Red (34)
-                                0x9A, 0x4D, 0xB4,   //Pixel 1 Blue (78)
-                                0x93, 0x6D, 0x24,   //Pixel 2 Green (56)
-                                0x93, 0x49, 0x34,   //Pixel 2 Red (34)
-                                0x9A, 0x4D, 0xB4    //Pixel 2 Blue (78)
+  const uint8_t EXPECTED3[] = { 0x93, 0x6D, 0x24,   // Pixel 1 Green (56)
+                                0x93, 0x49, 0x34,   // Pixel 1 Red (34)
+                                0x9A, 0x4D, 0xB4,   // Pixel 1 Blue (78)
+                                0x93, 0x6D, 0x24,   // Pixel 2 Green (56)
+                                0x93, 0x49, 0x34,   // Pixel 2 Red (34)
+                                0x9A, 0x4D, 0xB4    // Pixel 2 Blue (78)
                               };
   OLA_ASSERT_DATA_EQUALS(EXPECTED3, arraysize(EXPECTED3), data, length);
   OLA_ASSERT_EQ(3u, backend.Writes(0));
@@ -1366,12 +1366,12 @@ void SPIOutputTest::testCombinedWS2812bControl() {
   buffer.SetFromString("1,2,3,4,5,6,7,8");
   output.WriteDMX(buffer);
   data = backend.GetData(0, &length);
-  const uint8_t EXPECTED5[] = { 0x92, 0x49, 0xA4,   //Pixel 1 Green (4)
-                                0x92, 0x49, 0x36,   //Pixel 1 Red (3)
-                                0x92, 0x49, 0xA6,   //Pixel 1 Blue (5)
-                                0x92, 0x49, 0xA4,   //Pixel 2 Green (4)
-                                0x92, 0x49, 0x36,   //Pixel 2 Red (3)
-                                0x92, 0x49, 0xA6    //Pixel 2 Blue (5)
+  const uint8_t EXPECTED5[] = { 0x92, 0x49, 0xA4,   // Pixel 1 Green (4)
+                                0x92, 0x49, 0x36,   // Pixel 1 Red (3)
+                                0x92, 0x49, 0xA6,   // Pixel 1 Blue (5)
+                                0x92, 0x49, 0xA4,   // Pixel 2 Green (4)
+                                0x92, 0x49, 0x36,   // Pixel 2 Red (3)
+                                0x92, 0x49, 0xA6    // Pixel 2 Blue (5)
                               };
   OLA_ASSERT_DATA_EQUALS(EXPECTED5, arraysize(EXPECTED5), data, length);
   OLA_ASSERT_EQ(4u, backend.Writes(0));
@@ -1402,13 +1402,13 @@ void SPIOutputTest::testCombinedWS2812bControl() {
   data = backend.GetData(1, &length);
   // this is the expected spi data stream:
   // StartFrame is missing --> port is >0 !
-  const uint8_t EXPECTED7[] = { 0x92, 0x4D, 0x34,   //Pixel 1 Green (10)
-                                0x92, 0x49, 0x26,   //Pixel 1 Red (1)
-                                0x9B, 0x49, 0xA4,   //Pixel 1 Blue (100)
-                                0x92, 0x4D, 0x34,   //Pixel 2 Green (10)
-                                0x92, 0x49, 0x26,   //Pixel 2 Red (1)
-                                0x9B, 0x49, 0xA4    //Pixel 2 Blue (100)
-                            };                       
+  const uint8_t EXPECTED7[] = { 0x92, 0x4D, 0x34,   // Pixel 1 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 1 Red (1)
+                                0x9B, 0x49, 0xA4,   // Pixel 1 Blue (100)
+                                0x92, 0x4D, 0x34,   // Pixel 2 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 2 Red (1)
+                                0x9B, 0x49, 0xA4    // Pixel 2 Blue (100)
+                            };
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
   // check if the output writes are 1

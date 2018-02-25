@@ -915,17 +915,19 @@ void SPIOutput::IndividualWS2812bControl(const DmxBuffer &buffer) {
     // Convert RGB to GRB
     unsigned int offset = first_slot + i * WS2812B_SLOTS_PER_PIXEL;
 
-    //Get DMX data
+    // Get DMX data
     uint8_t r = 0;
     uint8_t g = 0;
     uint8_t b = 0;
-    if(offset < buffer.Size() - 2) {
+    if ( offset < buffer.Size() - 2 ) {
       r = buffer.Get(offset);
       g = buffer.Get(offset + 1);
       b = buffer.Get(offset + 2);
-    } // fill further pixel data only if the pixel data is empty
-    else if(output[i * WS2812B_SPI_BYTES_PER_PIXEL] != 0)
+
+    // fill further pixel data only if the pixel data is empty
+    } else if ( output[i * WS2812B_SPI_BYTES_PER_PIXEL] != 0 )
         break;
+
     uint8_t low = 0, mid = 0, high = 0;
 
     WS2812bByteMapper(g, &low, &mid, &high);
