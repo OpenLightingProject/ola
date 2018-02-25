@@ -199,7 +199,7 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   ola::rdm::SlotDataCollection::SlotDataList sd_irgb_combined;
   sd_irgb_combined.push_back(
       ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_INTENSITY,
-                                      ola::rdm::DMX_MAX_SLOT_VALUE));
+                                      DMX_MAX_SLOT_VALUE));
   sd_irgb_combined.push_back(
       ola::rdm::SlotData::PrimarySlot(ola::rdm::SD_COLOR_ADD_RED, 0));
   sd_irgb_combined.push_back(
