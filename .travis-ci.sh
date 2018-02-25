@@ -12,14 +12,15 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./.git/*" -or \
       -wholename "./aclocal.m4" -or \
-      -wholename "./config/depcomp" -or \
-      -wholename "./config/ltmain.sh" -or \
       -wholename "./config/config.guess" -or \
       -wholename "./config/config.sub" -or \
+      -wholename "./config/depcomp" -or \
       -wholename "./config/install-sh" -or \
       -wholename "./config/libtool.m4" -or \
+      -wholename "./config/ltmain.sh" -or \
       -wholename "./config/ltoptions.m4" -or \
       -wholename "./config/ltsugar.m4" -or \
+      -wholename "./config/missing" -or \
       -wholename "./libtool" -or \
       -wholename "./config.status" -or \
       -wholename "./Makefile" -or \
@@ -137,10 +138,10 @@ elif [[ $TASK = 'codespell' ]]; then
       $SPELLINGBLACKLIST \
       \) | xargs")
   # count the number of codespell errors
-  spellingerrors=$(zrun codespell --check-filenames --quiet 2 --regex "[\\-'a-zA-Z0-9]+" --exclude-file .codespellignore $spellingfiles 2>&1 | wc -l)
+  spellingerrors=$(zrun codespell --check-filenames --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignore $spellingfiles 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
     # print the output for info
-    zrun codespell --check-filenames --quiet 2 --regex "[\\-'a-zA-Z0-9]+" --exclude-file .codespellignore $spellingfiles
+    zrun codespell --check-filenames --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignore $spellingfiles
     echo "Found $spellingerrors spelling errors via codespell"
     exit 1;
   else
