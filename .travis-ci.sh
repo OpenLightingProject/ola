@@ -12,14 +12,15 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./.git/*" -or \
       -wholename "./aclocal.m4" -or \
-      -wholename "./config/depcomp" -or \
-      -wholename "./config/ltmain.sh" -or \
       -wholename "./config/config.guess" -or \
       -wholename "./config/config.sub" -or \
+      -wholename "./config/depcomp" -or \
       -wholename "./config/install-sh" -or \
       -wholename "./config/libtool.m4" -or \
+      -wholename "./config/ltmain.sh" -or \
       -wholename "./config/ltoptions.m4" -or \
       -wholename "./config/ltsugar.m4" -or \
+      -wholename "./config/missing" -or \
       -wholename "./libtool" -or \
       -wholename "./config.status" -or \
       -wholename "./Makefile" -or \
