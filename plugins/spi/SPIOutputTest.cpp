@@ -1179,7 +1179,7 @@ void SPIOutputTest::testIndividualWS2812bControl() {
                                 0x92, 0x49, 0x24,   // Pixel 2 Green (0)
                                 0x92, 0x49, 0x24,   // Pixel 2 Red (0)
                                 0x92, 0x49, 0x24    // Pixel 2 Blue (0)
-                            };
+                              };
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   // check if the output writes are 1
@@ -1274,7 +1274,7 @@ void SPIOutputTest::testIndividualWS2812bControl() {
                                 0x92, 0x49, 0x24,   // Pixel 2 Green (0)
                                 0x92, 0x49, 0x24,   // Pixel 2 Red (0)
                                 0x92, 0x49, 0x24    // Pixel 2 Blue (0)
-                            };
+                              };
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
   // check if the output writes are 1
@@ -1313,7 +1313,7 @@ void SPIOutputTest::testCombinedWS2812bControl() {
                                 0x92, 0x4D, 0x34,   // Pixel 2 Green (10)
                                 0x92, 0x49, 0x26,   // Pixel 2 Red (1)
                                 0x9B, 0x49, 0xA4    // Pixel 2 Blue (100)
-                            };
+                              };
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
   // check if the output writes are 1
@@ -1408,7 +1408,7 @@ void SPIOutputTest::testCombinedWS2812bControl() {
                                 0x92, 0x4D, 0x34,   // Pixel 2 Green (10)
                                 0x92, 0x49, 0x26,   // Pixel 2 Red (1)
                                 0x9B, 0x49, 0xA4    // Pixel 2 Blue (100)
-                            };
+                              };
   // check for Equality
   OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
   // check if the output writes are 1
