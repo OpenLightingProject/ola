@@ -245,7 +245,6 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       personalities.begin() + PERS_APA102_INDIVIDUAL - 1,
       Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
                   "APA102 Individual Control"));
-
   personalities.insert(
       personalities.begin() + PERS_APA102_COMBINED - 1,
       Personality(APA102_SLOTS_PER_PIXEL,
@@ -256,7 +255,6 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
       Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
                   "APA102 Pixel Brightness Individ."));
-
   personalities.insert(
       personalities.begin() + PERS_APA102_PB_COMBINED - 1,
       Personality(APA102_PB_SLOTS_PER_PIXEL,
@@ -267,12 +265,16 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       personalities.begin() + PERS_WS2812B_INDIVIDUAL - 1,
       Personality(m_pixel_count * WS2812B_SLOTS_PER_PIXEL,
                   "WS2812b Individual Control"));
-
   personalities.insert(
       personalities.begin() + PERS_WS2812B_COMBINED - 1,
       Personality(WS2812B_SLOTS_PER_PIXEL,
                   "WS2812b Combined Control",
                   sdc_rgb_combined));
+
+  for (uint8_t iter = 0; iter < personalities.size(); iter++)
+    OLA_DEBUG << "Personality '" << personalities[iter].Description()
+              << "' added to list of SPI personalities with id: "
+              << (iter + 1);
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
