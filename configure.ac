@@ -621,12 +621,16 @@ AC_ARG_ENABLE(
 
 have_libftdi0="no"
 AS_IF([test "x$enable_libftdi" != xno],
-      [PKG_CHECK_MODULES([libftdi], [libftdi >= 0.18], [have_libftdi0="yes"],
+      [PKG_CHECK_MODULES([libftdi0], [libftdi >= 0.18], [have_libftdi0="yes"],
                          [true])])
+AS_IF([test "x$have_libftdi0" = xyes],
+      [AC_DEFINE([HAVE_LIBFTDI0], [1], [define if libftdi0 is installed])])
 have_libftdi1="no"
 AS_IF([test "x$enable_libftdi" != xno],
       [PKG_CHECK_MODULES([libftdi1], [libftdi1 >= 1.0], [have_libftdi1="yes"],
                          [true])])
+AS_IF([test "x$have_libftdi1" = xyes],
+      [AC_DEFINE([HAVE_LIBFTDI1], [1], [define if libftdi1 is installed])])
 have_libftdi="no"
 if test "x$have_libftdi0" = xyes || test "x$have_libftdi1" = xyes; then
   have_libftdi="yes"
