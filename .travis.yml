@@ -45,24 +45,42 @@ matrix:
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
+      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3beta
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3beta
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
+      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3beta
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3beta
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3beta
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='1'
     - os: linux
       dist: trusty
       compiler: clang
@@ -247,7 +265,9 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex protobuf@3.1 libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex protobuf@3.1 libusb liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy already present
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
