@@ -103,7 +103,7 @@ class SelectServer(object):
     self._function_list_lock.acquire()
     self._functions.append(f)
     # can write anything here, this wakes up the select() call
-    os.write(self._local_socket[1], 'a')
+    os.write(self._local_socket[1], b'a')
     self._function_list_lock.release()
 
   def Terminate(self):
