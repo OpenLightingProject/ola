@@ -32,8 +32,17 @@
  * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
-#include <strings.h>
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
+#ifdef HAVE_LIBFTDI1
+#include <libftdi1/ftdi.h>
+#else
 #include <ftdi.h>
+#endif  // HAVE_LIBFTDI1
+
+#include <strings.h>
 #include <assert.h>
 
 #include <string>
