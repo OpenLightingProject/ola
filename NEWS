@@ -11,7 +11,8 @@ x/y/2018 ola-0.10.7
  Bugs:
  * Fix the build on Windows
  * Entire codebase now passes codespell testing
- * 
+ * Fix a Python 3 bug in the API
+ *
 
  Internal:
  *
