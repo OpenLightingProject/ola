@@ -1054,7 +1054,7 @@ def main():
   app = BuildApplication(ola_thread, test_thread, pid_store)
 
   httpd = make_server('', settings['PORT'], app.HandleRequest)
-  logging.info('Running RDM Tests Server on %s:%s' %
+  logging.info('Running RDM Tests Server on http://%s:%s' %
                ('127.0.0.1', httpd.server_port))
 
   try:

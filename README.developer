@@ -257,7 +257,7 @@ Useful tips
 * Use $(srcdir), $(top_srcdir) to reference files where required. This is to
   support VPATH builds:
   http://www.gnu.org/software/automake/manual/html_node/VPATH-Builds.html
-* Prefer manualy dependencies over BUILT_SOURCES where possible, see
+* Prefer manual dependencies over BUILT_SOURCES where possible, see
   http://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html
   However this doesn't work in some cases (libraries?) because it overrides the
   automake generated rules.

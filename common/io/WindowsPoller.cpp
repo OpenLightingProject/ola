@@ -20,12 +20,20 @@
 
 #include "common/io/WindowsPoller.h"
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
 #include <string.h>
 #include <errno.h>
 
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <ola/win/CleanWinSock2.h>
+
+#if HAVE_WINERROR_H
+#include <winerror.h>
+#endif  // HAVE_WINERROR_H
 
 #include <algorithm>
 #include <queue>

@@ -38,6 +38,27 @@ namespace spi {
 
 class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
  public:
+  // definitions for all SPI Personalities
+  // keep personality order
+  // - it is important for backwards compatibility
+  // the integer representation is used to store the configuration in files
+  // and RDM Personality IDs should also be stable.
+  // new ones can be added at end.
+  // remember to increment RDM-Version in
+  // SPIOutput.cpp SPIOutput::GetDeviceInfo()
+  enum SPI_PERSONALITY {
+    PERS_WS2801_INDIVIDUAL = 1,
+    PERS_WS2801_COMBINED = 2,
+    PERS_LDP8806_INDIVIDUAL = 3,
+    PERS_LDP8806_COMBINED = 4,
+    PERS_P9813_INDIVIDUAL = 5,
+    PERS_P9813_COMBINED = 6,
+    PERS_APA102_INDIVIDUAL = 7,
+    PERS_APA102_COMBINED = 8,
+    PERS_APA102_PB_INDIVIDUAL,
+    PERS_APA102_PB_COMBINED,
+  };
+
   struct Options {
     std::string device_label;
     uint8_t pixel_count;
@@ -113,6 +134,8 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   void CombinedP9813Control(const DmxBuffer &buffer);
   void IndividualAPA102Control(const DmxBuffer &buffer);
   void CombinedAPA102Control(const DmxBuffer &buffer);
+  void IndividualAPA102ControlPixelBrightness(const DmxBuffer &buffer);
+  void CombinedAPA102ControlPixelBrightness(const DmxBuffer &buffer);
 
   unsigned int LPD8806BufferSize() const;
   void WriteSPIData(const uint8_t *data, unsigned int length);
@@ -137,6 +160,8 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   ola::rdm::RDMResponse *SetDmxPersonality(
       const ola::rdm::RDMRequest *request);
   ola::rdm::RDMResponse *GetPersonalityDescription(
+      const ola::rdm::RDMRequest *request);
+  ola::rdm::RDMResponse *GetSlotInfo(
       const ola::rdm::RDMRequest *request);
   ola::rdm::RDMResponse *GetDmxStartAddress(
       const ola::rdm::RDMRequest *request);
@@ -174,6 +199,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   // Helpers
   uint8_t P9813CreateFlag(uint8_t red, uint8_t green, uint8_t blue);
   static uint8_t CalculateAPA102LatchBytes(uint16_t pixel_count);
+  static uint8_t CalculateAPA102PixelBrightness(uint8_t brightness);
 
   static const uint8_t SPI_MODE;
   static const uint8_t SPI_BITS_PER_WORD;
@@ -184,8 +210,10 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   static const uint16_t P9813_SLOTS_PER_PIXEL;
   static const uint16_t P9813_SPI_BYTES_PER_PIXEL;
   static const uint16_t APA102_SLOTS_PER_PIXEL;
+  static const uint16_t APA102_PB_SLOTS_PER_PIXEL;
   static const uint16_t APA102_SPI_BYTES_PER_PIXEL;
   static const uint16_t APA102_START_FRAME_BYTES;
+  static const uint8_t APA102_LEDFRAME_START_MARK;
 
   static const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
       PARAM_HANDLERS[];

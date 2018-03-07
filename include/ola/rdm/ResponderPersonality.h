@@ -64,7 +64,7 @@ class Personality {
  */
 class PersonalityCollection {
  public:
-    /** The data type that stores the list of personalities for the responder. */
+    /** The data type that stores the list of personalities for a responder. */
     typedef std::vector<Personality> PersonalityList;
 
     explicit PersonalityCollection(const PersonalityList &personalities);

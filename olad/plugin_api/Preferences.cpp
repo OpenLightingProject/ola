@@ -19,8 +19,21 @@
  */
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
+#include "olad/Preferences.h"
+
 #include <dirent.h>
 #include <errno.h>
+#ifdef _WIN32
+// On MinGW, pthread.h pulls in Windows.h, which in turn pollutes the global
+// namespace. We define VC_EXTRALEAN and WIN32_LEAN_AND_MEAN to reduce this.
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // _WIN32
 #include <pthread.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -42,7 +55,6 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/thread/Thread.h"
-#include "olad/Preferences.h"
 
 namespace ola {
 
