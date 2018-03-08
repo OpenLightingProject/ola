@@ -290,7 +290,7 @@ void StringBuilderTest::testBuilderWithNestedGroups() {
 
 
 /**
- * test StringBuilder with nested varible groups.
+ * test StringBuilder with nested variable groups.
  */
 void StringBuilderTest::testBuilderWithVariableNestedGroups() {
   vector<const FieldDescriptor*> fields, group_fields, group_fields2;

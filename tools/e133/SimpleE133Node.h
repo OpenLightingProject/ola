@@ -25,6 +25,7 @@
 
 #include <ola/Constants.h>
 #include <ola/base/Init.h>
+#include <ola/base/Macro.h>
 #include <ola/acn/CID.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
@@ -93,7 +94,6 @@ class SimpleE133Node {
     void DumpTCPStats();
     void SendUnsolicited();
 
-    SimpleE133Node(const SimpleE133Node&);
-    SimpleE133Node operator=(const SimpleE133Node&);
+    DISALLOW_COPY_AND_ASSIGN(SimpleE133Node);
 };
 #endif  // TOOLS_E133_SIMPLEE133NODE_H_

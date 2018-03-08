@@ -40,38 +40,38 @@ matrix:
   fast_finish: true
   include:
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
       - PROTOBUF='3.5'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.2
       compiler: gcc
       env:
       - TASK='compile'
@@ -157,7 +157,27 @@ matrix:
       dist: trusty
       # Short duration job, would use the container/without sudo image as it boots faster, but we need a backported lintian, so don't
       sudo: required
-      env: TASK='spellchecker'
+      env: TASK='spellintian'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - moreutils
+    - os: linux
+      dist: trusty
+      # Short duration job, would use the container/without sudo image as it boots faster, but we need a backported lintian, so don't
+      sudo: required
+      env: TASK='spellintian-duplicates'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - moreutils
+    - os: linux
+      dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
+      env: TASK='codespell'
       addons:
         apt:
           packages:
@@ -212,23 +232,12 @@ matrix:
       # Short duration job, use the container/without sudo image as it boots faster
       sudo: false
       env: TASK='pychecker-wip'
-    - os: osx
-      osx_image: xcode9.1
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='3.5'
-    - os: osx
-      osx_image: xcode9.1
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='3.5'
     - os: linux
       dist: trusty
-      env: TASK='spellchecker'
+      env: TASK='spellintian'
+    - os: linux
+      dist: trusty
+      env: TASK='spellintian-duplicates'
 
 env:
   global:
@@ -263,12 +272,13 @@ before_cache:
 
 install:
 # Match the version of protobuf being installed via apt
-  - if [[ "$PROTOBUF" == "3.5" ]]; then pip install --user protobuf==3.5.0; fi
+  - if [[ "$PROTOBUF" == "3.5" ]]; then pip install --user protobuf==3.5.1; fi
   - if [[ "$PROTOBUF" != "3.5" ]]; then pip install --user protobuf==3.1.0; fi
 # We need to use pip rather than apt on Trusty
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
+  - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/lucasdemarchi/codespell.git; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
@@ -292,10 +302,11 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
 #Report the compiler version
  - $CXX --version
- - if [[ "$TASK" == "spellchecker" ]]; then sudo add-apt-repository ppa:waja/trusty-backports -y; sudo apt-get update -qq; sudo apt-get install lintian -y; fi # Install a late enough lintian
+ - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then sudo add-apt-repository ppa:waja/trusty-backports -y; sudo apt-get update -qq; sudo apt-get install lintian -y; fi # Install a late enough lintian
 
 after_failure:
-  - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log; fi
 
 after_success:
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-6 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
