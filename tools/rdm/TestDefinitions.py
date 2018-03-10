@@ -2763,7 +2763,8 @@ class GetSensorDefinition(OptionalParameterTestFixture):
     self._CheckForSensor()
 
   def _MissingSensorWarning(self):
-    max_sensor = max(self._sensors.keys())
+    # An advisory for zero sensors is covered in CheckSensorConsistency
+    max_sensor = max(self._sensors.keys()) if self._sensors else 0
     missing_sensors = [i for i in self._sensor_holes if i < max_sensor]
     if missing_sensors:
       self.AddWarning('Sensors missing in positions %s' % missing_sensors)
