@@ -1078,7 +1078,7 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
       self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
       self.NackGetResult(
           RDMNack.NR_DATA_OUT_OF_RANGE,
-          advisory='Parameter Description appears to be supported but no'
+          advisory='Parameter Description appears to be supported but no '
                    'manufacturer PIDs were declared'),
     ]
     if self.Property('manufacturer_parameters'):
