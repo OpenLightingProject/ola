@@ -285,7 +285,9 @@ AsynchronousEurolitePro::AsynchronousEurolitePro(
     const string &serial,
     bool is_mk2)
     : EurolitePro(adaptor, usb_device, serial, is_mk2) {
-  m_sender.reset(new EuroliteProAsyncUsbSender(m_adaptor, usb_device, m_is_mk2));
+  m_sender.reset(new EuroliteProAsyncUsbSender(m_adaptor,
+                                               usb_device,
+                                               m_is_mk2));
 }
 
 bool AsynchronousEurolitePro::Init() {
