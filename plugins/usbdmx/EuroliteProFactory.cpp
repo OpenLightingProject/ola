@@ -67,7 +67,8 @@ bool EuroliteProFactory::DeviceAdded(
     }
 
   // Eurolite USB-DMX512-PRO MK2?
-  } else if (descriptor.idVendor == VENDOR_ID_MK2 && descriptor.idProduct == PRODUCT_ID_MK2) {
+  } else if (descriptor.idVendor == VENDOR_ID_MK2 &&
+             descriptor.idProduct == PRODUCT_ID_MK2) {
     OLA_INFO << "Found a new Eurolite USB-DMX512-PRO MK2 device";
     LibUsbAdaptor::DeviceInformation info;
     if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
@@ -82,7 +83,7 @@ bool EuroliteProFactory::DeviceAdded(
       return false;
     }
     isMK2 = true;
-    
+
   // Something else
   } else {
     return false;
