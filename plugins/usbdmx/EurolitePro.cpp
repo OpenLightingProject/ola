@@ -46,6 +46,7 @@ static const uint8_t DMX_LABEL = 6;
 static const uint8_t START_OF_MESSAGE = 0x7e;
 static const uint8_t END_OF_MESSAGE = 0xe7;
 static const unsigned char ENDPOINT = 0x02;
+static const uint8_t EUROLITE_PRO_MK2_SET_BAUD_RATE = 0x03;
 enum { EUROLITE_PRO_FRAME_SIZE = 518 };
 
 /*
@@ -186,7 +187,7 @@ bool SynchronousEurolitePro::Init() {
         usb_handle,
         LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
         LIBUSB_ENDPOINT_OUT,  // bmRequestType
-        3,  // bRequest: set baudrate
+        EUROLITE_PRO_MK2_SET_BAUD_RATE,  // bRequest
         value,  // wValue
         index,  // wIndex
         NULL,  // data
@@ -243,7 +244,7 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
           usb_handle,
           LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
           LIBUSB_ENDPOINT_OUT,  // bmRequestType
-          3,  // bRequest: set baudrate
+          EUROLITE_PRO_MK2_SET_BAUD_RATE,  // bRequest
           value,  // wValue
           index,  // wIndex
           NULL,  // data
