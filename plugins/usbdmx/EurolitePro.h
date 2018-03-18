@@ -53,8 +53,8 @@ class EurolitePro : public SimpleWidget {
               const std::string &serial,
               bool is_mk2)
       : SimpleWidget(adaptor, usb_device),
-        m_serial(serial),
-        m_is_mk2(is_mk2) {}
+        m_is_mk2(is_mk2),
+        m_serial(serial) {}
 
   /**
    * @brief Get the serial number of this widget.
