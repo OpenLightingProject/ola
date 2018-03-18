@@ -179,12 +179,13 @@ bool SynchronousEurolitePro::Init() {
 
   // USB-DMX512-PRO MK2: set baudrate to 250000
   if (m_isMK2) {
-    unsigned short divisor = 12; // = 3000000 / 250000
-    unsigned short value = (divisor & 0xFFFF);
-    unsigned short index = (divisor >> 8) & 0xFF00;
+    uint16_t divisor = 12;  // = 3000000 / 250000
+    uint16_t value = (divisor & 0xFFFF);
+    uint16_t index = (divisor >> 8) & 0xFF00;
     int err = m_adaptor->ControlTransfer(
         usb_handle,
-        LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_OUT,  // bmRequestType
+        LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
+        LIBUSB_ENDPOINT_OUT,  // bmRequestType
         3,  // bRequest: set baudrate
         value,  // wValue
         index,  // wIndex
@@ -235,12 +236,13 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
 
     // USB-DMX512-PRO MK2: set baudrate to 250000
     if (m_isMK2) {
-      unsigned short divisor = 12; // = 3000000 / 250000
-      unsigned short value = (divisor & 0xFFFF);
-      unsigned short index = (divisor >> 8) & 0xFF00;
+      uint16_t divisor = 12; // = 3000000 / 250000
+      uint16_t value = (divisor & 0xFFFF);
+      uint16_t index = (divisor >> 8) & 0xFF00;
       int err = m_adaptor->ControlTransfer(
           usb_handle,
-          LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE | LIBUSB_ENDPOINT_OUT,  // bmRequestType
+          LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
+          LIBUSB_ENDPOINT_OUT,  // bmRequestType
           3,  // bRequest: set baudrate
           value,  // wValue
           index,  // wIndex
