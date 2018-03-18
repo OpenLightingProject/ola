@@ -66,7 +66,7 @@ class EurolitePro : public SimpleWidget {
 
  protected:
   bool m_isMK2;
- 
+
  private:
   std::string m_serial;
 };
