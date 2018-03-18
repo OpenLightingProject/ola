@@ -237,7 +237,7 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
 
     // USB-DMX512-PRO MK2: set baudrate to 250000
     if (m_isMK2) {
-      uint16_t divisor = 12; // = 3000000 / 250000
+      uint16_t divisor = 12;  // = 3000000 / 250000
       uint16_t value = (divisor & 0xFFFF);
       uint16_t index = (divisor >> 8) & 0xFF00;
       int err = m_adaptor->ControlTransfer(
