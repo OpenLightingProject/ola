@@ -46,15 +46,15 @@ class EurolitePro : public SimpleWidget {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
-   * @param isMK2 whether the widget is a mk 2 variant.
+   * @param is_mk2 whether the widget is a mk 2 variant.
    */
   EurolitePro(ola::usb::LibUsbAdaptor *adaptor,
               libusb_device *usb_device,
               const std::string &serial,
-              bool isMK2)
+              bool is_mk2)
       : SimpleWidget(adaptor, usb_device),
         m_serial(serial),
-        m_isMK2(isMK2) {}
+        m_is_mk2(is_mk2) {}
 
   /**
    * @brief Get the serial number of this widget.
@@ -65,7 +65,7 @@ class EurolitePro : public SimpleWidget {
   }
 
  protected:
-  bool m_isMK2;
+  bool m_is_mk2;
 
  private:
   std::string m_serial;
@@ -84,12 +84,12 @@ class SynchronousEurolitePro: public EurolitePro {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
-   * @param isMK2 whether the widget is a mk 2 variant.
+   * @param is_mk2 whether the widget is a mk 2 variant.
    */
   SynchronousEurolitePro(ola::usb::LibUsbAdaptor *adaptor,
                          libusb_device *usb_device,
                          const std::string &serial,
-                         bool isMK2);
+                         bool is_mk2);
 
   bool Init();
 
@@ -111,12 +111,12 @@ class AsynchronousEurolitePro: public EurolitePro {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
-   * @param isMK2 whether the widget is a mk 2 variant.
+   * @param is_mk2 whether the widget is a mk 2 variant.
    */
   AsynchronousEurolitePro(ola::usb::LibUsbAdaptor *adaptor,
                           libusb_device *usb_device,
                           const std::string &serial,
-                          bool isMK2);
+                          bool is_mk2);
 
   bool Init();
 
