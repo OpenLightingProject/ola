@@ -46,6 +46,7 @@ class EurolitePro : public SimpleWidget {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
+   * @param isMK2 whether the widget is a mk 2 variant.
    */
   EurolitePro(ola::usb::LibUsbAdaptor *adaptor,
               libusb_device *usb_device,
@@ -83,6 +84,7 @@ class SynchronousEurolitePro: public EurolitePro {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
+   * @param isMK2 whether the widget is a mk 2 variant.
    */
   SynchronousEurolitePro(ola::usb::LibUsbAdaptor *adaptor,
                          libusb_device *usb_device,
@@ -109,6 +111,7 @@ class AsynchronousEurolitePro: public EurolitePro {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param serial the serial number of the widget.
+   * @param isMK2 whether the widget is a mk 2 variant.
    */
   AsynchronousEurolitePro(ola::usb::LibUsbAdaptor *adaptor,
                           libusb_device *usb_device,
