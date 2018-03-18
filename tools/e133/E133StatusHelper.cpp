@@ -71,7 +71,7 @@ bool IntToStatusCode(uint16_t input, E133StatusCode *status_code) {
 /**
  * Return a text string describing this status code.
  */
-string StatusMessageIdToString(E133StatusCode status_code) {
+string StatusCodeToString(E133StatusCode status_code) {
   switch (status_code) {
     case ola::e133::SC_E133_ACK:
      return "Acknowledged";
