@@ -67,6 +67,7 @@ EXTRA_DIST += \
     common/rdm/testdata/duplicate_pid_value.proto \
     common/rdm/testdata/inconsistent_pid.proto \
     common/rdm/testdata/invalid_esta_pid.proto \
+    common/rdm/testdata/pids/manufacturer_names.proto \
     common/rdm/testdata/pids/overrides.proto \
     common/rdm/testdata/pids/pids1.proto \
     common/rdm/testdata/pids/pids2.proto \

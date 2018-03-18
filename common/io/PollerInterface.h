@@ -135,7 +135,7 @@ class PollerInterface {
    * @brief Poll the Descriptors for events and execute any callbacks.
    * @param timeout_manager the TimeoutManager to use for timer events.
    * @param poll_interval the maximum time to block for.
-   * @returns false if any errors occured, true if events were handled.
+   * @returns false if any errors occurred, true if events were handled.
    */
   virtual bool Poll(TimeoutManager *timeout_manager,
                     const TimeInterval &poll_interval) = 0;

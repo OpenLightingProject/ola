@@ -133,7 +133,7 @@ class MockPDU: public PDU {
 
     // This is used to id 'Mock' PDUs in the higher level protocol
     static const unsigned int TEST_VECTOR = 42;
-    // This is is the vector used by MockPDUs
+    // This is the vector used by MockPDUs
     static const unsigned int TEST_DATA_VECTOR = 43;
 
  private:

@@ -44,7 +44,7 @@ Disable the use of epoll(), revert to select()
 .IP "--no-use-kqueue"
 Disable the use of kqueue(), revert to select()
 .IP "--no-use-async-libusb"
-Disable the use of the asyncronous libusb calls, revert to syncronous
+Disable the use of the asynchronous libusb calls, revert to synchronous
 .IP "--scheduler-policy <policy>"
 The thread scheduling policy, one of {fifo, rr}.
 .IP "--scheduler-priority <priority>"
@@ -68,10 +68,10 @@ Informational logging.
 Debug logging.
 .SH SIGNALS
 Once running, the following signals control the behavior of olad:
-.IP "SIGUP"
+.IP "SIGHUP"
 Reloads the plugins.
 .IP "SIGUSR1"
-Increases the logging level, eventually wrapping 
+Increases the logging level, eventually wrapping
 .SH SEE ALSO
 .BR ola_dmxconsole(1) ,
 .BR ola_dmxmonitor(1) ,

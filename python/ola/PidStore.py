@@ -53,7 +53,7 @@ class InvalidPidFormat(Error):
 
 
 class PidStructureException(Error):
-  """Raised if the PID structure isn't vaild."""
+  """Raised if the PID structure isn't valid."""
 
 
 class ArgsValidationError(Error):
@@ -691,7 +691,7 @@ class Group(Atom):
       For now we support the following cases:
        - Fixed size group. This is easy to unpack
        - Groups of variable size. We enforce two conditions for these, i) the
-         variable sized field MUST be the last one ii) Only a single occurance
+         variable sized field MUST be the last one ii) Only a single occurrence
          is allowed. This means you can't do things like:
 
            [(string, int)]   # variable sized types must be last
@@ -1083,6 +1083,17 @@ class PidStore(object):
     if pid:
       return pid.value
     return pid
+
+  def ManufacturerIdToName(self, esta_id):
+    """A helper method to convert a manufacturer ID to a name
+
+    Args:
+      esta_id: The 2-byte esta / manufacturer ID.
+
+    Returns:
+      The name of the manufacturer, or None if it wasn't found.
+    """
+    return self._manufacturer_id_to_name.get(esta_id, None)
 
   def _PidProtoToObject(self, pid_pb):
     """Convert the protobuf representation of a PID to a PID object.

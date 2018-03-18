@@ -25,9 +25,11 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/thread/Thread.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
+// On MinGW, Thread.h pulls in pthread.h which pulls in Windows.h, which needs
+// to be after WinSock2.h, hence this order
+#include "ola/thread/Thread.h"
 
 using ola::io::SelectServer;
 using ola::network::UDPSocket;

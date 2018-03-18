@@ -120,7 +120,7 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
         if (port_iter->PriorityMode() == ola::PRIORITY_MODE_INHERIT) {
           cout << "inherited";
         } else {
-          cout << "overide " << static_cast<int>(port_iter->Priority());
+          cout << "override " << static_cast<int>(port_iter->Priority());
         }
         break;
       default:

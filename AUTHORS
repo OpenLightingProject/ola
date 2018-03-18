@@ -8,7 +8,7 @@ Contributors:
   Bastien Andrès, contributed to the dmx4linux plugin
   Carsten Presser, Karate USB plugin
   Dave Olsthoorn, working on a new web-ui
-  Florian Edelmann, added DMXCreator 512 Basic USB support
+  Florian Edelmann, added DMXCreator 512 Basic USB and native SPI DMX support
   Hakan Lindestaf, Renard plugin
   Harry F, for the Eurolite USB Pro code
   Heikki Junnila, bug fixes for the debian packaging files

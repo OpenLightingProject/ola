@@ -292,7 +292,7 @@ void SimpleE133Controller::SocketClosed(IPV4SocketAddress peer) {
 }
 
 /**
- * Interupt handler
+ * Interrupt handler
  */
 static void InteruptSignal(OLA_UNUSED int signo) {
   int old_errno = errno;
