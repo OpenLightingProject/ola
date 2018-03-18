@@ -150,7 +150,7 @@ bool EuroliteProThreadedSender::TransmitBuffer(libusb_device_handle *handle,
     // not sure if this is fatal or not
     OLA_WARN << "EurolitePro driver failed to transfer all data";
   }
-  return r == 0;
+  return (r == 0);
 }
 
 // SynchronousEurolitePro
@@ -160,8 +160,8 @@ SynchronousEurolitePro::SynchronousEurolitePro(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial,
-    bool isMK2)
-    : EurolitePro(adaptor, usb_device, serial, isMK2) {
+    bool is_mk2)
+    : EurolitePro(adaptor, usb_device, serial, is_mk2) {
 }
 
 bool SynchronousEurolitePro::Init() {
@@ -179,7 +179,7 @@ bool SynchronousEurolitePro::Init() {
   }
 
   // USB-DMX512-PRO MK2: set baudrate to 250000
-  if (m_isMK2) {
+  if (m_is_mk2) {
     uint16_t divisor = 12;  // = 3000000 / 250000
     uint16_t value = (divisor & 0xFFFF);
     uint16_t index = (divisor >> 8) & 0xFF00;
@@ -193,7 +193,9 @@ bool SynchronousEurolitePro::Init() {
         NULL,  // data
         0,  // wLength
         500);  // timeout
-    if (err) return false;
+    if (err) {
+      return false;
+    }
   }
 
   std::auto_ptr<EuroliteProThreadedSender> sender(
@@ -215,9 +217,9 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
  public:
   EuroliteProAsyncUsbSender(LibUsbAdaptor *adaptor,
                             libusb_device *usb_device,
-                            bool isMK2)
+                            bool is_mk2)
       : AsyncUsbSender(adaptor, usb_device),
-        m_isMK2(isMK2) {
+        m_is_mk2(is_mk2) {
   }
 
   ~EuroliteProAsyncUsbSender() {
@@ -233,10 +235,12 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
     libusb_device_handle *usb_handle;
     bool ok = m_adaptor->OpenDeviceAndClaimInterface(
         m_usb_device, interface_number, &usb_handle);
-    if (!ok) return NULL;
+    if (!ok) {
+      return NULL;
+    }
 
     // USB-DMX512-PRO MK2: set baudrate to 250000
-    if (m_isMK2) {
+    if (m_is_mk2) {
       uint16_t divisor = 12;  // = 3000000 / 250000
       uint16_t value = (divisor & 0xFFFF);
       uint16_t index = (divisor >> 8) & 0xFF00;
@@ -250,7 +254,9 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
           NULL,  // data
           0,  // wLength
           500);  // timeout
-      if (err) return NULL;
+      if (err) {
+        return NULL;
+      }
     }
 
     return usb_handle;
@@ -265,7 +271,7 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
 
  private:
   uint8_t m_tx_frame[EUROLITE_PRO_FRAME_SIZE];
-  bool m_isMK2;
+  bool m_is_mk2;
 
   DISALLOW_COPY_AND_ASSIGN(EuroliteProAsyncUsbSender);
 };
@@ -277,9 +283,9 @@ AsynchronousEurolitePro::AsynchronousEurolitePro(
     LibUsbAdaptor *adaptor,
     libusb_device *usb_device,
     const string &serial,
-    bool isMK2)
-    : EurolitePro(adaptor, usb_device, serial, isMK2) {
-  m_sender.reset(new EuroliteProAsyncUsbSender(m_adaptor, usb_device, m_isMK2));
+    bool is_mk2)
+    : EurolitePro(adaptor, usb_device, serial, is_mk2) {
+  m_sender.reset(new EuroliteProAsyncUsbSender(m_adaptor, usb_device, m_is_mk2));
 }
 
 bool AsynchronousEurolitePro::Init() {
