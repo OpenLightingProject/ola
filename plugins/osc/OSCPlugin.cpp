@@ -148,7 +148,7 @@ string OSCPlugin::Description() const {
 "\n"
 "udp_listen_port = <int>\n"
 "The UDP Port to listen on for OSC messages.\n"
-"\n";
+"\n"
 "port_N_address = /address\n"
 "The OSC address to listen on for port N. If the address contains %d\n"
 "it's replaced by the universe number for port N.\n"
@@ -165,7 +165,7 @@ string OSCPlugin::Description() const {
 " - individual_float: one float message for each slot (channel). 0.0 - 1.0 \n"
 " - individual_int: one int message for each slot (channel). 0 - 255.\n"
 " - int_array: an array of int values. 0 - 255.\n"
-"\n"
+"\n";
 }
 
 
