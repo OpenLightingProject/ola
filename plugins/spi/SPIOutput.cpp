@@ -962,7 +962,7 @@ void SPIOutput::IndividualTLC5971Control(const DmxBuffer &buffer) {
   // Device ..
   // Device 2
   // Device 1
-  // short brake of 8x period of clock (666ns .. 2.74ms) to generate latchpulse
+  // short break of 8x period of clock (666ns .. 2.74ms) to generate latchpulse
   //   + 1.34uS
   // than next update.
 
@@ -971,7 +971,7 @@ void SPIOutput::IndividualTLC5971Control(const DmxBuffer &buffer) {
   // calculate DMX-start-address
   const unsigned int first_slot = m_start_address - 1;  // 0 offset
 
-  // calculate how much channels for full devices are available in dmx_buffer
+  // calculate how many channels for full devices are available in dmx_buffer
   uint16_t devices_in_buffer =
     (buffer.Size() - first_slot) / TLC5971_SLOTS_PER_DEVICE;
   // OLA_WARN << "  devices_in_buffer:"
@@ -984,7 +984,7 @@ void SPIOutput::IndividualTLC5971Control(const DmxBuffer &buffer) {
     return;
   }
 
-  // rename m_pxiel_count for easier understanding.
+  // rename m_pixel_count for easier understanding.
   const unsigned int device_count   = m_pixel_count;
 
   // We always check out the entire string length, even if we only have data

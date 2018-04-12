@@ -276,7 +276,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
 
   union TLC5971_packet_gsdata_t {
     uint8_t bytes[24];
-    // the uint16_t will not work everywhere because of endianess problems..
+    // the uint16_t will not work everywhere because of endianness problems..
     // 12ch @16bit = 24byte
     struct {
       uint16_t GSB3;
