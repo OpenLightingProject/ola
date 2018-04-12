@@ -82,7 +82,8 @@ bool HotplugAgent::Init() {
   }
 
 #ifdef HAVE_LIBUSB_SET_OPTION
-  OLA_DEBUG << "libusb_set_option(LIBUSB_OPTION_LOG_LEVEL, " << m_debug_level << ")";
+  OLA_DEBUG << "libusb_set_option(LIBUSB_OPTION_LOG_LEVEL, " << m_debug_level
+            << ")";
   libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, m_debug_level);
 #else
   OLA_DEBUG << "libusb_set_debug(" << m_debug_level << ")";
