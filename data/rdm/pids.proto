@@ -1662,6 +1662,186 @@ pid {
       field {
         type: UINT16
         name: "slot_label_id"
+        label {
+          value: 1
+          label: "Intensity"
+        }
+        label {
+          value: 2
+          label: "Intensity Master"
+        }
+        label {
+          value: 257
+          label: "Pan"
+        }
+        label {
+          value: 258
+          label: "Tilt"
+        }
+        label {
+          value: 513
+          label: "Color Wheel"
+        }
+        label {
+          value: 514
+          label: "Subtractive Color Mixer - Cyan/Blue"
+        }
+        label {
+          value: 515
+          label: "Subtractive Color Mixer - Yellow/Amber"
+        }
+        label {
+          value: 516
+          label: "Subtractive Color Mixer - Magenta"
+        }
+        label {
+          value: 517
+          label: "Additive Color Mixer - Red"
+        }
+        label {
+          value: 518
+          label: "Additive Color Mixer - Green"
+        }
+        label {
+          value: 519
+          label: "Additive Color Mixer - Blue"
+        }
+        label {
+          value: 520
+          label: "Color Temperature Correction"
+        }
+        label {
+          value: 521
+          label: "Color Scroll"
+        }
+        label {
+          value: 528
+          label: "Color Semaphore"
+        }
+        label {
+          value: 529
+          label: "Additive Color Mixer - Amber"
+        }
+        label {
+          value: 530
+          label: "Additive Color Mixer - White"
+        }
+        label {
+          value: 531
+          label: "Additive Color Mixer - Warm White"
+        }
+        label {
+          value: 532
+          label: "Additive Color Mixer - Cool White"
+        }
+        label {
+          value: 533
+          label: "Subtractive Color Mixer - UV"
+        }
+        label {
+          value: 534
+          label: "Hue"
+        }
+        label {
+          value: 535
+          label: "Saturation"
+        }
+        label {
+          value: 769
+          label: "Static gobo wheel"
+        }
+        label {
+          value: 770
+          label: "Rotating gobo wheel"
+        }
+        label {
+          value: 771
+          label: "Prism wheel"
+        }
+        label {
+          value: 772
+          label: "Effects wheel"
+        }
+        label {
+          value: 1025
+          label: "Beam size iris"
+        }
+        label {
+          value: 1026
+          label: "Edge/Lens focus"
+        }
+        label {
+          value: 1027
+          label: "Frost/Diffusion"
+        }
+        label {
+          value: 1028
+          label: "Strobe/Shutter"
+        }
+        label {
+          value: 1029
+          label: "Zoom lens"
+        }
+        label {
+          value: 1030
+          label: "Framing shutter"
+        }
+        label {
+          value: 1031
+          label: "Framing shutter rotation"
+        }
+        label {
+          value: 1032
+          label: "Douser"
+        }
+        label {
+          value: 1033
+          label: "Barn Door"
+        }
+        label {
+          value: 1281
+          label: "Lamp control functions"
+        }
+        label {
+          value: 1282
+          label: "Fixture control channel"
+        }
+        label {
+          value: 1283
+          label: "Overall speed setting applied to multiple or all parameters"
+        }
+        label {
+          value: 1284
+          label: "Macro control"
+        }
+        label {
+          value: 1285
+          label: "Relay or power control"
+        }
+        label {
+          value: 1286
+          label: "Fan control"
+        }
+        label {
+          value: 1287
+          label: "Heater control"
+        }
+        label {
+          value: 1288
+          label: "Fountain water pump control"
+        }
+        label {
+          value: 65535
+          label: "No definition"
+        }
+        range {
+          min: 0
+          max: 65503
+        }
+        range {
+          min: 65535
+          max: 65535
+        }
       }
     }
   }
@@ -4368,4 +4548,4 @@ pid {
   }
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
-version: 1503271492
+version: 1521301591

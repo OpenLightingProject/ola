@@ -38,22 +38,22 @@ pkgpython_PYTHON = \
 endif
 
 python/ola/ArtNetConfigMessages_pb2.py: $(artnet_proto)
-	$(PROTOC) --python_out python/ola/ -I $(artnet_path) $(artnet_proto)
+	$(PROTOC) --python_out $(top_builddir)/python/ola/ -I $(artnet_path) $(artnet_proto)
 
 python/ola/Ola_pb2.py: $(ola_proto)
-	$(PROTOC) --python_out python/ola/ -I $(ola_path) $(ola_proto)
+	$(PROTOC) --python_out $(top_builddir)/python/ola/ -I $(ola_path) $(ola_proto)
 
 python/ola/Pids_pb2.py: $(pids_proto)
-	$(PROTOC) --python_out python/ola/ -I $(pids_path) $(pids_proto)
+	$(PROTOC) --python_out $(top_builddir)/python/ola/ -I $(pids_path) $(pids_proto)
 
 python/ola/UsbProConfigMessages_pb2.py: $(usbpro_proto)
-	$(PROTOC) --python_out python/ola/ -I $(usbpro_path) $(usbpro_proto)
+	$(PROTOC) --python_out $(top_builddir)/python/ola/ -I $(usbpro_path) $(usbpro_proto)
 
 python/ola/PidStoreLocation.py: python/ola/Makefile.mk configure.ac
-	echo "location = '${piddatadir}'" > python/ola/PidStoreLocation.py
+	echo "location = '${piddatadir}'" > $(top_builddir)/python/ola/PidStoreLocation.py
 
 python/ola/Version.py: python/ola/Makefile.mk configure.ac config/ola_version.m4
-	echo "version = '${VERSION}'" > python/ola/Version.py
+	echo "version = '${VERSION}'" > $(top_builddir)/python/ola/Version.py
 
 # TESTS
 ##################################################
