@@ -1334,11 +1334,13 @@ void ArtNetNodeImpl::RDMRequestCompletion(
       // hopefully update the remote controller
       port->on_discover->Run();
     } else {
-      OLA_WARN << "Art-Net RDM request failed with code " << reply->StatusCode();
+      OLA_WARN << "Art-Net RDM request failed with code "
+               << reply->StatusCode();
     }
   } else {
     // the universe address has changed we need to drop this request
-    OLA_WARN << "Art-Net Output port has changed mid request, dropping response";
+    OLA_WARN << "Art-Net Output port has changed mid request, "
+             <<"dropping response";
   }
 }
 
