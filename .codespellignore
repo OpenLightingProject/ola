@@ -64,25 +64,3 @@ const uint8_t BaseRobeWidget::SOM;
   manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
   manufacturer_name: "SRM Technik GmbH"
   manufacturer_name: "medien technik cords"
-  void Syncronize();
-  SC_E133_NONEXISTANT_ENDPOINT = 0x0005,
-  saver_thread.Syncronize();
-void FilePreferenceSaverThread::Syncronize() {
-  Mutex syncronize_mutex;
-  syncronize_mutex.Lock();
-        &syncronize_mutex));
-  condition_var.Wait(&syncronize_mutex);
-                      ola::e133::SC_E133_NONEXISTANT_ENDPOINT,
-    case ola::e133::SC_E133_NONEXISTANT_ENDPOINT:
-      *status_code = ola::e133::SC_E133_NONEXISTANT_ENDPOINT;
-    case ola::e133::SC_E133_NONEXISTANT_ENDPOINT:
- * @brief A LibUsbAdaptor for use with Syncronous widgets.
- * When using syncronous mode, we don't have the requirement of interacting
-class SyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
-  SyncronousLibUsbAdaptor() {}
-  DISALLOW_COPY_AND_ASSIGN(SyncronousLibUsbAdaptor);
- * @brief A LibUsbAdaptor for use with Asyncronous widgets.
- * Asyncronous mode requires notifying the LibUsbThread when handles are opened
-class AsyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
-  explicit AsyncronousLibUsbAdaptor(class LibUsbThread *thread)
-  DISALLOW_COPY_AND_ASSIGN(AsyncronousLibUsbAdaptor);
