@@ -79,3 +79,4 @@ class SyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
 class AsyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
   explicit AsyncronousLibUsbAdaptor(class LibUsbThread *thread)
   DISALLOW_COPY_AND_ASSIGN(AsyncronousLibUsbAdaptor);
+  manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
