@@ -1,4 +1,4 @@
-# The ArtNet plugin config messages. This needs to be available to client
+# The Art-Net plugin config messages. This needs to be available to client
 # programs.
 EXTRA_DIST += plugins/artnet/messages/ArtNetConfigMessages.proto
 
