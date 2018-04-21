@@ -1335,7 +1335,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(
       port->on_discover->Run();
     } else {
       OLA_WARN << "Art-Net RDM request failed with code "
-               << reply->StatusCode();
+               << reply->StatusCode();
     }
   } else {
     // the universe address has changed we need to drop this request
