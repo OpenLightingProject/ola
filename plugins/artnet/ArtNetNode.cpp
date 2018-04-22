@@ -1339,8 +1339,8 @@ void ArtNetNodeImpl::RDMRequestCompletion(
     }
   } else {
     // the universe address has changed we need to drop this request
-    OLA_WARN << "Art-Net Output port has changed mid request, "
-             <<"dropping response";
+    OLA_WARN << "Art-Net Output port has changed mid request, dropping "
+             << "response";
   }
 }
 
