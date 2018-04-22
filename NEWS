@@ -655,7 +655,7 @@ Documentation:
  * Changed the ForceDiscovery rpc to only return once discovery completes
  * Fixed Art-Net RDM discovery so DMXWorkshop works correctly - #160
  * Fixed a memory leak in the Art-Net RDM implementation
- * Add an option for using the limited broadcast address for Art-Net dmx data
+ * Add an option for using the limited broadcast address for Art-Net DMX data
  * Add an option to ignore specific USB serial devices
  * Added a program to sniff traffic using the RDM USB Pro
  * Added many more unit tests for the Art-Net plugin
