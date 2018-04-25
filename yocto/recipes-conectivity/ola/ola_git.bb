@@ -20,7 +20,7 @@ B = "${WORKDIR}/git"
 
 inherit autotools-brokensep relative_symlinks
 # autotools-brokensep 
-# forces in-source bulding (ola has bugs for out-of-tree builds). 
+# forces in-source building (ola has bugs for out-of-tree builds). 
 # See: https://www.yoctoproject.org/docs/latest/ref-manual/ref-manual.html#migration-1.7-autotools-class-changes
 # 
 # relative_symlinks
