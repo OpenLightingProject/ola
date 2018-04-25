@@ -11,7 +11,7 @@ DEPENDS_class-native    = "protobuf bison-native flex-native pkgconfig-native os
 
 PV = "0.10.6"
 
-# Esta revision de git tiene un parche para protobuf, la tag de 0.10.6 no compila.
+# 0.10.6 tag won't build, this rev has protobuf patches
 SRCREV = "00dc86a48ec4c528cec90166435b440f283a9c86" 
 SRC_URI = "git://github.com/OpenLightingProject/ola.git;protocol=https"
 
