@@ -43,9 +43,12 @@ bool DMXCProjectsNodleU1Factory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (!((descriptor.idVendor == VENDOR_ID_1 && descriptor.idProduct == PRODUCT_ID_1) ||
-        (descriptor.idVendor == VENDOR_ID_2 && descriptor.idProduct == PRODUCT_ID_2) ||
-        (descriptor.idVendor == VENDOR_ID_3 && descriptor.idProduct == PRODUCT_ID_3))) {
+  if (!((descriptor.idVendor == VENDOR_ID_1 &&
+         descriptor.idProduct == PRODUCT_ID_1) ||
+        (descriptor.idVendor == VENDOR_ID_2 &&
+         descriptor.idProduct == PRODUCT_ID_2) ||
+        (descriptor.idVendor == VENDOR_ID_3 &&
+         descriptor.idProduct == PRODUCT_ID_3) )) {
     return false;
   }
 
