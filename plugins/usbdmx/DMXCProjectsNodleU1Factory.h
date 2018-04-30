@@ -57,12 +57,12 @@ class DMXCProjectsNodleU1Factory :
   PluginAdaptor* const m_plugin_adaptor;
   Preferences* const m_preferences;
 
-  static const uint16_t VENDOR_ID_1;
-  static const uint16_t VENDOR_ID_2;
-  static const uint16_t VENDOR_ID_3;
-  static const uint16_t PRODUCT_ID_1;
-  static const uint16_t PRODUCT_ID_2;
-  static const uint16_t PRODUCT_ID_3;
+  static const uint16_t VENDOR_ID_NOODLE_U1;
+  static const uint16_t VENDOR_ID_DE;
+  static const uint16_t VENDOR_ID_FX5;
+  static const uint16_t PRODUCT_ID_NOODLE_U1;
+  static const uint16_t PRODUCT_ID_DE;
+  static const uint16_t PRODUCT_ID_FX5;
 
   DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1Factory);
 };
