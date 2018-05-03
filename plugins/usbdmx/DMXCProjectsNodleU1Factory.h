@@ -57,10 +57,10 @@ class DMXCProjectsNodleU1Factory :
   PluginAdaptor* const m_plugin_adaptor;
   Preferences* const m_preferences;
 
-  static const uint16_t VENDOR_ID_NOODLE_U1;
+  static const uint16_t VENDOR_ID_NODLE_U1;
   static const uint16_t VENDOR_ID_DE;
   static const uint16_t VENDOR_ID_FX5;
-  static const uint16_t PRODUCT_ID_NOODLE_U1;
+  static const uint16_t PRODUCT_ID_NODLE_U1;
   static const uint16_t PRODUCT_ID_DE;
   static const uint16_t PRODUCT_ID_FX5;
 
