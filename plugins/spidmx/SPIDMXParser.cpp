@@ -271,7 +271,7 @@ void SPIDMXParser::WaitForMab() {
 }
 
 /**
- * A MAB must be at least 8µs = 15 SPI bits, so we could alread find it in the
+ * A MAB must be at least 8µs = 15 SPI bits, so we could already find it in the
  * first handled byte. Then change to IN_STARTCODE, otherwise stay here. If we
  * get unexpected spikes, go back to WAIT_FOR_BREAK.
  */
