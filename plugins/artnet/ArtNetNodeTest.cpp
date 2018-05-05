@@ -698,7 +698,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
 }
 
 /**
- * Check sending DMX using broadcast works to ArtNet universe 0.
+ * Check sending DMX using broadcast works to Art-Net universe 0.
  */
 void ArtNetNodeTest::testBroadcastSendDMXZeroUniverse() {
   m_socket->SetDiscardMode(true);

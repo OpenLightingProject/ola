@@ -16,7 +16,7 @@
 # ola_artnet_params.py
 # Copyright (C) 2005 Simon Newton
 
-"""Fetch some ArtNet parameters."""
+"""Fetch some Art-Net parameters."""
 
 from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper

@@ -2103,7 +2103,7 @@ manufacturer {
         }
         label {
           value: 1
-          label: "ArtNet"
+          label: "Art-Net"
         }
         label {
           value: 2
@@ -2126,7 +2126,7 @@ manufacturer {
         }
         label {
           value: 1
-          label: "ArtNet"
+          label: "Art-Net"
         }
         label {
           value: 2
