@@ -36,7 +36,7 @@
  * @brief Code for supported devices and protocols.
  *
  * @namespace ola::plugin::artnet
- * @brief The ArtNet plugin.
+ * @brief The Art-Net plugin.
  *
  * @namespace ola::plugin::dmx4linux
  * @brief Code for DMX4Linux devices.
