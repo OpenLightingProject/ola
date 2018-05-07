@@ -57,7 +57,7 @@ using std::string;
 using std::vector;
 
 const char ArtNetDevice::K_ALWAYS_BROADCAST_KEY[] = "always_broadcast";
-const char ArtNetDevice::K_DEVICE_NAME[] = "ArtNet";
+const char ArtNetDevice::K_DEVICE_NAME[] = "Art-Net";
 const char ArtNetDevice::K_IP_KEY[] = "ip";
 const char ArtNetDevice::K_LIMITED_BROADCAST_KEY[] = "use_limited_broadcast";
 const char ArtNetDevice::K_LONG_NAME_KEY[] = "long_name";
@@ -104,7 +104,7 @@ bool ArtNetDevice::StartHook() {
       K_ALWAYS_BROADCAST_KEY);
   node_options.use_limited_broadcast_address = m_preferences->GetValueAsBool(
       K_LIMITED_BROADCAST_KEY);
-  // OLA Output ports are ArtNet input ports
+  // OLA Output ports are Art-Net input ports
   node_options.input_port_count = StringToIntOrDefault(
       m_preferences->GetValue(K_OUTPUT_PORT_KEY),
       K_DEFAULT_OUTPUT_PORT_COUNT);
