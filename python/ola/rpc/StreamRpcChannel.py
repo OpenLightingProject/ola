@@ -74,7 +74,7 @@ class StreamRpcChannel(service.RpcChannel):
       True if the socket remains connected, False if it was closed.
     """
     data = self._socket.recv(self.RECEIVE_BUFFER_SIZE)
-    if data == '':
+    if not data:
       ola_logger.info('OLAD Server Socket closed')
       if self._close_callback is not None:
         self._close_callback()
