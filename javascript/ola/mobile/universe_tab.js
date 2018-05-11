@@ -74,7 +74,7 @@ ola.mobile.UniverseTab.prototype.title = function() {
 
 
 /**
- * Called when the tab loses focuse
+ * Called when the tab loses focus
  */
 ola.mobile.UniverseTab.prototype.blur = function() {};
 

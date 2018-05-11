@@ -18,7 +18,7 @@
  *
  * OLA supports the following:
  *  - Various DMX512 over IP Protocols, including:
- *    - ArtNet 1, 2 & 3
+ *    - Art-Net 1, 2 & 3
  *    - Streaming ACN (E1.31)
  *    - Pathway Pathport
  *    - Strand ShowNet

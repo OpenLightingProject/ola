@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ola-artnet.cpp
- * Configure an ArtNet device
+ * Configure an Art-Net device
  * Copyright (C) 2005 Simon Newton
  */
 
@@ -35,16 +35,16 @@ using std::endl;
 using std::string;
 
 DECLARE_int32(device);
-DEFINE_s_string(name, n, "", "Set the name of the ArtNet device.");
-DEFINE_string(long_name, "", "Set the long name of the ArtNet device.");
-DEFINE_int32(net, -1, "Set the net parameter of the ArtNet device.");
+DEFINE_s_string(name, n, "", "Set the name of the Art-Net device.");
+DEFINE_string(long_name, "", "Set the long name of the Art-Net device.");
+DEFINE_int32(net, -1, "Set the net parameter of the Art-Net device.");
 DEFINE_s_int32(subnet, s, -1,
-               "Set the subnet parameter of the ArtNet device.");
+               "Set the subnet parameter of the Art-Net device.");
 DEFINE_s_uint32(universe, u, 0,
-                "List the IPs of ArtNet devices for this universe.");
+                "List the IPs of Art-Net devices for this universe.");
 
 /*
- * A class that configures Artnet devices
+ * A class that configures Art-Net devices
  */
 class ArtnetConfigurator: public OlaConfigurator {
  public:
@@ -166,7 +166,7 @@ int main(int argc, char*argv[]) {
   ola::AppInit(&argc,
                argv,
                "-d <dev_id> -n <name> -l <long_name> -s <subnet>",
-               "Configure ArtNet devices managed by OLA.");
+               "Configure Art-Net devices managed by OLA.");
 
   if (FLAGS_device < 0)
     ola::DisplayUsageAndExit();
