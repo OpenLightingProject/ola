@@ -15,9 +15,11 @@
 # __init__.py
 # Copyright (C) 2018 Shenghao Yang
 
-import logging
+"""
+Initialization code for the ola python library
+"""
 
-"""Initialization code for the ola python library"""
+import logging
 
 __author__ = 'me@shenghaoyang.info (Shenghao Yang)'
 
