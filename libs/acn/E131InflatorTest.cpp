@@ -152,7 +152,7 @@ void E131InflatorTest::testDecodeHeader() {
 
 
 /*
- * Check that we can inflate a E131 PDU that contains other PDUs
+ * Check that we can inflate a E1.31 PDU that contains other PDUs
  */
 void E131InflatorTest::testInflateRev2PDU() {
   const string source = "foo source";
@@ -177,7 +177,7 @@ void E131InflatorTest::testInflateRev2PDU() {
 }
 
 /*
- * Check that we can inflate a E131 PDU that contains other PDUs
+ * Check that we can inflate a E1.31 PDU that contains other PDUs
  */
 void E131InflatorTest::testInflatePDU() {
   const string source = "foobar source";
