@@ -73,7 +73,7 @@ typedef struct espnet_poll_s espnet_poll_t;
 struct espnet_node_config_s {
   uint8_t listen;
   uint8_t ip[4];
-  uint8_t universe;  // bit bizare that nodes only listen to one universe??
+  uint8_t universe;  // bit bizarre that nodes only listen to one universe??
 };
 
 typedef struct espnet_node_config_s espnet_node_config_t;
