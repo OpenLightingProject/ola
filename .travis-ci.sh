@@ -24,6 +24,7 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./config/ltsugar.m4" -or \
       -wholename "./config/missing" -or \
       -wholename "./libtool" -or \
+      -wholename "./config.log" -or \
       -wholename "./config.status" -or \
       -wholename "./Makefile" -or \
       -wholename "./Makefile.in" -or \
