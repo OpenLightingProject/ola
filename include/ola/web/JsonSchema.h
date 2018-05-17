@@ -477,7 +477,7 @@ class IntegerValidator : public BaseValidator {
 
   /**
    * @brief Add a constraint to this validator.
-   * @param constraint the contraint to add, ownership is transferred.
+   * @param constraint the constraint to add, ownership is transferred.
    */
   void AddConstraint(NumberConstraint *constraint);
 
