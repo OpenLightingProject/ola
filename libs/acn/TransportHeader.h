@@ -16,7 +16,7 @@
  * TransportHeader.h
  * Interface for the TransportHeader class.
  * This holds the source IP of the packet which is used to address replies
- * correctly. At some point in the future we should try to abtract the
+ * correctly. At some point in the future we should try to abstract the
  * transport protocol (IP/UDP in this case).
  * Copyright (C) 2011 Simon Newton
  */
