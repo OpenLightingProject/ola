@@ -56,12 +56,12 @@ inline int8_t NetworkToHost(int8_t value) { return value; }
  */
 int16_t NetworkToHost(int16_t value);
 
-/*
+/**
  * @brief 32-bit signed network to host conversion.
  */
 int32_t NetworkToHost(int32_t value);
 
-/*
+/**
  * @brief 8-bit unsigned host to network conversion.
  */
 inline uint8_t HostToNetwork(uint8_t value) { return value; }

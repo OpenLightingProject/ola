@@ -51,7 +51,7 @@ ola.common.ServerStats.prototype.title = function() {
 
 
 /**
- * Called when the tab loses focuse
+ * Called when the tab loses focus
  */
 ola.common.ServerStats.prototype.blur = function() {};
 

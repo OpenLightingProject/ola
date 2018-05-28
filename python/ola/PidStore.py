@@ -61,7 +61,7 @@ class ArgsValidationError(Error):
 
 
 class UnpackException(Error):
-  """Raised if we can't unpack the data corectly."""
+  """Raised if we can't unpack the data correctly."""
 
 
 class MissingPLASAPIDs(Error):

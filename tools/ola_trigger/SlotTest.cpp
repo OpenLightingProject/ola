@@ -53,7 +53,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SlotTest);
 
 
 /**
- * Chech that we don't add Intervals which intersect
+ * Check that we don't add Intervals which intersect
  */
 void SlotTest::testIntersectingIntervalAddition() {
   Slot slot(0);

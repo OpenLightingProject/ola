@@ -56,7 +56,7 @@ common_libolacommon_la_LIBADD += $(libprotobuf_LIBS)
 EXTRA_DIST += common/rdm/Pids.proto
 
 common/rdm/Pids.pb.cc common/rdm/Pids.pb.h: common/rdm/Makefile.mk common/rdm/Pids.proto
-	$(PROTOC) --cpp_out common/rdm --proto_path $(srcdir)/common/rdm $(srcdir)/common/rdm/Pids.proto
+	$(PROTOC) --cpp_out $(top_builddir)/common/rdm --proto_path $(srcdir)/common/rdm $(srcdir)/common/rdm/Pids.proto
 
 # TESTS_DATA
 ##################################################

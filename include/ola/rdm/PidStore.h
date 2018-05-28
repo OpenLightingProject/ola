@@ -44,7 +44,7 @@ namespace rdm {
 class PidStore;
 class PidDescriptor;
 
-// The following % before Device is to stop Doxygen interpretting it as a class
+// The following % before Device is to stop Doxygen interpreting it as a class
 /**
  * @brief The root of the RDM parameter descriptor store.
  *
