@@ -34,7 +34,7 @@ addons:
      - g++-8
     packages: &core_build_clang_latest
      - *core_build
-     - clang-5.0
+     - clang-6.0
 
 matrix:
   fast_finish: true
@@ -74,7 +74,7 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise
+           - llvm-toolchain-trusty-6.0
     - os: linux
       dist: trusty
       compiler: gcc
@@ -259,7 +259,7 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-8" CC="ccache gcc-8"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
 #Report the compiler version
  - $CXX --version
  - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then sudo add-apt-repository ppa:waja/trusty-backports -y; sudo apt-get update -qq; sudo apt-get install lintian -y; fi # Install a late enough lintian
