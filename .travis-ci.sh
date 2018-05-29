@@ -12,6 +12,7 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand"
 
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
+      -wholename "./.codespellignore" -or \
       -wholename "./.git/*" -or \
       -wholename "./aclocal.m4" -or \
       -wholename "./config/config.guess" -or \
