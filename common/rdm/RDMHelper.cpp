@@ -879,7 +879,8 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         str << "undefined for slot " << slot_label;
         break;
       default:
-        str << "unknown for slot " << slot_label;
+        str << "unknown, was type " << static_cast<int>(slot_type)
+            << ", for slot " << slot_label;
     }
     return str.str();
   }

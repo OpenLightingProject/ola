@@ -826,7 +826,7 @@ Documentation:
   Improved USB Pro handling
   Added port priorities & multi source merging
   TX support for the DMX-TRI
-  Support for the Ardiuno RGB Mixer
+  Support for the Arduino RGB Mixer
   DSCP for E1.31
   Support for using the OSSP uuid library
   Removal of run-time loadable plugins.

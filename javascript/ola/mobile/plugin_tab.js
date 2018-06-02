@@ -64,7 +64,7 @@ ola.mobile.PluginTab.prototype.title = function() {
 
 
 /**
- * Called when the tab loses focuse
+ * Called when the tab loses focus
  */
 ola.mobile.PluginTab.prototype.blur = function() {};
 

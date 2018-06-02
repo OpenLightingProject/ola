@@ -23,7 +23,7 @@
  *     provide timeradd and timersub.
  *   - Reduces bugs by using the compiler to check if the value was supposed
  *     to be an interval or absolute time. For example, passing an absolute
- *     time intstead of an Interval to RegisterTimeout would be bad.
+ *     time instead of an Interval to RegisterTimeout would be bad.
  */
 
 #ifndef INCLUDE_OLA_CLOCK_H_
