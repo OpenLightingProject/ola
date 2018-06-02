@@ -31,10 +31,10 @@ addons:
      - libmicrohttpd-dev
     packages: &core_build_gpp_latest
      - *core_build
-     - g++-6
+     - g++-8
     packages: &core_build_clang_latest
      - *core_build
-     - clang-5.0
+     - clang-6.0
 
 matrix:
   fast_finish: true
@@ -92,7 +92,7 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise
+           - llvm-toolchain-trusty-6.0
     - os: linux
       dist: trusty
       compiler: gcc
@@ -276,10 +276,10 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
- - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-6" CC="ccache gcc-6"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-8" CC="ccache gcc-8"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
 #Report the compiler version
  - $CXX --version
  - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then sudo add-apt-repository ppa:waja/trusty-backports -y; sudo apt-get update -qq; sudo apt-get install lintian -y; fi # Install a late enough lintian
@@ -288,7 +288,7 @@ after_failure:
   - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log
 
 after_success:
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-6 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-8 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
 
 after_script:
   - if [ "$TASK" = "coverity" ]; then tail -n 10000 ${TRAVIS_BUILD_DIR}/cov-int/build-log.txt; cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi
