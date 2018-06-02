@@ -21,6 +21,6 @@ plugins_ftdidmx_libolaftdidmx_la_LIBADD += \
 else
 plugins_ftdidmx_libolaftdidmx_la_LIBADD += \
     $(libftdi_LIBS)
-endif // HAVE_LIBFTDI1
+endif #HAVE_LIBFTDI1
 
-endif // USE_FTDI
+endif #USE_FTDI
