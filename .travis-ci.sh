@@ -10,6 +10,7 @@ CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cppli
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
+      -wholename "./.codespellignore" -or \
       -wholename "./.git/*" -or \
       -wholename "./aclocal.m4" -or \
       -wholename "./config/config.guess" -or \

@@ -267,7 +267,7 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex protobuf@3.1 liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb are already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex protobuf@3.1 liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
