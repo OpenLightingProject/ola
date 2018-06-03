@@ -16,11 +16,9 @@ plugins_ftdidmx_libolaftdidmx_la_LIBADD = \
     common/libolacommon.la \
     olad/plugin_api/libolaserverplugininterface.la
 if HAVE_LIBFTDI1
-plugins_ftdidmx_libolaftdidmx_la_LIBADD += \
-    $(libftdi1_LIBS)
+plugins_ftdidmx_libolaftdidmx_la_LIBADD += $(libftdi1_LIBS)
 else
-plugins_ftdidmx_libolaftdidmx_la_LIBADD += \
-    $(libftdi0_LIBS)
+plugins_ftdidmx_libolaftdidmx_la_LIBADD += $(libftdi0_LIBS)
 endif
 
 endif
