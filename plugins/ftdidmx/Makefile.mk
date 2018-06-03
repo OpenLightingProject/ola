@@ -20,7 +20,7 @@ plugins_ftdidmx_libolaftdidmx_la_LIBADD += \
     $(libftdi1_LIBS)
 else
 plugins_ftdidmx_libolaftdidmx_la_LIBADD += \
-    $(libftdi_LIBS)
+    $(libftdi0_LIBS)
 endif
 
 endif
