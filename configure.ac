@@ -617,7 +617,7 @@ AC_ARG_ENABLE(
 AC_ARG_ENABLE(
   [libftdi],
   [AS_HELP_STRING([--disable-libftdi],
-                  [Avoid using libftdi or libftdi1 even if either exists])])
+                  [Avoid using libftdi0 or libftdi1 even if either exists])])
 
 have_libftdi0="no"
 AS_IF([test "x$enable_libftdi" != xno],
@@ -638,7 +638,7 @@ if test "x$have_libftdi0" = xyes || test "x$have_libftdi1" = xyes; then
   have_libftdi="yes"
 fi
 AS_IF([test "x$have_libftdi" = xyes],
-      [AC_DEFINE([HAVE_LIBFTDI], [1], [define if libftdi or libftdi1 is installed])])
+      [AC_DEFINE([HAVE_LIBFTDI], [1], [define if libftdi0 or libftdi1 is installed])])
 
 # libusb
 AC_ARG_ENABLE(
