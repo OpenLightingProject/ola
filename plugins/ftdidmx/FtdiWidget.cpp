@@ -42,8 +42,8 @@
 #include <ftdi.h>
 #endif  // HAVE_LIBFTDI1
 
-#include <strings.h>
 #include <assert.h>
+#include <strings.h>
 
 #include <string>
 #include <algorithm>
