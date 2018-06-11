@@ -32,9 +32,18 @@
  * by E.S. Rosenberg a.k.a. Keeper of the Keys 5774/2014
  */
 
-#include <strings.h>
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
+#ifdef HAVE_LIBFTDI1
+#include <libftdi1/ftdi.h>
+#else
 #include <ftdi.h>
+#endif  // HAVE_LIBFTDI1
+
 #include <assert.h>
+#include <strings.h>
 
 #include <string>
 #include <algorithm>
@@ -127,7 +136,11 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
       ftdi_device_list* current_device = list;
 
       while (current_device != NULL) {
+#if HAVE_LIBFTDI1
+        struct libusb_device *dev = current_device->dev;
+#else
         struct usb_device *dev = current_device->dev;
+#endif  // HAVE_LIBFTDI1
         current_device = current_device->next;
         i++;
 
