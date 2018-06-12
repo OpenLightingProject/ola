@@ -45,38 +45,44 @@ matrix:
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
+      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
+      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
-    - os: osx
-      osx_image: xcode9.2
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
       - PROTOBUF='3.5'
+      - LIBFTDI='1'
     - os: osx
-      osx_image: xcode9.2
+      osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
       - PROTOBUF='3.5'
+      - LIBFTDI='1'
     - os: linux
       dist: trusty
       compiler: clang
@@ -289,7 +295,9 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "3.5" ]; then brew install protobuf@3.5; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.5" ]; then brew install protobuf@3.1; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.5" ]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release

@@ -612,19 +612,33 @@ AC_ARG_ENABLE(
   [ja-rule],
   [AS_HELP_STRING([--enable-ja-rule], [Build the Ja Rule test tool])])
 
-# libftdi: this requires libusb-0.1.4+ don't know if I should also
+# libftdi0: this requires libusb-0.1.4+ don't know if I should also
 # check for it, since the libusb check above is not for 0.1.4 but for libusb-1
 AC_ARG_ENABLE(
   [libftdi],
   [AS_HELP_STRING([--disable-libftdi],
-                  [Avoid using libftdi even if it exists])])
+                  [Avoid using libftdi0 or libftdi1 even if either exists])])
 
-have_libftdi="no"
+have_libftdi0="no"
 AS_IF([test "x$enable_libftdi" != xno],
-      [PKG_CHECK_MODULES([libftdi], [libftdi >= 0.18], [have_libftdi="yes"],
+      [PKG_CHECK_MODULES([libftdi0], [libftdi >= 0.18], [have_libftdi0="yes"],
                          [true])])
+AM_CONDITIONAL([HAVE_LIBFTDI0], [test "x$have_libftdi0" = xyes])
+AS_IF([test "x$have_libftdi0" = xyes],
+      [AC_DEFINE([HAVE_LIBFTDI0], [1], [define if libftdi0 is installed])])
+have_libftdi1="no"
+AS_IF([test "x$enable_libftdi" != xno],
+      [PKG_CHECK_MODULES([libftdi1], [libftdi1 >= 1.0], [have_libftdi1="yes"],
+                         [true])])
+AM_CONDITIONAL([HAVE_LIBFTDI1], [test "x$have_libftdi1" = xyes])
+AS_IF([test "x$have_libftdi1" = xyes],
+      [AC_DEFINE([HAVE_LIBFTDI1], [1], [define if libftdi1 is installed])])
+have_libftdi="no"
+if test "x$have_libftdi0" = xyes || test "x$have_libftdi1" = xyes; then
+  have_libftdi="yes"
+fi
 AS_IF([test "x$have_libftdi" = xyes],
-      [AC_DEFINE([HAVE_LIBFTDI], [1], [define if libftdi is installed])])
+      [AC_DEFINE([HAVE_LIBFTDI], [1], [define if libftdi0 or libftdi1 is installed])])
 
 # libusb
 AC_ARG_ENABLE(
