@@ -8,6 +8,7 @@ Contributors:
   Bastien Andrès, contributed to the dmx4linux plugin
   Carsten Presser, Karate USB plugin
   Dave Olsthoorn, working on a new web-ui
+  E.S. Rosenberg, further work on ftdidmx plugin.
   Hakan Lindestaf, Renard plugin
   Harry F, for the Eurolite USB Pro code
   Heikki Junnila, bug fixes for the debian packaging files
@@ -24,4 +25,3 @@ Contributors:
   Sean Sill, various fixes.
   Stefan Krüger, added APA102 support to the SPI Plugin
   Tobi Schäfer, for the MacPort files
-  E.S. Rosenberg, further work on ftdidmx plugin.
