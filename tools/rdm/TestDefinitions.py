@@ -1812,6 +1812,9 @@ class GetSoftwareVersionLabel(TestMixins.GetRequiredStringMixin,
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'SOFTWARE_VERSION_LABEL'
   EXPECTED_FIELDS = ['label']
+  # This makes it a fail, it should probably be an advisory, but we ought to
+  # flag mandatory PIDs with no label returned
+  MIN_LENGTH = 1
 
 
 class GetSoftwareVersionLabelWithData(TestMixins.GetMandatoryPIDWithDataMixin,
@@ -2151,6 +2154,8 @@ class GetDMXPersonalityDescription(OptionalParameterTestFixture):
           'Name field in %s contains unprintable characters, was %s' %
           (self.pid.name, fields['name'].encode('string-escape')))
 
+    # TODO(Peter): Advisory if name is 0 length
+
 
 class GetDMXPersonalityDescriptions(OptionalParameterTestFixture):
   """Get information about all the personalities."""
@@ -2195,6 +2200,7 @@ class GetDMXPersonalityDescriptions(OptionalParameterTestFixture):
             'Name field in %s contains unprintable characters, was %s' %
             (self.pid.name, fields['name'].encode('string-escape')))
 
+    # TODO(Peter): Advisory if name is 0 length
 
 class GetDMXPersonalityDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
                                              OptionalParameterTestFixture):
