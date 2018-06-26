@@ -362,7 +362,19 @@ class ModelCollector(object):
         self._NextState()
     elif self.work_state == self.SLOT_INFO:
       self.work_state = self.SLOT_DESCRIPTION
-      self._FetchNextSlotDescription()
+      pid = self.pid_store.GetName('SLOT_DESCRIPTION')
+      if self._CheckPidSupported(pid):
+        if not self.slots:
+          slot_count = self._GetCurrentPersonality().get('slot_count', 0)
+          if slot_count:
+            self.slots = list(xrange(0, slot_count))
+            logging.debug("%s supported but no slots from SLOT_INFO, populated %d slots from personality info" %
+                          (pid, slot_count))
+        self._FetchNextSlotDescription()
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
     elif self.work_state == self.SLOT_DESCRIPTION:
       # fetch slot default value
       self.work_state = self.SLOT_DEFAULT_VALUE
@@ -471,23 +483,18 @@ class ModelCollector(object):
     """Fetch the description for the next slot, or proceed to the next state if
        there are none left.
     """
-    pid = self.pid_store.GetName('SLOT_DESCRIPTION')
-    if self._CheckPidSupported(pid):
-      if self.slots:
-        slot = self.slots.pop(0)
-        self.rdm_api.Get(self.universe,
-                         self.uid,
-                         PidStore.ROOT_DEVICE,
-                         pid,
-                         self._RDMRequestComplete,
-                         [slot])
-        logging.debug('Sent SLOT_DESCRIPTION request for slot %d' % slot)
-        self.outstanding_pid = pid
-      else:
-        self._NextState()
+    if self.slots:
+      slot = self.slots.pop(0)
+      pid = self.pid_store.GetName('SLOT_DESCRIPTION')
+      self.rdm_api.Get(self.universe,
+                       self.uid,
+                       PidStore.ROOT_DEVICE,
+                       pid,
+                       self._RDMRequestComplete,
+                       [slot])
+      logging.debug('Sent SLOT_DESCRIPTION request for slot %d' % slot)
+      self.outstanding_pid = pid
     else:
-      logging.debug("Skipping pid %s as it's not supported on this device" %
-                    pid)
       self._NextState()
 
   def _FetchQueuedMessages(self):
