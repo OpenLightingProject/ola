@@ -18,6 +18,7 @@
 
 '''Show the UIDs for a universe.'''
 
+from __future__ import print_function
 import getopt
 import textwrap
 import sys
@@ -28,7 +29,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 def Usage():
   print(textwrap.dedent("""\
-  Usage: ola_rdm_discover.py --universe <universe> [--force_discovery]
+  Usage: ola_rdm_discover.py --universe <universe> [--full]
 
   Fetch the UID list for a universe.
 
@@ -62,7 +63,7 @@ def main():
     elif o in ('-u', '--universe'):
       universe = int(a)
 
-  if not universe:
+  if universe is None:
     Usage()
     sys.exit()
 
@@ -77,6 +78,8 @@ def main():
     if state.Succeeded():
       for uid in uids:
         print(str(uid))
+    else:
+      print('Error: %s' % state.message, file=sys.stderr)
     wrapper.Stop()
 
   if full_discovery:

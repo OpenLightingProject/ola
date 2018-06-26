@@ -14,13 +14,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetConfigMessages.proto
- * Defines the protocol buffers used to configure the Artnet device
+ * Defines the protocol buffers used to configure the Art-Net device
  * Copyright (C) 2005 Simon Newton
  */
 
 package ola.plugin.artnet;
 
-// This adjusts the ArtNet settings for this node.
+// This adjusts the Art-Net settings for this node.
 message OptionsRequest {
   optional string short_name = 1;
   optional string long_name = 2;

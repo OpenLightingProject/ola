@@ -2,7 +2,7 @@
 See https://github.com/OpenLightingProject/ola/issues?direction=desc&state=open
 
 --URGENT--
-resend DMX on idle (artnet every 4s)
+resend DMX on idle (Art-Net every 4s)
 
 --REQUIRED--
 

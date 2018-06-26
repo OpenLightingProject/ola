@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetNode.cpp
- * An ArtNet node
+ * An Art-Net node
  * Copyright (C) 2005 Simon Newton
  */
 
@@ -81,7 +81,7 @@ const char ArtNetNodeImpl::ARTNET_ID[] = "Art-Net";
 // saw it in an ArtTod message.
 typedef map<UID, std::pair<IPV4Address, uint8_t> > uid_map;
 
-// Input ports are ones that send data using ArtNet
+// Input ports are ones that send data using Art-Net
 class ArtNetNodeImpl::InputPort {
  public:
   InputPort()
@@ -354,7 +354,7 @@ bool ArtNetNodeImpl::SetLongName(const string &name) {
 
 bool ArtNetNodeImpl::SetNetAddress(uint8_t net_address) {
   if (net_address & 0x80) {
-    OLA_WARN << "Artnet net address > 127, truncating";
+    OLA_WARN << "Art-Net net address > 127, truncating";
     net_address = net_address & 0x7f;
   }
   if (net_address == m_net_address) {
@@ -595,7 +595,7 @@ bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
   }
 
   if (!sent_ok) {
-    OLA_WARN << "Failed to send ArtNet DMX packet";
+    OLA_WARN << "Failed to send Art-Net DMX packet";
   }
   return sent_ok;
 }
@@ -958,7 +958,7 @@ void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
 
   if (packet_size <= header_size) {
-    OLA_WARN << "Skipping small artnet packet received, size=" << packet_size;
+    OLA_WARN << "Skipping small Art-Net packet received, size=" << packet_size;
     return;
   }
 
@@ -1010,7 +1010,7 @@ void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
       // Not implemented
       break;
     default:
-      OLA_INFO << "ArtNet got unknown packet " << std::hex
+      OLA_INFO << "Art-Net got unknown packet " << std::hex
                << LittleEndianToHost(packet.op_code);
   }
 }
@@ -1304,7 +1304,7 @@ void ArtNetNodeImpl::HandleRdm(const IPV4Address &source_address,
     }
   }
 
-  // The ArtNet packet does not include the RDM start code. Prepend that.
+  // The Art-Net packet does not include the RDM start code. Prepend that.
   RDMFrame rdm_response(packet.data, rdm_length, RDMFrame::Options(true));
 
   InputPorts::iterator iter = m_input_ports.begin();
@@ -1334,11 +1334,13 @@ void ArtNetNodeImpl::RDMRequestCompletion(
       // hopefully update the remote controller
       port->on_discover->Run();
     } else {
-      OLA_WARN << "ArtNet RDM request failed with code " << reply->StatusCode();
+      OLA_WARN << "Art-Net RDM request failed with code "
+               << reply->StatusCode();
     }
   } else {
     // the universe address has changed we need to drop this request
-    OLA_WARN << "ArtNet Output port has changed mid request, dropping response";
+    OLA_WARN << "Art-Net Output port has changed mid request, dropping "
+             << "response";
   }
 }
 
@@ -1348,7 +1350,7 @@ void ArtNetNodeImpl::HandleRDMResponse(InputPort *port,
   auto_ptr<RDMReply> reply(ola::rdm::RDMReply::FromFrame(frame));
 
   // Without a valid response, we don't know which request this matches. This
-  // makes ArtNet rather useless for RDM regression testing
+  // makes Art-Net rather useless for RDM regression testing
   if (!reply->Response()) {
     return;
   }
@@ -1710,7 +1712,7 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(InputPort *port,
 
   // If this is the one and only block from this node, we can remove all uids
   // that don't appear in it.
-  // There is a bug in ArtNet nodes where sometimes UidCount > UidTotal.
+  // There is a bug in Art-Net nodes where sometimes UidCount > UidTotal.
   if (uid_count >= NetworkToHost(packet.uid_total)) {
     uid_map::iterator iter = port_uids.begin();
     while (iter != port_uids.end()) {
@@ -1748,7 +1750,7 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(InputPort *port,
 bool ArtNetNodeImpl::StartDiscoveryProcess(InputPort *port,
                                            RDMDiscoveryCallback *callback) {
   if (port->discovery_callback) {
-    OLA_FATAL << "ArtNet UID discovery already running, something has gone "
+    OLA_FATAL << "Art-Net UID discovery already running, something has gone "
                  "wrong with the DiscoverableQueueingRDMController.";
     port->RunTodCallback();
     return false;
@@ -1775,7 +1777,7 @@ bool ArtNetNodeImpl::StartDiscoveryProcess(InputPort *port,
 }
 
 void ArtNetNodeImpl::ReleaseDiscoveryLock(InputPort *port) {
-  OLA_INFO << "Artnet RDM discovery complete";
+  OLA_INFO << "Art-Net RDM discovery complete";
   port->discovery_timeout = ola::thread::INVALID_TIMEOUT;
   port->discovery_node_set.clear();
 
