@@ -1,21 +1,27 @@
 x/y/2018 ola-0.10.7
  Features:
- * 
+ * Allow multiple KiNet ports to be patched to the same universe #1414
+ * Support libftdi1 too in FTDI DMX #1012 Debian #810374
 
  API:
  * 
 
  RDM Tests:
- * 
+ * Fix a bug in the RDM tests when a responder supports sensor PIDs #1388
 
  Bugs:
  * Fix the build on Windows
  * Entire codebase now passes codespell testing
  * Fix a Python 3 bug in the API
- *
+ * Fix a few longstanding bugs in the Python ola_rdm_discover
+ * Correct the OSC config option name for output format in the documentation
+ * Use top_builddir in more places in the build
+ * Use libusb_set_option where available
+ * Fix the udev rules
+ * Downstream Debian fixes
 
  Internal:
- *
+ * Various minor log formatting tidying up
 
 07/01/2018 ola-0.10.6
  Bugs:
