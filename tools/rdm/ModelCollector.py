@@ -41,7 +41,8 @@ class ModelCollector(object):
 
   (EMPTYING_QUEUE,
    DEVICE_INFO,
-   MODEL_DESCRIPTION,
+   DEVICE_LABEL,
+   DEVICE_MODEL_DESCRIPTION,
    SUPPORTED_PARAMS,
    SOFTWARE_VERSION_LABEL,
    PERSONALITIES,
@@ -51,7 +52,7 @@ class ModelCollector(object):
    LANGUAGES,
    SLOT_INFO,
    SLOT_DESCRIPTION,
-   SLOT_DEFAULT_VALUE) = xrange(13)
+   SLOT_DEFAULT_VALUE) = xrange(14)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -150,7 +151,9 @@ class ModelCollector(object):
     logging.debug(unpacked_data)
     if self.work_state == self.DEVICE_INFO:
       self._HandleDeviceInfo(unpacked_data)
-    elif self.work_state == self.MODEL_DESCRIPTION:
+    elif self.work_state == self.DEVICE_LABEL:
+      self._HandleDeviceLabel(unpacked_data)
+    elif self.work_state == self.DEVICE_MODEL_DESCRIPTION:
       self._HandleDeviceModelDescription(unpacked_data)
     elif self.work_state == self.SUPPORTED_PARAMS:
       self._HandleSupportedParams(unpacked_data)
@@ -195,6 +198,12 @@ class ModelCollector(object):
 
     self.personalities = list(xrange(1, data['personality_count'] + 1))
     self.sensors = list(xrange(0, data['sensor_count']))
+    self._NextState()
+
+  def _HandleDeviceLabel(self, data):
+    """Called when we get a DEVICE_LABEL response."""
+    this_device = self._GetDevice()
+    this_device['device_label'] = data['label']
     self._NextState()
 
   def _HandleDeviceModelDescription(self, data):
@@ -308,11 +317,18 @@ class ModelCollector(object):
       self._GetPid(pid)
       self.work_state = self.DEVICE_INFO
     elif self.work_state == self.DEVICE_INFO:
+      # fetch device label
+      # Some devices seem to mistakenly use this instead of device model
+      # description
+      pid = self.pid_store.GetName('DEVICE_LABEL')
+      self._GetPid(pid)
+      self.work_state = self.DEVICE_LABEL
+    elif self.work_state == self.DEVICE_LABEL:
       # fetch device model description
       pid = self.pid_store.GetName('DEVICE_MODEL_DESCRIPTION')
       self._GetPid(pid)
-      self.work_state = self.MODEL_DESCRIPTION
-    elif self.work_state == self.MODEL_DESCRIPTION:
+      self.work_state = self.DEVICE_MODEL_DESCRIPTION
+    elif self.work_state == self.DEVICE_MODEL_DESCRIPTION:
       # fetch supported params
       pid = self.pid_store.GetName('SUPPORTED_PARAMETERS')
       self._GetPid(pid)
