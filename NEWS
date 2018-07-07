@@ -19,6 +19,7 @@ x/y/2018 ola-0.10.7
  * Use libusb_set_option where available
  * Fix the udev rules
  * Downstream Debian fixes
+ * Fix an incorrect response if we have the sensor PIDs but no sensors
 
  Internal:
  * Various minor log formatting tidying up
