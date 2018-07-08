@@ -2,6 +2,7 @@ x/y/2018 ola-0.10.7
  Features:
  * Allow multiple KiNet ports to be patched to the same universe #1414
  * Support libftdi1 too in FTDI DMX #1012 Debian #810374
+ * Support FTDI DMX via libftdi1 on Windows
 
  API:
  * 
@@ -20,6 +21,7 @@ x/y/2018 ola-0.10.7
  * Fix the udev rules
  * Downstream Debian fixes
  * Fix an incorrect response if we have the sensor PIDs but no sensors
+ * Stop trying to build opendmx kernel plugin on Windows
 
  Internal:
  * Various minor log formatting tidying up
