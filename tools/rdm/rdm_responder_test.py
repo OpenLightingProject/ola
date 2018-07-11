@@ -19,13 +19,13 @@
 from ola.testing.rdm import TestDefinitions, TestRunner
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm.TestState import TestState
+from ola.testing.rdm.TimingStats import TimingStats
 import datetime
 import logging
 import re
 import sys
 import textwrap
 import time
-from ola.testing.rdm.TimingStats import TimingStats
 from ola import PidStore
 from ola import Version
 from ola.ClientWrapper import ClientWrapper
