@@ -13,7 +13,7 @@ Package: libola-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same
-Depends: ola (= ${binary:Version}), ${misc:Depends}
+Depends: ola (= ${binary:Version}), libprotobuf-dev, ${misc:Depends}
 Description: Open Lighting Architecture - development libraries
  The DMX512 standard for Digital MultipleX is used for digital
  communication networks commonly used to control stage lighting and
