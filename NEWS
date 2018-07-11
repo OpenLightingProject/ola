@@ -9,6 +9,7 @@ x/y/2018 ola-0.10.7
 
  RDM Tests:
  * Fix a bug in the RDM tests when a responder supports sensor PIDs #1388
+ * Fix a bug in imports for rdm_responder_test.py
 
  Bugs:
  * Fix the build on Windows
