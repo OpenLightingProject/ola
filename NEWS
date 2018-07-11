@@ -22,6 +22,8 @@ x/y/2018 ola-0.10.7
  * Downstream Debian fixes
  * Fix an incorrect response if we have the sensor PIDs but no sensors
  * Stop trying to build opendmx kernel plugin on Windows
+ * Prefer Avahi over Bonjour for our DiscoveryAgent, in case the Bonjour
+   version is actually just Avahi's compatibility layer
 
  Internal:
  * Various minor log formatting tidying up
