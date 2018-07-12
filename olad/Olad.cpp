@@ -24,6 +24,10 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
+#if HAVE_LIBSYSTEMD
+#include <systemd/sd-daemon.h>
+#endif  // HAVE_LIBSYSTEMD
+
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -171,6 +175,11 @@ int main(int argc, char *argv[]) {
       ola::NewCallback(olad->GetOlaServer(), &ola::OlaServer::ReloadPlugins));
 #endif  // _WIN32
 
+#if HAVE_LIBSYSTEMD
+  // Return value is intentionally not checked. See return value section
+  // under sd_notify(3).
+  sd_notify(0, "READY=1\nSTATUS=Startup complete\n");
+#endif  // HAVE_LIBSYSTEMD
   olad->Run();
   return ola::EXIT_OK;
 }

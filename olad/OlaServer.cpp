@@ -22,6 +22,10 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
+#ifdef HAVE_LIBSYSTEMD
+#include <systemd/sd-daemon.h>
+#endif  // HAVE_LIBSYSTEMD
+
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -472,9 +476,17 @@ bool OlaServer::InternalNewConnection(
 }
 
 void OlaServer::ReloadPluginsInternal() {
+#ifdef HAVE_LIBSYSTEMD
+  // Return value is intentionally not checked for both calls.
+  // See return value section under sd_notify(3).
+  sd_notify(0, "RELOADING=1\nSTATUS=Reloading plugins\n");
+#endif  // HAVE_LIBSYSTEMD
   OLA_INFO << "Reloading plugins";
   StopPlugins();
   m_plugin_manager->LoadAll();
+#ifdef HAVE_LIBSYSTEMD
+  sd_notify(0, "READY=1\nSTATUS=Plugin reload complete\n");
+#endif  // HAVE_LIBSYSTEMD
 }
 
 void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {

@@ -387,6 +387,13 @@ esac
 have_libftd2xx="no"
 AM_CONDITIONAL([HAVE_LIBFTD2XX], [test "x$have_libftd2xx" = xyes])
 
+# libsystemd
+AC_SEARCH_LIBS([sd_notify], [systemd], [have_libsystemd="yes"])
+AC_CHECK_HEADER([systemd/sd-daemon.h], [], [have_libsystemd="no"])
+
+AS_IF([test "x$have_libsystemd" = xyes],
+      [AC_DEFINE([HAVE_LIBSYSTEMD], [1], [define if libsystemd is installed])])
+
 # ncurses
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL([HAVE_NCURSES], [test "x$have_ncurses" = xyes])
