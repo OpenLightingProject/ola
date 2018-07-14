@@ -24,10 +24,6 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
-#if HAVE_LIBSYSTEMD
-#include <systemd/sd-daemon.h>
-#endif  // HAVE_LIBSYSTEMD
-
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,6 +35,10 @@
 // On MinGW, OlaDaemon.h pulls in SocketAddress.h which pulls in WinSock2.h,
 // which needs to be after WinSock2.h, hence this order
 #include "olad/OlaDaemon.h"
+
+#if HAVE_LIBSYSTEMD
+#include "olad/Systemd.h"
+#endif  // HAVE_LIBSYSTEMD
 
 #include "ola/Logging.h"
 #include "ola/base/Credentials.h"
@@ -176,9 +176,14 @@ int main(int argc, char *argv[]) {
 #endif  // _WIN32
 
 #if HAVE_LIBSYSTEMD
-  // Return value is intentionally not checked. See return value section
-  // under sd_notify(3).
-  sd_notify(0, "READY=1\nSTATUS=Startup complete\n");
+  if (ola::notify_available()) {
+    OLA_INFO << "Systemd notification socket present. Sending notifications.";
+  } else {
+    OLA_WARN << "Systemd notification socket not present";
+  }
+  // Does not need to be guarded. sd_notify does its own internal check on
+  // the socket's presence, as well.
+  ola::notify_systemd(0, "READY=1\nSTATUS=Startup complete\n");
 #endif  // HAVE_LIBSYSTEMD
   olad->Run();
   return ola::EXIT_OK;

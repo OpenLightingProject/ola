@@ -387,13 +387,6 @@ esac
 have_libftd2xx="no"
 AM_CONDITIONAL([HAVE_LIBFTD2XX], [test "x$have_libftd2xx" = xyes])
 
-# libsystemd
-AC_SEARCH_LIBS([sd_notify], [systemd], [have_libsystemd="yes"])
-AC_CHECK_HEADER([systemd/sd-daemon.h], [], [have_libsystemd="no"])
-
-AS_IF([test "x$have_libsystemd" = xyes],
-      [AC_DEFINE([HAVE_LIBSYSTEMD], [1], [define if libsystemd is installed])])
-
 # ncurses
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL([HAVE_NCURSES], [test "x$have_ncurses" = xyes])
@@ -750,6 +743,21 @@ AC_ARG_ENABLE(
   [doxygen-version],
   [AS_HELP_STRING([--disable-doxygen-version],
   [Substitute the Doxygen version with latest, for the website])])
+
+# systemd support
+AC_ARG_ENABLE(
+  [systemd],
+  [AS_HELP_STRING([--enable-systemd], [Enable systemd support])])
+
+have_libsystemd="no"
+AS_IF([test "x$enable_systemd" = "xyes"],
+  [PKG_CHECK_MODULES([libsystemd], [libsystemd >= 38], [have_libsystemd="yes"])
+   AC_CHECK_HEADER([systemd/sd-daemon.h], [], [have_libsystemd="no"])])
+
+AS_IF([test "x$have_libsystemd" = xyes],
+      [AC_DEFINE([HAVE_LIBSYSTEMD], [1], [define if systemd support wanted])])
+
+AM_CONDITIONAL([HAVE_LIBSYSTEMD], [test "x$have_libsystemd" = xyes])
 
 # UUCP Lock directory
 AC_ARG_WITH([uucp-lock],

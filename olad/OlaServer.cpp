@@ -22,10 +22,6 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
-#ifdef HAVE_LIBSYSTEMD
-#include <systemd/sd-daemon.h>
-#endif  // HAVE_LIBSYSTEMD
-
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -66,6 +62,10 @@
 #ifdef HAVE_LIBMICROHTTPD
 #include "olad/OladHTTPServer.h"
 #endif  // HAVE_LIBMICROHTTPD
+
+#ifdef HAVE_LIBSYSTEMD
+#include "olad/Systemd.h"
+#endif  // HAVE_LIBSYSTEMD
 
 DEFINE_s_uint16(rpc_port, r, ola::OlaServer::DEFAULT_RPC_PORT,
                 "The port to listen for RPCs on. Defaults to 9010.");
@@ -477,15 +477,13 @@ bool OlaServer::InternalNewConnection(
 
 void OlaServer::ReloadPluginsInternal() {
 #ifdef HAVE_LIBSYSTEMD
-  // Return value is intentionally not checked for both calls.
-  // See return value section under sd_notify(3).
-  sd_notify(0, "RELOADING=1\nSTATUS=Reloading plugins\n");
+  ola::notify_systemd(0, "RELOADING=1\nSTATUS=Reloading plugins\n");
 #endif  // HAVE_LIBSYSTEMD
   OLA_INFO << "Reloading plugins";
   StopPlugins();
   m_plugin_manager->LoadAll();
 #ifdef HAVE_LIBSYSTEMD
-  sd_notify(0, "READY=1\nSTATUS=Plugin reload complete\n");
+  ola::notify_systemd(0, "READY=1\nSTATUS=Plugin reload complete\n");
 #endif  // HAVE_LIBSYSTEMD
 }
 
