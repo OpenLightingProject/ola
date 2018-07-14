@@ -8,7 +8,7 @@ nodist_rpcpython_PYTHON = python/ola/rpc/Rpc_pb2.py
 rpcpython_PYTHON = python/ola/rpc/SimpleRpcController.py \
                    python/ola/rpc/StreamRpcChannel.py \
                    python/ola/rpc/__init__.py
-built_sources += python/ola/rpc/Rpc_pb2.py
+built_sources += $(top_builddir)/python/ola/rpc/Rpc_pb2.py
 endif
 
 python/ola/rpc/Rpc_pb2.py: common/rpc/Rpc.proto

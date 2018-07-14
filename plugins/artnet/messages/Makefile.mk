@@ -15,8 +15,9 @@ nodist_artnetinclude_HEADERS = \
     plugins/artnet/messages/ArtNetConfigMessages.pb.h
 
 
-built_sources += plugins/artnet/messages/ArtNetConfigMessages.pb.cc \
-                 plugins/artnet/messages/ArtNetConfigMessages.pb.h
+built_sources += \
+    $(top_builddir)/plugins/artnet/messages/ArtNetConfigMessages.pb.cc \
+    $(top_builddir)/plugins/artnet/messages/ArtNetConfigMessages.pb.h
 
 nodist_plugins_artnet_messages_libolaartnetconf_la_SOURCES = \
     plugins/artnet/messages/ArtNetConfigMessages.pb.cc

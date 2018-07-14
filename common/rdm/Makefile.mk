@@ -1,6 +1,6 @@
 built_sources += \
-    common/rdm/Pids.pb.cc \
-    common/rdm/Pids.pb.h
+    $(top_builddir)/common/rdm/Pids.pb.cc \
+    $(top_builddir)/common/rdm/Pids.pb.h
 
 # LIBRARIES
 ##################################################
