@@ -572,7 +572,7 @@ RDMResponse *ResponderHelper::RecordSensor(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (sensor_number == ALL_SENSORS) {
+  if ((sensor_number == ALL_SENSORS) && (sensor_list.size() > 0)) {
     Sensors::const_iterator iter = sensor_list.begin();
     for (; iter != sensor_list.end(); ++iter) {
       (*iter)->Record();

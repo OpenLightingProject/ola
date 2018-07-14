@@ -15,6 +15,7 @@
 *.pb.h
 *.pc
 *.pyc
+*.save
 *.swp
 *.tar.gz
 *.trs
