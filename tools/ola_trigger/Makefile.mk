@@ -50,10 +50,10 @@ built_sources += \
     tools/ola_trigger/config.tab.h
 
 tools/ola_trigger/lex.yy.cpp: tools/ola_trigger/Makefile.mk tools/ola_trigger/config.lex
-	$(LEX) -otools/ola_trigger/lex.yy.cpp $(srcdir)/tools/ola_trigger/config.lex
+	$(LEX) -o$(top_builddir)/tools/ola_trigger/lex.yy.cpp $(srcdir)/tools/ola_trigger/config.lex
 
 tools/ola_trigger/config.tab.cpp tools/ola_trigger/config.tab.h: tools/ola_trigger/Makefile.mk tools/ola_trigger/config.ypp
-	$(BISON) --defines=tools/ola_trigger/config.tab.h --output-file=tools/ola_trigger/config.tab.cpp $(srcdir)/tools/ola_trigger/config.ypp
+	$(BISON) --defines=$(top_builddir)/tools/ola_trigger/config.tab.h --output-file=$(top_builddir)/tools/ola_trigger/config.tab.cpp $(srcdir)/tools/ola_trigger/config.ypp
 
 # TESTS
 ##################################################
@@ -74,7 +74,7 @@ tools_ola_trigger_ActionTester_LDADD = $(COMMON_TESTING_LIBS) \
 test_scripts += tools/ola_trigger/FileValidateTest.sh
 
 tools/ola_trigger/FileValidateTest.sh: tools/ola_trigger/Makefile.mk
-	echo "for FILE in ${srcdir}/tools/ola_trigger/example.conf ${srcdir}/tools/ola_trigger/test_file.conf ${srcdir}/tools/ola_trigger/contrib/crelay.conf ${srcdir}/tools/ola_trigger/contrib/mac_volume.conf ${srcdir}/tools/ola_trigger/contrib/mac_itunes.conf ${srcdir}/tools/ola_trigger/contrib/philips_hue_osram_lightify.conf; do echo \"Checking \$$FILE\"; ${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate \$$FILE; STATUS=\$$?; if [ \$$STATUS -ne 0 ]; then echo \"FAIL: \$$FILE caused ola_trigger to exit with status \$$STATUS\"; exit \$$STATUS; fi; done; exit 0" > tools/ola_trigger/FileValidateTest.sh
-	chmod +x tools/ola_trigger/FileValidateTest.sh
+	echo "for FILE in ${srcdir}/tools/ola_trigger/example.conf ${srcdir}/tools/ola_trigger/test_file.conf ${srcdir}/tools/ola_trigger/contrib/crelay.conf ${srcdir}/tools/ola_trigger/contrib/mac_volume.conf ${srcdir}/tools/ola_trigger/contrib/mac_itunes.conf ${srcdir}/tools/ola_trigger/contrib/philips_hue_osram_lightify.conf; do echo \"Checking \$$FILE\"; ${top_builddir}/tools/ola_trigger/ola_trigger${EXEEXT} --validate \$$FILE; STATUS=\$$?; if [ \$$STATUS -ne 0 ]; then echo \"FAIL: \$$FILE caused ola_trigger to exit with status \$$STATUS\"; exit \$$STATUS; fi; done; exit 0" > $(top_builddir)/tools/ola_trigger/FileValidateTest.sh
+	chmod +x $(top_builddir)/tools/ola_trigger/FileValidateTest.sh
 
 CLEANFILES += tools/ola_trigger/FileValidateTest.sh

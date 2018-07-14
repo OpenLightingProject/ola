@@ -19,12 +19,12 @@ import array
 import datetime
 import fcntl
 import heapq
-import logging
 import os
 import select
 import termios
 import threading
 import traceback
+from ola import ola_logger
 from ola.OlaClient import OlaClient
 
 """A simple client wrapper for the OlaClient."""
@@ -173,7 +173,7 @@ class SelectServer(object):
       False if the calling thread isn't the one that created the select server.
     """
     if self._ss_thread_id != self._GetThreadID():
-      logging.critical(
+      ola_logger.critical(
          'SelectServer called in a thread other than the owner. '
          'Owner %d, caller %d' % (self._ss_thread_id, self._GetThreadID()))
       traceback.print_stack()

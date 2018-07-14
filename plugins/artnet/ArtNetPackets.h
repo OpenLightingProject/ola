@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetPackets.h
- * Datagram definitions for ArtNet
+ * Datagram definitions for Art-Net
  * Copyright (C) 2004 Simon Newton
  */
 
@@ -247,7 +247,7 @@ struct artnet_ip_reply_s {
 
 typedef struct artnet_ip_reply_s artnet_ip_reply_t;
 
-// union of all artnet packets
+// union of all Art-Net packets
 typedef struct {
   uint8_t id[8];
   uint16_t op_code;

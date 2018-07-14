@@ -50,7 +50,7 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 776
-  manufacturer_name: "ImageCue LLC "
+  manufacturer_name: "ImageCue LLC"
   pid {
     name: "SERIAL_NUMBER"
     value: 32976
@@ -2103,7 +2103,7 @@ manufacturer {
         }
         label {
           value: 1
-          label: "ArtNet"
+          label: "Art-Net"
         }
         label {
           value: 2
@@ -2126,7 +2126,7 @@ manufacturer {
         }
         label {
           value: 1
-          label: "ArtNet"
+          label: "Art-Net"
         }
         label {
           value: 2
@@ -2485,6 +2485,74 @@ manufacturer {
       field {
         type: BOOL
         name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 17742
+  manufacturer_name: "ENTTEC Pty Ltd"
+  pid {
+    name: "PWM_OUTPUT_FREQUENCY"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "frequency"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "frequency"
+        range {
+          min: 500
+          max: 2000
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "FAN_ON_PERCENTAGE"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "percentage"
+        label {
+          value: 0
+          label: "Auto"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "percentage"
+        label {
+          value: 0
+          label: "Auto"
+        }
+        range {
+          min: 0
+          max: 0
+        }
+        range {
+          min: 50
+          max: 100
+        }
       }
     }
     set_response {
@@ -6725,6 +6793,116 @@ manufacturer {
     }
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
+  pid {
+    name: "TOUCHSCREEN_LOCK"
+    value: 40975
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Touchscreen Lock Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Touchscreen Lock Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
 }
 manufacturer {
   manufacturer_id: 21324
@@ -8986,72 +9164,4 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-manufacturer {
-  manufacturer_id: 17742
-  manufacturer_name: "Enttec Pty Ltd"
-  pid {
-    name: "PWM_OUTPUT_FREQUENCY"
-    value: 32770
-    get_request {
-    }
-    get_response {
-      field {
-        type: UINT16
-        name: "frequency"
-      }
-    }
-    get_sub_device_range: ROOT_OR_SUBDEVICE
-    set_request {
-      field {
-        type: UINT16
-        name: "frequency"
-        range {
-          min: 500
-          max: 2000
-        }
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
-  }
-  pid {
-    name: "FAN_ON_PERCENTAGE"
-    value: 32771
-    get_request {
-    }
-    get_response {
-      field {
-        type: UINT8
-        name: "percentage"
-        label {
-          value: 0
-          label: "Auto"
-        }
-      }
-    }
-    get_sub_device_range: ROOT_OR_SUBDEVICE
-    set_request {
-      field {
-        type: UINT8
-        name: "percentage"
-        label {
-          value: 0
-          label: "Auto"
-        }
-        range {
-          min: 0
-          max: 0
-        }
-        range {
-          min: 50
-          max: 100
-        }
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
-  }
-}
-version: 1503271492
+version: 1528709287

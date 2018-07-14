@@ -1,41 +1,41 @@
 # Remember to update debian/org.openlighting.ola.ola.metainfo.xml when adding new devices
 
 # udev rules for ftdi devices
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", GROUP="plugdev"
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", GROUP="plugdev", TAG+="uaccess"
 
 # udev rules for the anyma dmx device
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev", TAG+="uaccess"
 
 # udev rules for the avldiy dmx device
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="8888", GROUP="plugdev"
 
 # udev rules for the usbdmx2 dmx device
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0962", GROUP="plugdev"
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0962", GROUP="plugdev", TAG+="uaccess"
 
 # udev rules for the velleman dmx device
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="8062", GROUP="plugdev"
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="8062", GROUP="plugdev", TAG+="uaccess"
 
 # udev rules for the ShowJockey-DMX-U1 device
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="57fe", GROUP="plugdev"
 
 # udev rules for the DMXControl Projects e.V. Nodle U1
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0830", GROUP="plugdev"
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0830", GROUP="plugdev", TAG+="uaccess"
 
 # udev rules for the DMXCreator 512 Basic device
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0a30", ATTRS{idProduct}=="0002", GROUP="plugdev"
 
 # udev rules for the Eurolite
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="fa63", GROUP="plugdev" MODE="660"
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="fa63", GROUP="plugdev", MODE="660", TAG+="uaccess"
 
 # udev rules file for the karate-device
 KERNEL=="ttyACM?", ATTRS{product}=="DMX2USB simple", SYMLINK+="kldmx0"
 
 # udev rules file for the Scanlime Fadecandy device
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="607a", GROUP="plugdev"
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="607a", GROUP="plugdev", TAG+="uaccess"
 
 # udev rules for Ja Rule
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="aced", GROUP="plugdev" MODE="660"
-SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="acee", GROUP="plugdev" MODE="660"
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="aced", GROUP="plugdev", MODE="660", TAG+="uaccess"
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="acee", GROUP="plugdev", MODE="660", TAG+="uaccess"
 
 # udev rules for SPI
 SUBSYSTEM=="spidev", MODE="0666"

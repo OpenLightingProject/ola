@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetPort.cpp
- * The ArtNet plugin for ola
+ * The Art-Net plugin for ola
  * Copyright (C) 2005 Simon Newton
  */
 #include <string.h>
@@ -92,7 +92,7 @@ string ArtNetInputPort::Description() const {
   }
 
   std::ostringstream str;
-  str << "ArtNet Universe "
+  str << "Art-Net Universe "
       << static_cast<int>(m_node->NetAddress()) << ":"
       << static_cast<int>(m_node->SubnetAddress()) << ":"
       << static_cast<int>(m_node->GetOutputPortUniverse(PortId()));
@@ -111,7 +111,7 @@ void ArtNetInputPort::TriggerDiscovery() {
 bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
                                 OLA_UNUSED uint8_t priority) {
   if (PortId() >= ARTNET_MAX_PORTS) {
-    OLA_WARN << "Invalid artnet port id " << PortId();
+    OLA_WARN << "Invalid Art-Net port id " << PortId();
     return false;
   }
 
@@ -122,7 +122,7 @@ void ArtNetOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   // Discovery requests aren't proxied
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
-    OLA_WARN << "Blocked attempt to send discovery command via Artnet";
+    OLA_WARN << "Blocked attempt to send discovery command via Art-Net";
     ola::rdm::RunRDMCallback(on_complete,
                              ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED);
     delete request;
@@ -138,7 +138,7 @@ void ArtNetOutputPort::RunFullDiscovery(
 
 void ArtNetOutputPort::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
-  // ArtNet nodes seem to run incremental discovery in the background. The
+  // Art-Net nodes seem to run incremental discovery in the background. The
   // protocol doesn't provide a way of triggering incremental discovery so we
   // just do a full flush.
   m_node->RunIncrementalDiscovery(PortId(), callback);
@@ -170,7 +170,7 @@ string ArtNetOutputPort::Description() const {
   }
 
   std::ostringstream str;
-  str << "ArtNet Universe "
+  str << "Art-Net Universe "
       << static_cast<int>(m_node->NetAddress()) << ":"
       << static_cast<int>(m_node->SubnetAddress()) << ":"
       << static_cast<int>(m_node->GetInputPortUniverse(PortId()));
