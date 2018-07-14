@@ -49,8 +49,8 @@ namespace artnet {
 
 // The directions are the opposite from what OLA uses
 typedef enum {
-  ARTNET_INPUT_PORT,  // sends ArtNet data
-  ARTNET_OUTPUT_PORT,  // receives ArtNet data
+  ARTNET_INPUT_PORT,  // sends Art-Net data
+  ARTNET_OUTPUT_PORT,  // receives Art-Net data
 } artnet_port_type;
 
 typedef enum {
@@ -152,14 +152,14 @@ class ArtNetNodeImpl {
 
   /**
    * @brief Set the net address for this node
-   * @param net_address the ArtNet 'net' address
+   * @param net_address the Art-Net 'net' address
    */
   bool SetNetAddress(uint8_t net_address);
   uint8_t NetAddress() const { return m_net_address; }
 
   /**
    * @brief Set the subnet address for this node
-   * @param subnet_address the ArtNet 'subnet' address, 4 bits.
+   * @param subnet_address the Art-Net 'subnet' address, 4 bits.
    */
   bool SetSubnetAddress(uint8_t subnet_address);
   uint8_t SubnetAddress() const {
@@ -181,7 +181,7 @@ class ArtNetNodeImpl {
    * @brief Get an input port universe address
    *
    * Return the 8bit universe address for a port. This does not include the
-   * ArtNet III net-address.
+   * Art-Net III net-address.
    * @param port_id a port id between 0 and ARTNET_MAX_PORTS - 1
    * @return The universe address for the port. Invalid port_ids return 0.
    */
@@ -369,7 +369,7 @@ class ArtNetNodeImpl {
     ola::network::IPV4Address address;
   };
 
-  // Output Ports receive ArtNet data
+  // Output Ports receive Art-Net data
   struct OutputPort {
     uint8_t universe_address;
     uint8_t sequence_number;
@@ -388,7 +388,7 @@ class ArtNetNodeImpl {
   };
 
   bool m_running;
-  uint8_t m_net_address;  // this is the 'net' portion of the Artnet address
+  uint8_t m_net_address;  // this is the 'net' portion of the Art-Net address
   bool m_send_reply_on_change;
   std::string m_short_name;
   std::string m_long_name;
@@ -440,7 +440,7 @@ class ArtNetNodeImpl {
   bool SendIPReply(const ola::network::IPV4Address &destination);
 
   /**
-   * @brief Handle an ArtNet packet
+   * @brief Handle an Art-Net packet
    */
   void HandlePacket(const ola::network::IPV4Address &source_address,
                     const artnet_packet &packet,
@@ -507,9 +507,10 @@ class ArtNetNodeImpl {
    * @brief Handle an RDM response.
    *
    * <rant>
-   * ArtNet as a protocol is broken, the nodes don't buffer ACK_OVERFLOW messages
-   * so if another GET/SET message arrives from *any* controller the ACK_OVERFLOW
-   * session will be reset, possibly causing the controller to spin in a loop.
+   * Art-Net as a protocol is broken, the nodes don't buffer ACK_OVERFLOW
+   * messages so if another GET/SET message arrives from *any* controller the
+   * ACK_OVERFLOW session will be reset, possibly causing the controller to spin
+   * in a loop.
    * </rant>
    */
   void HandleRDMResponse(InputPort *port,
@@ -529,7 +530,7 @@ class ArtNetNodeImpl {
   void PopulatePacketHeader(artnet_packet *packet, uint16_t op_code);
 
   /**
-   * @brief Send an ArtNet packet
+   * @brief Send an Art-Net packet
    * @param packet the packet to send
    * @param size the size of the packet, excluding the header portion
    * @param destination where to send the packet to
@@ -691,7 +692,7 @@ class ArtNetNodeImplRDMWrapper
 
 
 /**
- * @brief The actual ArtNet Node
+ * @brief The actual Art-Net Node
  */
 class ArtNetNode {
  public:

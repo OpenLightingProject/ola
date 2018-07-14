@@ -1,18 +1,27 @@
 x/y/2018 ola-0.10.7
  Features:
- * 
+ * Allow multiple KiNet ports to be patched to the same universe #1414
+ * Support libftdi1 too in FTDI DMX #1012 Debian #810374
 
  API:
  * 
 
  RDM Tests:
- * 
+ * Fix a bug in the RDM tests when a responder supports sensor PIDs #1388
 
  Bugs:
- * 
+ * Fix the build on Windows
+ * Entire codebase now passes codespell testing
+ * Fix a Python 3 bug in the API
+ * Fix a few longstanding bugs in the Python ola_rdm_discover
+ * Correct the OSC config option name for output format in the documentation
+ * Use top_builddir in more places in the build
+ * Use libusb_set_option where available
+ * Fix the udev rules
+ * Downstream Debian fixes
 
  Internal:
- *
+ * Various minor log formatting tidying up
 
 07/01/2018 ola-0.10.6
  Bugs:
@@ -40,7 +49,7 @@ x/y/2018 ola-0.10.7
 
 21/05/2017 ola-0.10.4
  Features:
- * Add more help regarding the ArtNet use_limited_broadcast option
+ * Add more help regarding the Art-Net use_limited_broadcast option
 
  Bugs:
  * Ensure Pathport node actually uses configured IP #1166
@@ -175,7 +184,7 @@ x/y/2018 ola-0.10.7
  Bugs:
  * Fix some Xcode build errors
  * Fix the build on Windows
- * Fix a bug in Artnet universe mapping #856
+ * Fix a bug in Art-Net universe mapping #856
  * NACK requests for IPv4 default route PID with data
  * NACK with format error requests for DNS PIDs with data
  * Fix a bug regarding stack traces error messages with Python RDM gets #884
@@ -315,7 +324,7 @@ x/y/2018 ola-0.10.7
    Working:
    * Building simple client applications
    * olad, with the web UI
-   * Plugins: Dummy, ArtNet, ShowNet, ESP Net, SandNet, Pathport, OSC, KiNet
+   * Plugins: Dummy, Art-Net, ShowNet, ESP Net, SandNet, Pathport, OSC, KiNet
    * Python bindings
    Not working yet:
    * all other plugins, especially device-based ones (USB, serial, SPI)
@@ -459,7 +468,7 @@ Documentation:
  * Save the SPI pixel count during shutdown
  * Fix E1.31 merge timeouts - #256
  * Fixed 2 bugs in the RDM responder tests.
- * Fix a bug where OLA wouldn't receive on ArtNet universe 0 - #260
+ * Fix a bug where OLA wouldn't receive on Art-Net universe 0 - #260
  * Expose the source priority in the C++ API
 
 29/9/2013 ola-0.8.32
@@ -468,8 +477,8 @@ Documentation:
    timestamp in the RDM test logs
  * Added pretty printing of slot info messages
  * Added support for new OSC formats
- * Added support for more than 4 ArtNet output ports
- * Added a simple ArtNet loadtest
+ * Added support for more than 4 Art-Net output ports
+ * Added a simple Art-Net loadtest
  * Fixed a couple of bugs in the Dummy RDM responders
  * Added support for templates in the OSC target addresses.
  * Re-wrote the SPI backend with loads of new options.
@@ -547,7 +556,7 @@ Documentation:
  * Add a script to enforce code licences
  * Add the slp_sa_test program
  * Improved support for the RDM-TRI
- * Added support for using the loopback interface with the ArtNet plugin
+ * Added support for using the loopback interface with the Art-Net plugin
  * Fixed some bugs in the RDM tests
  * Add configure time options to disable each plugin
  * Fixed a bug in the sniffer tool
@@ -639,7 +648,7 @@ Documentation:
  * Added support for multiple Open DMX USB devices (still Linux Only) - #166
  * Fixed a build error in the StageProfi widget - #169
  * Added an option to choose the NIC olad uses - #173
- * Add support for listing remote ArtNet nodes - #167
+ * Add support for listing remote Art-Net nodes - #167
 
 23/01/2012 ola-0.8.17
  * fix a bug in the RDM sniffer
@@ -650,19 +659,19 @@ Documentation:
  * Added a configure test for the python google.protobuf module
  * Added the ola_trigger program
  * Changed the ForceDiscovery rpc to only return once discovery completes
- * Fixed ArtNet RDM discovery so DMXWorkshop works correctly - #160
- * Fixed a memory leak in the ArtNet RDM implementation
- * Add an option for using the limited broadcast address for ArtNet dmx data
+ * Fixed Art-Net RDM discovery so DMXWorkshop works correctly - #160
+ * Fixed a memory leak in the Art-Net RDM implementation
+ * Add an option for using the limited broadcast address for Art-Net DMX data
  * Add an option to ignore specific USB serial devices
  * Added a program to sniff traffic using the RDM USB Pro
- * Added many more unit tests for the ArtNet plugin
+ * Added many more unit tests for the Art-Net plugin
  * Fixed build warnings found by newer versions of clang
  * Fix a bug in the RDM discovery code for the Robe Widget
 
 12/12/2011 ola-0.8.15
  * Add DMX IN support for the Robe widget - #156
  * Add an option to send DMX during RDM tests - #153
- * Add basic support for sending ArtNet timecode - #150
+ * Add basic support for sending Art-Net timecode - #150
  * Added a DMX keypad to the mobile UI, thanks to Chris Stranex
  * Fix a race condition in the WidgetDectectorThreadTest
  * Fix compile errors with new versions of clang
@@ -680,7 +689,7 @@ Documentation:
 
 22/10/2011 ola-0.8.13
  * Attempt to reconnect to usb devices periodically - #143
- * Add support for ArtNet 3 - #144
+ * Add support for Art-Net 3 - #144
  * Add support for the Eurolite USB Pro - thanks Harry F
  * Large cleanup of the build rules
  * Added a script to collect device model information using RDM
@@ -697,7 +706,7 @@ Documentation:
  * Fixed link errors with the new version of gcc - #142, #145
  * Fixed sorting of Sensors in the RDM web UI - #137
  * Improvements to the threading model to support more async operations.
- * Enabled SO_REUSEPORT so that local ArtNet applications work - #141
+ * Enabled SO_REUSEPORT so that local Art-Net applications work - #141
  * Reduced the cost of logging by using lazy evaluation
  * Added more PIDs to the dummy responder
  * Refactored the core I/O classes, removed the "socket operation on
@@ -760,7 +769,7 @@ Documentation:
 
 19/10/2010 ola-0.8.4
   Add the RDM web UI
-  Work around an ArtNet RDM bug
+  Work around an Art-Net RDM bug
   Handle ACK overflow in the DMX-TRI
 
 23/9/2010 ola-0.8.3
@@ -773,7 +782,7 @@ Documentation:
 19/9/2010 ola-0.8.2
   Moved the DMX Console to the new UI
   Removed the old web UI, no more requirements for ctemplate
-  Added ACK_OVERFLOW support for RDM over ArtNet
+  Added ACK_OVERFLOW support for RDM over Art-Net
   Added Support for the last remaining E1.20 PIDS
   Re-factored the Ola Client code to fix the problem of de-multiplexing
     responses.
@@ -786,8 +795,8 @@ Documentation:
   Fixed some compiler warnings with gcc 4.4
 
 7/8/2010 ola-0.8.0
-  Initial RDM support for the ArtNet, Dummy & DMX-TRI devices
-  New ArtNet stack to support RDM - no more dependency on libartnet
+  Initial RDM support for the Art-Net, Dummy & DMX-TRI devices
+  New Art-Net stack to support RDM - no more dependency on libartnet
   Support for packetheads DMX dongle
   Make the FPS limit for USB Pro devices configurable
 
@@ -823,7 +832,7 @@ Documentation:
   Improved USB Pro handling
   Added port priorities & multi source merging
   TX support for the DMX-TRI
-  Support for the Ardiuno RGB Mixer
+  Support for the Arduino RGB Mixer
   DSCP for E1.31
   Support for using the OSSP uuid library
   Removal of run-time loadable plugins.

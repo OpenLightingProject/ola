@@ -95,7 +95,11 @@ bool SyncPluginImpl::Start() {
   }
 
   OLA_DEBUG << "libusb debug level set to " << m_debug_level;
+#ifdef HAVE_LIBUSB_SET_OPTION
+  libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, m_debug_level);
+#else
   libusb_set_debug(m_context, m_debug_level);
+#endif  // HAVE_LIBUSB_SET_OPTION
 
   unsigned int devices_claimed = ScanForDevices();
   if (devices_claimed != m_devices.size()) {

@@ -137,7 +137,7 @@ bool SetThreadScheduling() {
     OLA_WARN << "Maximum value for --scheduler-priority is " << max;
     return false;
   }
-#endif  // _POSIX_PRORITY_SCHEDULING
+#endif  // _POSIX_PRIORITY_SCHEDULING
 
   // Set the scheduling parameters.
   struct sched_param param;

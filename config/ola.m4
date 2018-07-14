@@ -24,8 +24,10 @@ AC_DEFUN([PROTOBUF_SUPPORT],
 AC_REQUIRE_CPP()
 PKG_CHECK_MODULES(libprotobuf, [protobuf >= $1])
 
-PKG_CHECK_MODULES(libprotobuf2, [protobuf < 3.2], [],
-                  [AC_MSG_ERROR([OLA currently requires protobuf < 3.2, see issue 1192])])
+AC_MSG_CHECKING([protobuf library version])
+PROTOBUF_VERSION=`pkg-config --modversion protobuf`;
+AC_MSG_RESULT([$PROTOBUF_VERSION])
+AC_SUBST([PROTOBUF_VERSION])
 
 AC_SUBST([libprotobuf_CFLAGS])
 

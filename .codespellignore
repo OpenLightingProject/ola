@@ -57,3 +57,10 @@ const uint8_t BaseRobeWidget::SOM;
         '%s attempted to get %s which wasn\'t declared' %
         '%s attempted to set %s which wasn\'t declared' %
         'min': numpy.amin(array),
+        /^(?:([0-9]{1,3})(?:\s(THRU)\s(?:([0-9]{1,3}))?)?(?:\s(@)\s(?:([0-9]{1,3}|FULL))?)?)/;
+            $scope.input(' THRU ');
+  manufacturer_name: "ALS Stanislaw Binkiewicz"
+  manufacturer_name: "Guangzhou Litewise Lighting Equipments Co., Ltd. dba \"EK Lights\""
+  manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
+  manufacturer_name: "SRM Technik GmbH"
+  manufacturer_name: "medien technik cords"

@@ -8,6 +8,7 @@ Contributors:
   Bastien Andrès, contributed to the dmx4linux plugin
   Carsten Presser, Karate USB plugin
   Dave Olsthoorn, working on a new web-ui
+  E.S. Rosenberg, further work on ftdidmx plugin.
   Florian Edelmann, added DMXCreator 512 Basic USB and native SPI DMX support
   Hakan Lindestaf, Renard plugin
   Harry F, for the Eurolite USB Pro code
@@ -15,7 +16,7 @@ Contributors:
   Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
   Lukas Erlinghagen, win32 port.
   Johan Nilsson, Philips Hue, Osram Lightify & crelay trigger config
-  Joshua Moyerman, ArtNet fixes.
+  Joshua Moyerman, Art-Net fixes.
   Masaki Muranaka, various patches
   Nicolas, for the win32 port of libartnet
   Nicolas Bertrand, added ShowJockey DMX-U1 support

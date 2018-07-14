@@ -3,10 +3,12 @@
 *.gcda
 *.gcno
 *.gcov
+*.gch
 *.la
 *.lo
 *.log
 *.o
+*.o.*
 *.o-????????
 *.pb.cc
 *.pb.cpp

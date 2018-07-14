@@ -81,8 +81,14 @@ bool HotplugAgent::Init() {
     return false;
   }
 
+#ifdef HAVE_LIBUSB_SET_OPTION
+  OLA_DEBUG << "libusb_set_option(LIBUSB_OPTION_LOG_LEVEL, " << m_debug_level
+            << ")";
+  libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, m_debug_level);
+#else
   OLA_DEBUG << "libusb_set_debug(" << m_debug_level << ")";
   libusb_set_debug(m_context, m_debug_level);
+#endif  // HAVE_LIBUSB_SET_OPTION
 
   m_use_hotplug = ola::usb::LibUsbAdaptor::HotplugSupported();
   OLA_DEBUG << "HotplugSupported(): " << m_use_hotplug;

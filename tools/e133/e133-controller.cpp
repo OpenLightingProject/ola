@@ -399,7 +399,7 @@ void SimpleE133Controller::HandleStatusMessage(
              << " : " << status_message.status_message;
   } else {
     OLA_INFO << "Device returned code " << status_message.status_code << " : "
-             << ola::e133::StatusMessageIdToString(e133_status_code)
+             << ola::e133::StatusCodeToString(e133_status_code)
              << " : " << status_message.status_message;
   }
   Stop();
