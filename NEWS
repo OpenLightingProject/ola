@@ -1,13 +1,29 @@
-x/y/2018 ola-0.10.7
+x/y/2018 ola-0.10.8
  Features:
- * Allow multiple KiNet ports to be patched to the same universe #1414
- * Support libftdi1 too in FTDI DMX #1012 Debian #810374
+ * 
 
  API:
  * 
 
  RDM Tests:
+ * 
+
+ Bugs:
+ * 
+
+ Internal:
+ *
+
+13/7/2018 ola-0.10.7
+ Features:
+ * Allow multiple KiNet ports to be patched to the same universe #1414
+ * Allow multiple FTDI ports to be patched to the same universe
+ * Support libftdi1 as well as libftdi0 in FTDI DMX #1012 Debian #810374
+ * Support FTDI DMX via libftdi1 on Windows
+
+ RDM Tests:
  * Fix a bug in the RDM tests when a responder supports sensor PIDs #1388
+ * Fix a bug in imports for rdm_responder_test.py
 
  Bugs:
  * Fix the build on Windows
@@ -19,6 +35,11 @@ x/y/2018 ola-0.10.7
  * Use libusb_set_option where available
  * Fix the udev rules
  * Downstream Debian fixes
+ * Fix an incorrect response if we have the sensor PIDs but no sensors
+ * Stop trying to build opendmx kernel plugin on Windows
+ * Prefer Avahi over Bonjour for our DiscoveryAgent, in case the Bonjour
+   version is actually just Avahi's compatibility layer
+ * Clean up the libolaserver pkg-config file
 
  Internal:
  * Various minor log formatting tidying up
