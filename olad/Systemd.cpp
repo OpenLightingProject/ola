@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * NotifySystemd.cpp
- * Provides wrapped access to the systemd notification interface.
+ * Systemd.cpp
+ * Provides wrapped access to systemd interfaces.
  * Copyright (C) 2018 Shenghao Yang
  */
 
@@ -34,17 +34,17 @@
 
 namespace ola {
 
-int notify_systemd(int unset_environment, const char *state) {
+int NotifySystemd(int unset_environment, const char *state) {
   int rtn = sd_notify(unset_environment, state);
   if (rtn < 0) {
     char buf[1024];
-    OLA_WARN << "Error sending notification to systemd: " <<
-      strerror_r(-rtn, buf, sizeof(buf));
+    OLA_WARN << "Error sending notification to systemd: "
+             << strerror_r(-rtn, buf, sizeof(buf));
   }
   return rtn;
 }
 
-bool notify_available() {
+bool NotifyAvailable() {
   return (sd_notify(0, "") != 0);
 }
 

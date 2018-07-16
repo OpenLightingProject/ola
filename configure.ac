@@ -759,7 +759,8 @@ AS_IF([test "x$enable_systemd" = "xyes"],
    AC_CHECK_HEADER([systemd/sd-daemon.h], [], [have_libsystemd="no"])])
 
 AS_IF([test "x$have_libsystemd" = xyes],
-      [AC_DEFINE([HAVE_LIBSYSTEMD], [1], [define if systemd support wanted])])
+      [AC_DEFINE([HAVE_LIBSYSTEMD], [1],
+                 [define if systemd support is wanted and libsystemd is present])])
 
 AM_CONDITIONAL([HAVE_LIBSYSTEMD], [test "x$have_libsystemd" = xyes])
 

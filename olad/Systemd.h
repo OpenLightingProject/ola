@@ -26,21 +26,21 @@ namespace ola {
 /*
  * @brief Notify systemd about daemon state changes.
  *  
- * This function logs on failures to queue notifications, but only if the
+ * This function logs on any failure to queue notifications, but only if the
  * notification socket environment variable is set.
  *  
  * @param unset_environment whether to unset the notification socket environment
  *        variable so child processes cannot utilize it.
  * @param state state block to pass to systemd.
- * @return value returned from \ref sd_notify()
+ * @return value returned from @ref sd_notify()
  */
-int notify_systemd(int unset_environment, const char *state);
+int NotifySystemd(int unset_environment, const char *state);
 
 /* 
  * @brief Tests whether the systemd notification socket is available.
  * @return @c true if the socket is available, @c false if not.
  */
-bool notify_available();
+bool NotifyAvailable();
 
 }  // namespace ola
 #endif  // OLAD_SYSTEMD_H_

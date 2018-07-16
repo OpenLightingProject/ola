@@ -43,7 +43,7 @@ ola_server_additional_libs += common/http/libolahttp.la
 endif
 
 if HAVE_LIBSYSTEMD
-ola_server_sources += olad/NotifySystemd.cpp olad/Systemd.h
+ola_server_sources += olad/Systemd.cpp olad/Systemd.h
 ola_server_additional_libs += $(libsystemd_LIBS)
 endif
 

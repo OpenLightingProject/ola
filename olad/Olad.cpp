@@ -176,14 +176,14 @@ int main(int argc, char *argv[]) {
 #endif  // _WIN32
 
 #if HAVE_LIBSYSTEMD
-  if (ola::notify_available()) {
+  if (ola::NotifyAvailable()) {
     OLA_INFO << "Systemd notification socket present. Sending notifications.";
   } else {
     OLA_WARN << "Systemd notification socket not present";
   }
   // Does not need to be guarded. sd_notify does its own internal check on
   // the socket's presence, as well.
-  ola::notify_systemd(0, "READY=1\nSTATUS=Startup complete\n");
+  ola::NotifySystemd(0, "READY=1\nSTATUS=Startup complete\n");
 #endif  // HAVE_LIBSYSTEMD
   olad->Run();
   return ola::EXIT_OK;
