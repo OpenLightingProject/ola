@@ -80,10 +80,22 @@ bool OpenHandleAndClaimInterface(libusb_device *usb_device,
   }
 
   int r = libusb_claim_interface(*usb_handle, interface);
-  if (r) {
+  if (r == LIBUSB_ERROR_BUSY) {
+	int error = libusb_detach_kernel_driver(*usb_handle, interface);
+	if (error) {
+		OLA_WARN << "Failed to detach kernel driver " << interface
+				 << " on device: " << usb_device;
+	} else {
+	  r = libusb_claim_interface(*usb_handle, interface);
+	}
+  }
+
+  if (r)
+  {
     OLA_WARN << "Failed to claim interface " << interface
              << " on device: " << usb_device << ": "
              << LibUsbAdaptor::ErrorCodeToString(r);
+
     libusb_close(*usb_handle);
     *usb_handle = NULL;
     return false;
