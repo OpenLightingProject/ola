@@ -28,6 +28,7 @@
 #include "plugins/dummy/DummyDevice.h"
 #include "plugins/dummy/DummyPort.h"
 #include "plugins/dummy/DummyPlugin.h"
+#include "plugins/dummy/DummyPluginDescription.h"
 
 namespace ola {
 namespace plugin {
@@ -126,51 +127,7 @@ bool DummyPlugin::StopHook() {
 
 
 string DummyPlugin::Description() const {
-  return
-"Dummy Plugin\n"
-"----------------------------\n"
-"\n"
-"The plugin creates a single device with one port. When used as an output\n"
-"port it prints the first two bytes of dmx data to stdout.\n"
-"\n"
-"The Dummy plugin can also emulate a range of RDM devices. It supports the\n"
-"following RDM device types:\n"
-" * Dummy Device (original)\n"
-" * Dimmer Rack, with a configurable number of sub-devices\n"
-" * Moving Light\n"
-" * Advanced Dimmer Rack, with E1.37-1 PIDs\n"
-" * A device that responds with ack timers\n"
-" * Sensor Device, with a number of sensors implemented\n"
-" * Network Device, with E1.37-2 PIDs\n"
-"\n"
-"The number of each device is configurable.\n"
-"\n"
-"--- Config file : ola-dummy.conf ---\n"
-"\n"
-"ack_timer_count = 0\n"
-"The number of ack timer responders to create.\n"
-"\n"
-"advanced_dimmer_count = 0\n"
-"The number of E1.37-1 dimmer responders to create.\n"
-"\n"
-"dimmer_count = 1\n"
-"The number of dimmer devices to create.\n"
-"\n"
-"dimmer_subdevice_count = 1\n"
-"The number of sub-devices each dimmer device should have.\n"
-"\n"
-"dummy_device_count = 1\n"
-"The number of dummy devices to create.\n"
-"\n"
-"moving_light_count = 1\n"
-"The number of moving light devices to create.\n"
-"\n"
-"sensor_device_count = 1\n"
-"The number of sensor-only devices to create.\n"
-"\n"
-"network_device_count = 1\n"
-"The number of network E1.37-2 devices to create.\n"
-"\n";
+  return plugin_description;
 }
 
 

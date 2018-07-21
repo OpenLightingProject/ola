@@ -313,7 +313,9 @@ void EnttecUsbProWidgetTest::ValidateDMX(
     EnttecPort *port,
     const ola::DmxBuffer *expected_buffer) {
   const ola::DmxBuffer &buffer = port->FetchDMX();
-  OLA_ASSERT(*expected_buffer == buffer);
+  // Dereference the pointer so we can use our existing test
+  ola::DmxBuffer expected = *expected_buffer;
+  OLA_ASSERT_DMX_EQUALS(expected, buffer);
   m_got_dmx = true;
   m_ss.Terminate();
 }

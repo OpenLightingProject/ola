@@ -63,6 +63,10 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
       m_spi_device_name(spi_device) {
   m_spi_device_name = ola::file::FilenameFromPathOrPath(m_spi_device_name);
 
+  ostringstream str;
+  str << SPI_DEVICE_NAME << " " << m_spi_device_name;
+  SetName(str.str());
+
   SetDefaults();
   unsigned int port_count = 0;
 
@@ -230,11 +234,13 @@ void SPIDevice::SetDefaults() {
   m_preferences->SetDefaultValue(SPIBackendKey(),
                                  SetValidator<string>(valid_backends),
                                  SOFTWARE_BACKEND);
-  m_preferences->SetDefaultValue(SPISpeedKey(), UIntValidator(0, 32000000),
+  m_preferences->SetDefaultValue(SPISpeedKey(), UIntValidator(0, MAX_SPI_SPEED),
                                  1000000);
   m_preferences->SetDefaultValue(SPICEKey(), BoolValidator(), false);
-  m_preferences->SetDefaultValue(PortCountKey(), UIntValidator(1, 8), 1);
-  m_preferences->SetDefaultValue(SyncPortKey(), IntValidator(-2, 8), 0);
+  m_preferences->SetDefaultValue(PortCountKey(),
+                                 UIntValidator(1, MAX_PORT_COUNT), 1);
+  m_preferences->SetDefaultValue(SyncPortKey(),
+                                 IntValidator(-2, MAX_PORT_COUNT), 0);
   m_preferences->Save();
 }
 

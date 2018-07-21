@@ -31,6 +31,7 @@
 #include "olad/Preferences.h"
 #include "olad/PluginAdaptor.h"
 #include "plugins/uartdmx/UartDmxPlugin.h"
+#include "plugins/uartdmx/UartDmxPluginDescription.h"
 #include "plugins/uartdmx/UartDmxDevice.h"
 #include "plugins/uartdmx/UartWidget.h"
 
@@ -115,31 +116,7 @@ bool UartDmxPlugin::StopHook() {
  * Return a description for this plugin.
  */
 string UartDmxPlugin::Description() const {
-  return
-"Native UART DMX Plugin\n"
-"----------------------\n"
-"\n"
-"This plugin drives a supported POSIX UART (plus extensions)\n"
-"to produce a direct DMX output stream. The host needs to\n"
-"create the DMX stream itself as there is no external microcontroller.\n"
-"This is tested with the on-board UART of the Raspberry Pi.\n"
-"See here for a possible schematic:\n"
-"http://eastertrail.blogspot.co.uk/2014/04/command-and-control-ii.html\n"
-"\n"
-"--- Config file : ola-uartdmx.conf ---\n"
-"\n"
-"enabled = true\n"
-"Enable this plugin (DISABLED by default).\n"
-"device = /dev/ttyACM0\n"
-"The device to use for DMX output (optional). Multiple devices are supported "
-"if the hardware exists. Using USB-serial adapters is not supported (try the "
-"ftdidmx plugin instead).\n"
-"--- Per Device Settings (using above device name) ---\n"
-"<device>-break = 100\n"
-"The DMX break time in microseconds for this device (optional).\n"
-"<device>-malf = 100\n"
-"The Mark After Last Frame time in microseconds for this device (optional).\n"
-"\n";
+  return plugin_description;
 }
 
 

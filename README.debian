@@ -1,3 +1,5 @@
+This readme should also apply to Ubuntu and probably
+other Debian-based distributions as well.
 
 If you extracted a tarball you should be able to run
 
@@ -15,3 +17,25 @@ $ cd /tmp
 $ tar -zxf ola-0.X.Y.tar.gz
 $ cd ola-0.X.Y
 $ debuild
+
+If autoreconf reports missing things, you can add the -i option.
+Running configure might report missing utilities and libraries. You
+can install these with apt-get.
+
+The list below is probably not complete. Some of the package-names
+may differ between Debian and Debian-like distributions. Adjust
+as necessary.
+
+$ sudo apt-get install libcppunit-dev libcppunit-1.13-0 uuid-dev pkg-config \
+      libncurses5-dev libtool autoconf automake g++ libmicrohttpd-dev \
+      libmicrohttpd10 protobuf-compiler libprotobuf-lite10 python-protobuf \
+      libprotobuf-dev libprotoc-dev zlib1g-dev bison flex make libftdi-dev \
+      libftdi1 libusb-1.0-0-dev liblo-dev libavahi-client-dev python-numpy
+
+Note: Some distributions may offer older or newer versions of packages.
+For example, libprotobuf-lite6 or libprotobuf-lite7 instead of libprotobuf-lite8.
+
+The build system allows for checks/tests to be run.
+$ make check
+
+

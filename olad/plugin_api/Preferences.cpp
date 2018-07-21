@@ -385,20 +385,20 @@ bool FilePreferenceSaverThread::Join(void *ptr) {
 }
 
 
-void FilePreferenceSaverThread::Syncronize() {
-  Mutex syncronize_mutex;
+void FilePreferenceSaverThread::Synchronize() {
+  Mutex synchronize_mutex;
   ConditionVariable condition_var;
-  syncronize_mutex.Lock();
+  synchronize_mutex.Lock();
   m_ss.Execute(NewSingleCallback(
         this,
-        &FilePreferenceSaverThread::CompleteSyncronization,
+        &FilePreferenceSaverThread::CompleteSynchronization,
         &condition_var,
-        &syncronize_mutex));
-  condition_var.Wait(&syncronize_mutex);
+        &synchronize_mutex));
+  condition_var.Wait(&synchronize_mutex);
 }
 
 
-void FilePreferenceSaverThread::CompleteSyncronization(
+void FilePreferenceSaverThread::CompleteSynchronization(
     ConditionVariable *condition,
     Mutex *mutex) {
   // calling lock here forces us to block until Wait() is called on the

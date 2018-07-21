@@ -16,7 +16,7 @@
 # ola_artnet_params.py
 # Copyright (C) 2005 Simon Newton
 
-"""Fetch some ArtNet parameters."""
+"""Fetch some Art-Net parameters."""
 
 from __future__ import print_function
 from ola.ClientWrapper import ClientWrapper
@@ -24,6 +24,8 @@ from ola import ArtNetConfigMessages_pb2
 import sys
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
+
+wrapper = None
 
 
 def ArtNetConfigureReply(status, response):

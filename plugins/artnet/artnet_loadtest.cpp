@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * artnet_loadtest.cpp
- * A simple ArtNet load tester
+ * A simple Art-Net load tester
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -48,7 +48,7 @@ DEFINE_s_uint16(universes, u, 1, "Number of universes to send");
 DEFINE_string(iface, "", "The interface to send from");
 
 /**
- * Send N DMX frames using ArtNet, where N is given by number_of_universes.
+ * Send N DMX frames using Art-Net, where N is given by number_of_universes.
  */
 bool SendFrames(ArtNetNode *node, DmxBuffer *buffer,
                 uint16_t number_of_universes) {

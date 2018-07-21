@@ -64,7 +64,8 @@ void AsyncUsbSender::TransferComplete(struct libusb_transfer *transfer) {
   }
 
   if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-    OLA_WARN << "Transfer returned " << transfer->status;
+    OLA_WARN << "Transfer returned "
+             << m_adaptor->ErrorCodeToString(transfer->status);
   }
 
   ola::thread::MutexLocker locker(&m_mutex);

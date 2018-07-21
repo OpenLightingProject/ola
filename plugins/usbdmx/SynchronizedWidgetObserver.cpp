@@ -13,12 +13,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SyncronizedWidgetObserver.cpp
+ * SynchronizedWidgetObserver.cpp
  * Transfers widget add/remove events to another thread.
  * Copyright (C) 2014 Simon Newton
  */
 
-#include "plugins/usbdmx/SyncronizedWidgetObserver.h"
+#include "plugins/usbdmx/SynchronizedWidgetObserver.h"
 
 #include "ola/Callback.h"
 
@@ -28,7 +28,7 @@ namespace usbdmx {
 
 using ola::thread::Thread;
 
-SyncronizedWidgetObserver::SyncronizedWidgetObserver(
+SynchronizedWidgetObserver::SynchronizedWidgetObserver(
     WidgetObserver *observer,
     ola::io::SelectServerInterface *ss)
     : m_observer(observer),
@@ -37,22 +37,22 @@ SyncronizedWidgetObserver::SyncronizedWidgetObserver(
 }
 
 template<typename WidgetClass>
-bool SyncronizedWidgetObserver::DispatchNewWidget(WidgetClass *widget) {
+bool SynchronizedWidgetObserver::DispatchNewWidget(WidgetClass *widget) {
   if (pthread_equal(Thread::Self(), m_main_thread_id)) {
     return m_observer->NewWidget(widget);
   } else {
     AddFuture f;
     m_ss->Execute(
         NewSingleCallback(
-            this, &SyncronizedWidgetObserver::HandleNewWidget<WidgetClass>,
+            this, &SynchronizedWidgetObserver::HandleNewWidget<WidgetClass>,
             widget, &f));
     return f.Get();
   }
 }
 
 template<typename WidgetClass>
-void SyncronizedWidgetObserver::HandleNewWidget(WidgetClass*widget,
-                                                AddFuture *f) {
+void SynchronizedWidgetObserver::HandleNewWidget(WidgetClass*widget,
+                                                 AddFuture *f) {
   f->Set(m_observer->NewWidget(widget));
 }
 }  // namespace usbdmx
