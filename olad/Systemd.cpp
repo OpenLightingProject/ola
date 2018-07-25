@@ -38,6 +38,10 @@ int SystemdNotify(int unset_environment, const char *state) {
   int rtn = sd_notify(unset_environment, state);
   if (rtn < 0) {
     char buf[1024];
+    // olad is compiled under GNU extensions: the return value of
+    // strerror_r() is not an error code but a pointer to a character array
+    // containing the error description. The array returned is always NUL
+    // terminated, even in case of errors, so blindly using it is not a problem.
     OLA_WARN << "Error sending notification to systemd: "
              << strerror_r(-rtn, buf, sizeof(buf));
   }
