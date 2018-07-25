@@ -34,13 +34,13 @@ namespace ola {
  * @param state state block to pass to systemd.
  * @return value returned from @ref sd_notify()
  */
-int NotifySystemd(int unset_environment, const char *state);
+int SystemdNotify(int unset_environment, const char *state);
 
 /* 
  * @brief Tests whether the systemd notification socket is available.
  * @return @c true if the socket is available, @c false if not.
  */
-bool NotifyAvailable();
+bool SystemdNotifyAvailable();
 
 }  // namespace ola
 #endif  // OLAD_SYSTEMD_H_

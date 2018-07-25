@@ -477,13 +477,13 @@ bool OlaServer::InternalNewConnection(
 
 void OlaServer::ReloadPluginsInternal() {
 #ifdef HAVE_LIBSYSTEMD
-  ola::NotifySystemd(0, "RELOADING=1\nSTATUS=Reloading plugins\n");
+  ola::SystemdNotify(0, "RELOADING=1\nSTATUS=Reloading plugins\n");
 #endif  // HAVE_LIBSYSTEMD
   OLA_INFO << "Reloading plugins";
   StopPlugins();
   m_plugin_manager->LoadAll();
 #ifdef HAVE_LIBSYSTEMD
-  ola::NotifySystemd(0, "READY=1\nSTATUS=Plugin reload complete\n");
+  ola::SystemdNotify(0, "READY=1\nSTATUS=Plugin reload complete\n");
 #endif  // HAVE_LIBSYSTEMD
 }
 

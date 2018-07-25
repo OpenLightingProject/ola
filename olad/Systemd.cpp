@@ -34,7 +34,7 @@
 
 namespace ola {
 
-int NotifySystemd(int unset_environment, const char *state) {
+int SystemdNotify(int unset_environment, const char *state) {
   int rtn = sd_notify(unset_environment, state);
   if (rtn < 0) {
     char buf[1024];
@@ -44,7 +44,7 @@ int NotifySystemd(int unset_environment, const char *state) {
   return rtn;
 }
 
-bool NotifyAvailable() {
+bool SystemdNotifyAvailable() {
   return (sd_notify(0, "") != 0);
 }
 
