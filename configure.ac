@@ -755,7 +755,8 @@ AC_ARG_ENABLE(
 
 have_libsystemd="no"
 AS_IF([test "x$enable_systemd" != "xno"],
-  [PKG_CHECK_MODULES([libsystemd], [libsystemd >= 38], [have_libsystemd="yes"])
+  [PKG_CHECK_MODULES([libsystemd], [libsystemd >= 38], [have_libsystemd="yes"], 
+                     [AC_MSG_WARN([disabling systemd support: can't find libsystemd])])
    AC_CHECK_HEADER([systemd/sd-daemon.h], [],
                    [have_libsystemd="no"
                     AC_MSG_WARN([disabling systemd support: can't find systemd/sd-daemon.h])])

@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Systemd.cpp
- * Provides wrapped access to systemd interfaces.
+ * Strerror_r.cpp
+ * Definition of strerror_r that is XSI-compliant.
  * Copyright (C) 2018 Shenghao Yang
  */
 
@@ -22,33 +22,28 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
-#if HAVE_LIBSYSTEMD
-#include <systemd/sd-daemon.h>
-#endif  // HAVE_LIBSYSTEMD
+// Required for string.h to declare the standards-compliant version of
+// strerror_r(), when compiling under glibc. Must come before the inclusion
+// of string.h.
+// These are conditional to avoid errors when not compiling with glibc, or
+// when compiling with a compiler that does not define _POSIX_C_SOURCE.
+#ifdef _GNU_SOURCE
+#undef _GNU_SOURCE
+#endif
 
-#include "ola/Logging.h"
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#define _POSIX_C_SOURCE 200112L
+
+#include <string.h>
 
 #include "olad/Strerror_r.h"
-#include "olad/Systemd.h"
 
 namespace ola {
 
-int SystemdNotify(int unset_environment, const char *state) {
-  int rtn = sd_notify(unset_environment, state);
-  if (rtn < 0) {
-    char buf[1024];
-    OLA_WARN << "Error sending notification to systemd: ";
-    if (ola::Strerror_r(-rtn, buf, sizeof(buf))) {
-      OLA_WARN << "errno = " << -rtn;
-    } else {
-      OLA_WARN << buf;
-    }
-  }
-  return rtn;
-}
-
-bool SystemdNotifyAvailable() {
-  return (sd_notify(0, "") != 0);
+int Strerror_r(int errnum, char* buf, size_t buflen) {
+  return strerror_r(errnum, buf, buflen);
 }
 
 }  // namespace ola

@@ -13,42 +13,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Systemd.cpp
- * Provides wrapped access to systemd interfaces.
+ * Strerror_r.h
+ * Declaration of strerror_r that is XSI-compliant.
  * Copyright (C) 2018 Shenghao Yang
  */
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif  // HAVE_CONFIG_H
-
-#if HAVE_LIBSYSTEMD
-#include <systemd/sd-daemon.h>
-#endif  // HAVE_LIBSYSTEMD
-
-#include "ola/Logging.h"
-
-#include "olad/Strerror_r.h"
-#include "olad/Systemd.h"
+#ifndef OLAD_STRERROR_R_H_
+#define OLAD_STRERROR_R_H_
 
 namespace ola {
 
-int SystemdNotify(int unset_environment, const char *state) {
-  int rtn = sd_notify(unset_environment, state);
-  if (rtn < 0) {
-    char buf[1024];
-    OLA_WARN << "Error sending notification to systemd: ";
-    if (ola::Strerror_r(-rtn, buf, sizeof(buf))) {
-      OLA_WARN << "errno = " << -rtn;
-    } else {
-      OLA_WARN << buf;
-    }
-  }
-  return rtn;
-}
-
-bool SystemdNotifyAvailable() {
-  return (sd_notify(0, "") != 0);
-}
+/*
+ * @brief XSI-compliant version of @ref strerror_r()
+ 
+ * See strerror(3) for more details.
+ */
+int Strerror_r(int errnum, char* buf, size_t buflen);
 
 }  // namespace ola
+
+#endif  // OLAD_STRERROR_R_H_
