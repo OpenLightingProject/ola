@@ -751,16 +751,17 @@ AC_ARG_ENABLE(
 # systemd support
 AC_ARG_ENABLE(
   [systemd],
-  [AS_HELP_STRING([--enable-systemd], [Enable systemd support])])
+  [AS_HELP_STRING([--disable-systemd], [Disable systemd support])])
 
 have_libsystemd="no"
-AS_IF([test "x$enable_systemd" = "xyes"],
+AS_IF([test "x$enable_systemd" != "xno"],
   [PKG_CHECK_MODULES([libsystemd], [libsystemd >= 38], [have_libsystemd="yes"])
    AC_CHECK_HEADER([systemd/sd-daemon.h], [],
                    [have_libsystemd="no"
-                    AC_MSG_ERROR([can't find systemd/sd-daemon.h necessary for systemd support])])
+                    AC_MSG_WARN([disabling systemd support: can't find systemd/sd-daemon.h])])
    AC_CHECK_FUNC([strerror_r], [],
-                 [AC_MSG_ERROR([can't find strerror_r necessary for systemd support])])])
+                 [have_libsystemd="no"
+                  AC_MSG_WARN([disabling systemd support: can't find strerror_r])])])
 
 AS_IF([test "x$have_libsystemd" = xyes],
       [AC_DEFINE([HAVE_LIBSYSTEMD], [1],
