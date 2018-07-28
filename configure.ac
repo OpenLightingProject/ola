@@ -184,8 +184,8 @@ AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
-                socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
-                getgrnam_r getgrgid_r secure_getenv])
+                socket strerror strerror_r getifaddrs getloadavg getpwnam_r \
+                getpwuid_r getgrnam_r getgrgid_r secure_getenv])
 
 AC_MSG_CHECKING(for readdir_r deprecation)
 old_cxxflags=$CXXFLAGS
@@ -227,6 +227,9 @@ AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
 # kqueue
 AC_CHECK_FUNCS([kqueue])
 AM_CONDITIONAL(HAVE_KQUEUE, test "${ac_cv_func_kqueue}" = "yes")
+
+# strerror_r
+AM_CONDITIONAL([HAVE_STRERROR_R], [test "x$ac_cv_func_strerror_r" = "xyes"])
 
 # check if the compiler supports -rdynamic
 AC_MSG_CHECKING(for -rdynamic support)
@@ -760,9 +763,9 @@ AS_IF([test "x$enable_systemd" != "xno"],
    AC_CHECK_HEADER([systemd/sd-daemon.h], [],
                    [have_libsystemd="no"
                     AC_MSG_WARN([disabling systemd support: can't find systemd/sd-daemon.h])])
-   AC_CHECK_FUNC([strerror_r], [],
-                 [have_libsystemd="no"
-                  AC_MSG_WARN([disabling systemd support: can't find strerror_r])])])
+   AS_IF([test "x$ac_cv_func_strerror_r" = "xno"],
+         [have_libsystemd="no"
+          AC_MSG_WARN([disabling systemd support: can't find strerror_r])])])
 
 AS_IF([test "x$have_libsystemd" = xyes],
       [AC_DEFINE([HAVE_LIBSYSTEMD], [1],

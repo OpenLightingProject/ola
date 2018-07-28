@@ -1,17 +1,17 @@
 /*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Strerror_r.cpp
  * Definition of strerror_r that is XSI-compliant.
@@ -27,6 +27,7 @@
 // of string.h.
 // These are conditional to avoid errors when not compiling with glibc, or
 // when compiling with a compiler that does not define _POSIX_C_SOURCE.
+// See strerror(3) as to why the macros are defined this way.
 #ifdef _GNU_SOURCE
 #undef _GNU_SOURCE
 #endif
@@ -38,7 +39,7 @@
 
 #include <string.h>
 
-#include "olad/Strerror_r.h"
+#include "ola/base/Strerror_r.h"
 
 namespace ola {
 

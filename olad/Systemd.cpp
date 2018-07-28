@@ -27,8 +27,8 @@
 #endif  // HAVE_LIBSYSTEMD
 
 #include "ola/Logging.h"
+#include "ola/base/Strerror_r.h"
 
-#include "olad/Strerror_r.h"
 #include "olad/Systemd.h"
 
 namespace ola {

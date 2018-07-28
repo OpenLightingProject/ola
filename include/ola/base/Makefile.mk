@@ -9,5 +9,9 @@ olabaseinclude_HEADERS = \
     include/ola/base/Macro.h \
     include/ola/base/SysExits.h
 
+if HAVE_STRERROR_R
+olabaseinclude_HEADERS += include/ola/base/Strerror_r.h
+endif
+
 nodist_olabaseinclude_HEADERS = \
     include/ola/base/Version.h
