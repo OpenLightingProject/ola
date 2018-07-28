@@ -37,11 +37,10 @@ int SystemdNotify(int unset_environment, const char *state) {
   int rtn = sd_notify(unset_environment, state);
   if (rtn < 0) {
     char buf[1024];
-    OLA_WARN << "Error sending notification to systemd: ";
     if (ola::Strerror_r(-rtn, buf, sizeof(buf))) {
-      OLA_WARN << "errno = " << -rtn;
+      OLA_WARN << "Error sending notification to systemd: errno = " << -rtn;
     } else {
-      OLA_WARN << buf;
+      OLA_WARN << "Error sending notification to systemd: " << buf;
     }
   }
   return rtn;

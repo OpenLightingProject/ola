@@ -177,11 +177,11 @@ int main(int argc, char *argv[]) {
 
 #if HAVE_LIBSYSTEMD
   if (ola::SystemdNotifyAvailable()) {
-    OLA_INFO << "Systemd notification socket address present. "
-             << "Sending notifications.";
+    OLA_INFO << "Systemd notification socket address present, "
+             << "sending notifications.";
   } else {
-    OLA_WARN << "Systemd notification socket address not present. "
-             << "Not sending notifications.";
+    OLA_WARN << "Systemd notification socket address not present, "
+             << "not sending notifications.";
   }
   // Does not need to be guarded. sd_notify does its own internal check on
   // the socket's presence, as well.
