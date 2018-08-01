@@ -21,6 +21,9 @@
 #include <ola/io/StdinHandler.h>
 #include <iostream>
 
+/**
+ * @brief An example StdinHandler.
+ */
 class ExampleStdinHandler {
  public:
   ExampleStdinHandler()
