@@ -5,6 +5,9 @@
  * @namespace ola::acn
  * @brief ACN related code.
  *
+ * @namespace ola::base
+ * @brief Core base functionality (arrays, exit codes, flags, versioning).
+ *
  * @namespace ola::client
  * @brief OLA C++ API
  *
