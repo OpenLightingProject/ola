@@ -65,6 +65,9 @@
  * @namespace ola::plugin::milinst
  * @brief Code for Milford Instruments devices.
  *
+ * @namespace ola::plugin::nanoleaf
+ * @brief Code for Nanoleaf Aurora.
+ *
  * @namespace ola::plugin::opendmx
  * @brief Code for the Enttec OpenDMX.
  *
@@ -88,6 +91,9 @@
  *
  * @namespace ola::plugin::spi
  * @brief Code for SPI devices.
+ *
+ * @namespace ola::plugin::spidmx
+ * @brief Code for receiving DMX using SPI devices.
  *
  * @namespace ola::plugin::stageprofi
  * @brief Code for Stageprofi devices.
