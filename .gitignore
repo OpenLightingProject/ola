@@ -8,12 +8,14 @@
 *.lo
 *.log
 *.o
+*.o.*
 *.o-????????
 *.pb.cc
 *.pb.cpp
 *.pb.h
 *.pc
 *.pyc
+*.save
 *.swp
 *.tar.gz
 *.trs

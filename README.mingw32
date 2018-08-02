@@ -83,6 +83,12 @@ libusb (optional)
 - Download and extract the latest version of libusb from http://libusb.info/
 - Configure, compile and install it using the MinGW MSYS shell with option --prefix=/c/MinGW
 
+libftdi1 (optional)
+----------------
+- Download and install libftdi1 from https://www.intra2net.com/en/developer/libftdi/
+- Alternatively download a pre-compiled version and install from https://code.google.com/archive/p/picusb/downloads
+- Use the Zadig tool from https://sourceforge.net/projects/libwdi/files/zadig/ to install the libusbK for each FTDI device
+
 ============
 Building OLA
 ============
@@ -91,7 +97,7 @@ Building OLA
 * git clone https://github.com/OpenLightingProject/ola.git ola
 * cd ola
 * autoreconf -i -f
-* ./configure --enable-python-libs --disable-all-plugins --enable-artnet --enable-dummy --enable-espnet --enable-kinet --enable-opendmx --enable-osc --enable-pathport --enable-sandnet --enable-shownet --enable-usbdmx
+* ./configure --enable-python-libs --disable-all-plugins --enable-artnet --enable-dummy --enable-espnet --enable-ftdidmx --enable-kinet --enable-osc --enable-pathport --enable-sandnet --enable-shownet --enable-usbdmx
 * make
 * make install
 
