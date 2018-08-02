@@ -25,6 +25,7 @@
 
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -442,6 +443,15 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
 #endif  // _WIN32
 
   JsonObject json;
+#ifdef OLA_SCREENSHOT_MODE
+  json.Add("hostname", "olad-server");
+  json.Add("instance_name", OLA_DEFAULT_INSTANCE_NAME);
+  json.Add("config_dir", "/etc/ola/");
+  json.Add("ip", "10.79.76.65");
+  json.Add("broadcast", "10.79.76.255");
+  json.Add("subnet", "255.255.255.0");
+  json.Add("hw_address", "01:ad:01:ad:01:ad");
+#else
   json.Add("hostname", ola::network::FQDN());
   json.Add("instance_name", m_ola_server->InstanceName());
   json.Add("config_dir",
@@ -450,6 +460,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   json.Add("broadcast", m_interface.bcast_address.ToString());
   json.Add("subnet", m_interface.subnet_mask.ToString());
   json.Add("hw_address", m_interface.hw_address.ToString());
+#endif  // SCREENSHOT_MODE
   json.Add("version", ola::base::Version::GetVersion());
   json.Add("up_since", start_time_str);
   json.Add("quit_enabled", m_enable_quit);
