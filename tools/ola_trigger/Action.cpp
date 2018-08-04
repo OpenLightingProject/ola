@@ -112,7 +112,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
                      NULL,
                      &startup_info,
                      &process_information)) {
-    OLA_WARN << "Could not launch " << args[0] << ":" << GetLastError();
+    OLA_WARN << "Could not launch " << args[0] << ": " << GetLastError();
     FreeArgList(args);
   } else {
     // Don't leak the handles
