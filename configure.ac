@@ -214,6 +214,10 @@ LT_INIT([win32-dll])
 
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
+have_not_win32="yes"
+if test "x$host_os" = xmingw32; then
+  have_not_win32="no"
+fi
 
 # Epoll
 AX_HAVE_EPOLL(
@@ -849,7 +853,7 @@ PLUGIN_SUPPORT(karate, USE_KARATE)
 PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(milinst, USE_MILINST)
 PLUGIN_SUPPORT(nanoleaf, USE_NANOLEAF)
-PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
+PLUGIN_SUPPORT(opendmx, USE_OPENDMX, [$have_not_win32])
 PLUGIN_SUPPORT(openpixelcontrol, USE_OPENPIXELCONTROL)
 PLUGIN_SUPPORT(osc, USE_OSC, [$have_liblo])
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
