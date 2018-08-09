@@ -10,7 +10,7 @@ olabaseinclude_HEADERS = \
     include/ola/base/SysExits.h
 
 if HAVE_STRERROR_R
-olabaseinclude_HEADERS += include/ola/base/Strerror_r.h
+olabaseinclude_HEADERS += include/ola/base/StrError_R.h
 endif
 
 nodist_olabaseinclude_HEADERS = \

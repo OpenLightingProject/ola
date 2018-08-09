@@ -10,7 +10,8 @@ common_libolacommon_la_SOURCES += \
     common/base/Version.cpp
 
 if HAVE_STRERROR_R
-common_libolacommon_la_SOURCES += common/base/Strerror_r.cpp
+common_libolacommon_la_SOURCES += common/base/StrError_R.cpp \
+                                  common/base/StrError_R_XSI.cpp
 endif
 
 # TESTS

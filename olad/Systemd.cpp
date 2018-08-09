@@ -27,7 +27,7 @@
 #endif  // HAVE_LIBSYSTEMD
 
 #include "ola/Logging.h"
-#include "ola/base/Strerror_r.h"
+#include "ola/base/StrError_R.h"
 
 #include "olad/Systemd.h"
 
@@ -36,12 +36,8 @@ namespace ola {
 int SystemdNotify(int unset_environment, const char *state) {
   int rtn = sd_notify(unset_environment, state);
   if (rtn < 0) {
-    char buf[1024];
-    if (ola::Strerror_r(-rtn, buf, sizeof(buf))) {
-      OLA_WARN << "Error sending notification to systemd: errno = " << -rtn;
-    } else {
-      OLA_WARN << "Error sending notification to systemd: " << buf;
-    }
+    OLA_WARN << "Error sending notification to systemd: "
+             << ola::StrError_R(-rtn);
   }
   return rtn;
 }

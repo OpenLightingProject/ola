@@ -13,8 +13,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * Strerror_r.cpp
- * Definition of strerror_r that is XSI-compliant.
+ * StrError_R_XSI.cpp
+ * Definition of strerror_r() that is XSI-compliant.
+ * This extra file is required because the header declaring the symbols
+ * for the C++ string library conflicts with the macros used to expose
+ * the XSI-compliant declaration of strerror_r().
  * Copyright (C) 2018 Shenghao Yang
  */
 
@@ -39,11 +42,9 @@
 
 #include <string.h>
 
-#include "ola/base/Strerror_r.h"
-
 namespace ola {
 
-int Strerror_r(int errnum, char* buf, size_t buflen) {
+int StrError_R_XSI(int errnum, char* buf, size_t buflen) {
   return strerror_r(errnum, buf, buflen);
 }
 
