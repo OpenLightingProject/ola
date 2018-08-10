@@ -117,7 +117,7 @@ void FirmwareTransferer::HandleMessage(uint8_t label,
     if (!SendNextChunk() || m_successful)
       m_ss->Terminate();
   } else {
-    OLA_FATAL << "Bad response from widget:" << string((const char*) data, 4);
+    OLA_FATAL << "Bad response from widget: " << string((const char*) data, 4);
     m_ss->Terminate();
   }
 }
