@@ -23,7 +23,7 @@
  * @defgroup strerror Description of system error codes
  * @brief Error descriptions
  * @details Convenience functions to obtain descriptions of system error codes.
- * The functions in this group are only defined if @ref strerror_r() is available.
+ * The functions in this group are only defined if \c strerror_r() is available.
  */
 
 /**
@@ -55,7 +55,7 @@ namespace ola {
 extern const int StrError_R_BufSize;
 
 /**
- * @brief XSI-compliant version of @ref strerror_r()
+ * @brief XSI-compliant version of \c strerror_r()
  *
  * See https://linux.die.net/man/3/strerror for more details.
  */
