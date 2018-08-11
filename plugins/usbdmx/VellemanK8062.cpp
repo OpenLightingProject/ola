@@ -286,7 +286,7 @@ bool VellemanThreadedSender::SendDataChunk(libusb_device_handle *handle,
       handle, ENDPOINT, reinterpret_cast<unsigned char*>(usb_data),
       chunk_size, &transferred, URB_TIMEOUT_MS);
   if (ret) {
-    OLA_WARN << "InterruptTransfer():" << m_adaptor->ErrorCodeToString(ret)
+    OLA_WARN << "InterruptTransfer(): " << m_adaptor->ErrorCodeToString(ret)
              << ", transferred " << transferred << " / " << chunk_size;
   }
   return ret == 0;
