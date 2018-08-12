@@ -416,8 +416,8 @@ bool UDPSocket::JoinMulticast(const IPV4Address &iface,
                     sizeof(loop));
 #endif  // _WIN32
     if (ok < 0) {
-      OLA_WARN << "Failed to disable looping for " << m_handle << ":" <<
-        strerror(errno);
+      OLA_WARN << "Failed to disable looping for " << m_handle << ": "
+               << strerror(errno);
       return false;
     }
   }

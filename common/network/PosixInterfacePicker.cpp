@@ -140,7 +140,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
 
     struct ifreq ifrcopy = *iface;
     if (ioctl(sd, SIOCGIFFLAGS, &ifrcopy) < 0) {
-      OLA_WARN << "ioctl error for " << iface->ifr_name << ":"
+      OLA_WARN << "ioctl error for " << iface->ifr_name << ": "
                << strerror(errno);
       continue;
     }

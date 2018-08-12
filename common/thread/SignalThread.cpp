@@ -131,7 +131,7 @@ bool SignalThread::AddSignals(sigset_t *signals) {
   for (; iter != m_signal_handlers.end(); ++iter) {
     if (sigaddset(signals, iter->first)) {
       OLA_WARN << "Failed to add " << strsignal(iter->first)
-               << " to the signal set:" << strerror(errno);
+               << " to the signal set: " << strerror(errno);
       return false;
     }
   }
@@ -156,7 +156,7 @@ bool SignalThread::BlockSignal(int signal) {
 
   if (sigaddset(&signals, signal)) {
     OLA_WARN << "Failed to add " << strsignal(signal)
-             << " to the signal set:" << strerror(errno);
+             << " to the signal set: " << strerror(errno);
     return false;
   }
 
