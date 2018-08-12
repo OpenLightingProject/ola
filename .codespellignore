@@ -80,3 +80,83 @@ class AsyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
   explicit AsyncronousLibUsbAdaptor(class LibUsbThread *thread)
   DISALLOW_COPY_AND_ASSIGN(AsyncronousLibUsbAdaptor);
   manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
+  STLDeleteValues(&m_uint_map_variables);
+  return GetMapVar(&m_uint_map_variables, name, label);
+  STLValues(m_uint_map_variables, &variables);
+  auto_ptr<JsonUInt> m_uint_value;
+  m_uint_value.reset(new JsonUInt(4));
+  m_uint_value->Accept(&wildcard_validator);
+  m_uint_value->Accept(&validator);
+  m_uint_value->Accept(&basic_string_validator);
+  m_uint_value->Accept(&bool_validator);
+  m_uint_value->Accept(&null_validator);
+  m_uint_value->Accept(&integer_validator);
+  auto_ptr<JsonInt> uint_value1(new JsonInt(5));
+  m_uint_value->Accept(&max_int_validator);
+  uint_value1->Accept(&max_int_validator);
+  m_uint_value->Accept(&exclusive_max_int_validator);
+  uint_value1->Accept(&max_int_validator);
+  m_uint_value->Accept(&min_int_validator);
+  m_uint_value->Accept(&exclusive_min_int_validator);
+  m_uint_value->Accept(&multiple_of_validator);
+  m_uint_value->Accept(&integer_validator);
+  m_uint_value->Accept(&object_validator);
+  m_uint_value->Accept(&array_validator);
+  m_uint_value->Accept(&all_of_validator);
+  m_uint_value->Accept(&any_of_validator);
+  m_uint_value->Accept(&one_of_validator);
+  m_uint_value->Accept(&not_validator);
+  JsonInt uint_value1(2);
+  JsonInt uint_value2(3);
+  m_uint_value->Accept(&integer_validator);
+  uint_value1.Accept(&integer_validator);
+  uint_value2.Accept(&integer_validator);
+  JsonUInt uint_value(10);
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(uint_value));
+  std::map<std::string, UIntMap*> m_uint_map_variables;
+    if (message.uint_offset < MAX_UINT_FIELDS) {
+      message.uint16_fields[message.uint_offset++] = field->Value();
+          iter->uint_offset != MAX_UINT_FIELDS ||
+  enum { MAX_UINT_FIELDS = 2 };
+    uint16_t uint16_fields[MAX_UINT_FIELDS];
+    uint8_t uint_offset;
+    status_message() : uint_offset(0), int_offset(0), status_type(0),
+const char RDMHTTPModule::GENERIC_UINT_FIELD[] = "int";
+  section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
+  section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
+  SelectItem *item = new SelectItem("Personality", GENERIC_UINT_FIELD);
+  string personality_str = request->GetParameter(GENERIC_UINT_FIELD);
+    UIntItem *uint_item = new UIntItem("DMX Start Address", address,
+    uint_item->SetMin(DMX_MIN_SLOT_NUMBER);
+    uint_item->SetMax(DMX_MAX_SLOT_NUMBER);
+    item = uint_item;
+  string device_hours = request->GetParameter(GENERIC_UINT_FIELD);
+  string lamp_hours_str = request->GetParameter(GENERIC_UINT_FIELD);
+  string lamp_strikes_str = request->GetParameter(GENERIC_UINT_FIELD);
+  SelectItem *item = new SelectItem("Lamp State", GENERIC_UINT_FIELD);
+  string lamp_state_str = request->GetParameter(GENERIC_UINT_FIELD);
+  SelectItem *item = new SelectItem("Lamp Mode", GENERIC_UINT_FIELD);
+  string lamp_mode_str = request->GetParameter(GENERIC_UINT_FIELD);
+  string power_cycles_str = request->GetParameter(GENERIC_UINT_FIELD);
+  UIntItem *item = new UIntItem("Display Level", value, GENERIC_UINT_FIELD);
+  string display_level_str = request->GetParameter(GENERIC_UINT_FIELD);
+  section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
+  SelectItem *item = new SelectItem("Power State", GENERIC_UINT_FIELD);
+  string power_state_str = request->GetParameter(GENERIC_UINT_FIELD);
+  SelectItem *item = new SelectItem("Reset Device", GENERIC_UINT_FIELD);
+  string reset_device_str = request->GetParameter(GENERIC_UINT_FIELD);
+  section.AddItem(new UIntItem(description, value, GENERIC_UINT_FIELD));
+  UIntValidator uint_validator(10, 14);
+  OLA_ASSERT(uint_validator.IsValid("10"));
+  OLA_ASSERT(uint_validator.IsValid("14"));
+  OLA_ASSERT_FALSE(uint_validator.IsValid("0"));
+  OLA_ASSERT_FALSE(uint_validator.IsValid("9"));
+  OLA_ASSERT_FALSE(uint_validator.IsValid("15"));
+  UIntValidator uint_validator(0, 3);
+  OLA_ASSERT(preferences->SetDefaultValue(key1, uint_validator, value3));
+  OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, uint_validator,
+  const char *uint_vars[] = {
+    for (unsigned int i = 0; i < arraysize(uint_vars); ++i) {
+      m_export_map->GetUIntMapVar(uint_vars[i])->Remove(m_universe_id_str);
+    static const char GENERIC_UINT_FIELD[];
+                                         UIntValidator(0, UINT_MAX),
