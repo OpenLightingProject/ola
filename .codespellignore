@@ -127,6 +127,9 @@ class AsyncronousLibUsbAdaptor : public BaseLibUsbAdaptor {
     uint8_t uint_offset;
     status_message() : uint_offset(0), int_offset(0), status_type(0),
     std::string Type() const { return "uint"; }
+      if (items[i]['type'] == 'uint') {
+      if (items[i]['type'] == 'uint') {
+    if (type == 'string' || type == 'uint' || type == 'hidden') {
 const char RDMHTTPModule::GENERIC_UINT_FIELD[] = "int";
   section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
   section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
@@ -162,6 +165,9 @@ function ok(a,b){for(var c=a.wa[b].data.items,d=c.length,g=N(a.wa[b].id),h="",i=
   OLA_ASSERT_FALSE(uint_validator.IsValid("0"));
   OLA_ASSERT_FALSE(uint_validator.IsValid("9"));
   OLA_ASSERT_FALSE(uint_validator.IsValid("15"));
+  // test get/set/has single values uint
+  // test get/set multiple value uint
+  // test SetDefaultValue uint
   UIntValidator uint_validator(0, 3);
   OLA_ASSERT(preferences->SetDefaultValue(key1, uint_validator, value3));
   OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, uint_validator,
@@ -169,4 +175,5 @@ function ok(a,b){for(var c=a.wa[b].data.items,d=c.length,g=N(a.wa[b].id),h="",i=
     for (unsigned int i = 0; i < arraysize(uint_vars); ++i) {
       m_export_map->GetUIntMapVar(uint_vars[i])->Remove(m_universe_id_str);
     static const char GENERIC_UINT_FIELD[];
+    if ((uint) r != buffer.Size()) {
                                          UIntValidator(0, UINT_MAX),
