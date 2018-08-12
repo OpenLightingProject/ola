@@ -30,6 +30,7 @@
 #include <sstream>
 
 #include "ola/base/StrError_R.h"
+#include "ola/strings/Format.h"
 
 namespace ola {
 
@@ -39,12 +40,7 @@ std::string StrError_R(int errnum) {
   // Pre-allocate to prevent re-allocation.
   std::string out(StrError_R_BufSize, '\0');
   if (StrError_R_XSI(errnum, &(out[0]), out.size())) {
-    std::ostringstream errs("errno = ");
-    if (!(errs << errnum)) {
-      out.assign("errno = <error in text conversion>");
-    } else {
-      out.assign(errs.str());
-    }
+    out.assign(std::string("errno = ") + ola::strings::IntToString(errnum));
   } else {
     out.resize(strlen(&(out[0])));
   }
