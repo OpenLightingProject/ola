@@ -27,37 +27,23 @@
 
 #include <limits>
 #include <string>
+#include <sstream>
 
 #include "ola/base/StrError_R.h"
 
 namespace ola {
 
-const int StrError_R_BufSize(1024);
+const int StrError_R_BufSize = 1024;
 
 std::string StrError_R(int errnum) {
   // Pre-allocate to prevent re-allocation.
   std::string out(StrError_R_BufSize, '\0');
   if (StrError_R_XSI(errnum, &(out[0]), out.size())) {
-    out.assign("errno = ");
-    // Buffer size here is digits10 + 3 to account for:
-    // - Systems in which the int type cannot represent the full range
-    //   of digits in the position of the most significant base 10 digit.
-    //   (i.e. 0-2 representable in an 8-bit unsigned integer at the
-    //   hundredth's place instead of 0-9 because an u8 is clamped to
-    //   [0, 255])
-    // - Terminating NUL byte added by snprintf.
-    // - 1 additional unit of storage just in case a negative errnum is
-    //   passed, and somehow StrError_R_XSI() failed on that.
-    char errs[std::numeric_limits<int>::digits10 + 3];
-    int r(snprintf(errs, sizeof(errs), "%d", errnum));
-    if (r < 0) {
-      out.append("<error>");
-    // Ugly cast required to avoid compiler warning when comparing
-    // numbers of different signedness.
-    } else if (static_cast<unsigned int>(r) >= sizeof(errs)) {
-      out.append("<truncated>");
+    std::ostringstream errs("errno = ");
+    if (!(errs << errnum)) {
+      out.assign("errno = <error in text conversion>");
     } else {
-      out.append(errs);
+      out.assign(errs.str());
     }
   } else {
     out.resize(strlen(&(out[0])));

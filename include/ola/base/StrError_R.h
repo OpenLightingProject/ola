@@ -23,7 +23,8 @@
  * @defgroup strerror Description of system error codes
  * @brief Error descriptions
  * @details Convenience functions to obtain descriptions of system error codes.
- * The functions in this group are only defined if \c strerror_r() is available.
+ * The functions and variables in this group are only defined if \c strerror_r()
+ * is available.
  */
 
 /**
@@ -55,9 +56,9 @@ namespace ola {
 extern const int StrError_R_BufSize;
 
 /**
- * @brief XSI-compliant version of \c strerror_r()
+ * @brief XSI-compliant version of \c strerror_r().
  *
- * See https://linux.die.net/man/3/strerror for more details.
+ * @see https://linux.die.net/man/3/strerror for more details.
  */
 int StrError_R_XSI(int errnum, char* buf, size_t buflen);
 
@@ -66,7 +67,7 @@ int StrError_R_XSI(int errnum, char* buf, size_t buflen);
  * 
  * @param errnum error value to generate the textual description for.
  * @return Textual description of the error value. If the description is
- * trucnated due to an insufficient buffer length, the description will
+ * truncated due to an insufficient buffer length, the description will
  * be in the form: "errno = errnum".
  * @sa StrError_R_BufSize for information regarding truncation.
  */
