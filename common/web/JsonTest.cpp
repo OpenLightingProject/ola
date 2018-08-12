@@ -558,11 +558,11 @@ void JsonTest::testLookups() {
                 string1.LookupElement(empty_pointer));
 
   #ifdef __FreeBSD__
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
   #else
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
   #endif  // __FreeBSD__
-                string1.LookupElement(invalid_pointer));
+                        string1.LookupElement(invalid_pointer));
 
   // Now try an object
   JsonString *name_value = new JsonString("simon");
@@ -578,11 +578,11 @@ void JsonTest::testLookups() {
                 object.LookupElement(name_pointer));
 
   #ifdef __FreeBSD__
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
   #else
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
   #endif  // __FreeBSD__
-                object.LookupElement(invalid_pointer));
+                        object.LookupElement(invalid_pointer));
 
   // Now try an array
   JsonArray *array = new JsonArray();
@@ -603,11 +603,11 @@ void JsonTest::testLookups() {
                 array->LookupElement(empty_pointer));
 
   #ifdef __FreeBSD__
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
   #else
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
   #endif  // __FreeBSD__
-                array->LookupElement(invalid_pointer));
+                        array->LookupElement(invalid_pointer));
 
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(string2),
                 array->LookupElement(first));
@@ -617,18 +617,18 @@ void JsonTest::testLookups() {
                 array->LookupElement(last));
 
   #ifdef __FreeBSD__
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
   #else
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
   #endif  // __FreeBSD__
-                array->LookupElement(one_past_last));
+                        array->LookupElement(one_past_last));
 
   #ifdef __FreeBSD__
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
   #else
-        OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+          OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
   #endif  // __FreeBSD__
-                array->LookupElement(invalid));
+                        array->LookupElement(invalid));
 
   // now a nested case
   object.AddValue("pets", array);
