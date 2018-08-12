@@ -99,7 +99,7 @@ void SchemaParser::Bool(bool value) {
   }
 
   if (!m_root_context.get()) {
-    m_error_logger.Error() << "Invalid bool for first element:" << value;
+    m_error_logger.Error() << "Invalid bool for first element: " << value;
     return;
   }
 
