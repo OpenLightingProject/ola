@@ -757,14 +757,14 @@ AC_ARG_ENABLE(
   [AS_HELP_STRING([--disable-systemd], [Disable systemd support])])
 
 have_libsystemd="no"
-AS_IF([test "x$enable_systemd" != "xno"],
-  [PKG_CHECK_MODULES([libsystemd], [libsystemd >= 38], [have_libsystemd="yes"], 
+AS_IF([test "x$enable_systemd" != xno],
+  [PKG_CHECK_MODULES([libsystemd], [libsystemd >= 38], [have_libsystemd=yes], 
                      [AC_MSG_WARN([disabling systemd support: can't find libsystemd])])
    AC_CHECK_HEADER([systemd/sd-daemon.h], [],
-                   [have_libsystemd="no"
+                   [have_libsystemd=no
                     AC_MSG_WARN([disabling systemd support: can't find systemd/sd-daemon.h])])
-   AS_IF([test "x$ac_cv_func_strerror_r" = "xno"],
-         [have_libsystemd="no"
+   AS_IF([test "x$ac_cv_func_strerror_r" = xno],
+         [have_libsystemd=no
           AC_MSG_WARN([disabling systemd support: can't find strerror_r])])])
 
 AS_IF([test "x$have_libsystemd" = xyes],
@@ -772,6 +772,9 @@ AS_IF([test "x$have_libsystemd" = xyes],
                  [define if systemd support is wanted and libsystemd is present])])
 
 AM_CONDITIONAL([HAVE_LIBSYSTEMD], [test "x$have_libsystemd" = xyes])
+
+AS_IF([test "x$enable_systemd" = xyes && test "x$have_libsystemd" = xno],
+      [AC_MSG_ERROR([could not enable systemd support])])
 
 # UUCP Lock directory
 AC_ARG_WITH([uucp-lock],
