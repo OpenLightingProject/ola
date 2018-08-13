@@ -85,7 +85,8 @@ AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
                                                                              [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
                                                           ])
                                        ])
-                                [require_gnu_plus_plus_11="yes"]])
+                                ],
+                                [require_gnu_plus_plus_11="yes"])
              ])
       ])
 AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
