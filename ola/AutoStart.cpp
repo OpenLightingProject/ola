@@ -110,7 +110,11 @@ TCPSocket *ConnectToServer(unsigned short port) {
     // Try to start the server, we pass --daemon (fork into background) and
     // --syslog (log to syslog).
     execlp("olad", "olad", "--daemon", "--syslog",
+#ifdef __FreeBSD__
+           reinterpret_cast<char*>(0));
+#else
            reinterpret_cast<char*>(NULL));
+#endif  // __FreeBSD__
     OLA_WARN << "Failed to exec: " << strerror(errno);
     _exit(1);
   }
