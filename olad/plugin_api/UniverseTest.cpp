@@ -632,7 +632,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_UNKNOWN_UID,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // ok, now try something that returns a response from the port
   request = new ola::rdm::RDMGetRequest(
@@ -654,7 +658,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_TIMEOUT,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // now try a broadcast fan out
   UID vendorcast_uid = UID::VendorcastAddress(0x7a70);
@@ -683,7 +691,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_WAS_BROADCAST,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // now confirm that if one of the ports fails to send, we see this response
   request = new ola::rdm::RDMGetRequest(
@@ -707,7 +719,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_FAILED_TO_SEND,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // DUB responses are slightly different
   request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
@@ -727,7 +743,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_DUB_RESPONSE,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // now check that we still get a RDM_DUB_RESPONSE even if one port returns an
   // RDM_TIMEOUT
@@ -744,7 +764,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_DUB_RESPONSE,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // and the same again but the second port returns
   // RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED
@@ -761,7 +785,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_DUB_RESPONSE,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // now the first port returns a RDM_TIMEOUT
   request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
@@ -777,7 +805,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_TIMEOUT,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // finally if neither ports support the DUB, we should return that
   request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
@@ -793,7 +825,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   universe->RemovePort(&port1);
   universe->RemovePort(&port2);
