@@ -64,3 +64,100 @@ const uint8_t BaseRobeWidget::SOM;
   manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
   manufacturer_name: "SRM Technik GmbH"
   manufacturer_name: "medien technik cords"
+  STLDeleteValues(&m_uint_map_variables);
+  return GetMapVar(&m_uint_map_variables, name, label);
+  STLValues(m_uint_map_variables, &variables);
+  auto_ptr<JsonUInt> m_uint_value;
+  m_uint_value.reset(new JsonUInt(4));
+  m_uint_value->Accept(&wildcard_validator);
+  m_uint_value->Accept(&validator);
+  m_uint_value->Accept(&basic_string_validator);
+  m_uint_value->Accept(&bool_validator);
+  m_uint_value->Accept(&null_validator);
+  m_uint_value->Accept(&integer_validator);
+  auto_ptr<JsonInt> uint_value1(new JsonInt(5));
+  m_uint_value->Accept(&max_int_validator);
+  uint_value1->Accept(&max_int_validator);
+  m_uint_value->Accept(&exclusive_max_int_validator);
+  uint_value1->Accept(&max_int_validator);
+  m_uint_value->Accept(&min_int_validator);
+  m_uint_value->Accept(&exclusive_min_int_validator);
+  m_uint_value->Accept(&multiple_of_validator);
+  m_uint_value->Accept(&integer_validator);
+  m_uint_value->Accept(&object_validator);
+  m_uint_value->Accept(&array_validator);
+  m_uint_value->Accept(&all_of_validator);
+  m_uint_value->Accept(&any_of_validator);
+  m_uint_value->Accept(&one_of_validator);
+  m_uint_value->Accept(&not_validator);
+  JsonInt uint_value1(2);
+  JsonInt uint_value2(3);
+  m_uint_value->Accept(&integer_validator);
+  uint_value1.Accept(&integer_validator);
+  uint_value2.Accept(&integer_validator);
+  JsonUInt uint_value(10);
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(uint_value));
+ * Test the uint item
+    "  \"type\": \"uint\",\n"
+    "  \"type\": \"uint\",\n"
+    "  \"type\": \"uint\",\n"
+    "  \"type\": \"uint\",\n"
+  std::map<std::string, UIntMap*> m_uint_map_variables;
+    if (message.uint_offset < MAX_UINT_FIELDS) {
+      message.uint16_fields[message.uint_offset++] = field->Value();
+          iter->uint_offset != MAX_UINT_FIELDS ||
+  enum { MAX_UINT_FIELDS = 2 };
+    uint16_t uint16_fields[MAX_UINT_FIELDS];
+    uint8_t uint_offset;
+    status_message() : uint_offset(0), int_offset(0), status_type(0),
+    std::string Type() const { return "uint"; }
+      if (items[i]['type'] == 'uint') {
+      if (items[i]['type'] == 'uint') {
+    if (type == 'string' || type == 'uint' || type == 'hidden') {
+const char RDMHTTPModule::GENERIC_UINT_FIELD[] = "int";
+  section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
+  section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
+  SelectItem *item = new SelectItem("Personality", GENERIC_UINT_FIELD);
+  string personality_str = request->GetParameter(GENERIC_UINT_FIELD);
+    UIntItem *uint_item = new UIntItem("DMX Start Address", address,
+    uint_item->SetMin(DMX_MIN_SLOT_NUMBER);
+    uint_item->SetMax(DMX_MAX_SLOT_NUMBER);
+    item = uint_item;
+  string device_hours = request->GetParameter(GENERIC_UINT_FIELD);
+  string lamp_hours_str = request->GetParameter(GENERIC_UINT_FIELD);
+  string lamp_strikes_str = request->GetParameter(GENERIC_UINT_FIELD);
+  SelectItem *item = new SelectItem("Lamp State", GENERIC_UINT_FIELD);
+  string lamp_state_str = request->GetParameter(GENERIC_UINT_FIELD);
+  SelectItem *item = new SelectItem("Lamp Mode", GENERIC_UINT_FIELD);
+  string lamp_mode_str = request->GetParameter(GENERIC_UINT_FIELD);
+  string power_cycles_str = request->GetParameter(GENERIC_UINT_FIELD);
+  UIntItem *item = new UIntItem("Display Level", value, GENERIC_UINT_FIELD);
+  string display_level_str = request->GetParameter(GENERIC_UINT_FIELD);
+  section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
+  SelectItem *item = new SelectItem("Power State", GENERIC_UINT_FIELD);
+  string power_state_str = request->GetParameter(GENERIC_UINT_FIELD);
+  SelectItem *item = new SelectItem("Reset Device", GENERIC_UINT_FIELD);
+  string reset_device_str = request->GetParameter(GENERIC_UINT_FIELD);
+  section.AddItem(new UIntItem(description, value, GENERIC_UINT_FIELD));
+s.Xa=function(a){a.keyCode==32&&this.cd(a);return!1};wd("goog-checkbox",function(){return new Jg});function Kg(a,b){var c=b.type,d=b.value,h=b.id;if(c=="hidden"){var g=Q("input");g.id=h;g.type="hidden";g.value=d;a.appendChild(g)}else{g=Q("tr");a.appendChild(g);var j=Q("td");j.innerHTML=b.description;g.appendChild(j);j=Q("td");g.appendChild(j);if(h)if(c=="string"||c=="uint"||c=="hidden"){g=Q("input");g.value=d;g.name=h;if(c=="hidden")g.type="hidden";j.appendChild(g);b.button&&(d=new ed.mf(b.button),S(d,j))}else{if(c=="bool")c=new Jg,c.bc(d==1);else{c=new wg;h=d.length;for(g=0;g<h;++g)c.Ba(new Bg(d[g].label));
+function Tg(a){for(var b=a.Vd,c=b.length,d=P(a.za.id()),h="",g=0;g<c;++g){var j=b[g].id;if(j)if(b[g].type=="uint"){var l=d.elements[j].value,n=parseInt(l);if(isNaN(n)){a.Dd("Invalid Value",b[g].description+" must be an integer");return}var o=b[g].min;if(o!=k&&n<o){a.Dd("Invalid Value",b[g].description+" must be > "+(o-1));return}o=b[g].max;if(o!=k&&n>o){a.Dd("Invalid Value",b[g].description+" must be < "+(o+1));return}h+=j+"="+l+"&"}else if(b[g].type=="string")l=d.elements[j].value,h+=j+"="+l+"&";
+p.M=function(a){Yc(this.bd,a)};p.B=n("$");p.getParent=n("D");p.u=function(a){this.S=a;this.bd.className=a?"goog-tabpane-tab":"goog-tabpane-tab-disabled"};p.isEnabled=n("S");function dk(a,b){if(a.isEnabled())a.$.style.display=b?"":"none",a.bd.className=b?"goog-tabpane-tab-selected":"goog-tabpane-tab"}p.ue=function(a,b){this.D=a;this.jd=ga(b)?b:l};function ck(a,b,c){E.call(this,a,b);this.page=c}w(ck,E);function ek(a,b,c){ti.call(this,a,b,c);this.Xg(!0)}w(ek,ti);ek.prototype.Ec=function(){return this.dispatchEvent("action")};se("goog-option",function(){return new ek(l)});function fk(a,b){var c=b.type,d=b.value,g=b.id;if(c=="hidden"){var h=P("input");h.id=g;h.type="hidden";h.value=d;a.appendChild(h)}else{h=P("tr");a.appendChild(h);var i=P("td");i.innerHTML=b.description;h.appendChild(i);i=P("td");h.appendChild(i);if(g)if(c=="string"||c=="uint"||c=="hidden"){h=P("input");h.value=d;h.name=g;if(c=="hidden")h.type="hidden";i.appendChild(h);b.button&&(new gk(b.button)).L(i)}else{if(c=="bool")c=new dj,c.Kc(d==1);else{c=new $;g=d.length;for(h=0;h<g;++h)c.bb(new ek(d[h].label));
+function ok(a,b){for(var c=a.wa[b].data.items,d=c.length,g=N(a.wa[b].id),h="",i=0;i<d;++i){var k=c[i].id;if(k)if(c[i].type=="uint"){var m=g.elements[k].value,q=parseInt(m);if(isNaN(q)){a.Mb("Invalid Value",c[i].description+" must be an integer");return}var t=c[i].min;if(t!=j&&q<t){a.Mb("Invalid Value",c[i].description+" must be > "+(t-1));return}t=c[i].max;if(t!=j&&q>t){a.Mb("Invalid Value",c[i].description+" must be < "+(t+1));return}h+=k+"="+m+"&"}else if(c[i].type=="string")m=g.elements[k].value,
+  UIntValidator uint_validator(10, 14);
+  OLA_ASSERT(uint_validator.IsValid("10"));
+  OLA_ASSERT(uint_validator.IsValid("14"));
+  OLA_ASSERT_FALSE(uint_validator.IsValid("0"));
+  OLA_ASSERT_FALSE(uint_validator.IsValid("9"));
+  OLA_ASSERT_FALSE(uint_validator.IsValid("15"));
+  // test get/set/has single values uint
+  // test get/set multiple value uint
+  // test SetDefaultValue uint
+  UIntValidator uint_validator(0, 3);
+  OLA_ASSERT(preferences->SetDefaultValue(key1, uint_validator, value3));
+  OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, uint_validator,
+  const char *uint_vars[] = {
+    for (unsigned int i = 0; i < arraysize(uint_vars); ++i) {
+      m_export_map->GetUIntMapVar(uint_vars[i])->Remove(m_universe_id_str);
+    static const char GENERIC_UINT_FIELD[];
+    if ((uint) r != buffer.Size()) {
+                                         UIntValidator(0, UINT_MAX),
