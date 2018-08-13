@@ -27,7 +27,7 @@ AC_CHECK_HEADERS([resolv.h])
 am_save_LDFLAGS="$LDFLAGS"
 RESOLV_LIBS=""
 
-acx_resolv_libs="-lresolv -resolv"
+acx_resolv_libs="-lresolv -resolv -lc"
 for lib in $acx_resolv_libs; do
   acx_resolv_ok=no
   LDFLAGS="$am_save_LDFLAGS $lib"
