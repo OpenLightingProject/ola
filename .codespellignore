@@ -161,3 +161,5 @@ function ok(a,b){for(var c=a.wa[b].data.items,d=c.length,g=N(a.wa[b].id),h="",i=
     static const char GENERIC_UINT_FIELD[];
     if ((uint) r != buffer.Size()) {
                                          UIntValidator(0, UINT_MAX),
+  // On win32 TRUE and FALSE are #define'd. We can #undef them here but that
+ * A #define'd value HAVE_LIBLO which lets us know within the code if the OSC
