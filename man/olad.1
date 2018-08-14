@@ -1,16 +1,17 @@
-.TH olad 1 "July 2013"
+.TH olad 1 "August 2018"
 .SH NAME
 olad \- The Open Lighting Architecture Daemon
 .SH SYNOPSIS
-.B olad [ options ]
+.B olad
+[options]
 .SH DESCRIPTION
 .B olad
 is the Open Lighting Architecture (OLA) daemon. It handles communication
 with DMX512 / RDM hardware devices and remote network hosts via various
 lighting control protocols.
 .SH OPTIONS
-.IP "-c, --config-dir"
-Path to the config directory. Defaults to ~/.ola
+.IP "-c, --config-dir <string>"
+The path to the config directory, defaults to ~/.ola/ on *nix and %LOCALAPPDATA%\.ola\ on Windows.
 .IP "-d, --http-data-dir <string>"
 The path to the static www content.
 .IP "-f, --daemon"
@@ -18,11 +19,11 @@ Fork and run as a background process.
 .IP "-h, --help"
 Display the help message
 .IP "-i, --interface <string>"
-The interface name (e.g. eth0) or IP address of the network interface to use
+The interface name (e.g. eth0) or IP address of the network interface to use for the web server.
 .IP "-l, --log-level <int8_t>"
 Set the logging level 0 .. 4. See LOGGING.
 .IP "-p, --http-port <uint16_t>"
-Port to run the http server on. Defaults to 9090.
+The port to run the HTTP server on. Defaults to 9090.
 .IP "-r, --rpc-port <uint16_t>"
 The port to listen for RPCs on. Defaults to 9010.
 .IP "-v, --version"
@@ -33,22 +34,22 @@ version information
 Disable the HTTP server.
 .IP "--no-http-quit"
 Disable the HTTP /quit handler.
-.IP "--pid-location <string>"
-The directory containing the PID definitions
-.IP "--syslog"
-Send to syslog rather than stderr.
 .IP "--no-register-with-dns-sd"
 Don't register the web service using DNS-SD (Bonjour).
+.IP "--no-use-async-libusb"
+Disable the use of the asynchronous libusb calls, revert to synchronous
 .IP "--no-use-epoll"
 Disable the use of epoll(), revert to select()
 .IP "--no-use-kqueue"
 Disable the use of kqueue(), revert to select()
-.IP "--no-use-async-libusb"
-Disable the use of the asynchronous libusb calls, revert to synchronous
+.IP "--pid-location <string>"
+The directory containing the PID definitions.
 .IP "--scheduler-policy <policy>"
 The thread scheduling policy, one of {fifo, rr}.
 .IP "--scheduler-priority <priority>"
 The thread priority, only used if --scheduler-policy is set.
+.IP "--syslog"
+Send to syslog rather than stderr.
 .SH LOGGING
 .B olad
 can either log to
