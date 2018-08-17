@@ -3355,6 +3355,10 @@ void RDMHTTPModule::GetCurveHandler(
   JsonSection section;
   SelectItem *item = new SelectItem("Active Curve", GENERIC_UINT_FIELD);
 
+  /**
+   * The data returned in the RDM packet is two 8 bit numbers, so we just grab
+   * the whole 16bit number and mask off the part we want here.
+   */
   uint8_t curves = value & 0x00FF;
   uint8_t active_curve = (value & 0xFF00) >> 8;
   for (unsigned int i = 1; i <= curves; i++) {
