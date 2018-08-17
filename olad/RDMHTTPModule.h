@@ -573,6 +573,15 @@ class RDMHTTPModule {
                                  unsigned int universe_id,
                                  const ola::rdm::UID &uid);
 
+    std::string GetCurve(const ola::http::HTTPRequest *request,
+                         ola::http::HTTPResponse *response,
+                         unsigned int universe_id,
+                         const ola::rdm::UID &uid);
+
+    void GetCurveHandler(ola::http::HTTPResponse *response,
+                            const ola::rdm::ResponseStatus &status,
+                            uint16_t value);
+
     // util methods
     bool CheckForInvalidId(const ola::http::HTTPRequest *request,
                            unsigned int *universe_id);
@@ -666,6 +675,7 @@ class RDMHTTPModule {
     static const char RESET_DEVICE_SECTION[];
     static const char SENSOR_SECTION[];
     static const char TILT_INVERT_SECTION[];
+    static const char CURVE_SECTION[];
 
     static const char BOOT_SOFTWARE_SECTION_NAME[];
     static const char CLOCK_SECTION_NAME[];
@@ -695,6 +705,7 @@ class RDMHTTPModule {
     static const char PROXIED_DEVICES_SECTION_NAME[];
     static const char RESET_DEVICE_SECTION_NAME[];
     static const char TILT_INVERT_SECTION_NAME[];
+    static const char CURVE_SECTION_NAME[];
 
     DISALLOW_COPY_AND_ASSIGN(RDMHTTPModule);
 };

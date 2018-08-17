@@ -125,6 +125,7 @@ const char RDMHTTPModule::PROXIED_DEVICES_SECTION[] = "proxied_devices";
 const char RDMHTTPModule::RESET_DEVICE_SECTION[] = "reset_device";
 const char RDMHTTPModule::SENSOR_SECTION[] = "sensor";
 const char RDMHTTPModule::TILT_INVERT_SECTION[] = "tilt_invert";
+const char RDMHTTPModule::CURVE_SECTION[] = "curve";
 
 // section names
 const char RDMHTTPModule::BOOT_SOFTWARE_SECTION_NAME[] =
@@ -157,6 +158,7 @@ const char RDMHTTPModule::PRODUCT_DETAIL_SECTION_NAME[] = "Product Details";
 const char RDMHTTPModule::PROXIED_DEVICES_SECTION_NAME[] = "Proxied Devices";
 const char RDMHTTPModule::RESET_DEVICE_SECTION_NAME[] = "Reset Device";
 const char RDMHTTPModule::TILT_INVERT_SECTION_NAME[] = "Tilt Invert";
+const char RDMHTTPModule::CURVE_SECTION_NAME[] = "Dimmer Curve";
 
 RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
                              client::OlaClient *client)
@@ -558,6 +560,8 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
     error = GetDnsHostname(response, universe_id, *uid);
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = GetDnsDomainName(response, universe_id, *uid);
+  } else if (section_id == CURVE_SECTION) {
+    error = GetCurve(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -1153,6 +1157,9 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         AddSection(&sections,
                    DNS_DOMAIN_NAME_SECTION,
                    DNS_DOMAIN_NAME_SECTION_NAME);
+        break;
+      case ola::rdm::PID_CURVE:
+        AddSection(&sections, CURVE_SECTION, CURVE_SECTION_NAME);
         break;
     }
   }
@@ -3311,6 +3318,51 @@ string RDMHTTPModule::SetDnsDomainName(const HTTPRequest *request,
                         response),
       &error);
   return error;
+}
+
+/**
+ * @brief Handle the request for the dimmer curve section.
+ */
+string RDMHTTPModule::GetCurve(OLA_UNUSED const HTTPRequest *request,
+                                      HTTPResponse *response,
+                                      unsigned int universe_id,
+                                      const UID &uid) {
+  string error;
+  m_rdm_api.GetCurve(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::GetCurveHandler,
+                        response),
+      &error);
+  return error;
+}
+
+/**
+ * @brief Handle the response to a dimmer curve call and build the response
+ */
+void RDMHTTPModule::GetCurveHandler(
+    HTTPResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    uint16_t value) {
+  if (CheckForRDMError(response, status)) {
+    return;
+  }
+
+  JsonSection section;
+  SelectItem *item = new SelectItem("Active Curve", GENERIC_UINT_FIELD);
+
+  uint8_t curves = value & 0x00FF;
+  uint8_t active_curve = (value & 0xFF00) >> 8;
+  for(unsigned int i = 1; i <= curves; i++) {
+    item->AddItem(IntToString(i), i);
+  }
+  item->SetSelectedOffset(active_curve - 1);
+
+  section.AddItem(item);
+  section.AddItem(new StringItem("Available Curves", std::to_string(curves)));
+  RespondWithSection(response, section);
 }
 
 

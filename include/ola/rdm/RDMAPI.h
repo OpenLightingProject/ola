@@ -926,6 +926,15 @@ class RDMAPI {
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         std::string *error);
 
+    bool GetCurve(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
+        std::string *error);
+
     bool SelfTestEnabled(
         unsigned int universe,
         const UID &uid,
@@ -1011,6 +1020,13 @@ class RDMAPI {
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
                                 uint8_t> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleU16Response(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
         const ResponseStatus &status,
         const std::string &data);
 
