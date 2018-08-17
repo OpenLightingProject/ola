@@ -120,7 +120,9 @@ Interface& Interface::operator=(const Interface &other) {
 bool Interface::operator==(const Interface &other) const {
   return (name == other.name &&
           ip_address == other.ip_address &&
+          bcast_address == other.bcast_address &&
           subnet_mask == other.subnet_mask &&
+          hw_address == other.hw_address &&
           loopback == other.loopback &&
           index == other.index &&
           type == other.type);
@@ -130,12 +132,13 @@ bool Interface::operator==(const Interface &other) const {
 string Interface::ToString(const string &separator) const {
   std::ostringstream str;
   str << name << separator
-      << "index: " << index << separator
-      << "ip: " << ip_address << separator
-      << "bcast: " << bcast_address << separator
-      << "subnet: " << subnet_mask << separator
-      << "type: " << type << separator
-      << "hw_addr: " << hw_address;
+      << "Index: " << index << separator
+      << "IP: " << ip_address << separator
+      << "Broadcast: " << bcast_address << separator
+      << "Subnet: " << subnet_mask << separator
+      << "Type: " << type << separator
+      << "MAC: " << hw_address << separator
+      << "Loopback: " << loopback;
   return str.str();
 }
 

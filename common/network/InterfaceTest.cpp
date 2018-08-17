@@ -112,7 +112,7 @@ void InterfaceTest::testBuilder() {
   // now build from IPV4Address and MACAddress objects
   IPV4Address ip_address, netmask, broadcast_address;
   IPV4Address::FromString("10.0.0.1", &ip_address);
-  IPV4Address::FromString("10.0.255.255", &netmask);
+  IPV4Address::FromString("255.255.0.0", &netmask);
   IPV4Address::FromString("10.0.255.255", &broadcast_address);
   MACAddress mac_address;
   MACAddress::FromString("ba:98:76:54:32:10", &mac_address);
@@ -129,4 +129,20 @@ void InterfaceTest::testBuilder() {
   OLA_ASSERT_EQ(broadcast_address, interface.bcast_address);
   OLA_ASSERT_EQ(netmask, interface.subnet_mask);
   OLA_ASSERT_EQ(mac_address, interface.hw_address);
+
+  // test stringification
+  OLA_ASSERT_EQ(string("eth1, Index: -1, IP: 10.0.0.1, Broadcast: "
+                       "10.0.255.255, Subnet: 255.255.0.0, Type: 65535, MAC: "
+                       "ba:98:76:54:32:10, Loopback: 0"),
+                interface.ToString());
+  OLA_ASSERT_EQ(string("eth1|Index: -1|IP: 10.0.0.1|Broadcast: 10.0.255.255|"
+                       "Subnet: 255.255.0.0|Type: 65535|MAC: "
+                       "ba:98:76:54:32:10|Loopback: 0"),
+                interface.ToString("|"));
+  std::ostringstream str;
+  str << interface;
+  OLA_ASSERT_EQ(string("eth1, Index: -1, IP: 10.0.0.1, Broadcast: "
+                       "10.0.255.255, Subnet: 255.255.0.0, Type: 65535, MAC: "
+                       "ba:98:76:54:32:10, Loopback: 0"),
+                str.str());
 }
