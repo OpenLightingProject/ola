@@ -2599,6 +2599,7 @@ bool RDMAPI::GetCurve(
  * Set the dimmer curve
  * @param uid the UID to set the DNS domain name for
  * @param sub_device the sub device to use
+ * @param curve the index of the curve to set
  * @param callback the callback to invoke when this request completes
  * @param error a pointer to a string which it set if an error occurs
  * @return true if the request is sent correctly, false otherwise
