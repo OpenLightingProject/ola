@@ -3355,7 +3355,7 @@ void RDMHTTPModule::GetCurveHandler(
 
   uint8_t curves = value & 0x00FF;
   uint8_t active_curve = (value & 0xFF00) >> 8;
-  for(unsigned int i = 1; i <= curves; i++) {
+  for (unsigned int i = 1; i <= curves; i++) {
     item->AddItem(IntToString(i), i);
   }
   item->SetSelectedOffset(active_curve - 1);
