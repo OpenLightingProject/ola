@@ -647,6 +647,8 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
     error = SetDnsHostname(request, response, universe_id, *uid);
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = SetDnsDomainName(request, response, universe_id, *uid);
+  } else if (section_id == CURVE_SECTION) {
+    error = SetCurve(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -3365,6 +3367,32 @@ void RDMHTTPModule::GetCurveHandler(
   RespondWithSection(response, section);
 }
 
+/**
+ * @brief Set the dimmer curve
+ */
+string RDMHTTPModule::SetCurve(const HTTPRequest *request,
+                                     HTTPResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string curve_str = request->GetParameter(GENERIC_UINT_FIELD);
+  uint8_t curve;
+
+  if (!StringToInt(curve_str, &curve)) {
+    return "Invalid curve";
+  }
+
+  string error;
+  m_rdm_api.SetCurve(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      curve,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
 
 /**
  * @brief Check if the id URL param exists and is valid.

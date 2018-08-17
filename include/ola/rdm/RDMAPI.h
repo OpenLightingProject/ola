@@ -935,6 +935,14 @@ class RDMAPI {
                                 uint16_t> *callback,
         std::string *error);
 
+    bool SetCurve(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t curve,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
     bool SelfTestEnabled(
         unsigned int universe,
         const UID &uid,

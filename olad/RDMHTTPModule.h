@@ -582,6 +582,11 @@ class RDMHTTPModule {
                             const ola::rdm::ResponseStatus &status,
                             uint16_t value);
 
+    std::string SetCurve(const ola::http::HTTPRequest *request,
+                         ola::http::HTTPResponse *response,
+                         unsigned int universe_id,
+                         const ola::rdm::UID &uid);
+
     // util methods
     bool CheckForInvalidId(const ola::http::HTTPRequest *request,
                            unsigned int *universe_id);

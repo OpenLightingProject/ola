@@ -2596,6 +2596,44 @@ bool RDMAPI::GetCurve(
 }
 
 /*
+ * Set the dimmer curve
+ * @param uid the UID to set the DNS domain name for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::SetCurve(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t curve,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback)) {
+    return false;
+  }
+  // It doesn't really make sense to broadcast this but allow it anyway
+  if (CheckValidSubDevice(sub_device, true, error, callback)) {
+    return false;
+  }
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_CURVE,
+                   &curve,
+                   sizeof(curve)),
+    error);
+}
+
+/*
  * Check if a device is in self test mode.
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
