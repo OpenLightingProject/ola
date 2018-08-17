@@ -37,13 +37,15 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
                              ExportMap *export_map,
                              PreferencesFactory *preferences_factory,
                              PortBrokerInterface *port_broker,
-                             const std::string *instance_name):
+                             const std::string *instance_name,
+                             const std::string *default_ip_or_name):
   m_device_manager(device_manager),
   m_ss(select_server),
   m_export_map(export_map),
   m_preferences_factory(preferences_factory),
   m_port_broker(port_broker),
-  m_instance_name(instance_name) {
+  m_instance_name(instance_name),
+  m_default_ip_or_interface_name(default_ip_or_name) {
 }
 
 bool PluginAdaptor::AddReadDescriptor(
@@ -129,9 +131,17 @@ const TimeStamp *PluginAdaptor::WakeUpTime() const {
   return m_ss->WakeUpTime();
 }
 
-const std::string PluginAdaptor::InstanceName() {
+const std::string PluginAdaptor::InstanceName() const {
   if (m_instance_name) {
     return *m_instance_name;
+  } else {
+    return "";
+  }
+}
+
+const std::string PluginAdaptor::DefaultIPOrInterfaceName() const {
+  if (m_default_ip_or_interface_name) {
+    return *m_default_ip_or_interface_name;
   } else {
     return "";
   }
