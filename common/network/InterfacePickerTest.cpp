@@ -136,6 +136,12 @@ void InterfacePickerTest::testChooseInterface() {
   iface = Interface();
   OLA_ASSERT_TRUE(picker2.ChooseInterface(&iface, "192.168.1.1", "172.16.0.1"));
   OLA_ASSERT_EQ(iface1, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker2.ChooseInterface(&iface, "192.168.1.1", ""));
+  OLA_ASSERT_EQ(iface1, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker2.ChooseInterface(&iface, "", "172.16.0.1"));
+  OLA_ASSERT_EQ(iface1, iface);
 
   // check that preferred works
   Interface iface2;
@@ -192,6 +198,12 @@ void InterfacePickerTest::testChooseInterface() {
   OLA_ASSERT_EQ(iface1, iface);
   iface = Interface();
   OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo", "bar"));
+  OLA_ASSERT_EQ(iface1, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo", ""));
+  OLA_ASSERT_EQ(iface1, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "", "bar"));
   OLA_ASSERT_EQ(iface1, iface);
 
   // now check by iface index

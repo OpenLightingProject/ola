@@ -84,13 +84,15 @@ bool InterfacePicker::ChooseInterface(
     }
   }
 
-  if (!found && options.specific_only)
+  if (!found && options.specific_only) {
     return false;  // No match and being fussy
+  }
 
-  if (!found)
+  if (!found) {
     *iface = interfaces[0];
-  OLA_DEBUG << "Using interface " << iface->name << " (" <<
-    iface->ip_address << ")";
+  }
+  OLA_DEBUG << "Using interface " << iface->name << " ("
+            << iface->ip_address << ")";
   return true;
 }
 
@@ -111,10 +113,12 @@ bool InterfacePicker::ChooseInterface(
     const string &ip_or_name,
     const string &default_ip_or_name,
     const Options &options) const {
-  Options specific_options = options;
-  specific_options.specific_only = true;
-  // Need to force strict mode in the options here, so we only get a real match
-  if (!ip_or_name.empty() && ChooseInterface(iface, ip_or_name, specific_options)) {
+  Options restricted_options = options;
+  if (!default_ip_or_name.empty()) {
+    // Need to force strict mode in the options here, so we only get a real match
+    restricted_options.specific_only = true;
+  }
+  if (!ip_or_name.empty() && ChooseInterface(iface, ip_or_name, restricted_options)) {
     return true;
   } else {
     return ChooseInterface(iface, default_ip_or_name, options);
@@ -152,13 +156,15 @@ bool InterfacePicker::ChooseInterface(
     }
   }
 
-  if (!found && options.specific_only)
+  if (!found && options.specific_only) {
     return false;  // No match and being fussy
+  }
 
-  if (!found)
+  if (!found) {
     *iface = interfaces[0];
-  OLA_DEBUG << "Using interface " << iface->name << " (" <<
-    iface->ip_address << ") with index " << iface->index;
+  }
+  OLA_DEBUG << "Using interface " << iface->name << " ("
+            << iface->ip_address << ") with index " << iface->index;
   return true;
 }
 
