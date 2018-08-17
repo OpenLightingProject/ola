@@ -44,7 +44,7 @@ using std::vector;
  * @param iface, the interface to populate
  * @param ip_or_name the IP address or interface name of the local interface
  *   we'd prefer to use.
- * @param options a Options struct configuring ChooseInterface
+ * @param options an Options struct configuring ChooseInterface
  * @return true if we found an interface, false otherwise
  */
 // TODO(Simon): Change these to callback based code to reduce duplication.
@@ -96,10 +96,37 @@ bool InterfacePicker::ChooseInterface(
 
 
 /*
+ * Select an interface to use
+ * @param iface, the interface to populate
+ * @param ip_or_name the IP address or interface name of the local interface
+ *   we'd prefer to use.
+ * @param default_ip_or_name the IP address or interface name of the local
+ *   interface we'd prefer to fall back to if ip_or_name isn't found.
+ * @param options an Options struct configuring ChooseInterface
+ * @return true if we found an interface, false otherwise
+ */
+// TODO(Simon): Change these to callback based code to reduce duplication.
+bool InterfacePicker::ChooseInterface(
+    Interface *iface,
+    const string &ip_or_name,
+    const string &default_ip_or_name,
+    const Options &options) const {
+  Options specific_options = options;
+  specific_options.specific_only = true;
+  // Need to force strict mode in the options here, so we only get a real match
+  if (!ip_or_name.empty() && ChooseInterface(iface, ip_or_name, specific_options)) {
+    return true;
+  } else {
+    return ChooseInterface(iface, default_ip_or_name, options);
+  }
+}
+
+
+/*
  * Select an interface to use by index
  * @param iface, the interface to populate
  * @param index the index of the local interface we'd prefer to use.
- * @param options a Options struct configuring ChooseInterface
+ * @param options an Options struct configuring ChooseInterface
  * @return true if we found an interface, false otherwise
  */
 // TODO(Simon): Change these to callback based code to reduce duplication.

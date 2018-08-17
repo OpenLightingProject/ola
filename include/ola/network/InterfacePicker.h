@@ -83,6 +83,11 @@ class InterfacePicker {
       const Options &options = Options()) const;
   bool ChooseInterface(
       Interface *iface,
+      const std::string &ip_or_name,
+      const std::string &default_ip_or_name,
+      const Options &options = Options()) const;
+  bool ChooseInterface(
+      Interface *iface,
       int32_t index,
       const Options &options = Options()) const;
 

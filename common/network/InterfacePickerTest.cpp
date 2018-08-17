@@ -75,13 +75,7 @@ void InterfacePickerTest::testGetInterfaces() {
   vector<Interface>::iterator iter;
   cout << endl;
   for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
-    cout << iter->name << endl;
-    cout << " index: " << iter->index << endl;
-    cout << " ip: " << iter->ip_address << endl;
-    cout << " bcast: " << iter->bcast_address << endl;
-    cout << " subnet: " << iter->subnet_mask << endl;
-    cout << " type: " << iter->type << endl;
-    cout << " hw_addr: " << iter->hw_address << endl;
+    cout << iter->ToString("\n ") << endl;
     cout << endl;
     cout << "---------------" << endl;
   }
@@ -121,6 +115,11 @@ void InterfacePickerTest::testChooseInterface() {
   // no interfaces
   Interface iface;
   OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, ""));
+  // no interfaces, with default
+  OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, "", ""));
+  OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, "", "foo"));
+  OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, "foo", ""));
+  OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, "foo", "bar"));
   // no interfaces, by index
   OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, 0));
 
@@ -133,7 +132,10 @@ void InterfacePickerTest::testChooseInterface() {
 
   FakeInterfacePicker picker2(interfaces);
   OLA_ASSERT_TRUE(picker2.ChooseInterface(&iface, "192.168.1.1"));
-  OLA_ASSERT_TRUE(iface1 == iface);
+  OLA_ASSERT_EQ(iface1, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker2.ChooseInterface(&iface, "192.168.1.1", "172.16.0.1"));
+  OLA_ASSERT_EQ(iface1, iface);
 
   // check that preferred works
   Interface iface2;
@@ -144,24 +146,59 @@ void InterfacePickerTest::testChooseInterface() {
 
   FakeInterfacePicker picker3(interfaces);
   OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "192.168.1.1"));
-  OLA_ASSERT_TRUE(iface2 == iface);
+  OLA_ASSERT_EQ(iface2, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "192.168.1.1", ""));
+  OLA_ASSERT_EQ(iface2, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "", "192.168.1.1"));
+  OLA_ASSERT_EQ(iface2, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "192.168.1.1", "foo"));
+  OLA_ASSERT_EQ(iface2, iface);
+
+  // an invalid address should fallback to default
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo", "192.168.1.1"));
+  OLA_ASSERT_EQ(iface2, iface);
+
+  // a valid address should ignore the default
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "192.168.1.1", "10.0.0.1"));
+  OLA_ASSERT_EQ(iface2, iface);
 
   // now check for iface name
   OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "eth0"));
-  OLA_ASSERT_TRUE(iface1 == iface);
+  OLA_ASSERT_EQ(iface1, iface);
 
   OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "eth1"));
-  OLA_ASSERT_TRUE(iface2 == iface);
+  OLA_ASSERT_EQ(iface2, iface);
+
+  // an invalid or empty address should fallback to default
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "", "eth1"));
+  OLA_ASSERT_EQ(iface2, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo", "eth1"));
+  OLA_ASSERT_EQ(iface2, iface);
+
+  // a valid address should ignore the default
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "eth1", "eth0"));
+  OLA_ASSERT_EQ(iface2, iface);
 
   // a invalid address should return the first one
   OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo"));
-  OLA_ASSERT_TRUE(iface1 == iface);
+  OLA_ASSERT_EQ(iface1, iface);
+  iface = Interface();
+  OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, "foo", "bar"));
+  OLA_ASSERT_EQ(iface1, iface);
 
   // now check by iface index
   OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, 2));
-  OLA_ASSERT_TRUE(iface2 == iface);
+  OLA_ASSERT_EQ(iface2, iface);
 
   // an invalid index should return the first one
   OLA_ASSERT_TRUE(picker3.ChooseInterface(&iface, 3));
-  OLA_ASSERT_TRUE(iface1 == iface);
+  OLA_ASSERT_EQ(iface1, iface);
 }
