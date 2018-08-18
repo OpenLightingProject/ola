@@ -52,16 +52,17 @@ using std::endl;
 DEFINE_default_bool(http, true, "Disable the HTTP server.");
 DEFINE_default_bool(http_quit, true, "Disable the HTTP /quit handler.");
 #ifndef _WIN32
-DEFINE_s_default_bool(daemon, f, false, "Fork and run in the background.");
+DEFINE_s_default_bool(daemon, f, false,
+                      "Fork and run as a background process.");
 #endif  // _WIN32
 DEFINE_s_string(http_data_dir, d, "", "The path to the static www content.");
 DEFINE_s_string(interface, i, "",
-                "The interface name (e.g. eth0) or IP of the network interface "
-                "to use.");
+                "The interface name (e.g. eth0) or IP address of the network "
+                "interface to use for the web server.");
 DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
 DEFINE_s_uint16(http_port, p, ola::OlaServer::DEFAULT_HTTP_PORT,
-                "The port to run the http server on. Defaults to 9090.");
+                "The port to run the HTTP server on. Defaults to 9090.");
 
 /**
  * This is called by the SelectServer loop to start up the SignalThread. If the

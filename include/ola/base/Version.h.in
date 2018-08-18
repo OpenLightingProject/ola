@@ -34,6 +34,7 @@ namespace base {
 /**
  * @class Version ola/base/Version.h
  * @brief Provides version information.
+ *
  * OLA Version numbers are in the form major.minor.revision e.g. @VERSION@
  */
 class Version {
