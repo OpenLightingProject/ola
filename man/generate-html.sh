@@ -43,3 +43,5 @@ cat << 'EOF' >> $index_file
 </body>
 </html>
 EOF
+
+chmod a+r $index_file;
