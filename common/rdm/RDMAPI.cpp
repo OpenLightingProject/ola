@@ -2568,9 +2568,10 @@ bool RDMAPI::GetCurve(
     unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
-    SingleUseCallback2<void,
+    SingleUseCallback3<void,
                        const ResponseStatus&,
-                       uint16_t> *callback,
+                       uint8_t,
+                       uint8_t> *callback,
     string *error) {
   if (CheckCallback(error, callback)) {
     return false;
@@ -2584,7 +2585,7 @@ bool RDMAPI::GetCurve(
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
-    &RDMAPI::_HandleU16Response,
+    &RDMAPI::_HandleGetCurve,
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
@@ -3885,6 +3886,31 @@ void RDMAPI::_HandlePlaybackMode(
     }
   }
   callback->Run(response_status, mode, level);
+}
+
+/*
+ * Handle a get CURVE response
+ */
+void RDMAPI::_HandleGetCurve(
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint8_t,
+                       uint8_t> *callback,
+    const ResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status = status;
+  static const unsigned int DATA_SIZE = 2;
+  uint8_t active_curve = 0;
+  uint8_t curve_count = 0;
+  if (response_status.WasAcked()) {
+    if (data.size() != DATA_SIZE) {
+      SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
+    } else {
+      active_curve = data[0];
+      curve_count = data[1];
+    }
+  }
+  callback->Run(response_status, active_curve, curve_count);
 }
 
 

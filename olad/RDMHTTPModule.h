@@ -580,7 +580,8 @@ class RDMHTTPModule {
 
     void GetCurveHandler(ola::http::HTTPResponse *response,
                             const ola::rdm::ResponseStatus &status,
-                            uint16_t value);
+                            uint8_t current_curve,
+                            uint8_t curve_count);
 
     std::string SetCurve(const ola::http::HTTPRequest *request,
                          ola::http::HTTPResponse *response,

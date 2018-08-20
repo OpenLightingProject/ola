@@ -3347,7 +3347,8 @@ string RDMHTTPModule::GetCurve(OLA_UNUSED const HTTPRequest *request,
 void RDMHTTPModule::GetCurveHandler(
     HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
-    uint16_t value) {
+    uint8_t active_curve,
+    uint8_t curve_count) {
   if (CheckForRDMError(response, status)) {
     return;
   }
@@ -3355,19 +3356,14 @@ void RDMHTTPModule::GetCurveHandler(
   JsonSection section;
   SelectItem *item = new SelectItem("Active Curve", GENERIC_UINT_FIELD);
 
-  /**
-   * The data returned in the RDM packet is two 8 bit numbers, so we just grab
-   * the whole 16bit number and mask off the part we want here.
-   */
-  uint8_t curves = value & 0x00FF;
-  uint8_t active_curve = (value & 0xFF00) >> 8;
-  for (unsigned int i = 1; i <= curves; i++) {
+  for (unsigned int i = 1; i <= curve_count; i++) {
     item->AddItem(IntToString(i), i);
   }
   item->SetSelectedOffset(active_curve - 1);
 
   section.AddItem(item);
-  section.AddItem(new StringItem("Available Curves", std::to_string(curves)));
+  section.AddItem(new StringItem("Available Curves",
+    std::to_string(curve_count)));
   RespondWithSection(response, section);
 }
 
