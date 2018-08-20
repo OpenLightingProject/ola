@@ -561,7 +561,7 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = GetDnsDomainName(response, universe_id, *uid);
   } else if (section_id == CURVE_SECTION) {
-    error = GetCurve(request, response, universe_id, *uid);
+    error = GetCurve(request, response, universe_id, *uid, false);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -3328,42 +3328,72 @@ string RDMHTTPModule::SetDnsDomainName(const HTTPRequest *request,
 string RDMHTTPModule::GetCurve(OLA_UNUSED const HTTPRequest *request,
                                       HTTPResponse *response,
                                       unsigned int universe_id,
-                                      const UID &uid) {
+                                      const UID &uid,
+                                      bool include_descriptions) {
   string error;
+
+  curve_info *info = new curve_info;
+  info->universe_id = universe_id;
+  info->uid = new UID(uid);
+  info->include_descriptions = include_descriptions;
+  info->active = 0;
+  info->next = 1;
+  info->total = 0;
+
   m_rdm_api.GetCurve(
       universe_id,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
                         &RDMHTTPModule::GetCurveHandler,
-                        response),
+                        response,
+                        info),
       &error);
   return error;
 }
 
 /**
- * @brief Handle the response to a dimmer curve call and build the response
+ * @brief Handle the response to a dimmer curve call and build the curve info
+ * object
  */
 void RDMHTTPModule::GetCurveHandler(
     HTTPResponse *response,
+    curve_info *info,
     const ola::rdm::ResponseStatus &status,
     uint8_t active_curve,
     uint8_t curve_count) {
   if (CheckForRDMError(response, status)) {
+    delete info->uid;
+    delete info;
     return;
   }
 
+  info->active = active_curve;
+  info->total = curve_count;
+
+  if (info->include_descriptions) {
+    // GetNextCurveDescription(response, info);
+  } else {
+    SendCurveResponse(response, info);
+  }
+}
+
+/**
+ * @brief Build the curve http response
+ */
+void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
+                                      curve_info *info) {
   JsonSection section;
   SelectItem *item = new SelectItem("Active Curve", GENERIC_UINT_FIELD);
 
-  for (unsigned int i = 1; i <= curve_count; i++) {
+  for (unsigned int i = 1; i <= info->total; i++) {
     item->AddItem(IntToString(i), i);
   }
-  item->SetSelectedOffset(active_curve - 1);
+  item->SetSelectedOffset(info->active - 1);
 
   section.AddItem(item);
   section.AddItem(new StringItem("Available Curves",
-    std::to_string(curve_count)));
+    std::to_string(info->total)));
   RespondWithSection(response, section);
 }
 

@@ -135,6 +135,16 @@ class RDMHTTPModule {
       std::vector<std::pair<uint32_t, std::string> > personalities;
     } personality_info;
 
+    typedef struct {
+      unsigned int universe_id;
+      const ola::rdm::UID *uid;
+      bool include_descriptions;
+      unsigned int active;
+      unsigned int next;
+      unsigned int total;
+      std::vector<std::pair<uint32_t, std::string> > curves;
+    } curve_info;
+
     // UID resolution methods
     void HandleUIDList(ola::http::HTTPResponse *response,
                        unsigned int universe_id,
@@ -576,12 +586,17 @@ class RDMHTTPModule {
     std::string GetCurve(const ola::http::HTTPRequest *request,
                          ola::http::HTTPResponse *response,
                          unsigned int universe_id,
-                         const ola::rdm::UID &uid);
+                         const ola::rdm::UID &uid,
+                         bool include_descriptions);
 
     void GetCurveHandler(ola::http::HTTPResponse *response,
+                            curve_info *info,
                             const ola::rdm::ResponseStatus &status,
                             uint8_t current_curve,
                             uint8_t curve_count);
+
+    void SendCurveResponse(ola::http::HTTPResponse *response,
+                           curve_info *info);
 
     std::string SetCurve(const ola::http::HTTPRequest *request,
                          ola::http::HTTPResponse *response,
