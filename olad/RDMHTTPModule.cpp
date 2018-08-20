@@ -561,7 +561,7 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = GetDnsDomainName(response, universe_id, *uid);
   } else if (section_id == CURVE_SECTION) {
-    error = GetCurve(request, response, universe_id, *uid, false);
+    error = GetCurve(request, response, universe_id, *uid, true);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -3372,9 +3372,59 @@ void RDMHTTPModule::GetCurveHandler(
   info->total = curve_count;
 
   if (info->include_descriptions) {
-    // GetNextCurveDescription(response, info);
+    GetNextCurveDescription(response, info);
   } else {
     SendCurveResponse(response, info);
+  }
+}
+
+/**
+ * @brief Handle the response to a curve description call and add to curve
+ * info object
+ */
+void RDMHTTPModule::GetNextCurveDescription(HTTPResponse *response,
+                                            curve_info *info) {
+  string error;
+  while (info->next <= info->total) {
+    bool r = m_rdm_api.GetCurveDescription(
+        info->universe_id,
+        *(info->uid),
+        ola::rdm::ROOT_RDM_DEVICE,
+        info->next,
+        NewSingleCallback(this,
+                          &RDMHTTPModule::GetCurveDescriptionHandler,
+                          response,
+                          info),
+        &error);
+    if (r) {
+      return;
+    }
+
+    info->next++;
+  }
+
+  SendCurveResponse(response, info);
+}
+
+void RDMHTTPModule::GetCurveDescriptionHandler(
+    HTTPResponse *response,
+    curve_info *info,
+    const ola::rdm::ResponseStatus &status,
+    OLA_UNUSED uint8_t curve,
+    const string &resp_description) {
+  string description = "";
+
+  if (CheckForRDMSuccess(status)) {
+    description = resp_description;
+  }
+
+  info->curves.push_back(pair<uint32_t, string>(curve, description));
+
+  if (info->next == info->total) {
+    SendCurveResponse(response, info);
+  } else {
+    info->next++;
+    GetNextCurveDescription(response, info);
   }
 }
 
@@ -3387,7 +3437,14 @@ void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
   SelectItem *item = new SelectItem("Active Curve", GENERIC_UINT_FIELD);
 
   for (unsigned int i = 1; i <= info->total; i++) {
-    item->AddItem(IntToString(i), i);
+    if (i <= info->curves.size()) {
+      ostringstream str;
+      str << info->curves[i - 1].second << " (" <<
+        info->curves[i - 1].first << ")";
+      item->AddItem(str.str(), i);
+    } else {
+      item->AddItem(IntToString(i), i);
+    }
   }
   item->SetSelectedOffset(info->active - 1);
 

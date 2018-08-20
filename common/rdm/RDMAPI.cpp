@@ -2597,6 +2597,50 @@ bool RDMAPI::GetCurve(
 }
 
 /*
+ * Fetch the dimmer curve description (name)
+ * @param uid the UID to fetch the DNS domain name for
+ * @param sub_device the sub device to use
+ * @param curve the id of the curve to fetch the description for
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetCurveDescription(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t curve,
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint8_t,
+                       const string&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback)) {
+    return false;
+  }
+  if (CheckNotBroadcast(uid, error, callback)) {
+    return false;
+  }
+  if (CheckValidSubDevice(sub_device, false, error, callback)) {
+    return false;
+  }
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetCurveDescription,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_CURVE_DESCRIPTION,
+                   &curve,
+                   sizeof(curve)),
+    error);
+}
+
+/*
  * Set the dimmer curve
  * @param uid the UID to set the DNS domain name for
  * @param sub_device the sub device to use
@@ -3911,6 +3955,50 @@ void RDMAPI::_HandleGetCurve(
     }
   }
   callback->Run(response_status, active_curve, curve_count);
+}
+
+/*
+ * Handle a get CURVE_DESCRIPTION response
+ */
+void RDMAPI::_HandleGetCurveDescription(
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint8_t,
+                       const string&> *callback,
+    const ResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status = status;
+
+  uint8_t requested_curve = 0;
+  string description;
+
+  if (response_status.WasAcked()) {
+    PACK(
+    struct curve_description {
+      uint8_t curve;
+      // +1 for a null since it's not clear in the spec if this is null
+      // terminated
+      char description[MAX_RDM_STRING_LENGTH + 1];
+    });
+    STATIC_ASSERT(sizeof(curve_description) == 34);
+    struct curve_description raw_description;
+
+    unsigned int max = sizeof(curve_description) - 1;
+    unsigned int min = max - MAX_RDM_STRING_LENGTH;
+    unsigned int data_size = data.size();
+    if (data_size >= min && data_size <= max) {
+      memcpy(&raw_description, data.data(),
+             std::min(static_cast<unsigned int>(data.size()), max));
+      requested_curve = raw_description.curve;
+      description = string(raw_description.description, data_size - min);
+      ShortenString(&description);
+    } else {
+      std::ostringstream str;
+      str << data_size << " needs to be between " << min << " and " << max;
+      response_status.error = str.str();
+    }
+  }
+  callback->Run(response_status, requested_curve, description);
 }
 
 

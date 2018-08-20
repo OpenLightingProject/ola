@@ -936,6 +936,17 @@ class RDMAPI {
                                 uint8_t> *callback,
         std::string *error);
 
+    bool GetCurveDescription(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t curve,
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                const std::string&> *callback,
+        std::string *error);
+
     bool SetCurve(
         unsigned int universe,
         const UID &uid,
@@ -1233,6 +1244,14 @@ class RDMAPI {
                                 const ResponseStatus&,
                                 uint8_t,
                                 uint8_t> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleGetCurveDescription(
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                const std::string&> *callback,
         const ResponseStatus &status,
         const std::string &data);
 

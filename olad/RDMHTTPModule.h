@@ -595,6 +595,15 @@ class RDMHTTPModule {
                             uint8_t current_curve,
                             uint8_t curve_count);
 
+    void GetNextCurveDescription(ola::http::HTTPResponse *response,
+                                 curve_info *info);
+
+    void GetCurveDescriptionHandler(ola::http::HTTPResponse *response,
+                                    curve_info *info,
+                                    const ola::rdm::ResponseStatus &status,
+                                    uint8_t curve,
+                                    const std::string &resp_description);
+
     void SendCurveResponse(ola::http::HTTPResponse *response,
                            curve_info *info);
 
