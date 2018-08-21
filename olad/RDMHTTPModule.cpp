@@ -3437,7 +3437,8 @@ void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
   SelectItem *item = new SelectItem("Active Curve", GENERIC_UINT_FIELD);
 
   for (unsigned int i = 1; i <= info->total; i++) {
-    if (i <= info->curve_descriptions.size()) {
+    if (i <= info->curve_descriptions.size() &&
+        info->curve_descriptions[i - 1].length() > 0) {
       ostringstream str;
       str << info->curve_descriptions[i - 1] << " ("
           << i << ")";
@@ -3450,7 +3451,7 @@ void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
 
   section.AddItem(item);
   section.AddItem(new StringItem("Available Curves",
-                                 std::to_string(info->total)));
+                                 IntToString(info->total)));
   RespondWithSection(response, section);
 }
 
