@@ -99,6 +99,7 @@ const char RDMHTTPModule::SUB_DEVICE_FIELD[] = "sub_device";
 const char RDMHTTPModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
 const char RDMHTTPModule::CLOCK_SECTION[] = "clock";
 const char RDMHTTPModule::COMMS_STATUS_SECTION[] = "comms_status";
+const char RDMHTTPModule::CURVE_SECTION[] = "curve";
 const char RDMHTTPModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHTTPModule::DEVICE_INFO_SECTION[] = "device_info";
 const char RDMHTTPModule::DEVICE_LABEL_SECTION[] = "device_label";
@@ -125,13 +126,13 @@ const char RDMHTTPModule::PROXIED_DEVICES_SECTION[] = "proxied_devices";
 const char RDMHTTPModule::RESET_DEVICE_SECTION[] = "reset_device";
 const char RDMHTTPModule::SENSOR_SECTION[] = "sensor";
 const char RDMHTTPModule::TILT_INVERT_SECTION[] = "tilt_invert";
-const char RDMHTTPModule::CURVE_SECTION[] = "curve";
 
 // section names
 const char RDMHTTPModule::BOOT_SOFTWARE_SECTION_NAME[] =
   "Boot Software Version";
 const char RDMHTTPModule::CLOCK_SECTION_NAME[] = "Clock";
 const char RDMHTTPModule::COMMS_STATUS_SECTION_NAME[] = "Communication Status";
+const char RDMHTTPModule::CURVE_SECTION_NAME[] = "Dimmer Curve";
 const char RDMHTTPModule::DEVICE_HOURS_SECTION_NAME[] = "Device Hours";
 const char RDMHTTPModule::DEVICE_INFO_SECTION_NAME[] = "Device Info";
 const char RDMHTTPModule::DEVICE_LABEL_SECTION_NAME[] = "Device Label";
@@ -158,7 +159,6 @@ const char RDMHTTPModule::PRODUCT_DETAIL_SECTION_NAME[] = "Product Details";
 const char RDMHTTPModule::PROXIED_DEVICES_SECTION_NAME[] = "Proxied Devices";
 const char RDMHTTPModule::RESET_DEVICE_SECTION_NAME[] = "Reset Device";
 const char RDMHTTPModule::TILT_INVERT_SECTION_NAME[] = "Tilt Invert";
-const char RDMHTTPModule::CURVE_SECTION_NAME[] = "Dimmer Curve";
 
 RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
                              client::OlaClient *client)
@@ -3326,10 +3326,10 @@ string RDMHTTPModule::SetDnsDomainName(const HTTPRequest *request,
  * @brief Handle the request for the dimmer curve section.
  */
 string RDMHTTPModule::GetCurve(OLA_UNUSED const HTTPRequest *request,
-                                      HTTPResponse *response,
-                                      unsigned int universe_id,
-                                      const UID &uid,
-                                      bool include_descriptions) {
+                               HTTPResponse *response,
+                               unsigned int universe_id,
+                               const UID &uid,
+                               bool include_descriptions) {
   string error;
 
   curve_info *info = new curve_info;
@@ -3410,7 +3410,7 @@ void RDMHTTPModule::GetCurveDescriptionHandler(
     HTTPResponse *response,
     curve_info *info,
     const ola::rdm::ResponseStatus &status,
-    OLA_UNUSED uint8_t curve,
+    uint8_t curve,
     const string &resp_description) {
   string description = "";
 
@@ -3439,8 +3439,8 @@ void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
   for (unsigned int i = 1; i <= info->total; i++) {
     if (i <= info->curves.size()) {
       ostringstream str;
-      str << info->curves[i - 1].second << " (" <<
-        info->curves[i - 1].first << ")";
+      str << info->curves[i - 1].second << " ("
+          << info->curves[i - 1].first << ")";
       item->AddItem(str.str(), i);
     } else {
       item->AddItem(IntToString(i), i);
@@ -3450,7 +3450,7 @@ void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
 
   section.AddItem(item);
   section.AddItem(new StringItem("Available Curves",
-    std::to_string(info->total)));
+                                 std::to_string(info->total)));
   RespondWithSection(response, section);
 }
 

@@ -679,6 +679,7 @@ class RDMHTTPModule {
     static const char BOOT_SOFTWARE_SECTION[];
     static const char CLOCK_SECTION[];
     static const char COMMS_STATUS_SECTION[];
+    static const char CURVE_SECTION[];
     static const char DEVICE_HOURS_SECTION[];
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];
@@ -705,11 +706,11 @@ class RDMHTTPModule {
     static const char RESET_DEVICE_SECTION[];
     static const char SENSOR_SECTION[];
     static const char TILT_INVERT_SECTION[];
-    static const char CURVE_SECTION[];
 
     static const char BOOT_SOFTWARE_SECTION_NAME[];
     static const char CLOCK_SECTION_NAME[];
     static const char COMMS_STATUS_SECTION_NAME[];
+    static const char CURVE_SECTION_NAME[];
     static const char DEVICE_HOURS_SECTION_NAME[];
     static const char DEVICE_INFO_SECTION_NAME[];
     static const char DEVICE_LABEL_SECTION_NAME[];
@@ -735,7 +736,6 @@ class RDMHTTPModule {
     static const char PROXIED_DEVICES_SECTION_NAME[];
     static const char RESET_DEVICE_SECTION_NAME[];
     static const char TILT_INVERT_SECTION_NAME[];
-    static const char CURVE_SECTION_NAME[];
 
     DISALLOW_COPY_AND_ASSIGN(RDMHTTPModule);
 };
