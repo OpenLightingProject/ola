@@ -142,7 +142,7 @@ class RDMHTTPModule {
       unsigned int active;
       unsigned int next;
       unsigned int total;
-      std::vector<std::pair<uint32_t, std::string> > curves;
+      std::vector<std::string> curve_descriptions;
     } curve_info;
 
     // UID resolution methods

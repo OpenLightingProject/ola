@@ -3418,7 +3418,7 @@ void RDMHTTPModule::GetCurveDescriptionHandler(
     description = resp_description;
   }
 
-  info->curves.push_back(pair<uint32_t, string>(curve, description));
+  info->curve_descriptions.push_back(description);
 
   if (info->next == info->total) {
     SendCurveResponse(response, info);
@@ -3437,10 +3437,10 @@ void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
   SelectItem *item = new SelectItem("Active Curve", GENERIC_UINT_FIELD);
 
   for (unsigned int i = 1; i <= info->total; i++) {
-    if (i <= info->curves.size()) {
+    if (i <= info->curve_descriptions.size()) {
       ostringstream str;
-      str << info->curves[i - 1].second << " ("
-          << info->curves[i - 1].first << ")";
+      str << info->curve_descriptions[i - 1] << " ("
+          << i << ")";
       item->AddItem(str.str(), i);
     } else {
       item->AddItem(IntToString(i), i);
