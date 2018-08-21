@@ -38,6 +38,7 @@ namespace plugin {
 namespace espnet {
 
 using std::ostringstream;
+using std::string;
 
 const char EspNetDevice::ESPNET_DEVICE_NAME[] = "ESP Net";
 const char EspNetDevice::IP_KEY[] = "ip";
@@ -60,7 +61,11 @@ EspNetDevice::EspNetDevice(Plugin *owner,
  * Start this device
  */
 bool EspNetDevice::StartHook() {
-  m_node = new EspNetNode(m_preferences->GetValue(IP_KEY));
+  string ip_address = m_preferences->GetValue(IP_KEY);
+  if (ip_address.empty()) {
+    ip_address = m_plugin_adaptor->DefaultIPOrInterfaceName();
+  }
+  m_node = new EspNetNode(ip_address);
   m_node->SetName(m_preferences->GetValue(NODE_NAME_KEY));
   m_node->SetType(ESPNET_NODE_TYPE_IO);
 

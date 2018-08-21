@@ -19,6 +19,7 @@
  */
 
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "ola/Logging.h"
@@ -36,6 +37,7 @@ namespace plugin {
 namespace pathport {
 
 using std::ostringstream;
+using std::string;
 using std::vector;
 
 const char PathportDevice::K_DEFAULT_NODE_NAME[] = "ola-Pathport";
@@ -81,7 +83,11 @@ bool PathportDevice::StartHook() {
     dscp = dscp << 2;
   }
 
-  m_node = new PathportNode(m_preferences->GetValue(K_NODE_IP_KEY),
+  string ip_address = m_preferences->GetValue(K_NODE_IP_KEY);
+  if (ip_address.empty()) {
+    ip_address = m_plugin_adaptor->DefaultIPOrInterfaceName();
+  }
+  m_node = new PathportNode(ip_address,
                             product_id, dscp);
 
   if (!m_node->Start()) {

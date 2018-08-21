@@ -94,6 +94,7 @@ bool ArtNetDevice::StartHook() {
   options.include_loopback = m_preferences->GetValueAsBool(K_LOOPBACK_KEY);
   if (!picker->ChooseInterface(&iface,
                                m_preferences->GetValue(K_IP_KEY),
+                               m_plugin_adaptor->DefaultIPOrInterfaceName(),
                                options)) {
     OLA_INFO << "Failed to find an interface";
     return false;

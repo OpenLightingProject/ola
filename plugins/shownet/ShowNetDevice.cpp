@@ -35,6 +35,7 @@ namespace plugin {
 namespace shownet {
 
 using std::ostringstream;
+using std::string;
 
 const char ShowNetDevice::SHOWNET_DEVICE_NAME[] = "ShowNet";
 const char ShowNetDevice::IP_KEY[] = "ip";
@@ -56,7 +57,11 @@ ShowNetDevice::ShowNetDevice(ola::Plugin *owner,
  * Start this device
  */
 bool ShowNetDevice::StartHook() {
-  m_node = new ShowNetNode(m_preferences->GetValue(IP_KEY));
+  string ip_address = m_preferences->GetValue(IP_KEY);
+  if (ip_address.empty()) {
+    ip_address = m_plugin_adaptor->DefaultIPOrInterfaceName();
+  }
+  m_node = new ShowNetNode(ip_address);
   m_node->SetName(m_preferences->GetValue("name"));
 
   if (!m_node->Start()) {

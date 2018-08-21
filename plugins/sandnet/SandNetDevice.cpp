@@ -64,7 +64,11 @@ bool SandNetDevice::StartHook() {
   vector<ola::network::UDPSocket*> sockets;
   vector<ola::network::UDPSocket*>::iterator iter;
 
-  m_node = new SandNetNode(m_preferences->GetValue(IP_KEY));
+  string ip_address = m_preferences->GetValue(IP_KEY);
+  if (ip_address.empty()) {
+    ip_address = m_plugin_adaptor->DefaultIPOrInterfaceName();
+  }
+  m_node = new SandNetNode(ip_address);
   m_node->SetName(m_preferences->GetValue(NAME_KEY));
 
   // setup the output ports (ie INTO sandnet)

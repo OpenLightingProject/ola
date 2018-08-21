@@ -72,7 +72,11 @@ E131Device::E131Device(Plugin *owner,
  * Start this device
  */
 bool E131Device::StartHook() {
-  m_node.reset(new E131Node(m_plugin_adaptor, m_ip_addr, m_options, m_cid));
+  string ip_address = m_ip_addr;
+  if (ip_address.empty()) {
+    ip_address = m_plugin_adaptor->DefaultIPOrInterfaceName();
+  }
+  m_node.reset(new E131Node(m_plugin_adaptor, ip_address, m_options, m_cid));
 
   if (!m_node->Start()) {
     m_node.reset();
