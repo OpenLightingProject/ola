@@ -3438,7 +3438,7 @@ void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
 
   for (unsigned int i = 1; i <= info->total; i++) {
     if (i <= info->curve_descriptions.size() &&
-        info->curve_descriptions[i - 1].empty() == false) {
+        !info->curve_descriptions[i - 1].empty()) {
       ostringstream str;
       str << info->curve_descriptions[i - 1] << " ("
           << i << ")";
