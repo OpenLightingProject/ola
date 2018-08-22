@@ -66,7 +66,7 @@ uint8_t RDMAPI::OutstandingMessagesCount(const UID &uid) {
  * @brief Fetch a count of the proxied devices
  * @param uid the UID of the device to address this message to
  * @param callback the Callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::GetProxiedDeviceCount(
@@ -100,7 +100,7 @@ bool RDMAPI::GetProxiedDeviceCount(
  * @brief Fetch a list of the proxied devices
  * @param uid the UID of the device to address this message to
  * @param callback the Callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::GetProxiedDevices(
@@ -133,7 +133,7 @@ bool RDMAPI::GetProxiedDevices(
  * @brief Get the communication status report
  * @param uid the UID of the device to address this message to
  * @param callback the Callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::GetCommStatus(
@@ -168,7 +168,7 @@ bool RDMAPI::GetCommStatus(
  * @brief Clear the Communication status
  * @param uid the UID of the device to address this message to
  * @param callback the Callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::ClearCommStatus(
@@ -257,7 +257,7 @@ bool RDMAPI::GetQueuedMessage(
  * @param uid the UID of the device to address this message to
  * @param status_type the Status Type requested
  * @param callback the Callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::GetStatusMessage(
@@ -294,7 +294,7 @@ bool RDMAPI::GetStatusMessage(
  * @brief Fetch the description for a status id
  * @param uid the UID of the device to address this message to
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetStatusIdDescription(
@@ -330,7 +330,7 @@ bool RDMAPI::GetStatusIdDescription(
  * @param uid the UID of the device to address this message to
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::ClearStatusId(
@@ -363,7 +363,7 @@ bool RDMAPI::ClearStatusId(
  * @param uid the UID of the device to address this message to
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSubDeviceReporting(
@@ -401,7 +401,7 @@ bool RDMAPI::GetSubDeviceReporting(
  * @param sub_device the sub device to use
  * @param status_type the Status Type to set the threshold as
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetSubDeviceReporting(
@@ -440,7 +440,7 @@ bool RDMAPI::SetSubDeviceReporting(
  * @param uid the UID of the device to address this message to
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSupportedParameters(
@@ -475,7 +475,7 @@ bool RDMAPI::GetSupportedParameters(
  * @param uid the UID of the device to address this message to
  * @param pid the parameter id to fetch the description for
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetParameterDescription(
@@ -513,7 +513,7 @@ bool RDMAPI::GetParameterDescription(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDeviceInfo(
@@ -550,7 +550,7 @@ bool RDMAPI::GetDeviceInfo(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetProductDetailIdList(
@@ -587,7 +587,7 @@ bool RDMAPI::GetProductDetailIdList(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDeviceModelDescription(
@@ -624,7 +624,7 @@ bool RDMAPI::GetDeviceModelDescription(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetManufacturerLabel(
@@ -661,7 +661,7 @@ bool RDMAPI::GetManufacturerLabel(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDeviceLabel(
@@ -698,7 +698,7 @@ bool RDMAPI::GetDeviceLabel(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetDeviceLabel(
@@ -735,7 +735,7 @@ bool RDMAPI::SetDeviceLabel(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetFactoryDefaults(
@@ -772,7 +772,7 @@ bool RDMAPI::GetFactoryDefaults(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::ResetToFactoryDefaults(
@@ -807,7 +807,7 @@ bool RDMAPI::ResetToFactoryDefaults(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetLanguageCapabilities(
@@ -844,7 +844,7 @@ bool RDMAPI::GetLanguageCapabilities(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetLanguage(
@@ -882,7 +882,7 @@ bool RDMAPI::GetLanguage(
  * @param sub_device the sub device to use
  * @param language the language code, only the first two characters are used
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetLanguage(
@@ -926,7 +926,7 @@ bool RDMAPI::SetLanguage(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSoftwareVersionLabel(
@@ -963,7 +963,7 @@ bool RDMAPI::GetSoftwareVersionLabel(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetBootSoftwareVersion(
@@ -1000,7 +1000,7 @@ bool RDMAPI::GetBootSoftwareVersion(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetBootSoftwareVersionLabel(
@@ -1037,7 +1037,7 @@ bool RDMAPI::GetBootSoftwareVersionLabel(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDMXPersonality(
@@ -1076,7 +1076,7 @@ bool RDMAPI::GetDMXPersonality(
  * @param sub_device the sub device to use
  * @param personality the value of the personality to choose
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetDMXPersonality(
@@ -1113,7 +1113,7 @@ bool RDMAPI::SetDMXPersonality(
  * @param sub_device the sub device to use
  * @param personality the value of the personality to get the description of
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDMXPersonalityDescription(
@@ -1155,7 +1155,7 @@ bool RDMAPI::GetDMXPersonalityDescription(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDMXAddress(
@@ -1193,7 +1193,7 @@ bool RDMAPI::GetDMXAddress(
  * @param sub_device the sub device to use
  * @param start_address the new start address
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetDMXAddress(
@@ -1230,7 +1230,7 @@ bool RDMAPI::SetDMXAddress(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSlotInfo(
@@ -1268,7 +1268,7 @@ bool RDMAPI::GetSlotInfo(
  * @param sub_device the sub device to use
  * @param slot_offset the offset of the slot to get the description of
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSlotDescription(
@@ -1310,7 +1310,7 @@ bool RDMAPI::GetSlotDescription(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSlotDefaultValues(
@@ -1348,7 +1348,7 @@ bool RDMAPI::GetSlotDefaultValues(
  * @param sub_device the sub device to use
  * @param sensor_number the sensor index to get the descriptor for
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSensorDefinition(
@@ -1389,7 +1389,7 @@ bool RDMAPI::GetSensorDefinition(
  * @param sub_device the sub device to use
  * @param sensor_number the sensor index to get the value of
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSensorValue(
@@ -1430,7 +1430,7 @@ bool RDMAPI::GetSensorValue(
  * @param sub_device the sub device to use
  * @param sensor_number the sensor index to reset
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetSensorValue(
@@ -1469,7 +1469,7 @@ bool RDMAPI::SetSensorValue(
  * @param sub_device the sub device to use
  * @param sensor_number the sensor index to record
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::RecordSensors(
@@ -1505,7 +1505,7 @@ bool RDMAPI::RecordSensors(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetDeviceHours(
@@ -1532,7 +1532,7 @@ bool RDMAPI::GetDeviceHours(
  * @param sub_device the sub device to use
  * @param device_hours the number of device hours
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetDeviceHours(
@@ -1560,7 +1560,7 @@ bool RDMAPI::SetDeviceHours(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetLampHours(
@@ -1587,7 +1587,7 @@ bool RDMAPI::GetLampHours(
  * @param sub_device the sub device to use
  * @param lamp_hours the number of lamp hours
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetLampHours(
@@ -1615,7 +1615,7 @@ bool RDMAPI::SetLampHours(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetLampStrikes(
@@ -1642,7 +1642,7 @@ bool RDMAPI::GetLampStrikes(
  * @param sub_device the sub device to use
  * @param lamp_strikes the number of lamp strikes
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetLampStrikes(
@@ -1670,7 +1670,7 @@ bool RDMAPI::SetLampStrikes(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetLampState(
@@ -1697,7 +1697,7 @@ bool RDMAPI::GetLampState(
  * @param sub_device the sub device to use
  * @param lamp_state the new lamp state
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetLampState(
@@ -1725,7 +1725,7 @@ bool RDMAPI::SetLampState(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetLampMode(
@@ -1752,7 +1752,7 @@ bool RDMAPI::GetLampMode(
  * @param sub_device the sub device to use
  * @param lamp_mode the new lamp mode
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetLampMode(
@@ -1780,7 +1780,7 @@ bool RDMAPI::SetLampMode(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetDevicePowerCycles(
@@ -1807,7 +1807,7 @@ bool RDMAPI::GetDevicePowerCycles(
  * @param sub_device the sub device to use
  * @param power_cycles the number of power cycles
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetDevicePowerCycles(
@@ -1835,7 +1835,7 @@ bool RDMAPI::SetDevicePowerCycles(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetDisplayInvert(
@@ -1862,7 +1862,7 @@ bool RDMAPI::GetDisplayInvert(
  * @param sub_device the sub device to use
  * @param display_invert the new invert setting
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetDisplayInvert(
@@ -1890,7 +1890,7 @@ bool RDMAPI::SetDisplayInvert(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetDisplayLevel(
@@ -1917,7 +1917,7 @@ bool RDMAPI::GetDisplayLevel(
  * @param sub_device the sub device to use
  * @param display_level the new setting
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetDisplayLevel(
@@ -1945,7 +1945,7 @@ bool RDMAPI::SetDisplayLevel(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetPanInvert(
@@ -1972,7 +1972,7 @@ bool RDMAPI::GetPanInvert(
  * @param sub_device the sub device to use
  * @param invert set to true to invert
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetPanInvert(
@@ -2000,7 +2000,7 @@ bool RDMAPI::SetPanInvert(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetTiltInvert(
@@ -2027,7 +2027,7 @@ bool RDMAPI::GetTiltInvert(
  * @param sub_device the sub device to use
  * @param invert set to true to invert
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetTiltInvert(
@@ -2055,7 +2055,7 @@ bool RDMAPI::SetTiltInvert(
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
-* @param error a pointer to a string which it set if an error occurs
+* @param error a pointer to a string which is set if an error occurs
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetPanTiltSwap(
@@ -2082,7 +2082,7 @@ bool RDMAPI::GetPanTiltSwap(
  * @param sub_device the sub device to use
  * @param swap, true to swap, false otherwise
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetPanTiltSwap(
@@ -2110,7 +2110,7 @@ bool RDMAPI::SetPanTiltSwap(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetClock(
@@ -2143,7 +2143,7 @@ bool RDMAPI::GetClock(
  * @param sub_device the sub device to use
  * @param clock, the new clock settings
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetClock(
@@ -2180,7 +2180,7 @@ bool RDMAPI::SetClock(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetIdentifyDevice(
@@ -2216,7 +2216,7 @@ bool RDMAPI::GetIdentifyDevice(
  * @param sub_device the sub device to use
  * @param mode the identify mode to set
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::IdentifyDevice(
@@ -2254,7 +2254,7 @@ bool RDMAPI::IdentifyDevice(
  * @param sub_device the sub device to use
  * @param warm_reset true for a warm reset, false for a cold reset
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::ResetDevice(
@@ -2291,7 +2291,7 @@ bool RDMAPI::ResetDevice(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetPowerState(
@@ -2327,7 +2327,7 @@ bool RDMAPI::GetPowerState(
  * @param sub_device the sub device to use
  * @param power_state the new power state
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetPowerState(
@@ -2365,7 +2365,7 @@ bool RDMAPI::SetPowerState(
  * @param sub_device the sub device to use
  * @param reset_device the new reset device
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetResetDevice(
@@ -2402,7 +2402,7 @@ bool RDMAPI::SetResetDevice(
  * @param uid the UID to fetch the DNS hostname for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDnsHostname(
@@ -2443,7 +2443,7 @@ bool RDMAPI::GetDnsHostname(
  * @param uid the UID to set the DNS hostname for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetDnsHostname(
@@ -2482,7 +2482,7 @@ bool RDMAPI::SetDnsHostname(
  * @param uid the UID to fetch the DNS domain name for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDnsDomainName(
@@ -2523,7 +2523,7 @@ bool RDMAPI::GetDnsDomainName(
  * @param uid the UID to set the DNS domain name for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetDnsDomainName(
@@ -2561,7 +2561,7 @@ bool RDMAPI::SetDnsDomainName(
  * @param uid the UID to fetch the dimmer curve information for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetCurve(
@@ -2602,7 +2602,7 @@ bool RDMAPI::GetCurve(
  * @param sub_device the sub device to use
  * @param curve the index of the curve to set
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetCurve(
@@ -2641,7 +2641,7 @@ bool RDMAPI::SetCurve(
  * @param sub_device the sub device to use
  * @param curve the id of the curve to fetch the description for
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetCurveDescription(
@@ -2684,7 +2684,7 @@ bool RDMAPI::GetCurveDescription(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SelfTestEnabled(
@@ -2720,7 +2720,7 @@ bool RDMAPI::SelfTestEnabled(
  * @param sub_device the sub device to use
  * @param self_test_number the number of the self test to perform.
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::PerformSelfTest(
@@ -2758,7 +2758,7 @@ bool RDMAPI::PerformSelfTest(
  * @param self_test_number the number of the self test to fetch the description
  *   of.
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SelfTestDescription(
@@ -2803,7 +2803,7 @@ bool RDMAPI::SelfTestDescription(
  * @param wait_time the time in 10s of a second to hold this scene when the
  *   playback mode is PRESET_PLAYBACK_ALL
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::CapturePreset(
@@ -2857,7 +2857,7 @@ bool RDMAPI::CapturePreset(
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::PresetPlaybackMode(
@@ -2900,7 +2900,7 @@ bool RDMAPI::PresetPlaybackMode(
  *   PRESET_PLAYBACK_ALL.
  * @param level the level to use for the scene.
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetPresetPlaybackMode(
