@@ -3410,7 +3410,7 @@ void RDMHTTPModule::GetCurveDescriptionHandler(
     HTTPResponse *response,
     curve_info *info,
     const ola::rdm::ResponseStatus &status,
-    uint8_t curve,
+    OLA_UNUSED uint8_t curve,
     const string &resp_description) {
   string description = "";
 
@@ -3438,7 +3438,7 @@ void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
 
   for (unsigned int i = 1; i <= info->total; i++) {
     if (i <= info->curve_descriptions.size() &&
-        info->curve_descriptions[i - 1].length() > 0) {
+        info->curve_descriptions[i - 1].empty() == false) {
       ostringstream str;
       str << info->curve_descriptions[i - 1] << " ("
           << i << ")";
