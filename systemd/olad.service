@@ -1,0 +1,30 @@
+[Unit]
+Description=Ola Daemon (User mode)
+Documentation=https://github.com/OpenLightingProject/ola
+
+[Service]
+# Task control options
+Type=notify
+ExecStart=/usr/bin/olad
+ExecReload=/usr/bin/kill -HUP $MAINPID
+NotifyAccess=main
+Restart=on-failure
+
+# Exec Options
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=tmpfs
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+
+# Directory specifications
+ConfigurationDirectory="~/.ola/"
+WorkingDirectory=~
+
+[Install]
+WantedBy=default.target
+
