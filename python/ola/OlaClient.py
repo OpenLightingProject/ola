@@ -721,6 +721,9 @@ class OlaClient(Ola_pb2.OlaClientService):
     self._stub = Ola_pb2.OlaServerService_Stub(self._channel)
     self._universe_callbacks = {}
 
+  def __del__(self):
+    self._SocketClosed()
+
   def GetSocket(self):
     """Returns the socket used to communicate with the server."""
     return self._socket
