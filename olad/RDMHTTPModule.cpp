@@ -562,13 +562,10 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
     error = GetDnsHostname(response, universe_id, *uid);
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = GetDnsDomainName(response, universe_id, *uid);
-<<<<<<< HEAD
-  } else if (section_id == DIMMER_INFO_SECTION) {
-    error = GetDimmerInfo(response, universe_id, *uid);
-=======
   } else if (section_id == CURVE_SECTION) {
     error = GetCurve(request, response, universe_id, *uid, true);
->>>>>>> add-curve
+  } else if (section_id == DIMMER_INFO_SECTION) {
+    error = GetDimmerInfo(response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -1167,16 +1164,13 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
                    DNS_DOMAIN_NAME_SECTION,
                    DNS_DOMAIN_NAME_SECTION_NAME);
         break;
-<<<<<<< HEAD
+      case ola::rdm::PID_CURVE:
+        AddSection(&sections, CURVE_SECTION, CURVE_SECTION_NAME);
+        break;
       case ola::rdm::PID_DIMMER_INFO:
         AddSection(&sections,
                    DIMMER_INFO_SECTION,
                    DIMMER_INFO_SECTION_NAME);
-=======
-      case ola::rdm::PID_CURVE:
-        AddSection(&sections, CURVE_SECTION, CURVE_SECTION_NAME);
->>>>>>> add-curve
-        break;
     }
   }
 
