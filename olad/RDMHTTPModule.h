@@ -573,6 +573,14 @@ class RDMHTTPModule {
                                  unsigned int universe_id,
                                  const ola::rdm::UID &uid);
 
+    std::string GetDimmerInfo(ola::http::HTTPResponse *response,
+                              unsigned int universe_id,
+                              const ola::rdm::UID &uid);
+
+    void GetDimmerInfoHandler(ola::http::HTTPResponse *response,
+                              const ola::rdm::ResponseStatus &status,
+                              const ola::rdm::DimmerInfoDescriptor &dimmer);
+
     // util methods
     bool CheckForInvalidId(const ola::http::HTTPRequest *request,
                            unsigned int *universe_id);
@@ -643,6 +651,7 @@ class RDMHTTPModule {
     static const char DEVICE_HOURS_SECTION[];
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];
+    static const char DIMMER_INFO_SECTION[];
     static const char DISPLAY_INVERT_SECTION[];
     static const char DISPLAY_LEVEL_SECTION[];
     static const char DMX_ADDRESS_SECTION[];
@@ -673,6 +682,7 @@ class RDMHTTPModule {
     static const char DEVICE_HOURS_SECTION_NAME[];
     static const char DEVICE_INFO_SECTION_NAME[];
     static const char DEVICE_LABEL_SECTION_NAME[];
+    static const char DIMMER_INFO_SECTION_NAME[];
     static const char DISPLAY_INVERT_SECTION_NAME[];
     static const char DISPLAY_LEVEL_SECTION_NAME[];
     static const char DMX_ADDRESS_SECTION_NAME[];

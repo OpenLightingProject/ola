@@ -102,6 +102,7 @@ const char RDMHTTPModule::COMMS_STATUS_SECTION[] = "comms_status";
 const char RDMHTTPModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHTTPModule::DEVICE_INFO_SECTION[] = "device_info";
 const char RDMHTTPModule::DEVICE_LABEL_SECTION[] = "device_label";
+const char RDMHTTPModule::DIMMER_INFO_SECTION[] = "dimmer_info";
 const char RDMHTTPModule::DISPLAY_INVERT_SECTION[] = "display_invert";
 const char RDMHTTPModule::DISPLAY_LEVEL_SECTION[] = "display_level";
 const char RDMHTTPModule::DMX_ADDRESS_SECTION[] = "dmx_address";
@@ -134,6 +135,7 @@ const char RDMHTTPModule::COMMS_STATUS_SECTION_NAME[] = "Communication Status";
 const char RDMHTTPModule::DEVICE_HOURS_SECTION_NAME[] = "Device Hours";
 const char RDMHTTPModule::DEVICE_INFO_SECTION_NAME[] = "Device Info";
 const char RDMHTTPModule::DEVICE_LABEL_SECTION_NAME[] = "Device Label";
+const char RDMHTTPModule::DIMMER_INFO_SECTION_NAME[] = "Dimmer Info";
 const char RDMHTTPModule::DISPLAY_INVERT_SECTION_NAME[] = "Display Invert";
 const char RDMHTTPModule::DISPLAY_LEVEL_SECTION_NAME[] = "Display Level";
 const char RDMHTTPModule::DMX_ADDRESS_SECTION_NAME[] = "DMX Start Address";
@@ -558,6 +560,8 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
     error = GetDnsHostname(response, universe_id, *uid);
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = GetDnsDomainName(response, universe_id, *uid);
+  } else if (section_id == DIMMER_INFO_SECTION) {
+    error = GetDimmerInfo(response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -1153,6 +1157,11 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         AddSection(&sections,
                    DNS_DOMAIN_NAME_SECTION,
                    DNS_DOMAIN_NAME_SECTION_NAME);
+        break;
+      case ola::rdm::PID_DIMMER_INFO:
+        AddSection(&sections,
+                   DIMMER_INFO_SECTION,
+                   DIMMER_INFO_SECTION_NAME);
         break;
     }
   }
@@ -3311,6 +3320,52 @@ string RDMHTTPModule::SetDnsDomainName(const HTTPRequest *request,
                         response),
       &error);
   return error;
+}
+
+/**
+ * @brief Handle the request for Dimmer Info.
+ */
+string RDMHTTPModule::GetDimmerInfo(HTTPResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string error;
+  m_rdm_api.GetDimmerInfo(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::GetDimmerInfoHandler,
+                        response),
+      &error);
+  return error;
+}
+
+/**
+ * @brief Handle the response to a dimmer info call and build the response
+ */
+void RDMHTTPModule::GetDimmerInfoHandler(
+    HTTPResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const ola::rdm::DimmerInfoDescriptor &info) {
+  if (CheckForRDMError(response, status)) {
+    return;
+  }
+
+  JsonSection section;
+  section.AddItem(new UIntItem("Minimum Level Lower Limit",
+    info.min_level_lower_limit));
+  section.AddItem(new UIntItem("Minimum Level Upper Limit",
+    info.min_level_upper_limit));
+  section.AddItem(new UIntItem("Maximum Level Lower Limit",
+    info.max_level_lower_limit));
+  section.AddItem(new UIntItem("Maximum Level Upper Limit",
+    info.max_level_upper_limit));
+  section.AddItem(new UIntItem("# of Supported Curves", info.curves_supported));
+  section.AddItem(new UIntItem("Levels Resolution", info.resolution));
+  section.AddItem(new UIntItem("Split Levels Supported",
+    info.split_levels_supported));
+
+  RespondWithSection(response, section);
 }
 
 

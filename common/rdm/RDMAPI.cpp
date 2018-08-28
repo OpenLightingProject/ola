@@ -2558,6 +2558,42 @@ bool RDMAPI::SetDnsDomainName(
 
 
 /*
+ * @brief Fetch the dimmer info
+ * @param uid the UID to fetch the dimmer info for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetDimmerInfo(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const DimmerInfoDescriptor&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback))
+    return false;
+  if (CheckNotBroadcast(uid, error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetDimmerInfo,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_DIMMER_INFO),
+    error);
+}
+
+/*
  * Check if a device is in self test mode.
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
@@ -3785,6 +3821,57 @@ void RDMAPI::_HandlePlaybackMode(
     }
   }
   callback->Run(response_status, mode, level);
+}
+
+/*
+ * @brief Handle a get DIMMER_INFO response
+ */
+void RDMAPI::_HandleGetDimmerInfo(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const DimmerInfoDescriptor&> *callback,
+    const ResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status = status;
+  DimmerInfoDescriptor dimmer_info;
+
+  if (response_status.WasAcked()) {
+    PACK(
+    struct dimmer_info_s {
+      uint16_t min_level_lower_limit;
+      uint16_t min_level_upper_limit;
+      uint16_t max_level_lower_limit;
+      uint16_t max_level_upper_limit;
+      uint8_t curves_supported;
+      uint8_t resolution;
+      uint8_t split_levels_supported;
+    });
+    STATIC_ASSERT(sizeof(dimmer_info_s) == 11);
+    struct dimmer_info_s raw_description;
+
+    unsigned int data_size = data.size();
+    if (data_size == sizeof(dimmer_info_s)) {
+      memcpy(&raw_description, data.data(), data_size);
+
+      dimmer_info.min_level_lower_limit =
+        NetworkToHost(raw_description.min_level_lower_limit);
+      dimmer_info.min_level_upper_limit =
+        NetworkToHost(raw_description.min_level_upper_limit);
+      dimmer_info.max_level_lower_limit =
+        NetworkToHost(raw_description.max_level_lower_limit);
+      dimmer_info.max_level_upper_limit =
+        NetworkToHost(raw_description.max_level_upper_limit);
+      dimmer_info.curves_supported = raw_description.curves_supported;
+      dimmer_info.resolution = raw_description.resolution;
+      dimmer_info.split_levels_supported =
+        raw_description.split_levels_supported;
+    } else {
+      std::ostringstream str;
+      str << data_size << " needs to be " << sizeof(dimmer_info_s);
+      response_status.error = str.str();
+    }
+  }
+  callback->Run(response_status, dimmer_info);
 }
 
 
