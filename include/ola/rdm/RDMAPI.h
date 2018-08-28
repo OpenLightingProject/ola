@@ -939,6 +939,35 @@ class RDMAPI {
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         std::string *error);
 
+    bool GetCurve(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                uint8_t> *callback,
+        std::string *error);
+
+    bool SetCurve(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t curve,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
+    bool GetCurveDescription(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t curve,
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                const std::string&> *callback,
+        std::string *error);
+
     bool GetDimmerInfo(
         unsigned int universe,
         const UID &uid,
@@ -1033,6 +1062,13 @@ class RDMAPI {
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
                                 uint8_t> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleU16Response(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
         const ResponseStatus &status,
         const std::string &data);
 
@@ -1222,6 +1258,22 @@ class RDMAPI {
                                 const ResponseStatus&,
                                 uint16_t,
                                 uint8_t> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleGetCurve(
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                uint8_t> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleGetCurveDescription(
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                const std::string&> *callback,
         const ResponseStatus &status,
         const std::string &data);
 

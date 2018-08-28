@@ -135,6 +135,16 @@ class RDMHTTPModule {
       std::vector<std::pair<uint32_t, std::string> > personalities;
     } personality_info;
 
+    typedef struct {
+      unsigned int universe_id;
+      const ola::rdm::UID *uid;
+      bool include_descriptions;
+      unsigned int active;
+      unsigned int next;
+      unsigned int total;
+      std::vector<std::string> curve_descriptions;
+    } curve_info;
+
     // UID resolution methods
     void HandleUIDList(ola::http::HTTPResponse *response,
                        unsigned int universe_id,
@@ -573,6 +583,35 @@ class RDMHTTPModule {
                                  unsigned int universe_id,
                                  const ola::rdm::UID &uid);
 
+    std::string GetCurve(const ola::http::HTTPRequest *request,
+                         ola::http::HTTPResponse *response,
+                         unsigned int universe_id,
+                         const ola::rdm::UID &uid,
+                         bool include_descriptions);
+
+    void GetCurveHandler(ola::http::HTTPResponse *response,
+                            curve_info *info,
+                            const ola::rdm::ResponseStatus &status,
+                            uint8_t current_curve,
+                            uint8_t curve_count);
+
+    void GetNextCurveDescription(ola::http::HTTPResponse *response,
+                                 curve_info *info);
+
+    void GetCurveDescriptionHandler(ola::http::HTTPResponse *response,
+                                    curve_info *info,
+                                    const ola::rdm::ResponseStatus &status,
+                                    uint8_t curve,
+                                    const std::string &resp_description);
+
+    void SendCurveResponse(ola::http::HTTPResponse *response,
+                           curve_info *info);
+
+    std::string SetCurve(const ola::http::HTTPRequest *request,
+                         ola::http::HTTPResponse *response,
+                         unsigned int universe_id,
+                         const ola::rdm::UID &uid);
+
     std::string GetDimmerInfo(ola::http::HTTPResponse *response,
                               unsigned int universe_id,
                               const ola::rdm::UID &uid);
@@ -648,6 +687,7 @@ class RDMHTTPModule {
     static const char BOOT_SOFTWARE_SECTION[];
     static const char CLOCK_SECTION[];
     static const char COMMS_STATUS_SECTION[];
+    static const char CURVE_SECTION[];
     static const char DEVICE_HOURS_SECTION[];
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];
@@ -679,6 +719,7 @@ class RDMHTTPModule {
     static const char BOOT_SOFTWARE_SECTION_NAME[];
     static const char CLOCK_SECTION_NAME[];
     static const char COMMS_STATUS_SECTION_NAME[];
+    static const char CURVE_SECTION_NAME[];
     static const char DEVICE_HOURS_SECTION_NAME[];
     static const char DEVICE_INFO_SECTION_NAME[];
     static const char DEVICE_LABEL_SECTION_NAME[];
