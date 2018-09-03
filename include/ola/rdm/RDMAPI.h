@@ -186,6 +186,15 @@ typedef struct {
 } DimmerInfoDescriptor;
 
 /*
+ * Dimmer minimum values
+ */
+typedef struct {
+  uint16_t min_level_increasing;
+  uint16_t min_level_decreasing;
+  uint8_t on_below_min;
+} DimmerMinimumDescriptor;
+
+/*
  * The interface for objects which deal with queued messages
  */
 class QueuedMessageHandler {
@@ -977,6 +986,42 @@ class RDMAPI {
                                 const DimmerInfoDescriptor&> *callback,
         std::string *error);
 
+    bool GetDimmerMinimumLevels(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t pid,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DimmerMinimumDescriptor&> *callback,
+        std::string *error);
+
+    bool SetDimmerMinimumLevels(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t min_increasing,
+        uint16_t min_decreasing,
+        uint8_t on_below_min,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
+    bool GetDimmerMaximumLevel(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t pid,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
+        std::string *error);
+
+    bool SetDimmerMaximumLevel(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t maximum_level,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
     bool SelfTestEnabled(
         unsigned int universe,
         const UID &uid,
@@ -1281,6 +1326,20 @@ class RDMAPI {
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
                                 const DimmerInfoDescriptor&> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleGetDimmerMinimumLevels(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DimmerMinimumDescriptor&> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleGetDimmerMaximumLevel(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
         const ResponseStatus &status,
         const std::string &data);
 

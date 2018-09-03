@@ -620,6 +620,32 @@ class RDMHTTPModule {
                               const ola::rdm::ResponseStatus &status,
                               const ola::rdm::DimmerInfoDescriptor &dimmer);
 
+    std::string GetDimmerMinimumLevels(ola::http::HTTPResponse *response,
+                                      unsigned int universe_id,
+                                      const ola::rdm::UID &uid);
+
+    void GetDimmerMinimumLevelsHandler(ola::http::HTTPResponse *response,
+                               const ola::rdm::ResponseStatus &status,
+                               const ola::rdm::DimmerMinimumDescriptor &dimmer);
+
+    std::string SetDimmerMinimumLevels(const ola::http::HTTPRequest *request,
+                                       ola::http::HTTPResponse *response,
+                                       unsigned int universe_id,
+                                       const ola::rdm::UID &uid);
+
+    std::string GetDimmerMaximumLevel(ola::http::HTTPResponse *response,
+                                      unsigned int universe_id,
+                                      const ola::rdm::UID &uid);
+
+    void GetDimmerMaximumLevelHandler(ola::http::HTTPResponse *response,
+                                      const ola::rdm::ResponseStatus &status,
+                                      uint16_t maximum_level);
+
+    std::string SetDimmerMaximumLevel(const ola::http::HTTPRequest *request,
+                                      ola::http::HTTPResponse *response,
+                                      unsigned int universe_id,
+                                      const ola::rdm::UID &uid);
+
     // util methods
     bool CheckForInvalidId(const ola::http::HTTPRequest *request,
                            unsigned int *universe_id);
@@ -674,6 +700,8 @@ class RDMHTTPModule {
     static const char UID_KEY[];
 
     static const char ADDRESS_FIELD[];
+    static const char DIMMER_MINIMUM_INCREASING_FIELD[];
+    static const char DIMMER_MINIMUM_DECREASING_FIELD[];
     static const char DISPLAY_INVERT_FIELD[];
     static const char GENERIC_BOOL_FIELD[];
     static const char GENERIC_STRING_FIELD[];
@@ -692,6 +720,8 @@ class RDMHTTPModule {
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];
     static const char DIMMER_INFO_SECTION[];
+    static const char DIMMER_MAXIMUM_SECTION[];
+    static const char DIMMER_MINIMUM_SECTION[];
     static const char DISPLAY_INVERT_SECTION[];
     static const char DISPLAY_LEVEL_SECTION[];
     static const char DMX_ADDRESS_SECTION[];
@@ -724,6 +754,8 @@ class RDMHTTPModule {
     static const char DEVICE_INFO_SECTION_NAME[];
     static const char DEVICE_LABEL_SECTION_NAME[];
     static const char DIMMER_INFO_SECTION_NAME[];
+    static const char DIMMER_MAXIMUM_SECTION_NAME[];
+    static const char DIMMER_MINIMUM_SECTION_NAME[];
     static const char DISPLAY_INVERT_SECTION_NAME[];
     static const char DISPLAY_LEVEL_SECTION_NAME[];
     static const char DMX_ADDRESS_SECTION_NAME[];
