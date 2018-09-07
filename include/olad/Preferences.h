@@ -462,7 +462,7 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
    * want to make sure the files have been written to disk before continuing.
    * This blocks until all pending save requests are complete.
    */
-  void Syncronize();
+  void Synchronize();
 
  private:
   ola::io::SelectServer m_ss;
@@ -470,8 +470,8 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
   /**
    * Notify the blocked thread we're done
    */
-  void CompleteSyncronization(ola::thread::ConditionVariable *condition,
-                              ola::thread::Mutex *mutex);
+  void CompleteSynchronization(ola::thread::ConditionVariable *condition,
+                               ola::thread::Mutex *mutex);
 };
 
 

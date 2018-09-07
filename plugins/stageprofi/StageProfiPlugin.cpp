@@ -33,6 +33,7 @@
 #include "olad/Preferences.h"
 #include "plugins/stageprofi/StageProfiDetector.h"
 #include "plugins/stageprofi/StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiPluginDescription.h"
 #include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {

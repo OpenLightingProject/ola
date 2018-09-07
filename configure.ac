@@ -66,21 +66,27 @@ AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = x
 
 # force us into gnu++98 mode if necessary
 # If gnu++11 and gnu++98 then
-#   If no unit tests, force to gnu++98
-#   If unittests and cppunit < 1.14.0, force to gnu++98
-#   Else turn off deprecation messages for std::auto_ptr and run gnu++11
+#   If protobuf < 3.6
+#     If no unit tests, force to gnu++98
+#     Else we have unit tests
+#       If cppunit < 1.14.0, force to gnu++98
+#       Else turn off deprecation messages for std::auto_ptr and run gnu++11
+#   Else assume we have protobuf >= 3.6 (later checks will confirm that for certain), turn off deprecation messages for std::auto_ptr and run gnu++11
 require_gnu_plus_plus_11="no"
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
       [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
-             [AS_IF([test "x$enable_unittests" = xno],
-                    [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                    [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+             [PKG_CHECK_MODULES([PROTOBUF1], [protobuf < 3.6],
+                                [AS_IF([test "x$enable_unittests" = xno],
                                        [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                                       [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
-                                                          [require_gnu_plus_plus_11="yes"],
-                                                          [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                       [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+                                                          [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                                          [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
+                                                                             [require_gnu_plus_plus_11="yes"],
+                                                                             [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                                          ])
                                        ])
-                    ])
+                                ],
+                                [require_gnu_plus_plus_11="yes"])
              ])
       ])
 AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
@@ -242,6 +248,44 @@ CPPFLAGS=$old_cppflags
 AC_MSG_RESULT($ac_cv_rdynamic)
 
 AM_CONDITIONAL([SUPPORTS_RDYNAMIC], [test "x$ac_cv_rdynamic" = xyes])
+
+# check if the compiler supports -std=gnu++98
+AC_MSG_CHECKING(for -std=gnu++98 support)
+old_cppflags=$CPPFLAGS
+CPPFLAGS="${CPPFLAGS} -std=gnu++98 -Wall -Werror"
+AC_CACHE_VAL(ac_cv_gnu_plus_plus_98,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([], [])],
+     [ac_cv_gnu_plus_plus_98=yes],
+     [ac_cv_gnu_plus_plus_98=no])
+)
+CPPFLAGS=$old_cppflags
+AC_MSG_RESULT($ac_cv_gnu_plus_plus_98)
+
+AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_98], [test "x$ac_cv_gnu_plus_plus_98" = xyes])
+
+# check if the compiler supports -std=gnu++11
+AC_MSG_CHECKING(for -std=gnu++11 support)
+old_cppflags=$CPPFLAGS
+CPPFLAGS="${CPPFLAGS} -std=gnu++11 -Wall -Werror"
+AC_CACHE_VAL(ac_cv_gnu_plus_plus_11,
+  AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([], [])],
+     [ac_cv_gnu_plus_plus_11=yes],
+     [ac_cv_gnu_plus_plus_11=no])
+)
+CPPFLAGS=$old_cppflags
+AC_MSG_RESULT($ac_cv_gnu_plus_plus_11)
+
+AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = xyes])
+
+# force us into gnu++98 mode if necessary
+AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
+      [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
+             [CFLAGS="$CFLAGS -std=gnu++98"
+              CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+             [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+      ])
 
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
@@ -741,7 +785,7 @@ AS_IF([test "x$enable_root_check" = xno],
 # Use tcmalloc. This is used by the buildbot leak checks.
 AC_ARG_ENABLE([tcmalloc], AS_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 AS_IF([test "x$enable_tcmalloc" = xyes],
-      [AC_CHECK_LIB([tcmalloc], [malloc], [LDFLAGS="$LDFLAGS -ltcmalloc"], [AS_ERROR([tcmalloc not found, but enabled on command line])])])
+      [AC_CHECK_LIB([tcmalloc], [malloc], [AM_LDFLAGS="$AM_LDFLAGS -ltcmalloc"], [AS_ERROR([tcmalloc not found, but enabled on command line])])])
 
 # Optionally set the Doxygen version to "Latest Git" for website latest
 # version.
@@ -862,6 +906,7 @@ PLUGIN_SUPPORT(renard, USE_RENARD)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 PLUGIN_SUPPORT(spi, USE_SPI, [$have_spi])
+PLUGIN_SUPPORT(spidmx, USE_SPIDMX, [$have_spi])
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
 PLUGIN_SUPPORT(uartdmx, USE_UART, [$have_uart])
 PLUGIN_SUPPORT(usbdmx, USE_LIBUSB, [$have_libusb])
@@ -940,6 +985,7 @@ AC_CONFIG_FILES([include/ola/base/Version.h
                  ])
 # Makefiles
 AC_CONFIG_FILES([Makefile java/Makefile])
+AC_SUBST(AM_LDFLAGS)
 AC_OUTPUT
 
 echo \
@@ -948,7 +994,7 @@ ${PACKAGE_NAME} Version ${PACKAGE_VERSION}
 
 Prefix: '${prefix}'
 Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
-Linker: '${LD} ${LDFLAGS} ${LIBS}'
+Linker: '${LD} ${AM_LDFLAGS} ${LIBS}'
 Python: ${PYTHON}
 
 Python API: ${enable_python_libs}

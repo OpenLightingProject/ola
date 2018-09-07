@@ -18,3 +18,4 @@ plugins_stageprofi_libolastageprofi_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la
 endif
 
+EXTRA_DIST += plugins/stageprofi/README.md

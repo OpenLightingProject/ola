@@ -33,8 +33,8 @@ def Universes(status, universes):
     for uni in universes:
       print('Universe %d' % uni.id)
       print('  - Name: %s' % uni.name)
-      print('  - Merge mode: %s' % (
-            ('LTP' if uni.merge_mode == Universe.LTP else 'HTP')))
+      print('  - Merge mode: %s' %
+            ('LTP' if uni.merge_mode == Universe.LTP else 'HTP'))
 
       if len(uni.input_ports) > 0:
         print('  - Input ports:')

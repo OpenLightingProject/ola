@@ -39,3 +39,5 @@ plugins_spi_SPITester_LDADD = $(COMMON_TESTING_LIBS) \
                               common/libolacommon.la
 
 endif
+
+EXTRA_DIST += plugins/spi/README.md

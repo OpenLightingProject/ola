@@ -19,3 +19,5 @@ plugins_milinst_libolamilinst_la_LIBADD = \
     common/libolacommon.la \
     olad/plugin_api/libolaserverplugininterface.la
 endif
+
+EXTRA_DIST += plugins/milinst/README.md

@@ -3,6 +3,7 @@
 *.gcda
 *.gcno
 *.gcov
+*.gch
 *.la
 *.lo
 *.log
@@ -167,7 +168,10 @@ include/ola/base/Version.h
 include/ola/plugin_id.h
 include/ola/rdm/RDMResponseCodes.h
 include/ola/timecode/TimeCodeEnums.h
+java/.classpath
+java/src/main/java/ola/proto/Ola.java
 java/src/main/java/ola/rpc/Rpc.java
+java/target/
 javascript/compiler.jar
 javascript/trunk/
 libs/acn/e131_loadtest
@@ -181,6 +185,7 @@ olad/ola-output.conf
 olad/testdata/ola-output.conf
 plugins/artnet/artnet_loadtest
 plugins/artnet/artnet_loadtest.exe
+plugins/*/*PluginDescription.h
 protoc/ola_protoc
 protoc/ola_protoc.exe
 protoc/ola_protoc_plugin
@@ -236,3 +241,4 @@ javascript/new-src/node_modules
 .autotools
 .cproject
 .settings
+.vscode/

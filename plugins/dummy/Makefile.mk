@@ -30,3 +30,5 @@ plugins_dummy_DummyPluginTester_LDADD = \
     common/libolacommon.la
 
 endif
+
+EXTRA_DIST += plugins/dummy/README.md

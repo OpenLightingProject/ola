@@ -28,6 +28,7 @@
 #include "plugins/usbdmx/AsyncPluginImpl.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncPluginImpl.h"
+#include "plugins/usbdmx/UsbDmxPluginDescription.h"
 
 DECLARE_bool(use_async_libusb);
 
@@ -92,8 +93,8 @@ string UsbDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, DMXControl Projects e.V. Nodle U1, Eurolite, Fadecandy, "
-"Sunlite USBDMX2 and Velleman K8062.\n"
+"Anyma uDMX, AVLdiy D512, DMXControl Projects e.V. Nodle U1, Eurolite, "
+"Fadecandy, Sunlite USBDMX2 and Velleman K8062.\n"
 "\n"
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"

@@ -31,6 +31,7 @@
 
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
+#include <ola/base/Macro.h>
 #include <ola/base/SysExits.h>
 #include <ola/Callback.h>
 #include <ola/Constants.h>
@@ -46,6 +47,7 @@
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
+#include <ola/StringUtils.h>
 
 #include <iostream>
 #include <fstream>
@@ -69,6 +71,7 @@ using ola::rdm::CommandPrinter;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
+using ola::strings::ToHex;
 
 
 using ola::thread::Mutex;
@@ -79,6 +82,7 @@ using ola::NewSingleCallback;
 DEFINE_default_bool(display_asc, false,
                     "Display non-RDM alternate start code frames.");
 DEFINE_s_default_bool(full_rdm, r, false, "Unpack RDM parameter data.");
+// TODO(Peter): Implement this!
 DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
 DEFINE_s_default_bool(display_dmx, d, false,
                       "Display DMX Frames. Defaults to false.");
@@ -124,8 +128,8 @@ class LogicReader {
 
  private:
     const unsigned int m_sample_rate;
-    U64 m_device_id;  // GUARDED_BY(mu_);
-    LogicInterface *m_logic;  // GUARDED_BY(mu_);
+    U64 m_device_id;  // GUARDED_BY(m_mu);
+    LogicInterface *m_logic;  // GUARDED_BY(m_mu);
     mutable Mutex m_mu;
     SelectServer *m_ss;
     DMXSignalProcessor m_signal_processor;
@@ -172,7 +176,7 @@ void LogicReader::DeviceConnected(U64 device, GenericInterface *interface) {
 }
 
 void LogicReader::DeviceDisconnected(U64 device) {
-  OLA_INFO << "Device " << device << " disconnected";
+  OLA_FATAL << "Device " << device << " disconnected";
 
   MutexLocker lock(&m_mu);
   if (device != m_device_id) {
@@ -182,8 +186,6 @@ void LogicReader::DeviceDisconnected(U64 device) {
   m_logic = NULL;
 
   m_ss->Terminate();
-
-  //
 }
 
 /**
@@ -197,6 +199,8 @@ void LogicReader::DataReceived(U64 device, U8 *data, uint32_t data_length) {
   {
     MutexLocker lock(&m_mu);
     if (device != m_device_id) {
+      OLA_WARN << "Received data from another device, expecting "
+               << m_device_id << " got " << device;
       DevicesManagerInterface::DeleteU8ArrayPtr(data);
       return;
     }
@@ -232,9 +236,7 @@ void LogicReader::FrameReceived(const uint8_t *data, unsigned int length) {
   }
 }
 
-/**
- *
- */
+
 void LogicReader::Stop() {
   MutexLocker lock(&m_mu);
   if (m_logic) {
@@ -267,8 +269,9 @@ void LogicReader::ProcessData(U8 *data, uint32_t data_length) {
 
 
 void LogicReader::DisplayDMXFrame(const uint8_t *data, unsigned int length) {
-  if (!FLAGS_display_dmx)
+  if (!FLAGS_display_dmx) {
     return;
+  }
 
   cout << "DMX " << std::dec;
   cout << length << ":" << std::hex;
@@ -283,6 +286,8 @@ void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
     }
     command->Print(&m_command_printer, !FLAGS_full_rdm, true);
   } else {
+    cout << "RDM " << std::dec;
+    cout << length << ":" << std::hex;
     DisplayRawData(data, length);
   }
 }
@@ -290,12 +295,13 @@ void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
 
 void LogicReader::DisplayAlternateFrame(const uint8_t *data,
                                         unsigned int length) {
-  if (!FLAGS_display_asc || length == 0)
+  if (!FLAGS_display_asc || length == 0) {
     return;
+  }
 
   unsigned int slot_count = length - 1;
-  cout << "SC 0x" << std::hex << std::setw(2) << static_cast<int>(data[0])
-       << " " << std::dec << slot_count << ":" << std::hex;
+  cout << "SC " << ToHex(static_cast<int>(data[0]))
+       << " " << slot_count << ":";
   DisplayRawData(data + 1, slot_count);
 }
 
@@ -305,7 +311,8 @@ void LogicReader::DisplayAlternateFrame(const uint8_t *data,
  */
 void LogicReader::DisplayRawData(const uint8_t *data, unsigned int length) {
   for (unsigned int i = 0; i < length; i++) {
-    cout << std::hex << std::setw(2) << static_cast<int>(data[i]) << " ";
+    cout << std::hex << std::setw(2) << std::setfill('0')
+         << static_cast<int>(data[i]) << " ";
   }
   cout << endl;
 }
@@ -313,8 +320,9 @@ void LogicReader::DisplayRawData(const uint8_t *data, unsigned int length) {
 // SaleaeDeviceApi callbacks
 void OnConnect(U64 device_id, GenericInterface* device_interface,
                void* user_data) {
-  if (!user_data)
+  if (!user_data) {
     return;
+  }
 
   LogicReader *reader =
       (LogicReader*) user_data;  // NOLINT(readability/casting)
@@ -322,8 +330,9 @@ void OnConnect(U64 device_id, GenericInterface* device_interface,
 }
 
 void OnDisconnect(U64 device_id, void *user_data) {
-  if (!user_data)
+  if (!user_data) {
     return;
+  }
 
   LogicReader *reader =
       (LogicReader*) user_data;  // NOLINT(readability/casting)
@@ -341,10 +350,8 @@ void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
   reader->DataReceived(device_id, data, data_length);
 }
 
-void OnError(U64 device_id, void *user_data) {
-  OLA_INFO << "A device reported an Error.";
-  (void) device_id;
-  (void) user_data;
+void OnError(U64 device_id, OLA_UNUSED void *user_data) {
+  OLA_WARN << "Device " << device_id << " reported an error.";
 }
 
 void DisplayReminder(LogicReader *reader) {

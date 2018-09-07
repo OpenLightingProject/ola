@@ -18,3 +18,5 @@ plugins_e131_libolae131_la_LIBADD = \
     plugins/e131/messages/libolae131conf.la \
     libs/acn/libolae131core.la
 endif
+
+EXTRA_DIST += plugins/e131/README.md

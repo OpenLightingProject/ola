@@ -49,12 +49,16 @@ class UndeclaredPropertyException(Error):
 
 class TestFixture(object):
   """The base responder test class, every test inherits from this."""
+  PID = None
   CATEGORY = TestCategory.UNCLASSIFIED
   DEPS = []
   PROVIDES = []
   REQUIRES = []
 
   def __init__(self, device, universe, uid, pid_store, *args, **kwargs):
+    self._warnings = []
+    self._advisories = []
+    self._debug = []
     self._device_properties = device
     self._uid = uid
     self._pid_store = pid_store
@@ -63,9 +67,9 @@ class TestFixture(object):
       self.pid = self.LookupPid(self.PID)
     except AttributeError:
       self.pid = None
-    self._warnings = []
-    self._advisories = []
-    self._debug = []
+    if self.PidRequired() and self.pid is None:
+      self.SetBroken("%s: Couldn't find PID from %s" %
+                     (self.__class__.__name__, self.PID))
 
   def __hash__(self):
     return hash(self.__class__.__name__)
@@ -78,6 +82,10 @@ class TestFixture(object):
 
   def __cmp__(self, other):
     return cmp(self.__class__.__name__, other.__class__.__name__)
+
+  def PidRequired(self):
+    """Whether a valid PID is required for this test"""
+    return True
 
   def LookupPid(self, pid_name):
     return self._pid_store.GetName(pid_name, self._uid)
@@ -108,12 +116,12 @@ class TestFixture(object):
     Args:
       message: The text of the warning message.
     """
-    self.LogDebug('Warning: %s' % message)
+    self.LogDebug(' Warning: %s' % message)
     self._warnings.append(message)
 
   # Advisories are logged independently of errors. They should be used to
-  # indicate conditions that while aren't covered by the standard, should still
-  # be fixed.
+  # indicate conditions that while not covered by the standard, should still be
+  # fixed.
   @property
   def advisories(self):
     """Non-fatal advisories message."""
@@ -125,7 +133,7 @@ class TestFixture(object):
     Args:
       message: The text of the advisory message.
     """
-    self.LogDebug('Advisory: %s' % message)
+    self.LogDebug(' Advisory: %s' % message)
     self._advisories.append(message)
 
   @property
@@ -193,24 +201,33 @@ class TestFixture(object):
 
   def Run(self):
     """Run the test."""
+    # Try and fail early
+    if self.state == TestState.BROKEN:
+      return
+
     self.Test()
 
+  def Stop(self):
+    self.SetBroken('stop method not defined')
+
   def SetNotRun(self, message=None):
-    """Set the state of the test to NOT_RUN and stop further processing."""
+    """Set the state of the test to NOT_RUN."""
     self._state = TestState.NOT_RUN
     if message:
       self.LogDebug(' ' + message)
-    self.Stop()
 
   def SetBroken(self, message):
+    """Set the state of the test to BROKEN."""
     self.LogDebug(' Broken: %s' % message)
     self._state = TestState.BROKEN
 
   def SetFailed(self, message):
+    """Set the state of the test to FAILED."""
     self.LogDebug(' Failed: %s' % message)
     self._state = TestState.FAILED
 
   def SetPassed(self):
+    """Set the state of the test to PASSED."""
     self._state = TestState.PASSED
 
 
@@ -244,6 +261,10 @@ class ResponderTestFixture(TestFixture):
   def uid(self):
     return self._uid
 
+  def PidSupported(self):
+    # By default all PIDs are supported, overridden in subclasses
+    return True
+
   def SleepAfterBroadcastSet(self):
     if self._broadcast_write_delay_s:
       self.LogDebug('Sleeping after broadcast...')
@@ -251,9 +272,14 @@ class ResponderTestFixture(TestFixture):
 
   def Run(self):
     """Call the test method and then start running the loop wrapper."""
+    # Try and fail early
+    if self.state == TestState.BROKEN:
+      return
+
     # the super call invokes self.Test()
     super(ResponderTestFixture, self).Run()
 
+    # Check if we've broken during self.Test()
     if self.state == TestState.BROKEN:
       return
 
@@ -275,12 +301,58 @@ class ResponderTestFixture(TestFixture):
     self._should_run_wrapper = False
     self._wrapper.Stop()
 
+  def SetNotRun(self, message=None):
+    """Set the state of the test to NOT_RUN and stop further processing."""
+    super(ResponderTestFixture, self).SetNotRun(message)
+    self.Stop()
+
+  def SetBroken(self, message):
+    """Set the state of the test to BROKEN and stop further processing."""
+    super(ResponderTestFixture, self).SetBroken(message)
+    self.Stop()
+
+  def SetFailed(self, message):
+    """Set the state of the test to FAILED and stop further processing."""
+    super(ResponderTestFixture, self).SetFailed(message)
+    self.Stop()
+
+  def SetPassed(self):
+    """Set the state of the test to PASSED and stop further processing."""
+    super(ResponderTestFixture, self).SetPassed()
+    self.Stop()
+
   def AddExpectedResults(self, results):
     """Add a set of expected results."""
     if isinstance(results, list):
       self._expected_results = results
     else:
       self._expected_results = [results]
+
+  def AddIfGetSupported(self, result):
+    """Add a set of expected GET results if the PID is supported"""
+    if not self.PidSupported():
+      result = self.NackGetResult(RDMNack.NR_UNKNOWN_PID)
+    self.AddExpectedResults(result)
+
+  def AddIfSetSupported(self, result):
+    """Add a set of expected SET results if the PID is supported"""
+    # The lock modes means that some sets may return NR_WRITE_PROTECT. Account
+    # for that here.
+    if not self.PidSupported():
+      expected_results = self.NackSetResult(RDMNack.NR_UNKNOWN_PID)
+    else:
+      expected_results = [
+        self.NackSetResult(
+          RDMNack.NR_WRITE_PROTECT,
+          advisory='SET %s was write protected, try changing the lock mode if '
+                   'enabled' % self.pid.name)
+      ]
+      if isinstance(result, list):
+        expected_results.extend(result)
+      else:
+        expected_results.append(result)
+
+    self.AddExpectedResults(expected_results)
 
   def NackDiscoveryResult(self, nack_reason, **kwargs):
     """A helper method which returns a NackDiscoveryResult for the current
@@ -539,7 +611,7 @@ class ResponderTestFixture(TestFixture):
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      self.LogDebug(' Request status: %s' % response.ResponseCodeAsString())
+      self.LogDebug(' Response status: %s' % response.ResponseCodeAsString())
       if response.response_code == OlaClient.RDM_DUB_RESPONSE:
         # track timing for DUB responses.
         self._RecordFrameTiming(response, TimingStats.DUB)
@@ -682,27 +754,3 @@ class OptionalParameterTestFixture(ResponderTestFixture):
 
   def PidSupported(self):
     return self.pid.value in self.Property('supported_parameters')
-
-  def AddIfGetSupported(self, result):
-    if not self.PidSupported():
-      result = self.NackGetResult(RDMNack.NR_UNKNOWN_PID)
-    self.AddExpectedResults(result)
-
-  def AddIfSetSupported(self, result):
-    # The lock modes means that some sets may return NR_WRITE_PROTECT. Account
-    # for that here.
-    if not self.PidSupported():
-      expected_results = self.NackSetResult(RDMNack.NR_UNKNOWN_PID)
-    else:
-      expected_results = [
-        self.NackSetResult(
-          RDMNack.NR_WRITE_PROTECT,
-          advisory='SET %s was write protected, try changing the lock mode if '
-                   'enabled' % self.pid.name)
-      ]
-      if isinstance(result, list):
-        expected_results.extend(result)
-      else:
-        expected_results.append(result)
-
-    self.AddExpectedResults(expected_results)

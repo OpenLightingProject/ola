@@ -69,10 +69,11 @@ using ola::rdm::RDMResponse;
 using ola::rdm::ResponderHelper;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using std::auto_ptr;
 using std::min;
 using std::string;
 using std::vector;
+
+
 
 const uint16_t SPIOutput::SPI_DELAY = 0;
 const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;
@@ -87,6 +88,7 @@ const uint16_t SPIOutput::WS2801_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
+const uint16_t SPIOutput::APA102PB_SLOTS_PER_PIXEL = 4;
 
 // Number of bytes that each pixel uses on the SPI wires
 // (if it differs from 1:1 with colors)
@@ -94,6 +96,7 @@ const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
 const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
 
 const uint16_t SPIOutput::APA102_START_FRAME_BYTES = 4;
+const uint8_t SPIOutput::APA102_LEDFRAME_START_MARK = 0xE0;
 
 SPIOutput::RDMOps *SPIOutput::RDMOps::instance = NULL;
 
@@ -180,26 +183,38 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
   m_spi_device_name = FilenameFromPathOrPath(m_backend->DevicePath());
 
   PersonalityCollection::PersonalityList personalities;
-  personalities.push_back(Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
-                                      "WS2801 Individual Control"));
-  personalities.push_back(Personality(WS2801_SLOTS_PER_PIXEL,
-                                      "WS2801 Combined Control"));
-  personalities.push_back(Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
-                                      "LPD8806 Individual Control"));
-  personalities.push_back(Personality(LPD8806_SLOTS_PER_PIXEL,
-                                      "LPD8806 Combined Control"));
-  personalities.push_back(Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
-                                      "P9813 Individual Control"));
-  personalities.push_back(Personality(P9813_SLOTS_PER_PIXEL,
-                                      "P9813 Combined Control"));
-  personalities.push_back(Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
-                                      "APA102 Individual Control"));
-  personalities.push_back(Personality(APA102_SLOTS_PER_PIXEL,
-                                      "APA102 Combined Control"));
+  personalities.insert(personalities.begin() + PERS_WS2801_INDIVIDUAL,
+    Personality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
+      "WS2801 Individual Control"));
+  personalities.insert(personalities.begin() + PERS_WS2801_COMBINED,
+    Personality(WS2801_SLOTS_PER_PIXEL,
+      "WS2801 Combined Control"));
+  personalities.insert(personalities.begin() + PERS_LDP8806_INDIVIDUAL,
+    Personality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
+      "LPD8806 Individual Control"));
+  personalities.insert(personalities.begin() + PERS_LDP8806_COMBINED,
+    Personality(LPD8806_SLOTS_PER_PIXEL,
+      "LPD8806 Combined Control"));
+  personalities.insert(personalities.begin() + PERS_P9813_INDIVIDUAL,
+    Personality(m_pixel_count * P9813_SLOTS_PER_PIXEL,
+      "P9813 Individual Control"));
+  personalities.insert(personalities.begin() + PERS_P9813_COMBINED,
+    Personality(P9813_SLOTS_PER_PIXEL,
+      "P9813 Combined Control"));
+  personalities.insert(personalities.begin() + PERS_APA102_INDIVIDUAL,
+    Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
+      "APA102 Individual Control"));
+  personalities.insert(personalities.begin() + PERS_APA102_COMBINED,
+    Personality(APA102_SLOTS_PER_PIXEL,
+      "APA102 Combined Control"));
+  personalities.insert(personalities.begin() + PERS_APA102PB_INDIVIDUAL,
+    Personality(m_pixel_count * APA102PB_SLOTS_PER_PIXEL,
+      "APA102 with pixel brightness Individual Control"));
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
       m_personality_collection.get()));
-  m_personality_manager->SetActivePersonality(1);
+  // m_personality_manager->SetActivePersonality(1);
+  m_personality_manager->SetActivePersonality(PERS_WS2801_INDIVIDUAL);
 
 #ifdef HAVE_GETLOADAVG
   m_sensors.push_back(new LoadSensor(ola::system::LOAD_AVERAGE_1_MIN,
@@ -251,8 +266,7 @@ bool SPIOutput::SetStartAddress(uint16_t address) {
 
 string SPIOutput::Description() const {
   std::ostringstream str;
-  str << m_spi_device_name << ", output "
-      << static_cast<int>(m_output_number) << ", "
+  str << "Output " << static_cast<int>(m_output_number) << ", "
       << m_personality_manager->ActivePersonalityDescription() << ", "
       << m_personality_manager->ActivePersonalityFootprint()
       << " slots @ " << m_start_address << ". (" << m_uid << ")";
@@ -263,8 +277,9 @@ string SPIOutput::Description() const {
  * Send DMX data over SPI.
  */
 bool SPIOutput::WriteDMX(const DmxBuffer &buffer) {
-  if (m_identify_mode)
+  if (m_identify_mode) {
     return true;
+  }
   return InternalWriteDMX(buffer);
 }
 
@@ -292,29 +307,32 @@ void SPIOutput::SendRDMRequest(RDMRequest *request,
 
 bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
   switch (m_personality_manager->ActivePersonalityNumber()) {
-    case 1:
+    case PERS_WS2801_INDIVIDUAL:
       IndividualWS2801Control(buffer);
       break;
-    case 2:
+    case PERS_WS2801_COMBINED:
       CombinedWS2801Control(buffer);
       break;
-    case 3:
+    case PERS_LDP8806_INDIVIDUAL:
       IndividualLPD8806Control(buffer);
       break;
-    case 4:
+    case PERS_LDP8806_COMBINED:
       CombinedLPD8806Control(buffer);
       break;
-    case 5:
+    case PERS_P9813_INDIVIDUAL:
       IndividualP9813Control(buffer);
       break;
-    case 6:
+    case PERS_P9813_COMBINED:
       CombinedP9813Control(buffer);
       break;
-    case 7:
+    case PERS_APA102_INDIVIDUAL:
       IndividualAPA102Control(buffer);
       break;
-    case 8:
+    case PERS_APA102_COMBINED:
       CombinedAPA102Control(buffer);
+      break;
+    case PERS_APA102PB_INDIVIDUAL:
+      IndividualAPA102ControlPixelBrightness(buffer);
       break;
     default:
       break;
@@ -325,10 +343,11 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
 void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   // We always check out the entire string length, even if we only have data
   // for part of it
-  const unsigned int output_length = m_pixel_count * LPD8806_SLOTS_PER_PIXEL;
+  const unsigned int output_length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, output_length);
-  if (!output)
+  if (!output) {
     return;
+  }
 
   unsigned int new_length = output_length;
   buffer.GetRange(m_start_address - 1, output, &new_length);
@@ -347,8 +366,9 @@ void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
 
   const unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, length);
-  if (!output)
+  if (!output) {
     return;
+  }
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     memcpy(output + (i * WS2801_SLOTS_PER_PIXEL), pixel_data,
@@ -373,7 +393,7 @@ void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
   if (!output)
     return;
 
-  const unsigned int length = std::min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
+  const unsigned int length = min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
                                        buffer.Size() - first_slot);
 
   for (unsigned int i = 0; i < length / LPD8806_SLOTS_PER_PIXEL; i++) {
@@ -435,8 +455,9 @@ void SPIOutput::IndividualP9813Control(const DmxBuffer &buffer) {
   uint8_t *output = m_backend->Checkout(m_output_number, output_length,
                                         latch_bytes);
 
-  if (!output)
+  if (!output) {
     return;
+  }
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     // Convert RGB to P9813 Pixel
@@ -479,8 +500,9 @@ void SPIOutput::CombinedP9813Control(const DmxBuffer &buffer) {
 
   const unsigned int length = m_pixel_count * P9813_SPI_BYTES_PER_PIXEL;
   uint8_t *output = m_backend->Checkout(m_output_number, length, latch_bytes);
-  if (!output)
+  if (!output) {
     return;
+  }
 
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     memcpy(&output[(i + 1) * P9813_SPI_BYTES_PER_PIXEL], pixel_data,
@@ -575,6 +597,83 @@ void SPIOutput::IndividualAPA102Control(const DmxBuffer &buffer) {
   m_backend->Commit(m_output_number);
 }
 
+
+void SPIOutput::IndividualAPA102ControlPixelBrightness(
+  const DmxBuffer &buffer
+) {
+  // some detailed information on the protocol:
+  // https://cpldcpu.wordpress.com/2014/11/30/understanding-the-apa102-superled/
+  // Data-Struct
+  // StartFrame: 4 bytes = 32 bits zeros (APA102_START_FRAME_BYTES)
+  // LEDFrame:
+  //    1 byte START_MARK + pixel brightness
+  //    3 bytes color info (Blue, Green, Red)
+  // EndFrame: (n/2)bits; n = pixel_count
+
+  // calculate DMX-start-address
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+
+  // only do something if at least 1 pixel can be updated..
+  if (buffer.Size() - first_slot < APA102PB_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << APA102PB_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
+    return;
+  }
+
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  uint16_t output_length = (m_pixel_count * APA102_SPI_BYTES_PER_PIXEL);
+  // only add the APA102_START_FRAME_BYTES on the first port!!
+  if (m_output_number == 0) {
+    output_length += APA102_START_FRAME_BYTES;
+  }
+  uint8_t *output = m_backend->Checkout(
+      m_output_number,
+      output_length,
+      CalculateAPA102LatchBytes(m_pixel_count));
+
+  // only update SPI data if possible
+  if (!output) {
+    return;
+  }
+
+  // only write to APA102_START_FRAME_BYTES on the first port!!
+  if (m_output_number == 0) {
+    // set APA102_START_FRAME_BYTES to zero
+    memset(output, 0, APA102_START_FRAME_BYTES);
+  }
+
+  for (uint16_t i = 0; i < m_pixel_count; i++) {
+    // Convert RGB to APA102 Pixel
+    uint16_t offset = first_slot + (i * APA102PB_SLOTS_PER_PIXEL);
+
+
+    uint16_t spi_offset = (i * APA102_SPI_BYTES_PER_PIXEL);
+    // only skip APA102_START_FRAME_BYTES on the first port!!
+    if (m_output_number == 0) {
+      // We need to avoid the first 4 bytes of the buffer since that acts as a
+      // start of frame delimiter
+      spi_offset += APA102_START_FRAME_BYTES;
+    }
+    // set pixel data
+    // only write pixel data if buffer has complete data for this pixel:
+    if ((buffer.Size() - offset) >= APA102PB_SLOTS_PER_PIXEL) {
+      // first Byte:
+      // 3 bits start mark (111) (APA102_LEDFRAME_START_MARK) +
+      // 5 bits pixel brightness (datasheet name: global brightness)
+      output[spi_offset + 0] = SPIOutput::APA102_LEDFRAME_START_MARK +
+        CalculateAPA102PixelBrightness(buffer.Get(offset + 0));
+      // Convert RGB to APA102 Pixel
+      output[spi_offset + 1] = buffer.Get(offset + 3);  // blue
+      output[spi_offset + 2] = buffer.Get(offset + 2);  // green
+      output[spi_offset + 3] = buffer.Get(offset + 1);  // red
+    }
+  }
+
+  // write output back
+  m_backend->Commit(m_output_number);
+}
+
 void SPIOutput::CombinedAPA102Control(const DmxBuffer &buffer) {
   // for Protocol details see IndividualAPA102Control
 
@@ -649,11 +748,23 @@ uint8_t SPIOutput::CalculateAPA102LatchBytes(uint16_t pixel_count) {
   return latch_bytes;
 }
 
+/**
+ * Calculate Pixel Brightness for APA102:
+ * Map Input to Output range:
+ * Input is 8bit value (0..255)
+ * Output is 5bit value (0..31)
+ */
+uint8_t SPIOutput::CalculateAPA102PixelBrightness(uint8_t brightness) {
+  return (brightness >> 3);
+}
+
+
 
 RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
-      ola::rdm::PRODUCT_CATEGORY_FIXTURE, 4,
+      ola::rdm::PRODUCT_CATEGORY_FIXTURE,
+      5,  // RDM software version (increment on personality changes)
       m_personality_manager.get(),
       m_start_address,
       0, m_sensors.size());
@@ -685,7 +796,9 @@ RDMResponse *SPIOutput::SetDeviceLabel(const RDMRequest *request) {
 }
 
 RDMResponse *SPIOutput::GetSoftwareVersionLabel(const RDMRequest *request) {
-  return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
+  return ResponderHelper::GetString(
+    request,
+    string("OLA Version ") + VERSION);
 }
 
 RDMResponse *SPIOutput::GetDmxPersonality(const RDMRequest *request) {

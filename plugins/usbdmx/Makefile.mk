@@ -8,6 +8,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/AnymauDMX.h \
     plugins/usbdmx/AnymauDMXFactory.cpp \
     plugins/usbdmx/AnymauDMXFactory.h \
+    plugins/usbdmx/AVLdiyD512.cpp \
+    plugins/usbdmx/AVLdiyD512.h \
+    plugins/usbdmx/AVLdiyD512Factory.cpp \
+    plugins/usbdmx/AVLdiyD512Factory.h \
     plugins/usbdmx/AsyncUsbReceiver.cpp \
     plugins/usbdmx/AsyncUsbReceiver.h \
     plugins/usbdmx/AsyncUsbSender.cpp \
@@ -30,6 +34,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/ScanlimeFadecandy.h \
     plugins/usbdmx/ScanlimeFadecandyFactory.cpp \
     plugins/usbdmx/ScanlimeFadecandyFactory.h \
+    plugins/usbdmx/ShowJockeyDMXU1.cpp \
+    plugins/usbdmx/ShowJockeyDMXU1.h \
+    plugins/usbdmx/ShowJockeyDMXU1Factory.cpp \
+    plugins/usbdmx/ShowJockeyDMXU1Factory.h \
     plugins/usbdmx/Sunlite.cpp \
     plugins/usbdmx/Sunlite.h \
     plugins/usbdmx/SunliteFactory.cpp \
@@ -37,8 +45,8 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/SunliteFirmware.h \
     plugins/usbdmx/SunliteFirmwareLoader.cpp \
     plugins/usbdmx/SunliteFirmwareLoader.h \
-    plugins/usbdmx/SyncronizedWidgetObserver.cpp \
-    plugins/usbdmx/SyncronizedWidgetObserver.h \
+    plugins/usbdmx/SynchronizedWidgetObserver.cpp \
+    plugins/usbdmx/SynchronizedWidgetObserver.h \
     plugins/usbdmx/ThreadedUsbReceiver.cpp \
     plugins/usbdmx/ThreadedUsbReceiver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
@@ -84,4 +92,6 @@ plugins_usbdmx_libolausbdmx_la_LIBADD = \
     plugins/usbdmx/libolausbdmxwidget.la
 endif
 
-EXTRA_DIST += plugins/usbdmx/README.md
+EXTRA_DIST += \
+    plugins/usbdmx/README.md \
+    plugins/usbdmx/README.developer.md

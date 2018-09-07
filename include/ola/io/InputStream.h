@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_IO_INPUTSTREAM_H_
 
 #include <stdint.h>
+#include <ola/base/Macro.h>
 #include <ola/io/InputBuffer.h>
 #include <string>
 
@@ -87,8 +88,7 @@ class InputStream: public InputStreamInterface {
       return length == sizeof(*val);
     }
 
-    InputStream(const InputStream&);
-    InputStream& operator=(const InputStream&);
+    DISALLOW_COPY_AND_ASSIGN(InputStream);
 };
 }  // namespace io
 }  // namespace ola

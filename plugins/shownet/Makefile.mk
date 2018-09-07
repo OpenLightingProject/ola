@@ -27,3 +27,5 @@ plugins_shownet_ShowNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 plugins_shownet_ShowNetTester_LDADD = $(COMMON_TESTING_LIBS) \
                                       common/libolacommon.la
 endif
+
+EXTRA_DIST += plugins/shownet/README.md
