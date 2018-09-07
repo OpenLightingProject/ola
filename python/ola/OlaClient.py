@@ -18,6 +18,7 @@
 import array
 import socket
 import struct
+import sys
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
@@ -882,7 +883,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.DmxData()
     request.universe = universe
-    request.data = data.tostring()
+    if sys.version >= '3.2':
+      request.data = data.tobytes()
+    else:
+      request.data = data.tostring()
     try:
       self._stub.UpdateDmxData(
           controller, request,
