@@ -10,5 +10,6 @@ Depends: python-all, ola, ola-python
 Test-Command: pkg-config --cflags --libs libola
 Depends: libola-dev, pkg-config
 
-Test-Command: set -e; gcc -o linktest $(pkg-config --cflags --libs libola) debian/tests/hw.c; ./linktest
-Depends: libola-dev, gcc, libc6-dev, pkg-config
+Test-Command: set -e; g++ -o linktest $(pkg-config --cflags --libs libola) debian/tests/hw.cc; ./linktest
+Depends: libola-dev, g++, pkg-config
+Restrictions: rw-build-tree
