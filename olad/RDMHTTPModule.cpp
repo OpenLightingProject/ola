@@ -3326,8 +3326,8 @@ string RDMHTTPModule::SetDnsDomainName(const HTTPRequest *request,
  * @brief Handle the request for Dimmer Info.
  */
 string RDMHTTPModule::GetDimmerInfo(HTTPResponse *response,
-                                     unsigned int universe_id,
-                                     const UID &uid) {
+                                    unsigned int universe_id,
+                                    const UID &uid) {
   string error;
   m_rdm_api.GetDimmerInfo(
       universe_id,
@@ -3353,17 +3353,17 @@ void RDMHTTPModule::GetDimmerInfoHandler(
 
   JsonSection section;
   section.AddItem(new UIntItem("Minimum Level Lower Limit",
-    info.min_level_lower_limit));
+                               info.min_level_lower_limit));
   section.AddItem(new UIntItem("Minimum Level Upper Limit",
-    info.min_level_upper_limit));
+                               info.min_level_upper_limit));
   section.AddItem(new UIntItem("Maximum Level Lower Limit",
-    info.max_level_lower_limit));
+                               info.max_level_lower_limit));
   section.AddItem(new UIntItem("Maximum Level Upper Limit",
-    info.max_level_upper_limit));
+                               info.max_level_upper_limit));
   section.AddItem(new UIntItem("# of Supported Curves", info.curves_supported));
   section.AddItem(new UIntItem("Levels Resolution", info.resolution));
   section.AddItem(new UIntItem("Split Levels Supported",
-    info.split_levels_supported));
+                               info.split_levels_supported));
 
   RespondWithSection(response, section);
 }
