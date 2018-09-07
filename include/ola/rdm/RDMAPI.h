@@ -173,6 +173,19 @@ struct clock_value_s {
 typedef struct clock_value_s ClockValue;
 
 /*
+ * Dimmer info values
+ */
+typedef struct {
+  uint16_t min_level_lower_limit;
+  uint16_t min_level_upper_limit;
+  uint16_t max_level_lower_limit;
+  uint16_t max_level_upper_limit;
+  uint8_t curves_supported;
+  uint8_t resolution;
+  uint8_t split_levels_supported;
+} DimmerInfoDescriptor;
+
+/*
  * The interface for objects which deal with queued messages
  */
 class QueuedMessageHandler {
@@ -926,6 +939,15 @@ class RDMAPI {
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         std::string *error);
 
+    bool GetDimmerInfo(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t pid,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DimmerInfoDescriptor&> *callback,
+        std::string *error);
+
     bool SelfTestEnabled(
         unsigned int universe,
         const UID &uid,
@@ -1200,6 +1222,13 @@ class RDMAPI {
                                 const ResponseStatus&,
                                 uint16_t,
                                 uint8_t> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleGetDimmerInfo(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DimmerInfoDescriptor&> *callback,
         const ResponseStatus &status,
         const std::string &data);
 
