@@ -227,7 +227,7 @@ env:
    # -- BEGIN Coverity Scan ENV
    - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 --template && autoreconf -i && ./configure --enable-ja-rule --enable-e133"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
-   # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
+   # Usually this is the same as STANDARD_BUILD_COMMAND, excluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
    # Name of the project
    - COVERITY_SCAN_PROJECT_NAME="$TRAVIS_REPO_SLUG"
