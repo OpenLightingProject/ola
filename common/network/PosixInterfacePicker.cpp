@@ -38,7 +38,7 @@
 #endif  // HAVE_SYS_SOCKET_H
 #include <arpa/inet.h>
 #ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>  // Required by FreeBSD
+  #include <netinet/in.h>  // Required by FreeBSD
 #endif  // HAVE_NETINET_IN_H
 #include <errno.h>
 #include <net/if.h>
@@ -222,11 +222,11 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       if (ioctl(sd, SIOCGIFINDEX, &ifrcopy) < 0) {
         OLA_WARN << "ioctl error " << strerror(errno);
       } else {
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__DragonFly__)
         interface.index = ifrcopy.ifr_index;
 #else
         interface.index = ifrcopy.ifr_ifindex;
-#endif  // SIOCGIFINDEX
+#endif  // defined(__FreeBSD__) || defined(__DragonFly__)
       }
     }
 #elif defined(HAVE_IF_NAMETOINDEX)
@@ -235,7 +235,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     if (index != 0) {
       interface.index = index;
     }
-#endif  // defined(HAVE_IF_NAMETOINDEX)
+#endif  // SIOCGIFINDEX
 
     /* ok, if that all failed we should prob try and use sysctl to work out the
      * broadcast and hardware addresses

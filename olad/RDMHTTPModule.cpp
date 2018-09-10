@@ -99,6 +99,7 @@ const char RDMHTTPModule::SUB_DEVICE_FIELD[] = "sub_device";
 const char RDMHTTPModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
 const char RDMHTTPModule::CLOCK_SECTION[] = "clock";
 const char RDMHTTPModule::COMMS_STATUS_SECTION[] = "comms_status";
+const char RDMHTTPModule::CURVE_SECTION[] = "curve";
 const char RDMHTTPModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHTTPModule::DEVICE_INFO_SECTION[] = "device_info";
 const char RDMHTTPModule::DEVICE_LABEL_SECTION[] = "device_label";
@@ -131,6 +132,7 @@ const char RDMHTTPModule::BOOT_SOFTWARE_SECTION_NAME[] =
   "Boot Software Version";
 const char RDMHTTPModule::CLOCK_SECTION_NAME[] = "Clock";
 const char RDMHTTPModule::COMMS_STATUS_SECTION_NAME[] = "Communication Status";
+const char RDMHTTPModule::CURVE_SECTION_NAME[] = "Dimmer Curve";
 const char RDMHTTPModule::DEVICE_HOURS_SECTION_NAME[] = "Device Hours";
 const char RDMHTTPModule::DEVICE_INFO_SECTION_NAME[] = "Device Info";
 const char RDMHTTPModule::DEVICE_LABEL_SECTION_NAME[] = "Device Label";
@@ -558,6 +560,8 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
     error = GetDnsHostname(response, universe_id, *uid);
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = GetDnsDomainName(response, universe_id, *uid);
+  } else if (section_id == CURVE_SECTION) {
+    error = GetCurve(request, response, universe_id, *uid, true);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -643,6 +647,8 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
     error = SetDnsHostname(request, response, universe_id, *uid);
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = SetDnsDomainName(request, response, universe_id, *uid);
+  } else if (section_id == CURVE_SECTION) {
+    error = SetCurve(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -1153,6 +1159,9 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         AddSection(&sections,
                    DNS_DOMAIN_NAME_SECTION,
                    DNS_DOMAIN_NAME_SECTION_NAME);
+        break;
+      case ola::rdm::PID_CURVE:
+        AddSection(&sections, CURVE_SECTION, CURVE_SECTION_NAME);
         break;
     }
   }
@@ -3313,6 +3322,165 @@ string RDMHTTPModule::SetDnsDomainName(const HTTPRequest *request,
   return error;
 }
 
+/**
+ * @brief Handle the request for the dimmer curve section.
+ */
+string RDMHTTPModule::GetCurve(OLA_UNUSED const HTTPRequest *request,
+                               HTTPResponse *response,
+                               unsigned int universe_id,
+                               const UID &uid,
+                               bool include_descriptions) {
+  string error;
+
+  curve_info *info = new curve_info;
+  info->universe_id = universe_id;
+  info->uid = new UID(uid);
+  info->include_descriptions = include_descriptions;
+  info->active = 0;
+  info->next = 1;
+  info->total = 0;
+
+  m_rdm_api.GetCurve(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::GetCurveHandler,
+                        response,
+                        info),
+      &error);
+  return error;
+}
+
+/**
+ * @brief Handle the response to a dimmer curve call and build the curve info
+ * object
+ */
+void RDMHTTPModule::GetCurveHandler(
+    HTTPResponse *response,
+    curve_info *info,
+    const ola::rdm::ResponseStatus &status,
+    uint8_t active_curve,
+    uint8_t curve_count) {
+  if (CheckForRDMError(response, status)) {
+    delete info->uid;
+    delete info;
+    return;
+  }
+
+  info->active = active_curve;
+  info->total = curve_count;
+
+  if (info->include_descriptions) {
+    GetNextCurveDescription(response, info);
+  } else {
+    SendCurveResponse(response, info);
+  }
+}
+
+/**
+ * @brief Handle the response to a curve description call and add to curve
+ * info object
+ */
+void RDMHTTPModule::GetNextCurveDescription(HTTPResponse *response,
+                                            curve_info *info) {
+  string error;
+  while (info->next <= info->total) {
+    bool r = m_rdm_api.GetCurveDescription(
+        info->universe_id,
+        *(info->uid),
+        ola::rdm::ROOT_RDM_DEVICE,
+        info->next,
+        NewSingleCallback(this,
+                          &RDMHTTPModule::GetCurveDescriptionHandler,
+                          response,
+                          info),
+        &error);
+    if (r) {
+      return;
+    }
+
+    info->next++;
+  }
+
+  SendCurveResponse(response, info);
+}
+
+void RDMHTTPModule::GetCurveDescriptionHandler(
+    HTTPResponse *response,
+    curve_info *info,
+    const ola::rdm::ResponseStatus &status,
+    OLA_UNUSED uint8_t curve,
+    const string &resp_description) {
+  string description = "";
+
+  if (CheckForRDMSuccess(status)) {
+    description = resp_description;
+  }
+
+  info->curve_descriptions.push_back(description);
+
+  if (info->next == info->total) {
+    SendCurveResponse(response, info);
+  } else {
+    info->next++;
+    GetNextCurveDescription(response, info);
+  }
+}
+
+/**
+ * @brief Build the curve http response
+ */
+void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
+                                      curve_info *info) {
+  JsonSection section;
+  SelectItem *item = new SelectItem("Active Curve", GENERIC_UINT_FIELD);
+
+  for (unsigned int i = 1; i <= info->total; i++) {
+    if (i <= info->curve_descriptions.size() &&
+        !info->curve_descriptions[i - 1].empty()) {
+      ostringstream str;
+      str << info->curve_descriptions[i - 1] << " ("
+          << i << ")";
+      item->AddItem(str.str(), i);
+    } else {
+      item->AddItem(IntToString(i), i);
+    }
+  }
+  item->SetSelectedOffset(info->active - 1);
+
+  section.AddItem(item);
+  section.AddItem(new StringItem("Available Curves",
+                                 IntToString(info->total)));
+  RespondWithSection(response, section);
+}
+
+/**
+ * @brief Set the dimmer curve
+ */
+string RDMHTTPModule::SetCurve(const HTTPRequest *request,
+                                     HTTPResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string curve_str = request->GetParameter(GENERIC_UINT_FIELD);
+  uint8_t curve;
+
+  if (!StringToInt(curve_str, &curve)) {
+    return "Invalid curve";
+  }
+
+  string error;
+  m_rdm_api.SetCurve(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      curve,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
 
 /**
  * @brief Check if the id URL param exists and is valid.
