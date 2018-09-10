@@ -1,5 +1,7 @@
 [Unit]
-Description=Ola Daemon (User mode)
+Description=Ola Daemon (User instance)
+Documentation=https://docs.openlighting.org/ola/conf/
+Documentation=https://www.openlighting.org/ola/
 Documentation=https://github.com/OpenLightingProject/ola
 
 [Service]
