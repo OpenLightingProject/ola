@@ -175,7 +175,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     if (interface.name == last_dl_iface_name) {
       interface.index = index;
       interface.type = type;
-      // The only way hwaddr is non-null is if HAVE_SOCKADDR_DL_STRUCT is defined.
+      // The only way hwaddr is non-null is if HAVE_SOCKADDR_DL_STRUCT is
+      // defined.
       if (hwaddr) {
         if (hwlen == MACAddress::LENGTH) {
           interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
