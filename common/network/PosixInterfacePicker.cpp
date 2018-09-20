@@ -233,11 +233,11 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       if (ioctl(sd, SIOCGIFINDEX, &ifrcopy) < 0) {
         OLA_WARN << "ioctl error " << strerror(errno);
       } else {
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__DragonFly__)
         interface.index = ifrcopy.ifr_index;
 #else
         interface.index = ifrcopy.ifr_ifindex;
-#endif  // __FreeBSD__
+#endif  // defined(__FreeBSD__) || defined(__DragonFly__)
       }
     }
 #elif defined(HAVE_IF_NAMETOINDEX)
