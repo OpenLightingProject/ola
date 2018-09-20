@@ -3576,7 +3576,7 @@ string RDMHTTPModule::GetDimmerMinimumLevels(HTTPResponse *response,
 
 
 /*
- * @brief Handle the response to a dimmer info call and build the response
+ * @brief Handle the response to a dimmer minimum levels and build the response
  */
 void RDMHTTPModule::GetDimmerMinimumLevelsHandler(HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
