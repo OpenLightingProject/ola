@@ -2684,7 +2684,7 @@ bool RDMAPI::GetCurveDescription(
  * @param uid the UID to fetch the dimmer info for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDimmerInfo(
@@ -2695,12 +2695,17 @@ bool RDMAPI::GetDimmerInfo(
                        const ResponseStatus&,
                        const DimmerInfoDescriptor&> *callback,
     string *error) {
-  if (CheckCallback(error, callback))
+  if (CheckCallback(error, callback)) {
     return false;
-  if (CheckNotBroadcast(uid, error, callback))
+  }
+
+  if (CheckNotBroadcast(uid, error, callback)) {
     return false;
-  if (CheckValidSubDevice(sub_device, false, error, callback))
+  }
+
+  if (CheckValidSubDevice(sub_device, false, error, callback)) {
     return false;
+  }
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
@@ -2720,7 +2725,7 @@ bool RDMAPI::GetDimmerInfo(
  * @param uid the UID to fetch the dimmer info for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDimmerMinimumLevels(
@@ -2731,12 +2736,17 @@ bool RDMAPI::GetDimmerMinimumLevels(
                        const ResponseStatus&,
                        const DimmerMinimumDescriptor&> *callback,
     string *error) {
-  if (CheckCallback(error, callback))
+  if (CheckCallback(error, callback)) {
     return false;
-  if (CheckNotBroadcast(uid, error, callback))
+  }
+
+  if (CheckNotBroadcast(uid, error, callback)) {
     return false;
-  if (CheckValidSubDevice(sub_device, false, error, callback))
+  }
+
+  if (CheckValidSubDevice(sub_device, false, error, callback)) {
     return false;
+  }
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
@@ -2813,7 +2823,7 @@ bool RDMAPI::SetDimmerMinimumLevels(
  * @param uid the UID to fetch the dimmer info for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
+ * @param error a pointer to a string which is set if an error occurs
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDimmerMaximumLevel(
@@ -2824,12 +2834,17 @@ bool RDMAPI::GetDimmerMaximumLevel(
                        const ResponseStatus&,
                        uint16_t> *callback,
     string *error) {
-  if (CheckCallback(error, callback))
+  if (CheckCallback(error, callback)) {
     return false;
-  if (CheckNotBroadcast(uid, error, callback))
+  }
+
+  if (CheckNotBroadcast(uid, error, callback)) {
     return false;
-  if (CheckValidSubDevice(sub_device, false, error, callback))
+  }
+
+  if (CheckValidSubDevice(sub_device, false, error, callback)) {
     return false;
+  }
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
@@ -2860,10 +2875,13 @@ bool RDMAPI::SetDimmerMaximumLevel(
     uint16_t maximum_level,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
-  if (CheckCallback(error, callback))
+  if (CheckCallback(error, callback)) {
     return false;
-  if (CheckValidSubDevice(sub_device, true, error, callback))
+  }
+
+  if (CheckValidSubDevice(sub_device, true, error, callback)) {
     return false;
+  }
 
   maximum_level = HostToNetwork(maximum_level);
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
@@ -4234,17 +4252,17 @@ void RDMAPI::_HandleGetDimmerInfo(
       memcpy(&raw_description, data.data(), data_size);
 
       dimmer_info.min_level_lower_limit =
-        NetworkToHost(raw_description.min_level_lower_limit);
+          NetworkToHost(raw_description.min_level_lower_limit);
       dimmer_info.min_level_upper_limit =
-        NetworkToHost(raw_description.min_level_upper_limit);
+          NetworkToHost(raw_description.min_level_upper_limit);
       dimmer_info.max_level_lower_limit =
-        NetworkToHost(raw_description.max_level_lower_limit);
+          NetworkToHost(raw_description.max_level_lower_limit);
       dimmer_info.max_level_upper_limit =
-        NetworkToHost(raw_description.max_level_upper_limit);
+          NetworkToHost(raw_description.max_level_upper_limit);
       dimmer_info.curves_supported = raw_description.curves_supported;
       dimmer_info.resolution = raw_description.resolution;
       dimmer_info.split_levels_supported =
-        raw_description.split_levels_supported;
+          raw_description.split_levels_supported;
     } else {
       std::ostringstream str;
       str << data_size << " needs to be " << sizeof(dimmer_info_s);
@@ -4281,9 +4299,9 @@ void RDMAPI::_HandleGetDimmerMinimumLevels(
       memcpy(&raw_description, data.data(), data_size);
 
       dimmer_mins.min_level_increasing =
-        NetworkToHost(raw_description.min_level_increasing);
+          NetworkToHost(raw_description.min_level_increasing);
       dimmer_mins.min_level_decreasing =
-        NetworkToHost(raw_description.min_level_decreasing);
+          NetworkToHost(raw_description.min_level_decreasing);
       dimmer_mins.on_below_min = raw_description.on_below_min;
     } else {
       std::ostringstream str;

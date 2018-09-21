@@ -3531,8 +3531,9 @@ string RDMHTTPModule::GetDimmerInfo(HTTPResponse *response,
 /*
  * @brief Handle the response to a dimmer info call and build the response
  */
-void RDMHTTPModule::GetDimmerInfoHandler(HTTPResponse *response,
-                                         const ola::rdm::ResponseStatus &status,
+void RDMHTTPModule::GetDimmerInfoHandler(
+    HTTPResponse *response,
+    const ola::rdm::ResponseStatus &status,
     const ola::rdm::DimmerInfoDescriptor &info) {
   if (CheckForRDMError(response, status)) {
     return;
@@ -3540,17 +3541,17 @@ void RDMHTTPModule::GetDimmerInfoHandler(HTTPResponse *response,
 
   JsonSection section;
   section.AddItem(new UIntItem("Minimum Level Lower Limit",
-    info.min_level_lower_limit));
+                               info.min_level_lower_limit));
   section.AddItem(new UIntItem("Minimum Level Upper Limit",
-    info.min_level_upper_limit));
+                               info.min_level_upper_limit));
   section.AddItem(new UIntItem("Maximum Level Lower Limit",
-    info.max_level_lower_limit));
+                               info.max_level_lower_limit));
   section.AddItem(new UIntItem("Maximum Level Upper Limit",
-    info.max_level_upper_limit));
+                               info.max_level_upper_limit));
   section.AddItem(new UIntItem("# of Supported Curves", info.curves_supported));
   section.AddItem(new UIntItem("Levels Resolution", info.resolution));
   section.AddItem(new UIntItem("Split Levels Supported",
-    info.split_levels_supported));
+                               info.split_levels_supported));
 
   RespondWithSection(response, section);
 }
@@ -3578,7 +3579,8 @@ string RDMHTTPModule::GetDimmerMinimumLevels(HTTPResponse *response,
 /*
  * @brief Handle the response to a dimmer minimum levels and build the response
  */
-void RDMHTTPModule::GetDimmerMinimumLevelsHandler(HTTPResponse *response,
+void RDMHTTPModule::GetDimmerMinimumLevelsHandler(
+    HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     const ola::rdm::DimmerMinimumDescriptor &info) {
   if (CheckForRDMError(response, status)) {
@@ -3587,11 +3589,11 @@ void RDMHTTPModule::GetDimmerMinimumLevelsHandler(HTTPResponse *response,
 
   JsonSection section;
   section.AddItem(new UIntItem("Minimum Level - Increasing",
-    info.min_level_increasing, DIMMER_MINIMUM_INCREASING_FIELD));
+                               info.min_level_increasing, DIMMER_MINIMUM_INCREASING_FIELD));
   section.AddItem(new UIntItem("Minimum Level - Decreasing",
-    info.min_level_decreasing, DIMMER_MINIMUM_DECREASING_FIELD));
+                               info.min_level_decreasing, DIMMER_MINIMUM_DECREASING_FIELD));
   section.AddItem(new BoolItem("On Below Minimum", info.on_below_min,
-    GENERIC_BOOL_FIELD));
+                               GENERIC_BOOL_FIELD));
 
   RespondWithSection(response, section);
 }
@@ -3661,7 +3663,8 @@ string RDMHTTPModule::GetDimmerMaximumLevel(HTTPResponse *response,
 /*
  * @brief Handle the response to a dimmer maximum call and build the response
  */
-void RDMHTTPModule::GetDimmerMaximumLevelHandler(HTTPResponse *response,
+void RDMHTTPModule::GetDimmerMaximumLevelHandler(
+    HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     uint16_t maximum_level) {
   if (CheckForRDMError(response, status)) {
@@ -3670,7 +3673,7 @@ void RDMHTTPModule::GetDimmerMaximumLevelHandler(HTTPResponse *response,
 
   JsonSection section;
   section.AddItem(new UIntItem("Maximum Level",
-    maximum_level, GENERIC_UINT_FIELD));
+                               maximum_level, GENERIC_UINT_FIELD));
 
   RespondWithSection(response, section);
 }
