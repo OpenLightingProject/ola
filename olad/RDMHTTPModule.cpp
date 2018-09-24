@@ -3589,9 +3589,11 @@ void RDMHTTPModule::GetDimmerMinimumLevelsHandler(
 
   JsonSection section;
   section.AddItem(new UIntItem("Minimum Level - Increasing",
-                               info.min_level_increasing, DIMMER_MINIMUM_INCREASING_FIELD));
+                               info.min_level_increasing,
+                               DIMMER_MINIMUM_INCREASING_FIELD));
   section.AddItem(new UIntItem("Minimum Level - Decreasing",
-                               info.min_level_decreasing, DIMMER_MINIMUM_DECREASING_FIELD));
+                               info.min_level_decreasing,
+                               DIMMER_MINIMUM_DECREASING_FIELD));
   section.AddItem(new BoolItem("On Below Minimum", info.on_below_min,
                                GENERIC_BOOL_FIELD));
 
