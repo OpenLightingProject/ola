@@ -191,7 +191,7 @@ typedef struct {
 typedef struct {
   uint16_t min_level_increasing;
   uint16_t min_level_decreasing;
-  uint8_t on_below_min;
+  bool on_below_min;
 } DimmerMinimumDescriptor;
 
 /*
@@ -1001,7 +1001,7 @@ class RDMAPI {
         uint16_t sub_device,
         uint16_t min_increasing,
         uint16_t min_decreasing,
-        uint8_t on_below_min,
+        bool on_below_min,
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         std::string *error);
 

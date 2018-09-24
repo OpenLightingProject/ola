@@ -2856,7 +2856,7 @@ bool RDMAPI::SetDimmerMinimumLevels(
     uint16_t sub_device,
     uint16_t min_increasing,
     uint16_t min_decreasing,
-    uint8_t on_below_min,
+    bool on_below_min,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
   if (CheckCallback(error, callback)) {
@@ -2871,7 +2871,7 @@ bool RDMAPI::SetDimmerMinimumLevels(
   struct minimum_levels {
     uint16_t min_increasing;
     uint16_t min_decreasing;
-    uint8_t on_below_min;
+    bool on_below_min;
   });
   STATIC_ASSERT(sizeof(minimum_levels) == 5);
   struct minimum_levels raw_levels;
