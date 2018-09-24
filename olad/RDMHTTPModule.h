@@ -621,12 +621,13 @@ class RDMHTTPModule {
                               const ola::rdm::DimmerInfoDescriptor &dimmer);
 
     std::string GetDimmerMinimumLevels(ola::http::HTTPResponse *response,
-                                      unsigned int universe_id,
-                                      const ola::rdm::UID &uid);
+                                       unsigned int universe_id,
+                                       const ola::rdm::UID &uid);
 
-    void GetDimmerMinimumLevelsHandler(ola::http::HTTPResponse *response,
-                               const ola::rdm::ResponseStatus &status,
-                               const ola::rdm::DimmerMinimumDescriptor &dimmer);
+    void GetDimmerMinimumLevelsHandler(
+        ola::http::HTTPResponse *response,
+        const ola::rdm::ResponseStatus &status,
+        const ola::rdm::DimmerMinimumDescriptor &dimmer);
 
     std::string SetDimmerMinimumLevels(const ola::http::HTTPRequest *request,
                                        ola::http::HTTPResponse *response,
