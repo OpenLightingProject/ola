@@ -2844,7 +2844,7 @@ bool RDMAPI::GetDimmerMinimumLevels(
  * @param sub_device the sub device to use
  * @param min_increasing the value for dimmer minimum while increasing
  * @param min_decreasing the value for dimmer minimum while decreasing
- * @param on_below_min the value set to either 0x00 or 0x01 to indicate whether
+ * @param on_below_min the value set to either true or false to indicate whether
  *        or not the dimmer stays on when minimum is exceeded
  * @param callback the callback to invoke when this request completes
  * @param error a pointer to a string which is set if an error occurs
@@ -2871,7 +2871,7 @@ bool RDMAPI::SetDimmerMinimumLevels(
   struct minimum_levels {
     uint16_t min_increasing;
     uint16_t min_decreasing;
-    bool on_below_min;
+    uint8_t on_below_min;
   });
   STATIC_ASSERT(sizeof(minimum_levels) == 5);
   struct minimum_levels raw_levels;

@@ -182,7 +182,7 @@ typedef struct {
   uint16_t max_level_upper_limit;
   uint8_t curves_supported;
   uint8_t resolution;
-  uint8_t split_levels_supported;
+  bool split_levels_supported;
 } DimmerInfoDescriptor;
 
 /*
