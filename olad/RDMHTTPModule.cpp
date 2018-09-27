@@ -3610,7 +3610,6 @@ string RDMHTTPModule::SetDimmerMinimumLevels(const HTTPRequest *request,
                                              const UID &uid) {
   string level = request->GetParameter(DIMMER_MINIMUM_INCREASING_FIELD);
   uint16_t min_increasing, min_decreasing;
-  uint8_t on_below_min;
 
   if (!StringToInt(level, &min_increasing)) {
     return "Invalid minimum level - increasing";
@@ -3624,7 +3623,7 @@ string RDMHTTPModule::SetDimmerMinimumLevels(const HTTPRequest *request,
 
   level = request->GetParameter(GENERIC_BOOL_FIELD);
 
-  if (!StringToInt(level, &on_below_min)) {
+  if (level.empty()) {
     return "Invalid on below minimum value";
   }
 
@@ -3635,7 +3634,7 @@ string RDMHTTPModule::SetDimmerMinimumLevels(const HTTPRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       min_increasing,
       min_decreasing,
-      on_below_min,
+      level == "1",
       NewSingleCallback(this,
                         &RDMHTTPModule::SetHandler,
                         response),
