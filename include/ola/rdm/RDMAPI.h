@@ -980,7 +980,7 @@ class RDMAPI {
     bool GetDimmerInfo(
         unsigned int universe,
         const UID &uid,
-        uint16_t pid,
+        uint16_t sub_device,
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
                                 const DimmerInfoDescriptor&> *callback,
@@ -989,7 +989,7 @@ class RDMAPI {
     bool GetDimmerMinimumLevels(
         unsigned int universe,
         const UID &uid,
-        uint16_t pid,
+        uint16_t sub_device,
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
                                 const DimmerMinimumDescriptor&> *callback,
