@@ -3550,7 +3550,7 @@ void RDMHTTPModule::GetDimmerInfoHandler(
                                info.max_level_upper_limit));
   section.AddItem(new UIntItem("# of Supported Curves", info.curves_supported));
   section.AddItem(new UIntItem("Levels Resolution", info.resolution));
-  section.AddItem(new UIntItem("Split Levels Supported",
+  section.AddItem(new BoolItem("Split Levels Supported",
                                info.split_levels_supported));
 
   RespondWithSection(response, section);
