@@ -3608,22 +3608,22 @@ string RDMHTTPModule::SetDimmerMinimumLevels(const HTTPRequest *request,
                                              HTTPResponse *response,
                                              unsigned int universe_id,
                                              const UID &uid) {
-  string level = request->GetParameter(DIMMER_MINIMUM_INCREASING_FIELD);
+  string raw_value = request->GetParameter(DIMMER_MINIMUM_INCREASING_FIELD);
   uint16_t min_increasing, min_decreasing;
 
-  if (!StringToInt(level, &min_increasing)) {
+  if (!StringToInt(raw_value, &min_increasing)) {
     return "Invalid minimum level - increasing";
   }
 
-  level = request->GetParameter(DIMMER_MINIMUM_DECREASING_FIELD);
+  raw_value = request->GetParameter(DIMMER_MINIMUM_DECREASING_FIELD);
 
-  if (!StringToInt(level, &min_decreasing)) {
+  if (!StringToInt(raw_value, &min_decreasing)) {
     return "Invalid minimum level - decreasing";
   }
 
-  level = request->GetParameter(GENERIC_BOOL_FIELD);
+  raw_value = request->GetParameter(GENERIC_BOOL_FIELD);
 
-  if (level.empty()) {
+  if (raw_value.empty()) {
     return "Invalid on below minimum value";
   }
 
@@ -3634,7 +3634,7 @@ string RDMHTTPModule::SetDimmerMinimumLevels(const HTTPRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       min_increasing,
       min_decreasing,
-      level == "1",
+      raw_value == "1",
       NewSingleCallback(this,
                         &RDMHTTPModule::SetHandler,
                         response),
