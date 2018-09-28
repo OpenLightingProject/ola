@@ -64,6 +64,7 @@ const uint8_t BaseRobeWidget::SOM;
   manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
   manufacturer_name: "SRM Technik GmbH"
   manufacturer_name: "medien technik cords"
+  manufacturer_name: "TBE Srl"
   STLDeleteValues(&m_uint_map_variables);
   return GetMapVar(&m_uint_map_variables, name, label);
   STLValues(m_uint_map_variables, &variables);
