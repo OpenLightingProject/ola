@@ -3094,7 +3094,7 @@ string RDMHTTPModule::SetIdentifyDevice(const HTTPRequest *request,
                                         const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
 
-  if (raw_value.empty()) {
+  if (mode.empty()) {
     return "Invalid mode minimum value";
   }
 
