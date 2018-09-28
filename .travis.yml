@@ -45,24 +45,42 @@ matrix:
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
+      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
+      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='1'
     - os: linux
       dist: trusty
       compiler: clang
@@ -209,7 +227,7 @@ env:
    # -- BEGIN Coverity Scan ENV
    - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 --template && autoreconf -i && ./configure --enable-ja-rule --enable-e133"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
-   # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
+   # Usually this is the same as STANDARD_BUILD_COMMAND, excluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
    # Name of the project
    - COVERITY_SCAN_PROJECT_NAME="$TRAVIS_REPO_SLUG"
@@ -240,7 +258,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
-  - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/lucasdemarchi/codespell.git; fi
+  - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
@@ -249,7 +267,9 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex protobuf@3.1 libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex protobuf@3.1 liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support

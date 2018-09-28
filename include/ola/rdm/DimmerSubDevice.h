@@ -21,7 +21,7 @@
  * @addtogroup rdm_resp
  * @{
  * @file DimmerSubDevice.h
- * @brief A soft responder that impements a SubDevice in DimmerResponder
+ * @brief A soft responder that implements a SubDevice in DimmerResponder
  * @}
  */
 
