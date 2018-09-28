@@ -2873,6 +2873,11 @@ string RDMHTTPModule::SetPanInvert(const HTTPRequest *request,
                                    unsigned int universe_id,
                                    const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+
+  if (mode.empty()) {
+    return "Invalid mode value";
+  }
+
   string error;
   m_rdm_api.SetPanInvert(
       universe_id,
@@ -2915,6 +2920,11 @@ string RDMHTTPModule::SetTiltInvert(const HTTPRequest *request,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+
+  if (mode.empty()) {
+    return "Invalid mode value";
+  }
+
   string error;
   m_rdm_api.SetTiltInvert(
       universe_id,
@@ -2957,6 +2967,11 @@ string RDMHTTPModule::SetPanTiltSwap(const HTTPRequest *request,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+
+  if (mode.empty()) {
+    return "Invalid mode value";
+  }
+
   string error;
   m_rdm_api.SetPanTiltSwap(
       universe_id,
@@ -3078,6 +3093,11 @@ string RDMHTTPModule::SetIdentifyDevice(const HTTPRequest *request,
                                         unsigned int universe_id,
                                         const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+
+  if (raw_value.empty()) {
+    return "Invalid mode minimum value";
+  }
+
   string error;
   m_rdm_api.IdentifyDevice(
       universe_id,
