@@ -64,23 +64,53 @@ AC_MSG_RESULT($ac_cv_gnu_plus_plus_11)
 
 AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = xyes])
 
+# This checks whether random needs gnu++11 or not, it doesn't set HAVE_RANDOM
+# (as it's using AC_CHECK_HEADER not HEADERS), we do that later as normal
+ac_cv_header_random_98="no"
+ac_cv_header_random_11="no"
+# Manually purge the cache
+AS_UNSET([ac_cv_header_random])
+AC_CHECK_HEADER(
+   [random],
+   [ac_cv_header_random_98="yes"],
+   [ac_cv_header_random_98="no"])
+
+AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
+      [old_cppflags=$CPPFLAGS
+       old_cxxflags=$CXXFLAGS
+       CPPFLAGS="${CPPFLAGS} -std=gnu++11 -Wall -Werror"
+       CXXFLAGS="${CXXFLAGS} -std=gnu++11 -Wall -Werror"
+       # Manually purge the cache
+       AS_UNSET([ac_cv_header_random])
+       AC_CHECK_HEADER(
+          [random],
+          [ac_cv_header_random_11=yes],
+          [ac_cv_header_random_11=no])
+       CPPFLAGS=$old_cppflags
+       CXXFLAGS=$old_cxxflags])
+
 # force us into gnu++98 mode if necessary
 # If gnu++11 and gnu++98 then
-#   If no unit tests, force to gnu++98
-#   If unittests and cppunit < 1.14.0, force to gnu++98
-#   Else turn off deprecation messages for std::auto_ptr and run gnu++11
+#   If random works with gnu++98
+#     If no unit tests, force to gnu++98
+#     If unittests and cppunit < 1.14.0, force to gnu++98
+#     Else turn off deprecation messages for std::auto_ptr and run gnu++11
+#   Else run gnu++11
 require_gnu_plus_plus_11="no"
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
       [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
-             [AS_IF([test "x$enable_unittests" = xno],
-                    [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                    [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
-                                       [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                                       [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
-                                                          [require_gnu_plus_plus_11="yes"],
-                                                          [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
-                                       ])
-                    ])
+             [AS_IF([test "x$ac_cv_header_random_98" = xyes],
+                    [AS_IF([test "x$enable_unittests" = xno],
+                           [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                           [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+                                              [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                              [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
+                                                                 [require_gnu_plus_plus_11="yes"],
+                                                                 [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                              ])
+                           ])
+                    ],
+                    [require_gnu_plus_plus_11="yes"])
              ])
       ])
 AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
