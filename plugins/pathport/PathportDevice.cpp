@@ -111,7 +111,7 @@ bool PathportDevice::StartHook() {
 
   m_plugin_adaptor->AddReadDescriptor(m_node->GetSocket());
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
-      ADVERTISTMENT_PERIOD_MS,
+      ADVERTISEMENT_PERIOD_MS,
       NewCallback(this, &PathportDevice::SendArpReply));
 
   return true;
