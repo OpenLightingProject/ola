@@ -19,7 +19,6 @@ addons:
      - libprotobuf-dev
      - protobuf-compiler
      - libprotoc-dev
-     - tree
     packages: &core_build
      # This is all the bits we need to enable all options
      - *base_build
@@ -286,7 +285,6 @@ before_install:
  - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then sudo add-apt-repository ppa:waja/trusty-backports -y; sudo apt-get update -qq; sudo apt-get install lintian -y; fi # Install a late enough lintian
 
 after_failure:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then tree; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log; fi
