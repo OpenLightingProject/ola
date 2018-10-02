@@ -55,6 +55,8 @@ IGNORE_PATTERNS = [
   'man/generate-html.sh',
   'ola-*.tar.gz',
   'ola-*/*',
+  'plugins/generate-html.sh',
+  'plugins/pandoc-html-index.html',
   'plugins/kinet/kinet.cpp',
   'python/ola/PidStoreLocation.py',
   'python/ola/Version.py',

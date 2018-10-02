@@ -556,7 +556,12 @@ void JsonTest::testLookups() {
   JsonString string1("foo");
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(&string1),
                 string1.LookupElement(empty_pointer));
+
+#ifdef __FreeBSD__
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+#else
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+#endif  // __FreeBSD__
                 string1.LookupElement(invalid_pointer));
 
   // Now try an object
@@ -571,7 +576,12 @@ void JsonTest::testLookups() {
                 object.LookupElement(empty_pointer));
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(name_value),
                 object.LookupElement(name_pointer));
+
+#ifdef __FreeBSD__
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+#else
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+#endif  // __FreeBSD__
                 object.LookupElement(invalid_pointer));
 
   // Now try an array
@@ -591,17 +601,33 @@ void JsonTest::testLookups() {
 
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(array),
                 array->LookupElement(empty_pointer));
+
+#ifdef __FreeBSD__
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+#else
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+#endif  // __FreeBSD__
                 array->LookupElement(invalid_pointer));
+
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(string2),
                 array->LookupElement(first));
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(string3),
                 array->LookupElement(middle));
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(string4),
                 array->LookupElement(last));
+
+#ifdef __FreeBSD__
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+#else
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+#endif  // __FreeBSD__
                 array->LookupElement(one_past_last));
+
+#ifdef __FreeBSD__
+  OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(0),
+#else
   OLA_ASSERT_EQ(reinterpret_cast<JsonValue*>(NULL),
+#endif  // __FreeBSD__
                 array->LookupElement(invalid));
 
   // now a nested case
