@@ -69,9 +69,7 @@ AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = x
 ac_cv_header_random_98="no"
 ac_cv_header_random_11="no"
 
-old_cppflags=$CPPFLAGS
 old_cxxflags=$CXXFLAGS
-CPPFLAGS="${CPPFLAGS} -std=gnu++98 -Wall -Werror"
 CXXFLAGS="${CXXFLAGS} -std=gnu++98 -Wall -Werror"
 # Manually purge the cache
 AS_UNSET([ac_cv_header_random])
@@ -81,13 +79,10 @@ AC_CHECK_HEADER(
    [ac_cv_header_random_98="no"])
 # Manually purge the cache
 AS_UNSET([ac_cv_header_random])
-CPPFLAGS=$old_cppflags
 CXXFLAGS=$old_cxxflags
 
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
-      [old_cppflags=$CPPFLAGS
-       old_cxxflags=$CXXFLAGS
-       CPPFLAGS="${CPPFLAGS} -std=gnu++11 -Wall -Werror"
+      [old_cxxflags=$CXXFLAGS
        CXXFLAGS="${CXXFLAGS} -std=gnu++11 -Wall -Werror"
        # Manually purge the cache
        AS_UNSET([ac_cv_header_random])
@@ -97,7 +92,6 @@ AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
           [ac_cv_header_random_11=no])
        # Manually purge the cache
        AS_UNSET([ac_cv_header_random])
-       CPPFLAGS=$old_cppflags
        CXXFLAGS=$old_cxxflags])
 
 # force us into gnu++98 mode if necessary
@@ -125,8 +119,7 @@ AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
              ])
       ])
 AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
-      [CXXFLAGS="$CXXFLAGS -std=gnu++11"
-       CPPFLAGS="$CPPFLAGS -std=gnu++11"])
+      [CXXFLAGS="$CXXFLAGS -std=gnu++11"])
 AM_CONDITIONAL([GNU_PLUS_PLUS_11_DEPRECATIONS], [test "x$require_gnu_plus_plus_11" = xyes])
 
 # Checks for header files.
