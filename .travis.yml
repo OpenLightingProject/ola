@@ -222,6 +222,8 @@ matrix:
 
 env:
   global:
+   # No colours in terminal (to reduce log file size)
+   - TERM=dumb
    # Parallel make build
    - MAKEFLAGS="-j 2"
    # -- BEGIN Coverity Scan ENV
