@@ -66,9 +66,14 @@ AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = x
 
 # This checks whether random needs gnu++11 or not, it doesn't set HAVE_RANDOM
 # (as it's using AC_CHECK_HEADER not HEADERS), we do that later as normal
+# We don't pass the compiler flag to the preprocessor (CPPFLAGS) because that
+# variable is used by the C preprocessor too, and some of the pthread checks
+# test for C code, which complains it doesn't understand gnu++. We may
+# therefore generate some warnings in configure, but it should all work!
 ac_cv_header_random_98="no"
 ac_cv_header_random_11="no"
 
+AC_MSG_NOTICE([checking for random gnu++98 compatibility])
 old_cxxflags=$CXXFLAGS
 CXXFLAGS="${CXXFLAGS} -std=gnu++98 -Wall -Werror"
 # Manually purge the cache
@@ -82,7 +87,8 @@ AS_UNSET([ac_cv_header_random])
 CXXFLAGS=$old_cxxflags
 
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
-      [old_cxxflags=$CXXFLAGS
+      [AC_MSG_NOTICE([checking for random gnu++11 compatibility])
+       old_cxxflags=$CXXFLAGS
        CXXFLAGS="${CXXFLAGS} -std=gnu++11 -Wall -Werror"
        # Manually purge the cache
        AS_UNSET([ac_cv_header_random])
@@ -811,8 +817,9 @@ esac
 
 AS_IF([test "x$with_uucp_lock" != x], [UUCPLOCK=$with_uucp_lock])
 AS_IF([test -d $UUCPLOCK],
-      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")],
-      AC_MSG_ERROR(No suitable lock directory))
+      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")
+       AC_MSG_RESULT($UUCPLOCK)],
+      AC_MSG_ERROR(no suitable lock directory))
 
 # Python wrappers & RDM Responder tests.
 #####################################################
