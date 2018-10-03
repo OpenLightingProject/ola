@@ -603,7 +603,7 @@ class ModelCollector(object):
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print response.ResponseCodeAsString()
+      print 'Got RDM failure: %s' % response.ResponseCodeAsString()
       self.wrapper.Stop()
       return False
 
