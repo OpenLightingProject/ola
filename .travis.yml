@@ -263,6 +263,8 @@ matrix:
 
 env:
   global:
+   # No colours in terminal (to reduce log file size)
+   - TERM=dumb
    # Parallel make build
    - MAKEFLAGS="-j 2"
    # -- BEGIN Coverity Scan ENV
@@ -331,6 +333,10 @@ before_install:
  - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then sudo add-apt-repository ppa:waja/trusty-backports -y; sudo apt-get update -qq; sudo apt-get install lintian -y; fi # Install a late enough lintian
 
 after_failure:
+# Disabled as otherwise the logfile is too big
+#  - if [ -f ${TRAVIS_BUILD_DIR}/config.log ]; then cat ${TRAVIS_BUILD_DIR}/config.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log; fi
 
