@@ -45,11 +45,15 @@ BLACKLIST
 
 if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
+  travis_fold start "autoreconf"
   autoreconf -i;
+  travis_fold end "autoreconf"
   ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for linting to run against
-  make builtfiles
+  travis_fold start "make_builtfiles"
+  make builtfiles;
+  travis_fold end "make_builtfiles"
   # first check we've not got any generic NOLINTs
   # count the number of generic NOLINTs
   nolints=$(grep -IR NOLINT * | grep -v "NOLINT(" | wc -l)
@@ -80,22 +84,34 @@ if [[ $TASK = 'lint' ]]; then
   fi;
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
+  travis_fold start "autoreconf"
   autoreconf -i;
+  travis_fold end "autoreconf"
+  travis_fold start "configure"
   ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  travis_fold end "configure"
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for licence checking to run against
-  make builtfiles
+  travis_fold start "make_builtfiles"
+  make builtfiles;
+  travis_fold end "make_builtfiles"
   ./scripts/enforce_licence.py
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
 elif [[ $TASK = 'spellintian' ]]; then
   # run spellintian only if it is the requested task, ignoring duplicate words
+  travis_fold start "autoreconf"
   autoreconf -i;
+  travis_fold end "autoreconf"
+  travis_fold start "configure"
   ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  travis_fold end "configure"
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for spellintian to run against
-  make builtfiles
+  travis_fold start "make_builtfiles"
+  make builtfiles;
+  travis_fold end "make_builtfiles"
   spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
       \) | xargs")
@@ -111,11 +127,17 @@ elif [[ $TASK = 'spellintian' ]]; then
   fi;
 elif [[ $TASK = 'spellintian-duplicates' ]]; then
   # run spellintian only if it is the requested task
+  travis_fold start "autoreconf"
   autoreconf -i;
+  travis_fold end "autoreconf"
+  travis_fold start "configure"
   ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  travis_fold end "configure"
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for spellintian to run against
-  make builtfiles
+  travis_fold start "make_builtfiles"
+  make builtfiles;
+  travis_fold end "make_builtfiles"
   spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
       \) | xargs")
@@ -131,11 +153,17 @@ elif [[ $TASK = 'spellintian-duplicates' ]]; then
   fi;
 elif [[ $TASK = 'codespell' ]]; then
   # run codespell only if it is the requested task
+  travis_fold start "autoreconf"
   autoreconf -i;
+  travis_fold end "autoreconf"
+  travis_fold start "configure"
   ./configure --enable-rdm-tests --enable-ja-rule --enable-e133;
+  travis_fold end "configure"
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for codespell to run against
-  make builtfiles
+  travis_fold start "make_builtfiles"
+  make builtfiles;
+  travis_fold end "make_builtfiles"
   spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
       \) | xargs")
@@ -151,12 +179,18 @@ elif [[ $TASK = 'codespell' ]]; then
   fi;
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
+  travis_fold start "autoreconf"
   autoreconf -i;
+  travis_fold end "autoreconf"
   # Doxygen is C++ only, so don't bother with RDM tests
+  travis_fold start "configure"
   ./configure --enable-ja-rule --enable-e133;
+  travis_fold end "configure"
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
-  make builtfiles
+  travis_fold start "make_builtfiles"
+  make builtfiles;
+  travis_fold end "make_builtfiles"
   # count the number of warnings
   warnings=$(make doxygen-doc 2>&1 >/dev/null | wc -l)
   if [[ $warnings -ne 0 ]]; then
@@ -169,11 +203,19 @@ elif [[ $TASK = 'doxygen' ]]; then
   fi;
 elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
+  travis_fold start "autoreconf"
   autoreconf -i;
+  travis_fold end "autoreconf"
   # Coverage is C++ only, so don't bother with RDM tests
+  travis_fold start "configure"
   ./configure --enable-gcov --enable-ja-rule --enable-e133;
+  travis_fold end "configure"
+  travis_fold start "make"
   make;
+  travis_fold end "make"
+  travis_fold start "make_check"
   make check;
+  travis_fold end "make_check"
 elif [[ $TASK = 'coverity' ]]; then
   # Run Coverity Scan unless token is zero length
   # The Coverity Scan script also relies on a number of other COVERITY_SCAN_
@@ -185,14 +227,22 @@ elif [[ $TASK = 'coverity' ]]; then
   fi;
 elif [[ $TASK = 'jshint' ]]; then
   cd ./javascript/new-src;
+  travis_fold start "npm_install"
   npm install;
+  travis_fold end "npm_install"
   grunt test
 elif [[ $TASK = 'flake8' ]]; then
+  travis_fold start "autoreconf"
   autoreconf -i;
-  ./configure --enable-rdm-tests
+  travis_fold end "autoreconf"
+  travis_fold start "configure"
+  ./configure --enable-rdm-tests;
+  travis_fold end "configure"
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for flake8 to run against
-  make builtfiles
+  travis_fold start "make_builtfiles"
+  make builtfiles;
+  travis_fold end "make_builtfiles"
   flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129 data/rdm include/ola python scripts tools/ola_mon tools/rdm
 else
   # Otherwise compile and check as normal
