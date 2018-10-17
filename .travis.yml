@@ -3,6 +3,10 @@ language: cpp
 sudo: required
 # Use the latest Travis images since they are more up to date than the stable release.
 group: edge
+
+before_script:
+ - export -f travis_fold
+
 script:
  - "bash -ex .travis-ci.sh"
 
