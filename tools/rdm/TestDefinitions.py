@@ -1858,7 +1858,7 @@ class GetPersonalityDescriptions(OptionalParameterTestFixture):
       self.Stop()
       return
 
-    if self._current_index >= MAX_PERSONALITY_NUMBER:
+    if self._current_index > MAX_PERSONALITY_NUMBER:
       # This should never happen because personality_count is a uint8
       self.SetFailed('Could not find all personalities')
       self.Stop()
