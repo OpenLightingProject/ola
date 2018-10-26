@@ -958,7 +958,7 @@ def BuildApplication(ola_thread, test_thread):
   app.RegisterHandler('/RunTests', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatTests', run_tests_handler.HandleRequest)
-  app.RegisterRegex('/static/.*',
+  app.RegisterRegex(r'/static/.*',
                     StaticFileHandler(settings['www_dir']).HandleRequest)
   return app
 
