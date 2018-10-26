@@ -980,7 +980,8 @@ def parse_options():
   parser.add_option('-p', '--pid-location', metavar='DIR',
                     help='The directory to load the PID definitions from.')
   parser.add_option('-d', '--www-dir', default=DataLocation.location,
-                    help='The root directory to serve static files.')
+                    help='The root directory to serve static files, this must '
+                         'be absolute.')
   parser.add_option('-l', '--log-directory',
                     default=os.path.abspath('/tmp/ola-rdm-logs'),
                     help='The directory to store log files.')
