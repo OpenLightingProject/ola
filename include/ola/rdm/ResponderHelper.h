@@ -271,6 +271,8 @@ class ResponderHelper {
       const NetworkManagerInterface *network_manager,
       ola::network::Interface *interface,
       uint32_t index);
+  static bool IsInterfaceIndexValid(uint32_t index);
+  static bool IsInterfaceIndexValidInterface(ola::network::Interface interface);
 };
 }  // namespace rdm
 }  // namespace ola
