@@ -64,29 +64,70 @@ AC_MSG_RESULT($ac_cv_gnu_plus_plus_11)
 
 AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = xyes])
 
+# This checks whether random needs gnu++11 or not, it doesn't set HAVE_RANDOM
+# (as it's using AC_CHECK_HEADER not HEADERS), we do that later as normal
+# We don't pass the compiler flag to the preprocessor (CPPFLAGS) because that
+# variable is used by the C preprocessor too, and some of the pthread checks
+# test for C code, which complains it doesn't understand gnu++. We may
+# therefore generate some warnings in configure, but it should all work!
+ac_cv_header_random_98="no"
+ac_cv_header_random_11="no"
+
+AC_MSG_NOTICE([checking for random gnu++98 compatibility])
+old_cxxflags=$CXXFLAGS
+CXXFLAGS="${CXXFLAGS} -std=gnu++98 -Wall -Werror"
+# Manually purge the cache
+AS_UNSET([ac_cv_header_random])
+AC_CHECK_HEADER(
+   [random],
+   [ac_cv_header_random_98="yes"],
+   [ac_cv_header_random_98="no"])
+# Manually purge the cache
+AS_UNSET([ac_cv_header_random])
+CXXFLAGS=$old_cxxflags
+
+AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
+      [AC_MSG_NOTICE([checking for random gnu++11 compatibility])
+       old_cxxflags=$CXXFLAGS
+       CXXFLAGS="${CXXFLAGS} -std=gnu++11 -Wall -Werror"
+       # Manually purge the cache
+       AS_UNSET([ac_cv_header_random])
+       AC_CHECK_HEADER(
+          [random],
+          [ac_cv_header_random_11=yes],
+          [ac_cv_header_random_11=no])
+       # Manually purge the cache
+       AS_UNSET([ac_cv_header_random])
+       CXXFLAGS=$old_cxxflags])
+
 # force us into gnu++98 mode if necessary
 # If gnu++11 and gnu++98 then
-#   If protobuf < 3.6
-#     If no unit tests, force to gnu++98
-#     Else we have unit tests
-#       If cppunit < 1.14.0, force to gnu++98
-#       Else turn off deprecation messages for std::auto_ptr and run gnu++11
-#   Else assume we have protobuf >= 3.6 (later checks will confirm that for certain), turn off deprecation messages for std::auto_ptr and run gnu++11
+#   If random works with gnu++98
+#     If protobuf < 3.6
+#       If no unit tests, force to gnu++98
+#       Else we have unit tests
+#         If cppunit < 1.14.0, force to gnu++98
+#         Else turn off deprecation messages for std::auto_ptr and run gnu++11
+#     Else assume we have protobuf >= 3.6 (later checks will confirm that for certain), turn off deprecation messages for std::auto_ptr and run gnu++11
+#   Else turn off deprecation messages for std::auto_ptr and run gnu++11
 require_gnu_plus_plus_11="no"
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
       [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
-             [PKG_CHECK_MODULES([PROTOBUF1], [protobuf < 3.6],
-                                [AS_IF([test "x$enable_unittests" = xno],
-                                       [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                                       [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
-                                                          [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                                                          [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
-                                                                             [require_gnu_plus_plus_11="yes"],
-                                                                             [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
-                                                          ])
-                                       ])
-                                ],
-                                [require_gnu_plus_plus_11="yes"])
+             [AS_IF([test "x$ac_cv_header_random_98" = xyes],
+                    [PKG_CHECK_MODULES([PROTOBUF1], [protobuf < 3.6],
+                                       [AS_IF([test "x$enable_unittests" = xno],
+                                              [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                              [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+                                                                 [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                                                 [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
+                                                                                    [require_gnu_plus_plus_11="yes"],
+                                                                                    [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                                                 ])
+                                              ])
+                                       ],
+                                       [require_gnu_plus_plus_11="yes"])
+                    ],
+                    [require_gnu_plus_plus_11="yes"])
              ])
       ])
 AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
@@ -782,8 +823,9 @@ esac
 
 AS_IF([test "x$with_uucp_lock" != x], [UUCPLOCK=$with_uucp_lock])
 AS_IF([test -d $UUCPLOCK],
-      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")],
-      AC_MSG_ERROR(No suitable lock directory))
+      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")
+       AC_MSG_RESULT($UUCPLOCK)],
+      AC_MSG_ERROR(no suitable lock directory))
 
 # Python wrappers & RDM Responder tests.
 #####################################################
