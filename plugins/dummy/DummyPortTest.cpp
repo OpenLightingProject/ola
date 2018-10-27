@@ -32,6 +32,7 @@
 #include "common/rdm/TestHelper.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/network/Interface.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMAPI.h"
@@ -47,6 +48,7 @@ namespace plugin {
 namespace dummy {
 
 using ola::network::HostToNetwork;
+using ola::network::Interface;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMGetResponse;
 using ola::rdm::RDMReply;
@@ -80,12 +82,14 @@ class DummyPortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testParamDescription);
   CPPUNIT_TEST(testOlaManufacturerPidCodeVersion);
   CPPUNIT_TEST(testSlotInfo);
+  CPPUNIT_TEST(testListInterfaces);
   CPPUNIT_TEST_SUITE_END();
 
  public:
   DummyPortTest()
       : TestFixture(),
         m_expected_uid(0x7a70, 0xffffff00),
+        m_network_expected_uid(0x7a70, 0xffffff05),
         m_test_source(1, 2) {
     ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   }
@@ -109,9 +113,11 @@ class DummyPortTest: public CppUnit::TestFixture {
   void testParamDescription();
   void testOlaManufacturerPidCodeVersion();
   void testSlotInfo();
+  void testListInterfaces();
 
  private:
   UID m_expected_uid;
+  UID m_network_expected_uid;
   UID m_test_source;
   MockDummyPort m_port;
   ola::rdm::RDMStatusCode m_expected_code;
@@ -161,6 +167,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
 void DummyPortTest::HandleRDMResponse(RDMReply *reply) {
   OLA_ASSERT_EQ(m_expected_code, reply->StatusCode());
   if (m_expected_response) {
+    OLA_ASSERT(reply->Response());
+    // Check the param data explicitly first, as it's most likely to be wrong
+    // and will make developers lives easier
+    OLA_ASSERT_DATA_EQUALS(m_expected_response->ParamData(),
+                           m_expected_response->ParamDataSize(),
+                           reply->Response()->ParamData(),
+                           reply->Response()->ParamDataSize());
     OLA_ASSERT_TRUE(*m_expected_response == *reply->Response());
   } else {
     OLA_ASSERT_NULL(reply->Response());
@@ -787,6 +800,57 @@ void DummyPortTest::testSlotInfo() {
   checkMalformedRequest(ola::rdm::PID_SLOT_INFO);
   checkSetRequest(ola::rdm::PID_SLOT_INFO);
   checkNoBroadcastResponse(ola::rdm::PID_SLOT_INFO);
+}
+
+
+/*
+ * Check that the list interface command works
+ */
+void DummyPortTest::testListInterfaces() {
+  RDMRequest *request = new RDMGetRequest(
+      m_test_source,
+      m_network_expected_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // sub device
+      ola::rdm::PID_LIST_INTERFACES,  // param id
+      NULL,  // data
+      0);  // data length
+
+  PACK(
+  struct list_interface_struct {
+    uint32_t interface_identifier;
+    uint16_t interface_hardware_type;
+  });
+
+  PACK(
+  struct list_interfaces_s {
+    list_interface_struct list_interface_s[2];
+  });
+
+  list_interfaces_s list_interfaces = {
+      {
+        {HostToNetwork(static_cast<uint32_t>(1)),
+         HostToNetwork(static_cast<uint16_t>(Interface::ARP_ETHERNET_TYPE))},
+        {HostToNetwork(static_cast<uint32_t>(2)),
+         HostToNetwork(static_cast<uint16_t>(Interface::ARP_ETHERNET_TYPE))}
+      }};
+
+  RDMResponse *response = GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&list_interfaces),
+      sizeof(list_interfaces));
+
+  SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
+  m_port.SendRDMRequest(
+      request,
+      NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+  checkSubDeviceOutOfRange(ola::rdm::PID_LIST_INTERFACES);
+  checkMalformedRequest(ola::rdm::PID_LIST_INTERFACES);
+  checkSetRequest(ola::rdm::PID_LIST_INTERFACES);
+  checkNoBroadcastResponse(ola::rdm::PID_LIST_INTERFACES);
 }
 
 
