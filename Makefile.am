@@ -59,7 +59,7 @@ COMMON_TESTING_FLAGS_ONLY_WARNINGS = $(COMMON_CXXFLAGS_ONLY_WARNINGS) \
 COMMON_TESTING_FLAGS = $(COMMON_TESTING_FLAGS_ONLY_WARNINGS)
 COMMON_TESTING_PROTOBUF_FLAGS = $(COMMON_TESTING_FLAGS)
 
-# The genererated protobuf files don't compile with -Werror on win32 so we
+# The generated protobuf files don't compile with -Werror on win32 so we
 # disable fatal warnings on WIN32.
 if ! USING_WIN32
 if FATAL_WARNINGS
@@ -71,6 +71,13 @@ if FATAL_WARNINGS
   COMMON_TESTING_FLAGS += -Werror
   COMMON_TESTING_PROTOBUF_FLAGS += -Werror -Wno-error=unused-parameter \
                                    -Wno-error=deprecated-declarations
+
+if GNU_PLUS_PLUS_11_DEPRECATIONS
+    # We have to use gnu++11 for some reason, so stop it complaining about
+    # auto_ptr
+    COMMON_CXXFLAGS += -Wno-error=deprecated-declarations
+    COMMON_TESTING_FLAGS += -Wno-error=deprecated-declarations
+endif
 endif
 endif
 
