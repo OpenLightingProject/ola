@@ -692,6 +692,9 @@ typedef enum {
 static const uint16_t IPV4_UNCONFIGURED = 0x00000000;
 static const uint16_t NO_DEFAULT_ROUTE = 0x00000000;
 
+static const uint32_t MIN_RDM_INTERFACE_INDEX = 0x00000001;
+static const uint32_t MAX_RDM_INTERFACE_INDEX = 0xFFFFFF00;
+
 typedef enum {
   DHCP_STATUS_INACTIVE = 0x00,
   DHCP_STATUS_ACTIVE = 0x01,
