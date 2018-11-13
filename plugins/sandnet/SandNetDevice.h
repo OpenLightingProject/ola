@@ -60,8 +60,8 @@ class SandNetDevice: public ola::Device {
     static const char SANDNET_DEVICE_NAME[];
     // the number of input ports to create
     static const unsigned int INPUT_PORTS = 8;
-    // send an advertistment every 2s.
-    static const int ADVERTISTMENT_PERIOD_MS = 2000;
+    // send an advertisement every 2s.
+    static const int ADVERTISEMENT_PERIOD_MS = 2000;
 };
 }  // namespace sandnet
 }  // namespace plugin
