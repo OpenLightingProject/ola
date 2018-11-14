@@ -1756,6 +1756,7 @@ class GetOutOfRangePersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
   """GET the personality description for the N + 1 personality."""
   PID = 'DMX_PERSONALITY_DESCRIPTION'
   REQUIRES = ['personality_count']
+  LABEL = 'personality descriptions'
 
 
 class AllSubDevicesGetPersonalityDescription(TestMixins.AllSubDevicesGetMixin,
