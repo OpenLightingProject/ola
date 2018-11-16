@@ -295,7 +295,7 @@ def main():
   wrapper.Reset()
 
   if not uid_ok:
-    sys.exit()
+    sys.exit(1)
 
   test_filter = None
   if options.tests is not None:
