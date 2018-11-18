@@ -384,7 +384,8 @@ class ModelCollector(object):
           slot_count = self._GetCurrentPersonality().get('slot_count', 0)
           if slot_count:
             self.slots = list(xrange(0, slot_count))
-            logging.debug("%s supported but no slots from SLOT_INFO, populated %d slots from personality info" %
+            logging.debug("%s supported but no slots from SLOT_INFO, "
+                          "populated %d slots from personality info" %
                           (pid, slot_count))
         self._FetchNextSlotDescription()
       else:
