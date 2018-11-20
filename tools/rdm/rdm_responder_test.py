@@ -108,7 +108,8 @@ class MyFilter(object):
   """Filter out the ascii coloring."""
   def filter(self, record):
     msg = record.msg
-    record.msg = re.sub('\x1b\[\d*m', '', str(msg))
+    # Use a raw string for the regex
+    record.msg = re.sub(r'\x1b\[\d*m', '', str(msg))
     return True
 
 
@@ -288,7 +289,7 @@ def main():
   wrapper.Reset()
 
   if not uid_ok:
-    sys.exit()
+    sys.exit(1)
 
   test_filter = None
   if options.tests is not None:

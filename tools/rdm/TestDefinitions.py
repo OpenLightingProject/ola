@@ -1756,6 +1756,7 @@ class GetOutOfRangePersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
   """GET the personality description for the N + 1 personality."""
   PID = 'DMX_PERSONALITY_DESCRIPTION'
   REQUIRES = ['personality_count']
+  LABEL = 'personality descriptions'
 
 
 class AllSubDevicesGetPersonalityDescription(TestMixins.AllSubDevicesGetMixin,
@@ -1858,7 +1859,7 @@ class GetPersonalityDescriptions(OptionalParameterTestFixture):
       self.Stop()
       return
 
-    if self._current_index >= MAX_PERSONALITY_NUMBER:
+    if self._current_index > MAX_PERSONALITY_NUMBER:
       # This should never happen because personality_count is a uint8
       self.SetFailed('Could not find all personalities')
       self.Stop()
@@ -6696,13 +6697,14 @@ class GetListInterfaces(TestMixins.GetMixin,
 
     for interface in fields['interfaces']:
       interface_id = interface['interface_identifier']
-      interfaces.append(interface_id)
       if (interface_id < RDM_INTERFACE_INDEX_MIN or
           interface_id > RDM_INTERFACE_INDEX_MAX):
         self.AddWarning('Interface index %d is outside allowed range (%d to '
                         '%d)' % (interface_id,
                                  RDM_INTERFACE_INDEX_MIN,
                                  RDM_INTERFACE_INDEX_MAX))
+      else:
+        interfaces.append(interface_id)
       if (interface['interface_hardware_type'] !=
           INTERFACE_HARDWARE_TYPE_ETHERNET):
         self.AddAdvisory('Possible error, found unusual hardware type %d for '
