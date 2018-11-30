@@ -69,7 +69,7 @@
  * The client sends the word its looking for and the server replies with the
  * definition and maybe some extra information like the pronunciation and a
  * list of similar words.
- * ~~~~~~~~~~~~~~~~~~~~~
+  ~~~~~~~~~~~~~~~~~~~~~
    message WordQuery {
      required string word = 1;
    }
