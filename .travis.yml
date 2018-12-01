@@ -132,8 +132,6 @@ matrix:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: xenial
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
       env: TASK='doxygen'
       addons:
         apt:
@@ -145,8 +143,6 @@ matrix:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: xenial
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
       env: TASK='lint'
       addons:
         apt:
@@ -154,8 +150,6 @@ matrix:
            - *core_build
     - os: linux
       dist: xenial
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
       env: TASK='check-licences'
       addons:
         apt:
@@ -183,8 +177,6 @@ matrix:
            - moreutils
     - os: linux
       dist: xenial
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
       env: TASK='codespell'
       addons:
         apt:
@@ -193,16 +185,12 @@ matrix:
            - moreutils
     - os: linux
       dist: xenial
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
       dist: xenial
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
       env: TASK='flake8'
       addons:
         apt:
