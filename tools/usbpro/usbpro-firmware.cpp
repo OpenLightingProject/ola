@@ -76,7 +76,7 @@ class FirmwareTransferer {
     void StartTransfer() {
       SendNextChunk();
     }
-    bool WasSucessfull() const { return m_successful; }
+    bool WasSuccessful() const { return m_successful; }
 
  private:
     enum { FLASH_STATUS_LENGTH = 4 };
@@ -288,5 +288,5 @@ int main(int argc, char *argv[]) {
   ss.Run();
 
   firmware_file.close();
-  return !transferer.WasSucessfull();
+  return !transferer.WasSuccessful();
 }

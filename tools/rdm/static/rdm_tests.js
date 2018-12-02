@@ -456,17 +456,35 @@ RDMTests.prototype.run_discovery = function() {
     'message': RDMTests.ajax_loader
   });
   rdmtests.query_server('/RunDiscovery', {'u': universe}, function(data) {
-    var devices_list = $('#devices_list');
+    rdmtests.populate_device_list(data);
+    rdmtests.clear_notification();
+  });
+};
+
+
+/**
+ * Populate the device list from a HTTP response
+ */
+RDMTests.prototype.populate_device_list = function(data) {
+  var devices_list = $('#devices_list');
+  if (data['status'] == true) {
     devices_list.empty();
-    if (data['status'] == true) {
+    if (data['nameduids'] != undefined) {
       var uids = data.uids;
       $.each(uids, function(item) {
-        devices_list.append($('<option />').val(uids[item])
-                              .text(uids[item]));
+        var uid_text = uids[item];
+        if (data['nameduids'][uids[item]] != undefined) {
+          uid_text = uids[item] + ' (' + data['nameduids'][uids[item]] + ')';
+        }
+        devices_list.append($('<option />').val(uids[item]).text(uid_text));
       });
-      rdmtests.clear_notification();
+    } else {
+      var uids = data.uids;
+      $.each(uids, function(item) {
+        devices_list.append($('<option />').val(uids[item]).text(uids[item]));
+      });
     }
-  });
+  }
 };
 
 
@@ -475,16 +493,9 @@ RDMTests.prototype.run_discovery = function() {
  */
 RDMTests.prototype.update_device_list = function() {
   var universe_options = $('#universe_options');
-  var devices_list = $('#devices_list');
   this.query_server('/GetDevices', {
     'u': universe_options.val() }, function(data) {
-    if (data['status'] == true) {
-      devices_list.empty();
-      var uids = data.uids;
-      $.each(uids, function(item) {
-        devices_list.append($('<option />').val(uids[item]).text(uids[item]));
-      });
-    }
+      rdmtests.populate_device_list(data);
   });
 };
 

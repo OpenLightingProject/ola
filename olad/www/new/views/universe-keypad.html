@@ -1,7 +1,7 @@
 <div ng-include="'/new/views/universe-header.html'"></div>
 <div class="panel panel-default keypad">
  <div class="panel-body">
-  <div class="keypad-field static-fake">{{field}}</div>
+  <input type="text" class="keypad-field static-fake" value="{{field}}" ng-keypress="keypress($event)" autofocus="focusInput" />
   <button ng-click="input('backspace')" class="btn btn-keypad backspace">&lt;</button>
  </div>
  <table class="keypad-keys">

@@ -111,15 +111,15 @@ RDMCommand::~RDMCommand() {
 
 string RDMCommand::ToString() const {
   std::ostringstream str;
-  str << m_source << " -> " << m_destination << ", Trans # " <<
-    static_cast<int>(m_transaction_number) << ", Port ID " <<
-    static_cast<int>(m_port_id) << ", Msg Cnt " <<
-    static_cast<int>(m_message_count) << ", SubDevice " << m_sub_device
-    << ", Cmd Class " << CommandClass() << ", Param ID " << m_param_id
-    << ", Data Len " << m_data_length;
+  str << m_source << " -> " << m_destination << ", Trans # "
+      << static_cast<int>(m_transaction_number) << ", Port ID "
+      << static_cast<int>(m_port_id) << ", Msg Cnt "
+      << static_cast<int>(m_message_count) << ", SubDevice " << m_sub_device
+      << ", Cmd Class " << CommandClass() << ", Param ID " << m_param_id
+      << ", Data Len " << m_data_length;
   str << ", Data ";
   for (unsigned int i = 0 ; i < m_data_length; i++) {
-    str << std::hex << std::setw(2) << static_cast<int>(m_data[i]) << " ";
+    str << ToHex(m_data[i], false) << " ";
   }
   return str.str();
 }
@@ -171,8 +171,9 @@ uint8_t RDMCommand::MessageLength() const {
 void RDMCommand::SetParamData(const uint8_t *data, unsigned int length) {
   m_data_length = length;
   if (m_data_length > 0 && data != NULL) {
-    if (m_data)
+    if (m_data) {
       delete[] m_data;
+    }
 
     m_data = new uint8_t[m_data_length];
     memcpy(m_data, data, m_data_length);
@@ -192,8 +193,8 @@ RDMStatusCode RDMCommand::VerifyData(const uint8_t *data,
                                      size_t length,
                                      RDMCommandHeader *command_header) {
   if (length < sizeof(RDMCommandHeader)) {
-    OLA_WARN << "RDM message is too small, needs to be at least " <<
-      sizeof(RDMCommandHeader) << ", was " << length;
+    OLA_WARN << "RDM message is too small, needs to be at least "
+             << sizeof(RDMCommandHeader) << ", was " << length;
     return RDM_PACKET_TOO_SHORT;
   }
 
@@ -207,35 +208,35 @@ RDMStatusCode RDMCommand::VerifyData(const uint8_t *data,
          sizeof(*command_header));
 
   if (command_header->sub_start_code != SUB_START_CODE) {
-    OLA_WARN << "Sub start code mis match, was 0x" << std::hex <<
-      static_cast<int>(command_header->sub_start_code) << ", required 0x"
-      << static_cast<int>(SUB_START_CODE);
+    OLA_WARN << "Sub start code mis match, was "
+             << ToHex(command_header->sub_start_code) << ", required "
+             << ToHex(SUB_START_CODE);
     return RDM_WRONG_SUB_START_CODE;
   }
 
   unsigned int message_length = command_header->message_length;
   if (length < message_length + 1) {
-    OLA_WARN << "RDM message is too small, needs to be " <<
-      message_length + 1 << ", was " << length;
+    OLA_WARN << "RDM message is too small, needs to be "
+             << message_length + 1 << ", was " << length;
     return RDM_PACKET_LENGTH_MISMATCH;
   }
 
   uint16_t checksum = CalculateChecksum(data, message_length - 1);
-  uint16_t actual_checksum = (data[message_length - 1] << 8) +
-    data[message_length];
+  uint16_t actual_checksum = JoinUInt8(data[message_length - 1],
+                                       data[message_length]);
 
   if (actual_checksum != checksum) {
-    OLA_WARN << "RDM checksum mismatch, was " << actual_checksum <<
-      " but was supposed to be " << checksum;
+    OLA_WARN << "RDM checksum mismatch, was " << actual_checksum
+             << " but was supposed to be " << checksum;
     return RDM_CHECKSUM_INCORRECT;
   }
 
   // check param length is valid here
   unsigned int block_size = length - sizeof(RDMCommandHeader) - 2;
   if (command_header->param_data_length > block_size) {
-    OLA_WARN << "Param length " <<
-      static_cast<int>(command_header->param_data_length) <<
-      " exceeds remaining RDM message size of " << block_size;
+    OLA_WARN << "Param length "
+             << static_cast<int>(command_header->param_data_length)
+             << " exceeds remaining RDM message size of " << block_size;
     return RDM_PARAM_LENGTH_MISMATCH;
   }
   return RDM_COMPLETED_OK;
@@ -248,8 +249,9 @@ RDMStatusCode RDMCommand::VerifyData(const uint8_t *data,
 uint16_t RDMCommand::CalculateChecksum(const uint8_t *data,
                                        unsigned int packet_length) {
   unsigned int checksum_value = START_CODE;
-  for (unsigned int i = 0; i < packet_length; i++)
+  for (unsigned int i = 0; i < packet_length; i++) {
     checksum_value += data[i];
+  }
   return static_cast<uint16_t>(checksum_value);
 }
 
@@ -323,6 +325,8 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
     return NULL;
   }
 
+  UID source_uid(command_message.source_uid);
+  UID destination_uid(command_message.destination_uid);
   uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
                                   command_message.sub_device[1]);
   uint16_t param_id = JoinUInt8(command_message.param_id[0],
@@ -338,8 +342,8 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
   switch (command_class) {
     case DISCOVER_COMMAND:
       return new RDMDiscoveryRequest(
-          UID(command_message.source_uid),
-          UID(command_message.destination_uid),
+          source_uid,
+          destination_uid,
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
           sub_device,
@@ -349,8 +353,8 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
           options);
     case GET_COMMAND:
       return new RDMGetRequest(
-          UID(command_message.source_uid),
-          UID(command_message.destination_uid),
+          source_uid,
+          destination_uid,
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
           sub_device,
@@ -360,8 +364,8 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
           options);
     case SET_COMMAND:
       return new RDMSetRequest(
-          UID(command_message.source_uid),
-          UID(command_message.destination_uid),
+          source_uid,
+          destination_uid,
           command_message.transaction_number,  // transaction #
           command_message.port_id,  // port id
           sub_device,
@@ -370,7 +374,10 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
           command_message.param_data_length,  // data length
           options);
     default:
-      OLA_WARN << "Expected a RDM request command but got " << command_class;
+      OLA_WARN << "Expected a RDM request command but got "
+               << ToHex(command_class) << ", from " << source_uid << " to "
+               << destination_uid << ", TN "
+               << static_cast<int>(command_message.transaction_number);
       return NULL;
   }
 }
@@ -387,8 +394,8 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
 
   UID source_uid(command_message.source_uid);
   UID destination_uid(command_message.destination_uid);
-  uint16_t sub_device = ((command_message.sub_device[0] << 8) +
-    command_message.sub_device[1]);
+  uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
+                                  command_message.sub_device[1]);
   RDMCommandClass command_class = ConvertCommandClass(
     command_message.command_class);
 
@@ -507,7 +514,9 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
           data + sizeof(RDMCommandHeader),
           command_message.param_data_length);  // data length
     default:
-      OLA_WARN << "Command class isn't valid, got " << ToHex(command_class);
+      OLA_WARN << "Command class isn't valid, got " << ToHex(command_class)
+               << ", from " << source_uid << " to " << destination_uid
+               << ", TN " << static_cast<int>(return_transaction_number);
       *status_code = RDM_INVALID_COMMAND_CLASS;
       return NULL;
   }
@@ -520,10 +529,11 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
   // do some sort of checking
   if (combined_length > MAX_OVERFLOW_SIZE) {
     OLA_WARN << "ACK_OVERFLOW buffer size hit! Limit is " << MAX_OVERFLOW_SIZE
-      << ", request size is " << combined_length;
+             << ", request size is " << combined_length;
     return NULL;
   } else if (response1->SourceUID() != response2->SourceUID()) {
-    OLA_WARN << "Source UIDs don't match";
+    OLA_WARN << "Source UIDs don't match, got " << response1->SourceUID()
+             << " and " << response2->SourceUID();
     return NULL;
   }
 
@@ -559,8 +569,9 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
         combined_data,
         combined_length);
   } else {
-    OLA_WARN << "Expected a RDM request command but got " <<
-      std::hex << response1->CommandClass();
+    OLA_WARN << "Expected a pair of RDM response commands but got "
+             << ToHex(response1->CommandClass()) << " and "
+             << ToHex(response2->CommandClass());
   }
   delete[] combined_data;
   return response;
@@ -754,16 +765,17 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
     unsigned int length) {
   RDMCommandHeader command_message;
   RDMStatusCode code = VerifyData(data, length, &command_message);
-  if (code != RDM_COMPLETED_OK)
+  if (code != RDM_COMPLETED_OK) {
     return NULL;
+  }
 
-  uint16_t sub_device = ((command_message.sub_device[0] << 8) +
-    command_message.sub_device[1]);
-  uint16_t param_id = ((command_message.param_id[0] << 8) +
-    command_message.param_id[1]);
+  uint16_t sub_device = JoinUInt8(command_message.sub_device[0],
+                                  command_message.sub_device[1]);
+  uint16_t param_id = JoinUInt8(command_message.param_id[0],
+                                command_message.param_id[1]);
 
   RDMCommandClass command_class = ConvertCommandClass(
-    command_message.command_class);
+      command_message.command_class);
 
   if (command_class == DISCOVER_COMMAND_RESPONSE) {
     return new RDMDiscoveryResponse(

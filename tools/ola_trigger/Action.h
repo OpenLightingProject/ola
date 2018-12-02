@@ -30,7 +30,7 @@
 #include "tools/ola_trigger/Context.h"
 
 /*
- * An Action is a behavior that is run when a particular DMX value is received
+ * @brief An Action is a behavior that is run when a particular DMX value is received
  * on a particular slot.
  *
  * This is the base class that all others inherit from.
@@ -47,8 +47,9 @@ class Action {
   }
   void DeRef() {
     m_ref_count--;
-    if (m_ref_count == 0)
+    if (m_ref_count == 0) {
       delete this;
+    }
   }
   virtual void Execute(Context *context, uint8_t slot_value) = 0;
 
@@ -58,7 +59,7 @@ class Action {
 
 
 /**
- * An Action that assigned a value to a variable
+ * @brief An Action that assigned a value to a variable
  */
 class VariableAssignmentAction: public Action {
  public:
@@ -78,31 +79,32 @@ class VariableAssignmentAction: public Action {
 
 
 /**
- * Command Action. This action executes a command.
+ * @brief Command Action. This action executes a command.
  */
 class CommandAction: public Action {
  public:
-    CommandAction(const std::string &command,
-                  const std::vector<std::string> &arguments)
-        : m_command(command),
-          m_arguments(arguments) {
-    }
-    virtual ~CommandAction() {}
+  CommandAction(const std::string &command,
+                const std::vector<std::string> &arguments)
+      : m_command(command),
+        m_arguments(arguments) {
+  }
+  virtual ~CommandAction() {}
 
-    virtual void Execute(Context *context, uint8_t slot_value);
+  virtual void Execute(Context *context, uint8_t slot_value);
 
  protected:
-    const std::string m_command;
-    std::vector<std::string> m_arguments;
+  const std::string m_command;
+  std::vector<std::string> m_arguments;
 
-    char **BuildArgList(const Context *context);
-    void FreeArgList(char **args);
-    char *StringToDynamicChar(const std::string &str);
+  char **BuildArgList(const Context *context);
+  void FreeArgList(char **args);
+  char *StringToDynamicChar(const std::string &str);
 };
 
 
 /**
- * An interval of DMX values and then action to be taken for matching values.
+ * @brief An interval of DMX values and then action to be taken for matching
+ * values.
  */
 class ValueInterval {
  public:
@@ -137,7 +139,7 @@ class ValueInterval {
 
 
 /**
- * The set of intervals and their actions.
+ * @brief The set of intervals and their actions.
  */
 class Slot {
  public:
@@ -181,44 +183,54 @@ class Slot {
         : interval(interval),
           rising_action(rising_action),
           falling_action(falling_action) {
-      if (rising_action)
+      if (rising_action) {
         rising_action->Ref();
-      if (falling_action)
+      }
+      if (falling_action) {
         falling_action->Ref();
+      }
     }
 
     ActionInterval(const ActionInterval &other)
         : interval(other.interval),
           rising_action(other.rising_action),
           falling_action(other.falling_action) {
-      if (rising_action)
+      if (rising_action) {
         rising_action->Ref();
-      if (falling_action)
+      }
+      if (falling_action) {
         falling_action->Ref();
+      }
     }
 
     ~ActionInterval() {
-      if (rising_action)
+      if (rising_action) {
         rising_action->DeRef();
-      if (falling_action)
+      }
+      if (falling_action) {
         falling_action->DeRef();
+      }
     }
 
     ActionInterval &operator=(const ActionInterval &other) {
       if (this != &other) {
         interval = other.interval;
 
-        if (rising_action)
+        if (rising_action) {
           rising_action->DeRef();
+        }
         rising_action = other.rising_action;
-        if (rising_action)
+        if (rising_action) {
           rising_action->Ref();
+        }
 
-        if (falling_action)
+        if (falling_action) {
           falling_action->DeRef();
+        }
         falling_action = other.falling_action;
-        if (falling_action)
+        if (falling_action) {
           falling_action->Ref();
+        }
       }
       return *this;
     }

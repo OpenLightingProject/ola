@@ -499,8 +499,12 @@ void EnttecPortImpl::HandleDMXDiff(const uint8_t *data, unsigned int length) {
     uint8_t data[40];
   } widget_data_changed;
 
-  if (length < sizeof(widget_data_changed)) {
-    OLA_WARN << "Change of state packet was too small: " << length;
+  // The minimum packet length is 1 byte start_pos, 5 bytes bitmap
+  // and one changed databyte. A length-6 packet would be valid (if
+  // no bits in the changed bitmap was set), but nonsensical to
+  // transmit. In any case, ignoring it would at least work.
+  if ((length < 7) || (length > sizeof(widget_data_changed))) {
+    OLA_WARN << "Change of state packet has an invalid length: " << length;
     return;
   }
 

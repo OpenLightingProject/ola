@@ -2,10 +2,35 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ola</groupId>
   <artifactId>ola-java-client</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>Java implementation of OLA RPC</description>
+  <properties>
+   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+   <buildDir>${user.dir}</buildDir>
+   <protobufGeneratedSource>${user.dir}</protobufGeneratedSource>
+  </properties>
   <build>
+   <directory>${buildDir}</directory>
    <plugins>
+     <plugin>
+       <groupId>org.codehaus.mojo</groupId>
+       <artifactId>build-helper-maven-plugin</artifactId>
+       <version>1.7</version>
+       <executions>
+        <execution>
+         <id>add-source</id>
+         <phase>generate-sources</phase>
+         <goals>
+          <goal>add-source</goal>
+         </goals>
+         <configuration>
+          <sources>
+           <source>${protobufGeneratedSource}</source>
+          </sources>
+         </configuration>
+        </execution>
+       </executions>
+     </plugin>
      <plugin>
        <groupId>org.apache.maven.plugins</groupId>
        <artifactId>maven-compiler-plugin</artifactId>
@@ -19,19 +44,51 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.12</version>
-        <configuration>
-          <excludes>
-            <exclude>**/OlaClientTest.java</exclude>
-          </excludes>
-        </configuration>
       </plugin>
    </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>normal</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/OlaClientTest.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>oladServerAvailable</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes combine.children="append">
+                <include>**/OlaClientTest.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
   <dependencies>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>2.6.1</version>
+      <version>${protobufJavaVersion}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

@@ -521,11 +521,15 @@ class JsonRequestHandler(RequestHandler):
 
 class OLAServerRequestHandler(JsonRequestHandler):
   """Catches OLADNotRunningException and handles them gracefully."""
-  def __init__(self, ola_thread):
+  def __init__(self, ola_thread, pid_store):
     self._thread = ola_thread
+    self._pid_store = pid_store
 
   def GetThread(self):
     return self._thread
+
+  def GetPidStore(self):
+    return self._pid_store
 
   def HandleRequest(self, request, response):
     try:
@@ -591,6 +595,10 @@ class GetDevicesHandler(OLAServerRequestHandler):
     response.SetStatus(HTTPResponse.OK)
     return {
       'uids': [str(u) for u in uids],
+      'nameduids': dict(
+        (str(u),
+         self.GetPidStore().ManufacturerIdToName(u.manufacturer_id))
+        for u in uids),
       'status': True,
     }
 
@@ -615,6 +623,10 @@ class RunDiscoveryHandler(OLAServerRequestHandler):
     response.SetStatus(HTTPResponse.OK)
     return {
       'uids': [str(u) for u in uids],
+      'nameduids': dict(
+        (str(u),
+         self.GetPidStore().ManufacturerIdToName(u.manufacturer_id))
+        for u in uids),
       'status': True,
     }
 
@@ -674,8 +686,8 @@ class DownloadResultsHandler(RequestHandler):
 
 class RunTestsHandler(OLAServerRequestHandler):
   """Run the RDM tests."""
-  def __init__(self, ola_thread, test_thread):
-    super(RunTestsHandler, self).__init__(ola_thread)
+  def __init__(self, ola_thread, test_thread, pid_store):
+    super(RunTestsHandler, self).__init__(ola_thread, pid_store)
     self._test_thread = test_thread
 
   def GetJson(self, request, response):
@@ -932,7 +944,7 @@ class Application(object):
     response.SetStatus(HTTPResponse.NOT_FOUND)
 
 
-def BuildApplication(ola_thread, test_thread):
+def BuildApplication(ola_thread, test_thread, pid_store):
   """Construct the application and add the handlers."""
   app = Application()
   app.RegisterHandler('/',
@@ -943,17 +955,17 @@ def BuildApplication(ola_thread, test_thread):
   app.RegisterHandler('/GetTestDefs',
                       TestDefinitionsHandler().HandleRequest)
   app.RegisterHandler('/GetUnivInfo',
-                      GetUniversesHandler(ola_thread).HandleRequest)
+                      GetUniversesHandler(ola_thread, pid_store).HandleRequest)
   app.RegisterHandler('/GetDevices',
-                      GetDevicesHandler(ola_thread).HandleRequest)
+                      GetDevicesHandler(ola_thread, pid_store).HandleRequest)
   app.RegisterHandler('/RunDiscovery',
-                      RunDiscoveryHandler(ola_thread).HandleRequest)
+                      RunDiscoveryHandler(ola_thread, pid_store).HandleRequest)
   app.RegisterHandler('/DownloadResults',
                       DownloadResultsHandler().HandleRequest)
   app.RegisterHandler('/DownloadModelData',
                       DownloadModelDataHandler().HandleRequest)
 
-  run_tests_handler = RunTestsHandler(ola_thread, test_thread)
+  run_tests_handler = RunTestsHandler(ola_thread, test_thread, pid_store)
   app.RegisterHandler('/RunCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/RunTests', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatCollector', run_tests_handler.HandleRequest)
@@ -1020,7 +1032,8 @@ def main():
   options = parse_options()
   settings.update(options.__dict__)
   pid_store = PidStore.GetStore(options.pid_location,
-                                ('pids.proto', 'draft_pids.proto'))
+                                ('pids.proto', 'draft_pids.proto',
+                                 'manufacturer_names.proto'))
 
   logging.basicConfig(level=logging.INFO, format='%(message)s')
 
@@ -1038,7 +1051,7 @@ def main():
   ola_thread.start()
   test_thread = RDMTestThread(pid_store, settings['log_directory'])
   test_thread.start()
-  app = BuildApplication(ola_thread, test_thread)
+  app = BuildApplication(ola_thread, test_thread, pid_store)
 
   httpd = make_server('', settings['PORT'], app.HandleRequest)
   logging.info('Running RDM Tests Server on http://%s:%s' %

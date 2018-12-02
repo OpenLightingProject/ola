@@ -38,14 +38,14 @@ class SlotTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
  public:
-    void testIntersectingIntervalAddition();
-    void testIntervalAddition();
-    void testActionMatching();
-    void testDefaultAction();
+  void testIntersectingIntervalAddition();
+  void testIntervalAddition();
+  void testActionMatching();
+  void testDefaultAction();
 
-    void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-    }
+  void setUp() {
+    ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  }
 };
 
 
@@ -97,22 +97,21 @@ void SlotTest::testIntervalAddition() {
 
   // add before the beginning
   OLA_ASSERT(slot.AddAction(ValueInterval(5, 6), NULL, NULL));
-  OLA_ASSERT_EQ(string("[5, 6], [10, 20]"),
-                       slot.IntervalsAsString());
+  OLA_ASSERT_EQ(string("[5, 6], [10, 20]"), slot.IntervalsAsString());
 
   // add at the end
   OLA_ASSERT(slot.AddAction(ValueInterval(100, 104), NULL, NULL));
   OLA_ASSERT_EQ(string("[5, 6], [10, 20], [100, 104]"),
-                       slot.IntervalsAsString());
+                slot.IntervalsAsString());
 
   // now try adding some in the middle
   OLA_ASSERT(slot.AddAction(ValueInterval(80, 82), NULL, NULL));
   OLA_ASSERT_EQ(string("[5, 6], [10, 20], [80, 82], [100, 104]"),
-                       slot.IntervalsAsString());
+                slot.IntervalsAsString());
 
   OLA_ASSERT(slot.AddAction(ValueInterval(76, 76), NULL, NULL));
   OLA_ASSERT_EQ(string("[5, 6], [10, 20], 76, [80, 82], [100, 104]"),
-                       slot.IntervalsAsString());
+                slot.IntervalsAsString());
 
   OLA_ASSERT(slot.AddAction(ValueInterval(70, 72), NULL, NULL));
   OLA_ASSERT_EQ(
@@ -177,7 +176,7 @@ void SlotTest::testActionMatching() {
   MockAction *rising_action2 = new MockAction();
   MockAction *falling_action2 = new MockAction();
   OLA_ASSERT(slot.AddAction(
-        ValueInterval(30, 40), rising_action2, falling_action2));
+      ValueInterval(30, 40), rising_action2, falling_action2));
 
   slot.TakeAction(NULL, 30);
   OLA_ASSERT(rising_action1->NoCalls());

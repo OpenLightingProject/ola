@@ -58,7 +58,7 @@ class AutoPatcher(object):
 
     for device in sorted(devices):
       if device.plugin_id == Plugin.OLA_PLUGIN_ARTNET:
-        # skip over artnet devices
+        # skip over Art-Net devices
         continue
 
       for port in device.output_ports:

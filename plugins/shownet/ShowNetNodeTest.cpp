@@ -291,7 +291,7 @@ void ShowNetNodeTest::SendAndReceiveForUniverse(unsigned int universe) {
   // zero first
   size = m_node->BuildCompressedPacket(&packet, universe, zero_buffer);
   m_node->HandlePacket(&packet, size);
-  OLA_ASSERT(received_data == zero_buffer);
+  OLA_ASSERT_DMX_EQUALS(received_data, zero_buffer);
 
   // send a test packet
   size = m_node->BuildCompressedPacket(&packet, universe, buffer1);

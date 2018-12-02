@@ -690,7 +690,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
     OLA_ASSERT_FALSE(node.SendDMX(4, dmx));
   }
 
-  {  // attempt to send an empty fram
+  {  // attempt to send an empty frame
     SocketVerifier verifer(m_socket);
     DmxBuffer empty_buffer;
     OLA_ASSERT(node.SendDMX(m_port_id, empty_buffer));
@@ -698,7 +698,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
 }
 
 /**
- * Check sending DMX using broadcast works to ArtNet universe 0.
+ * Check sending DMX using broadcast works to Art-Net universe 0.
  */
 void ArtNetNodeTest::testBroadcastSendDMXZeroUniverse() {
   m_socket->SetDiscardMode(true);

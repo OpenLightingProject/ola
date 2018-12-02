@@ -59,6 +59,10 @@
 #include "plugins/milinst/MilInstPlugin.h"
 #endif  // USE_MILINST
 
+#ifdef USE_NANOLEAF
+#include "plugins/nanoleaf/NanoleafPlugin.h"
+#endif  // USE_NANOLEAF
+
 #ifdef USE_OPENDMX
 #include "plugins/opendmx/OpenDmxPlugin.h"
 #endif  // USE_OPENDMX
@@ -90,6 +94,10 @@
 #ifdef USE_SPI
 #include "plugins/spi/SPIPlugin.h"
 #endif  // USE_SPI
+
+#ifdef USE_SPIDMX
+#include "plugins/spidmx/SPIDMXPlugin.h"
+#endif  // USE_SPIDMX
 
 #ifdef USE_STAGEPROFI
 #include "plugins/stageprofi/StageProfiPlugin.h"
@@ -173,6 +181,11 @@ void DynamicPluginLoader::PopulatePlugins() {
       new ola::plugin::milinst::MilInstPlugin(m_plugin_adaptor));
 #endif  // USE_MILINST
 
+#ifdef USE_NANOLEAF
+  m_plugins.push_back(
+      new ola::plugin::nanoleaf::NanoleafPlugin(m_plugin_adaptor));
+#endif  // USE_NANOLEAF
+
 #ifdef USE_OPENDMX
   m_plugins.push_back(
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
@@ -207,6 +220,11 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(
       new ola::plugin::spi::SPIPlugin(m_plugin_adaptor));
 #endif  // USE_SPI
+
+#ifdef USE_SPIDMX
+  m_plugins.push_back(
+      new ola::plugin::spidmx::SPIDMXPlugin(m_plugin_adaptor));
+#endif  // USE_SPIDMX
 
 #ifdef USE_STAGEPROFI
   m_plugins.push_back(

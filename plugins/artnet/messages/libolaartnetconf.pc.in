@@ -5,5 +5,5 @@ includedir=@includedir@
 
 Name: libolaartnetconf
 Version: @VERSION@
-Description: Open Lighting Architecture - Artnet Config Messages
+Description: Open Lighting Architecture - Art-Net Config Messages
 Libs: -lprotobuf

@@ -33,6 +33,7 @@
 #include "olad/Preferences.h"
 #include "plugins/stageprofi/StageProfiDetector.h"
 #include "plugins/stageprofi/StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiPluginDescription.h"
 #include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
@@ -81,19 +82,7 @@ bool StageProfiPlugin::StopHook() {
 }
 
 string StageProfiPlugin::Description() const {
-    return
-"StageProfi Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin creates devices with one output port.\n"
-"\n"
-"--- Config file : ola-stageprofi.conf ---\n"
-"\n"
-"device = /dev/ttyUSB0\n"
-"device = 192.168.1.250\n"
-"The device to use either as a path for the USB version or an IP address\n"
-"for the LAN version. Multiple devices are supported.\n"
-"\n";
+    return plugin_description;
 }
 
 bool StageProfiPlugin::SetDefaultPreferences() {

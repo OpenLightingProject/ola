@@ -22,6 +22,7 @@
 #include "olad/Preferences.h"
 #include "plugins/sandnet/SandNetDevice.h"
 #include "plugins/sandnet/SandNetPlugin.h"
+#include "plugins/sandnet/SandNetPluginDescription.h"
 
 
 namespace ola {
@@ -75,24 +76,7 @@ bool SandNetPlugin::StopHook() {
  * Return the description for this plugin
  */
 string SandNetPlugin::Description() const {
-  return
-"SandNet Plugin\n"
-"----------------------------\n"
-"\n"
-"This plugin creates a single device with 2 output and 8 input ports.\n"
-"\n"
-"The universe bindings are offset by one from those displayed in sandnet.\n"
-"For example, SandNet universe 1 is OLA universe 0.\n"
-"\n"
-"--- Config file : ola-sandnet.conf ---\n"
-"\n"
-"ip = [a.b.c.d|<interface_name>]\n"
-"The ip address or interface name to bind to. If not specified it will\n"
-"use the first non-loopback interface.\n"
-"\n"
-"name = ola-SandNet\n"
-"The name of the node.\n"
-"\n";
+  return plugin_description;
 }
 
 

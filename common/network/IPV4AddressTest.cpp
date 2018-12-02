@@ -75,6 +75,7 @@ void IPAddressTest::testIPV4Address() {
   int ip_as_int = address1.AsInt();
   OLA_ASSERT_NE(wildcard_address, address1);
   OLA_ASSERT_NE(HostToNetwork(0xc0a811), ip_as_int);
+  OLA_ASSERT_EQ(HostToNetwork(0xc0a80101), static_cast<uint32_t>(ip_as_int));
 
   // Test Get()
   uint8_t addr[IPV4Address::LENGTH];

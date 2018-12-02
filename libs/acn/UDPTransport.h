@@ -22,6 +22,7 @@
 #define LIBS_ACN_UDPTRANSPORT_H_
 
 #include "ola/acn/ACNPort.h"
+#include "ola/base/Macro.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
 #include "libs/acn/PDU.h"
@@ -51,8 +52,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
     class OutgoingUDPTransportImpl *m_impl;
     ola::network::IPV4SocketAddress m_destination;
 
-    OutgoingUDPTransport(const OutgoingUDPTransport&);
-    OutgoingUDPTransport& operator=(const OutgoingUDPTransport&);
+    DISALLOW_COPY_AND_ASSIGN(OutgoingUDPTransport);
 };
 
 

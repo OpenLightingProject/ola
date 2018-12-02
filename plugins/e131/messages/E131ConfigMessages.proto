@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131ConfigMessages.proto
- * Defines the protocol buffers used to configure the Artnet device
+ * Defines the protocol buffers used to configure the E1.31 device
  * Copyright (C) 2005 Simon Newton
  */
 

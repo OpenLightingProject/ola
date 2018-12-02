@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_IO_MEMORYBUFFER_H_
 #define INCLUDE_OLA_IO_MEMORYBUFFER_H_
 
+#include <ola/base/Macro.h>
 #include <ola/io/InputBuffer.h>
 #include <stdint.h>
 #include <string.h>
@@ -63,8 +64,7 @@ class MemoryBuffer: public InputBufferInterface {
     const unsigned int m_size;
     unsigned int m_cursor;
 
-    MemoryBuffer(const MemoryBuffer&);
-    MemoryBuffer& operator=(const MemoryBuffer&);
+    DISALLOW_COPY_AND_ASSIGN(MemoryBuffer);
 };
 }  // namespace io
 }  // namespace ola
