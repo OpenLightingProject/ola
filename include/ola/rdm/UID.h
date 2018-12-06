@@ -72,7 +72,7 @@ class UID {
      * @brief Constructs a new UID from a uint64_t
      * @param uid a uint64_t in the form 0x0000XXXXYYYYYYYY.
      */
-    UID(uint64_t uid) {
+    explicit UID(uint64_t uid) {
       m_uid.esta_id = static_cast<uint16_t>(uid >> 32);
       m_uid.device_id = static_cast<uint32_t>(uid);
     }
