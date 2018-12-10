@@ -408,7 +408,8 @@ void DiscoveryAgent::SplitAroundBadUID(UID bad_uid) {
     SendDiscovery();
     return;
   } else if (bad_uid < lower_uid || bad_uid > upper_uid) {
-    OLA_INFO << "Bad UID " << bad_uid << " not within range " << lower_uid << " - " << upper_uid << ", assuming it's a phantom!";
+    OLA_INFO << "Bad UID " << bad_uid << " not within range " << lower_uid
+             << " - " << upper_uid << ", assuming it's a phantom!";
     HandleCollision();
     return;
   }
@@ -419,11 +420,13 @@ void DiscoveryAgent::SplitAroundBadUID(UID bad_uid) {
 
   range->uids_discovered = 0;
   if (mid_minus_one_uid >= lower_uid) {
-    OLA_INFO << "Splitting either side of " << bad_uid << ", adding " << lower_uid << " - " << mid_minus_one_uid;
+    OLA_INFO << "Splitting either side of " << bad_uid << ", adding "
+             << lower_uid << " - " << mid_minus_one_uid;
     m_uid_ranges.push(new UIDRange(lower_uid, mid_minus_one_uid, range));
   }
   if (mid_plus_one_uid <= upper_uid) {
-    OLA_INFO << "Splitting either side of " << bad_uid << ", adding " << mid_plus_one_uid << " - " << upper_uid;
+    OLA_INFO << "Splitting either side of " << bad_uid << ", adding "
+             << mid_plus_one_uid << " - " << upper_uid;
     m_uid_ranges.push(new UIDRange(mid_plus_one_uid, upper_uid, range));
   }
   SendDiscovery();
