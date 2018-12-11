@@ -2071,7 +2071,7 @@ class SetZeroDMXPersonality(TestMixins.SetZeroUInt8Mixin,
   PID = 'DMX_PERSONALITY'
 
 
-class SetOutOfRangeDMXPersonality(TestMixins.SetOutOfRangeByteMixin,
+class SetOutOfRangeDMXPersonality(TestMixins.SetOutOfRangeUInt8Mixin,
                                   OptionalParameterTestFixture):
   """Set DMX_PERSONALITY to an out-of-range value."""
   PID = 'DMX_PERSONALITY'
@@ -2105,7 +2105,7 @@ class GetZeroDMXPersonalityDescription(TestMixins.GetZeroUInt8Mixin,
   PID = 'DMX_PERSONALITY_DESCRIPTION'
 
 
-class GetOutOfRangeDMXPersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
+class GetOutOfRangeDMXPersonalityDescription(TestMixins.GetOutOfRangeUInt8Mixin,
                                              OptionalParameterTestFixture):
   """GET the personality description for the N + 1 personality."""
   PID = 'DMX_PERSONALITY_DESCRIPTION'
@@ -5469,7 +5469,7 @@ class GetZeroLockStateDescription(TestMixins.GetZeroUInt8Mixin,
   PID = 'LOCK_STATE_DESCRIPTION'
 
 
-class GetOutOfRangeLockStateDescription(TestMixins.GetOutOfRangeByteMixin,
+class GetOutOfRangeLockStateDescription(TestMixins.GetOutOfRangeUInt8Mixin,
                                         OptionalParameterTestFixture):
   """Get LOCK_STATE_DESCRIPTION for an out-of-range lock state."""
   PID = 'LOCK_STATE_DESCRIPTION'
@@ -6163,7 +6163,7 @@ class SetZeroCurve(TestMixins.SetZeroUInt8Mixin,
   PID = 'CURVE'
 
 
-class SetOutOfRangeCurve(TestMixins.SetOutOfRangeByteMixin,
+class SetOutOfRangeCurve(TestMixins.SetOutOfRangeUInt8Mixin,
                          OptionalParameterTestFixture):
   """Set CURVE to an out-of-range value."""
   PID = 'CURVE'
@@ -6219,7 +6219,7 @@ class GetZeroCurveDescription(TestMixins.GetZeroUInt8Mixin,
   PID = 'CURVE_DESCRIPTION'
 
 
-class GetOutOfRangeCurveDescription(TestMixins.GetOutOfRangeByteMixin,
+class GetOutOfRangeCurveDescription(TestMixins.GetOutOfRangeUInt8Mixin,
                                     OptionalParameterTestFixture):
   """Get CURVE_DESCRIPTION for an out-of-range curve."""
   PID = 'CURVE_DESCRIPTION'
@@ -6337,7 +6337,7 @@ class SetZeroOutputResponseTime(TestMixins.SetZeroUInt8Mixin,
   PID = 'OUTPUT_RESPONSE_TIME'
 
 
-class SetOutOfRangeOutputResponseTime(TestMixins.SetOutOfRangeByteMixin,
+class SetOutOfRangeOutputResponseTime(TestMixins.SetOutOfRangeUInt8Mixin,
                                       OptionalParameterTestFixture):
   """Set OUTPUT_RESPONSE_TIME to an out-of-range value."""
   PID = 'OUTPUT_RESPONSE_TIME'
@@ -6396,7 +6396,7 @@ class GetZeroOutputResponseTimeDescription(TestMixins.GetZeroUInt8Mixin,
 
 
 class GetOutOfRangeOutputResponseTimeDescription(
-        TestMixins.GetOutOfRangeByteMixin,
+        TestMixins.GetOutOfRangeUInt8Mixin,
         OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for an out-of-range response time."""
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
@@ -6518,7 +6518,7 @@ class SetZeroModulationFrequency(TestMixins.SetZeroUInt8Mixin,
   PID = 'MODULATION_FREQUENCY'
 
 
-class SetOutOfRangeModulationFrequency(TestMixins.SetOutOfRangeByteMixin,
+class SetOutOfRangeModulationFrequency(TestMixins.SetOutOfRangeUInt8Mixin,
                                        OptionalParameterTestFixture):
   """Set MODULATION_FREQUENCY to an out-of-range value."""
   PID = 'MODULATION_FREQUENCY'
@@ -6577,7 +6577,7 @@ class GetZeroModulationFrequencyDescription(TestMixins.GetZeroUInt8Mixin,
 
 
 class GetOutOfRangeModulationFrequencyDescription(
-        TestMixins.GetOutOfRangeByteMixin,
+        TestMixins.GetOutOfRangeUInt8Mixin,
         OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION for an out-of-range frequency."""
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
