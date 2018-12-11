@@ -69,6 +69,15 @@ class UID {
     }
 
     /**
+     * @brief Constructs a new UID from a uint64_t
+     * @param uid a uint64_t in the form 0x0000XXXXYYYYYYYY.
+     */
+    explicit UID(uint64_t uid) {
+      m_uid.esta_id = static_cast<uint16_t>(uid >> 32);
+      m_uid.device_id = static_cast<uint32_t>(uid);
+    }
+
+    /**
      * @brief Copy constructor.
      * @param uid the UID to copy.
      */
@@ -85,7 +94,7 @@ class UID {
     explicit UID(const uint8_t *data) {
       m_uid.esta_id = ola::utils::JoinUInt8(data[0], data[1]);
       m_uid.device_id = ola::utils::JoinUInt8(data[2], data[3], data[4],
-                                             data[5]);
+                                              data[5]);
     }
 
     /**
@@ -129,6 +138,22 @@ class UID {
      */
     bool operator<(const UID &other) const {
       return cmp(*this, other) < 0;
+    }
+
+    /**
+     * @brief Greater than or equal to.
+     * @param other the UID to compare to.
+     */
+    bool operator>=(const UID &other) const {
+      return cmp(*this, other) >= 0;
+    }
+
+    /**
+     * @brief Less than or equal to.
+     * @param other the UID to compare to.
+     */
+    bool operator<=(const UID &other) const {
+      return cmp(*this, other) <= 0;
     }
 
     /**
@@ -177,6 +202,14 @@ class UID {
             (IsBroadcast() &&
              (ManufacturerId() == ALL_MANUFACTURERS ||
               ManufacturerId() == uid.ManufacturerId()));
+    }
+
+    /**
+     * @brief Convert a UID to a uint64_t.
+     * @returns a uint64_t in the form 0x0000XXXXYYYYYYYY.
+     */
+    uint64_t ToUInt64() const {
+      return ((static_cast<uint64_t>(m_uid.esta_id) << 32) + m_uid.device_id);
     }
 
     /**
@@ -237,7 +270,7 @@ class UID {
 
     /**
      * @brief Returns a UID that matches all devices for a particular
-     * manufacturer.
+     *     manufacturer.
      * @param uid a UID whose manufacturer id you want to match.
      * @returns a UID(X, 0xffffffff).
      */
@@ -257,7 +290,7 @@ class UID {
      * The size of a UID.
      */
     enum {
-      UID_SIZE = 6  /**< The size of a UID in binary form */
+      UID_SIZE = LENGTH  /**< The size of a UID in binary form */
     };
 
     /**
@@ -279,14 +312,16 @@ class UID {
     struct rdm_uid m_uid;
 
     int cmp(const UID &a, const UID &b) const {
-      if (a.m_uid.esta_id == b.m_uid.esta_id)
+      if (a.m_uid.esta_id == b.m_uid.esta_id) {
         return cmp(a.m_uid.device_id, b.m_uid.device_id);
+      }
       return cmp(a.m_uid.esta_id, b.m_uid.esta_id);
     }
 
     int cmp(uint32_t a, uint32_t b) const {
-      if (a == b)
+      if (a == b) {
         return 0;
+      }
       return a < b ? -1 : 1;
     }
 };
