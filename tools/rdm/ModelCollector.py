@@ -102,38 +102,49 @@ class ModelCollector(object):
 
   def _GetVersion(self):
     this_device = self._GetDevice()
-    software_versions = this_device['software_versions']
-    return software_versions[software_versions.keys()[0]]
+    if this_device:
+      software_versions = this_device['software_versions']
+      if software_versions.keys():
+        return software_versions[software_versions.keys()[0]]
+    return None
 
   def _GetCurrentPersonality(self):
     this_device = self._GetDevice()
-    this_version = self._GetVersion()
-    personalities = this_version['personalities']
-    return personalities[(this_device['current_personality'] - 1)]
+    if this_device:
+      this_version = self._GetVersion()
+      if this_version:
+        personalities = this_version['personalities']
+        if personalities:
+          return personalities[(this_device['current_personality'] - 1)]
+    return None
 
   def _GetSlotData(self, slot):
     this_personality = self._GetCurrentPersonality()
-    return this_personality.setdefault('slots', {}).setdefault(slot, {})
+    if this_personality:
+      return this_personality.setdefault('slots', {}).setdefault(slot, {})
+    return None
 
   def _GetLanguage(self):
     this_device = self._GetDevice()
-    return this_device.get('language', DEFAULT_LANGUAGE)
+    if this_device:
+      return this_device.get('language', DEFAULT_LANGUAGE)
+    return None
 
   def _CheckPidSupported(self, pid):
     this_version = self._GetVersion()
-    if pid.value in this_version['supported_parameters']:
-      return True
-    else:
-      return False
+    if this_version:
+      if pid.value in this_version['supported_parameters']:
+        return True
+    return False
 
   def _GetPid(self, pid):
-      self.rdm_api.Get(self.universe,
-                       self.uid,
-                       PidStore.ROOT_DEVICE,
-                       pid,
-                       self._RDMRequestComplete)
-      logging.debug('Sent %s request' % pid)
-      self.outstanding_pid = pid
+    self.rdm_api.Get(self.universe,
+                     self.uid,
+                     PidStore.ROOT_DEVICE,
+                     pid,
+                     self._RDMRequestComplete)
+    logging.debug('Sent %s request' % pid)
+    self.outstanding_pid = pid
 
   def _HandleUIDList(self, state, uids):
     """Called when the UID list arrives."""
