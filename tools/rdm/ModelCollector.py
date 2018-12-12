@@ -71,6 +71,7 @@ class ModelCollector(object):
     self.skip_queued_messages = skip_queued_messages
     self._ResetData()
 
+    logging.debug('Running RDM discovery on universe %d' % self.universe)
     self.client.RunRDMDiscovery(self.universe, True, self._HandleUIDList)
     self.wrapper.Run()
 
@@ -136,6 +137,7 @@ class ModelCollector(object):
 
   def _HandleUIDList(self, state, uids):
     """Called when the UID list arrives."""
+    logging.debug('RDM discovery complete for universe %d' % self.universe)
     if not state.Succeeded():
       raise DiscoveryException(state.message)
 
@@ -148,7 +150,8 @@ class ModelCollector(object):
     self._FetchNextUID()
 
   def _HandleResponse(self, unpacked_data):
-    logging.debug(unpacked_data)
+    if unpacked_data:
+      logging.debug(unpacked_data)
     if self.work_state == self.DEVICE_INFO:
       self._HandleDeviceInfo(unpacked_data)
     elif self.work_state == self.DEVICE_LABEL:
@@ -586,7 +589,7 @@ class ModelCollector(object):
         self._NextState()
         return
 
-      logging.debug('Got pid 0x%hx' % response.pid)
+      logging.debug('Got pid %#04hx' % response.pid)
       if self.outstanding_pid and response.pid == self.outstanding_pid.value:
         self._HandleResponse(unpacked_data)
       else:
@@ -599,7 +602,7 @@ class ModelCollector(object):
       True if this response was an ACK or NACK, False for all other cases.
     """
     if not response.status.Succeeded():
-      print response.status.message
+      print ('Status: %s' % response.status.message)
       self.wrapper.Stop()
       return False
 
