@@ -215,8 +215,10 @@ class ModelCollector(object):
       self.sensors = list(xrange(0, data['sensor_count']))
       self._NextState()
     else:
-      # We need software version to do anything, so abort and move onto the next responder
-      print ('Failed to get device info for UID %s so moving onto the next one' % self.uid)
+      # We need software version to do anything, so abort and move onto the
+      # next responder
+      print ('Failed to get device info for UID %s so moving onto the next one'
+             % self.uid)
       self._FetchNextUID()
 
   def _HandleDeviceLabel(self, data):
@@ -306,8 +308,10 @@ class ModelCollector(object):
     """Called when we get a LANGUAGE_CAPABILITIES response."""
     this_version = self._GetVersion()
     if not this_version:
-      # We need software version to do anything, so abort and move onto the next responder
-      print ('Failed to get software version for UID %s so moving onto the next one' % self.uid)
+      # We need software version to do anything, so abort and move onto the
+      # next responder
+      print ('Failed to get software version for UID %s so moving onto the '
+             'next one' % self.uid)
       self._FetchNextUID()
     for language in data['languages']:
       this_version['languages'].append(language['language'])
@@ -329,7 +333,8 @@ class ModelCollector(object):
       # Got valid data, not a nack
       this_slot_data = self._GetSlotData(data['slot_number'])
       if this_slot_data is not None:
-        this_slot_data.setdefault('name', {})[self._GetLanguage()] = data['name']
+        this_slot_data.setdefault('name', {})[self._GetLanguage()] =
+            data['name']
     self._FetchNextSlotDescription()
 
   def _HandleSlotDefaultValue(self, data):
@@ -349,8 +354,10 @@ class ModelCollector(object):
       self.work_state = self.DEVICE_INFO
     elif self.work_state == self.DEVICE_INFO:
       if not self._GetVersion():
-        # We need software version to do anything, so abort and move onto the next responder
-        print ('Failed to get software version for UID %s so moving onto the next one' % self.uid)
+        # We need software version to do anything, so abort and move onto the
+        # next responder
+        print ('Failed to get software version for UID %s so moving onto the '
+               'next one' % self.uid)
         self._FetchNextUID()
       else:
         # fetch device label
@@ -489,8 +496,10 @@ class ModelCollector(object):
         # data structure to add the other info to
         this_version = self._GetVersion()
         if not this_version:
-          # We need software version to do anything, so abort and move onto the next responder
-          print ('Failed to get software version for UID %s so moving onto the next one' % self.uid)
+          # We need software version to do anything, so abort and move onto the
+          # next responder
+          print ('Failed to get software version for UID %s so moving onto '
+                 'the next one' % self.uid)
           self._FetchNextUID()
         else:
           for personality_index in self.personalities:
