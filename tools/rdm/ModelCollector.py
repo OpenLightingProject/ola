@@ -333,8 +333,8 @@ class ModelCollector(object):
       # Got valid data, not a nack
       this_slot_data = self._GetSlotData(data['slot_number'])
       if this_slot_data is not None:
-        this_slot_data.setdefault('name', {})[self._GetLanguage()] =
-            data['name']
+        this_slot_data.setdefault('name', {})[self._GetLanguage()
+                                              ] = data['name']
     self._FetchNextSlotDescription()
 
   def _HandleSlotDefaultValue(self, data):
@@ -625,11 +625,11 @@ class ModelCollector(object):
         logging.debug('Device doesn\'t support queued messages')
         self._NextState()
       else:
-        print 'Got nack for 0x%04hx with reason: %s' % (
-            response.pid, response.nack_reason)
+        print ('Got nack for 0x%04hx with reason: %s' %
+               (response.pid, response.nack_reason))
 
     elif unpack_exception:
-      print 'Invalid Param data: %s' % unpack_exception
+      print ('Invalid Param data: %s' % unpack_exception)
       self.queued_message_failures += 1
       if self.queued_message_failures >= 10:
         # declare this bad and move on
@@ -668,7 +668,7 @@ class ModelCollector(object):
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print 'Got RDM failure: %s' % response.ResponseCodeAsString()
+      print ('Got RDM failure: %s' % response.ResponseCodeAsString())
       self.wrapper.Stop()
       return False
 
