@@ -45,7 +45,7 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
                       FtdiInterface *interface,
                       unsigned int id,
                       unsigned int freq)
-        : BasicOutputPort(parent, id),
+      : BasicOutputPort(parent, id, true, true),
           m_interface(interface),
           m_thread(interface, freq) {
       m_thread.Start();
