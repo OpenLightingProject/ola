@@ -26,8 +26,13 @@
 #ifndef PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
 #define PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
 
+#include <queue>
+#include <utility>
+
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
+#include "ola/rdm/RDMCommand.h"
+
 
 namespace ola {
 namespace plugin {
@@ -41,6 +46,9 @@ class FtdiDmxThread : public ola::thread::Thread {
     bool Stop();
     void *Run();
     bool WriteDMX(const DmxBuffer &buffer);
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback);
+    bool SupportsRDM() { return true; }
 
  private:
     enum TimerGranularity { UNKNOWN, GOOD, BAD };
@@ -49,9 +57,13 @@ class FtdiDmxThread : public ola::thread::Thread {
     FtdiInterface *m_interface;
     bool m_term;
     unsigned int m_frequency;
+
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;
+
+    std::queue<std::pair<ola::io::ByteString *,
+               ola::rdm::RDMCallback *>> m_RDMQueue;
 
     void CheckTimeGranularity();
 

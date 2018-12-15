@@ -27,10 +27,16 @@
 #include <unistd.h>
 
 #include <string>
+#include <queue>
+#include <utility>
 
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMControllerInterface.h"
+#include "ola/rdm/RDMCommandSerializer.h"
+
 #include "plugins/ftdidmx/FtdiWidget.h"
 #include "plugins/ftdidmx/FtdiDmxThread.h"
 
@@ -54,9 +60,12 @@ FtdiDmxThread::~FtdiDmxThread() {
  * @brief Stop this thread
  */
 bool FtdiDmxThread::Stop() {
-  {
-    ola::thread::MutexLocker locker(&m_term_mutex);
-    m_term = true;
+  ola::thread::MutexLocker locker(&m_term_mutex);
+  m_term = true;
+  while(!m_RDMQueue.empty()){
+    delete m_RDMQueue.front().first;
+    delete m_RDMQueue.front().second;
+    m_RDMQueue.pop();
   }
   return Join();
 }
@@ -73,12 +82,21 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
   }
 }
 
+void FtdiDmxThread::SendRDMRequest(ola::rdm::RDMRequest *request,
+                    ola::rdm::RDMCallback *callback) {
+  ola::io::ByteString data;
+  if(!ola::rdm::RDMCommandSerializer::PackWithStartCode(*request, &data)) {
+      OLA_WARN << "RDMCommandSerializer failed.";
+  }
+  m_RDMQueue.push(std::pair<ola::io::ByteString *,
+                  ola::rdm::RDMCallback *>(&data, callback));
+};
 
 /**
  * @brief The method called by the thread
  */
 void *FtdiDmxThread::Run() {
-  TimeStamp ts1, ts2, ts3;
+  TimeStamp ts1, ts2, ts3, lastDMX;
   Clock clock;
   CheckTimeGranularity();
   DmxBuffer buffer;
