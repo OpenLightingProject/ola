@@ -224,8 +224,11 @@ class FtdiInterface {
   /** @brief Toggle communications line BREAK condition on/off */
   bool SetBreak(bool on);
 
-  /** @brief Write data to a previously-opened line */
+  /** @brief Write data to a previously-opened line, DMX only */
   bool Write(const ola::DmxBuffer &data);
+
+  /** @brief Write prepared packets to previously opened line, agnostic to packet contents */
+  void Write(ola::io::ByteString *request);
 
   /** @brief Read data from a previously-opened line */
   bool Read(unsigned char* buff, int size);

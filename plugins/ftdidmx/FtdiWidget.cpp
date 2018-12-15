@@ -53,6 +53,9 @@
 #include "ola/BaseTypes.h"
 #include "ola/StringUtils.h"
 #include "ola/Constants.h"
+#include "ola/rdm/RDMCommand.h"
+
+
 #include "plugins/ftdidmx/FtdiWidget.h"
 
 namespace ola {
@@ -362,6 +365,16 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
   } else {
     return true;
   }
+}
+
+
+void FtdiInterface::Write(ola::io::ByteString *request) {
+    if(ftdi_write_data(&m_handle, request->data(), request->size()) < 0) {
+        OLA_WARN << m_parent->Description() << " "
+                 << ftdi_get_error_string(&m_handle);
+    } else {
+
+    }
 }
 
 bool FtdiInterface::Read(unsigned char *buff, int size) {
