@@ -32,13 +32,16 @@
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
 #include "ola/rdm/RDMCommand.h"
-
+#include "ola/rdm/DiscoveryAgent.h"
+#include "ola/rdm/RDMResponseCodes.h"
 
 namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-class FtdiDmxThread : public ola::thread::Thread {
+class FtdiDmxThread
+        : public ola::thread::Thread,
+          public ola::rdm::DiscoveryTargetInterface {
  public:
     FtdiDmxThread(FtdiInterface *interface, unsigned int frequency);
     ~FtdiDmxThread();
@@ -48,6 +51,16 @@ class FtdiDmxThread : public ola::thread::Thread {
     bool WriteDMX(const DmxBuffer &buffer);
     void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
+
+    void MuteDevice(const ola::rdm::UID &target,
+                    MuteDeviceCallback *mute_complete);
+
+    void UnMuteAll(UnMuteDeviceCallback *unmute_complete);
+
+    void Branch(const ola::rdm::UID &lower,
+                const ola::rdm::UID &upper,
+                BranchCallback *callback);
+
 
  private:
     enum TimerGranularity { UNKNOWN, GOOD, BAD };
@@ -60,6 +73,14 @@ class FtdiDmxThread : public ola::thread::Thread {
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;
+
+    uint8_t m_transaction_number;
+    ola::rdm::DiscoveryAgent m_discovery_agent;
+    const ola::rdm::UID m_uid;
+
+    MuteDeviceCallback *m_mute_complete;
+    UnMuteDeviceCallback *m_unmute_complete;
+    BranchCallback *m_branch_callback;
 
     std::queue<std::pair<ola::rdm::RDMRequest *,
                ola::rdm::RDMCallback *>> m_RDMQueue;
