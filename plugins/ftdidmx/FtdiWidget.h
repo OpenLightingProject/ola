@@ -228,10 +228,10 @@ class FtdiInterface {
   bool Write(const ola::DmxBuffer &data);
 
   /** @brief Write prepared packets to previously opened line, agnostic to packet contents */
-  void Write(ola::io::ByteString *request);
+  bool Write(ola::io::ByteString *packet);
 
   /** @brief Read data from a previously-opened line */
-  bool Read(unsigned char* buff, int size);
+  int Read(unsigned char* buff, int size);
 
   /** @brief Setup device for DMX Output **/
   bool SetupOutput();

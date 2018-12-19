@@ -368,23 +368,24 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
 }
 
 
-void FtdiInterface::Write(ola::io::ByteString *request) {
-    if(ftdi_write_data(&m_handle, request->data(), request->size()) < 0) {
-        OLA_WARN << m_parent->Description() << " "
-                 << ftdi_get_error_string(&m_handle);
-    } else {
-
-    }
-}
-
-bool FtdiInterface::Read(unsigned char *buff, int size) {
-  int read = ftdi_read_data(&m_handle, buff, size);
-  if (read <= 0) {
+bool FtdiInterface::Write(ola::io::ByteString *packet) {
+  if(ftdi_write_data(&m_handle, packet->data(), packet->size()) < 0) {
     OLA_WARN << m_parent->Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
     return true;
+  }
+}
+
+int FtdiInterface::Read(unsigned char *buff, int size) {
+  int read = ftdi_read_data(&m_handle, buff, size);
+  if (read < 0) {
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
+    return read;
+  } else {
+    return read;
   }
 }
 

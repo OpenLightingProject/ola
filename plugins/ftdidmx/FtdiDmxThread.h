@@ -48,7 +48,6 @@ class FtdiDmxThread : public ola::thread::Thread {
     bool WriteDMX(const DmxBuffer &buffer);
     void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
-    bool SupportsRDM() { return true; }
 
  private:
     enum TimerGranularity { UNKNOWN, GOOD, BAD };
@@ -62,7 +61,7 @@ class FtdiDmxThread : public ola::thread::Thread {
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;
 
-    std::queue<std::pair<ola::io::ByteString *,
+    std::queue<std::pair<ola::rdm::RDMRequest *,
                ola::rdm::RDMCallback *>> m_RDMQueue;
 
     void CheckTimeGranularity();

@@ -29,8 +29,12 @@
 #include <string>
 
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/DiscoveryAgent.h"
+#include "ola/rdm/RDMResponseCodes.h"
+
 #include "olad/Port.h"
 #include "olad/Preferences.h"
+
 #include "plugins/ftdidmx/FtdiDmxDevice.h"
 #include "plugins/ftdidmx/FtdiWidget.h"
 #include "plugins/ftdidmx/FtdiDmxThread.h"
@@ -39,15 +43,23 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-class FtdiDmxOutputPort : public ola::BasicOutputPort {
+class FtdiDmxOutputPort
+    : public ola::BasicOutputPort,
+      public ola::rdm::DiscoveryTargetInterface {
  public:
     FtdiDmxOutputPort(FtdiDmxDevice *parent,
                       FtdiInterface *interface,
                       unsigned int id,
                       unsigned int freq)
-      : BasicOutputPort(parent, id, true, true),
+      : BasicOutputPort(parent, id, false, true),
           m_interface(interface),
-          m_thread(interface, freq) {
+          m_thread(interface, freq),
+          m_transaction_number(0),
+          m_discovery_agent(this),
+          m_uid(0x7a7012345678),
+          m_mute_complete(nullptr),
+          m_unmute_complete(nullptr),
+          m_branch_callback(nullptr) {
       m_thread.Start();
     }
     ~FtdiDmxOutputPort() {
@@ -59,11 +71,84 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
       return m_thread.WriteDMX(buffer);
     }
 
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback) {
+      request->SetTransactionNumber(m_transaction_number++);
+      m_thread.SendRDMRequest(request, callback);
+    }
+
     std::string Description() const { return m_interface->Description(); }
 
- private:
+    void on_mute_reply(RDMReply *mute_reply) {
+      MuteDeviceCallback *my_mute_complete = m_mute_complete;
+      m_mute_complete = nullptr;
+      //if(mute_reply->Response().SourceUID() == )
+      my_mute_complete->Run(true);
+    }
+
+    void on_unmute_complete(RDMReply *unmute_reply) {
+      UnMuteDeviceCallback *my_unmute_complete = m_unmute_complete;
+      m_unmute_complete = nullptr;
+      ola::rdm::rdm_response_code response = unmute_reply->StatusCode();
+      if(response == rdm::RDM_WAS_BROADCAST || response == rdm::RDM_COMPLETED_OK) {
+        my_unmute_complete->Run();
+      } else {
+        OLA_WARN << "Something went wrong broadcasting unmute";
+        my_unmute_complete->Run();
+      }
+    }
+
+    void on_branch_callback(RDMReply *branch_reply) {
+      BranchCallback *my_branch_callback = m_branch_callback;
+      m_branch_callback = nullptr;
+      my_branch_callback->Run(branch_reply->frame().data, branch_reply->frame().length);
+    }
+
+    void MuteDevice(const ola::rdm::UID &target,
+                    MuteDeviceCallback *mute_complete){
+      if(m_mute_complete == nullptr) {
+        m_mute_complete = mute_complete;
+        m_thread.SendRDMRequest(ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number++),
+                                &on_mute_reply);
+      } else {
+        //fail
+      }
+    }
+    void UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
+      if(m_unmute_complete == nullptr) {
+        m_unmute_complete = unmute_complete;
+        m_thread.SendRDMRequest(ola::rdm::NewUnMuteRequest(m_uid, ola::rdm::UID::AllDevices(),
+                                                           m_transaction_number++),
+                                [&FtdiDmxOutputPort](RDMRequest*) { return on_unmute_complete(RDMReply *unmute_reply)) };
+      } else {
+        //fail
+      }
+    }
+    void Branch(const ola::rdm::UID &lower,
+                const ola::rdm::UID &upper,
+                BranchCallback *callback) {
+      if(m_branch_callback == nullptr) {
+        m_branch_callback = callback;
+        m_thread.SendRDMRequest(ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower, upper,
+                                                                          m_transaction_number++),
+                                &on_branch_callback);
+      } else {
+        //fail
+      }
+    }
+
+  private:
     FtdiInterface *m_interface;
     FtdiDmxThread m_thread;
+
+    uint8_t m_transaction_number;
+    ola::rdm::DiscoveryAgent m_discovery_agent;
+    const ola::rdm::UID m_uid;
+
+    MuteDeviceCallback *m_mute_complete;
+    UnMuteDeviceCallback * m_unmute_complete;
+    BranchCallback * m_branch_callback;
+
 };
 }  // namespace ftdidmx
 }  // namespace plugin

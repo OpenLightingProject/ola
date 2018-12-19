@@ -33,9 +33,11 @@
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMCommandSerializer.h"
+#include "ola/rdm/RDMResponseCodes.h"
 
 #include "plugins/ftdidmx/FtdiWidget.h"
 #include "plugins/ftdidmx/FtdiDmxThread.h"
@@ -63,8 +65,9 @@ bool FtdiDmxThread::Stop() {
   ola::thread::MutexLocker locker(&m_term_mutex);
   m_term = true;
   while(!m_RDMQueue.empty()){
-    delete m_RDMQueue.front().first;
-    delete m_RDMQueue.front().second;
+    OLA_INFO << "Emptying Queue";
+    //delete m_RDMQueue.front().first;
+    RunRDMCallback(m_RDMQueue.front().second, rdm::RDM_FAILED_TO_SEND);
     m_RDMQueue.pop();
   }
   return Join();
@@ -84,12 +87,8 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
 
 void FtdiDmxThread::SendRDMRequest(ola::rdm::RDMRequest *request,
                     ola::rdm::RDMCallback *callback) {
-  ola::io::ByteString data;
-  if(!ola::rdm::RDMCommandSerializer::PackWithStartCode(*request, &data)) {
-      OLA_WARN << "RDMCommandSerializer failed.";
-  }
-  m_RDMQueue.push(std::pair<ola::io::ByteString *,
-                  ola::rdm::RDMCallback *>(&data, callback));
+  m_RDMQueue.push(std::pair<ola::rdm::RDMRequest *,
+                  ola::rdm::RDMCallback *>(request, callback));
 };
 
 /**
@@ -100,6 +99,12 @@ void *FtdiDmxThread::Run() {
   Clock clock;
   CheckTimeGranularity();
   DmxBuffer buffer;
+  bool sendRDM = false;
+  TimeInterval elapsed, interval;
+  int readBytes;
+  unsigned char readBuffer[258];
+  ola::io::ByteString packetBuffer;
+
 
   int frameTime = static_cast<int>(floor(
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
@@ -123,6 +128,21 @@ void *FtdiDmxThread::Run() {
     }
 
     clock.CurrentTime(&ts1);
+    if(!m_RDMQueue.empty()) {
+      elapsed = ts1 - lastDMX;
+      if(elapsed.InMilliSeconds() < 500) {
+        if(!ola::rdm::RDMCommandSerializer::PackWithStartCode(*m_RDMQueue.front().first, &packetBuffer)) {
+          OLA_WARN << "RDMCommandSerializer failed. Dropping packet.";
+          delete m_RDMQueue.front().first;
+          RunRDMCallback(m_RDMQueue.front().second, rdm::RDM_FAILED_TO_SEND);
+          m_RDMQueue.pop();
+          sendRDM = false;
+        } else {
+          sendRDM = true;
+        }
+      }
+    }
+
 
     if (!m_interface->SetBreak(true)) {
       goto framesleep;
@@ -140,14 +160,46 @@ void *FtdiDmxThread::Run() {
       usleep(DMX_MAB);
     }
 
-    if (!m_interface->Write(buffer)) {
+    if(!sendRDM) {
+      if (!m_interface->Write(buffer)) {
+        goto framesleep;
+      } else {
+        clock.CurrentTime(&lastDMX);
+      }
+    } else {
+      if(m_interface->Write(&packetBuffer)) {
+          if(m_RDMQueue.front().first->IsDUB()) {
+            usleep(1400);
+            readBytes = m_interface->Read(readBuffer, 258);
+            if(readBytes <= 0) { // also catches hw issues, slightly incorrect, but they were already reported at hw layer.
+              RunRDMCallback(m_RDMQueue.front().second, rdm::RDM_TIMEOUT);
+            } else if (readBytes <= 24) {// Ignores potential for bad splitters dropping preamble bytes.
+              m_RDMQueue.front().second->Run(rdm::RDMReply::DUBReply(rdm::RDMFrame(readBuffer, readBytes)));
+            } else {
+              // Invalid response (collision)
+            }
+          } else if(!m_RDMQueue.front().first->DestinationUID().IsBroadcast()) {
+            usleep(31000); // Wait half the time needed for broadcasting 512 bytes (full packet which is impossible in RDM)
+            readBytes = m_interface->Read(readBuffer, 258);
+            if(readBytes <= 0) { // also catches hw issues, slightly incorrect, but they were already reported at hw layer.
+              RunRDMCallback(m_RDMQueue.front().second, rdm::RDM_TIMEOUT);
+            } else {
+              m_RDMQueue.front().second->Run(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer, readBytes), m_RDMQueue.front().first));
+            }
+          } else {
+            RunRDMCallback(m_RDMQueue.front().second, rdm::RDM_WAS_BROADCAST);
+          }
+      } else {
+        RunRDMCallback(m_RDMQueue.front().second, rdm::RDM_FAILED_TO_SEND);
+      }
+      m_RDMQueue.pop();
       goto framesleep;
     }
 
   framesleep:
     // Sleep for the remainder of the DMX frame time
     clock.CurrentTime(&ts2);
-    TimeInterval elapsed = ts2 - ts1;
+    elapsed = ts2 - ts1;
 
     if (m_granularity == GOOD) {
       while (elapsed.InMilliSeconds() < frameTime) {
@@ -159,7 +211,7 @@ void *FtdiDmxThread::Run() {
       // See if we can drop out of bad mode.
       usleep(1000);
       clock.CurrentTime(&ts3);
-      TimeInterval interval = ts3 - ts2;
+      interval = ts3 - ts2;
       if (interval.InMilliSeconds() < BAD_GRANULARITY_LIMIT) {
         m_granularity = GOOD;
         OLA_INFO << "Switching from BAD to GOOD granularity for ftdi thread";
