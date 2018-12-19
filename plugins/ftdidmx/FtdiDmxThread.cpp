@@ -94,6 +94,7 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
 
 void FtdiDmxThread::SendRDMRequest(ola::rdm::RDMRequest *request,
                     ola::rdm::RDMCallback *callback) {
+  OLA_INFO << "Sending RDM Request #" << m_transaction_number;
   request->SetTransactionNumber(m_transaction_number += 1);
   m_RDMQueue.push(std::pair<ola::rdm::RDMRequest *,
                   ola::rdm::RDMCallback *>(request, callback));
