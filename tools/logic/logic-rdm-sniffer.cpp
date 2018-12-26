@@ -108,7 +108,9 @@ class LogicReader {
                            sample_rate),
         m_pid_helper(FLAGS_pid_location.str(), 4),
         m_command_printer(&cout, &m_pid_helper) {
-      m_pid_helper.Init();
+      if (!m_pid_helper.Init()) {
+        OLA_WARN << "Failed to init PidStore";
+      }
     }
     ~LogicReader();
 

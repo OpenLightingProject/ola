@@ -132,7 +132,7 @@ bool FindMatchingFiles(const string &directory,
   struct dirent dir_ent;
   struct dirent *dir_ent_p;
   if ((dp = opendir(directory.data())) == NULL) {
-    OLA_WARN << "Could not open " << directory << ":" << strerror(errno);
+    OLA_WARN << "Could not open " << directory << ": " << strerror(errno);
     return false;
   }
 
