@@ -134,7 +134,7 @@ class MockResponder: public MockResponderInterface {
                        unsigned int offset,
                        uint8_t value,
                        uint16_t *checksum) const {
-      data[offset] = value;
+      data[offset] |= value;
       *checksum += value;
     }
 };
