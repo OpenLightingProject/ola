@@ -213,7 +213,7 @@ class ModelCollector(object):
 
       self.personalities = list(xrange(1, data['personality_count'] + 1))
       self.slots.update(xrange(0, data['dmx_footprint']))
-      logging.debug("Populated %d slots from device info" % (slot_count))
+      logging.debug("Populated %d slots from device info" % (data['dmx_footprint']))
       self.sensors = list(xrange(0, data['sensor_count']))
       self._NextState()
     else:
