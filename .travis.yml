@@ -162,6 +162,7 @@ matrix:
         apt:
           packages:
            - *core_build
+           - lintian
            - moreutils
     - os: linux
       dist: xenial
@@ -170,6 +171,7 @@ matrix:
         apt:
           packages:
            - *core_build
+           - lintian
            - moreutils
     - os: linux
       dist: xenial
