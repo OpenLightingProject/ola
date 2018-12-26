@@ -162,7 +162,6 @@ matrix:
         apt:
           packages:
            - *core_build
-           - lintian
            - moreutils
     - os: linux
       dist: xenial
@@ -171,7 +170,6 @@ matrix:
         apt:
           packages:
            - *core_build
-           - lintian
            - moreutils
     - os: linux
       dist: xenial
@@ -274,6 +272,7 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
 #Report the compiler version
  - $CXX --version
+ - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then wget "http://archive.ubuntu.com/ubuntu/pool/main/l/lintian/lintian_2.5.118_all.deb"; sudo dpkg -i lintian_2.5.118_all.deb; sudo apt-get install -f -y; fi # Install a later lintian
 
 after_failure:
 # Disabled as otherwise the logfile is too big
