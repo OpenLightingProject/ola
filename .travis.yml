@@ -104,7 +104,7 @@ matrix:
       - PROTOBUF='3.6'
       - LIBFTDI='1'
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: clang
       env: TASK='compile'
       python: '2.7'
@@ -114,9 +114,9 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-trusty-6.0
+           - llvm-toolchain-xenial-6.0
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env: TASK='compile'
       python: '2.7'
@@ -127,7 +127,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env: TASK='coverage'
       addons:
@@ -137,7 +137,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env: TASK='coverity'
       addons:
@@ -149,9 +149,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='doxygen'
       addons:
         apt:
@@ -162,25 +160,21 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='lint'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='check-licences'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: trusty
+      dist: xenial
       # Short duration job, would use the container/without sudo image as it boots faster, but we need a backported lintian, so don't
       sudo: required
       env: TASK='spellintian'
@@ -190,7 +184,7 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: trusty
+      dist: xenial
       # Short duration job, would use the container/without sudo image as it boots faster, but we need a backported lintian, so don't
       sudo: required
       env: TASK='spellintian-duplicates'
@@ -200,9 +194,7 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='codespell'
       addons:
         apt:
@@ -210,35 +202,27 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='flake8'
       addons:
         apt:
           packages:
            - *base_build
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='pychecker'
       addons:
         apt:
           packages:
            - *base_build
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='pychecker-wip'
       addons:
         apt:
@@ -246,23 +230,21 @@ matrix:
            - *base_build
   allow_failures:
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env: TASK='coverage'
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env: TASK='coverity'
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='pychecker-wip'
     - os: linux
-      dist: trusty
+      dist: xenial
       env: TASK='spellintian'
     - os: linux
-      dist: trusty
+      dist: xenial
       env: TASK='spellintian-duplicates'
 
 env:
@@ -302,7 +284,7 @@ install:
 # Match the version of protobuf being installed via apt
   - if [[ "$PROTOBUF" == "3.6" ]]; then pip install --user protobuf==3.6.0; fi
   - if [[ "$PROTOBUF" != "3.6" ]]; then pip install --user protobuf==3.1.0; fi
-# We need to use pip rather than apt on Trusty
+# We need to use pip rather than apt on Xenial
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
@@ -334,7 +316,7 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
 #Report the compiler version
  - $CXX --version
- - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then sudo add-apt-repository ppa:waja/trusty-backports -y; sudo apt-get update -qq; sudo apt-get install lintian -y; fi # Install a late enough lintian
+ - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then sudo add-apt-repository ppa:waja/xenial-backports -y; sudo apt-get update -qq; sudo apt-get install lintian -y; fi # Install a late enough lintian
 
 after_failure:
 # Disabled as otherwise the logfile is too big
