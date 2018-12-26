@@ -343,7 +343,7 @@ class ModelCollector(object):
     """Called when we get a DEFAULT_SLOT_VALUE response."""
     for slot in data['slot_values']:
       this_slot_data = self._GetSlotData(slot['slot_offset'])
-      if this_slot_data:
+      if this_slot_data is not None:
         this_slot_data['default_value'] = slot['default_slot_value']
     self._NextState()
 
