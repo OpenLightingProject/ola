@@ -51,8 +51,8 @@ class ModelCollector(object):
    LANGUAGE,
    LANGUAGES,
    SLOT_INFO,
-   SLOT_DESCRIPTION,
-   SLOT_DEFAULT_VALUE) = xrange(14)
+   SLOT_DEFAULT_VALUE,
+   SLOT_DESCRIPTION) = xrange(14)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -185,10 +185,10 @@ class ModelCollector(object):
       self._HandleLanguages(unpacked_data)
     elif self.work_state == self.SLOT_INFO:
       self._HandleSlotInfo(unpacked_data)
-    elif self.work_state == self.SLOT_DESCRIPTION:
-      self._HandleSlotDescription(unpacked_data)
     elif self.work_state == self.SLOT_DEFAULT_VALUE:
       self._HandleSlotDefaultValue(unpacked_data)
+    elif self.work_state == self.SLOT_DESCRIPTION:
+      self._HandleSlotDescription(unpacked_data)
 
   def _HandleDeviceInfo(self, data):
     """Called when we get a DEVICE_INFO response."""
@@ -330,6 +330,14 @@ class ModelCollector(object):
         self.slots.add(slot['slot_offset'])
     self._NextState()
 
+  def _HandleSlotDefaultValue(self, data):
+    """Called when we get a DEFAULT_SLOT_VALUE response."""
+    for slot in data['slot_values']:
+      this_slot_data = self._GetSlotData(slot['slot_offset'])
+      if this_slot_data is not None:
+        this_slot_data['default_value'] = slot['default_slot_value']
+    self._NextState()
+
   def _HandleSlotDescription(self, data):
     """Called when we get a SLOT_DESCRIPTION response."""
     if data is not None:
@@ -339,14 +347,6 @@ class ModelCollector(object):
         this_slot_data.setdefault('name', {})[self._GetLanguage()
                                               ] = data['name']
     self._FetchNextSlotDescription()
-
-  def _HandleSlotDefaultValue(self, data):
-    """Called when we get a DEFAULT_SLOT_VALUE response."""
-    for slot in data['slot_values']:
-      this_slot_data = self._GetSlotData(slot['slot_offset'])
-      if this_slot_data is not None:
-        this_slot_data['default_value'] = slot['default_slot_value']
-    self._NextState()
 
   def _NextState(self):
     """Move to the next state of information fetching."""
@@ -423,21 +423,21 @@ class ModelCollector(object):
                       pid)
         self._NextState()
     elif self.work_state == self.SLOT_INFO:
-      # fetch slot description
-      self.work_state = self.SLOT_DESCRIPTION
-      pid = self.pid_store.GetName('SLOT_DESCRIPTION')
-      if self._CheckPidSupported(pid):
-        self._FetchNextSlotDescription()
-      else:
-        logging.debug("Skipping pid %s as it's not supported on this device" %
-                      pid)
-        self._NextState()
-    elif self.work_state == self.SLOT_DESCRIPTION:
       # fetch slot default value
       self.work_state = self.SLOT_DEFAULT_VALUE
       pid = self.pid_store.GetName('DEFAULT_SLOT_VALUE')
       if self._CheckPidSupported(pid):
         self._GetPid(pid)
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
+    elif self.work_state == self.SLOT_DEFAULT_VALUE:
+      # fetch slot description
+      self.work_state = self.SLOT_DESCRIPTION
+      pid = self.pid_store.GetName('SLOT_DESCRIPTION')
+      if self._CheckPidSupported(pid):
+        self._FetchNextSlotDescription()
       else:
         logging.debug("Skipping pid %s as it's not supported on this device" %
                       pid)
