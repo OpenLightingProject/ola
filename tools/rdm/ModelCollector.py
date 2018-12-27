@@ -323,16 +323,17 @@ class ModelCollector(object):
   def _HandleSlotInfo(self, data):
     """Called when we get a SLOT_INFO response."""
     for slot in data['slots']:
+      self.slots.add(slot['slot_offset'])
       this_slot_data = self._GetSlotData(slot['slot_offset'])
       if this_slot_data is not None:
         this_slot_data['label_id'] = slot['slot_label_id']
         this_slot_data['type'] = slot['slot_type']
-        self.slots.add(slot['slot_offset'])
     self._NextState()
 
   def _HandleSlotDefaultValue(self, data):
     """Called when we get a DEFAULT_SLOT_VALUE response."""
     for slot in data['slot_values']:
+      self.slots.add(slot['slot_offset'])
       this_slot_data = self._GetSlotData(slot['slot_offset'])
       if this_slot_data is not None:
         this_slot_data['default_value'] = slot['default_slot_value']
