@@ -73,17 +73,17 @@ class FtdiDmxThread
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;
+    ola::thread::Mutex m_rdm_mutex;
 
     uint8_t m_transaction_number;
-    ola::rdm::DiscoveryAgent m_discovery_agent;
+    //ola::rdm::DiscoveryAgent m_discovery_agent;
     const ola::rdm::UID m_uid;
 
+    ola::rdm::RDMRequest *m_pending_request;
+    ola::rdm::RDMCallback *m_rdm_callback;
     MuteDeviceCallback *m_mute_complete;
     UnMuteDeviceCallback *m_unmute_complete;
     BranchCallback *m_branch_callback;
-
-    std::queue<std::pair<ola::rdm::RDMRequest *,
-               ola::rdm::RDMCallback *>> m_RDMQueue;
 
     void CheckTimeGranularity();
 
