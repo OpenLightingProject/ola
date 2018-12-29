@@ -157,8 +157,6 @@ matrix:
            - *core_build
     - os: linux
       dist: xenial
-      # Short duration job, would use the container/without sudo image as it boots faster, but we need a backported lintian, so don't
-      sudo: required
       env: TASK='spellintian'
       addons:
         apt:
@@ -167,8 +165,6 @@ matrix:
            - moreutils
     - os: linux
       dist: xenial
-      # Short duration job, would use the container/without sudo image as it boots faster, but we need a backported lintian, so don't
-      sudo: required
       env: TASK='spellintian-duplicates'
       addons:
         apt:
@@ -276,7 +272,7 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
 #Report the compiler version
  - $CXX --version
- - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then sudo add-apt-repository ppa:waja/xenial-backports -y; sudo apt-get update -qq; sudo apt-get install lintian -y; fi # Install a late enough lintian
+ - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then wget "http://archive.ubuntu.com/ubuntu/pool/main/l/lintian/lintian_2.5.104_all.deb"; sudo dpkg -i lintian_*.deb; sudo apt-get install -f -y; fi # Install a later lintian
 
 after_failure:
 # Disabled as otherwise the logfile is too big
