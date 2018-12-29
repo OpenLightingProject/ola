@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ola</groupId>
   <artifactId>ola-java-client</artifactId>
-  <version>0.0.2</version>
+  <version>0.1.0</version>
   <description>Java implementation of OLA RPC</description>
   <properties>
    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
