@@ -260,11 +260,18 @@ class ModelCollector(object):
     """Called when we get a DMX_PERSONALITY_DESCRIPTION response."""
     if data is not None:
       this_version = self._GetVersion()
-      this_version['personalities'].append({
-        'description': data['name'],
-        'index': data['personality'],
-        'slot_count': data['slots_required'],
-      })
+      if this_version:
+        this_device = self._GetDevice()
+        if (this_device and
+          (this_device['current_personality'] == data['personality'])):
+          self.slots.update(xrange(0, data['slots_required']))
+          logging.debug("Populated %d slots from personality description"
+                        % (data['slots_required']))
+        this_version['personalities'].append({
+          'description': data['name'],
+          'index': data['personality'],
+          'slot_count': data['slots_required'],
+        })
     self._FetchNextPersonality()
 
   def _HandleSensorData(self, data):
