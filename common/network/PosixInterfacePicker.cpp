@@ -77,6 +77,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
   string last_dl_iface_name;
   uint8_t hwlen = 0;
   char *hwaddr = NULL;
+  int32_t index = Interface::DEFAULT_INDEX;
+  uint16_t type = Interface::ARP_VOID_TYPE;
 #endif  // HAVE_SOCKADDR_DL_STRUCT
 
   // create socket to get iface config
@@ -128,6 +130,11 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       last_dl_iface_name.assign(sdl->sdl_data, sdl->sdl_nlen);
       hwaddr = sdl->sdl_data + sdl->sdl_nlen;
       hwlen = sdl->sdl_alen;
+      if (sdl->sdl_index != 0) {
+        // According to net/if_dl.h
+        index = sdl->sdl_index;
+      }
+      type = sdl->sdl_type;
     }
 #endif  // HAVE_SOCKADDR_DL_STRUCT
 
@@ -165,14 +172,19 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     }
 
 #ifdef HAVE_SOCKADDR_DL_STRUCT
-    // The only way hwaddr is non-null is if HAVE_SOCKADDR_DL_STRUCT is defined.
-    if ((interface.name == last_dl_iface_name) && hwaddr) {
-      if (hwlen == MACAddress::LENGTH) {
-        interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
-      } else {
-        OLA_WARN << "hwlen was not expected length, so didn't obtain MAC "
-                 << "address; got " << static_cast<int>(hwlen)
-                 << ", expecting " << MACAddress::LENGTH;
+    if (interface.name == last_dl_iface_name) {
+      interface.index = index;
+      interface.type = type;
+      // The only way hwaddr is non-null is if HAVE_SOCKADDR_DL_STRUCT is
+      // defined.
+      if (hwaddr) {
+        if (hwlen == MACAddress::LENGTH) {
+          interface.hw_address = MACAddress(reinterpret_cast<uint8_t*>(hwaddr));
+        } else {
+          OLA_WARN << "hwlen was not expected length, so didn't obtain MAC "
+                   << "address; got " << static_cast<int>(hwlen)
+                   << ", expecting " << MACAddress::LENGTH;
+        }
       }
     }
 #endif  // HAVE_SOCKADDR_DL_STRUCT
@@ -222,11 +234,11 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       if (ioctl(sd, SIOCGIFINDEX, &ifrcopy) < 0) {
         OLA_WARN << "ioctl error " << strerror(errno);
       } else {
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__DragonFly__)
         interface.index = ifrcopy.ifr_index;
 #else
         interface.index = ifrcopy.ifr_ifindex;
-#endif  // __FreeBSD__
+#endif  // defined(__FreeBSD__) || defined(__DragonFly__)
       }
     }
 #elif defined(HAVE_IF_NAMETOINDEX)

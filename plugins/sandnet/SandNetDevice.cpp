@@ -115,7 +115,7 @@ bool SandNetDevice::StartHook() {
     m_plugin_adaptor->AddReadDescriptor(*iter);
 
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
-      ADVERTISTMENT_PERIOD_MS,
+      ADVERTISEMENT_PERIOD_MS,
       NewCallback(this, &SandNetDevice::SendAdvertisement));
 
   return true;

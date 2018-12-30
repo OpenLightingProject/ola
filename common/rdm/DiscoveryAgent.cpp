@@ -113,6 +113,7 @@ void DiscoveryAgent::InitDiscovery(
   }
 
   m_bad_uids.Clear();
+  m_split_uids.Clear();
   m_tree_corrupt = false;
 
   // push the first range on to the branch stack
@@ -195,8 +196,9 @@ void DiscoveryAgent::SendDiscovery() {
     // limit reached, move on to the next branch
     OLA_DEBUG << "Hit failure limit for (" << range->lower << ", "
               << range->upper << ")";
-    if (range->parent)
+    if (range->parent) {
       range->parent->branch_corrupt = true;
+    }
     FreeCurrentRange();
     SendDiscovery();
   } else {
@@ -306,15 +308,29 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
   // callback each time.
   UID located_uid = UID(manufacturer_id, device_id);
   if (m_uids.Contains(located_uid)) {
-    OLA_WARN << "Previous muted responder " << located_uid
+    OLA_WARN << "Previously muted responder " << located_uid
              << " continues to respond";
     range->failures++;
-    // ignore this and continue on to the next branch.
-    SendDiscovery();
+    if (!m_split_uids.Contains(located_uid)) {
+      m_split_uids.AddUID(located_uid);
+      // ignore this and continue either side of it.
+      SplitAroundBadUID(located_uid);
+    } else {
+      // Treat this as a collision and continue branching down
+      HandleCollision();
+    }
   } else if (m_bad_uids.Contains(located_uid)) {
     // we've already tried this one
+    OLA_INFO << "Previously bad responder " << located_uid
+             << " continues to respond";
     range->failures++;
-    SendDiscovery();
+    if (!m_split_uids.Contains(located_uid)) {
+      // ignore this and continue either side of it.
+      SplitAroundBadUID(located_uid);
+    } else {
+      // Continue branching
+      HandleCollision();
+    }
   } else {
     m_muting_uid = located_uid;
     m_mute_attempts = 0;
@@ -338,7 +354,7 @@ void DiscoveryAgent::BranchMuteComplete(bool status) {
       m_target->MuteDevice(m_muting_uid, m_branch_mute_callback.get());
       return;
     } else {
-      // this UID is bad, either it was a phantom or it doesn't response to
+      // this UID is bad, either it was a phantom or it doesn't respond to
       // mute commands
       OLA_INFO << m_muting_uid << " didn't respond to MUTE, marking as bad";
       m_bad_uids.AddUID(m_muting_uid);
@@ -363,14 +379,10 @@ void DiscoveryAgent::HandleCollision() {
   }
 
   // work out the mid point
-  uint64_t lower = ((static_cast<uint64_t>(lower_uid.ManufacturerId()) << 32) +
-                    lower_uid.DeviceId());
-  uint64_t upper = ((static_cast<uint64_t>(upper_uid.ManufacturerId()) << 32) +
-                    upper_uid.DeviceId());
-  uint64_t mid = (lower + upper) / 2;
-  UID mid_uid(mid >> 32, mid);
+  uint64_t mid = (lower_uid.ToUInt64() + upper_uid.ToUInt64()) / 2;
+  UID mid_uid(mid);
   mid++;
-  UID mid_plus_one_uid(mid >> 32, mid);
+  UID mid_plus_one_uid(mid);
   OLA_INFO << "Collision, splitting into: " << lower_uid << " - " << mid_uid
            << " , " << mid_plus_one_uid << " - " << upper_uid;
 
@@ -378,6 +390,45 @@ void DiscoveryAgent::HandleCollision() {
   // add both ranges to the stack
   m_uid_ranges.push(new UIDRange(lower_uid, mid_uid, range));
   m_uid_ranges.push(new UIDRange(mid_plus_one_uid, upper_uid, range));
+  SendDiscovery();
+}
+
+/*
+ * Split around a bad UID.
+ * This is a more specialised version of HandleCollision
+ */
+void DiscoveryAgent::SplitAroundBadUID(UID bad_uid) {
+  UIDRange *range = m_uid_ranges.top();
+  UID lower_uid = range->lower;
+  UID upper_uid = range->upper;
+
+  if (lower_uid == upper_uid) {
+    range->failures++;
+    OLA_WARN << "End of tree reached!!!";
+    SendDiscovery();
+    return;
+  } else if (bad_uid < lower_uid || bad_uid > upper_uid) {
+    OLA_INFO << "Bad UID " << bad_uid << " not within range " << lower_uid
+             << " - " << upper_uid << ", assuming it's a phantom!";
+    HandleCollision();
+    return;
+  }
+
+  OLA_INFO << "Bad UID, attempting split either side of: " << bad_uid;
+  UID mid_minus_one_uid(bad_uid.ToUInt64() - 1);
+  UID mid_plus_one_uid(bad_uid.ToUInt64() + 1);
+
+  range->uids_discovered = 0;
+  if (mid_minus_one_uid >= lower_uid) {
+    OLA_INFO << "Splitting either side of " << bad_uid << ", adding "
+             << lower_uid << " - " << mid_minus_one_uid;
+    m_uid_ranges.push(new UIDRange(lower_uid, mid_minus_one_uid, range));
+  }
+  if (mid_plus_one_uid <= upper_uid) {
+    OLA_INFO << "Splitting either side of " << bad_uid << ", adding "
+             << mid_plus_one_uid << " - " << upper_uid;
+    m_uid_ranges.push(new UIDRange(mid_plus_one_uid, upper_uid, range));
+  }
   SendDiscovery();
 }
 
