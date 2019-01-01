@@ -1,15 +1,35 @@
-x/y/2018 ola-0.10.8
+x/y/2019 ola-0.10.8
  Features:
- * 
+ * Support DragonFly BSD
 
  API:
  * 
 
  RDM Tests:
- * 
+ * Fix a bug in the RDM tests to ensure they can cope with 255 personalities
+   #1508
+ * Only add valid network interface IDs to the test list so future tests don't
+   fail
+ * Add a label to the GetOutOfRangePersonalityDescription test
 
  Bugs:
- * 
+ * Fix a few more minor documentation spelling errors found by codespell
+ * Point to the main site rather than the wiki for RDM test help
+ * Fix the build on FreeBSD 10.0, 10.4 and 11
+ * Make PID store loading more robust
+ * Clarify some of the man page options for olad
+ * Fix some dead links in documentation
+ * Properly close socket on destruction of Python OlaClient
+ * Fix some Python 3.2 compatibility
+ * Try and fetch index and type via sockaddr_dl struct for better *BSD support
+ * Use C++11 if required by random #1477
+ * Correct uartdmx plugin documentation for the example UART #1320
+ * Ensure we don't return unsuitable network indices via RDM #1478
+ * Ensure a non-existant UID exits with a non-zero exit code
+ * Fix a bug in how we simulate RDM responses and collisions
+ * Fix an RDM discovery bug for how we handle phantom UIDs
+ * Ensure _close_callback is assigned before we might need to run it in the
+   Python API
 
  Internal:
  *
