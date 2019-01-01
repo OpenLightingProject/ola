@@ -139,8 +139,8 @@ class IPV4Address {
      * should be at least LENGTH bytes.
      * @note The address is copied in network byte order.
      */
-    void Get(uint8_t ptr[LENGTH]) {
-      memcpy(ptr, reinterpret_cast<uint8_t*>(&m_address), LENGTH);
+    void Get(uint8_t ptr[LENGTH]) const {
+      memcpy(ptr, reinterpret_cast<const uint8_t*>(&m_address), LENGTH);
     }
 
     /**
