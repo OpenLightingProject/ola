@@ -116,10 +116,12 @@ bool InterfacePicker::ChooseInterface(
     const Options &options) const {
   Options restricted_options = options;
   if (!default_ip_or_name.empty()) {
-    // Need to force strict mode in the options here, so we only get a real match
+    // Need to force strict mode in the options here, so we only get a real
+    // match
     restricted_options.specific_only = true;
   }
-  if (!ip_or_name.empty() && ChooseInterface(iface, ip_or_name, restricted_options)) {
+  if (!ip_or_name.empty() &&
+      ChooseInterface(iface, ip_or_name, restricted_options)) {
     return true;
   } else {
     return ChooseInterface(iface, default_ip_or_name, options);
@@ -146,7 +148,8 @@ bool InterfacePicker::ChooseInterface(
   Options restricted_options = options;
   // Need to force strict mode in the options here, so we only get a real match
   restricted_options.specific_only = true;
-  if (!ip_or_name.empty() && ChooseInterface(iface, ip_or_name, restricted_options)) {
+  if (!ip_or_name.empty() &&
+      ChooseInterface(iface, ip_or_name, restricted_options)) {
     return true;
   } else {
     vector<Interface> interfaces = GetInterfaces(options.include_loopback);

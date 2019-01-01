@@ -65,7 +65,8 @@ bool ShowNetDevice::StartHook() {
   ola::network::Interface iface;
   std::auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-  if (!picker->ChooseInterface(&iface, ip_address, m_plugin_adaptor->DefaultInterface())) {
+  if (!picker->ChooseInterface(&iface, ip_address,
+                               m_plugin_adaptor->DefaultInterface())) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }

@@ -79,7 +79,8 @@ bool E131Device::StartHook() {
   ola::network::Interface iface;
   std::auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-  if (!picker->ChooseInterface(&iface, m_ip_addr, m_plugin_adaptor->DefaultInterface())) {
+  if (!picker->ChooseInterface(&iface, m_ip_addr,
+                               m_plugin_adaptor->DefaultInterface())) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }
