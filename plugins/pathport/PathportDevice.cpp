@@ -18,12 +18,15 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/network/Interface.h"
+#include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
@@ -81,11 +84,16 @@ bool PathportDevice::StartHook() {
   }
 
   string ip_address = m_preferences->GetValue(K_NODE_IP_KEY);
-  if (ip_address.empty()) {
-    ip_address = m_plugin_adaptor->DefaultIPOrInterfaceName();
+  // stupid Windows, 'interface' seems to be a struct so we use iface here.
+  ola::network::Interface iface;
+  std::auto_ptr<ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+  if (!picker->ChooseInterface(&iface, ip_address,
+                               m_plugin_adaptor->DefaultInterface())) {
+    OLA_INFO << "Failed to find an interface";
+    return false;
   }
-  m_node = new PathportNode(ip_address,
-                            product_id, dscp);
+  m_node = new PathportNode(iface, product_id, dscp);
 
   if (!m_node->Start()) {
     delete m_node;

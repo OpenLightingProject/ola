@@ -127,6 +127,34 @@ bool InterfacePicker::ChooseInterface(
 
 
 /*
+ * Select an interface to use
+ * @param iface, the interface to populate
+ * @param ip_or_name the IP address or interface name of the local interface
+ *   we'd prefer to use.
+ * @param default_iface the Interface we'd prefer to fall back to if
+ *   ip_or_name isn't found.
+ * @param options an Options struct configuring ChooseInterface
+ * @return true if we found an interface, false otherwise
+ */
+// TODO(Simon): Change these to callback based code to reduce duplication.
+bool InterfacePicker::ChooseInterface(
+    Interface *iface,
+    const string &ip_or_name,
+    Interface default_iface,
+    const Options &options) const {
+  Options restricted_options = options;
+  // Need to force strict mode in the options here, so we only get a real match
+  restricted_options.specific_only = true;
+  if (!ip_or_name.empty() && ChooseInterface(iface, ip_or_name, restricted_options)) {
+    return true;
+  } else {
+    iface = &default_iface;
+    return true;
+  }
+}
+
+
+/*
  * Select an interface to use by index
  * @param iface, the interface to populate
  * @param index the index of the local interface we'd prefer to use.
