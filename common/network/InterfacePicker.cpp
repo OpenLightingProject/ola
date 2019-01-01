@@ -19,6 +19,7 @@
  */
 
 #include <string.h>
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -140,7 +141,7 @@ bool InterfacePicker::ChooseInterface(
 bool InterfacePicker::ChooseInterface(
     Interface *iface,
     const string &ip_or_name,
-    Interface default_iface,
+    const Interface default_iface,
     const Options &options) const {
   Options restricted_options = options;
   // Need to force strict mode in the options here, so we only get a real match
@@ -148,8 +149,29 @@ bool InterfacePicker::ChooseInterface(
   if (!ip_or_name.empty() && ChooseInterface(iface, ip_or_name, restricted_options)) {
     return true;
   } else {
-    iface = &default_iface;
-    return true;
+    vector<Interface> interfaces = GetInterfaces(options.include_loopback);
+    if (interfaces.empty()) {
+      OLA_INFO << "No interfaces found";
+      return false;
+    }
+
+    // Check that default_iface is actually in the picker list
+    vector<Interface>::const_iterator iter = std::find(interfaces.begin(), interfaces.end(), default_iface);
+    if (iter != interfaces.end()) {
+      *iface = *iter;
+      return true;
+    } else {
+      OLA_INFO << "Default interface " << default_iface << " does not exist in "
+                  "the InterfacePicker list";
+      if (options.specific_only) {
+        return false;
+      } else {
+        *iface = interfaces[0];
+        OLA_DEBUG << "Falling back to interface " << iface->name << " ("
+                  << iface->ip_address << ")";
+        return true;
+      }
+    }
   }
 }
 

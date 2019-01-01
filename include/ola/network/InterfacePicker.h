@@ -89,7 +89,7 @@ class InterfacePicker {
   bool ChooseInterface(
       Interface *iface,
       const std::string &ip_or_name,
-      Interface default_iface,
+      const Interface default_iface,
       const Options &options = Options()) const;
   bool ChooseInterface(
       Interface *iface,
