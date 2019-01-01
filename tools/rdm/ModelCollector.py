@@ -108,14 +108,20 @@ class ModelCollector(object):
         return software_versions[software_versions.keys()[0]]
     return None
 
-  def _GetCurrentPersonality(self):
+  def _GetPersonality(self, personality):
     this_device = self._GetDevice()
     if this_device:
       this_version = self._GetVersion()
       if this_version:
         personalities = this_version['personalities']
         if personalities:
-          return personalities[(this_device['current_personality'] - 1)]
+          return personalities[(personality - 1)]
+    return None
+
+  def _GetCurrentPersonality(self):
+    this_device = self._GetDevice()
+    if this_device:
+      return self._GetPersonality(this_device['current_personality'])
     return None
 
   def _GetSlotData(self, slot):
@@ -212,6 +218,18 @@ class ModelCollector(object):
       }
 
       self.personalities = list(xrange(1, data['personality_count'] + 1))
+      if self.personalities:
+        # If we have personalities populate the basic data structure to add the
+        # other info to
+        this_version = this_device['software_versions'][
+            data['software_version']]
+        for personality_index in self.personalities:
+          this_version['personalities'].append({
+            'index': personality_index,
+          })
+        this_personality = self._GetCurrentPersonality()
+        if this_personality is not None:
+          this_personality['slot_count'] = data['dmx_footprint']
       self.slots.update(xrange(0, data['dmx_footprint']))
       logging.debug("Populated %d slots from device info"
                     % (data['dmx_footprint']))
@@ -261,17 +279,16 @@ class ModelCollector(object):
     if data is not None:
       this_version = self._GetVersion()
       if this_version:
+        this_personality = self._GetPersonality(data['personality'])
+        if this_personality is not None:
+          this_personality['description'] = data['name']
+          this_personality['slot_count'] = data['slots_required']
         this_device = self._GetDevice()
         if (this_device and
           (this_device['current_personality'] == data['personality'])):
           self.slots.update(xrange(0, data['slots_required']))
           logging.debug("Populated %d slots from personality description"
                         % (data['slots_required']))
-        this_version['personalities'].append({
-          'description': data['name'],
-          'index': data['personality'],
-          'slot_count': data['slots_required'],
-        })
     self._FetchNextPersonality()
 
   def _HandleSensorData(self, data):
@@ -496,21 +513,6 @@ class ModelCollector(object):
       else:
         self._NextState()
     else:
-      if self.personalities:
-        # If we have personalities but no description, we still need the basic
-        # data structure to add the other info to
-        this_version = self._GetVersion()
-        if not this_version:
-          # We need software version to do anything, so abort and move onto the
-          # next responder
-          print ('Failed to get software version for UID %s so moving onto '
-                 'the next one' % self.uid)
-          self._FetchNextUID()
-        else:
-          for personality_index in self.personalities:
-            this_version['personalities'].append({
-              'index': personality_index,
-            })
       logging.debug("Skipping pid %s as it's not supported on this device" %
                     pid)
       self._NextState()
