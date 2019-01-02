@@ -159,7 +159,8 @@ bool InterfacePicker::ChooseInterface(
     }
 
     // Check that default_iface is actually in the picker list
-    vector<Interface>::const_iterator iter = std::find(interfaces.begin(), interfaces.end(), default_iface);
+    vector<Interface>::const_iterator iter = std::find(
+        interfaces.begin(), interfaces.end(), default_iface);
     if (iter != interfaces.end()) {
       *iface = *iter;
       return true;

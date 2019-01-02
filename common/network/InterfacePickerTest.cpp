@@ -126,7 +126,8 @@ void InterfacePickerTest::testChooseInterface() {
   Interface iface2_alt;
   iface2_alt.name = "eth1";
   iface2_alt.index = 2;
-  OLA_ASSERT_TRUE(IPV4Address::FromString("192.168.1.1", &iface2_alt.ip_address));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("192.168.1.1",
+                                          &iface2_alt.ip_address));
 
   // no interfaces
   Interface iface;

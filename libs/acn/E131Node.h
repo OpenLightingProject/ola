@@ -81,7 +81,7 @@ class E131Node {
   /**
    * @brief Create a new E1.31 node.
    * @param ss the SchedulerInterface to use.
-   * @param interface the Interface to prefer to listen on
+   * @param iface the Interface to prefer to listen on
    * @param options the Options to use for the node.
    * @param cid the CID to use, if not provided we generate one.
    */
