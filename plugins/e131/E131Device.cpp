@@ -24,6 +24,7 @@
 #include <google/protobuf/service.h>
 #include <google/protobuf/stubs/common.h>
 #include <iostream>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -31,6 +32,8 @@
 #include "common/rpc/RpcController.h"
 #include "ola/CallbackRunner.h"
 #include "ola/Logging.h"
+#include "ola/network/Interface.h"
+#include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
@@ -72,7 +75,17 @@ E131Device::E131Device(Plugin *owner,
  * Start this device
  */
 bool E131Device::StartHook() {
-  m_node.reset(new E131Node(m_plugin_adaptor, m_ip_addr, m_options, m_cid));
+  // stupid Windows, 'interface' seems to be a struct so we use iface here.
+  ola::network::Interface iface;
+  std::auto_ptr<ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+  if (!picker->ChooseInterface(&iface, m_ip_addr,
+                               m_plugin_adaptor->DefaultInterface())) {
+    OLA_INFO << "Failed to find an interface";
+    return false;
+  }
+
+  m_node.reset(new E131Node(m_plugin_adaptor, iface, m_options, m_cid));
 
   if (!m_node->Start()) {
     m_node.reset();
