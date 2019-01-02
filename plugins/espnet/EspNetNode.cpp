@@ -45,12 +45,13 @@ using std::string;
 
 const char EspNetNode::NODE_NAME[] = "OLA Node";
 
+// stupid Windows, 'interface' seems to be a struct so we use iface here.
 /*
  * Create a new node
  * @param ip_address the IP address to prefer to listen on, if NULL we choose
  * one.
  */
-EspNetNode::EspNetNode(const string &ip_address)
+EspNetNode::EspNetNode(const ola::network::Interface &iface)
     : m_running(false),
       m_options(DEFAULT_OPTIONS),
       m_tos(DEFAULT_TOS),
@@ -58,7 +59,7 @@ EspNetNode::EspNetNode(const string &ip_address)
       m_universe(0),
       m_type(ESPNET_NODE_TYPE_IO),
       m_node_name(NODE_NAME),
-      m_preferred_ip(ip_address) {
+      m_interface(iface) {
 }
 
 
@@ -80,21 +81,13 @@ EspNetNode::~EspNetNode() {
  * Start this node
  */
 bool EspNetNode::Start() {
-  if (m_running)
-    return false;
-
-  ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
-
-  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
-    OLA_INFO << "Failed to find an interface";
-    delete picker;
+  if (m_running) {
     return false;
   }
-  delete picker;
 
-  if (!InitNetwork())
+  if (!InitNetwork()) {
     return false;
+  }
 
   m_running = true;
   return true;
@@ -105,8 +98,9 @@ bool EspNetNode::Start() {
  * Stop this node
  */
 bool EspNetNode::Stop() {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   m_running = false;
   return true;
@@ -124,8 +118,9 @@ void EspNetNode::SocketReady() {
   ssize_t packet_size = sizeof(packet);
   if (!m_socket.RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                          &packet_size,
-                         &source))
+                         &source)) {
     return;
+  }
 
   if (packet_size < (ssize_t) sizeof(packet.poll.head)) {
     OLA_WARN << "Small espnet packet received, discarding";
@@ -165,8 +160,9 @@ void EspNetNode::SocketReady() {
 bool EspNetNode::SetHandler(uint8_t universe,
                             DmxBuffer *buffer,
                             Callback0<void> *closure) {
-  if (!closure)
+  if (!closure) {
     return false;
+  }
 
   map<uint8_t, universe_handler>::iterator iter =
     m_handlers.find(universe);
@@ -209,8 +205,9 @@ bool EspNetNode::RemoveHandler(uint8_t universe) {
  * @param full_poll
  */
 bool EspNetNode::SendPoll(bool full_poll) {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   return SendEspPoll(m_interface.bcast_address, full_poll);
 }
@@ -223,8 +220,9 @@ bool EspNetNode::SendPoll(bool full_poll) {
  * @return true if it was send successfully, false otherwise
  */
 bool EspNetNode::SendDMX(uint8_t universe, const ola::DmxBuffer &buffer) {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   return SendEspData(m_interface.bcast_address, universe, buffer);
 }
@@ -239,8 +237,9 @@ bool EspNetNode::InitNetwork() {
     return false;
   }
 
-  if (!m_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ESPNET_PORT)))
+  if (!m_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ESPNET_PORT))) {
     return false;
+  }
 
   if (!m_socket.EnableBroadcast()) {
     OLA_WARN << "Failed to enable broadcasting";

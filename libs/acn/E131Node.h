@@ -81,12 +81,14 @@ class E131Node {
   /**
    * @brief Create a new E1.31 node.
    * @param ss the SchedulerInterface to use.
-   * @param ip_address the IP address to prefer to listen on
+   * @param iface the Interface to prefer to listen on
    * @param options the Options to use for the node.
    * @param cid the CID to use, if not provided we generate one.
    */
   E131Node(ola::thread::SchedulerInterface *ss,
-           const std::string &ip_address,
+           // stupid Windows, 'interface' seems to be a struct so we use iface
+           // here.
+           const ola::network::Interface &iface,
            const Options &options,
            const ola::acn::CID &cid = ola::acn::CID::Generate());
   ~E131Node();
@@ -217,11 +219,10 @@ class E131Node {
   typedef std::map<acn::CID, class TrackedSource*> TrackedSources;
 
   ola::thread::SchedulerInterface *m_ss;
+  ola::network::Interface m_interface;
   const Options m_options;
-  const std::string m_preferred_ip;
   const ola::acn::CID m_cid;
 
-  ola::network::Interface m_interface;
   ola::network::UDPSocket m_socket;
   // senders
   RootSender m_root_sender;
