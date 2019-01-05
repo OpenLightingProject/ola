@@ -107,13 +107,14 @@ void TrackedSource::NewPage(uint8_t page_number, uint8_t last_page,
   }
 }
 
+// stupid Windows, 'interface' seems to be a struct so we use iface here.
 E131Node::E131Node(ola::thread::SchedulerInterface *ss,
-                   const string &ip_address,
+                   const ola::network::Interface &iface,
                    const Options &options,
                    const ola::acn::CID &cid)
     : m_ss(ss),
+      m_interface(iface),
       m_options(options),
-      m_preferred_ip(ip_address),
       m_cid(cid),
       m_root_sender(m_cid),
       m_e131_sender(&m_socket, &m_root_sender),
@@ -160,23 +161,18 @@ E131Node::~E131Node() {
 
 
 bool E131Node::Start() {
-  auto_ptr<ola::network::InterfacePicker> picker(
-    ola::network::InterfacePicker::NewPicker());
-  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
-    OLA_INFO << "Failed to find an interface";
-    return false;
-  }
-
   if (!m_socket.Init()) {
     return false;
   }
 
   if (!m_socket.Bind(
-        IPV4SocketAddress(IPV4Address::WildCard(), m_options.port)))
+        IPV4SocketAddress(IPV4Address::WildCard(), m_options.port))) {
     return false;
+  }
 
-  if (!m_socket.EnableBroadcast())
+  if (!m_socket.EnableBroadcast()) {
     return false;
+  }
 
   m_socket.SetTos(m_options.dscp);
   m_socket.SetMulticastInterface(m_interface.ip_address);
