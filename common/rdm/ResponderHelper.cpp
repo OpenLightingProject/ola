@@ -572,7 +572,7 @@ RDMResponse *ResponderHelper::RecordSensor(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (sensor_number == ALL_SENSORS) {
+  if ((sensor_number == ALL_SENSORS) && (sensor_list.size() > 0)) {
     Sensors::const_iterator iter = sensor_list.begin();
     for (; iter != sensor_list.end(); ++iter) {
       (*iter)->Record();
@@ -651,6 +651,9 @@ RDMResponse *ResponderHelper::GetListInterfaces(
   std::sort(interfaces.begin(), interfaces.end(),
             ola::network::InterfaceIndexOrdering());
 
+  uint16_t interface_count = std::count_if(
+      interfaces.begin(), interfaces.end(), IsInterfaceIndexValidInterface);
+
   PACK(
   struct list_interfaces_s {
     uint32_t index;
@@ -658,12 +661,18 @@ RDMResponse *ResponderHelper::GetListInterfaces(
   });
   STATIC_ASSERT(sizeof(list_interfaces_s) == 6);
 
-  list_interfaces_s list_interfaces[interfaces.size()];
+  list_interfaces_s list_interfaces[interface_count];
 
-  for (uint16_t i = 0; i < interfaces.size(); i++) {
-    list_interfaces[i].index = HostToNetwork(interfaces[i].index);
+  // Reorder so valid interfaces are first
+  std::stable_partition(interfaces.begin(), interfaces.end(),
+                        IsInterfaceIndexValidInterface);
+
+  // Then just iterate through the valid ones
+  vector<Interface>::iterator iter = interfaces.begin();
+  for (uint16_t i = 0; i < interface_count; i++) {
+    list_interfaces[i].index = HostToNetwork(iter[i].index);
     list_interfaces[i].type = HostToNetwork(
-        static_cast<uint16_t>(interfaces[i].type));
+        static_cast<uint16_t>(iter[i].type));
   }
 
   return GetResponseFromData(
@@ -1201,10 +1210,24 @@ RDMResponse *ResponderHelper::SetUInt32Value(
 bool ResponderHelper::FindInterface(
     const NetworkManagerInterface *network_manager,
     Interface *interface, uint32_t index) {
+  if (!IsInterfaceIndexValid(index)) {
+    // Invalid index
+    return false;
+  }
+
   InterfacePicker::Options options;
   options.specific_only = true;
   return network_manager->GetInterfacePicker()->ChooseInterface(
       interface, index, options);
+}
+
+bool ResponderHelper::IsInterfaceIndexValid(uint32_t index) {
+  return (index >= MIN_RDM_INTERFACE_INDEX &&
+          index <= MAX_RDM_INTERFACE_INDEX);
+}
+
+bool ResponderHelper::IsInterfaceIndexValidInterface(Interface interface) {
+  return IsInterfaceIndexValid(interface.index);
 }
 }  // namespace rdm
 }  // namespace ola

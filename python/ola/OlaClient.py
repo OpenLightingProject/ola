@@ -18,6 +18,7 @@
 import array
 import socket
 import struct
+import sys
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
@@ -707,6 +708,7 @@ class OlaClient(Ola_pb2.OlaClientService):
         created.
       close_callback: A callable to run if the socket is closed
     """
+    self._close_callback = close_callback
     self._socket = our_socket
 
     if self._socket is None:
@@ -716,10 +718,12 @@ class OlaClient(Ola_pb2.OlaClientService):
       except socket.error:
         raise OLADNotRunningException('Failed to connect to olad')
 
-    self._close_callback = close_callback
     self._channel = StreamRpcChannel(self._socket, self, self._SocketClosed)
     self._stub = Ola_pb2.OlaServerService_Stub(self._channel)
     self._universe_callbacks = {}
+
+  def __del__(self):
+    self._SocketClosed()
 
   def GetSocket(self):
     """Returns the socket used to communicate with the server."""
@@ -879,7 +883,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.DmxData()
     request.universe = universe
-    request.data = data.tostring()
+    if sys.version >= '3.2':
+      request.data = data.tobytes()
+    else:
+      request.data = data.tostring()
     try:
       self._stub.UpdateDmxData(
           controller, request,

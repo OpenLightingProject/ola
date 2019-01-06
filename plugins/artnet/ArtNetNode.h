@@ -405,7 +405,7 @@ class ArtNetNodeImpl {
 
   InputPorts m_input_ports;
   OutputPort m_output_ports[ARTNET_MAX_PORTS];
-  ola::network::Interface m_interface;
+  const ola::network::Interface m_interface;
   std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
 
   /**

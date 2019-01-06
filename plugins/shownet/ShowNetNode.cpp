@@ -25,6 +25,7 @@
 
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
+#include "ola/network/Interface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/stl/STLUtils.h"
@@ -47,17 +48,16 @@ using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::Callback0;
 
-
+// stupid Windows, 'interface' seems to be a struct so we use iface here.
 /*
  * Create a new node
- * @param ip_address the IP address to prefer to listen on, if NULL we choose
- * one.
+ * @param iface the interface prefer to listen on.
  */
-ShowNetNode::ShowNetNode(const std::string &ip_address)
+ShowNetNode::ShowNetNode(const ola::network::Interface &iface)
     : m_running(false),
       m_packet_count(0),
       m_node_name(),
-      m_preferred_ip(ip_address),
+      m_interface(iface),
       m_socket(NULL) {
 }
 
@@ -80,20 +80,13 @@ ShowNetNode::~ShowNetNode() {
  * Start this node
  */
 bool ShowNetNode::Start() {
-  if (m_running)
-    return false;
-
-  ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
-  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
-    delete picker;
-    OLA_INFO << "Failed to find an interface";
+  if (m_running) {
     return false;
   }
-  delete picker;
 
-  if (!InitNetwork())
+  if (!InitNetwork()) {
     return false;
+  }
 
   m_running = true;
   return true;
@@ -104,8 +97,9 @@ bool ShowNetNode::Start() {
  * Stop this node
  */
 bool ShowNetNode::Stop() {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   if (m_socket) {
     delete m_socket;
@@ -134,12 +128,13 @@ void ShowNetNode::SetName(const string &name) {
  */
 bool ShowNetNode::SendDMX(unsigned int universe,
                           const ola::DmxBuffer &buffer) {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   if (universe >= SHOWNET_MAX_UNIVERSES) {
-    OLA_WARN << "Universe index out of bounds, should be between 0 and" <<
-                  SHOWNET_MAX_UNIVERSES << "), was " << universe;
+    OLA_WARN << "Universe index out of bounds (should be between 0 and "
+             << SHOWNET_MAX_UNIVERSES << "), was " << universe;
     return false;
   }
 
@@ -169,11 +164,12 @@ bool ShowNetNode::SendDMX(unsigned int universe,
 bool ShowNetNode::SetHandler(unsigned int universe,
                              DmxBuffer *buffer,
                              Callback0<void> *closure) {
-  if (!closure)
+  if (!closure) {
     return false;
+  }
 
   map<unsigned int, universe_handler>::iterator iter =
-    m_handlers.find(universe);
+      m_handlers.find(universe);
 
   if (iter == m_handlers.end()) {
     universe_handler handler;
@@ -196,7 +192,7 @@ bool ShowNetNode::SetHandler(unsigned int universe,
  */
 bool ShowNetNode::RemoveHandler(unsigned int universe) {
   map<unsigned int, universe_handler>::iterator iter =
-    m_handlers.find(universe);
+      m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
     Callback0<void> *old_closure = iter->second.closure;
@@ -217,12 +213,14 @@ void ShowNetNode::SocketReady() {
   ola::network::IPV4SocketAddress source;
 
   if (!m_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                          &packet_size, &source))
+                          &packet_size, &source)) {
     return;
+  }
 
   // skip packets sent by us
-  if (source.Host() != m_interface.ip_address)
+  if (source.Host() != m_interface.ip_address) {
     HandlePacket(&packet, packet_size);
+  }
 }
 
 
@@ -326,8 +324,9 @@ unsigned int ShowNetNode::BuildCompressedPacket(shownet_packet *packet,
       static_cast<uint16_t>(buffer.Size()));
 
   unsigned int enc_len = sizeof(packet->data);
-  if (!m_encoder.Encode(buffer, compressed_dmx->data, &enc_len))
+  if (!m_encoder.Encode(buffer, compressed_dmx->data, &enc_len)) {
     OLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
+  }
 
   compressed_dmx->indexBlock[0] = HostToLittleEndian(
       static_cast<uint16_t>(MAGIC_INDEX_OFFSET));

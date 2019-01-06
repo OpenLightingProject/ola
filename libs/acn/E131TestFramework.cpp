@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <memory>
 #include <string>
 #include <vector>
 #include "ola/acn/CID.h"
@@ -32,6 +33,8 @@
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
 #include "ola/io/StdinHandler.h"
+#include "ola/network/Interface.h"
+#include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
 #include "libs/acn/E131Node.h"
 #include "libs/acn/E131TestFramework.h"
@@ -69,10 +72,19 @@ bool StateManager::Init() {
   m_stdin_handler.reset(new StdinHandler(
       m_ss, ola::NewCallback(this, &StateManager::Input)));
 
+  // stupid Windows, 'interface' seems to be a struct so we use iface here.
+  ola::network::Interface iface;
+  std::auto_ptr<ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+  if (!picker->ChooseInterface(&iface, "")) {
+    OLA_WARN << "Failed to find an interface";
+    return false;
+  }
+
   if (!m_interactive) {
     // local node test
     CID local_cid = CID::Generate();
-    m_local_node = new E131Node(m_ss, "", E131Node::Options(), local_cid);
+    m_local_node = new E131Node(m_ss, iface, E131Node::Options(), local_cid);
     assert(m_local_node->Start());
     assert(m_ss->AddReadDescriptor(m_local_node->GetSocket()));
 
@@ -88,8 +100,8 @@ bool StateManager::Init() {
   E131Node::Options options2(options1);
   options1.port = 5569;
 
-  m_node1 = new E131Node(m_ss, "", options1, m_cid1);
-  m_node2 = new E131Node(m_ss, "", options2, m_cid2);
+  m_node1 = new E131Node(m_ss, iface, options1, m_cid1);
+  m_node2 = new E131Node(m_ss, iface, options2, m_cid2);
   assert(m_node1->Start());
   assert(m_node2->Start());
   assert(m_ss->AddReadDescriptor(m_node1->GetSocket()));

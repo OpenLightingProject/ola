@@ -25,7 +25,12 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
+#ifdef HAVE_CURSES_H
 #include <curses.h>
+#elif defined(HAVE_NCURSES_CURSES_H)
+#include <ncurses/curses.h>
+#endif  // HAVE_CURSES_H
+
 #include <errno.h>
 #include <getopt.h>
 #include <signal.h>

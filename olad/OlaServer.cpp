@@ -185,7 +185,7 @@ bool OlaServer::Init() {
     if (!picker->ChooseInterface(&iface, m_options.network_interface)) {
       OLA_WARN << "No network interface found";
     } else {
-      // default to using the ip as a id
+      // default to using the ip as an id
       m_default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
                                     iface.ip_address.AsInt());
     }
@@ -225,7 +225,7 @@ bool OlaServer::Init() {
   auto_ptr<PluginAdaptor> plugin_adaptor(
       new PluginAdaptor(device_manager.get(), m_ss, m_export_map,
                         m_preferences_factory, port_broker.get(),
-                        &m_instance_name));
+                        &m_instance_name, &iface));
 
   auto_ptr<PluginManager> plugin_manager(
     new PluginManager(m_plugin_loaders, plugin_adaptor.get()));

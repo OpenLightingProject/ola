@@ -49,7 +49,8 @@ enum { ESPNET_MAX_UNIVERSES = 512 };
 
 class EspNetNode {
  public:
-    explicit EspNetNode(const std::string &ip_address);
+    // stupid Windows, 'interface' seems to be a struct so we use iface here.
+    explicit EspNetNode(const ola::network::Interface &iface);
     virtual ~EspNetNode();
 
     bool Start();

@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * InputBuffer.h
- * An Abstract base class that represents a block of memory tha can be read
+ * An Abstract base class that represents a block of memory that can be read
  * from.
  * Copyright (C) 2012 Simon Newton
  */

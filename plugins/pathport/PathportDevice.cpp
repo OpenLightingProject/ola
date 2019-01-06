@@ -18,11 +18,15 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+#include <memory>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/network/Interface.h"
+#include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
@@ -36,6 +40,7 @@ namespace plugin {
 namespace pathport {
 
 using std::ostringstream;
+using std::string;
 using std::vector;
 
 const char PathportDevice::K_DEFAULT_NODE_NAME[] = "ola-Pathport";
@@ -63,9 +68,6 @@ PathportDevice::PathportDevice(PathportPlugin *owner,
  * Start this device
  */
 bool PathportDevice::StartHook() {
-  vector<ola::network::UDPSocket*> sockets;
-  vector<ola::network::UDPSocket*>::iterator iter;
-
   uint32_t product_id;
   if (!StringToInt(m_preferences->GetValue(K_NODE_ID_KEY), &product_id)) {
     OLA_WARN << "Invalid node Id " << m_preferences->GetValue(K_NODE_ID_KEY);
@@ -81,8 +83,17 @@ bool PathportDevice::StartHook() {
     dscp = dscp << 2;
   }
 
-  m_node = new PathportNode(m_preferences->GetValue(K_NODE_IP_KEY),
-                            product_id, dscp);
+  string ip_address = m_preferences->GetValue(K_NODE_IP_KEY);
+  // stupid Windows, 'interface' seems to be a struct so we use iface here.
+  ola::network::Interface iface;
+  std::auto_ptr<ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+  if (!picker->ChooseInterface(&iface, ip_address,
+                               m_plugin_adaptor->DefaultInterface())) {
+    OLA_INFO << "Failed to find an interface";
+    return false;
+  }
+  m_node = new PathportNode(iface, product_id, dscp);
 
   if (!m_node->Start()) {
     delete m_node;
@@ -111,7 +122,7 @@ bool PathportDevice::StartHook() {
 
   m_plugin_adaptor->AddReadDescriptor(m_node->GetSocket());
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
-      ADVERTISTMENT_PERIOD_MS,
+      ADVERTISEMENT_PERIOD_MS,
       NewCallback(this, &PathportDevice::SendArpReply));
 
   return true;

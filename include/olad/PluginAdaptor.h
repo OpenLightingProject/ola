@@ -32,6 +32,7 @@
 #include <ola/ExportMap.h>
 #include <ola/base/Macro.h>
 #include <ola/io/SelectServerInterface.h>
+#include <ola/network/Interface.h>
 #include <olad/OlaServer.h>
 
 #include <string>
@@ -48,13 +49,15 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
    * @param preferences_factory pointer to the PreferencesFactory object
    * @param port_broker pointer to the PortBroker object
    * @param instance_name the instance name of this OlaServer
+   * @param default_interface the default interface to use
    */
   PluginAdaptor(class DeviceManager *device_manager,
                 ola::io::SelectServerInterface *select_server,
                 ExportMap *export_map,
                 class PreferencesFactory *preferences_factory,
                 class PortBrokerInterface *port_broker,
-                const std::string *instance_name);
+                const std::string *instance_name,
+                const ola::network::Interface *default_interface);
 
   // The following methods are part of the SelectServerInterface
   bool AddReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
@@ -96,7 +99,13 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
    * @brief Return the instance name for the OLA server
    * @return a string which is the instance name
    */
-  const std::string InstanceName();
+  const std::string InstanceName() const;
+
+  /**
+   * @brief Return the default Interface to use
+   * @return the Interface which is the default one to use
+   */
+  const ola::network::Interface DefaultInterface() const;
 
   ExportMap *GetExportMap() const {
     return m_export_map;
@@ -134,6 +143,7 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
   class PreferencesFactory *m_preferences_factory;
   class PortBrokerInterface *m_port_broker;
   const std::string *m_instance_name;
+  const ola::network::Interface *m_default_interface;
 
   DISALLOW_COPY_AND_ASSIGN(PluginAdaptor);
 };

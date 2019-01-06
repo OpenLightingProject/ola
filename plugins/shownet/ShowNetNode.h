@@ -27,6 +27,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
 #include "ola/dmx/RunLengthEncoder.h"
+#include "ola/network/Interface.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
 #include "plugins/shownet/ShowNetPackets.h"
@@ -37,7 +38,8 @@ namespace shownet {
 
 class ShowNetNode {
  public:
-    explicit ShowNetNode(const std::string &ip_address);
+    // stupid Windows, 'interface' seems to be a struct so we use iface here.
+    explicit ShowNetNode(const ola::network::Interface &iface);
     virtual ~ShowNetNode();
 
     bool Start();
@@ -70,7 +72,6 @@ class ShowNetNode {
     bool m_running;
     uint16_t m_packet_count;
     std::string m_node_name;
-    std::string m_preferred_ip;
     std::map<unsigned int, universe_handler> m_handlers;
     ola::network::Interface m_interface;
     ola::dmx::RunLengthEncoder m_encoder;

@@ -542,7 +542,7 @@ void DmxTriWidgetTest::testSendRDMErrors() {
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
 
-  // confirm transaction mis-match works
+  // confirm transaction mismatch works
   RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t transaction_mismatch_response[] = {0x38, 0x13};

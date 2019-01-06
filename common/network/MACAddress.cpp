@@ -56,14 +56,14 @@ struct ether_addr {
 #endif  // HAVE_NETINET_IF_ETHER_H
 #endif  // _WIN32
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__DragonFly__)
 // In the FreeBSD struct ether_addr, the single field is named octet, instead
 // of ether_addr_octet.
 // OS X does this too, but avoids it by adding the following line to its
 // header, for compatibility with linux and others:
 // http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/net/ethernet.h
 #define ether_addr_octet octet
-#endif  // __FreeBSD__
+#endif  // defined(__FreeBSD__) || defined(__DragonFly__)
 
 #include <assert.h>
 #include <string.h>
