@@ -313,7 +313,7 @@ class RDMTestThread(Thread):
 
   def _RunCollector(self, universe, skip_queued_messages):
     """Run the device model collector for a universe."""
-    logging.info('Collecting for %d' % universe)
+    logging.info('Collecting for universe %d' % universe)
     self._test_state_lock.acquire()
     self._test_state = {
       'action': self.COLLECTOR,
