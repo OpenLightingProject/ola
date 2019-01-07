@@ -36,7 +36,6 @@
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/Descriptor.h>
-#include <ola/network/Interface.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/rdm/DummyResponder.h>
 #include <ola/rdm/RDMControllerAdaptor.h>
@@ -121,20 +120,19 @@ int main(int argc, char *argv[]) {
   CID cid = CID::Generate();
 
   // Find a network interface to use
-  // stupid Windows, 'interface' seems to be a struct so we use iface here.
-  ola::network::Interface iface;
+  ola::network::Interface interface;
 
   {
     auto_ptr<const ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-    if (!picker->ChooseInterface(&iface, FLAGS_listen_ip)) {
+    if (!picker->ChooseInterface(&interface, FLAGS_listen_ip)) {
       OLA_INFO << "Failed to find an interface";
       exit(ola::EXIT_UNAVAILABLE);
     }
   }
 
   // Setup the Node.
-  SimpleE133Node::Options opts(cid, iface.ip_address, *uid, FLAGS_lifetime);
+  SimpleE133Node::Options opts(cid, interface.ip_address, *uid, FLAGS_lifetime);
   SimpleE133Node node(opts);
 
   // Optionally attach some other endpoints.
@@ -154,7 +152,7 @@ int main(int argc, char *argv[]) {
   auto_ptr<ola::acn::E131Node> e131_node;
   if (FLAGS_e131) {
     e131_node.reset(new ola::acn::E131Node(
-                    node.SelectServer(), iface,
+                    node.SelectServer(), FLAGS_listen_ip,
                     ola::acn::E131Node::Options(), cid));
     if (!e131_node->Start()) {
       OLA_WARN << "Failed to start E1.31 node";

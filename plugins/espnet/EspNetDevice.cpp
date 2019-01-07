@@ -20,12 +20,9 @@
  *
  */
 
-#include <memory>
 #include <sstream>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/network/Interface.h"
-#include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
@@ -41,7 +38,6 @@ namespace plugin {
 namespace espnet {
 
 using std::ostringstream;
-using std::string;
 
 const char EspNetDevice::ESPNET_DEVICE_NAME[] = "ESP Net";
 const char EspNetDevice::IP_KEY[] = "ip";
@@ -64,16 +60,7 @@ EspNetDevice::EspNetDevice(Plugin *owner,
  * Start this device
  */
 bool EspNetDevice::StartHook() {
-  string ip_address = m_preferences->GetValue(IP_KEY);
-  ola::network::Interface interface;
-  std::auto_ptr<ola::network::InterfacePicker> picker(
-      ola::network::InterfacePicker::NewPicker());
-  if (!picker->ChooseInterface(&interface, ip_address,
-                               m_plugin_adaptor->DefaultInterface())) {
-    OLA_INFO << "Failed to find an interface";
-    return false;
-  }
-  m_node = new EspNetNode(interface);
+  m_node = new EspNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue(NODE_NAME_KEY));
   m_node->SetType(ESPNET_NODE_TYPE_IO);
 

@@ -26,7 +26,6 @@
 #include "ola/Logging.h"
 #include "ola/Constants.h"
 #include "ola/network/IPV4Address.h"
-#include "ola/network/Interface.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/pathport/PathportNode.h"
 
@@ -41,23 +40,22 @@ using std::vector;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::network::Interface;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::Callback0;
 
-// stupid Windows, 'interface' seems to be a struct so we use iface here.
 /*
  * Create a new node
- * @param iface the Interface to listen on.
+ * @param ip_address the IP address to prefer to listen on, if NULL we choose
+ * one.
  */
-PathportNode::PathportNode(const ola::network::Interface &iface,
+PathportNode::PathportNode(const string &ip_address,
                            uint32_t device_id,
                            uint8_t dscp)
     : m_running(false),
-      m_interface(iface),
-      m_device_id(device_id),
       m_dscp(dscp),
+      m_preferred_ip(ip_address),
+      m_device_id(device_id),
       m_sequence_number(1) {
 }
 
@@ -80,17 +78,24 @@ PathportNode::~PathportNode() {
  * Start this node
  */
 bool PathportNode::Start() {
-  if (m_running) {
+  if (m_running)
+    return false;
+
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
+    delete picker;
+    OLA_INFO << "Failed to find an interface";
     return false;
   }
+  delete picker;
 
   m_config_addr = IPV4Address(HostToNetwork(PATHPORT_CONFIG_GROUP));
   m_status_addr = IPV4Address(HostToNetwork(PATHPORT_STATUS_GROUP));
   m_data_addr = IPV4Address(HostToNetwork(PATHPORT_DATA_GROUP));
 
-  if (!InitNetwork()) {
+  if (!InitNetwork())
     return false;
-  }
 
   m_socket.SetTos(m_dscp);
   m_running = true;
@@ -104,9 +109,8 @@ bool PathportNode::Start() {
  * Stop this node
  */
 bool PathportNode::Stop() {
-  if (!m_running) {
+  if (!m_running)
     return false;
-  }
 
   m_socket.Close();
   m_running = false;
@@ -123,14 +127,12 @@ void PathportNode::SocketReady(UDPSocket *socket) {
   IPV4SocketAddress source;
 
   if (!socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                        &packet_size, &source)) {
+                        &packet_size, &source))
     return;
-  }
 
   // skip packets sent by us
-  if (source.Host() == m_interface.ip_address) {
+  if (source.Host() == m_interface.ip_address)
     return;
-  }
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.header))) {
     OLA_WARN << "Small pathport packet received, discarding";
@@ -190,9 +192,8 @@ void PathportNode::SocketReady(UDPSocket *socket) {
 bool PathportNode::SetHandler(uint8_t universe,
                              DmxBuffer *buffer,
                              Callback0<void> *closure) {
-  if (!closure) {
+  if (!closure)
     return false;
-  }
 
   universe_handlers::iterator iter = m_handlers.find(universe);
 
@@ -232,9 +233,8 @@ bool PathportNode::RemoveHandler(uint8_t universe) {
  * Send an arp reply
  */
 bool PathportNode::SendArpReply() {
-  if (!m_running) {
+  if (!m_running)
     return false;
-  }
 
   pathport_packet_s packet;
 
@@ -264,9 +264,8 @@ bool PathportNode::SendArpReply() {
  * @return true if it was send successfully, false otherwise
  */
 bool PathportNode::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
-  if (!m_running) {
+  if (!m_running)
     return false;
-  }
 
   if (universe > MAX_UNIVERSES) {
     OLA_WARN << "attempt to send to universe " << universe;
@@ -384,9 +383,8 @@ void PathportNode::HandleDmxData(const pathport_pdu_data &packet,
   }
 
   // Don't handle release messages yet
-  if (NetworkToHost(packet.type) != XDMX_DATA_FLAT) {
+  if (NetworkToHost(packet.type) != XDMX_DATA_FLAT)
     return;
-  }
 
   if (packet.start_code) {
     OLA_INFO << "Non-0 start code packet received, ignoring";
@@ -423,9 +421,8 @@ void PathportNode::HandleDmxData(const pathport_pdu_data &packet,
  * @param destination the destination to target
  */
 bool PathportNode::SendArpRequest(uint32_t destination) {
-  if (!m_running) {
+  if (!m_running)
     return false;
-  }
 
   pathport_packet_s packet;
   PopulateHeader(&packet.header, destination);
