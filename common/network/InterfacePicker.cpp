@@ -44,7 +44,7 @@ using std::vector;
  * @param iface, the interface to populate
  * @param ip_or_name the IP address or interface name of the local interface
  *   we'd prefer to use.
- * @param options a Options struct configuring ChooseInterface
+ * @param options an Options struct configuring ChooseInterface
  * @return true if we found an interface, false otherwise
  */
 // TODO(Simon): Change these to callback based code to reduce duplication.
