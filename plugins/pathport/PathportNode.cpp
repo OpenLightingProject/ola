@@ -303,7 +303,7 @@ bool PathportNode::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool PathportNode::InitNetwork() {
   if (!m_socket.Init()) {
