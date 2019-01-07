@@ -303,7 +303,7 @@ bool SandNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool SandNetNode::InitNetwork() {
   if (!m_control_socket.Init()) {
