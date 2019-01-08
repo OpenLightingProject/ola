@@ -378,8 +378,7 @@ bool FtdiInterface::Write(ola::io::ByteString *packet) {
   } else if (bytesWritten == (int)packet->size()){
     return true;
   } else {
-    OLA_WARN << "Bytes Written: " << bytesWritten;
-    OLA_WARN << "Packet Size: " << size;
+    OLA_WARN << "Bytes Written: " << bytesWritten << " Packet Size: " << size;
     return false;
   }
 }
