@@ -213,7 +213,6 @@ void *FtdiDmxThread::Run() {
 
         if(!ola::rdm::RDMCommandSerializer::PackWithStartCode(*m_pending_request, &packetBuffer)) {
           OLA_WARN << "RDMCommandSerializer failed. Dropping packet.";
-          delete m_pending_request;
           m_pending_request = nullptr;
 
           // This behavior is wrong, this suggests to whoever is doing the discovery that no devices are connected/responding while we actually just failed to get the packet to the line.
@@ -235,7 +234,11 @@ void *FtdiDmxThread::Run() {
           OLA_INFO << "OK To send RDM";
           sendRDM = true;
         }
+      } else {
+        sendRDM = false;
       }
+    } else {
+      sendRDM = false;
     }
 
     if (!m_interface->SetBreak(true)) {
@@ -262,6 +265,7 @@ void *FtdiDmxThread::Run() {
       }
     } else {
       if(m_interface->Write(&packetBuffer)) {
+          OLA_INFO << "RDM packet";
           if(m_pending_request->IsDUB()) {
             usleep(58000); //min time before next packet broadcast allowed
             readBytes = m_interface->Read(readBuffer, 258);
@@ -292,9 +296,11 @@ void *FtdiDmxThread::Run() {
             if(m_unmute_complete != nullptr) {
               thread_unmute_callback = m_unmute_complete;
               m_unmute_complete = nullptr;
+              OLA_INFO << "UnMuteAllCallback";
               thread_unmute_callback->Run();
             }
           }
+          m_pending_request = nullptr;
       } else {
         if(m_branch_callback != nullptr) {
 
