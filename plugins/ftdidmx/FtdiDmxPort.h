@@ -44,8 +44,7 @@ namespace plugin {
 namespace ftdidmx {
 
 class FtdiDmxOutputPort
-    : public ola::BasicOutputPort,
-      public ola::rdm::DiscoveryTargetInterface {
+    : public ola::BasicOutputPort {
  public:
     FtdiDmxOutputPort(FtdiDmxDevice *parent,
                       FtdiInterface *interface,
@@ -78,24 +77,6 @@ class FtdiDmxOutputPort
     }
 
     std::string Description() const { return m_interface->Description(); }
-
-    void MuteDevice(const ola::rdm::UID &target,
-                    MuteDeviceCallback *mute_complete){
-      OLA_WARN << "Port.MuteDevice()";
-      m_thread.MuteDevice(target, mute_complete);
-    }
-
-    void UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
-      OLA_WARN << "Port.UnMuteAll()";
-      m_thread.UnMuteAll(unmute_complete);
-    }
-
-    void Branch(const ola::rdm::UID &lower,
-                const ola::rdm::UID &upper,
-                BranchCallback *callback) {
-      OLA_WARN << "Port.Branch()";
-      m_thread.Branch(lower, upper, callback);
-    }
 
   private:
     FtdiInterface *m_interface;
