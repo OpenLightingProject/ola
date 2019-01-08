@@ -98,8 +98,10 @@ void FtdiDmxThread::SendRDMRequest(ola::rdm::RDMRequest *request,
   if(m_pending_request == nullptr) {
       m_pending_request = request;
       m_rdm_callback = callback;
+  } else {
+    OLA_WARN << "Unable to queue RDM request, RDM operation already pending";
   }
-  OLA_WARN << "Function not properly implemented yet, callback won't get called.";
+  OLA_WARN << "Function not properly implemented yet, callback may not get called.";
 }
 
 void FtdiDmxThread::RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
@@ -136,6 +138,7 @@ void FtdiDmxThread::MuteDevice(const ola::rdm::UID &target,
     m_pending_request = ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number += 1);
   } else {
       // Already pending request
+
   }
 }
 
@@ -147,6 +150,7 @@ void FtdiDmxThread::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
     m_pending_request = ola::rdm::NewUnMuteRequest(m_uid, ola::rdm::UID::AllDevices(), m_transaction_number += 1);
   } else {
       // Already pending request
+    OLA_WARN << "Unable to queue UnMuteAll request, RDM operation already pending";
   }
 }
 
@@ -160,6 +164,7 @@ void FtdiDmxThread::Branch(const ola::rdm::UID &lower,
     m_pending_request = ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower, upper, m_transaction_number += 1);
   } else {
       // Already pending request
+    OLA_WARN << "Unable to queue Branch request, RDM operation already pending";
   }
 }
 
@@ -181,6 +186,7 @@ void *FtdiDmxThread::Run() {
   MuteDeviceCallback *thread_mute_callback = nullptr;
   UnMuteDeviceCallback *thread_unmute_callback = nullptr;
   BranchCallback *thread_branch_callback = nullptr;
+  ola::rdm::RDMCallback *thread_rdm_callback = nullptr;
 
 
   int frameTime = static_cast<int>(floor(
@@ -228,6 +234,10 @@ void *FtdiDmxThread::Run() {
             thread_branch_callback = m_branch_callback;
             m_branch_callback = nullptr;
             thread_branch_callback->Run(nullptr, 0);
+          } else if(m_rdm_callback != nullptr) {
+            thread_rdm_callback = m_rdm_callback;
+            m_rdm_callback = nullptr;
+            ola::rdm::RunRDMCallback(thread_rdm_callback, ola::rdm::RDM_FAILED_TO_SEND);
           }
           sendRDM = false;
         } else {
@@ -289,6 +299,15 @@ void *FtdiDmxThread::Run() {
                 thread_mute_callback->Run(true);
               } else {
                 thread_mute_callback->Run(false);
+              }
+            } else if(m_rdm_callback != nullptr) {
+              thread_rdm_callback = m_rdm_callback;
+              m_rdm_callback = nullptr;
+
+              if(readBytes > 0) {
+                thread_rdm_callback->Run(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer, readBytes), m_pending_request));
+              } else {
+                RunRDMCallback(thread_rdm_callback, rdm::RDM_TIMEOUT);
               }
             }
 
