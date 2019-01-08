@@ -70,6 +70,13 @@ class FtdiDmxOutputPort
       m_thread.SendRDMRequest(request, callback);
     }
 
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_thread.RunFullDiscovery(callback);
+    }
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_thread.RunIncrementalDiscovery(callback);
+    }
+
     std::string Description() const { return m_interface->Description(); }
 
     void MuteDevice(const ola::rdm::UID &target,
