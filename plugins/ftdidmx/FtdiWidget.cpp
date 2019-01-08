@@ -369,12 +369,18 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
 
 
 bool FtdiInterface::Write(ola::io::ByteString *packet) {
-  if(ftdi_write_data(&m_handle, packet->data(), packet->size()) < 0) {
+  int bytesWritten = ftdi_write_data(&m_handle, packet->data(), packet->size());
+  int size = packet->size();
+  if(bytesWritten < 0) {
     OLA_WARN << m_parent->Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
-  } else {
+  } else if (bytesWritten == (int)packet->size()){
     return true;
+  } else {
+    OLA_WARN << "Bytes Written: " << bytesWritten;
+    OLA_WARN << "Packet Size: " << size;
+    return false;
   }
 }
 
