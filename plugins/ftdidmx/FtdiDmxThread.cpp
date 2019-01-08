@@ -71,8 +71,11 @@ FtdiDmxThread::~FtdiDmxThread() {
  * @brief Stop this thread
  */
 bool FtdiDmxThread::Stop() {
-  ola::thread::MutexLocker locker(&m_term_mutex);
-  m_term = true;
+
+  {
+    ola::thread::MutexLocker locker(&m_term_mutex);
+    m_term = true;
+  }
 
   if(m_pending_request != nullptr) {
       //destroy pending request and callbacks
@@ -138,7 +141,7 @@ void FtdiDmxThread::MuteDevice(const ola::rdm::UID &target,
     m_pending_request = ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number += 1);
   } else {
       // Already pending request
-
+    OLA_WARN << "Unable to queue Mute request, RDM operation already pending";
   }
 }
 
@@ -187,6 +190,7 @@ void *FtdiDmxThread::Run() {
   UnMuteDeviceCallback *thread_unmute_callback = nullptr;
   BranchCallback *thread_branch_callback = nullptr;
   ola::rdm::RDMCallback *thread_rdm_callback = nullptr;
+  ola::rdm::RDMRequest *thread_pending_request = nullptr;
 
 
   int frameTime = static_cast<int>(floor(
@@ -245,6 +249,7 @@ void *FtdiDmxThread::Run() {
           sendRDM = true;
         }
       } else {
+        OLA_INFO << "NOK to send RDM (DMX interval)";
         sendRDM = false;
       }
     } else {
@@ -279,10 +284,11 @@ void *FtdiDmxThread::Run() {
           if(m_pending_request->IsDUB()) {
             usleep(58000); //min time before next packet broadcast allowed
             readBytes = m_interface->Read(readBuffer, 258);
-
+            OLA_INFO << "DUB Read: " << readBytes;
             if(m_branch_callback != nullptr) {
               thread_branch_callback = m_branch_callback;
               m_branch_callback = nullptr;
+              m_pending_request = nullptr;
               thread_branch_callback->Run(readBuffer, readBytes);
             }
           }
@@ -296,8 +302,10 @@ void *FtdiDmxThread::Run() {
               m_mute_complete = nullptr;
 
               if(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer, readBytes))->Response()->SourceUID() == m_pending_request->DestinationUID()) {
+                m_pending_request = nullptr;
                 thread_mute_callback->Run(true);
               } else {
+                m_pending_request = nullptr;
                 thread_mute_callback->Run(false);
               }
             } else if(m_rdm_callback != nullptr) {
@@ -305,8 +313,11 @@ void *FtdiDmxThread::Run() {
               m_rdm_callback = nullptr;
 
               if(readBytes > 0) {
-                thread_rdm_callback->Run(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer, readBytes), m_pending_request));
+                thread_pending_request = m_pending_request;
+                m_pending_request = nullptr;
+                thread_rdm_callback->Run(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer, readBytes), thread_pending_request));
               } else {
+                m_pending_request = nullptr;
                 RunRDMCallback(thread_rdm_callback, rdm::RDM_TIMEOUT);
               }
             }
@@ -316,16 +327,18 @@ void *FtdiDmxThread::Run() {
               thread_unmute_callback = m_unmute_complete;
               m_unmute_complete = nullptr;
               OLA_INFO << "UnMuteAllCallback";
+              m_pending_request = nullptr;
               thread_unmute_callback->Run();
             }
           }
-          m_pending_request = nullptr;
       } else {
         if(m_branch_callback != nullptr) {
 
         } else if(m_mute_complete != nullptr) {
 
         } else if(m_unmute_complete != nullptr) {
+
+        } else if(m_rdm_callback != nullptr) {
 
         }
       }
