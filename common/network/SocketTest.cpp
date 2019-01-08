@@ -343,7 +343,7 @@ void SocketTest::ReceiveSendAndClose(ConnectedDescriptor *socket) {
 void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
   OLA_ASSERT_TRUE(new_socket);
   GenericSocketAddress address = new_socket->GetPeerAddress();
-  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_ASSERT_EQ(address.Family(), static_cast<uint16_t>(AF_INET));
   OLA_INFO << "Connection from " << address;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
@@ -361,7 +361,7 @@ void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
 void SocketTest::NewConnectionSendAndClose(TCPSocket *new_socket) {
   OLA_ASSERT_NOT_NULL(new_socket);
   GenericSocketAddress address = new_socket->GetPeerAddress();
-  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_ASSERT_EQ(address.Family(), static_cast<uint16_t>(AF_INET));
   OLA_INFO << "Connection from " << address;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
