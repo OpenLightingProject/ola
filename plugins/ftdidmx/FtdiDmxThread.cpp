@@ -53,6 +53,7 @@ FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface, unsigned int frequency)
     m_term(false),
     m_frequency(frequency),
     m_transaction_number(0),
+    m_discovery_agent(this),
     m_uid(0x7a70, 0x12345678),
     m_pending_request(nullptr),
     m_rdm_callback(nullptr),
@@ -101,6 +102,31 @@ void FtdiDmxThread::SendRDMRequest(ola::rdm::RDMRequest *request,
   OLA_WARN << "Function not properly implemented yet, callback won't get called.";
 }
 
+void FtdiDmxThread::RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+  m_discovery_agent.StartFullDiscovery(ola::NewSingleCallback(this, &FtdiDmxThread::DiscoveryComplete, callback));
+}
+
+void FtdiDmxThread::RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+  m_discovery_agent.StartIncrementalDiscovery(ola::NewSingleCallback(this, &FtdiDmxThread::DiscoveryComplete, callback));
+}
+
+/**
+ * Called when the discovery process finally completes
+ * @param callback the callback passed to StartFullDiscovery or
+ * StartIncrementalDiscovery that we should execute.
+ * @param status true if discovery worked, false otherwise
+ * @param uids the UIDSet of UIDs that were found.
+ */
+void FtdiDmxThread::DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
+                                       bool,
+                                       const ola::rdm::UIDSet &uids) {
+  OLA_DEBUG << "FTDI discovery complete: " << uids;
+  if (callback) {
+    callback->Run(uids);
+  }
+}
+
+
 void FtdiDmxThread::MuteDevice(const ola::rdm::UID &target,
                                MuteDeviceCallback *mute_complete) {
   ola::thread::MutexLocker locker(&m_rdm_mutex);
@@ -129,6 +155,7 @@ void FtdiDmxThread::Branch(const ola::rdm::UID &lower,
                            BranchCallback *callback) {
   ola::thread::MutexLocker locker(&m_rdm_mutex);
   if(m_pending_request == nullptr) {
+    OLA_INFO << "Sending branch";
     m_branch_callback = callback;
     m_pending_request = ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower, upper, m_transaction_number += 1);
   } else {

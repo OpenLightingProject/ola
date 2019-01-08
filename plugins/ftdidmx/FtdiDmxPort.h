@@ -74,16 +74,19 @@ class FtdiDmxOutputPort
 
     void MuteDevice(const ola::rdm::UID &target,
                     MuteDeviceCallback *mute_complete){
+      OLA_WARN << "Port.MuteDevice()";
       m_thread.MuteDevice(target, mute_complete);
     }
 
     void UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
+      OLA_WARN << "Port.UnMuteAll()";
       m_thread.UnMuteAll(unmute_complete);
     }
 
     void Branch(const ola::rdm::UID &lower,
                 const ola::rdm::UID &upper,
                 BranchCallback *callback) {
+      OLA_WARN << "Port.Branch()";
       m_thread.Branch(lower, upper, callback);
     }
 

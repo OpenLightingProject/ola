@@ -41,6 +41,7 @@ namespace ftdidmx {
 
 class FtdiDmxThread
         : public ola::thread::Thread,
+          public ola::rdm::DiscoverableRDMControllerInterface,
           public ola::rdm::DiscoveryTargetInterface {
  public:
     FtdiDmxThread(FtdiInterface *interface, unsigned int frequency);
@@ -51,6 +52,9 @@ class FtdiDmxThread
     bool WriteDMX(const DmxBuffer &buffer);
     void SendRDMRequest(ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
+
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
     void MuteDevice(const ola::rdm::UID &target,
                     MuteDeviceCallback *mute_complete);
@@ -76,7 +80,7 @@ class FtdiDmxThread
     ola::thread::Mutex m_rdm_mutex;
 
     uint8_t m_transaction_number;
-    //ola::rdm::DiscoveryAgent m_discovery_agent;
+    ola::rdm::DiscoveryAgent m_discovery_agent;
     const ola::rdm::UID m_uid;
 
     ola::rdm::RDMRequest *m_pending_request;
@@ -86,6 +90,9 @@ class FtdiDmxThread
     BranchCallback *m_branch_callback;
 
     void CheckTimeGranularity();
+    void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
+                           bool status,
+                           const ola::rdm::UIDSet &uids);
 
     static const uint32_t DMX_MAB = 16;
     static const uint32_t DMX_BREAK = 110;
