@@ -230,6 +230,9 @@ class FtdiInterface {
   /** @brief Write prepared packets to previously opened line, agnostic to packet contents */
   bool Write(ola::io::ByteString *packet);
 
+  /** @brief Write prepared packet and read line into buffer */
+  int WriteAndRead(ola::io::ByteString *packet, unsigned char *readBuffer, long unsigned int size, int minWait);
+
   /** @brief Read data from a previously-opened line */
   int Read(unsigned char* buff, int size);
 

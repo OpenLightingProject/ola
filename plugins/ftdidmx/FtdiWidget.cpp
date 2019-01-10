@@ -44,6 +44,7 @@
 
 #include <assert.h>
 #include <strings.h>
+#include <unistd.h>
 
 #include <string>
 #include <algorithm>
@@ -383,9 +384,35 @@ bool FtdiInterface::Write(ola::io::ByteString *packet) {
   }
 }
 
+int FtdiInterface::WriteAndRead(ola::io::ByteString *packet, unsigned char *readBuffer, unsigned long readBufferSize, int minWait) {
+  int bytesWritten = ftdi_write_data(&m_handle, packet->data(), packet->size());
+  int size = packet->size();
+  if(bytesWritten < 0) {
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
+    return bytesWritten;
+  } else if (bytesWritten == (int)packet->size()){
+    usleep(minWait);
+    int bytesRead = ftdi_read_data(&m_handle, readBuffer, readBufferSize);
+    if(bytesRead < 0) {
+      OLA_WARN << m_parent->Description() << " "
+               << ftdi_get_error_string(&m_handle);
+      return bytesRead;
+    } else {
+      OLA_INFO << "Read bytes: " << bytesRead;
+      return bytesRead;
+    }
+
+  } else {
+    OLA_WARN << "Bytes Written: " << bytesWritten << " Packet Size: " << size;
+    return -1;
+  }
+}
+
 int FtdiInterface::Read(unsigned char *buff, int size) {
   int read = ftdi_read_data(&m_handle, buff, size);
-  if (read < 0) {
+  OLA_INFO << "FtdiRead";
+  if (read <= 0) {
     OLA_WARN << m_parent->Description() << " "
              << ftdi_get_error_string(&m_handle);
     return read;

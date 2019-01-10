@@ -279,7 +279,64 @@ void *FtdiDmxThread::Run() {
         clock.CurrentTime(&lastDMX);
       }
     } else {
-      if(m_interface->Write(&packetBuffer)) {
+      if(!m_pending_request->DestinationUID().IsBroadcast() || m_pending_request->IsDUB()) {
+        if((readBytes = m_interface->WriteAndRead(&packetBuffer, readBuffer, sizeof(readBuffer), (m_pending_request->IsDUB() ? 58000 : 30000))) >= 0) {
+          if(m_pending_request->IsDUB()) {
+            if(m_branch_callback != nullptr) {
+              thread_branch_callback = m_branch_callback;
+              m_branch_callback = nullptr;
+              m_pending_request = nullptr;
+              thread_branch_callback->Run(readBuffer, readBytes);
+            } else {
+              if(m_mute_complete != nullptr) {
+                thread_mute_callback = m_mute_complete;
+                m_mute_complete = nullptr;
+
+                if(readBytes > 0 &&
+                   rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer, readBytes))->Response()->SourceUID() == m_pending_request->DestinationUID()) {
+                  m_pending_request = nullptr;
+                  thread_mute_callback->Run(true);
+                } else {
+                  m_pending_request = nullptr;
+                  thread_mute_callback->Run(false);
+                }
+              } else if(m_rdm_callback != nullptr) {
+                thread_rdm_callback = m_rdm_callback;
+                m_rdm_callback = nullptr;
+
+                if(readBytes > 0) {
+                  thread_pending_request = m_pending_request;
+                  m_pending_request = nullptr;
+                  thread_rdm_callback->Run(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer, readBytes), thread_pending_request));
+                } else {
+                  m_pending_request = nullptr;
+                  RunRDMCallback(thread_rdm_callback, rdm::RDM_TIMEOUT);
+                }
+              }
+            }
+          }
+        } else {
+          // Something went wrong, already reported at hw level but we'll need to handle the callbacks
+          if(m_branch_callback != nullptr) {
+
+          } else if(m_mute_complete != nullptr) {
+
+          } else if(m_unmute_complete != nullptr) {
+
+          } else if(m_rdm_callback != nullptr) {
+          }
+        }
+      } else if(m_interface->Write(&packetBuffer)) {
+        if(m_unmute_complete != nullptr) {
+          thread_unmute_callback = m_unmute_complete;
+          m_unmute_complete = nullptr;
+          OLA_INFO << "UnMuteAllCallback";
+          m_pending_request = nullptr;
+          thread_unmute_callback->Run();
+        }
+      }
+
+/*      if(m_interface->Write(&packetBuffer)) {
           OLA_INFO << "RDM packet";
           if(m_pending_request->IsDUB()) {
             usleep(58000); //min time before next packet broadcast allowed
@@ -341,7 +398,7 @@ void *FtdiDmxThread::Run() {
         } else if(m_rdm_callback != nullptr) {
 
         }
-      }
+      } */
 
       goto framesleep;
     }
