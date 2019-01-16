@@ -1191,6 +1191,7 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
       case ola::rdm::PID_MAXIMUM_LEVEL:
         AddSection(&sections, DIMMER_MAXIMUM_SECTION,
                    DIMMER_MAXIMUM_SECTION_NAME);
+        break;
     }
   }
 
