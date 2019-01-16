@@ -117,13 +117,29 @@ Interface& Interface::operator=(const Interface &other) {
 }
 
 
-bool Interface::operator==(const Interface &other) {
+bool Interface::operator==(const Interface &other) const {
   return (name == other.name &&
           ip_address == other.ip_address &&
+          bcast_address == other.bcast_address &&
           subnet_mask == other.subnet_mask &&
+          hw_address == other.hw_address &&
           loopback == other.loopback &&
           index == other.index &&
           type == other.type);
+}
+
+
+string Interface::ToString(const string &separator) const {
+  std::ostringstream str;
+  str << name << separator
+      << "Index: " << index << separator
+      << "IP: " << ip_address << separator
+      << "Broadcast: " << bcast_address << separator
+      << "Subnet: " << subnet_mask << separator
+      << "Type: " << type << separator
+      << "MAC: " << hw_address << separator
+      << "Loopback: " << loopback;
+  return str.str();
 }
 
 
@@ -228,8 +244,9 @@ Interface InterfaceBuilder::Construct() {
 bool InterfaceBuilder::SetAddress(const string &str,
                                   IPV4Address *target) {
   IPV4Address tmp_address;
-  if (!IPV4Address::FromString(str, &tmp_address))
+  if (!IPV4Address::FromString(str, &tmp_address)) {
     return false;
+  }
   *target = tmp_address;
   return true;
 }

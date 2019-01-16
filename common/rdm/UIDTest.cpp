@@ -71,6 +71,14 @@ void UIDTest::testUID() {
   OLA_ASSERT_EQ((uint16_t) 2, uid3.ManufacturerId());
   OLA_ASSERT_EQ((uint32_t) 10, uid3.DeviceId());
 
+  UID uid4(0x0000000400000002);
+  OLA_ASSERT_EQ((uint16_t) 4, uid4.ManufacturerId());
+  OLA_ASSERT_EQ((uint32_t) 2, uid4.DeviceId());
+
+  // ToUInt64
+  OLA_ASSERT_EQ((uint64_t) 0x000100000002, uid.ToUInt64());
+  OLA_ASSERT_EQ((uint64_t) 0x00020000000a, uid3.ToUInt64());
+
   // ToString
   OLA_ASSERT_EQ(string("0001:00000002"), uid.ToString());
   OLA_ASSERT_EQ(string("0002:0000000a"), uid3.ToString());
@@ -79,15 +87,15 @@ void UIDTest::testUID() {
   UID manufacturer_devices = UID::VendorcastAddress(0x52);
   OLA_ASSERT_EQ(string("ffff:ffffffff"), all_devices.ToString());
   OLA_ASSERT_EQ(string("0052:ffffffff"),
-                       manufacturer_devices.ToString());
+                manufacturer_devices.ToString());
   OLA_ASSERT_EQ(all_devices.ManufacturerId(),
-                       static_cast<uint16_t>(0xffff));
+                static_cast<uint16_t>(0xffff));
   OLA_ASSERT_EQ(all_devices.DeviceId(),
-                       static_cast<uint32_t>(0xffffffff));
+                static_cast<uint32_t>(0xffffffff));
   OLA_ASSERT_EQ(manufacturer_devices.ManufacturerId(),
-                       static_cast<uint16_t>(0x0052));
+                static_cast<uint16_t>(0x0052));
   OLA_ASSERT_EQ(manufacturer_devices.DeviceId(),
-                       static_cast<uint32_t>(0xffffffff));
+                static_cast<uint32_t>(0xffffffff));
   OLA_ASSERT_TRUE(all_devices.IsBroadcast());
   OLA_ASSERT_TRUE(manufacturer_devices.IsBroadcast());
 

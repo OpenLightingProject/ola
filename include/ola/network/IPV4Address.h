@@ -139,8 +139,8 @@ class IPV4Address {
      * should be at least LENGTH bytes.
      * @note The address is copied in network byte order.
      */
-    void Get(uint8_t ptr[LENGTH]) {
-      memcpy(ptr, reinterpret_cast<uint8_t*>(&m_address), LENGTH);
+    void Get(uint8_t ptr[LENGTH]) const {
+      memcpy(ptr, reinterpret_cast<const uint8_t*>(&m_address), LENGTH);
     }
 
     /**
@@ -153,7 +153,7 @@ class IPV4Address {
      * @brief Write the string representation of this IPV4Address to an
      * ostream.
      * @param out the ostream to write to.
-     * @param address to address to write.
+     * @param address the address to write.
      */
     friend std::ostream& operator<<(std::ostream &out,
                                     const IPV4Address &address) {
