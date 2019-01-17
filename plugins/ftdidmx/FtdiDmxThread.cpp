@@ -220,6 +220,9 @@ void *FtdiDmxThread::Run() {
       elapsed = ts1 - lastDMX;
 
       if(elapsed.InMilliSeconds() < 500) {
+        if(!packetBuffer.empty()) {
+          packetBuffer.clear();
+        }
 
         if(!ola::rdm::RDMCommandSerializer::PackWithStartCode(*m_pending_request, &packetBuffer)) {
           OLA_WARN << "RDMCommandSerializer failed. Dropping packet.";
@@ -287,17 +290,20 @@ void *FtdiDmxThread::Run() {
               m_branch_callback = nullptr;
               m_pending_request = nullptr;
               thread_branch_callback->Run(readBuffer, readBytes);
-            } else {
+            }
+          } else {
               if(m_mute_complete != nullptr) {
                 thread_mute_callback = m_mute_complete;
                 m_mute_complete = nullptr;
 
                 if(readBytes > 0 &&
-                   rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer, readBytes))->Response()->SourceUID() == m_pending_request->DestinationUID()) {
+                   rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer+1, readBytes-1))->Response()->SourceUID() == m_pending_request->DestinationUID()) {
                   m_pending_request = nullptr;
+                  OLA_INFO << "Mute callback(true)";
                   thread_mute_callback->Run(true);
                 } else {
                   m_pending_request = nullptr;
+                  OLA_INFO << "Mute callback(false)";
                   thread_mute_callback->Run(false);
                 }
               } else if(m_rdm_callback != nullptr) {
@@ -307,14 +313,14 @@ void *FtdiDmxThread::Run() {
                 if(readBytes > 0) {
                   thread_pending_request = m_pending_request;
                   m_pending_request = nullptr;
-                  thread_rdm_callback->Run(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer, readBytes), thread_pending_request));
+                  thread_rdm_callback->Run(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer+1, readBytes-1), thread_pending_request));
                 } else {
                   m_pending_request = nullptr;
                   RunRDMCallback(thread_rdm_callback, rdm::RDM_TIMEOUT);
                 }
               }
             }
-          }
+
         } else {
           // Something went wrong, already reported at hw level but we'll need to handle the callbacks
           if(m_branch_callback != nullptr) {
