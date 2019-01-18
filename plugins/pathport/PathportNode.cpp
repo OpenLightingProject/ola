@@ -26,7 +26,6 @@
 #include "ola/Logging.h"
 #include "ola/Constants.h"
 #include "ola/network/IPV4Address.h"
-#include "ola/network/Interface.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/pathport/PathportNode.h"
 
@@ -41,23 +40,22 @@ using std::vector;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::network::Interface;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::Callback0;
 
-// stupid Windows, 'interface' seems to be a struct so we use iface here.
 /*
  * Create a new node
- * @param iface the Interface to listen on.
+ * @param ip_address the IP address to prefer to listen on, if NULL we choose
+ * one.
  */
-PathportNode::PathportNode(const ola::network::Interface &iface,
+PathportNode::PathportNode(const string &ip_address,
                            uint32_t device_id,
                            uint8_t dscp)
     : m_running(false),
-      m_interface(iface),
-      m_device_id(device_id),
       m_dscp(dscp),
+      m_preferred_ip(ip_address),
+      m_device_id(device_id),
       m_sequence_number(1) {
 }
 
@@ -83,6 +81,15 @@ bool PathportNode::Start() {
   if (m_running) {
     return false;
   }
+
+  ola::network::InterfacePicker *picker =
+      ola::network::InterfacePicker::NewPicker();
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
+    delete picker;
+    OLA_INFO << "Failed to find an interface";
+    return false;
+  }
+  delete picker;
 
   m_config_addr = IPV4Address(HostToNetwork(PATHPORT_CONFIG_GROUP));
   m_status_addr = IPV4Address(HostToNetwork(PATHPORT_STATUS_GROUP));
@@ -123,9 +130,8 @@ void PathportNode::SocketReady(UDPSocket *socket) {
   IPV4SocketAddress source;
 
   if (!socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                        &packet_size, &source)) {
+                        &packet_size, &source))
     return;
-  }
 
   // skip packets sent by us
   if (source.Host() == m_interface.ip_address) {
@@ -175,8 +181,8 @@ void PathportNode::SocketReady(UDPSocket *socket) {
       OLA_DEBUG << "Got pathport arp reply";
       break;
     default:
-      OLA_INFO << "Unhandled pathport packet with id: " <<
-        NetworkToHost(pdu->head.type);
+      OLA_INFO << "Unhandled pathport packet with id: "
+               << NetworkToHost(pdu->head.type);
   }
 }
 
@@ -304,7 +310,7 @@ bool PathportNode::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool PathportNode::InitNetwork() {
   if (!m_socket.Init()) {
@@ -342,7 +348,7 @@ bool PathportNode::InitNetwork() {
   }
 
   m_socket.SetOnData(
-    NewCallback(this, &PathportNode::SocketReady, &m_socket));
+      NewCallback(this, &PathportNode::SocketReady, &m_socket));
   return true;
 }
 

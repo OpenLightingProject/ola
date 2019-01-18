@@ -26,7 +26,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/IPV4Address.h"
-#include "ola/network/Interface.h"
+#include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
 #include "plugins/pathport/PathportPackets.h"
 
@@ -36,9 +36,7 @@ namespace pathport {
 
 class PathportNode {
  public:
-    // stupid Windows, 'interface' seems to be a struct so we use iface here.
-    explicit PathportNode(const ola::network::Interface &iface,
-                          uint32_t device_id,
+    explicit PathportNode(const std::string &preferred_ip, uint32_t device_id,
                           uint8_t dscp);
     ~PathportNode();
 
@@ -113,12 +111,13 @@ class PathportNode {
                     ola::network::IPV4Address dest);
 
     bool m_running;
-    const ola::network::Interface m_interface;
-    uint32_t m_device_id;  // the pathport device id
     uint8_t m_dscp;
+    std::string m_preferred_ip;
+    uint32_t m_device_id;  // the pathport device id
     uint16_t m_sequence_number;
 
     universe_handlers m_handlers;
+    ola::network::Interface m_interface;
     ola::network::UDPSocket m_socket;
     ola::network::IPV4Address m_config_addr;
     ola::network::IPV4Address m_status_addr;

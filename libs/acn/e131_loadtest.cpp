@@ -20,15 +20,12 @@
 
 #include <stdlib.h>
 #include <algorithm>
-#include <memory>
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
 #include "ola/base/Init.h"
-#include "ola/network/Interface.h"
-#include "ola/network/InterfacePicker.h"
 #include "ola/io/SelectServer.h"
 #include "libs/acn/E131Node.h"
 
@@ -66,16 +63,7 @@ int main(int argc, char* argv[]) {
   output.Blackout();
   SelectServer ss;
 
-  // stupid Windows, 'interface' seems to be a struct so we use iface here.
-  ola::network::Interface iface;
-  std::auto_ptr<ola::network::InterfacePicker> picker(
-      ola::network::InterfacePicker::NewPicker());
-  if (!picker->ChooseInterface(&iface, "")) {
-    OLA_WARN << "Failed to find an interface";
-    return -1;
-  }
-
-  E131Node node(&ss, iface, E131Node::Options());
+  E131Node node(&ss, "", E131Node::Options());
   if (!node.Start()) {
     return -1;
   }

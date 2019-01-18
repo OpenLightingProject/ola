@@ -28,7 +28,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/IPV4Address.h"
-#include "ola/network/Interface.h"
+#include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
 #include "ola/dmx/RunLengthEncoder.h"
 #include "plugins/sandnet/SandNetPackets.h"
@@ -48,8 +48,7 @@ class SandNetNode {
       SANDNET_PORT_MODE_MIN
     } sandnet_port_type;
 
-    // stupid Windows, 'interface' seems to be a struct so we use iface here.
-    explicit SandNetNode(const ola::network::Interface &iface);
+    explicit SandNetNode(const std::string &preferred_ip);
     ~SandNetNode();
 
     const ola::network::Interface &GetInterface() const {
@@ -104,6 +103,7 @@ class SandNetNode {
 
     bool m_running;
     std::string m_node_name;
+    std::string m_preferred_ip;
 
     sandnet_port m_ports[SANDNET_MAX_PORTS];
     universe_handlers m_handlers;
