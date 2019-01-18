@@ -441,6 +441,7 @@ void CustomCapitalizeLabel(string *s) {
     "dns",
     "ip",
     "ipv4",  // Should really be IPv4 probably, but better than nothing
+    "ipv6",  // Should really be IPv6 probably, but better than nothing
     "led",
     "pdl",
     "pid",
