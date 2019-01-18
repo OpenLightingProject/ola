@@ -19,7 +19,6 @@
  */
 
 #include <string.h>
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -95,88 +94,6 @@ bool InterfacePicker::ChooseInterface(
   OLA_DEBUG << "Using interface " << iface->name << " ("
             << iface->ip_address << ")";
   return true;
-}
-
-
-/*
- * Select an interface to use
- * @param iface, the interface to populate
- * @param ip_or_name the IP address or interface name of the local interface
- *   we'd prefer to use.
- * @param default_ip_or_name the IP address or interface name of the local
- *   interface we'd prefer to fall back to if ip_or_name isn't found.
- * @param options an Options struct configuring ChooseInterface
- * @return true if we found an interface, false otherwise
- */
-// TODO(Simon): Change these to callback based code to reduce duplication.
-bool InterfacePicker::ChooseInterface(
-    Interface *iface,
-    const string &ip_or_name,
-    const string &default_ip_or_name,
-    const Options &options) const {
-  Options restricted_options = options;
-  if (!default_ip_or_name.empty()) {
-    // Need to force strict mode in the options here, so we only get a real
-    // match
-    restricted_options.specific_only = true;
-  }
-  if (!ip_or_name.empty() &&
-      ChooseInterface(iface, ip_or_name, restricted_options)) {
-    return true;
-  } else {
-    return ChooseInterface(iface, default_ip_or_name, options);
-  }
-}
-
-
-/*
- * Select an interface to use
- * @param iface, the interface to populate
- * @param ip_or_name the IP address or interface name of the local interface
- *   we'd prefer to use.
- * @param default_iface the Interface we'd prefer to fall back to if
- *   ip_or_name isn't found.
- * @param options an Options struct configuring ChooseInterface
- * @return true if we found an interface, false otherwise
- */
-// TODO(Simon): Change these to callback based code to reduce duplication.
-bool InterfacePicker::ChooseInterface(
-    Interface *iface,
-    const string &ip_or_name,
-    const Interface default_iface,
-    const Options &options) const {
-  Options restricted_options = options;
-  // Need to force strict mode in the options here, so we only get a real match
-  restricted_options.specific_only = true;
-  if (!ip_or_name.empty() &&
-      ChooseInterface(iface, ip_or_name, restricted_options)) {
-    return true;
-  } else {
-    vector<Interface> interfaces = GetInterfaces(options.include_loopback);
-    if (interfaces.empty()) {
-      OLA_INFO << "No interfaces found";
-      return false;
-    }
-
-    // Check that default_iface is actually in the picker list
-    vector<Interface>::const_iterator iter = std::find(
-        interfaces.begin(), interfaces.end(), default_iface);
-    if (iter != interfaces.end()) {
-      *iface = *iter;
-      return true;
-    } else {
-      OLA_INFO << "Default interface " << default_iface << " does not exist in "
-                  "the InterfacePicker list";
-      if (options.specific_only) {
-        return false;
-      } else {
-        *iface = interfaces[0];
-        OLA_DEBUG << "Falling back to interface " << iface->name << " ("
-                  << iface->ip_address << ")";
-        return true;
-      }
-    }
-  }
 }
 
 

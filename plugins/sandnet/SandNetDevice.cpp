@@ -18,14 +18,11 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "ola/Logging.h"
-#include "ola/network/Interface.h"
-#include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
@@ -67,17 +64,7 @@ bool SandNetDevice::StartHook() {
   vector<ola::network::UDPSocket*> sockets;
   vector<ola::network::UDPSocket*>::iterator iter;
 
-  string ip_address = m_preferences->GetValue(IP_KEY);
-  // stupid Windows, 'interface' seems to be a struct so we use iface here.
-  ola::network::Interface iface;
-  std::auto_ptr<ola::network::InterfacePicker> picker(
-      ola::network::InterfacePicker::NewPicker());
-  if (!picker->ChooseInterface(&iface, ip_address,
-                               m_plugin_adaptor->DefaultInterface())) {
-    OLA_INFO << "Failed to find an interface";
-    return false;
-  }
-  m_node = new SandNetNode(iface);
+  m_node = new SandNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue(NAME_KEY));
 
   // setup the output ports (ie INTO sandnet)

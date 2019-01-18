@@ -25,7 +25,6 @@
 
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
-#include "ola/network/Interface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/stl/STLUtils.h"
@@ -48,16 +47,17 @@ using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::Callback0;
 
-// stupid Windows, 'interface' seems to be a struct so we use iface here.
+
 /*
  * Create a new node
- * @param iface the interface prefer to listen on.
+ * @param ip_address the IP address to prefer to listen on, if NULL we choose
+ * one.
  */
-ShowNetNode::ShowNetNode(const ola::network::Interface &iface)
+ShowNetNode::ShowNetNode(const std::string &ip_address)
     : m_running(false),
       m_packet_count(0),
       m_node_name(),
-      m_interface(iface),
+      m_preferred_ip(ip_address),
       m_socket(NULL) {
 }
 
@@ -83,6 +83,15 @@ bool ShowNetNode::Start() {
   if (m_running) {
     return false;
   }
+
+  ola::network::InterfacePicker *picker =
+      ola::network::InterfacePicker::NewPicker();
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
+    delete picker;
+    OLA_INFO << "Failed to find an interface";
+    return false;
+  }
+  delete picker;
 
   if (!InitNetwork()) {
     return false;
@@ -133,7 +142,7 @@ bool ShowNetNode::SendDMX(unsigned int universe,
   }
 
   if (universe >= SHOWNET_MAX_UNIVERSES) {
-    OLA_WARN << "Universe index out of bounds (should be between 0 and "
+    OLA_WARN << "Universe index out of bounds, should be between 0 and"
              << SHOWNET_MAX_UNIVERSES << "), was " << universe;
     return false;
   }
@@ -343,7 +352,7 @@ unsigned int ShowNetNode::BuildCompressedPacket(shownet_packet *packet,
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool ShowNetNode::InitNetwork() {
   m_socket = new UDPSocket();
