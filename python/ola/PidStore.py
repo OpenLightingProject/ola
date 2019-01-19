@@ -833,19 +833,19 @@ class Group(Atom):
       # groups of fixed length data
       if data_size % self._group_size:
         raise UnpackException(
-            'Data size issue for %s, data size %d, group size %d' %
-            (self.name, data_size, self._group_size))
+            'Data size issue for %s (%s), data size %d, "%s" group size %d' %
+            (self.name, self.__str__, data_size, data, self._group_size))
 
       group_count = data_size / self._group_size
       if self.max is not None and group_count > self.max:
         raise UnpackException(
-            'Too many repeated group_count for %s, limit is %d, found %d' %
-            (self.name, self.max, group_count))
+            'Too many repeated group_count for %s (%s), limit is %d, found %d' %
+            (self.name, self.__str__, self.max, group_count))
 
       if self.max is not None and group_count < self.min:
         raise UnpackException(
-            'Too few repeated group_count for %s, limit is %d, found %d' %
-            (self.name, self.min, group_count))
+            'Too few repeated group_count for %s (%s), limit is %d, found %d' %
+            (self.name, self.__str__, self.min, group_count))
 
       offset = 0
       groups = []
