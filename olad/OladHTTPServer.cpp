@@ -444,13 +444,13 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
 
   JsonObject json;
 #ifdef OLA_SCREENSHOT_MODE
-  json.Add("hostname", "olad-server");
-  json.Add("instance_name", OLA_DEFAULT_INSTANCE_NAME);
-  json.Add("config_dir", "/etc/ola/");
-  json.Add("ip", "10.79.76.65");
-  json.Add("broadcast", "10.79.76.255");
-  json.Add("subnet", "255.255.255.0");
-  json.Add("hw_address", "01:ad:01:ad:01:ad");
+  json.Add("hostname", "***");
+  json.Add("instance_name", "***");
+  json.Add("config_dir", "***");
+  json.Add("ip", "***.***.***.***");
+  json.Add("broadcast", "***.***.***.***");
+  json.Add("subnet", "***.***.***.***");
+  json.Add("hw_address", "**:**:**:**:**:**");
 #else
   json.Add("hostname", ola::network::FQDN());
   json.Add("instance_name", m_ola_server->InstanceName());
