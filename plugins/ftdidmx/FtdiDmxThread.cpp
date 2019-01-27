@@ -131,6 +131,36 @@ void FtdiDmxThread::DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
   }
 }
 
+/**
+ * @brief Method called to cleanup any outstanding callbacks
+ * @param state
+ *
+ * All callbacks except the RDMCallback lack a way of reporting an error state to the caller.
+ */
+void FtdiDmxThread::destroyPendindingCallback(ola::rdm::RDMStatusCode state) {
+  MuteDeviceCallback *thread_mute_callback = nullptr;
+  UnMuteDeviceCallback *thread_unmute_callback = nullptr;
+  BranchCallback *thread_branch_callback = nullptr;
+  ola::rdm::RDMCallback *thread_rdm_callback = nullptr;
+
+  if(m_mute_complete != nullptr) {
+    thread_mute_callback = m_mute_complete;
+    m_mute_complete = nullptr;
+    thread_mute_callback->Run(false);
+  } else if(m_unmute_complete != nullptr) {
+    thread_unmute_callback = m_unmute_complete;
+    m_unmute_complete = nullptr;
+    thread_unmute_callback->Run();
+  } else if(m_branch_callback != nullptr) {
+    thread_branch_callback = m_branch_callback;
+    m_branch_callback = nullptr;
+    thread_branch_callback->Run(nullptr, 0);
+  } else if(m_rdm_callback != nullptr) {
+    thread_rdm_callback = m_rdm_callback;
+    m_rdm_callback = nullptr;
+    ola::rdm::RunRDMCallback(thread_rdm_callback, state);
+  }
+}
 
 void FtdiDmxThread::MuteDevice(const ola::rdm::UID &target,
                                MuteDeviceCallback *mute_complete) {
@@ -228,24 +258,7 @@ void *FtdiDmxThread::Run() {
           OLA_WARN << "RDMCommandSerializer failed. Dropping packet.";
           m_pending_request = nullptr;
 
-          // This behavior is wrong, this suggests to whoever is doing the discovery that no devices are connected/responding while we actually just failed to get the packet to the line.
-          if(m_mute_complete != nullptr) {
-            thread_mute_callback = m_mute_complete;
-            m_mute_complete = nullptr;
-            thread_mute_callback->Run(false);
-          } else if(m_unmute_complete != nullptr) {
-            thread_unmute_callback = m_unmute_complete;
-            m_unmute_complete = nullptr;
-            thread_unmute_callback->Run();
-          } else if(m_branch_callback != nullptr) {
-            thread_branch_callback = m_branch_callback;
-            m_branch_callback = nullptr;
-            thread_branch_callback->Run(nullptr, 0);
-          } else if(m_rdm_callback != nullptr) {
-            thread_rdm_callback = m_rdm_callback;
-            m_rdm_callback = nullptr;
-            ola::rdm::RunRDMCallback(thread_rdm_callback, ola::rdm::RDM_FAILED_TO_SEND);
-          }
+          destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
           sendRDM = false;
         } else {
           OLA_INFO << "OK To send RDM";
@@ -323,14 +336,8 @@ void *FtdiDmxThread::Run() {
 
         } else {
           // Something went wrong, already reported at hw level but we'll need to handle the callbacks
-          if(m_branch_callback != nullptr) {
-
-          } else if(m_mute_complete != nullptr) {
-
-          } else if(m_unmute_complete != nullptr) {
-
-          } else if(m_rdm_callback != nullptr) {
-          }
+          // Strictly speaking we failed to receive OR send, I have proposed another code: RDM_HW_ERROR
+          destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
         }
       } else if(m_interface->Write(&packetBuffer)) {
         if(m_unmute_complete != nullptr) {

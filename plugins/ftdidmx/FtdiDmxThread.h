@@ -89,10 +89,13 @@ class FtdiDmxThread
     UnMuteDeviceCallback *m_unmute_complete;
     BranchCallback *m_branch_callback;
 
-    void CheckTimeGranularity();
     void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                            bool status,
                            const ola::rdm::UIDSet &uids);
+
+    void destroyPendindingCallback(ola::rdm::RDMStatusCode state);
+
+    void CheckTimeGranularity();
 
     static const uint32_t DMX_MAB = 16;
     static const uint32_t DMX_BREAK = 110;
