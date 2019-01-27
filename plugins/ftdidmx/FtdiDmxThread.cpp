@@ -78,8 +78,10 @@ bool FtdiDmxThread::Stop() {
   }
 
   if(m_pending_request != nullptr) {
-      //destroy pending request and callbacks
+    m_pending_request = nullptr;
+    destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
   }
+  m_discovery_agent.Abort();
   return Join();
 }
 
