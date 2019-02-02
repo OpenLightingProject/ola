@@ -225,7 +225,7 @@ void LogicReader::FrameReceived(const uint8_t *data, unsigned int length) {
   }
 
   switch (data[0]) {
-    case 0:
+    case ola::DMX512_START_CODE:
       DisplayDMXFrame(data + 1, length - 1);
       break;
     case RDMCommand::START_CODE:
