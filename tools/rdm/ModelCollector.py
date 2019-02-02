@@ -285,7 +285,7 @@ class ModelCollector(object):
           this_personality['slot_count'] = data['slots_required']
         this_device = self._GetDevice()
         if (this_device and
-          (this_device['current_personality'] == data['personality'])):
+            (this_device['current_personality'] == data['personality'])):
           self.slots.update(xrange(0, data['slots_required']))
           logging.debug("Populated %d slots from personality description"
                         % (data['slots_required']))
