@@ -246,7 +246,8 @@ void StringBuilderTest::testBuilderWithIntervals() {
 
 
   // Test an invalid case
-  auto_ptr<const Message> message2(BuildMessageSingleInput(descriptor, "dozen"));
+  auto_ptr<const Message> message2(BuildMessageSingleInput(descriptor,
+                                                           "dozen"));
 
   // verify
   OLA_ASSERT_NULL(message2.get());
@@ -300,7 +301,8 @@ void StringBuilderTest::testBuilderWithLabelsAndIntervals() {
 
 
   // Test an invalid case
-  auto_ptr<const Message> message2(BuildMessageSingleInput(descriptor, "half_dozen"));
+  auto_ptr<const Message> message2(BuildMessageSingleInput(descriptor,
+                                                           "half_dozen"));
 
   // verify
   OLA_ASSERT_NULL(message2.get());
