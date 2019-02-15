@@ -15,9 +15,12 @@
 # TestState.py
 # Copyright (C) 2011 Simon Newton
 
+import functools
+
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
+@functools.total_ordering()
 class TestState(object):
   """Represents the state of a test."""
   def __init__(self, state):
@@ -28,6 +31,12 @@ class TestState(object):
 
   def __cmp__(self, other):
     return cmp(self._state, other._state)
+
+  def __eq__(self, other):
+    return self._state == other._state
+
+  def __lt__(self, other):
+    return self._state < other._state
 
   def __hash__(self):
     return hash(self._state)

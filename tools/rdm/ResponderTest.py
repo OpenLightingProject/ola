@@ -24,6 +24,7 @@
 #                                  result based on the output of
 #                                  SUPPORTED_PARAMETERS
 
+import functools
 import logging
 import time
 from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
@@ -47,6 +48,7 @@ class UndeclaredPropertyException(Error):
   """Raised if a test attempts to get/set a property that it didn't declare."""
 
 
+@functools.total_ordering()
 class TestFixture(object):
   """The base responder test class, every test inherits from this."""
   CATEGORY = TestCategory.UNCLASSIFIED
@@ -78,6 +80,12 @@ class TestFixture(object):
 
   def __cmp__(self, other):
     return cmp(self.__class__.__name__, other.__class__.__name__)
+
+  def __eq__(self, other):
+    return self.__class__.__name__ == other.__class__.__name__
+
+  def __lt__(self, other):
+    return self.__class__.__name__ < other.__class__.__name__
 
   def LookupPid(self, pid_name):
     return self._pid_store.GetName(pid_name, self._uid)
