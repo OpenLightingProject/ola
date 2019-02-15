@@ -27,7 +27,6 @@
 #                                  result based on the output of
 #                                  SUPPORTED_PARAMETERS
 
-import functools
 import logging
 import time
 from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
@@ -51,7 +50,6 @@ class UndeclaredPropertyException(Error):
   """Raised if a test attempts to get/set a property that it didn't declare."""
 
 
-@functools.total_ordering()
 class TestFixture(object):
   """The base responder test class, every test inherits from this."""
   PID = None
@@ -93,6 +91,15 @@ class TestFixture(object):
 
   def __lt__(self, other):
     return self.__class__.__name__ < other.__class__.__name__
+
+  def __le__(self, other):
+    return self.__class__.__name__ <= other.__class__.__name__
+
+  def __gt__(self, other):
+    return self.__class__.__name__ > other.__class__.__name__
+
+  def __ge__(self, other):
+    return self.__class__.__name__ >= other.__class__.__name__
 
   def PidRequired(self):
     """Whether a valid PID is required for this test"""

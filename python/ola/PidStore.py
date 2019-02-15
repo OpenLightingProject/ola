@@ -18,7 +18,6 @@
 
 from __future__ import print_function
 import binascii
-import functools
 import math
 import os
 import socket
@@ -68,7 +67,7 @@ class UnpackException(Error):
 class MissingPLASAPIDs(Error):
   """Raises if the files did not contain the ESTA (PLASA) PIDs."""
 
-@functools.total_ordering()
+
 class Pid(object):
   """A class that describes everything about a PID."""
   def __init__(self, name, value,
@@ -166,6 +165,15 @@ class Pid(object):
 
   def __lt__(self, other):
     return self._value < other._value
+
+  def __le__(self, other):
+    return self._value <= other._value
+
+  def __gt__(self, other):
+    return self._value > other._value
+
+  def __ge__(self, other):
+    return self._value >= other._value
 
   def __str__(self):
     return '%s (0x%04hx)' % (self.name, self.value)
