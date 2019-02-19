@@ -949,8 +949,8 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RegisterUniverse(self, universe, action, 
-    data_callback=None, callback=None):
+  def RegisterUniverse(self, universe, action,
+                       data_callback=None, callback=None):
     """Register to receive dmx updates for a universe.
 
     Args:
