@@ -949,7 +949,8 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RegisterUniverse(self, universe, action, data_callback, callback=None):
+  def RegisterUniverse(self, universe, action, 
+    data_callback=None, callback=None):
     """Register to receive dmx updates for a universe.
 
     Args:
@@ -963,6 +964,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     Returns:
       True if the request was sent, False otherwise.
     """
+
+    if data_callback is None and action == self.REGISTER:
+      raise TypeError("data_callback is None and action is REGISTER")
+
     if self._socket is None:
       return False
 
