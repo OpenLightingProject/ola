@@ -18,7 +18,6 @@
 import array
 import datetime
 import fcntl
-import functools
 import heapq
 import logging
 import os
@@ -33,7 +32,6 @@ from ola.OlaClient import OlaClient
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
-@functools.total_ordering
 class _Event(object):
   """An _Event represents a timer scheduled to expire in the future.
 
@@ -54,6 +52,15 @@ class _Event(object):
 
   def __lt__(self, other):
     return self._run_at < other._run_at
+
+  def __le__(self, other):
+    return self._run_at <= other._run_at
+
+  def __gt__(self, other):
+    return self._run_at > other._run_at
+
+  def __ge__(self, other):
+    return self._run_at >= other._run_at
 
   def TimeLeft(self, now):
     """Get the time remaining before this event triggers.

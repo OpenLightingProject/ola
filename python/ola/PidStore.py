@@ -161,7 +161,11 @@ class Pid(object):
     return cmp(self._value, other._value)
 
   def __eq__(self, other):
-    return self._value == other._value
+    return self.value == other.value \
+      and self.name == other.name \
+      and self._requests == other._requests \
+      and self._responses == other._responses \
+      and self._validators == other._validators
 
   def __lt__(self, other):
     return self._value < other._value
