@@ -28,18 +28,28 @@ class TestState(object):
     return self._state
 
   def __eq__(self, other):
+    if other.__class__ is not self.__class__:
+      return False
     return self._state == other._state
 
   def __lt__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._state < other._state
 
   def __le__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._state <= other._state
 
   def __gt__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._state > other._state
 
   def __ge__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._state >= other._state
 
   def __hash__(self):

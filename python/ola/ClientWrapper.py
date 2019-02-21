@@ -45,18 +45,28 @@ class _Event(object):
     self._callback = callback
 
   def __eq__(self, other):
+    if other.__class__ is not self.__class__:
+      return False
     return self._run_at == other._run_at and self._callback == other._callback
 
   def __lt__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._run_at < other._run_at
 
   def __le__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._run_at <= other._run_at
 
   def __gt__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._run_at > other._run_at
 
   def __ge__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._run_at >= other._run_at
 
   def TimeLeft(self, now):
