@@ -76,9 +76,6 @@ class TestFixture(object):
   def __repr__(self):
     return self.__class__.__name__
 
-  def __cmp__(self, other):
-    return cmp(self.__class__.__name__, other.__class__.__name__)
-
   def __eq__(self, other):
     return self.__class__.__name__ == other.__class__.__name__
 

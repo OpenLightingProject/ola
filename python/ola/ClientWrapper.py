@@ -44,9 +44,6 @@ class _Event(object):
                     datetime.timedelta(milliseconds=time_ms))
     self._callback = callback
 
-  def __cmp__(self, other):
-    return cmp(self._run_at, other._run_at)
-
   def __eq__(self, other):
     return self._run_at == other._run_at and self._callback == other._callback
 

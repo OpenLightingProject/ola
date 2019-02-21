@@ -55,18 +55,29 @@ class UID(object):
   def __repr__(self):
     return self.__str__()
 
-  def __cmp__(self, other):
-    if other is None:
-      return 1
-    if self._manufacturer_id == other._manufacturer_id:
-      return cmp(self._device_id, other._device_id)
-    return cmp(self.manufacturer_id, other.manufacturer_id)
-
   def __lt__(self, other):
     if self.manufacturer_id != other.manufacturer_id:
       return self.manufacturer_id < other.manufacturer_id
     else:
       return self.device_id < other.device_id
+
+  def __le__(self, other):
+    if self.manufacturer_id != other.manufacturer_id:
+      return self.manufacturer_id <= other.manufacturer_id
+    else:
+      return self.device_id <= other.device_id
+
+  def __gt__(self, other):
+    if self.manufacturer_id != other.manufacturer_id:
+      return self.manufacturer_id > other.manufacturer_id
+    else:
+      return self.device_id > other.device_id
+
+  def __ge__(self, other):
+    if self.manufacturer_id != other.manufacturer_id:
+      return self.manufacturer_id >= other.manufacturer_id
+    else:
+      return self.device_id >= other.device_id
 
   def __eq__(self, other):
     if other is None:

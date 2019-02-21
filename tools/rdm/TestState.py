@@ -27,9 +27,6 @@ class TestState(object):
   def __str__(self):
     return self._state
 
-  def __cmp__(self, other):
-    return cmp(self._state, other._state)
-
   def __eq__(self, other):
     return self._state == other._state
 
