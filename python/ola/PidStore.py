@@ -158,6 +158,8 @@ class Pid(object):
     return True
 
   def __eq__(self, other):
+    if other.__class__ is not self.__class__:
+      return False
     return self.value == other.value and \
       self.name == other.name and \
       self._requests == other._requests and \
@@ -165,15 +167,23 @@ class Pid(object):
       self._validators == other._validators
 
   def __lt__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._value < other._value
 
   def __le__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._value <= other._value
 
   def __gt__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._value > other._value
 
   def __ge__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
     return self._value >= other._value
 
   def __str__(self):
