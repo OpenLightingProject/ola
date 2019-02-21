@@ -63,12 +63,12 @@ class MACAddress(object):
 
   def __gt__(self, other):
     if other is None:
-      return False
+      return True
     return self.mac_address > other.mac_address
 
   def __ge__(self, other):
     if other is None:
-      return False
+      return True
     return self.mac_address >= other.mac_address
 
   def __eq__(self, other):
