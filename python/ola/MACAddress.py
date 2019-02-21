@@ -51,13 +51,25 @@ class MACAddress(object):
   def __repr__(self):
     return self.__str__()
 
-  def __cmp__(self, other):
-    if other is None:
-      return 1
-    return cmp(self.mac_address, other.mac_address)
-
   def __lt__(self, other):
+    if other is None:
+      return False
     return self.mac_address < other.mac_address
+
+  def __le__(self, other):
+    if other is None:
+      return False
+    return self.mac_address <= other.mac_address
+
+  def __gt__(self, other):
+    if other is None:
+      return False
+    return self.mac_address > other.mac_address
+
+  def __ge__(self, other):
+    if other is None:
+      return False
+    return self.mac_address >= other.mac_address
 
   def __eq__(self, other):
     if other is None:
