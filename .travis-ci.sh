@@ -243,10 +243,15 @@ elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "make_builtfiles"
   make builtfiles;
   travis_fold end "make_builtfiles"
-  flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129 data/rdm include/ola python scripts tools/ola_mon tools/rdm
+  flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129,W504 data/rdm include/ola python scripts tools/ola_mon tools/rdm
 else
   # Otherwise compile and check as normal
-  export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
+  if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
+    # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
+    export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133 CPPFLAGS=-Wno-deprecated-declarations'
+  else
+    export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
+  fi
   travis_fold start "autoreconf"
   autoreconf -i;
   travis_fold end "autoreconf"
