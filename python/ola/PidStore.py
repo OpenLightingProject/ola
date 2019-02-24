@@ -160,11 +160,11 @@ class Pid(object):
   def __eq__(self, other):
     if other.__class__ is not self.__class__:
       return False
-    return self.value == other.value and \
-      self.name == other.name and \
-      self._requests == other._requests and \
-      self._responses == other._responses and \
-      self._validators == other._validators
+    return (self.value == other.value and
+            self.name == other.name and
+            self._requests == other._requests and
+            self._responses == other._responses and
+            self._validators == other._validators)
 
   def __ne__(self, other):
     return not self == other

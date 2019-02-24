@@ -92,8 +92,8 @@ class UID(object):
   def __eq__(self, other):
     if other.__class__ is not self.__class__:
       return False
-    return self.manufacturer_id == other.manufacturer_id and \
-           self.device_id == other.device_id
+    return (self.manufacturer_id == other.manufacturer_id and
+            self.device_id == other.device_id)
 
   def __ne__(self, other):
     return not self == other
