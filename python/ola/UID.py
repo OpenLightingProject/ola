@@ -70,10 +70,7 @@ class UID(object):
       return False
     if other.__class__ is not self.__class__:
       return NotImplemented
-    if self.manufacturer_id != other.manufacturer_id:
-      return self.manufacturer_id <= other.manufacturer_id
-    else:
-      return self.device_id <= other.device_id
+    return self < other or self == other
 
   def __gt__(self, other):
     if other is None:
@@ -90,16 +87,16 @@ class UID(object):
       return True
     if other.__class__ is not self.__class__:
       return NotImplemented
-    if self.manufacturer_id != other.manufacturer_id:
-      return self.manufacturer_id >= other.manufacturer_id
-    else:
-      return self.device_id >= other.device_id
+    return self > other or self == other
 
   def __eq__(self, other):
     if other.__class__ is not self.__class__:
       return False
     return self.manufacturer_id == other.manufacturer_id and \
            self.device_id == other.device_id
+
+  def __ne__(self, other):
+    return not self == other
 
   @staticmethod
   def AllDevices():

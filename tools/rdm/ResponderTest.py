@@ -81,6 +81,9 @@ class TestFixture(object):
       return False
     return self.__class__.__name__ == other.__class__.__name__
 
+  def __ne__(self, other):
+    return not self == other
+
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
@@ -89,7 +92,7 @@ class TestFixture(object):
   def __le__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.__class__.__name__ <= other.__class__.__name__
+    return self < other or self == other
 
   def __gt__(self, other):
     if other.__class__ is not self.__class__:
@@ -99,7 +102,7 @@ class TestFixture(object):
   def __ge__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.__class__.__name__ >= other.__class__.__name__
+    return self > other or self == other
 
   def LookupPid(self, pid_name):
     return self._pid_store.GetName(pid_name, self._uid)
