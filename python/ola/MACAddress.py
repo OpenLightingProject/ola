@@ -63,7 +63,7 @@ class MACAddress(object):
       return False
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.mac_address <= other.mac_address
+    return self < other or self == other
 
   def __gt__(self, other):
     if other is None:
@@ -77,12 +77,15 @@ class MACAddress(object):
       return True
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.mac_address >= other.mac_address
+    return self > other or self == other
 
   def __eq__(self, other):
     if other.__class__ is not self.__class__:
       return False
     return self.mac_address == other.mac_address
+
+  def __ne__(self, other):
+    return not self == other
 
   @staticmethod
   def FromString(mac_address_str):

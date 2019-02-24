@@ -49,6 +49,9 @@ class _Event(object):
       return False
     return self._run_at == other._run_at and self._callback == other._callback
 
+  def __ne__(self, other):
+    return not self == other
+
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
@@ -57,7 +60,7 @@ class _Event(object):
   def __le__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self._run_at <= other._run_at
+    return self < other or self == other
 
   def __gt__(self, other):
     if other.__class__ is not self.__class__:
@@ -67,7 +70,7 @@ class _Event(object):
   def __ge__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self._run_at >= other._run_at
+    return self > other or self == other
 
   def __hash__(self):
     return hash((self._run_at, self._callback))

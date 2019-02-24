@@ -166,6 +166,9 @@ class Pid(object):
       self._responses == other._responses and \
       self._validators == other._validators
 
+  def __ne__(self, other):
+    return not self == other
+
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
@@ -174,7 +177,7 @@ class Pid(object):
   def __le__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self._value <= other._value
+    return self < other or self == other
 
   def __gt__(self, other):
     if other.__class__ is not self.__class__:
@@ -184,7 +187,7 @@ class Pid(object):
   def __ge__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self._value >= other._value
+    return self > other or self == other
 
   def __str__(self):
     return '%s (0x%04hx)' % (self.name, self.value)

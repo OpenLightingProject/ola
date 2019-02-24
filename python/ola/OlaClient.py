@@ -99,7 +99,7 @@ class Plugin(object):
   def __le__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.id <= other.id
+    return self < other or self == other
 
   def __gt__(self, other):
     if other.__class__ is not self.__class__:
@@ -109,7 +109,10 @@ class Plugin(object):
   def __ge__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.id >= other.id
+    return self > other or self == other
+
+  def __ne__(self, other):
+    return not self == other
 
   def __hash__(self):
     return hash((self._id, self._name, self._active, self._enabled))
@@ -199,7 +202,7 @@ class Device(object):
   def __le__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.alias <= other.alias
+    return self < other or self == other
 
   def __gt__(self, other):
     if other.__class__ is not self.__class__:
@@ -209,7 +212,10 @@ class Device(object):
   def __ge__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.alias >= other.alias
+    return self > other or self == other
+
+  def __ne__(self, other):
+    return not self == other
 
 
 class Port(object):
@@ -280,7 +286,7 @@ class Port(object):
   def __le__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.id <= other.id
+    return self < other or self == other
 
   def __gt__(self, other):
     if other.__class__ is not self.__class__:
@@ -290,7 +296,10 @@ class Port(object):
   def __ge__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.id >= other.id
+    return self > other or self == other
+
+  def __ne__(self, other):
+    return not self == other
 
   def __hash__(self):
     return hash((self._id, self._universe, self._active, self._description,
@@ -367,7 +376,7 @@ class Universe(object):
   def __le__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.id <= other.id
+    return self < other or self == other
 
   def __gt__(self, other):
     if other.__class__ is not self.__class__:
@@ -377,7 +386,10 @@ class Universe(object):
   def __ge__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.id >= other.id
+    return self > other or self == other
+
+  def __ne__(self, other):
+    return not self == other
 
 
 class RequestStatus(object):
@@ -461,7 +473,7 @@ class RDMNack(object):
   def __le__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.value <= other.value
+    return self < other or self == other
 
   def __gt__(self, other):
     if other.__class__ is not self.__class__:
@@ -471,7 +483,10 @@ class RDMNack(object):
   def __ge__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
-    return self.value >= other.value
+    return self > other or self == other
+
+  def __ne__(self, other):
+    return not self == other
 
   def __hash__(self):
     return hash((self._value, self._description))
