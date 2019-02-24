@@ -111,10 +111,8 @@ class Plugin(object):
       return NotImplemented
     return self.id >= other.id
 
-  def __ne__(self, other):
-    if other.__class__ is not self.__class__:
-      return True
-    return self.id != other.id
+  def __hash__(self):
+    return hash((self._id, self._name, self._active, self._enabled))
 
 
 # Populate the Plugin class attributes from the protobuf
@@ -293,6 +291,10 @@ class Port(object):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self.id >= other.id
+
+  def __hash__(self):
+    return hash((self._id, self._universe, self._active, self._description,
+                 self._supports_rdm))
 
 
 class Universe(object):
@@ -474,6 +476,9 @@ class RDMNack(object):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self.value >= other.value
+
+  def __hash__(self):
+    return hash((self._value, self._description))
 
   @classmethod
   def LookupCode(cls, code):

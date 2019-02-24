@@ -50,7 +50,7 @@ class UID(object):
     return '%04x:%08x' % (self._manufacturer_id, self._device_id)
 
   def __hash__(self):
-    return hash(str(self))
+    return hash((self._manufacturer_id, self._device_id))
 
   def __repr__(self):
     return self.__str__()

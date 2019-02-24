@@ -69,6 +69,9 @@ class _Event(object):
       return NotImplemented
     return self._run_at >= other._run_at
 
+  def __hash__(self):
+    return hash((self._run_at, self._callback))
+
   def TimeLeft(self, now):
     """Get the time remaining before this event triggers.
 
