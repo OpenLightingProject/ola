@@ -3556,7 +3556,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "LIGHTSENSOR_LEVEL_TRIGGER_ENABLE"
+    name: "LIGHT_SENSOR_LEVEL_TRIGGER_ENABLE"
     value: 33032
     get_request {
     }
@@ -3578,7 +3578,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "CAPTURE_CURRENT_SENSOR_VALUE"
+    name: "CAPTURE_CURRENT_LIGHT_LEVEL"
     value: 33033
     set_request {
     }
@@ -3587,7 +3587,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "LIGHTSENSOR_TRIGGER_LEVEL"
+    name: "LIGHT_SENSOR_TRIGGER_LEVEL"
     value: 33034
     get_request {
     }

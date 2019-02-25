@@ -45,13 +45,12 @@ using std::string;
 
 const char EspNetNode::NODE_NAME[] = "OLA Node";
 
-// stupid Windows, 'interface' seems to be a struct so we use iface here.
 /*
  * Create a new node
  * @param ip_address the IP address to prefer to listen on, if NULL we choose
  * one.
  */
-EspNetNode::EspNetNode(const ola::network::Interface &iface)
+EspNetNode::EspNetNode(const string &ip_address)
     : m_running(false),
       m_options(DEFAULT_OPTIONS),
       m_tos(DEFAULT_TOS),
@@ -59,7 +58,7 @@ EspNetNode::EspNetNode(const ola::network::Interface &iface)
       m_universe(0),
       m_type(ESPNET_NODE_TYPE_IO),
       m_node_name(NODE_NAME),
-      m_interface(iface) {
+      m_preferred_ip(ip_address) {
 }
 
 
@@ -84,6 +83,16 @@ bool EspNetNode::Start() {
   if (m_running) {
     return false;
   }
+
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
+    OLA_INFO << "Failed to find an interface";
+    delete picker;
+    return false;
+  }
+  delete picker;
 
   if (!InitNetwork()) {
     return false;
@@ -188,7 +197,7 @@ bool EspNetNode::SetHandler(uint8_t universe,
  */
 bool EspNetNode::RemoveHandler(uint8_t universe) {
   map<uint8_t, universe_handler>::iterator iter =
-    m_handlers.find(universe);
+      m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
     Callback0<void> *old_closure = iter->second.closure;
@@ -229,7 +238,7 @@ bool EspNetNode::SendDMX(uint8_t universe, const ola::DmxBuffer &buffer) {
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool EspNetNode::InitNetwork() {
   if (!m_socket.Init()) {
@@ -259,48 +268,44 @@ void EspNetNode::HandlePoll(const espnet_poll_t &poll,
                             const IPV4Address &source) {
   OLA_DEBUG << "Got ESP Poll " << poll.type;
   if (length < (ssize_t) sizeof(espnet_poll_t)) {
-    OLA_DEBUG << "Poll size too small " << length << " < " <<
-      sizeof(espnet_poll_t);
+    OLA_DEBUG << "Poll size too small " << length << " < "
+              << sizeof(espnet_poll_t);
     return;
   }
 
-  if (poll.type)
+  if (poll.type) {
     SendEspPollReply(source);
-  else
+  } else {
     SendEspAck(source, 0, 0);
+  }
 }
 
 
 /*
  * Handle an Esp reply packet. This does nothing at the moment.
  */
-void EspNetNode::HandleReply(const espnet_poll_reply_t &reply,
+void EspNetNode::HandleReply(OLA_UNUSED const espnet_poll_reply_t &reply,
                              ssize_t length,
-                             const IPV4Address &source) {
+                             OLA_UNUSED const IPV4Address &source) {
   if (length < (ssize_t) sizeof(espnet_poll_reply_t)) {
-    OLA_DEBUG << "Poll reply size too small " << length << " < " <<
-      sizeof(espnet_poll_reply_t);
+    OLA_DEBUG << "Poll reply size too small " << length << " < "
+              << sizeof(espnet_poll_reply_t);
     return;
   }
-  (void) reply;
-  (void) source;
 }
 
 
 /*
  * Handle a Esp Ack packet
  */
-void EspNetNode::HandleAck(const espnet_ack_t &ack,
+void EspNetNode::HandleAck(OLA_UNUSED const espnet_ack_t &ack,
                            ssize_t length,
-                           const IPV4Address &source) {
+                           OLA_UNUSED const IPV4Address &source) {
   if (length < (ssize_t) sizeof(espnet_ack_t)) {
     OLA_DEBUG << "Ack size too small " << length << " < " <<
       sizeof(espnet_ack_t);
     return;
   }
-
-  (void) ack;
-  (void) source;
 }
 
 
@@ -309,7 +314,7 @@ void EspNetNode::HandleAck(const espnet_ack_t &ack,
  */
 void EspNetNode::HandleData(const espnet_data_t &data,
                             ssize_t length,
-                            const IPV4Address &source) {
+                            OLA_UNUSED const IPV4Address &source) {
   static const ssize_t header_size = sizeof(espnet_data_t) - DMX_UNIVERSE_SIZE;
   if (length < header_size) {
     OLA_DEBUG << "Data size too small " << length << " < " << header_size;
@@ -317,7 +322,7 @@ void EspNetNode::HandleData(const espnet_data_t &data,
   }
 
   map<uint8_t, universe_handler>::iterator iter =
-    m_handlers.find(data.universe);
+      m_handlers.find(data.universe);
 
   if (iter == m_handlers.end()) {
     OLA_DEBUG << "Not interested in universe " <<
@@ -344,7 +349,6 @@ void EspNetNode::HandleData(const espnet_data_t &data,
       return;
   }
   iter->second.closure->Run();
-  (void) source;
 }
 
 

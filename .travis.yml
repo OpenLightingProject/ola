@@ -271,6 +271,7 @@ cache:
     - $HOME/.cache/pip # pip cache
     - $HOME/.npm # npm cache
     - $HOME/.ccache # ccache cache
+    - $HOME/.m2 # maven cache
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log # erase log

@@ -137,7 +137,7 @@ class BoolItem: public GenericItem {
  public:
     BoolItem(const std::string &description,
              bool value,
-             const std::string &id):
+             const std::string &id = ""):
       GenericItem(description, id),
       m_value(value) {
     }

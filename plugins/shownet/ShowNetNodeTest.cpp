@@ -101,10 +101,7 @@ const uint8_t ShowNetNodeTest::EXPECTED_PACKET2[] = {
 
 void ShowNetNodeTest::setUp() {
   m_handler_called = 0;
-  // We pass in a blank interface here, so the uninitialised IP (0.0.0.0)
-  // matches the content of our expected packets
-  ola::network::Interface iface;
-  m_node.reset(new ShowNetNode(iface));
+  m_node.reset(new ShowNetNode(""));
 }
 
 /*

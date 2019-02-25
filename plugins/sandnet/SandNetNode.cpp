@@ -40,7 +40,6 @@ using std::vector;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::network::Interface;
 using ola::network::MACAddress;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
@@ -57,10 +56,10 @@ const char SandNetNode::DEFAULT_NODE_NAME[] = "ola-SandNet";
  * @param ip_address the IP address to prefer to listen on, if NULL we choose
  * one.
  */
-SandNetNode::SandNetNode(const ola::network::Interface &iface)
+SandNetNode::SandNetNode(const string &ip_address)
     : m_running(false),
       m_node_name(DEFAULT_NODE_NAME),
-      m_interface(iface) {
+      m_preferred_ip(ip_address) {
   for (unsigned int i = 0; i < SANDNET_MAX_PORTS; i++) {
     m_ports[i].group = 0;
     m_ports[i].universe = i;
@@ -89,6 +88,15 @@ bool SandNetNode::Start() {
   if (m_running) {
     return false;
   }
+
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
+    delete picker;
+    OLA_INFO << "Failed to find an interface";
+    return false;
+  }
+  delete picker;
 
   IPV4Address ip;
   if (!IPV4Address::FromString(CONTROL_ADDRESS, &ip)) {
@@ -304,7 +312,7 @@ bool SandNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool SandNetNode::InitNetwork() {
   if (!m_control_socket.Init()) {
@@ -346,7 +354,7 @@ bool SandNetNode::InitNetwork() {
 
   if (!m_control_socket.JoinMulticast(m_interface.ip_address,
                                       m_control_addr.Host())) {
-    OLA_WARN << "Failed to join multicast to: " << m_control_addr;
+      OLA_WARN << "Failed to join multicast to: " << m_control_addr;
     m_data_socket.Close();
     m_control_socket.Close();
     return false;
@@ -354,7 +362,7 @@ bool SandNetNode::InitNetwork() {
 
   if (!m_data_socket.JoinMulticast(m_interface.ip_address,
                                    m_data_addr.Host())) {
-    OLA_WARN << "Failed to join multicast to: " << m_data_addr;
+      OLA_WARN << "Failed to join multicast to: " << m_data_addr;
     m_data_socket.Close();
     m_control_socket.Close();
     return false;
