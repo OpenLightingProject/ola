@@ -43,8 +43,7 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-class FtdiDmxOutputPort
-    : public ola::BasicOutputPort {
+class FtdiDmxOutputPort : public ola::BasicOutputPort {
  public:
     FtdiDmxOutputPort(FtdiDmxDevice *parent,
                       FtdiInterface *interface,

@@ -39,6 +39,12 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
+enum {
+  HALF_SECOND_MS = 500,
+  MIN_WAIT_DUB_US = 58000,
+  MIN_WAIT_RDM_US = 30000,
+};
+
 class FtdiDmxThread
         : public ola::thread::Thread,
           public ola::rdm::DiscoverableRDMControllerInterface,

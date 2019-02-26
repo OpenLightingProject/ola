@@ -98,7 +98,7 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
 }
 
 void FtdiDmxThread::SendRDMRequest(ola::rdm::RDMRequest *request,
-                    ola::rdm::RDMCallback *callback) {
+                                   ola::rdm::RDMCallback *callback) {
   ola::thread::MutexLocker locker(&m_rdm_mutex);
   if(m_pending_request == nullptr) {
       m_pending_request = request;
@@ -125,9 +125,13 @@ void FtdiDmxThread::RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *call
  * @param uids the UIDSet of UIDs that were found.
  */
 void FtdiDmxThread::DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
-                                       bool,
-                                       const ola::rdm::UIDSet &uids) {
-  OLA_DEBUG << "FTDI discovery complete: " << uids;
+                                      bool status,
+                                      const ola::rdm::UIDSet &uids) {
+  if(status) {
+    OLA_DEBUG << "FTDI discovery complete: " << uids;
+  } else {
+    OLA_WARN << "FTDI discovery failed";
+  }
   if (callback) {
     callback->Run(uids);
   }
@@ -172,7 +176,7 @@ void FtdiDmxThread::MuteDevice(const ola::rdm::UID &target,
     m_mute_complete = mute_complete;
     m_pending_request = ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number += 1);
   } else {
-      // Already pending request
+    // Already pending request
     OLA_WARN << "Unable to queue Mute request, RDM operation already pending";
   }
 }
@@ -251,7 +255,7 @@ void *FtdiDmxThread::Run() {
 
       elapsed = ts1 - lastDMX;
 
-      if(elapsed.InMilliSeconds() < 500) {
+      if(elapsed.InMilliSeconds() < HALF_SECOND_MS) {
         if(!packetBuffer.empty()) {
           packetBuffer.clear();
         }
@@ -300,8 +304,8 @@ void *FtdiDmxThread::Run() {
       if(m_interface->Write(&packetBuffer)) {
           OLA_INFO << "RDM packet written to line";
           if(m_pending_request->IsDUB()) {
-            usleep(58000); //min time before next packet broadcast allowed
-            readBytes = m_interface->Read(readBuffer, 258);
+            usleep(MIN_WAIT_DUB_US); //min time before next packet broadcast allowed
+            readBytes = m_interface->Read(readBuffer, sizeof(readBuffer));
             OLA_INFO << "DUB Read: " << readBytes;
             if(m_branch_callback != nullptr) {
               thread_branch_callback = m_branch_callback;
@@ -312,8 +316,8 @@ void *FtdiDmxThread::Run() {
           }
           else if(!m_pending_request->DestinationUID().IsBroadcast()) {
 
-            usleep(30000); //min time before next packet allowed
-            readBytes = m_interface->Read(readBuffer, 258);
+            usleep(MIN_WAIT_RDM_US); //min time before next packet allowed
+            readBytes = m_interface->Read(readBuffer, sizeof(readBuffer));
 
             if(readBytes >=0) {
               if(m_mute_complete != nullptr) {
