@@ -71,13 +71,12 @@ FtdiDmxThread::~FtdiDmxThread() {
  * @brief Stop this thread
  */
 bool FtdiDmxThread::Stop() {
-
   {
     ola::thread::MutexLocker locker(&m_term_mutex);
     m_term = true;
   }
 
-  if(m_pending_request != nullptr) {
+  if (m_pending_request != nullptr) {
     m_pending_request = nullptr;
     destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
   }
@@ -100,21 +99,26 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
 void FtdiDmxThread::SendRDMRequest(ola::rdm::RDMRequest *request,
                                    ola::rdm::RDMCallback *callback) {
   ola::thread::MutexLocker locker(&m_rdm_mutex);
-  if(m_pending_request == nullptr) {
+  if (m_pending_request == nullptr) {
       m_pending_request = request;
       m_rdm_callback = callback;
   } else {
     OLA_WARN << "Unable to queue RDM request, RDM operation already pending";
   }
-  OLA_WARN << "Function not properly implemented yet, callback may not get called.";
 }
 
 void FtdiDmxThread::RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-  m_discovery_agent.StartFullDiscovery(ola::NewSingleCallback(this, &FtdiDmxThread::DiscoveryComplete, callback));
+  m_discovery_agent.StartFullDiscovery(
+        ola::NewSingleCallback(this,
+                               &FtdiDmxThread::DiscoveryComplete,
+                               callback));
 }
 
 void FtdiDmxThread::RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-  m_discovery_agent.StartIncrementalDiscovery(ola::NewSingleCallback(this, &FtdiDmxThread::DiscoveryComplete, callback));
+  m_discovery_agent.StartIncrementalDiscovery(
+        ola::NewSingleCallback(this,
+                               &FtdiDmxThread::DiscoveryComplete,
+                               callback));
 }
 
 /**
@@ -127,7 +131,7 @@ void FtdiDmxThread::RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *call
 void FtdiDmxThread::DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                                       bool status,
                                       const ola::rdm::UIDSet &uids) {
-  if(status) {
+  if (status) {
     OLA_DEBUG << "FTDI discovery complete: " << uids;
   } else {
     OLA_WARN << "FTDI discovery failed";
@@ -141,7 +145,8 @@ void FtdiDmxThread::DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
  * @brief Method called to cleanup any outstanding callbacks
  * @param state
  *
- * All callbacks except the RDMCallback lack a way of reporting an error state to the caller.
+ * All callbacks except the RDMCallback lack a way of reporting an error state
+ * to the caller.
  */
 void FtdiDmxThread::destroyPendindingCallback(ola::rdm::RDMStatusCode state) {
   MuteDeviceCallback *thread_mute_callback = nullptr;
@@ -149,19 +154,19 @@ void FtdiDmxThread::destroyPendindingCallback(ola::rdm::RDMStatusCode state) {
   BranchCallback *thread_branch_callback = nullptr;
   ola::rdm::RDMCallback *thread_rdm_callback = nullptr;
 
-  if(m_mute_complete != nullptr) {
+  if (m_mute_complete != nullptr) {
     thread_mute_callback = m_mute_complete;
     m_mute_complete = nullptr;
     thread_mute_callback->Run(false);
-  } else if(m_unmute_complete != nullptr) {
+  } else if (m_unmute_complete != nullptr) {
     thread_unmute_callback = m_unmute_complete;
     m_unmute_complete = nullptr;
     thread_unmute_callback->Run();
-  } else if(m_branch_callback != nullptr) {
+  } else if (m_branch_callback != nullptr) {
     thread_branch_callback = m_branch_callback;
     m_branch_callback = nullptr;
     thread_branch_callback->Run(nullptr, 0);
-  } else if(m_rdm_callback != nullptr) {
+  } else if (m_rdm_callback != nullptr) {
     thread_rdm_callback = m_rdm_callback;
     m_rdm_callback = nullptr;
     ola::rdm::RunRDMCallback(thread_rdm_callback, state);
@@ -171,25 +176,31 @@ void FtdiDmxThread::destroyPendindingCallback(ola::rdm::RDMStatusCode state) {
 void FtdiDmxThread::MuteDevice(const ola::rdm::UID &target,
                                MuteDeviceCallback *mute_complete) {
   ola::thread::MutexLocker locker(&m_rdm_mutex);
-  if(m_pending_request == nullptr) {
+  if (m_pending_request == nullptr) {
     OLA_INFO << "Muting device";
     m_mute_complete = mute_complete;
-    m_pending_request = ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number += 1);
+    m_pending_request = ola::rdm::NewMuteRequest(m_uid,
+                                                 target,
+                                                 m_transaction_number += 1);
   } else {
     // Already pending request
-    OLA_WARN << "Unable to queue Mute request, RDM operation already pending";
+    OLA_WARN << "Unable to queue Mute request, "
+             << "RDM operation already pending";
   }
 }
 
 void FtdiDmxThread::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
   ola::thread::MutexLocker locker(&m_rdm_mutex);
-  if(m_pending_request == nullptr) {
+  if (m_pending_request == nullptr) {
     OLA_INFO << "Sending UnMuteAll";
     m_unmute_complete = unmute_complete;
-    m_pending_request = ola::rdm::NewUnMuteRequest(m_uid, ola::rdm::UID::AllDevices(), m_transaction_number += 1);
+    m_pending_request = ola::rdm::NewUnMuteRequest(m_uid,
+                                                   ola::rdm::UID::AllDevices(),
+                                                   m_transaction_number += 1);
   } else {
-      // Already pending request
-    OLA_WARN << "Unable to queue UnMuteAll request, RDM operation already pending";
+    // Already pending request
+    OLA_WARN << "Unable to queue UnMuteAll request, "
+             << "RDM operation already pending";
   }
 }
 
@@ -197,13 +208,18 @@ void FtdiDmxThread::Branch(const ola::rdm::UID &lower,
                            const ola::rdm::UID &upper,
                            BranchCallback *callback) {
   ola::thread::MutexLocker locker(&m_rdm_mutex);
-  if(m_pending_request == nullptr) {
+  if (m_pending_request == nullptr) {
     OLA_INFO << "Sending branch";
     m_branch_callback = callback;
-    m_pending_request = ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower, upper, m_transaction_number += 1);
+    m_pending_request =
+        ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid,
+                                                  lower,
+                                                  upper,
+                                                  m_transaction_number += 1);
   } else {
-      // Already pending request
-    OLA_WARN << "Unable to queue Branch request, RDM operation already pending";
+    // Already pending request
+    OLA_WARN << "Unable to queue Branch request, "
+             << "RDM operation already pending";
   }
 }
 
@@ -251,16 +267,16 @@ void *FtdiDmxThread::Run() {
     }
 
     clock.CurrentTime(&ts1);
-    if(m_pending_request != nullptr) {
+    if (m_pending_request != nullptr) {
 
       elapsed = ts1 - lastDMX;
 
-      if(elapsed.InMilliSeconds() < HALF_SECOND_MS) {
-        if(!packetBuffer.empty()) {
+      if (elapsed.InMilliSeconds() < HALF_SECOND_MS) {
+        if (!packetBuffer.empty()) {
           packetBuffer.clear();
         }
 
-        if(!ola::rdm::RDMCommandSerializer::PackWithStartCode(*m_pending_request, &packetBuffer)) {
+        if (!ola::rdm::RDMCommandSerializer::PackWithStartCode(*m_pending_request, &packetBuffer)) {
           OLA_WARN << "RDMCommandSerializer failed. Dropping packet.";
           m_pending_request = nullptr;
 
@@ -294,27 +310,27 @@ void *FtdiDmxThread::Run() {
       usleep(DMX_MAB);
     }
 
-    if(!sendRDM) {
+    if (!sendRDM) {
       if (!m_interface->Write(buffer)) {
         goto framesleep;
       } else {
         clock.CurrentTime(&lastDMX);
       }
     } else {
-      if(m_interface->Write(&packetBuffer)) {
+      if (m_interface->Write(&packetBuffer)) {
           OLA_INFO << "RDM packet written to line";
-          if(m_pending_request->IsDUB()) {
+          if (m_pending_request->IsDUB()) {
             usleep(MIN_WAIT_DUB_US); //min time before next packet broadcast allowed
             readBytes = m_interface->Read(readBuffer, sizeof(readBuffer));
             OLA_INFO << "DUB Read: " << readBytes;
-            if(m_branch_callback != nullptr) {
+            if (m_branch_callback != nullptr) {
               thread_branch_callback = m_branch_callback;
               m_branch_callback = nullptr;
               m_pending_request = nullptr;
               thread_branch_callback->Run(readBuffer, (readBytes >= 0 ? readBytes : 0));
             }
           }
-          else if(!m_pending_request->DestinationUID().IsBroadcast()) {
+          else if (!m_pending_request->DestinationUID().IsBroadcast()) {
 
             usleep(MIN_WAIT_RDM_US); //min time before next packet allowed
             readBytes = m_interface->Read(readBuffer, sizeof(readBuffer));
@@ -324,21 +340,24 @@ void *FtdiDmxThread::Run() {
                 thread_mute_callback = m_mute_complete;
                 m_mute_complete = nullptr;
 
-                if(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer+1, readBytes-1))->Response()->SourceUID() == m_pending_request->DestinationUID()) {
+                if (rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer+1, readBytes-1))->Response()->SourceUID() == m_pending_request->DestinationUID()) {
                   m_pending_request = nullptr;
                   thread_mute_callback->Run(true);
                 } else {
                   m_pending_request = nullptr;
                   thread_mute_callback->Run(false);
                 }
-              } else if(m_rdm_callback != nullptr) {
+              } else if (m_rdm_callback != nullptr) {
                 thread_rdm_callback = m_rdm_callback;
                 m_rdm_callback = nullptr;
 
-                if(readBytes > 0) {
+                if (readBytes > 0) {
                   thread_pending_request = m_pending_request;
                   m_pending_request = nullptr;
-                  thread_rdm_callback->Run(rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer+1, readBytes-1), thread_pending_request));
+                  thread_rdm_callback->Run(rdm::RDMReply::FromFrame(
+                                             rdm::RDMFrame(readBuffer+1,
+                                                           readBytes-1),
+                                             thread_pending_request));
                 } else {
                   m_pending_request = nullptr;
                   RunRDMCallback(thread_rdm_callback, rdm::RDM_TIMEOUT);
@@ -346,7 +365,7 @@ void *FtdiDmxThread::Run() {
               }
             }
           } else {
-            if(m_unmute_complete != nullptr) {
+            if (m_unmute_complete != nullptr) {
               thread_unmute_callback = m_unmute_complete;
               m_unmute_complete = nullptr;
               OLA_INFO << "UnMuteAllCallback";

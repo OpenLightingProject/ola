@@ -77,10 +77,9 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
 
     std::string Description() const { return m_interface->Description(); }
 
-  private:
+ private:
     FtdiInterface *m_interface;
     FtdiDmxThread m_thread;
-
 };
 }  // namespace ftdidmx
 }  // namespace plugin

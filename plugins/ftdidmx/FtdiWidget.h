@@ -227,7 +227,8 @@ class FtdiInterface {
   /** @brief Write data to a previously-opened line, DMX only */
   bool Write(const ola::DmxBuffer &data);
 
-  /** @brief Write prepared packets to previously opened line, agnostic to packet contents */
+  /** @brief Write prepared packets to previously opened line,
+   *         agnostic to packet contents */
   bool Write(ola::io::ByteString *packet);
 
   /** @brief Read data from a previously-opened line */
