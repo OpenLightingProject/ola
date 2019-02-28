@@ -33,6 +33,7 @@
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/Constants.h"
 
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMControllerInterface.h"
@@ -56,7 +57,7 @@ FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface,
     m_frequency(frequency),
     m_transaction_number(0),
     m_discovery_agent(this),
-    m_uid(0x7a70, serial),
+    m_uid(OPEN_LIGHTING_ESTA_CODE, serial),
     m_pending_request(nullptr),
     m_rdm_callback(nullptr),
     m_mute_complete(nullptr),
@@ -67,7 +68,6 @@ FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface,
 FtdiDmxThread::~FtdiDmxThread() {
   Stop();
 }
-
 
 /**
  * @brief Stop this thread
@@ -379,7 +379,7 @@ void *FtdiDmxThread::Run() {
          * but we'll need to handle the callbacks.
          */
         destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
-      } // End of Write loop */
+      }  // End of Write loop */
 
       goto framesleep;
     }
