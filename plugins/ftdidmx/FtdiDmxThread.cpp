@@ -47,14 +47,16 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface, unsigned int frequency)
+FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface,
+                             unsigned int frequency,
+                             unsigned int serial)
   : m_granularity(UNKNOWN),
     m_interface(interface),
     m_term(false),
     m_frequency(frequency),
     m_transaction_number(0),
     m_discovery_agent(this),
-    m_uid(0x7a70, 0x12345678),
+    m_uid(0x7a70, serial),
     m_pending_request(nullptr),
     m_rdm_callback(nullptr),
     m_mute_complete(nullptr),
@@ -268,7 +270,6 @@ void *FtdiDmxThread::Run() {
 
     clock.CurrentTime(&ts1);
     if (m_pending_request != nullptr) {
-
       elapsed = ts1 - lastDMX;
 
       if (elapsed.InMilliSeconds() < HALF_SECOND_MS) {
@@ -320,23 +321,23 @@ void *FtdiDmxThread::Run() {
       if (m_interface->Write(&packetBuffer)) {
           OLA_INFO << "RDM packet written to line";
           if (m_pending_request->IsDUB()) {
-            usleep(MIN_WAIT_DUB_US); //min time before next packet broadcast allowed
+            usleep(MIN_WAIT_DUB_US);
+
             readBytes = m_interface->Read(readBuffer, sizeof(readBuffer));
             OLA_INFO << "DUB Read: " << readBytes;
             if (m_branch_callback != nullptr) {
               thread_branch_callback = m_branch_callback;
               m_branch_callback = nullptr;
               m_pending_request = nullptr;
-              thread_branch_callback->Run(readBuffer, (readBytes >= 0 ? readBytes : 0));
+              thread_branch_callback->Run(readBuffer,
+                                          (readBytes >= 0 ? readBytes : 0));
             }
-          }
-          else if (!m_pending_request->DestinationUID().IsBroadcast()) {
-
-            usleep(MIN_WAIT_RDM_US); //min time before next packet allowed
+          } else if (!m_pending_request->DestinationUID().IsBroadcast()) {
+            usleep(MIN_WAIT_RDM_US);
             readBytes = m_interface->Read(readBuffer, sizeof(readBuffer));
 
-            if(readBytes >=0) {
-              if(m_mute_complete != nullptr) {
+            if (readBytes >= 0) {
+              if (m_mute_complete != nullptr) {
                 thread_mute_callback = m_mute_complete;
                 m_mute_complete = nullptr;
 
@@ -363,7 +364,7 @@ void *FtdiDmxThread::Run() {
                   RunRDMCallback(thread_rdm_callback, rdm::RDM_TIMEOUT);
                 }
               }
-            }
+            } else {/* TODO: run some type of timeout */}
           } else {
             if (m_unmute_complete != nullptr) {
               thread_unmute_callback = m_unmute_complete;
@@ -374,8 +375,9 @@ void *FtdiDmxThread::Run() {
             }
           }
       } else {
-        // Something went wrong, already reported at hw level but we'll need to handle the callbacks
-        // Strictly speaking we failed to receive OR send, I have proposed another code: RDM_HW_ERROR
+        /* Something went wrong, already reported at hw level
+         * but we'll need to handle the callbacks.
+         */
         destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
       } // End of Write loop */
 

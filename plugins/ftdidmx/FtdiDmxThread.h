@@ -50,7 +50,9 @@ class FtdiDmxThread
           public ola::rdm::DiscoverableRDMControllerInterface,
           public ola::rdm::DiscoveryTargetInterface {
  public:
-    FtdiDmxThread(FtdiInterface *interface, unsigned int frequency);
+    FtdiDmxThread(FtdiInterface *interface,
+                  unsigned int frequency,
+                  unsigned int serial);
     ~FtdiDmxThread();
 
     bool Stop();
