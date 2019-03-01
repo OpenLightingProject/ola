@@ -1003,11 +1003,17 @@ void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
                       packet.data.ip_program,
                       packet_size - header_size);
       break;
+    case ARTNET_SYNC:
+      // TODO(Someone): Implement me, not currently implemented.
+      OLA_DEBUG << "ArtSync input not currently supported";
+      break;
     case ARTNET_RDM_SUB:
-      // Not implemented
+      // TODO(Someone): Implement me, not currently implemented.
+      OLA_DEBUG << "ArtRDMSub input not currently supported";
       break;
     case ARTNET_TIME_CODE:
-      // Not implemented
+      // TODO(Someone): Implement me, not currently implemented.
+      OLA_DEBUG << "ArtTimeCode input not currently supported";
       break;
     default:
       OLA_INFO << "ArtNet got unknown packet " << std::hex
