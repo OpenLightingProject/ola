@@ -246,4 +246,7 @@ javascript/new-src/node_modules
 .cproject
 .settings
 .vscode/
-OLA.*
+*.config
+*.creator*
+*.files
+*.includes
