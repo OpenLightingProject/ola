@@ -355,8 +355,8 @@ void *FtdiDmxThread::Run() {
                 OLA_WARN << "FTDI Didn't receive at least 4B during minWait";
                 additionalWait = (MIN_WAIT_RDM_US / readBytes)*(4 - readBytes);
                 usleep(additionalWait);
-                readBytes += m_interface->Read(readBuffer+readBytes,
-                                               sizeof(readBuffer-readBytes));
+                readBytes += m_interface->Read(readBuffer + readBytes,
+                                               sizeof(readBuffer) - readBytes);
               }
               /*
                * This section of code does minimal verification of the received
@@ -373,8 +373,9 @@ void *FtdiDmxThread::Run() {
                     additionalWait = (MIN_WAIT_RDM_US / readBytes) *
                         (readBuffer[3] - readBytes + 1);
                     usleep(additionalWait);
-                    readBytes += m_interface->Read(readBuffer+readBytes,
-                                                   sizeof(readBuffer-readBytes));
+                    readBytes += m_interface->Read(
+                          readBuffer + readBytes,
+                          sizeof(readBuffer) - readBytes);
 
                     clock.CurrentTime(&ts2);
                     elapsed = ts2 - ts1;
