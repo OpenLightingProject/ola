@@ -156,6 +156,7 @@ void FtdiDmxThread::destroyPendindingCallback(ola::rdm::RDMStatusCode state) {
   BranchCallback *thread_branch_callback = nullptr;
   ola::rdm::RDMCallback *thread_rdm_callback = nullptr;
 
+  m_pending_request = nullptr;
   if (m_mute_complete != nullptr) {
     thread_mute_callback = m_mute_complete;
     m_mute_complete = nullptr;
@@ -237,6 +238,7 @@ void *FtdiDmxThread::Run() {
   bool sendRDM = false;
   TimeInterval elapsed, interval;
   int readBytes;
+  unsigned int additionalWait = 0;
   unsigned char readBuffer[258];
   ola::io::ByteString packetBuffer;
 
@@ -244,8 +246,8 @@ void *FtdiDmxThread::Run() {
   UnMuteDeviceCallback *thread_unmute_callback = nullptr;
   BranchCallback *thread_branch_callback = nullptr;
   ola::rdm::RDMCallback *thread_rdm_callback = nullptr;
-  ola::rdm::RDMRequest *thread_pending_request = nullptr;
 
+  ola::rdm::RDMReply *received_reply = nullptr;
 
   int frameTime = static_cast<int>(floor(
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
@@ -277,13 +279,20 @@ void *FtdiDmxThread::Run() {
           packetBuffer.clear();
         }
 
-        if (!ola::rdm::RDMCommandSerializer::PackWithStartCode(*m_pending_request, &packetBuffer)) {
+        if (!ola::rdm::RDMCommandSerializer::PackWithStartCode(
+              *m_pending_request, &packetBuffer)) {
           OLA_WARN << "RDMCommandSerializer failed. Dropping packet.";
           m_pending_request = nullptr;
 
           destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
           sendRDM = false;
         } else {
+          /* Reset reply buffer.
+           * TODO: make sure no memory is leaked here.
+           */
+          if (received_reply != nullptr) {
+            received_reply = nullptr;
+          }
           OLA_INFO << "OK To send RDM";
           sendRDM = true;
         }
@@ -336,35 +345,87 @@ void *FtdiDmxThread::Run() {
             usleep(MIN_WAIT_RDM_US);
             readBytes = m_interface->Read(readBuffer, sizeof(readBuffer));
 
-            if (readBytes >= 0) {
-              if (m_mute_complete != nullptr) {
-                thread_mute_callback = m_mute_complete;
-                m_mute_complete = nullptr;
-
-                if (rdm::RDMReply::FromFrame(rdm::RDMFrame(readBuffer+1, readBytes-1))->Response()->SourceUID() == m_pending_request->DestinationUID()) {
-                  m_pending_request = nullptr;
-                  thread_mute_callback->Run(true);
-                } else {
-                  m_pending_request = nullptr;
-                  thread_mute_callback->Run(false);
-                }
-              } else if (m_rdm_callback != nullptr) {
-                thread_rdm_callback = m_rdm_callback;
-                m_rdm_callback = nullptr;
-
-                if (readBytes > 0) {
-                  thread_pending_request = m_pending_request;
-                  m_pending_request = nullptr;
-                  thread_rdm_callback->Run(rdm::RDMReply::FromFrame(
-                                             rdm::RDMFrame(readBuffer+1,
-                                                           readBytes-1),
-                                             thread_pending_request));
-                } else {
-                  m_pending_request = nullptr;
-                  RunRDMCallback(thread_rdm_callback, rdm::RDM_TIMEOUT);
-                }
+            if (readBytes > 0) {
+              /*
+               * The following section of code tries to deal with replies that
+               * are being broadcast too slowly, I don't have equipment that
+               * malfunctions in this way so I have no way of testing this.
+               */
+              if (readBytes < 4) {
+                OLA_WARN << "FTDI Didn't receive at least 4B during minWait";
+                additionalWait = (MIN_WAIT_RDM_US / readBytes)*(4 - readBytes);
+                usleep(additionalWait);
+                readBytes += m_interface->Read(readBuffer+readBytes,
+                                               sizeof(readBuffer-readBytes));
               }
-            } else {/* TODO: run some type of timeout */}
+              /*
+               * This section of code does minimal verification of the received
+               * frame.
+               * This assumes that the 4th byte in the buffer is the 3rd byte of
+               * the RDM Frame which defines length and no checksum has been done
+               * yet.
+               */
+              if (readBytes >= 4) {
+                if (readBuffer[0] == 0x00 && readBuffer[1] == 0xcc) {
+                  while (((readBytes - 1) < readBuffer[3]) &&
+                         elapsed.InMilliSeconds() <= 1250) {
+                    OLA_WARN << "FTDI Didn't receive full frame during minWait";
+                    additionalWait = (MIN_WAIT_RDM_US / readBytes) *
+                        (readBuffer[3] - readBytes + 1);
+                    usleep(additionalWait);
+                    readBytes += m_interface->Read(readBuffer+readBytes,
+                                                   sizeof(readBuffer-readBytes));
+
+                    clock.CurrentTime(&ts2);
+                    elapsed = ts2 - ts1;
+                  }
+                  if (readBytes < (readBuffer[3] + 1)) {
+                    OLA_WARN << "Discarding due to timeout.";
+                    destroyPendindingCallback(rdm::RDM_TIMEOUT);
+                  } else {
+                    received_reply = rdm::RDMReply::FromFrame(
+                          rdm::RDMFrame(readBuffer+1,readBytes-1),
+                          m_pending_request);
+
+                    if(received_reply != nullptr) {
+                      if (m_mute_complete != nullptr) {
+                        thread_mute_callback = m_mute_complete;
+                        m_mute_complete = nullptr;
+
+                        if (received_reply->Response()->SourceUID() ==
+                            m_pending_request->DestinationUID()) {
+                          m_pending_request = nullptr;
+                          thread_mute_callback->Run(true);
+                        } else {
+                          m_pending_request = nullptr;
+                          thread_mute_callback->Run(false);
+                        }
+                      } else if (m_rdm_callback != nullptr) {
+                        thread_rdm_callback = m_rdm_callback;
+                        m_rdm_callback = nullptr;
+
+                        if (readBytes > 0) {
+                          m_pending_request = nullptr;
+                          thread_rdm_callback->Run(received_reply);
+                        } else {
+                          m_pending_request = nullptr;
+                          RunRDMCallback(thread_rdm_callback, rdm::RDM_TIMEOUT);
+                        }
+                      }
+                    } else {
+                      OLA_WARN << "received reply is nullptr";
+                      destroyPendindingCallback(rdm::RDM_INVALID_RESPONSE);
+                    }
+                  }  // End handling seemingly valid data
+                } else {
+                  destroyPendindingCallback(rdm::RDM_INVALID_RESPONSE);
+                }
+              } else {
+                destroyPendindingCallback(rdm::RDM_TIMEOUT);
+              }
+            } else {
+              destroyPendindingCallback(rdm::RDM_TIMEOUT);
+            }
           } else {
             if (m_unmute_complete != nullptr) {
               thread_unmute_callback = m_unmute_complete;
