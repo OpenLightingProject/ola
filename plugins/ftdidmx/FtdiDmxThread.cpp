@@ -287,12 +287,6 @@ void *FtdiDmxThread::Run() {
           destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
           sendRDM = false;
         } else {
-          /* Reset reply buffer.
-           * TODO: make sure no memory is leaked here.
-           */
-          if (received_reply != nullptr) {
-            received_reply = nullptr;
-          }
           OLA_INFO << "OK To send RDM";
           sendRDM = true;
         }
@@ -416,6 +410,12 @@ void *FtdiDmxThread::Run() {
                     } else {
                       OLA_WARN << "received reply is nullptr";
                       destroyPendindingCallback(rdm::RDM_INVALID_RESPONSE);
+                    }
+                    // Reset reply buffer.
+                    if (received_reply != nullptr) {
+                      rdm::RDMReply *tmp = received_reply;
+                      received_reply = nullptr;
+                      delete tmp;
                     }
                   }  // End handling seemingly valid data
                 } else {
