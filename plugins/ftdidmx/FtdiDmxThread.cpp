@@ -116,11 +116,11 @@ void FtdiDmxThread::RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
                                callback));
 }
 
-void FtdiDmxThread::RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+void FtdiDmxThread::RunIncrementalDiscovery(rdm::RDMDiscoveryCallback *cb) {
   m_discovery_agent.StartIncrementalDiscovery(
         ola::NewSingleCallback(this,
                                &FtdiDmxThread::DiscoveryComplete,
-                               callback));
+                               cb));
 }
 
 /**
@@ -385,10 +385,10 @@ void *FtdiDmxThread::Run() {
                     destroyPendindingCallback(rdm::RDM_TIMEOUT);
                   } else {
                     received_reply = rdm::RDMReply::FromFrame(
-                          rdm::RDMFrame(readBuffer+1,readBytes-1),
+                          rdm::RDMFrame(readBuffer+1, readBytes-1),
                           m_pending_request);
 
-                    if(received_reply != nullptr) {
+                    if (received_reply != nullptr) {
                       if (m_mute_complete != nullptr) {
                         thread_mute_callback = m_mute_complete;
                         m_mute_complete = nullptr;

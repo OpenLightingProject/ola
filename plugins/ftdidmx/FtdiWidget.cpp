@@ -374,9 +374,11 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
 
 
 bool FtdiInterface::Write(ola::io::ByteString *packet) {
-  int bytesWritten = ftdi_write_data(&m_handle,
-                                     const_cast<unsigned char *>(packet->data()),
-                                     packet->size());
+  int bytesWritten = ftdi_write_data(
+                       &m_handle,
+                       const_cast<unsigned char *>(packet->data()),
+                       packet->size());
+
   int size = packet->size();
   if (bytesWritten < 0) {
     OLA_WARN << m_parent->Description() << " "

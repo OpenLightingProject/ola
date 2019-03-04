@@ -62,7 +62,7 @@ class FtdiDmxThread
                         ola::rdm::RDMCallback *callback);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *cb);
 
     void MuteDevice(const ola::rdm::UID &target,
                     MuteDeviceCallback *mute_complete);
