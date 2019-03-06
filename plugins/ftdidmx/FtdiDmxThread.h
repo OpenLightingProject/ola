@@ -102,6 +102,7 @@ class FtdiDmxThread
                            const ola::rdm::UIDSet &uids);
 
     void destroyPendindingCallback(ola::rdm::RDMStatusCode state);
+    void destroyPendingRequest();
 
     void CheckTimeGranularity();
 

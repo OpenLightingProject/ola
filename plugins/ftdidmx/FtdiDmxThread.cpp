@@ -79,7 +79,7 @@ bool FtdiDmxThread::Stop() {
   }
 
   if (m_pending_request != nullptr) {
-    m_pending_request = nullptr;
+    destroyPendingRequest();
     destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
   }
   m_discovery_agent.Abort();
@@ -156,7 +156,8 @@ void FtdiDmxThread::destroyPendindingCallback(ola::rdm::RDMStatusCode state) {
   BranchCallback *thread_branch_callback = nullptr;
   ola::rdm::RDMCallback *thread_rdm_callback = nullptr;
 
-  m_pending_request = nullptr;
+  destroyPendingRequest();
+
   if (m_mute_complete != nullptr) {
     thread_mute_callback = m_mute_complete;
     m_mute_complete = nullptr;
@@ -174,6 +175,13 @@ void FtdiDmxThread::destroyPendindingCallback(ola::rdm::RDMStatusCode state) {
     m_rdm_callback = nullptr;
     ola::rdm::RunRDMCallback(thread_rdm_callback, state);
   }
+}
+
+void FtdiDmxThread::destroyPendingRequest() {
+  ola::rdm::RDMRequest *tmp_rdm_request = m_pending_request;
+
+  m_pending_request = nullptr;
+  delete tmp_rdm_request;
 }
 
 void FtdiDmxThread::MuteDevice(const ola::rdm::UID &target,
@@ -282,7 +290,6 @@ void *FtdiDmxThread::Run() {
         if (!ola::rdm::RDMCommandSerializer::PackWithStartCode(
               *m_pending_request, &packetBuffer)) {
           OLA_WARN << "RDMCommandSerializer failed. Dropping packet.";
-          m_pending_request = nullptr;
 
           destroyPendindingCallback(ola::rdm::RDM_FAILED_TO_SEND);
           sendRDM = false;
@@ -331,7 +338,7 @@ void *FtdiDmxThread::Run() {
             if (m_branch_callback != nullptr) {
               thread_branch_callback = m_branch_callback;
               m_branch_callback = nullptr;
-              m_pending_request = nullptr;
+              destroyPendingRequest();
               thread_branch_callback->Run(readBuffer,
                                           (readBytes >= 0 ? readBytes : 0));
             }
@@ -389,10 +396,10 @@ void *FtdiDmxThread::Run() {
 
                         if (received_reply->Response()->SourceUID() ==
                             m_pending_request->DestinationUID()) {
-                          m_pending_request = nullptr;
+                          destroyPendingRequest();
                           thread_mute_callback->Run(true);
                         } else {
-                          m_pending_request = nullptr;
+                          destroyPendingRequest();
                           thread_mute_callback->Run(false);
                         }
                       } else if (m_rdm_callback != nullptr) {
@@ -400,10 +407,10 @@ void *FtdiDmxThread::Run() {
                         m_rdm_callback = nullptr;
 
                         if (readBytes > 0) {
-                          m_pending_request = nullptr;
+                          destroyPendingRequest();
                           thread_rdm_callback->Run(received_reply);
                         } else {
-                          m_pending_request = nullptr;
+                          destroyPendingRequest();
                           RunRDMCallback(thread_rdm_callback, rdm::RDM_TIMEOUT);
                         }
                       }
@@ -432,7 +439,7 @@ void *FtdiDmxThread::Run() {
               thread_unmute_callback = m_unmute_complete;
               m_unmute_complete = nullptr;
               OLA_INFO << "UnMuteAllCallback";
-              m_pending_request = nullptr;
+              destroyPendingRequest();
               thread_unmute_callback->Run();
             }
           }
