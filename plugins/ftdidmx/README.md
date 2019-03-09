@@ -24,6 +24,7 @@ For RDM 2 additional resistors of 680 Ohm are needed:
 
 ### RDM was tested with:
 - FT4232H (USB-COM485-PLUS4)
+- USB-RS485-WE-1800-BT
 
 ## Config file: ola-ftdidmx.conf
 
