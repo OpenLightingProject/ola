@@ -26,6 +26,9 @@ For RDM 2 additional resistors of 680 Ohm are needed:
 - FT4232H (USB-COM485-PLUS4)
 - USB-RS485-WE-1800-BT
 
+### RDM was tested as not working with:
+- Enttec Open DMX USB (we believe this may be due to incorrect line biasing)
+
 ## Config file: ola-ftdidmx.conf
 
 `frequency = 30`  
