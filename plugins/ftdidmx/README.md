@@ -25,29 +25,29 @@ For RDM 2 additional resistors of 680 Ohm are needed:
 2. Pull-down between Data- and the common/ground.
 
 #### Diagram
-    +V
-    ---
-     |
-     +----------+
-     |          |
-     |       [680 Ohm]
-   |\|          |
-   | \----------+---------- DMX Pin 3 (Data+)
-   |  \         |
-   |   \     [130 Ohm]
-   |   /        |
-   |  /         |
-   | /o---------+---------- DMX Pin 2 (Data-)
-   |/|          |
-     |       [680 Ohm]
-     |          |
-     +----------+---------- DMX Pin 1 (Common)
-     |
-     +-------[<=20 Ohm]---+
-     |                    |
-   Common               -----
-                         ---
-                          -
+     +V
+     ---
+      |
+      +----------+
+      |          |
+      |       [680 Ohm]
+    |\|          |
+    | \----------+---------- DMX Pin 3 (Data+)
+    |  \         |
+    |   \     [130 Ohm]
+    |   /        |
+    |  /         |
+    | /o---------+---------- DMX Pin 2 (Data-)
+    |/|          |
+      |       [680 Ohm]
+      |          |
+      +----------+---------- DMX Pin 1 (Common)
+      |
+      +-------[<=20 Ohm]---+
+      |                    |
+    Common               -----
+                          ---
+                           -
 
 #### FTDI Board DB9 pinouts
 Based on the FTDI spec this is the pinout to be used on their DB9 connectors
