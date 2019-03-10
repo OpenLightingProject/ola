@@ -62,8 +62,9 @@ bool FtdiDmxDevice::StartHook() {
            << " interfaces.";
 
   for (unsigned int i = 1; i <= interface_count; i++) {
-    if (!StringToInt(m_widget->Serial(), &serial, false, 36)) {
-      OLA_WARN << "StringToInt returned false, serial used: " << serial;
+    if (!StringToInt(m_widget->Serial().substr(2,6), &serial, false, 36)) {
+      OLA_WARN << "StringToInt returned false, serial used: " << serial
+               << " Generated from: " << m_widget->Serial().substr(2,6);
     }
     FtdiInterface *port = new FtdiInterface(m_widget,
                                             static_cast<ftdi_interface>(i));
