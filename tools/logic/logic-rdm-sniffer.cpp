@@ -45,6 +45,7 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
+#include <ola/rdm/RDMPacket.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
 #include <ola/StringUtils.h>
@@ -228,7 +229,7 @@ void LogicReader::FrameReceived(const uint8_t *data, unsigned int length) {
     case ola::DMX512_START_CODE:
       DisplayDMXFrame(data + 1, length - 1);
       break;
-    case RDMCommand::START_CODE:
+    case ola::rdm::START_CODE:
       DisplayRDMFrame(data + 1, length - 1);
       break;
     default:
