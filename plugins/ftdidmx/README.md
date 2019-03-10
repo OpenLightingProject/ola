@@ -25,7 +25,6 @@ For RDM 2 additional resistors of 680 Ohm are needed:
 2. Pull-down between Data- and the common/ground.
 
 #### Diagram
-`
     +V
     ---
      |
@@ -49,7 +48,6 @@ For RDM 2 additional resistors of 680 Ohm are needed:
    Common               -----
                          ---
                           -
-`
 
 #### FTDI Board DB9 pinouts
 Based on the FTDI spec this is the pinout to be used on their DB9 connectors
