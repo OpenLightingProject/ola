@@ -25,6 +25,7 @@
 
 #include <math.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <string>
 #include <queue>
@@ -491,9 +492,23 @@ void *FtdiDmxThread::Run() {
 void FtdiDmxThread::CheckTimeGranularity() {
   TimeStamp ts1, ts2;
   Clock clock;
+  timespec req, rem;
+  req.tv_sec = rem.tv_sec = 0;
+  rem.tv_nsec = 0;
+  req.tv_nsec = 1000 * 1000;
+  int nanosleepReturn = 0;
 
   clock.CurrentTime(&ts1);
-  usleep(1000);
+  if ((nanosleepReturn = nanosleep(&req, &rem)) < 0) {
+    if (nanosleepReturn == EINTR) {
+      while (rem.tv_nsec > 0) {
+        req.tv_nsec = rem.tv_nsec;
+        nanosleep(&req, &rem);
+      }
+    } else {
+      OLA_WARN << "nanosleep failed with state: " << nanosleepReturn;
+    }
+  }
   clock.CurrentTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
