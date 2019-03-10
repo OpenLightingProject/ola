@@ -445,7 +445,8 @@ void *FtdiDmxThread::Run() {
               thread_rdm_callback = m_rdm_callback;
               m_rdm_callback = nullptr;
               destroyPendingRequest();
-              ola::rdm::RunRDMCallback(thread_rdm_callback, ola::rdm::RDM_WAS_BROADCAST);
+              ola::rdm::RunRDMCallback(thread_rdm_callback,
+                                       ola::rdm::RDM_WAS_BROADCAST);
             }
           }
       } else {
