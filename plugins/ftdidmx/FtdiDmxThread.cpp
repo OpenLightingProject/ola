@@ -112,9 +112,9 @@ void FtdiDmxThread::SendRDMRequest(ola::rdm::RDMRequest *request,
 
 void FtdiDmxThread::RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
   m_discovery_agent.StartFullDiscovery(
-        ola::NewSingleCallback(this,
-                               &FtdiDmxThread::DiscoveryComplete,
-                               callback));
+      ola::NewSingleCallback(this,
+                             &FtdiDmxThread::DiscoveryComplete,
+                             callback));
 }
 
 void FtdiDmxThread::RunIncrementalDiscovery(rdm::RDMDiscoveryCallback *cb) {

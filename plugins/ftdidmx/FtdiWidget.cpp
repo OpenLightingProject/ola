@@ -387,21 +387,20 @@ bool FtdiInterface::Write(ola::io::ByteString *packet) {
   } else if (bytesWritten == static_cast<int>(packet->size())) {
     return true;
   } else {
-    OLA_WARN << "Bytes Written: " << bytesWritten << " Packet Size: " << size;
+    OLA_WARN << "Bytes Written: " << bytesWritten \
+             << " != Packet Size: " << size;
     return false;
   }
 }
 
 int FtdiInterface::Read(unsigned char *buff, int size) {
   int read = ftdi_read_data(&m_handle, buff, size);
-  OLA_INFO << "FtdiRead";
+  OLA_DEBUG << "ftdi_read_data() read: " << read;
   if (read <= 0) {
     OLA_WARN << m_parent->Description() << " "
              << ftdi_get_error_string(&m_handle);
-    return read;
-  } else {
-    return read;
   }
+  return read;
 }
 
 bool FtdiInterface::SetupOutput() {
