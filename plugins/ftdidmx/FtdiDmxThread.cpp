@@ -439,9 +439,13 @@ void *FtdiDmxThread::Run() {
             if (m_unmute_complete != nullptr) {
               thread_unmute_callback = m_unmute_complete;
               m_unmute_complete = nullptr;
-              OLA_INFO << "UnMuteAllCallback";
               destroyPendingRequest();
               thread_unmute_callback->Run();
+            } else if (m_rdm_callback != nullptr) {
+              thread_rdm_callback = m_rdm_callback;
+              m_rdm_callback = nullptr;
+              destroyPendingRequest();
+              ola::rdm::RunRDMCallback(thread_rdm_callback, ola::rdm::RDM_WAS_BROADCAST);
             }
           }
       } else {
