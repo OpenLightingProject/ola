@@ -193,7 +193,8 @@ void FtdiDmxThread::MuteDevice(const ola::rdm::UID &target,
     m_mute_complete = mute_complete;
     m_pending_request = ola::rdm::NewMuteRequest(m_uid,
                                                  target,
-                                                 m_transaction_number += 1);
+                                                 m_transaction_number);
+    m_transaction_number++;
   } else {
     // Already pending request
     OLA_WARN << "Unable to queue Mute request, "
@@ -208,7 +209,8 @@ void FtdiDmxThread::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
     m_unmute_complete = unmute_complete;
     m_pending_request = ola::rdm::NewUnMuteRequest(m_uid,
                                                    ola::rdm::UID::AllDevices(),
-                                                   m_transaction_number += 1);
+                                                   m_transaction_number);
+    m_transaction_number++;
   } else {
     // Already pending request
     OLA_WARN << "Unable to queue UnMuteAll request, "
@@ -227,7 +229,8 @@ void FtdiDmxThread::Branch(const ola::rdm::UID &lower,
         ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid,
                                                   lower,
                                                   upper,
-                                                  m_transaction_number += 1);
+                                                  m_transaction_number);
+    m_transaction_number++;
   } else {
     // Already pending request
     OLA_WARN << "Unable to queue Branch request, "

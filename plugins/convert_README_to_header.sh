@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # A simple script to build a C++ header file containing the plugin description
 # from the plugin's README.md
