@@ -39,6 +39,8 @@
 #include <sstream>
 #include <string>
 
+#include "ola/Logging.h"
+
 namespace ola {
 
 using std::string;
@@ -127,6 +129,11 @@ void BaseTimeVal::AsTimeval(struct timeval *tv) const {
 int64_t BaseTimeVal::InMilliSeconds() const {
   return (m_tv.tv_sec * static_cast<int64_t>(ONE_THOUSAND) +
           m_tv.tv_usec / ONE_THOUSAND);
+}
+
+int64_t BaseTimeVal::InMicroSeconds() const {
+  return (m_tv.tv_sec * static_cast<int64_t>(USEC_IN_SECONDS) +
+          m_tv.tv_usec);
 }
 
 int64_t BaseTimeVal::AsInt() const {
@@ -272,4 +279,64 @@ void MockClock::CurrentTime(TimeStamp *timestamp) const {
   *timestamp = tv;
   *timestamp += m_offset;
 }
+
+OlaSleep::OlaSleep(std::string caller) :
+  m_caller(caller) {
+}
+
+/**
+ * @brief Check the granularity of usleep.
+ */
+void OlaSleep::CheckTimeGranularity() {
+  TimeStamp ts1, ts2;
+  Clock clock;
+
+  clock.CurrentTime(&ts1);
+  OlaSleep::usleep(4);
+  clock.CurrentTime(&ts2);
+
+  TimeInterval interval = ts2 - ts1;
+  m_granularity = (interval.InMicroSeconds() > BAD_GRANULARITY_LIMIT) ?
+      BAD : GOOD;
+  OLA_INFO << "Granularity for OlaSleep is "
+           << ((m_granularity == GOOD) ? "GOOD" : "BAD");
+}
+
+void OlaSleep::usleep(TimeInterval requested) {
+  timespec req;
+  req.tv_sec = requested.Seconds();
+  req.tv_nsec = requested.MicroSeconds() * 1000;
+
+  OlaSleep::usleep(req);
+}
+
+void OlaSleep::usleep(uint32_t requested) {
+  timespec req;
+  req.tv_sec = requested / 1000000;
+  req.tv_nsec = (requested % 1000000) * 1000;
+  req.tv_sec = 0;
+
+  OlaSleep::usleep(req);
+}
+
+void OlaSleep::usleep(timespec requested) {
+  timespec req, rem;
+  rem.tv_sec = rem.tv_nsec = 0;
+  req.tv_sec = requested.tv_sec;
+  req.tv_nsec = requested.tv_nsec;
+  int nanosleepReturn = 0;
+
+  if ((nanosleepReturn = nanosleep(&req, &rem)) < 0) {
+    if (errno == EINTR) {
+      while (rem.tv_nsec > 0 || rem.tv_sec > 0) {
+        req.tv_nsec = rem.tv_nsec;
+        req.tv_sec = rem.tv_sec;
+        nanosleep(&req, &rem);
+      }
+    } else {
+      OLA_WARN << "nanosleep failed with state: " << errno;
+    }
+  }
+}
+
 }  // namespace ola

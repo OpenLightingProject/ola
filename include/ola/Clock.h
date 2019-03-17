@@ -102,6 +102,12 @@ class BaseTimeVal {
    * @brief Returns the entire BaseTimeVal as microseconds
    * @return The entire BaseTimeVal in microseconds
    */
+  int64_t InMicroSeconds() const;
+
+  /**
+   * @brief Returns the entire BaseTimeVal as microseconds
+   * @return The entire BaseTimeVal in microseconds
+   */
   int64_t AsInt() const;
 
   std::string ToString() const;
@@ -160,6 +166,7 @@ class TimeInterval {
   int32_t MicroSeconds() const { return m_interval.MicroSeconds(); }
 
   int64_t InMilliSeconds() const { return m_interval.InMilliSeconds(); }
+  int64_t InMicroSeconds() const { return m_interval.InMicroSeconds(); }
   int64_t AsInt() const { return m_interval.AsInt(); }
 
   std::string ToString() const { return m_interval.ToString(); }
@@ -256,6 +263,22 @@ class MockClock: public Clock {
 
  private:
   TimeInterval m_offset;
+};
+
+class OlaSleep {
+public:
+  OlaSleep(std::string caller);
+
+  void usleep(TimeInterval requested);
+  void usleep(uint32_t requested);
+  void usleep(timespec requested);
+private:
+  std::string m_caller;
+  enum TimerGranularity { UNKNOWN, GOOD, BAD };
+  static const uint32_t BAD_GRANULARITY_LIMIT = 10;
+
+  TimerGranularity m_granularity;
+  void CheckTimeGranularity();
 };
 }  // namespace ola
 #endif  // INCLUDE_OLA_CLOCK_H_
