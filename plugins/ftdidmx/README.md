@@ -21,8 +21,12 @@ For simple DMX output (and input) all that is needed is a 130 Ohm resistor
 between data+ and data-.
 
 For RDM 2 additional resistors of 680 Ohm are needed:
-1. Pull-up connects between Data+ and VCC
-2. Pull-down between Data- and the common/ground.
+ 1. Pull-up connects between Data+ and VCC
+ 2. Pull-down between Data- and the common/ground.
+
+*Please note:* these values are based on the book "Control Freak" by Simon
+Howell and are what I used in my test setup, however the standard actually
+proscribes 133 Ohm and 562 Ohm resistors.
 
 #### Diagram
      +V
@@ -53,26 +57,26 @@ For RDM 2 additional resistors of 680 Ohm are needed:
 Based on the FTDI spec this is the pinout to be used on their DB9 connectors
 and the way to connect the lines and resistors.
 
-1. Data- (130 Ohm -> 3, 680 Ohm -> 5)
-2. Data+ (680 Ohm -> 9)
-3. 130 Ohm -> 1
-4. Not used
-5. GND (680 Ohm -> 1)
-6. Not used
-7. Short with 8 to disable echo
-8. Short with 7 to disable echo
-9. +5VDC (680 Ohm -> 2)
+ 1. Data- (130 Ohm -> 3, 680 Ohm -> 5)
+ 2. Data+ (680 Ohm -> 9)
+ 3. 130 Ohm -> 1
+ 4. Not used
+ 5. GND (680 Ohm -> 1)
+ 6. Not used
+ 7. Short with 8 to disable echo
+ 8. Short with 7 to disable echo
+ 9. +5VDC (680 Ohm -> 2)
 
 The FTDI spec and the DMX/RDM spec disagree where the 130 Ohm resistor should
 terminate, it could be that really it should be between pins 1 and 2, both 
 ways have worked for me for pure output, for RDM I only tested this way.
 
 ### RDM was tested with
-- FT4232H (USB-COM485-PLUS4)
-- USB-RS485-WE-1800-BT
+  - FT4232H (USB-COM485-PLUS4)
+  - USB-RS485-WE-1800-BT
 
 ### RDM was tested as not working with
-- Enttec Open DMX USB (we believe this may be due to incorrect line biasing)
+  - Enttec Open DMX USB (we believe this may be due to incorrect line biasing)
 
 ## Config file: ola-ftdidmx.conf
 
