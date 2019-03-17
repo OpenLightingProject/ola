@@ -25,8 +25,6 @@
 
 #include <math.h>
 #include <unistd.h>
-#include <time.h>
-#include <errno.h>
 
 #include <string>
 #include <queue>
@@ -53,7 +51,8 @@ namespace ftdidmx {
 FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface,
                              unsigned int frequency,
                              unsigned int serial)
-  : m_granularity(UNKNOWN),
+  : m_timer("FtdiDmxThread"),
+    m_granularity(UNKNOWN),
     m_interface(interface),
     m_term(false),
     m_frequency(frequency),
@@ -315,7 +314,7 @@ void *FtdiDmxThread::Run() {
     }
 
     if (m_granularity == GOOD) {
-      expirimentalSleep(DMX_BREAK);
+      m_timer.usleep(DMX_BREAK);
     }
 
     if (!m_interface->SetBreak(false)) {
@@ -323,7 +322,7 @@ void *FtdiDmxThread::Run() {
     }
 
     if (m_granularity == GOOD) {
-      expirimentalSleep(DMX_MAB);
+      m_timer.usleep(DMX_MAB);
     }
 
     if (!sendRDM) {
@@ -336,7 +335,7 @@ void *FtdiDmxThread::Run() {
       if (m_interface->Write(&packetBuffer)) {
           OLA_INFO << "RDM packet written to line";
           if (m_pending_request->IsDUB()) {
-            expirimentalSleep(MIN_WAIT_DUB_US);
+            m_timer.usleep(MIN_WAIT_DUB_US);
 
             readBytes = m_interface->Read(readBuffer, sizeof(readBuffer));
             OLA_INFO << "DUB Read: " << readBytes;
@@ -348,7 +347,7 @@ void *FtdiDmxThread::Run() {
                                           (readBytes >= 0 ? readBytes : 0));
             }
           } else if (!m_pending_request->DestinationUID().IsBroadcast()) {
-            expirimentalSleep(MIN_WAIT_RDM_US);
+            m_timer.usleep(MIN_WAIT_RDM_US);
             readBytes = m_interface->Read(readBuffer, sizeof(readBuffer));
 
             if (readBytes > 0) {
@@ -360,7 +359,7 @@ void *FtdiDmxThread::Run() {
               if (readBytes < 4) {
                 OLA_WARN << "FTDI Didn't receive at least 4B during minWait";
                 additionalWait = (MIN_WAIT_RDM_US / readBytes)*(4 - readBytes);
-                expirimentalSleep(additionalWait);
+                m_timer.usleep(additionalWait);
                 readBytes += m_interface->Read(readBuffer + readBytes,
                                                sizeof(readBuffer) - readBytes);
               }
@@ -378,7 +377,7 @@ void *FtdiDmxThread::Run() {
                     OLA_WARN << "FTDI Didn't receive full frame during minWait";
                     additionalWait = (MIN_WAIT_RDM_US / readBytes) *
                         (readBuffer[3] - readBytes + 1);
-                    expirimentalSleep(additionalWait);
+                    m_timer.usleep(additionalWait);
                     readBytes += m_interface->Read(
                           readBuffer + readBytes,
                           sizeof(readBuffer) - readBytes);
@@ -470,13 +469,13 @@ void *FtdiDmxThread::Run() {
 
     if (m_granularity == GOOD) {
       while (elapsed.InMilliSeconds() < frameTime) {
-        expirimentalSleep(1000);
+        m_timer.usleep(1000);
         clock.CurrentTime(&ts2);
         elapsed = ts2 - ts1;
       }
     } else {
       // See if we can drop out of bad mode.
-      expirimentalSleep(1000);
+      m_timer.usleep(1000);
       clock.CurrentTime(&ts3);
       interval = ts3 - ts2;
       if (interval.InMilliSeconds() < BAD_GRANULARITY_LIMIT) {
@@ -503,7 +502,7 @@ void FtdiDmxThread::CheckTimeGranularity() {
   Clock clock;
 
   clock.CurrentTime(&ts1);
-  expirimentalSleep(1000);
+  m_timer.usleep(1000);
   clock.CurrentTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
@@ -511,43 +510,6 @@ void FtdiDmxThread::CheckTimeGranularity() {
       BAD : GOOD;
   OLA_INFO << "Granularity for FTDI thread is "
            << ((m_granularity == GOOD) ? "GOOD" : "BAD");
-}
-
-void FtdiDmxThread::expirimentalSleep(TimeInterval requested) {
-  timespec req;
-  req.tv_sec = requested.Seconds();
-  req.tv_nsec = requested.MicroSeconds() * 1000;
-
-  FtdiDmxThread::expirimentalSleep(req);
-}
-
-void FtdiDmxThread::expirimentalSleep(uint32_t requested) {
-  timespec req;
-  req.tv_sec = requested / 1000000;
-  req.tv_nsec = (requested % 1000000) * 1000;
-  req.tv_sec = 0;
-
-  FtdiDmxThread::expirimentalSleep(req);
-}
-
-void FtdiDmxThread::expirimentalSleep(timespec requested) {
-  timespec req, rem;
-  rem.tv_sec = rem.tv_nsec = 0;
-  req.tv_sec = requested.tv_sec;
-  req.tv_nsec = requested.tv_nsec;
-  int nanosleepReturn = 0;
-
-  if ((nanosleepReturn = nanosleep(&req, &rem)) < 0) {
-    if (errno == EINTR) {
-      while (rem.tv_nsec > 0 || rem.tv_sec > 0) {
-        req.tv_nsec = rem.tv_nsec;
-        req.tv_sec = rem.tv_sec;
-        nanosleep(&req, &rem);
-      }
-    } else {
-      OLA_WARN << "nanosleep failed with state: " << errno;
-    }
-  }
 }
 }  // namespace ftdidmx
 }  // namespace plugin

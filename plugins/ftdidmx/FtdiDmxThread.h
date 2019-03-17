@@ -26,8 +26,6 @@
 #ifndef PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
 #define PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
 
-#include <time.h>
-
 #include <queue>
 #include <utility>
 
@@ -77,6 +75,7 @@ class FtdiDmxThread
 
 
  private:
+    ola::OlaSleep m_timer;
     enum TimerGranularity { UNKNOWN, GOOD, BAD };
 
     TimerGranularity m_granularity;
@@ -107,10 +106,6 @@ class FtdiDmxThread
     void destroyPendingRequest();
 
     void CheckTimeGranularity();
-
-    void expirimentalSleep(TimeInterval requested);
-    void expirimentalSleep(uint32_t requested);
-    void expirimentalSleep(timespec requested);
 
     static const uint32_t DMX_MAB = 16;
     static const uint32_t DMX_BREAK = 110;
