@@ -25,7 +25,7 @@ x/y/2019 ola-0.10.8
  * Use C++11 if required by random #1477
  * Correct uartdmx plugin documentation for the example UART #1320
  * Ensure we don't return unsuitable network indices via RDM #1478
- * Ensure a non-existant UID exits with a non-zero exit code
+ * Ensure a non-existent UID exits with a non-zero exit code
  * Fix a bug in how we simulate RDM responses and collisions
  * Fix an RDM discovery bug for how we handle phantom UIDs
  * Ensure _close_callback is assigned before we might need to run it in the
