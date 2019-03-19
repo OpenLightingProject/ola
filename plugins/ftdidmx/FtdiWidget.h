@@ -153,6 +153,8 @@ class FtdiWidget {
   /** @brief Get the widget's FTD2XX ID number */
   uint32_t Id() const { return m_id; }
 
+  void setId(uint32_t id) { m_id = id; }
+
   std::string Description() const {
     return m_name + " serial: " + m_serial + " port: " + std::to_string(m_id);
   }
@@ -182,7 +184,7 @@ class FtdiWidget {
 
 class FtdiInterface {
  public:
-  FtdiInterface(const FtdiWidget * parent,
+  FtdiInterface(FtdiWidget * parent,
                 const ftdi_interface interface);
 
   virtual ~FtdiInterface();
@@ -238,7 +240,7 @@ class FtdiInterface {
   bool SetupOutput();
 
  private:
-  const FtdiWidget * m_parent;
+  FtdiWidget * m_parent;
   struct ftdi_context m_handle;
   const ftdi_interface m_interface;
 };  // FtdiInterface

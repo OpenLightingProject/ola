@@ -217,7 +217,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   ftdi_free(ftdi);
 }
 
-FtdiInterface::FtdiInterface(const FtdiWidget * parent,
+FtdiInterface::FtdiInterface(FtdiWidget *parent,
                              const ftdi_interface interface)
       : m_parent(parent),
         m_interface(interface) {
@@ -235,6 +235,7 @@ FtdiInterface::~FtdiInterface() {
 
 bool FtdiInterface::SetInterface() {
   OLA_INFO << "Setting interface to: " << m_interface;
+  m_parent->setId(static_cast<uint32_t>(m_interface));
   if (ftdi_set_interface(&m_handle, m_interface) < 0) {
     OLA_WARN << m_parent->Description() << " "
              << ftdi_get_error_string(&m_handle);
