@@ -64,6 +64,7 @@ FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface,
     m_mute_complete(nullptr),
     m_unmute_complete(nullptr),
     m_branch_callback(nullptr) {
+  m_timer.setCaller("FtdiDmxThread " + m_interface->Description());
 }
 
 FtdiDmxThread::~FtdiDmxThread() {
@@ -475,6 +476,7 @@ void *FtdiDmxThread::Run() {
       }
     } else {
       // See if we can drop out of bad mode.
+      CheckTimeGranularity();
       m_timer.usleep(1000);
       clock.CurrentTime(&ts3);
       interval = ts3 - ts2;
@@ -498,18 +500,8 @@ void *FtdiDmxThread::Run() {
  * @brief Check the granularity of usleep.
  */
 void FtdiDmxThread::CheckTimeGranularity() {
-  TimeStamp ts1, ts2;
-  Clock clock;
-
-  clock.CurrentTime(&ts1);
-  m_timer.usleep(1000);
-  clock.CurrentTime(&ts2);
-
-  TimeInterval interval = ts2 - ts1;
-  m_granularity = (interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT) ?
-      BAD : GOOD;
-  OLA_INFO << "Granularity for FTDI thread is "
-           << ((m_granularity == GOOD) ? "GOOD" : "BAD");
+  m_timer.CheckTimeGranularity(8, 4);
+  m_granularity = m_timer.getGranularity();
 }
 }  // namespace ftdidmx
 }  // namespace plugin

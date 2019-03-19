@@ -75,8 +75,7 @@ class FtdiDmxThread
 
 
  private:
-    ola::OlaSleep m_timer;
-    enum TimerGranularity { UNKNOWN, GOOD, BAD };
+    ola::Sleep m_timer;
 
     TimerGranularity m_granularity;
     FtdiInterface *m_interface;
