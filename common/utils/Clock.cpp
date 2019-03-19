@@ -308,13 +308,13 @@ bool Sleep::CheckTimeGranularity(uint64_t wanted, uint64_t maxDeviation) {
   t.tv_nsec = (wanted % USEC_IN_SECONDS) * ONE_THOUSAND;
 
   clock.CurrentTime(&ts1);
-  Sleep::usleep(1);
+  this->usleep(1);
   clock.CurrentTime(&ts2);
   TimeInterval interval = ts2 - ts1;
   m_clock_overhead = interval.InMicroSeconds();
 
   clock.CurrentTime(&ts1);
-  Sleep::usleep(t);
+  this->usleep(t);
   clock.CurrentTime(&ts2);
 
   interval = ts2 - ts1;
@@ -336,7 +336,7 @@ void Sleep::usleep(TimeInterval requested) {
   req.tv_sec = requested.Seconds();
   req.tv_nsec = requested.MicroSeconds() * ONE_THOUSAND;
 
-  Sleep::usleep(req);
+  this->usleep(req);
 }
 
 void Sleep::usleep(uint32_t requested) {
@@ -345,7 +345,7 @@ void Sleep::usleep(uint32_t requested) {
   req.tv_nsec = (requested % USEC_IN_SECONDS) * ONE_THOUSAND;
   req.tv_sec = 0;
 
-  Sleep::usleep(req);
+  this->usleep(req);
 }
 
 void Sleep::usleep(timespec requested) {
