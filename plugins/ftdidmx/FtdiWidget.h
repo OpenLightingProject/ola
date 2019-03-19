@@ -154,7 +154,7 @@ class FtdiWidget {
   uint32_t Id() const { return m_id; }
 
   std::string Description() const {
-    return m_name + " with serial number : " + m_serial +" ";
+    return m_name + " serial: " + m_serial + " port: " + std::to_string(m_id);
   }
 
   /** @brief Get Widget available interface count **/
