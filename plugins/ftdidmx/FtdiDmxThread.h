@@ -100,8 +100,18 @@ class FtdiDmxThread
     void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                            bool status,
                            const ola::rdm::UIDSet &uids);
-
+    /**
+     * @brief Method called to cleanup any outstanding callbacks
+     * @param state state to return to caller when possible.
+     *
+     * @note All callbacks except the RDMCallback lack a way of reporting an
+     * error state to the caller.
+     */
     void destroyPendindingCallback(ola::rdm::RDMStatusCode state);
+    /**
+     * @brief Method called to cleanup the pending request without leaking
+     * memory.
+     */
     void destroyPendingRequest();
 
     void CheckTimeGranularity();

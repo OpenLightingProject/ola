@@ -154,10 +154,10 @@ void FtdiDmxThread::DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
 
 /**
  * @brief Method called to cleanup any outstanding callbacks
- * @param state
+ * @param state state to return to caller when possible.
  *
- * All callbacks except the RDMCallback lack a way of reporting an error state
- * to the caller.
+ * @note All callbacks except the RDMCallback lack a way of reporting an error
+ * state to the caller.
  */
 void FtdiDmxThread::destroyPendindingCallback(ola::rdm::RDMStatusCode state) {
   MuteDeviceCallback *thread_mute_callback = nullptr;

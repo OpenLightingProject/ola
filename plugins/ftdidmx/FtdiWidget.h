@@ -193,7 +193,7 @@ class FtdiInterface {
     return m_parent->Description();
   }
 
-  /** @brief Set interface on the widget */
+  /** @brief Pick interface on multiport widgets */
   bool SetInterface();
 
   /** @brief Open the widget */
@@ -230,10 +230,16 @@ class FtdiInterface {
   bool Write(const ola::DmxBuffer &data);
 
   /** @brief Write prepared packets to previously opened line,
-   *         agnostic to packet contents */
+   *         agnostic to packet contents
+   *  @pre The whole line setup and opening sequence.
+   *       Should haven been performed by the plugin before ever reaching this.
+   */
   bool Write(ola::io::ByteString *packet);
 
-  /** @brief Read data from a previously-opened line */
+  /** @brief Read data from a previously-opened line
+   *  @pre The whole line setup and opening sequence.
+   *       Should haven been performed by the plugin before ever reaching this.
+   */
   int Read(unsigned char* buff, int size);
 
   /** @brief Setup device for DMX Output **/
