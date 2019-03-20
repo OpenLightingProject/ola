@@ -190,10 +190,6 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
           }
         }
 
-        /* TODO: Serial part of UID for RDM relies on serial,
-         *       need to add a default serial
-         */
-
         OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '"
                  << sname << "', Serial: '" << sserial << "'";
         ToUpper(&v);

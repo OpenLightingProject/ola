@@ -89,7 +89,7 @@ class FtdiDmxThread
 
     uint8_t m_transaction_number;
     ola::rdm::DiscoveryAgent m_discovery_agent;
-    const ola::rdm::UID m_uid;
+    ola::rdm::UID m_uid;
 
     ola::rdm::RDMRequest *m_pending_request;
     ola::rdm::RDMCallback *m_rdm_callback;

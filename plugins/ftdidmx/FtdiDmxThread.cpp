@@ -65,6 +65,13 @@ FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface,
     m_unmute_complete(nullptr),
     m_branch_callback(nullptr) {
   m_timer.setCaller("FtdiDmxThread " + m_interface->Description());
+
+  if (serial == 0) {
+    unsigned int deviceId = std::rand();
+    OLA_WARN << "Setting Device ID to random value due to lack of serial: "
+             << deviceId;
+    m_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, deviceId);
+  }
 }
 
 FtdiDmxThread::~FtdiDmxThread() {
