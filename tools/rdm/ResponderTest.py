@@ -81,13 +81,13 @@ class TestFixture(object):
       return False
     return self.__class__.__name__ == other.__class__.__name__
 
-  def __ne__(self, other):
-    return not self == other
-
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self.__class__.__name__ < other.__class__.__name__
+
+  # These 4 can be replaced with functools.total_ordering when support for 2.7
+  # is dropped because NotImplemented is not supported by it before 3.4
 
   def __le__(self, other):
     if other.__class__ is not self.__class__:
@@ -103,6 +103,9 @@ class TestFixture(object):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self > other or self == other
+
+  def __ne__(self, other):
+    return not self == other
 
   def LookupPid(self, pid_name):
     return self._pid_store.GetName(pid_name, self._uid)

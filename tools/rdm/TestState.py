@@ -32,13 +32,13 @@ class TestState(object):
       return False
     return self._state == other._state
 
-  def __ne__(self, other):
-    return not self == other
-
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self._state < other._state
+
+  # These 4 can be replaced with functools.total_ordering when support for 2.7
+  # is dropped because NotImplemented is not supported by it before 3.4
 
   def __le__(self, other):
     if other.__class__ is not self.__class__:
@@ -54,6 +54,9 @@ class TestState(object):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self > other or self == other
+
+  def __ne__(self, other):
+    return not self == other
 
   def __hash__(self):
     return hash(self._state)
