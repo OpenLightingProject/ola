@@ -49,13 +49,13 @@ class _Event(object):
       return False
     return self._run_at == other._run_at and self._callback == other._callback
 
-  def __ne__(self, other):
-    return not self == other
-
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self._run_at < other._run_at
+
+  # These 4 can be replaced with functools.total_ordering when support for 2.7
+  # is dropped because NotImplemented is not supported by it before 3.4
 
   def __le__(self, other):
     if other.__class__ is not self.__class__:
@@ -71,6 +71,9 @@ class _Event(object):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self > other or self == other
+
+  def __ne__(self, other):
+    return not self == other
 
   def __hash__(self):
     return hash((self._run_at, self._callback))

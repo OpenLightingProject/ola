@@ -51,12 +51,20 @@ class MACAddress(object):
   def __repr__(self):
     return self.__str__()
 
+  def __eq__(self, other):
+    if other.__class__ is not self.__class__:
+      return False
+    return self.mac_address == other.mac_address
+
   def __lt__(self, other):
     if other is None:
       return False
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self.mac_address < other.mac_address
+
+  # These 4 can not be replaced with functools.total_ordering because of the
+  # special case where the other is None.
 
   def __le__(self, other):
     if other is None:
@@ -78,11 +86,6 @@ class MACAddress(object):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self > other or self == other
-
-  def __eq__(self, other):
-    if other.__class__ is not self.__class__:
-      return False
-    return self.mac_address == other.mac_address
 
   def __ne__(self, other):
     return not self == other

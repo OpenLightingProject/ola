@@ -86,15 +86,18 @@ class Plugin(object):
                     active=self.active,
                     enabled=self.enabled)
 
+  def __eq__(self, other):
+    if other.__class__ is not self.__class__:
+      return False
+    return self.id == other.id
+
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self.id < other.id
 
-  def __eq__(self, other):
-    if other.__class__ is not self.__class__:
-      return False
-    return self.id == other.id
+  # These 4 can be replaced with functools.total_ordering when support for 2.7
+  # is dropped because NotImplemented is not supported by it before 3.4
 
   def __le__(self, other):
     if other.__class__ is not self.__class__:
@@ -189,15 +192,18 @@ class Device(object):
                     nr_inputs=len(self.input_ports),
                     nr_outputs=len(self.output_ports))
 
+  def __eq__(self, other):
+    if other.__class__ is not self.__class__:
+      return False
+    return self.alias == other.alias
+
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self.alias < other.alias
 
-  def __eq__(self, other):
-    if other.__class__ is not self.__class__:
-      return False
-    return self.alias == other.alias
+  # These 4 can be replaced with functools.total_ordering when support for 2.7
+  # is dropped because NotImplemented is not supported by it before 3.4
 
   def __le__(self, other):
     if other.__class__ is not self.__class__:
@@ -273,15 +279,18 @@ class Port(object):
                     desc=self.description,
                     supports_rdm=self.supports_rdm)
 
+  def __eq__(self, other):
+    if other.__class__ is not self.__class__:
+      return NotImplemented
+    return self.id == other.id
+
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self.id < other.id
 
-  def __eq__(self, other):
-    if other.__class__ is not self.__class__:
-      return NotImplemented
-    return self.id == other.id
+  # These 4 can be replaced with functools.total_ordering when support for 2.7
+  # is dropped because NotImplemented is not supported by it before 3.4
 
   def __le__(self, other):
     if other.__class__ is not self.__class__:
@@ -363,15 +372,18 @@ class Universe(object):
                     name=self.name,
                     merge_mode=merge_mode)
 
+  def __eq__(self, other):
+    if other.__class__ is not self.__class__:
+      return False
+    return self.id == other.id
+
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self.id < other.id
 
-  def __eq__(self, other):
-    if other.__class__ is not self.__class__:
-      return False
-    return self.id == other.id
+  # These 4 can be replaced with functools.total_ordering when support for 2.7
+  # is dropped because NotImplemented is not supported by it before 3.4
 
   def __le__(self, other):
     if other.__class__ is not self.__class__:
@@ -464,15 +476,18 @@ class RDMNack(object):
     return s.format(value=self.value,
                     desc=self.description)
 
+  def __eq__(self, other):
+    if other.__class__ is not self.__class__:
+      return False
+    return self.value == other.value
+
   def __lt__(self, other):
     if other.__class__ is not self.__class__:
       return NotImplemented
     return self.value < other.value
 
-  def __eq__(self, other):
-    if other.__class__ is not self.__class__:
-      return False
-    return self.value == other.value
+  # These 4 can be replaced with functools.total_ordering when support for 2.7
+  # is dropped because NotImplemented is not supported by it before 3.4
 
   def __le__(self, other):
     if other.__class__ is not self.__class__:
