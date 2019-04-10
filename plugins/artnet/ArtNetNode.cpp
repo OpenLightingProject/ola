@@ -1598,7 +1598,7 @@ ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(uint8_t port_id,
                                                         bool warn) {
   if (port_id >= m_input_ports.size()) {
     if (warn) {
-      OLA_WARN << "Port index of out bounds: "
+      OLA_WARN << "Port index out of bounds: "
                << static_cast<int>(port_id) << " >= " << m_input_ports.size();
     }
     return NULL;
@@ -1609,7 +1609,7 @@ ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(uint8_t port_id,
 const ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(
     uint8_t port_id) const {
   if (port_id >= m_input_ports.size()) {
-    OLA_WARN << "Port index of out bounds: "
+    OLA_WARN << "Port index out of bounds: "
              << static_cast<int>(port_id) << " >= " << m_input_ports.size();
     return NULL;
   }
@@ -1633,7 +1633,7 @@ ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetEnabledInputPort(
 
 ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetOutputPort(uint8_t port_id) {
   if (port_id >= ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: "
+    OLA_WARN << "Port index out of bounds: "
              << static_cast<int>(port_id) << " >= " << ARTNET_MAX_PORTS;
     return NULL;
   }
@@ -1643,7 +1643,7 @@ ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetOutputPort(uint8_t port_id) {
 const ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetOutputPort(
     uint8_t port_id) const {
   if (port_id >= ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: "
+    OLA_WARN << "Port index out of bounds: "
              << static_cast<int>(port_id) << " >= " << ARTNET_MAX_PORTS;
     return NULL;
   }
@@ -1850,7 +1850,7 @@ void ArtNetNode::SendRDMRequest(uint8_t port_id, RDMRequest *request,
 
 bool ArtNetNode::CheckInputPortId(uint8_t port_id) {
   if (port_id >= m_controllers.size()) {
-    OLA_WARN << "Port index of out bounds: " << static_cast<int>(port_id)
+    OLA_WARN << "Port index out of bounds: " << static_cast<int>(port_id)
              << " >= " << m_controllers.size();
     return false;
   }
