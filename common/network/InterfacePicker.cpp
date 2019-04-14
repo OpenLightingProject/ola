@@ -44,7 +44,7 @@ using std::vector;
  * @param iface, the interface to populate
  * @param ip_or_name the IP address or interface name of the local interface
  *   we'd prefer to use.
- * @param options a Options struct configuring ChooseInterface
+ * @param options an Options struct configuring ChooseInterface
  * @return true if we found an interface, false otherwise
  */
 // TODO(Simon): Change these to callback based code to reduce duplication.
@@ -84,13 +84,15 @@ bool InterfacePicker::ChooseInterface(
     }
   }
 
-  if (!found && options.specific_only)
+  if (!found && options.specific_only) {
     return false;  // No match and being fussy
+  }
 
-  if (!found)
+  if (!found) {
     *iface = interfaces[0];
-  OLA_DEBUG << "Using interface " << iface->name << " (" <<
-    iface->ip_address << ")";
+  }
+  OLA_DEBUG << "Using interface " << iface->name << " ("
+            << iface->ip_address << ")";
   return true;
 }
 
@@ -99,7 +101,7 @@ bool InterfacePicker::ChooseInterface(
  * Select an interface to use by index
  * @param iface, the interface to populate
  * @param index the index of the local interface we'd prefer to use.
- * @param options a Options struct configuring ChooseInterface
+ * @param options an Options struct configuring ChooseInterface
  * @return true if we found an interface, false otherwise
  */
 // TODO(Simon): Change these to callback based code to reduce duplication.
@@ -125,13 +127,15 @@ bool InterfacePicker::ChooseInterface(
     }
   }
 
-  if (!found && options.specific_only)
+  if (!found && options.specific_only) {
     return false;  // No match and being fussy
+  }
 
-  if (!found)
+  if (!found) {
     *iface = interfaces[0];
-  OLA_DEBUG << "Using interface " << iface->name << " (" <<
-    iface->ip_address << ") with index " << iface->index;
+  }
+  OLA_DEBUG << "Using interface " << iface->name << " ("
+            << iface->ip_address << ") with index " << iface->index;
   return true;
 }
 

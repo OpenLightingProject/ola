@@ -306,8 +306,9 @@ string MemoryPreferences::GetValue(const string &key) const {
   PreferencesMap::const_iterator iter;
   iter = m_pref_map.find(key);
 
-  if (iter != m_pref_map.end())
+  if (iter != m_pref_map.end()) {
     return iter->second;
+  }
   return "";
 }
 
@@ -338,16 +339,15 @@ bool MemoryPreferences::GetValueAsBool(const string &key) const {
   PreferencesMap::const_iterator iter;
   iter = m_pref_map.find(key);
 
-  if (iter != m_pref_map.end())
+  if (iter != m_pref_map.end()) {
     return iter->second == BoolValidator::ENABLED;
+  }
   return false;
 }
 
 
 void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
-  m_pref_map.erase(key);
-  m_pref_map.insert(make_pair(key, (value ? BoolValidator::ENABLED :
-                                            BoolValidator::DISABLED)));
+  SetValue(key, (value ? BoolValidator::ENABLED : BoolValidator::DISABLED));
 }
 
 

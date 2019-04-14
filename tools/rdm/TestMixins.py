@@ -1078,7 +1078,7 @@ class SetZeroUInt32Mixin(SetZeroMixin):
   DATA = struct.pack('!I', 0)
 
 
-class GetOutOfRangeByteMixin(ResponderTestFixture):
+class GetOutOfRangeUInt8Mixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   LABEL = None
@@ -1105,7 +1105,7 @@ class GetOutOfRangeByteMixin(ResponderTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
 
-class SetOutOfRangeByteMixin(ResponderTestFixture):
+class SetOutOfRangeUInt8Mixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   LABEL = None

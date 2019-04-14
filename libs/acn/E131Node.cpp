@@ -171,12 +171,14 @@ bool E131Node::Start() {
     return false;
   }
 
-  if (!m_socket.Bind(
-        IPV4SocketAddress(IPV4Address::WildCard(), m_options.port)))
+  if (!m_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                       m_options.port))) {
     return false;
+  }
 
-  if (!m_socket.EnableBroadcast())
+  if (!m_socket.EnableBroadcast()) {
     return false;
+  }
 
   m_socket.SetTos(m_options.dscp);
   m_socket.SetMulticastInterface(m_interface.ip_address);

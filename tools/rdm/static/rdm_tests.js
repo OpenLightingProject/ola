@@ -116,7 +116,7 @@ RDMTests.publisher_url = 'http://rdm.openlighting.org/incoming/model_data';
 /**
  * Prepares the notification div and displays it on the page.
  * @this {RDMTests}
- * @param {Objec} options An object containing title and message to be
+ * @param {Object} options An object containing title and message to be
  * displayed.
  *
  *  {

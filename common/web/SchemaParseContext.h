@@ -80,7 +80,7 @@ class ObjectParseContext : public SchemaParseContextInterface {
   ObjectParseContext() {}
 
   /**
-   * @brief Called when we encouter a property
+   * @brief Called when we encounter a property
    */
   void ObjectKey(SchemaErrorLogger*, const std::string &keyword) {
     m_keyword.Set(keyword);
