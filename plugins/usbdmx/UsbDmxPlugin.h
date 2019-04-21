@@ -40,6 +40,7 @@ namespace usbdmx {
  *   - DMXControl Projects e.V. Nodle U1.
  *   - DMXCreator 512 Basic USB.
  *   - Eurolite DMX USB Pro.
+ *   - Eurolite DMX USB Pro MK2.
  *   - Scanlime's Fadecandy.
  *   - Sunlite.
  *   - Velleman K8062.
@@ -59,6 +60,8 @@ class UsbDmxPlugin: public ola::Plugin {
   ola_plugin_id Id() const { return OLA_PLUGIN_USBDMX; }
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
+  virtual void ConflictsWith(std::set<ola_plugin_id>* conflicting_plugins) const override;
+  
  private:
   std::auto_ptr<class PluginImplInterface> m_impl;
 

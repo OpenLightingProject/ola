@@ -44,6 +44,26 @@ const char EuroliteProFactory::EXPECTED_PRODUCT_MK2[] = "FT232R USB UART";
 const uint16_t EuroliteProFactory::PRODUCT_ID_MK2 = 0x6001;
 const uint16_t EuroliteProFactory::VENDOR_ID_MK2 = 0x0403;
 
+const char EuroliteProFactory::ENABLE_EUROLITE_MK2_KEY[] = "enable_eurolite_mk2";
+
+EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
+                                       Preferences *preferences)
+  : BaseWidgetFactory<class EurolitePro>("EuroliteProFactory"),
+    m_adaptor(adaptor),
+    m_enable_eurolite_mk2(IsEuroliteMk2Enabled(preferences))
+{
+}
+
+bool EuroliteProFactory::IsEuroliteMk2Enabled(Preferences *preferences)
+{
+  bool enabled;
+  if (!StringToBool(preferences->GetValue(ENABLE_EUROLITE_MK2_KEY),
+                    &enabled)) {
+    enabled = false;
+  }
+  return enabled;
+}
+
 bool EuroliteProFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
@@ -67,7 +87,8 @@ bool EuroliteProFactory::DeviceAdded(
     }
 
   // Eurolite USB-DMX512-PRO MK2?
-  } else if (descriptor.idVendor == VENDOR_ID_MK2 &&
+  } else if (m_enable_eurolite_mk2 &&
+             descriptor.idVendor == VENDOR_ID_MK2 &&
              descriptor.idProduct == PRODUCT_ID_MK2) {
     OLA_INFO << "Found a new Eurolite USB-DMX512-PRO MK2 device";
     LibUsbAdaptor::DeviceInformation info;
