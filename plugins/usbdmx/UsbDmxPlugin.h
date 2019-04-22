@@ -22,6 +22,7 @@
 #define PLUGINS_USBDMX_USBDMXPLUGIN_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include "ola/base/Macro.h"
 #include "ola/plugin_id.h"
@@ -60,8 +61,9 @@ class UsbDmxPlugin: public ola::Plugin {
   ola_plugin_id Id() const { return OLA_PLUGIN_USBDMX; }
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  virtual void ConflictsWith(std::set<ola_plugin_id>* conflicting_plugins) const override;
-  
+  void ConflictsWith(
+    std::set<ola_plugin_id>* conflicting_plugins) const override;
+
  private:
   std::auto_ptr<class PluginImplInterface> m_impl;
 

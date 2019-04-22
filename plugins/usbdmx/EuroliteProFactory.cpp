@@ -44,18 +44,17 @@ const char EuroliteProFactory::EXPECTED_PRODUCT_MK2[] = "FT232R USB UART";
 const uint16_t EuroliteProFactory::PRODUCT_ID_MK2 = 0x6001;
 const uint16_t EuroliteProFactory::VENDOR_ID_MK2 = 0x0403;
 
-const char EuroliteProFactory::ENABLE_EUROLITE_MK2_KEY[] = "enable_eurolite_mk2";
+const char EuroliteProFactory::ENABLE_EUROLITE_MK2_KEY[] =
+  "enable_eurolite_mk2";
 
 EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
                                        Preferences *preferences)
   : BaseWidgetFactory<class EurolitePro>("EuroliteProFactory"),
     m_adaptor(adaptor),
-    m_enable_eurolite_mk2(IsEuroliteMk2Enabled(preferences))
-{
+    m_enable_eurolite_mk2(IsEuroliteMk2Enabled(preferences)) {
 }
 
-bool EuroliteProFactory::IsEuroliteMk2Enabled(Preferences *preferences)
-{
+bool EuroliteProFactory::IsEuroliteMk2Enabled(Preferences *preferences) {
   bool enabled;
   if (!StringToBool(preferences->GetValue(ENABLE_EUROLITE_MK2_KEY),
                     &enabled)) {

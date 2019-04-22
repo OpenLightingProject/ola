@@ -44,7 +44,7 @@ class EuroliteProFactory : public BaseWidgetFactory<class EurolitePro> {
                    const struct libusb_device_descriptor &descriptor);
 
   static bool IsEuroliteMk2Enabled(Preferences *preferences);
-   
+
  private:
   ola::usb::LibUsbAdaptor *m_adaptor;
   bool m_enable_eurolite_mk2;
@@ -60,7 +60,7 @@ class EuroliteProFactory : public BaseWidgetFactory<class EurolitePro> {
   static const char EXPECTED_PRODUCT_MK2[];
 
   static const char ENABLE_EUROLITE_MK2_KEY[];
-	
+
   DISALLOW_COPY_AND_ASSIGN(EuroliteProFactory);
 };
 }  // namespace usbdmx
