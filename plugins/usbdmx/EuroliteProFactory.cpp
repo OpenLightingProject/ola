@@ -45,7 +45,7 @@ const uint16_t EuroliteProFactory::PRODUCT_ID_MK2 = 0x6001;
 const uint16_t EuroliteProFactory::VENDOR_ID_MK2 = 0x0403;
 
 const char EuroliteProFactory::ENABLE_EUROLITE_MK2_KEY[] =
-  "enable_eurolite_mk2";
+    "enable_eurolite_mk2";
 
 EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
                                        Preferences *preferences)
@@ -86,24 +86,29 @@ bool EuroliteProFactory::DeviceAdded(
     }
 
   // Eurolite USB-DMX512-PRO MK2?
-  } else if (m_enable_eurolite_mk2 &&
-             descriptor.idVendor == VENDOR_ID_MK2 &&
+  } else if (descriptor.idVendor == VENDOR_ID_MK2 &&
              descriptor.idProduct == PRODUCT_ID_MK2) {
-    OLA_INFO << "Found a new Eurolite USB-DMX512-PRO MK2 device";
-    LibUsbAdaptor::DeviceInformation info;
-    if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
+    if (m_enable_eurolite_mk2) {
+      OLA_INFO << "Found a new Eurolite USB-DMX512-PRO MK2 device";
+      LibUsbAdaptor::DeviceInformation info;
+      if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
+        return false;
+      }
+
+      if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER_MK2, info)) {
+        return false;
+      }
+
+      if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT_MK2, info)) {
+        return false;
+      }
+      isMK2 = true;
+    } else {
+      OLA_INFO << "Connected FTDI device could be a Eurolite "
+               << "USB-DMX512-PRO MK2 but is ignored, because "
+               << ENABLE_EUROLITE_MK2_KEY << " was false.";
       return false;
     }
-
-    if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER_MK2, info)) {
-      return false;
-    }
-
-    if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT_MK2, info)) {
-      return false;
-    }
-    isMK2 = true;
-
   // Something else
   } else {
     return false;

@@ -46,7 +46,7 @@ static const uint8_t DMX_LABEL = 6;
 static const uint8_t START_OF_MESSAGE = 0x7e;
 static const uint8_t END_OF_MESSAGE = 0xe7;
 static const unsigned char ENDPOINT = 0x02;
-static const uint8_t EUROLITE_PRO_MK2_SET_BAUD_RATE = 0x03;
+static const uint8_t MK2_SET_BAUD_RATE = 0x03;
 enum { EUROLITE_PRO_FRAME_SIZE = 518 };
 
 /*
@@ -181,13 +181,13 @@ bool SynchronousEurolitePro::Init() {
   // USB-DMX512-PRO MK2: set baudrate to 250000
   if (m_is_mk2) {
     uint16_t divisor = 12;  // = 3000000 / 250000
-    uint16_t value = (divisor & 0xFFFF);
+    uint16_t value = divisor; // divisor & 0xFFFF
     uint16_t index = (divisor >> 8) & 0xFF00;
     int err = m_adaptor->ControlTransfer(
         usb_handle,
         LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
         LIBUSB_ENDPOINT_OUT,  // bmRequestType
-        EUROLITE_PRO_MK2_SET_BAUD_RATE,  // bRequest
+        MK2_SET_BAUD_RATE,  // bRequest
         value,  // wValue
         index,  // wIndex
         NULL,  // data
@@ -242,13 +242,13 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
     // USB-DMX512-PRO MK2: set baudrate to 250000
     if (m_is_mk2) {
       uint16_t divisor = 12;  // = 3000000 / 250000
-      uint16_t value = (divisor & 0xFFFF);
+      uint16_t value = divisor; // divisor & 0xFFFF
       uint16_t index = (divisor >> 8) & 0xFF00;
       int err = m_adaptor->ControlTransfer(
           usb_handle,
           LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |
           LIBUSB_ENDPOINT_OUT,  // bmRequestType
-          EUROLITE_PRO_MK2_SET_BAUD_RATE,  // bRequest
+          MK2_SET_BAUD_RATE,  // bRequest
           value,  // wValue
           index,  // wIndex
           NULL,  // data
