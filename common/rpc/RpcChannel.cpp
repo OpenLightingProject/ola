@@ -546,7 +546,7 @@ void RpcChannel::SendRequestFailed(OutstandingRequest *request) {
 
 
 /*
- * Sent if we get a request for a non-existant method.
+ * Sent if we get a request for a non-existent method.
  */
 void RpcChannel::SendNotImplemented(int msg_id) {
   RpcMessage message;
