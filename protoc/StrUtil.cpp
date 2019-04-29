@@ -41,11 +41,6 @@
 
 #include "protoc/StrUtil.h"
 
-#if HAVE_CONFIG_H
-#include <config.h>
-#endif  // HAVE_CONFIG_H
-
-// Required for Protobuf 3.7 onwards
 #ifdef HAVE_GOOGLE_PROTOBUF_IO_STRTOD_H
 #include <google/protobuf/io/strtod.h>
 #endif  // HAVE_GOOGLE_PROTOBUF_IO_STRTOD_H
