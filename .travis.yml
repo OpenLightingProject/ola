@@ -77,7 +77,7 @@ matrix:
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
-      - PROTOBUF='latest'
+      - PROTOBUF='3.6'
       - LIBFTDI='1'
     - os: osx
       osx_image: xcode9.3
@@ -85,7 +85,7 @@ matrix:
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
-      - PROTOBUF='latest'
+      - PROTOBUF='3.6'
       - LIBFTDI='1'
     - os: osx
       osx_image: xcode9.3
@@ -93,7 +93,7 @@ matrix:
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
-      - PROTOBUF='latest'
+      - PROTOBUF='3.6'
       - LIBFTDI='1'
     - os: osx
       osx_image: xcode9.3
@@ -101,7 +101,7 @@ matrix:
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
-      - PROTOBUF='latest'
+      - PROTOBUF='3.6'
       - LIBFTDI='1'
     - os: linux
       dist: xenial
@@ -279,8 +279,8 @@ before_cache:
 
 install:
 # Match the version of protobuf being installed via apt
-  - if [[ "$PROTOBUF" == "latest" ]]; then pip install --user protobuf; fi
-  - if [[ "$PROTOBUF" != "latest" ]]; then pip install --user protobuf==3.1.0; fi
+  - if [[ "$PROTOBUF" == "3.6" ]]; then pip install --user protobuf==3.6.0; fi
+  - if [[ "$PROTOBUF" != "3.6" ]]; then pip install --user protobuf==3.1.0; fi
 # We need to use pip rather than apt on Xenial
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
@@ -300,9 +300,9 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "latest" ]; then brew install protobuf; fi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew install protobuf@3.1; fi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "3.6" ]; then brew install protobuf@3.6; fi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.6" ]; then brew install protobuf@3.1; fi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.6" ]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
