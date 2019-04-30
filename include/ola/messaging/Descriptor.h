@@ -281,11 +281,13 @@ typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
  *
  * An example of this type of group would be:
  *
+ * @verbatim
  * +----------------+
  * |    bool (1)    |
  * +----------------+
  * | string (0, 32) |
  * +----------------+
+ * @endverbatim
  *
  *  This could hold data like:
  *    (true, "foo"),
@@ -299,11 +301,13 @@ typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
  *
  * An example of this type of group would be:
  *
+ * @verbatim
  * +----------------+
  * |    bool (1)    |
  * +----------------+
  * |   uint16 (2)   |
  * +----------------+
+ * @endverbatim
  *
  *  This could hold data like:
  *    (true, 1000),
