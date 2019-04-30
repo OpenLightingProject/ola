@@ -858,6 +858,9 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
 AS_IF([test "x$build_java_libs" = xyes],
       [PROTOBUF_SUPPORT([2.4.0])],
       [PROTOBUF_SUPPORT([2.3.0])])
+# Version 3.7 and above of protoc require some additional includes
+AC_CHECK_HEADERS([google/protobuf/io/strtod.h google/protobuf/stubs/logging.h \
+                  google/protobuf/stubs/stl_util.h])
 
 
 # Doxygen
