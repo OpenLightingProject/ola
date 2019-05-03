@@ -29,6 +29,7 @@
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/rdm/RDMCommandSerializer.h"
+#include "ola/rdm/RDMPacket.h"
 #include "ola/rdm/UID.h"
 #include "ola/testing/TestUtils.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
@@ -178,7 +179,7 @@ uint8_t *EnttecUsbProWidgetTest::PackRDMRequest(const RDMRequest *request,
                                                 unsigned int *size) {
   unsigned int request_size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *rdm_data = new uint8_t[request_size + 1];
-  rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
+  rdm_data[0] = ola::rdm::START_CODE;
   memset(&rdm_data[1], 0, request_size);
   OLA_ASSERT(RDMCommandSerializer::Pack(*request, &rdm_data[1], &request_size));
   *size = request_size + 1;
@@ -194,7 +195,7 @@ uint8_t *EnttecUsbProWidgetTest::PackRDMResponse(const RDMResponse *response,
   unsigned int response_size = RDMCommandSerializer::RequiredSize(*response);
   uint8_t *rdm_data = new uint8_t[response_size + 2];
   rdm_data[0] = 0;  // status ok
-  rdm_data[1] = ola::rdm::RDMCommand::START_CODE;
+  rdm_data[1] = ola::rdm::START_CODE;
   memset(&rdm_data[2], 0, response_size);
   OLA_ASSERT(RDMCommandSerializer::Pack(*response, &rdm_data[2],
                                         &response_size));
@@ -732,7 +733,7 @@ void EnttecUsbProWidgetTest::testMuteDevice() {
   // TODO(simon): make this better
   uint8_t mute_response_frame[] = {
       0,
-      ola::rdm::RDMCommand::START_CODE,
+      ola::rdm::START_CODE,
       0};
 
   // add the expected response, send and verify

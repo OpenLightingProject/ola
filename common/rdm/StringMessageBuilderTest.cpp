@@ -57,6 +57,8 @@ class StringBuilderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringBuilderTest);
   CPPUNIT_TEST(testSimpleBuilder);
   CPPUNIT_TEST(testBuilderWithLabels);
+  CPPUNIT_TEST(testBuilderWithIntervals);
+  CPPUNIT_TEST(testBuilderWithLabelsAndIntervals);
   CPPUNIT_TEST(testBuilderWithGroups);
   CPPUNIT_TEST(testBuilderWithNestedGroups);
   CPPUNIT_TEST(testBuilderWithVariableNestedGroups);
@@ -69,6 +71,8 @@ class StringBuilderTest: public CppUnit::TestFixture {
  public:
     void testSimpleBuilder();
     void testBuilderWithLabels();
+    void testBuilderWithIntervals();
+    void testBuilderWithLabelsAndIntervals();
     void testBuilderWithGroups();
     void testBuilderWithNestedGroups();
     void testBuilderWithVariableNestedGroups();
@@ -82,6 +86,8 @@ class StringBuilderTest: public CppUnit::TestFixture {
 
     const Message *BuildMessage(const Descriptor &descriptor,
                                 const vector<string> &inputs);
+    const Message *BuildMessageSingleInput(const Descriptor &descriptor,
+                                           const string &input);
 };
 
 
@@ -97,9 +103,23 @@ const Message *StringBuilderTest::BuildMessage(
     const vector<string> &inputs) {
   StringMessageBuilder builder;
   const Message *message = builder.GetMessage(inputs, &descriptor);
-  if (!message)
+  if (!message) {
     OLA_WARN << "Error with field: " << builder.GetError();
+  }
   return message;
+}
+
+
+/**
+ * Build a message from a single input and return the string representation
+ * of the message.
+ */
+const Message *StringBuilderTest::BuildMessageSingleInput(
+    const Descriptor &descriptor,
+    const string &input) {
+  vector<string> inputs;
+  inputs.push_back(input);
+  return BuildMessage(descriptor, inputs);
 }
 
 
@@ -188,6 +208,123 @@ void StringBuilderTest::testBuilderWithLabels() {
 
   string expected = "uint8: dozen\n";
   OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
+
+  // Test an invalid case
+  // setup the inputs
+  vector<string> inputs2;
+  inputs2.push_back("half_dozen");
+  auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
+
+  // verify
+  OLA_ASSERT_NULL(message2.get());
+}
+
+
+/**
+ * Check the builder accepts intervals
+ */
+void StringBuilderTest::testBuilderWithIntervals() {
+  // build the descriptor
+  UInt8FieldDescriptor::IntervalVector intervals;
+  intervals.push_back(UInt16FieldDescriptor::Interval(2, 8));
+  intervals.push_back(UInt16FieldDescriptor::Interval(12, 14));
+  UInt8FieldDescriptor::LabeledValues labels;
+
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new UInt8FieldDescriptor("uint8", intervals, labels));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  auto_ptr<const Message> message(BuildMessageSingleInput(descriptor, "2"));
+
+  // verify
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(static_cast<unsigned int>(fields.size()),
+                message->FieldCount());
+
+  string expected = "uint8: 2\n";
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
+
+
+  // Test an invalid case
+  auto_ptr<const Message> message2(BuildMessageSingleInput(descriptor,
+                                                           "dozen"));
+
+  // verify
+  OLA_ASSERT_NULL(message2.get());
+
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "0"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "1"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "2"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "8"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "9"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "11"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "12"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "13"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "14"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "15"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "255"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "65535"));
+
+  // check labels
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "one"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "dozen"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "bakers_dozen"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "twenty"));
+}
+
+
+/**
+ * Check the builder accepts labels and intervals
+ */
+void StringBuilderTest::testBuilderWithLabelsAndIntervals() {
+  // build the descriptor
+  UInt8FieldDescriptor::IntervalVector intervals;
+  intervals.push_back(UInt16FieldDescriptor::Interval(2, 8));
+  intervals.push_back(UInt16FieldDescriptor::Interval(12, 14));
+  UInt8FieldDescriptor::LabeledValues labels;
+  labels["dozen"] = 12;
+  labels["bakers_dozen"] = 13;
+
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new UInt8FieldDescriptor("uint8", intervals, labels));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  auto_ptr<const Message> message(BuildMessageSingleInput(descriptor, "dozen"));
+
+  // verify
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(static_cast<unsigned int>(fields.size()),
+                message->FieldCount());
+
+  string expected = "uint8: dozen\n";
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
+
+
+  // Test an invalid case
+  auto_ptr<const Message> message2(BuildMessageSingleInput(descriptor,
+                                                           "half_dozen"));
+
+  // verify
+  OLA_ASSERT_NULL(message2.get());
+
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "0"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "1"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "2"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "8"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "9"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "11"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "12"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "13"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "14"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "15"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "255"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "65535"));
+
+  // check labels
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "one"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "dozen"));
+  OLA_ASSERT_NOT_NULL(BuildMessageSingleInput(descriptor, "bakers_dozen"));
+  OLA_ASSERT_NULL(BuildMessageSingleInput(descriptor, "twenty"));
 }
 
 

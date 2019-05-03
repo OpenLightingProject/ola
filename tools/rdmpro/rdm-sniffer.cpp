@@ -37,6 +37,7 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
+#include <ola/rdm/RDMPacket.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
 #include <ola/strings/Format.h>
@@ -305,7 +306,7 @@ void RDMSniffer::ProcessFrame() {
         DisplayDmxFrame();
       }
       break;
-    case RDMCommand::START_CODE:
+    case ola::rdm::START_CODE:
       DisplayRDMFrame();
       break;
     default:

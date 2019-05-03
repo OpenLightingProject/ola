@@ -2496,6 +2496,132 @@ manufacturer {
   manufacturer_id: 17742
   manufacturer_name: "ENTTEC Pty Ltd"
   pid {
+    name: "AUTO_MODE"
+    value: 34559
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "program"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "program"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
     name: "PWM_OUTPUT_FREQUENCY"
     value: 32770
     get_request {
