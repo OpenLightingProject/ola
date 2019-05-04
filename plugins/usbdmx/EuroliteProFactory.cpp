@@ -67,7 +67,7 @@ bool EuroliteProFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  bool isMK2 = false;
+  bool is_mk2 = false;
 
   // Eurolite USB-DMX512-PRO?
   if (descriptor.idVendor == VENDOR_ID && descriptor.idProduct == PRODUCT_ID) {
@@ -89,7 +89,7 @@ bool EuroliteProFactory::DeviceAdded(
   } else if (descriptor.idVendor == VENDOR_ID_MK2 &&
              descriptor.idProduct == PRODUCT_ID_MK2) {
     if (m_enable_eurolite_mk2) {
-      OLA_INFO << "Found a new Eurolite USB-DMX512-PRO MK2 device";
+      OLA_INFO << "Found a possible new Eurolite USB-DMX512-PRO MK2 device";
       LibUsbAdaptor::DeviceInformation info;
       if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
         return false;
@@ -102,15 +102,15 @@ bool EuroliteProFactory::DeviceAdded(
       if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT_MK2, info)) {
         return false;
       }
-      isMK2 = true;
+            is_mk2 = true;
     } else {
       OLA_INFO << "Connected FTDI device could be a Eurolite "
                << "USB-DMX512-PRO MK2 but is ignored, because "
                << ENABLE_EUROLITE_MK2_KEY << " was false.";
       return false;
     }
-  // Something else
   } else {
+    // Something else
     return false;
   }
 
@@ -130,11 +130,11 @@ bool EuroliteProFactory::DeviceAdded(
   if (FLAGS_use_async_libusb) {
     widget = new AsynchronousEurolitePro(m_adaptor, usb_device,
                                          serial_str.str(),
-                                         isMK2);
+                                         is_mk2);
   } else {
     widget = new SynchronousEurolitePro(m_adaptor, usb_device,
                                         serial_str.str(),
-                                        isMK2);
+                                        is_mk2);
   }
   return AddWidget(observer, widget);
 }
