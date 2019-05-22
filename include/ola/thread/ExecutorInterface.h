@@ -51,7 +51,7 @@ class ExecutorInterface {
    *
    * When queuing callbacks, you ether need to ensure that either:
    *   - The objects used in the callback outlive the ExecutorInterface
-   *   - That the calback is run before the objects are deleted.
+   *   - That the callback is run before the objects are deleted.
    *
    * To achieve the latter it's common to keep track of the number of
    * outstanding callbacks and then call DrainCallbacks() in the destructor
