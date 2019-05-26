@@ -102,10 +102,10 @@ bool EuroliteProFactory::DeviceAdded(
       if (!m_adaptor->CheckProduct(EXPECTED_PRODUCT_MK2, info)) {
         return false;
       }
-            is_mk2 = true;
+      is_mk2 = true;
     } else {
       OLA_INFO << "Connected FTDI device could be a Eurolite "
-               << "USB-DMX512-PRO MK2 but is ignored, because "
+               << "USB-DMX512-PRO MK2 but was ignored, because "
                << ENABLE_EUROLITE_MK2_KEY << " was false.";
       return false;
     }
