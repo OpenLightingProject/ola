@@ -23,6 +23,7 @@ addons:
      - libprotobuf-dev
      - protobuf-compiler
      - libprotoc-dev
+     - debianutils
     packages: &core_build
      # This is all the bits we need to enable all options
      - *base_build
