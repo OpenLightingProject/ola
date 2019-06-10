@@ -9,6 +9,8 @@ before_script:
 
 script:
  - "cat `which pychecker`"
+ - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then locate pychecker || echo "no results"; fi
+ - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then locate checker.py || echo "no results"; fi
  - "bash -ex .travis-ci.sh"
 
 addons:
@@ -294,8 +296,6 @@ install:
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
-  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then locate pychecker; fi
-  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then locate checker.py; fi
 
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
