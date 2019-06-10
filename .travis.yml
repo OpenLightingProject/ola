@@ -298,7 +298,7 @@ install:
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 # This is a very bodgy workaround to the fact that the pip install of the archive doesn't seem to work properly now on Travis
-  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then sudo mkdir -p /pychecker/; sudo ln -s /pychecker/checker.py /home/travis/.local/lib/python2.7/site-packages/pychecker/checker.py; fi
+  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then sudo mkdir -p /pychecker/; sudo ln -s /home/travis/.local/lib/python2.7/site-packages/pychecker/checker.py /pychecker/checker.py; fi
 
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
