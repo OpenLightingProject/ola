@@ -8,7 +8,9 @@ before_script:
  - export -f travis_fold
 
 script:
+ - ls -al /usr/local/lib/python2.7/site-packages/pychecker/checker.py || echo missing
  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
+ - ls -al /home/travis/.local/lib/python2.7/site-packages/pychecker/checker.py || echo missing
  - "which pychecker || echo unknown"
  - "cat `which pychecker || true` || true"
  - "tree /home/travis/.local/ || echo unknown"
@@ -296,7 +298,7 @@ install:
   - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
-#  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
+  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then sudo pip install http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
