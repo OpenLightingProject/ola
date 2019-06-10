@@ -8,9 +8,9 @@ before_script:
  - export -f travis_fold
 
 script:
+ - "`which pychecker`"
  - "cat `which pychecker`"
- - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then locate pychecker || echo "no results"; fi
- - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then locate checker.py || echo "no results"; fi
+ - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
  - "bash -ex .travis-ci.sh"
 
 addons:
