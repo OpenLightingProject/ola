@@ -4413,7 +4413,8 @@ void RDMAPI::_HandleGetDimmerMaximumLevel(
     if (data.size() != DATA_SIZE) {
       SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
     } else {
-      maximum_level = data[0];
+      const uint16_t *ptr = reinterpret_cast<const uint16_t*>(data.data());
+      maximum_level = NetworkToHost(*ptr);
     }
   }
   callback->Run(response_status, maximum_level);
