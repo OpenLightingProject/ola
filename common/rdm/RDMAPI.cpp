@@ -1223,24 +1223,14 @@ bool RDMAPI::SetDMXAddress(
     uint16_t start_address,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
-  if (CheckCallback(error, callback))
-    return false;
-  if (CheckValidSubDevice(sub_device, true, error, callback))
-    return false;
 
-  start_address = HostToNetwork(start_address);
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleEmptyResponse,
-    callback);
-  return CheckReturnStatus(
-    m_impl->RDMSet(cb,
-                   universe,
-                   uid,
-                   sub_device,
-                   PID_DMX_START_ADDRESS,
-                   reinterpret_cast<const uint8_t*>(&start_address),
-                   sizeof(start_address)),
+  return GenericSetU16(
+    universe,
+    uid,
+    sub_device,
+    start_address,
+    callback,
+    PID_DMX_START_ADDRESS,
     error);
 }
 
