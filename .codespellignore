@@ -66,6 +66,7 @@ const uint8_t BaseRobeWidget::SOM;
   manufacturer_name: "SRM Technik GmbH"
   manufacturer_name: "medien technik cords"
   manufacturer_name: "TBE Srl"
+  manufacturer_name: "AUTOLUX Handels- und ProduktionsgmbH"
   STLDeleteValues(&m_uint_map_variables);
   return GetMapVar(&m_uint_map_variables, name, label);
   STLValues(m_uint_map_variables, &variables);
