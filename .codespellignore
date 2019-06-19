@@ -175,3 +175,4 @@ import java.nio.ByteOrder;
   std::string ErrorString() const;
 std::string SchemaErrorLogger::ErrorString() const {
   return m_error_logger.ErrorString();
+# This is a very bodgy workaround to the fact that the pip install of the archive doesn't seem to work properly now on Travis
