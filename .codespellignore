@@ -61,10 +61,12 @@ const uint8_t BaseRobeWidget::SOM;
             $scope.input(' THRU ');
   manufacturer_name: "ALS Stanislaw Binkiewicz"
   manufacturer_name: "Guangzhou Litewise Lighting Equipments Co., Ltd. dba \"EK Lights\""
+  manufacturer_name: "Guangzhou VAS Lighting Co., Ltd."
   manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
   manufacturer_name: "SRM Technik GmbH"
   manufacturer_name: "medien technik cords"
   manufacturer_name: "TBE Srl"
+  manufacturer_name: "AUTOLUX Handels- und ProduktionsgmbH"
   STLDeleteValues(&m_uint_map_variables);
   return GetMapVar(&m_uint_map_variables, name, label);
   STLValues(m_uint_map_variables, &variables);
@@ -171,3 +173,7 @@ function ok(a,b){for(var c=a.wa[b].data.items,d=c.length,g=N(a.wa[b].id),h="",i=
 import java.nio.ByteOrder;
         byte[] header = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder()).putInt(headerContent).array();
         int headerValue = ByteBuffer.wrap(header).order(ByteOrder.nativeOrder()).getInt();
+  std::string ErrorString() const;
+std::string SchemaErrorLogger::ErrorString() const {
+  return m_error_logger.ErrorString();
+# This is a very bodgy workaround to the fact that the pip install of the archive doesn't seem to work properly now on Travis
