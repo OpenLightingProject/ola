@@ -61,6 +61,8 @@ class NewWidgetHandler {
                            const UsbProWidgetInformation &information) = 0;
     virtual void NewWidget(class DmxterWidget *widget,
                            const UsbProWidgetInformation &information) = 0;
+    virtual void NewWidget(class DMXUSBWidget *widget,
+                           const UsbProWidgetInformation &information) = 0;
     virtual void NewWidget(class RobeWidget *widget,
                            const RobeWidgetInformation &information) = 0;
     virtual void NewWidget(class UltraDMXProWidget *widget,
@@ -162,6 +164,9 @@ class WidgetDetectorThread: public ola::thread::Thread {
     static const uint16_t DMX_KING_ULTRA_MICRO_ID = 3;
     static const uint16_t DMX_KING_ULTRA_RDM_ID = 4;
 
+    // DMXUSB Device Models
+    static const uint16_t DMXUSB_ID = 0x32;
+
     // Jese device models.
     static const uint16_t JESE_DMX_TRI_MK1_ID = 1;  // Original DMX-TRI
     static const uint16_t JESE_RDM_TRI_MK1_ID = 2;  // Original RDM-TRI
@@ -181,6 +186,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
 
     // ESTA Ids
     static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
+    static const uint16_t DMXUSB_ESTA_ID = 0x7ff7;
     static const uint16_t GODDARD_ESTA_ID = 0x4744;
     static const uint16_t JESE_ESTA_ID = 0x6864;
 };

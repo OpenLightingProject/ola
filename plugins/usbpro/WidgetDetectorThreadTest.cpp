@@ -30,6 +30,7 @@
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/DmxterWidget.h"
+#include "plugins/usbpro/DMXUSBWidget.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/MockEndpoint.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
@@ -46,6 +47,7 @@ using ola::plugin::usbpro::BaseRobeWidget;
 using ola::plugin::usbpro::BaseUsbProWidget;
 using ola::plugin::usbpro::DmxTriWidget;
 using ola::plugin::usbpro::DmxterWidget;
+using ola::plugin::usbpro::DMXUSBWidget;
 using ola::plugin::usbpro::EnttecUsbProWidget;
 using ola::plugin::usbpro::NewWidgetHandler;
 using ola::plugin::usbpro::RobeWidget;
@@ -91,6 +93,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
   CPPUNIT_TEST(testArduinoWidget);
   CPPUNIT_TEST(testDmxTriWidget);
   CPPUNIT_TEST(testDmxterWidget);
+  CPPUNIT_TEST(testDMXUSBWidget);
   CPPUNIT_TEST(testUsbProWidget);
   CPPUNIT_TEST(testUsbProMkIIWidget);
   CPPUNIT_TEST(testUsbProMkIIBWidget);
@@ -107,6 +110,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void testArduinoWidget();
     void testDmxTriWidget();
     void testDmxterWidget();
+    void testDMXUSBWidget();
     void testUsbProWidget();
     void testUsbProMkIIWidget();
     void testUsbProMkIIBWidget();
@@ -122,6 +126,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       ENTTEC,
       DMX_TRI,
       DMXTER,
+      DMXUSB,
       ROBE,
       ULTRA_DMX,
     } WidgetType;
@@ -184,6 +189,17 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = DMXTER;
+      m_ss.Terminate();
+    }
+    void NewWidget(DMXUSBWidget *widget,
+                   const UsbProWidgetInformation &information) {
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x7ff7), information.esta_id);
+      OLA_ASSERT_EQ(string("DMXUSB"), information.manufacturer);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x32), information.device_id);
+      OLA_ASSERT_EQ(string("mode 2"), information.device);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
+      m_thread->FreeWidget(widget);
+      m_received_widget_type = DMXUSB;
       m_ss.Terminate();
     }
     void NewWidget(RobeWidget *widget,
@@ -334,6 +350,37 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
   m_thread->WaitUntilRunning();
   m_ss.Run();
   OLA_ASSERT_EQ(DMXTER, m_received_widget_type);
+}
+
+
+/**
+ * Check that we can locate a DMXUSB widget.
+ */
+void WidgetDetectorThreadTest::testDMXUSBWidget() {
+  uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  uint8_t manufacturer_data[] = "\153\152DMXUSB";
+  uint8_t device_data[] = "\032\000DMXUSB";
+  uint8_t get_params_request[] = {0, 0};
+
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
+      BaseUsbProWidget::MANUFACTURER_LABEL,
+      manufacturer_data,
+      sizeof(manufacturer_data));
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::DEVICE_LABEL, NULL, 0,
+      BaseUsbProWidget::DEVICE_LABEL, device_data, sizeof(device_data));
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
+      BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::GET_PARAMS,
+                                       &get_params_request[0],
+                                       sizeof(get_params_request));
+
+  m_thread->Start();
+  m_thread->WaitUntilRunning();
+  m_ss.Run();
+  OLA_ASSERT_EQ(DMXUSB, m_received_widget_type);
 }
 
 

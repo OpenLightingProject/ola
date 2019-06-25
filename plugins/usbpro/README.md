@@ -11,6 +11,7 @@ includes:
 * Enttec DMX USB Pro & USB Pro Mk II
 * Robe Universe Interface
 * LumenRadio CRMX Nova TX USB
+* DMXUSB Arduino-compatible library
 
 See https://wiki.openlighting.org/index.php/USB_Protocol_Extensions for 
 more info.
@@ -34,4 +35,4 @@ The max frames per second to send to a Usb Pro or DMXKing device.
 Bypass RDM handling in the {DMX,RDM}-TRI widgets.
 
 `ultra_fps_limit = 40`  
-The max frames per second to send to a Ultra DMX Pro device.
+The max frames per second to send to a Ultra DMX Pro or DMXUSB device.

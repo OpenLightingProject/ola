@@ -36,6 +36,7 @@
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/DmxterWidget.h"
+#include "plugins/usbpro/DMXUSBWidget.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
@@ -271,6 +272,15 @@ void WidgetDetectorThread::UsbProWidgetReady(
             information);
         return;
       }
+    case DMXUSB_ESTA_ID:
+      if (information->device_id == DMXUSB_ID) {
+        // The DMXUSB device has many outputs
+        DispatchWidget(
+            new DMXUSBWidget(descriptor),
+            information);
+        return;
+      }
+      break;
     case GODDARD_ESTA_ID:
       if (information->device_id == GODDARD_DMXTER4_ID ||
           information->device_id == GODDARD_DMXTER4A_ID ||
