@@ -53,7 +53,7 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     StringMessageBuilder();
     ~StringMessageBuilder();
 
-    // we handle decending into groups ourself
+    // we handle descending into groups ourself
     bool Descend() const { return false; }
     const ola::messaging::Message *GetMessage(
         const std::vector<std::string> &inputs,
