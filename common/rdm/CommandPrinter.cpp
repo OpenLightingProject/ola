@@ -209,7 +209,7 @@ void CommandPrinter::DisplayDiscoveryRequest(
       UID upper(param_data + UID::UID_SIZE);
       *m_output << ", (" << lower << ", " << upper << ")";
     } else {
-      *m_output << ", pdl: " << std::dec << request->ParamDataSize();
+      *m_output << ", PDL: " << std::dec << request->ParamDataSize();
     }
     *m_output << endl;
   } else {
@@ -282,7 +282,7 @@ void CommandPrinter::DisplayDiscoveryResponse(
       UID upper(param_data + UID::UID_SIZE);
       *m_output << ", (" << lower << ", " << upper << ")";
     } else {
-      *m_output << ", pdl: " << response->ParamDataSize();
+      *m_output << ", PDL: " << response->ParamDataSize();
     }
     *m_output << endl;
   } else {
@@ -314,8 +314,8 @@ void CommandPrinter::AppendUIDsAndType(const class RDMCommand *command,
                                        const char *message_type) {
   *m_output <<
     command->SourceUID() << " -> " << command->DestinationUID() << " " <<
-    message_type << ", sub-device: " << std::dec << command->SubDevice() <<
-    ", tn: " << static_cast<int>(command->TransactionNumber());
+    message_type << ", Sub-Device: " << std::dec << command->SubDevice() <<
+    ", TN: " << static_cast<int>(command->TransactionNumber());
 }
 
 
@@ -393,7 +393,7 @@ void CommandPrinter::AppendPidString(const RDMCommand *command,
   if (descriptor) {
     *m_output << " (" << descriptor->Name() << ")";
   }
-  *m_output << ", pdl: " << command->ParamDataSize() << endl;
+  *m_output << ", PDL: " << command->ParamDataSize() << endl;
 }
 
 

@@ -213,6 +213,7 @@ matrix:
     - os: linux
       dist: xenial
       env: TASK='pychecker'
+      python: '2.7'
       addons:
         apt:
           packages:
@@ -220,6 +221,7 @@ matrix:
     - os: linux
       dist: xenial
       env: TASK='pychecker-wip'
+      python: '2.7'
       addons:
         apt:
           packages:
@@ -236,6 +238,7 @@ matrix:
     - os: linux
       dist: xenial
       env: TASK='pychecker-wip'
+      python: '2.7'
     - os: linux
       dist: xenial
       env: TASK='spellintian'
@@ -288,7 +291,9 @@ install:
   - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
-  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then sudo pip install http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
+  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
+# This is a very bodgy workaround to the fact that the pip install of the archive doesn't seem to work properly now on Travis
+  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then sudo mkdir -p /pychecker/; sudo ln -s /home/travis/.local/lib/python2.7/site-packages/pychecker/checker.py /pychecker/checker.py; fi
 
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
@@ -301,6 +306,7 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "3.6" ]; then brew install protobuf@3.6; fi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "3.6" ]; then brew link -f protobuf@3.6; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.6/lib/pkgconfig; fi # When protobuf is not on the latest release
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.6" ]; then brew install protobuf@3.1; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.6" ]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi

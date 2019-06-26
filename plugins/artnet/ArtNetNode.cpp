@@ -1003,11 +1003,17 @@ void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
                       packet.data.ip_program,
                       packet_size - header_size);
       break;
+    case ARTNET_SYNC:
+      // TODO(Someone): Implement me, not currently implemented.
+      OLA_DEBUG << "ArtSync input not currently supported";
+      break;
     case ARTNET_RDM_SUB:
-      // Not implemented
+      // TODO(Someone): Implement me, not currently implemented.
+      OLA_DEBUG << "ArtRDMSub input not currently supported";
       break;
     case ARTNET_TIME_CODE:
-      // Not implemented
+      // TODO(Someone): Implement me, not currently implemented.
+      OLA_DEBUG << "ArtTimeCode input not currently supported";
       break;
     default:
       OLA_INFO << "Art-Net got unknown packet " << std::hex
@@ -1594,7 +1600,7 @@ ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(uint8_t port_id,
                                                         bool warn) {
   if (port_id >= m_input_ports.size()) {
     if (warn) {
-      OLA_WARN << "Port index of out bounds: "
+      OLA_WARN << "Port index out of bounds: "
                << static_cast<int>(port_id) << " >= " << m_input_ports.size();
     }
     return NULL;
@@ -1605,7 +1611,7 @@ ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(uint8_t port_id,
 const ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetInputPort(
     uint8_t port_id) const {
   if (port_id >= m_input_ports.size()) {
-    OLA_WARN << "Port index of out bounds: "
+    OLA_WARN << "Port index out of bounds: "
              << static_cast<int>(port_id) << " >= " << m_input_ports.size();
     return NULL;
   }
@@ -1629,7 +1635,7 @@ ArtNetNodeImpl::InputPort *ArtNetNodeImpl::GetEnabledInputPort(
 
 ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetOutputPort(uint8_t port_id) {
   if (port_id >= ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: "
+    OLA_WARN << "Port index out of bounds: "
              << static_cast<int>(port_id) << " >= " << ARTNET_MAX_PORTS;
     return NULL;
   }
@@ -1639,7 +1645,7 @@ ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetOutputPort(uint8_t port_id) {
 const ArtNetNodeImpl::OutputPort *ArtNetNodeImpl::GetOutputPort(
     uint8_t port_id) const {
   if (port_id >= ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: "
+    OLA_WARN << "Port index out of bounds: "
              << static_cast<int>(port_id) << " >= " << ARTNET_MAX_PORTS;
     return NULL;
   }
@@ -1846,7 +1852,7 @@ void ArtNetNode::SendRDMRequest(uint8_t port_id, RDMRequest *request,
 
 bool ArtNetNode::CheckInputPortId(uint8_t port_id) {
   if (port_id >= m_controllers.size()) {
-    OLA_WARN << "Port index of out bounds: " << static_cast<int>(port_id)
+    OLA_WARN << "Port index out of bounds: " << static_cast<int>(port_id)
              << " >= " << m_controllers.size();
     return false;
   }
