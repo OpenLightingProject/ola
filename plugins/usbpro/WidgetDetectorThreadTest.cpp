@@ -358,8 +358,8 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
  */
 void WidgetDetectorThreadTest::testDMXUSBWidget() {
   uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
-  uint8_t manufacturer_data[] = "\153\152DMXUSB";
-  uint8_t device_data[] = "\032\000DMXUSB";
+  uint8_t manufacturer_data[] = "\367\177DMXUSB";
+  uint8_t device_data[] = "\062\000DMXUSB";
   uint8_t get_params_request[] = {0, 0};
 
   m_endpoint->AddExpectedUsbProDataAndReturn(
