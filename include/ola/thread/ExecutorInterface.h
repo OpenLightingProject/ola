@@ -49,7 +49,7 @@ class ExecutorInterface {
    *  - For a given thread, callbacks will be run in the order in which they
    *    were added.
    *
-   * When queuing callbacks, you ether need to ensure that either:
+   * When queuing callbacks, you need to ensure that either:
    *   - The objects used in the callback outlive the ExecutorInterface
    *   - That the callback is run before the objects are deleted.
    *
