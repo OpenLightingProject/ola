@@ -112,9 +112,9 @@ bool UsbDmxPlugin::SetDefaultPreferences() {
 void UsbDmxPlugin::ConflictsWith(
     std::set<ola_plugin_id>* conflicting_plugins) const {
   if (EuroliteProFactory::IsEuroliteMk2Enabled(m_preferences)) {
-    conflicting_plugins->insert(OLA_PLUGIN_USBPRO);
-    conflicting_plugins->insert(OLA_PLUGIN_STAGEPROFI);
     conflicting_plugins->insert(OLA_PLUGIN_FTDIDMX);
+    conflicting_plugins->insert(OLA_PLUGIN_STAGEPROFI);
+    conflicting_plugins->insert(OLA_PLUGIN_USBPRO);
   }
 }
 

@@ -62,7 +62,7 @@ class UsbDmxPlugin: public ola::Plugin {
   std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   void ConflictsWith(
-    std::set<ola_plugin_id>* conflicting_plugins) const;
+      std::set<ola_plugin_id>* conflicting_plugins) const;
 
  private:
   std::auto_ptr<class PluginImplInterface> m_impl;
