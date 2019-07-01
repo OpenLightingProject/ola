@@ -196,7 +196,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       OLA_ASSERT_EQ(static_cast<uint16_t>(0x7ff7), information.esta_id);
       OLA_ASSERT_EQ(string("DMXUSB"), information.manufacturer);
       OLA_ASSERT_EQ(static_cast<uint16_t>(0x32), information.device_id);
-      OLA_ASSERT_EQ(string("mode 2"), information.device);
+      OLA_ASSERT_EQ(string("DMXUSB Multi-universe Device"), information.device);
       OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = DMXUSB;
@@ -359,7 +359,7 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
 void WidgetDetectorThreadTest::testDMXUSBWidget() {
   uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
   uint8_t manufacturer_data[] = "\367\177DMXUSB";
-  uint8_t device_data[] = "\062\000DMXUSB";
+  uint8_t device_data[] = "\062\000DMXUSB Multi-universe Device";
   uint8_t get_params_request[] = {0, 0};
 
   m_endpoint->AddExpectedUsbProDataAndReturn(
