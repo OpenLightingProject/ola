@@ -104,27 +104,27 @@ void UniverseStore::DeleteAll() {
     SaveUniverseSettings(iter->second);
     delete iter->second;
   }
-  m_deletion_candiates.clear();
+  m_deletion_candidates.clear();
   m_universe_map.clear();
 }
 
 void UniverseStore::AddUniverseGarbageCollection(Universe *universe) {
-  m_deletion_candiates.insert(universe);
+  m_deletion_candidates.insert(universe);
 }
 
 void UniverseStore::GarbageCollectUniverses() {
   set<Universe*>::iterator iter;
   UniverseMap::iterator map_iter;
 
-  for (iter = m_deletion_candiates.begin();
-       iter != m_deletion_candiates.end(); iter++) {
+  for (iter = m_deletion_candidates.begin();
+       iter != m_deletion_candidates.end(); iter++) {
     if (!(*iter)->IsActive()) {
       SaveUniverseSettings(*iter);
       m_universe_map.erase((*iter)->UniverseId());
       delete *iter;
     }
   }
-  m_deletion_candiates.clear();
+  m_deletion_candidates.clear();
 }
 
 
