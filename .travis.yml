@@ -8,10 +8,6 @@ before_script:
  - export -f travis_fold
 
 script:
- - ls -al /home/travis/.local/lib/python2.7/site-packages/pychecker/checker.py || echo missing
- - "which pychecker || echo unknown"
- - "cat `which pychecker || true` || true"
- - "tree /home/travis/.local/ || echo unknown"
  - "bash -ex .travis-ci.sh"
 
 addons:
@@ -27,7 +23,6 @@ addons:
      - libprotobuf-dev
      - protobuf-compiler
      - libprotoc-dev
-     - tree
     packages: &core_build
      # This is all the bits we need to enable all options
      - *base_build
