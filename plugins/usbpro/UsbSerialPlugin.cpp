@@ -34,8 +34,8 @@
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/DmxterDevice.h"
-#include "plugins/usbpro/DMXUSBDevice.h"
-#include "plugins/usbpro/DMXUSBWidget.h"
+#include "plugins/usbpro/ArduinoDMXUSBDevice.h"
+#include "plugins/usbpro/ArduinoDMXUSBWidget.h"
 #include "plugins/usbpro/RobeDevice.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
 #include "plugins/usbpro/UltraDMXProDevice.h"
@@ -174,11 +174,11 @@ void UsbSerialPlugin::NewWidget(
 
 
 /**
- * A New DMXUSB Widget
+ * A New ArduinoDMXUSB Widget
  */
-void UsbSerialPlugin::NewWidget(DMXUSBWidget *widget,
+void UsbSerialPlugin::NewWidget(ArduinoDMXUSBWidget *widget,
                                 const UsbProWidgetInformation &information) {
-  AddDevice(new DMXUSBDevice(
+  AddDevice(new ArduinoDMXUSBDevice(
       m_plugin_adaptor,
       this,
       GetDeviceName(information),
@@ -360,7 +360,7 @@ unsigned int UsbSerialPlugin::GetProFrameLimit() {
 
 
 /*
- * Get the Frames per second limit for a Ultra DMX Pro Device and DMXUSB Device
+ * Get the Frames per second limit for a Ultra DMX Pro Device and ArduinoDMXUSB Device
  */
 unsigned int UsbSerialPlugin::GetUltraDMXProFrameLimit() {
   unsigned int fps_limit;

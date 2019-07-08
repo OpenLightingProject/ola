@@ -13,40 +13,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXUSBWidget.cpp
- * The DMXUSB Widget(based on DMX King Ultra DMX Pro code by Simon Newton).
+ * ArduinoDMXUSBWidget.cpp
+ * The ArduinoDMXUSB Widget(based on DMX King Ultra DMX Pro code by Simon Newton).
  * Copyright (C) 2019 Perry Naseck (DaAwesomeP)
  */
 
 #include <cstring>
 #include "ola/Constants.h"
 #include "ola/strings/Format.h"
-#include "plugins/usbpro/DMXUSBWidget.h"
+#include "plugins/usbpro/ArduinoDMXUSBWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
 
 /**
- * DMXUSBWidget Constructor
+ * ArduinoDMXUSBWidget Constructor
  */
-DMXUSBWidget::DMXUSBWidget(
+ArduinoDMXUSBWidget::ArduinoDMXUSBWidget(
   ola::io::ConnectedDescriptor *descriptor)
     : GenericUsbProWidget(descriptor) {
 }
 
 
-bool DMXUSBWidget::SendDMX(const DmxBuffer &buffer) {
+bool ArduinoDMXUSBWidget::SendDMX(const DmxBuffer &buffer) {
   return SendDMXWithLabel(DMX_START_PORT, buffer);
 }
 
 
-bool DMXUSBWidget::SendDMXPort(unsigned int port, const DmxBuffer &buffer) {
+bool ArduinoDMXUSBWidget::SendDMXPort(unsigned int port, const DmxBuffer &buffer) {
   return SendDMXWithLabel(DMX_START_PORT + port, buffer);
 }
 
 
-bool DMXUSBWidget::SendDMXWithLabel(uint8_t label,
+bool ArduinoDMXUSBWidget::SendDMXWithLabel(uint8_t label,
                                          const DmxBuffer &data) {
   struct {
     uint8_t start_code;
@@ -62,8 +62,8 @@ bool DMXUSBWidget::SendDMXWithLabel(uint8_t label,
 }
 
 
-void DMXUSBWidget::GetExtendedParameters(
-    dmxusb_extended_params_callback *callback) {
+void ArduinoDMXUSBWidget::GetExtendedParameters(
+    arduinodmxusb_extended_params_callback *callback) {
   m_outstanding_extended_param_callbacks.push_back(callback);
 
   uint16_t user_size = 0;
@@ -74,17 +74,17 @@ void DMXUSBWidget::GetExtendedParameters(
   if (!r) {
     // failed
     m_outstanding_extended_param_callbacks.pop_back();
-    dmxusb_extended_parameters params = {0, 0};
+    arduinodmxusb_extended_parameters params = {0, 0};
     callback->Run(false, params);
   }
 }
 
 
-void DMXUSBWidget::SpecificStop() {
+void ArduinoDMXUSBWidget::SpecificStop() {
   // empty extedned_params struct
-  dmxusb_extended_parameters extedned_params;
+  arduinodmxusb_extended_parameters extedned_params;
   while (!m_outstanding_extended_param_callbacks.empty()) {
-    dmxusb_extended_params_callback *callback =
+    arduinodmxusb_extended_params_callback *callback =
         m_outstanding_extended_param_callbacks.front();
     m_outstanding_extended_param_callbacks.pop_front();
     callback->Run(false, extedned_params);
@@ -92,7 +92,7 @@ void DMXUSBWidget::SpecificStop() {
 }
 
 
-void DMXUSBWidget::HandleMessage(uint8_t label,
+void ArduinoDMXUSBWidget::HandleMessage(uint8_t label,
                                  const uint8_t *data,
                                  unsigned int length) {
   if (label == EXTENDED_PARAMETERS_LABEL) {
@@ -103,20 +103,20 @@ void DMXUSBWidget::HandleMessage(uint8_t label,
 }
 
 
-void DMXUSBWidget::HandleExtendedParameters(const uint8_t *data,
+void ArduinoDMXUSBWidget::HandleExtendedParameters(const uint8_t *data,
                                            unsigned int length) {
   if (m_outstanding_extended_param_callbacks.empty()) {
     return;
   }
 
-  if (length < sizeof(dmxusb_extended_parameters)) {
+  if (length < sizeof(arduinodmxusb_extended_parameters)) {
     return;
   }
 
-  dmxusb_extended_parameters params;
-  memcpy(&params, data, sizeof(dmxusb_extended_parameters));
+  arduinodmxusb_extended_parameters params;
+  memcpy(&params, data, sizeof(arduinodmxusb_extended_parameters));
 
-  dmxusb_extended_params_callback *callback =
+  arduinodmxusb_extended_params_callback *callback =
       m_outstanding_extended_param_callbacks.front();
   m_outstanding_extended_param_callbacks.pop_front();
 

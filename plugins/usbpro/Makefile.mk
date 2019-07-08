@@ -15,8 +15,8 @@ plugins_usbpro_libolausbprowidget_la_SOURCES = \
     plugins/usbpro/DmxTriWidget.h \
     plugins/usbpro/DmxterWidget.cpp \
     plugins/usbpro/DmxterWidget.h \
-    plugins/usbpro/DMXUSBWidget.cpp \
-    plugins/usbpro/DMXUSBWidget.h \
+    plugins/usbpro/ArduinoDMXUSBWidget.cpp \
+    plugins/usbpro/ArduinoDMXUSBWidget.h \
     plugins/usbpro/EnttecUsbProWidget.cpp \
     plugins/usbpro/EnttecUsbProWidget.h \
     plugins/usbpro/EnttecUsbProWidgetImpl.h \
@@ -55,8 +55,8 @@ plugins_usbpro_libolausbpro_la_SOURCES = \
     plugins/usbpro/DmxTriDevice.h \
     plugins/usbpro/DmxterDevice.cpp \
     plugins/usbpro/DmxterDevice.h \
-    plugins/usbpro/DMXUSBDevice.cpp \
-    plugins/usbpro/DMXUSBDevice.h \
+    plugins/usbpro/ArduinoDMXUSBDevice.cpp \
+    plugins/usbpro/ArduinoDMXUSBDevice.h \
     plugins/usbpro/RobeDevice.cpp \
     plugins/usbpro/RobeDevice.h \
     plugins/usbpro/UltraDMXProDevice.cpp \
@@ -80,7 +80,7 @@ test_programs += \
     plugins/usbpro/BaseUsbProWidgetTester \
     plugins/usbpro/DmxTriWidgetTester \
     plugins/usbpro/DmxterWidgetTester \
-    plugins/usbpro/DMXUSBWidgetTester \
+    plugins/usbpro/ArduinoDMXUSBWidgetTester \
     plugins/usbpro/EnttecUsbProWidgetTester \
     plugins/usbpro/RobeWidgetDetectorTester \
     plugins/usbpro/RobeWidgetTester \
@@ -127,11 +127,11 @@ plugins_usbpro_DmxterWidgetTester_SOURCES = \
 plugins_usbpro_DmxterWidgetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 plugins_usbpro_DmxterWidgetTester_LDADD = $(COMMON_USBPRO_TEST_LDADD)
 
-plugins_usbpro_DMXUSBWidgetTester_SOURCES = \
-    plugins/usbpro/DMXUSBWidgetTest.cpp \
+plugins_usbpro_ArduinoDMXUSBWidgetTester_SOURCES = \
+    plugins/usbpro/ArduinoDMXUSBWidgetTest.cpp \
     $(common_test_sources)
-plugins_usbpro_DMXUSBWidgetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-plugins_usbpro_DMXUSBWidgetTester_LDADD = $(COMMON_USBPRO_TEST_LDADD)
+plugins_usbpro_ArduinoDMXUSBWidgetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+plugins_usbpro_ArduinoDMXUSBWidgetTester_LDADD = $(COMMON_USBPRO_TEST_LDADD)
 
 plugins_usbpro_EnttecUsbProWidgetTester_SOURCES = \
     plugins/usbpro/EnttecUsbProWidgetTest.cpp \

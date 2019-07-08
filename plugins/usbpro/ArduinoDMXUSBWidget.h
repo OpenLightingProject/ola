@@ -13,15 +13,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXUSBWidget.h
- * The DMXUSB Widget (based on DMX King Ultra DMX Pro code by Simon Newton).
+ * ArduinoDMXUSBWidget.h
+ * The ArduinoDMXUSB Widget (based on DMX King Ultra DMX Pro code by Simon Newton).
  * This is similar to the Enttec Usb Pro, but it fetches the number of input
  * and output ports.
  * Copyright (C) 2019 Perry Naseck (DaAwesomeP)
  */
 
-#ifndef PLUGINS_USBPRO_DMXUSBWIDGET_H_
-#define PLUGINS_USBPRO_DMXUSBWIDGET_H_
+#ifndef PLUGINS_USBPRO_ArduinoDMXUSBWIDGET_H_
+#define PLUGINS_USBPRO_ArduinoDMXUSBWIDGET_H_
 
 #include <deque>
 #include <string>
@@ -36,28 +36,28 @@ namespace usbpro {
 typedef struct {
   uint8_t out_ports;
   uint8_t in_ports;
-} dmxusb_extended_parameters;
+} arduinodmxusb_extended_parameters;
 
-typedef ola::SingleUseCallback2<void, bool, const dmxusb_extended_parameters&>
-  dmxusb_extended_params_callback;
+typedef ola::SingleUseCallback2<void, bool, const arduinodmxusb_extended_parameters&>
+  arduinodmxusb_extended_params_callback;
 
 /*
- * An DMXUSB Widget
+ * An ArduinoDMXUSB Widget
  */
-class DMXUSBWidget: public GenericUsbProWidget {
+class ArduinoDMXUSBWidget: public GenericUsbProWidget {
  public:
-    explicit DMXUSBWidget(ola::io::ConnectedDescriptor *descriptor);
-    ~DMXUSBWidget() {}
+    explicit ArduinoDMXUSBWidget(ola::io::ConnectedDescriptor *descriptor);
+    ~ArduinoDMXUSBWidget() {}
     void Stop() override { GenericStop(); SpecificStop(); }
 
     bool SendDMX(const DmxBuffer &buffer) override;
     bool SendDMXPort(unsigned int port, const DmxBuffer &buffer);
     void SpecificStop();
 
-    void GetExtendedParameters(dmxusb_extended_params_callback *callback);
+    void GetExtendedParameters(arduinodmxusb_extended_params_callback *callback);
 
  private:
-    std::deque<dmxusb_extended_params_callback*>
+    std::deque<arduinodmxusb_extended_params_callback*>
         m_outstanding_extended_param_callbacks;
 
     void HandleExtendedParameters(const uint8_t *data, unsigned int length);
@@ -73,4 +73,4 @@ class DMXUSBWidget: public GenericUsbProWidget {
 }  // namespace usbpro
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBPRO_DMXUSBWIDGET_H_
+#endif  // PLUGINS_USBPRO_ArduinoDMXUSBWIDGET_H_

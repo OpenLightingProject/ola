@@ -51,7 +51,7 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
                    const UsbProWidgetInformation &information);
     void NewWidget(DmxterWidget *widget,
                    const UsbProWidgetInformation &information);
-    void NewWidget(DMXUSBWidget *widget,
+    void NewWidget(ArduinoDMXUSBWidget *widget,
                    const UsbProWidgetInformation &information);
     void NewWidget(RobeWidget *widget,
                    const RobeWidgetInformation &information);

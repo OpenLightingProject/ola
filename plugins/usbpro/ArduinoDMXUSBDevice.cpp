@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXUSBDevice.cpp
- * A DMXUSB Device (based on DMX King Ultra DMX Pro code by Simon Newton)
+ * ArduinoDMXUSBDevice.cpp
+ * An ArduinoDMXUSB Device (based on DMX King Ultra DMX Pro code by Simon Newton)
  * Copyright (C) 2019 Perry Naseck (DaAwesomeP)
  *
  * This device creates n ports, 0 input and n outputs (fetchs number from
@@ -28,7 +28,7 @@
 #include "common/rpc/RpcController.h"
 #include "ola/Callback.h"
 #include "ola/Constants.h"
-#include "plugins/usbpro/DMXUSBDevice.h"
+#include "plugins/usbpro/ArduinoDMXUSBDevice.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
 
 namespace ola {
@@ -46,10 +46,10 @@ using std::string;
  * @param name  the device name
  * @param dev_path  path to the pro widget
  */
-DMXUSBDevice::DMXUSBDevice(ola::PluginAdaptor *plugin_adaptor,
+ArduinoDMXUSBDevice::ArduinoDMXUSBDevice(ola::PluginAdaptor *plugin_adaptor,
                                      ola::AbstractPlugin *owner,
                                      const string &name,
-                                     DMXUSBWidget *widget,
+                                     ArduinoDMXUSBWidget *widget,
                                      OLA_UNUSED uint16_t esta_id,
                                      OLA_UNUSED uint16_t device_id,
                                      uint32_t serial,
@@ -57,7 +57,7 @@ DMXUSBDevice::DMXUSBDevice(ola::PluginAdaptor *plugin_adaptor,
                                      unsigned int fps_limit):
     UsbSerialDevice(owner, name, widget),
     m_plugin_adaptor(plugin_adaptor),
-    m_dmxusb_widget(widget),
+    m_arduinodmxusb_widget(widget),
     m_serial(),
     m_got_parameters(false),
     m_got_extended_parameters(false),
@@ -79,20 +79,17 @@ DMXUSBDevice::DMXUSBDevice(ola::PluginAdaptor *plugin_adaptor,
       << (firmware_version >> 8) << "." << (firmware_version & 0xff);
 
 
-  m_dmxusb_widget->GetParameters(NewSingleCallback(
+  m_arduinodmxusb_widget->GetParameters(NewSingleCallback(
     this,
-    &DMXUSBDevice::UpdateParams));
-  m_dmxusb_widget->GetExtendedParameters(NewSingleCallback(
-    this,
-    &DMXUSBDevice::UpdateExtendedParams));
+    &ArduinoDMXUSBDevice::UpdateParams));
 }
 
 
 /*
  * Stop this device
  */
-void DMXUSBDevice::PrePortStop() {
-  m_dmxusb_widget->Stop();
+void ArduinoDMXUSBDevice::PrePortStop() {
+  m_arduinodmxusb_widget->Stop();
 }
 
 
@@ -103,7 +100,7 @@ void DMXUSBDevice::PrePortStop() {
  * @param response the response to return
  * @param done the closure to call once the request is complete
  */
-void DMXUSBDevice::Configure(RpcController *controller,
+void ArduinoDMXUSBDevice::Configure(RpcController *controller,
                                   const string &request,
                                   string *response,
                                   ConfigureCallback *done) {
@@ -131,36 +128,39 @@ void DMXUSBDevice::Configure(RpcController *controller,
 /**
  * Update the cached param values
  */
-void DMXUSBDevice::UpdateParams(bool status,
+void ArduinoDMXUSBDevice::UpdateParams(bool status,
                                      const usb_pro_parameters &params) {
   if (status) {
     m_got_parameters = true;
     m_break_time = params.break_time;
     m_mab_time = params.mab_time;
     m_rate = params.rate;
+    m_arduinodmxusb_widget->GetExtendedParameters(NewSingleCallback(
+      this,
+      &ArduinoDMXUSBDevice::UpdateExtendedParams));
   }
 }
 
 
-void DMXUSBDevice::UpdateExtendedParams(bool status,
-                                     const dmxusb_extended_parameters &params) {
+void ArduinoDMXUSBDevice::UpdateExtendedParams(bool status,
+                                     const arduinodmxusb_extended_parameters &params) {
   if (status) {
     m_got_extended_parameters = true;
     m_out_ports = params.out_ports;
     m_in_ports = params.in_ports;
-    DMXUSBDevice::SetupPorts();
+    ArduinoDMXUSBDevice::SetupPorts();
   }
 }
 
-void DMXUSBDevice::SetupPorts() {
+void ArduinoDMXUSBDevice::SetupPorts() {
   // add the out ports
   for (int i = 0; i < static_cast<int>(m_out_ports); i++) {
     std::ostringstream out_str;
     out_str << " Output universe: " << (i + 1) << " of "
         << static_cast<int>(m_out_ports) << ", " << m_str.str();
-    OutputPort *output_port = new DMXUSBOutputPort(
+    OutputPort *output_port = new ArduinoDMXUSBOutputPort(
         this,
-        m_dmxusb_widget,
+        m_arduinodmxusb_widget,
         i,
         out_str.str(),
         m_plugin_adaptor->WakeUpTime(),
@@ -179,7 +179,7 @@ void DMXUSBDevice::SetupPorts() {
  * then another GetParam() request in order to return the latest values to the
  * client.
  */
-void DMXUSBDevice::HandleParametersRequest(RpcController *controller,
+void ArduinoDMXUSBDevice::HandleParametersRequest(RpcController *controller,
                                                 const Request *request,
                                                 string *response,
                                                 ConfigureCallback *done) {
@@ -193,7 +193,7 @@ void DMXUSBDevice::HandleParametersRequest(RpcController *controller,
       return;
     }
 
-    bool ret = m_dmxusb_widget->SetParameters(
+    bool ret = m_arduinodmxusb_widget->SetParameters(
       request->parameters().has_break_time() ?
         request->parameters().break_time() : m_break_time,
       request->parameters().has_mab_time() ?
@@ -208,9 +208,9 @@ void DMXUSBDevice::HandleParametersRequest(RpcController *controller,
     }
   }
 
-  m_dmxusb_widget->GetParameters(NewSingleCallback(
+  m_arduinodmxusb_widget->GetParameters(NewSingleCallback(
     this,
-    &DMXUSBDevice::HandleParametersResponse,
+    &ArduinoDMXUSBDevice::HandleParametersResponse,
     controller,
     response,
     done));
@@ -220,7 +220,7 @@ void DMXUSBDevice::HandleParametersRequest(RpcController *controller,
 /**
  * Handle the GetParameters response
  */
-void DMXUSBDevice::HandleParametersResponse(
+void ArduinoDMXUSBDevice::HandleParametersResponse(
     RpcController *controller,
     string *response,
     ConfigureCallback *done,
@@ -249,7 +249,7 @@ void DMXUSBDevice::HandleParametersResponse(
 /*
  * Handle a Serial number Configure RPC. We can just return the cached number.
  */
-void DMXUSBDevice::HandleSerialRequest(
+void ArduinoDMXUSBDevice::HandleSerialRequest(
     RpcController *controller,
     const Request *request,
     string *response,

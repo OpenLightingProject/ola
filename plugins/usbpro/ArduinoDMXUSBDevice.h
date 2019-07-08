@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXUSBDevice.h
- * A DMXUSB Device (based on DMX King Ultra DMX Pro code by Simon Newton)
+ * ArduinoDMXUSBDevice.h
+ * An ArduinoDMXUSB Device (based on DMX King Ultra DMX Pro code by Simon Newton)
  * Copyright (C) 2019 Perry Naseck (DaAwesomeP)
  */
 
-#ifndef PLUGINS_USBPRO_DMXUSBDEVICE_H_
-#define PLUGINS_USBPRO_DMXUSBDEVICE_H_
+#ifndef PLUGINS_USBPRO_ArduinoDMXUSBDevice_H_
+#define PLUGINS_USBPRO_ArduinoDMXUSBDevice_H_
 
 #include <string>
 #include <sstream>
@@ -29,7 +29,7 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
 
-#include "plugins/usbpro/DMXUSBWidget.h"
+#include "plugins/usbpro/ArduinoDMXUSBWidget.h"
 #include "plugins/usbpro/UsbSerialDevice.h"
 #include "plugins/usbpro/messages/UsbProConfigMessages.pb.h"
 
@@ -38,14 +38,14 @@ namespace plugin {
 namespace usbpro {
 
 /*
- * An DMXUSB device
+ * An ArduinoDMXUSB device
  */
-class DMXUSBDevice: public UsbSerialDevice {
+class ArduinoDMXUSBDevice: public UsbSerialDevice {
  public:
-  DMXUSBDevice(ola::PluginAdaptor *plugin_adaptor,
+  ArduinoDMXUSBDevice(ola::PluginAdaptor *plugin_adaptor,
                     ola::AbstractPlugin *owner,
                     const std::string &name,
-                    DMXUSBWidget *widget,
+                    ArduinoDMXUSBWidget *widget,
                     uint16_t esta_id,
                     uint16_t device_id,
                     uint32_t serial,
@@ -67,7 +67,7 @@ class DMXUSBDevice: public UsbSerialDevice {
  private:
   void UpdateParams(bool status, const usb_pro_parameters &params);
   void UpdateExtendedParams(bool status,
-                            const dmxusb_extended_parameters &params);
+                            const arduinodmxusb_extended_parameters &params);
   void SetupPorts();
 
   void HandleParametersRequest(ola::rpc::RpcController *controller,
@@ -87,7 +87,7 @@ class DMXUSBDevice: public UsbSerialDevice {
                            ConfigureCallback *done);
 
   ola::PluginAdaptor *m_plugin_adaptor;
-  DMXUSBWidget *m_dmxusb_widget;
+  ArduinoDMXUSBWidget *m_arduinodmxusb_widget;
   std::string m_serial;
   std::ostringstream m_str;
 
@@ -105,10 +105,10 @@ class DMXUSBDevice: public UsbSerialDevice {
 /*
  * The output ports
  */
-class DMXUSBOutputPort: public BasicOutputPort {
+class ArduinoDMXUSBOutputPort: public BasicOutputPort {
  public:
-  DMXUSBOutputPort(DMXUSBDevice *parent,
-                        DMXUSBWidget *widget,
+  ArduinoDMXUSBOutputPort(ArduinoDMXUSBDevice *parent,
+                        ArduinoDMXUSBWidget *widget,
                         unsigned int id,
                         const std::string &description,
                         const TimeStamp *wake_time,
@@ -126,7 +126,7 @@ class DMXUSBOutputPort: public BasicOutputPort {
     if (m_bucket.GetToken(*m_wake_time)) {
       return m_widget->SendDMXPort(m_port, buffer);
     } else {
-      OLA_INFO << "DMXUSB port " << m_port << " rated limited, dropping frame";
+      OLA_INFO << "ArduinoDMXUSB port " << m_port << " rated limited, dropping frame";
     }
     return true;
   }
@@ -135,7 +135,7 @@ class DMXUSBOutputPort: public BasicOutputPort {
 
  private:
   const std::string m_description;
-  DMXUSBWidget *m_widget;
+  ArduinoDMXUSBWidget *m_widget;
   TokenBucket m_bucket;
   const TimeStamp *m_wake_time;
   unsigned int m_port;
@@ -143,4 +143,4 @@ class DMXUSBOutputPort: public BasicOutputPort {
 }  // namespace usbpro
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBPRO_DMXUSBDEVICE_H_
+#endif  // PLUGINS_USBPRO_ArduinoDMXUSBDevice_H_

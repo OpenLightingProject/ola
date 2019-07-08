@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXUSBWidgetTest.cpp
- * Test fixture for the DMXUSBWidget class (based on DMX King Ultra DMX Pro
+ * ArduinoDMXUSBWidgetTest.cpp
+ * Test fixture for the ArduinoDMXUSBWidget class (based on DMX King Ultra DMX Pro
  * code by Simon Newton)
  * Copyright (C) 2019 Perry Naseck (DaAwesomeP)
  */
@@ -26,7 +26,7 @@
 #include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
-#include "plugins/usbpro/DMXUSBWidget.h"
+#include "plugins/usbpro/ArduinoDMXUSBWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 
 
@@ -34,8 +34,8 @@ using std::auto_ptr;
 using ola::DmxBuffer;
 
 
-class DMXUSBWidgetTest: public CommonWidgetTest {
-  CPPUNIT_TEST_SUITE(DMXUSBWidgetTest);
+class ArduinoDMXUSBWidgetTest: public CommonWidgetTest {
+  CPPUNIT_TEST_SUITE(ArduinoDMXUSBWidgetTest);
   CPPUNIT_TEST(testAllSendDMX);
   CPPUNIT_TEST_SUITE_END();
 
@@ -44,27 +44,27 @@ class DMXUSBWidgetTest: public CommonWidgetTest {
     void testAllSendDMX();
 
  private:
-    auto_ptr<ola::plugin::usbpro::DMXUSBWidget> m_widget;
+    auto_ptr<ola::plugin::usbpro::ArduinoDMXUSBWidget> m_widget;
 
     void Terminate() { m_ss.Terminate(); }
 
     static const uint8_t START_DMX_LABEL = 100;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DMXUSBWidgetTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(ArduinoDMXUSBWidgetTest);
 
 
-void DMXUSBWidgetTest::setUp() {
+void ArduinoDMXUSBWidgetTest::setUp() {
   CommonWidgetTest::setUp();
   m_widget.reset(
-      new ola::plugin::usbpro::DMXUSBWidget(&m_descriptor));
+      new ola::plugin::usbpro::ArduinoDMXUSBWidget(&m_descriptor));
 }
 
 
 /**
  * Check that we can send DMX on the all ports
  */
-void DMXUSBWidgetTest::testAllSendDMX() {
+void ArduinoDMXUSBWidgetTest::testAllSendDMX() {
   // dmx data
   DmxBuffer buffer;
   buffer.SetFromString("0,1,2,3,4");
@@ -77,7 +77,7 @@ void DMXUSBWidgetTest::testAllSendDMX() {
         START_DMX_LABEL + i,
         dmx_frame_data,
         sizeof(dmx_frame_data),
-        ola::NewSingleCallback(this, &DMXUSBWidgetTest::Terminate));
+        ola::NewSingleCallback(this, &ArduinoDMXUSBWidgetTest::Terminate));
 
     m_widget->SendDMXPort(i, buffer);
     m_ss.Run();
@@ -91,7 +91,7 @@ void DMXUSBWidgetTest::testAllSendDMX() {
         START_DMX_LABEL + i,
         empty_frame_data,
         sizeof(empty_frame_data),
-        ola::NewSingleCallback(this, &DMXUSBWidgetTest::Terminate));
+        ola::NewSingleCallback(this, &ArduinoDMXUSBWidgetTest::Terminate));
     m_widget->SendDMXPort(i, buffer2);
     m_ss.Run();
     m_endpoint->Verify();
