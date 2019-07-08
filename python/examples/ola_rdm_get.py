@@ -85,7 +85,7 @@ class ResponsePrinter(object):
   def ProxiedDevices(self, uid, response_data):
     uids = []
     for uid_data in response_data['uids']:
-      uids.append(UID(uid_data['manufacturer_id'], uid_data['device_id']))
+      uids.append(uid_data['uid'])
     for uid in sorted(uids):
       print(uid)
 

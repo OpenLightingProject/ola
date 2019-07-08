@@ -6370,13 +6370,13 @@ class GetPresetStatus(OptionalParameterTestFixture):
 
   def CheckFieldIsBetween(self, fields, key, min_value, max_value):
     if fields[key] < min_value:
-          self.AddWarning(
-              '%s for scene %d (%d s) is less than the min of %s' %
-              (key, self.index, fields[key], min_value))
+      self.AddWarning(
+          '%s for scene %d (%d s) is less than the min of %s' %
+          (key, self.index, fields[key], min_value))
     if fields[key] > max_value:
-          self.AddWarning(
-              '%s for scene %d (%d s) is more than the min of %s' %
-              (key, self.index, fields[key], max_value))
+      self.AddWarning(
+          '%s for scene %d (%d s) is more than the min of %s' %
+          (key, self.index, fields[key], max_value))
 
 
 class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,

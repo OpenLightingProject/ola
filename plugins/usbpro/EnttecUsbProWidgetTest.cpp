@@ -396,7 +396,7 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
   // because this doesn't trigger the callback we have no way to terminate the
   // select server, so we use a timeout, which is nasty, but fails closed
   m_ss.RegisterSingleTimeout(
-      100,  // shold be more than enough time
+      100,  // should be more than enough time
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
   m_ss.Run();
   m_endpoint->Verify();

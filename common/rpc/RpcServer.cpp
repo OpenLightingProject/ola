@@ -100,7 +100,7 @@ bool RpcServer::Init() {
     if (!accepting_socket->Listen(
           IPV4SocketAddress(IPV4Address::Loopback(), m_options.listen_port))) {
       OLA_FATAL << "Could not listen on the RPC port " << m_options.listen_port
-                << ", you probably have another instance of running.";
+                << ", you probably have another instance running.";
       return false;
     }
     if (m_options.export_map) {

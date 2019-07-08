@@ -69,7 +69,7 @@ class AbstractPlugin {
   /**
    * @brief Start the plugin
    *
-   * Calls start_hook() which can be over-ridden by the derrived classes.
+   * Calls StartHook() which can be overridden by the derived classes.
    * @return true if we started ok, false otherwise
    */
   virtual bool Start() = 0;
@@ -77,7 +77,7 @@ class AbstractPlugin {
   /**
    * @brief Stop the plugin
    *
-   * Calls stop_hook() which can be over-ridden by the derrived classes.
+   * Calls StopHook() which can be overridden by the derived classes.
    * @return true on success, false on failure
    */
   virtual bool Stop() = 0;

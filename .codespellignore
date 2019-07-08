@@ -179,3 +179,9 @@ function ok(a,b){for(var c=a.wa[b].data.items,d=c.length,g=N(a.wa[b].id),h="",i=
                                          UIntValidator(0, UINT_MAX),
   // On win32 TRUE and FALSE are #define'd. We can #undef them here but that
  * A #define'd value HAVE_LIBLO which lets us know within the code if the OSC
+import java.nio.ByteOrder;
+        byte[] header = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder()).putInt(headerContent).array();
+        int headerValue = ByteBuffer.wrap(header).order(ByteOrder.nativeOrder()).getInt();
+  std::string ErrorString() const;
+std::string SchemaErrorLogger::ErrorString() const {
+  return m_error_logger.ErrorString();
