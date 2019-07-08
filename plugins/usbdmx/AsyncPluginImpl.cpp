@@ -126,7 +126,7 @@ bool AsyncPluginImpl::Start() {
                                      m_preferences));
   m_widget_factories.push_back(new DMXCreator512BasicFactory(m_usb_adaptor));
   m_widget_factories.push_back(
-      new EuroliteProFactory(m_usb_adaptor));
+      new EuroliteProFactory(m_usb_adaptor, m_preferences));
   m_widget_factories.push_back(
       new JaRuleFactory(m_plugin_adaptor, m_usb_adaptor));
   m_widget_factories.push_back(
