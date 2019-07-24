@@ -391,7 +391,7 @@ void HTTPResponse::SetHeader(const string &key, const string &value) {
  * @return true on success, false on error
  */
 int HTTPResponse::SendJson(const JsonValue &json) {
-  SetHeader("Access-Control-Allow-Origin", "*");
+  SetHeader(MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "*");
   const string output = JsonWriter::AsString(json);
   struct MHD_Response *response = HTTPServer::BuildResponse(
       static_cast<void*>(const_cast<char*>(output.data())),
@@ -413,7 +413,7 @@ int HTTPResponse::SendJson(const JsonValue &json) {
  * @return true on success, false on error
  */
 int HTTPResponse::Send() {
-  SetHeader("Access-Control-Allow-Origin", "*");
+  SetHeader(MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "*");
   HeadersMultiMap::const_iterator iter;
   struct MHD_Response *response = HTTPServer::BuildResponse(
       static_cast<void*>(const_cast<char*>(m_data.data())),
