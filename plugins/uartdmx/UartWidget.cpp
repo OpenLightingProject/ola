@@ -46,6 +46,7 @@
 #include "ola/io/IOUtils.h"
 #include "ola/Logging.h"
 #include "plugins/uartdmx/UartWidget.h"
+#include "plugins/uartdmx/UartDmxDevice.h"
 
 namespace ola {
 namespace plugin {
@@ -53,9 +54,16 @@ namespace uartdmx {
 
 using std::string;
 using std::vector;
-
+/*
 UartWidget::UartWidget(const string& path)
     : m_path(path),
+      m_fd(NOT_OPEN) {
+	m_padding = ola::plugin::uartdmx::UartDmxDevice::DEFAULT_PADDING;
+}
+*/
+UartWidget::UartWidget(const std::string &path, unsigned int padding)
+    : m_path(path),
+	  m_padding (padding),
       m_fd(NOT_OPEN) {
 }
 
@@ -122,6 +130,10 @@ bool UartWidget::Write(const ola::DmxBuffer& data) {
   buffer[0] = DMX512_START_CODE;
 
   data.Get(buffer + 1, &length);
+  if (length < m_padding) {
+	  memset ((buffer + 1 + length), 0x00, (m_padding - length) );
+	  length = m_padding;
+  }
 
   if (write(m_fd, buffer, length + 1) <= 0) {
     // TODO(richardash1981): handle errors better as per the test code,
