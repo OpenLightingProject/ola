@@ -52,7 +52,6 @@ class UartDmxDevice : public Device {
   // Per device options
   std::string DeviceBreakKey() const;
   std::string DeviceMalfKey() const;
-  std::string DevicePaddingKey() const;
   void SetDefaults();
 
   std::auto_ptr<UartWidget> m_widget;
@@ -61,14 +60,11 @@ class UartDmxDevice : public Device {
   const std::string m_path;
   unsigned int m_breakt;
   unsigned int m_malft;
-  unsigned int m_padding;
 
   static const unsigned int DEFAULT_MALF;
   static const char K_MALF[];
   static const unsigned int DEFAULT_BREAK;
   static const char K_BREAK[];
-  static const unsigned int DEFAULT_PADDING;
-  static const char K_PADDING[];
 
   DISALLOW_COPY_AND_ASSIGN(UartDmxDevice);
 };
