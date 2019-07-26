@@ -54,13 +54,7 @@ namespace uartdmx {
 
 using std::string;
 using std::vector;
-/*
-UartWidget::UartWidget(const string& path)
-    : m_path(path),
-      m_fd(NOT_OPEN) {
-	m_padding = ola::plugin::uartdmx::UartDmxDevice::DEFAULT_PADDING;
-}
-*/
+
 UartWidget::UartWidget(const std::string &path, unsigned int padding)
     : m_path(path),
 	  m_padding (padding),
