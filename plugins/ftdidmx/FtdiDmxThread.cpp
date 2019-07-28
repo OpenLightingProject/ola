@@ -52,7 +52,7 @@ FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface,
                              unsigned int frequency,
                              unsigned int serial)
   : m_timer("FtdiDmxThread"),
-    m_granularity(UNKNOWN),
+    m_granularity(TimerGranularity::UNKNOWN),
     m_interface(interface),
     m_term(false),
     m_frequency(frequency),
@@ -511,6 +511,49 @@ void FtdiDmxThread::CheckTimeGranularity() {
   m_timer.CheckTimeGranularity(8, 4);
   m_granularity = m_timer.getGranularity();
 }
+
+/**
+ * @brief FtdiDmxThread::CheckEchoState
+ * @return true is echo is on
+ *
+ * echo is always assumed on unless proven otherwise.
+ *
+bool FtdiDmxThread::CheckEchoState() {
+  ola::io::ByteString testPattern;
+  testPattern.push_back(0xff);
+  testPattern.push_back(0x55);
+  testPattern.push_back(0xff);
+  testPattern.push_back(0xaa);
+  testPattern.push_back(0xff);
+  testPattern.push_back(0x55);
+  testPattern.push_back(0xff);
+  testPattern.push_back(0xaa);
+  testPattern.push_back(0xff);
+  testPattern.push_back(0x55);
+  testPattern.push_back(0xff);
+  testPattern.push_back(0xaa);
+
+  unsigned char readBuffer[13];
+  int readBytes;
+
+  if(!m_interface->PurgeBuffers()) {
+    OLA_WARN << "Failed to clear buffers so can't verify echo state.";
+    return true;
+  }
+
+  if(m_interface->Write(&testPattern)) {
+    readBytes = m_interface->Read(readBuffer, 13);
+    if(readBytes == 0) {
+      return false;
+    } else {
+      // check other
+    }
+  } else {
+    //handle write error
+  }
+  // If we can't verify beyond a doubt that echo is off it is assumed on.
+  return true;
+}*/
 }  // namespace ftdidmx
 }  // namespace plugin
 }  // namespace ola

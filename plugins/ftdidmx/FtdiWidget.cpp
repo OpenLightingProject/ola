@@ -216,7 +216,8 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
 FtdiInterface::FtdiInterface(FtdiWidget *parent,
                              const ftdi_interface interface)
       : m_parent(parent),
-        m_interface(interface) {
+        m_interface(interface),
+        m_echoState(UNKNOWN) {
   memset(&m_handle, '\0', sizeof(struct ftdi_context));
   ftdi_init(&m_handle);
 }
@@ -398,6 +399,41 @@ int FtdiInterface::Read(unsigned char *buff, int size) {
              << ftdi_get_error_string(&m_handle);
   }
   return read;
+}
+
+void FtdiInterface::DetectEchoState() {
+  unsigned char testPattern[] = "\xff\x55\xff\xaa\xff\x0f\xf0";
+  int size = sizeof(testPattern);
+  unsigned char readBuffer[(size + 1)];
+
+  int bytesWritten = ftdi_write_data(&m_handle, testPattern, size);
+  if (bytesWritten < 0) {
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
+    m_echoState = UNKNOWN;
+    return;
+  } else if (bytesWritten != size) {
+    OLA_WARN << "Bytes Written: " << bytesWritten
+             << " != Pattern Size: " << size
+             << " Attempting detection of what was written.";
+  }
+  int bytesRead = ftdi_read_data(&m_handle, readBuffer, bytesWritten);
+  if(bytesRead == 0) {
+    m_echoState = OFF;
+  } else if(bytesRead < 0) {
+    OLA_WARN << m_parent->Description() << " "
+             << ftdi_get_error_string(&m_handle);
+    m_echoState = UNKNOWN;
+    return;
+  } else if(bytesRead <= bytesWritten) {
+    for (int i = 0; i < bytesRead; i++) {
+      if(testPattern[i] != readBuffer[i]) {
+        m_echoState = UNKNOWN;
+        return;
+      }
+    }
+  }
+  m_echoState = ON;
 }
 
 bool FtdiInterface::SetupOutput() {

@@ -182,6 +182,12 @@ class FtdiWidget {
   const uint16_t m_pid;
 };
 
+enum EchoState {
+  UNKNOWN,
+  ON,
+  OFF
+};
+
 class FtdiInterface {
  public:
   FtdiInterface(FtdiWidget * parent,
@@ -242,6 +248,8 @@ class FtdiInterface {
    */
   int Read(unsigned char* buff, int size);
 
+  void DetectEchoState();
+
   /** @brief Setup device for DMX Output **/
   bool SetupOutput();
 
@@ -249,6 +257,7 @@ class FtdiInterface {
   FtdiWidget * m_parent;
   struct ftdi_context m_handle;
   const ftdi_interface m_interface;
+  EchoState m_echoState;
 };  // FtdiInterface
 }  // namespace ftdidmx
 }  // namespace plugin
