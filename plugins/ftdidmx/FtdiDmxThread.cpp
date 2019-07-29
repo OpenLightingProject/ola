@@ -25,6 +25,7 @@
 
 #include <math.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <string>
 #include <queue>
@@ -40,6 +41,8 @@
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMResponseCodes.h"
 #include "ola/rdm/DiscoveryAgent.h"
+
+#include "ola/math/Random.h"
 
 #include "plugins/ftdidmx/FtdiWidget.h"
 #include "plugins/ftdidmx/FtdiDmxThread.h"
@@ -67,8 +70,8 @@ FtdiDmxThread::FtdiDmxThread(FtdiInterface *interface,
   m_timer.setCaller("FtdiDmxThread " + m_interface->Description());
 
   if (serial == 0) {
-    std::srand(std::time(nullptr));
-    unsigned int deviceId = std::rand();
+    ola::math::InitRandom();
+    unsigned int deviceId = ola::math::Random(0, INT_MAX);
     OLA_WARN << "Setting Device ID to random value due to lack of serial: "
              << deviceId;
     m_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, deviceId);
