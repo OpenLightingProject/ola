@@ -14,7 +14,14 @@ At this stage we can't guarantee that the plugin meets all timing specs since
 I don't have any faulty RDM equipment to test with. It has however been tested
 with multiple responders on the line and discovery works correctly.
 
-*It is also critical that the FTDI local echo function is disabled*
+Ideally FTDI local echo should be disabled to prevent transimitted data from 
+being read.
+The driver does have echo detection and attempts to correct for it, however
+we can't commit to this working 100% off the time and it will add 
+unpredictability.
+
+The same applies for line biasing, things do seem to work without it but we
+don't recommend it.
 
 ### Proper Line Biasing
 For simple DMX output (and input) all that is needed is a 130 Ohm resistor
