@@ -32,7 +32,9 @@ plugins_usbpro_libolausbprowidget_la_SOURCES = \
     plugins/usbpro/UsbProWidgetDetector.h \
     plugins/usbpro/WidgetDetectorInterface.h \
     plugins/usbpro/WidgetDetectorThread.cpp \
-    plugins/usbpro/WidgetDetectorThread.h
+    plugins/usbpro/WidgetDetectorThread.h \
+    plugins/usbpro/UsbProExtWidget.cpp \
+    plugins/usbpro/UsbProExtWidget.h
 plugins_usbpro_libolausbprowidget_la_LIBADD = common/libolacommon.la
 
 if USE_USBPRO
@@ -57,6 +59,8 @@ plugins_usbpro_libolausbpro_la_SOURCES = \
     plugins/usbpro/RobeDevice.h \
     plugins/usbpro/UltraDMXProDevice.cpp \
     plugins/usbpro/UltraDMXProDevice.h \
+    plugins/usbpro/UsbProExtDevice.cpp \
+    plugins/usbpro/UsbProExtDevice.h \
     plugins/usbpro/UsbProDevice.cpp \
     plugins/usbpro/UsbProDevice.h \
     plugins/usbpro/UsbSerialDevice.h \
