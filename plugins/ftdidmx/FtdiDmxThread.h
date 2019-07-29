@@ -41,6 +41,7 @@ namespace ftdidmx {
 
 enum {
   HALF_SECOND_MS = 500,
+  ALMOST_SECOND_MS = 900,
   MIN_WAIT_DUB_US = 58000,
   MIN_WAIT_RDM_US = 30000,
 };

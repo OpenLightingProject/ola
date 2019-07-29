@@ -298,7 +298,9 @@ void *FtdiDmxThread::Run() {
     if (m_pending_request != nullptr) {
       elapsed = ts1 - lastDMX;
 
-      if (elapsed.InMilliSeconds() < HALF_SECOND_MS) {
+      if (elapsed.InMilliSeconds() < HALF_SECOND_MS ||
+          (buffer.Size() < 24 &&
+           elapsed.InMilliSeconds() < ALMOST_SECOND_MS)) {
         if (!packetBuffer.empty()) {
           packetBuffer.clear();
         }
