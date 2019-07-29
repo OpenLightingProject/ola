@@ -378,6 +378,15 @@ bool FtdiInterface::Write(ola::io::ByteString *packet) {
                        packet->size());
 
   int size = packet->size();
+
+  /* In case echo may be on immediately read the amount of bytes that were
+   * put on the line so that read will start at point of reception.
+   */
+  if (bytesWritten > 0 && m_echoState != OFF) {
+    unsigned char readBuffer[bytesWritten];
+    ftdi_read_data(&m_handle, readBuffer, bytesWritten);
+  }
+
   if (bytesWritten < 0) {
     OLA_WARN << m_parent->Description() << " "
              << ftdi_get_error_string(&m_handle);
@@ -419,7 +428,7 @@ void FtdiInterface::DetectEchoState() {
   }
   int bytesRead = ftdi_read_data(&m_handle, readBuffer, bytesWritten);
   if(bytesRead == 0) {
-    OLA_LOG << m_parent->Description() << " No data read, echo state OFF.";
+    OLA_INFO << m_parent->Description() << " No data read, echo state OFF.";
     m_echoState = OFF;
   } else if(bytesRead < 0) {
     OLA_WARN << m_parent->Description() << " "
@@ -438,7 +447,7 @@ void FtdiInterface::DetectEchoState() {
       }
     }
   }
-  OLA_LOG << m_parent->Description() << "Echo state ON.";
+  OLA_INFO << m_parent->Description() << "Echo state ON.";
   m_echoState = ON;
 }
 
