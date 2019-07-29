@@ -376,26 +376,12 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
   packetBuffer[0] = DMX512_START_CODE;
 
   if(data.Size() >= 24) {
-    packetBuffer.insert(1, data.GetRaw(), data.Size());
+    packetBuffer.append(data.GetRaw(), data.Size());
   } else {
-    OLA_WARN << Description() << " Broadcasting NULL DMX Package due to empty buffer.";
     packetBuffer.append(512, '\x00');
   }
 
   return Write(&packetBuffer);
-/*  unsigned char buffer[DMX_UNIVERSE_SIZE + 1];
-  unsigned int length = DMX_UNIVERSE_SIZE;
-  buffer[0] = DMX512_START_CODE;
-
-  data.Get(buffer + 1, &length);
-
-  if (ftdi_write_data(&m_handle, buffer, length + 1) < 0) {
-    OLA_WARN << Description() << " "
-             << ftdi_get_error_string(&m_handle);
-    return false;
-  } else {
-    return true;
-  }*/
 }
 
 
@@ -411,10 +397,8 @@ bool FtdiInterface::Write(ola::io::ByteString *packet) {
    * put on the line so that read will start at point of reception.
    */
   if (bytesWritten > 0 && m_echoState != OFF) {
-    unsigned char readBuffer[bytesWritten];
-    int read = ftdi_read_data(&m_handle, readBuffer, bytesWritten);
-    OLA_DEBUG << Description()
-              << "Write() - Wrote: " << bytesWritten << " Read: " << read;
+    unsigned char readBuffer[bytesWritten+1];
+    ftdi_read_data(&m_handle, readBuffer, bytesWritten+1);
   }
 
   if (bytesWritten < 0) {
@@ -432,7 +416,9 @@ bool FtdiInterface::Write(ola::io::ByteString *packet) {
 
 int FtdiInterface::Read(unsigned char *buff, int size) {
   int read = ftdi_read_data(&m_handle, buff, size);
-  OLA_DEBUG << "ftdi_read_data() read: " << read;
+
+  OLA_DEBUG << Description() << "Read: " << read;
+
   if (read < 0) {
     OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
