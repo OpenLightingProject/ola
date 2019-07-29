@@ -419,20 +419,26 @@ void FtdiInterface::DetectEchoState() {
   }
   int bytesRead = ftdi_read_data(&m_handle, readBuffer, bytesWritten);
   if(bytesRead == 0) {
+    OLA_LOG << m_parent->Description() << " No data read, echo state OFF.";
     m_echoState = OFF;
   } else if(bytesRead < 0) {
     OLA_WARN << m_parent->Description() << " "
-             << ftdi_get_error_string(&m_handle);
+             << ftdi_get_error_string(&m_handle) << "\n"
+             << "Echo state UNKNOWN";
     m_echoState = UNKNOWN;
     return;
   } else if(bytesRead <= bytesWritten) {
     for (int i = 0; i < bytesRead; i++) {
       if(testPattern[i] != readBuffer[i]) {
         m_echoState = UNKNOWN;
+        OLA_WARN << m_parent->Description()
+                 << "Mismatch in read data and test pattern, "
+                 << "echo state remains UNKNOWN.";
         return;
       }
     }
   }
+  OLA_LOG << m_parent->Description() << "Echo state ON.";
   m_echoState = ON;
 }
 
