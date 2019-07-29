@@ -355,7 +355,18 @@ bool FtdiInterface::SetBreak(bool on) {
 }
 
 bool FtdiInterface::Write(const ola::DmxBuffer& data) {
-  unsigned char buffer[DMX_UNIVERSE_SIZE + 1];
+  ola::io::ByteString packetBuffer;
+  packetBuffer[0] = DMX512_START_CODE;
+
+  if(data.Size() >= 24) {
+    packetBuffer.insert(1, data.GetRaw(), data.Size());
+  } else {
+    OLA_WARN << m_parent->Description() << " Broadcasting NULL DMX Package due to empty buffer.";
+    packetBuffer.append(512, '\x00');
+  }
+
+  return Write(&packetBuffer);
+/*  unsigned char buffer[DMX_UNIVERSE_SIZE + 1];
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer[0] = DMX512_START_CODE;
 
@@ -367,7 +378,7 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
     return false;
   } else {
     return true;
-  }
+  }*/
 }
 
 
@@ -384,7 +395,9 @@ bool FtdiInterface::Write(ola::io::ByteString *packet) {
    */
   if (bytesWritten > 0 && m_echoState != OFF) {
     unsigned char readBuffer[bytesWritten];
-    ftdi_read_data(&m_handle, readBuffer, bytesWritten);
+    int read = ftdi_read_data(&m_handle, readBuffer, bytesWritten);
+    OLA_DEBUG << m_parent->Description()
+              << "Write() - Wrote: " << bytesWritten << " Read: " << read;
   }
 
   if (bytesWritten < 0) {
@@ -441,13 +454,13 @@ void FtdiInterface::DetectEchoState() {
       if(testPattern[i] != readBuffer[i]) {
         m_echoState = UNKNOWN;
         OLA_WARN << m_parent->Description()
-                 << "Mismatch in read data and test pattern, "
+                 << " Mismatch in read data and test pattern, "
                  << "echo state remains UNKNOWN.";
         return;
       }
     }
   }
-  OLA_INFO << m_parent->Description() << "Echo state ON.";
+  OLA_INFO << m_parent->Description() << " Echo state ON.";
   m_echoState = ON;
 }
 
@@ -492,6 +505,8 @@ bool FtdiInterface::SetupOutput() {
     OLA_WARN << "Error clearing rts";
     return false;
   }
+
+  DetectEchoState();
 
   return true;
 }
