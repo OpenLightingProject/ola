@@ -156,7 +156,7 @@ class FtdiWidget {
   void setId(uint32_t id) { m_id = id; }
 
   std::string Description() const {
-    return m_name + " serial: " + m_serial + " port: " + std::to_string(m_id);
+    return m_name + " serial: " + m_serial;
   }
 
   /** @brief Get Widget available interface count **/
@@ -195,9 +195,7 @@ class FtdiInterface {
 
   virtual ~FtdiInterface();
 
-  std::string Description() const {
-    return m_parent->Description();
-  }
+  std::string Description() const;
 
   /** @brief Pick interface on multiport widgets */
   bool SetInterface();

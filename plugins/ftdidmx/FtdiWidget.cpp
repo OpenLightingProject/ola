@@ -230,11 +230,28 @@ FtdiInterface::~FtdiInterface() {
   ftdi_deinit(&m_handle);
 }
 
+std::string FtdiInterface::Description() const {
+  switch (m_interface) {
+    case INTERFACE_A:
+      return m_parent->Description() + " Port: 1";
+    case INTERFACE_B:
+      return m_parent->Description() + " Port: 2";
+    case INTERFACE_C:
+      return m_parent->Description() + " Port: 3";
+    case INTERFACE_D:
+      return m_parent->Description() + " Port: 4";
+    case INTERFACE_ANY:
+      return m_parent->Description();
+  }
+  return m_parent->Description() + " Interface detection failure.";
+}
+
+
 bool FtdiInterface::SetInterface() {
   OLA_INFO << "Setting interface to: " << m_interface;
   m_parent->setId(static_cast<uint32_t>(m_interface));
   if (ftdi_set_interface(&m_handle, m_interface) < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -247,7 +264,7 @@ bool FtdiInterface::Open() {
     OLA_WARN << m_parent->Name() << " has no serial number, which might cause "
              << "issues with multiple devices";
     if (ftdi_usb_open(&m_handle, m_parent->Vid(), m_parent->Pid()) < 0) {
-      OLA_WARN << m_parent->Description() << " "
+      OLA_WARN << Description() << " "
                << ftdi_get_error_string(&m_handle);
       return false;
     } else {
@@ -260,7 +277,7 @@ bool FtdiInterface::Open() {
     if (ftdi_usb_open_desc(&m_handle, m_parent->Vid(), m_parent->Pid(),
                            m_parent->Name().c_str(),
                            m_parent->Serial().c_str()) < 0) {
-      OLA_WARN << m_parent->Description() << " "
+      OLA_WARN << Description() << " "
                << ftdi_get_error_string(&m_handle);
       return false;
     } else {
@@ -271,7 +288,7 @@ bool FtdiInterface::Open() {
 
 bool FtdiInterface::Close() {
   if (ftdi_usb_close(&m_handle) < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -285,7 +302,7 @@ bool FtdiInterface::IsOpen() const {
 
 bool FtdiInterface::Reset() {
   if (ftdi_usb_reset(&m_handle) < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -295,7 +312,7 @@ bool FtdiInterface::Reset() {
 
 bool FtdiInterface::SetLineProperties() {
   if ((ftdi_set_line_property(&m_handle, BITS_8, STOP_BIT_2, NONE) < 0)) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -305,7 +322,7 @@ bool FtdiInterface::SetLineProperties() {
 
 bool FtdiInterface::SetBaudRate(int speed) {
   if (ftdi_set_baudrate(&m_handle, speed) < 0) {
-    OLA_WARN << "Error setting " << m_parent->Description() << " to baud rate "
+    OLA_WARN << "Error setting " << Description() << " to baud rate "
              << "of " << speed << " - " << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -315,7 +332,7 @@ bool FtdiInterface::SetBaudRate(int speed) {
 
 bool FtdiInterface::SetFlowControl() {
   if (ftdi_setflowctrl(&m_handle, SIO_DISABLE_FLOW_CTRL) < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -325,7 +342,7 @@ bool FtdiInterface::SetFlowControl() {
 
 bool FtdiInterface::ClearRts() {
   if (ftdi_setrts(&m_handle, 0) < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -335,7 +352,7 @@ bool FtdiInterface::ClearRts() {
 
 bool FtdiInterface::PurgeBuffers() {
   if (ftdi_usb_purge_buffers(&m_handle) < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -346,7 +363,7 @@ bool FtdiInterface::PurgeBuffers() {
 bool FtdiInterface::SetBreak(bool on) {
   if (ftdi_set_line_property2(&m_handle, BITS_8, STOP_BIT_2, NONE,
                               (on ? BREAK_ON : BREAK_OFF)) < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -361,7 +378,7 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
   if(data.Size() >= 24) {
     packetBuffer.insert(1, data.GetRaw(), data.Size());
   } else {
-    OLA_WARN << m_parent->Description() << " Broadcasting NULL DMX Package due to empty buffer.";
+    OLA_WARN << Description() << " Broadcasting NULL DMX Package due to empty buffer.";
     packetBuffer.append(512, '\x00');
   }
 
@@ -373,7 +390,7 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
   data.Get(buffer + 1, &length);
 
   if (ftdi_write_data(&m_handle, buffer, length + 1) < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else {
@@ -396,12 +413,12 @@ bool FtdiInterface::Write(ola::io::ByteString *packet) {
   if (bytesWritten > 0 && m_echoState != OFF) {
     unsigned char readBuffer[bytesWritten];
     int read = ftdi_read_data(&m_handle, readBuffer, bytesWritten);
-    OLA_DEBUG << m_parent->Description()
+    OLA_DEBUG << Description()
               << "Write() - Wrote: " << bytesWritten << " Read: " << read;
   }
 
   if (bytesWritten < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     return false;
   } else if (bytesWritten != static_cast<int>(packet->size())) {
@@ -417,7 +434,7 @@ int FtdiInterface::Read(unsigned char *buff, int size) {
   int read = ftdi_read_data(&m_handle, buff, size);
   OLA_DEBUG << "ftdi_read_data() read: " << read;
   if (read < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
   }
   return read;
@@ -430,7 +447,7 @@ void FtdiInterface::DetectEchoState() {
 
   int bytesWritten = ftdi_write_data(&m_handle, testPattern, size);
   if (bytesWritten < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle);
     m_echoState = UNKNOWN;
     return;
@@ -441,10 +458,10 @@ void FtdiInterface::DetectEchoState() {
   }
   int bytesRead = ftdi_read_data(&m_handle, readBuffer, bytesWritten);
   if(bytesRead == 0) {
-    OLA_INFO << m_parent->Description() << " No data read, echo state OFF.";
+    OLA_INFO << Description() << " No data read, echo state OFF.";
     m_echoState = OFF;
   } else if(bytesRead < 0) {
-    OLA_WARN << m_parent->Description() << " "
+    OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle) << "\n"
              << "Echo state UNKNOWN";
     m_echoState = UNKNOWN;
@@ -453,14 +470,14 @@ void FtdiInterface::DetectEchoState() {
     for (int i = 0; i < bytesRead; i++) {
       if(testPattern[i] != readBuffer[i]) {
         m_echoState = UNKNOWN;
-        OLA_WARN << m_parent->Description()
+        OLA_WARN << Description()
                  << " Mismatch in read data and test pattern, "
                  << "echo state remains UNKNOWN.";
         return;
       }
     }
   }
-  OLA_INFO << m_parent->Description() << " Echo state ON.";
+  OLA_INFO << Description() << " Echo state ON.";
   m_echoState = ON;
 }
 
