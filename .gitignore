@@ -246,3 +246,5 @@ javascript/new-src/node_modules
 .cproject
 .settings
 .vscode/
+etc
+.pydevproject
