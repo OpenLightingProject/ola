@@ -128,7 +128,7 @@ class FtdiWidget {
    * @brief Construct a new FtdiWidget instance for one widget.
    * @param serial The widget's USB serial number
    * @param name The widget's USB name (description)
-   * @param id id based on order of adding it seems from the code
+   * @param id based on order of adding it seems from the code
    * @param vid The VendorID of the device, def = FtdiWidgetInfo::ftdi_vid
    * @param pid The ProductID of the device, def = FtdiWidgetInfo::ft232_pid
    */

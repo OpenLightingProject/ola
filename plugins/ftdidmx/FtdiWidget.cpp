@@ -375,7 +375,7 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
   ola::io::ByteString packetBuffer;
   packetBuffer[0] = DMX512_START_CODE;
 
-  if(data.Size() >= 24) {
+  if (data.Size() >= 24) {
     packetBuffer.append(data.GetRaw(), data.Size());
   } else {
     packetBuffer.append(512, '\x00');
@@ -443,18 +443,18 @@ void FtdiInterface::DetectEchoState() {
              << " Attempting detection of what was written.";
   }
   int bytesRead = ftdi_read_data(&m_handle, readBuffer, bytesWritten);
-  if(bytesRead == 0) {
+  if (bytesRead == 0) {
     OLA_INFO << Description() << " No data read, echo state OFF.";
     m_echoState = OFF;
-  } else if(bytesRead < 0) {
+  } else if (bytesRead < 0) {
     OLA_WARN << Description() << " "
              << ftdi_get_error_string(&m_handle) << "\n"
              << "Echo state UNKNOWN";
     m_echoState = UNKNOWN;
     return;
-  } else if(bytesRead <= bytesWritten) {
+  } else if (bytesRead <= bytesWritten) {
     for (int i = 0; i < bytesRead; i++) {
-      if(testPattern[i] != readBuffer[i]) {
+      if (testPattern[i] != readBuffer[i]) {
         m_echoState = UNKNOWN;
         OLA_WARN << Description()
                  << " Mismatch in read data and test pattern, "

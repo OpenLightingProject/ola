@@ -103,7 +103,7 @@ class FtdiDmxThread
                            const ola::rdm::UIDSet &uids);
     /**
      * @brief Method called to cleanup any outstanding callbacks
-     * @param state state to return to caller when possible.
+     * @param state to return to caller when possible.
      *
      * @note All callbacks except the RDMCallback lack a way of reporting an
      * error state to the caller.
