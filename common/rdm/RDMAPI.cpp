@@ -1195,23 +1195,13 @@ bool RDMAPI::GetDMXAddress(
                        const ResponseStatus&,
                        uint16_t> *callback,
     string *error) {
-  if (CheckCallback(error, callback))
-    return false;
-  if (CheckNotBroadcast(uid, error, callback))
-    return false;
-  if (CheckValidSubDevice(sub_device, false, error, callback))
-    return false;
 
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleGetDMXAddress,
-    callback);
-  return CheckReturnStatus(
-    m_impl->RDMGet(cb,
-                   universe,
-                   uid,
-                   sub_device,
-                   PID_DMX_START_ADDRESS),
+  return GenericGetU16(
+    universe,
+    uid,
+    sub_device,
+    callback,
+    PID_DMX_START_ADDRESS,
     error);
 }
 
@@ -1233,24 +1223,14 @@ bool RDMAPI::SetDMXAddress(
     uint16_t start_address,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
-  if (CheckCallback(error, callback))
-    return false;
-  if (CheckValidSubDevice(sub_device, true, error, callback))
-    return false;
 
-  start_address = HostToNetwork(start_address);
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleEmptyResponse,
-    callback);
-  return CheckReturnStatus(
-    m_impl->RDMSet(cb,
-                   universe,
-                   uid,
-                   sub_device,
-                   PID_DMX_START_ADDRESS,
-                   reinterpret_cast<const uint8_t*>(&start_address),
-                   sizeof(start_address)),
+  return GenericSetU16(
+    universe,
+    uid,
+    sub_device,
+    start_address,
+    callback,
+    PID_DMX_START_ADDRESS,
     error);
 }
 
@@ -2908,32 +2888,15 @@ bool RDMAPI::GetDimmerMaximumLevel(
     unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
-    SingleUseCallback2<void,
-                       const ResponseStatus&,
-                       uint16_t> *callback,
+    SingleUseCallback2<void, const ResponseStatus&, uint16_t> *callback,
     string *error) {
-  if (CheckCallback(error, callback)) {
-    return false;
-  }
 
-  if (CheckNotBroadcast(uid, error, callback)) {
-    return false;
-  }
-
-  if (CheckValidSubDevice(sub_device, false, error, callback)) {
-    return false;
-  }
-
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-      this,
-      &RDMAPI::_HandleGetDimmerMaximumLevel,
-      callback);
-  return CheckReturnStatus(
-      m_impl->RDMGet(cb,
-                     universe,
-                     uid,
-                     sub_device,
-                     PID_MAXIMUM_LEVEL),
+  return GenericGetU16(
+      universe,
+      uid,
+      sub_device,
+      callback,
+      PID_MAXIMUM_LEVEL,
       error);
 }
 
@@ -2954,28 +2917,15 @@ bool RDMAPI::SetDimmerMaximumLevel(
     uint16_t maximum_level,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
-  if (CheckCallback(error, callback)) {
-    return false;
-  }
 
-  if (CheckValidSubDevice(sub_device, true, error, callback)) {
-    return false;
-  }
-
-  maximum_level = HostToNetwork(maximum_level);
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleEmptyResponse,
-    callback);
-  return CheckReturnStatus(
-    m_impl->RDMSet(cb,
-                   universe,
-                   uid,
-                   sub_device,
-                   PID_MAXIMUM_LEVEL,
-                   reinterpret_cast<const uint8_t*>(&maximum_level),
-                   sizeof(maximum_level)),
-    error);
+  return GenericSetU16(
+      universe,
+      uid,
+      sub_device,
+      maximum_level,
+      callback,
+      PID_MAXIMUM_LEVEL,
+      error);
 }
 
 /*
@@ -3905,30 +3855,6 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
 
 
 /*
- * @brief Handle a get DMX_START_ADDRESS response
- */
-void RDMAPI::_HandleGetDMXAddress(
-    SingleUseCallback2<void,
-                       const ResponseStatus&,
-                       uint16_t> *callback,
-    const ResponseStatus &status,
-    const string &data) {
-  ResponseStatus response_status = status;
-  static const unsigned int DATA_SIZE = 2;
-  uint16_t start_address = 0;
-  if (response_status.WasAcked()) {
-    if (data.size() != DATA_SIZE) {
-      SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
-    } else {
-      start_address = *(reinterpret_cast<const uint16_t*>(data.data()));
-      start_address = NetworkToHost(start_address);
-    }
-  }
-  callback->Run(response_status, start_address);
-}
-
-
-/*
  * @brief Handle a get SLOT_INFO response
  */
 void RDMAPI::_HandleGetSlotInfo(
@@ -4397,27 +4323,6 @@ void RDMAPI::_HandleGetDimmerMinimumLevels(
   callback->Run(response_status, dimmer_mins);
 }
 
-/*
- * @brief Handle a get MAXIMUM_LEVEL response
- */
-void RDMAPI::_HandleGetDimmerMaximumLevel(
-    SingleUseCallback2<void,
-                       const ResponseStatus&,
-                       uint16_t> *callback,
-    const ResponseStatus &status,
-    const string &data) {
-  ResponseStatus response_status = status;
-  static const unsigned int DATA_SIZE = 2;
-  uint16_t maximum_level = 0;
-  if (response_status.WasAcked()) {
-    if (data.size() != DATA_SIZE) {
-      SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
-    } else {
-      maximum_level = data[0];
-    }
-  }
-  callback->Run(response_status, maximum_level);
-}
 
 //-----------------------------------------------------------------------------
 // Private methods follow
@@ -4433,6 +4338,8 @@ bool RDMAPI::GenericGetU8(
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
     return false;
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
@@ -4460,6 +4367,8 @@ bool RDMAPI::GenericSetU8(
     string *error) {
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
+  if (CheckCallback(error, callback))
+    return false;
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
@@ -4477,6 +4386,66 @@ bool RDMAPI::GenericSetU8(
 }
 
 
+// @brief get a 16 bit value
+bool RDMAPI::GenericGetU16(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint16_t> *callback,
+    uint16_t pid,
+    string *error) {
+  if (CheckNotBroadcast(uid, error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleU16Response,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   pid),
+    error);
+}
+
+
+// @brief set a 16 bit value
+bool RDMAPI::GenericSetU16(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t value,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    uint16_t pid,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
+    return false;
+
+  value = HostToNetwork(value);
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   pid,
+                   reinterpret_cast<const uint8_t*>(&value),
+                   sizeof(value)),
+    error);
+}
+
+
 // @brief get a 32 bit value
 bool RDMAPI::GenericGetU32(
     unsigned int universe,
@@ -4488,6 +4457,8 @@ bool RDMAPI::GenericGetU32(
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
     return false;
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
@@ -4514,6 +4485,8 @@ bool RDMAPI::GenericSetU32(
     uint16_t pid,
     string *error) {
   if (CheckValidSubDevice(sub_device, true, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
     return false;
 
   value = HostToNetwork(value);
