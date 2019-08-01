@@ -375,10 +375,13 @@ bool FtdiInterface::Write(const ola::DmxBuffer& data) {
   ola::io::ByteString packetBuffer;
   packetBuffer[0] = DMX512_START_CODE;
 
-  if (data.Size() >= 24) {
+  if (data.Size() > 0) {
     packetBuffer.append(data.GetRaw(), data.Size());
+    if (data.Size() < 24) {
+      packetBuffer.append(24 - data.Size(), '\x00');
+    }
   } else {
-    packetBuffer.append(512, '\x00');
+    packetBuffer.append(24, '\x00');
   }
 
   return Write(&packetBuffer);
