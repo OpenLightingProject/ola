@@ -82,7 +82,7 @@ if [[ $TASK = 'lint' ]]; then
     echo "Found $nolints generic NOLINTs"
   fi;
   # then fetch and run the main cpplint tool
-  lintfiles=`find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( $LINT_BLACKLIST \) | xargs`
+  lintfiles=$(eval "find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( $LINT_BLACKLIST \) | xargs")
   wget -O cpplint.py $CPP_LINT_URL;
   chmod u+x cpplint.py;
   ./cpplint.py \
