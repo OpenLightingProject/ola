@@ -87,7 +87,7 @@ if [[ $TASK = 'lint' ]]; then
   ./cpplint.py \
     --filter=-legal/copyright,-readability/streams,-runtime/arrays \
     $(find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
-    $LINT_BLACKLIST
+    "$LINT_BLACKLIST"
     \) | xargs)
   if [[ $? -ne 0 ]]; then
     exit 1;
