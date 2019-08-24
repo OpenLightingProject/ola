@@ -88,7 +88,7 @@ void E131InflatorTest::testDecodeRev2Header() {
         &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
-  // test inherting the header from the prev call
+  // test inheriting the header from the prev call
   OLA_ASSERT(inflator.DecodeHeader(&header_set2, NULL, 0, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   decoded_header = header_set2.GetE131Header();
@@ -136,7 +136,7 @@ void E131InflatorTest::testDecodeHeader() {
       &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
-  // test inherting the header from the prev call
+  // test inheriting the header from the prev call
   OLA_ASSERT(inflator.DecodeHeader(&header_set2, NULL, 0, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   decoded_header = header_set2.GetE131Header();

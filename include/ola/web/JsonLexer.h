@@ -84,34 +84,34 @@ class JsonParserInterface {
   virtual void End() = 0;
 
   /**
-   * @brief Called when a string is encounted.
+   * @brief Called when a string is encountered.
    *
    * This is not called for object keys, see ObjectKey() below.
    */
   virtual void String(const std::string &value) = 0;
 
   /**
-   * @brief Called when a uint32_t is encounted.
+   * @brief Called when a uint32_t is encountered.
    */
   virtual void Number(uint32_t value) = 0;
 
   /**
-   * @brief Called when a int32_t is encounted.
+   * @brief Called when a int32_t is encountered.
    */
   virtual void Number(int32_t value) = 0;
 
   /**
-   * @brief Called when a uint64_t is encounted.
+   * @brief Called when a uint64_t is encountered.
    */
   virtual void Number(uint64_t value) = 0;
 
   /**
-   * @brief Called when a int64_t is encounted.
+   * @brief Called when a int64_t is encountered.
    */
   virtual void Number(int64_t value) = 0;
 
   /**
-   * @brief Called when a double value is encounted.
+   * @brief Called when a double value is encountered.
    *
    * MinGW struggles with long doubles
    * http://mingw.5.n7.nabble.com/Strange-behaviour-of-gcc-4-8-1-with-long-double-td32949.html
@@ -121,17 +121,17 @@ class JsonParserInterface {
   virtual void Number(const JsonDouble::DoubleRepresentation &rep) = 0;
 
   /**
-   * @brief Called when a double value is encounted.
+   * @brief Called when a double value is encountered.
    */
   virtual void Number(double d) = 0;
 
   /**
-   * @brief Called when a bool is encounted.
+   * @brief Called when a bool is encountered.
    */
   virtual void Bool(bool value) = 0;
 
   /**
-   * @brief Called when a null token is encounted.
+   * @brief Called when a null token is encountered.
    */
   virtual void Null() = 0;
 
@@ -151,7 +151,7 @@ class JsonParserInterface {
   virtual void OpenObject() = 0;
 
   /**
-   * @brief Called when a new key is encounted.
+   * @brief Called when a new key is encountered.
    *
    * This may be called multiple times for the same object. The standard
    * doesn't specify how to handle duplicate keys, so I generally use the last
