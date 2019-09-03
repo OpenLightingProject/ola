@@ -196,7 +196,7 @@ void DmxBufferTest::testAssign() {
   // assigning to ourself does nothing
   buffer = buffer;
 
-  // assinging to a previously init'ed buffer
+  // assigning to a previously init'ed buffer
   unsigned int size = result_length;
   assignment_buffer = buffer;
   assignment_buffer.Get(result, &size);
