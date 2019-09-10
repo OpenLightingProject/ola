@@ -20,7 +20,7 @@ class OVDmxPlugin: public Plugin {
 
     std::string Name() const { return PLUGIN_NAME; }
     std::string Description() const;
-    ola_plugin_id Id() const { return OLA_PLUGIN_EXPERIMENTAL; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_OVDMX; }
     std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
