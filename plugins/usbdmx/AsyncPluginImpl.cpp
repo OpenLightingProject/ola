@@ -52,6 +52,7 @@
 #include "plugins/usbdmx/JaRuleFactory.h"
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
+#include "plugins/usbdmx/ShowJockeyDMXU1Factory.h"
 #include "plugins/usbdmx/SunliteFactory.h"
 #include "plugins/usbdmx/VellemanK8062.h"
 #include "plugins/usbdmx/VellemanK8062Factory.h"
@@ -125,11 +126,12 @@ bool AsyncPluginImpl::Start() {
                                      m_preferences));
   m_widget_factories.push_back(new DMXCreator512BasicFactory(m_usb_adaptor));
   m_widget_factories.push_back(
-      new EuroliteProFactory(m_usb_adaptor));
+      new EuroliteProFactory(m_usb_adaptor, m_preferences));
   m_widget_factories.push_back(
       new JaRuleFactory(m_plugin_adaptor, m_usb_adaptor));
   m_widget_factories.push_back(
       new ScanlimeFadecandyFactory(m_usb_adaptor));
+  m_widget_factories.push_back(new ShowJockeyDMXU1Factory(m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(m_usb_adaptor));
   m_widget_factories.push_back(new VellemanK8062Factory(m_usb_adaptor));
 
@@ -220,6 +222,15 @@ bool AsyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
           m_plugin, widget,
           "Fadecandy USB Device (" + widget->SerialNumber() + ")",
           "fadecandy-" + widget->SerialNumber()));
+}
+
+bool AsyncPluginImpl::NewWidget(ShowJockeyDMXU1 *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(
+          m_plugin, widget,
+          "ShowJockey-DMX-U1 Device (" + widget->SerialNumber() + ")",
+          "showjockey-dmx-u1-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(Sunlite *widget) {

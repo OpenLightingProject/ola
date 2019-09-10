@@ -35,6 +35,7 @@ class RunLengthEncoderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RunLengthEncoderTest);
   CPPUNIT_TEST(testEncode);
   CPPUNIT_TEST(testEncode2);
+  CPPUNIT_TEST(testEncodeDecode);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -86,8 +87,7 @@ void RunLengthEncoderTest::checkEncode(const DmxBuffer &buffer,
   memset(m_dst, 0, ola::DMX_UNIVERSE_SIZE);
   OLA_ASSERT_EQ(is_complete,
                 m_encoder.Encode(buffer, m_dst, &dst_size));
-  OLA_ASSERT_EQ(expected_length, dst_size);
-  OLA_ASSERT_EQ(0, memcmp(expected_data, m_dst, dst_size));
+  OLA_ASSERT_DATA_EQUALS(expected_data, expected_length, m_dst, dst_size);
 }
 
 
@@ -149,9 +149,11 @@ void RunLengthEncoderTest::checkEncodeDecode(const uint8_t *data,
   OLA_ASSERT_TRUE(m_encoder.Encode(src, m_dst, &dst_size));
 
   OLA_ASSERT_TRUE(m_encoder.Decode(0, m_dst, dst_size, &dst));
-  OLA_ASSERT_TRUE(src == dst);
-  OLA_ASSERT_EQ(dst.Size(), data_size);
+  // Because we've zero padded to a full frame, we check it's a subset
+  OLA_ASSERT_GTE(dst.Size(), data_size);
   OLA_ASSERT_NE(0, memcmp(data, dst.GetRaw(), dst.Size()));
+  // Checking the first data_size bytes of both buffers
+  OLA_ASSERT_DATA_EQUALS(data, data_size, dst.GetRaw(), data_size);
 }
 
 

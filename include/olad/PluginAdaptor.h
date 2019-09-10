@@ -96,7 +96,7 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
    * @brief Return the instance name for the OLA server
    * @return a string which is the instance name
    */
-  const std::string InstanceName();
+  const std::string InstanceName() const;
 
   ExportMap *GetExportMap() const {
     return m_export_map;

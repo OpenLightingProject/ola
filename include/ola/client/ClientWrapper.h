@@ -30,12 +30,15 @@
 #ifndef INCLUDE_OLA_CLIENT_CLIENTWRAPPER_H_
 #define INCLUDE_OLA_CLIENT_CLIENTWRAPPER_H_
 
+// On MinGW, SocketAddress.h pulls in WinSock2.h, which needs to be after
+// WinSock2.h, hence this order
+#include <ola/network/SocketAddress.h>
+#include <ola/network/TCPSocket.h>
+
 #include <ola/AutoStart.h>
 #include <ola/Callback.h>
 #include <ola/client/OlaClient.h>
 #include <ola/io/SelectServer.h>
-#include <ola/network/SocketAddress.h>
-#include <ola/network/TCPSocket.h>
 
 #include <memory>
 

@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetDevice.h
- * Interface for the ArtNet device
+ * Interface for the Art-Net device
  * Copyright (C) 2005 Simon Newton
  */
 
@@ -47,13 +47,13 @@ namespace artnet {
 class ArtNetDevice: public Device {
  public:
   /**
-   * Create a new Artnet Device
+   * Create a new Art-Net Device
    */
   ArtNetDevice(AbstractPlugin *owner,
                class Preferences *preferences,
                class PluginAdaptor *plugin_adaptor);
 
-  // only one ArtNet device
+  // only one Art-Net device
   std::string DeviceId() const { return "1"; }
 
   void EnterConfigurationMode() { m_node->EnterConfigurationMode(); }

@@ -48,7 +48,7 @@ lib_LTLIBRARIES += olad/libolaserver.la
 olad_libolaserver_la_SOURCES = $(ola_server_sources) \
                                olad/OlaServer.cpp \
                                olad/OlaDaemon.cpp
-olad_libolaserver_la_CXXFLAGS = $(COMMON_CXXFLAGS) \
+olad_libolaserver_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS) \
                                 -DHTTP_DATA_DIR=\"${www_datadir}\"
 olad_libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
                               common/libolacommon.la \
@@ -72,10 +72,6 @@ olad_olad_LDADD = olad/libolaserver.la \
                   common/libolacommon.la \
                   ola/libola.la
 
-if USE_FTDI
-olad_olad_LDADD += -lftdi -lusb
-endif
-
 # TESTS
 ##################################################
 test_programs += \
@@ -89,7 +85,7 @@ COMMON_OLAD_TEST_LDADD = $(COMMON_TESTING_LIBS) $(libprotobuf_LIBS) \
 olad_OlaTester_SOURCES = \
     olad/PluginManagerTest.cpp \
     olad/OlaServerServiceImplTest.cpp
-olad_OlaTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+olad_OlaTester_CXXFLAGS = $(COMMON_TESTING_PROTOBUF_FLAGS)
 olad_OlaTester_LDADD = $(COMMON_OLAD_TEST_LDADD)
 
 CLEANFILES += olad/ola-output.conf

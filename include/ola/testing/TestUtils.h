@@ -160,8 +160,15 @@ inline void _FailIf(const SourceLine &source_line,
 
 #define OLA_ASSERT_DATA_EQUALS(expected, expected_length, actual, \
                                actual_length)  \
-ola::testing::ASSERT_DATA_EQUALS(OLA_SOURCELINE(), (expected), \
-                                 (expected_length), (actual), (actual_length))
+  ola::testing::ASSERT_DATA_EQUALS(OLA_SOURCELINE(), (expected), \
+                                   (expected_length), (actual), \
+                                   (actual_length))
+
+#define OLA_ASSERT_DMX_EQUALS(expected, actual)  \
+  ola::testing::ASSERT_DATA_EQUALS(OLA_SOURCELINE(), \
+                                   (expected.GetRaw()), (expected.Size()), \
+                                   (actual.GetRaw()), (actual.Size())); \
+  OLA_ASSERT_EQ(expected, actual)
 
 #define OLA_ASSERT_NULL(value) \
   CPPUNIT_NS::Asserter::failIf( \

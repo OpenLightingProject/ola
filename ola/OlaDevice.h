@@ -31,7 +31,7 @@
 
 namespace ola {
 
-// For backwards compatability:
+// For backwards compatibility:
 typedef ola::client::OlaDevice OlaDevice;
 typedef ola::client::OlaInputPort OlaInputPort;
 typedef ola::client::OlaOutputPort OlaOutputPort;

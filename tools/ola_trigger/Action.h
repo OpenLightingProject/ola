@@ -103,8 +103,7 @@ class CommandAction: public Action {
 
 
 /**
- * @brief An interval of DMX values and then action to be taken for matching
- * values.
+ * @brief An interval of DMX values
  */
 class ValueInterval {
  public:
@@ -175,6 +174,10 @@ class Slot {
   uint8_t m_old_value;
   bool m_old_value_defined;
 
+  /**
+   * @brief An interval of DMX values and the action to be taken for matching
+   * values.
+   */ 
   class ActionInterval {
    public:
     ActionInterval(const ValueInterval *interval,

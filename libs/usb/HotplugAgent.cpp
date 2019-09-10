@@ -39,17 +39,17 @@
 namespace ola {
 namespace usb {
 
-using ola::usb::AsyncronousLibUsbAdaptor;
+using ola::usb::AsynchronousLibUsbAdaptor;
 using ola::usb::LibUsbAdaptor;
 using std::auto_ptr;
 using std::pair;
 
 namespace {
 #ifdef HAVE_LIBUSB_HOTPLUG_API
-int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
-                     struct libusb_device *dev,
-                     libusb_hotplug_event event,
-                     void *user_data) {
+int LIBUSB_CALL hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
+                                 struct libusb_device *dev,
+                                 libusb_hotplug_event event,
+                                 void *user_data) {
   HotplugAgent *agent = reinterpret_cast<HotplugAgent*>(user_data);
   agent->HotPlugEvent(dev, event);
   return 0;
@@ -72,7 +72,7 @@ HotplugAgent::~HotplugAgent() {
   }
 }
 
-AsyncronousLibUsbAdaptor *HotplugAgent::GetUSBAdaptor() const {
+AsynchronousLibUsbAdaptor *HotplugAgent::GetUSBAdaptor() const {
   return m_usb_adaptor.get();
 }
 
@@ -81,10 +81,16 @@ bool HotplugAgent::Init() {
     return false;
   }
 
+#ifdef HAVE_LIBUSB_SET_OPTION
+  OLA_DEBUG << "libusb_set_option(LIBUSB_OPTION_LOG_LEVEL, " << m_debug_level
+            << ")";
+  libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, m_debug_level);
+#else
   OLA_DEBUG << "libusb_set_debug(" << m_debug_level << ")";
   libusb_set_debug(m_context, m_debug_level);
+#endif  // HAVE_LIBUSB_SET_OPTION
 
-  m_use_hotplug = HotplugSupported();
+  m_use_hotplug = ola::usb::LibUsbAdaptor::HotplugSupported();
   OLA_DEBUG << "HotplugSupported(): " << m_use_hotplug;
 #ifdef HAVE_LIBUSB_HOTPLUG_API
   if (m_use_hotplug) {
@@ -97,7 +103,7 @@ bool HotplugAgent::Init() {
     m_usb_thread.reset(new ola::usb::LibUsbSimpleThread(m_context));
   }
   m_usb_adaptor.reset(
-      new ola::usb::AsyncronousLibUsbAdaptor(m_usb_thread.get()));
+      new ola::usb::AsynchronousLibUsbAdaptor(m_usb_thread.get()));
   return true;
 }
 
@@ -204,13 +210,11 @@ void HotplugAgent::HotPlugEvent(struct libusb_device *usb_device,
  * @brief Check if this platform supports hotplug.
  * @returns true if hotplug is supported and enabled on this platform, false
  *   otherwise.
+ * @deprecated This is only here for backwards compatibility. New code should
+ *   use ola::usb::LibUsbAdaptor::HotplugSupported().
  */
 bool HotplugAgent::HotplugSupported() {
-#ifdef HAVE_LIBUSB_HOTPLUG_API
-  return libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG) != 0;
-#else
-  return false;
-#endif  // HAVE_LIBUSB_HOTPLUG_API
+  return ola::usb::LibUsbAdaptor::HotplugSupported();
 }
 
 /*

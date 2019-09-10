@@ -77,7 +77,7 @@ public class OlaClient {
     /**
      * Generic method for making Rpc Calls.
      *
-     * @param method Name of te Rpc Method to call
+     * @param method Name of the Rpc Method to call
      * @param inputMessage Input RpcMessage
      * @return Message result message or null if the call failed.
      */
@@ -175,6 +175,18 @@ public class OlaClient {
      */
     public UniverseInfoReply getUniverseInfo(int universe) {
         OptionalUniverseRequest request = OptionalUniverseRequest.newBuilder().setUniverse(universe).build();
+        return (UniverseInfoReply) callRpcMethod("GetUniverseInfo", request);
+    }
+
+
+    /**
+     * Get a list of info about all universes.
+     *
+     * @return UniverseInfoReply
+     * @since 0.0.2
+     */
+    public UniverseInfoReply getUniverseList() {
+        OptionalUniverseRequest request = OptionalUniverseRequest.newBuilder().build();
         return (UniverseInfoReply) callRpcMethod("GetUniverseInfo", request);
     }
 
@@ -407,7 +419,7 @@ public class OlaClient {
     /**
      * Convert short array to bytestring
      */
-    public ByteString convertToUnsigned(short[] values) {
+    public static ByteString convertToUnsigned(short[] values) {
         byte[] unsigned = new byte[values.length];
         for (int i = 0; i < values.length; i++) {
             unsigned[i] = (byte) values[i];
@@ -419,7 +431,7 @@ public class OlaClient {
     /**
      * Convert bytestring to short array.
      */
-    public short[] convertFromUnsigned(ByteString data) {
+    public static short[] convertFromUnsigned(ByteString data) {
         byte[] values = data.toByteArray();
         short[] signed = new short[values.length];
         for (int i = 0; i < values.length; i++) {

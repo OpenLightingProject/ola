@@ -28,6 +28,7 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/RDMPacket.h>
 #include <ola/rdm/UID.h>
 #include <ola/util/Utils.h>
 #include <ola/strings/Format.h>
@@ -229,7 +230,8 @@ void JaRulePortHandleImpl::MuteDeviceComplete(
         response->CommandClass() == RDMCommand::DISCOVER_COMMAND_RESPONSE &&
         response->ResponseType() == rdm::RDM_ACK);
   } else {
-    OLA_INFO << "Mute failed!";
+    OLA_INFO << "Mute failed! Result: " << result << ", RC: " << return_code
+             << ", payload size: " << payload.size();
   }
   mute_complete->Run(muted_ok);
 }
@@ -345,7 +347,7 @@ ola::rdm::RDMResponse* JaRulePortHandleImpl::UnpackRDMResponse(
     const RDMRequest *request,
     const ByteString &payload,
     ola::rdm::RDMStatusCode *status_code) {
-  if (payload.empty() || payload[0] != RDMCommand::START_CODE) {
+  if (payload.empty() || payload[0] != ola::rdm::START_CODE) {
     *status_code = rdm::RDM_INVALID_RESPONSE;
     return NULL;
   }

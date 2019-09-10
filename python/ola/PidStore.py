@@ -53,7 +53,7 @@ class InvalidPidFormat(Error):
 
 
 class PidStructureException(Error):
-  """Raised if the PID structure isn't vaild."""
+  """Raised if the PID structure isn't valid."""
 
 
 class ArgsValidationError(Error):
@@ -61,7 +61,7 @@ class ArgsValidationError(Error):
 
 
 class UnpackException(Error):
-  """Raised if we can't unpack the data corectly."""
+  """Raised if we can't unpack the data correctly."""
 
 
 class MissingPLASAPIDs(Error):
@@ -230,6 +230,10 @@ class Atom(object):
   def GetDescription(self, indent=0):
     return str(self)
 
+  @staticmethod
+  def HasRanges():
+    return False
+
 
 class FixedSizeAtom(Atom):
   def __init__(self, name, format_char):
@@ -337,6 +341,12 @@ class IntAtom(FixedSizeAtom):
     if not self._ranges:
       self._ranges.append(Range(0, max_value))
 
+  def ValidateRawValueInRange(self, value):
+    for valid_range in self._ranges:
+      if valid_range.Matches(value):
+        return True
+    return False
+
   def Pack(self, args):
     self.CheckForSingleArg(args)
     arg = args[0]
@@ -384,6 +394,9 @@ class IntAtom(FixedSizeAtom):
     This takes into account any multipliers set for the field.
     """
     return self._AccountForMultiplierPack(value)
+
+  def HasRanges(self):
+    return (len(self._ranges) > 0)
 
   def _GetAllowedRanges(self):
     values = list(self._labels.keys())
@@ -678,7 +691,7 @@ class Group(Atom):
       For now we support the following cases:
        - Fixed size group. This is easy to unpack
        - Groups of variable size. We enforce two conditions for these, i) the
-         variable sized field MUST be the last one ii) Only a single occurance
+         variable sized field MUST be the last one ii) Only a single occurrence
          is allowed. This means you can't do things like:
 
            [(string, int)]   # variable sized types must be last
@@ -820,19 +833,19 @@ class Group(Atom):
       # groups of fixed length data
       if data_size % self._group_size:
         raise UnpackException(
-            'Data size issue for %s, data size %d, group size %d' %
-            (self.name, data_size, self._group_size))
+            'Data size issue for %s (%s), data size %d, "%s" group size %d' %
+            (self.name, self.__str__, data_size, data, self._group_size))
 
       group_count = data_size / self._group_size
       if self.max is not None and group_count > self.max:
         raise UnpackException(
-            'Too many repeated group_count for %s, limit is %d, found %d' %
-            (self.name, self.max, group_count))
+            'Too many repeated group_count for %s (%s), limit is %d, found %d' %
+            (self.name, self.__str__, self.max, group_count))
 
       if self.max is not None and group_count < self.min:
         raise UnpackException(
-            'Too few repeated group_count for %s, limit is %d, found %d' %
-            (self.name, self.min, group_count))
+            'Too few repeated group_count for %s (%s), limit is %d, found %d' %
+            (self.name, self.__str__, self.min, group_count))
 
       offset = 0
       groups = []
@@ -1070,6 +1083,17 @@ class PidStore(object):
     if pid:
       return pid.value
     return pid
+
+  def ManufacturerIdToName(self, esta_id):
+    """A helper method to convert a manufacturer ID to a name
+
+    Args:
+      esta_id: The 2-byte esta / manufacturer ID.
+
+    Returns:
+      The name of the manufacturer, or None if it wasn't found.
+    """
+    return self._manufacturer_id_to_name.get(esta_id, None)
 
   def _PidProtoToObject(self, pid_pb):
     """Convert the protobuf representation of a PID to a PID object.

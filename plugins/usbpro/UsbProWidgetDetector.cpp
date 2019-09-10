@@ -31,7 +31,7 @@
  * constructor. Of these, the only message a widget must respond to is
  * SERIAL_LABEL. The other two messages are part of the Usb Pro Extensions
  * (https://wiki.openlighting.org/index.php/USB_Protocol_Extensions) and allow
- * us to determine more specfically what type of device this is.
+ * us to determine more specifically what type of device this is.
  *
  * If the widget responds to SERIAL_LABEL the on_success callback is run.
  * Otherwise on_failure is run. It's important you register callbacks for each
@@ -320,9 +320,10 @@ void UsbProWidgetDetector::DiscoveryTimeout(DispatchingUsbProWidget *widget) {
         CompleteWidgetDiscovery(widget);
         break;
       default:
-        OLA_WARN << "Usb Widget didn't respond to messages, esta id "
+        OLA_WARN << "USB Widget didn't respond to messages, esta id "
                  << iter->second.information.esta_id << ", device id "
                  << iter->second.information.device_id;
+        OLA_WARN << "Is device in USB Controller mode if it's a Goddard?";
         ola::io::ConnectedDescriptor *descriptor =
             widget->GetDescriptor();
         descriptor->SetOnClose(NULL);

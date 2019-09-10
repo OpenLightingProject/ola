@@ -72,9 +72,9 @@ class RpcController {
   void SetFailed(const std::string &reason);
 
   /**
-   * @brief Get the session infomation for this RPC.
+   * @brief Get the session information for this RPC.
    *
-   * Unless specfically provided, the session be NULL on the client side.
+   * Unless specifically provided, the session be NULL on the client side.
    * @returns the RpcSession object, ownership is not transferred.
    */
   RpcSession *Session();

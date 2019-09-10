@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include "ola/StringUtils.h"
+#include "ola/base/Macro.h"
 
 namespace ola {
 
@@ -416,9 +417,11 @@ void CapitalizeLabel(string *s) {
     switch (*iter) {
       case '-':
         // fall through, also convert to space then capitalize next character
+        OLA_FALLTHROUGH
       case '_':
         *iter = ' ';
         // fall through, also convert to space then capitalize next character
+        OLA_FALLTHROUGH
       case ' ':
         capitalize = true;
         break;
@@ -438,7 +441,10 @@ void CustomCapitalizeLabel(string *s) {
     "dns",
     "ip",
     "ipv4",  // Should really be IPv4 probably, but better than nothing
+    "ipv6",  // Should really be IPv6 probably, but better than nothing
     "led",
+    "pdl",
+    "pid",
     "rdm",
     "uid",
     NULL

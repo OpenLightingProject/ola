@@ -220,7 +220,7 @@ void JaRuleWidgetPort::SendCommand(
   if (payload.size() % USB_PACKET_SIZE == 0)  {
     // We need to pad the message so that the transfer completes on the
     // Device side. We could use LIBUSB_TRANSFER_ADD_ZERO_PACKET instead but
-    // that isn't avaiable on all platforms.
+    // that isn't available on all platforms.
     payload.push_back(0);
   }
 

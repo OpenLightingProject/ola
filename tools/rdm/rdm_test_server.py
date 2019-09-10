@@ -313,7 +313,7 @@ class RDMTestThread(Thread):
 
   def _RunCollector(self, universe, skip_queued_messages):
     """Run the device model collector for a universe."""
-    logging.info('Collecting for %d' % universe)
+    logging.info('Collecting for universe %d' % universe)
     self._test_state_lock.acquire()
     self._test_state = {
       'action': self.COLLECTOR,
@@ -465,7 +465,7 @@ class StaticFileHandler(RequestHandler):
 
     # Strip off /static
     path = path[len(self.PREFIX):]
-    # This is important as it ensures we can't access arbitary files
+    # This is important as it ensures we can't access arbitrary files
     filename = os.path.abspath(os.path.join(self._static_dir, path))
     if (not filename.startswith(self._static_dir) or
          not os.path.exists(filename) or
@@ -521,11 +521,15 @@ class JsonRequestHandler(RequestHandler):
 
 class OLAServerRequestHandler(JsonRequestHandler):
   """Catches OLADNotRunningException and handles them gracefully."""
-  def __init__(self, ola_thread):
+  def __init__(self, ola_thread, pid_store):
     self._thread = ola_thread
+    self._pid_store = pid_store
 
   def GetThread(self):
     return self._thread
+
+  def GetPidStore(self):
+    return self._pid_store
 
   def HandleRequest(self, request, response):
     try:
@@ -591,6 +595,10 @@ class GetDevicesHandler(OLAServerRequestHandler):
     response.SetStatus(HTTPResponse.OK)
     return {
       'uids': [str(u) for u in uids],
+      'nameduids': dict(
+        (str(u),
+         self.GetPidStore().ManufacturerIdToName(u.manufacturer_id))
+        for u in uids),
       'status': True,
     }
 
@@ -615,6 +623,10 @@ class RunDiscoveryHandler(OLAServerRequestHandler):
     response.SetStatus(HTTPResponse.OK)
     return {
       'uids': [str(u) for u in uids],
+      'nameduids': dict(
+        (str(u),
+         self.GetPidStore().ManufacturerIdToName(u.manufacturer_id))
+        for u in uids),
       'status': True,
     }
 
@@ -674,8 +686,8 @@ class DownloadResultsHandler(RequestHandler):
 
 class RunTestsHandler(OLAServerRequestHandler):
   """Run the RDM tests."""
-  def __init__(self, ola_thread, test_thread):
-    super(RunTestsHandler, self).__init__(ola_thread)
+  def __init__(self, ola_thread, test_thread, pid_store):
+    super(RunTestsHandler, self).__init__(ola_thread, pid_store)
     self._test_thread = test_thread
 
   def GetJson(self, request, response):
@@ -816,7 +828,7 @@ class RunTestsHandler(OLAServerRequestHandler):
     return {'status': True}
 
   def _CheckValidUniverse(self, request):
-    """Check that the universe paramter is present and refers to a valid
+    """Check that the universe parameter is present and refers to a valid
        universe.
 
     Args:
@@ -932,7 +944,7 @@ class Application(object):
     response.SetStatus(HTTPResponse.NOT_FOUND)
 
 
-def BuildApplication(ola_thread, test_thread):
+def BuildApplication(ola_thread, test_thread, pid_store):
   """Construct the application and add the handlers."""
   app = Application()
   app.RegisterHandler('/',
@@ -943,22 +955,22 @@ def BuildApplication(ola_thread, test_thread):
   app.RegisterHandler('/GetTestDefs',
                       TestDefinitionsHandler().HandleRequest)
   app.RegisterHandler('/GetUnivInfo',
-                      GetUniversesHandler(ola_thread).HandleRequest)
+                      GetUniversesHandler(ola_thread, pid_store).HandleRequest)
   app.RegisterHandler('/GetDevices',
-                      GetDevicesHandler(ola_thread).HandleRequest)
+                      GetDevicesHandler(ola_thread, pid_store).HandleRequest)
   app.RegisterHandler('/RunDiscovery',
-                      RunDiscoveryHandler(ola_thread).HandleRequest)
+                      RunDiscoveryHandler(ola_thread, pid_store).HandleRequest)
   app.RegisterHandler('/DownloadResults',
                       DownloadResultsHandler().HandleRequest)
   app.RegisterHandler('/DownloadModelData',
                       DownloadModelDataHandler().HandleRequest)
 
-  run_tests_handler = RunTestsHandler(ola_thread, test_thread)
+  run_tests_handler = RunTestsHandler(ola_thread, test_thread, pid_store)
   app.RegisterHandler('/RunCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/RunTests', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatTests', run_tests_handler.HandleRequest)
-  app.RegisterRegex('/static/.*',
+  app.RegisterRegex(r'/static/.*',
                     StaticFileHandler(settings['www_dir']).HandleRequest)
   return app
 
@@ -980,7 +992,8 @@ def parse_options():
   parser.add_option('-p', '--pid-location', metavar='DIR',
                     help='The directory to load the PID definitions from.')
   parser.add_option('-d', '--www-dir', default=DataLocation.location,
-                    help='The root directory to serve static files.')
+                    help='The root directory to serve static files, this must '
+                         'be absolute.')
   parser.add_option('-l', '--log-directory',
                     default=os.path.abspath('/tmp/ola-rdm-logs'),
                     help='The directory to store log files.')
@@ -1020,7 +1033,8 @@ def main():
   options = parse_options()
   settings.update(options.__dict__)
   pid_store = PidStore.GetStore(options.pid_location,
-                                ('pids.proto', 'draft_pids.proto'))
+                                ('pids.proto', 'draft_pids.proto',
+                                 'manufacturer_names.proto'))
 
   logging.basicConfig(level=logging.INFO, format='%(message)s')
 
@@ -1038,10 +1052,10 @@ def main():
   ola_thread.start()
   test_thread = RDMTestThread(pid_store, settings['log_directory'])
   test_thread.start()
-  app = BuildApplication(ola_thread, test_thread)
+  app = BuildApplication(ola_thread, test_thread, pid_store)
 
   httpd = make_server('', settings['PORT'], app.HandleRequest)
-  logging.info('Running RDM Tests Server on %s:%s' %
+  logging.info('Running RDM Tests Server on http://%s:%s' %
                ('127.0.0.1', httpd.server_port))
 
   try:

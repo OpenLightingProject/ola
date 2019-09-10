@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * SectionsTest.cpp
- * Unittest for JsonSections classses.
+ * Unittest for JsonSections classes.
  * Copyright (C) 2010 Simon Newton
  */
 

@@ -45,6 +45,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/ScanlimeFadecandy.h \
     plugins/usbdmx/ScanlimeFadecandyFactory.cpp \
     plugins/usbdmx/ScanlimeFadecandyFactory.h \
+    plugins/usbdmx/ShowJockeyDMXU1.cpp \
+    plugins/usbdmx/ShowJockeyDMXU1.h \
+    plugins/usbdmx/ShowJockeyDMXU1Factory.cpp \
+    plugins/usbdmx/ShowJockeyDMXU1Factory.h \
     plugins/usbdmx/Sunlite.cpp \
     plugins/usbdmx/Sunlite.h \
     plugins/usbdmx/SunliteFactory.cpp \
@@ -52,8 +56,8 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/SunliteFirmware.h \
     plugins/usbdmx/SunliteFirmwareLoader.cpp \
     plugins/usbdmx/SunliteFirmwareLoader.h \
-    plugins/usbdmx/SyncronizedWidgetObserver.cpp \
-    plugins/usbdmx/SyncronizedWidgetObserver.h \
+    plugins/usbdmx/SynchronizedWidgetObserver.cpp \
+    plugins/usbdmx/SynchronizedWidgetObserver.h \
     plugins/usbdmx/ThreadedUsbReceiver.cpp \
     plugins/usbdmx/ThreadedUsbReceiver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \

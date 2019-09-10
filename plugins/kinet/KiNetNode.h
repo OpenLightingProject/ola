@@ -24,9 +24,11 @@
 #include <memory>
 
 #include "ola/DmxBuffer.h"
+#include "ola/base/Macro.h"
 #include "ola/io/BigEndianStream.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/SelectServerInterface.h"
+#include "ola/network/Interface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
 
@@ -55,9 +57,6 @@ class KiNetNode {
     ola::network::Interface m_interface;
     std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
 
-    KiNetNode(const KiNetNode&);
-    KiNetNode& operator=(const KiNetNode&);
-
     void SocketReady();
     void PopulatePacketHeader(uint16_t msg_type);
     bool InitNetwork();
@@ -66,6 +65,8 @@ class KiNetNode {
     static const uint32_t KINET_MAGIC_NUMBER = 0x0401dc4a;
     static const uint16_t KINET_VERSION_ONE = 0x0100;
     static const uint16_t KINET_DMX_MSG = 0x0101;
+
+    DISALLOW_COPY_AND_ASSIGN(KiNetNode);
 };
 }  // namespace kinet
 }  // namespace plugin

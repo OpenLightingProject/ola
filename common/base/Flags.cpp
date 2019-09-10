@@ -205,7 +205,7 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
         }
       } else {
         if (!flag->SetValue("1")) {
-          cerr << "Invalid value " << optarg << endl;
+          cerr << "Failed to set value of 1 for flag " << flag->name() << endl;
           exit(EXIT_USAGE);
         }
       }
@@ -358,8 +358,15 @@ void FlagRegistry::GenManPage() {
       str << " <" << flag->arg_type() << ">";
     }
     if (flag->short_opt()) {
-      short_flag_lines.push_back(
-          OptionPair(str.str(), iter->second->help()));
+      if (flag->name() == FLAGS_version.name()) {
+        std::ostringstream help_str;
+        help_str << "Print\n.B " << exe_name << "\nversion information.";
+        short_flag_lines.push_back(
+            OptionPair(str.str(), help_str.str()));
+      } else {
+        short_flag_lines.push_back(
+            OptionPair(str.str(), iter->second->help()));
+      }
     } else {
       long_flag_lines.push_back(
           OptionPair(str.str(), iter->second->help()));

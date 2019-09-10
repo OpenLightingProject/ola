@@ -40,13 +40,13 @@
 #include "ola/thread/Future.h"
 #include "olad/Preferences.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
-#include "plugins/usbdmx/SyncronizedWidgetObserver.h"
+#include "plugins/usbdmx/SynchronizedWidgetObserver.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
 namespace ola {
 namespace usb {
 class LibUsbThread;
-class AsyncronousLibUsbAdaptor;
+class AsynchronousLibUsbAdaptor;
 }  // namespace usb
 
 class Device;
@@ -85,6 +85,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   bool NewWidget(class EurolitePro *widget);
   bool NewWidget(ola::usb::JaRuleWidget *widget);
   bool NewWidget(class ScanlimeFadecandy *widget);
+  bool NewWidget(class ShowJockeyDMXU1 *widget);
   bool NewWidget(class Sunlite *widget);
   bool NewWidget(class VellemanK8062 *widget);
 
@@ -98,8 +99,8 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   std::auto_ptr<ola::usb::HotplugAgent> m_agent;
   Preferences* const m_preferences;
 
-  SyncronizedWidgetObserver m_widget_observer;
-  ola::usb::AsyncronousLibUsbAdaptor *m_usb_adaptor;  // not owned
+  SynchronizedWidgetObserver m_widget_observer;
+  ola::usb::AsynchronousLibUsbAdaptor *m_usb_adaptor;  // not owned
   WidgetFactories m_widget_factories;
   USBDeviceMap m_device_map;
 

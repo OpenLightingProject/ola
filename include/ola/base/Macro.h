@@ -63,6 +63,32 @@
 #endif  // __GNUC__
 
 /**
+ * @def OLA_FALLTHROUGH
+ * @brief Mark switch cases as fallthrough when required
+ * @note We are not currently using [[fallthrough]]; because we need C++98
+ * compatibility
+ *
+ * @examplepara
+ *   @code
+ *   switch (cond) {
+ *     case 'foo':
+ *       doFoo();
+ *       // after foo fallthrough to bar because $REASON
+ *       OLA_FALLTHROUGH
+ *     case 'bar':
+ *   @endcode
+ */
+#ifdef __GNUC__
+#if __GNUC__ >= 7
+#define OLA_FALLTHROUGH __attribute__ ((fallthrough));
+#else
+#define OLA_FALLTHROUGH
+#endif  // __GNUC__ >= 7
+#else
+#define OLA_FALLTHROUGH
+#endif  // __GNUC__
+
+/**
  * @def STATIC_ASSERT
  * @brief Compile time assert().
  *

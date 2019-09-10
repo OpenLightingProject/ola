@@ -182,12 +182,14 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (!pid_helper.Init())
+  if (!pid_helper.Init()) {
     exit(ola::EXIT_OSFILE);
+  }
 
   SimpleE133Monitor monitor(&pid_helper);
-  if (!monitor.Init())
+  if (!monitor.Init()) {
     exit(ola::EXIT_UNAVAILABLE);
+  }
 
   // manually add the responder IPs
   vector<IPV4Address>::const_iterator iter = targets.begin();

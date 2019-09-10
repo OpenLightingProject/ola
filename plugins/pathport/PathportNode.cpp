@@ -78,11 +78,12 @@ PathportNode::~PathportNode() {
  * Start this node
  */
 bool PathportNode::Start() {
-  if (m_running)
+  if (m_running) {
     return false;
+  }
 
   ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
+      ola::network::InterfacePicker::NewPicker();
   if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
     delete picker;
     OLA_INFO << "Failed to find an interface";
@@ -94,8 +95,9 @@ bool PathportNode::Start() {
   m_status_addr = IPV4Address(HostToNetwork(PATHPORT_STATUS_GROUP));
   m_data_addr = IPV4Address(HostToNetwork(PATHPORT_DATA_GROUP));
 
-  if (!InitNetwork())
+  if (!InitNetwork()) {
     return false;
+  }
 
   m_socket.SetTos(m_dscp);
   m_running = true;
@@ -109,8 +111,9 @@ bool PathportNode::Start() {
  * Stop this node
  */
 bool PathportNode::Stop() {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   m_socket.Close();
   m_running = false;
@@ -131,8 +134,9 @@ void PathportNode::SocketReady(UDPSocket *socket) {
     return;
 
   // skip packets sent by us
-  if (source.Host() == m_interface.ip_address)
+  if (source.Host() == m_interface.ip_address) {
     return;
+  }
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.header))) {
     OLA_WARN << "Small pathport packet received, discarding";
@@ -177,8 +181,8 @@ void PathportNode::SocketReady(UDPSocket *socket) {
       OLA_DEBUG << "Got pathport arp reply";
       break;
     default:
-      OLA_INFO << "Unhandled pathport packet with id: " <<
-        NetworkToHost(pdu->head.type);
+      OLA_INFO << "Unhandled pathport packet with id: "
+               << NetworkToHost(pdu->head.type);
   }
 }
 
@@ -192,8 +196,9 @@ void PathportNode::SocketReady(UDPSocket *socket) {
 bool PathportNode::SetHandler(uint8_t universe,
                              DmxBuffer *buffer,
                              Callback0<void> *closure) {
-  if (!closure)
+  if (!closure) {
     return false;
+  }
 
   universe_handlers::iterator iter = m_handlers.find(universe);
 
@@ -233,8 +238,9 @@ bool PathportNode::RemoveHandler(uint8_t universe) {
  * Send an arp reply
  */
 bool PathportNode::SendArpReply() {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   pathport_packet_s packet;
 
@@ -264,8 +270,9 @@ bool PathportNode::SendArpReply() {
  * @return true if it was send successfully, false otherwise
  */
 bool PathportNode::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   if (universe > MAX_UNIVERSES) {
     OLA_WARN << "attempt to send to universe " << universe;
@@ -303,7 +310,7 @@ bool PathportNode::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool PathportNode::InitNetwork() {
   if (!m_socket.Init()) {
@@ -341,7 +348,7 @@ bool PathportNode::InitNetwork() {
   }
 
   m_socket.SetOnData(
-    NewCallback(this, &PathportNode::SocketReady, &m_socket));
+      NewCallback(this, &PathportNode::SocketReady, &m_socket));
   return true;
 }
 
@@ -383,8 +390,9 @@ void PathportNode::HandleDmxData(const pathport_pdu_data &packet,
   }
 
   // Don't handle release messages yet
-  if (NetworkToHost(packet.type) != XDMX_DATA_FLAT)
+  if (NetworkToHost(packet.type) != XDMX_DATA_FLAT) {
     return;
+  }
 
   if (packet.start_code) {
     OLA_INFO << "Non-0 start code packet received, ignoring";
@@ -421,8 +429,9 @@ void PathportNode::HandleDmxData(const pathport_pdu_data &packet,
  * @param destination the destination to target
  */
 bool PathportNode::SendArpRequest(uint32_t destination) {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   pathport_packet_s packet;
   PopulateHeader(&packet.header, destination);

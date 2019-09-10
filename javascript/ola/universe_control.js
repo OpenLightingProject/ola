@@ -53,7 +53,7 @@ ola.UniverseControl.prototype.enterDocument = function() {
 
 /**
  * A factory which produces UniverseControls
- * @param {function()} callback the funtion called when the control is clicked.
+ * @param {function()} callback the function called when the control is clicked.
  * @constructor
  */
 ola.UniverseControlFactory = function(callback) {

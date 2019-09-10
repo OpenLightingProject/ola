@@ -25,8 +25,12 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
-
+#ifdef HAVE_CURSES_H
 #include <curses.h>
+#elif defined(HAVE_NCURSES_CURSES_H)
+#include <ncurses/curses.h>
+#endif  // HAVE_CURSES_H
+
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -563,6 +567,7 @@ void DmxMonitor::ChangePalette(int p) {
     default:
       m_palette_number = 0;
       // fall through, use 0 as default palette
+      OLA_FALLTHROUGH
     case 0:
       init_pair(CHANNEL, COLOR_BLACK, COLOR_CYAN);
       init_pair(ZERO, COLOR_BLACK, COLOR_WHITE);

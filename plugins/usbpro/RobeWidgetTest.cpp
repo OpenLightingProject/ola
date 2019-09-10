@@ -704,6 +704,6 @@ void RobeWidgetTest::testReceive() {
   m_ss.Run();
   OLA_ASSERT(m_new_dmx_data);
   const DmxBuffer &new_data = m_widget->FetchDMX();
-  OLA_ASSERT(buffer == new_data);
+  OLA_ASSERT_DMX_EQUALS(buffer, new_data);
 }
 

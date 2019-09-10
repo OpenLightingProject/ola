@@ -18,7 +18,7 @@ nodist_plugins_artnet_libolaartnet_la_SOURCES = \
 plugins/artnet/ArtNetPluginDescription.h: plugins/artnet/README.md plugins/artnet/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/artnet $(top_builddir)/plugins/artnet/ArtNetPluginDescription.h
 
-# The OLA artnet plugin
+# The OLA Art-Net plugin
 lib_LTLIBRARIES += plugins/artnet/libolaartnet.la
 plugins_artnet_libolaartnet_la_SOURCES = \
     plugins/artnet/ArtNetPlugin.cpp \
@@ -27,6 +27,7 @@ plugins_artnet_libolaartnet_la_SOURCES = \
     plugins/artnet/ArtNetDevice.h \
     plugins/artnet/ArtNetPort.cpp \
     plugins/artnet/ArtNetPort.h
+plugins_artnet_libolaartnet_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 plugins_artnet_libolaartnet_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la \
     plugins/artnet/libolaartnetnode.la \

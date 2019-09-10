@@ -5,7 +5,7 @@ lib_LTLIBRARIES += plugins/renard/libolarenard.la
 
 # Plugin description is generated from README.md
 built_sources += plugins/renard/RenardPluginDescription.h
-nodist_plugins_ranard_libolaranard_la_SOURCES = \
+nodist_plugins_renard_libolarenard_la_SOURCES = \
     plugins/renard/RenardPluginDescription.h
 plugins/renard/RenardPluginDescription.h: plugins/renard/README.md plugins/renard/Makefile.mk plugins/convert_README_to_header.sh
 	sh $(top_srcdir)/plugins/convert_README_to_header.sh $(top_srcdir)/plugins/renard $(top_builddir)/plugins/renard/RenardPluginDescription.h

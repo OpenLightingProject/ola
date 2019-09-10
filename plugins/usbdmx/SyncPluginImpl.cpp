@@ -48,6 +48,8 @@
 #include "plugins/usbdmx/ScanlimeFadecandy.h"
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/GenericDevice.h"
+#include "plugins/usbdmx/ShowJockeyDMXU1.h"
+#include "plugins/usbdmx/ShowJockeyDMXU1Factory.h"
 #include "plugins/usbdmx/Sunlite.h"
 #include "plugins/usbdmx/SunliteFactory.h"
 #include "plugins/usbdmx/VellemanK8062.h"
@@ -75,8 +77,10 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
   m_widget_factories.push_back(new DMXCProjectsNodleU1Factory(&m_usb_adaptor,
       m_plugin_adaptor, m_preferences));
   m_widget_factories.push_back(new DMXCreator512BasicFactory(&m_usb_adaptor));
-  m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor,
+      m_preferences));
   m_widget_factories.push_back(new ScanlimeFadecandyFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new ShowJockeyDMXU1Factory(&m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new VellemanK8062Factory(&m_usb_adaptor));
 }
@@ -92,7 +96,11 @@ bool SyncPluginImpl::Start() {
   }
 
   OLA_DEBUG << "libusb debug level set to " << m_debug_level;
+#ifdef HAVE_LIBUSB_SET_OPTION
+  libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, m_debug_level);
+#else
   libusb_set_debug(m_context, m_debug_level);
+#endif  // HAVE_LIBUSB_SET_OPTION
 
   unsigned int devices_claimed = ScanForDevices();
   if (devices_claimed != m_devices.size()) {
@@ -161,7 +169,7 @@ bool SyncPluginImpl::NewWidget(EurolitePro *widget) {
 }
 
 bool SyncPluginImpl::NewWidget(OLA_UNUSED ola::usb::JaRuleWidget *widget) {
-  // This should never happen since there is no Syncronous support for Ja Rule.
+  // This should never happen since there is no Synchronous support for Ja Rule.
   OLA_WARN << "::NewWidget called for a JaRuleWidget";
   return false;
 }
@@ -173,6 +181,15 @@ bool SyncPluginImpl::NewWidget(ScanlimeFadecandy *widget) {
           m_plugin, widget,
           "Fadecandy USB Device (" + widget->SerialNumber() + ")",
           "fadecandy-" + widget->SerialNumber()));
+}
+
+bool SyncPluginImpl::NewWidget(ShowJockeyDMXU1 *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      new GenericDevice(
+          m_plugin, widget,
+          "ShowJockey-DMX-U1 Device (" + widget->SerialNumber() + ")",
+          "showjockey-dmx-u1-" + widget->SerialNumber()));
 }
 
 bool SyncPluginImpl::NewWidget(Sunlite *widget) {

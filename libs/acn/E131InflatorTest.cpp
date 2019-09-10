@@ -88,7 +88,7 @@ void E131InflatorTest::testDecodeRev2Header() {
         &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
-  // test inherting the header from the prev call
+  // test inheriting the header from the prev call
   OLA_ASSERT(inflator.DecodeHeader(&header_set2, NULL, 0, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   decoded_header = header_set2.GetE131Header();
@@ -136,7 +136,7 @@ void E131InflatorTest::testDecodeHeader() {
       &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
-  // test inherting the header from the prev call
+  // test inheriting the header from the prev call
   OLA_ASSERT(inflator.DecodeHeader(&header_set2, NULL, 0, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   decoded_header = header_set2.GetE131Header();
@@ -152,7 +152,7 @@ void E131InflatorTest::testDecodeHeader() {
 
 
 /*
- * Check that we can inflate a E131 PDU that contains other PDUs
+ * Check that we can inflate a E1.31 PDU that contains other PDUs
  */
 void E131InflatorTest::testInflateRev2PDU() {
   const string source = "foo source";
@@ -177,7 +177,7 @@ void E131InflatorTest::testInflateRev2PDU() {
 }
 
 /*
- * Check that we can inflate a E131 PDU that contains other PDUs
+ * Check that we can inflate a E1.31 PDU that contains other PDUs
  */
 void E131InflatorTest::testInflatePDU() {
   const string source = "foobar source";

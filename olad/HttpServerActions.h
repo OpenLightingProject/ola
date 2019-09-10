@@ -188,12 +188,12 @@ class PortPriorityStaticAction: public BaseHttpAction {
                              unsigned int device_alias,
                              unsigned int port,
                              client::PortDirection direction,
-                             uint8_t overide_value):
+                             uint8_t override_value):
       BaseHttpAction(client),
       m_device_alias(device_alias),
       m_port(port),
       m_direction(direction),
-      m_override_value(overide_value) {
+      m_override_value(override_value) {
     }
 
     bool IsFatal() const { return false; }

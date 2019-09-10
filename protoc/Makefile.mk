@@ -15,6 +15,7 @@ protoc_ola_protoc_plugin_SOURCES = \
     protoc/StrUtil.cpp \
     protoc/StrUtil.h \
     protoc/ola-protoc-generator-plugin.cpp
+protoc_ola_protoc_plugin_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 protoc_ola_protoc_plugin_LDADD = $(libprotobuf_LIBS) -lprotoc
 
 else

@@ -27,13 +27,13 @@ EXTRA_DIST += \
     common/rpc/TestService.proto
 
 common/rpc/Rpc.pb.cc common/rpc/Rpc.pb.h: common/rpc/Makefile.mk common/rpc/Rpc.proto
-	$(PROTOC) --cpp_out common/rpc --proto_path $(srcdir)/common/rpc $(srcdir)/common/rpc/Rpc.proto
+	$(PROTOC) --cpp_out $(top_builddir)/common/rpc --proto_path $(srcdir)/common/rpc $(srcdir)/common/rpc/Rpc.proto
 
 common/rpc/TestService.pb.cc common/rpc/TestService.pb.h: common/rpc/Makefile.mk common/rpc/TestService.proto
-	$(PROTOC) --cpp_out common/rpc --proto_path $(srcdir)/common/rpc $(srcdir)/common/rpc/TestService.proto
+	$(PROTOC) --cpp_out $(top_builddir)/common/rpc --proto_path $(srcdir)/common/rpc $(srcdir)/common/rpc/TestService.proto
 
 common/rpc/TestServiceService.pb.cpp common/rpc/TestServiceService.pb.h: common/rpc/Makefile.mk common/rpc/TestService.proto protoc/ola_protoc_plugin$(EXEEXT)
-	$(OLA_PROTOC) --cppservice_out common/rpc --proto_path $(srcdir)/common/rpc $(srcdir)/common/rpc/TestService.proto
+	$(OLA_PROTOC) --cppservice_out $(top_builddir)/common/rpc --proto_path $(srcdir)/common/rpc $(srcdir)/common/rpc/TestService.proto
 
 # TESTS
 ##################################################

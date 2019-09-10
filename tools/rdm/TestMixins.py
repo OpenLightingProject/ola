@@ -67,6 +67,24 @@ class UnsupportedGetWithDataMixin(ResponderTestFixture):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
+class AllSubDevicesUnsupportedGetMixin(ResponderTestFixture):
+  """Check that a GET to ALL_SUB_DEVICES fails with
+    NR_UNSUPPORTED_COMMAND_CLASS.
+  """
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def Test(self):
+    # E1.20, section 9.2.2
+    results = [self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE),
+               # Some devices check the command class before the sub device.
+               self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
+    if not self.PidSupported():
+      # Some devices check the PID first.
+      results.append(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
+    self.AddExpectedResults(results)
+    self.SendRawGet(PidStore.ALL_SUB_DEVICES, self.pid)
+
+
 class GetMixin(ResponderTestFixture):
   """GET Mixin for an optional PID. Verify EXPECTED_FIELDS is in the response.
 
@@ -299,6 +317,9 @@ class SetWithDataMixin(ResponderTestFixture):
   def Test(self):
     results = [
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      # TODO(Peter): Fix this, ideally we change behaviour based on past
+      # support of the PID
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       self.AckSetResult(
         warning='Set %s with data returned an ack' % self.pid.name)
     ]
@@ -315,7 +336,13 @@ class SetWithNoDataMixin(ResponderTestFixture):
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
+    results = [
+      # TODO(Peter): Fix this, ideally we change behaviour based on past
+      # support of the PID
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackSetResult(RDMNack.NR_FORMAT_ERROR)
+    ]
+    self.AddIfSetSupported(results)
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
   # TODO(simon): add a method to check this didn't change the value
@@ -716,7 +743,7 @@ class SetUndefinedSensorValues(ResponderTestFixture):
 
 # Preset Status mixins
 # -----------------------------------------------------------------------------
-class SetPresetStatusMixin(ResponderTestFixture):
+class SetOutOfRangePresetStatusMixin(ResponderTestFixture):
   """Set an out of range scene for PRESET_STATUS"""
   PID = 'PRESET_STATUS'
   REQUIRES = ['preset_info']
@@ -733,7 +760,7 @@ class SetPresetStatusMixin(ResponderTestFixture):
                        int(wait_time), 0)
 
   def PresetStatusSceneNumber(self):
-    self.SetBroken('Base method of SetPresetStatusMixin called')
+    self.SetBroken('Base method of SetOutOfRangePresetStatusMixin called')
     return
 
   def Test(self):
@@ -993,47 +1020,65 @@ class SetMinimumLevelMixin(ResponderTestFixture):
     self._wrapper.Run()
 
 
-class GetZeroUInt8Mixin(ResponderTestFixture):
-  """Get a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+class GetZeroMixin(ResponderTestFixture):
+  """Send a get to index 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = struct.pack('!B', 0)
+  DATA = None
 
   def Test(self):
+    if self.DATA is None:
+      self.SetBroken('No DATA given for %s' % self.__class__.__name__)
+      return
+
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
 
-class GetZeroUInt16Mixin(GetZeroUInt8Mixin):
+class GetZeroUInt8Mixin(GetZeroMixin):
+  """Get a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!B', 0)
+
+
+class GetZeroUInt16Mixin(GetZeroMixin):
   """Get a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!H', 0)
 
 
-class GetZeroUInt32Mixin(GetZeroUInt8Mixin):
+class GetZeroUInt32Mixin(GetZeroMixin):
   """Get a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!I', 0)
 
 
-class SetZeroUInt8Mixin(ResponderTestFixture):
-  """Set a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+class SetZeroMixin(ResponderTestFixture):
+  """Send a set to index 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = struct.pack('!B', 0)
+  DATA = None
 
   def Test(self):
+    if self.DATA is None:
+      self.SetBroken('No DATA given for %s' % self.__class__.__name__)
+      return
+
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendRawSet(ROOT_DEVICE, self.pid, self.DATA)
 
 
-class SetZeroUInt16Mixin(SetZeroUInt8Mixin):
+class SetZeroUInt8Mixin(SetZeroMixin):
+  """Set a UInt8 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  DATA = struct.pack('!B', 0)
+
+
+class SetZeroUInt16Mixin(SetZeroMixin):
   """Set a UInt16 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!H', 0)
 
 
-class SetZeroUInt32Mixin(SetZeroUInt8Mixin):
+class SetZeroUInt32Mixin(SetZeroMixin):
   """Set a UInt32 parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   DATA = struct.pack('!I', 0)
 
 
-class GetOutOfRangeByteMixin(ResponderTestFixture):
+class GetOutOfRangeUInt8Mixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   LABEL = None
@@ -1060,7 +1105,7 @@ class GetOutOfRangeByteMixin(ResponderTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [settings_supported + 1])
 
 
-class SetOutOfRangeByteMixin(ResponderTestFixture):
+class SetOutOfRangeUInt8Mixin(ResponderTestFixture):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   LABEL = None

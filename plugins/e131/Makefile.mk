@@ -20,6 +20,7 @@ plugins_e131_libolae131_la_SOURCES = \
     plugins/e131/E131Plugin.h \
     plugins/e131/E131Port.cpp \
     plugins/e131/E131Port.h
+plugins_e131_libolae131_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 plugins_e131_libolae131_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la \
     plugins/e131/messages/libolae131conf.la \

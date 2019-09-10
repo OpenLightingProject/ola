@@ -25,6 +25,7 @@
 #include <map>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "ola/base/Macro.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
@@ -81,8 +82,6 @@ class EspNetNode {
       Callback0<void> *closure;
     } universe_handler;
 
-    EspNetNode(const EspNetNode&);
-    EspNetNode& operator=(const EspNetNode&);
     bool InitNetwork();
     void HandlePoll(const espnet_poll_t &poll, ssize_t length,
                     const ola::network::IPV4Address &source);
@@ -130,6 +129,8 @@ class EspNetNode {
     static const uint8_t DATA_PAIRS = 2;
     static const uint8_t DATA_RLE = 4;
     static const uint8_t START_CODE = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(EspNetNode);
 };
 }  // namespace espnet
 }  // namespace plugin

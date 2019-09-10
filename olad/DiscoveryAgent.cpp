@@ -23,23 +23,25 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
-#ifdef HAVE_DNSSD
-#include "olad/BonjourDiscoveryAgent.h"
-#endif  // HAVE_DNSSD
-
 #ifdef HAVE_AVAHI
 #include "olad/AvahiDiscoveryAgent.h"
 #endif  // HAVE_AVAHI
 
+#ifdef HAVE_DNSSD
+#include "olad/BonjourDiscoveryAgent.h"
+#endif  // HAVE_DNSSD
+
 namespace ola {
 
 DiscoveryAgentInterface* DiscoveryAgentFactory::New() {
-#ifdef HAVE_DNSSD
-  return new BonjourDiscoveryAgent();
-#endif  // HAVE_DNSSD
+  // Return Avahi first, in case the Bonjour version is actually just Avahi's
+  // compatibility layer
 #ifdef HAVE_AVAHI
   return new AvahiDiscoveryAgent();
 #endif  // HAVE_AVAHI
+#ifdef HAVE_DNSSD
+  return new BonjourDiscoveryAgent();
+#endif  // HAVE_DNSSD
   return NULL;
 }
 }  // namespace ola

@@ -14,13 +14,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MemoryBuffer.h
- * An derrived class of InputBuffer that wraps a memory buffer.
+ * A derived class of InputBuffer that wraps a memory buffer.
  * Copyright (C) 2012 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_IO_MEMORYBUFFER_H_
 #define INCLUDE_OLA_IO_MEMORYBUFFER_H_
 
+#include <ola/base/Macro.h>
 #include <ola/io/InputBuffer.h>
 #include <stdint.h>
 #include <string.h>
@@ -63,8 +64,7 @@ class MemoryBuffer: public InputBufferInterface {
     const unsigned int m_size;
     unsigned int m_cursor;
 
-    MemoryBuffer(const MemoryBuffer&);
-    MemoryBuffer& operator=(const MemoryBuffer&);
+    DISALLOW_COPY_AND_ASSIGN(MemoryBuffer);
 };
 }  // namespace io
 }  // namespace ola

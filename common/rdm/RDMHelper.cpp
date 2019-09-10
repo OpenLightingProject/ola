@@ -270,8 +270,8 @@ string PrefixToString(uint8_t prefix) {
       return "Nano";
     case PREFIX_PICO:
       return "Pico";
-    case PREFIX_FEMPTO:
-      return "Fempto";
+    case PREFIX_FEMTO:
+      return "Femto";
     case PREFIX_ATTO:
       return "Atto";
     case PREFIX_ZEPTO:
@@ -288,8 +288,8 @@ string PrefixToString(uint8_t prefix) {
       return "Mega";
     case PREFIX_GIGA:
       return "Giga";
-    case PREFIX_TERRA:
-      return "Terra";
+    case PREFIX_TERA:
+      return "Tera";
     case PREFIX_PETA:
       return "Peta";
     case PREFIX_EXA:
@@ -581,8 +581,8 @@ string ProductDetailToString(uint16_t detail) {
       return "Data Patch";
     case PRODUCT_DETAIL_WIRELESS_LINK:
       return "Wireless link";
-    case PRODUCT_DETAIL_PROTOCOL_CONVERTOR:
-      return "Protocol Convertor";
+    case PRODUCT_DETAIL_PROTOCOL_CONVERTER:
+      return "Protocol Converter";
     case PRODUCT_DETAIL_ANALOG_DEMULTIPLEX:
       return "DMX512 to DC Voltage";
     case PRODUCT_DETAIL_ANALOG_MULTIPLEX:
@@ -879,7 +879,8 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         str << "undefined for slot " << slot_label;
         break;
       default:
-        str << "unknown for slot " << slot_label;
+        str << "unknown, was type " << static_cast<int>(slot_type)
+            << ", for slot " << slot_label;
     }
     return str.str();
   }

@@ -41,7 +41,7 @@ namespace usbdmx {
  * @brief Receives notifications when Widgets are added or removed.
  *
  * Classes implementing the WidgetObserver can be used with WidgetFactories to
- * receive notifcations when widgets are added.
+ * receive notifications when widgets are added.
  *
  * On adding a new Widget, the appropriate NewWidget() method is called. The
  * observer can mark a widget as in-use by returning true.
@@ -94,6 +94,15 @@ class WidgetObserver {
    *   ignored.
    */
   virtual bool NewWidget(class EurolitePro *widget) = 0;
+
+  /**
+   * @brief Called when a new ShowJockeyDMXU1 is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
+   *   ignored.
+   */
+  virtual bool NewWidget(class ShowJockeyDMXU1 *widget) = 0;
 
   /**
    * @brief Called when a new Ja Rule widget is added.

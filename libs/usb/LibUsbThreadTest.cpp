@@ -21,16 +21,17 @@
 #include <libusb.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "libs/usb/LibUsbAdaptor.h"
 #include "libs/usb/LibUsbThread.h"
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 
 namespace {
 #if HAVE_LIBUSB_HOTPLUG_API
-int hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
-                     OLA_UNUSED struct libusb_device *dev,
-                     OLA_UNUSED libusb_hotplug_event event,
-                     OLA_UNUSED void *user_data) {
+int LIBUSB_CALL hotplug_callback(OLA_UNUSED struct libusb_context *ctx,
+                                 OLA_UNUSED struct libusb_device *dev,
+                                 OLA_UNUSED libusb_hotplug_event event,
+                                 OLA_UNUSED void *user_data) {
   return 0;
 }
 #endif  // HAVE_LIBUSB_HOTPLUG_API
@@ -91,11 +92,17 @@ void LibUsbThreadTest::testHotplug() {
     return;
   }
 
-  ola::usb::LibUsbHotplugThread thread(m_context, hotplug_callback,
-                                                  NULL);
-  OLA_ASSERT_TRUE(thread.Init());
-  AttemptDeviceOpen(&thread);
-  thread.Shutdown();
+  bool hotplug_support = ola::usb::LibUsbAdaptor::HotplugSupported();
+  OLA_DEBUG << "HotplugSupported(): " << hotplug_support;
+  ola::usb::LibUsbHotplugThread thread(m_context, hotplug_callback, NULL);
+  if (hotplug_support) {
+    OLA_ASSERT_TRUE(thread.Init());
+    AttemptDeviceOpen(&thread);
+    thread.Shutdown();
+  } else {
+    OLA_WARN << "No hotplug support, check that starting the thread fails";
+    OLA_ASSERT_FALSE(thread.Init());
+  }
 }
 #endif  // HAVE_LIBUSB_HOTPLUG_API
 

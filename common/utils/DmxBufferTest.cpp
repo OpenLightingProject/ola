@@ -167,7 +167,7 @@ void DmxBufferTest::testStringGetSet() {
 
   // Check the string constructor
   DmxBuffer string_buffer(data);
-  OLA_ASSERT_TRUE(buffer == string_buffer);
+  OLA_ASSERT_DMX_EQUALS(buffer, string_buffer);
 
   // Set with an empty string
   string data2;
@@ -196,7 +196,7 @@ void DmxBufferTest::testAssign() {
   // assigning to ourself does nothing
   buffer = buffer;
 
-  // assinging to a previously init'ed buffer
+  // assigning to a previously init'ed buffer
   unsigned int size = result_length;
   assignment_buffer = buffer;
   assignment_buffer.Get(result, &size);
@@ -204,7 +204,7 @@ void DmxBufferTest::testAssign() {
                        assignment_buffer.Size());
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), size);
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, size));
-  OLA_ASSERT_TRUE(assignment_buffer == buffer);
+  OLA_ASSERT_DMX_EQUALS(assignment_buffer, buffer);
 
   // assigning to a non-init'ed buffer
   assignment_buffer2 = buffer;
@@ -214,9 +214,9 @@ void DmxBufferTest::testAssign() {
                 assignment_buffer2.Size());
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), result_length);
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, result_length));
-  OLA_ASSERT_TRUE(assignment_buffer2 == buffer);
+  OLA_ASSERT_DMX_EQUALS(assignment_buffer2, buffer);
 
-  // now try assigning an unitialized buffer
+  // now try assigning an uninitialized buffer
   DmxBuffer uninitialized_buffer;
   DmxBuffer assignment_buffer3;
 
@@ -225,7 +225,7 @@ void DmxBufferTest::testAssign() {
   size = result_length;
   assignment_buffer3.Get(result, &result_length);
   OLA_ASSERT_EQ(0u, result_length);
-  OLA_ASSERT_TRUE(assignment_buffer3 == uninitialized_buffer);
+  OLA_ASSERT_DMX_EQUALS(assignment_buffer3, uninitialized_buffer);
 
   // Check two buffers differ
   OLA_ASSERT_TRUE(assignment_buffer3 != assignment_buffer2);
@@ -243,7 +243,7 @@ void DmxBufferTest::testCopy() {
 
   DmxBuffer copy_buffer(buffer);
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), copy_buffer.Size());
-  OLA_ASSERT_TRUE(copy_buffer == buffer);
+  OLA_ASSERT_DMX_EQUALS(copy_buffer, buffer);
 
   unsigned int result_length = sizeof(TEST_DATA2);
   uint8_t *result = new uint8_t[result_length];
@@ -268,21 +268,21 @@ void DmxBufferTest::testMerge() {
   // merge into an empty buffer
   OLA_ASSERT_TRUE(uninitialized_buffer.HTPMerge(buffer2));
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA3), buffer2.Size());
-  OLA_ASSERT_TRUE(test_buffer2 == uninitialized_buffer);
+  OLA_ASSERT_DMX_EQUALS(test_buffer2, uninitialized_buffer);
 
   // merge from an empty buffer
   OLA_ASSERT_TRUE(buffer2.HTPMerge(uninitialized_buffer2));
-  OLA_ASSERT_TRUE(buffer2 == test_buffer2);
+  OLA_ASSERT_DMX_EQUALS(buffer2, test_buffer2);
 
   // merge two buffers (longer into shorter)
   buffer2 = test_buffer2;
   OLA_ASSERT_TRUE(buffer2.HTPMerge(buffer1));
-  OLA_ASSERT_TRUE(buffer2 == merge_result);
+  OLA_ASSERT_DMX_EQUALS(buffer2, merge_result);
 
   // merge shorter into longer
   buffer2 = test_buffer2;
   OLA_ASSERT_TRUE(buffer1.HTPMerge(buffer2));
-  OLA_ASSERT_TRUE(buffer1 == merge_result);
+  OLA_ASSERT_DMX_EQUALS(buffer1, merge_result);
 }
 
 
@@ -295,7 +295,7 @@ void DmxBufferTest::runStringToDmx(const string &input,
                                    const DmxBuffer &expected) {
   DmxBuffer buffer;
   OLA_ASSERT_TRUE(buffer.SetFromString(input));
-  OLA_ASSERT_TRUE(expected == buffer);
+  OLA_ASSERT_DMX_EQUALS(expected, buffer);
 }
 
 
@@ -348,24 +348,24 @@ void DmxBufferTest::testCopyOnWrite() {
   // Check HTPMerge
   dest_buffer.HTPMerge(buffer3);
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
-  OLA_ASSERT_TRUE(merge_result == dest_buffer);
+  OLA_ASSERT_DMX_EQUALS(merge_result, dest_buffer);
   dest_buffer = src_buffer;
   // Check the other way
   src_buffer.HTPMerge(buffer3);
-  OLA_ASSERT_TRUE(merge_result == src_buffer);
+  OLA_ASSERT_DMX_EQUALS(merge_result, src_buffer);
   OLA_ASSERT_TRUE(initial_data == dest_buffer.Get());
   src_buffer = dest_buffer;
 
   // Check Set works
   dest_buffer.Set(TEST_DATA3, sizeof(TEST_DATA3));
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
-  OLA_ASSERT_TRUE(buffer3 == dest_buffer);
+  OLA_ASSERT_DMX_EQUALS(buffer3, dest_buffer);
   dest_buffer = src_buffer;
   // Check it works the other way
   OLA_ASSERT_TRUE(initial_data == src_buffer.Get());
   OLA_ASSERT_TRUE(initial_data == dest_buffer.Get());
   src_buffer.Set(TEST_DATA3, sizeof(TEST_DATA3));
-  OLA_ASSERT_TRUE(buffer3 == src_buffer);
+  OLA_ASSERT_DMX_EQUALS(buffer3, src_buffer);
   OLA_ASSERT_TRUE(initial_data == dest_buffer.Get());
   src_buffer = dest_buffer;
 
@@ -373,13 +373,13 @@ void DmxBufferTest::testCopyOnWrite() {
   dest_buffer = src_buffer;
   dest_buffer.SetFromString("10,11,12");
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
-  OLA_ASSERT_TRUE(buffer3 == dest_buffer);
+  OLA_ASSERT_DMX_EQUALS(buffer3, dest_buffer);
   dest_buffer = src_buffer;
   // Check it works the other way
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
   OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer.SetFromString("10,11,12");
-  OLA_ASSERT_TRUE(buffer3 == src_buffer);
+  OLA_ASSERT_DMX_EQUALS(buffer3, src_buffer);
   OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer = dest_buffer;
 

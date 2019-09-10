@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SyncronizedWidgetObserver.h
+ * SynchronizedWidgetObserver.h
  * Transfers widget add/remove events to another thread.
  * Copyright (C) 2014 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_SYNCRONIZEDWIDGETOBSERVER_H_
-#define PLUGINS_USBDMX_SYNCRONIZEDWIDGETOBSERVER_H_
+#ifndef PLUGINS_USBDMX_SYNCHRONIZEDWIDGETOBSERVER_H_
+#define PLUGINS_USBDMX_SYNCHRONIZEDWIDGETOBSERVER_H_
 
 #include "plugins/usbdmx/WidgetFactory.h"
 
@@ -34,18 +34,18 @@ namespace usbdmx {
 /**
  * @brief Transfers widget add/remove events to another thread.
  *
- * The SyncronizedWidgetObserver ensures that all widget add/removed events are
- * handled in the thread that created the SyncronizedWidgetObserver object.
+ * The SynchronizedWidgetObserver ensures that all widget add/removed events are
+ * handled in the thread that created the SynchronizedWidgetObserver object.
  */
-class SyncronizedWidgetObserver : public WidgetObserver {
+class SynchronizedWidgetObserver : public WidgetObserver {
  public:
   /**
-   * @brief Create a new SyncronizedWidgetObserver.
+   * @brief Create a new SynchronizedWidgetObserver.
    * @param observer the observer to notify on add/remove events.
    * @param ss The ss to use the schedule events on.
    */
-  SyncronizedWidgetObserver(WidgetObserver *observer,
-                            ola::io::SelectServerInterface *ss);
+  SynchronizedWidgetObserver(WidgetObserver *observer,
+                             ola::io::SelectServerInterface *ss);
 
   bool NewWidget(class AnymauDMX *widget) {
     return DispatchNewWidget(widget);
@@ -75,6 +75,10 @@ class SyncronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
+  bool NewWidget(class ShowJockeyDMXU1 *widget) {
+    return DispatchNewWidget(widget);
+  }
+
   bool NewWidget(class Sunlite *widget) {
     return DispatchNewWidget(widget);
   }
@@ -96,9 +100,9 @@ class SyncronizedWidgetObserver : public WidgetObserver {
   template<typename WidgetClass>
   void HandleNewWidget(WidgetClass *widget, AddFuture *f);
 
-  DISALLOW_COPY_AND_ASSIGN(SyncronizedWidgetObserver);
+  DISALLOW_COPY_AND_ASSIGN(SynchronizedWidgetObserver);
 };
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_USBDMX_SYNCRONIZEDWIDGETOBSERVER_H_
+#endif  // PLUGINS_USBDMX_SYNCHRONIZEDWIDGETOBSERVER_H_

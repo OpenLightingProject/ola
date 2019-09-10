@@ -403,6 +403,93 @@ manufacturer {
   }
 }
 manufacturer {
+  manufacturer_id: 13364
+  manufacturer_name: "Global Design Solutions, Ltd."
+  pid {
+    name: "LED_DRIVE_CURRENT"
+    value: 32800
+    get_request {
+      field {
+        type: UINT8
+        name: "channel"
+        range {
+          min: 1
+          max: 4
+        }
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "channel"
+        range {
+          min: 1
+          max: 4
+        }
+      }
+      field {
+        type: UINT8
+        name: "value"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "channel"
+        label {
+          value: 255
+          label: "All"
+        }
+        range {
+          min: 1
+          max: 4
+        }
+        range {
+          min: 255
+          max: 255
+        }
+      }
+      field {
+        type: UINT8
+        name: "value"
+      }
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "channel"
+        label {
+          value: 0
+          label: "All"
+        }
+        range {
+          min: 0
+          max: 4
+        }
+      }
+      field {
+        type: UINT8
+        name: "value"
+      }
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "SERIAL_NUMBER"
+    value: 65503
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "serial_number"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+}
+manufacturer {
   manufacturer_id: 16761
   manufacturer_name: "AYRTON"
   pid {
@@ -2016,7 +2103,7 @@ manufacturer {
         }
         label {
           value: 1
-          label: "ArtNet"
+          label: "Art-Net"
         }
         label {
           value: 2
@@ -2039,7 +2126,7 @@ manufacturer {
         }
         label {
           value: 1
-          label: "ArtNet"
+          label: "Art-Net"
         }
         label {
           value: 2
@@ -2398,6 +2485,200 @@ manufacturer {
       field {
         type: BOOL
         name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 17742
+  manufacturer_name: "ENTTEC Pty Ltd"
+  pid {
+    name: "AUTO_MODE"
+    value: 34559
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "program"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "program"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        range {
+          min: 0
+          max: 9
+        }
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "PWM_OUTPUT_FREQUENCY"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "frequency"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "frequency"
+        range {
+          min: 500
+          max: 2000
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "FAN_ON_PERCENTAGE"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "percentage"
+        label {
+          value: 0
+          label: "Auto"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "percentage"
+        label {
+          value: 0
+          label: "Auto"
+        }
+        range {
+          min: 0
+          max: 0
+        }
+        range {
+          min: 50
+          max: 100
+        }
       }
     }
     set_response {
@@ -3113,7 +3394,7 @@ manufacturer {
         }
         label {
           value: 2
-          label: "Syncronized fixture"
+          label: "Synchronized fixture"
         }
       }
     }
@@ -3121,7 +3402,7 @@ manufacturer {
     set_request {
       field {
         type: UINT8
-        name: "sycronization_mode"
+        name: "synchronization_mode"
         label {
           value: 0
           label: "Single Fixture"
@@ -3132,7 +3413,7 @@ manufacturer {
         }
         label {
           value: 2
-          label: "Syncronized fixture"
+          label: "Synchronized fixture"
         }
       }
     }
@@ -3401,7 +3682,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "LIGHTSENSOR_LEVEL_TRIGGER_ENABLE"
+    name: "LIGHT_SENSOR_LEVEL_TRIGGER_ENABLE"
     value: 33032
     get_request {
     }
@@ -3423,7 +3704,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "CAPTURE_CURRENT_SENSOR_VALUE"
+    name: "CAPTURE_CURRENT_LIGHT_LEVEL"
     value: 33033
     set_request {
     }
@@ -3432,7 +3713,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "LIGHTSENSOR_TRIGGER_LEVEL"
+    name: "LIGHT_SENSOR_TRIGGER_LEVEL"
     value: 33034
     get_request {
     }
@@ -6638,6 +6919,116 @@ manufacturer {
     }
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
+  pid {
+    name: "TOUCHSCREEN_LOCK"
+    value: 40975
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Touchscreen Lock Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Touchscreen Lock Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
 }
 manufacturer {
   manufacturer_id: 21324
@@ -8419,6 +8810,327 @@ manufacturer {
     get_sub_device_range: ROOT_OR_SUBDEVICE
   }
   pid {
+    name: "ETC_OVER_TEMP_MODE_DESCRIPTION"
+    value: 33048
+    get_request {
+      field {
+        type: UINT8
+        name: "over_temperature_mode"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "over_temperature_mode"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_SEQUENCE_PLAYBACK"
+    value: 33055
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "sequence"
+        label {
+          value: 0
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "sequence"
+        label {
+          value: 0
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_SEQUENCE_CONFIG"
+    value: 33056
+    get_request {
+    }
+    get_response {
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LOW_POWER_TIMEOUT"
+    value: 33057
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "low_power_timeout"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "low_power_timeout"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LOW_POWER_TIMEOUT_DESCRIPTION"
+    value: 33058
+    get_request {
+      field {
+        type: UINT8
+        name: "low_power_timeout"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "low_power_timeout"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_FREQUENCY_ENUM"
+    value: 33059
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "frequency"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "frequency"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_FREQUENCY_ENUM_DESCRIPTION"
+    value: 33060
+    get_request {
+      field {
+        type: UINT8
+        name: "frequency"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "frequency"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_PRESET_CONFIG"
+    value: 33061
+    get_request {
+    }
+    get_response {
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_HAS_ENUM_TEXT"
+    value: 36865
+    get_request {
+    }
+    get_response {
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_GET_ENUM_TEXT"
+    value: 36866
+    get_request {
+    }
+    get_response {
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_POWER_COMMAND"
+    value: 40960
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "power_command"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "power_command"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_POWER_COMMAND_DESCRIPTION"
+    value: 40961
+    get_request {
+      field {
+        type: UINT8
+        name: "power_command"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "power_command"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DALI_SHORT_ADDRESS"
+    value: 40964
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "dali_short_address"
+        range {
+          min: 0
+          max: 63
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "dali_short_address"
+        range {
+          min: 0
+          max: 63
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DALI_GROUP_MEMBERSHIP"
+    value: 40965
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "dali_group_membership"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "dali_group_membership"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_AUTOBIND"
+    value: 40966
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "autobind"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "autobind"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DELETE_SUBDEVICE"
+    value: 40967
+    set_request {
+      field {
+        type: UINT16
+        name: "subdevice_number"
+        range {
+          min: 1
+          max: 512
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
     name: "ETC_PREPARE_FOR_SOFTWARE_DOWNLOAD"
     value: 61440
     set_request {
@@ -8578,4 +9290,4 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-version: 1458491190
+version: 1528709287

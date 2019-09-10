@@ -24,9 +24,11 @@ AC_DEFUN([PROTOBUF_SUPPORT],
 AC_REQUIRE_CPP()
 PKG_CHECK_MODULES(libprotobuf, [protobuf >= $1])
 
-# We want to replace -I with -isystem here to disable errors in the .h files
-# See https://groups.google.com/forum/#!topic/open-lighting/39Mj0KXlCIk
-libprotobuf_CFLAGS=`echo $libprotobuf_CFLAGS | sed 's/-I/-isystem /'`
+AC_MSG_CHECKING([protobuf library version])
+PROTOBUF_VERSION=`pkg-config --modversion protobuf`;
+AC_MSG_RESULT([$PROTOBUF_VERSION])
+AC_SUBST([PROTOBUF_VERSION])
+
 AC_SUBST([libprotobuf_CFLAGS])
 
 AC_ARG_WITH([protoc],
