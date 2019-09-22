@@ -267,7 +267,7 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
- - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-9" CC="ccache gcc-8"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-9" CC="ccache gcc-9"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
