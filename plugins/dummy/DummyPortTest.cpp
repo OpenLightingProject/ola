@@ -668,11 +668,16 @@ void DummyPortTest::testParamDescription() {
 
  * Disable the warning to avoid it being an issue, but only for this
  * line.
+ *
+ * Also, work around clang producing an erorr on the
+ * "stringop-truncation" warning not existing there.
  */
+#ifndef __clang__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-truncation"
   strncpy(param_description.description, description.c_str(), str_len);
 #pragma GCC diagnostic pop
+#endif
 
   unsigned int param_data_length = (
       sizeof(param_description) - sizeof(param_description.description) +
