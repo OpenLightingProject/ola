@@ -43,6 +43,52 @@ addons:
 matrix:
   fast_finish: true
   include:
+    - os: linux
+      dist: xenial
+      env: TASK='doxygen'
+      addons:
+        apt:
+          packages:
+           - *core_build_gpp_latest
+           - doxygen
+           - graphviz
+          sources:
+           - ubuntu-toolchain-r-test
+    - os: linux
+      dist: xenial
+      env: TASK='lint'
+      addons:
+        apt:
+          packages:
+           - *core_build
+    - os: linux
+      dist: xenial
+      env: TASK='check-licences'
+      addons:
+        apt:
+          packages:
+           - *core_build
+    - os: linux
+      dist: xenial
+      env: TASK='codespell'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - moreutils
+    - os: linux
+      dist: xenial
+      env: TASK='jshint'
+      addons:
+        apt:
+          packages:
+    - os: linux
+      dist: xenial
+      env: TASK='flake8'
+      addons:
+        apt:
+          packages:
+           - *base_build
     - os: osx
       osx_image: xcode9.3
       compiler: clang
@@ -132,31 +178,6 @@ matrix:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: xenial
-      env: TASK='doxygen'
-      addons:
-        apt:
-          packages:
-           - *core_build_gpp_latest
-           - doxygen
-           - graphviz
-          sources:
-           - ubuntu-toolchain-r-test
-    - os: linux
-      dist: xenial
-      env: TASK='lint'
-      addons:
-        apt:
-          packages:
-           - *core_build
-    - os: linux
-      dist: xenial
-      env: TASK='check-licences'
-      addons:
-        apt:
-          packages:
-           - *core_build
-    - os: linux
-      dist: xenial
       env: TASK='spellintian'
       addons:
         apt:
@@ -171,27 +192,6 @@ matrix:
           packages:
            - *core_build
            - moreutils
-    - os: linux
-      dist: xenial
-      env: TASK='codespell'
-      addons:
-        apt:
-          packages:
-           - *core_build
-           - moreutils
-    - os: linux
-      dist: xenial
-      env: TASK='jshint'
-      addons:
-        apt:
-          packages:
-    - os: linux
-      dist: xenial
-      env: TASK='flake8'
-      addons:
-        apt:
-          packages:
-           - *base_build
   allow_failures:
     - os: linux
       dist: xenial
@@ -236,9 +236,11 @@ cache:
     - $HOME/.cache/pip # pip cache
     - $HOME/.npm # npm cache
     - $HOME/.ccache # ccache cache
+    - $HOME/Library/Caches/Homebrew # homebrew bottle cache
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log # erase log
+  - brew cleanup # avoid caching old package versions
   - ccache -s # see how many hits ccache got
 
 install:
