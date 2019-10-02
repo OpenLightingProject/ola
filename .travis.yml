@@ -142,20 +142,6 @@ matrix:
           update: true
     - os: osx
       osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='0'
-      addons:
-        homebrew:
-          packages:
-           - *mac_core_build
-           - cppunit
-           - libftdi0
-          update: true
-    - os: osx
-      osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
@@ -166,6 +152,21 @@ matrix:
           packages:
            - *mac_core_build
            - *mac_cppunit_113
+           - libftdi0
+          update: true
+
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='0'
+      addons:
+        homebrew:
+          packages:
+           - *mac_core_build
+           - cppunit
            - libftdi0
           update: true
     - os: osx
