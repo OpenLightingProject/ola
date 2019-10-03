@@ -52,7 +52,8 @@ addons:
      - homebrew/python/numpy 
      - libusb
     packages: &mac_cppunit_113
-     - https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3^/Formula/cppunit.rb # install a slightly older cppunit, as latest needs C++11 support
+     - https://raw.githubusercontent.com/Homebrew/homebrew-core/b998430/Formula/cppunit.rb # install a slightly older cppunit, as latest needs C++11 support.
+     # This commit is equivalent to e6e43cf6a3^ (i.e. the last one pre 1.14)
 
 matrix:
   fast_finish: true
