@@ -262,20 +262,22 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian'
       addons:
         apt:
           packages:
            - *core_build
+           - lintian
            - moreutils
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian-duplicates'
       addons:
         apt:
           packages:
            - *core_build
+           - lintian
            - moreutils
   allow_failures:
     - os: linux
@@ -287,10 +289,10 @@ matrix:
       compiler: gcc
       env: TASK='coverity'
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian'
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian-duplicates'
 
 env:
@@ -342,7 +344,6 @@ before_install:
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
- - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then wget "http://archive.ubuntu.com/ubuntu/pool/main/l/lintian/lintian_2.5.104_all.deb"; sudo dpkg -i lintian_*.deb; sudo apt-get install -f -y; fi # Install a later lintian
 
 install:
 # Match the version of protobuf being installed via apt
