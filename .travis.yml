@@ -106,6 +106,7 @@ matrix:
            - *base_build
     - os: linux
       dist: xenial
+      arch: amd64
       compiler: clang
       env: TASK='compile'
       python: '2.7'
@@ -118,6 +119,32 @@ matrix:
            - llvm-toolchain-xenial-6.0
     - os: linux
       dist: xenial
+      arch: amd64
+      compiler: gcc
+      env: TASK='compile'
+      python: '2.7'
+      addons:
+        apt:
+          packages:
+           - *core_build_gpp_latest
+          sources:
+           - ubuntu-toolchain-r-test
+    - os: linux
+      dist: xenial
+      arch: arm64
+      compiler: clang
+      env: TASK='compile'
+      python: '2.7'
+      addons:
+        apt:
+          packages:
+           - *core_build_clang_latest
+          sources:
+           - ubuntu-toolchain-r-test
+           - llvm-toolchain-xenial-6.0
+    - os: linux
+      dist: xenial
+      arch: arm64
       compiler: gcc
       env: TASK='compile'
       python: '2.7'
