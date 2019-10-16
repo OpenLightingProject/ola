@@ -66,7 +66,7 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='doxygen'
       addons:
         apt:
@@ -77,21 +77,21 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='lint'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='check-licences'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='codespell'
       addons:
         apt:
@@ -99,20 +99,20 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='flake8'
       addons:
         apt:
           packages:
            - *base_build
     - os: linux
-      dist: xenial
+      dist: bionic
       arch: amd64
       compiler: clang
       env: TASK='compile'
@@ -125,7 +125,7 @@ matrix:
            - ubuntu-toolchain-r-test
            - llvm-toolchain-xenial-6.0
     - os: linux
-      dist: xenial
+      dist: bionic
       arch: amd64
       compiler: gcc
       env: TASK='compile'
@@ -137,7 +137,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: xenial
+      dist: bionic
       arch: arm64
       compiler: clang
       env: TASK='compile'
@@ -151,7 +151,7 @@ matrix:
            - ubuntu-toolchain-r-test
            - llvm-toolchain-xenial-6.0
     - os: linux
-      dist: xenial
+      dist: bionic
       arch: arm64
       compiler: gcc
       env: TASK='compile'
@@ -191,7 +191,6 @@ matrix:
            - *mac_cppunit_113
            - libftdi0
           update: true
-
     - os: osx
       osx_image: xcode9.3
       compiler: clang
