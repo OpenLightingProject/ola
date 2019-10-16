@@ -39,6 +39,8 @@ addons:
     packages: &core_build_clang_latest
      - *core_build
      - clang-6.0
+    packages: &bionic_build_extras
+     - python-pip
   homebrew:
     packages: &mac_core_build
      - ccache
@@ -139,6 +141,7 @@ matrix:
         apt:
           packages:
            - *core_build_clang_latest
+           - *bionic_build_extras
           sources:
            - ubuntu-toolchain-r-test
            - llvm-toolchain-xenial-6.0
@@ -152,6 +155,7 @@ matrix:
         apt:
           packages:
            - *core_build_gpp_latest
+           - *bionic_build_extras
           sources:
            - ubuntu-toolchain-r-test
     - os: osx
