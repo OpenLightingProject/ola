@@ -41,6 +41,8 @@ addons:
      - clang-6.0
     packages: &bionic_build_extras
      - python-pip
+     # To compile numpy
+     - python-dev
   homebrew:
     packages: &mac_core_build
      - ccache
