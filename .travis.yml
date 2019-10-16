@@ -335,7 +335,7 @@ cache:
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log # erase log
-  - brew cleanup # avoid caching old package versions
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cleanup; fi # avoid caching old package versions
   - ccache -s # see how many hits ccache got
 
 before_install:
