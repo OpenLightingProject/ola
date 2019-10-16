@@ -43,6 +43,8 @@ addons:
      - python-pip
      # To compile numpy
      - python-dev
+     # To fix the build/add missing components
+     - libtool
   homebrew:
     packages: &mac_core_build
      - ccache
