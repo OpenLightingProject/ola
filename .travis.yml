@@ -45,6 +45,7 @@ addons:
      - python-dev
      # To fix the build/add missing components
      - libtool
+     - pkg-config
   homebrew:
     packages: &mac_core_build
      - ccache
