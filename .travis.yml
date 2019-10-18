@@ -57,7 +57,7 @@ addons:
      - liblo
      - libmicrohttpd
      - ossp-uuid
-     - homebrew/python/numpy 
+     - numpy 
      - libusb
     packages: &mac_cppunit_113
      # Installing via the addon isn't currently working so do it the old fashioned way below
