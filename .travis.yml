@@ -1,6 +1,4 @@
 language: cpp
-# Default to the fully visualised "sudo" GCE environments, as they are faster for longer running jobs. We don't actually need sudo
-sudo: required
 # Use the latest Travis images since they are more up to date than the stable release.
 group: edge
 
@@ -347,7 +345,7 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb; fi # install protobuf 3.1 as that's the latest we support everywhere
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-8" CC="ccache gcc-8"; fi
