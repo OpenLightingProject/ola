@@ -20,7 +20,6 @@ LINT_BLACKLIST=$(cat <<EOLBL
         -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
         -wholename "./tools/ola_trigger/config.tab.*" -or \
         -wholename "./tools/ola_trigger/lex.yy.cpp" -or \
-        -wholename "./plugins/ftdidmx/FtdiDmxPluginDescription.h"
 EOLBL
 )
 
