@@ -163,7 +163,7 @@ jobs:
           sources:
            - ubuntu-toolchain-r-test
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: clang
       env:
       - TASK='compile'
@@ -177,7 +177,7 @@ jobs:
            - libftdi0
           update: true
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: gcc
       env:
       - TASK='compile'
@@ -191,7 +191,7 @@ jobs:
            - libftdi0
           update: true
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: clang
       env:
       - TASK='compile'
@@ -205,7 +205,7 @@ jobs:
            - libftdi0
           update: true
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: gcc
       env:
       - TASK='compile'
@@ -219,7 +219,7 @@ jobs:
            - libftdi0
           update: true
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: clang
       env:
       - TASK='compile'
@@ -233,7 +233,7 @@ jobs:
            - libftdi # install the latest cppunit, which needs C++11
           update: true
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: gcc
       env:
       - TASK='compile'
