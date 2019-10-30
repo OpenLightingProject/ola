@@ -217,7 +217,7 @@ Chapter 2, Plugin Boilerplate
 
 We need to reserve a plugin ID in common/protocol/Ola.proto . Before you pick a
 plugin id please send a message to the open-lighting@googlegroups.com list so
-we can co-ordinate plugin IDs.
+we can coordinate plugin IDs.
 
 Once we've assigned a plugin id, we can run `make` in the top directory. This
 will update include/ola/plugin_id.h. You'll notice plugin_id.h isn't included
