@@ -11,7 +11,7 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 
 PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand"
 
-LINT_BLACKLIST=$(cat <<EOLBL
+LINT_BLACKLIST=$(cat <<-EO_LINT_BL
         -wholename "./common/protocol/Ola.pb.*" -or \
         -wholename "./common/rpc/Rpc.pb.*" -or \
         -wholename "./common/rpc/TestService.pb.*" -or \
@@ -20,10 +20,10 @@ LINT_BLACKLIST=$(cat <<EOLBL
         -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
         -wholename "./tools/ola_trigger/config.tab.*" -or \
         -wholename "./tools/ola_trigger/lex.yy.cpp" -or \
-EOLBL
+EO_LINT_BL
 )
 
-SPELLINGBLACKLIST=$(cat <<-BLACKLIST
+SPELLING_BLACKLIST=$(cat <<-EO_SPELL_BL
       -wholename "./.codespellignore" -or \
       -wholename "./.git/*" -or \
       -wholename "./aclocal.m4" -or \
@@ -55,7 +55,7 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./plugins/artnet/messages/ArtNetConfigMessages.pb.*" -or \
       -wholename "./tools/ola_trigger/config.tab.*" -or \
       -wholename "./tools/ola_trigger/lex.yy.cpp"
-BLACKLIST
+EO_SPELL_BL
 )
 
 if [[ $TASK = 'lint' ]]; then
@@ -121,7 +121,7 @@ elif [[ $TASK = 'spellintian' ]]; then
   make builtfiles;
   travis_fold end "make_builtfiles"
   spellingfiles=$(eval "find ./ -type f -and ! \( \
-      $SPELLINGBLACKLIST \
+      $SPELLING_BLACKLIST \
       \) | xargs")
   # count the number of spellintian errors, ignoring duplicate words
   spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | grep -v "\(duplicate word\)" | wc -l)
@@ -147,7 +147,7 @@ elif [[ $TASK = 'spellintian-duplicates' ]]; then
   make builtfiles;
   travis_fold end "make_builtfiles"
   spellingfiles=$(eval "find ./ -type f -and ! \( \
-      $SPELLINGBLACKLIST \
+      $SPELLING_BLACKLIST \
       \) | xargs")
   # count the number of spellintian errors
   spellingerrors=$(zrun spellintian $spellingfiles 2>&1 | wc -l)
@@ -173,7 +173,7 @@ elif [[ $TASK = 'codespell' ]]; then
   make builtfiles;
   travis_fold end "make_builtfiles"
   spellingfiles=$(eval "find ./ -type f -and ! \( \
-      $SPELLINGBLACKLIST \
+      $SPELLING_BLACKLIST \
       \) | xargs")
   # count the number of codespell errors
   spellingerrors=$(zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignore $spellingfiles 2>&1 | wc -l)
