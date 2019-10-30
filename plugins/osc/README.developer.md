@@ -228,7 +228,7 @@ Chapter 2, Plugin Boilerplate
 
 We need to reserve a plugin ID in `common/protocol/Ola.proto`. Before you
 pick a plugin ID, please send a message to the
-[mailing list](mailto:open-lighting@googlegroups.com) so we can co-ordinate
+[mailing list](mailto:open-lighting@googlegroups.com) so we can coordinate
 plugin IDs.
 
 Once we've assigned a plugin ID, we can run `make` in the top directory.
