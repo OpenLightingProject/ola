@@ -19,7 +19,7 @@ LINT_BLACKLIST=$(cat <<-EO_LINT_BL
         -wholename "./config.h" -or \
         -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
         -wholename "./tools/ola_trigger/config.tab.*" -or \
-        -wholename "./tools/ola_trigger/lex.yy.cpp" -or \
+        -wholename "./tools/ola_trigger/lex.yy.cpp"
 EO_LINT_BL
 )
 
