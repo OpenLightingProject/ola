@@ -328,7 +328,8 @@ bool StringToInt(const std::string &value,
  */
 bool StringToInt(const std::string &value,
                  int16_t *output,
-                 bool strict = false);
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a int8_t.
@@ -357,9 +358,10 @@ bool StringToInt(const std::string &value,
 template <typename int_type>
 int_type StringToIntOrDefault(const std::string &value,
                               int_type alternative,
-                              bool strict = false) {
+                              bool strict = false,
+                              uint8_t base = 10) {
   int_type output;
-  return (StringToInt(value, &output, strict)) ? output : alternative;
+  return (StringToInt(value, &output, strict, base)) ? output : alternative;
 }
 
 /**
