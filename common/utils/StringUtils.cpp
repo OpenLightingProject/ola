@@ -152,13 +152,16 @@ bool StringToBoolTolerant(const string &value, bool *output) {
   return false;
 }
 
-bool StringToInt(const string &value, unsigned int *output, bool strict) {
+bool StringToInt(const string &value,
+                 unsigned int *output,
+                 bool strict,
+                 uint8_t base) {
   if (value.empty()) {
     return false;
   }
   char *end_ptr;
   errno = 0;
-  long long l = strtoll(value.data(), &end_ptr, 10);  // NOLINT(runtime/int)
+  long long l = strtoll(value.data(), &end_ptr, base);  // NOLINT(runtime/int)
   if (l < 0 || (l == 0 && errno != 0)) {
     return false;
   }
@@ -175,9 +178,12 @@ bool StringToInt(const string &value, unsigned int *output, bool strict) {
   return true;
 }
 
-bool StringToInt(const string &value, uint16_t *output, bool strict) {
+bool StringToInt(const string &value,
+                 uint16_t *output,
+                 bool strict,
+                 uint8_t base) {
   unsigned int v;
-  if (!StringToInt(value, &v, strict)) {
+  if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
   if (v > UINT16_MAX) {
@@ -187,9 +193,12 @@ bool StringToInt(const string &value, uint16_t *output, bool strict) {
   return true;
 }
 
-bool StringToInt(const string &value, uint8_t *output, bool strict) {
+bool StringToInt(const string &value,
+                 uint8_t *output,
+                 bool strict,
+                 uint8_t base) {
   unsigned int v;
-  if (!StringToInt(value, &v, strict)) {
+  if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
   if (v > UINT8_MAX) {
@@ -199,13 +208,16 @@ bool StringToInt(const string &value, uint8_t *output, bool strict) {
   return true;
 }
 
-bool StringToInt(const string &value, int *output, bool strict) {
+bool StringToInt(const string &value,
+                 int *output,
+                 bool strict,
+                 uint8_t base) {
   if (value.empty()) {
     return false;
   }
   char *end_ptr;
   errno = 0;
-  long long l = strtoll(value.data(), &end_ptr, 10);  // NOLINT(runtime/int)
+  long long l = strtoll(value.data(), &end_ptr, base);  // NOLINT(runtime/int)
   if (l == 0 && errno != 0) {
     return false;
   }
@@ -222,9 +234,12 @@ bool StringToInt(const string &value, int *output, bool strict) {
   return true;
 }
 
-bool StringToInt(const string &value, int16_t *output, bool strict) {
+bool StringToInt(const string &value,
+                 int16_t *output,
+                 bool strict,
+                 uint8_t base) {
   int v;
-  if (!StringToInt(value, &v, strict)) {
+  if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
   if (v < INT16_MIN || v > INT16_MAX) {
@@ -234,9 +249,12 @@ bool StringToInt(const string &value, int16_t *output, bool strict) {
   return true;
 }
 
-bool StringToInt(const string &value, int8_t *output, bool strict) {
+bool StringToInt(const string &value,
+                 int8_t *output,
+                 bool strict,
+                 uint8_t base) {
   int v;
-  if (!StringToInt(value, &v, strict)) {
+  if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
   if (v < INT8_MIN || v > INT8_MAX) {
