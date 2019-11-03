@@ -539,7 +539,7 @@ void StringUtilsTest::testStringToBoolTolerant() {
 
 
 void StringUtilsTest::testStringToUInt() {
-  unsigned int value;
+  unsigned int value, value2;
   OLA_ASSERT_FALSE(StringToInt("", &value));
   OLA_ASSERT_FALSE(StringToInt("-1", &value));
   OLA_ASSERT_TRUE(StringToInt("0", &value));
@@ -561,6 +561,14 @@ void StringUtilsTest::testStringToUInt() {
   OLA_ASSERT_FALSE(StringToInt("1 bar baz", &value, true));
   OLA_ASSERT_FALSE(StringToInt("65537cat", &value, true));
   OLA_ASSERT_FALSE(StringToInt("4294967295bat bar", &value, true));
+
+  //Base36 test
+  OLA_ASSERT_TRUE(StringToInt("12FZ9A", &value, false, 36));
+  OLA_ASSERT_TRUE(StringToInt("12fz9a", &value2, false, 36));
+  OLA_ASSERT_EQ(value, value2);
+  OLA_ASSERT_TRUE(StringToInt("STRICT1", &value, true, 36));
+  OLA_ASSERT_TRUE(StringToInt("strict1", &value2, true, 36));
+  OLA_ASSERT_EQ(value, value2);
 }
 
 void StringUtilsTest::testStringToUIntOrDefault() {
