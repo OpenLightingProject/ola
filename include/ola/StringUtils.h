@@ -262,55 +262,66 @@ bool StringToBoolTolerant(const std::string &value, bool *output);
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  */
 bool StringToInt(const std::string &value,
                  unsigned int *output,
-                 bool strict = false);
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a uint16_t.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
  */
 bool StringToInt(const std::string &value,
                  uint16_t *output,
-                 bool strict = false);
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a uint8_t.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
  */
 bool StringToInt(const std::string &value,
                  uint8_t *output,
-                 bool strict = false);
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a int.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
  */
-bool StringToInt(const std::string &value, int *output, bool strict = false);
+bool StringToInt(const std::string &value,
+                 int *output,
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a int16_t.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
@@ -324,11 +335,15 @@ bool StringToInt(const std::string &value,
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
  */
-bool StringToInt(const std::string &value, int8_t *output, bool strict = false);
+bool StringToInt(const std::string &value,
+                 int8_t *output,
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to an int type or return a default if it failed.
