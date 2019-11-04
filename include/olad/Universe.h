@@ -93,7 +93,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool SetDMX(const DmxBuffer &buffer);
     const DmxBuffer &GetDMX() const { return m_buffer; }
 
-    // These are the ports we need to nofity when data changes
+    // These are the ports we need to notify when data changes
     bool AddPort(InputPort *port);
     bool AddPort(OutputPort *port);
     bool RemovePort(InputPort *port);

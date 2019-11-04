@@ -130,7 +130,7 @@ class DiscoveryTargetInterface {
  * We also track responders that fail to ack a mute request (we attempt to mute
  * MAX_MUTE_ATTEMPTS times) and branches that contain responders which continue
  * to respond once muted. The latter causes a branch to be marked as corrupt,
- * which prevents us from looping forver.
+ * which prevents us from looping forever.
  */
 class DiscoveryAgent {
  public:

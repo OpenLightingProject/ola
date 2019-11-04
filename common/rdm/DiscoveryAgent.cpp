@@ -309,12 +309,13 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
     OLA_WARN << "Previous muted responder " << located_uid
              << " continues to respond";
     range->failures++;
-    // ignore this and continue on to the next branch.
-    SendDiscovery();
+    // Treat this as a collision and continue branching down
+    HandleCollision();
   } else if (m_bad_uids.Contains(located_uid)) {
     // we've already tried this one
     range->failures++;
-    SendDiscovery();
+    // Continue branching
+    HandleCollision();
   } else {
     m_muting_uid = located_uid;
     m_mute_attempts = 0;
