@@ -117,7 +117,7 @@ matrix:
           packages:
            - *core_build_gpp_latest
           sources:
-           - ubuntu-toolchain-r-test
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
       dist: xenial
       compiler: gcc
@@ -129,7 +129,7 @@ matrix:
            - *core_build
            - g++-4.9
           sources:
-           - ubuntu-toolchain-r-test
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
       dist: xenial
       env: TASK='doxygen'
@@ -140,7 +140,7 @@ matrix:
            - doxygen
            - graphviz
           sources:
-           - ubuntu-toolchain-r-test
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
       dist: xenial
       env: TASK='lint'
