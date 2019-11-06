@@ -562,13 +562,24 @@ void StringUtilsTest::testStringToUInt() {
   OLA_ASSERT_FALSE(StringToInt("65537cat", &value, true));
   OLA_ASSERT_FALSE(StringToInt("4294967295bat bar", &value, true));
 
-  //Base36 test
+  // Base8 test
+  OLA_ASSERT_TRUE(StringToInt("377", &value, false, 8);
+  OLA_ASSERT_EQ(value, 255);
+
+  // Base16 test
+  OLA_ASSERT_TRUE(StringToInt("ff00", &value, false, 16));
+  OLA_ASSERT_EQ(value, 65280);
+
+  // Base36 test
   OLA_ASSERT_TRUE(StringToInt("12FZ9A", &value, false, 36));
   OLA_ASSERT_TRUE(StringToInt("12fz9a", &value2, false, 36));
   OLA_ASSERT_EQ(value, value2);
-  OLA_ASSERT_TRUE(StringToInt("STRICT1", &value, true, 36));
-  OLA_ASSERT_TRUE(StringToInt("strict1", &value2, true, 36));
+  OLA_ASSERT_EQ(value, 64570942);
+
+  OLA_ASSERT_TRUE(StringToInt("STRIC7", &value, true, 36));
+  OLA_ASSERT_TRUE(StringToInt("stric7", &value2, true, 36));
   OLA_ASSERT_EQ(value, value2);
+  OLA_ASSERT_EQ(value, 1743045271);
 }
 
 void StringUtilsTest::testStringToUIntOrDefault() {
