@@ -48,6 +48,50 @@ matrix:
       compiler: clang
       env:
       - TASK='compile'
+      - CPPUNIT='1.13'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
       - CPPUNIT='1.14'
       - PROTOBUF='3.6'
       - LIBFTDI='1'
@@ -60,7 +104,7 @@ matrix:
       - PROTOBUF='3.6'
       - LIBFTDI='1'
     - os: linux
-      dist: bionic
+      dist: xenial
       compiler: clang
       env: TASK='compile'
       python: '2.7'
@@ -70,9 +114,9 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-bionic-6.0
+           - llvm-toolchain-xenial-6.0
     - os: linux
-      dist: bionic
+      dist: xenial
       compiler: gcc
       env: TASK='compile'
       python: '2.7'
@@ -83,7 +127,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: bionic
+      dist: xenial
       compiler: gcc
       env: TASK='coverage'
       addons:
@@ -93,7 +137,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: bionic
+      dist: xenial
       compiler: gcc
       env: TASK='coverity'
       addons:
@@ -105,7 +149,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='doxygen'
       addons:
         apt:
@@ -116,21 +160,21 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='lint'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='check-licences'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='spellintian'
       addons:
         apt:
@@ -138,7 +182,7 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='spellintian-duplicates'
       addons:
         apt:
@@ -146,7 +190,7 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='codespell'
       addons:
         apt:
@@ -154,20 +198,20 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='flake8'
       addons:
         apt:
           packages:
            - *base_build
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='pychecker'
       python: '2.7'
       addons:
@@ -175,7 +219,7 @@ matrix:
           packages:
            - *base_build
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='pychecker-wip'
       python: '2.7'
       addons:
@@ -184,22 +228,22 @@ matrix:
            - *base_build
   allow_failures:
     - os: linux
-      dist: bionic
+      dist: xenial
       compiler: gcc
       env: TASK='coverage'
     - os: linux
-      dist: bionic
+      dist: xenial
       compiler: gcc
       env: TASK='coverity'
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='pychecker-wip'
       python: '2.7'
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='spellintian'
     - os: linux
-      dist: bionic
+      dist: xenial
       env: TASK='spellintian-duplicates'
 
 env:
