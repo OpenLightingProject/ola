@@ -104,7 +104,7 @@ matrix:
       - PROTOBUF='3.6'
       - LIBFTDI='1'
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: clang
       env: TASK='compile'
       python: '2.7'
