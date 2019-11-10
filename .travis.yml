@@ -194,6 +194,48 @@ matrix:
           packages:
            - *base_build
   allow_failures:
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='1'
     - os: linux
       dist: xenial
       compiler: gcc
