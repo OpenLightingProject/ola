@@ -70,7 +70,7 @@ matrix:
            - *core_build_clang_latest
           sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-xenial-6.0
+           - llvm-toolchain-bionic-6.0
     - os: linux
       dist: bionic
       compiler: gcc
@@ -83,7 +83,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: TASK='coverage'
       addons:
@@ -93,7 +93,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: TASK='coverity'
       addons:
@@ -105,7 +105,7 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='doxygen'
       addons:
         apt:
@@ -116,21 +116,21 @@ matrix:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='lint'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='check-licences'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian'
       addons:
         apt:
@@ -138,7 +138,7 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian-duplicates'
       addons:
         apt:
@@ -146,7 +146,7 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='codespell'
       addons:
         apt:
@@ -154,20 +154,20 @@ matrix:
            - *core_build
            - moreutils
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='flake8'
       addons:
         apt:
           packages:
            - *base_build
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='pychecker'
       python: '2.7'
       addons:
@@ -175,7 +175,7 @@ matrix:
           packages:
            - *base_build
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='pychecker-wip'
       python: '2.7'
       addons:
@@ -184,22 +184,22 @@ matrix:
            - *base_build
   allow_failures:
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: TASK='coverage'
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: TASK='coverity'
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='pychecker-wip'
       python: '2.7'
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian'
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian-duplicates'
 
 env:
