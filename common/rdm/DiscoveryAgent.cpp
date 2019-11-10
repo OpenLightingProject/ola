@@ -119,6 +119,7 @@ void DiscoveryAgent::InitDiscovery(
   // push the first range on to the branch stack
   UID lower(0, 0);
   m_uid_ranges.push(new UIDRange(lower, UID::AllDevices(), NULL));
+  //m_uid_ranges.push(new UIDRange(UID(4096, 0), UID(8192, 0), NULL));
 
   m_unmute_count = 0;
   m_target->UnMuteAll(m_unmute_callback.get());
@@ -130,6 +131,7 @@ void DiscoveryAgent::InitDiscovery(
  * devices (incremental only).
  */
 void DiscoveryAgent::UnMuteComplete() {
+  OLA_INFO << "UnMuteComplete Callback!";
   if (m_uid_ranges.empty()) {
     // Abort() was called
     return;
