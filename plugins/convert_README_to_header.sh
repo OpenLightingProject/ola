@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # A simple script to build a C++ header file containing the plugin description
 # from the plugin's README.md
@@ -30,8 +30,14 @@ outfilename=`basename $outfile`;
 # See http://stackoverflow.com/a/16576291
 # On Mac OS's sed, \n is not recognized as a newline character, but
 # \[actual newline] works
-desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\"/\\\"/g' -e 's/\n/\\\\n"\\
-"/g' "$path/README.md"`;
+desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\\\/\\\\\\\/g' -e 's/\"/\\\"/g'\
+ -e 's/\n/\\\\n\"\
+\"/g' "$path/README.md"`;
+
+if (( $? != 0 )); then
+	echo 'Sed failed to generate $desc'
+	exit 1
+fi
 
 identifier=`echo "PLUGINS_${plugin}_${outfilename%.h}_H_" | tr '[:lower:]' '[:upper:]'`
 
