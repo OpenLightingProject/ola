@@ -246,3 +246,8 @@ javascript/new-src/node_modules
 .cproject
 .settings
 .vscode/
+# QtCreator project files
+*.config
+*.creator*
+*.files
+*.includes
