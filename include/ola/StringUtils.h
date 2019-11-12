@@ -352,6 +352,7 @@ bool StringToInt(const std::string &value,
  * @param value the string to convert
  * @param alternative the default value to return if conversion failed.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns the value if it converted successfully or the default if the string
  * was not an int or the value was too large / small for the type.
  */
