@@ -564,13 +564,13 @@ void StringUtilsTest::testStringToUInt() {
 
   // Base8 test
   OLA_ASSERT_TRUE(StringToInt("377", &value, false, 8));
-  OLA_ASSERT_EQ(value, 255);
+  OLA_ASSERT_EQ(value, 255u);
 
   OLA_ASSERT_FALSE(StringToInt("999", &value, false, 8));
 
   // Base16 test
   OLA_ASSERT_TRUE(StringToInt("ff00", &value, false, 16));
-  OLA_ASSERT_EQ(value, 65280);
+  OLA_ASSERT_EQ(value, 65280u);
 
   OLA_ASSERT_FALSE(StringToInt("gg00", &value, false, 16));
 
@@ -578,12 +578,12 @@ void StringUtilsTest::testStringToUInt() {
   OLA_ASSERT_TRUE(StringToInt("12FZ9A", &value, false, 36));
   OLA_ASSERT_TRUE(StringToInt("12fz9a", &value2, false, 36));
   OLA_ASSERT_EQ(value, value2);
-  OLA_ASSERT_EQ(value, 64570942);
+  OLA_ASSERT_EQ(value, 64570942u);
 
   OLA_ASSERT_TRUE(StringToInt("STRIC7", &value, true, 36));
   OLA_ASSERT_TRUE(StringToInt("stric7", &value2, true, 36));
   OLA_ASSERT_EQ(value, value2);
-  OLA_ASSERT_EQ(value, 1743045271);
+  OLA_ASSERT_EQ(value, 1743045271u);
 
   OLA_ASSERT_FALSE(StringToInt("STRICT1", &value, true, 36));
 }
