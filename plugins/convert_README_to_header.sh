@@ -36,11 +36,6 @@ desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\\\/\\\\\\\/g' -e 's/\"/\\\"/g' \
  -e 's/\n/\\\\n\"\\
 \"/g' "$path/README.md"`;
 
-if (( $? != 0 )); then
-	echo "sed failed to process $path/README.md"
-	exit 1
-fi
-
 identifier=`echo "PLUGINS_${plugin}_${outfilename%.h}_H_" | tr '[:lower:]' '[:upper:]'`
 
 cat <<EOM > $outfile
