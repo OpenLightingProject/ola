@@ -4,6 +4,8 @@
 # from the plugin's README.md
 # The output file then contains one variable 'plugin_description'.
 
+set -e
+
 if [ $# != 2 ]; then
   echo "Usage: convert_README_to_header.sh <plugin path> <outfile path>";
   echo "<plugin path>: path to plugin dir, e.g. plugins/artnet";
