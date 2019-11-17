@@ -168,7 +168,7 @@ bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
   };
 
   for (uint16_t i = 0;
-       i < m_gpio_pins.size() && (i + m_options.start_address < dmx.Size());
+       i < m_gpio_pins.size() && (i + m_options.start_address - 1u < dmx.Size());
        i++) {
     Action action = NO_CHANGE;
     uint8_t slot_value = dmx.Get(i + m_options.start_address - 1);
