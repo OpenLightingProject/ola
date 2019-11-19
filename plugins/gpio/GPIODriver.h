@@ -113,6 +113,7 @@ class GPIODriver : private ola::thread::Thread {
   typedef std::vector<GPIOPin> GPIOPins;
 
   const Options m_options;
+  const uint16_t m_first_slot;
   GPIOPins m_gpio_pins;
 
   DmxBuffer m_buffer;
