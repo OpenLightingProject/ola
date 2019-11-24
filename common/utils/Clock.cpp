@@ -125,8 +125,8 @@ void BaseTimeVal::AsTimeval(struct timeval *tv) const {
 }
 
 int64_t BaseTimeVal::InMilliSeconds() const {
-  return (m_tv.tv_sec * static_cast<int64_t>(ONE_THOUSAND) +
-          m_tv.tv_usec / ONE_THOUSAND);
+  return (m_tv.tv_sec * static_cast<int64_t>(MSEC_IN_SEC) +
+          m_tv.tv_usec / MSEC_IN_SEC);
 }
 
 int64_t BaseTimeVal::AsInt() const {
