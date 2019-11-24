@@ -41,8 +41,9 @@
 namespace ola {
 
 static const int USEC_IN_SECONDS = 1000000;
-static const int ONE_THOUSAND = 1000;
-
+static const int MSEC_IN_SEC = 1000;
+static const uint64_t NSEC_IN_SEC = 1000000000;
+static const int ONE_THOUSAND = MSEC_IN_SEC;
 /**
  * Don't use this class directly. It's an implementation detail of TimeInterval
  * and TimeStamp.
@@ -104,6 +105,12 @@ class BaseTimeVal {
    */
   int64_t AsInt() const;
 
+  /**
+   * @brief InMicroSeconds returns AsInt() for naming consistency
+   * @return returns AsInt()
+   */
+  int64_t InMicroSeconds() const;
+
   std::string ToString() const;
 
  private:
@@ -160,6 +167,7 @@ class TimeInterval {
   int32_t MicroSeconds() const { return m_interval.MicroSeconds(); }
 
   int64_t InMilliSeconds() const { return m_interval.InMilliSeconds(); }
+  int64_t InMicroSeconds() const { return m_interval.InMicroSeconds(); }
   int64_t AsInt() const { return m_interval.AsInt(); }
 
   std::string ToString() const { return m_interval.ToString(); }
@@ -256,6 +264,34 @@ class MockClock: public Clock {
 
  private:
   TimeInterval m_offset;
+};
+
+enum TimerGranularity { UNKNOWN, GOOD, BAD };
+
+/**
+ * @brief The Sleep class implements usleep with some granualtiry detection.
+ */
+class Sleep {
+ public:
+  explicit Sleep(std::string caller);
+
+  void setCaller(std::string caller) { m_caller = caller; }
+
+  void usleep(TimeInterval requested);
+  void usleep(uint32_t requested);
+  void usleep(timespec requested);
+
+  TimerGranularity getGranularity() { return m_granularity; }
+  bool CheckTimeGranularity(uint64_t wanted, uint64_t maxDeviation);
+ private:
+  std::string m_caller;
+  uint64_t m_wanted_granularity;
+  uint64_t m_max_granularity_deviation;
+  uint64_t m_clock_overhead;
+
+  static const uint32_t BAD_GRANULARITY_LIMIT = 10;
+
+  TimerGranularity m_granularity = UNKNOWN;
 };
 }  // namespace ola
 #endif  // INCLUDE_OLA_CLOCK_H_
