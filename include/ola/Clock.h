@@ -266,5 +266,33 @@ class MockClock: public Clock {
  private:
   TimeInterval m_offset;
 };
+
+enum TimerGranularity { UNKNOWN, GOOD, BAD };
+
+/**
+ * @brief The Sleep class implements usleep with some granualtiry detection.
+ */
+class Sleep {
+ public:
+  explicit Sleep(std::string caller);
+
+  void setCaller(std::string caller) { m_caller = caller; }
+
+  void usleep(TimeInterval requested);
+  void usleep(uint32_t requested);
+  void usleep(timespec requested);
+
+  TimerGranularity getGranularity() { return m_granularity; }
+  bool CheckTimeGranularity(uint64_t wanted, uint64_t maxDeviation);
+ private:
+  std::string m_caller;
+  uint64_t m_wanted_granularity;
+  uint64_t m_max_granularity_deviation;
+  uint64_t m_clock_overhead;
+
+  static const uint32_t BAD_GRANULARITY_LIMIT = 10;
+
+  TimerGranularity m_granularity = UNKNOWN;
+};
 }  // namespace ola
 #endif  // INCLUDE_OLA_CLOCK_H_
