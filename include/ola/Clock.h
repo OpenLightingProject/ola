@@ -106,6 +106,12 @@ class BaseTimeVal {
    */
   int64_t AsInt() const;
 
+  /**
+   * @brief InMicroSeconds wrapper for AsInt() for name consistency.
+   * @return The entire BaseTimeVal in microseconds
+   */
+  int64_t InMicroSeconds() const { return this->AsInt(); }
+
   std::string ToString() const;
 
  private:
@@ -162,6 +168,7 @@ class TimeInterval {
   int32_t MicroSeconds() const { return m_interval.MicroSeconds(); }
 
   int64_t InMilliSeconds() const { return m_interval.InMilliSeconds(); }
+  int64_t InMicroSeconds() const { return m_interval.InMicroSeconds(); }
   int64_t AsInt() const { return m_interval.AsInt(); }
 
   std::string ToString() const { return m_interval.ToString(); }
