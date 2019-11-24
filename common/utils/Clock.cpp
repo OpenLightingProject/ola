@@ -357,5 +357,4 @@ void Sleep::usleep(timespec requested) {
     }
   }
 }
-
 }  // namespace ola
