@@ -40,8 +40,10 @@
 
 namespace ola {
 
+static const uint64_t NSEC_IN_SEC = 1000000000;
 static const int USEC_IN_SECONDS = 1000000;
-static const int ONE_THOUSAND = 1000;
+static const int MSEC_IN_SEC = 1000;
+static const int ONE_THOUSAND = MSEC_IN_SEC;
 
 /**
  * Don't use this class directly. It's an implementation detail of TimeInterval
