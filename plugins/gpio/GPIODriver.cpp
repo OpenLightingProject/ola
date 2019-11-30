@@ -48,7 +48,7 @@ using std::vector;
 
 GPIODriver::GPIODriver(const Options &options)
     : m_options(options),
-      m_first_slot(options.start_address - 1u),
+      m_first_slot(options.start_address - 1),
       m_term(false),
       m_dmx_changed(false) {
 }
