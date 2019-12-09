@@ -40,10 +40,10 @@
 
 namespace ola {
 
-static const uint64_t NSEC_IN_SEC = 1000000000;
-static const int USEC_IN_SECONDS = 1000000;
-static const int MSEC_IN_SEC = 1000;
-static const int ONE_THOUSAND = MSEC_IN_SEC;
+static const int ONE_THOUSAND = 1000;
+static const int MSECS_IN_SECOND = ONE_THOUSAND;
+static const int USECS_IN_SECOND = MSECS_IN_SECOND * ONE_THOUSAND;
+static const uint64_t NSECS_IN_SECOND = USECS_IN_SECOND * ONE_THOUSAND;
 
 /**
  * Don't use this class directly. It's an implementation detail of TimeInterval
@@ -92,13 +92,13 @@ class BaseTimeVal {
    * @brief Returns the microseconds portion of the BaseTimeVal
    * @return The microseconds portion of the BaseTimeVal
    */
-  int32_t MicroSeconds() const { return static_cast<int32_t>(m_tv.tv_usec); }
+  int32_t Microseconds() const { return static_cast<int32_t>(m_tv.tv_usec); }
 
   /**
    * @brief Returns the entire BaseTimeVal as milliseconds
    * @return The entire BaseTimeVal in milliseconds
    */
-  int64_t InMilliSeconds() const;
+  int64_t InMilliseconds() const;
 
   /**
    * @brief Returns the entire BaseTimeVal as microseconds
@@ -107,10 +107,10 @@ class BaseTimeVal {
   int64_t AsInt() const;
 
   /**
-   * @brief InMicroSeconds wrapper for AsInt() for name consistency.
+   * @brief InMicroseconds wrapper for AsInt() for name consistency.
    * @return The entire BaseTimeVal in microseconds
    */
-  int64_t InMicroSeconds() const { return this->AsInt(); }
+  int64_t InMicroseconds() const { return this->AsInt(); }
 
   std::string ToString() const;
 
@@ -165,10 +165,10 @@ class TimeInterval {
   void AsTimeval(struct timeval *tv) const { m_interval.AsTimeval(tv); }
 
   time_t Seconds() const { return m_interval.Seconds(); }
-  int32_t MicroSeconds() const { return m_interval.MicroSeconds(); }
+  int32_t Microseconds() const { return m_interval.Microseconds(); }
 
-  int64_t InMilliSeconds() const { return m_interval.InMilliSeconds(); }
-  int64_t InMicroSeconds() const { return m_interval.InMicroSeconds(); }
+  int64_t InMilliseconds() const { return m_interval.InMilliseconds(); }
+  int64_t InMicroseconds() const { return m_interval.InMicroseconds(); }
   int64_t AsInt() const { return m_interval.AsInt(); }
 
   std::string ToString() const { return m_interval.ToString(); }
@@ -220,7 +220,7 @@ class TimeStamp {
     bool IsSet() const { return m_tv.IsSet(); }
 
     time_t Seconds() const { return m_tv.Seconds(); }
-    int32_t MicroSeconds() const { return m_tv.MicroSeconds(); }
+    int32_t Microseconds() const { return m_tv.Microseconds(); }
 
     std::string ToString() const { return m_tv.ToString(); }
 
@@ -270,20 +270,20 @@ class MockClock: public Clock {
 enum TimerGranularity { UNKNOWN, GOOD, BAD };
 
 /**
- * @brief The Sleep class implements usleep with some granualtiry detection.
+ * @brief The Sleep class implements usleep with some granulatiry detection.
  */
 class Sleep {
  public:
   explicit Sleep(std::string caller);
 
-  void setCaller(std::string caller) { m_caller = caller; }
+  void SetCaller(std::string caller) { m_caller = caller; }
 
-  void usleep(TimeInterval requested);
-  void usleep(uint32_t requested);
-  void usleep(timespec requested);
+  void Usleep(TimeInterval requested);
+  void Usleep(uint32_t requested);
+  void Usleep(timespec requested);
 
-  TimerGranularity getGranularity() { return m_granularity; }
-  bool CheckTimeGranularity(uint64_t wanted, uint64_t maxDeviation);
+  TimerGranularity GetGranularity() { return m_granularity; }
+  bool CheckTimeGranularity(uint64_t wanted, uint64_t max_deviation);
  private:
   std::string m_caller;
   uint64_t m_wanted_granularity;

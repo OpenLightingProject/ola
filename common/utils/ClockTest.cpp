@@ -101,7 +101,7 @@ void ClockTest::testTimeStamp() {
   OLA_ASSERT_EQ(static_cast<int64_t>(1500000),
                        one_point_five_seconds.AsInt());
   OLA_ASSERT_EQ(static_cast<int64_t>(1500),
-                       one_point_five_seconds.InMilliSeconds());
+                       one_point_five_seconds.InMilliseconds());
 }
 
 
@@ -131,16 +131,16 @@ void ClockTest::testTimeInterval() {
 void ClockTest::testTimeIntervalMutliplication() {
   TimeInterval half_second(500000);  // 0.5s
   TimeInterval zero_seconds = half_second * 0;
-  OLA_ASSERT_EQ((int64_t) 0, zero_seconds.InMilliSeconds());
+  OLA_ASSERT_EQ((int64_t) 0, zero_seconds.InMilliseconds());
 
   TimeInterval another_half_second = half_second * 1;
-  OLA_ASSERT_EQ((int64_t) 500, another_half_second.InMilliSeconds());
+  OLA_ASSERT_EQ((int64_t) 500, another_half_second.InMilliseconds());
 
   TimeInterval two_seconds = half_second * 4;
-  OLA_ASSERT_EQ((int64_t) 2000, two_seconds.InMilliSeconds());
+  OLA_ASSERT_EQ((int64_t) 2000, two_seconds.InMilliseconds());
 
   TimeInterval twenty_seconds = half_second * 40;
-  OLA_ASSERT_EQ((int64_t) 20000, twenty_seconds.InMilliSeconds());
+  OLA_ASSERT_EQ((int64_t) 20000, twenty_seconds.InMilliseconds());
 }
 
 
