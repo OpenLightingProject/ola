@@ -306,7 +306,7 @@ bool Sleep::CheckTimeGranularity(uint64_t wanted, uint64_t max_deviation) {
   this->Usleep(1);
   clock.CurrentTime(&ts2);
   TimeInterval interval = ts2 - ts1;
-  m_clock_overhead = interval.InMicroseconds();
+  m_clock_overhead = interval.InMicroseconds() - 1;
 
   clock.CurrentTime(&ts1);
   this->Usleep(t);
