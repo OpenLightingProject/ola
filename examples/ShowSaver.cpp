@@ -88,7 +88,7 @@ bool ShowSaver::NewFrame(const ola::TimeStamp &arrival_time,
     // this is not the first frame so write the delay in ms
     const ola::TimeInterval delta = arrival_time - m_last_frame;
 
-    m_show_file << delta.InMilliSeconds() << endl;
+    m_show_file << delta.InMilliseconds() << endl;
   }
   m_last_frame = arrival_time;
   m_show_file << universe << " " << data.ToString() << endl;

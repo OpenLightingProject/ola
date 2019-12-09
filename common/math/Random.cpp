@@ -46,7 +46,7 @@ void InitRandom() {
   TimeStamp now;
   clock.CurrentTime(&now);
 
-  uint64_t seed = (static_cast<uint64_t>(now.MicroSeconds()) << 32) +
+  uint64_t seed = (static_cast<uint64_t>(now.Microseconds()) << 32) +
                    static_cast<uint64_t>(getpid());
 #ifdef HAVE_RANDOM
   generator_.seed(seed);

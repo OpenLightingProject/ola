@@ -407,7 +407,7 @@ void RDMSniffer::MaybePrintTimestamp() {
 
   char output[24];
   strftime(output, sizeof(output), "%d-%m-%Y %H:%M:%S", &local_time);
-  cout << output << "." << std::dec << static_cast<int>(now.MicroSeconds()) <<
+  cout << output << "." << std::dec << static_cast<int>(now.Microseconds()) <<
     " ";
 }
 
