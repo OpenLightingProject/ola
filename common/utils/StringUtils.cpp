@@ -161,8 +161,8 @@ bool StringToInt(const string &value,
   }
   char *end_ptr;
   errno = 0;
-  long long l = strtoll(value.data(), &end_ptr, base);  // NOLINT(runtime/int)
-  if (l < 0 || (l == 0 && errno != 0)) {
+  unsigned long l = strtoul(value.data(), &end_ptr, base);  // NOLINT(runtime/int)
+  if (l == 0 && errno != 0) {
     return false;
   }
   if (value == end_ptr) {
@@ -230,7 +230,7 @@ bool StringToInt(const string &value,
   if (l < INT32_MIN || l > INT32_MAX) {
     return false;
   }
-  *output = static_cast<unsigned int>(l);
+  *output = static_cast<int>(l);
   return true;
 }
 
@@ -343,80 +343,6 @@ void ReplaceAll(string *original, const string &find, const string &replace) {
     // Move to the end of the replaced section
     start += ((replace.length() > find.length()) ? replace.length() : 0);
   }
-}
-
-bool HexStringToInt(const string &value, uint8_t *output) {
-  uint32_t temp;
-  if (!HexStringToInt(value, &temp)) {
-    return false;
-  }
-  if (temp > UINT8_MAX) {
-    return false;
-  }
-  *output = static_cast<uint8_t>(temp);
-  return true;
-}
-
-bool HexStringToInt(const string &value, uint16_t *output) {
-  uint32_t temp;
-  if (!HexStringToInt(value, &temp)) {
-    return false;
-  }
-  if (temp > UINT16_MAX) {
-    return false;
-  }
-  *output = static_cast<uint16_t>(temp);
-  return true;
-}
-
-bool HexStringToInt(const string &value, uint32_t *output) {
-  if (value.empty()) {
-    return false;
-  }
-
-  size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
-  if (found != string::npos) {
-    return false;
-  }
-  *output = strtoul(value.data(), NULL, 16);
-  return true;
-}
-
-bool HexStringToInt(const string &value, int8_t *output) {
-  int32_t temp;
-  if (!HexStringToInt(value, &temp)) {
-    return false;
-  }
-  if (temp < 0 || temp > static_cast<int32_t>(UINT8_MAX)) {
-    return false;
-  }
-  *output = static_cast<int8_t>(temp);
-  return true;
-}
-
-bool HexStringToInt(const string &value, int16_t *output) {
-  int32_t temp;
-  if (!HexStringToInt(value, &temp)) {
-    return false;
-  }
-  if (temp < 0 || temp > static_cast<int32_t>(UINT16_MAX)) {
-    return false;
-  }
-  *output = static_cast<int16_t>(temp);
-  return true;
-}
-
-bool HexStringToInt(const string &value, int32_t *output) {
-  if (value.empty()) {
-    return false;
-  }
-
-  size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
-  if (found != string::npos) {
-    return false;
-  }
-  *output = strtoll(value.data(), NULL, 16);
-  return true;
 }
 
 void ToLower(string *s) {

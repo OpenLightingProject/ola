@@ -366,72 +366,6 @@ int_type StringToIntOrDefault(const std::string &value,
 }
 
 /**
- * @brief Convert a hex string to a uint8_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, uint8_t *output);
-
-/**
- * @brief Convert a hex string to a uint16_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, uint16_t *output);
-
-/**
- * @brief Convert a hex string to a uint32_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, uint32_t *output);
-
-/**
- * @brief Convert a hex string to a int8_t.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- *
- * The string can contain upper or lower case hex characters.
- */
-bool HexStringToInt(const std::string &value, int8_t *output);
-
-/**
- * @brief Convert a hex string to a int16_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, int16_t *output);
-
-/**
- * @brief Convert a hex string to a int32_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, int32_t *output);
-
-/**
  * @brief Convert a string to lower case.
  * @param s the string to convert to lower case.
  */
@@ -499,7 +433,7 @@ bool PrefixedHexStringToInt(const std::string &input, int_type *output) {
   if ((input.find("0x") != 0) && (input.find("0X") != 0))
     return false;
   std::string modified_input = input.substr(2);
-  return HexStringToInt(modified_input, output);
+  return StringToInt(modified_input, output, true, 16);
 }
 
 /**

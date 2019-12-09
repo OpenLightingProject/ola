@@ -39,10 +39,10 @@ UID* UID::FromString(const string &uid) {
 
   uint16_t esta_id;
   unsigned int device_id;
-  if (!ola::HexStringToInt(tokens[0], &esta_id)) {
+  if (!ola::StringToInt(tokens[0], &esta_id, true, 16)) {
     return NULL;
   }
-  if (!ola::HexStringToInt(tokens[1], &device_id)) {
+  if (!ola::StringToInt(tokens[1], &device_id, true, 16)) {
     return NULL;
   }
 

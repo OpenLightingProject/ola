@@ -150,7 +150,7 @@ bool StringToEther(const string &address, ether_addr *target) {
   }
 
   for (unsigned int i = 0; i < MACAddress::LENGTH; i++) {
-    if (!ola::HexStringToInt(tokens[i], target->ether_addr_octet + i)) {
+    if (!ola::StringToInt(tokens[i], target->ether_addr_octet + i, true, 16)) {
       return false;
     }
   }
