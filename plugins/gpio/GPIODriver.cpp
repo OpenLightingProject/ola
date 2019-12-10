@@ -48,7 +48,6 @@ using std::vector;
 
 GPIODriver::GPIODriver(const Options &options)
     : m_options(options),
-      m_first_slot(options.start_address - 1),
       m_term(false),
       m_dmx_changed(false) {
 }
@@ -167,12 +166,13 @@ bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
     TURN_OFF,
     NO_CHANGE,
   };
+  const uint16_t first_slot = m_options.start_address - 1;
 
   for (uint16_t i = 0;
-       i < m_gpio_pins.size() && (i + m_first_slot < dmx.Size());
+       i < m_gpio_pins.size() && (i + first_slot < dmx.Size());
        i++) {
     Action action = NO_CHANGE;
-    uint8_t slot_value = dmx.Get(i + m_first_slot);
+    uint8_t slot_value = dmx.Get(i + first_slot);
 
     switch (m_gpio_pins[i].state) {
       case ON:
