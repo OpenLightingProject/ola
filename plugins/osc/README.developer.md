@@ -226,14 +226,12 @@ Chapter 2, Plugin Boilerplate
 2.1 Plugin ID
 -------------
 
-We need to reserve a plugin ID in `common/protocol/Ola.proto`. Before you
-pick a plugin ID, please send a message to the
-[mailing list](mailto:open-lighting@googlegroups.com) so we can co-ordinate
-plugin IDs.
+We need to reserve a plugin ID in `common/protocol/Ola.proto`. Please see the
+note in that file regarding how we coordinate assigning plugin IDs.
 
-Once we've assigned a plugin ID, we can run `make` in the top directory.
-This will update `include/ola/plugin_id.h`. You'll notice `plugin_id.h`
-isn't included in the git repo since it's a generated file.
+Once we've assigned a plugin id, we can run `make` in the top directory. This
+will update `include/ola/plugin_id.h`. You'll notice `plugin_id.h` isn't
+included in the git repo since it's a generated file.
 
 2.2 Plugin Loader
 -----------------

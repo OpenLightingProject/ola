@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MemoryBuffer.h
- * An derrived class of InputBuffer that wraps a memory buffer.
+ * A derived class of InputBuffer that wraps a memory buffer.
  * Copyright (C) 2012 Simon Newton
  */
 
