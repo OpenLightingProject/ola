@@ -786,7 +786,7 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
       case SD_COLOR_SCROLL:
         return "Primary, scroll";
       case SD_COLOR_SEMAPHORE:
-        return "Primary, color semaphone";
+        return "Primary, color semaphore";
       case SD_COLOR_ADD_AMBER:
         return "Primary, additive amber";
       case SD_COLOR_ADD_WHITE:
