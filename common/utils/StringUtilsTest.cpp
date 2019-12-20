@@ -598,132 +598,7 @@ void StringUtilsTest::testStringToUInt() {
   OLA_ASSERT_EQ((unsigned int) 4010947670UL, value);
   OLA_ASSERT_FALSE(StringToInt("fz", &value, true, 16));
   OLA_ASSERT_FALSE(StringToInt("zfff", &value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("0xf", &value, true, 16));
-
-  // uint16_t
-  uint16_t uint16_value;
-  OLA_ASSERT_FALSE(StringToInt("", &uint16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("-1", &uint16_value, true, 16));
-
-  OLA_ASSERT_TRUE(StringToInt("0", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 0, uint16_value);
-  OLA_ASSERT_TRUE(StringToInt("1", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 1, uint16_value);
-  OLA_ASSERT_TRUE(StringToInt("a", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 10, uint16_value);
-  OLA_ASSERT_TRUE(StringToInt("f", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 15, uint16_value);
-  OLA_ASSERT_TRUE(StringToInt("a1", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 161, uint16_value);
-  OLA_ASSERT_TRUE(StringToInt("ff", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 255, uint16_value);
-  OLA_ASSERT_TRUE(StringToInt("a1", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 161, uint16_value);
-  OLA_ASSERT_TRUE(StringToInt("ff", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 255, uint16_value);
-  OLA_ASSERT_TRUE(StringToInt("400", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 1024, uint16_value);
-  OLA_ASSERT_TRUE(StringToInt("ffff", &uint16_value, true, 16));
-  OLA_ASSERT_EQ((uint16_t) 65535, uint16_value);
-
-  OLA_ASSERT_FALSE(StringToInt("ffffff", &uint16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("ffffffff", &uint16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("ef123456", &uint16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("fz", &uint16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("zfff", &uint16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("0xf", &uint16_value, true, 16));
-
-  // int8_t
-  int8_t int8_value;
-  OLA_ASSERT_FALSE(StringToInt("", &int8_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("-1", &int8_value, true, 16));
-
-  OLA_ASSERT_TRUE(StringToInt("0", &int8_value, true, 16));
-  OLA_ASSERT_EQ((int8_t) 0, int8_value);
-  OLA_ASSERT_TRUE(StringToInt("1", &int8_value, true, 16));
-  OLA_ASSERT_EQ((int8_t) 1, int8_value);
-  OLA_ASSERT_TRUE(StringToInt("a", &int8_value, true, 16));
-  OLA_ASSERT_EQ((int8_t) 10, int8_value);
-  OLA_ASSERT_TRUE(StringToInt("f", &int8_value, true, 16));
-  OLA_ASSERT_EQ((int8_t) 15, int8_value);
-  OLA_ASSERT_TRUE(StringToInt("7f", &int8_value, true, 16));
-  OLA_ASSERT_EQ((int8_t) 127, int8_value);
-  OLA_ASSERT_TRUE(StringToInt("a1", &int8_value, true, 16));
-  OLA_ASSERT_EQ((int8_t) -95, int8_value);
-  OLA_ASSERT_TRUE(StringToInt("80", &int8_value, true, 16));
-  OLA_ASSERT_EQ((int8_t) -128, int8_value);
-  OLA_ASSERT_TRUE(StringToInt("ff", &int8_value, true, 16));
-  OLA_ASSERT_EQ((int8_t) -1, int8_value);
-
-  OLA_ASSERT_FALSE(StringToInt("ffff", &int8_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("fff0", &int8_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("ffffff", &int8_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("ffffffff", &int8_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("ef123456", &int8_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("fz", &int8_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("zfff", &int8_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("0xf", &int8_value, true, 16));
-
-  // int16_t
-  int16_t int16_value;
-  OLA_ASSERT_FALSE(StringToInt("", &int16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("-1", &int16_value, true, 16));
-
-  OLA_ASSERT_TRUE(StringToInt("0", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) 0, int16_value);
-  OLA_ASSERT_TRUE(StringToInt("1", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) 1, int16_value);
-  OLA_ASSERT_TRUE(StringToInt("a", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) 10, int16_value);
-  OLA_ASSERT_TRUE(StringToInt("f", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) 15, int16_value);
-  OLA_ASSERT_TRUE(StringToInt("a1", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) 161, int16_value);
-  OLA_ASSERT_TRUE(StringToInt("ff", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) 255, int16_value);
-  OLA_ASSERT_TRUE(StringToInt("7fff", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) 32767, int16_value);
-  OLA_ASSERT_TRUE(StringToInt("ffff", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) -1, int16_value);
-  OLA_ASSERT_TRUE(StringToInt("fff0", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) -16, int16_value);
-  OLA_ASSERT_TRUE(StringToInt("8000", &int16_value, true, 16));
-  OLA_ASSERT_EQ((int16_t) -32768, int16_value);
-
-  OLA_ASSERT_FALSE(StringToInt("ffffff", &int16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("ffffffff", &int16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("ef123456", &int16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("fz", &int16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("zfff", &int16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("0xf", &int16_value, true, 16));
-
-  // int32
-  int32_t int32_value;
-  OLA_ASSERT_FALSE(StringToInt("", &int32_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("-1", &int32_value, true, 16));
-
-  OLA_ASSERT_TRUE(StringToInt("0", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) 0, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("1", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) 1, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("a", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) 10, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("f", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) 15, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("a1", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) 161, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("ff", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) 255, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("7fff", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) 32767, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("ffff", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) 65535, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("ffffffff", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) -1, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("fffffff0", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) -16, int32_value);
-  OLA_ASSERT_TRUE(StringToInt("80000000", &int32_value, true, 16));
-  OLA_ASSERT_EQ((int32_t) -2147483647 - 1, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("0xf", &value, true, 16));
 
   // Base36 test
   OLA_ASSERT_TRUE(StringToInt("12FZ9A", &value, false, 36));
@@ -798,6 +673,41 @@ void StringUtilsTest::testStringToUInt16() {
   OLA_ASSERT_EQ((uint16_t) 143, value);
   OLA_ASSERT_TRUE(StringToInt("65535", &value));
   OLA_ASSERT_EQ((uint16_t) 65535, value);
+
+  // base16 - uint16_t
+  uint16_t uint16_value;
+  OLA_ASSERT_FALSE(StringToInt("", &uint16_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("-1", &uint16_value, true, 16));
+
+  OLA_ASSERT_TRUE(StringToInt("0", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 0, uint16_value);
+  OLA_ASSERT_TRUE(StringToInt("1", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 1, uint16_value);
+  OLA_ASSERT_TRUE(StringToInt("a", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 10, uint16_value);
+  OLA_ASSERT_TRUE(StringToInt("f", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 15, uint16_value);
+  OLA_ASSERT_TRUE(StringToInt("a1", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 161, uint16_value);
+  OLA_ASSERT_TRUE(StringToInt("ff", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 255, uint16_value);
+  OLA_ASSERT_TRUE(StringToInt("a1", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 161, uint16_value);
+  OLA_ASSERT_TRUE(StringToInt("ff", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 255, uint16_value);
+  OLA_ASSERT_TRUE(StringToInt("400", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 1024, uint16_value);
+  OLA_ASSERT_TRUE(StringToInt("ffff", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 65535, uint16_value);
+
+  OLA_ASSERT_FALSE(StringToInt("ffffff", &uint16_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("ffffffff", &uint16_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("ef123456", &uint16_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("fz", &uint16_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("zfff", &uint16_value, true, 16));
+
+  OLA_ASSERT_TRUE(StringToInt("0xf", &uint16_value, true, 16));
+  OLA_ASSERT_EQ((uint16_t) 15, uint16_value);
 }
 
 
@@ -876,6 +786,36 @@ void StringUtilsTest::testStringToInt() {
   OLA_ASSERT_FALSE(StringToInt("143car", &value, true));
   OLA_ASSERT_FALSE(StringToInt("2147483647 !@#", &value, true));
   OLA_ASSERT_FALSE(StringToInt("2147483648mm", &value, true));
+
+  // base16 - int32
+  int32_t int32_value;
+  OLA_ASSERT_FALSE(StringToInt("", &int32_value, true, 16));
+
+  OLA_ASSERT_TRUE(StringToInt("-1", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) -1, int32_value);
+
+  OLA_ASSERT_TRUE(StringToInt("0", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) 0, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("1", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) 1, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("a", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) 10, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("f", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) 15, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("a1", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) 161, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("ff", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) 255, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("7fff", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) 32767, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("ffff", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) 65535, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("ffffffff", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) -1, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("fffffff0", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) -16, int32_value);
+  OLA_ASSERT_TRUE(StringToInt("80000000", &int32_value, true, 16));
+  OLA_ASSERT_EQ((int32_t) -2147483647 - 1, int32_value);
 }
 
 
@@ -931,6 +871,42 @@ void StringUtilsTest::testStringToInt16() {
   OLA_ASSERT_TRUE(StringToInt("32767", &value));
   OLA_ASSERT_EQ((int16_t) 32767, value);
   OLA_ASSERT_FALSE(StringToInt("32768", &value));
+
+  // base16 - int16_t
+  int16_t int16_value;
+  OLA_ASSERT_FALSE(StringToInt("", &int16_value, true, 16));
+
+  OLA_ASSERT_TRUE(StringToInt("-1", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) -1, int16_value);
+
+  OLA_ASSERT_TRUE(StringToInt("0", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) 0, int16_value);
+  OLA_ASSERT_TRUE(StringToInt("1", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) 1, int16_value);
+  OLA_ASSERT_TRUE(StringToInt("a", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) 10, int16_value);
+  OLA_ASSERT_TRUE(StringToInt("f", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) 15, int16_value);
+  OLA_ASSERT_TRUE(StringToInt("a1", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) 161, int16_value);
+  OLA_ASSERT_TRUE(StringToInt("ff", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) 255, int16_value);
+  OLA_ASSERT_TRUE(StringToInt("7fff", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) 32767, int16_value);
+  OLA_ASSERT_TRUE(StringToInt("ffff", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) -1, int16_value);
+  OLA_ASSERT_TRUE(StringToInt("fff0", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) -16, int16_value);
+  OLA_ASSERT_TRUE(StringToInt("8000", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) -32768, int16_value);
+
+  OLA_ASSERT_FALSE(StringToInt("ffffff", &int16_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("ffffffff", &int16_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("ef123456", &int16_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("fz", &int16_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("zfff", &int16_value, true, 16));
+  OLA_ASSERT_TRUE(StringToInt("0xf", &int16_value, true, 16));
+  OLA_ASSERT_EQ((int16_t) 15, int16_value);
 }
 
 
@@ -974,6 +950,40 @@ void StringUtilsTest::testStringToInt8() {
   OLA_ASSERT_EQ((int8_t) 127, value);
   OLA_ASSERT_FALSE(StringToInt("128", &value));
   OLA_ASSERT_FALSE(StringToInt("129", &value));
+
+  // base16 - int8_t
+  int8_t int8_value;
+  OLA_ASSERT_FALSE(StringToInt("", &int8_value, true, 16));
+
+  OLA_ASSERT_TRUE(StringToInt("-1", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) -1, int8_value);
+
+  OLA_ASSERT_TRUE(StringToInt("0", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) 0, int8_value);
+  OLA_ASSERT_TRUE(StringToInt("1", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) 1, int8_value);
+  OLA_ASSERT_TRUE(StringToInt("a", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) 10, int8_value);
+  OLA_ASSERT_TRUE(StringToInt("f", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) 15, int8_value);
+  OLA_ASSERT_TRUE(StringToInt("7f", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) 127, int8_value);
+  OLA_ASSERT_TRUE(StringToInt("a1", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) -95, int8_value);
+  OLA_ASSERT_TRUE(StringToInt("80", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) -128, int8_value);
+  OLA_ASSERT_TRUE(StringToInt("ff", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) -1, int8_value);
+
+  OLA_ASSERT_FALSE(StringToInt("ffff", &int8_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("fff0", &int8_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("ffffff", &int8_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("ffffffff", &int8_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("ef123456", &int8_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("fz", &int8_value, true, 16));
+  OLA_ASSERT_FALSE(StringToInt("zfff", &int8_value, true, 16));
+  OLA_ASSERT_TRUE(StringToInt("0xf", &int8_value, true, 16));
+  OLA_ASSERT_EQ((int8_t) 15, int8_value);
 }
 
 
