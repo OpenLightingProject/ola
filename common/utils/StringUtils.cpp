@@ -174,7 +174,7 @@ bool StringToInt(const string &value,
   if (l > static_cast<long long>(UINT32_MAX)) {  // NOLINT(runtime/int)
     return false;
   }
-  *output = static_cast<unsigned int>(l);
+  *output = static_cast<uint32_t>(l);
   return true;
 }
 
@@ -227,10 +227,10 @@ bool StringToInt(const string &value,
   if (strict && *end_ptr != 0) {
     return false;
   }
-  if (l < INT32_MIN || l > INT32_MAX) {
+  if (l < INT32_MIN || l > UINT32_MAX) {
     return false;
   }
-  *output = static_cast<int>(l);
+  *output = static_cast<int32_t>(l);
   return true;
 }
 
@@ -242,7 +242,7 @@ bool StringToInt(const string &value,
   if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
-  if (v < INT16_MIN || v > INT16_MAX) {
+  if (v < INT16_MIN || v > UINT16_MAX) {
     return false;
   }
   *output = static_cast<int16_t>(v);
@@ -257,7 +257,7 @@ bool StringToInt(const string &value,
   if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
-  if (v < INT8_MIN || v > INT8_MAX) {
+  if (v < INT8_MIN || v > UINT8_MAX) {
     return false;
   }
   *output = static_cast<int8_t>(v);
