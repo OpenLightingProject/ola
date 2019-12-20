@@ -153,7 +153,7 @@ bool StringToBoolTolerant(const string &value, bool *output) {
 }
 
 bool StringToInt(const string &value,
-                 unsigned int *output,
+                 uint32_t *output,
                  bool strict,
                  uint8_t base) {
   if (value.empty()) {
@@ -209,7 +209,7 @@ bool StringToInt(const string &value,
 }
 
 bool StringToInt(const string &value,
-                 int *output,
+                 int32_t *output,
                  bool strict,
                  uint8_t base) {
   if (value.empty()) {
