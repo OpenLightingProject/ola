@@ -901,7 +901,7 @@ void StringUtilsTest::testStringToInt16() {
   OLA_ASSERT_EQ((int16_t) -32768, int16_value);
 
   OLA_ASSERT_FALSE(StringToInt("ffffff", &int16_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("ffffffff", &int16_value, true, 16));
+  OLA_ASSERT_TRUE(StringToInt("ffffffff", &int16_value, true, 16));
   OLA_ASSERT_FALSE(StringToInt("ef123456", &int16_value, true, 16));
   OLA_ASSERT_FALSE(StringToInt("fz", &int16_value, true, 16));
   OLA_ASSERT_FALSE(StringToInt("zfff", &int16_value, true, 16));
@@ -978,7 +978,7 @@ void StringUtilsTest::testStringToInt8() {
   OLA_ASSERT_FALSE(StringToInt("ffff", &int8_value, true, 16));
   OLA_ASSERT_FALSE(StringToInt("fff0", &int8_value, true, 16));
   OLA_ASSERT_FALSE(StringToInt("ffffff", &int8_value, true, 16));
-  OLA_ASSERT_FALSE(StringToInt("ffffffff", &int8_value, true, 16));
+  OLA_ASSERT_TRUE(StringToInt("ffffffff", &int8_value, true, 16));
   OLA_ASSERT_FALSE(StringToInt("ef123456", &int8_value, true, 16));
   OLA_ASSERT_FALSE(StringToInt("fz", &int8_value, true, 16));
   OLA_ASSERT_FALSE(StringToInt("zfff", &int8_value, true, 16));
