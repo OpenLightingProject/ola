@@ -171,7 +171,7 @@ bool StringToInt(const string &value,
   if (strict && *end_ptr != 0) {
     return false;
   }
-  if (l > static_cast<long long>(UINT32_MAX)) {  // NOLINT(runtime/int)
+  if (l != static_cast<uint32_t>(l)) {  // NOLINT(runtime/int)
     return false;
   }
   *output = static_cast<uint32_t>(l);
@@ -182,11 +182,11 @@ bool StringToInt(const string &value,
                  uint16_t *output,
                  bool strict,
                  uint8_t base) {
-  unsigned int v;
+  uint32_t v;
   if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
-  if (v > UINT16_MAX) {
+  if (v != static_cast<uint16_t>(v)) {
     return false;
   }
   *output = static_cast<uint16_t>(v);
@@ -197,11 +197,11 @@ bool StringToInt(const string &value,
                  uint8_t *output,
                  bool strict,
                  uint8_t base) {
-  unsigned int v;
+  uint32_t v;
   if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
-  if (v > UINT8_MAX) {
+  if (v != static_cast<uint8_t>(v)) {
     return false;
   }
   *output = static_cast<uint8_t>(v);
@@ -217,7 +217,10 @@ bool StringToInt(const string &value,
   }
   char *end_ptr;
   errno = 0;
-  long long l = strtoll(value.data(), &end_ptr, base);  // NOLINT(runtime/int)
+
+  long l = strtol(value.data(), &end_ptr, base);  // NOLINT(runtime/int)
+  int32_t i = static_cast<int32_t>(l);
+
   if (l == 0 && errno != 0) {
     return false;
   }
@@ -227,9 +230,16 @@ bool StringToInt(const string &value,
   if (strict && *end_ptr != 0) {
     return false;
   }
-  if (l < INT32_MIN || l > UINT32_MAX) {
+  if (i < 0 && base != 10) {
+    if (l > 0 && l != static_cast<uint32_t>(l)) {
+      return false;
+    } else if(l < 0 && i != l) {
+      return false;
+    }
+  } else if (l != static_cast<int32_t>(l)) {
     return false;
   }
+
   *output = static_cast<int32_t>(l);
   return true;
 }
@@ -238,14 +248,25 @@ bool StringToInt(const string &value,
                  int16_t *output,
                  bool strict,
                  uint8_t base) {
-  int v;
+  int32_t v;
+  int16_t i;
+
   if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
-  if (v < INT16_MIN || v > UINT16_MAX) {
+  i = static_cast<int16_t>(v);
+
+  if (i < 0 && base != 10) {
+    if (v > 0 && v != static_cast<uint16_t>(v)) {
+      return false;
+    } else if(v < 0 && i != v) {
+      return false;
+    }
+  } else if (v != i) {
     return false;
   }
-  *output = static_cast<int16_t>(v);
+
+  *output = i;
   return true;
 }
 
@@ -253,14 +274,25 @@ bool StringToInt(const string &value,
                  int8_t *output,
                  bool strict,
                  uint8_t base) {
-  int v;
+  int32_t v;
+  int8_t i;
+
   if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
-  if (v < INT8_MIN || v > UINT8_MAX) {
+  i = static_cast<int8_t>(v);
+
+  if (i < 0 && base != 10) {
+    if (v > 0 && v != static_cast<uint8_t>(v)) {
+      return false;
+    } else if(v < 0 && i != v) {
+      return false;
+    }
+  } else if (v != i) {
     return false;
   }
-  *output = static_cast<int8_t>(v);
+
+  *output = i;
   return true;
 }
 
