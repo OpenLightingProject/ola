@@ -6,6 +6,7 @@ Primary author:
 
 Contributors:
   Bastien Andrès, contributed to the dmx4linux plugin
+  Bruce Lowekamp, various fixes and python updates
   Carsten Presser, Karate USB plugin
   Dave Olsthoorn, working on a new web-ui
   E.S. Rosenberg, further work on ftdidmx plugin.

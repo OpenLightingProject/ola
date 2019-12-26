@@ -28,32 +28,30 @@ class TestState(object):
     return self._state
 
   def __eq__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return False
     return self._state == other._state
 
   def __lt__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
     return self._state < other._state
 
-  # These 4 can be replaced with functools.total_ordering when support for 2.7
-  # is dropped because NotImplemented is not supported by it before 3.4
-
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
     return self < other or self == other
 
   def __gt__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
-    return self._state > other._state
+    return not self <= other
 
   def __ge__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
-    return self > other or self == other
+    return not self < other
 
   def __ne__(self, other):
     return not self == other

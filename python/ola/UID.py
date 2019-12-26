@@ -56,7 +56,7 @@ class UID(object):
     return self.__str__()
 
   def __eq__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return False
     return (self.manufacturer_id == other.manufacturer_id and
             self.device_id == other.device_id)
@@ -64,39 +64,34 @@ class UID(object):
   def __lt__(self, other):
     if other is None:
       return False
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
     if self.manufacturer_id != other.manufacturer_id:
       return self.manufacturer_id < other.manufacturer_id
     else:
       return self.device_id < other.device_id
 
-  # These 4 can be replaced with functools.total_ordering when support for 2.7
-  # is dropped because NotImplemented is not supported by it before 3.4
-
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
     if other is None:
       return False
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
     return self < other or self == other
 
   def __gt__(self, other):
     if other is None:
       return True
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
-    if self.manufacturer_id != other.manufacturer_id:
-      return self.manufacturer_id > other.manufacturer_id
-    else:
-      return self.device_id > other.device_id
+    return not self <= other
 
   def __ge__(self, other):
     if other is None:
       return True
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
-    return self > other or self == other
+    return not self < other
 
   def __ne__(self, other):
     return not self == other
