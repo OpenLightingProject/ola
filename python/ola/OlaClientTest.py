@@ -14,6 +14,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # OlaClientTest.py
+# Copyright (C) 2019 Bruce Lowekamp
 
 import itertools
 import unittest
