@@ -159,6 +159,7 @@ void JsonSchemaParserTest::ReadTestCases(const string& filename,
   const string comment_prefix = "//";
   string line;
   while (getline(in, line)) {
+    line.erase(line.find_last_not_of("\r")+1);
     if (line.compare(0, comment_prefix.size(), comment_prefix) == 0) {
       continue;
     } else if (line == "--------") {
