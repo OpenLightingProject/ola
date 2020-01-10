@@ -53,7 +53,7 @@ DEFINE_string(verify, "", "The show file to verify.");
 DEFINE_s_string(universes, u, "",
                 "A comma separated list of universes to record");
 DEFINE_s_uint32(delay, d, 0, "The delay in ms between successive iterations.");
-DEFINE_uint32(duration, 0, "The length of time (seconds) to run for.");
+DEFINE_uint32(duration, 0, "The length of time (seconds) to play or record for.");
 // 0 means infinite looping
 DEFINE_s_uint32(iterations, i, 1,
                 "The number of times to repeat the show, 0 means unlimited.");
@@ -84,7 +84,7 @@ int RecordShow() {
     universes.push_back(universe);
   }
 
-  ShowRecorder show_recorder(FLAGS_record.str(), universes);
+  ShowRecorder show_recorder(FLAGS_record.str(), universes, FLAGS_duration);
   int status = show_recorder.Init();
   if (status)
     return status;
