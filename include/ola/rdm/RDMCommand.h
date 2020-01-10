@@ -175,8 +175,9 @@ class RDMCommand {
 
   /**
    * @brief The RDM Start Code.
+   * @deprecated Use ola::rdm::START_CODE from RDMPacket.h instead (10 Mar 2019).
    */
-  static const uint8_t START_CODE = 0xcc;
+  static const uint8_t START_CODE = ola::rdm::START_CODE;
 
   /**
    * @brief Extract a RDMCommand from raw data.

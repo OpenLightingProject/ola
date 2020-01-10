@@ -255,7 +255,7 @@ class ResponderTestFixture(TestFixture):
     self._broadcast_write_delay_s = broadcast_write_delay / 1000.0
     self._timing_stats = timing_stats
 
-    # This is set to the tuple of (sub_device, command_class, pid) when we sent
+    # This is set to the tuple of (sub_device, command_class, pid) when we send
     # a message. It's used to identify the response if we get an ACK_TIMER and
     # use QUEUED_MESSAGEs
     self._outstanding_request = None
@@ -591,12 +591,17 @@ class ResponderTestFixture(TestFixture):
         self.Stop()
         return
     elif (response.pid == status_messages_pid.value and
+          response.response_type != OlaClient.RDM_NACK_REASON and
           unpacked_data.get('messages', None) == []):
         # This means we've run out of messages
         if self._state == TestState.NOT_RUN:
           self.SetFailed('ACK_TIMER issued but the response was never queued')
         self.Stop()
         return
+    elif (response.pid == status_messages_pid.value and
+          response.response_type == OlaClient.RDM_NACK_REASON):
+        self.LogDebug('Status message returned nack, fetching next message: %s'
+                      % response.nack_reason)
 
     # Otherwise fetch the next one
     self._GetQueuedMessage()

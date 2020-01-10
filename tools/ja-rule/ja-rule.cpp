@@ -30,6 +30,7 @@
 #include <ola/network/MACAddress.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMCommandSerializer.h>
+#include <ola/rdm/RDMPacket.h>
 #include <ola/rdm/UID.h>
 #include <ola/strings/Format.h>
 #include <ola/util/Utils.h>
@@ -396,7 +397,7 @@ class Controller {
       return;
     }
 
-    if (payload[0] == RDMCommand::START_CODE) {
+    if (payload[0] == ola::rdm::START_CODE) {
       RDMStatusCode status_code;
       // Skip over the start code.
       auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(

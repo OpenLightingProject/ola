@@ -64,6 +64,7 @@ uint8_t RDMAPI::OutstandingMessagesCount(const UID &uid) {
 
 /*
  * @brief Fetch a count of the proxied devices
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param callback the Callback to invoke when this request completes
  * @param error a pointer to a string which is set if an error occurs
@@ -98,6 +99,7 @@ bool RDMAPI::GetProxiedDeviceCount(
 
 /*
  * @brief Fetch a list of the proxied devices
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param callback the Callback to invoke when this request completes
  * @param error a pointer to a string which is set if an error occurs
@@ -131,6 +133,7 @@ bool RDMAPI::GetProxiedDevices(
 
 /*
  * @brief Get the communication status report
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param callback the Callback to invoke when this request completes
  * @param error a pointer to a string which is set if an error occurs
@@ -166,6 +169,7 @@ bool RDMAPI::GetCommStatus(
 
 /*
  * @brief Clear the Communication status
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param callback the Callback to invoke when this request completes
  * @param error a pointer to a string which is set if an error occurs
@@ -254,6 +258,7 @@ bool RDMAPI::GetQueuedMessage(
 
 /*
  * @brief Get the status information from a device
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param status_type the Status Type requested
  * @param callback the Callback to invoke when this request completes
@@ -292,6 +297,7 @@ bool RDMAPI::GetStatusMessage(
 
 /*
  * @brief Fetch the description for a status id
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param callback the callback to invoke when this request completes
  * @param error a pointer to a string which is set if an error occurs
@@ -327,6 +333,7 @@ bool RDMAPI::GetStatusIdDescription(
 
 /*
  * @brief Clear the status message queue
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -360,6 +367,7 @@ bool RDMAPI::ClearStatusId(
 
 /*
  * @brief Get the reporting threshold for a device
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -397,6 +405,7 @@ bool RDMAPI::GetSubDeviceReporting(
 
 /*
  * @brief Set the reporting threshold for a device
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param sub_device the sub device to use
  * @param status_type the Status Type to set the threshold as
@@ -437,6 +446,7 @@ bool RDMAPI::SetSubDeviceReporting(
 
 /*
  * @brief Fetch the supported parameters list
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -472,6 +482,7 @@ bool RDMAPI::GetSupportedParameters(
 
 /*
  * @brief Fetch the description of a param ID
+ * @param universe the universe to perform the call on
  * @param uid the UID of the device to address this message to
  * @param pid the parameter id to fetch the description for
  * @param callback the callback to invoke when this request completes
@@ -510,6 +521,7 @@ bool RDMAPI::GetParameterDescription(
 
 /*
  * @brief Fetch the device information
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -547,6 +559,7 @@ bool RDMAPI::GetDeviceInfo(
 
 /*
  * @brief Fetch the product detail IDs.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -584,6 +597,7 @@ bool RDMAPI::GetProductDetailIdList(
 
 /*
  * @brief Fetch the description for a device model.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -621,6 +635,7 @@ bool RDMAPI::GetDeviceModelDescription(
 
 /*
  * @brief Fetch the manufacturer label for a device
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -658,6 +673,7 @@ bool RDMAPI::GetManufacturerLabel(
 
 /*
  * @brief Fetch the device label
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -695,6 +711,7 @@ bool RDMAPI::GetDeviceLabel(
 
 /*
  * @brief Set the device label
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -732,6 +749,7 @@ bool RDMAPI::SetDeviceLabel(
 
 /*
  * @brief Check if a device is using the factory defaults
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -769,6 +787,7 @@ bool RDMAPI::GetFactoryDefaults(
 
 /*
  * @brief Reset a device to factory defaults
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -804,6 +823,7 @@ bool RDMAPI::ResetToFactoryDefaults(
 
 /*
  * @brief Get the list of languages this device supports
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -841,6 +861,7 @@ bool RDMAPI::GetLanguageCapabilities(
 
 /*
  * @brief Get the language for this device
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -878,6 +899,7 @@ bool RDMAPI::GetLanguage(
 
 /*
  * @brief Set the language for this device
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param language the language code, only the first two characters are used
@@ -923,6 +945,7 @@ bool RDMAPI::SetLanguage(
 
 /*
  * @brief Get the software version label
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -960,6 +983,7 @@ bool RDMAPI::GetSoftwareVersionLabel(
 
 /*
  * @brief Get the boot software version.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -997,6 +1021,7 @@ bool RDMAPI::GetBootSoftwareVersion(
 
 /*
  * @brief Get the boot software version label
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -1034,6 +1059,7 @@ bool RDMAPI::GetBootSoftwareVersionLabel(
 
 /*
  * @brief Get the current DMX personality
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -1072,6 +1098,7 @@ bool RDMAPI::GetDMXPersonality(
 
 /*
  * @brief Set the DMX personality
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param personality the value of the personality to choose
@@ -1109,6 +1136,7 @@ bool RDMAPI::SetDMXPersonality(
 
 /*
  * @brief Get the description for a DMX personality
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param personality the value of the personality to get the description of
@@ -1152,6 +1180,7 @@ bool RDMAPI::GetDMXPersonalityDescription(
 
 /*
  * @brief Get the DMX start address
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -1166,29 +1195,20 @@ bool RDMAPI::GetDMXAddress(
                        const ResponseStatus&,
                        uint16_t> *callback,
     string *error) {
-  if (CheckCallback(error, callback))
-    return false;
-  if (CheckNotBroadcast(uid, error, callback))
-    return false;
-  if (CheckValidSubDevice(sub_device, false, error, callback))
-    return false;
 
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleGetDMXAddress,
-    callback);
-  return CheckReturnStatus(
-    m_impl->RDMGet(cb,
-                   universe,
-                   uid,
-                   sub_device,
-                   PID_DMX_START_ADDRESS),
+  return GenericGetU16(
+    universe,
+    uid,
+    sub_device,
+    callback,
+    PID_DMX_START_ADDRESS,
     error);
 }
 
 
 /*
  * @brief Set the DMX start address
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param start_address the new start address
@@ -1203,30 +1223,21 @@ bool RDMAPI::SetDMXAddress(
     uint16_t start_address,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
-  if (CheckCallback(error, callback))
-    return false;
-  if (CheckValidSubDevice(sub_device, true, error, callback))
-    return false;
 
-  start_address = HostToNetwork(start_address);
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleEmptyResponse,
-    callback);
-  return CheckReturnStatus(
-    m_impl->RDMSet(cb,
-                   universe,
-                   uid,
-                   sub_device,
-                   PID_DMX_START_ADDRESS,
-                   reinterpret_cast<const uint8_t*>(&start_address),
-                   sizeof(start_address)),
+  return GenericSetU16(
+    universe,
+    uid,
+    sub_device,
+    start_address,
+    callback,
+    PID_DMX_START_ADDRESS,
     error);
 }
 
 
 /*
  * @brief Fetch the DMX slot info
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -1264,6 +1275,7 @@ bool RDMAPI::GetSlotInfo(
 
 /*
  * @brief Fetch a DMX slot description
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param slot_offset the offset of the slot to get the description of
@@ -1307,6 +1319,7 @@ bool RDMAPI::GetSlotDescription(
 
 /*
  * @brief Get the default value for a slot
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -1344,6 +1357,7 @@ bool RDMAPI::GetSlotDefaultValues(
 
 /*
  * @brief Get the definition for a sensor
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param sensor_number the sensor index to get the descriptor for
@@ -1385,6 +1399,7 @@ bool RDMAPI::GetSensorDefinition(
 
 /*
  * @brief Get the value of a sensor
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param sensor_number the sensor index to get the value of
@@ -1426,6 +1441,7 @@ bool RDMAPI::GetSensorValue(
 
 /*
  * @brief Reset a sensor
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param sensor_number the sensor index to reset
@@ -1465,6 +1481,7 @@ bool RDMAPI::SetSensorValue(
 
 /*
  * @brief Put a sensor into record mode
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param sensor_number the sensor index to record
@@ -1502,6 +1519,7 @@ bool RDMAPI::RecordSensors(
 
 /*
  * @brief Get the device hours
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -1528,6 +1546,7 @@ bool RDMAPI::GetDeviceHours(
 
 /*
  * @brief Set the device hours
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param device_hours the number of device hours
@@ -1557,6 +1576,7 @@ bool RDMAPI::SetDeviceHours(
 
 /*
 * @brief Get the lamp hours
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -1583,6 +1603,7 @@ bool RDMAPI::GetLampHours(
 
 /*
  * @brief Set the lamp hours
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param lamp_hours the number of lamp hours
@@ -1612,6 +1633,7 @@ bool RDMAPI::SetLampHours(
 
 /*
 * @brief Get the number of lamp strikes
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -1638,6 +1660,7 @@ bool RDMAPI::GetLampStrikes(
 
 /*
  * @brief Set the lamp strikes
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param lamp_strikes the number of lamp strikes
@@ -1667,6 +1690,7 @@ bool RDMAPI::SetLampStrikes(
 
 /*
 * @brief Get the state of the lamp
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -1693,6 +1717,7 @@ bool RDMAPI::GetLampState(
 
 /*
  * @brief Set the lamp state
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param lamp_state the new lamp state
@@ -1722,6 +1747,7 @@ bool RDMAPI::SetLampState(
 
 /*
 * @brief Get the mode of the lamp
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -1748,6 +1774,7 @@ bool RDMAPI::GetLampMode(
 
 /*
  * @brief Set the lamp mode
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param lamp_mode the new lamp mode
@@ -1777,6 +1804,7 @@ bool RDMAPI::SetLampMode(
 
 /*
 * @brief Get the number of device power cycles
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -1803,6 +1831,7 @@ bool RDMAPI::GetDevicePowerCycles(
 
 /*
  * @brief Set the number of power cycles
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param power_cycles the number of power cycles
@@ -1832,6 +1861,7 @@ bool RDMAPI::SetDevicePowerCycles(
 
 /*
 * @brief Get the display invert setting
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -1858,6 +1888,7 @@ bool RDMAPI::GetDisplayInvert(
 
 /*
  * @brief Set the display invert setting
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param display_invert the new invert setting
@@ -1887,6 +1918,7 @@ bool RDMAPI::SetDisplayInvert(
 
 /*
 * @brief Get the display level
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -1913,6 +1945,7 @@ bool RDMAPI::GetDisplayLevel(
 
 /*
  * @brief Set the display level
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param display_level the new setting
@@ -1942,6 +1975,7 @@ bool RDMAPI::SetDisplayLevel(
 
 /*
 * @brief Get the pan invert parameter
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -1968,6 +2002,7 @@ bool RDMAPI::GetPanInvert(
 
 /*
  * @brief Invert the pan parameter
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param invert set to true to invert
@@ -1997,6 +2032,7 @@ bool RDMAPI::SetPanInvert(
 
 /*
 * @brief Get the tilt invert parameter
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -2023,6 +2059,7 @@ bool RDMAPI::GetTiltInvert(
 
 /*
  * @brief Invert the tilt parameter
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param invert set to true to invert
@@ -2052,6 +2089,7 @@ bool RDMAPI::SetTiltInvert(
 
 /*
 * @brief Get the pan/tilt swap parameter
+* @param universe the universe to perform the call on
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
 * @param callback the callback to invoke when this request completes
@@ -2078,6 +2116,7 @@ bool RDMAPI::GetPanTiltSwap(
 
 /*
  * @brief Swap the pan and tilt actions
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param swap, true to swap, false otherwise
@@ -2107,6 +2146,7 @@ bool RDMAPI::SetPanTiltSwap(
 
 /*
  * @brief Get the clock value
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2139,6 +2179,7 @@ bool RDMAPI::GetClock(
 
 /*
  * @brief Set the clock value
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param clock, the new clock settings
@@ -2177,6 +2218,7 @@ bool RDMAPI::SetClock(
 
 /*
  * @brief Check the identify state for a device
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2212,6 +2254,7 @@ bool RDMAPI::GetIdentifyDevice(
 
 /*
  * @brief Change the identify state for a device
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param mode the identify mode to set
@@ -2250,6 +2293,7 @@ bool RDMAPI::IdentifyDevice(
 
 /*
  * @brief Reset a device
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param warm_reset true for a warm reset, false for a cold reset
@@ -2288,6 +2332,7 @@ bool RDMAPI::ResetDevice(
 
 /*
  * @brief Get the power state for a device
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2323,6 +2368,7 @@ bool RDMAPI::GetPowerState(
 
 /*
  * @brief Set the power state for a device.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param power_state the new power state
@@ -2361,6 +2407,7 @@ bool RDMAPI::SetPowerState(
 
 /*
  * @brief Set the reset device for a device.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param reset_device the new reset device
@@ -2399,6 +2446,7 @@ bool RDMAPI::SetResetDevice(
 
 /*
  * @brief Fetch the DNS hostname
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the DNS hostname for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2440,6 +2488,7 @@ bool RDMAPI::GetDnsHostname(
 
 /*
  * @brief Set the DNS hostname
+ * @param universe the universe to perform the call on
  * @param uid the UID to set the DNS hostname for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2479,6 +2528,7 @@ bool RDMAPI::SetDnsHostname(
 
 /*
  * @brief Fetch the DNS domain name
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the DNS domain name for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2520,6 +2570,7 @@ bool RDMAPI::GetDnsDomainName(
 
 /*
  * @brief Set the DNS domain name
+ * @param universe the universe to perform the call on
  * @param uid the UID to set the DNS domain name for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2558,6 +2609,7 @@ bool RDMAPI::SetDnsDomainName(
 
 /*
  * @brief Fetch the dimmer curve
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the dimmer curve information for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2598,6 +2650,7 @@ bool RDMAPI::GetCurve(
 
 /*
  * @brief Set the dimmer curve
+ * @param universe the universe to perform the call on
  * @param uid the UID to set the dimmer curve for
  * @param sub_device the sub device to use
  * @param curve the index of the curve to set
@@ -2637,6 +2690,7 @@ bool RDMAPI::SetCurve(
 
 /*
  * @brief Fetch the dimmer curve description (name)
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the dimmer curve description for
  * @param sub_device the sub device to use
  * @param curve the id of the curve to fetch the description for
@@ -2680,7 +2734,203 @@ bool RDMAPI::GetCurveDescription(
 }
 
 /*
+ * @brief Fetch the dimmer info
+ * @param universe the universe to perform the call on
+ * @param uid the UID to fetch the dimmer info for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which is set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetDimmerInfo(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const DimmerInfoDescriptor&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback)) {
+    return false;
+  }
+
+  if (CheckNotBroadcast(uid, error, callback)) {
+    return false;
+  }
+
+  if (CheckValidSubDevice(sub_device, false, error, callback)) {
+    return false;
+  }
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetDimmerInfo,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_DIMMER_INFO),
+    error);
+}
+
+/*
+ * @brief Fetch the dimmer minimum levels
+ * @param universe the universe to perform the call on
+ * @param uid the UID to fetch the dimmer info for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which is set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetDimmerMinimumLevels(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const DimmerMinimumDescriptor&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback)) {
+    return false;
+  }
+
+  if (CheckNotBroadcast(uid, error, callback)) {
+    return false;
+  }
+
+  if (CheckValidSubDevice(sub_device, false, error, callback)) {
+    return false;
+  }
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetDimmerMinimumLevels,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_MINIMUM_LEVEL),
+    error);
+}
+
+/*
+ * @brief Set the dimmer minimum levels
+ * @param universe the universe to perform the call on
+ * @param uid the UID to set the dimmer curve for
+ * @param sub_device the sub device to use
+ * @param min_increasing the value for dimmer minimum while increasing
+ * @param min_decreasing the value for dimmer minimum while decreasing
+ * @param on_below_min the value set to either true or false to indicate whether
+ *        or not the dimmer stays on when minimum is exceeded
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which is set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::SetDimmerMinimumLevels(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t min_increasing,
+    uint16_t min_decreasing,
+    bool on_below_min,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback)) {
+    return false;
+  }
+
+  if (CheckValidSubDevice(sub_device, true, error, callback)) {
+    return false;
+  }
+
+  PACK(
+  struct minimum_levels {
+    uint16_t min_increasing;
+    uint16_t min_decreasing;
+    uint8_t on_below_min;
+  });
+  STATIC_ASSERT(sizeof(minimum_levels) == 5);
+  struct minimum_levels raw_levels;
+
+  raw_levels.min_increasing = HostToNetwork(min_increasing);
+  raw_levels.min_decreasing = HostToNetwork(min_decreasing);
+  raw_levels.on_below_min = on_below_min;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   PID_MINIMUM_LEVEL,
+                   reinterpret_cast<const uint8_t*>(&raw_levels),
+                   sizeof(raw_levels)),
+    error);
+}
+
+/*
+ * @brief Fetch the dimmer maximum level
+ * @param universe the universe to perform the call on
+ * @param uid the UID to fetch the dimmer info for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which is set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetDimmerMaximumLevel(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint16_t> *callback,
+    string *error) {
+
+  return GenericGetU16(
+      universe,
+      uid,
+      sub_device,
+      callback,
+      PID_MAXIMUM_LEVEL,
+      error);
+}
+
+/*
+ * @brief Set the dimmer maximum level
+ * @param universe the universe to perform the call on
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param maximum_level the new maximum level
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which is set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::SetDimmerMaximumLevel(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t maximum_level,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+
+  return GenericSetU16(
+      universe,
+      uid,
+      sub_device,
+      maximum_level,
+      callback,
+      PID_MAXIMUM_LEVEL,
+      error);
+}
+
+/*
  * @brief Check if a device is in self test mode.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2716,6 +2966,7 @@ bool RDMAPI::SelfTestEnabled(
 
 /*
  * @brief Perform a self test on a device.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param self_test_number the number of the self test to perform.
@@ -2753,6 +3004,7 @@ bool RDMAPI::PerformSelfTest(
 
 /*
  * @brief Fetch the description of a self test.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param self_test_number the number of the self test to fetch the description
@@ -2794,6 +3046,7 @@ bool RDMAPI::SelfTestDescription(
 
 /*
  * @brief Capture the current state into a preset.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param scene the number of the preset scene to store
@@ -2854,6 +3107,7 @@ bool RDMAPI::CapturePreset(
 
 /*
  * @brief Fetch the current playback mode.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param callback the callback to invoke when this request completes
@@ -2894,6 +3148,7 @@ bool RDMAPI::PresetPlaybackMode(
 
 /*
  * @brief Set the current playback mode.
+ * @param universe the universe to perform the call on
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
  * @param playback_mode the playback scene to use, PRESET_PLAYBACK_OFF or
@@ -3600,30 +3855,6 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
 
 
 /*
- * @brief Handle a get DMX_START_ADDRESS response
- */
-void RDMAPI::_HandleGetDMXAddress(
-    SingleUseCallback2<void,
-                       const ResponseStatus&,
-                       uint16_t> *callback,
-    const ResponseStatus &status,
-    const string &data) {
-  ResponseStatus response_status = status;
-  static const unsigned int DATA_SIZE = 2;
-  uint16_t start_address = 0;
-  if (response_status.WasAcked()) {
-    if (data.size() != DATA_SIZE) {
-      SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
-    } else {
-      start_address = *(reinterpret_cast<const uint16_t*>(data.data()));
-      start_address = NetworkToHost(start_address);
-    }
-  }
-  callback->Run(response_status, start_address);
-}
-
-
-/*
  * @brief Handle a get SLOT_INFO response
  */
 void RDMAPI::_HandleGetSlotInfo(
@@ -4001,6 +4232,97 @@ void RDMAPI::_HandleGetCurveDescription(
   callback->Run(response_status, requested_curve, description);
 }
 
+/*
+ * @brief Handle a get DIMMER_INFO response
+ */
+void RDMAPI::_HandleGetDimmerInfo(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const DimmerInfoDescriptor&> *callback,
+    const ResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status = status;
+  DimmerInfoDescriptor dimmer_info;
+
+  if (response_status.WasAcked()) {
+    PACK(
+    struct dimmer_info_s {
+      uint16_t min_level_lower_limit;
+      uint16_t min_level_upper_limit;
+      uint16_t max_level_lower_limit;
+      uint16_t max_level_upper_limit;
+      uint8_t curves_supported;
+      uint8_t resolution;
+      uint8_t split_levels_supported;
+    });
+    STATIC_ASSERT(sizeof(dimmer_info_s) == 11);
+    struct dimmer_info_s raw_description;
+
+    unsigned int data_size = data.size();
+    if (data_size == sizeof(dimmer_info_s)) {
+      memcpy(&raw_description, data.data(), data_size);
+
+      dimmer_info.min_level_lower_limit =
+          NetworkToHost(raw_description.min_level_lower_limit);
+      dimmer_info.min_level_upper_limit =
+          NetworkToHost(raw_description.min_level_upper_limit);
+      dimmer_info.max_level_lower_limit =
+          NetworkToHost(raw_description.max_level_lower_limit);
+      dimmer_info.max_level_upper_limit =
+          NetworkToHost(raw_description.max_level_upper_limit);
+      dimmer_info.curves_supported = raw_description.curves_supported;
+      dimmer_info.resolution = raw_description.resolution;
+      dimmer_info.split_levels_supported =
+          raw_description.split_levels_supported;
+    } else {
+      std::ostringstream str;
+      str << data_size << " needs to be " << sizeof(dimmer_info_s);
+      response_status.error = str.str();
+    }
+  }
+  callback->Run(response_status, dimmer_info);
+}
+
+/*
+ * @brief Handle a get MINIMUM_LEVEL response
+ */
+void RDMAPI::_HandleGetDimmerMinimumLevels(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const DimmerMinimumDescriptor&> *callback,
+    const ResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status = status;
+  DimmerMinimumDescriptor dimmer_mins;
+
+  if (response_status.WasAcked()) {
+    PACK(
+    struct dimmer_min_s {
+      uint16_t min_level_increasing;
+      uint16_t min_level_decreasing;
+      uint8_t on_below_min;
+    });
+    STATIC_ASSERT(sizeof(dimmer_min_s) == 5);
+    struct dimmer_min_s raw_description;
+
+    unsigned int data_size = data.size();
+    if (data_size == sizeof(dimmer_min_s)) {
+      memcpy(&raw_description, data.data(), data_size);
+
+      dimmer_mins.min_level_increasing =
+          NetworkToHost(raw_description.min_level_increasing);
+      dimmer_mins.min_level_decreasing =
+          NetworkToHost(raw_description.min_level_decreasing);
+      dimmer_mins.on_below_min = raw_description.on_below_min;
+    } else {
+      std::ostringstream str;
+      str << data_size << " needs to be " << sizeof(dimmer_min_s);
+      response_status.error = str.str();
+    }
+  }
+  callback->Run(response_status, dimmer_mins);
+}
+
 
 //-----------------------------------------------------------------------------
 // Private methods follow
@@ -4016,6 +4338,8 @@ bool RDMAPI::GenericGetU8(
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
     return false;
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
@@ -4043,6 +4367,8 @@ bool RDMAPI::GenericSetU8(
     string *error) {
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
+  if (CheckCallback(error, callback))
+    return false;
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
@@ -4060,6 +4386,66 @@ bool RDMAPI::GenericSetU8(
 }
 
 
+// @brief get a 16 bit value
+bool RDMAPI::GenericGetU16(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint16_t> *callback,
+    uint16_t pid,
+    string *error) {
+  if (CheckNotBroadcast(uid, error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleU16Response,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   pid),
+    error);
+}
+
+
+// @brief set a 16 bit value
+bool RDMAPI::GenericSetU16(
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t value,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    uint16_t pid,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
+    return false;
+
+  value = HostToNetwork(value);
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   universe,
+                   uid,
+                   sub_device,
+                   pid,
+                   reinterpret_cast<const uint8_t*>(&value),
+                   sizeof(value)),
+    error);
+}
+
+
 // @brief get a 32 bit value
 bool RDMAPI::GenericGetU32(
     unsigned int universe,
@@ -4071,6 +4457,8 @@ bool RDMAPI::GenericGetU32(
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
     return false;
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
@@ -4097,6 +4485,8 @@ bool RDMAPI::GenericSetU32(
     uint16_t pid,
     string *error) {
   if (CheckValidSubDevice(sub_device, true, error, callback))
+    return false;
+  if (CheckCallback(error, callback))
     return false;
 
   value = HostToNetwork(value);
