@@ -326,6 +326,11 @@ typedef enum {
 } rdm_data_type;
 
 
+// Remember to update the other places when adding new NACK codes:
+// common/rdm/RDMHelper.cpp
+// plugins/usbpro/DmxTriWidget.cpp
+// plugins/usbpro/DmxTriWidget.h
+// python/ola/OlaClient.py
 typedef enum {
   NR_UNKNOWN_PID = 0x0000,
   NR_FORMAT_ERROR = 0x0001,
