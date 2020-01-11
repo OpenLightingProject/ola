@@ -78,7 +78,7 @@ int ShowRecorder::Init() {
         m_duration * 1000,
         ola::NewSingleCallback(this, &ShowRecorder::Stop));
   }
-  
+
   m_client.GetClient()->SetDMXCallback(
       ola::NewCallback(this, &ShowRecorder::NewFrame));
 
@@ -107,6 +107,8 @@ int ShowRecorder::Record() {
  * Stop recording
  */
 void ShowRecorder::Stop() {
+  // TODO(Peter): This should really write the current delay out at the end if
+  // we're looping
   m_client.GetSelectServer()->Terminate();
 }
 

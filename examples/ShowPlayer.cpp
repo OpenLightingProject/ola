@@ -66,9 +66,9 @@ int ShowPlayer::Init() {
   return ola::EXIT_OK;
 }
 
-int ShowPlayer::Playback(unsigned int iterations,
-                         unsigned int duration,
-                         unsigned int delay) {
+int ShowPlayer::Playback(const unsigned int iterations,
+                         const unsigned int duration,
+                         const unsigned int delay) {
   m_infinite_loop = iterations == 0 || duration != 0;
   m_iteration_remaining = iterations;
   m_loop_delay = delay;

@@ -54,9 +54,9 @@ class ShowPlayer {
    * @param delay the hold time at the end of a show before playback starts
    * from the beginning again.
    */
-  int Playback(unsigned int iterations,
-               unsigned int duration,
-               unsigned int delay);
+  int Playback(const unsigned int iterations,
+               const unsigned int duration,
+               const unsigned int delay);
 
  private:
   ola::client::OlaClientWrapper m_client;
