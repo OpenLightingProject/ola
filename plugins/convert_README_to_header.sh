@@ -30,6 +30,13 @@ outfilename=`basename $outfile`;
 # See http://stackoverflow.com/a/16576291
 # On Mac OS's sed, \n is not recognized as a newline character, but
 # \[actual newline] works
+#Original sed:
+#:a - label "a"
+#N - add a newline
+#$!ba - Not the last line of the last file, branch to "a"
+#s/\"/\\\"/g - replace " with \" throughout
+#s/\n/\\\\n"\\
+#"/g - replace newline with \\n<newline>
 desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\"/\\\"/g' -e 's/\n/\\\\n"\\
 "/g' "$path/README.md"`;
 
