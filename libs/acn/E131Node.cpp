@@ -181,7 +181,7 @@ bool E131Node::Start() {
   }
 
   m_socket.SetTos(m_options.dscp);
-  m_socket.SetMulticastInterface(m_interface.ip_address);
+  m_socket.SetMulticastInterface(m_interface);
 
   m_socket.SetOnData(NewCallback(&m_incoming_udp_transport,
                                  &IncomingUDPTransport::Receive));
