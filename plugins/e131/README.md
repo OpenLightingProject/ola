@@ -25,8 +25,15 @@ Ignore preview data.
 The number of input ports to create up to a max of 32.
 
 `ip = [a.b.c.d|<interface_name>]`  
-The IP address or interface name to bind to. If not specified it will use
-the first non-loopback interface.
+The IP address or interface name to bind to. If not specified or no
+matching interface is found the first "up" or configured non-loopback
+interface is used. Prefer `interface` if this is not desired.
+
+`interface = <interface_name>`
+The name of the interface to bind to. Overrides the "ip" option if given.
+Unlike the "ip" option this will use the specified interface whenever
+possible at all, especially even if it is down. If the interface does not
+exist an error is thrown rather than picking just any interface.
 
 `output_ports = [int]`  
 The number of output ports to create up to a max of 32.
