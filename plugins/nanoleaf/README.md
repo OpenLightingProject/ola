@@ -7,10 +7,10 @@ This plugin uses the streaming external control effects functionality of
 the Aurora OpenAPI.
 
 Currently only the [Nanoleaf
-Aurora](https://nanoleaf.me/en/consumer-led-lighting/products/
-smarter-series/nanoleaf-light-panels-smarter-kit/)
+Aurora](https://nanoleaf.me/en/consumer-led-lighting/products/smarter-series/nanoleaf-light-panels-smarter-kit/)
 is supported.
 
+The Nanoleaf Aurora must be in "ExternalStreaming" mode UDP Enabled via Nanoleaf API: `"write": { "command": "display", "animType": "extControl" }}`
 
 ## Config file: `ola-nanoleaf.conf`
 
@@ -24,5 +24,6 @@ one controller by adding multiple `controller =` lines
 The port to stream to on the controller, range is 1 - 65535.
 
 `<controller IP>-panels = [int]`
-The list of panel IDs to control, each panel is mapped to three DMX512 slots
-(for Red, Green and Blue).
+The list of panel IDs to control, each panel is mapped to three DMX512 slots 
+(for Red, Green and Blue). 
+Panel IDs are comma seperated ie: `321,789,123`
