@@ -772,7 +772,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     if self._socket is None:
       self._socket = socket.socket()
       try:
-        self._socket.connect(('localhost', 9010))
+        self._socket.connect(('localhost', OLA_PORT))
       except socket.error:
         raise OLADNotRunningException('Failed to connect to olad')
 
