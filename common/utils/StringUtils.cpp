@@ -435,6 +435,7 @@ void CapitalizeLabel(string *s) {
 }
 
 void CustomCapitalizeLabel(string *s) {
+  // Remember to update the Doxygen in include/ola/StringUtils.h too
   static const char* const transforms[] = {
     "dhcp",
     "dmx",
@@ -443,6 +444,7 @@ void CustomCapitalizeLabel(string *s) {
     "ipv4",  // Should really be IPv4 probably, but better than nothing
     "ipv6",  // Should really be IPv6 probably, but better than nothing
     "led",
+    "mdmx",  // City Theatrical, should really be mDMX, but better than nothing
     "pdl",
     "pid",
     "rdm",
