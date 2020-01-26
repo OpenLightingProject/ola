@@ -320,7 +320,7 @@ class LibUsbAdaptor {
    *   output (depending on direction bits within bmRequestType)
    * @param wLength the length field for the setup packet. The data buffer
    *   should be at least this size.
-   * @param timeout timeout (in millseconds) that this function should wait
+   * @param timeout timeout (in milliseconds) that this function should wait
    *   before giving up due to no response being received. For an unlimited
    *   timeout, use value 0.
    * @returns on success, the number of bytes actually transferred
