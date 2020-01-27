@@ -326,6 +326,11 @@ typedef enum {
 } rdm_data_type;
 
 
+// Remember to update the other places when adding new NACK codes:
+// common/rdm/RDMHelper.cpp
+// plugins/usbpro/DmxTriWidget.cpp
+// plugins/usbpro/DmxTriWidget.h
+// python/ola/OlaClient.py
 typedef enum {
   NR_UNKNOWN_PID = 0x0000,
   NR_FORMAT_ERROR = 0x0001,
@@ -339,7 +344,9 @@ typedef enum {
   NR_SUB_DEVICE_OUT_OF_RANGE = 0x0009,
   NR_PROXY_BUFFER_FULL = 0x000A,
   NR_ACTION_NOT_SUPPORTED = 0x000B,
-  NR_ENDPOINT_NUMBER_INVALID = 0x0011
+  NR_ENDPOINT_NUMBER_INVALID = 0x000C,
+  NR_INVALID_ENDPOINT_MODE = 0x000D,
+  NR_UNKNOWN_UID = 0x000E
 } rdm_nack_reason;
 
 
