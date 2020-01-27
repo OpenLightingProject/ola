@@ -399,6 +399,10 @@ class RDMNack(object):
     'NR_PACKET_SIZE_UNSUPPORTED': (8, 'Packet size unsupported'),
     'NR_SUB_DEVICE_OUT_OF_RANGE': (9, 'Sub device out of range'),
     'NR_PROXY_BUFFER_FULL': (10, 'Proxy buffer full'),
+    'NR_ACTION_NOT_SUPPORTED': (11, 'Action not supported'),
+    'NR_ENDPOINT_NUMBER_INVALID': (12, 'Endpoint number invalid'),
+    'NR_INVALID_ENDPOINT_MODE': (13, 'Invalid endpoint mode'),
+    'NR_UNKNOWN_UID': (14, 'Unknown UID'),
   }
 
   # this is populated below
