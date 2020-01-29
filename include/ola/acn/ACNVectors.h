@@ -47,6 +47,9 @@ enum RootVector {
   VECTOR_ROOT_E131 = 4,  /**< E1.31 (sACN) */
   VECTOR_ROOT_E133 = 5,  /**< E1.33 (RDNNet) */
   VECTOR_ROOT_NULL = 6,  /**< NULL (empty) root */
+  VECTOR_ROOT_BROKER = 9,  /**< E1.33 (Broker) */
+  VECTOR_ROOT_LLRP = 0x0A,  /**< E1.33 (LLRP) */
+  VECTOR_ROOT_EPT = 0x0B,  /**< E1.33 (EPT) */
 };
 
 /**
