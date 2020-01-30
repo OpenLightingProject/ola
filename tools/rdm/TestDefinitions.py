@@ -253,7 +253,6 @@ class DUBSingleUID(TestMixins.DiscoveryMixin,
                    ResponderTestFixture):
   """Confirm the device responds to just it's own range."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
