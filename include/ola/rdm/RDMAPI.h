@@ -1240,13 +1240,6 @@ class RDMAPI {
         const ResponseStatus &status,
         const std::string &data);
 
-    void _HandleGetDMXAddress(
-        ola::SingleUseCallback2<void,
-                                const ResponseStatus&,
-                                uint16_t> *callback,
-        const ResponseStatus &status,
-        const std::string &data);
-
     void _HandleGetSlotInfo(
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
@@ -1336,13 +1329,6 @@ class RDMAPI {
         const ResponseStatus &status,
         const std::string &data);
 
-    void _HandleGetDimmerMaximumLevel(
-        ola::SingleUseCallback2<void,
-                                const ResponseStatus&,
-                                uint16_t> *callback,
-        const ResponseStatus &status,
-        const std::string &data);
-
  private:
     class RDMAPIImplInterface *m_impl;
     std::map<UID, uint8_t> m_outstanding_messages;
@@ -1360,6 +1346,25 @@ class RDMAPI {
         const UID &uid,
         uint16_t sub_device,
         uint8_t value,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        uint16_t pid,
+        std::string *error);
+
+    bool GenericGetU16(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
+        uint16_t pid,
+        std::string *error);
+
+    bool GenericSetU16(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t value,
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         uint16_t pid,
         std::string *error);

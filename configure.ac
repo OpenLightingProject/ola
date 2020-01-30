@@ -935,7 +935,7 @@ fi
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
-# html & data directories
+# HTML & data directories
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
@@ -1017,5 +1017,5 @@ Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
     all          - build everything
     check        - run the tests
-    doxygen-doc  - generate the html documentation
+    doxygen-doc  - generate the HTML documentation
 -------------------------------------------------------"

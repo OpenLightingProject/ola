@@ -256,7 +256,6 @@ class DUBSingleUID(TestMixins.DiscoveryMixin,
                    ResponderTestFixture):
   """Confirm the device responds to just it's own range."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
@@ -1734,16 +1733,16 @@ class SetLanguage(OptionalParameterTestFixture):
     ack = self.AckSetResult(action=self.VerifySet)
     nack = self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
 
-    available_langugages = list(self.Property('languages_capabilities'))
-    if available_langugages:
-      if len(available_langugages) > 1:
+    available_languages = list(self.Property('languages_capabilities'))
+    if available_languages:
+      if len(available_languages) > 1:
         # If the responder only supports 1 lang, we may not be able to set it
         self.AddIfSetSupported(ack)
-        self.new_language = available_langugages[0]
+        self.new_language = available_languages[0]
         if self.new_language == self.Property('language'):
-          self.new_language = available_langugages[1]
+          self.new_language = available_languages[1]
       else:
-        self.new_language = available_langugages[0]
+        self.new_language = available_languages[0]
         self.AddIfSetSupported([ack, nack])
     else:
       # Get languages returned no languages so we expect a nack
