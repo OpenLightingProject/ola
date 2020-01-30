@@ -79,7 +79,7 @@ namespace ola {
 
 /**
  * @brief Set the help string for the program.
- * @param first_line the inital line that is displayed in the help section.
+ * @param first_line the initial line that is displayed in the help section.
  *     This is displayed after argv[0].
  * @param description a multiline description of the program
  */

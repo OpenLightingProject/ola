@@ -63,9 +63,6 @@ PathportDevice::PathportDevice(PathportPlugin *owner,
  * Start this device
  */
 bool PathportDevice::StartHook() {
-  vector<ola::network::UDPSocket*> sockets;
-  vector<ola::network::UDPSocket*>::iterator iter;
-
   uint32_t product_id;
   if (!StringToInt(m_preferences->GetValue(K_NODE_ID_KEY), &product_id)) {
     OLA_WARN << "Invalid node Id " << m_preferences->GetValue(K_NODE_ID_KEY);
@@ -111,7 +108,7 @@ bool PathportDevice::StartHook() {
 
   m_plugin_adaptor->AddReadDescriptor(m_node->GetSocket());
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
-      ADVERTISTMENT_PERIOD_MS,
+      ADVERTISEMENT_PERIOD_MS,
       NewCallback(this, &PathportDevice::SendArpReply));
 
   return true;

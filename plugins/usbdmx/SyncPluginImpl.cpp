@@ -77,7 +77,8 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
   m_widget_factories.push_back(new DMXCProjectsNodleU1Factory(&m_usb_adaptor,
       m_plugin_adaptor, m_preferences));
   m_widget_factories.push_back(new DMXCreator512BasicFactory(&m_usb_adaptor));
-  m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new EuroliteProFactory(&m_usb_adaptor,
+      m_preferences));
   m_widget_factories.push_back(new ScanlimeFadecandyFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new ShowJockeyDMXU1Factory(&m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(&m_usb_adaptor));
@@ -95,7 +96,11 @@ bool SyncPluginImpl::Start() {
   }
 
   OLA_DEBUG << "libusb debug level set to " << m_debug_level;
+#ifdef HAVE_LIBUSB_SET_OPTION
+  libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, m_debug_level);
+#else
   libusb_set_debug(m_context, m_debug_level);
+#endif  // HAVE_LIBUSB_SET_OPTION
 
   unsigned int devices_claimed = ScanForDevices();
   if (devices_claimed != m_devices.size()) {
@@ -164,7 +169,7 @@ bool SyncPluginImpl::NewWidget(EurolitePro *widget) {
 }
 
 bool SyncPluginImpl::NewWidget(OLA_UNUSED ola::usb::JaRuleWidget *widget) {
-  // This should never happen since there is no Syncronous support for Ja Rule.
+  // This should never happen since there is no Synchronous support for Ja Rule.
   OLA_WARN << "::NewWidget called for a JaRuleWidget";
   return false;
 }

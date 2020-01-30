@@ -37,7 +37,7 @@ class BackOffPolicy {
 
     /**
      * @brief Calculate the backoff time
-     * @param failed_attempts is the number of unsuccessfull connection
+     * @param failed_attempts is the number of unsuccessful connection
      * attempts since the last successful connection.
      * @return how long to wait before the next attempt
      */

@@ -85,8 +85,9 @@ SandNetNode::~SandNetNode() {
  * Start this node
  */
 bool SandNetNode::Start() {
-  if (m_running)
+  if (m_running) {
     return false;
+  }
 
   ola::network::InterfacePicker *picker =
     ola::network::InterfacePicker::NewPicker();
@@ -110,8 +111,9 @@ bool SandNetNode::Start() {
   }
   m_data_addr = IPV4SocketAddress(ip, DATA_PORT);
 
-  if (!InitNetwork())
+  if (!InitNetwork()) {
     return false;
+  }
 
   m_running = true;
   return true;
@@ -122,8 +124,9 @@ bool SandNetNode::Start() {
  * Stop this node
  */
 bool SandNetNode::Stop() {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   m_data_socket.Close();
   m_control_socket.Close();
@@ -153,12 +156,14 @@ void SandNetNode::SocketReady(UDPSocket *socket) {
   IPV4SocketAddress source;
 
   if (!socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                        &packet_size, &source))
+                        &packet_size, &source)) {
     return;
+  }
 
   // skip packets sent by us
-  if (source.Host() == m_interface.ip_address)
+  if (source.Host() == m_interface.ip_address) {
     return;
+  }
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.opcode))) {
     OLA_WARN << "Small sandnet packet received, discarding";
@@ -191,8 +196,9 @@ void SandNetNode::SocketReady(UDPSocket *socket) {
 bool SandNetNode::SetHandler(uint8_t group, uint8_t universe,
                              DmxBuffer *buffer,
                              Callback0<void> *closure) {
-  if (!closure)
+  if (!closure) {
     return false;
+  }
 
   group_universe_pair key(group, universe);
   universe_handlers::iterator iter = m_handlers.find(key);
@@ -235,8 +241,9 @@ bool SandNetNode::RemoveHandler(uint8_t group, uint8_t universe) {
  */
 bool SandNetNode::SetPortParameters(uint8_t port_id, sandnet_port_type type,
                                     uint8_t group, uint8_t universe) {
-  if (port_id >= SANDNET_MAX_PORTS)
+  if (port_id >= SANDNET_MAX_PORTS) {
     return false;
+  }
 
   m_ports[port_id].group = group;
   m_ports[port_id].universe = universe;
@@ -249,8 +256,9 @@ bool SandNetNode::SetPortParameters(uint8_t port_id, sandnet_port_type type,
  * Send a Sandnet Advertisement.
  */
 bool SandNetNode::SendAdvertisement() {
-  if (!m_running)
+  if (!m_running) {
     return false;
+  }
 
   sandnet_packet packet;
   sandnet_advertisement *advertisement = &packet.contents.advertisement;
@@ -294,8 +302,9 @@ bool SandNetNode::SendAdvertisement() {
  * @return true if it was send successfully, false otherwise
  */
 bool SandNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
-  if (!m_running || port_id >= SANDNET_MAX_PORTS)
+  if (!m_running || port_id >= SANDNET_MAX_PORTS) {
     return false;
+  }
 
   // Sandnet doesn't seem to understand compressed DMX
   return SendUncompressedDMX(port_id, buffer);
@@ -303,7 +312,7 @@ bool SandNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool SandNetNode::InitNetwork() {
   if (!m_control_socket.Init()) {
@@ -375,16 +384,17 @@ bool SandNetNode::HandleCompressedDMX(const sandnet_compressed_dmx &dmx_packet,
   unsigned int header_size = sizeof(dmx_packet) - sizeof(dmx_packet.dmx);
 
   if (size <= header_size) {
-    OLA_WARN << "Sandnet data size too small, expected at least " <<
-      header_size << ", got " << size;
+    OLA_WARN << "Sandnet data size too small, expected at least "
+             << header_size << ", got " << size;
     return false;
   }
 
   group_universe_pair key(dmx_packet.group, dmx_packet.universe);
   universe_handlers::iterator iter = m_handlers.find(key);
 
-  if (iter == m_handlers.end())
+  if (iter == m_handlers.end()) {
     return false;
+  }
 
   unsigned int data_size = size - header_size;
   bool r = m_encoder.Decode(0, dmx_packet.dmx, data_size, iter->second.buffer);
@@ -405,16 +415,17 @@ bool SandNetNode::HandleDMX(const sandnet_dmx &dmx_packet,
                             unsigned int size) {
   unsigned int header_size = sizeof(dmx_packet) - sizeof(dmx_packet.dmx);
   if (size <= header_size) {
-    OLA_WARN << "Sandnet data size too small, expected at least " <<
-      header_size << ", got " << size;
+    OLA_WARN << "Sandnet data size too small, expected at least "
+             << header_size << ", got " << size;
     return false;
   }
 
   group_universe_pair key(dmx_packet.group, dmx_packet.universe);
   universe_handlers::iterator iter = m_handlers.find(key);
 
-  if (iter == m_handlers.end())
+  if (iter == m_handlers.end()) {
     return false;
+  }
 
   unsigned int data_size = size - header_size;
   iter->second.buffer->Set(dmx_packet.dmx, data_size);
@@ -452,10 +463,11 @@ bool SandNetNode::SendPacket(const sandnet_packet &packet,
                              unsigned int size,
                              bool is_control) {
   UDPSocket *socket;
-  if (is_control)
+  if (is_control) {
     socket = &m_control_socket;
-  else
+  } else {
     socket = &m_data_socket;
+  }
 
   ssize_t bytes_sent = socket->SendTo(
       reinterpret_cast<const uint8_t*>(&packet),

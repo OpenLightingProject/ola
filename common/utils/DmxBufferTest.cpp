@@ -196,7 +196,7 @@ void DmxBufferTest::testAssign() {
   // assigning to ourself does nothing
   buffer = buffer;
 
-  // assinging to a previously init'ed buffer
+  // assigning to a previously init'ed buffer
   unsigned int size = result_length;
   assignment_buffer = buffer;
   assignment_buffer.Get(result, &size);
@@ -216,7 +216,7 @@ void DmxBufferTest::testAssign() {
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, result_length));
   OLA_ASSERT_DMX_EQUALS(assignment_buffer2, buffer);
 
-  // now try assigning an unitialized buffer
+  // now try assigning an uninitialized buffer
   DmxBuffer uninitialized_buffer;
   DmxBuffer assignment_buffer3;
 

@@ -25,6 +25,7 @@
 #include <string.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
 #include <ola/win/CleanWindows.h>
 #endif  // _WIN32
 
@@ -131,7 +132,7 @@ bool FindMatchingFiles(const string &directory,
   struct dirent dir_ent;
   struct dirent *dir_ent_p;
   if ((dp = opendir(directory.data())) == NULL) {
-    OLA_WARN << "Could not open " << directory << ":" << strerror(errno);
+    OLA_WARN << "Could not open " << directory << ": " << strerror(errno);
     return false;
   }
 

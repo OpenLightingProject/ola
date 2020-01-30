@@ -39,7 +39,7 @@
 namespace ola {
 namespace usb {
 
-using ola::usb::AsyncronousLibUsbAdaptor;
+using ola::usb::AsynchronousLibUsbAdaptor;
 using ola::usb::LibUsbAdaptor;
 using std::auto_ptr;
 using std::pair;
@@ -72,7 +72,7 @@ HotplugAgent::~HotplugAgent() {
   }
 }
 
-AsyncronousLibUsbAdaptor *HotplugAgent::GetUSBAdaptor() const {
+AsynchronousLibUsbAdaptor *HotplugAgent::GetUSBAdaptor() const {
   return m_usb_adaptor.get();
 }
 
@@ -81,8 +81,14 @@ bool HotplugAgent::Init() {
     return false;
   }
 
+#ifdef HAVE_LIBUSB_SET_OPTION
+  OLA_DEBUG << "libusb_set_option(LIBUSB_OPTION_LOG_LEVEL, " << m_debug_level
+            << ")";
+  libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, m_debug_level);
+#else
   OLA_DEBUG << "libusb_set_debug(" << m_debug_level << ")";
   libusb_set_debug(m_context, m_debug_level);
+#endif  // HAVE_LIBUSB_SET_OPTION
 
   m_use_hotplug = ola::usb::LibUsbAdaptor::HotplugSupported();
   OLA_DEBUG << "HotplugSupported(): " << m_use_hotplug;
@@ -97,7 +103,7 @@ bool HotplugAgent::Init() {
     m_usb_thread.reset(new ola::usb::LibUsbSimpleThread(m_context));
   }
   m_usb_adaptor.reset(
-      new ola::usb::AsyncronousLibUsbAdaptor(m_usb_thread.get()));
+      new ola::usb::AsynchronousLibUsbAdaptor(m_usb_thread.get()));
   return true;
 }
 

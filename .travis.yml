@@ -3,6 +3,10 @@ language: cpp
 sudo: required
 # Use the latest Travis images since they are more up to date than the stable release.
 group: edge
+
+before_script:
+ - export -f travis_fold
+
 script:
  - "bash -ex .travis-ci.sh"
 
@@ -31,54 +35,76 @@ addons:
      - libmicrohttpd-dev
     packages: &core_build_gpp_latest
      - *core_build
-     - g++-6
+     - g++-8
     packages: &core_build_clang_latest
      - *core_build
-     - clang-5.0
+     - clang-6.0
 
 matrix:
   fast_finish: true
   include:
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
+      - LIBFTDI='0'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - LIBFTDI='0'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
+      - LIBFTDI='0'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
-    - os: osx
-      osx_image: xcode9.1
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
-      - PROTOBUF='3.5'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
-      - PROTOBUF='3.5'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: clang
       env: TASK='compile'
       python: '2.7'
@@ -87,10 +113,11 @@ matrix:
           packages:
            - *core_build_clang_latest
           sources:
-           - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
+           - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
+             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env: TASK='compile'
       python: '2.7'
@@ -99,9 +126,9 @@ matrix:
           packages:
            - *core_build_gpp_latest
           sources:
-           - ubuntu-toolchain-r-test
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env: TASK='coverage'
       addons:
@@ -109,9 +136,9 @@ matrix:
           packages:
            - *core_build_gpp_latest
           sources:
-           - ubuntu-toolchain-r-test
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
-      dist: trusty
+      dist: xenial
       compiler: gcc
       env: TASK='coverity'
       addons:
@@ -121,11 +148,9 @@ matrix:
            - *core_build
            - g++-4.9
           sources:
-           - ubuntu-toolchain-r-test
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='doxygen'
       addons:
         apt:
@@ -134,97 +159,164 @@ matrix:
            - doxygen
            - graphviz
           sources:
-           - ubuntu-toolchain-r-test
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='lint'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='check-licences'
       addons:
         apt:
           packages:
            - *core_build
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
+      env: TASK='spellintian'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - moreutils
+    - os: linux
+      dist: xenial
+      env: TASK='spellintian-duplicates'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - moreutils
+    - os: linux
+      dist: xenial
+      env: TASK='codespell'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - moreutils
+    - os: linux
+      dist: xenial
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='flake8'
       addons:
         apt:
           packages:
            - *base_build
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='pychecker'
+      python: '2.7'
       addons:
         apt:
           packages:
            - *base_build
     - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
+      dist: xenial
       env: TASK='pychecker-wip'
+      python: '2.7'
       addons:
         apt:
           packages:
            - *base_build
   allow_failures:
-    - os: linux
-      dist: trusty
-      compiler: gcc
-      env: TASK='coverage'
-    - os: linux
-      dist: trusty
-      compiler: gcc
-      env: TASK='coverity'
-    - os: linux
-      dist: trusty
-      # Short duration job, use the container/without sudo image as it boots faster
-      sudo: false
-      env: TASK='pychecker-wip'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
-      - PROTOBUF='3.5'
+      - LIBFTDI='0'
     - os: osx
-      osx_image: xcode9.1
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
-      - PROTOBUF='3.5'
+      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - PROTOBUF='3.6'
+      - LIBFTDI='1'
+    - os: linux
+      dist: xenial
+      compiler: gcc
+      env: TASK='coverage'
+    - os: linux
+      dist: xenial
+      compiler: gcc
+      env: TASK='coverity'
+    - os: linux
+      dist: xenial
+      env: TASK='pychecker-wip'
+      python: '2.7'
+    - os: linux
+      dist: xenial
+      env: TASK='spellintian'
+    - os: linux
+      dist: xenial
+      env: TASK='spellintian-duplicates'
 
 env:
   global:
+   # No colours in terminal (to reduce log file size)
+   - TERM=dumb
    # Parallel make build
    - MAKEFLAGS="-j 2"
    # -- BEGIN Coverity Scan ENV
    - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 --template && autoreconf -i && ./configure --enable-ja-rule --enable-e133"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
-   # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
+   # Usually this is the same as STANDARD_BUILD_COMMAND, excluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
    # Name of the project
    - COVERITY_SCAN_PROJECT_NAME="$TRAVIS_REPO_SLUG"
@@ -243,6 +335,7 @@ cache:
     - $HOME/.cache/pip # pip cache
     - $HOME/.npm # npm cache
     - $HOME/.ccache # ccache cache
+    - $HOME/.m2 # maven cache
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log # erase log
@@ -250,41 +343,56 @@ before_cache:
 
 install:
 # Match the version of protobuf being installed via apt
-  - if [[ "$PROTOBUF" == "3.5" ]]; then pip install --user protobuf==3.5.0; fi
-  - if [[ "$PROTOBUF" != "3.5" ]]; then pip install --user protobuf==3.1.0; fi
-# We need to use pip rather than apt on Trusty
+  - if [[ "$PROTOBUF" == "3.6" ]]; then pip install --user protobuf==3.6.0; fi
+  - if [[ "$PROTOBUF" != "3.6" ]]; then pip install --user protobuf==3.1.0; fi
+# We need to use pip rather than apt on Xenial
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
+  - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
+# This is a very bodgy workaround to the fact that the pip install of the archive doesn't seem to work properly now on Travis
+  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then sudo mkdir -p /pychecker/; sudo ln -s /home/travis/.local/lib/python2.7/site-packages/pychecker/checker.py /pychecker/checker.py; fi
 
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 #Fix a broken homebrew libtool install
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall -s libtool; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex libftdi libftdi0 libusb liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy already present
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "3.5" ]; then brew install protobuf@3.5; fi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.5" ]; then brew install protobuf@3.1; fi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.5" ]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall libtool; fi
+#Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "3.6" ]; then brew install protobuf@3.6; fi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "3.6" ]; then brew link -f protobuf@3.6; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.6/lib/pkgconfig; fi # When protobuf is not on the latest release
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.6" ]; then brew install protobuf@3.1; fi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "3.6" ]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
- - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-6" CC="ccache gcc-6"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-8" CC="ccache gcc-8"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
 #Report the compiler version
  - $CXX --version
+ - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then wget "http://archive.ubuntu.com/ubuntu/pool/main/l/lintian/lintian_2.5.104_all.deb"; sudo dpkg -i lintian_*.deb; sudo apt-get install -f -y; fi # Install a later lintian
 
 after_failure:
-  - cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log
+# Disabled as otherwise the logfile is too big
+#  - if [ -f ${TRAVIS_BUILD_DIR}/config.log ]; then cat ${TRAVIS_BUILD_DIR}/config.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log; fi
 
 after_success:
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-6 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-8 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
 
 after_script:
   - if [ "$TASK" = "coverity" ]; then tail -n 10000 ${TRAVIS_BUILD_DIR}/cov-int/build-log.txt; cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi

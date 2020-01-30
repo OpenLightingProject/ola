@@ -18,6 +18,7 @@
 import array
 import socket
 import struct
+import sys
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
@@ -353,7 +354,7 @@ class Universe(object):
 
 
 class RequestStatus(object):
-  """Represents the status of an reqeust.
+  """Represents the status of an request.
 
   Attributes:
     state: the state of the operation
@@ -398,6 +399,10 @@ class RDMNack(object):
     'NR_PACKET_SIZE_UNSUPPORTED': (8, 'Packet size unsupported'),
     'NR_SUB_DEVICE_OUT_OF_RANGE': (9, 'Sub device out of range'),
     'NR_PROXY_BUFFER_FULL': (10, 'Proxy buffer full'),
+    'NR_ACTION_NOT_SUPPORTED': (11, 'Action not supported'),
+    'NR_ENDPOINT_NUMBER_INVALID': (12, 'Endpoint number invalid'),
+    'NR_INVALID_ENDPOINT_MODE': (13, 'Invalid endpoint mode'),
+    'NR_UNKNOWN_UID': (14, 'Unknown UID'),
   }
 
   # this is populated below
@@ -707,6 +712,7 @@ class OlaClient(Ola_pb2.OlaClientService):
         created.
       close_callback: A callable to run if the socket is closed
     """
+    self._close_callback = close_callback
     self._socket = our_socket
 
     if self._socket is None:
@@ -716,10 +722,12 @@ class OlaClient(Ola_pb2.OlaClientService):
       except socket.error:
         raise OLADNotRunningException('Failed to connect to olad')
 
-    self._close_callback = close_callback
     self._channel = StreamRpcChannel(self._socket, self, self._SocketClosed)
     self._stub = Ola_pb2.OlaServerService_Stub(self._channel)
     self._universe_callbacks = {}
+
+  def __del__(self):
+    self._SocketClosed()
 
   def GetSocket(self):
     """Returns the socket used to communicate with the server."""
@@ -879,7 +887,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.DmxData()
     request.universe = universe
-    request.data = data.tostring()
+    if sys.version >= '3.2':
+      request.data = data.tobytes()
+    else:
+      request.data = data.tostring()
     try:
       self._stub.UpdateDmxData(
           controller, request,
@@ -1081,7 +1092,7 @@ class OlaClient(Ola_pb2.OlaClientService):
 
     Args:
       controller: An RpcController object
-      reqeust: A DmxData message
+      request: A DmxData message
       callback: The callback to run once complete
 
     Returns:

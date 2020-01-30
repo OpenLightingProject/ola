@@ -24,8 +24,10 @@
 
 #include <ola/base/Macro.h>
 #include <ola/Logging.h>
-#include <ola/thread/Thread.h>
 #include <ola/io/SelectServer.h>
+// On MinGW, Thread.h pulls in pthread.h which pulls in Windows.h, which needs
+// to be after WinSock2.h, hence this order
+#include <ola/thread/Thread.h>
 
 #include <map>
 #include <vector>
@@ -456,11 +458,11 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
   bool Join(void *ptr = NULL);
 
   /**
-   * This can be used to syncronize with the file saving thread. Useful if you
+   * This can be used to synchronize with the file saving thread. Useful if you
    * want to make sure the files have been written to disk before continuing.
    * This blocks until all pending save requests are complete.
    */
-  void Syncronize();
+  void Synchronize();
 
  private:
   ola::io::SelectServer m_ss;
@@ -468,8 +470,8 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
   /**
    * Notify the blocked thread we're done
    */
-  void CompleteSyncronization(ola::thread::ConditionVariable *condition,
-                              ola::thread::Mutex *mutex);
+  void CompleteSynchronization(ola::thread::ConditionVariable *condition,
+                               ola::thread::Mutex *mutex);
 };
 
 

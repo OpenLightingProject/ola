@@ -78,7 +78,14 @@ const RootPidStore *PidStoreLoader::LoadFromDirectory(
   string override_file;
   string manufacturer_names_file;
   vector<string> all_files;
-  ola::file::ListDirectory(directory, &all_files);
+  if (!ola::file::ListDirectory(directory, &all_files)) {
+    OLA_WARN << "Failed to list files in " << directory;
+    return NULL;
+  }
+  if (all_files.empty()) {
+    OLA_WARN << "Didn't find any files in " << directory;
+    return NULL;
+  }
   vector<string>::const_iterator file_iter = all_files.begin();
   for (; file_iter != all_files.end(); ++file_iter) {
     if (ola::file::FilenameFromPath(*file_iter) == OVERRIDE_FILE_NAME) {
@@ -89,6 +96,10 @@ const RootPidStore *PidStoreLoader::LoadFromDirectory(
     } else if (StringEndsWith(*file_iter, ".proto")) {
       files.push_back(*file_iter);
     }
+  }
+  if (files.empty() && override_file.empty()) {
+    OLA_WARN << "Didn't find any files to load in " << directory;
+    return NULL;
   }
 
   ola::rdm::pid::PidStore pid_store_pb;

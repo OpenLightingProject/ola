@@ -19,8 +19,21 @@
  */
 
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
+#include "olad/Preferences.h"
+
 #include <dirent.h>
 #include <errno.h>
+#ifdef _WIN32
+// On MinGW, pthread.h pulls in Windows.h, which in turn pollutes the global
+// namespace. We define VC_EXTRALEAN and WIN32_LEAN_AND_MEAN to reduce this.
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // _WIN32
 #include <pthread.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -42,7 +55,6 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/thread/Thread.h"
-#include "olad/Preferences.h"
 
 namespace ola {
 
@@ -294,8 +306,9 @@ string MemoryPreferences::GetValue(const string &key) const {
   PreferencesMap::const_iterator iter;
   iter = m_pref_map.find(key);
 
-  if (iter != m_pref_map.end())
+  if (iter != m_pref_map.end()) {
     return iter->second;
+  }
   return "";
 }
 
@@ -326,16 +339,15 @@ bool MemoryPreferences::GetValueAsBool(const string &key) const {
   PreferencesMap::const_iterator iter;
   iter = m_pref_map.find(key);
 
-  if (iter != m_pref_map.end())
+  if (iter != m_pref_map.end()) {
     return iter->second == BoolValidator::ENABLED;
+  }
   return false;
 }
 
 
 void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
-  m_pref_map.erase(key);
-  m_pref_map.insert(make_pair(key, (value ? BoolValidator::ENABLED :
-                                            BoolValidator::DISABLED)));
+  SetValue(key, (value ? BoolValidator::ENABLED : BoolValidator::DISABLED));
 }
 
 
@@ -373,20 +385,20 @@ bool FilePreferenceSaverThread::Join(void *ptr) {
 }
 
 
-void FilePreferenceSaverThread::Syncronize() {
-  Mutex syncronize_mutex;
+void FilePreferenceSaverThread::Synchronize() {
+  Mutex synchronize_mutex;
   ConditionVariable condition_var;
-  syncronize_mutex.Lock();
+  synchronize_mutex.Lock();
   m_ss.Execute(NewSingleCallback(
         this,
-        &FilePreferenceSaverThread::CompleteSyncronization,
+        &FilePreferenceSaverThread::CompleteSynchronization,
         &condition_var,
-        &syncronize_mutex));
-  condition_var.Wait(&syncronize_mutex);
+        &synchronize_mutex));
+  condition_var.Wait(&synchronize_mutex);
 }
 
 
-void FilePreferenceSaverThread::CompleteSyncronization(
+void FilePreferenceSaverThread::CompleteSynchronization(
     ConditionVariable *condition,
     Mutex *mutex) {
   // calling lock here forces us to block until Wait() is called on the

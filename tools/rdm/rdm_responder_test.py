@@ -19,13 +19,13 @@
 from ola.testing.rdm import TestDefinitions, TestRunner
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm.TestState import TestState
+from ola.testing.rdm.TimingStats import TimingStats
 import datetime
 import logging
 import re
 import sys
 import textwrap
 import time
-from ola.testing.rdm.TimingStats import TimingStats
 from ola import PidStore
 from ola import Version
 from ola.ClientWrapper import ClientWrapper
@@ -108,7 +108,8 @@ class MyFilter(object):
   """Filter out the ascii coloring."""
   def filter(self, record):
     msg = record.msg
-    record.msg = re.sub('\x1b\[\d*m', '', str(msg))
+    # Use a raw string for the regex
+    record.msg = re.sub(r'\x1b\[\d*m', '', str(msg))
     return True
 
 
@@ -294,7 +295,7 @@ def main():
   wrapper.Reset()
 
   if not uid_ok:
-    sys.exit()
+    sys.exit(1)
 
   test_filter = None
   if options.tests is not None:

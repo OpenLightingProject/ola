@@ -185,7 +185,7 @@ bool OlaServer::Init() {
     if (!picker->ChooseInterface(&iface, m_options.network_interface)) {
       OLA_WARN << "No network interface found";
     } else {
-      // default to using the ip as a id
+      // default to using the ip as an id
       m_default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
                                     iface.ip_address.AsInt());
     }

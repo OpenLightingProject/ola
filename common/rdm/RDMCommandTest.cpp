@@ -33,6 +33,7 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/RDMPacket.h"
 #include "ola/rdm/UID.h"
 #include "ola/util/Utils.h"
 #include "ola/testing/TestUtils.h"
@@ -58,7 +59,7 @@ using std::string;
  * Calculate a checksum for a packet and update it
  */
 void UpdateChecksum(uint8_t *expected, unsigned int expected_length) {
-  unsigned int checksum = RDMCommand::START_CODE;
+  unsigned int checksum = ola::rdm::START_CODE;
   for (unsigned int i = 0 ; i < expected_length - 2; i++) {
     checksum += expected[i];
   }
@@ -68,7 +69,7 @@ void UpdateChecksum(uint8_t *expected, unsigned int expected_length) {
 }
 
 void UpdateChecksum(ByteString *data) {
-  unsigned int checksum = RDMCommand::START_CODE;
+  unsigned int checksum = ola::rdm::START_CODE;
   for (unsigned int i = 0 ; i < data->size() - 2; i++) {
     checksum += (*data)[i];
   }

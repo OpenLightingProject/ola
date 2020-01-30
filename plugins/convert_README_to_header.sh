@@ -30,7 +30,7 @@ outfilename=`basename $outfile`;
 # See http://stackoverflow.com/a/16576291
 # On Mac OS's sed, \n is not recognized as a newline character, but
 # \[actual newline] works
-desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\\\n"\\
+desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\"/\\\"/g' -e 's/\n/\\\\n"\\
 "/g' "$path/README.md"`;
 
 identifier=`echo "PLUGINS_${plugin}_${outfilename%.h}_H_" | tr '[:lower:]' '[:upper:]'`

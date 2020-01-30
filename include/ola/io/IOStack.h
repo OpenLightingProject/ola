@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_IO_IOSTACK_H_
 #define INCLUDE_OLA_IO_IOSTACK_H_
 
+#include <ola/base/Macro.h>
 #include <ola/io/IOVecInterface.h>
 #include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
@@ -82,8 +83,7 @@ class IOStack: public IOVecInterface,
     void PrependBlock();
 
     // no copying / assignment for now
-    IOStack(const IOStack&);
-    IOStack& operator=(const IOStack&);
+    DISALLOW_COPY_AND_ASSIGN(IOStack);
 };
 }  // namespace io
 }  // namespace ola

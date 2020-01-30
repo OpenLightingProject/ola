@@ -47,8 +47,8 @@ bool IntToStatusCode(uint16_t input, E133StatusCode *status_code) {
     case ola::e133::SC_E133_UNKNOWN_UID:
       *status_code = ola::e133::SC_E133_UNKNOWN_UID;
       return true;
-    case ola::e133::SC_E133_NONEXISTANT_ENDPOINT:
-      *status_code = ola::e133::SC_E133_NONEXISTANT_ENDPOINT;
+    case ola::e133::SC_E133_NONEXISTENT_ENDPOINT:
+      *status_code = ola::e133::SC_E133_NONEXISTENT_ENDPOINT;
       return true;
     case ola::e133::SC_E133_WRONG_ENDPOINT:
       *status_code = ola::e133::SC_E133_WRONG_ENDPOINT;
@@ -71,7 +71,7 @@ bool IntToStatusCode(uint16_t input, E133StatusCode *status_code) {
 /**
  * Return a text string describing this status code.
  */
-string StatusMessageIdToString(E133StatusCode status_code) {
+string StatusCodeToString(E133StatusCode status_code) {
   switch (status_code) {
     case ola::e133::SC_E133_ACK:
      return "Acknowledged";
@@ -83,7 +83,7 @@ string StatusMessageIdToString(E133StatusCode status_code) {
      return "Buffer Full";
     case ola::e133::SC_E133_UNKNOWN_UID:
      return "Unknown UID";
-    case ola::e133::SC_E133_NONEXISTANT_ENDPOINT:
+    case ola::e133::SC_E133_NONEXISTENT_ENDPOINT:
      return "Endpoint doesn't exist";
     case ola::e133::SC_E133_WRONG_ENDPOINT:
      return "Wrong endpoint";

@@ -313,7 +313,7 @@ class RDMTestThread(Thread):
 
   def _RunCollector(self, universe, skip_queued_messages):
     """Run the device model collector for a universe."""
-    logging.info('Collecting for %d' % universe)
+    logging.info('Collecting for universe %d' % universe)
     self._test_state_lock.acquire()
     self._test_state = {
       'action': self.COLLECTOR,
@@ -465,7 +465,7 @@ class StaticFileHandler(RequestHandler):
 
     # Strip off /static
     path = path[len(self.PREFIX):]
-    # This is important as it ensures we can't access arbitary files
+    # This is important as it ensures we can't access arbitrary files
     filename = os.path.abspath(os.path.join(self._static_dir, path))
     if (not filename.startswith(self._static_dir) or
          not os.path.exists(filename) or
@@ -623,6 +623,10 @@ class RunDiscoveryHandler(OLAServerRequestHandler):
     response.SetStatus(HTTPResponse.OK)
     return {
       'uids': [str(u) for u in uids],
+      'nameduids': dict(
+        (str(u),
+         self.GetPidStore().ManufacturerIdToName(u.manufacturer_id))
+        for u in uids),
       'status': True,
     }
 
@@ -824,7 +828,7 @@ class RunTestsHandler(OLAServerRequestHandler):
     return {'status': True}
 
   def _CheckValidUniverse(self, request):
-    """Check that the universe paramter is present and refers to a valid
+    """Check that the universe parameter is present and refers to a valid
        universe.
 
     Args:
@@ -966,7 +970,7 @@ def BuildApplication(ola_thread, test_thread, pid_store):
   app.RegisterHandler('/RunTests', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatTests', run_tests_handler.HandleRequest)
-  app.RegisterRegex('/static/.*',
+  app.RegisterRegex(r'/static/.*',
                     StaticFileHandler(settings['www_dir']).HandleRequest)
   return app
 
@@ -988,7 +992,8 @@ def parse_options():
   parser.add_option('-p', '--pid-location', metavar='DIR',
                     help='The directory to load the PID definitions from.')
   parser.add_option('-d', '--www-dir', default=DataLocation.location,
-                    help='The root directory to serve static files.')
+                    help='The root directory to serve static files, this must '
+                         'be absolute.')
   parser.add_option('-l', '--log-directory',
                     default=os.path.abspath('/tmp/ola-rdm-logs'),
                     help='The directory to store log files.')
@@ -1050,7 +1055,7 @@ def main():
   app = BuildApplication(ola_thread, test_thread, pid_store)
 
   httpd = make_server('', settings['PORT'], app.HandleRequest)
-  logging.info('Running RDM Tests Server on %s:%s' %
+  logging.info('Running RDM Tests Server on http://%s:%s' %
                ('127.0.0.1', httpd.server_port))
 
   try:

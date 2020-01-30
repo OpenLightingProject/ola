@@ -13,6 +13,10 @@ set a larger block size if you want a higher refresh rate for the high
 channels (which results in more stuttering in all channels, as the time
 between two SPI read operation increases).
 
+A detailed description of the development process and the techniques used
+can be found in Flo Edelmann's Bachelors Thesis:
+http://mnm-team.org/pub/Fopras/edel17/PDF-Version/edel17.pdf
+
 
 ## Raspberry Pi configuration
 
