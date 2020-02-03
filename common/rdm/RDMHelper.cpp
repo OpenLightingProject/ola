@@ -201,6 +201,16 @@ string NackReasonToString(uint16_t reason) {
       return "Invalid endpoint mode";
     case NR_UNKNOWN_UID:
       return "Unknown UID";
+    case NR_UNKNOWN_SCOPE:
+      return "Unknown scope";
+    case NR_INVALID_STATIC_CONFIG_TYPE:
+      return "Invalid static config type";
+    case NR_INVALID_IPV4_ADDRESS:
+      return "Invalid IPv4 address";
+    case NR_INVALID_IPV6_ADDRESS:
+      return "Invalid IPv6 address";
+    case NR_INVALID_PORT:
+      return "Invalid port";
     default:
       ostringstream str;
       str << "Unknown, was " << reason;
