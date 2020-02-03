@@ -157,37 +157,49 @@ class Pid(object):
         return False
     return True
 
+  def _GroupCmp(self, a, b):
+    def setToDescription(x):
+      def descOrNone(y):
+        return y.GetDescription() if y is not None else "None"
+      return ':'.join([descOrNone(x[f])
+                       for f in [RDM_GET, RDM_SET, RDM_DISCOVERY]])
+    ax = setToDescription(a)
+    bx = setToDescription(b)
+    return (ax > bx) - (ax < bx)  # canonical for cmp(a,b)
+
   def __eq__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return False
     return (self.value == other.value and
             self.name == other.name and
-            self._requests == other._requests and
-            self._responses == other._responses and
-            self._validators == other._validators)
+            self._GroupCmp(self._requests, other._requests) == 0 and
+            self._GroupCmp(self._responses, other._responses) == 0)
 
   def __lt__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
-    return self._value < other._value
+    if self.value != other.value:
+      return self._value < other._value
+    if self.name != other.name:
+      return self.name < other.name
+    return (self._GroupCmp(self._requests, other._requests) < 0 or
+            self._GroupCmp(self._responses, other._responses) < 0)
 
-  # These 4 can be replaced with functools.total_ordering when support for 2.7
-  # is dropped because NotImplemented is not supported by it before 3.4
-
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
     return self < other or self == other
 
   def __gt__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
-    return self._value > other._value
+    return not self <= other
 
   def __ge__(self, other):
-    if other.__class__ is not self.__class__:
+    if not isinstance(other, self.__class__):
       return NotImplemented
-    return self > other or self == other
+    return not self < other
 
   def __ne__(self, other):
     return not self == other
@@ -729,7 +741,7 @@ class Group(Atom):
         variable_sized_atoms.append(atom)
 
     if len(variable_sized_atoms) > 1:
-      raise PidStore('More than one variable size field in %s: %s' % (
+      raise InvalidPidFormat('More than one variable size field in %s: %s' % (
         self.name, variable_sized_atoms))
 
     if not variable_sized_atoms:
@@ -883,7 +895,7 @@ class Group(Atom):
       names.append('<%s>' % atom.name)
       output.append(atom.GetDescription(indent=2))
 
-    return ' '.join(names), '\n'.join(output)
+    return ' '.join(names) + ':\n' + '\n'.join(output)
 
   def _UnpackFixedLength(self, atoms, data):
     """Unpack a list of atoms of a known, fixed size.
@@ -960,17 +972,32 @@ class PidStore(object):
     self._manufacturer_id_to_name = {}
 
   def Load(self, pid_files, validate=True):
-    """Load a PidStore from a file.
+    """Load a PidStore from a list of files.
 
     Args:
-      pid_files: A list of PID files on disk to load
+      pid_files: A list of PID files on disk to load.  If
+      a file "overrides.proto" is in the list it will be loaded
+      last and its PIDs override any previously loaded.
       validate: When True, enable strict checking.
     """
     self._pid_store.Clear()
+
+    raw_list = pid_files
+    pid_files = []
+    override_file = None
+
+    for f in raw_list:
+      if os.path.basename(f) == "overrides.proto":
+        override_file = f
+      else:
+        pid_files.append(f)
+
     for pid_file in pid_files:
       self.LoadFile(pid_file, validate)
+    if override_file is not None:
+      self.LoadFile(override_file, validate, True)
 
-  def LoadFile(self, pid_file_name, validate):
+  def LoadFile(self, pid_file_name, validate, override=False):
     """Load a pid file."""
     pid_file = open(pid_file_name, 'r')
     lines = pid_file.readlines()
@@ -980,8 +1007,11 @@ class PidStore(object):
       text_format.Merge('\n'.join(lines), self._pid_store)
     except text_format.ParseError as e:
       raise InvalidPidFormat(str(e))
-
     for pid_pb in self._pid_store.pid:
+      if override:  # if processing overrides delete any conflicting entry
+        old = self._pids.pop(pid_pb.value, None)
+        if old is not None:
+          del self._name_to_pid[old.name]
       if validate:
         if ((pid_pb.value >= ola.RDMConstants.RDM_MANUFACTURER_PID_MIN) and
             (pid_pb.value <= ola.RDMConstants.RDM_MANUFACTURER_PID_MAX)):
@@ -1013,6 +1043,10 @@ class PidStore(object):
           manufacturer.manufacturer_name)
 
       for pid_pb in manufacturer.pid:
+        if override:  # if processing overrides delete any conflicting entry
+          old = pid_dict.pop(pid_pb.value, None)
+          if old is not None:
+            del name_dict[old.name]
         if validate:
           if ((pid_pb.value < ola.RDMConstants.RDM_MANUFACTURER_PID_MIN) or
               (pid_pb.value > ola.RDMConstants.RDM_MANUFACTURER_PID_MAX)):

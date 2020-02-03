@@ -189,6 +189,7 @@ python/examples/ola_rdm_set.py
 python/ola/ClientWrapperTest.sh
 python/ola/OlaClientTest.sh
 python/ola/PidStoreLocation.py
+python/ola/PidStoreTest.sh
 python/ola/Version.py
 python/ola/rpc/SimpleRpcControllerTest.sh
 slp/slp_client

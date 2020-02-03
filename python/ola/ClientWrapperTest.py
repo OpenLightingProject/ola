@@ -79,6 +79,8 @@ class ClientWrapperTest(unittest.TestCase):
     s = "teststring"
     self.assertNotEqual(a, s)
     self.assertEqual(a.__lt__(s), NotImplemented)
+    self.assertEqual(a.__ne__(s), True)
+    self.assertEqual(a.__eq__(s), False)
 
   def testEventHash(self):
     a = _Event(0.5, None)
