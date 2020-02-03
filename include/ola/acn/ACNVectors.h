@@ -64,7 +64,7 @@ enum DMPVector {
  * @brief Vectors used at the E1.31 layer.
  */
 enum E131Vector {
-  VECTOR_E131_DATA = 2,  /**< DMP data (DATA_PACKET_VECTOR( */
+  VECTOR_E131_DATA = 2,  /**< DMP data (DATA_PACKET_VECTOR) */
   VECTOR_E131_SYNC = 3,  /**< Sync data (SYNC_PACKET_VECTOR) */
   VECTOR_E131_DISCOVERY = 4,  /**< Discovery data (DISCOVERY_PACKET_VECTOR) */
 };
