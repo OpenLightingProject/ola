@@ -11,6 +11,7 @@ Aurora](https://nanoleaf.me/en/products/smarter-series/nanoleaf-light-panels-sma
 is supported.
 
 The Nanoleaf Aurora must be in "ExternalStreaming" mode UDP Enabled via Nanoleaf API:
+
 `{"write": { "command": "display", "animType": "extControl" }}`
 
 ## Config file: `ola-nanoleaf.conf`
