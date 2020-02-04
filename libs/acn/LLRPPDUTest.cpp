@@ -35,7 +35,6 @@ namespace acn {
 using ola::io::IOQueue;
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
-using std::string;
 
 class LLRPPDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(LLRPPDUTest);

@@ -59,4 +59,4 @@ class LLRPProbeRequestPDU : private PDU {
 };
 }  // namespace acn
 }  // namespace ola
-#endif  // LIBS_ACN_LLRPProbeRequestPDU_H_
+#endif  // LIBS_ACN_LLRPPROBEREQUESTPDU_H_
