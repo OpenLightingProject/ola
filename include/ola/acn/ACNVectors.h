@@ -86,10 +86,11 @@ enum E133ControllerVector {
   VECTOR_CONTROLLER_DEVICE_RELEASED = 4,  /**< Device released message */
   VECTOR_CONTROLLER_EXPECT_MASTER = 5,  /**< Expect master message */
 };
-}  // namespace acn
-}  // namespace ola
 
 /**
  * @}
  */
+}  // namespace acn
+}  // namespace ola
+
 #endif  // INCLUDE_OLA_ACN_ACNVECTORS_H_
