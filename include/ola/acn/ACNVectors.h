@@ -98,10 +98,11 @@ enum LLRPVector {
   VECTOR_LLRP_PROBE_REPLY = 1,  /**< LLRP Probe Reply */
   VECTOR_LLRP_RDM_CMD = 1,  /**< LLRP RDM Command */
 };
-}  // namespace acn
-}  // namespace ola
 
 /**
  * @}
  */
+}  // namespace acn
+}  // namespace ola
+
 #endif  // INCLUDE_OLA_ACN_ACNVECTORS_H_
