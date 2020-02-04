@@ -223,10 +223,11 @@ class UIDSet {
     }
 
     /**
-     * @brief Write the binary representation of the UID to memory.
-     * @param buffer a pointer to memory to write the UID to
-     * @param length the size of the memory block, should be at least UID_SIZE.
-     * @returns true if length was >= UID_SIZE, false otherwise.
+     * @brief Write the binary representation of the UID set to memory.
+     * @param buffer a pointer to memory to write the UID set to
+     * @param length the size of the memory block, should be at least UID_SIZE
+     *   * set size.
+     * @returns true if length was >= UID_SIZE * set size, false otherwise.
      */
     bool Pack(uint8_t *buffer, unsigned int length) const {
       if (static_cast<size_t>(length) < (m_uids.size() * UID::UID_SIZE)) {
