@@ -112,8 +112,7 @@ void LLRPPDU::PrependPDU(ola::io::IOStack *stack,
 
   vector = HostToNetwork(vector);
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
-  // Flags for LLRP should always be 0xF0
-  PrependFlagsAndLength(stack, 0xf0);
+  PrependFlagsAndLength(stack, VFLAG_MASK | HFLAG_MASK | DFLAG_MASK, true);
 }
 }  // namespace acn
 }  // namespace ola

@@ -37,7 +37,7 @@ class LLRPPDU: public PDU {
     LLRPPDU(unsigned int vector,
             const LLRPHeader &header,
             const PDU *pdu):
-      PDU(vector),
+      PDU(vector, FOUR_BYTES, true),
       m_header(header),
       m_pdu(pdu) {}
     ~LLRPPDU() {}
@@ -50,8 +50,10 @@ class LLRPPDU: public PDU {
     void PackHeader(ola::io::OutputStream *stream) const;
     void PackData(ola::io::OutputStream *stream) const;
 
-    static void PrependPDU(ola::io::IOStack *stack, uint32_t vector,
-                           const ola::acn::CID &destination_cid, uint32_t transaction_number);
+    static void PrependPDU(ola::io::IOStack *stack,
+                           uint32_t vector,
+                           const ola::acn::CID &destination_cid,
+                           uint32_t transaction_number);
 
  private:
     LLRPHeader m_header;

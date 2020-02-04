@@ -108,7 +108,7 @@ void LLRPInflatorTest::testInflatePDU() {
   LLRPHeader header(destination_cid, 2370);
   // TODO(Peter): pass a different type of msg here as well
   LLRPPDU pdu(3, header, NULL);
-  OLA_ASSERT_EQ((unsigned int) 26, pdu.Size());
+  OLA_ASSERT_EQ((unsigned int) 27, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
