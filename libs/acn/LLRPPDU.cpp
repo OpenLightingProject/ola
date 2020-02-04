@@ -100,8 +100,10 @@ void LLRPPDU::PackData(OutputStream *stream) const {
 }
 
 
-void LLRPPDU::PrependPDU(ola::io::IOStack *stack, uint32_t vector,
-                         const ola::acn::CID &destination_cid, uint32_t transaction_number) {
+void LLRPPDU::PrependPDU(ola::io::IOStack *stack,
+                         uint32_t vector,
+                         const ola::acn::CID &destination_cid,
+                         uint32_t transaction_number) {
   LLRPHeader::llrp_pdu_header header;
   destination_cid.Pack(header.destination_cid);
   header.transaction_number = HostToNetwork(transaction_number);
