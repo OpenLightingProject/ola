@@ -18,13 +18,12 @@
 
 import itertools
 import os
-import sys
 import unittest
 import ola.PidStore as PidStore
 
 """Test cases for the PidStore class.
    Relies on the PID data from rdm tests,
-   passed as TESTDATADIR envvar or defaults to 
+   passed as TESTDATADIR envvar or defaults to
    ../common/rdm/testdata
 """
 
