@@ -56,7 +56,7 @@ void LLRPProbeRequestPDU::PrependPDU(ola::io::IOStack *stack,
                                          (known_uids.Size() * UID::LENGTH)));
   uint8_t vector = HostToNetwork(VECTOR_PROBE_REQUEST_DATA);
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
-  PrependFlagsAndLength(stack);
+  PrependFlagsAndLength(stack, VFLAG_MASK | HFLAG_MASK | DFLAG_MASK, true);
 }
 }  // namespace acn
 }  // namespace ola
