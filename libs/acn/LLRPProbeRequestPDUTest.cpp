@@ -70,7 +70,7 @@ void LLRPProbeRequestPDUTest::testPrepend() {
   OLA_ASSERT(stack.Read(buffer, length));
 
   const uint8_t expected_data[] = {
-    0xf0, 0x23, 1,
+    0xf0, 0x00, 0x24, 1,
     0, 0, 0, 0, 0, 0,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0x00, 0x00,

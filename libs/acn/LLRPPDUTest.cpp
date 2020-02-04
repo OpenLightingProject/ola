@@ -74,7 +74,7 @@ void LLRPPDUTest::testSimpleLLRPPDU() {
 
   OLA_ASSERT_EQ(20u, pdu.HeaderSize());
   OLA_ASSERT_EQ(0u, pdu.DataSize());
-  OLA_ASSERT_EQ(26u, pdu.Size());
+  OLA_ASSERT_EQ(27u, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
@@ -83,20 +83,21 @@ void LLRPPDUTest::testSimpleLLRPPDU() {
   OLA_ASSERT_EQ(size, bytes_used);
 
   // spot check the data
-  OLA_ASSERT_EQ((uint8_t) 0x70, data[0]);
-  OLA_ASSERT_EQ((uint8_t) bytes_used, data[1]);
+  OLA_ASSERT_EQ((uint8_t) 0xf0, data[0]);
+  // bytes_used is technically data[1] and data[2] if > 255
+  OLA_ASSERT_EQ((uint8_t) bytes_used, data[2]);
   unsigned int actual_value;
-  memcpy(&actual_value, data + 2, sizeof(actual_value));
+  memcpy(&actual_value, data + 3, sizeof(actual_value));
   OLA_ASSERT_EQ(HostToNetwork(TEST_VECTOR), actual_value);
 
   uint8_t buffer[CID::CID_LENGTH];
   destination_cid.Pack(buffer);
-  OLA_ASSERT_FALSE(memcmp(&data[6], buffer, CID::CID_LENGTH));
+  OLA_ASSERT_DATA_EQUALS(&data[7], CID::CID_LENGTH, buffer, sizeof(buffer));
   // transaction number
-  OLA_ASSERT_EQ((uint8_t) 0, data[6 + CID::CID_LENGTH]);
-  OLA_ASSERT_EQ((uint8_t) 0, data[6 + CID::CID_LENGTH + 1]);
-  OLA_ASSERT_EQ((uint8_t) 0, data[6 + CID::CID_LENGTH + 2]);
-  OLA_ASSERT_EQ((uint8_t) 101, data[6 + CID::CID_LENGTH + 3]);
+  OLA_ASSERT_EQ((uint8_t) 0, data[7 + CID::CID_LENGTH]);
+  OLA_ASSERT_EQ((uint8_t) 0, data[7 + CID::CID_LENGTH + 1]);
+  OLA_ASSERT_EQ((uint8_t) 0, data[7 + CID::CID_LENGTH + 2]);
+  OLA_ASSERT_EQ((uint8_t) 101, data[7 + CID::CID_LENGTH + 3]);
 
   // test undersized buffer
   bytes_used = size - 1;
@@ -121,19 +122,19 @@ void LLRPPDUTest::testSimpleLLRPPDUToOutputStream() {
 
   OLA_ASSERT_EQ(20u, pdu.HeaderSize());
   OLA_ASSERT_EQ(0u, pdu.DataSize());
-  OLA_ASSERT_EQ(26u, pdu.Size());
+  OLA_ASSERT_EQ(27u, pdu.Size());
 
   IOQueue output;
   OutputStream stream(&output);
   pdu.Write(&stream);
-  OLA_ASSERT_EQ(26u, output.Size());
+  OLA_ASSERT_EQ(27u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
   unsigned int pdu_size = output.Peek(pdu_data, output.Size());
   OLA_ASSERT_EQ(output.Size(), pdu_size);
 
   uint8_t EXPECTED[] = {
-    0xf0, 0x1a,
+    0xf0, 0x00, 0x1b,
     0, 0, 0, 39,
     0, 1, 2, 3, 4, 5, 6, 7,
     8, 9, 10, 11, 12, 13, 14, 15,
