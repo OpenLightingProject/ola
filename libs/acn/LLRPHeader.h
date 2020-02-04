@@ -29,6 +29,8 @@
 namespace ola {
 namespace acn {
 
+// TODO(Peter): I think technically this probably shouldn't be a header and
+// instead is just data at this level!
 /*
  * Header for the LLRP layer
  */
