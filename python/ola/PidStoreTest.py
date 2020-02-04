@@ -13,8 +13,8 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
-# UIDTest.py
-# Copyright (C) 2005 Simon Newton
+# PidStoreTest.py
+# Copyright (C) 2020 Bruce Lowekamp
 
 import itertools
 import os
@@ -23,9 +23,9 @@ import unittest
 import ola.PidStore as PidStore
 
 """Test cases for the PidStore class.
-   Relies on the PID data from rdm tests.
-   (passed as only command-line arg, otherwise defaults to
-   relative path in source tree)
+   Relies on the PID data from rdm tests,
+   passed as TESTDATADIR envvar or defaults to 
+   ../common/rdm/testdata
 """
 
 __author__ = 'bruce@lowekamp.net (Bruce Lowekamp)'
@@ -142,7 +142,7 @@ class PidStoreTest(unittest.TestCase):
 
   def testInconsistentData(self):
     store = PidStore.PidStore()
-    with self.assertRaises(PidStore.InvalidPidFormat):
+    with self.assertRaises(PidStore.PidStructureException):
       store.Load([os.path.join(path, "inconsistent_pid.proto")])
 
   def testSort(self):
@@ -218,8 +218,5 @@ class PidStoreTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  if len(sys.argv) == 2:
-    path = sys.argv.pop()
-  else:
-    path = "../common/rdm/testdata"
+  path = (os.environ.get('TESTDATADIR', "../common/rdm/testdata"))
   unittest.main()

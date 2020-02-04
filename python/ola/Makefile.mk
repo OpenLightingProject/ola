@@ -70,7 +70,7 @@ python/ola/OlaClientTest.sh: python/ola/Makefile.mk
 
 python/ola/PidStoreTest.sh: python/ola/Makefile.mk
 	mkdir -p $(top_builddir)/python/ola
-	echo "export PYTHONPATH=${top_builddir}/python:${top_srcdir}/python; $(PYTHON) ${srcdir}/python/ola/PidStoreTest.py $(top_builddir)/common/rdm/testdata; exit \$$?" > $(top_builddir)/python/ola/PidStoreTest.sh
+	echo "PYTHONPATH=${top_builddir}/python TESTDATADIR=$(srcdir)/common/rdm/testdata $(PYTHON) ${srcdir}/python/ola/PidStoreTest.py; exit \$$?" > $(top_builddir)/python/ola/PidStoreTest.sh
 	chmod +x $(top_builddir)/python/ola/PidStoreTest.sh
 
 dist_check_SCRIPTS += \
