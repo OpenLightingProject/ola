@@ -90,6 +90,15 @@ class CID {
   std::string ToString() const;
 
   /**
+   * @brief A helper function to write a CID to an ostream.
+   * @param out the ostream
+   * @param cid the CID to write.
+   */
+  friend std::ostream& operator<< (std::ostream &out, const CID &cid) {
+    return out << cid.ToString();
+  }
+
+  /**
    * @brief Write the CID to an OutputBufferInterface
    */
   void Write(ola::io::OutputBufferInterface *output) const;
