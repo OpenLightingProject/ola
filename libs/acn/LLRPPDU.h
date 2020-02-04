@@ -30,8 +30,6 @@
 namespace ola {
 namespace acn {
 
-class RDMPDU;
-
 class LLRPPDU: public PDU {
  public:
     LLRPPDU(unsigned int vector,

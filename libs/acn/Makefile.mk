@@ -64,6 +64,8 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/LLRPHeader.h \
     libs/acn/LLRPInflator.cpp \
     libs/acn/LLRPInflator.h \
+    libs/acn/LLRPProbeRequestPDU.cpp \
+    libs/acn/LLRPProbeRequestPDU.h \
     libs/acn/LLRPPDU.cpp \
     libs/acn/LLRPPDU.h \
     libs/acn/PDU.cpp \
@@ -148,7 +150,8 @@ libs_acn_E133Tester_LDADD = \
 
 libs_acn_LLRPTester_SOURCES = \
     libs/acn/LLRPInflatorTest.cpp \
-    libs/acn/LLRPPDUTest.cpp
+    libs/acn/LLRPPDUTest.cpp \
+    libs/acn/LLRPProbeRequestPDUTest.cpp
 libs_acn_LLRPTester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 libs_acn_LLRPTester_LDADD = \
     libs/acn/libolae131core.la \
