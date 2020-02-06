@@ -95,8 +95,8 @@ enum E133ControllerVector {
  */
 enum LLRPVector {
   VECTOR_LLRP_PROBE_REQUEST = 1,  /**< LLRP Probe Request */
-  VECTOR_LLRP_PROBE_REPLY = 1,  /**< LLRP Probe Reply */
-  VECTOR_LLRP_RDM_CMD = 1,  /**< LLRP RDM Command */
+  VECTOR_LLRP_PROBE_REPLY = 2,  /**< LLRP Probe Reply */
+  VECTOR_LLRP_RDM_CMD = 3,  /**< LLRP RDM Command */
 };
 
 /**
