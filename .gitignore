@@ -212,6 +212,8 @@ tools/e133/e133_monitor
 tools/e133/e133_monitor.exe
 tools/e133/e133_receiver
 tools/e133/e133_receiver.exe
+tools/e133/llrp_receive_test
+tools/e133/llrp_receive_test.exe
 tools/e133/slp_locate
 tools/e133/slp_locate.exe
 tools/e133/slp_register
