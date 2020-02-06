@@ -47,7 +47,6 @@ class LLRPProbeRequestPDU : private PDU {
   static const uint16_t FILTER_CLIENT_TCP_CONNECTION_INACTIVE = 0x0001;
   static const uint16_t FILTER_BROKERS_ONLY = 0x0002;
 
- private:
   PACK(
   struct llrp_probe_request_pdu_data_s {
     uint8_t lower_uid[ola::rdm::UID::LENGTH];

@@ -30,7 +30,6 @@ namespace acn {
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::rdm::UID;
-using std::vector;
 
 void LLRPProbeRequestPDU::PrependPDU(ola::io::IOStack *stack,
                                      const UID &lower_uid,
@@ -49,6 +48,7 @@ void LLRPProbeRequestPDU::PrependPDU(ola::io::IOStack *stack,
     filter |= FILTER_BROKERS_ONLY;
   }
   data.filter = HostToNetwork(filter);
+  // TODO(Peter): We need to check we've got <= 200 UIDs here
   known_uids.Pack(data.known_uids, sizeof(data.known_uids));
   stack->Write(reinterpret_cast<uint8_t*>(&data),
                static_cast<unsigned int>(sizeof(llrp_probe_request_pdu_data) -
