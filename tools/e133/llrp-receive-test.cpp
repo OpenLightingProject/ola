@@ -13,12 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * e131_transmit_test.cpp
- * The sends custom E1.31 packets in order to test the implementation of a
- * remote node.
- * Copyright (C) 2010 Simon Newton
- *
- * The remote node needs to be listening for Universe 1.
+ * llrp-receive-test.cpp
+ * Run a very simple E1.33 LLRP Responder.
+ * Copyright (C) 2020 Peter Newman
  */
 
 #include <getopt.h>
@@ -41,6 +38,9 @@
 #include "ola/Callback.h"
 #include "ola/acn/ACNPort.h"
 #include "ola/acn/CID.h"
+#include "ola/base/Flags.h"
+#include "ola/base/Init.h"
+#include "ola/base/SysExits.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Interface.h"
 #include "ola/network/InterfacePicker.h"
@@ -68,22 +68,7 @@ using ola::network::IPV4SocketAddress;
 using ola::network::MACAddress;
 using ola::rdm::UID;
 
-/*
- * Display the help message
- */
-void DisplayHelp(const char *binary_name) {
-  std::cout << "Usage: " << binary_name << " [--interactive]\n"
-  "\n"
-  "Run the E1.31 Transmit test. This test can run in one of two modes:\n"
-  "  * interactive mode. This sends data to the multicast addresses\n"
-  "    and a human gets to verify it.\n"
-  "  * local mode (default). This starts a local E131Node and sends it data,\n"
-  "    verifying against the expected output.\n"
-  "\n"
-  "  -h, --help                  Display this help message and exit.\n"
-  "  -i, --interactive           Run in interactive mode.\n"
-  << std::endl;
-}
+DEFINE_string(uid, "7a70:00000001", "The UID of the responder.");
 
 auto_ptr<ola::network::InterfacePicker> picker(
   ola::network::InterfacePicker::NewPicker());
@@ -91,6 +76,7 @@ ola::network::Interface m_interface;
 const std::string m_preferred_ip;
 ola::network::UDPSocket m_socket;
 uint8_t *m_recv_buffer;
+std::auto_ptr<UID> target_uid;
 
 ola::acn::PreamblePacker m_packer;
 ola::acn::CID cid = CID::Generate();
@@ -154,11 +140,9 @@ void HandleLLRPProbeRequest(
                                  *target_address,
                                  ola::acn::LLRP_PORT);
 
-  UID target_uid = UID(0x4321, 0x12345678);
-
   LLRPProbeReplyPDU probe_reply(
       LLRPProbeReplyPDU::VECTOR_PROBE_REPLY_DATA,
-      target_uid,
+      *target_uid,
       FindLowestMAC().hw_address,
       LLRPProbeReplyPDU::LLRP_COMPONENT_TYPE_NON_RDMNET);
 
@@ -168,32 +152,15 @@ void HandleLLRPProbeRequest(
 }
 
 int main(int argc, char* argv[]) {
-  ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
+  ola::AppInit(&argc, argv, "[options]", "Run a very simple E1.33 LLRP Responder.");
 
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {0, 0, 0, 0}
-    };
-
-  int option_index = 0;
-
-  while (1) {
-    int c = getopt_long(argc, argv, "ih", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'h':
-        DisplayHelp(argv[0]);
-        return 0;
-      case '?':
-        break;
-      default:
-        break;
-    }
+  target_uid.reset(UID::FromString(FLAGS_uid));
+  if (!target_uid.get()) {
+    OLA_WARN << "Invalid UID: " << FLAGS_uid;
+    ola::DisplayUsage();
+    exit(ola::EXIT_USAGE);
+  } else {
+    OLA_INFO << "Started LLRP Responder with UID " << *target_uid;
   }
 
   ola::io::SelectServer ss;
