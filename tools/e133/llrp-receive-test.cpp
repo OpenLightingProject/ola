@@ -60,6 +60,7 @@ using ola::acn::CID;
 using ola::acn::IncomingUDPTransport;
 using ola::acn::LLRPHeader;
 using ola::acn::LLRPProbeReplyPDU;
+using ola::acn::LLRPProbeRequestInflator;
 using ola::acn::OutgoingUDPTransport;
 using ola::acn::OutgoingUDPTransportImpl;
 using ola::network::Interface;
@@ -121,9 +122,23 @@ Interface FindLowestMAC() {
 
 void HandleLLRPProbeRequest(
     const ola::acn::HeaderSet *headers,
-    const ola::rdm::UID &lower_uid,
-    const ola::rdm::UID &upper_uid) {
-  OLA_DEBUG << "Handling probe from " << lower_uid << " to " << upper_uid;
+    const LLRPProbeRequestInflator::LLRPProbeRequest &request) {
+  OLA_DEBUG << "Potentially handling probe from " << request.lower << " to "
+            << request.upper;
+
+  if ((*target_uid < request.lower) || (*target_uid > request.upper)) {
+    OLA_INFO << "Ignoring probe request as we are not in the target UID range";
+    return;
+  }
+
+  OLA_DEBUG << "Known UIDs are: " << request.known_uids;
+
+  if (request.known_uids.Contains(*target_uid)) {
+    OLA_INFO << "Ignoring probe request as we are already in the known UID list";
+    return;
+  }
+
+  // TODO(Peter): Check the filter bits!
 
   const ola::acn::RootHeader root_header = headers->GetRootHeader();
   const ola::acn::LLRPHeader llrp_header = headers->GetLLRPHeader();
@@ -147,6 +162,9 @@ void HandleLLRPProbeRequest(
       LLRPProbeReplyPDU::LLRP_COMPONENT_TYPE_NON_RDMNET);
 
   ola::acn::LLRPPDU pdu(ola::acn::VECTOR_LLRP_PROBE_REPLY, reply_llrp_header, &probe_reply);
+
+  // TODO(Peter): Delay sending by 0 to LLRP_MAX_BACKOFF!
+
   m_root_sender.SendPDU(ola::acn::VECTOR_ROOT_LLRP, pdu, &transport);
   OLA_DEBUG << "Sent PDU";
 }
