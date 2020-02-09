@@ -22,6 +22,7 @@
  */
 
 #include <getopt.h>
+#include <algorithm>
 #include <string>
 #include <memory>
 #include <vector>
@@ -41,6 +42,7 @@
 #include "ola/acn/ACNPort.h"
 #include "ola/acn/CID.h"
 #include "ola/io/SelectServer.h"
+#include "ola/network/Interface.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/MACAddress.h"
@@ -60,6 +62,7 @@ using ola::acn::LLRPHeader;
 using ola::acn::LLRPProbeReplyPDU;
 using ola::acn::OutgoingUDPTransport;
 using ola::acn::OutgoingUDPTransportImpl;
+using ola::network::Interface;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::MACAddress;
@@ -82,7 +85,8 @@ void DisplayHelp(const char *binary_name) {
   << std::endl;
 }
 
-
+auto_ptr<ola::network::InterfacePicker> picker(
+  ola::network::InterfacePicker::NewPicker());
 ola::network::Interface m_interface;
 const std::string m_preferred_ip;
 ola::network::UDPSocket m_socket;
@@ -91,6 +95,20 @@ uint8_t *m_recv_buffer;
 ola::acn::PreamblePacker m_packer;
 ola::acn::CID cid = CID::Generate();
 ola::acn::RootSender m_root_sender(cid, true);
+
+bool CompareInterfaceMACs(Interface a, Interface b) {
+  return a.hw_address < b.hw_address;
+}
+
+Interface FindLowestMAC() {
+  // TODO(Peter): Get some clarification on whether we only care about active
+  // interfaces, or any installed ones?
+  // TODO(Peter): Work out what to do here if running on localhost only? Return
+  // 00:00:00:00:00:00
+  std::vector<Interface> interfaces = picker->GetInterfaces(false);
+  std::vector<Interface>::iterator result = std::min_element(interfaces.begin(), interfaces.end(), CompareInterfaceMACs);
+  return *result;
+}
 
 //void CheckData() {
 //  std::cout << "Awaiting data..." << std::endl;
@@ -137,13 +155,11 @@ void HandleLLRPProbeRequest(
                                  ola::acn::LLRP_PORT);
 
   UID target_uid = UID(0x4321, 0x12345678);
-  MACAddress hardware_address;
-  MACAddress::FromString("01:23:45:67:89:ab", &hardware_address);
 
   LLRPProbeReplyPDU probe_reply(
       LLRPProbeReplyPDU::VECTOR_PROBE_REPLY_DATA,
       target_uid,
-      hardware_address,
+      FindLowestMAC().hw_address,
       LLRPProbeReplyPDU::LLRP_COMPONENT_TYPE_NON_RDMNET);
 
   ola::acn::LLRPPDU pdu(ola::acn::VECTOR_LLRP_PROBE_REPLY, reply_llrp_header, &probe_reply);
@@ -197,8 +213,6 @@ int main(int argc, char* argv[]) {
 
   IPV4Address *addr = IPV4Address::FromString("239.255.250.133");
 
-  auto_ptr<ola::network::InterfacePicker> picker(
-    ola::network::InterfacePicker::NewPicker());
   if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
     OLA_INFO << "Failed to find an interface";
     return false;
