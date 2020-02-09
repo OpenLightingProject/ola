@@ -66,6 +66,21 @@ class UIDSet {
     }
 
     /**
+     * @brief Construct a new UIDSet from binary data.
+     * @param data a pointer to the memory containing the UIDSet data. The data
+     * should be most significant byte first.
+     * @param length is the length of the data you wish to retrieve
+     */
+    explicit UIDSet(const uint8_t *data, unsigned int *length) {
+      unsigned int used_length = 0;
+      while ((*length - used_length) >= UID::LENGTH) {
+        m_uids.insert(UID(data + used_length));
+        used_length += UID::LENGTH;
+      }
+      *length = used_length;
+    }
+
+    /**
      * @brief Assignment operator
      */
     UIDSet& operator=(const UIDSet &other) {
