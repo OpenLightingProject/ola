@@ -23,6 +23,26 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <ola/Callback.h>
+#include <ola/acn/ACNPort.h>
+#include <ola/acn/CID.h>
+#include <ola/base/Flags.h>
+#include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
+#include <ola/io/SelectServer.h>
+#include <ola/network/Interface.h>
+#include <ola/network/InterfacePicker.h>
+#include <ola/network/IPV4Address.h>
+#include <ola/network/MACAddress.h>
+#include <ola/network/SocketAddress.h>
+#include <ola/network/Socket.h>
+#include <ola/rdm/DummyResponder.h>
+#include <ola/rdm/RDMCommandSerializer.h>
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/RDMHelper.h>
+#include <ola/rdm/UID.h>
+#include <ola/DmxBuffer.h>
+#include <ola/Logging.h>
 #include "libs/acn/HeaderSet.h"
 #include "libs/acn/LLRPHeader.h"
 #include "libs/acn/LLRPInflator.h"
@@ -30,27 +50,13 @@
 #include "libs/acn/LLRPProbeReplyPDU.h"
 #include "libs/acn/LLRPProbeRequestInflator.h"
 #include "libs/acn/PreamblePacker.h"
+#include "libs/acn/RDMInflator.h"
+#include "libs/acn/RDMPDU.h"
 #include "libs/acn/RootHeader.h"
 #include "libs/acn/RootInflator.h"
 #include "libs/acn/RootSender.h"
 #include "libs/acn/Transport.h"
 #include "libs/acn/UDPTransport.h"
-#include "ola/Callback.h"
-#include "ola/acn/ACNPort.h"
-#include "ola/acn/CID.h"
-#include "ola/base/Flags.h"
-#include "ola/base/Init.h"
-#include "ola/base/SysExits.h"
-#include "ola/io/SelectServer.h"
-#include "ola/network/Interface.h"
-#include "ola/network/InterfacePicker.h"
-#include "ola/network/IPV4Address.h"
-#include "ola/network/MACAddress.h"
-#include "ola/network/SocketAddress.h"
-#include "ola/network/Socket.h"
-#include "ola/rdm/UID.h"
-#include "ola/DmxBuffer.h"
-#include "ola/Logging.h"
 
 using std::string;
 using std::vector;
@@ -78,6 +84,7 @@ const std::string m_preferred_ip;
 ola::network::UDPSocket m_socket;
 uint8_t *m_recv_buffer;
 std::auto_ptr<UID> target_uid;
+std::auto_ptr<ola::rdm::DummyResponder> dummy_responder;
 
 ola::acn::PreamblePacker m_packer;
 ola::acn::CID cid = CID::Generate();
@@ -96,29 +103,6 @@ Interface FindLowestMAC() {
   std::vector<Interface>::iterator result = std::min_element(interfaces.begin(), interfaces.end(), CompareInterfaceMACs);
   return *result;
 }
-
-//void CheckData() {
-//  std::cout << "Awaiting data..." << std::endl;
-//  if (!m_recv_buffer)
-//    m_recv_buffer = new uint8_t[512];
-//
-//  ssize_t size = 512;
-//  ola::network::IPV4SocketAddress source;
-
-//  if (!m_socket.RecvFrom(m_recv_buffer, &size, &source))
-//    return;
-
-//  std::cout << "Got " << size << " bytes" << std::endl;
-
-//  ola::FormatData(&std::cout, m_recv_buffer, size);
-
-//  ola::acn::HeaderSet header_set;
-//  if (root_inflator.InflatePDUBlock(&header_set, &m_recv_buffer[16], size - 16)) {
-//    std::cout << "Inflated" << std::endl;
-//  } else {
-//    std::cout << "Failed to inflate" << std::endl;
-//  }
-//}
 
 void HandleLLRPProbeRequest(
     const ola::acn::HeaderSet *headers,
@@ -169,6 +153,62 @@ void HandleLLRPProbeRequest(
   OLA_DEBUG << "Sent PDU";
 }
 
+void RDMRequestComplete(
+    ola::acn::HeaderSet headers,
+    ola::rdm::RDMReply *reply) {
+  OLA_INFO << "Got RDM reply to send";
+  OLA_DEBUG << reply->ToString();
+
+  const ola::acn::RootHeader root_header = headers.GetRootHeader();
+  const ola::acn::LLRPHeader llrp_header = headers.GetLLRPHeader();
+
+  OLA_DEBUG << "Source CID: " << root_header.GetCid();
+  OLA_DEBUG << "TN: " << llrp_header.TransactionNumber();
+
+  ola::acn::LLRPHeader reply_llrp_header = LLRPHeader(root_header.GetCid(), llrp_header.TransactionNumber());
+
+  IPV4Address *target_address = IPV4Address::FromString("239.255.250.134");
+
+  OutgoingUDPTransportImpl transport_impl = OutgoingUDPTransportImpl(&m_socket, &m_packer);
+  OutgoingUDPTransport transport(&transport_impl,
+                                 *target_address,
+                                 ola::acn::LLRP_PORT);
+
+  ola::io::ByteString raw_reply;
+  ola::rdm::RDMCommandSerializer::Pack(*reply->Response(), &raw_reply);
+
+  ola::acn::RDMPDU rdm_reply(raw_reply);
+
+  ola::acn::LLRPPDU pdu(ola::acn::VECTOR_LLRP_RDM_CMD, reply_llrp_header, &rdm_reply);
+
+  m_root_sender.SendPDU(ola::acn::VECTOR_ROOT_LLRP, pdu, &transport);
+  OLA_DEBUG << "Sent RDM PDU";
+}
+
+void HandleRDM(
+    const ola::acn::HeaderSet *headers,
+    const string &raw_request) {
+  IPV4SocketAddress target = headers->GetTransportHeader().Source();
+  OLA_INFO << "Got RDM request from " << target;
+
+  // attempt to unpack as a request
+  ola::rdm::RDMRequest *request = ola::rdm::RDMRequest::InflateFromData(
+    reinterpret_cast<const uint8_t*>(raw_request.data()),
+    raw_request.size());
+
+  if (!request) {
+    OLA_WARN << "Failed to unpack LLRP RDM message, ignoring request.";
+    return;
+  } else {
+    OLA_DEBUG << "Got RDM request " << request->ToString();
+  }
+
+  dummy_responder->SendRDMRequest(
+      request,
+      ola::NewSingleCallback(&RDMRequestComplete,
+                             *headers));
+}
+
 int main(int argc, char* argv[]) {
   ola::AppInit(&argc, argv, "[options]", "Run a very simple E1.33 LLRP Responder.");
 
@@ -180,6 +220,8 @@ int main(int argc, char* argv[]) {
   } else {
     OLA_INFO << "Started LLRP Responder with UID " << *target_uid;
   }
+
+  dummy_responder.reset(new ola::rdm::DummyResponder(*target_uid));
 
   ola::io::SelectServer ss;
 
@@ -214,22 +256,21 @@ int main(int argc, char* argv[]) {
   ola::acn::LLRPProbeRequestInflator llrp_probe_request_inflator;
   llrp_probe_request_inflator.SetLLRPProbeRequestHandler(
       ola::NewCallback(&HandleLLRPProbeRequest));
+  ola::acn::RDMInflator llrp_rdm_inflator(ola::acn::VECTOR_LLRP_RDM_CMD);
+  llrp_rdm_inflator.SetGenericRDMHandler(
+      ola::NewCallback(&HandleRDM));
 
   // setup all the inflators
   root_inflator.AddInflator(&llrp_inflator);
   llrp_inflator.AddInflator(&llrp_probe_request_inflator);
+  llrp_inflator.AddInflator(&llrp_rdm_inflator);
 
   IncomingUDPTransport m_incoming_udp_transport(&m_socket, &root_inflator);
   m_socket.SetOnData(ola::NewCallback(&m_incoming_udp_transport,
                                       &IncomingUDPTransport::Receive));
-//  m_socket.SetOnData(ola::NewCallback(&CheckData));
   ss.AddReadDescriptor(&m_socket);
 
-  std::cout << "Pre run!" << std::endl;
-
   ss.Run();
-
-  std::cout << "Run!" << std::endl;
 
   return 0;
 }
