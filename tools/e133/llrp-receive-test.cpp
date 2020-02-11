@@ -18,11 +18,6 @@
  * Copyright (C) 2020 Peter Newman
  */
 
-#include <getopt.h>
-#include <algorithm>
-#include <string>
-#include <memory>
-#include <vector>
 #include <ola/Callback.h>
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/CID.h>
@@ -39,10 +34,17 @@
 #include <ola/rdm/DummyResponder.h>
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
+
+#include <algorithm>
+#include <string>
+#include <memory>
+#include <vector>
+
 #include "libs/acn/HeaderSet.h"
 #include "libs/acn/LLRPHeader.h"
 #include "libs/acn/LLRPInflator.h"
@@ -69,6 +71,7 @@ using ola::acn::LLRPProbeReplyPDU;
 using ola::acn::LLRPProbeRequestInflator;
 using ola::acn::OutgoingUDPTransport;
 using ola::acn::OutgoingUDPTransportImpl;
+using ola::acn::RootHeader;
 using ola::network::Interface;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -87,8 +90,13 @@ std::auto_ptr<UID> target_uid;
 std::auto_ptr<ola::rdm::DummyResponder> dummy_responder;
 
 ola::acn::PreamblePacker m_packer;
-ola::acn::CID cid = CID::Generate();
+CID cid = CID::Generate();
 ola::acn::RootSender m_root_sender(cid, true);
+
+bool CheckCIDAddressedToUs(const CID destination_cid) {
+  return (destination_cid == CID::LLRPBroadcastCID() ||
+          destination_cid == cid);
+}
 
 bool CompareInterfaceMACs(Interface a, Interface b) {
   return a.hw_address < b.hw_address;
@@ -99,8 +107,10 @@ Interface FindLowestMAC() {
   // interfaces, or any installed ones?
   // TODO(Peter): Work out what to do here if running on localhost only? Return
   // 00:00:00:00:00:00
-  std::vector<Interface> interfaces = picker->GetInterfaces(false);
-  std::vector<Interface>::iterator result = std::min_element(interfaces.begin(), interfaces.end(), CompareInterfaceMACs);
+  vector<Interface> interfaces = picker->GetInterfaces(false);
+  vector<Interface>::iterator result = std::min_element(interfaces.begin(),
+                                                        interfaces.end(),
+                                                        CompareInterfaceMACs);
   return *result;
 }
 
@@ -110,6 +120,12 @@ void HandleLLRPProbeRequest(
   OLA_DEBUG << "Potentially handling probe from " << request.lower << " to "
             << request.upper;
 
+  const LLRPHeader llrp_header = headers->GetLLRPHeader();
+  if (!CheckCIDAddressedToUs(llrp_header.DestinationCid())) {
+    OLA_INFO << "Ignoring probe request as it's not addressed to us or the LLRP broadcast CID";
+    return;
+  }
+
   if ((*target_uid < request.lower) || (*target_uid > request.upper)) {
     OLA_INFO << "Ignoring probe request as we are not in the target UID range";
     return;
@@ -118,19 +134,20 @@ void HandleLLRPProbeRequest(
   OLA_DEBUG << "Known UIDs are: " << request.known_uids;
 
   if (request.known_uids.Contains(*target_uid)) {
-    OLA_INFO << "Ignoring probe request as we are already in the known UID list";
+    OLA_INFO << "Ignoring probe request as we are already in the known UID "
+             << "list";
     return;
   }
 
   // TODO(Peter): Check the filter bits!
 
-  const ola::acn::RootHeader root_header = headers->GetRootHeader();
-  const ola::acn::LLRPHeader llrp_header = headers->GetLLRPHeader();
+  const RootHeader root_header = headers->GetRootHeader();
 
   OLA_DEBUG << "Source CID: " << root_header.GetCid();
   OLA_DEBUG << "TN: " << llrp_header.TransactionNumber();
 
-  ola::acn::LLRPHeader reply_llrp_header = LLRPHeader(root_header.GetCid(), llrp_header.TransactionNumber());
+  LLRPHeader reply_llrp_header = LLRPHeader(root_header.GetCid(),
+                                            llrp_header.TransactionNumber());
 
   IPV4Address *target_address = IPV4Address::FromString("239.255.250.134");
 
@@ -159,13 +176,20 @@ void RDMRequestComplete(
   OLA_INFO << "Got RDM reply to send";
   OLA_DEBUG << reply->ToString();
 
-  const ola::acn::RootHeader root_header = headers.GetRootHeader();
-  const ola::acn::LLRPHeader llrp_header = headers.GetLLRPHeader();
+// TODO(Peter): Do the below
+//LLRP Targets shall not return RDM responses with response types of ACK_TIMER or
+//ACK_OVERFLOW. LLRP Targets shall respond with a NACK with reason code
+//NR_ACTION_NOT_SUPPORTED to any RDM request that cannot be answered without starting
+//an ACK_TIMER or ACK_OVERFLOW sequence.
+
+  const RootHeader root_header = headers.GetRootHeader();
+  const LLRPHeader llrp_header = headers.GetLLRPHeader();
 
   OLA_DEBUG << "Source CID: " << root_header.GetCid();
   OLA_DEBUG << "TN: " << llrp_header.TransactionNumber();
 
-  ola::acn::LLRPHeader reply_llrp_header = LLRPHeader(root_header.GetCid(), llrp_header.TransactionNumber());
+  LLRPHeader reply_llrp_header = LLRPHeader(root_header.GetCid(),
+                                            llrp_header.TransactionNumber());
 
   IPV4Address *target_address = IPV4Address::FromString("239.255.250.134");
 
@@ -191,6 +215,11 @@ void HandleRDM(
   IPV4SocketAddress target = headers->GetTransportHeader().Source();
   OLA_INFO << "Got RDM request from " << target;
 
+  if (!CheckCIDAddressedToUs(headers->GetLLRPHeader().DestinationCid())) {
+    OLA_INFO << "Ignoring probe request as it's not addressed to us or the LLRP broadcast CID";
+    return;
+  }
+
   // attempt to unpack as a request
   ola::rdm::RDMRequest *request = ola::rdm::RDMRequest::InflateFromData(
     reinterpret_cast<const uint8_t*>(raw_request.data()),
@@ -201,6 +230,20 @@ void HandleRDM(
     return;
   } else {
     OLA_DEBUG << "Got RDM request " << request->ToString();
+  }
+
+  if (!request->DestinationUID().DirectedToUID(*target_uid)) {
+    OLA_WARN << "Destination UID " << request->DestinationUID() << " was not "
+             << "directed to us";
+    return;
+  }
+
+  if (!((request->SubDevice() == ola::rdm::ROOT_RDM_DEVICE) ||
+        (request->SubDevice() == ola::rdm::ALL_RDM_SUBDEVICES))) {
+    OLA_WARN << "Subdevice " << request->SubDevice() << " was not the root or "
+             << "broadcast subdevice";
+    // TODO(Peter): NACK with NR_SUB_DEVICE_OUT_OF_RANGE
+    return;
   }
 
   dummy_responder->SendRDMRequest(
@@ -249,6 +292,7 @@ int main(int argc, char* argv[]) {
 
   if (!m_socket.JoinMulticast(m_interface.ip_address, *addr)) {
     OLA_WARN << "Failed to join multicast group " << addr;
+    return false;
   }
 
   ola::acn::RootInflator root_inflator;
