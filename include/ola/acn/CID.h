@@ -141,6 +141,10 @@ class CID {
    */
   static CID FromString(const std::string &cid);
 
+  static CID LLRPBroadcastCID() {
+    return FromString("FBAD822C-BD0C-4D4C-BDC8-7EABEBC85AFF");
+  }
+
  private:
   class CIDImpl *m_impl;
 
