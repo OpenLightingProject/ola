@@ -30,6 +30,8 @@ x/y/2019 ola-0.10.8
  * Fix an RDM discovery bug for how we handle phantom UIDs
  * Ensure _close_callback is assigned before we might need to run it in the
    Python API
+ * Renamed RESONSE_INVALID_DESTINATION(sic) to RESPONSE_INVALID_DESTINATION in
+   the ArduinoWidget code
 
  Internal:
  *
