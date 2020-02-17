@@ -37,6 +37,7 @@
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
+#include <ola/rdm/RDMReply.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
 #include <ola/DmxBuffer.h>
@@ -78,6 +79,7 @@ using ola::network::Interface;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::MACAddress;
+using ola::rdm::RDMReply;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 
@@ -253,15 +255,19 @@ void HandleRDM(
   if (!((request->SubDevice() == ola::rdm::ROOT_RDM_DEVICE) ||
         (request->SubDevice() == ola::rdm::ALL_RDM_SUBDEVICES))) {
     OLA_WARN << "Subdevice " << request->SubDevice() << " was not the root or "
-             << "broadcast subdevice";
-    // TODO(Peter): NACK with NR_SUB_DEVICE_OUT_OF_RANGE
-    return;
+             << "broadcast subdevice, NACKing";
+    // Immediately send a NACK
+    RDMReply reply(
+        ola::rdm::RDM_COMPLETED_OK,
+        NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE));
+    RDMRequestComplete(*headers, &reply);
+  } else {
+    // Dispatch the message to the responder
+    dummy_responder->SendRDMRequest(
+        request,
+        ola::NewSingleCallback(&RDMRequestComplete,
+                               *headers));
   }
-
-  dummy_responder->SendRDMRequest(
-      request,
-      ola::NewSingleCallback(&RDMRequestComplete,
-                             *headers));
 }
 
 int main(int argc, char* argv[]) {
