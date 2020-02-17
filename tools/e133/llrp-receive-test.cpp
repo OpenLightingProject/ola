@@ -290,7 +290,7 @@ int main(int argc, char* argv[]) {
 
   std::cout << "IF " << m_interface << std::endl;
 
-  if (!m_socket.JoinMulticast(m_interface.ip_address, *addr)) {
+  if (!m_socket.JoinMulticast(m_interface.ip_address, *addr, true)) {
     OLA_WARN << "Failed to join multicast group " << addr;
     return false;
   }
