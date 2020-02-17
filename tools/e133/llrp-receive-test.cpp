@@ -32,10 +32,12 @@
 #include <ola/network/SocketAddress.h>
 #include <ola/network/Socket.h>
 #include <ola/rdm/DummyResponder.h>
+#include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
+#include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
@@ -76,6 +78,7 @@ using ola::network::Interface;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::MACAddress;
+using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 
 DEFINE_string(uid, "7a70:00000001", "The UID of the responder.");
@@ -176,11 +179,20 @@ void RDMRequestComplete(
   OLA_INFO << "Got RDM reply to send";
   OLA_DEBUG << reply->ToString();
 
-// TODO(Peter): Do the below
-//LLRP Targets shall not return RDM responses with response types of ACK_TIMER or
-//ACK_OVERFLOW. LLRP Targets shall respond with a NACK with reason code
-//NR_ACTION_NOT_SUPPORTED to any RDM request that cannot be answered without starting
-//an ACK_TIMER or ACK_OVERFLOW sequence.
+  const RDMResponse *response = reply->Response();
+  uint8_t response_type = response->ResponseType();
+
+  if (response_type == ola::rdm::RDM_ACK_TIMER ||
+      response_type == ola::rdm::ACK_OVERFLOW) {
+    // Technically we shouldn't have even actioned the request but we can't
+    // really do that in OLA, as we don't know what it might return until we've
+    // done it
+    OLA_DEBUG << "Got a disallowed ACK, mangling to NR_ACTION_NOT_SUPPORTED";
+    response = NackWithReason(response, ola::rdm::NR_ACTION_NOT_SUPPORTED);
+  } else {
+    OLA_DEBUG << "Got an acceptable response type: "
+              << (unsigned int)response_type;
+  }
 
   const RootHeader root_header = headers.GetRootHeader();
   const LLRPHeader llrp_header = headers.GetLLRPHeader();
@@ -199,7 +211,7 @@ void RDMRequestComplete(
                                  ola::acn::LLRP_PORT);
 
   ola::io::ByteString raw_reply;
-  ola::rdm::RDMCommandSerializer::Pack(*reply->Response(), &raw_reply);
+  ola::rdm::RDMCommandSerializer::Pack(*response, &raw_reply);
 
   ola::acn::RDMPDU rdm_reply(raw_reply);
 
@@ -216,7 +228,7 @@ void HandleRDM(
   OLA_INFO << "Got RDM request from " << target;
 
   if (!CheckCIDAddressedToUs(headers->GetLLRPHeader().DestinationCid())) {
-    OLA_INFO << "Ignoring probe request as it's not addressed to us or the LLRP broadcast CID";
+    OLA_INFO << "Ignoring RDM request as it's not addressed to us or the LLRP broadcast CID";
     return;
   }
 
@@ -283,13 +295,17 @@ int main(int argc, char* argv[]) {
 
   IPV4Address *addr = IPV4Address::FromString("239.255.250.133");
 
-  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
+  ola::network::InterfacePicker::Options options;
+  options.include_loopback = false;
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip, options)) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }
 
   std::cout << "IF " << m_interface << std::endl;
 
+  // If we enable multicast loopback, we can test two bits of software on the
+  // same machine, but we get, and must ignore, all our own requests too
   if (!m_socket.JoinMulticast(m_interface.ip_address, *addr, true)) {
     OLA_WARN << "Failed to join multicast group " << addr;
     return false;
