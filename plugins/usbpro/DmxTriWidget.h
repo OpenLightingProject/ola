@@ -195,6 +195,11 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
       EC_ENDPOINT_NUMBER_INVALID = 0x2c,  // this is a guess
       EC_INVALID_ENDPOINT_MODE = 0x2d,  // this is a guess
       EC_UNKNOWN_UID = 0x2e,  // this is a guess
+      EC_UNKNOWN_SCOPE = 0x2f,  // this is a guess
+      EC_INVALID_STATIC_CONFIG_TYPE = 0x30,  // this is a guess
+      EC_INVALID_IPV4_ADDRESS = 0x31,  // this is a guess
+      EC_INVALID_IPV6_ADDRESS = 0x32,  // this is a guess
+      EC_INVALID_PORT = 0x33  // this is a guess
     } dmx_tri_error_codes;
     // TODO(Peter): try and test the guessed values
 

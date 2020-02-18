@@ -515,7 +515,7 @@ class RDMResponse: public RDMCommand {
 
   /**
    * @brief The Response Type.
-   * @returns The Response Typpe (ACK, NACK, etc.)
+   * @returns The Response Type (ACK, NACK, etc.)
    */
   uint8_t ResponseType() const { return m_port_id; }
 
