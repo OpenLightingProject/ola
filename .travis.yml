@@ -401,7 +401,8 @@ install:
   - pip install --user protobuf==3.1.0
 # We need to use pip rather than apt on Xenial
   - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" = "bionic" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
-  - pip install --user numpy
+# Later versions of numpy don't install on arm via pip  
+  - pip install --user numpy=1.17.5
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
