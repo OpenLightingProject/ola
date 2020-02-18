@@ -30,8 +30,33 @@
 namespace ola {
 namespace acn {
 
-class LLRPProbeRequestPDU : private PDU {
+class LLRPProbeRequestPDU : public PDU {
  public:
+  explicit LLRPProbeRequestPDU(unsigned int vector,
+                               const ola::rdm::UID &lower_uid,
+                               const ola::rdm::UID &upper_uid,
+                               bool client_tcp_connection_inactive,
+                               bool brokers_only,
+                               const ola::rdm::UIDSet &known_uids):
+    PDU(vector, ONE_BYTE, true),
+    m_lower_uid(lower_uid),
+    m_upper_uid(upper_uid),
+    m_client_tcp_connection_inactive(client_tcp_connection_inactive),
+    m_brokers_only(brokers_only),
+    m_known_uids(known_uids) {}
+
+  unsigned int HeaderSize() const { return 0; }
+  bool PackHeader(OLA_UNUSED uint8_t *data,
+                  unsigned int *length) const {
+    *length = 0;
+    return true;
+  }
+  void PackHeader(OLA_UNUSED ola::io::OutputStream *stream) const {}
+
+  unsigned int DataSize() const;
+  bool PackData(uint8_t *data, unsigned int *length) const;
+  void PackData(ola::io::OutputStream *stream) const;
+
   static void PrependPDU(ola::io::IOStack *stack,
                          const ola::rdm::UID &lower_uid,
                          const ola::rdm::UID &upper_uid,
@@ -55,6 +80,13 @@ class LLRPProbeRequestPDU : private PDU {
     uint8_t known_uids[ola::rdm::UID::LENGTH * LLRP_KNOWN_UID_SIZE];
   });
   typedef struct llrp_probe_request_pdu_data_s llrp_probe_request_pdu_data;
+
+ private:
+  const ola::rdm::UID m_lower_uid;
+  const ola::rdm::UID m_upper_uid;
+  bool m_client_tcp_connection_inactive;
+  bool m_brokers_only;
+  const ola::rdm::UIDSet m_known_uids;
 };
 }  // namespace acn
 }  // namespace ola
