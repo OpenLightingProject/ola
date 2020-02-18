@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * llrp-receive-test.cpp
- * Run a very simple E1.33 LLRP Responder.
+ * llrp-target.cpp
+ * Run a very simple E1.33 LLRP Target.
  * Copyright (C) 2020 Peter Newman
  */
 
@@ -83,7 +83,7 @@ using ola::rdm::RDMReply;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 
-DEFINE_string(uid, "7a70:00000001", "The UID of the responder.");
+DEFINE_string(uid, "7a70:00000001", "The UID of the target.");
 
 auto_ptr<ola::network::InterfacePicker> picker(
   ola::network::InterfacePicker::NewPicker());
@@ -271,7 +271,7 @@ void HandleRDM(
 }
 
 int main(int argc, char* argv[]) {
-  ola::AppInit(&argc, argv, "[options]", "Run a very simple E1.33 LLRP Responder.");
+  ola::AppInit(&argc, argv, "[options]", "Run a very simple E1.33 LLRP Target.");
 
   target_uid.reset(UID::FromString(FLAGS_uid));
   if (!target_uid.get()) {
