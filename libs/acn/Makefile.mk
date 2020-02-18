@@ -64,6 +64,8 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/LLRPHeader.h \
     libs/acn/LLRPInflator.cpp \
     libs/acn/LLRPInflator.h \
+    libs/acn/LLRPProbeReplyInflator.cpp \
+    libs/acn/LLRPProbeReplyInflator.h \
     libs/acn/LLRPProbeReplyPDU.cpp \
     libs/acn/LLRPProbeReplyPDU.h \
     libs/acn/LLRPProbeRequestInflator.cpp \
