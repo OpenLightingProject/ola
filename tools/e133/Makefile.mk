@@ -71,6 +71,7 @@ noinst_PROGRAMS += \
     tools/e133/e133_controller \
     tools/e133/e133_monitor \
     tools/e133/e133_receiver \
+    tools/e133/llrp_manager \
     tools/e133/llrp_target
 
 tools_e133_e133_receiver_SOURCES = tools/e133/e133-receiver.cpp
@@ -106,5 +107,12 @@ tools_e133_basic_device_LDADD = common/libolacommon.la \
                                 libs/acn/libolaacn.la \
                                 tools/e133/libolae133common.la
 
+tools_e133_llrp_manager_SOURCES = tools/e133/llrp-manager.cpp
+tools_e133_llrp_manager_LDADD = common/libolacommon.la \
+                                libs/acn/libolaacn.la \
+                                tools/e133/libolae133common.la
+
 tools_e133_llrp_target_SOURCES = tools/e133/llrp-target.cpp
-tools_e133_llrp_target_LDADD = libs/acn/libolae131core.la
+tools_e133_llrp_target_LDADD = common/libolacommon.la \
+                               libs/acn/libolaacn.la \
+                               tools/e133/libolae133common.la
