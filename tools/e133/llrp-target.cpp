@@ -279,7 +279,7 @@ int main(int argc, char* argv[]) {
     ola::DisplayUsage();
     exit(ola::EXIT_USAGE);
   } else {
-    OLA_INFO << "Started LLRP Responder with UID " << *target_uid;
+    OLA_INFO << "Started LLRP Target with UID " << *target_uid;
   }
 
   dummy_responder.reset(new ola::rdm::DummyResponder(*target_uid));
