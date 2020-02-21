@@ -196,7 +196,21 @@ string NackReasonToString(uint16_t reason) {
     case NR_ACTION_NOT_SUPPORTED:
       return "Action not supported";
     case NR_ENDPOINT_NUMBER_INVALID:
-      return "Invalid endpoint";
+      return "Endpoint number invalid";
+    case NR_INVALID_ENDPOINT_MODE:
+      return "Invalid endpoint mode";
+    case NR_UNKNOWN_UID:
+      return "Unknown UID";
+    case NR_UNKNOWN_SCOPE:
+      return "Unknown scope";
+    case NR_INVALID_STATIC_CONFIG_TYPE:
+      return "Invalid static config type";
+    case NR_INVALID_IPV4_ADDRESS:
+      return "Invalid IPv4 address";
+    case NR_INVALID_IPV6_ADDRESS:
+      return "Invalid IPv6 address";
+    case NR_INVALID_PORT:
+      return "Invalid port";
     default:
       ostringstream str;
       str << "Unknown, was " << reason;
@@ -786,7 +800,7 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
       case SD_COLOR_SCROLL:
         return "Primary, scroll";
       case SD_COLOR_SEMAPHORE:
-        return "Primary, color semaphone";
+        return "Primary, color semaphore";
       case SD_COLOR_ADD_AMBER:
         return "Primary, additive amber";
       case SD_COLOR_ADD_WHITE:

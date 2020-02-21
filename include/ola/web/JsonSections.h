@@ -34,7 +34,7 @@ namespace web {
  * This is the base item class. Items are composed into sections.
  * Each item has the following:
  *  - A text description
- *  - A type, which controls how the item is renders
+ *  - A type, which controls how the item is rendered
  *  - The value.
  *  - Optional id. A non-empty id makes this item editable
  *  - Optional button text. Non-empty means this item gets it own button.

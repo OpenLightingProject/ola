@@ -51,7 +51,7 @@ const uint8_t ArduinoWidgetImpl::RESPONSE_OK = 0;
 const uint8_t ArduinoWidgetImpl::RESPONSE_WAS_BROADCAST = 1;
 const uint8_t ArduinoWidgetImpl::RESPONSE_FAILED = 2;
 const uint8_t ArduinoWidgetImpl::RESPONSE_FAILED_CHECKSUM = 3;
-const uint8_t ArduinoWidgetImpl::RESONSE_INVALID_DESTINATION = 4;
+const uint8_t ArduinoWidgetImpl::RESPONSE_INVALID_DESTINATION = 4;
 const uint8_t ArduinoWidgetImpl::RESPONSE_INVALID_COMMAND = 5;
 
 
@@ -179,7 +179,7 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
       case RESPONSE_FAILED_CHECKSUM:
         OLA_WARN << "USB Device reports checksum mismatch";
         break;
-      case RESONSE_INVALID_DESTINATION:
+      case RESPONSE_INVALID_DESTINATION:
         OLA_WARN << "USB Device reports invalid destination";
         break;
       case RESPONSE_INVALID_COMMAND:
