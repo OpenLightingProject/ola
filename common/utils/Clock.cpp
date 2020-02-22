@@ -39,6 +39,8 @@
 #include <sstream>
 #include <string>
 
+#include "ola/Logging.h"
+
 namespace ola {
 
 using std::string;
@@ -127,6 +129,11 @@ void BaseTimeVal::AsTimeval(struct timeval *tv) const {
 int64_t BaseTimeVal::InMilliSeconds() const {
   return (m_tv.tv_sec * static_cast<int64_t>(ONE_THOUSAND) +
           m_tv.tv_usec / ONE_THOUSAND);
+}
+
+int64_t BaseTimeVal::InMicroSeconds() const {
+  return (m_tv.tv_sec * static_cast<int64_t>(USEC_IN_SECONDS) +
+          m_tv.tv_usec);
 }
 
 int64_t BaseTimeVal::AsInt() const {
@@ -272,4 +279,89 @@ void MockClock::CurrentTime(TimeStamp *timestamp) const {
   *timestamp = tv;
   *timestamp += m_offset;
 }
+
+Sleep::Sleep(std::string caller) :
+  m_caller(caller) {
+}
+
+/**
+ * @brief Set wanted granularity for usleep and check it.
+ * @note does not check at the nanosecond level,
+ * since internal sturtures use usecs.
+ *
+ * @param wanted wanted/needed granularity in usecs
+ * @param maxDeviation max deviation in usecs tolerated by calling thread.
+ *
+ * @attention the granularity of sleep is highly fluctuating depending on the
+ * load of the system, a prior GOOD state is no guarantee for future proper
+ * timing.
+ */
+bool Sleep::CheckTimeGranularity(uint64_t wanted, uint64_t maxDeviation) {
+  TimeStamp ts1, ts2;
+  Clock clock;
+
+  m_wanted_granularity = wanted;
+  m_max_granularity_deviation = maxDeviation;
+
+  timespec t;
+  t.tv_sec = wanted / USEC_IN_SECONDS;
+  t.tv_nsec = (wanted % USEC_IN_SECONDS) * ONE_THOUSAND;
+
+  clock.CurrentTime(&ts1);
+  this->usleep(1);
+  clock.CurrentTime(&ts2);
+  TimeInterval interval = ts2 - ts1;
+  m_clock_overhead = interval.InMicroSeconds();
+
+  clock.CurrentTime(&ts1);
+  this->usleep(t);
+  clock.CurrentTime(&ts2);
+
+  interval = ts2 - ts1;
+  m_granularity = (interval.InMicroSeconds() >
+                   (wanted + maxDeviation + m_clock_overhead)) ? BAD : GOOD;
+
+  OLA_INFO << "Granularity for OlaSleep in " << m_caller << " is "
+           << ((m_granularity == GOOD) ? "GOOD" : "BAD")
+           << " Requested: " << wanted << " Got: " << interval.InMicroSeconds()
+           << " Overhead: " << m_clock_overhead;
+  if (m_granularity == GOOD) {
+    return true;
+  }
+  return false;
+}
+
+void Sleep::usleep(TimeInterval requested) {
+  timespec req;
+  req.tv_sec = requested.Seconds();
+  req.tv_nsec = requested.MicroSeconds() * ONE_THOUSAND;
+
+  this->usleep(req);
+}
+
+void Sleep::usleep(uint32_t requested) {
+  timespec req;
+  req.tv_sec = requested / USEC_IN_SECONDS;
+  req.tv_nsec = (requested % USEC_IN_SECONDS) * ONE_THOUSAND;
+  req.tv_sec = 0;
+
+  this->usleep(req);
+}
+
+void Sleep::usleep(timespec requested) {
+  timespec rem;
+
+  if (nanosleep(&requested, &rem) < 0) {
+    if (errno == EINTR) {
+      while (rem.tv_nsec > 0 || rem.tv_sec > 0) {
+        requested.tv_nsec = rem.tv_nsec;
+        requested.tv_sec = rem.tv_sec;
+        nanosleep(&requested, &rem);
+      }
+    } else {
+      OLA_WARN << "nanosleep failed with state: " << errno;
+    }
+  }
+}
+
 }  // namespace ola

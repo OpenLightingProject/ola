@@ -56,15 +56,20 @@ FtdiDmxDevice::~FtdiDmxDevice() {
 bool FtdiDmxDevice::StartHook() {
   unsigned int interface_count = m_widget->GetInterfaceCount();
   unsigned int successfully_added = 0;
+  unsigned int serial = 0;
 
   OLA_INFO << "Widget " << m_widget->Name() << " has " << interface_count
            << " interfaces.";
 
   for (unsigned int i = 1; i <= interface_count; i++) {
+    if (!StringToInt(m_widget->Serial().substr(2, 6), &serial, false, 36)) {
+      OLA_WARN << "StringToInt returned false, serial used: " << serial
+               << " Generated from: " << m_widget->Serial().substr(2, 6);
+    }
     FtdiInterface *port = new FtdiInterface(m_widget,
                                             static_cast<ftdi_interface>(i));
     if (port->SetupOutput()) {
-      AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency));
+      AddPort(new FtdiDmxOutputPort(this, port, i, m_frequency, serial));
       successfully_added += 1;
     } else {
       OLA_WARN << "Failed to add interface: " << i;

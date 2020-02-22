@@ -11,6 +11,19 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 
 PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand"
 
+LINT_BLACKLIST=$(cat <<EOLBL
+        -wholename "./common/protocol/Ola.pb.*" -or \
+        -wholename "./common/rpc/Rpc.pb.*" -or \
+        -wholename "./common/rpc/TestService.pb.*" -or \
+        -wholename "./common/rdm/Pids.pb.*" -or \
+        -wholename "./config.h" -or \
+        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
+        -wholename "./tools/ola_trigger/config.tab.*" -or \
+        -wholename "./tools/ola_trigger/lex.yy.cpp" -or \
+        -wholename "./plugins/ftdidmx/FtdiDmxPluginDescription.h"
+EOLBL
+)
+
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./.codespellignorewords" -or \
       -wholename "./.codespellignorelines" -or \
@@ -70,19 +83,12 @@ if [[ $TASK = 'lint' ]]; then
     echo "Found $nolints generic NOLINTs"
   fi;
   # then fetch and run the main cpplint tool
+  lintfiles=$(eval "find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( $LINT_BLACKLIST \) | xargs")
   wget -O cpplint.py $CPP_LINT_URL;
   chmod u+x cpplint.py;
   ./cpplint.py \
     --filter=-legal/copyright,-readability/streams,-runtime/arrays \
-    $(find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
-        -wholename "./common/protocol/Ola.pb.*" -or \
-        -wholename "./common/rpc/Rpc.pb.*" -or \
-        -wholename "./common/rpc/TestService.pb.*" -or \
-        -wholename "./common/rdm/Pids.pb.*" -or \
-        -wholename "./config.h" -or \
-        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
-        -wholename "./tools/ola_trigger/config.tab.*" -or \
-        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
+    $lintfiles
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;

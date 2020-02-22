@@ -128,7 +128,7 @@ class FtdiWidget {
    * @brief Construct a new FtdiWidget instance for one widget.
    * @param serial The widget's USB serial number
    * @param name The widget's USB name (description)
-   * @param id id based on order of adding it seems from the code
+   * @param id based on order of adding it seems from the code
    * @param vid The VendorID of the device, def = FtdiWidgetInfo::ftdi_vid
    * @param pid The ProductID of the device, def = FtdiWidgetInfo::ft232_pid
    */
@@ -153,8 +153,10 @@ class FtdiWidget {
   /** @brief Get the widget's FTD2XX ID number */
   uint32_t Id() const { return m_id; }
 
+  void setId(uint32_t id) { m_id = id; }
+
   std::string Description() const {
-    return m_name + " with serial number : " + m_serial +" ";
+    return m_name + " serial: " + m_serial;
   }
 
   /** @brief Get Widget available interface count **/
@@ -180,18 +182,22 @@ class FtdiWidget {
   const uint16_t m_pid;
 };
 
+enum EchoState {
+  UNKNOWN,
+  ON,
+  OFF
+};
+
 class FtdiInterface {
  public:
-  FtdiInterface(const FtdiWidget * parent,
+  FtdiInterface(FtdiWidget * parent,
                 const ftdi_interface interface);
 
   virtual ~FtdiInterface();
 
-  std::string Description() const {
-    return m_parent->Description();
-  }
+  std::string Description() const;
 
-  /** @brief Set interface on the widget */
+  /** @brief Pick interface on multiport widgets */
   bool SetInterface();
 
   /** @brief Open the widget */
@@ -224,19 +230,32 @@ class FtdiInterface {
   /** @brief Toggle communications line BREAK condition on/off */
   bool SetBreak(bool on);
 
-  /** @brief Write data to a previously-opened line */
+  /** @brief Write data to a previously-opened line, DMX only */
   bool Write(const ola::DmxBuffer &data);
 
-  /** @brief Read data from a previously-opened line */
-  bool Read(unsigned char* buff, int size);
+  /** @brief Write prepared packets to previously opened line,
+   *         agnostic to packet contents
+   *  @pre The whole line setup and opening sequence.
+   *       Should haven been performed by the plugin before ever reaching this.
+   */
+  bool Write(ola::io::ByteString *packet);
+
+  /** @brief Read data from a previously-opened line
+   *  @pre The whole line setup and opening sequence.
+   *       Should haven been performed by the plugin before ever reaching this.
+   */
+  int Read(unsigned char* buff, int size);
+
+  void DetectEchoState();
 
   /** @brief Setup device for DMX Output **/
   bool SetupOutput();
 
  private:
-  const FtdiWidget * m_parent;
+  FtdiWidget * m_parent;
   struct ftdi_context m_handle;
   const ftdi_interface m_interface;
+  EchoState m_echoState;
 };  // FtdiInterface
 }  // namespace ftdidmx
 }  // namespace plugin

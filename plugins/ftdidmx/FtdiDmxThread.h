@@ -26,32 +26,94 @@
 #ifndef PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
 #define PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
 
+#include <queue>
+#include <utility>
+
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
+#include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/DiscoveryAgent.h"
+#include "ola/rdm/RDMResponseCodes.h"
 
 namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-class FtdiDmxThread : public ola::thread::Thread {
+enum {
+  HALF_SECOND_MS = 500,
+  ALMOST_SECOND_MS = 900,
+  MIN_WAIT_DUB_US = 58000,
+  MIN_WAIT_RDM_US = 30000,
+};
+
+class FtdiDmxThread
+        : public ola::thread::Thread,
+          public ola::rdm::DiscoverableRDMControllerInterface,
+          public ola::rdm::DiscoveryTargetInterface {
  public:
-    FtdiDmxThread(FtdiInterface *interface, unsigned int frequency);
+    FtdiDmxThread(FtdiInterface *interface,
+                  unsigned int frequency,
+                  unsigned int serial);
     ~FtdiDmxThread();
 
     bool Stop();
     void *Run();
     bool WriteDMX(const DmxBuffer &buffer);
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback);
+
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *cb);
+
+    void MuteDevice(const ola::rdm::UID &target,
+                    MuteDeviceCallback *mute_complete);
+
+    void UnMuteAll(UnMuteDeviceCallback *unmute_complete);
+
+    void Branch(const ola::rdm::UID &lower,
+                const ola::rdm::UID &upper,
+                BranchCallback *callback);
+
 
  private:
-    enum TimerGranularity { UNKNOWN, GOOD, BAD };
+    ola::Sleep m_timer;
 
     TimerGranularity m_granularity;
     FtdiInterface *m_interface;
     bool m_term;
     unsigned int m_frequency;
+
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;
+    ola::thread::Mutex m_rdm_mutex;
+
+    uint8_t m_transaction_number;
+    ola::rdm::DiscoveryAgent m_discovery_agent;
+    ola::rdm::UID m_uid;
+
+    ola::rdm::RDMRequest *m_pending_request;
+    ola::rdm::RDMCallback *m_rdm_callback;
+    MuteDeviceCallback *m_mute_complete;
+    UnMuteDeviceCallback *m_unmute_complete;
+    BranchCallback *m_branch_callback;
+
+    void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
+                           bool status,
+                           const ola::rdm::UIDSet &uids);
+    /**
+     * @brief Method called to cleanup any outstanding callbacks
+     * @param state to return to caller when possible.
+     *
+     * @note All callbacks except the RDMCallback lack a way of reporting an
+     * error state to the caller.
+     */
+    void destroyPendindingCallback(ola::rdm::RDMStatusCode state);
+    /**
+     * @brief Method called to cleanup the pending request without leaking
+     * memory.
+     */
+    void destroyPendingRequest();
 
     void CheckTimeGranularity();
 

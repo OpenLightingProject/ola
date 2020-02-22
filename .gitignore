@@ -246,3 +246,7 @@ javascript/new-src/node_modules
 .cproject
 .settings
 .vscode/
+*.config
+*.creator*
+*.files
+*.includes

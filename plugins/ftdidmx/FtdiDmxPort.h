@@ -29,8 +29,12 @@
 #include <string>
 
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/DiscoveryAgent.h"
+#include "ola/rdm/RDMResponseCodes.h"
+
 #include "olad/Port.h"
 #include "olad/Preferences.h"
+
 #include "plugins/ftdidmx/FtdiDmxDevice.h"
 #include "plugins/ftdidmx/FtdiWidget.h"
 #include "plugins/ftdidmx/FtdiDmxThread.h"
@@ -44,10 +48,11 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
     FtdiDmxOutputPort(FtdiDmxDevice *parent,
                       FtdiInterface *interface,
                       unsigned int id,
-                      unsigned int freq)
-        : BasicOutputPort(parent, id),
+                      unsigned int freq,
+                      unsigned int serial)
+      : BasicOutputPort(parent, id, false, true),
           m_interface(interface),
-          m_thread(interface, freq) {
+          m_thread(interface, freq, serial) {
       m_thread.Start();
     }
     ~FtdiDmxOutputPort() {
@@ -57,6 +62,18 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
 
     bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t) {
       return m_thread.WriteDMX(buffer);
+    }
+
+    void SendRDMRequest(ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback) {
+      m_thread.SendRDMRequest(request, callback);
+    }
+
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_thread.RunFullDiscovery(callback);
+    }
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_thread.RunIncrementalDiscovery(callback);
     }
 
     std::string Description() const { return m_interface->Description(); }
