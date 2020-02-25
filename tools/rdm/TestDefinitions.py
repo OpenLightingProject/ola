@@ -915,7 +915,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
   REQUIRES = ['sub_device_addresses']
   PROVIDES = ['sub_device_supported_parameters']
 
-  # E1.37, 2.1 Sub devices are required to support these.
+  # E1.37-1, 2.1 Sub devices are required to support these.
   MANDATORY_PIDS = ['SUPPORTED_PARAMETERS',
                     'DEVICE_INFO',
                     'SOFTWARE_VERSION_LABEL',
@@ -4611,7 +4611,7 @@ class AllSubDevicesGetPresetPlayback(TestMixins.AllSubDevicesGetMixin,
   PID = 'PRESET_PLAYBACK'
 
 
-# E1.37 PIDS
+# E1.37-1 PIDS
 # =============================================================================
 
 # IDENTIFY_MODE
