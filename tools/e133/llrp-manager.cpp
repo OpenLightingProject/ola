@@ -90,10 +90,12 @@ using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
+using ola::rdm::RDMSetRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 
 DEFINE_string(manager_uid, "7a70:00000002", "The UID of the manager.");
+DEFINE_default_bool(set, false, "Send a set rather than a get.");
 
 auto_ptr<ola::network::InterfacePicker> picker(
   ola::network::InterfacePicker::NewPicker());
@@ -169,8 +171,7 @@ void HandleLLRPProbeReply(
                                  *target_address,
                                  ola::acn::LLRP_PORT);
 
-  // TODO(Peter): Enable set
-  bool is_set = false;
+  bool is_set = FLAGS_set;
 
   // get the pid descriptor
   const ola::rdm::PidDescriptor *pid_descriptor = m_pid_helper->GetDescriptor(
@@ -193,10 +194,11 @@ void HandleLLRPProbeReply(
   }
 
   const ola::messaging::Descriptor *descriptor = NULL;
-  if (is_set)
+  if (is_set) {
     descriptor = pid_descriptor->SetRequest();
-  else
+  } else {
     descriptor = pid_descriptor->GetRequest();
+  }
 
   if (!descriptor) {
     std::cout << (is_set ? "SET" : "GET") << " command not supported for "
@@ -219,7 +221,9 @@ void HandleLLRPProbeReply(
       message.get(),
       &param_data_length);
 
-  RDMRequest *request = new RDMGetRequest(
+  RDMRequest *request;
+  if (is_set) {
+   request = new RDMSetRequest(
       *manager_uid,
       reply.uid,
       m_rdm_transaction_number_sequence.Next(),  // transaction #
@@ -228,6 +232,17 @@ void HandleLLRPProbeReply(
       pid_descriptor->Value(),  // param id
       param_data,  // data
       param_data_length);  // data length
+  } else {
+   request = new RDMGetRequest(
+      *manager_uid,
+      reply.uid,
+      m_rdm_transaction_number_sequence.Next(),  // transaction #
+      1,  // port id
+      0,  // sub device
+      pid_descriptor->Value(),  // param id
+      param_data,  // data
+      param_data_length);  // data length
+  }
 
   ola::io::ByteString raw_reply;
   ola::rdm::RDMCommandSerializer::Pack(*request, &raw_reply);
