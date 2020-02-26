@@ -32,7 +32,7 @@ namespace acn {
 
 class RootSender {
  public:
-    explicit RootSender(const ola::acn::CID &cid);
+    explicit RootSender(const ola::acn::CID &cid, bool force_length_flag = false);
     ~RootSender() {}
 
     // Convenience method to encapsulate & send a single PDU

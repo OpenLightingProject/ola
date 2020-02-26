@@ -61,6 +61,19 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/E133StatusPDU.cpp \
     libs/acn/E133StatusPDU.h \
     libs/acn/HeaderSet.h \
+    libs/acn/LLRPHeader.h \
+    libs/acn/LLRPInflator.cpp \
+    libs/acn/LLRPInflator.h \
+    libs/acn/LLRPProbeReplyInflator.cpp \
+    libs/acn/LLRPProbeReplyInflator.h \
+    libs/acn/LLRPProbeReplyPDU.cpp \
+    libs/acn/LLRPProbeReplyPDU.h \
+    libs/acn/LLRPProbeRequestInflator.cpp \
+    libs/acn/LLRPProbeRequestInflator.h \
+    libs/acn/LLRPProbeRequestPDU.cpp \
+    libs/acn/LLRPProbeRequestPDU.h \
+    libs/acn/LLRPPDU.cpp \
+    libs/acn/LLRPPDU.h \
     libs/acn/PDU.cpp \
     libs/acn/PDU.h \
     libs/acn/PDUTestCommon.h \
@@ -108,6 +121,7 @@ libs_acn_e131_loadtest_LDADD = libs/acn/libolae131core.la
 test_programs += \
     libs/acn/E131Tester \
     libs/acn/E133Tester \
+    libs/acn/LLRPTester \
     libs/acn/TransportTester
 
 libs_acn_E131Tester_SOURCES = \
@@ -137,6 +151,16 @@ libs_acn_E133Tester_SOURCES = \
     libs/acn/RDMPDUTest.cpp
 libs_acn_E133Tester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 libs_acn_E133Tester_LDADD = \
+    libs/acn/libolae131core.la \
+    $(COMMON_TESTING_LIBS)
+
+libs_acn_LLRPTester_SOURCES = \
+    libs/acn/LLRPInflatorTest.cpp \
+    libs/acn/LLRPPDUTest.cpp \
+    libs/acn/LLRPProbeReplyPDUTest.cpp \
+    libs/acn/LLRPProbeRequestPDUTest.cpp
+libs_acn_LLRPTester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
+libs_acn_LLRPTester_LDADD = \
     libs/acn/libolae131core.la \
     $(COMMON_TESTING_LIBS)
 

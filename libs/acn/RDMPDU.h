@@ -21,16 +21,38 @@
 #ifndef LIBS_ACN_RDMPDU_H_
 #define LIBS_ACN_RDMPDU_H_
 
+#include <string>
+#include <ola/io/ByteString.h>
 #include <ola/io/IOStack.h>
+#include <ola/rdm/RDMPacket.h>
 
 #include "libs/acn/PDU.h"
 
 namespace ola {
 namespace acn {
 
-class RDMPDU : private PDU {
+class RDMPDU : public PDU {
  public:
+  explicit RDMPDU(const ola::io::ByteString &command):
+    PDU(ola::rdm::START_CODE, ONE_BYTE, true),
+    m_command(command) {}
+
+  unsigned int HeaderSize() const { return 0; }
+  bool PackHeader(OLA_UNUSED uint8_t *data,
+                  unsigned int *length) const {
+    *length = 0;
+    return true;
+  }
+  void PackHeader(OLA_UNUSED ola::io::OutputStream *stream) const {}
+
+  unsigned int DataSize() const;
+  bool PackData(uint8_t *data, unsigned int *length) const;
+  void PackData(ola::io::OutputStream *stream) const;
+
   static void PrependPDU(ola::io::IOStack *stack);
+
+ private:
+  const ola::io::ByteString m_command;
 };
 }  // namespace acn
 }  // namespace ola

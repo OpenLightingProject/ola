@@ -66,6 +66,21 @@ class UIDSet {
     }
 
     /**
+     * @brief Construct a new UIDSet from binary data.
+     * @param data a pointer to the memory containing the UIDSet data. The data
+     * should be most significant byte first.
+     * @param length is the length of the data you wish to retrieve
+     */
+    explicit UIDSet(const uint8_t *data, unsigned int *length) {
+      unsigned int used_length = 0;
+      while ((*length - used_length) >= UID::LENGTH) {
+        m_uids.insert(UID(data + used_length));
+        used_length += UID::LENGTH;
+      }
+      *length = used_length;
+    }
+
+    /**
      * @brief Assignment operator
      */
     UIDSet& operator=(const UIDSet &other) {
@@ -87,7 +102,7 @@ class UIDSet {
      * @return the number of UIDs in the set.
      */
     unsigned int Size() const {
-      return m_uids.size();
+      return static_cast<unsigned int>(m_uids.size());
     }
 
     /**
@@ -205,6 +220,26 @@ class UIDSet {
      */
     friend std::ostream& operator<< (std::ostream &out, const UIDSet &uid_set) {
       return out << uid_set.ToString();
+    }
+
+    /**
+     * @brief Write the binary representation of the UID set to memory.
+     * @param buffer a pointer to memory to write the UID set to
+     * @param length the size of the memory block, should be at least UID_SIZE
+     *   * set size.
+     * @returns true if length was >= UID_SIZE * set size, false otherwise.
+     */
+    bool Pack(uint8_t *buffer, unsigned int length) const {
+      if (static_cast<size_t>(length) < (m_uids.size() * UID::UID_SIZE)) {
+        return false;
+      }
+      uint8_t *ptr = buffer;
+      std::set<UID>::const_iterator iter;
+      for (iter = m_uids.begin(); iter != m_uids.end(); ++iter) {
+        iter->Pack(ptr, UID::UID_SIZE);
+        ptr += UID::UID_SIZE;
+      }
+      return true;
     }
 
  private:

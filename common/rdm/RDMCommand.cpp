@@ -592,6 +592,22 @@ RDMResponse *NackWithReason(const RDMRequest *request,
                              outstanding_messages);
 }
 
+RDMResponse *NackWithReason(const RDMResponse *response,
+                            rdm_nack_reason reason_enum) {
+  uint16_t reason = ola::network::HostToNetwork(
+      static_cast<uint16_t>(reason_enum));
+  return new RDMResponse(response->SourceUID(),
+                         response->DestinationUID(),
+                         response->TransactionNumber(),
+                         RDM_NACK_REASON,
+                         response->MessageCount(),
+                         response->SubDevice(),
+                         response->CommandClass(),
+                         response->ParamId(),
+                         reinterpret_cast<uint8_t*>(&reason),
+                         sizeof(reason));
+}
+
 RDMResponse *GetResponseFromData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length,

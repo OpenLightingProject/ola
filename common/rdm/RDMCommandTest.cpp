@@ -670,6 +670,33 @@ void RDMCommandTest::testNackWithReason() {
   OLA_ASSERT_EQ(2u, response->ParamDataSize());
   OLA_ASSERT_EQ((uint16_t) ola::rdm::NR_WRITE_PROTECT,
                 NackReasonFromResponse(response.get()));
+
+  RDMResponse get_command_response(source,
+                                   destination,
+                                   0,  // transaction #
+                                   ola::rdm::RDM_ACK,  // response type
+                                   5,  // message count
+                                   10,  // sub device
+                                   RDMCommand::GET_COMMAND_RESPONSE,
+                                   296,  // param id
+                                   NULL,  // data
+                                   0);  // data length
+
+  response.reset(NackWithReason(&get_command_response,
+                                ola::rdm::NR_DATA_OUT_OF_RANGE));
+  OLA_ASSERT_NOT_NULL(response.get());
+  // Comparing response to response, so no flipping of UIDs
+  OLA_ASSERT_EQ(source, response->SourceUID());
+  OLA_ASSERT_EQ(destination, response->DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_NACK_REASON, response->ResponseType());
+  OLA_ASSERT_EQ((uint8_t) 5, response->MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, response->CommandClass());
+  OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
+  OLA_ASSERT_EQ(2u, response->ParamDataSize());
+  OLA_ASSERT_EQ((uint16_t) ola::rdm::NR_DATA_OUT_OF_RANGE,
+                NackReasonFromResponse(response.get()));
 }
 
 

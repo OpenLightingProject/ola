@@ -109,7 +109,7 @@ void MessageBuilder::BuildTCPRootE133(IOStack *packet,
                                       uint16_t endpoint_id) {
   E133PDU::PrependPDU(packet, vector, m_source_name, sequence_number,
                       endpoint_id);
-  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_E133, m_cid);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_RPT, m_cid);
   PreamblePacker::AddTCPPreamble(packet);
 }
 
@@ -123,7 +123,7 @@ void MessageBuilder::BuildUDPRootE133(IOStack *packet,
                                       uint16_t endpoint_id) {
   E133PDU::PrependPDU(packet, vector, m_source_name, sequence_number,
                       endpoint_id);
-  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_E133, m_cid);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_RPT, m_cid);
   PreamblePacker::AddUDPPreamble(packet);
 }
 }  // namespace e133

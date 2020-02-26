@@ -32,17 +32,28 @@ using std::string;
 /**
  * Create a new RDM inflator
  */
-RDMInflator::RDMInflator()
-    : BaseInflator(PDU::ONE_BYTE) {
+RDMInflator::RDMInflator(unsigned int vector)
+    : BaseInflator(PDU::ONE_BYTE),
+      m_vector(vector) {
 }
 
 /**
- * Set a RDMHandler to run when receiving a RDM message.
- * @param handler the callback to invoke when there is rdm data for this
+ * Set an RDMMessageHandler to run when receiving a RDM message.
+ * @param handler the callback to invoke when there is RDM data for this
  * universe.
  */
 void RDMInflator::SetRDMHandler(RDMMessageHandler *handler) {
   m_rdm_handler.reset(handler);
+}
+
+
+/**
+ * Set a GenericRDMHandler to run when receiving a RDM message.
+ * @param handler the callback to invoke when there is RDM data for this
+ * universe.
+ */
+void RDMInflator::SetGenericRDMHandler(GenericRDMMessageHandler *handler) {
+  m_generic_rdm_handler.reset(handler);
 }
 
 
@@ -76,11 +87,13 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
 
   string rdm_message(reinterpret_cast<const char*>(&data[0]), pdu_len);
 
-  E133Header e133_header = headers.GetE133Header();
-
   if (m_rdm_handler.get()) {
+    E133Header e133_header = headers.GetE133Header();
+
     m_rdm_handler->Run(&headers.GetTransportHeader(), &e133_header,
                        rdm_message);
+  } else if (m_generic_rdm_handler.get()) {
+    m_generic_rdm_handler->Run(&headers, rdm_message);
   } else {
     OLA_WARN << "No RDM handler defined!";
   }

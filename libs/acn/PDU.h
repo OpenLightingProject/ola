@@ -22,6 +22,7 @@
 #define LIBS_ACN_PDU_H_
 
 #include <stdint.h>
+#include <ola/acn/ACNFlags.h>
 #include <ola/io/OutputStream.h>
 #include <ola/io/OutputBuffer.h>
 #include <vector>
@@ -41,9 +42,12 @@ class PDU {
       FOUR_BYTES = 4,
     } vector_size;
 
-    explicit PDU(unsigned int vector, vector_size size = FOUR_BYTES):
+    explicit PDU(unsigned int vector,
+                 vector_size size = FOUR_BYTES,
+                 bool force_length_flag = false):
       m_vector(vector),
-      m_vector_size(size) {}
+      m_vector_size(size),
+      m_force_length_flag(force_length_flag) {}
     virtual ~PDU() {}
 
     // Returns the size of this PDU
@@ -72,23 +76,36 @@ class PDU {
 
     static void PrependFlagsAndLength(
         ola::io::OutputBufferInterface *output,
-        uint8_t flags = VFLAG_MASK | HFLAG_MASK | DFLAG_MASK);
+        uint8_t flags = VFLAG_MASK | HFLAG_MASK | DFLAG_MASK,
+        bool force_length_flag = false);
 
     static void PrependFlagsAndLength(
         ola::io::OutputBufferInterface *output,
         unsigned int length,
-        uint8_t flags);
+        uint8_t flags,
+        bool force_length_flag = false);
 
-    // This indicates a vector is present
-    static const uint8_t VFLAG_MASK = 0x40;
-    // This indicates a header field is present
-    static const uint8_t HFLAG_MASK = 0x20;
-    // This indicates a data field is present
-    static const uint8_t DFLAG_MASK = 0x10;
+    /**
+     * @brief This indicates a vector is present.
+     * @deprecated Use ola::acn::VFLAG_MASK instead (4 Feb 2020).
+     */
+    static const uint8_t VFLAG_MASK = ola::acn::VFLAG_MASK;
+    /**
+     * @brief This indicates a header field is present.
+     * @deprecated Use ola::acn::HFLAG_MASK instead (4 Feb 2020).
+     */
+    static const uint8_t HFLAG_MASK = ola::acn::HFLAG_MASK;
+    /**
+     * @brief This indicates a data field is present.
+     * @deprecated Use ola::acn::DFLAG_MASK instead (4 Feb 2020).
+     */
+    static const uint8_t DFLAG_MASK = ola::acn::DFLAG_MASK;
+
 
  private:
     unsigned int m_vector;
     unsigned int m_vector_size;
+    bool m_force_length_flag;
 
     // The max PDU length that can be represented with the 2 byte format for
     // the length field.

@@ -13,9 +13,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * RDMPDUTest.cpp
- * Test fixture for the RDMPDU class
- * Copyright (C) 2012 Simon Newton
+ * LLRPProbeReplyPDUTest.cpp
+ * Test fixture for the LLRPProbeReplyPDU class
+ * Copyright (C) 2020 Peter Newman
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -23,72 +23,64 @@
 #include <string>
 
 #include "ola/Logging.h"
-#include "ola/io/ByteString.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/IOStack.h"
+#include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/UIDSet.h"
 #include "ola/testing/TestUtils.h"
 #include "libs/acn/PDUTestCommon.h"
-#include "libs/acn/RDMPDU.h"
+#include "libs/acn/LLRPProbeReplyPDU.h"
 
 namespace ola {
 namespace acn {
 
-using ola::io::ByteString;
+using ola::acn::LLRPProbeReplyPDU;
 using ola::io::IOQueue;
 using ola::io::IOStack;
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
+using ola::network::MACAddress;
+using ola::rdm::UID;
 
-class RDMPDUTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(RDMPDUTest);
-  CPPUNIT_TEST(testSimpleRDMPDU);
-  CPPUNIT_TEST(testSimpleRDMPDUToOutputStream);
+class LLRPProbeReplyPDUTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(LLRPProbeReplyPDUTest);
+  CPPUNIT_TEST(testSimpleLLRPProbeReplyPDU);
+  CPPUNIT_TEST(testSimpleLLRPProbeReplyPDUToOutputStream);
   CPPUNIT_TEST(testPrepend);
   CPPUNIT_TEST_SUITE_END();
 
  public:
-  void testSimpleRDMPDU();
-  void testSimpleRDMPDUToOutputStream();
+  void testSimpleLLRPProbeReplyPDU();
+  void testSimpleLLRPProbeReplyPDUToOutputStream();
   void testPrepend();
 
  private:
   static const unsigned int TEST_VECTOR;
-  static const uint8_t EXPECTED_GET_RESPONSE_BUFFER[];
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(RDMPDUTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(LLRPProbeReplyPDUTest);
 
-const unsigned int RDMPDUTest::TEST_VECTOR = 0xcc;
+const unsigned int LLRPProbeReplyPDUTest::TEST_VECTOR = 39;
 
-const uint8_t RDMPDUTest::EXPECTED_GET_RESPONSE_BUFFER[] = {
-  1, 28,  // sub code & length
-  0, 3, 0, 0, 0, 4,   // dst uid
-  0, 1, 0, 0, 0, 2,   // src uid
-  0, 0, 0, 0, 10,  // transaction, port id, msg count & sub device
-  0x21, 1, 40, 4,  // command, param id, param data length
-  0x5a, 0x5a, 0x5a, 0x5a,  // param data
-  0x02, 0xb3  // checksum
-};
 
 /*
- * Test that packing an RDMPDU works.
+ * Test that packing a LLRPProbeReplyPDU works.
  */
-void RDMPDUTest::testSimpleRDMPDU() {
-  ByteString empty;
-  RDMPDU empty_pdu(empty);
-
-  OLA_ASSERT_EQ(0u, empty_pdu.HeaderSize());
-  OLA_ASSERT_EQ(0u, empty_pdu.DataSize());
-  OLA_ASSERT_EQ(4u, empty_pdu.Size());
-
-  ByteString response(EXPECTED_GET_RESPONSE_BUFFER,
-                      sizeof(EXPECTED_GET_RESPONSE_BUFFER));
-  RDMPDU pdu(response);
+void LLRPProbeReplyPDUTest::testSimpleLLRPProbeReplyPDU() {
+  UID target_uid = UID(0x4321, 0x12345678);
+  MACAddress hardware_address;
+  MACAddress::FromString("01:23:45:67:89:ab", &hardware_address);
+  LLRPProbeReplyPDU pdu(
+      TEST_VECTOR,
+      target_uid,
+      hardware_address,
+      LLRPProbeReplyPDU::LLRP_COMPONENT_TYPE_NON_RDMNET);
 
   OLA_ASSERT_EQ(0u, pdu.HeaderSize());
-  OLA_ASSERT_EQ(29u, pdu.DataSize());
-  OLA_ASSERT_EQ(33u, pdu.Size());
+  OLA_ASSERT_EQ(13u, pdu.DataSize());
+  OLA_ASSERT_EQ(17u, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
@@ -101,6 +93,13 @@ void RDMPDUTest::testSimpleRDMPDU() {
   // bytes_used is technically data[1] and data[2] if > 255
   OLA_ASSERT_EQ((uint8_t) bytes_used, data[2]);
   OLA_ASSERT_EQ(HostToNetwork((uint8_t) TEST_VECTOR), data[3]);
+
+  uint8_t buffer[UID::LENGTH];
+  target_uid.Pack(buffer, sizeof(buffer));
+  OLA_ASSERT_DATA_EQUALS(&data[4], UID::LENGTH, buffer, sizeof(buffer));
+  uint8_t buffer2[MACAddress::LENGTH];
+  hardware_address.Pack(buffer2, sizeof(buffer2));
+  OLA_ASSERT_DATA_EQUALS(&data[10], MACAddress::LENGTH, buffer2, sizeof(buffer2));
 
   // test undersized buffer
   bytes_used = size - 1;
@@ -118,34 +117,35 @@ void RDMPDUTest::testSimpleRDMPDU() {
 /*
  * Test that writing to an output stream works.
  */
-void RDMPDUTest::testSimpleRDMPDUToOutputStream() {
-  ByteString response(EXPECTED_GET_RESPONSE_BUFFER,
-                      sizeof(EXPECTED_GET_RESPONSE_BUFFER));
-  RDMPDU pdu(response);
+void LLRPProbeReplyPDUTest::testSimpleLLRPProbeReplyPDUToOutputStream() {
+  UID target_uid = UID(0x4321, 0x12345678);
+  MACAddress hardware_address;
+  MACAddress::FromString("01:23:45:67:89:ab", &hardware_address);
+  LLRPProbeReplyPDU pdu(
+      TEST_VECTOR,
+      target_uid,
+      hardware_address,
+      LLRPProbeReplyPDU::LLRP_COMPONENT_TYPE_NON_RDMNET);
 
   OLA_ASSERT_EQ(0u, pdu.HeaderSize());
-  OLA_ASSERT_EQ(29u, pdu.DataSize());
-  OLA_ASSERT_EQ(33u, pdu.Size());
+  OLA_ASSERT_EQ(13u, pdu.DataSize());
+  OLA_ASSERT_EQ(17u, pdu.Size());
 
   IOQueue output;
   OutputStream stream(&output);
   pdu.Write(&stream);
-  OLA_ASSERT_EQ(33u, output.Size());
+  OLA_ASSERT_EQ(17u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
   unsigned int pdu_size = output.Peek(pdu_data, output.Size());
   OLA_ASSERT_EQ(output.Size(), pdu_size);
 
   uint8_t EXPECTED[] = {
-    0xf0, 0x00, 0x21,
-    0xcc,
-    1, 28,  // sub code & length
-    0, 3, 0, 0, 0, 4,   // dst uid
-    0, 1, 0, 0, 0, 2,   // src uid
-    0, 0, 0, 0, 10,  // transaction, port id, msg count & sub device
-    0x21, 1, 40, 4,  // command, param id, param data length
-    0x5a, 0x5a, 0x5a, 0x5a,  // param data
-    0x02, 0xb3  // checksum
+    0xf0, 0x00, 0x11,
+    39,
+    0x43, 0x21, 0x12, 0x34, 0x56, 0x78,
+    0x01, 0x23, 0x45, 0x67, 0x89, 0xab,
+    0xff
   };
   OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), pdu_data, pdu_size);
   output.Pop(output.Size());
@@ -153,15 +153,27 @@ void RDMPDUTest::testSimpleRDMPDUToOutputStream() {
 }
 
 
-void RDMPDUTest::testPrepend() {
+void LLRPProbeReplyPDUTest::testPrepend() {
   IOStack stack;
-  RDMPDU::PrependPDU(&stack);
+  UID target_uid = UID(0x4321, 0x12345678);
+  MACAddress hardware_address;
+  MACAddress::FromString("01:23:45:67:89:ab", &hardware_address);
+  LLRPProbeReplyPDU::PrependPDU(
+      &stack,
+      target_uid,
+      hardware_address,
+      LLRPProbeReplyPDU::LLRP_COMPONENT_TYPE_NON_RDMNET);
 
   unsigned int length = stack.Size();
   uint8_t *buffer = new uint8_t[length];
   OLA_ASSERT(stack.Read(buffer, length));
 
-  const uint8_t expected_data[] = {0x70, 3, TEST_VECTOR};
+  const uint8_t expected_data[] = {
+    0xf0, 0x00, 0x11, 1,
+    0x43, 0x21, 0x12, 0x34, 0x56, 0x78,
+    0x01, 0x23, 0x45, 0x67, 0x89, 0xab,
+    0xff
+  };
   OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
   delete[] buffer;
 }

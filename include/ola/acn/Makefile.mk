@@ -3,6 +3,7 @@ olaacninclude_HEADERS =
 
 if INSTALL_ACN
 olaacninclude_HEADERS += \
+    include/ola/acn/ACNFlags.h \
     include/ola/acn/ACNPort.h \
     include/ola/acn/ACNVectors.h \
     include/ola/acn/CID.h
