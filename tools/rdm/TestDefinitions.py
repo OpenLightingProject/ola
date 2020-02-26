@@ -7851,6 +7851,776 @@ class SetInterfaceHardwareAddressType1WithData(
   PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
 
 
+# E1.33/E1.37-7 PIDS
+# =============================================================================
+
+class AllSubDevicesGetSearchDomain(TestMixins.AllSubDevicesGetMixin,
+                                   OptionalParameterTestFixture):
+  """Send a get SEARCH_DOMAIN to ALL_SUB_DEVICES."""
+  PID = 'SEARCH_DOMAIN'
+
+
+# class GetSearchDomain(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'SEARCH_DOMAIN'
+# TODO(peter): Test get
+
+
+class GetSearchDomainWithData(TestMixins.GetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """GET SEARCH_DOMAIN with data."""
+  PID = 'SEARCH_DOMAIN'
+
+
+# class SetSearchDomain(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'SEARCH_DOMAIN'
+# TODO(peter): Test set
+
+
+class SetSearchDomainWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set SEARCH_DOMAIN command with no data."""
+  PID = 'SEARCH_DOMAIN'
+
+
+class SetSearchDomainWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET SEARCH_DOMAIN command with extra data."""
+  PID = 'SEARCH_DOMAIN'
+
+
+class AllSubDevicesGetBrokerStatus(TestMixins.AllSubDevicesGetMixin,
+                                   OptionalParameterTestFixture):
+  """Send a get BROKER_STATUS to ALL_SUB_DEVICES."""
+  PID = 'BROKER_STATUS'
+
+
+# class GetBrokerStatus(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'BROKER_STATUS'
+# TODO(peter): Test get
+
+
+class GetBrokerStatusWithData(TestMixins.GetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """GET BROKER_STATUS with data."""
+  PID = 'BROKER_STATUS'
+
+
+# class SetBrokerStatus(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'BROKER_STATUS'
+# TODO(peter): Test set
+
+
+class SetBrokerStatusWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set BROKER_STATUS command with no data."""
+  PID = 'BROKER_STATUS'
+
+
+class SetBrokerStatusWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET BROKER_STATUS command with extra data."""
+  PID = 'BROKER_STATUS'
+
+
+class AllSubDevicesGetEndpointMode(TestMixins.AllSubDevicesGetMixin,
+                                   OptionalParameterTestFixture):
+  """Send a get ENDPOINT_MODE to ALL_SUB_DEVICES."""
+  PID = 'ENDPOINT_MODE'
+  DATA = [0x0001]
+
+
+# class GetEndpointMode(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_MODE'
+# TODO(peter): Test get
+
+
+class GetZeroEndpointMode(TestMixins.GetZeroUInt16Mixin,
+                          OptionalParameterTestFixture):
+  """GET ENDPOINT_MODE for endpoint id 0."""
+  PID = 'ENDPOINT_MODE'
+
+
+class GetEndpointModeWithNoData(TestMixins.GetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """GET ENDPOINT_MODE with no argument given."""
+  PID = 'ENDPOINT_MODE'
+
+
+class GetEndpointModeWithExtraData(TestMixins.GetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """GET ENDPOINT_MODE with more than 2 bytes of data."""
+  PID = 'ENDPOINT_MODE'
+
+
+# class SetEndpointMode(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_MODE'
+# TODO(peter): Test set
+
+
+# class SetZeroEndpointMode(TestMixins.SetZero,
+#                           OptionalParameterTestFixture):
+#   """SET ENDPOINT_MODE for endpoint id 0."""
+#   PID = 'ENDPOINT_MODE'
+# TODO(peter): Test set zero
+
+
+class SetEndpointModeWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set ENDPOINT_MODE command with no data."""
+  PID = 'ENDPOINT_MODE'
+
+
+class SetEndpointModeWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET ENDPOINT_MODE command with extra data."""
+  PID = 'ENDPOINT_MODE'
+  DATA = 'foobar'
+
+
+class AllSubDevicesGetEndpointLabel(TestMixins.AllSubDevicesGetMixin,
+                                    OptionalParameterTestFixture):
+  """Send a get ENDPOINT_LABEL to ALL_SUB_DEVICES."""
+  PID = 'ENDPOINT_LABEL'
+  DATA = [0x0001]
+
+
+# class GetEndpointLabel(TestMixins.,
+#                        OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_LABEL'
+# TODO(peter): Test get
+
+
+class GetZeroEndpointLabel(TestMixins.GetZeroUInt16Mixin,
+                           OptionalParameterTestFixture):
+  """GET ENDPOINT_LABEL for endpoint id 0."""
+  PID = 'ENDPOINT_LABEL'
+
+
+class GetEndpointLabelWithNoData(TestMixins.GetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
+  """GET ENDPOINT_LABEL with no argument given."""
+  PID = 'ENDPOINT_LABEL'
+
+
+class GetEndpointLabelWithExtraData(TestMixins.GetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """GET ENDPOINT_LABEL with more than 2 bytes of data."""
+  PID = 'ENDPOINT_LABEL'
+
+
+# class SetEndpointLabel(TestMixins.,
+#                        OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_LABEL'
+# TODO(peter): Test set
+
+
+# class SetZeroEndpointLabel(TestMixins.SetZero,
+#                            OptionalParameterTestFixture):
+#   """SET ENDPOINT_LABEL for endpoint id 0."""
+#   PID = 'ENDPOINT_LABEL'
+# TODO(peter): Test set zero
+
+
+class SetEndpointLabelWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
+  """Set ENDPOINT_LABEL command with no data."""
+  PID = 'ENDPOINT_LABEL'
+
+
+class SetEndpointLabelWithExtraData(TestMixins.SetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Send a SET ENDPOINT_LABEL command with extra data."""
+  PID = 'ENDPOINT_LABEL'
+
+
+class AllSubDevicesGetEndpointTiming(TestMixins.AllSubDevicesGetMixin,
+                                     OptionalParameterTestFixture):
+  """Send a get ENDPOINT_TIMING to ALL_SUB_DEVICES."""
+  PID = 'ENDPOINT_TIMING'
+  DATA = [0x0001]
+
+
+# class GetEndpointTiming(TestMixins.,
+#                         OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_TIMING'
+# TODO(peter): Test get
+
+
+class GetZeroEndpointTiming(TestMixins.GetZeroUInt16Mixin,
+                            OptionalParameterTestFixture):
+  """GET ENDPOINT_TIMING for endpoint id 0."""
+  PID = 'ENDPOINT_TIMING'
+
+
+class GetEndpointTimingWithNoData(TestMixins.GetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
+  """GET ENDPOINT_TIMING with no argument given."""
+  PID = 'ENDPOINT_TIMING'
+
+
+class GetEndpointTimingWithExtraData(TestMixins.GetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """GET ENDPOINT_TIMING with more than 2 bytes of data."""
+  PID = 'ENDPOINT_TIMING'
+
+
+# class SetEndpointTiming(TestMixins.,
+#                         OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_TIMING'
+# TODO(peter): Test set
+
+
+# class SetZeroEndpointTiming(TestMixins.SetZero,
+#                             OptionalParameterTestFixture):
+#   """SET ENDPOINT_TIMING for endpoint id 0."""
+#   PID = 'ENDPOINT_TIMING'
+# TODO(peter): Test set zero
+
+
+class SetEndpointTimingWithNoData(TestMixins.SetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
+  """Set ENDPOINT_TIMING command with no data."""
+  PID = 'ENDPOINT_TIMING'
+
+
+class SetEndpointTimingWithExtraData(TestMixins.SetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """Send a SET ENDPOINT_TIMING command with extra data."""
+  PID = 'ENDPOINT_TIMING'
+  DATA = 'foobar'
+
+
+class AllSubDevicesGetEndpointTimingDescription(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
+  """Send a get ENDPOINT_TIMING_DESCRIPTION to ALL_SUB_DEVICES."""
+  PID = 'ENDPOINT_TIMING_DESCRIPTION'
+  DATA = [0x01]
+
+
+# class GetEndpointTimingDescription(TestMixins.,
+#                                    OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_TIMING_DESCRIPTION'
+# TODO(peter): Test get
+
+
+class GetZeroEndpointTimingDescription(TestMixins.GetZeroUInt8Mixin,
+                                       OptionalParameterTestFixture):
+  """GET ENDPOINT_TIMING_DESCRIPTION for timing setting 0."""
+  PID = 'ENDPOINT_TIMING_DESCRIPTION'
+
+
+class GetEndpointTimingDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
+                                             OptionalParameterTestFixture):
+  """GET ENDPOINT_TIMING_DESCRIPTION with no argument given."""
+  PID = 'ENDPOINT_TIMING_DESCRIPTION'
+
+
+class GetEndpointTimingDescriptionWithExtraData(TestMixins.GetWithDataMixin,
+                                                OptionalParameterTestFixture):
+  """GET ENDPOINT_TIMING_DESCRIPTION with more than 1 byte of data."""
+  PID = 'ENDPOINT_TIMING_DESCRIPTION'
+
+
+class SetEndpointTimingDescription(TestMixins.UnsupportedSetMixin,
+                                   OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_TIMING_DESCRIPTION."""
+  PID = 'ENDPOINT_TIMING_DESCRIPTION'
+
+
+class SetEndpointTimingDescriptionWithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_TIMING_DESCRIPTION with data."""
+  PID = 'ENDPOINT_TIMING_DESCRIPTION'
+
+
+class AllSubDevicesGetEndpointResponders(TestMixins.AllSubDevicesGetMixin,
+                                         OptionalParameterTestFixture):
+  """Send a get ENDPOINT_RESPONDERS to ALL_SUB_DEVICES."""
+  PID = 'ENDPOINT_RESPONDERS'
+  DATA = [0x0001]
+
+
+# class GetEndpointResponders(TestMixins.,
+#                             OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_RESPONDERS'
+# TODO(peter): Test get
+
+
+class GetZeroEndpointResponders(TestMixins.GetZeroUInt16Mixin,
+                                OptionalParameterTestFixture):
+  """GET ENDPOINT_RESPONDERS for endpoint id 0."""
+  PID = 'ENDPOINT_RESPONDERS'
+
+
+class GetEndpointRespondersWithNoData(TestMixins.GetWithNoDataMixin,
+                                      OptionalParameterTestFixture):
+  """GET ENDPOINT_RESPONDERS with no argument given."""
+  PID = 'ENDPOINT_RESPONDERS'
+
+
+class GetEndpointRespondersWithExtraData(TestMixins.GetWithDataMixin,
+                                         OptionalParameterTestFixture):
+  """GET ENDPOINT_RESPONDERS with more than 2 bytes of data."""
+  PID = 'ENDPOINT_RESPONDERS'
+
+
+class SetEndpointResponders(TestMixins.UnsupportedSetMixin,
+                            OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_RESPONDERS."""
+  PID = 'ENDPOINT_RESPONDERS'
+
+
+class SetEndpointRespondersWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_RESPONDERS with data."""
+  PID = 'ENDPOINT_RESPONDERS'
+
+
+class AllSubDevicesGetEndpointResponderListChange(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
+  """Send a get ENDPOINT_RESPONDER_LIST_CHANGE to ALL_SUB_DEVICES."""
+  PID = 'ENDPOINT_RESPONDER_LIST_CHANGE'
+  DATA = [0x0001]
+
+
+# class GetEndpointResponderListChange(TestMixins.,
+#                                      OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_RESPONDER_LIST_CHANGE'
+# TODO(peter): Test get
+
+
+class GetZeroEndpointResponderListChange(TestMixins.GetZeroUInt16Mixin,
+                                         OptionalParameterTestFixture):
+  """GET ENDPOINT_RESPONDER_LIST_CHANGE for endpoint id 0."""
+  PID = 'ENDPOINT_RESPONDER_LIST_CHANGE'
+
+
+class GetEndpointResponderListChangeWithNoData(TestMixins.GetWithNoDataMixin,
+                                               OptionalParameterTestFixture):
+  """GET ENDPOINT_RESPONDER_LIST_CHANGE with no argument given."""
+  PID = 'ENDPOINT_RESPONDER_LIST_CHANGE'
+
+
+class GetEndpointResponderListChangeWithExtraData(TestMixins.GetWithDataMixin,
+                                                  OptionalParameterTestFixture):
+  """GET ENDPOINT_RESPONDER_LIST_CHANGE with more than 2 bytes of data."""
+  PID = 'ENDPOINT_RESPONDER_LIST_CHANGE'
+
+
+class SetEndpointResponderListChange(TestMixins.UnsupportedSetMixin,
+                                     OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_RESPONDER_LIST_CHANGE."""
+  PID = 'ENDPOINT_RESPONDER_LIST_CHANGE'
+
+
+class SetEndpointResponderListChangeWithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_RESPONDER_LIST_CHANGE with data."""
+  PID = 'ENDPOINT_RESPONDER_LIST_CHANGE'
+
+
+class AllSubDevicesGetEndpointList(TestMixins.AllSubDevicesGetMixin,
+                                   OptionalParameterTestFixture):
+  """Send a get ENDPOINT_LIST to ALL_SUB_DEVICES."""
+  PID = 'ENDPOINT_LIST'
+
+
+# class GetEndpointList(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_LIST'
+# TODO(peter): Test get
+
+
+class GetEndpointListWithData(TestMixins.GetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """GET ENDPOINT_LIST with data."""
+  PID = 'ENDPOINT_LIST'
+
+
+class SetEndpointList(TestMixins.UnsupportedSetMixin,
+                      OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_LIST."""
+  PID = 'ENDPOINT_LIST'
+
+
+class SetEndpointListWithData(TestMixins.UnsupportedSetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_LIST with data."""
+  PID = 'ENDPOINT_LIST'
+
+
+class AllSubDevicesGetEndpointListChange(TestMixins.AllSubDevicesGetMixin,
+                                         OptionalParameterTestFixture):
+  """Send a get ENDPOINT_LIST_CHANGE to ALL_SUB_DEVICES."""
+  PID = 'ENDPOINT_LIST_CHANGE'
+
+
+# class GetEndpointListChange(TestMixins.,
+#                             OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_LIST_CHANGE'
+# TODO(peter): Test get
+
+
+class GetEndpointListChangeWithData(TestMixins.GetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """GET ENDPOINT_LIST_CHANGE with data."""
+  PID = 'ENDPOINT_LIST_CHANGE'
+
+
+class SetEndpointListChange(TestMixins.UnsupportedSetMixin,
+                            OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_LIST_CHANGE."""
+  PID = 'ENDPOINT_LIST_CHANGE'
+
+
+class SetEndpointListChangeWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """Attempt to SET ENDPOINT_LIST_CHANGE with data."""
+  PID = 'ENDPOINT_LIST_CHANGE'
+
+
+class AllSubDevicesGetEndpointToUniverse(TestMixins.AllSubDevicesGetMixin,
+                                         OptionalParameterTestFixture):
+  """Send a get ENDPOINT_TO_UNIVERSE to ALL_SUB_DEVICES."""
+  PID = 'ENDPOINT_TO_UNIVERSE'
+  DATA = [0x0001]
+
+
+# class GetEndpointToUniverse(TestMixins.,
+#                             OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_TO_UNIVERSE'
+# TODO(peter): Test get
+
+
+class GetZeroEndpointToUniverse(TestMixins.GetZeroUInt16Mixin,
+                                OptionalParameterTestFixture):
+  """GET ENDPOINT_TO_UNIVERSE for endpoint id 0."""
+  PID = 'ENDPOINT_TO_UNIVERSE'
+
+
+class GetEndpointToUniverseWithNoData(TestMixins.GetWithNoDataMixin,
+                                      OptionalParameterTestFixture):
+  """GET ENDPOINT_TO_UNIVERSE with no argument given."""
+  PID = 'ENDPOINT_TO_UNIVERSE'
+
+
+class GetEndpointToUniverseWithExtraData(TestMixins.GetWithDataMixin,
+                                         OptionalParameterTestFixture):
+  """GET ENDPOINT_TO_UNIVERSE with more than 2 bytes of data."""
+  PID = 'ENDPOINT_TO_UNIVERSE'
+
+
+# class SetEndpointToUniverse(TestMixins.,
+#                             OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'ENDPOINT_TO_UNIVERSE'
+# TODO(peter): Test set
+
+
+# class SetZeroEndpointToUniverse(TestMixins.SetZero,
+#                                 OptionalParameterTestFixture):
+#   """SET ENDPOINT_TO_UNIVERSE for endpoint id 0."""
+#   PID = 'ENDPOINT_TO_UNIVERSE'
+# TODO(peter): Test set zero
+
+
+class SetEndpointToUniverseWithNoData(TestMixins.SetWithNoDataMixin,
+                                      OptionalParameterTestFixture):
+  """Set ENDPOINT_TO_UNIVERSE command with no data."""
+  PID = 'ENDPOINT_TO_UNIVERSE'
+
+
+class SetEndpointToUniverseWithExtraData(TestMixins.SetWithDataMixin,
+                                         OptionalParameterTestFixture):
+  """Send a SET ENDPOINT_TO_UNIVERSE command with extra data."""
+  PID = 'ENDPOINT_TO_UNIVERSE'
+  DATA = 'foobar'
+
+
+class AllSubDevicesGetRdmTrafficEnable(TestMixins.AllSubDevicesGetMixin,
+                                       OptionalParameterTestFixture):
+  """Send a get RDM_TRAFFIC_ENABLE to ALL_SUB_DEVICES."""
+  PID = 'RDM_TRAFFIC_ENABLE'
+  DATA = [0x0001]
+
+
+# class GetRdmTrafficEnable(TestMixins.,
+#                           OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'RDM_TRAFFIC_ENABLE'
+# TODO(peter): Test get
+
+
+class GetZeroRdmTrafficEnable(TestMixins.GetZeroUInt16Mixin,
+                              OptionalParameterTestFixture):
+  """GET RDM_TRAFFIC_ENABLE for endpoint id 0."""
+  PID = 'RDM_TRAFFIC_ENABLE'
+
+
+class GetRdmTrafficEnableWithNoData(TestMixins.GetWithNoDataMixin,
+                                    OptionalParameterTestFixture):
+  """GET RDM_TRAFFIC_ENABLE with no argument given."""
+  PID = 'RDM_TRAFFIC_ENABLE'
+
+
+class GetRdmTrafficEnableWithExtraData(TestMixins.GetWithDataMixin,
+                                       OptionalParameterTestFixture):
+  """GET RDM_TRAFFIC_ENABLE with more than 2 bytes of data."""
+  PID = 'RDM_TRAFFIC_ENABLE'
+
+
+# class SetRdmTrafficEnable(TestMixins.,
+#                           OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'RDM_TRAFFIC_ENABLE'
+# TODO(peter): Test set
+
+
+# class SetZeroRdmTrafficEnable(TestMixins.SetZero,
+#                               OptionalParameterTestFixture):
+#   """SET RDM_TRAFFIC_ENABLE for endpoint id 0."""
+#   PID = 'RDM_TRAFFIC_ENABLE'
+# TODO(peter): Test set zero
+
+
+class SetRdmTrafficEnableWithNoData(TestMixins.SetWithNoDataMixin,
+                                    OptionalParameterTestFixture):
+  """Set RDM_TRAFFIC_ENABLE command with no data."""
+  PID = 'RDM_TRAFFIC_ENABLE'
+
+
+class SetRdmTrafficEnableWithExtraData(TestMixins.SetWithDataMixin,
+                                       OptionalParameterTestFixture):
+  """Send a SET RDM_TRAFFIC_ENABLE command with extra data."""
+  PID = 'RDM_TRAFFIC_ENABLE'
+  DATA = 'foobar'
+
+
+class AllSubDevicesGetDiscoveryState(TestMixins.AllSubDevicesGetMixin,
+                                     OptionalParameterTestFixture):
+  """Send a get DISCOVERY_STATE to ALL_SUB_DEVICES."""
+  PID = 'DISCOVERY_STATE'
+  DATA = [0x0001]
+
+
+# class GetDiscoveryState(TestMixins.,
+#                         OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'DISCOVERY_STATE'
+# TODO(peter): Test get
+
+
+class GetZeroDiscoveryState(TestMixins.GetZeroUInt16Mixin,
+                            OptionalParameterTestFixture):
+  """GET DISCOVERY_STATE for endpoint id 0."""
+  PID = 'DISCOVERY_STATE'
+
+
+class GetDiscoveryStateWithNoData(TestMixins.GetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
+  """GET DISCOVERY_STATE with no argument given."""
+  PID = 'DISCOVERY_STATE'
+
+
+class GetDiscoveryStateWithExtraData(TestMixins.GetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """GET DISCOVERY_STATE with more than 2 bytes of data."""
+  PID = 'DISCOVERY_STATE'
+
+
+# class SetDiscoveryState(TestMixins.,
+#                         OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'DISCOVERY_STATE'
+# TODO(peter): Test set
+
+
+# class SetZeroDiscoveryState(TestMixins.SetZero,
+#                             OptionalParameterTestFixture):
+#   """SET DISCOVERY_STATE for endpoint id 0."""
+#   PID = 'DISCOVERY_STATE'
+# TODO(peter): Test set zero
+
+
+class SetDiscoveryStateWithNoData(TestMixins.SetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
+  """Set DISCOVERY_STATE command with no data."""
+  PID = 'DISCOVERY_STATE'
+
+
+class SetDiscoveryStateWithExtraData(TestMixins.SetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """Send a SET DISCOVERY_STATE command with extra data."""
+  PID = 'DISCOVERY_STATE'
+  DATA = 'foobar'
+
+
+class AllSubDevicesGetBackgroundDiscovery(TestMixins.AllSubDevicesGetMixin,
+                                          OptionalParameterTestFixture):
+  """Send a get BACKGROUND_DISCOVERY to ALL_SUB_DEVICES."""
+  PID = 'BACKGROUND_DISCOVERY'
+  DATA = [0x0001]
+
+
+# class GetBackgroundDiscovery(TestMixins.,
+#                              OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'BACKGROUND_DISCOVERY'
+# TODO(peter): Test get
+
+
+class GetZeroBackgroundDiscovery(TestMixins.GetZeroUInt16Mixin,
+                                 OptionalParameterTestFixture):
+  """GET BACKGROUND_DISCOVERY for endpoint id 0."""
+  PID = 'BACKGROUND_DISCOVERY'
+
+
+class GetBackgroundDiscoveryWithNoData(TestMixins.GetWithNoDataMixin,
+                                       OptionalParameterTestFixture):
+  """GET BACKGROUND_DISCOVERY with no argument given."""
+  PID = 'BACKGROUND_DISCOVERY'
+
+
+class GetBackgroundDiscoveryWithExtraData(TestMixins.GetWithDataMixin,
+                                          OptionalParameterTestFixture):
+  """GET BACKGROUND_DISCOVERY with more than 2 bytes of data."""
+  PID = 'BACKGROUND_DISCOVERY'
+
+
+# class SetBackgroundDiscovery(TestMixins.,
+#                              OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'BACKGROUND_DISCOVERY'
+# TODO(peter): Test set
+
+
+# class SetZeroBackgroundDiscovery(TestMixins.SetZero,
+#                                  OptionalParameterTestFixture):
+#   """SET BACKGROUND_DISCOVERY for endpoint id 0."""
+#   PID = 'BACKGROUND_DISCOVERY'
+# TODO(peter): Test set zero
+
+
+class SetBackgroundDiscoveryWithNoData(TestMixins.SetWithNoDataMixin,
+                                       OptionalParameterTestFixture):
+  """Set BACKGROUND_DISCOVERY command with no data."""
+  PID = 'BACKGROUND_DISCOVERY'
+
+
+class SetBackgroundDiscoveryWithExtraData(TestMixins.SetWithDataMixin,
+                                          OptionalParameterTestFixture):
+  """Send a SET BACKGROUND_DISCOVERY command with extra data."""
+  PID = 'BACKGROUND_DISCOVERY'
+  DATA = 'foobar'
+
+
+class AllSubDevicesGetBackgroundQueuedStatusPolicy(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
+  """Send a get BACKGROUND_QUEUED_STATUS_POLICY to ALL_SUB_DEVICES."""
+  PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
+
+
+# class GetBackgroundQueuedStatusPolicy(TestMixins.,
+#                                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
+# TODO(peter): Test get
+
+
+class GetBackgroundQueuedStatusPolicyWithData(TestMixins.GetWithDataMixin,
+                                              OptionalParameterTestFixture):
+  """GET BACKGROUND_QUEUED_STATUS_POLICY with data."""
+  PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
+
+
+# class SetBackgroundQueuedStatusPolicy(TestMixins.,
+#                                       OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
+# TODO(peter): Test set
+
+
+class SetBackgroundQueuedStatusPolicyWithNoData(TestMixins.SetWithNoDataMixin,
+                                                OptionalParameterTestFixture):
+  """Set BACKGROUND_QUEUED_STATUS_POLICY command with no data."""
+  PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
+
+
+class SetBackgroundQueuedStatusPolicyWithExtraData(TestMixins.SetWithDataMixin,
+                                                   OptionalParameterTestFixture):
+  """Send a SET BACKGROUND_QUEUED_STATUS_POLICY command with extra data."""
+  PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
+
+
+class AllSubDevicesGetBackgroundQueuedStatusPolicyDescription(
+        TestMixins.AllSubDevicesGetMixin,
+        OptionalParameterTestFixture):
+  """Send a get BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION to ALL_SUB_DEVICES."""
+  PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
+  DATA = [0x00]
+
+
+# class GetBackgroundQueuedStatusPolicyDescription(TestMixins.,
+#                                                  OptionalParameterTestFixture):
+#   CATEGORY = TestCategory.
+#   PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
+# TODO(peter): Test get
+
+
+class GetBackgroundQueuedStatusPolicyDescriptionWithNoData(
+        TestMixins.GetWithNoDataMixin,
+        OptionalParameterTestFixture):
+  """GET BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION with no argument given."""
+  PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
+
+
+class GetBackgroundQueuedStatusPolicyDescriptionWithExtraData(
+        TestMixins.GetWithDataMixin,
+        OptionalParameterTestFixture):
+  """GET BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION with more than 1 byte of data."""
+  PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
+
+
+class SetBackgroundQueuedStatusPolicyDescription(TestMixins.UnsupportedSetMixin,
+                                                 OptionalParameterTestFixture):
+  """Attempt to SET BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION."""
+  PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
+
+
+class SetBackgroundQueuedStatusPolicyDescriptionWithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Attempt to SET BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION with data."""
+  PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
+
+
 # Cross check the control fields with various other properties
 # -----------------------------------------------------------------------------
 class SubDeviceControlField(TestFixture):
