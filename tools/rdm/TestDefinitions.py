@@ -7948,6 +7948,7 @@ class GetZeroEndpointMode(TestMixins.GetZeroUInt16Mixin,
                           OptionalParameterTestFixture):
   """GET ENDPOINT_MODE for endpoint id 0."""
   PID = 'ENDPOINT_MODE'
+  OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
 class GetEndpointModeWithNoData(TestMixins.GetWithNoDataMixin,
@@ -8007,6 +8008,7 @@ class GetZeroEndpointLabel(TestMixins.GetZeroUInt16Mixin,
                            OptionalParameterTestFixture):
   """GET ENDPOINT_LABEL for endpoint id 0."""
   PID = 'ENDPOINT_LABEL'
+  OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
 class GetEndpointLabelWithNoData(TestMixins.GetWithNoDataMixin,
@@ -8065,6 +8067,7 @@ class GetZeroEndpointTiming(TestMixins.GetZeroUInt16Mixin,
                             OptionalParameterTestFixture):
   """GET ENDPOINT_TIMING for endpoint id 0."""
   PID = 'ENDPOINT_TIMING'
+  OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
 class GetEndpointTimingWithNoData(TestMixins.GetWithNoDataMixin,
@@ -8170,6 +8173,7 @@ class GetZeroEndpointResponders(TestMixins.GetZeroUInt16Mixin,
                                 OptionalParameterTestFixture):
   """GET ENDPOINT_RESPONDERS for endpoint id 0."""
   PID = 'ENDPOINT_RESPONDERS'
+  OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
 class GetEndpointRespondersWithNoData(TestMixins.GetWithNoDataMixin,
@@ -8215,6 +8219,7 @@ class GetZeroEndpointResponderListChange(TestMixins.GetZeroUInt16Mixin,
                                          OptionalParameterTestFixture):
   """GET ENDPOINT_RESPONDER_LIST_CHANGE for endpoint id 0."""
   PID = 'ENDPOINT_RESPONDER_LIST_CHANGE'
+  OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
 class GetEndpointResponderListChangeWithNoData(TestMixins.GetWithNoDataMixin,
@@ -8322,6 +8327,7 @@ class GetZeroEndpointToUniverse(TestMixins.GetZeroUInt16Mixin,
                                 OptionalParameterTestFixture):
   """GET ENDPOINT_TO_UNIVERSE for endpoint id 0."""
   PID = 'ENDPOINT_TO_UNIVERSE'
+  OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
 class GetEndpointToUniverseWithNoData(TestMixins.GetWithNoDataMixin,
@@ -8381,6 +8387,7 @@ class GetZeroRdmTrafficEnable(TestMixins.GetZeroUInt16Mixin,
                               OptionalParameterTestFixture):
   """GET RDM_TRAFFIC_ENABLE for endpoint id 0."""
   PID = 'RDM_TRAFFIC_ENABLE'
+  OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
 class GetRdmTrafficEnableWithNoData(TestMixins.GetWithNoDataMixin,
@@ -8440,6 +8447,7 @@ class GetZeroDiscoveryState(TestMixins.GetZeroUInt16Mixin,
                             OptionalParameterTestFixture):
   """GET DISCOVERY_STATE for endpoint id 0."""
   PID = 'DISCOVERY_STATE'
+  OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
 class GetDiscoveryStateWithNoData(TestMixins.GetWithNoDataMixin,
@@ -8499,6 +8507,7 @@ class GetZeroBackgroundDiscovery(TestMixins.GetZeroUInt16Mixin,
                                  OptionalParameterTestFixture):
   """GET BACKGROUND_DISCOVERY for endpoint id 0."""
   PID = 'BACKGROUND_DISCOVERY'
+  OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
 class GetBackgroundDiscoveryWithNoData(TestMixins.GetWithNoDataMixin,
