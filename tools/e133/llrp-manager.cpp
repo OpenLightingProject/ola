@@ -96,11 +96,14 @@ using ola::rdm::UIDSet;
 
 DEFINE_string(manager_uid, "7a70:00000002", "The UID of the manager.");
 DEFINE_default_bool(set, false, "Send a set rather than a get.");
+DEFINE_default_bool(allow_loopback, false, "Include the loopback interface.");
+DEFINE_s_string(interface, i, "",
+                "The interface name (e.g. eth0) or IP address of the network "
+                "interface to use for LLRP messages.");
 
 auto_ptr<ola::network::InterfacePicker> picker(
   ola::network::InterfacePicker::NewPicker());
 ola::network::Interface m_interface;
-const std::string m_preferred_ip;
 ola::network::UDPSocket m_socket;
 uint8_t *m_recv_buffer;
 std::auto_ptr<UID> manager_uid;
@@ -402,8 +405,9 @@ int main(int argc, char* argv[]) {
   }
   std::cout << "Bind!" << std::endl;
 
+  const std::string m_preferred_ip = FLAGS_interface;
   ola::network::InterfacePicker::Options options;
-  options.include_loopback = false;
+  options.include_loopback = FLAGS_allow_loopback;
   if (!picker->ChooseInterface(&m_interface, m_preferred_ip, options)) {
     OLA_INFO << "Failed to find an interface";
     return false;
