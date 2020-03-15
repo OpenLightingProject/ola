@@ -91,9 +91,9 @@ examples_ola_uni_stats_LDADD = $(EXAMPLE_COMMON_LIBS)
 if HAVE_NCURSES
 bin_PROGRAMS += examples/ola_dmxconsole examples/ola_dmxmonitor
 examples_ola_dmxconsole_SOURCES = examples/ola-dmxconsole.cpp
-examples_ola_dmxconsole_LDADD = $(EXAMPLE_COMMON_LIBS) -lncurses
+examples_ola_dmxconsole_LDADD = $(EXAMPLE_COMMON_LIBS) $(libncurses_LIBS)
 examples_ola_dmxmonitor_SOURCES = examples/ola-dmxmonitor.cpp
-examples_ola_dmxmonitor_LDADD = $(EXAMPLE_COMMON_LIBS) -lncurses
+examples_ola_dmxmonitor_LDADD = $(EXAMPLE_COMMON_LIBS) $(libncurses_LIBS)
 endif
 
 noinst_PROGRAMS += examples/ola_throughput examples/ola_latency
