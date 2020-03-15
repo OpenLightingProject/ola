@@ -220,6 +220,24 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
     // protobuf_AssignDescriptorsOnce():  The first time it is called, calls
     // AssignDescriptors().  All later times, waits for the first call to
     // complete and then returns.
+
+    // We need to generate different code, depending on the version
+    // of protobuf we compile against
+#if GOOGLE_PROTOBUF_VERSION < 3008000
+    printer->Print(
+      "namespace {\n"
+      "\n"
+      "GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);\n"
+      "inline void protobuf_AssignDescriptorsOnce() {\n"
+      "  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,"
+      "\n"
+      "                 &$assigndescriptorsname$);\n"
+      "}\n"
+      "\n",
+      "assigndescriptorsname", GlobalAssignDescriptorsName(m_output_name));
+
+    printer->Print("}  // namespace\n");
+#else
     printer->Print(
       "void protobuf_AssignDescriptorsOnce() {\n"
       "  static ::google::protobuf::internal::once_flag once;\n"
@@ -227,6 +245,7 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
       "}\n"
       "\n",
       "assigndescriptorsname", GlobalAssignDescriptorsName(m_output_name));
+#endif
   }
 }
 
