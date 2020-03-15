@@ -241,7 +241,8 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
     printer->Print(
       "void protobuf_AssignDescriptorsOnce() {\n"
       "  static ::google::protobuf::internal::once_flag once;\n"
-      "  ::google::protobuf::internal::call_once(once, $assigndescriptorsname$);\n"
+      "  ::google::protobuf::internal::call_once(once,\n"
+      "    $assigndescriptorsname$);\n"
       "}\n"
       "\n",
       "assigndescriptorsname", GlobalAssignDescriptorsName(m_output_name));
