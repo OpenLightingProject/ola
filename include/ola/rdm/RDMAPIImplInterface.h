@@ -43,7 +43,7 @@ namespace rdm {
  * @brief Represents the state of a response and/or any error codes.
  *
  * RDM Handlers should first check for error being non-empty as this
- * represents an underlying transport error. Then the resonse_code
+ * represents an underlying transport error. Then the response_code
  * should be checked to catch invalid responses, timeouts etc. Finally, the
  * value of response_type should be checked against the rdm_response_type
  * codes.
