@@ -79,6 +79,7 @@ dist_check_SCRIPTS += \
     python/ola/MACAddressTest.py \
     python/ola/OlaClientTest.py \
     python/ola/PidStoreTest.py \
+    python/ola/TestUtils.py \
     python/ola/UIDTest.py
 
 if BUILD_PYTHON_LIBS

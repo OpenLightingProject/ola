@@ -16,15 +16,15 @@
 # PidStoreTest.py
 # Copyright (C) 2020 Bruce Lowekamp
 
-import itertools
 import os
 import unittest
 import ola.PidStore as PidStore
+from ola.TestUtils import allNotEqual, allHashNotEqual
 
 """Test cases for the PidStore class.
-   Relies on the PID data from rdm tests,
+   Relies on the PID data from rdm tests in directory
    passed as TESTDATADIR envvar or defaults to
-   ../common/rdm/testdata
+   ../common/rdm/testdata.
 """
 
 __author__ = 'bruce@lowekamp.net (Bruce Lowekamp)'
@@ -35,15 +35,6 @@ OPEN_LIGHTING_ESTA_CODE = 0x7a70
 
 
 class PidStoreTest(unittest.TestCase):
-
-  def allNotEqual(self, t):
-    for pair in itertools.combinations(t, 2):
-      self.assertNotEqual(pair[0], pair[1])
-
-  def allHashNotEqual(self, t):
-    h = map(hash, t)
-    for pair in itertools.combinations(h, 2):
-      self.assertNotEqual(pair[0], pair[1])
 
   def testBasic(self):
     store = PidStore.PidStore()
@@ -159,8 +150,8 @@ class PidStoreTest(unittest.TestCase):
                       32691, 32692, 32752, 32753, 32754, 32755, 32756, 32757,
                       32758, 32759, 32760, 32761, 32762, 32763, 32764, 32765,
                       32766, 32767])
-    self.allNotEqual(store.Pids())
-    self.allHashNotEqual(store.Pids())
+    allNotEqual(self, store.Pids())
+    allHashNotEqual(self, store.Pids())
 
   def testCmp(self):
     p1 = PidStore.Pid("base", 42)
@@ -211,7 +202,7 @@ class PidStoreTest(unittest.TestCase):
 
     pids = [p1, p2, p3, p4]
 
-    self.allNotEqual(pids)
+    allNotEqual(self, pids)
 
     self.assertEqual(sorted(pids), [p4, p3, p2, p1])
 

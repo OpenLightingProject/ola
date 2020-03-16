@@ -15,7 +15,6 @@
 # TestState.py
 # Copyright (C) 2011 Simon Newton
 
-
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 

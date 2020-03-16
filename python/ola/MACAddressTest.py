@@ -16,10 +16,10 @@
 # MACAddressTest.py
 # Copyright (C) 2013 Peter Newman
 
-import itertools
 import sys
 import unittest
 from ola.MACAddress import MACAddress
+from ola.TestUtils import allNotEqual, allHashNotEqual
 
 """Test cases for the MACAddress class."""
 
@@ -27,15 +27,6 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class MACAddressTest(unittest.TestCase):
-
-  def allNotEqual(self, t):
-    for pair in itertools.combinations(t, 2):
-      self.assertNotEqual(pair[0], pair[1])
-
-  def allHashNotEqual(self, t):
-    h = map(hash, t)
-    for pair in itertools.combinations(h, 2):
-      self.assertNotEqual(pair[0], pair[1])
 
   def testBasic(self):
     mac = MACAddress(bytearray([0x01, 0x23, 0x45, 0x67, 0x89, 0xab]))
@@ -78,8 +69,8 @@ class MACAddressTest(unittest.TestCase):
     m4 = MACAddress(bytearray([0x48, 0x46, 0x00, 0x00, 0x02, 0x2e]))
     macs = sorted([m1, m2, None, m3, m4])
     self.assertEqual([None, m3, m2, m1, m4], macs)
-    self.allNotEqual(macs)
-    self.allHashNotEqual(macs)
+    allNotEqual(self, macs)
+    allHashNotEqual(self, macs)
 
   def testEquals(self):
     m1 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))

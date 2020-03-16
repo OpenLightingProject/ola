@@ -16,9 +16,9 @@
 # UIDTest.py
 # Copyright (C) 2005 Simon Newton
 
-import itertools
 import unittest
 from ola.UID import UID, UIDOutOfRangeException
+from ola.TestUtils import allNotEqual, allHashNotEqual
 
 """Test cases for the UID class."""
 
@@ -26,15 +26,6 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 class UIDTest(unittest.TestCase):
-
-  def allNotEqual(self, t):
-    for pair in itertools.combinations(t, 2):
-      self.assertNotEqual(pair[0], pair[1])
-
-  def allHashNotEqual(self, t):
-    h = map(hash, t)
-    for pair in itertools.combinations(h, 2):
-      self.assertNotEqual(pair[0], pair[1])
 
   def testBasic(self):
     uid = UID(0x707a, 0x12345678)
@@ -133,8 +124,8 @@ class UIDTest(unittest.TestCase):
     self.assertTrue(u3 is not None)
     self.assertFalse(u3 is None)
 
-    self.allNotEqual([u2, u3, u4])
-    self.allHashNotEqual([u2, u3, u4])
+    allNotEqual(self, [u2, u3, u4])
+    allHashNotEqual(self, [u2, u3, u4])
 
 
 if __name__ == '__main__':

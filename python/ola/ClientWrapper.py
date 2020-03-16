@@ -36,7 +36,7 @@ class _Event(object):
   """An _Event represents a timer scheduled to expire in the future.
 
   Args:
-    delay: timedelta or number of ms before this event fires
+    delay: datetime.timedelta or number of ms before this event fires
     callback: the callable to run
   """
   def __init__(self, delay, callback):

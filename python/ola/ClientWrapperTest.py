@@ -47,9 +47,11 @@ class ClientWrapperTest(unittest.TestCase):
 
   def testEventCmp(self):
     a = _Event(0.5, a_func)
+    # b/b2/b3/c have same timing to test comparisons of
+    # callback (b==b2 and b!=b3)
     b = _Event(1, b_func)
     b2 = _Event(1, b_func)
-    b2._run_at = b._run_at  # tests rely on timestamps being actually equal
+    b2._run_at = b._run_at  
     b3 = _Event(1, a_func)
     b3._run_at = b._run_at
     c = _Event(1, c_func)

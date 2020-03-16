@@ -76,29 +76,30 @@ class TestFixture(object):
   def __repr__(self):
     return self.__class__.__name__
 
-  # original __cmp__ compared __class__.__name__.  This sorts
-  # subclasses, so this implementation preserves that behavior.
+  # TestFixture and its subclasses are equal/ordered based on
+  # class name.  Two TestFixtures are equal if they are the same class,
+  # and ordering is based comparing __class__.__name__
   def __eq__(self, other):
     return other.__class__ is self.__class__
 
   def __lt__(self, other):
-    if not isinstance(other, TestFixture):
+    if not issubclass(other.__class__, TestFixture):
       return NotImplemented
     return self.__class__.__name__ < other.__class__.__name__
 
   # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
-    if not isinstance(other, TestFixture):
+    if not issubclass(other.__class__, TestFixture):
       return NotImplemented
     return self < other or self == other
 
   def __gt__(self, other):
-    if not isinstance(other, TestFixture):
+    if not issubclass(other.__class__, TestFixture):
       return NotImplemented
     return not self <= other
 
   def __ge__(self, other):
-    if not isinstance(other, TestFixture):
+    if not issubclass(other.__class__, TestFixture):
       return NotImplemented
     return not self < other
 

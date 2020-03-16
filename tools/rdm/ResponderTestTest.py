@@ -36,10 +36,9 @@ class TestFixtureTest(unittest.TestCase):
 
   def testCmp(self):
     base = TestFixture({}, 2, 123, None)
-    base2 = TestFixture({}, 2, 123, None)
+    base2 = TestFixture({}, 3, 456, None)
 
     a = ATestFixture({}, 2, 123, None)
-    a2 = ATestFixture({}, 2, 123, None)
     z = ZTestFixture({}, 2, 123, None)
 
     self.assertEqual(base, base2)
@@ -52,7 +51,6 @@ class TestFixtureTest(unittest.TestCase):
     self.assertTrue(base >= base)
     self.assertNotEqual(a, z)
     self.assertTrue(a < z)
-    self.assertEqual(a, a2)
     self.assertTrue(z > a)
 
 

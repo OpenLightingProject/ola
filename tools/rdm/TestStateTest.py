@@ -41,8 +41,8 @@ class TestStateCmpTest(unittest.TestCase):
     states = sorted([TestState.PASSED, TestState.FAILED,
                      TestState.BROKEN, TestState.NOT_RUN])
     self.assertEqual(states,
-                              [TestState.BROKEN, TestState.FAILED,
-                               TestState.NOT_RUN, TestState.PASSED])
+                     [TestState.BROKEN, TestState.FAILED,
+                      TestState.NOT_RUN, TestState.PASSED])
     self.allNotEqual(states)
     self.allHashNotEqual(states)
 

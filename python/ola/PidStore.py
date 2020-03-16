@@ -35,6 +35,10 @@ from ola.UID import UID
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
+# magic filenames
+OVERRIDE_FILE_NAME = "overrides.proto"
+MANUFACTURER_NAMES_FILE_NAME = "manufacturer_names.proto"
+
 # Various sub device enums
 ROOT_DEVICE = 0
 MAX_VALID_SUB_DEVICE = 0x0200
@@ -988,10 +992,12 @@ class PidStore(object):
     override_file = None
 
     for f in raw_list:
-      if os.path.basename(f) == "overrides.proto":
+      if os.path.basename(f) == OVERRIDE_FILE_NAME:
         override_file = f
-      else:
-        pid_files.append(f)
+        continue
+      if os.path.basename(f) == MANUFACTURER_NAMES_FILE_NAME:
+        continue
+      pid_files.append(f)
 
     for pid_file in pid_files:
       self.LoadFile(pid_file, validate)
