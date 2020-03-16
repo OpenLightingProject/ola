@@ -19,7 +19,7 @@
 import array
 import datetime
 import socket
-import timeout_decorator
+# import timeout_decorator
 import unittest
 from ola.ClientWrapper import ClientWrapper
 from ola.ClientWrapper import _Event
@@ -51,7 +51,7 @@ class ClientWrapperTest(unittest.TestCase):
     # callback (b==b2 and b!=b3)
     b = _Event(1, b_func)
     b2 = _Event(1, b_func)
-    b2._run_at = b._run_at  
+    b2._run_at = b._run_at
     b3 = _Event(1, a_func)
     b3._run_at = b._run_at
     c = _Event(1, c_func)
@@ -100,7 +100,7 @@ class ClientWrapperTest(unittest.TestCase):
     self.assertNotEqual(hash(b), hash(b3))
     self.assertNotEqual(hash(b), hash(c))
 
-  @timeout_decorator.timeout(2)
+  # @timeout_decorator.timeout(2)
   def testBasic(self):
     sockets = socket.socketpair()
     wrapper = ClientWrapper(sockets[0])
@@ -126,7 +126,7 @@ class ClientWrapperTest(unittest.TestCase):
     sockets[0].close()
     sockets[1].close()
 
-  @timeout_decorator.timeout(2)
+  # @timeout_decorator.timeout(2)
   def testEventLoop(self):
     sockets = socket.socketpair()
     wrapper = ClientWrapper(sockets[0])
@@ -197,7 +197,7 @@ class ClientWrapperTest(unittest.TestCase):
     sockets[0].close()
     sockets[1].close()
 
-  @timeout_decorator.timeout(2)
+  # @timeout_decorator.timeout(2)
   def testSend(self):
     """tests that data goes out on the wire with SendDMX"""
     sockets = socket.socketpair()
