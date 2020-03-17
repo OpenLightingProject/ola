@@ -440,6 +440,7 @@ AM_CONDITIONAL([HAVE_NCURSES], [test "x$have_ncurses" = xyes])
 # Defines libncurses_LIBS that we can use to link against ncurses
 # Needed since >=ncurses-6 where -ltinfo is needed in addition to -lncurses
 PKG_CHECK_MODULES(libncurses, [ncurses >= 5])
+AM_CONDITIONAL([HAVE_NCURSES_PKGCONFIG], [test "$libncurses_LIBS" != ""])
 
 # pthread
 ACX_PTHREAD([
