@@ -403,6 +403,11 @@ class RDMNack(object):
     'NR_ENDPOINT_NUMBER_INVALID': (12, 'Endpoint number invalid'),
     'NR_INVALID_ENDPOINT_MODE': (13, 'Invalid endpoint mode'),
     'NR_UNKNOWN_UID': (14, 'Unknown UID'),
+    'NR_UNKNOWN_SCOPE': (15, 'Unknown scope'),
+    'NR_INVALID_STATIC_CONFIG_TYPE': (16, 'Invalid static config type'),
+    'NR_INVALID_IPV4_ADDRESS': (17, 'Invalid IPv4 address'),
+    'NR_INVALID_IPV6_ADDRESS': (18, 'Invalid IPv6 address'),
+    'NR_INVALID_PORT': (19, 'Invalid port'),
   }
 
   # this is populated below
