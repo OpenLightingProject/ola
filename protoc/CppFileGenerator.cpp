@@ -239,13 +239,16 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
     printer->Print("}  // namespace\n");
 #else
     printer->Print(
-      "void protobuf_AssignDescriptorsOnce() {\n"
+      "namespace {\n"
+      "\n"
+      "inline void protobuf_AssignDescriptorsOnce() {\n"
       "  static ::google::protobuf::internal::once_flag once;\n"
       "  ::google::protobuf::internal::call_once(once,\n"
       "    $assigndescriptorsname$);\n"
       "}\n"
       "\n",
       "assigndescriptorsname", GlobalAssignDescriptorsName(m_output_name));
+    printer->Print("}  // namespace\n");
 #endif
   }
 }
