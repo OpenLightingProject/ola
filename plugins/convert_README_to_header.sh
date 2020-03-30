@@ -27,11 +27,11 @@ fi
 plugin=`basename "$path"`;
 outfilename=`basename $outfile`;
 
-# See http://stackoverflow.com/a/16576291
-# On Mac OS's sed, \n is not recognized as a newline character, but
-# \[actual newline] works
-desc=`sed -e ':a' -e 'N' -e '$!ba' -e 's/\"/\\\"/g' -e 's/\n/\\\\n"\\
-"/g' "$path/README.md"`;
+#s/"/\\"/g - replace " with \" throughout
+#1!s/^/"/g - Apart from the first line, add a " to the start of each line
+#$!s/$/\\\\n"/g - Apart from the last line, add a \\n (i.e. an escaped newline)
+#and a " to the end of each line
+desc=`sed -e 's/"/\\"/g' -e '1!s/^/"/' -e '$!s/$/\\\\n"/' "$path/README.md"`;
 
 identifier=`echo "PLUGINS_${plugin}_${outfilename%.h}_H_" | tr '[:lower:]' '[:upper:]'`
 
