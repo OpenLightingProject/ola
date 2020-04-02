@@ -37,6 +37,8 @@ AsyncUsbSender::AsyncUsbSender(LibUsbAdaptor *adaptor,
 }
 
 AsyncUsbSender::~AsyncUsbSender() {
+  ola::thread::MutexLocker locker(&m_mutex);
+  CancelTransfer();
   m_adaptor->Close(m_usb_handle);
 }
 

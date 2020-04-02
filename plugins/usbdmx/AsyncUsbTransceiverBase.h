@@ -101,7 +101,7 @@ class AsyncUsbTransceiverBase {
   virtual void PostTransferHook() {}
 
   /**
-   * @brief Cancel any pending transfers.
+   * @brief Cancel any pending transfers and wait for them to complete.
    */
   void CancelTransfer();
 
@@ -139,6 +139,7 @@ class AsyncUsbTransceiverBase {
   std::queue<struct libusb_transfer*> m_idle;  // GUARDED_BY(m_mutex);
 
   ola::thread::Mutex m_mutex;
+  ola::thread::ConditionVariable m_cond;
 
  private:
   /**

@@ -173,7 +173,6 @@ class SunliteAsyncUsbSender : public AsyncUsbSender {
   }
 
   ~SunliteAsyncUsbSender() {
-    CancelTransfer();
   }
 
   libusb_device_handle* SetupHandle() {
