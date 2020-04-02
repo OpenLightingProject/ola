@@ -28,8 +28,9 @@ namespace usbdmx {
 
 AsyncUsbReceiver::AsyncUsbReceiver(ola::usb::LibUsbAdaptor *adaptor,
                                    libusb_device *usb_device,
-                                   PluginAdaptor *plugin_adaptor)
-    : AsyncUsbTransceiverBase(adaptor, usb_device),
+                                   PluginAdaptor *plugin_adaptor,
+                                   unsigned int num_transfers)
+    : AsyncUsbTransceiverBase(adaptor, usb_device, num_transfers),
       m_plugin_adaptor(plugin_adaptor),
       m_inited_with_handle(false) {
 }
@@ -58,25 +59,20 @@ bool AsyncUsbReceiver::Start() {
     return false;
   }
   ola::thread::MutexLocker locker(&m_mutex);
-  return PerformTransfer();
+  bool success = true;
+  while (!m_idle.empty() && success) {
+    success = PerformTransfer();
+  }
+  return success;
 }
 
 void AsyncUsbReceiver::TransferComplete(struct libusb_transfer *transfer) {
-  if (transfer != m_transfer) {
-    OLA_WARN << "Mismatched libusb transfer: " << transfer << " != "
-             << m_transfer;
-    return;
-  }
-
   if (transfer->status != LIBUSB_TRANSFER_COMPLETED &&
       transfer->status != LIBUSB_TRANSFER_TIMED_OUT ) {
     OLA_WARN << "Transfer returned " << transfer->status;
   }
 
   ola::thread::MutexLocker locker(&m_mutex);
-  m_transfer_state = (transfer->status == LIBUSB_TRANSFER_NO_DEVICE ?
-      DISCONNECTED : IDLE);
-
   if (m_suppress_continuation) {
     return;
   }
