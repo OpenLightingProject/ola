@@ -968,6 +968,7 @@ AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
                  python/ola/OlaClient.py:python/ola/OlaClient.py
                  python/ola/PidStore.py:python/ola/PidStore.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/TestUtils.py:python/ola/TestUtils.py
                  python/ola/UID.py:python/ola/UID.py
                  python/ola/rpc/__init__.py:python/ola/rpc/__init__.py
                  python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
