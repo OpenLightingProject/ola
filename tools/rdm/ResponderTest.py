@@ -76,7 +76,7 @@ class TestFixture(object):
   def __repr__(self):
     return self.__class__.__name__
 
-  # TestFixture and its subclasses are equal/ordered based on
+  # TestFixture and its subclasses are equal/ordered based on comparing
   # class name.  Two TestFixtures are equal if they are the same class,
   # and ordering is based comparing __class__.__name__
   def __eq__(self, other):
