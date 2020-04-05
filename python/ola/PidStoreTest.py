@@ -22,9 +22,9 @@ import ola.PidStore as PidStore
 from ola.TestUtils import allNotEqual, allHashNotEqual
 
 """Test cases for the PidStore class.
-   Relies on the PID data from rdm tests in directory
-   passed as TESTDATADIR envvar or defaults to
-   ../common/rdm/testdata.
+   Relies on the PID data from rdm tests in the directory
+   passed as TESTDATADIR envvar.  Otherwise PID data directory
+   defaults to ../common/rdm/testdata.
 """
 
 __author__ = 'bruce@lowekamp.net (Bruce Lowekamp)'
@@ -157,54 +157,20 @@ class PidStoreTest(unittest.TestCase):
     p1 = PidStore.Pid("base", 42)
     p1a = PidStore.Pid("base", 42)
 
-    g2getreq = PidStore.Group("grg", [PidStore.UInt16("ui16"),
+    g1getreq = PidStore.Group("grg", [PidStore.UInt16("ui16"),
                                       PidStore.Int32("i32")])
-    g2setreq = PidStore.Group("srg", [PidStore.MACAtom("mac"),
+    g1setreq = PidStore.Group("srg", [PidStore.MACAtom("mac"),
                                       PidStore.Int8("i32")])
-    p2 = PidStore.Pid("base", 42, None, None,
-                      g2getreq, g2setreq)
-    g2agetreq = PidStore.Group("grg", [PidStore.UInt16("ui16"),
-                                       PidStore.Int32("i32")])
-    g2asetreq = PidStore.Group("srg", [PidStore.MACAtom("mac"),
-                                       PidStore.Int8("i32")])
-    p2a = PidStore.Pid("base", 42, None, None,
-                       g2agetreq, g2asetreq)
+    p1b = PidStore.Pid("base", 42, None, None,
+                       g1getreq, g1setreq)
 
-    g3getreq = PidStore.Group("grg", [PidStore.UInt16("ui16"),
-                                      PidStore.Int32("i32")])
-    g3setreq = PidStore.Group("srg", [PidStore.MACAtom("mac"),
-                                      PidStore.Int8("i32"),
-                                      PidStore.UInt16("ui16")])
-    p3 = PidStore.Pid("base", 42, None, None,
-                      g3getreq, g3setreq)
-
-    g4getreq = PidStore.Group("grg", [PidStore.UInt16("ui16"),
-                                      PidStore.Int32("i32"),
-                                      PidStore.Int32("i32")])
-    g4setreq = PidStore.Group("srg", [PidStore.MACAtom("mac"),
-                                      PidStore.Int8("i32"),
-                                      PidStore.UInt16("ui16")])
-    p4 = PidStore.Pid("base", 42, None, None,
-                      g4getreq, g4setreq)
+    p2 = PidStore.Pid("base", 43, None, None,
+                      g1getreq, g1setreq)
 
     self.assertEqual(p1, p1a)
-    self.assertEqual(p2, p2a)
+    self.assertEqual(p1, p1b)
     self.assertNotEqual(p1, p2)
-    self.assertFalse(p1 < p2)
-    self.assertTrue(p2 < p1)
-    self.assertTrue(p2 <= p1)
-    self.assertTrue(p1 > p2)
-    self.assertTrue(p1 >= p2)
-
-    self.assertFalse(p1 < p4)
-    self.assertTrue(p3 < p2)
-    self.assertTrue(p4 < p3)
-
-    pids = [p1, p2, p3, p4]
-
-    allNotEqual(self, pids)
-
-    self.assertEqual(sorted(pids), [p4, p3, p2, p1])
+    self.assertNotEqual(p1b, p2)
 
 
 if __name__ == '__main__':

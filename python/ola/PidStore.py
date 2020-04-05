@@ -174,20 +174,12 @@ class Pid(object):
   def __eq__(self, other):
     if not isinstance(other, self.__class__):
       return False
-    return (self.value == other.value and
-            self.name == other.name and
-            self._GroupCmp(self._requests, other._requests) == 0 and
-            self._GroupCmp(self._responses, other._responses) == 0)
+    return self.value == other.value
 
   def __lt__(self, other):
     if not isinstance(other, self.__class__):
       return NotImplemented
-    if self.value != other.value:
-      return self._value < other._value
-    if self.name != other.name:
-      return self.name < other.name
-    return (self._GroupCmp(self._requests, other._requests) < 0 or
-            self._GroupCmp(self._responses, other._responses) < 0)
+    return self._value < other._value
 
   # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
@@ -212,7 +204,7 @@ class Pid(object):
     return '%s (0x%04hx)' % (self.name, self.value)
 
   def __hash__(self):
-    return hash((self._name, self._value))
+    return hash(self._name)
 
   def Pack(self, args, command_class):
     """Pack args
