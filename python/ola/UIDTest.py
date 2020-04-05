@@ -18,7 +18,7 @@
 
 import unittest
 from ola.UID import UID, UIDOutOfRangeException
-from TestUtils import allNotEqual, allHashNotEqual
+from ola.TestUtils import allNotEqual, allHashNotEqual
 
 """Test cases for the UID class."""
 
