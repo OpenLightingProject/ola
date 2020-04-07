@@ -223,7 +223,7 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
 
     // We need to generate different code, depending on the version
     // of protobuf we compile against
-#if GOOGLE_PROTOBUF_VERSION < 3008000
+#if GOOGLE_PROTOBUF_VERSION < 3007000
     printer->Print(
       "namespace {\n"
       "\n"
