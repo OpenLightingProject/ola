@@ -172,6 +172,11 @@ class PidStoreTest(unittest.TestCase):
     self.assertNotEqual(p1, p2)
     self.assertNotEqual(p1b, p2)
 
+    self.assertEqual(hash(p1), hash(p1a))
+    self.assertEqual(hash(p1), hash(p1b))
+    self.assertNotEqual(hash(p1), hash(p2))
+    self.assertNotEqual(hash(p1b), hash(p2))
+
 
 if __name__ == '__main__':
   path = (os.environ.get('TESTDATADIR', "../common/rdm/testdata"))

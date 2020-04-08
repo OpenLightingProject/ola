@@ -204,7 +204,7 @@ class Pid(object):
     return '%s (0x%04hx)' % (self.name, self.value)
 
   def __hash__(self):
-    return hash(self._name)
+    return hash(self._value)
 
   def Pack(self, args, command_class):
     """Pack args

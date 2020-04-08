@@ -93,6 +93,7 @@ class UIDTest(unittest.TestCase):
     u4 = UID(0x4844, 0x00000230)
 
     self.assertEqual(u3, u3a)
+    self.assertEqual(hash(u3), hash(u3a))
     self.assertTrue(u3 <= u3a)
     self.assertTrue(u3 >= u3a)
 
@@ -109,6 +110,7 @@ class UIDTest(unittest.TestCase):
     self.assertFalse(u3 == u2)
 
     self.assertNotEqual(u3, u4)
+    self.assertNotEqual(hash(u3), hash(u4))
     self.assertFalse(u3 == u4)
     self.assertTrue(u3 < u4)
     self.assertFalse(u4 < u3)
