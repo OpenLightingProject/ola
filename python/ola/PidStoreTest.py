@@ -22,8 +22,8 @@ import ola.PidStore as PidStore
 from ola.TestUtils import allNotEqual, allHashNotEqual
 
 """Test cases for the PidStore class.
-   Relies on the PID data from rdm tests in the directory
-   passed as TESTDATADIR envvar.  Otherwise PID data directory
+   Relies on the PID data from RDM tests in the directory
+   passed as TESTDATADIR envvar. Otherwise PID data directory
    defaults to ../common/rdm/testdata.
 """
 
