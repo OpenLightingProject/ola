@@ -437,6 +437,14 @@ AM_CONDITIONAL([HAVE_LIBFTD2XX], [test "x$have_libftd2xx" = xyes])
 AC_CHECK_HEADERS([curses.h ncurses/curses.h])
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL([HAVE_NCURSES], [test "x$have_ncurses" = xyes])
+# Defines libncurses_LIBS that we can use to link against ncurses
+# Needed since >=ncurses-6 where -ltinfo is needed in addition to -lncurses
+PKG_CHECK_MODULES(libncurses,
+                  [ncurses >= 5],
+                  [have_ncurses_pkgconfig="yes"],
+                  [have_ncurses_pkgconfig="no"])
+AM_CONDITIONAL([HAVE_NCURSES_PKGCONFIG],
+               [test "x$have_ncurses_pkgconfig" = xyes])
 
 # pthread
 ACX_PTHREAD([
@@ -924,7 +932,7 @@ fi
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
-# html & data directories
+# HTML & data directories
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
@@ -1005,5 +1013,5 @@ Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
     all          - build everything
     check        - run the tests
-    doxygen-doc  - generate the html documentation
+    doxygen-doc  - generate the HTML documentation
 -------------------------------------------------------"

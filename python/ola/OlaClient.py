@@ -399,6 +399,15 @@ class RDMNack(object):
     'NR_PACKET_SIZE_UNSUPPORTED': (8, 'Packet size unsupported'),
     'NR_SUB_DEVICE_OUT_OF_RANGE': (9, 'Sub device out of range'),
     'NR_PROXY_BUFFER_FULL': (10, 'Proxy buffer full'),
+    'NR_ACTION_NOT_SUPPORTED': (11, 'Action not supported'),
+    'NR_ENDPOINT_NUMBER_INVALID': (12, 'Endpoint number invalid'),
+    'NR_INVALID_ENDPOINT_MODE': (13, 'Invalid endpoint mode'),
+    'NR_UNKNOWN_UID': (14, 'Unknown UID'),
+    'NR_UNKNOWN_SCOPE': (15, 'Unknown scope'),
+    'NR_INVALID_STATIC_CONFIG_TYPE': (16, 'Invalid static config type'),
+    'NR_INVALID_IPV4_ADDRESS': (17, 'Invalid IPv4 address'),
+    'NR_INVALID_IPV6_ADDRESS': (18, 'Invalid IPv6 address'),
+    'NR_INVALID_PORT': (19, 'Invalid port'),
   }
 
   # this is populated below
