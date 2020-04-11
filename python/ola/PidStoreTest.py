@@ -155,7 +155,7 @@ class PidStoreTest(unittest.TestCase):
 
   def testCmp(self):
     p1 = PidStore.Pid("base", 42)
-    p1a = PidStore.Pid("base", 42)
+    p1a = PidStore.Pid("notbase", 42)
 
     g1getreq = PidStore.Group("grg", [PidStore.UInt16("ui16"),
                                       PidStore.Int32("i32")])
@@ -166,16 +166,25 @@ class PidStoreTest(unittest.TestCase):
 
     p2 = PidStore.Pid("base", 43, None, None,
                       g1getreq, g1setreq)
+    p3 = PidStore.Pid("notbase", 43)
 
     self.assertEqual(p1, p1a)
     self.assertEqual(p1, p1b)
+    self.assertEqual(p1a, p1b)
+    self.assertEqual(p2, p3)
     self.assertNotEqual(p1, p2)
+    self.assertNotEqual(p1a, p2)
     self.assertNotEqual(p1b, p2)
+    self.assertNotEqual(p1a, p3)
 
     self.assertEqual(hash(p1), hash(p1a))
     self.assertEqual(hash(p1), hash(p1b))
+    self.assertEqual(hash(p1a), hash(p1b))
+    self.assertEqual(hash(p2), hash(p3))
     self.assertNotEqual(hash(p1), hash(p2))
+    self.assertNotEqual(hash(p1a), hash(p2))
     self.assertNotEqual(hash(p1b), hash(p2))
+    self.assertNotEqual(hash(p1a), hash(p3))
 
 
 if __name__ == '__main__':
