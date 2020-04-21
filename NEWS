@@ -32,6 +32,8 @@ x/y/2019 ola-0.10.8
    Python API
  * Renamed RESONSE_INVALID_DESTINATION(sic) to RESPONSE_INVALID_DESTINATION in
    the ArduinoWidget code
+ * Fix compatibility with ncurses 6
+ * Fix compatibility with newer versions of Protobuf
 
  Internal:
  *
