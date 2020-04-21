@@ -196,14 +196,6 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
       "assigndescriptorsname", GlobalAssignDescriptorsName(m_output_name));
     printer->Indent();
 
-    // Make sure the file has found its way into the pool.  If a descriptor
-    // is requested *during* static init then AddDescriptors() may not have
-    // been called yet, so we call it manually.  Note that it's fine if
-    // AddDescriptors() is called multiple times.
-    printer->Print(
-      "$adddescriptorsname$();\n",
-      "adddescriptorsname", GlobalAddDescriptorsName(m_file->name()));
-
     // Get the file's descriptor from the pool.
     printer->Print(
       "const ::google::protobuf::FileDescriptor* file =\n"
