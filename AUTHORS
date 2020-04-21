@@ -12,6 +12,7 @@ Contributors:
   Hakan Lindestaf, Renard plugin
   Harry F, for the Eurolite USB Pro code
   Heikki Junnila, bug fixes for the debian packaging files
+  Jannis Achstetter, Compile fixes for newer dependencies
   Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
   Lukas Erlinghagen, win32 port.
   Johan Nilsson, Philips Hue trigger config
