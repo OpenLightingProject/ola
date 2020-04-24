@@ -108,6 +108,11 @@ module.exports = function(grunt) {
         verbose: true
       }
     },
+    stylelint: {
+      all: [
+        'css/*.css'
+      ]
+    },
     watch: {
       build: {
         files: targets.watching,
@@ -134,8 +139,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-jscs');
+  grunt.loadNpmTasks('grunt-stylelint');
+
   grunt.registerTask('dev', ['watch:build']);
-  grunt.registerTask('test', ['jshint:dev', 'jscs']);
+  grunt.registerTask('test', ['jshint:dev', 'jscs', 'stylelint']);
   grunt.registerTask('build:js', ['concat:build', 'uglify:build']);
   grunt.registerTask('build', ['test', 'build:js', 'cssmin:build']);
 };
