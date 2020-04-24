@@ -251,7 +251,7 @@ input.priority {
 
 select.priority {
  width: 90px;
- display: inline;
+ display: inline-block;
 }
 
 .caption-overview {
@@ -299,6 +299,7 @@ div#header-universe > div {
  border-radius: 4px;
  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+ transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
 .table-condensed>tbody>tr>td,
