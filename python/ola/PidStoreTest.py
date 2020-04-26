@@ -56,15 +56,23 @@ class PidStoreTest(unittest.TestCase):
       "<protocol_major> <protocol_minor> <device_model> "
       "<product_category> <software_version> <dmx_footprint> "
       "<current_personality> <personality_count> <dmx_start_address> "
-      "<sub_device_count> <sensor_count>:\n  "
-      "protocol_major: <[0, 255]> \n  protocol_minor: <[0, 255]> \n  "
-      "device_model: <[0, 65535]> \n  product_category: <[0, 65535]> \n  "
-      "software_version: <[0, 4294967295]> \n  dmx_footprint: <[0, 65535]> \n  "
-      "current_personality: <[0, 255]> \n  personality_count: <[0, 255]> \n  "
-      "dmx_start_address: <[0, 65535]> \n  sub_device_count: <[0, 65535]> \n  "
-      "sensor_count: <[0, 255]> ")
-
+      "<sub_device_count> <sensor_count>",
+      "  protocol_major: <[0, 255]>\n  protocol_minor: <[0, 255]>\n  "
+      "device_model: <[0, 65535]>\n  product_category: <[0, 65535]>\n  "
+      "software_version: <[0, 4294967295]>\n  dmx_footprint: <[0, 65535]>\n  "
+      "current_personality: <[0, 255]>\n  personality_count: <[0, 255]>\n  "
+      "dmx_start_address: <[0, 65535]>\n  sub_device_count: <[0, 65535]>\n  "
+      "sensor_count: <[0, 255]>")
     self.assertEqual(pid.GetResponse(PidStore.RDM_GET).GetDescription(),
+                     expected)
+
+    pid = store.GetName("CAPTURE_PRESET")
+    expected = ("<scene> <fade_up_time> <fade_down_time> <wait_time>",
+                "  scene: <[1, 65534]>\n"
+                "  fade_up_time: <[0.0, 6553.5]>, increment 0.1\n"
+                "  fade_down_time: <[0.0, 6553.5]>, increment 0.1\n"
+                "  wait_time: <[0.0, 6553.5]>, increment 0.1")
+    self.assertEqual(pid.GetRequest(PidStore.RDM_SET).GetDescription(),
                      expected)
 
   def testDirectoryAndSingleton(self):
@@ -104,9 +112,9 @@ class PidStoreTest(unittest.TestCase):
     self.assertIsNone(pid.GetResponse(PidStore.RDM_SET))
     self.assertEqual(store.NameToValue("FOO_BAR", OPEN_LIGHTING_ESTA_CODE),
                      32768)
-    self.assertIsNone(store.NameToValue("FOO_BAR", OPEN_LIGHTING_ESTA_CODE+1))
+    self.assertIsNone(store.NameToValue("FOO_BAR", OPEN_LIGHTING_ESTA_CODE + 1))
     self.assertEqual(pid.GetResponse(PidStore.RDM_GET).GetDescription(),
-                     "<baz>:\n  baz: <[0, 4294967295]> ")
+                     ("<baz>", "  baz: <[0, 4294967295]>"))
 
   def testLoadMissing(self):
     store = PidStore.PidStore()

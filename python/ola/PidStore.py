@@ -406,7 +406,7 @@ class IntAtom(FixedSizeAtom):
     if self._multiplier:
       increment = ', increment %s' % (10 ** self._multiplier)
 
-    return ('%s%s: <%s> %s' % (indent, self.name, self._GetAllowedRanges(),
+    return ('%s%s: <%s>%s' % (indent, self.name, self._GetAllowedRanges(),
                                increment))
 
   def DisplayValue(self, value):
@@ -892,7 +892,7 @@ class Group(Atom):
       names.append('<%s>' % atom.name)
       output.append(atom.GetDescription(indent=2))
 
-    return ' '.join(names) + ':\n' + '\n'.join(output)
+    return ' '.join(names), '\n'.join(output)
 
   def _UnpackFixedLength(self, atoms, data):
     """Unpack a list of atoms of a known, fixed size.
