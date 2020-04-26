@@ -61,13 +61,13 @@ tools/rdm/ResponderTestTest.sh: tools/rdm/Makefile.mk
 	chmod +x $(top_builddir)/tools/rdm/ResponderTestTest.sh
 
 dist_check_SCRIPTS += \
-   tools/rdm/TestStateTest.py \
-   tools/rdm/ResponderTestTest.py
+   tools/rdm/ResponderTestTest.py \
+   tools/rdm/TestStateTest.py
 
 if BUILD_PYTHON_LIBS
 test_scripts += \
-   tools/rdm/TestStateTest.py \
-   tools/rdm/ResponderTestTest.sh
+   tools/rdm/ResponderTestTest.sh \
+   tools/rdm/TestStateTest.py
 endif
 
 CLEANFILES += \

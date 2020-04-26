@@ -16,9 +16,9 @@
 # TestStateTest.py
 # Copyright (C) 2019 Bruce Lowekamp
 
-import itertools
 import unittest
 from TestState import TestState
+from ola.TestUtils import allNotEqual, allHashNotEqual
 
 """Test cases for sorting TestState."""
 
@@ -26,15 +26,6 @@ __author__ = 'bruce@lowekamp.net (Bruce Lowekamp)'
 
 
 class TestStateCmpTest(unittest.TestCase):
-  def allNotEqual(self, t):
-    for pair in itertools.combinations(t, 2):
-      self.assertNotEqual(pair[0], pair[1])
-
-  def allHashNotEqual(self, t):
-    h = map(hash, t)
-    for pair in itertools.combinations(h, 2):
-      self.assertNotEqual(pair[0], pair[1])
-
   def testCmp(self):
     self.assertEqual(TestState.PASSED, TestState.PASSED)
 
@@ -43,8 +34,8 @@ class TestStateCmpTest(unittest.TestCase):
     self.assertEqual(states,
                      [TestState.BROKEN, TestState.FAILED,
                       TestState.NOT_RUN, TestState.PASSED])
-    self.allNotEqual(states)
-    self.allHashNotEqual(states)
+    allNotEqual(self, states)
+    allHashNotEqual(self, states)
 
 
 if __name__ == '__main__':

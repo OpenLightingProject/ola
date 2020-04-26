@@ -60,12 +60,12 @@ python/ola/Version.py: python/ola/Makefile.mk configure.ac config/ola_version.m4
 
 python/ola/ClientWrapperTest.sh: python/ola/Makefile.mk
 	mkdir -p $(top_builddir)/python/ola
-	echo "export PYTHONPATH=${top_builddir}/python:${top_srcdir}/python; $(PYTHON) ${srcdir}/python/ola/ClientWrapperTest.py; exit \$$?" > $(top_builddir)/python/ola/ClientWrapperTest.sh
+	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/python/ola/ClientWrapperTest.py; exit \$$?" > $(top_builddir)/python/ola/ClientWrapperTest.sh
 	chmod +x $(top_builddir)/python/ola/ClientWrapperTest.sh
 
 python/ola/OlaClientTest.sh: python/ola/Makefile.mk
 	mkdir -p $(top_builddir)/python/ola
-	echo "export PYTHONPATH=${top_builddir}/python:${top_srcdir}/python; $(PYTHON) ${srcdir}/python/ola/OlaClientTest.py; exit \$$?" > $(top_builddir)/python/ola/OlaClientTest.sh
+	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/python/ola/OlaClientTest.py; exit \$$?" > $(top_builddir)/python/ola/OlaClientTest.sh
 	chmod +x $(top_builddir)/python/ola/OlaClientTest.sh
 
 python/ola/PidStoreTest.sh: python/ola/Makefile.mk

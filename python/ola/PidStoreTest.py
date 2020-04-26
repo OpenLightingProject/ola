@@ -80,6 +80,7 @@ class PidStoreTest(unittest.TestCase):
     self.assertIsNotNone(store.GetName("DEVICE_INFO"))
     self.assertIsNotNone(store.GetName("PROXIED_DEVICES",
                                        OPEN_LIGHTING_ESTA_CODE))
+    self.assertEqual(store.NameToValue("DEVICE_INFO"), 96)
 
     # in pids2
     self.assertIsNotNone(store.GetPid(80))
@@ -101,7 +102,9 @@ class PidStoreTest(unittest.TestCase):
     self.assertIsNotNone(pid.GetResponse(PidStore.RDM_GET))
     self.assertIsNone(pid.GetRequest(PidStore.RDM_SET))
     self.assertIsNone(pid.GetResponse(PidStore.RDM_SET))
-
+    self.assertEqual(store.NameToValue("FOO_BAR", OPEN_LIGHTING_ESTA_CODE),
+                     32768)
+    self.assertIsNone(store.NameToValue("FOO_BAR", OPEN_LIGHTING_ESTA_CODE+1))
     self.assertEqual(pid.GetResponse(PidStore.RDM_GET).GetDescription(),
                      "<baz>:\n  baz: <[0, 4294967295]> ")
 
