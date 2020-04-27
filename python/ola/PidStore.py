@@ -164,7 +164,8 @@ class Pid(object):
   def _GroupCmp(self, a, b):
     def setToDescription(x):
       def descOrNone(y):
-        return y.GetDescription() if y is not None else "None"
+        d = y.GetDescription() if y is not None else "None"
+        return '::'.join(d) if isinstance(d, tuple) else d
       return ':'.join([descOrNone(x[f])
                        for f in [RDM_GET, RDM_SET, RDM_DISCOVERY]])
     ax = setToDescription(a)
@@ -241,7 +242,8 @@ class Pid(object):
       command_class: RDM_GET or RDM_SET or RDM_DISCOVERY
 
     Returns:
-      A help string.
+      A tuple of two strings, the first is a list of the names
+      and the second is the descriptions, one per line.
     """
     group = self._requests.get(command_class)
     return group.GetDescription()
@@ -407,7 +409,7 @@ class IntAtom(FixedSizeAtom):
       increment = ', increment %s' % (10 ** self._multiplier)
 
     return ('%s%s: <%s>%s' % (indent, self.name, self._GetAllowedRanges(),
-                               increment))
+                              increment))
 
   def DisplayValue(self, value):
     """Converts a raw value, e.g. UInt16 (as opposed to an array of bytes) into

@@ -74,6 +74,7 @@ class PidStoreTest(unittest.TestCase):
                 "  wait_time: <[0.0, 6553.5]>, increment 0.1")
     self.assertEqual(pid.GetRequest(PidStore.RDM_SET).GetDescription(),
                      expected)
+    self.assertEqual(1, pid._GroupCmp(pid._requests, pid._responses))
 
   def testDirectoryAndSingleton(self):
     store = PidStore.GetStore(os.path.join(path, "pids"))
