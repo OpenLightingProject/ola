@@ -7,7 +7,7 @@ in the top level directory to create a set of .debs
 
 If you're building from the git repo do the following:
 
-$ autoreconf
+$ autoreconf -i
 $ ./configure
 $ make dist
 $ cp ola-0.X.Y.tar.gz /tmp

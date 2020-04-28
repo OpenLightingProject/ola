@@ -34,7 +34,7 @@ class MACAddress(object):
 
     Args:
       mac_address: The byte array representation of the MAC Address, e.g.
-      bytearray([0x01, 0x23, 0x45, 0x67, 0x89 0xab]).
+      bytearray([0x01, 0x23, 0x45, 0x67, 0x89, 0xab]).
     """
     self._mac_address = mac_address
 
@@ -51,19 +51,42 @@ class MACAddress(object):
   def __repr__(self):
     return self.__str__()
 
-  def __cmp__(self, other):
-    if other is None:
-      return 1
-    return cmp(self.mac_address, other.mac_address)
+  def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
+    return self.mac_address == other.mac_address
 
   def __lt__(self, other):
-    return self.mac_address < other.mac_address
-
-  def __eq__(self, other):
     if other is None:
       return False
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self.mac_address < other.mac_address
 
-    return self.mac_address == other.mac_address
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
+  def __le__(self, other):
+    if other is None:
+      return False
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
+
+  def __gt__(self, other):
+    if other is None:
+      return True
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
+
+  def __ge__(self, other):
+    if other is None:
+      return True
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
+
+  def __ne__(self, other):
+    return not self == other
 
   @staticmethod
   def FromString(mac_address_str):
