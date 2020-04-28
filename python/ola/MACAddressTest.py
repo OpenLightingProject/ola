@@ -19,6 +19,7 @@
 import sys
 import unittest
 from ola.MACAddress import MACAddress
+from ola.TestUtils import allNotEqual, allHashNotEqual
 
 """Test cases for the MACAddress class."""
 
@@ -66,13 +67,47 @@ class MACAddressTest(unittest.TestCase):
     m2 = MACAddress(bytearray([0x48, 0x45, 0x00, 0x00, 0x02, 0x2e]))
     m3 = MACAddress(bytearray([0x48, 0x44, 0x00, 0x00, 0x02, 0x2e]))
     m4 = MACAddress(bytearray([0x48, 0x46, 0x00, 0x00, 0x02, 0x2e]))
-    macs = sorted([m1, m2, m3, m4])
-    self.assertEqual([m3, m2, m1, m4], macs)
+    macs = sorted([m1, m2, None, m3, m4])
+    self.assertEqual([None, m3, m2, m1, m4], macs)
+    allNotEqual(self, macs)
+    allHashNotEqual(self, macs)
 
   def testEquals(self):
     m1 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
     m2 = MACAddress(bytearray([0x48, 0x45, 0xff, 0xff, 0xff, 0xfe]))
     self.assertEqual(m1, m2)
+
+  def testCmp(self):
+    m2 = MACAddress(bytearray([0x48, 0x45, 0x00, 0x00, 0x02, 0x2e]))
+    m3 = MACAddress(bytearray([0x48, 0x44, 0x00, 0x00, 0x02, 0x2e]))
+    m3a = MACAddress(bytearray([0x48, 0x44, 0x00, 0x00, 0x02, 0x2e]))
+
+    self.assertEqual(m3, m3a)
+    self.assertTrue(m3 <= m3a)
+    self.assertTrue(m3 >= m3a)
+
+    self.assertTrue(m3 < m2)
+    self.assertTrue(m2 > m3)
+    self.assertTrue(m3 <= m2)
+    self.assertTrue(m2 >= m3)
+    self.assertTrue(m3 != m2)
+
+    self.assertFalse(m3 > m2)
+    self.assertFalse(m2 < m3)
+    self.assertFalse(m3 >= m2)
+    self.assertFalse(m2 <= m3)
+    self.assertFalse(m3 == m2)
+
+    self.assertEqual(m2.__lt__("hello"), NotImplemented)
+    self.assertNotEqual(m2, "hello")
+
+    # None case
+    self.assertFalse(m3 < None)
+    self.assertTrue(m3 > None)
+    self.assertFalse(m3 <= None)
+    self.assertTrue(m3 >= None)
+    self.assertTrue(m3 is not None)
+    self.assertFalse(m3 is None)
 
 
 if __name__ == '__main__':

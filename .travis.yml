@@ -399,6 +399,8 @@ before_install:
 install:
 # Match the version of protobuf being installed via apt
   - pip install --user protobuf==3.1.0
+  # disable until can be added to all build variants
+  #- pip install --user timeout-decorator
 # We need to use pip rather than apt on Xenial
   - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" = "bionic" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
 # Later versions of numpy don't install on arm via pip  
