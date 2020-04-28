@@ -981,11 +981,21 @@ fi
 # the non-generated files $srcdir/python/ols/PidStore.py). To get the tests
 # to pass we symlink the files we need for the tests from the builddir to the
 # srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
-AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
+AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
+                 python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
+                 python/ola/OlaClient.py:python/ola/OlaClient.py
+                 python/ola/PidStore.py:python/ola/PidStore.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/TestUtils.py:python/ola/TestUtils.py
                  python/ola/UID.py:python/ola/UID.py
-                 python/ola/__init__.py:python/ola/__init__.py])
+                 python/ola/rpc/__init__.py:python/ola/rpc/__init__.py
+                 python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
+                 python/ola/rpc/StreamRpcChannel.py:python/ola/rpc/StreamRpcChannel.py
+                 tools/rdm/ExpectedResults.py:tools/rdm/ExpectedResults.py
+                 tools/rdm/TestCategory.py:tools/rdm/TestCategory.py
+                 tools/rdm/TestState.py:tools/rdm/TestState.py
+                 tools/rdm/TimingStats.py:tools/rdm/TimingStats.py])
 
 # Non-makefile generated files.
 AC_CONFIG_FILES([include/ola/base/Version.h
