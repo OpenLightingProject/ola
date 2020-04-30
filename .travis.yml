@@ -219,6 +219,7 @@ matrix:
         apt:
           packages:
            - *base_build
+           - python-tk
     - os: linux
       dist: xenial
       env: TASK='pychecker-wip'
@@ -227,6 +228,7 @@ matrix:
         apt:
           packages:
            - *base_build
+           - python-tk
   allow_failures:
     - os: osx
       osx_image: xcode9.3
