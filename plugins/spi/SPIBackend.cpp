@@ -282,7 +282,9 @@ bool HardwareBackend::SetupGPIO() {
                << strerror(errno);
       failed = true;
     }
-    close(fd);
+    if (close(fd)) {
+      OLA_WARN << "HardwareBackend SetupGPIO close: " << strerror(errno);
+    }
   }
 
   if (failed) {
@@ -295,7 +297,9 @@ bool HardwareBackend::SetupGPIO() {
 void HardwareBackend::CloseGPIOFDs() {
   GPIOFds::iterator iter = m_gpio_fds.begin();
   for (; iter != m_gpio_fds.end(); ++iter) {
-    close(*iter);
+    if (close(*iter)) {
+      OLA_WARN << "CloseGPIOFDs: " << strerror(errno);
+    }
   }
   m_gpio_fds.clear();
 }

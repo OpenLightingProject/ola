@@ -138,7 +138,7 @@ bool FindMatchingFiles(const string &directory,
 
   if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
     OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
-    closedir(dp);
+    closedir(dp); // ignore possible error, we've reported an error already. 
     return false;
   }
 
@@ -153,7 +153,7 @@ bool FindMatchingFiles(const string &directory,
     }
     if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
       OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
-      closedir(dp);
+      closedir(dp);// ignore possible error, we've reported an error already. 
       return false;
     }
   }

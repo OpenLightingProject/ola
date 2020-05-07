@@ -19,6 +19,7 @@
  */
 
 #include "ola/network/SocketCloser.h"
+#include <ola/Logging.h>
 
 #include <errno.h>
 #include <string.h>
@@ -35,7 +36,9 @@ SocketCloser::~SocketCloser() {
 #ifdef _WIN32
     closesocket(m_fd);
 #else
-    close(m_fd);
+    if (close(m_fd)) {
+       OLA_WARN << "socketcloser close: " << strerror(errno);
+    }
 #endif  // _WIN32
   }
 }

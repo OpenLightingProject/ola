@@ -63,7 +63,9 @@ bool KaratePlugin::StartHook() {
     // first check if it's there
     int fd;
     if (ola::io::Open(*iter, O_WRONLY, &fd)) {
-      close(fd);
+      if (close(fd)) {
+	OLA_WARN << "close device: " << strerror(errno);
+      }
       KarateDevice *device = new KarateDevice(
           this,
           KARATE_DEVICE_NAME,
