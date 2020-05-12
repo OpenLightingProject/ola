@@ -7,4 +7,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Flake8 with annotations
-        uses: peternewman/actions-flake8@patch-1
+        # if you update the flake8 options, please also update README.developer and .travis-ci.sh to match
+        uses: peternewman/actions-flake8@more-options
+        with:
+          ignore: E111,E114,E121,E127,E129,W504
+          max-line-length: 80
+          exclude: *_pb2.py,.git,__pycache
