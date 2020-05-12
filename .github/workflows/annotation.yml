@@ -11,5 +11,5 @@ jobs:
         uses: peternewman/actions-flake8@more-options
         with:
           ignore: E111,E114,E121,E127,E129,W504
-          max-line-length: 80
+          max_line_length: 80
           exclude: "*_pb2.py,.git,__pycache"
