@@ -144,8 +144,8 @@ def TransformCppToJsLicence(licence):
   lines = licence.split('\n')
   output = []
   output.append('/**')
-  for l in lines[1:]:
-    output.append(TransformJsLine(l[2:]))
+  for s in lines[1:]:
+    output.append(TransformJsLine(s[2:]))
   return '\n'.join(output)
 
 
@@ -162,8 +162,8 @@ def TransformCppToPythonLicence(licence):
   """Change a C++ licence to Python style"""
   lines = licence.split('\n')
   output = []
-  for l in lines[1:]:
-    output.append(TransformPythonLine(l[3:]))
+  for s in lines[1:]:
+    output.append(TransformPythonLine(s[3:]))
   return '\n'.join(output)
 
 
