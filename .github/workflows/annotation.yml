@@ -1,0 +1,10 @@
+# GitHub Action to annotate some of our test tool results
+name: annotation
+on: [push, pull_request]
+jobs:
+  flake8-annotation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Flake8 with annotations
+        uses: TrueBrain/actions-flake8@master
