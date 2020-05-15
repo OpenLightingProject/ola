@@ -104,8 +104,8 @@ string FilenameIdentifier(const string& filename) {
   return result;
 }
 
-// No longer needed since protobuf 3.7
-#if GOOGLE_PROTOBUF_VERSION < 3007000
+// No longer needed since protobuf 3.2
+#if GOOGLE_PROTOBUF_VERSION < 3002000
 // Return the name of the AddDescriptors() function for a given file.
 string GlobalAddDescriptorsName(const string& filename) {
   return "protobuf_AddDesc_" + FilenameIdentifier(filename);
