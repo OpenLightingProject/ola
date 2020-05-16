@@ -29,17 +29,20 @@ using ola::file::FilenameFromPath;
 using ola::file::FilenameFromPathOrDefault;
 using ola::file::FilenameFromPathOrPath;
 using ola::file::JoinPaths;
+using ola::file::FindMatchingFiles;
 using std::string;
 
 class UtilTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UtilTest);
   CPPUNIT_TEST(testJoinPaths);
   CPPUNIT_TEST(testFilenameFromPath);
+  CPPUNIT_TEST(testFindMatchingFiles);
   CPPUNIT_TEST_SUITE_END();
 
  public:
   void testFilenameFromPath();
   void testJoinPaths();
+  void testFindMatchingFiles();
 };
 
 
@@ -90,3 +93,23 @@ void UtilTest::testFilenameFromPath() {
   OLA_ASSERT_EQ(string("baz"), FilenameFromPathOrPath("/foo/bar/baz"));
 }
 
+/*
+ * Test the FindMatchingFiles function
+ */
+void UtilTest::testFindMatchingFiles() {
+  bool okay = false;
+
+  std::vector<std::string> prefixes;
+  prefixes.push_back("rdm");
+
+  std::vector<std::string> files;
+
+  okay = FindMatchingFiles(std::string("man"), std::string("rdm_"), &files);
+
+  OLA_ASSERT_TRUE_MSG(okay, "FindMatchingFiles returned false");
+
+  // At the time this test was written, there were 3 files in folder "man"
+  // starting with "rdm_". If this changed, please adapt the number below
+  // Or find something better to match against
+  OLA_ASSERT_EQ_MSG(3, (int)files.size(), "Not exactly 3 files man/rdm_* returned");
+}
