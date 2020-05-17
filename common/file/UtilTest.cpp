@@ -111,5 +111,6 @@ void UtilTest::testFindMatchingFiles() {
   // At the time this test was written, there were 3 files in folder "man"
   // starting with "rdm_". If this changed, please adapt the number below
   // Or find something better to match against
-  OLA_ASSERT_EQ_MSG(3, (int)files.size(), "Not exactly 3 files man/rdm_* returned");
+  OLA_ASSERT_EQ_MSG(3, (int)files.size(),
+                    "Not exactly 3 files man/rdm_* returned");
 }
