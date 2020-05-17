@@ -129,15 +129,16 @@ bool FindMatchingFiles(const string &directory,
   FindClose(h_find);
 #else
   DIR *dp;
-  struct dirent dir_ent;
   struct dirent *dir_ent_p;
   if ((dp = opendir(directory.data())) == NULL) {
     OLA_WARN << "Could not open " << directory << ": " << strerror(errno);
     return false;
   }
 
-  if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
-    OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
+  errno = 0;
+  dir_ent_p = readdir(dp);
+  if ((dir_ent_p == NULL) && (errno != 0)) {
+    OLA_WARN << "readdir(" << directory << "): " << strerror(errno);
     closedir(dp);
     return false;
   }
@@ -151,8 +152,10 @@ bool FindMatchingFiles(const string &directory,
         files->push_back(str.str());
       }
     }
-    if (readdir_r(dp, &dir_ent, &dir_ent_p)) {
-      OLA_WARN << "readdir_r(" << directory << "): " << strerror(errno);
+    errno = 0;
+    dir_ent_p = readdir(dp);
+    if ((dir_ent_p == NULL) && (errno != 0)) {
+      OLA_WARN << "readdir(" << directory << "): " << strerror(errno);
       closedir(dp);
       return false;
     }
