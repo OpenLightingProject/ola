@@ -104,7 +104,8 @@ void UtilTest::testFindMatchingFiles() {
 
   std::vector<std::string> files;
 
-  okay = FindMatchingFiles(std::string("man"), std::string("rdm_"), &files);
+  okay = FindMatchingFiles(std::string(TEST_SRC_DIR) + std::string("/man"),
+                           std::string("rdm_"), &files);
 
   OLA_ASSERT_TRUE_MSG(okay, "FindMatchingFiles returned false");
 
