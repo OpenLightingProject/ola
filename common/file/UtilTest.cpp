@@ -20,6 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
+#include <vector>
 
 #include "ola/file/Util.h"
 #include "ola/testing/TestUtils.h"
