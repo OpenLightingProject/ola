@@ -34,7 +34,7 @@ x/y/2019 ola-0.10.8
    the ArduinoWidget code
  * Fix compatibility with ncurses 6
  * Fix compatibility with Protobuf 3.7 and newer (tested with up to 3.11.4)
- * Rename CircularDepdendancyException(sic) to CircularDepdendencyException in
+ * Rename CircularDepdendancyException(sic) to CircularDependencyException in
    the Python RDM Test code, also the relevant comments
 
  Internal:
