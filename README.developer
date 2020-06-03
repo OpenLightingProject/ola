@@ -101,7 +101,7 @@ Structure packing syntax differs between platforms and compilers. If you declare
 a struct or class that needs to be packed, use the PACK() macro from
 ola/base/Macro.h . See below for an example of PACK() usage.
 
-Not that this macro doesn't work for enums. See plugins/espnet/EspNetPackets.h
+Note that this macro doesn't work for enums. See plugins/espnet/EspNetPackets.h
 for an example of how to pack an enum.
 
 Non x86 platforms
@@ -122,7 +122,7 @@ uint16_t *ptr = &foo.value2;
 // Bug! Will not be true on all platforms.
 if (*ptr == 2)
 
-http://www.aleph1.co.uk/chapter-10-arm-structured-alignment-faq has a good
+http://netwinder.osuosl.org/users/b/brianbr/public_html/alignment.html has a good
 explanation.
 
 
@@ -241,7 +241,7 @@ flake8 can be installed following the instructions here:
 
 Run it with:
   --max-line-length 80 --exclude *_pb2.py,.git,__pycache \
-  --ignore E111,E121,E127,E129 data/rdm include/ola python scripts \
+  --ignore E111,E114,E121,E127,E129,W504 data/rdm include/ola python scripts \
   tools/ola_mon tools/rdm
 
 Build System

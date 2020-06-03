@@ -64,23 +64,64 @@ AC_MSG_RESULT($ac_cv_gnu_plus_plus_11)
 
 AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = xyes])
 
+# This checks whether random needs gnu++11 or not, it doesn't set HAVE_RANDOM
+# (as it's using AC_CHECK_HEADER not HEADERS), we do that later as normal
+# We don't pass the compiler flag to the preprocessor (CPPFLAGS) because that
+# variable is used by the C preprocessor too, and some of the pthread checks
+# test for C code, which complains it doesn't understand gnu++. We may
+# therefore generate some warnings in configure, but it should all work!
+ac_cv_header_random_98="no"
+ac_cv_header_random_11="no"
+
+AC_MSG_NOTICE([checking for random gnu++98 compatibility])
+old_cxxflags=$CXXFLAGS
+CXXFLAGS="${CXXFLAGS} -std=gnu++98 -Wall -Werror"
+# Manually purge the cache
+AS_UNSET([ac_cv_header_random])
+AC_CHECK_HEADER(
+   [random],
+   [ac_cv_header_random_98="yes"],
+   [ac_cv_header_random_98="no"])
+# Manually purge the cache
+AS_UNSET([ac_cv_header_random])
+CXXFLAGS=$old_cxxflags
+
+AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
+      [AC_MSG_NOTICE([checking for random gnu++11 compatibility])
+       old_cxxflags=$CXXFLAGS
+       CXXFLAGS="${CXXFLAGS} -std=gnu++11 -Wall -Werror"
+       # Manually purge the cache
+       AS_UNSET([ac_cv_header_random])
+       AC_CHECK_HEADER(
+          [random],
+          [ac_cv_header_random_11=yes],
+          [ac_cv_header_random_11=no])
+       # Manually purge the cache
+       AS_UNSET([ac_cv_header_random])
+       CXXFLAGS=$old_cxxflags])
+
 # force us into gnu++98 mode if necessary
 # If gnu++11 and gnu++98 then
-#   If no unit tests, force to gnu++98
-#   If unittests and cppunit < 1.14.0, force to gnu++98
-#   Else turn off deprecation messages for std::auto_ptr and run gnu++11
+#   If random works with gnu++98
+#     If no unit tests, force to gnu++98
+#     If unittests and cppunit < 1.14.0, force to gnu++98
+#     Else turn off deprecation messages for std::auto_ptr and run gnu++11
+#   Else run gnu++11
 require_gnu_plus_plus_11="no"
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
       [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
-             [AS_IF([test "x$enable_unittests" = xno],
-                    [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                    [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
-                                       [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                                       [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
-                                                          [require_gnu_plus_plus_11="yes"],
-                                                          [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
-                                       ])
-                    ])
+             [AS_IF([test "x$ac_cv_header_random_98" = xyes],
+                    [AS_IF([test "x$enable_unittests" = xno],
+                           [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                           [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+                                              [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                              [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
+                                                                 [require_gnu_plus_plus_11="yes"],
+                                                                 [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                              ])
+                           ])
+                    ],
+                    [require_gnu_plus_plus_11="yes"])
              ])
       ])
 AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
@@ -382,7 +423,7 @@ AS_IF([test "x$have_dmx4linux" = xyes],
 # header execinfo.h isn't enough
 AC_CHECK_LIB([execinfo], [backtrace], [use_lexecinfo="yes"])
 case "${host_os}" in
-  *freebsd*)
+  *freebsd* | *dragonfly*)
   LIBS="$LIBS -lexecinfo"
   ;;
 esac
@@ -392,8 +433,18 @@ have_libftd2xx="no"
 AM_CONDITIONAL([HAVE_LIBFTD2XX], [test "x$have_libftd2xx" = xyes])
 
 # ncurses
+# Location is ncurses/curses.h on DragonFly
+AC_CHECK_HEADERS([curses.h ncurses/curses.h])
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL([HAVE_NCURSES], [test "x$have_ncurses" = xyes])
+# Defines libncurses_LIBS that we can use to link against ncurses
+# Needed since >=ncurses-6 where -ltinfo is needed in addition to -lncurses
+PKG_CHECK_MODULES(libncurses,
+                  [ncurses >= 5],
+                  [have_ncurses_pkgconfig="yes"],
+                  [have_ncurses_pkgconfig="no"])
+AM_CONDITIONAL([HAVE_NCURSES_PKGCONFIG],
+               [test "x$have_ncurses_pkgconfig" = xyes])
 
 # pthread
 ACX_PTHREAD([
@@ -774,8 +825,9 @@ esac
 
 AS_IF([test "x$with_uucp_lock" != x], [UUCPLOCK=$with_uucp_lock])
 AS_IF([test -d $UUCPLOCK],
-      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")],
-      AC_MSG_ERROR(No suitable lock directory))
+      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")
+       AC_MSG_RESULT($UUCPLOCK)],
+      AC_MSG_ERROR(no suitable lock directory))
 
 # Python wrappers & RDM Responder tests.
 #####################################################
@@ -806,6 +858,9 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
 AS_IF([test "x$build_java_libs" = xyes],
       [PROTOBUF_SUPPORT([2.4.0])],
       [PROTOBUF_SUPPORT([2.3.0])])
+# Version 3.7 and above of protoc require some additional includes
+AC_CHECK_HEADERS([google/protobuf/io/strtod.h google/protobuf/stubs/logging.h \
+                  google/protobuf/stubs/stl_util.h])
 
 
 # Doxygen
@@ -880,7 +935,7 @@ fi
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
-# html & data directories
+# HTML & data directories
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
@@ -918,11 +973,21 @@ fi
 # the non-generated files $srcdir/python/ols/PidStore.py). To get the tests
 # to pass we symlink the files we need for the tests from the builddir to the
 # srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
-AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
+AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
+                 python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
+                 python/ola/OlaClient.py:python/ola/OlaClient.py
+                 python/ola/PidStore.py:python/ola/PidStore.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/TestUtils.py:python/ola/TestUtils.py
                  python/ola/UID.py:python/ola/UID.py
-                 python/ola/__init__.py:python/ola/__init__.py])
+                 python/ola/rpc/__init__.py:python/ola/rpc/__init__.py
+                 python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
+                 python/ola/rpc/StreamRpcChannel.py:python/ola/rpc/StreamRpcChannel.py
+                 tools/rdm/ExpectedResults.py:tools/rdm/ExpectedResults.py
+                 tools/rdm/TestCategory.py:tools/rdm/TestCategory.py
+                 tools/rdm/TestState.py:tools/rdm/TestState.py
+                 tools/rdm/TimingStats.py:tools/rdm/TimingStats.py])
 
 # Non-makefile generated files.
 AC_CONFIG_FILES([include/ola/base/Version.h
@@ -961,5 +1026,5 @@ Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
     all          - build everything
     check        - run the tests
-    doxygen-doc  - generate the html documentation
+    doxygen-doc  - generate the HTML documentation
 -------------------------------------------------------"

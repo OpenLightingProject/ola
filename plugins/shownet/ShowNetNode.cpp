@@ -344,7 +344,7 @@ unsigned int ShowNetNode::BuildCompressedPacket(shownet_packet *packet,
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool ShowNetNode::InitNetwork() {
   m_socket = new UDPSocket();
