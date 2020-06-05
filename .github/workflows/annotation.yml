@@ -8,4 +8,4 @@ jobs:
       - uses: actions/checkout@master
       - name: Flake8 with annotations
         # Using the flake8 options in the .flake8 file
-        uses: TrueBrain/actions-flake8@master
+        uses: peternewman/actions-flake8@python2
