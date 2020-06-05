@@ -50,13 +50,71 @@ matrix:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='1'
     - os: osx
       osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
-      - CPPUNIT='1.14'
+      - CPPUNIT='1.13'
       - LIBFTDI='0'
+      - PROTOBUF='latest'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='latest'
+      - LIBFTDI='0'
+      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
@@ -64,45 +122,47 @@ matrix:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
+      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
-      - CPPUNIT='1.14'
+      - CPPUNIT='latest'
       - LIBFTDI='0'
+      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
-      - PROTOBUF='latest'
       - LIBFTDI='1'
+      - PROTOBUF='latest'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='latest'
+      - LIBFTDI='1'
+      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
-      - PROTOBUF='latest'
       - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
       - PROTOBUF='latest'
-      - LIBFTDI='1'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='latest'
+      - CPPUNIT='latest'
       - LIBFTDI='1'
+      - PROTOBUF='latest'
     - os: linux
       dist: xenial
       compiler: clang
@@ -235,13 +295,13 @@ matrix:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
@@ -249,43 +309,41 @@ matrix:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='1'
-      - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='1'
-      - PROTOBUF='latest'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='1'
     - os: linux
       dist: xenial
       compiler: gcc
@@ -369,8 +427,8 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew install protobuf@3.6; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew link -f protobuf@3.6; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.6/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "latest" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "latest" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-8" CC="ccache gcc-8"; fi
