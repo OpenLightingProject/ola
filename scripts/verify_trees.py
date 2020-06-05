@@ -38,6 +38,7 @@ IGNORE_PATTERNS = [
   '*_pb2.py',
   '*~',
   '.codespellignore*',
+  '.flake8',
   '.git',
   '.git/*',
   '.gitignore',

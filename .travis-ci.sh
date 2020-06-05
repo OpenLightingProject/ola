@@ -244,8 +244,7 @@ elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "make_builtfiles"
   make builtfiles;
   travis_fold end "make_builtfiles"
-  # if you update the flake8 command line, please also update README.developer to match
-  flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129,W504 data/rdm include/ola python scripts tools/ola_mon tools/rdm
+  flake8
 else
   # Otherwise compile and check as normal
   if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
