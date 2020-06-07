@@ -1,0 +1,11 @@
+# GitHub Action to annotate some of our test tool results
+name: annotation
+on: [push, pull_request]
+jobs:
+  flake8-annotation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Flake8 with annotations
+        # Using the flake8 options in the .flake8 file
+        uses: peternewman/actions-flake8@python2
