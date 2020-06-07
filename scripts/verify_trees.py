@@ -41,6 +41,7 @@ IGNORE_PATTERNS = [
   '.flake8',
   '.git',
   '.git/*',
+  '.github/*',
   '.gitignore',
   '.travis-ci.sh',
   '.travis.yml',
