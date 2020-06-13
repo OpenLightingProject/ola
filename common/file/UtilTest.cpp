@@ -103,8 +103,7 @@ void UtilTest::testFilenameFromPath() {
 /*
  * Inline helper function to check a string ending for a match
  */
-inline static bool endsWith(const std::string& str, const std::string& suffix)
-{
+inline static bool endsWith(const std::string& str, const std::string& suffix) {
   return (str.size() >= suffix.size()) &&
           (0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix));
 }
@@ -120,7 +119,8 @@ void UtilTest::testFindMatchingFiles() {
 
   std::vector<std::string> files;
 
-  okay = FindMatchingFiles(std::string(TEST_SRC_DIR) + PATH_SEPARATOR + std::string("/man"),
+  okay = FindMatchingFiles(std::string(TEST_SRC_DIR) + PATH_SEPARATOR +
+                           std::string("/man"),
                            std::string("rdm_"), &files);
 
   OLA_ASSERT_TRUE_MSG(okay, "FindMatchingFiles returned false");
@@ -135,7 +135,7 @@ void UtilTest::testFindMatchingFiles() {
   bool rdm_responder_test_found = 0;
   bool rdm_test_server_found = 0;
 
-  for(const auto& value: files) {
+  for (const auto& value : files) {
     if (endsWith(value, "rdm_model_collector.py.1"))
       rdm_model_collector_found = 1;
     if (endsWith(value, "rdm_responder_test.py.1"))
@@ -145,9 +145,9 @@ void UtilTest::testFindMatchingFiles() {
   }
 
   OLA_ASSERT_TRUE_MSG(rdm_model_collector_found,
-                      "FindMatchingFiles result lacks rdm_model_collector.py.1");
+                      "Result lacks rdm_model_collector.py.1");
   OLA_ASSERT_TRUE_MSG(rdm_responder_test_found,
-                      "FindMatchingFiles result lacks rdm_responder_test.py.1");
+                      "Result lacks rdm_responder_test.py.1");
   OLA_ASSERT_TRUE_MSG(rdm_test_server_found,
-                      "FindMatchingFiles result lacks rdm_test_server.py.1");
+                      "Result lacks rdm_test_server.py.1");
 }
