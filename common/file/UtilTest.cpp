@@ -25,6 +25,12 @@
 #include "ola/file/Util.h"
 #include "ola/testing/TestUtils.h"
 
+#ifdef _WIN32
+const char PATH_SEPARATOR = '\\';
+#else
+const char PATH_SEPARATOR = '/';
+#endif  // _WIN32
+
 
 using ola::file::FilenameFromPath;
 using ola::file::FilenameFromPathOrDefault;
@@ -114,7 +120,7 @@ void UtilTest::testFindMatchingFiles() {
 
   std::vector<std::string> files;
 
-  okay = FindMatchingFiles(std::string(TEST_SRC_DIR) + std::string("/man"),
+  okay = FindMatchingFiles(std::string(TEST_SRC_DIR) + PATH_SEPARATOR + std::string("/man"),
                            std::string("rdm_"), &files);
 
   OLA_ASSERT_TRUE_MSG(okay, "FindMatchingFiles returned false");
