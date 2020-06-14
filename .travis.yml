@@ -176,7 +176,9 @@ matrix:
            - moreutils
     - os: linux
       dist: xenial
-      env: TASK='codespell'
+      env:
+       - TASK='codespell'
+       - PATH=/opt/python/3.8.1/bin:$PATH
       addons:
         apt:
           packages:
@@ -312,7 +314,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
-  - if [ "$TASK" = "codespell" ]; then PATH=/opt/python/3.7.1/bin:$PATH; pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
+  - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
