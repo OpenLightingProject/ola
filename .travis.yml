@@ -93,7 +93,6 @@ jobs:
     - os: linux
       dist: bionic
       env: TASK='codespell'
-      python: '3.8.1'
       addons:
         apt:
           packages:
@@ -408,7 +407,7 @@ install:
   - pip install --user numpy==1.16.6
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
-  - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
+  - if [ "$TASK" = "codespell" ]; then python3 -m pip install --user git+https://github.com/codespell-project/codespell.git; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 # Installing via the addon isn't currently working so do it the old fashioned way
   - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
