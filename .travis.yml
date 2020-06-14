@@ -93,6 +93,7 @@ jobs:
     - os: linux
       dist: bionic
       env: TASK='codespell'
+      python: '3.8.1'
       addons:
         apt:
           packages:
