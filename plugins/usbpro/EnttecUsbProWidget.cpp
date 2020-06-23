@@ -93,7 +93,7 @@ OperationLabels OperationLabels::Port2Operations() {
 }
 
 EnttecPortImpl::EnttecPortImpl(const OperationLabels &ops, const UID &uid,
-                               SendCallback *send_cb)
+                               SendCallback *send_cb, bool no_rdm_dub_timeout)
     : m_send_cb(send_cb),
       m_ops(ops),
       m_active(true),
@@ -108,7 +108,8 @@ EnttecPortImpl::EnttecPortImpl(const OperationLabels &ops, const UID &uid,
       m_unmute_callback(NULL),
       m_branch_callback(NULL),
       m_discovery_response(NULL),
-      m_discovery_response_size(0) {
+      m_discovery_response_size(0),
+      m_no_rdm_dub_timeout(no_rdm_dub_timeout) {
 }
 
 void EnttecPortImpl::Stop() {
@@ -466,6 +467,11 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
     memcpy(response_data, data, length);
     m_discovery_response = response_data;
     m_discovery_response_size = length;
+    // TODO(Peter): Dummy a call to port->HandleRDMTimeout(0); if firmware is newer
+    if (m_no_rdm_dub_timeout) {
+      OLA_DEBUG << "Dummying HandleRDMTimeout(0) as device doesn't require it";
+      HandleRDMTimeout(0);
+    }
   } else if (m_mute_callback) {
     // we take any response as a mute acknowledgment here, which isn't great,
     // but it seems to work.
@@ -747,7 +753,7 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
                      uint8_t label, const uint8_t *data, unsigned int length);
     void HandlePortAssignment(const uint8_t *data, unsigned int length);
     void AddPort(const OperationLabels &ops, unsigned int queue_size,
-                 bool enable_rdm);
+                 bool enable_rdm, bool no_rdm_dub_timeout = false);
     void EnableSecondPort();
 
     bool Watchdog();
@@ -773,11 +779,11 @@ EnttecUsbProWidgetImpl::EnttecUsbProWidgetImpl(
                               EnttecUsbProWidget::ENTTEC_ESTA_ID,
             options.serial) {
   AddPort(OperationLabels::Port1Operations(), options.queue_size,
-          options.enable_rdm);
+          options.enable_rdm, options.no_rdm_dub_timeout);
 
   if (options.dual_ports) {
     AddPort(OperationLabels::Port2Operations(), options.queue_size,
-            options.enable_rdm);
+            options.enable_rdm, options.no_rdm_dub_timeout);
     EnableSecondPort();
   }
   m_watchdog_timer_id = m_scheduler->RegisterRepeatingTimeout(
@@ -917,8 +923,9 @@ void EnttecUsbProWidgetImpl::HandlePortAssignment(const uint8_t *data,
  */
 void EnttecUsbProWidgetImpl::AddPort(const OperationLabels &ops,
                                      unsigned int queue_size,
-                                     bool enable_rdm) {
-  EnttecPortImpl *impl = new EnttecPortImpl(ops, m_uid, m_send_cb.get());
+                                     bool enable_rdm,
+                                     bool no_rdm_dub_timeout) {
+  EnttecPortImpl *impl = new EnttecPortImpl(ops, m_uid, m_send_cb.get(), no_rdm_dub_timeout);
   m_port_impls.push_back(impl);
   EnttecPort *port = new EnttecPort(impl, queue_size, enable_rdm);
   m_ports.push_back(port);
