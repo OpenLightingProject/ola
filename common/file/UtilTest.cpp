@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "ola/StringUtils.h"
 #include "ola/file/Util.h"
 #include "ola/testing/TestUtils.h"
 
@@ -94,14 +95,6 @@ void UtilTest::testFilenameFromPath() {
 }
 
 /*
- * Inline helper function to check a string ending for a match
- */
-inline static bool endsWith(const std::string& str, const std::string& suffix) {
-  return (str.size() >= suffix.size()) &&
-          (0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix));
-}
-
-/*
  * Test the FindMatchingFiles function
  */
 void UtilTest::testFindMatchingFiles() {
@@ -133,11 +126,11 @@ void UtilTest::testFindMatchingFiles() {
   bool rdm_test_server_found = 0;
 
   for (const auto& value : files) {
-    if (endsWith(value, "rdm_model_collector.py.1"))
+    if (ola::StringEndsWith(value, "rdm_model_collector.py.1"))
       rdm_model_collector_found = 1;
-    if (endsWith(value, "rdm_responder_test.py.1"))
+    if (ola::StringEndsWith(value, "rdm_responder_test.py.1"))
       rdm_responder_test_found = 1;
-    if (endsWith(value, "rdm_test_server.py.1"))
+    if (ola::StringEndsWith(value, "rdm_test_server.py.1"))
       rdm_test_server_found = 1;
   }
 
