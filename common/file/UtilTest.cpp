@@ -112,6 +112,10 @@ void UtilTest::testFindMatchingFiles() {
 
   std::vector<std::string> files;
 
+  OLA_ASSERT_TRUE_MSG(ola::file::PATH_SEPARATOR == '/' ||
+                      ola::file::PATH_SEPARATOR == '\\',
+                      "ola::file::PATH_SEPARATOR is neither / nor \\");
+
   okay = FindMatchingFiles(std::string(TEST_SRC_DIR) +
                            ola::file::PATH_SEPARATOR + std::string("man"),
                            std::string("rdm_"), &files);
