@@ -126,12 +126,18 @@ void UtilTest::testFindMatchingFiles() {
   bool rdm_test_server_found = 0;
 
   for (const auto& value : files) {
-    if (ola::StringEndsWith(value, "rdm_model_collector.py.1"))
+    if (ola::StringEndsWith(value, "rdm_model_collector.py.1")) {
+      OLA_ASSERT_FALSE(rdm_model_collector_found); // just to make sure it's 0
       rdm_model_collector_found = 1;
-    if (ola::StringEndsWith(value, "rdm_responder_test.py.1"))
+    }
+    if (ola::StringEndsWith(value, "rdm_responder_test.py.1")) {
+      OLA_ASSERT_FALSE(rdm_responder_test_found); // just to make sure it's 0
       rdm_responder_test_found = 1;
-    if (ola::StringEndsWith(value, "rdm_test_server.py.1"))
+    }
+    if (ola::StringEndsWith(value, "rdm_test_server.py.1")) {
+      OLA_ASSERT_FALSE(rdm_test_server_found); // just to make sure it's 0
       rdm_test_server_found = 1;
+    }
   }
 
   OLA_ASSERT_TRUE_MSG(rdm_model_collector_found,
