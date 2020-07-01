@@ -207,16 +207,22 @@ void DisplayHelpAndExit(const options &opts) {
   exit(ola::EXIT_USAGE);
 }
 
-
 /*
  * Dump the list of known pids
  */
 void DisplayPIDsAndExit(uint16_t manufacturer_id,
-                        const PidStoreHelper &pid_helper) {
+                        const PidStoreHelper &pid_helper,
+                        bool set_mode) {
+  vector<const ola::rdm::PidDescriptor *> pids;
+  pid_helper.SupportedPids(manufacturer_id, &pids);
+  // Remove PIDs that don't support the proper command class (GET with ola_rdm_get, SET with ola_rdm_set)
   vector<string> pid_names;
-  pid_helper.SupportedPids(manufacturer_id, &pid_names);
-  sort(pid_names.begin(), pid_names.end());
-
+  vector<const ola::rdm::PidDescriptor *>::const_iterator it_pids = pids.begin();
+  for (; it_pids != pids.end(); ++it_pids) {
+    if ((set_mode && (*it_pids)->SetRequest() != NULL) || (!set_mode && (*it_pids)->GetRequest() != NULL)) {
+      pid_names.push_back((*it_pids)->Name());
+    }
+  }
   vector<string>::const_iterator iter = pid_names.begin();
   for (; iter != pid_names.end(); ++iter) {
     cout << *iter << endl;
@@ -604,7 +610,7 @@ int main(int argc, char *argv[]) {
 
   if (!opts.uid) {
     if (opts.list_pids) {
-      DisplayPIDsAndExit(0, controller.PidHelper());
+      DisplayPIDsAndExit(0, controller.PidHelper(), opts.set_mode);
     } else {
       OLA_FATAL << "Invalid or missing UID, try xxxx:yyyyyyyy";
       DisplayHelpAndExit(opts);
@@ -615,7 +621,7 @@ int main(int argc, char *argv[]) {
   delete opts.uid;
 
   if (opts.list_pids)
-    DisplayPIDsAndExit(dest_uid.ManufacturerId(), controller.PidHelper());
+    DisplayPIDsAndExit(dest_uid.ManufacturerId(), controller.PidHelper(), opts.set_mode);
 
   if (opts.args.empty())
     DisplayHelpAndExit(opts);
