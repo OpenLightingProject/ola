@@ -46,6 +46,7 @@
 
 using ola::network::NetworkToHost;
 using ola::rdm::PidStoreHelper;
+using ola::rdm::PidDescriptor;
 using ola::rdm::UID;
 using std::auto_ptr;
 using std::cerr;
@@ -213,13 +214,15 @@ void DisplayHelpAndExit(const options &opts) {
 void DisplayPIDsAndExit(uint16_t manufacturer_id,
                         const PidStoreHelper &pid_helper,
                         bool set_mode) {
-  vector<const ola::rdm::PidDescriptor *> pids;
+  vector<const PidDescriptor *> pids;
   pid_helper.SupportedPids(manufacturer_id, &pids);
-  // Remove PIDs that don't support the proper command class (GET with ola_rdm_get, SET with ola_rdm_set)
+  // Remove PIDs that don't support the proper command class (GET with
+  // ola_rdm_get, SET with ola_rdm_set)
   vector<string> pid_names;
-  vector<const ola::rdm::PidDescriptor *>::const_iterator it_pids = pids.begin();
+  vector<const PidDescriptor *>::const_iterator it_pids = pids.begin();
   for (; it_pids != pids.end(); ++it_pids) {
-    if ((set_mode && (*it_pids)->SetRequest() != NULL) || (!set_mode && (*it_pids)->GetRequest() != NULL)) {
+    if ((set_mode && (*it_pids)->SetRequest() != NULL)
+        || (!set_mode && (*it_pids)->GetRequest() != NULL)) {
       pid_names.push_back((*it_pids)->Name());
     }
   }
@@ -621,7 +624,8 @@ int main(int argc, char *argv[]) {
   delete opts.uid;
 
   if (opts.list_pids)
-    DisplayPIDsAndExit(dest_uid.ManufacturerId(), controller.PidHelper(), opts.set_mode);
+    DisplayPIDsAndExit(dest_uid.ManufacturerId(), controller.PidHelper(),
+                       opts.set_mode);
 
   if (opts.args.empty())
     DisplayHelpAndExit(opts);
