@@ -123,6 +123,7 @@ void ShowPlayer::SeekTo(const unsigned int time) {
     playhead_time += entry.next_wait;
   } while (playhead_time < time);
   // Adjust the timeout to handle landing in the middle of the entry's timeout
+  m_playback_pos = time;
   entry.next_wait = playhead_time - time;
   SendFrame(entry);
 }
@@ -134,14 +135,12 @@ void ShowPlayer::SeekTo(const unsigned int time) {
 void ShowPlayer::SendNextFrame() {
   ShowEntry entry;
   ShowLoader::State state = m_loader.NextEntry(&entry);
-  switch (state) {
-    case ShowLoader::END_OF_FILE:
-      HandleEndOfFile();
-      return;
-    case ShowLoader::INVALID_LINE:
-      m_client.GetSelectServer()->Terminate();
-      return;
-    default: {}
+  if (state == ShowLoader::END_OF_FILE || m_playback_pos >= m_stop) {
+    HandleEndOfFile();
+    return;
+  } else if (state == ShowLoader::INVALID_LINE) {
+    m_client.GetSelectServer()->Terminate();
+    return;
   }
   SendFrame(entry);
 }
