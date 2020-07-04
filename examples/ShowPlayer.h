@@ -74,8 +74,6 @@ class ShowPlayer {
   unsigned int m_timeout_offset = 0;
 
   void SendNextFrame();
-  ShowLoader::State RegisterNextTimeout();
-  bool ReadNextFrame(unsigned int *universe, ola::DmxBuffer *data);
   void HandleEndOfFile();
 };
 #endif  // EXAMPLES_SHOWPLAYER_H_

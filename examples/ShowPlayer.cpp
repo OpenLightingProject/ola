@@ -65,6 +65,7 @@ int ShowPlayer::Init() {
   return ola::EXIT_OK;
 }
 
+
 int ShowPlayer::Playback(unsigned int iterations,
                          unsigned int duration,
                          unsigned int delay,
@@ -88,10 +89,10 @@ int ShowPlayer::Playback(unsigned int iterations,
   return ola::EXIT_OK;
 }
 
+
 void ShowPlayer::SendNextFrame() {
-  DmxBuffer buffer;
-  unsigned int universe;
-  ShowLoader::State state = m_loader.NextFrame(&universe, &buffer);
+  ShowEntry entry;
+  ShowLoader::State state = m_loader.NextEntry(&entry);
   switch (state) {
     case ShowLoader::END_OF_FILE:
       HandleEndOfFile();
@@ -103,40 +104,14 @@ void ShowPlayer::SendNextFrame() {
       {}
   }
 
-  state = RegisterNextTimeout();
-
-  OLA_INFO << "Universe: " << universe << ": " << buffer.ToString();
-  ola::client::SendDMXArgs args;
-  m_client.GetClient()->SendDMX(universe, buffer, args);
-
-  switch (state) {
-    case ShowLoader::END_OF_FILE:
-      HandleEndOfFile();
-      return;
-    case ShowLoader::INVALID_LINE:
-      m_client.GetSelectServer()->Terminate();
-      return;
-    default:
-      {}
-  }
-}
-
-
-/**
- * Get the next time offset
- */
-ShowLoader::State ShowPlayer::RegisterNextTimeout() {
-  unsigned int timeout;
-  ShowLoader::State state = m_loader.NextTimeout(&timeout);
-  if (state != ShowLoader::OK) {
-    return state;
-  }
-
-  OLA_INFO << "Registering timeout for " << timeout << "ms";
+  OLA_INFO << "Registering timeout for " << entry.next_wait << "ms";
   m_client.GetSelectServer()->RegisterSingleTimeout(
-      timeout,
-      ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
-  return state;
+          entry.next_wait,
+          ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
+
+  OLA_INFO << "Universe: " << entry.universe << ": " << entry.buffer.ToString();
+  ola::client::SendDMXArgs args;
+  m_client.GetClient()->SendDMX(entry.universe, entry.buffer, args);
 }
 
 

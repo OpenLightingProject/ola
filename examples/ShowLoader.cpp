@@ -141,6 +141,24 @@ ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
 }
 
 
+/**
+ * Read the next show file entry
+ * @param entry a ShowEntry to fill with data
+ */
+ShowLoader::State ShowLoader::NextEntry(ShowEntry *entry) {
+  State state = NextFrame(&entry->universe, &entry->buffer);
+  if (state != State::OK) {
+      return state;
+  }
+  state = NextTimeout(&entry->next_wait);
+  if (state != State::OK) {
+      return state;
+  }
+
+  return State::OK;
+}
+
+
 void ShowLoader::ReadLine(string *line) {
   getline(m_show_file, *line);
   ola::StripSuffix(line, "\r");

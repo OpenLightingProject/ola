@@ -123,20 +123,14 @@ int VerifyShow(const string &filename) {
   map<unsigned int, unsigned int> frames_by_universe;
   uint64_t total_time = 0;
 
-  unsigned int universe;
-  ola::DmxBuffer buffer;
-  unsigned int timeout;
+  ShowEntry entry;
   ShowLoader::State state;
   while (true) {
-    state = loader.NextFrame(&universe, &buffer);
+    state = loader.NextEntry(&entry);
     if (state != ShowLoader::OK)
       break;
-    frames_by_universe[universe]++;
-
-    state = loader.NextTimeout(&timeout);
-    if (state != ShowLoader::OK)
-      break;
-    total_time += timeout;
+    frames_by_universe[entry.universe]++;
+    total_time += entry.next_wait;
   }
 
   map<unsigned int, unsigned int>::const_iterator iter;
