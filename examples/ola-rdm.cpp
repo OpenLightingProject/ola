@@ -208,6 +208,7 @@ void DisplayHelpAndExit(const options &opts) {
   exit(ola::EXIT_USAGE);
 }
 
+
 /*
  * Dump the list of known pids
  */
@@ -218,17 +219,12 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
   pid_helper.SupportedPids(manufacturer_id, &pids);
   // Remove PIDs that don't support the proper command class (GET with
   // ola_rdm_get, SET with ola_rdm_set)
-  vector<string> pid_names;
   vector<const PidDescriptor *>::const_iterator it_pids = pids.begin();
   for (; it_pids != pids.end(); ++it_pids) {
     if ((set_mode && (*it_pids)->SetRequest() != NULL)
         || (!set_mode && (*it_pids)->GetRequest() != NULL)) {
-      pid_names.push_back((*it_pids)->Name());
+        cout << (*it_pids)->Name() << endl;
     }
-  }
-  vector<string>::const_iterator iter = pid_names.begin();
-  for (; iter != pid_names.end(); ++iter) {
-    cout << *iter << endl;
   }
   exit(ola::EXIT_OK);
 }
