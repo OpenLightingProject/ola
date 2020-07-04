@@ -1,4 +1,4 @@
-.TH ola_recorder 1 "December 2013"
+.TH ola_recorder 1 "July 2020"
 .SH NAME
 ola_recorder \- Record to, or playback from, a file a number of universes for a
 show
@@ -32,6 +32,11 @@ Print
 version information
 .IP "--duration <uint32_t>"
 The length of time (seconds) to run for.
+.IP "--start <uint_32_t>"
+Time (milliseconds) in show file to start playback from.
+.IP "--stop <uint32_t>"
+Time (milliseconds) in show file to stop playback at.  If the show file is
+shorter, this option is ignored.
 .IP "--syslog"
 Send to syslog rather than stderr.
 .IP "--no-use-epoll"
@@ -49,7 +54,13 @@ ola_recorder --universes 1,2 --record foo
 ola_recorder --verify bar
 .SS Playback the previously recorded file baz for 30 seconds:
 ola_recorder --playback baz --duration 30
+.SS Playback the previously recorded file baz for 30 seconds, looping between \
+1 second and 10 seconds:
+ola_recorder --playback baz --duration 30 --start 1000 --stop 10000
 .SS Playback the previously recorded file baz for 3 iterations:
 ola_recorder --playback baz --iterations 3
 .SS Playback the previously recorded file baz, repeating forever:
 ola_recorder --playback baz --iterations 0
+.SS Playback the previously recorded file baz forever, looping between \
+1 second and 10 seconds:
+ola_recorder --playback baz --iterations 0 --start 1000 --stop 10000

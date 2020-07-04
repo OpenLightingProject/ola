@@ -58,10 +58,10 @@ DEFINE_uint32(duration, 0, "The length of time (seconds) to run for.");
 DEFINE_s_uint32(iterations, i, 1,
                 "The number of times to repeat the show, 0 means unlimited.");
 DEFINE_uint32(start, 0,
-              "Time (in milliseconds) in show file to seek to before"
-              " playback.");
+              "Time (milliseconds) in show file to start playback from.");
 DEFINE_uint32(stop, 0,
-              "Time (in milliseconds) in show file to stop at.");
+              "Time (milliseconds) in show file to stop playback at.  If"
+              " the show file is shorter, this option is ignored.");
 
 
 void TerminateRecorder(ShowRecorder *recorder) {
