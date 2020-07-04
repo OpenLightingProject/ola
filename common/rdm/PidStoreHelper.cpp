@@ -19,6 +19,7 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
@@ -32,6 +33,7 @@ namespace rdm {
 
 using std::string;
 using std::vector;
+using std::sort;
 
 /**
  * @brief Set up a new PidStoreHelper object
@@ -286,6 +288,14 @@ void PidStoreHelper::SupportedPids(
   if (store) {
     store->AllPids(descriptors);
   }
+
+  // Sort PIDs by name
+  sort(descriptors->begin(), descriptors->end(), &CompPidsForSort);
+}
+
+bool PidStoreHelper::CompPidsForSort(const PidDescriptor *a,
+                                     const PidDescriptor *b) {
+  return a->Name() < b->Name();
 }
 }  // namespace rdm
 }  // namespace ola

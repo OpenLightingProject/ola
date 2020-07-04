@@ -100,6 +100,8 @@ class PidStoreHelper {
     MessageDeserializer m_deserializer;
     RDMMessagePrinter m_message_printer;
     ola::messaging::SchemaPrinter m_schema_printer;
+
+    static bool CompPidsForSort(const PidDescriptor* a, const PidDescriptor* b);
 };
 }  // namespace rdm
 }  // namespace ola
