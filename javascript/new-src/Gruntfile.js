@@ -110,7 +110,11 @@ module.exports = function(grunt) {
     },
     stylelint: {
       all: [
-        'css/*.css'
+        'css/*.css',
+        '../../olad/www/*.html',
+        '../../tools/rdm/static/*.html',
+        '../../tools/rdm/static/common.css',
+        '../../tools/rdm/static/ui.multiselect.css'
       ]
     },
     watch: {
