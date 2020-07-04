@@ -79,7 +79,7 @@ int ShowPlayer::Playback(unsigned int iterations,
   m_start = start;
   m_stop = stop;
 
-  SeekTo(m_start);
+  Start();
 
   ola::io::SelectServer *ss = m_client.GetSelectServer();
 
@@ -90,6 +90,14 @@ int ShowPlayer::Playback(unsigned int iterations,
   }
   ss->Run();
   return ola::EXIT_OK;
+}
+
+
+/**
+ * Start playback
+ */
+void ShowPlayer::Start() {
+  SeekTo(m_start);
 }
 
 
@@ -172,13 +180,11 @@ void ShowPlayer::HandleEndOfFile() {
   m_iteration_remaining--;
   if (m_infinite_loop || m_iteration_remaining > 0) {
     m_loader.Reset();
+    SeekTo(m_start);
     m_client.GetSelectServer()->RegisterSingleTimeout(
         m_loop_delay,
-        ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
+        ola::NewSingleCallback(this, &ShowPlayer::Start));
     m_playback_pos = 0;
-    if (m_start > 0) {
-        SeekTo(m_start);
-    }
     return;
   } else {
     // stop the show

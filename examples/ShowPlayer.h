@@ -73,6 +73,7 @@ class ShowPlayer {
   unsigned int m_stop;
   unsigned int m_playback_pos = 0;
 
+  void Start();
   void SeekTo(const unsigned int time);
   void SendNextFrame();
   void SendFrame(const ShowEntry &entry);
