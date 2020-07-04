@@ -154,8 +154,8 @@ void ShowPlayer::SendFrame(const ShowEntry &entry) {
   // Set when next to send data
   OLA_INFO << "Registering timeout for " << entry.next_wait << "ms";
   m_client.GetSelectServer()->RegisterSingleTimeout(
-          entry.next_wait,
-          ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
+      entry.next_wait,
+      ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
   m_playback_pos += entry.next_wait;
 
   // Send DMX data
