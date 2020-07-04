@@ -293,6 +293,7 @@ void PidStoreHelper::SupportedPids(
   sort(descriptors->begin(), descriptors->end(), &CompPidsForSort);
 }
 
+
 bool PidStoreHelper::CompPidsForSort(const PidDescriptor *a,
                                      const PidDescriptor *b) {
   return a->Name() < b->Name();
