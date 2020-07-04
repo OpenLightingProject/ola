@@ -47,7 +47,9 @@ ShowPlayer::ShowPlayer(const string &filename)
     : m_loader(filename),
       m_infinite_loop(false),
       m_iteration_remaining(0),
-      m_loop_delay(0) {
+      m_loop_delay(0),
+      m_start(0),
+      m_stop(0) {
 }
 
 ShowPlayer::~ShowPlayer() {}
@@ -76,7 +78,8 @@ int ShowPlayer::Playback(unsigned int iterations,
   m_loop_delay = delay;
   m_start = start;
   m_stop = stop;
-  SendNextFrame();
+
+  SeekTo(m_start);
 
   ola::io::SelectServer *ss = m_client.GetSelectServer();
 
@@ -90,6 +93,44 @@ int ShowPlayer::Playback(unsigned int iterations,
 }
 
 
+/**
+ * Seek to @p time in the show file
+ * @param time the time (in milliseconds) to seek to
+ */
+void ShowPlayer::SeekTo(const unsigned int time) {
+  // Seeking to a time before the playhead's position requires moving from the
+  // beginning of the file.  This could be optimized more if this happens
+  // frequently.
+  if (time < m_playback_pos) {
+    m_loader.Reset();
+    m_playback_pos = 0;
+  }
+
+  // Keep reading through the show file until desired time is reached.
+  ShowEntry entry;
+  unsigned int playhead_time = m_playback_pos;
+  do {
+    ShowLoader::State state = m_loader.NextEntry(&entry);
+    switch (state) {
+      case ShowLoader::END_OF_FILE:
+        HandleEndOfFile();
+        return;
+      case ShowLoader::INVALID_LINE:
+        m_client.GetSelectServer()->Terminate();
+        return;
+      default: {}
+    }
+    playhead_time += entry.next_wait;
+  } while (playhead_time < time);
+  // Adjust the timeout to handle landing in the middle of the entry's timeout
+  entry.next_wait = playhead_time - time;
+  SendFrame(entry);
+}
+
+
+/**
+ * Send the next frame in the show file
+ */
 void ShowPlayer::SendNextFrame() {
   ShowEntry entry;
   ShowLoader::State state = m_loader.NextEntry(&entry);
@@ -100,15 +141,25 @@ void ShowPlayer::SendNextFrame() {
     case ShowLoader::INVALID_LINE:
       m_client.GetSelectServer()->Terminate();
       return;
-    default:
-      {}
+    default: {}
   }
+  SendFrame(entry);
+}
 
+
+/**
+ * Send @p frame and wait for next
+ * @param entry the show file entry to send
+ */
+void ShowPlayer::SendFrame(const ShowEntry &entry) {
+  // Set when next to send data
   OLA_INFO << "Registering timeout for " << entry.next_wait << "ms";
   m_client.GetSelectServer()->RegisterSingleTimeout(
           entry.next_wait,
           ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
+  m_playback_pos += entry.next_wait;
 
+  // Send DMX data
   OLA_INFO << "Universe: " << entry.universe << ": " << entry.buffer.ToString();
   ola::client::SendDMXArgs args;
   m_client.GetClient()->SendDMX(entry.universe, entry.buffer, args);
@@ -125,6 +176,10 @@ void ShowPlayer::HandleEndOfFile() {
     m_client.GetSelectServer()->RegisterSingleTimeout(
         m_loop_delay,
         ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
+    m_playback_pos = 0;
+    if (m_start > 0) {
+        SeekTo(m_start);
+    }
     return;
   } else {
     // stop the show

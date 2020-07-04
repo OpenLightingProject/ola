@@ -59,7 +59,7 @@ DEFINE_s_uint32(iterations, i, 1,
                 "The number of times to repeat the show, 0 means unlimited.");
 DEFINE_uint32(start, 0,
               "Time (in milliseconds) in show file to seek to before"
-              "playback.");
+              " playback.");
 DEFINE_uint32(stop, 0,
               "Time (in milliseconds) in show file to stop at.");
 
@@ -159,15 +159,15 @@ int VerifyShow(const string &filename) {
  * Playback a recorded show
  */
 int PlaybackShow() {
-  if (FLAGS_stop < FLAGS_start) {
-      OLA_FATAL << "Stop time must be later than start time.";
-      return ola::EXIT_USAGE;
+  if (FLAGS_stop > 0 && FLAGS_stop < FLAGS_start) {
+    OLA_FATAL << "Stop time must be later than start time.";
+    return ola::EXIT_USAGE;
   }
   ShowPlayer player(FLAGS_playback.str());
   int status = player.Init();
   if (!status)
-      status = player.Playback(FLAGS_iterations, FLAGS_duration,
-                               FLAGS_delay, FLAGS_start, FLAGS_stop);
+    status = player.Playback(FLAGS_iterations, FLAGS_duration,
+                             FLAGS_delay, FLAGS_start, FLAGS_stop);
   return status;
 }
 

@@ -54,7 +54,8 @@ class ShowPlayer {
    * @param delay the hold time at the end of a show before playback starts
    * from the beginning again.
    * @param start the time (in milliseconds) to start playback from
-   * @param stop the time (in milliseconds) to stop playback from
+   * @param stop the time (in milliseconds) to stop playback from; 0 will run
+   * until EOF.
    */
   int Playback(unsigned int iterations,
                unsigned int duration,
@@ -71,9 +72,10 @@ class ShowPlayer {
   unsigned int m_start;
   unsigned int m_stop;
   unsigned int m_playback_pos = 0;
-  unsigned int m_timeout_offset = 0;
 
+  void SeekTo(const unsigned int time);
   void SendNextFrame();
+  void SendFrame(const ShowEntry &entry);
   void HandleEndOfFile();
 };
 #endif  // EXAMPLES_SHOWPLAYER_H_
