@@ -57,6 +57,12 @@ DEFINE_uint32(duration, 0, "The length of time (seconds) to run for.");
 // 0 means infinite looping
 DEFINE_s_uint32(iterations, i, 1,
                 "The number of times to repeat the show, 0 means unlimited.");
+DEFINE_uint32(start, 0,
+              "Time (in milliseconds) in show file to seek to before"
+              "playback.");
+DEFINE_uint32(stop, 0,
+              "Time (in milliseconds) in show file to stop at.");
+
 
 void TerminateRecorder(ShowRecorder *recorder) {
   recorder->Stop();
@@ -154,6 +160,24 @@ int VerifyShow(const string &filename) {
   }
 }
 
+
+/**
+ * Playback a recorded show
+ */
+int PlaybackShow() {
+  if (FLAGS_stop < FLAGS_start) {
+      OLA_FATAL << "Stop time must be later than start time.";
+      return ola::EXIT_USAGE;
+  }
+  ShowPlayer player(FLAGS_playback.str());
+  int status = player.Init();
+  if (!status)
+      status = player.Playback(FLAGS_iterations, FLAGS_duration,
+                               FLAGS_delay, FLAGS_start, FLAGS_stop);
+  return status;
+}
+
+
 /*
  * Main
  */
@@ -165,11 +189,7 @@ int main(int argc, char *argv[]) {
                "recorded show.");
 
   if (!FLAGS_playback.str().empty()) {
-    ShowPlayer player(FLAGS_playback.str());
-    int status = player.Init();
-    if (!status)
-      status = player.Playback(FLAGS_iterations, FLAGS_duration, FLAGS_delay);
-    return status;
+    return PlaybackShow();
   } else if (!FLAGS_record.str().empty()) {
     return RecordShow();
   } else if (!FLAGS_verify.str().empty()) {

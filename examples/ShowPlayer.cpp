@@ -26,7 +26,6 @@
 #include <errno.h>
 #include <string.h>
 #include <ola/Callback.h>
-#include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/base/SysExits.h>
@@ -68,10 +67,14 @@ int ShowPlayer::Init() {
 
 int ShowPlayer::Playback(unsigned int iterations,
                          unsigned int duration,
-                         unsigned int delay) {
+                         unsigned int delay,
+                         unsigned int start,
+                         unsigned int stop) {
   m_infinite_loop = iterations == 0 || duration != 0;
   m_iteration_remaining = iterations;
   m_loop_delay = delay;
+  m_start = start;
+  m_stop = stop;
   SendNextFrame();
 
   ola::io::SelectServer *ss = m_client.GetSelectServer();

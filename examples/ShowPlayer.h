@@ -53,10 +53,14 @@ class ShowPlayer {
    * @param duration the duration in seconds after which playback is stopped.
    * @param delay the hold time at the end of a show before playback starts
    * from the beginning again.
+   * @param start the time (in milliseconds) to start playback from
+   * @param stop the time (in milliseconds) to stop playback from
    */
   int Playback(unsigned int iterations,
                unsigned int duration,
-               unsigned int delay);
+               unsigned int delay,
+               unsigned int start,
+               unsigned int stop);
 
  private:
   ola::client::OlaClientWrapper m_client;
@@ -64,6 +68,10 @@ class ShowPlayer {
   bool m_infinite_loop;
   unsigned int m_iteration_remaining;
   unsigned int m_loop_delay;
+  unsigned int m_start;
+  unsigned int m_stop;
+  unsigned int m_playback_pos = 0;
+  unsigned int m_timeout_offset = 0;
 
   void SendNextFrame();
   ShowLoader::State RegisterNextTimeout();
