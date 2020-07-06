@@ -289,16 +289,5 @@ void PidStoreHelper::SupportedPids(
     store->AllPids(descriptors);
   }
 }
-
-
-/**
- * @brief Compare PIDs by name
- *
- * Suitable for use as a sort comparison function
- */
-bool PidStoreHelper::ComparePidsByName(const PidDescriptor *a,
-                                       const PidDescriptor *b) {
-  return a->Name() < b->Name();
-}
 }  // namespace rdm
 }  // namespace ola
