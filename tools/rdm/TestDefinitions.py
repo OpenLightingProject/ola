@@ -1176,7 +1176,7 @@ class GetParameterDescription(ParamDescriptionTestFixture):
     self.params = self.Property('manufacturer_parameters')[:]
     if len(self.params) == 0:
       self.SetNotRun('No manufacturer params found')
-      # This case is tested in GetParamDescriptionForNonManufacturerPid
+      # This case is tested in GetParameterDescriptionForNonManufacturerPid
       return
     self._GetParam()
 

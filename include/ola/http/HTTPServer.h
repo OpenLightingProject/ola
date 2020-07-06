@@ -106,6 +106,7 @@ class HTTPResponse {
   void SetHeader(const std::string &key, const std::string &value);
   void SetStatus(unsigned int status) { m_status_code = status; }
   void SetNoCache();
+  void SetAccessControlAllowOriginAll();
   int SendJson(const ola::web::JsonValue &json);
   int Send();
   struct MHD_Connection *Connection() const { return m_connection; }

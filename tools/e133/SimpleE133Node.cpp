@@ -139,7 +139,7 @@ void SimpleE133Node::DumpTCPStats() {
 
 
 /**
- * Send an unsolicted message on the TCP connection
+ * Send an unsolicited message on the TCP connection
  */
 void SimpleE133Node::SendUnsolicited() {
   OLA_INFO << "Sending unsolicited TCP stats message";

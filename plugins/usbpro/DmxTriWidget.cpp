@@ -1000,6 +1000,21 @@ bool DmxTriWidgetImpl::ReturnCodeToNackReason(
     case EC_UNKNOWN_UID:
       *reason = ola::rdm::NR_UNKNOWN_UID;
       break;
+    case EC_UNKNOWN_SCOPE:
+      *reason = ola::rdm::NR_UNKNOWN_SCOPE;
+      break;
+    case EC_INVALID_STATIC_CONFIG_TYPE:
+      *reason = ola::rdm::NR_INVALID_STATIC_CONFIG_TYPE;
+      break;
+    case EC_INVALID_IPV4_ADDRESS:
+      *reason = ola::rdm::NR_INVALID_IPV4_ADDRESS;
+      break;
+    case EC_INVALID_IPV6_ADDRESS:
+      *reason = ola::rdm::NR_INVALID_IPV6_ADDRESS;
+      break;
+    case EC_INVALID_PORT:
+      *reason = ola::rdm::NR_INVALID_PORT;
+      break;
     default:
       return false;
   }

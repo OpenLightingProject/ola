@@ -15,7 +15,7 @@
  *
  * CID.h
  * The CID class, this just wraps a CIDImpl so we don't need to include all the
- *   UID headers.
+ *   UUID headers.
  * Copyright (C) 2007 Simon Newton
  */
 

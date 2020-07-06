@@ -58,7 +58,7 @@ using std::string;
 using std::vector;
 
 DEFINE_s_string(pid_location, p, "",
-                "The directory to read PID definitiions from");
+                "The directory to read PID definitions from");
 DEFINE_s_string(target_addresses, t, "",
                 "List of IPs to connect to");
 
