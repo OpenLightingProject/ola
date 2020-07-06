@@ -102,14 +102,14 @@ void ShowPlayer::Start() {
 
 
 /**
- * Seek to @p time in the show file
- * @param time the time (in milliseconds) to seek to
+ * Seek to @p seek_time in the show file
+ * @param seek_time the time (in milliseconds) to seek to
  */
-void ShowPlayer::SeekTo(const unsigned int time) {
+void ShowPlayer::SeekTo(const unsigned int seek_time) {
   // Seeking to a time before the playhead's position requires moving from the
   // beginning of the file.  This could be optimized more if this happens
   // frequently.
-  if (time < m_playback_pos) {
+  if (seek_time < m_playback_pos) {
     m_loader.Reset();
     m_playback_pos = 0;
   }
@@ -129,11 +129,11 @@ void ShowPlayer::SeekTo(const unsigned int time) {
       default: {}
     }
     playhead_time += entry.next_wait;
-  } while (playhead_time < time);
+  } while (playhead_time < seek_time);
   // Adjust the timeout to handle landing in the middle of the entry's timeout
-  m_playback_pos = time;
-  entry.next_wait = playhead_time - time;
-  SendFrame(entry);
+  m_playback_pos = seek_time;
+  entry.next_wait = playhead_time - seek_time;
+  SendEntry(entry);
 }
 
 
@@ -155,7 +155,7 @@ void ShowPlayer::SendNextFrame() {
 
 
 /**
- * Send @p frame and wait for next
+ * Send @p entry and wait for next
  * @param entry the show file entry to send
  */
 void ShowPlayer::SendFrame(const ShowEntry &entry) {

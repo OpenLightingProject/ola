@@ -150,12 +150,7 @@ ShowLoader::State ShowLoader::NextEntry(ShowEntry *entry) {
   if (state != State::OK) {
       return state;
   }
-  state = NextTimeout(&entry->next_wait);
-  if (state != State::OK) {
-      return state;
-  }
-
-  return State::OK;
+  return NextTimeout(&entry->next_wait);
 }
 
 
