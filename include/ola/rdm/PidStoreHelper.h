@@ -92,8 +92,9 @@ class PidStoreHelper {
         uint16_t manufacturer_id,
         std::vector<const PidDescriptor*> *descriptors) const;
 
-    static bool ComparePidsByName(const PidDescriptor* a,
-                                  const PidDescriptor* b);
+    static bool ComparePidsByName(
+        const PidDescriptor* a,
+        const PidDescriptor* b);
 
  private:
     const std::string m_pid_location;
