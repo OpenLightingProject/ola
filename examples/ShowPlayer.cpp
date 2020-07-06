@@ -180,11 +180,8 @@ void ShowPlayer::HandleEndOfFile() {
   m_iteration_remaining--;
   if (m_infinite_loop || m_iteration_remaining > 0) {
     m_loader.Reset();
+    // Move to start point and send the frame
     SeekTo(m_start);
-    m_client.GetSelectServer()->RegisterSingleTimeout(
-        m_loop_delay,
-        ola::NewSingleCallback(this, &ShowPlayer::Start));
-    m_playback_pos = 0;
     return;
   } else {
     // stop the show
