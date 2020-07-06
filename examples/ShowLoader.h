@@ -51,6 +51,7 @@ class ShowLoader {
 
   bool Load();
   void Reset();
+  unsigned int GetCurrentLineNumber() const;
 
   State NextEntry(ShowEntry *entry);
 

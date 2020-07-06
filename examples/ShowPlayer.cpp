@@ -143,14 +143,20 @@ void ShowPlayer::SeekTo(const unsigned int seek_time) {
 void ShowPlayer::SendNextFrame() {
   ShowEntry entry;
   ShowLoader::State state = m_loader.NextEntry(&entry);
-  if (state == ShowLoader::END_OF_FILE || m_playback_pos >= m_stop) {
+  if (state == ShowLoader::END_OF_FILE ||
+      (m_stop > 0 && m_playback_pos >= m_stop)) {
+    if (entry.buffer.Size() > 0) {
+      // Send the last frame before looping/exiting
+      SendFrame(entry);
+    }
     HandleEndOfFile();
     return;
   } else if (state == ShowLoader::INVALID_LINE) {
+    OLA_FATAL << "Invalid data at line " << m_loader.GetCurrentLineNumber();
     m_client.GetSelectServer()->Terminate();
     return;
   }
-  SendFrame(entry);
+  SendEntry(entry);
 }
 
 
@@ -158,15 +164,20 @@ void ShowPlayer::SendNextFrame() {
  * Send @p entry and wait for next
  * @param entry the show file entry to send
  */
-void ShowPlayer::SendFrame(const ShowEntry &entry) {
+void ShowPlayer::SendEntry(const ShowEntry &entry) {
+  // Send DMX data
+  SendFrame(entry);
+
   // Set when next to send data
   OLA_INFO << "Registering timeout for " << entry.next_wait << "ms";
-  m_client.GetSelectServer()->RegisterSingleTimeout(
-      entry.next_wait,
-      ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
   m_playback_pos += entry.next_wait;
+  m_client.GetSelectServer()->RegisterSingleTimeout(
+     entry.next_wait,
+     ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
+}
 
-  // Send DMX data
+
+void ShowPlayer::SendFrame(const ShowEntry &entry) const {
   OLA_INFO << "Universe: " << entry.universe << ": " << entry.buffer.ToString();
   ola::client::SendDMXArgs args;
   m_client.GetClient()->SendDMX(entry.universe, entry.buffer, args);

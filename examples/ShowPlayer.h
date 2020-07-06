@@ -76,7 +76,8 @@ class ShowPlayer {
   void Start();
   void SeekTo(const unsigned int seek_time);
   void SendNextFrame();
-  void SendFrame(const ShowEntry &entry);
+  void SendEntry(const ShowEntry &entry);
+  void SendFrame(const ShowEntry &entry) const;
   void HandleEndOfFile();
 };
 #endif  // EXAMPLES_SHOWPLAYER_H_
