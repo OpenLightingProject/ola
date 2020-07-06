@@ -217,7 +217,7 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
                         bool set_mode) {
   vector<const PidDescriptor *> pids;
   pid_helper.SupportedPids(manufacturer_id, &pids);
-  std::sort(pids.begin(), pids.end(), &PidDescriptor::CompareByName);
+  std::sort(pids.begin(), pids.end(), &PidDescriptor::OrderByName);
 
   // Remove PIDs that don't support the proper command class (GET with
   // ola_rdm_get, SET with ola_rdm_set)

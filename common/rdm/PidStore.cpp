@@ -213,8 +213,8 @@ bool PidDescriptor::IsSetValid(uint16_t sub_device) const {
  *
  * Suitable for use as a sort comparison function
  */
-bool PidDescriptor::CompareByName(const PidDescriptor *a,
-                                  const PidDescriptor *b) {
+bool PidDescriptor::OrderByName(const PidDescriptor *a,
+                                const PidDescriptor *b) {
   return a->Name() < b->Name();
 }
 

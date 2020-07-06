@@ -287,7 +287,7 @@ class PidDescriptor {
   bool IsGetValid(uint16_t sub_device) const;
   bool IsSetValid(uint16_t sub_device) const;
 
-  static bool CompareByName(const PidDescriptor* a, const PidDescriptor* b);
+  static bool OrderByName(const PidDescriptor* a, const PidDescriptor* b);
 
  private:
   const std::string m_name;

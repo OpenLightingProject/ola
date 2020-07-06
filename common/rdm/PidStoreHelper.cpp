@@ -19,7 +19,6 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#include <algorithm>
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
@@ -33,7 +32,6 @@ namespace rdm {
 
 using std::string;
 using std::vector;
-using std::sort;
 
 /**
  * @brief Set up a new PidStoreHelper object
