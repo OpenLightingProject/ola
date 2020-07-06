@@ -121,30 +121,51 @@ int VerifyShow(const string &filename) {
     return ola::EXIT_NOINPUT;
 
   map<unsigned int, unsigned int> frames_by_universe;
-  uint64_t total_time = 0;
 
   ShowEntry entry;
   ShowLoader::State state;
+  unsigned int playback_pos = 0;
+  bool playing = false;
   while (true) {
     state = loader.NextEntry(&entry);
     if (state != ShowLoader::OK)
       break;
-    frames_by_universe[entry.universe]++;
-    total_time += entry.next_wait;
+    playback_pos += entry.next_wait;
+    if (FLAGS_stop > 0 && playback_pos >= FLAGS_stop) {
+      // Compensate for overshooting the stop time
+      playback_pos -= (playback_pos - FLAGS_stop);
+      break;
+    }
+    if (!playing && playback_pos >= FLAGS_start) {
+      // Found the start point
+      playing = true;
+      entry.next_wait = playback_pos - FLAGS_start;
+    }
+    if (playing) {
+      frames_by_universe[entry.universe]++;
+    }
   }
 
+  const unsigned int total_time = playback_pos - FLAGS_start;
   map<unsigned int, unsigned int>::const_iterator iter;
   unsigned int total = 0;
   cout << "------------ Summary ----------" << endl;
+  if (FLAGS_start > 0) {
+    cout << "Starting at: " << FLAGS_start / 1000.0 << " second(s)" << endl;
+    if (FLAGS_stop > 0) {
+      cout << "Stopping at: " << FLAGS_stop / 1000.0 << " second(s)" << endl;
+    }
+    std::cout << endl;
+  }
   for (iter = frames_by_universe.begin(); iter != frames_by_universe.end();
        ++iter) {
     cout << "Universe " << iter->first << ": " << iter->second << " frames" <<
       endl;
     total += iter->second;
   }
+  std::cout << endl;
   cout << "Total frames: " << total << endl;
-  cout << "Playback time: " << total_time / 1000 << "." << total_time % 10 <<
-    " seconds" << endl;
+  cout << "Playback time: " << total_time / 1000.0 << " second(s)" << endl;
 
   if ((state == ShowLoader::OK) || (state == ShowLoader::END_OF_FILE)) {
     return ola::EXIT_OK;
@@ -159,10 +180,6 @@ int VerifyShow(const string &filename) {
  * Playback a recorded show
  */
 int PlaybackShow() {
-  if (FLAGS_stop > 0 && FLAGS_stop < FLAGS_start) {
-    OLA_FATAL << "Stop time must be later than start time.";
-    return ola::EXIT_USAGE;
-  }
   ShowPlayer player(FLAGS_playback.str());
   int status = player.Init();
   if (!status)
@@ -181,6 +198,11 @@ int main(int argc, char *argv[]) {
                "<file>] [--verify <file>]",
                "Record a series of universes, or playback a previously "
                "recorded show.");
+
+  if (FLAGS_stop > 0 && FLAGS_stop < FLAGS_start) {
+    OLA_FATAL << "Stop time must be later than start time.";
+    return ola::EXIT_USAGE;
+  }
 
   if (!FLAGS_playback.str().empty()) {
     return PlaybackShow();
