@@ -188,6 +188,10 @@ void ShowPlayer::SendFrame(const ShowEntry &entry) const {
  * Handle the case where we reach the end of file
  */
 void ShowPlayer::HandleEndOfFile() {
+  if (m_stop > 0 && m_playback_pos < m_stop) {
+    OLA_WARN << "Show file ends before the stop time (Actual length "
+             << m_playback_pos << " ms)";
+  }
   m_iteration_remaining--;
   if (m_infinite_loop || m_iteration_remaining > 0) {
     m_loader.Reset();
