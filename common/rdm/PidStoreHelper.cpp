@@ -288,14 +288,16 @@ void PidStoreHelper::SupportedPids(
   if (store) {
     store->AllPids(descriptors);
   }
-
-  // Sort PIDs by name
-  sort(descriptors->begin(), descriptors->end(), &CompPidsForSort);
 }
 
 
-bool PidStoreHelper::CompPidsForSort(const PidDescriptor *a,
-                                     const PidDescriptor *b) {
+/**
+ * @brief Compare PIDs by name
+ *
+ * Suitable for use as a sort comparison function
+ */
+bool PidStoreHelper::ComparePidsByName(const PidDescriptor *a,
+                                       const PidDescriptor *b) {
   return a->Name() < b->Name();
 }
 }  // namespace rdm

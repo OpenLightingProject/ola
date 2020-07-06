@@ -92,6 +92,9 @@ class PidStoreHelper {
         uint16_t manufacturer_id,
         std::vector<const PidDescriptor*> *descriptors) const;
 
+    static bool ComparePidsByName(const PidDescriptor* a,
+                                  const PidDescriptor* b);
+
  private:
     const std::string m_pid_location;
     const RootPidStore *m_root_store;
@@ -100,8 +103,6 @@ class PidStoreHelper {
     MessageDeserializer m_deserializer;
     RDMMessagePrinter m_message_printer;
     ola::messaging::SchemaPrinter m_schema_printer;
-
-    static bool CompPidsForSort(const PidDescriptor* a, const PidDescriptor* b);
 };
 }  // namespace rdm
 }  // namespace ola
