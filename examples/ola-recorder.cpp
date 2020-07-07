@@ -136,7 +136,7 @@ int VerifyShow(const string &filename) {
       playback_pos -= (playback_pos - FLAGS_stop);
       break;
     }
-    if (!playing && playback_pos >= FLAGS_start) {
+    if (!playing && playback_pos > FLAGS_start) {
       // Found the start point
       playing = true;
       entry.next_wait = playback_pos - FLAGS_start;

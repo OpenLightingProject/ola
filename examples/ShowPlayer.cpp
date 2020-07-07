@@ -122,7 +122,8 @@ ShowLoader::State ShowPlayer::SeekTo(const unsigned int seek_time) {
   ShowEntry entry;
   unsigned int playhead_time = m_playback_pos;
   ShowLoader::State state;
-  do {
+  bool found = false;
+  while (true) {
     state = m_loader.NextEntry(&entry);
     switch (state) {
       case ShowLoader::END_OF_FILE:
@@ -136,13 +137,21 @@ ShowLoader::State ShowPlayer::SeekTo(const unsigned int seek_time) {
       }
     }
     playhead_time += entry.next_wait;
-  } while (playhead_time < seek_time);
+    if (!found && playhead_time == seek_time) {
+      // Use the next frame if landing on the trailing edge of a frame's timeout
+      found = true;
+      continue;
+    }
+    if (found || playhead_time > seek_time) {
+      break;
+    }
+  }
   // Adjust the timeout to handle landing in the middle of the entry's timeout
   m_playback_pos = seek_time;
   entry.next_wait = playhead_time - seek_time;
   SendEntry(entry);
 
-  return state;
+  return ShowLoader::OK;
 }
 
 
