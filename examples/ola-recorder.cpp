@@ -145,7 +145,12 @@ int VerifyShow(const string &filename) {
     }
   }
 
-  const ShowPlayer::PlaybackTime total_time = playback_pos - FLAGS_start;
+  ShowPlayer::PlaybackTime total_time;
+  if (playback_pos >= FLAGS_start) {
+    total_time = playback_pos - FLAGS_start;
+  } else {
+    total_time = 0;
+  }
   map<unsigned int, unsigned int>::const_iterator iter;
   unsigned int total = 0;
   cout << "------------ Summary ----------" << endl;
