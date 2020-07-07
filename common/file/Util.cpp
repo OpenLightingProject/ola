@@ -135,7 +135,7 @@ bool FindMatchingFiles(const string &directory,
     return false;
   }
 
-  //  Explicitely set errno to 0 so we can reliably check the value after
+  //  Explicitly set errno to 0 so we can reliably check the value after
   //  the call to readdir. It might have a undefined value otherwise since
   //  a successful call may but doesn't need to set a value.
   errno = 0;
@@ -155,7 +155,7 @@ bool FindMatchingFiles(const string &directory,
         files->push_back(str.str());
       }
     }
-    //  Explicitely set errno to 0 so we can reliably check the value after
+    //  Explicitly set errno to 0 so we can reliably check the value after
     //  the call. It might have an undefined value otherwise.
     errno = 0;
     dir_ent_p = readdir(dp);
