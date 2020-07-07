@@ -79,5 +79,6 @@ class ShowPlayer {
   void SendEntry(const ShowEntry &entry);
   void SendFrame(const ShowEntry &entry) const;
   void HandleEndOfFile();
+  void HandleInvalidLine();
 };
 #endif  // EXAMPLES_SHOWPLAYER_H_

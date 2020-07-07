@@ -79,15 +79,14 @@ int ShowPlayer::Playback(unsigned int iterations,
   m_start = start;
   m_stop = stop;
 
-  Start();
-
   ola::io::SelectServer *ss = m_client.GetSelectServer();
-
   if (duration != 0) {
     ss->RegisterSingleTimeout(
-        duration * 1000,
-        ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
+       duration * 1000,
+       ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
   }
+
+  Start();
   ss->Run();
   return ola::EXIT_OK;
 }
@@ -121,10 +120,12 @@ void ShowPlayer::SeekTo(const unsigned int seek_time) {
     ShowLoader::State state = m_loader.NextEntry(&entry);
     switch (state) {
       case ShowLoader::END_OF_FILE:
-        HandleEndOfFile();
+        OLA_FATAL << "Show file ends before the start time (Actual length "
+                  << m_playback_pos << " ms)";
+        m_client.GetSelectServer()->Terminate();
         return;
       case ShowLoader::INVALID_LINE:
-        m_client.GetSelectServer()->Terminate();
+        HandleInvalidLine();
         return;
       default: {}
     }
@@ -152,8 +153,7 @@ void ShowPlayer::SendNextFrame() {
     HandleEndOfFile();
     return;
   } else if (state == ShowLoader::INVALID_LINE) {
-    OLA_FATAL << "Invalid data at line " << m_loader.GetCurrentLineNumber();
-    m_client.GetSelectServer()->Terminate();
+    HandleInvalidLine();
     return;
   }
   SendEntry(entry);
@@ -202,4 +202,13 @@ void ShowPlayer::HandleEndOfFile() {
     // stop the show
     m_client.GetSelectServer()->Terminate();
   }
+}
+
+
+/**
+ * Handle reading an invalid line from the show file
+ */
+void ShowPlayer::HandleInvalidLine() {
+  OLA_FATAL << "Invalid data at line " << m_loader.GetCurrentLineNumber();
+  m_client.GetSelectServer()->Terminate();
 }
