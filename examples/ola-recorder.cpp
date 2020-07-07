@@ -144,6 +144,14 @@ int VerifyShow(const string &filename) {
       frames_by_universe[entry.universe]++;
     }
   }
+  if (FLAGS_start > playback_pos) {
+    OLA_WARN << "Show file ends before the start time (Actual length "
+             << playback_pos << " ms)";
+  }
+  if (FLAGS_stop > playback_pos) {
+    OLA_WARN << "Show file ends before the stop time (Actual length "
+             << playback_pos << " ms)";
+  }
 
   ShowPlayer::PlaybackTime total_time;
   if (playback_pos >= FLAGS_start) {
