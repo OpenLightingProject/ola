@@ -154,7 +154,7 @@ int VerifyShow(const string &filename) {
     if (FLAGS_stop > 0) {
       cout << "Stopping at: " << FLAGS_stop / 1000.0 << " second(s)" << endl;
     }
-    std::cout << endl;
+    cout << endl;
   }
   for (iter = frames_by_universe.begin(); iter != frames_by_universe.end();
        ++iter) {
@@ -162,7 +162,7 @@ int VerifyShow(const string &filename) {
       endl;
     total += iter->second;
   }
-  std::cout << endl;
+  cout << endl;
   cout << "Total frames: " << total << endl;
   cout << "Playback time: " << total_time / 1000.0 << " second(s)" << endl;
 
@@ -181,9 +181,13 @@ int VerifyShow(const string &filename) {
 int PlaybackShow() {
   ShowPlayer player(FLAGS_playback.str());
   int status = player.Init();
-  if (!status)
-    status = player.Playback(FLAGS_iterations, FLAGS_duration,
-                             FLAGS_delay, FLAGS_start, FLAGS_stop);
+  if (!status) {
+    status = player.Playback(FLAGS_iterations,
+                             FLAGS_duration,
+                             FLAGS_delay,
+                             FLAGS_start,
+                             FLAGS_stop);
+  }
   return status;
 }
 
