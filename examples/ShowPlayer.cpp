@@ -69,10 +69,10 @@ int ShowPlayer::Init() {
 
 
 int ShowPlayer::Playback(unsigned int iterations,
-                         unsigned int duration,
-                         unsigned int delay,
-                         unsigned int start,
-                         unsigned int stop) {
+                         PlaybackTime duration,
+                         PlaybackTime delay,
+                         PlaybackTime start,
+                         PlaybackTime stop) {
   m_infinite_loop = iterations == 0 || duration != 0;
   m_iteration_remaining = iterations;
   m_loop_delay = delay;
@@ -109,7 +109,7 @@ void ShowPlayer::Loop() {
  * Seek to @p seek_time in the show file
  * @param seek_time the time (in milliseconds) to seek to
  */
-ShowLoader::State ShowPlayer::SeekTo(const unsigned int seek_time) {
+ShowLoader::State ShowPlayer::SeekTo(PlaybackTime seek_time) {
   // Seeking to a time before the playhead's position requires moving from the
   // beginning of the file.  This could be optimized more if this happens
   // frequently.
@@ -120,7 +120,7 @@ ShowLoader::State ShowPlayer::SeekTo(const unsigned int seek_time) {
 
   // Keep reading through the show file until desired time is reached.
   ShowEntry entry;
-  unsigned int playhead_time = m_playback_pos;
+  PlaybackTime playhead_time = m_playback_pos;
   ShowLoader::State state;
   bool found = false;
   while (true) {

@@ -124,7 +124,7 @@ int VerifyShow(const string &filename) {
 
   ShowEntry entry;
   ShowLoader::State state;
-  unsigned int playback_pos = 0;
+  ShowPlayer::PlaybackTime playback_pos = 0;
   bool playing = false;
   while (true) {
     state = loader.NextEntry(&entry);
@@ -145,7 +145,7 @@ int VerifyShow(const string &filename) {
     }
   }
 
-  const unsigned int total_time = playback_pos - FLAGS_start;
+  const ShowPlayer::PlaybackTime total_time = playback_pos - FLAGS_start;
   map<unsigned int, unsigned int>::const_iterator iter;
   unsigned int total = 0;
   cout << "------------ Summary ----------" << endl;
