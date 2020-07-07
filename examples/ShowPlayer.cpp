@@ -34,12 +34,14 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "examples/ShowPlayer.h"
 
 using std::vector;
 using std::string;
+using std::unordered_map;
 using ola::DmxBuffer;
 
 
@@ -119,11 +121,11 @@ ShowLoader::State ShowPlayer::SeekTo(PlaybackTime seek_time) {
   }
 
   // Keep reading through the show file until desired time is reached.
-  ShowEntry entry;
+  unordered_map<unsigned int, ShowEntry> entries;
   PlaybackTime playhead_time = m_playback_pos;
   ShowLoader::State state;
   bool found = false;
-  while (true) {
+  while (true) {ShowEntry entry;
     state = m_loader.NextEntry(&entry);
     switch (state) {
       case ShowLoader::END_OF_FILE:
@@ -137,6 +139,7 @@ ShowLoader::State ShowPlayer::SeekTo(PlaybackTime seek_time) {
       }
     }
     playhead_time += entry.next_wait;
+    entries[entry.universe] = entry;
     if (!found && playhead_time == seek_time) {
       // Use the next frame if landing on the trailing edge of a frame's timeout
       found = true;
@@ -146,10 +149,15 @@ ShowLoader::State ShowPlayer::SeekTo(PlaybackTime seek_time) {
       break;
     }
   }
-  // Adjust the timeout to handle landing in the middle of the entry's timeout
   m_playback_pos = seek_time;
-  entry.next_wait = playhead_time - seek_time;
-  SendEntry(entry);
+
+  // Send data in the state it would be in at the given time
+  unordered_map<unsigned int, ShowEntry>::iterator entry_it;
+  for (entry_it = entries.begin(); entry_it != entries.end(); ++entry_it) {
+    SendFrame(entry_it->second);
+  }
+  // Adjust the timeout to handle landing in the middle of the entry's timeout
+  RegisterNextTimeout(playhead_time-seek_time);
 
   return ShowLoader::OK;
 }
@@ -178,7 +186,7 @@ void ShowPlayer::SendNextFrame() {
 
 
 /**
- * Send @p entry and wait for next
+ * Send @p entry, update playhead position, and wait for next
  * @param entry the show file entry to send
  */
 void ShowPlayer::SendEntry(const ShowEntry &entry) {
@@ -186,14 +194,25 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
   SendFrame(entry);
 
   // Set when next to send data
-  OLA_INFO << "Registering timeout for " << entry.next_wait << "ms";
   m_playback_pos += entry.next_wait;
+  RegisterNextTimeout(entry.next_wait);
+}
+
+
+/**
+ * Send the next frame in @p timeout milliseconds
+ */
+void ShowPlayer::RegisterNextTimeout(const unsigned int timeout) {
+  OLA_INFO << "Registering timeout for " << timeout << "ms";
   m_client.GetSelectServer()->RegisterSingleTimeout(
-     entry.next_wait,
+     timeout,
      ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
 }
 
 
+/**
+ * Send data contained in @p entry
+ */
 void ShowPlayer::SendFrame(const ShowEntry &entry) const {
   OLA_INFO << "Universe: " << entry.universe << ": " << entry.buffer.ToString();
   ola::client::SendDMXArgs args;

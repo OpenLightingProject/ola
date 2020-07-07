@@ -79,6 +79,7 @@ class ShowPlayer {
   ShowLoader::State SeekTo(PlaybackTime seek_time);
   void SendNextFrame();
   void SendEntry(const ShowEntry &entry);
+  void RegisterNextTimeout(unsigned int timeout);
   void SendFrame(const ShowEntry &entry) const;
   void HandleEndOfFile();
   void HandleInvalidLine();
