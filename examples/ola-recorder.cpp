@@ -156,15 +156,14 @@ int VerifyShow(const string &filename) {
   cout << "------------ Summary ----------" << endl;
   if (FLAGS_start > 0) {
     cout << "Starting at: " << FLAGS_start / 1000.0 << " second(s)" << endl;
-    if (FLAGS_stop > 0) {
-      cout << "Stopping at: " << FLAGS_stop / 1000.0 << " second(s)" << endl;
-    }
-    cout << endl;
+  }
+  if (FLAGS_stop > 0) {
+    cout << "Stopping at: " << FLAGS_stop / 1000.0 << " second(s)" << endl;
   }
   for (iter = frames_by_universe.begin(); iter != frames_by_universe.end();
        ++iter) {
-    cout << "Universe " << iter->first << ": " << iter->second << " frames" <<
-      endl;
+    cout << "Universe " << iter->first << ": " << iter->second << " frames"
+         << endl;
     total += iter->second;
   }
   cout << endl;
