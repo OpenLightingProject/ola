@@ -129,12 +129,10 @@ void UtilTest::testFindMatchingFiles() {
     if (ola::StringEndsWith(value, "rdm_model_collector.py.1")) {
       OLA_ASSERT_FALSE(rdm_model_collector_found);  // make sure it's 0 before
       rdm_model_collector_found = 1;
-    }
-    if (ola::StringEndsWith(value, "rdm_responder_test.py.1")) {
+    } else if (ola::StringEndsWith(value, "rdm_responder_test.py.1")) {
       OLA_ASSERT_FALSE(rdm_responder_test_found);  // make sure it's 0 before
       rdm_responder_test_found = 1;
-    }
-    if (ola::StringEndsWith(value, "rdm_test_server.py.1")) {
+    } else if (ola::StringEndsWith(value, "rdm_test_server.py.1")) {
       OLA_ASSERT_FALSE(rdm_test_server_found);  // make sure it's 0 before
       rdm_test_server_found = 1;
     }
