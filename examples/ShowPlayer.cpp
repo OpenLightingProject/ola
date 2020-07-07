@@ -86,17 +86,22 @@ int ShowPlayer::Playback(unsigned int iterations,
        ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
   }
 
-  Start();
+  if ((SeekTo(m_start) != ShowLoader::State::OK)) {
+    return ola::EXIT_DATAERR;
+  }
   ss->Run();
   return ola::EXIT_OK;
 }
 
 
 /**
- * Start playback
+ * Begin playback from start point
  */
-void ShowPlayer::Start() {
-  SeekTo(m_start);
+void ShowPlayer::Loop() {
+  ShowLoader::State state = SeekTo(m_start);
+  if (state != ShowLoader::State::OK) {
+    m_client.GetSelectServer()->Terminate();
+  }
 }
 
 
@@ -104,7 +109,7 @@ void ShowPlayer::Start() {
  * Seek to @p seek_time in the show file
  * @param seek_time the time (in milliseconds) to seek to
  */
-void ShowPlayer::SeekTo(const unsigned int seek_time) {
+ShowLoader::State ShowPlayer::SeekTo(const unsigned int seek_time) {
   // Seeking to a time before the playhead's position requires moving from the
   // beginning of the file.  This could be optimized more if this happens
   // frequently.
@@ -116,18 +121,19 @@ void ShowPlayer::SeekTo(const unsigned int seek_time) {
   // Keep reading through the show file until desired time is reached.
   ShowEntry entry;
   unsigned int playhead_time = m_playback_pos;
+  ShowLoader::State state;
   do {
-    ShowLoader::State state = m_loader.NextEntry(&entry);
+    state = m_loader.NextEntry(&entry);
     switch (state) {
       case ShowLoader::END_OF_FILE:
         OLA_FATAL << "Show file ends before the start time (Actual length "
                   << m_playback_pos << " ms)";
-        m_client.GetSelectServer()->Terminate();
-        return;
+        return state;
       case ShowLoader::INVALID_LINE:
         HandleInvalidLine();
-        return;
-      default: {}
+        return state;
+      default: {
+      }
     }
     playhead_time += entry.next_wait;
   } while (playhead_time < seek_time);
@@ -135,6 +141,8 @@ void ShowPlayer::SeekTo(const unsigned int seek_time) {
   m_playback_pos = seek_time;
   entry.next_wait = playhead_time - seek_time;
   SendEntry(entry);
+
+  return state;
 }
 
 
@@ -194,12 +202,11 @@ void ShowPlayer::HandleEndOfFile() {
   }
   m_iteration_remaining--;
   if (m_infinite_loop || m_iteration_remaining > 0) {
-    m_loader.Reset();
+    OLA_INFO << "----- Waiting " << m_loop_delay << " ms before looping -----";
     // Move to start point and send the frame
     m_client.GetSelectServer()->RegisterSingleTimeout(
        m_loop_delay,
-       ola::NewSingleCallback(this, &ShowPlayer::Start)
-       );
+       ola::NewSingleCallback(this, &ShowPlayer::Loop));
     return;
   } else {
     // stop the show

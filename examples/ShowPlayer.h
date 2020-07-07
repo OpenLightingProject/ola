@@ -73,8 +73,8 @@ class ShowPlayer {
   unsigned int m_stop;
   unsigned int m_playback_pos = 0;
 
-  void Start();
-  void SeekTo(const unsigned int seek_time);
+  void Loop();
+  ShowLoader::State SeekTo(const unsigned int seek_time);
   void SendNextFrame();
   void SendEntry(const ShowEntry &entry);
   void SendFrame(const ShowEntry &entry) const;
