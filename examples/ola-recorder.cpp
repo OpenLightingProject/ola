@@ -139,7 +139,6 @@ int VerifyShow(const string &filename) {
     if (!playing && playback_pos > FLAGS_start) {
       // Found the start point
       playing = true;
-      entry.next_wait = playback_pos - FLAGS_start;
     }
     if (playing) {
       frames_by_universe[entry.universe]++;
