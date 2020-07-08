@@ -20,6 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
+#include <iterator>
 #include <vector>
 
 #include "ola/StringUtils.h"
@@ -100,10 +101,8 @@ void UtilTest::testFilenameFromPath() {
 void UtilTest::testFindMatchingFiles() {
   bool okay = false;
 
-  std::vector<std::string> prefixes;
-  prefixes.push_back("rdm");
-
   std::vector<std::string> files;
+  std::vector<std::string>::iterator file;
 
   OLA_ASSERT_TRUE_MSG(ola::file::PATH_SEPARATOR == '/' ||
                       ola::file::PATH_SEPARATOR == '\\',
@@ -121,20 +120,23 @@ void UtilTest::testFindMatchingFiles() {
   OLA_ASSERT_EQ_MSG(3, (int)files.size(),
                     "Not exactly 3 files man/rdm_* returned");
 
-  bool rdm_model_collector_found = 0;
-  bool rdm_responder_test_found = 0;
-  bool rdm_test_server_found = 0;
+  bool rdm_model_collector_found = false;
+  bool rdm_responder_test_found = false;
+  bool rdm_test_server_found = false;
 
-  for (const auto& value : files) {
-    if (ola::StringEndsWith(value, "rdm_model_collector.py.1")) {
-      OLA_ASSERT_FALSE(rdm_model_collector_found);  // make sure it's 0 before
-      rdm_model_collector_found = 1;
-    } else if (ola::StringEndsWith(value, "rdm_responder_test.py.1")) {
-      OLA_ASSERT_FALSE(rdm_responder_test_found);  // make sure it's 0 before
-      rdm_responder_test_found = 1;
-    } else if (ola::StringEndsWith(value, "rdm_test_server.py.1")) {
-      OLA_ASSERT_FALSE(rdm_test_server_found);  // make sure it's 0 before
-      rdm_test_server_found = 1;
+  for (file = files.begin(); file < files.end(); file++)  {
+    if (ola::StringEndsWith(*file, "rdm_model_collector.py.1")) {
+      // make sure it has not been reported as found before
+      OLA_ASSERT_FALSE(rdm_model_collector_found);
+      rdm_model_collector_found = true;
+    } else if (ola::StringEndsWith(*file, "rdm_responder_test.py.1")) {
+      // make sure it has not been reported as found before
+      OLA_ASSERT_FALSE(rdm_responder_test_found);
+      rdm_responder_test_found = true;
+    } else if (ola::StringEndsWith(*file, "rdm_test_server.py.1")) {
+      // make sure it has not been reported as found before
+      OLA_ASSERT_FALSE(rdm_test_server_found);
+      rdm_test_server_found = true;
     }
   }
 
