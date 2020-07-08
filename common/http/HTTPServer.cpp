@@ -613,8 +613,8 @@ void HTTPServer::UpdateSockets() {
 /**
  * @brief Call the appropriate handler.
  */
-int HTTPServer::DispatchRequest(const HTTPRequest *request,
-                                HTTPResponse *response) {
+MHD_RESULT HTTPServer::DispatchRequest(const HTTPRequest *request,
+                                       HTTPResponse *response) {
   map<string, BaseHTTPCallback*>::iterator iter =
     m_handlers.find(request->Url());
 
