@@ -124,7 +124,9 @@ void UtilTest::testFindMatchingFiles() {
   bool rdm_responder_test_found = false;
   bool rdm_test_server_found = false;
 
-  for (file = files.begin(); file < files.end(); file++)  {
+  // Iterate over all files that have been returned and check if the ones
+  // we expected are in that list
+  for (file = files.begin(); file < files.end(); file++) {
     if (ola::StringEndsWith(*file, "rdm_model_collector.py.1")) {
       // make sure it has not been reported as found before
       OLA_ASSERT_FALSE(rdm_model_collector_found);
