@@ -167,8 +167,7 @@ static MHD_RESULT HandleRequest(void *http_server_ptr,
     HTTPResponse *response = new HTTPResponse(connection);
     request->SetInFlight();
     return static_cast<MHD_RESULT>(
-      http_server->DispatchRequest(request, response)
-    );
+      http_server->DispatchRequest(request, response));
 
   } else if (request->Method() == MHD_HTTP_METHOD_POST) {
     if (*upload_data_size != 0) {
@@ -179,8 +178,7 @@ static MHD_RESULT HandleRequest(void *http_server_ptr,
     request->SetInFlight();
     HTTPResponse *response = new HTTPResponse(connection);
     return static_cast<MHD_RESULT>(
-      http_server->DispatchRequest(request, response)
-    );
+      http_server->DispatchRequest(request, response));
   }
   return MHD_NO;
 }
