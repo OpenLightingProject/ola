@@ -144,8 +144,9 @@ static MHD_RESULT HandleRequest(void *http_server_ptr,
   // on the first call ptr is null
   if (*ptr == NULL) {
     request = new HTTPRequest(url, method, version, connection);
-    if (!request)
+    if (!request) {
       return MHD_NO;
+    }
 
     if (!request->Init()) {
       delete request;
@@ -157,9 +158,10 @@ static MHD_RESULT HandleRequest(void *http_server_ptr,
 
   request = static_cast<HTTPRequest*>(*ptr);
 
-  if (request->InFlight())
+  if (request->InFlight()) {
     // don't dispatch more than once
     return MHD_YES;
+  }
 
   if (request->Method() == MHD_HTTP_METHOD_GET) {
     HTTPResponse *response = new HTTPResponse(connection);
@@ -193,8 +195,9 @@ void RequestCompleted(void*,
                       struct MHD_Connection*,
                       void **request_cls,
                       enum MHD_RequestTerminationCode) {
-  if (!request_cls)
+  if (!request_cls) {
     return;
+  }
 
   delete static_cast<HTTPRequest*>(*request_cls);
   *request_cls = NULL;
@@ -240,8 +243,9 @@ bool HTTPRequest::Init() {
  * @brief Cleanup this request object
  */
 HTTPRequest::~HTTPRequest() {
-  if (m_processor)
+  if (m_processor) {
     MHD_destroy_post_processor(m_processor);
+  }
 }
 
 
@@ -291,10 +295,11 @@ void HTTPRequest::ProcessPostData(const char *data, size_t *data_size) {
 const string HTTPRequest::GetHeader(const string &key) const {
   map<string, string>::const_iterator iter = m_headers.find(key);
 
-  if (iter == m_headers.end())
+  if (iter == m_headers.end()) {
     return "";
-  else
+  } else {
     return iter->second;
+  }
 }
 
 
@@ -307,10 +312,11 @@ const string HTTPRequest::GetParameter(const string &key) const {
   const char *value = MHD_lookup_connection_value(m_connection,
                                                   MHD_GET_ARGUMENT_KIND,
                                                   key.c_str());
-  if (value)
+  if (value) {
     return string(value);
-  else
+  } else {
     return string();
+  }
 }
 
 /**
@@ -344,10 +350,11 @@ bool HTTPRequest::CheckParameterExists(const string &key) const {
 const string HTTPRequest::GetPostParameter(const string &key) const {
   map<string, string>::const_iterator iter = m_post_params.find(key);
 
-  if (iter == m_post_params.end())
+  if (iter == m_post_params.end()) {
     return "";
-  else
+  } else {
     return iter->second;
+  }
 }
 
 
@@ -391,10 +398,11 @@ int HTTPResponse::SendJson(const JsonValue &json) {
       static_cast<void*>(const_cast<char*>(output.data())),
       output.length());
   HeadersMultiMap::const_iterator iter;
-  for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
+  for (iter = m_headers.begin(); iter != m_headers.end(); ++iter) {
     MHD_add_response_header(response,
                             iter->first.c_str(),
                             iter->second.c_str());
+  }
   int ret = MHD_queue_response(m_connection, m_status_code, response);
   MHD_destroy_response(response);
   return ret;
@@ -410,10 +418,11 @@ int HTTPResponse::Send() {
   struct MHD_Response *response = HTTPServer::BuildResponse(
       static_cast<void*>(const_cast<char*>(m_data.data())),
       m_data.length());
-  for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
+  for (iter = m_headers.begin(); iter != m_headers.end(); ++iter) {
     MHD_add_response_header(response,
                             iter->first.c_str(),
                             iter->second.c_str());
+  }
   int ret = MHD_queue_response(m_connection, m_status_code, response);
   MHD_destroy_response(response);
   return ret;
@@ -448,8 +457,9 @@ HTTPServer::~HTTPServer() {
     MHD_stop_daemon(m_httpd);
 
   map<string, BaseHTTPCallback*>::const_iterator iter;
-  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter)
+  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
     delete iter->second;
+  }
 
   if (m_default_handler) {
     delete m_default_handler;
@@ -622,17 +632,20 @@ int HTTPServer::DispatchRequest(const HTTPRequest *request,
   map<string, BaseHTTPCallback*>::iterator iter =
     m_handlers.find(request->Url());
 
-  if (iter != m_handlers.end())
+  if (iter != m_handlers.end()) {
     return iter->second->Run(request, response);
+  }
 
   map<string, static_file_info>::iterator file_iter =
     m_static_content.find(request->Url());
 
-  if (file_iter != m_static_content.end())
+  if (file_iter != m_static_content.end()) {
     return ServeStaticContent(&(file_iter->second), response);
+  }
 
-  if (m_default_handler)
+  if (m_default_handler) {
     return m_default_handler->Run(request, response);
+  }
 
   return ServeNotFound(response);
 }
@@ -647,8 +660,9 @@ int HTTPServer::DispatchRequest(const HTTPRequest *request,
 bool HTTPServer::RegisterHandler(const string &path,
                                  BaseHTTPCallback *handler) {
   map<string, BaseHTTPCallback*>::const_iterator iter = m_handlers.find(path);
-  if (iter != m_handlers.end())
+  if (iter != m_handlers.end()) {
     return false;
+  }
   pair<string, BaseHTTPCallback*> pair(path, handler);
   m_handlers.insert(pair);
   return true;
@@ -683,8 +697,9 @@ bool HTTPServer::RegisterFile(const std::string &path,
   map<string, static_file_info>::const_iterator file_iter = (
       m_static_content.find(path));
 
-  if (file_iter != m_static_content.end())
+  if (file_iter != m_static_content.end()) {
     return false;
+  }
 
   static_file_info file_info;
   file_info.file_path = file;
@@ -711,13 +726,15 @@ void HTTPServer::RegisterDefaultHandler(BaseHTTPCallback *handler) {
  */
 void HTTPServer::Handlers(vector<string> *handlers) const {
   map<string, BaseHTTPCallback*>::const_iterator iter;
-  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter)
+  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
     handlers->push_back(iter->first);
+  }
 
   map<string, static_file_info>::const_iterator file_iter;
   for (file_iter = m_static_content.begin();
-       file_iter != m_static_content.end(); ++file_iter)
+       file_iter != m_static_content.end(); ++file_iter) {
     handlers->push_back(file_iter->first);
+  }
 }
 
 /**
@@ -811,10 +828,11 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   struct MHD_Response *mhd_response = BuildResponse(static_cast<void*>(data),
                                                     length);
 
-  if (!file_info->content_type.empty())
+  if (!file_info->content_type.empty()) {
     MHD_add_response_header(mhd_response,
                             MHD_HTTP_HEADER_CONTENT_TYPE,
                             file_info->content_type.c_str());
+  }
 
   int ret = MHD_queue_response(response->Connection(),
                                MHD_HTTP_OK,
