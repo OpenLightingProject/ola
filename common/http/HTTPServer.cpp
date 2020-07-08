@@ -88,7 +88,7 @@ const char HTTPServer::CONTENT_TYPE_OCT[] = "application/octet-stream";
  * @param key the header name
  * @param value the header value
  */
-static int AddHeaders(void *cls, OLA_UNUSED enum MHD_ValueKind kind,
+static MHD_RESULT AddHeaders(void *cls, OLA_UNUSED enum MHD_ValueKind kind,
                       const char *key, const char *value) {
   HTTPRequest *request = static_cast<HTTPRequest*>(cls);
   string key_string = key;
