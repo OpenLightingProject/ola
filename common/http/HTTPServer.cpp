@@ -89,7 +89,7 @@ const char HTTPServer::CONTENT_TYPE_OCT[] = "application/octet-stream";
  * @param value the header value
  */
 static MHD_RESULT AddHeaders(void *cls, OLA_UNUSED enum MHD_ValueKind kind,
-                      const char *key, const char *value) {
+                             const char *key, const char *value) {
   HTTPRequest *request = static_cast<HTTPRequest*>(cls);
   string key_string = key;
   string value_string = value;
@@ -110,11 +110,12 @@ static MHD_RESULT AddHeaders(void *cls, OLA_UNUSED enum MHD_ValueKind kind,
  * @param off the offset of the data
  * @param size the number of bytes available
  */
-int IteratePost(void *request_cls, OLA_UNUSED enum MHD_ValueKind kind,
-                const char *key, OLA_UNUSED const char *filename,
-                OLA_UNUSED const char *content_type,
-                OLA_UNUSED const char *transfer_encoding, const char *data,
-                OLA_UNUSED uint64_t off, OLA_UNUSED size_t size) {
+MHD_RESULT IteratePost(void *request_cls, OLA_UNUSED enum MHD_ValueKind kind,
+                       const char *key, OLA_UNUSED const char *filename,
+                       OLA_UNUSED const char *content_type,
+                       OLA_UNUSED const char *transfer_encoding,
+                       const char *data,
+                       OLA_UNUSED uint64_t off, OLA_UNUSED size_t size) {
   // libmicrohttpd has a bug where the size isn't set correctly.
   HTTPRequest *request = static_cast<HTTPRequest*>(request_cls);
   string value(data);
@@ -129,14 +130,14 @@ int IteratePost(void *request_cls, OLA_UNUSED enum MHD_ValueKind kind,
  * This sets up HTTPRequest & HTTPResponse objects and then calls
  * DispatchRequest.
  */
-static int HandleRequest(void *http_server_ptr,
-                         struct MHD_Connection *connection,
-                         const char *url,
-                         const char *method,
-                         const char *version,
-                         const char *upload_data,
-                         size_t *upload_data_size,
-                         void **ptr) {
+static MHD_RESULT HandleRequest(void *http_server_ptr,
+                                struct MHD_Connection *connection,
+                                const char *url,
+                                const char *method,
+                                const char *version,
+                                const char *upload_data,
+                                size_t *upload_data_size,
+                                void **ptr) {
   HTTPServer *http_server = static_cast<HTTPServer*>(http_server_ptr);
   HTTPRequest *request;
 
