@@ -164,7 +164,9 @@ static MHD_RESULT HandleRequest(void *http_server_ptr,
   if (request->Method() == MHD_HTTP_METHOD_GET) {
     HTTPResponse *response = new HTTPResponse(connection);
     request->SetInFlight();
-    return http_server->DispatchRequest(request, response);
+    return static_cast<MHD_RESULT>(
+      http_server->DispatchRequest(request, response)
+    );
 
   } else if (request->Method() == MHD_HTTP_METHOD_POST) {
     if (*upload_data_size != 0) {
@@ -174,7 +176,9 @@ static MHD_RESULT HandleRequest(void *http_server_ptr,
     }
     request->SetInFlight();
     HTTPResponse *response = new HTTPResponse(connection);
-    return http_server->DispatchRequest(request, response);
+    return static_cast<MHD_RESULT>(
+      http_server->DispatchRequest(request, response)
+    );
   }
   return MHD_NO;
 }
@@ -613,8 +617,8 @@ void HTTPServer::UpdateSockets() {
 /**
  * @brief Call the appropriate handler.
  */
-MHD_RESULT HTTPServer::DispatchRequest(const HTTPRequest *request,
-                                       HTTPResponse *response) {
+int HTTPServer::DispatchRequest(const HTTPRequest *request,
+                                HTTPResponse *response) {
   map<string, BaseHTTPCallback*>::iterator iter =
     m_handlers.find(request->Url());
 
