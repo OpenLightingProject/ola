@@ -316,8 +316,8 @@ install:
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
-#We install packages via brew which pull in numpy, so remove the pip numpy to avoid conflicts
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip uninstall numpy; fi
+#We install packages via brew which pull in numpy, so try a reinstall over the pip numpy to avoid conflicts
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall numpy; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall libtool; fi
