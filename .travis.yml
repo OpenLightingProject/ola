@@ -316,16 +316,19 @@ install:
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
+#Fix permissions for unbound (and possibly others)
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #We install packages via brew which pull in numpy, so try a reinstall over the pip numpy to avoid conflicts
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall numpy || brew link --overwrite numpy; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall libtool; fi
 #Fix a broken homebrew gnupg install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall gnupg; fi
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
+#Having fixed everything up, update to the bleeding edge
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+#Install build dependencies
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
