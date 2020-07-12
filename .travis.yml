@@ -324,6 +324,7 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall libtool; fi
 #Fix a broken homebrew gnupg install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall gnupg; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade gnupg; fi
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
 #Having fixed everything up, update to the bleeding edge
