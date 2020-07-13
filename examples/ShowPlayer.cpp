@@ -231,17 +231,19 @@ void ShowPlayer::SendFrame(const ShowEntry &entry) const {
  * Handle the case where we reach the end of file
  */
 void ShowPlayer::HandleEndOfFile() {
+  uint64_t loop_delay = m_loop_delay;
   if (m_stop > m_playback_pos) {
     OLA_WARN << "Show file ends before the stop time (Actual length "
              << m_playback_pos << " ms)";
+    loop_delay += m_stop - m_playback_pos;
   }
   m_iteration_remaining--;
   if (m_infinite_loop || m_iteration_remaining > 0) {
     OLA_INFO << "----- Waiting " << m_loop_delay << " ms before looping -----";
     // Move to start point and send the frame
     m_client.GetSelectServer()->RegisterSingleTimeout(
-       m_loop_delay,
-       ola::NewSingleCallback(this, &ShowPlayer::Loop));
+        loop_delay,
+        ola::NewSingleCallback(this, &ShowPlayer::Loop));
     return;
   } else {
     // stop the show
