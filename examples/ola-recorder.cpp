@@ -60,7 +60,7 @@ DEFINE_s_uint32(iterations, i, 1,
 DEFINE_uint32(start, 0,
               "Time (milliseconds) in show file to start playback from.");
 DEFINE_uint32(stop, 0,
-              "Time (milliseconds) in show file to stop playback at.  If"
+              "Time (milliseconds) in show file to stop playback at. If"
               " the show file is shorter, this option is ignored.");
 
 
@@ -124,7 +124,7 @@ int VerifyShow(const string &filename) {
 
   ShowEntry entry;
   ShowLoader::State state;
-  ShowPlayer::PlaybackTime playback_pos = 0;
+  uint64_t playback_pos = 0;
   bool playing = false;
   while (true) {
     state = loader.NextEntry(&entry);
@@ -133,7 +133,7 @@ int VerifyShow(const string &filename) {
     playback_pos += entry.next_wait;
     if (FLAGS_stop > 0 && playback_pos >= FLAGS_stop) {
       // Compensate for overshooting the stop time
-      playback_pos -= (playback_pos - FLAGS_stop);
+      playback_pos = FLAGS_stop;
       break;
     }
     if (!playing && playback_pos > FLAGS_start) {
@@ -153,7 +153,7 @@ int VerifyShow(const string &filename) {
              << playback_pos << " ms)";
   }
 
-  ShowPlayer::PlaybackTime total_time;
+  uint64_t total_time;
   if (playback_pos >= FLAGS_start) {
     total_time = playback_pos - FLAGS_start;
   } else {

@@ -34,8 +34,6 @@
  */
 class ShowPlayer {
  public:
-  typedef uint64_t PlaybackTime;
-
   /**
    * @brief Create a new ShowPlayer
    * @param filename the show file to play
@@ -60,23 +58,23 @@ class ShowPlayer {
    * until EOF.
    */
   int Playback(unsigned int iterations,
-               PlaybackTime duration,
-               PlaybackTime delay,
-               PlaybackTime start,
-               PlaybackTime stop);
+               uint64_t duration,
+               uint64_t delay,
+               uint64_t start,
+               uint64_t stop);
 
  private:
   ola::client::OlaClientWrapper m_client;
   ShowLoader m_loader;
   bool m_infinite_loop;
   unsigned int m_iteration_remaining;
-  PlaybackTime m_loop_delay;
-  PlaybackTime m_start;
-  PlaybackTime m_stop;
-  PlaybackTime m_playback_pos = 0;
+  uint64_t m_loop_delay;
+  uint64_t m_start;
+  uint64_t m_stop;
+  uint64_t m_playback_pos = 0;
 
   void Loop();
-  ShowLoader::State SeekTo(PlaybackTime seek_time);
+  ShowLoader::State SeekTo(uint64_t seek_time);
   void SendNextFrame();
   void SendEntry(const ShowEntry &entry);
   void RegisterNextTimeout(unsigned int timeout);

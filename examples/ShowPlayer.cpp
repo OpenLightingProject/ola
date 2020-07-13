@@ -34,14 +34,14 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 #include "examples/ShowPlayer.h"
 
 using std::vector;
 using std::string;
-using std::unordered_map;
+using std::map;
 using ola::DmxBuffer;
 
 
@@ -71,10 +71,10 @@ int ShowPlayer::Init() {
 
 
 int ShowPlayer::Playback(unsigned int iterations,
-                         PlaybackTime duration,
-                         PlaybackTime delay,
-                         PlaybackTime start,
-                         PlaybackTime stop) {
+                         uint64_t duration,
+                         uint64_t delay,
+                         uint64_t start,
+                         uint64_t stop) {
   m_infinite_loop = iterations == 0 || duration != 0;
   m_iteration_remaining = iterations;
   m_loop_delay = delay;
@@ -84,8 +84,8 @@ int ShowPlayer::Playback(unsigned int iterations,
   ola::io::SelectServer *ss = m_client.GetSelectServer();
   if (duration != 0) {
     ss->RegisterSingleTimeout(
-       duration * 1000,
-       ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
+        duration * 1000,
+        ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
   }
 
   if ((SeekTo(m_start) != ShowLoader::State::OK)) {
@@ -97,7 +97,7 @@ int ShowPlayer::Playback(unsigned int iterations,
 
 
 /**
- * Begin playback from start point
+ * Restart playback from start point
  */
 void ShowPlayer::Loop() {
   ShowLoader::State state = SeekTo(m_start);
@@ -111,7 +111,7 @@ void ShowPlayer::Loop() {
  * Seek to @p seek_time in the show file
  * @param seek_time the time (in milliseconds) to seek to
  */
-ShowLoader::State ShowPlayer::SeekTo(PlaybackTime seek_time) {
+ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
   // Seeking to a time before the playhead's position requires moving from the
   // beginning of the file.  This could be optimized more if this happens
   // frequently.
@@ -121,11 +121,12 @@ ShowLoader::State ShowPlayer::SeekTo(PlaybackTime seek_time) {
   }
 
   // Keep reading through the show file until desired time is reached.
-  unordered_map<unsigned int, ShowEntry> entries;
-  PlaybackTime playhead_time = m_playback_pos;
+  map<unsigned int, ShowEntry> entries;
+  uint64_t playhead_time = m_playback_pos;
   ShowLoader::State state;
   bool found = false;
-  while (true) {ShowEntry entry;
+  while (true) {
+    ShowEntry entry;
     state = m_loader.NextEntry(&entry);
     switch (state) {
       case ShowLoader::END_OF_FILE:
@@ -135,25 +136,24 @@ ShowLoader::State ShowPlayer::SeekTo(PlaybackTime seek_time) {
       case ShowLoader::INVALID_LINE:
         HandleInvalidLine();
         return state;
-      default: {
-      }
     }
     playhead_time += entry.next_wait;
-    entries[entry.universe] = entry;
+    if (entry.buffer.Size() > 0) {
+      // TODO(Dan): Merge entry buffers to handle buffers with different lengths
+      entries[entry.universe] = entry;
+    }
     if (!found && playhead_time == seek_time) {
       // Gather frames from other universes before sending if landing on the
       // trailing edge of a frame's timeout.
       found = true;
-      continue;
-    }
-    if ((found && entry.next_wait > 0) || playhead_time > seek_time) {
+    } else if ((found && entry.next_wait > 0) || playhead_time > seek_time) {
       break;
     }
   }
   m_playback_pos = seek_time;
 
   // Send data in the state it would be in at the given time
-  unordered_map<unsigned int, ShowEntry>::iterator entry_it;
+  map<unsigned int, ShowEntry>::iterator entry_it;
   for (entry_it = entries.begin(); entry_it != entries.end(); ++entry_it) {
     SendFrame(entry_it->second);
   }
@@ -170,9 +170,9 @@ ShowLoader::State ShowPlayer::SeekTo(PlaybackTime seek_time) {
 void ShowPlayer::SendNextFrame() {
   ShowEntry entry;
   ShowLoader::State state = m_loader.NextEntry(&entry);
-  if (state == ShowLoader::END_OF_FILE ||
-      (m_stop > 0 && m_playback_pos >= m_stop)) {
-    if (entry.buffer.Size() > 0) {
+  const bool stop_point_hit = m_stop > 0 && m_playback_pos >= m_stop;
+  if (state == ShowLoader::END_OF_FILE || stop_point_hit) {
+    if (stop_point_hit) {
       // Send the last frame before looping/exiting
       SendFrame(entry);
     }
@@ -215,6 +215,9 @@ void ShowPlayer::RegisterNextTimeout(const unsigned int timeout) {
  * Send data contained in @p entry
  */
 void ShowPlayer::SendFrame(const ShowEntry &entry) const {
+  if (entry.buffer.Size() == 0) {
+    return;
+  }
   OLA_INFO << "Universe: " << entry.universe << ": " << entry.buffer.ToString();
   ola::client::SendDMXArgs args;
   m_client.GetClient()->SendDMX(entry.universe, entry.buffer, args);
