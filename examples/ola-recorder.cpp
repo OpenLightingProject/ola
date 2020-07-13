@@ -113,6 +113,21 @@ int RecordShow() {
 
 
 /**
+ * Clamps the frame count between 0 and 1.
+ *
+ * This allows frames that would be cached during playback to be counted.
+ */
+void ClampVerifyFrameCount(map<unsigned int, unsigned int> &frames) {
+  map<unsigned int, unsigned int>::iterator iter;
+  for (iter = frames.begin(); iter != frames.end(); ++iter) {
+    if (iter->second > 1) {
+      iter->second = 1;
+    }
+  }
+}
+
+
+/**
  * Verify a show file is valid
  */
 int VerifyShow(const string &filename) {
@@ -131,6 +146,7 @@ int VerifyShow(const string &filename) {
     if (state != ShowLoader::OK)
       break;
     playback_pos += entry.next_wait;
+    frames_by_universe[entry.universe]++;
     if (FLAGS_stop > 0 && playback_pos >= FLAGS_stop) {
       // Compensate for overshooting the stop time
       playback_pos = FLAGS_stop;
@@ -139,9 +155,7 @@ int VerifyShow(const string &filename) {
     if (!playing && playback_pos > FLAGS_start) {
       // Found the start point
       playing = true;
-    }
-    if (playing) {
-      frames_by_universe[entry.universe]++;
+      ClampVerifyFrameCount(frames_by_universe);
     }
   }
   if (FLAGS_start > playback_pos) {
