@@ -141,11 +141,12 @@ ShowLoader::State ShowPlayer::SeekTo(PlaybackTime seek_time) {
     playhead_time += entry.next_wait;
     entries[entry.universe] = entry;
     if (!found && playhead_time == seek_time) {
-      // Use the next frame if landing on the trailing edge of a frame's timeout
+      // Gather frames from other universes before sending if landing on the
+      // trailing edge of a frame's timeout.
       found = true;
       continue;
     }
-    if (found || playhead_time > seek_time) {
+    if ((found && entry.next_wait > 0) || playhead_time > seek_time) {
       break;
     }
   }
