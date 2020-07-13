@@ -136,6 +136,8 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
       case ShowLoader::INVALID_LINE:
         HandleInvalidLine();
         return state;
+      default: {
+      }
     }
     playhead_time += entry.next_wait;
     if (entry.buffer.Size() > 0) {
