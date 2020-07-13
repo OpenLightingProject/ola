@@ -115,7 +115,7 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
   // Seeking to a time before the playhead's position requires moving from the
   // beginning of the file.  This could be optimized more if this happens
   // frequently.
-  if (seek_time < m_playback_pos) {
+  if (seek_time <= m_playback_pos) {
     m_loader.Reset();
     m_playback_pos = 0;
   }
@@ -128,16 +128,17 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
   while (true) {
     ShowEntry entry;
     state = m_loader.NextEntry(&entry);
-    switch (state) {
-      case ShowLoader::END_OF_FILE:
-        OLA_FATAL << "Show file ends before the start time (Actual length "
-                  << m_playback_pos << " ms)";
-        return state;
-      case ShowLoader::INVALID_LINE:
-        HandleInvalidLine();
-        return state;
-      default: {
+    if (state == ShowLoader::END_OF_FILE) {
+      if (playhead_time == seek_time) {
+        // Send the only frame(s) we have and loop
+        break;
       }
+      OLA_FATAL << "Show file ends before the start time (Actual length "
+                << m_playback_pos << " ms)";
+      return state;
+    } else if (state == ShowLoader::INVALID_LINE) {
+      HandleInvalidLine();
+      return state;
     }
     playhead_time += entry.next_wait;
     if (entry.buffer.Size() > 0) {
