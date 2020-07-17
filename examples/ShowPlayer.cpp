@@ -131,6 +131,8 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
     if (state == ShowLoader::END_OF_FILE) {
       if (playhead_time == seek_time) {
         // Send the only frame(s) we have and loop
+        OLA_WARN << "Starting at the end of the file; verify start time if "
+                    "output looks wrong.";
         break;
       }
       OLA_FATAL << "Show file ends before the start time (actual length "
