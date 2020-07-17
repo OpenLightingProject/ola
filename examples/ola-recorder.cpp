@@ -60,13 +60,14 @@ DEFINE_s_uint32(iterations, i, 1,
 DEFINE_uint32(start, 0,
               "Time (milliseconds) in show file to start playback from.");
 DEFINE_uint32(stop, 0,
-              "Time (milliseconds) in show file to stop playback at. If"
-              " the show file is shorter, this option is ignored.");
+              "Time (milliseconds) in show file to stop playback at. If "
+              "the show file is shorter, this option is ignored.");
 
 
 void TerminateRecorder(ShowRecorder *recorder) {
   recorder->Stop();
 }
+
 
 /**
  * Record a show
@@ -113,21 +114,6 @@ int RecordShow() {
 
 
 /**
- * Clamps the frame count between 0 and 1.
- *
- * This allows frames that would be cached during playback to be counted.
- */
-void ClampVerifyFrameCount(map<unsigned int, unsigned int> &frames) {
-  map<unsigned int, unsigned int>::iterator iter;
-  for (iter = frames.begin(); iter != frames.end(); ++iter) {
-    if (iter->second > 1) {
-      iter->second = 1;
-    }
-  }
-}
-
-
-/**
  * Verify a show file is valid
  */
 int VerifyShow(const string &filename) {
@@ -155,7 +141,16 @@ int VerifyShow(const string &filename) {
     if (!playing && playback_pos > FLAGS_start) {
       // Found the start point
       playing = true;
-      ClampVerifyFrameCount(frames_by_universe);
+
+      // Clamp the frames count between 0 and 1
+      map<unsigned int, unsigned int>::iterator clamp_iter;
+      for (clamp_iter = frames_by_universe.begin();
+           clamp_iter != frames_by_universe.end();
+           ++clamp_iter) {
+        if (clamp_iter->second > 1) {
+          clamp_iter->second = 1;
+        }
+      }
     }
   }
   if (FLAGS_start > playback_pos) {
