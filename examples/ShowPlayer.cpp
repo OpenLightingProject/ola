@@ -153,7 +153,7 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
       break;
     }
   }
-  m_playback_pos = seek_time;
+  m_playback_pos = playhead_time;
 
   // Send data in the state it would be in at the given time
   map<unsigned int, ShowEntry>::iterator entry_it;
@@ -175,7 +175,7 @@ void ShowPlayer::SendNextFrame() {
   ShowLoader::State state = m_loader.NextEntry(&entry);
   const bool stop_point_hit = m_stop > 0 && m_playback_pos >= m_stop;
   if (state == ShowLoader::END_OF_FILE || stop_point_hit) {
-    if (stop_point_hit) {
+    if (m_playback_pos == m_stop) {
       // Send the last frame before looping/exiting
       SendFrame(entry);
     }
