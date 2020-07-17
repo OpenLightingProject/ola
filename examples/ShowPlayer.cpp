@@ -133,7 +133,7 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
         // Send the only frame(s) we have and loop
         break;
       }
-      OLA_FATAL << "Show file ends before the start time (Actual length "
+      OLA_FATAL << "Show file ends before the start time (actual length "
                 << m_playback_pos << " ms)";
       return state;
     } else if (state == ShowLoader::INVALID_LINE) {
@@ -231,15 +231,25 @@ void ShowPlayer::SendFrame(const ShowEntry &entry) const {
  * Handle the case where we reach the end of file
  */
 void ShowPlayer::HandleEndOfFile() {
+  if (m_iteration_remaining > 0) {
+    m_iteration_remaining--;
+  }
+
+  const bool loop = m_infinite_loop || m_iteration_remaining > 0;
   uint64_t loop_delay = m_loop_delay;
   if (m_stop > m_playback_pos) {
-    OLA_WARN << "Show file ends before the stop time (Actual length "
+    OLA_WARN << "Show file ends before the stop time (actual length "
              << m_playback_pos << " ms)";
-    loop_delay += m_stop - m_playback_pos;
+    if (loop) {
+      const uint64_t remaining_time = m_stop - m_playback_pos;
+      OLA_WARN << "Waiting additional " << remaining_time << " ms before "
+               << "looping.";
+      loop_delay += remaining_time;
+    }
   }
-  m_iteration_remaining--;
-  if (m_infinite_loop || m_iteration_remaining > 0) {
-    OLA_INFO << "----- Waiting " << m_loop_delay << " ms before looping -----";
+
+  if (loop) {
+    OLA_INFO << "----- Waiting " << loop_delay << " ms before looping -----";
     // Move to start point and send the frame
     m_client.GetSelectServer()->RegisterSingleTimeout(
         loop_delay,

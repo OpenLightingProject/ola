@@ -159,11 +159,11 @@ int VerifyShow(const string &filename) {
     }
   }
   if (FLAGS_start > playback_pos) {
-    OLA_WARN << "Show file ends before the start time (Actual length "
+    OLA_WARN << "Show file ends before the start time (actual length "
              << playback_pos << " ms)";
   }
   if (FLAGS_stop > playback_pos) {
-    OLA_WARN << "Show file ends before the stop time (Actual length "
+    OLA_WARN << "Show file ends before the stop time (actual length "
              << playback_pos << " ms)";
   }
 
