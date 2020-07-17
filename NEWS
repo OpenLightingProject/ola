@@ -38,7 +38,8 @@ x/y/2019 ola-0.10.8
    the Python RDM Test code, also the relevant comments
 
  Internal:
- *
+ * Replace "readdir_r" with "readdir" since the former has been deprecated
+ * Add a unit test for the functions that used readdir_r before
 
 13/7/2018 ola-0.10.7
  Features:
