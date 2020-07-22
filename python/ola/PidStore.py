@@ -832,7 +832,10 @@ class Group(Atom):
       if arg_offset < len(args):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
-      return ''.join(str(data)), arg_offset
+      if sys.version >= '3.2':
+        return ''.join(str(data)), arg_offset
+      else:
+        return ''.join(data), arg_offset
 
   def Unpack(self, data):
     """Unpack binary data.

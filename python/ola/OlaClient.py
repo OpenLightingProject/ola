@@ -1360,8 +1360,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     if sys.version >= '3.2':
       request.data = eval(data)[0] if data else bytes(data, 'utf-8')
     else:
-      # eval(data)[0] if data else data - broke (MultiDim), 2019-10-31
-      request.data = data  # works, 2019-10-31
+      request.data = data
     request.is_set = set
     request.include_raw_response = include_frames
     try:
