@@ -162,14 +162,26 @@ int VerifyShow(const string &filename, string *summary) {
              << playback_pos << " ms)";
   }
 
-  uint64_t total_time;
-  if (playback_pos >= FLAGS_start) {
-    total_time = playback_pos - FLAGS_start;
-  } else {
-    total_time = 0;
-  }
-
   if (summary != NULL) {
+    uint64_t total_time;
+    if (playback_pos >= FLAGS_start) {
+      // Frames will have been sent
+      total_time = playback_pos - FLAGS_start;
+      if (FLAGS_iterations > 0) {
+        total_time *= FLAGS_iterations;
+      }
+      // Duration will cause playback to stop before it reaches the end if
+      // duration is shorter than the playback time.  Likewise, playback will
+      // stop if it reaches the end before the desired duration because a number
+      // of iterations has been specified.
+      if (FLAGS_duration > 0 && FLAGS_duration < total_time) {
+        total_time = FLAGS_duration * 1000;
+      }
+    } else {
+      // Will do precisely nothing for FLAGS_duration seconds
+      total_time = FLAGS_duration * 1000;
+    }
+
     std::stringstream out;
     map<unsigned int, unsigned int>::const_iterator iter;
     unsigned int total = 0;
@@ -182,9 +194,13 @@ int VerifyShow(const string &filename, string *summary) {
     }
     for (iter = frames_by_universe.begin(); iter != frames_by_universe.end();
          ++iter) {
-      out << "Universe " << iter->first << ": " << iter->second << " frames"
+      unsigned int univ_frames = iter->second;
+      if (FLAGS_iterations > 0) {
+        univ_frames *= FLAGS_iterations;
+      }
+      out << "Universe " << iter->first << ": " << univ_frames << " frames"
           << endl;
-      total += iter->second;
+      total += univ_frames;
     }
     out << endl;
     out << "Total frames: " << total << endl;
