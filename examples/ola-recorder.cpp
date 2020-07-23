@@ -120,72 +120,84 @@ int RecordShow() {
  * @param[out] string to fill with a summary of the show
  */
 int VerifyShow(const string &filename, string *summary) {
-  ShowLoader loader(filename);
-  if (!loader.Load())
-    return ola::EXIT_NOINPUT;
-
-  map<unsigned int, unsigned int> frames_by_universe;
-
-  ShowEntry entry;
-  ShowLoader::State state;
-  uint64_t playback_pos = 0;
-  bool playing = false;
-  while (true) {
-    state = loader.NextEntry(&entry);
-    if (state != ShowLoader::OK) {
-      // If this is a problem, an explanation will be printed later following
-      // the summary.
-      break;
-    }
-    playback_pos += entry.next_wait;
-    if (playing) {
-      frames_by_universe[entry.universe]++;
-    } else {
-      // Clamp the frame count to 1 as we haven't actually started playing yet
-      frames_by_universe[entry.universe] = 1;
-    }
-    if (FLAGS_stop > 0 && playback_pos >= FLAGS_stop) {
-      // Compensate for overshooting the stop time
-      playback_pos = FLAGS_stop;
-      break;
-    }
-    if (!playing && playback_pos > FLAGS_start) {
-      // Found the start point
-      playing = true;
-    }
+//  ShowLoader loader(filename);
+//  if (!loader.Load())
+//    return ola::EXIT_NOINPUT;
+//
+//  map<unsigned int, unsigned int> frames_by_universe;
+//
+//  ShowEntry entry;
+//  ShowLoader::State state;
+//  uint64_t playback_pos = 0;
+//  bool playing = false;
+//  while (true) {
+//    state = loader.NextEntry(&entry);
+//    if (state != ShowLoader::OK) {
+//      // If this is a problem, an explanation will be printed later following
+//      // the summary.
+//      break;
+//    }
+//    playback_pos += entry.next_wait;
+//    if (playing) {
+//      frames_by_universe[entry.universe]++;
+//    } else {
+//      // Clamp the frame count to 1 as we haven't actually started playing yet
+//      frames_by_universe[entry.universe] = 1;
+//    }
+//    if (FLAGS_stop > 0 && playback_pos >= FLAGS_stop) {
+//      // Compensate for overshooting the stop time
+//      playback_pos = FLAGS_stop;
+//      break;
+//    }
+//    if (!playing && playback_pos > FLAGS_start) {
+//      // Found the start point
+//      playing = true;
+//    }
+//  }
+//  if (FLAGS_start > playback_pos) {
+//    OLA_WARN << "Show file ends before the start time (actual length "
+//             << playback_pos << " ms)";
+//  }
+//  if (FLAGS_stop > playback_pos) {
+//    OLA_WARN << "Show file ends before the stop time (actual length "
+//             << playback_pos << " ms)";
+//  }
+  ShowPlayer player(filename);
+  int state = player.Init(true);
+  if (state != ola::EXIT_OK) {
+    return state;
   }
-  if (FLAGS_start > playback_pos) {
-    OLA_WARN << "Show file ends before the start time (actual length "
-             << playback_pos << " ms)";
-  }
-  if (FLAGS_stop > playback_pos) {
-    OLA_WARN << "Show file ends before the stop time (actual length "
-             << playback_pos << " ms)";
-  }
+  state = player.Playback(FLAGS_iterations,
+                          FLAGS_duration,
+                          FLAGS_delay,
+                          FLAGS_start,
+                          FLAGS_stop);
 
-  if (summary != NULL) {
-    uint64_t total_time;
-    if (playback_pos >= FLAGS_start) {
-      // Frames will have been sent
-      total_time = playback_pos - FLAGS_start;
-      if (FLAGS_iterations > 0) {
-        total_time *= FLAGS_iterations;
-      }
-      // Duration will cause playback to stop before it reaches the end if
-      // duration is shorter than the playback time.  Likewise, playback will
-      // stop if it reaches the end before the desired duration because a number
-      // of iterations has been specified.
-      if (FLAGS_duration > 0 && FLAGS_duration < total_time) {
-        total_time = FLAGS_duration * 1000;
-      }
-    } else {
-      // Will do precisely nothing for FLAGS_duration seconds
-      total_time = FLAGS_duration * 1000;
-    }
+  if (state == ola::EXIT_OK && summary != NULL) {
+//    uint64_t total_time;
+//    if (playback_pos >= FLAGS_start) {
+//      // Frames will have been sent
+//      total_time = playback_pos - FLAGS_start;
+//      if (FLAGS_iterations > 0) {
+//        total_time *= FLAGS_iterations;
+//      }
+//      // Duration will cause playback to stop before it reaches the end if
+//      // duration is shorter than the playback time.  Likewise, playback will
+//      // stop if it reaches the end before the desired duration because a
+//      // number of iterations has been specified.
+//      if (FLAGS_duration > 0 && FLAGS_duration < total_time) {
+//        total_time = FLAGS_duration * 1000;
+//      }
+//    } else {
+//      // Will do precisely nothing for FLAGS_duration seconds
+//      total_time = FLAGS_duration * 1000;
+//    }
 
+    map<unsigned int, uint64_t> frames_by_universe = player.GetFrameCount();
+    const uint64_t total_time = player.GetRunTime();
     std::stringstream out;
-    map<unsigned int, unsigned int>::const_iterator iter;
-    unsigned int total = 0;
+    map<unsigned int, uint64_t>::const_iterator iter;
+    uint64_t total = 0;
     out << "------------ Summary ----------" << endl;
     if (FLAGS_start > 0) {
       out << "Starting at: " << FLAGS_start / 1000.0 << " second(s)" << endl;
@@ -195,10 +207,10 @@ int VerifyShow(const string &filename, string *summary) {
     }
     for (iter = frames_by_universe.begin(); iter != frames_by_universe.end();
          ++iter) {
-      unsigned int univ_frames = iter->second;
-      if (FLAGS_iterations > 0) {
-        univ_frames *= FLAGS_iterations;
-      }
+      const unsigned int univ_frames = iter->second;
+//      if (FLAGS_iterations > 0) {
+//        univ_frames *= FLAGS_iterations;
+//      }
       out << "Universe " << iter->first << ": " << univ_frames << " frames"
           << endl;
       total += univ_frames;

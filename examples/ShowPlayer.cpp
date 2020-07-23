@@ -56,8 +56,9 @@ ShowPlayer::ShowPlayer(const string &filename)
 
 ShowPlayer::~ShowPlayer() {}
 
-int ShowPlayer::Init() {
-  if (!m_client.Setup()) {
+int ShowPlayer::Init(const bool simulate) {
+  m_simulate = simulate;
+  if (!simulate && !m_client.Setup()) {
     OLA_FATAL << "Client Setup failed";
     return ola::EXIT_UNAVAILABLE;
   }
@@ -81,17 +82,19 @@ int ShowPlayer::Playback(unsigned int iterations,
   m_start = start;
   m_stop = stop;
 
-  ola::io::SelectServer *ss = m_client.GetSelectServer();
-  if (duration != 0) {
-    ss->RegisterSingleTimeout(
-        duration * 1000,
-        ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
+  if (!m_simulate) {
+    ola::io::SelectServer *ss = m_client.GetSelectServer();
+    if (duration != 0) {
+      ss->RegisterSingleTimeout(
+          duration * 1000,
+          ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
+    }
+    ss->Run();
   }
 
   if ((SeekTo(m_start) != ShowLoader::State::OK)) {
     return ola::EXIT_DATAERR;
   }
-  ss->Run();
   return ola::EXIT_OK;
 }
 
@@ -212,22 +215,29 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
  */
 void ShowPlayer::RegisterNextTimeout(const unsigned int timeout) {
   OLA_DEBUG << "Registering timeout for " << timeout << "ms";
-  m_client.GetSelectServer()->RegisterSingleTimeout(
-     timeout,
-     ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
+  m_run_time += timeout;
+  if (!m_simulate) {
+    m_client.GetSelectServer()->RegisterSingleTimeout(
+        timeout,
+        ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
+  }
 }
 
 
 /**
  * Send data contained in @p entry
  */
-void ShowPlayer::SendFrame(const ShowEntry &entry) const {
+void ShowPlayer::SendFrame(const ShowEntry &entry) {
   if (entry.buffer.Size() == 0) {
     return;
   }
-  OLA_DEBUG << "Universe: " << entry.universe << ": " << entry.buffer.ToString();
+  OLA_DEBUG << "Universe: " << entry.universe << ": "
+            << entry.buffer.ToString();
   ola::client::SendDMXArgs args;
-  m_client.GetClient()->SendDMX(entry.universe, entry.buffer, args);
+  if (!m_simulate) {
+    m_client.GetClient()->SendDMX(entry.universe, entry.buffer, args);
+  }
+  m_frame_count[entry.universe]++;
 }
 
 
@@ -258,11 +268,14 @@ void ShowPlayer::HandleEndOfShow() {
              << "-----";
     OLA_INFO << "----- Waiting " << loop_delay << " ms before looping -----";
     // Move to start point and send the frame
-    m_client.GetSelectServer()->RegisterSingleTimeout(
-        loop_delay,
-        ola::NewSingleCallback(this, &ShowPlayer::Loop));
+    m_run_time += loop_delay;
+    if (!m_simulate) {
+      m_client.GetSelectServer()->RegisterSingleTimeout(
+          loop_delay,
+          ola::NewSingleCallback(this, &ShowPlayer::Loop));
+    }
     return;
-  } else {
+  } else if (!m_simulate) {
     // stop the show
     m_client.GetSelectServer()->Terminate();
   }
@@ -274,5 +287,7 @@ void ShowPlayer::HandleEndOfShow() {
  */
 void ShowPlayer::HandleInvalidLine() {
   OLA_FATAL << "Invalid data at line " << m_loader.GetCurrentLineNumber();
-  m_client.GetSelectServer()->Terminate();
+  if (!m_simulate) {
+    m_client.GetSelectServer()->Terminate();
+  }
 }

@@ -21,6 +21,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/client/ClientWrapper.h>
 
+#include <map>
 #include <string>
 #include <fstream>
 
@@ -43,9 +44,11 @@ class ShowPlayer {
 
   /**
    * @brief Initialize the show player.
+   * @param simulate if true, no connection will be made to olad and nothing
+   * will be sent for output.
    * @return EXIT_OK if successful.
    */
-  int Init();
+  int Init(bool simulate = false);
 
   /**
    * @brief Playback the show
@@ -63,6 +66,17 @@ class ShowPlayer {
                uint64_t start,
                uint64_t stop);
 
+
+  uint64_t GetRunTime() const {
+    return m_run_time;
+  }
+
+
+  const std::map<unsigned int, uint64_t> &GetFrameCount() const {
+    return m_frame_count;
+  }
+
+
  private:
   ola::client::OlaClientWrapper m_client;
   ShowLoader m_loader;
@@ -72,13 +86,16 @@ class ShowPlayer {
   uint64_t m_start;
   uint64_t m_stop;
   uint64_t m_playback_pos = 0;
+  uint64_t m_run_time = 0;
+  std::map<unsigned int, uint64_t> m_frame_count;
+  bool m_simulate = false;
 
   void Loop();
   ShowLoader::State SeekTo(uint64_t seek_time);
   void SendNextFrame();
   void SendEntry(const ShowEntry &entry);
   void RegisterNextTimeout(unsigned int timeout);
-  void SendFrame(const ShowEntry &entry) const;
+  void SendFrame(const ShowEntry &entry);
   void HandleEndOfShow();
   void HandleInvalidLine();
 };
