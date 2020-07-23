@@ -81,6 +81,7 @@ int ShowPlayer::Playback(unsigned int iterations,
   m_loop_delay = delay;
   m_start = start;
   m_stop = stop;
+  m_status = ola::EXIT_OK;
 
   if (!m_simulate) {
     ola::io::SelectServer *ss = m_client.GetSelectServer();
@@ -89,13 +90,29 @@ int ShowPlayer::Playback(unsigned int iterations,
           duration * 1000,
           ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
     }
+    if ((SeekTo(m_start) != ShowLoader::State::OK)) {
+      return ola::EXIT_DATAERR;
+    }
     ss->Run();
+  } else {
+    // Simple event loop to simulate playback without involving olad
+    // Start by seeking to start point
+    m_next_task = TASK_LOOP;
+    while (m_next_task != Task::TASK_COMPLETE) {
+      switch (m_next_task) {
+        case TASK_COMPLETE:
+          break;
+        case TASK_NEXT_FRAME:
+          SendNextFrame();
+          break;
+        case TASK_LOOP:
+          Loop();
+          break;
+      }
+    }
   }
 
-  if ((SeekTo(m_start) != ShowLoader::State::OK)) {
-    return ola::EXIT_DATAERR;
-  }
-  return ola::EXIT_OK;
+  return m_status;
 }
 
 
@@ -105,7 +122,15 @@ int ShowPlayer::Playback(unsigned int iterations,
 void ShowPlayer::Loop() {
   ShowLoader::State state = SeekTo(m_start);
   if (state != ShowLoader::State::OK) {
-    m_client.GetSelectServer()->Terminate();
+    m_next_task = TASK_COMPLETE;
+    if (state == ShowLoader::State::INVALID_LINE) {
+      m_status = ola::EXIT_DATAERR;
+    } else {
+      m_status = ola::EXIT_OK;
+    }
+    if (!m_simulate) {
+      m_client.GetSelectServer()->Terminate();
+    }
   }
 }
 
@@ -182,7 +207,7 @@ void ShowPlayer::SendNextFrame() {
   ShowLoader::State state = m_loader.NextEntry(&entry);
   const bool stop_point_hit = m_stop > 0 && m_playback_pos >= m_stop;
   if (state == ShowLoader::END_OF_FILE || stop_point_hit) {
-    if (m_playback_pos == m_stop) {
+    if (m_stop == 0 || m_playback_pos == m_stop) {
       // Send the last frame before looping/exiting
       SendFrame(entry);
     }
@@ -214,8 +239,11 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
  * Send the next frame in @p timeout milliseconds
  */
 void ShowPlayer::RegisterNextTimeout(const unsigned int timeout) {
-  OLA_DEBUG << "Registering timeout for " << timeout << "ms";
+  if (!m_simulate) {
+    OLA_DEBUG << "Registering timeout for " << timeout << "ms";
+  }
   m_run_time += timeout;
+  m_next_task = TASK_NEXT_FRAME;
   if (!m_simulate) {
     m_client.GetSelectServer()->RegisterSingleTimeout(
         timeout,
@@ -231,8 +259,10 @@ void ShowPlayer::SendFrame(const ShowEntry &entry) {
   if (entry.buffer.Size() == 0) {
     return;
   }
-  OLA_DEBUG << "Universe: " << entry.universe << ": "
-            << entry.buffer.ToString();
+  if (!m_simulate) {
+    OLA_DEBUG << "Universe: " << entry.universe << ": "
+              << entry.buffer.ToString();
+  }
   ola::client::SendDMXArgs args;
   if (!m_simulate) {
     m_client.GetClient()->SendDMX(entry.universe, entry.buffer, args);
@@ -263,21 +293,28 @@ void ShowPlayer::HandleEndOfShow() {
   }
 
   if (loop) {
-    OLA_INFO << "----- "
-             << m_iteration_remaining << " iteration(s) remain "
-             << "-----";
-    OLA_INFO << "----- Waiting " << loop_delay << " ms before looping -----";
+    if (!m_simulate) {
+      OLA_INFO << "----- "
+               << m_iteration_remaining << " iteration(s) remain "
+               << "-----";
+      OLA_INFO << "----- Waiting " << loop_delay << " ms before looping -----";
+    }
     // Move to start point and send the frame
     m_run_time += loop_delay;
+    m_next_task = TASK_LOOP;
     if (!m_simulate) {
       m_client.GetSelectServer()->RegisterSingleTimeout(
           loop_delay,
           ola::NewSingleCallback(this, &ShowPlayer::Loop));
     }
     return;
-  } else if (!m_simulate) {
+  } else {
     // stop the show
-    m_client.GetSelectServer()->Terminate();
+    m_next_task = TASK_COMPLETE;
+    m_status = ola::EXIT_OK;
+    if (!m_simulate) {
+      m_client.GetSelectServer()->Terminate();
+    }
   }
 }
 
@@ -287,6 +324,8 @@ void ShowPlayer::HandleEndOfShow() {
  */
 void ShowPlayer::HandleInvalidLine() {
   OLA_FATAL << "Invalid data at line " << m_loader.GetCurrentLineNumber();
+  m_next_task = TASK_COMPLETE;
+  m_status = ola::EXIT_DATAERR;
   if (!m_simulate) {
     m_client.GetSelectServer()->Terminate();
   }

@@ -90,6 +90,15 @@ class ShowPlayer {
   std::map<unsigned int, uint64_t> m_frame_count;
   bool m_simulate = false;
 
+  /** Used for tracking simulation progress */
+  typedef enum {
+    TASK_COMPLETE,
+    TASK_NEXT_FRAME,
+    TASK_LOOP,
+  } Task;
+  Task m_next_task = TASK_LOOP;
+  int m_status = ola::EXIT_OK;
+
   void Loop();
   ShowLoader::State SeekTo(uint64_t seek_time);
   void SendNextFrame();
