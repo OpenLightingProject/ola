@@ -129,10 +129,18 @@ int VerifyShow(const string &filename) {
   bool playing = false;
   while (true) {
     state = loader.NextEntry(&entry);
-    if (state != ShowLoader::OK)
+    if (state != ShowLoader::OK) {
+      // Either EOF or a problem; an explanation will be printed later
+      // following the summary.
       break;
+    }
     playback_pos += entry.next_wait;
-    frames_by_universe[entry.universe]++;
+    if (playing) {
+      frames_by_universe[entry.universe]++;
+    } else {
+      // Clamp the frame count to 1 as we haven't actually started playing yet
+      frames_by_universe[entry.universe] = 1;
+    }
     if (FLAGS_stop > 0 && playback_pos >= FLAGS_stop) {
       // Compensate for overshooting the stop time
       playback_pos = FLAGS_stop;
@@ -141,16 +149,6 @@ int VerifyShow(const string &filename) {
     if (!playing && playback_pos > FLAGS_start) {
       // Found the start point
       playing = true;
-
-      // Clamp the frames count between 0 and 1
-      map<unsigned int, unsigned int>::iterator clamp_iter;
-      for (clamp_iter = frames_by_universe.begin();
-           clamp_iter != frames_by_universe.end();
-           ++clamp_iter) {
-        if (clamp_iter->second > 1) {
-          clamp_iter->second = 1;
-        }
-      }
     }
   }
   if (FLAGS_start > playback_pos) {

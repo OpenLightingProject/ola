@@ -79,7 +79,7 @@ class ShowPlayer {
   void SendEntry(const ShowEntry &entry);
   void RegisterNextTimeout(unsigned int timeout);
   void SendFrame(const ShowEntry &entry) const;
-  void HandleEndOfFile();
+  void HandleEndOfShow();
   void HandleInvalidLine();
 };
 #endif  // EXAMPLES_SHOWPLAYER_H_

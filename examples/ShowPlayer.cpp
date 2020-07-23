@@ -115,6 +115,8 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
   // Seeking to a time before the playhead's position requires moving from the
   // beginning of the file.  This could be optimized more if this happens
   // frequently.
+  // Seeking to the current position can result in the frame being skipped;
+  // ensure the frame is loaded in this case as well.
   if (seek_time <= m_playback_pos) {
     m_loader.Reset();
     m_playback_pos = 0;
@@ -181,7 +183,7 @@ void ShowPlayer::SendNextFrame() {
       // Send the last frame before looping/exiting
       SendFrame(entry);
     }
-    HandleEndOfFile();
+    HandleEndOfShow();
     return;
   } else if (state == ShowLoader::INVALID_LINE) {
     HandleInvalidLine();
@@ -232,7 +234,7 @@ void ShowPlayer::SendFrame(const ShowEntry &entry) const {
 /**
  * Handle the case where we reach the end of file
  */
-void ShowPlayer::HandleEndOfFile() {
+void ShowPlayer::HandleEndOfShow() {
   if (m_iteration_remaining > 0) {
     m_iteration_remaining--;
   }
@@ -251,6 +253,9 @@ void ShowPlayer::HandleEndOfFile() {
   }
 
   if (loop) {
+    OLA_INFO << "----- "
+             << m_iteration_remaining << " iteration(s) remain "
+             << "-----";
     OLA_INFO << "----- Waiting " << loop_delay << " ms before looping -----";
     // Move to start point and send the frame
     m_client.GetSelectServer()->RegisterSingleTimeout(
