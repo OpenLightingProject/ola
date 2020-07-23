@@ -211,7 +211,7 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
  * Send the next frame in @p timeout milliseconds
  */
 void ShowPlayer::RegisterNextTimeout(const unsigned int timeout) {
-  OLA_INFO << "Registering timeout for " << timeout << "ms";
+  OLA_DEBUG << "Registering timeout for " << timeout << "ms";
   m_client.GetSelectServer()->RegisterSingleTimeout(
      timeout,
      ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
@@ -225,7 +225,7 @@ void ShowPlayer::SendFrame(const ShowEntry &entry) const {
   if (entry.buffer.Size() == 0) {
     return;
   }
-  OLA_INFO << "Universe: " << entry.universe << ": " << entry.buffer.ToString();
+  OLA_DEBUG << "Universe: " << entry.universe << ": " << entry.buffer.ToString();
   ola::client::SendDMXArgs args;
   m_client.GetClient()->SendDMX(entry.universe, entry.buffer, args);
 }
