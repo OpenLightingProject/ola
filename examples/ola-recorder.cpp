@@ -50,6 +50,7 @@ using std::string;
 DEFINE_s_string(playback, p, "", "The show file to playback.");
 DEFINE_s_string(record, r, "", "The show file to record data to.");
 DEFINE_string(verify, "", "The show file to verify.");
+DEFINE_default_bool(no_verify, false, "Don't verify show file before playback");
 DEFINE_s_string(universes, u, "",
                 "A comma separated list of universes to record");
 DEFINE_s_uint32(delay, d, 0, "The delay in ms between successive iterations.");
@@ -222,15 +223,17 @@ int VerifyShow(const string &filename, string *summary) {
  */
 int PlaybackShow() {
   const string filename = FLAGS_playback.str();
-  // Verify the show and print a summary before running
-  string summary;
-  const int verified = VerifyShow(filename, &summary);
-  // Printing a newline first makes this output look better in interactive
-  // terminal logs.
-  OLA_INFO << endl << summary;
-  if (verified != ola::EXIT_OK) {
-    // Show did not pass verification
-    return verified;
+  if (!FLAGS_no_verify) {
+    // Verify the show and print a summary before running
+    string summary;
+    const int verified = VerifyShow(filename, &summary);
+    // Printing a newline first makes this output look better in interactive
+    // terminal logs.
+    OLA_INFO << endl << summary;
+    if (verified != ola::EXIT_OK) {
+      // Show did not pass verification
+      return verified;
+    }
   }
 
   // Begin playback
