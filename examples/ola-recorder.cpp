@@ -144,6 +144,10 @@ int VerifyShow(const string &filename, string *summary) {
     if (FLAGS_stop > 0) {
       out << "Stopping at: " << FLAGS_stop / 1000.0 << " second(s)" << endl;
     }
+    if (FLAGS_iterations == 0 && FLAGS_duration == 0) {
+      // Infinite loop
+      out << "For each iteration:" << endl << endl;
+    }
     for (iter = frames_by_universe.begin(); iter != frames_by_universe.end();
          ++iter) {
       const unsigned int univ_frames = iter->second;

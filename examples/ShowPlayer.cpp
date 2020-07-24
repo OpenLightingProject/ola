@@ -95,10 +95,19 @@ int ShowPlayer::Playback(unsigned int iterations,
     }
     ss->Run();
   } else {
+    // Never infinite loop when simulating
+    if (iterations == 0 && duration == 0) {
+      m_infinite_loop = false;
+      m_iteration_remaining = 1;
+    }
     // Simple event loop to simulate playback without involving olad
     // Start by seeking to start point
     m_next_task = TASK_LOOP;
     while (m_next_task != Task::TASK_COMPLETE) {
+      if (duration > 0 && m_run_time >= duration * 1000) {
+        m_run_time = duration * 1000;
+        break;
+      }
       switch (m_next_task) {
         case TASK_COMPLETE:
           break;
