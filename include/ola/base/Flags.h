@@ -44,7 +44,7 @@
  *  --name is simon
  *  --baz (-b) is 0
  *  @endcode
- *  Compare with <tt>./flags  --foo --name bob -b 10 --nobar</tt>
+ *  Compare with <tt>./flags --foo --name bob -b 10 --no-bar</tt>
  *  @code
  *  --foo is 1
  *  --bar is 0
