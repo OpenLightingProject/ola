@@ -248,12 +248,10 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
  * Send the next frame in @p timeout milliseconds
  */
 void ShowPlayer::RegisterNextTimeout(const unsigned int timeout) {
-  if (!m_simulate) {
-    OLA_DEBUG << "Registering timeout for " << timeout << "ms";
-  }
   m_run_time += timeout;
   m_next_task = TASK_NEXT_FRAME;
   if (!m_simulate) {
+    OLA_DEBUG << "Registering timeout for " << timeout << "ms";
     m_client.GetSelectServer()->RegisterSingleTimeout(
         timeout,
         ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
@@ -302,16 +300,14 @@ void ShowPlayer::HandleEndOfShow() {
   }
 
   if (loop) {
+    // Move to start point and send the frame
+    m_run_time += loop_delay;
+    m_next_task = TASK_LOOP;
     if (!m_simulate) {
       OLA_INFO << "----- "
                << m_iteration_remaining << " iteration(s) remain "
                << "-----";
       OLA_INFO << "----- Waiting " << loop_delay << " ms before looping -----";
-    }
-    // Move to start point and send the frame
-    m_run_time += loop_delay;
-    m_next_task = TASK_LOOP;
-    if (!m_simulate) {
       m_client.GetSelectServer()->RegisterSingleTimeout(
           loop_delay,
           ola::NewSingleCallback(this, &ShowPlayer::Loop));

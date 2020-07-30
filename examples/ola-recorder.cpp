@@ -185,6 +185,8 @@ int PlaybackShow() {
     OLA_INFO << endl << summary;
     if (verified != ola::EXIT_OK) {
       // Show did not pass verification
+      // The Verify method has already informed the user, so fail with that
+      // method's result.
       return verified;
     }
   }
