@@ -15,6 +15,7 @@
 # StreamRpcChannel.py
 # Copyright (C) 2005 Simon Newton
 
+import binascii
 import logging
 import struct
 from google.protobuf import service
@@ -170,6 +171,7 @@ class StreamRpcChannel(service.RpcChannel):
     data = message.SerializeToString()
     # combine into one buffer to send so we avoid sending two packets
     data = self._EncodeHeader(len(data)) + data
+    logging.debug("send->" + str(binascii.hexlify(data)))
 
     sent_bytes = self._socket.send(data)
     if sent_bytes != len(data):
@@ -240,6 +242,7 @@ class StreamRpcChannel(service.RpcChannel):
         if not raw_header:
           # not enough data yet
           return
+        logging.debug("recvhdr<-" + str(binascii.hexlify(raw_header)))
         header = struct.unpack('=L', raw_header)[0]
         version, size = self._DecodeHeader(header)
 
@@ -254,6 +257,7 @@ class StreamRpcChannel(service.RpcChannel):
         # not enough data yet
         return
 
+      logging.debug("recvmsg<-" + str(binascii.hexlify(data)))
       if not self._skip_message:
         self._HandleNewMessage(data)
       self._expected_size = 0
