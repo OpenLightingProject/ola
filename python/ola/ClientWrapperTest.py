@@ -17,6 +17,7 @@
 # Copyright (C) 2019 Bruce Lowekamp
 
 import array
+import binascii
 import datetime
 import socket
 # import timeout_decorator
@@ -208,7 +209,13 @@ class ClientWrapperTest(unittest.TestCase):
 
     def DataCallback(self):
       data = sockets[1].recv(4096)
-      self.assertTrue(len(data) > 100)
+      expected = binascii.unhexlify(
+        "7d000010080110001a0d557064617465446d784461746122680801126400000"
+        "000000000000000000000000000000000000000000000000000000000000000"
+        "000000000000000000000000000000000000000000000000000000000000000"
+        "000000000000000000000000000000000000000000000000000000000000000"
+        "000000")
+      self.assertEqual(data, expected)
       results.gotdata = True
       wrapper.AddEvent(0, wrapper.Stop)
 
