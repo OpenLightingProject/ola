@@ -79,6 +79,7 @@ dist_check_SCRIPTS += \
     python/ola/MACAddressTest.py \
     python/ola/OlaClientTest.py \
     python/ola/PidStoreTest.py \
+    python/ola/RDMTest.py \
     python/ola/TestUtils.py \
     python/ola/UIDTest.py
 
@@ -89,6 +90,7 @@ test_scripts += \
     python/ola/MACAddressTest.py \
     python/ola/OlaClientTest.sh \
     python/ola/PidStoreTest.sh \
+    python/ola/RDMTest.py \
     python/ola/UIDTest.py
 endif
 
