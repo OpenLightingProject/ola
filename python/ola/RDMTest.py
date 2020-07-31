@@ -17,6 +17,7 @@
 # Copyright (C) 2019 Bruce Lowekamp
 
 import binascii
+import os
 import socket
 # import timeout_decorator
 import unittest
@@ -30,6 +31,7 @@ from ola.UID import UID
 
 __author__ = 'bruce@lowekamp.net (Bruce Lowekamp)'
 
+global pidStorePath
 
 class RDMTest(unittest.TestCase):
   # @timeout_decorator.timeout(2)
@@ -39,7 +41,7 @@ class RDMTest(unittest.TestCase):
     sends fixed response message."""
     sockets = socket.socketpair()
     wrapper = ClientWrapper(sockets[0])
-    pid_store = PidStore.GetStore()
+    pid_store = PidStore.GetStore(pidStorePath)
     client = wrapper.Client()
     rdm_api = RDMAPI(client, pid_store)
 
@@ -97,4 +99,5 @@ class RDMTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  pidStorePath = (os.environ.get('PIDSTOREDIR', "../data/rdm"))
   unittest.main()
