@@ -33,13 +33,15 @@ x/y/2020 ola-0.10.8
  * Renamed RESONSE_INVALID_DESTINATION(sic) to RESPONSE_INVALID_DESTINATION in
    the ArduinoWidget code
  * Fix compatibility with ncurses 6
- * Fix compatibility with Protobuf 3.7 and newer (tested with up to 3.11.4)
+ * Fix compatibility with Protobuf 3.7 and newer (tested with up to 3.12.2)
  * Rename CircularDepdendancyException(sic) to CircularDependencyException in
    the Python RDM Test code, also the relevant comments
+ * Fix a minor longstanding logging bug with Avahi subtype registration errors
  * Fix Enttec USB Pro Mk2 firmware >=4.15 RDM Discovery #1631
 
  Internal:
- *
+ * Replace "readdir_r" with "readdir" since the former has been deprecated
+ * Add a unit test for the functions that used readdir_r before
 
 13/7/2018 ola-0.10.7
  Features:
