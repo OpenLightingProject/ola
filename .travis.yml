@@ -50,13 +50,71 @@ matrix:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='0'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.13'
+      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='1'
     - os: osx
       osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
-      - CPPUNIT='1.14'
+      - CPPUNIT='1.13'
       - LIBFTDI='0'
+      - PROTOBUF='latest'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='latest'
+      - LIBFTDI='0'
+      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
@@ -64,45 +122,47 @@ matrix:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
+      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
-      - CPPUNIT='1.14'
+      - CPPUNIT='latest'
       - LIBFTDI='0'
+      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
-      - PROTOBUF='latest'
       - LIBFTDI='1'
+      - PROTOBUF='latest'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='latest'
+      - LIBFTDI='1'
+      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
-      - PROTOBUF='latest'
       - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
       - PROTOBUF='latest'
-      - LIBFTDI='1'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='latest'
+      - CPPUNIT='latest'
       - LIBFTDI='1'
+      - PROTOBUF='latest'
     - os: linux
       dist: xenial
       compiler: clang
@@ -192,7 +252,9 @@ matrix:
            - moreutils
     - os: linux
       dist: xenial
-      env: TASK='codespell'
+      env:
+       - TASK='codespell'
+       - PATH=/opt/python/3.7.1/bin:$PATH
       addons:
         apt:
           packages:
@@ -235,13 +297,13 @@ matrix:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='0'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
@@ -249,13 +311,41 @@ matrix:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='latest'
+#      - LIBFTDI='1'
     - os: linux
       dist: xenial
       compiler: gcc
@@ -318,7 +408,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
-  - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
+  - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
@@ -326,21 +416,28 @@ install:
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then sudo mkdir -p /pychecker/; sudo ln -s /home/travis/.local/lib/python2.7/site-packages/pychecker/checker.py /pychecker/checker.py; fi
 
 before_install:
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+#Fix permissions for unbound (and possibly others)
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
+#Add a missing gnupg folder
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/Cellar/gnupg2/2.2.5 ]; then sudo mkdir -p /usr/local/Cellar/gnupg2/2.2.5 && sudo chown -R $(whoami) /usr/local/Cellar/gnupg2/2.2.5; fi; fi
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall libtool; fi
+#Fix a broken homebrew gnupg install
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall --ignore-dependencies gnupg; fi
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
+#Having fixed everything up, update to the bleeding edge
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+#Install build dependencies
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "latest" ]; then brew install protobuf; fi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew install protobuf@3.1; fi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew link -f protobuf@3.1; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew install protobuf@3.6; fi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew link -f protobuf@3.6; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.6/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "latest" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "latest" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-8" CC="ccache gcc-8"; fi
