@@ -247,8 +247,7 @@ elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "make_builtfiles"
   make builtfiles;
   travis_fold end "make_builtfiles"
-  # if you update the flake8 command line, please also update README.developer to match
-  flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129,W504 data/rdm include/ola python scripts tools/ola_mon tools/rdm
+  flake8
 elif [[ $TASK = 'pychecker' ]]; then
   travis_fold start "autoreconf"
   autoreconf -i;
@@ -266,7 +265,7 @@ elif [[ $TASK = 'pychecker' ]]; then
   mkdir ./python/ola/testing/
   ln -s ./tools/rdm ./python/ola/testing/rdm
   travis_fold start "pychecker_a"
-  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and \( -wholename "./data/*" -or -wholename "./include/*" -or -wholename "./scripts/*" -or -wholename "./python/examples/rdm_compare.py" -or -wholename "./python/ola/*" \) -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -wholename "./scripts/enforce_licence.py" -or -wholename "./python/ola/rpc/*" -or -wholename "./python/ola/ClientWrapper.py" -or -wholename "./python/ola/PidStore.py" -or -wholename "./python/ola/RDMAPI.py" \) | xargs)
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and \( -wholename "./data/*" -or -wholename "./include/*" -or -wholename "./scripts/*" -or -wholename "./python/examples/rdm_compare.py" -or -wholename "./python/ola/*" \) -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "OlaClientTest.py" -or -name "ola_candidate_ports.py" -or -wholename "./scripts/enforce_licence.py" -or -wholename "./python/ola/rpc/*" -or -wholename "./python/ola/ClientWrapper.py" -or -wholename "./python/ola/PidStore.py" -or -wholename "./python/ola/RDMAPI.py" \) | xargs)
   travis_fold end "pychecker_a"
   # More restricted checking for files that import files that break pychecker
   travis_fold start "pychecker_b"
