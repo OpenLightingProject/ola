@@ -63,8 +63,8 @@ class ShowPlayer {
   int Playback(unsigned int iterations,
                uint64_t duration,
                uint64_t delay,
-               uint64_t start,
-               uint64_t stop);
+               uint64_t start = 0,
+               uint64_t stop = 0);
 
 
   uint64_t GetRunTime() const {

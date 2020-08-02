@@ -238,8 +238,10 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
 void ShowPlayer::SendNextFrame() {
   ShowEntry entry;
   ShowLoader::State state = m_loader.NextEntry(&entry);
-  const bool stop_point_hit = m_stop > 0 && m_playback_pos >= m_stop;
-  if (state == ShowLoader::END_OF_FILE || stop_point_hit) {
+
+  // If EOF or at user-requested stopping point
+  if (state == ShowLoader::END_OF_FILE ||
+      (m_stop > 0 && m_playback_pos >= m_stop)) {
     if (m_stop == 0 || m_playback_pos == m_stop) {
       // Send the last frame before looping/exiting
       SendFrame(entry);
@@ -261,9 +263,9 @@ void ShowPlayer::SendNextFrame() {
 void ShowPlayer::SendEntry(const ShowEntry &entry) {
   // Send DMX data
   SendFrame(entry);
+  m_playback_pos += entry.next_wait;
 
   // Set when next to send data
-  m_playback_pos += entry.next_wait;
   RegisterNextTimeout(entry.next_wait);
 }
 
@@ -293,9 +295,7 @@ void ShowPlayer::SendFrame(const ShowEntry &entry) {
   if (!m_simulate) {
     OLA_DEBUG << "Universe: " << entry.universe << ": "
               << entry.buffer.ToString();
-  }
-  ola::client::SendDMXArgs args;
-  if (!m_simulate) {
+    ola::client::SendDMXArgs args;
     m_client.GetClient()->SendDMX(entry.universe, entry.buffer, args);
   }
   m_frame_count[entry.universe]++;
