@@ -55,7 +55,8 @@ DEFINE_default_bool(verify_playback, true,
 DEFINE_s_string(universes, u, "",
                 "A comma separated list of universes to record");
 DEFINE_s_uint32(delay, d, 0, "The delay in ms between successive iterations.");
-DEFINE_uint32(duration, 0, "The length of time (seconds) to run for.");
+DEFINE_uint32(duration, 0, "Total playback time (seconds); the program will "
+                           "close after this time has elapsed.");
 // 0 means infinite looping
 DEFINE_s_uint32(iterations, i, 1,
                 "The number of times to repeat the show, 0 means unlimited.");
@@ -63,7 +64,8 @@ DEFINE_uint32(start, 0,
               "Time (milliseconds) in show file to start playback from.");
 DEFINE_uint32(stop, 0,
               "Time (milliseconds) in show file to stop playback at. If "
-              "the show file is shorter, this option is ignored.");
+              "the show file is shorter, the last look will be held until the "
+              "stop point.");
 
 
 void TerminateRecorder(ShowRecorder *recorder) {

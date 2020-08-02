@@ -33,12 +33,13 @@ Print
 .B ola_recorder
 version information
 .IP "--duration <uint32_t>"
-The length of time (seconds) to run for.
+Total playback time (seconds); the program will close after this time has
+elapsed.
 .IP "--start <uint_32_t>"
 Time (milliseconds) in show file to start playback from.
 .IP "--stop <uint32_t>"
 Time (milliseconds) in show file to stop playback at.  If the show file is
-shorter, this option is ignored.
+shorter, the last look will be held until the stop point.
 .IP "--syslog"
 Send to syslog rather than stderr.
 .IP "--no-use-epoll"
