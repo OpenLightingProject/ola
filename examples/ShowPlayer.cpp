@@ -54,7 +54,9 @@ ShowPlayer::ShowPlayer(const string &filename)
       m_stop(0),
       m_playback_pos(0),
       m_run_time(0),
-      m_simulate(false) {
+      m_simulate(false),
+      m_next_task(TASK_LOOP),
+      m_status(ola::EXIT_SOFTWARE) {
 }
 
 ShowPlayer::~ShowPlayer() {}
@@ -84,7 +86,7 @@ int ShowPlayer::Playback(unsigned int iterations,
   m_loop_delay = delay;
   m_start = start;
   m_stop = stop;
-  m_status = ola::EXIT_OK;
+  m_status = ola::EXIT_SOFTWARE;
 
   if (!m_simulate) {
     ola::io::SelectServer *ss = m_client.GetSelectServer();
@@ -133,16 +135,28 @@ int ShowPlayer::Playback(unsigned int iterations,
  */
 void ShowPlayer::Loop() {
   ShowLoader::State state = SeekTo(m_start);
-  if (state != ShowLoader::State::OK) {
+  if (state != ShowLoader::OK) {
+    // End playback
     m_next_task = TASK_COMPLETE;
-    if (state == ShowLoader::State::INVALID_LINE) {
-      m_status = ola::EXIT_DATAERR;
-    } else {
-      m_status = ola::EXIT_OK;
-    }
     if (!m_simulate) {
       m_client.GetSelectServer()->Terminate();
     }
+  }
+
+  // Set status fields
+  switch (state) {
+    case ShowLoader::END_OF_FILE:
+    case ShowLoader::OK:
+      m_status = ola::EXIT_OK;
+      break;
+      // All other states are considered errors of some sort
+    case ShowLoader::INVALID_LINE:
+      m_status = ola::EXIT_DATAERR;
+      break;
+    default:
+      // Handle future errors
+      m_status = ola::EXIT_SOFTWARE;
+      break;
   }
 }
 
@@ -170,6 +184,8 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
   while (true) {
     ShowEntry entry;
     state = m_loader.NextEntry(&entry);
+
+    // Handle abnormal conditions
     if (state == ShowLoader::END_OF_FILE) {
       if (playhead_time == seek_time) {
         // Send the only frame(s) we have and loop
@@ -183,7 +199,12 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
     } else if (state == ShowLoader::INVALID_LINE) {
       HandleInvalidLine();
       return state;
+    } else if (state != ShowLoader::OK) {
+      // Handle future errors
+      OLA_FATAL << "An unknown error occurred near " << m_playback_pos << " ms";
+      return state;
     }
+
     playhead_time += entry.next_wait;
     if (entry.buffer.Size() > 0) {
       // TODO(Dan): Merge entry buffers to handle buffers with different lengths

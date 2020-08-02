@@ -96,8 +96,8 @@ class ShowPlayer {
     TASK_NEXT_FRAME,
     TASK_LOOP,
   } Task;
-  Task m_next_task = TASK_LOOP;
-  int m_status = ola::EXIT_OK;
+  Task m_next_task;
+  int m_status;
 
   void Loop();
   ShowLoader::State SeekTo(uint64_t seek_time);
