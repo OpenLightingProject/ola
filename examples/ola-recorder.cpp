@@ -118,9 +118,9 @@ int RecordShow() {
 /**
  * Verify a show file is valid
  * @param[in] filename file to check
- * @param[out] string to fill with a summary of the show
+ * @param[out] stream to receive a textual summary of the show
  */
-int VerifyShow(const string &filename, string *summary) {
+int VerifyShow(const string &filename, std::ostream *summary) {
   ShowPlayer player(filename);
   int state = player.Init(true);
   if (state != ola::EXIT_OK) {
@@ -135,32 +135,32 @@ int VerifyShow(const string &filename, string *summary) {
   if (state == ola::EXIT_OK && summary != NULL) {
     map<unsigned int, uint64_t> frames_by_universe = player.GetFrameCount();
     const uint64_t total_time = player.GetRunTime();
-    std::stringstream out;
     map<unsigned int, uint64_t>::const_iterator iter;
     uint64_t total = 0;
-    out << "------------ Summary ----------" << endl;
+    *summary << "------------ Summary ----------" << endl;
     if (FLAGS_start > 0) {
-      out << "Starting at: " << FLAGS_start / 1000.0 << " second(s)" << endl;
+      *summary << "Starting at: " << FLAGS_start / 1000.0 << " second(s)"
+               << endl;
     }
     if (FLAGS_stop > 0) {
-      out << "Stopping at: " << FLAGS_stop / 1000.0 << " second(s)" << endl;
+      *summary << "Stopping at: " << FLAGS_stop / 1000.0 << " second(s)"
+               << endl;
     }
     if (FLAGS_iterations == 0 && FLAGS_duration == 0) {
       // Infinite loop
-      out << "For each iteration:" << endl << endl;
+      *summary << "For each iteration:" << endl << endl;
     }
     for (iter = frames_by_universe.begin(); iter != frames_by_universe.end();
          ++iter) {
       const unsigned int univ_frames = iter->second;
-      out << "Universe " << iter->first << ": " << univ_frames << " frames"
-          << endl;
+      *summary << "Universe " << iter->first << ": " << univ_frames << " frames"
+               << endl;
       total += univ_frames;
     }
-    out << endl;
-    out << "Total frames: " << total << endl;
-    out << "Playback time: " << total_time / 1000.0 << " second(s)" << endl;
-
-    summary->assign(out.str());
+    *summary << endl
+             << "Total frames: " << total << endl
+             << "Playback time: " << total_time / 1000.0 << " second(s)"
+             << endl;
   }
   if ((state == ShowLoader::OK) || (state == ShowLoader::END_OF_FILE)) {
     return ola::EXIT_OK;
@@ -178,11 +178,11 @@ int PlaybackShow() {
   const string filename = FLAGS_playback.str();
   if (FLAGS_verify_playback) {
     // Verify the show and print a summary before running
-    string summary;
+    std::ostringstream summary;
     const int verified = VerifyShow(filename, &summary);
     // Printing a newline first makes this output look better in interactive
     // terminal logs.
-    OLA_INFO << endl << summary;
+    OLA_INFO << endl << summary.str();
     if (verified != ola::EXIT_OK) {
       // Show did not pass verification
       // The Verify method has already informed the user, so fail with that
@@ -225,9 +225,7 @@ int main(int argc, char *argv[]) {
   } else if (!FLAGS_record.str().empty()) {
     return RecordShow();
   } else if (!FLAGS_verify.str().empty()) {
-    string summary;
-    const int verified = VerifyShow(FLAGS_verify.str(), &summary);
-    cout << summary << endl;
+    const int verified = VerifyShow(FLAGS_verify.str(), &cout);
     return verified;
   } else {
     OLA_FATAL << "One of --record or --playback or --verify must be provided";
