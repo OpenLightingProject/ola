@@ -51,7 +51,10 @@ ShowPlayer::ShowPlayer(const string &filename)
       m_iteration_remaining(0),
       m_loop_delay(0),
       m_start(0),
-      m_stop(0) {
+      m_stop(0),
+      m_playback_pos(0),
+      m_run_time(0),
+      m_simulate(false) {
 }
 
 ShowPlayer::~ShowPlayer() {}

@@ -30,9 +30,9 @@
  * Holds a single entry in the show file
  */
 struct ShowEntry {
-    unsigned int universe;
-    ola::DmxBuffer buffer;
-    unsigned int next_wait = 0;
+  unsigned int universe;
+  ola::DmxBuffer buffer;
+  unsigned int next_wait;
 };
 
 /**

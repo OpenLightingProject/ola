@@ -85,10 +85,10 @@ class ShowPlayer {
   uint64_t m_loop_delay;
   uint64_t m_start;
   uint64_t m_stop;
-  uint64_t m_playback_pos = 0;
-  uint64_t m_run_time = 0;
+  uint64_t m_playback_pos;
+  uint64_t m_run_time;
   std::map<unsigned int, uint64_t> m_frame_count;
-  bool m_simulate = false;
+  bool m_simulate;
 
   /** Used for tracking simulation progress */
   typedef enum {
