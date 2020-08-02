@@ -107,5 +107,6 @@ class ShowPlayer {
   void SendFrame(const ShowEntry &entry);
   void HandleEndOfShow();
   void HandleInvalidLine();
+  void StopPlayback(int exit_status);
 };
 #endif  // EXAMPLES_SHOWPLAYER_H_

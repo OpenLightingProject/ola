@@ -135,27 +135,20 @@ int ShowPlayer::Playback(unsigned int iterations,
  */
 void ShowPlayer::Loop() {
   ShowLoader::State state = SeekTo(m_start);
-  if (state != ShowLoader::OK) {
-    // End playback
-    m_next_task = TASK_COMPLETE;
-    if (!m_simulate) {
-      m_client.GetSelectServer()->Terminate();
-    }
-  }
 
-  // Set status fields
   switch (state) {
+    // Success conditions
     case ShowLoader::END_OF_FILE:
     case ShowLoader::OK:
       m_status = ola::EXIT_OK;
       break;
       // All other states are considered errors of some sort
     case ShowLoader::INVALID_LINE:
-      m_status = ola::EXIT_DATAERR;
+      StopPlayback(ola::EXIT_DATAERR);
       break;
     default:
       // Handle future errors
-      m_status = ola::EXIT_SOFTWARE;
+      StopPlayback(ola::EXIT_SOFTWARE);
       break;
   }
 }
@@ -239,9 +232,11 @@ void ShowPlayer::SendNextFrame() {
   ShowEntry entry;
   ShowLoader::State state = m_loader.NextEntry(&entry);
 
-  // If EOF or at user-requested stopping point
-  if (state == ShowLoader::END_OF_FILE ||
-      (m_stop > 0 && m_playback_pos >= m_stop)) {
+  if (state == ShowLoader::OK) {
+    SendEntry(entry);
+  } else if (state == ShowLoader::END_OF_FILE ||
+             (m_stop > 0 && m_playback_pos >= m_stop)) {
+    // At EOF or at user-requested stopping point
     if (m_stop == 0 || m_playback_pos == m_stop) {
       // Send the last frame before looping/exiting
       SendFrame(entry);
@@ -251,8 +246,12 @@ void ShowPlayer::SendNextFrame() {
   } else if (state == ShowLoader::INVALID_LINE) {
     HandleInvalidLine();
     return;
+  } else {
+    // Handle future errors
+    OLA_FATAL << "An unknown error occurred near " << m_playback_pos << " ms";
+    StopPlayback(ola::EXIT_SOFTWARE);
+    return;
   }
-  SendEntry(entry);
 }
 
 
@@ -338,12 +337,7 @@ void ShowPlayer::HandleEndOfShow() {
     }
     return;
   } else {
-    // stop the show
-    m_next_task = TASK_COMPLETE;
-    m_status = ola::EXIT_OK;
-    if (!m_simulate) {
-      m_client.GetSelectServer()->Terminate();
-    }
+    StopPlayback(ola::EXIT_OK);
   }
 }
 
@@ -353,8 +347,17 @@ void ShowPlayer::HandleEndOfShow() {
  */
 void ShowPlayer::HandleInvalidLine() {
   OLA_FATAL << "Invalid data at line " << m_loader.GetCurrentLineNumber();
+  StopPlayback(ola::EXIT_DATAERR);
+}
+
+
+/**
+ * Stop playback
+ * @param exit_status program exit status; ola::EXIT_OK iff no errors
+ */
+void ShowPlayer::StopPlayback(const int exit_status) {
   m_next_task = TASK_COMPLETE;
-  m_status = ola::EXIT_DATAERR;
+  m_status = exit_status;
   if (!m_simulate) {
     m_client.GetSelectServer()->Terminate();
   }
