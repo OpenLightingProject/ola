@@ -233,6 +233,7 @@ void ShowPlayer::SendNextFrame() {
   ShowLoader::State state = m_loader.NextEntry(&entry);
 
   if (state == ShowLoader::OK) {
+    m_status = ola::EXIT_OK;
     SendEntry(entry);
   } else if (state == ShowLoader::END_OF_FILE ||
              (m_stop > 0 && m_playback_pos >= m_stop)) {
