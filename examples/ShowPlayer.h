@@ -53,9 +53,10 @@ class ShowPlayer {
   /**
    * @brief Playback the show
    * @param iterations the number of iterations of the show to play.
-   * @param duration the duration in seconds after which playback is stopped.
-   * @param delay the hold time at the end of a show before playback starts
-   * from the beginning again.
+   * @param duration the duration (in milliseconds) after which playback is
+   * stopped.
+   * @param delay the hold time (in milliseconds) at the end of a show before
+   * playback starts from the beginning again.
    * @param start the time (in milliseconds) to start playback from
    * @param stop the time (in milliseconds) to stop playback from; 0 will run
    * until EOF.
