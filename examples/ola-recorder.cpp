@@ -122,51 +122,72 @@ int RecordShow() {
  */
 int VerifyShow(const string &filename, std::ostream *summary) {
   ShowPlayer player(filename);
-  int state = player.Init(true);
-  if (state != ola::EXIT_OK) {
-    return state;
+  int exit_status = player.Init(true);
+  if (exit_status != ola::EXIT_OK) {
+    // The init process will log any errors it encounters
+    OLA_FATAL << "Error initializing the player. This is usually because of "
+                 "incorrect command-line arguments or a system error, not "
+                 "because of data. See any error messages above for details.";
+    return exit_status;
   }
-  state = player.Playback(FLAGS_iterations,
-                          FLAGS_duration,
-                          FLAGS_delay,
-                          FLAGS_start,
-                          FLAGS_stop);
+  exit_status = player.Playback(FLAGS_iterations,
+                                FLAGS_duration,
+                                FLAGS_delay,
+                                FLAGS_start,
+                                FLAGS_stop);
 
-  if (state == ola::EXIT_OK && summary != NULL) {
-    map<unsigned int, uint64_t> frames_by_universe = player.GetFrameCount();
-    const uint64_t total_time = player.GetRunTime();
-    map<unsigned int, uint64_t>::const_iterator iter;
-    uint64_t total = 0;
-    *summary << "------------ Summary ----------" << endl;
-    if (FLAGS_start > 0) {
-      *summary << "Starting at: " << FLAGS_start / 1000.0 << " second(s)"
+  if (exit_status == ola::EXIT_OK) {
+    if (summary != NULL) {
+      map<unsigned int, uint64_t> frames_by_universe = player.GetFrameCount();
+      const uint64_t total_time = player.GetRunTime();
+      map<unsigned int, uint64_t>::const_iterator iter;
+      uint64_t total = 0;
+      *summary << "------------ Summary ----------" << endl;
+      if (FLAGS_start > 0) {
+        *summary << "Starting at " << FLAGS_start / 1000.0 << " second(s) from "
+                 << "the start of the recording" << endl;
+      }
+      if (FLAGS_stop > 0) {
+        *summary << "Stopping at " << FLAGS_stop / 1000.0 << " second(s) from "
+                 << "the start of the recording" << endl;
+      }
+      if (FLAGS_delay > 0) {
+        *summary << "Waiting " << FLAGS_delay / 1000.0 << " before looping"
+                 << endl;
+      }
+      if (FLAGS_iterations == 0 && FLAGS_duration == 0) {
+        // Infinite loop
+        *summary << "For each iteration:" << endl;
+      } else {
+        if (FLAGS_iterations > 0) {
+          // Defined iterations
+          *summary << "For all (" << FLAGS_iterations << ") iterations:"
+                   << endl;
+        }
+        if (FLAGS_duration > 0) {
+          // Defined duration
+          *summary << "After playing for " << FLAGS_duration << " second(s) "
+                   << "total:" << endl;
+        }
+      }
+      for (iter = frames_by_universe.begin(); iter != frames_by_universe.end();
+           ++iter) {
+        const unsigned int univ_frames = iter->second;
+        *summary << "Universe " << iter->first << ": " << univ_frames
+                 << " frames" << endl;
+        total += univ_frames;
+      }
+      *summary << endl
+               << "Total frames: " << total << endl
+               << "Total playback time: " << total_time / 1000.0 << " seconds"
                << endl;
     }
-    if (FLAGS_stop > 0) {
-      *summary << "Stopping at: " << FLAGS_stop / 1000.0 << " second(s)"
-               << endl;
-    }
-    if (FLAGS_iterations == 0 && FLAGS_duration == 0) {
-      // Infinite loop
-      *summary << "For each iteration:" << endl << endl;
-    }
-    for (iter = frames_by_universe.begin(); iter != frames_by_universe.end();
-         ++iter) {
-      const unsigned int univ_frames = iter->second;
-      *summary << "Universe " << iter->first << ": " << univ_frames << " frames"
-               << endl;
-      total += univ_frames;
-    }
-    *summary << endl
-             << "Total frames: " << total << endl
-             << "Playback time: " << total_time / 1000.0 << " second(s)"
-             << endl;
-  }
-  if ((state == ShowLoader::OK) || (state == ShowLoader::END_OF_FILE)) {
-    return ola::EXIT_OK;
+    return exit_status;
   } else {
-    OLA_FATAL << "Error loading show, got state " << state;
-    return ola::EXIT_DATAERR;
+    // The ShowPlayer will have printed details about the problem(s), so direct
+    // the user's attention there.
+    OLA_FATAL << "Error loading show. See error message above for details.";
+    return exit_status;
   }
 }
 
