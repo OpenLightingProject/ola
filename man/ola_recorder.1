@@ -15,7 +15,8 @@ The delay time (milliseconds) between successive iterations.
 .IP "-h, --help"
 Display the help message
 .IP "-i, --iterations <uint32_t>"
-The number of times to repeat the show, 0 means unlimited.
+The number of times to repeat the show, 0 means unlimited. The duration option
+overrides this option.
 .IP "-l, --log-level <int8_t>"
 Set the logging level 0 .. 4.
 .IP "-p, --playback <string>"
@@ -34,7 +35,7 @@ Print
 version information
 .IP "--duration <uint32_t>"
 Total playback time (milliseconds); the program will close after this time has
-elapsed.
+elapsed. This option overrides the iterations option.
 .IP "--start <uint_32_t>"
 Time (milliseconds) in show file to start playback from.
 .IP "--stop <uint32_t>"
