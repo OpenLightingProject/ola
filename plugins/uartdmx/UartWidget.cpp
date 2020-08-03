@@ -57,7 +57,7 @@ using std::vector;
 
 UartWidget::UartWidget(const std::string &path, unsigned int padding)
     : m_path(path),
-			m_padding (padding),
+      m_padding(padding),
       m_fd(NOT_OPEN) {
 }
 
@@ -125,8 +125,8 @@ bool UartWidget::Write(const ola::DmxBuffer& data) {
 
   data.Get(buffer + 1, &length);
   if (length < m_padding) {
-  	  memset ((buffer + 1 + length), 0x00, (m_padding - length) );
-  	  length = m_padding;
+  	  memset((buffer + 1 + length), 0x00, (m_padding - length) );
+      length = m_padding;
     }
 
   if (write(m_fd, buffer, length + 1) <= 0) {

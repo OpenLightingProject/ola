@@ -37,7 +37,7 @@ const char UartDmxDevice::K_BREAK[] = "-break";
 const char UartDmxDevice::K_PADDING[] = "-padding";
 const unsigned int UartDmxDevice::DEFAULT_BREAK = 100;
 const unsigned int UartDmxDevice::DEFAULT_MALF = 100;
-const unsigned int UartDmxDevice::DEFAULT_PADDING = 0; // at least 0 slots in frame
+const unsigned int UartDmxDevice::DEFAULT_PADDING = 0;
 
 
 UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
@@ -103,7 +103,7 @@ void UartDmxDevice::SetDefaults() {
                                          UIntValidator(8, 1000000),
                                          DEFAULT_MALF);
   save |= m_preferences->SetDefaultValue(DevicePaddingKey(),
-                                         UIntValidator(0, 512), // 0 to 512 slots in frame
+                                         UIntValidator(0, 512),
                                          DEFAULT_PADDING);
   if (save) {
     m_preferences->Save();
