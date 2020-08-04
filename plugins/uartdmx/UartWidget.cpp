@@ -125,7 +125,7 @@ bool UartWidget::Write(const ola::DmxBuffer& data) {
 
   data.Get(buffer + 1, &length);
   if (length < m_padding) {
-  	  memset((buffer + 1 + length), 0x00, (m_padding - length) );
+      memset((buffer + 1 + length), 0x00, (m_padding - length) );
       length = m_padding;
     }
 
