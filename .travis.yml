@@ -91,7 +91,7 @@ matrix:
       dist: xenial
       compiler: clang
       env: TASK='compile'
-      python: '2.7'
+      python: '3.8'
       addons:
         apt:
           packages:
