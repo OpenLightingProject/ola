@@ -36,6 +36,7 @@ x/y/2019 ola-0.10.8
  * Fix compatibility with Protobuf 3.7 and newer (tested with up to 3.12.2)
  * Rename CircularDepdendancyException(sic) to CircularDependencyException in
    the Python RDM Test code, also the relevant comments
+ * Fix a minor longstanding logging bug with Avahi subtype registration errors
 
  Internal:
  * Replace "readdir_r" with "readdir" since the former has been deprecated
