@@ -134,6 +134,7 @@ int VerifyShow(const string &filename, std::ostream *summary) {
                  "because of data. See any error messages above for details.";
     return exit_status;
   }
+  // The playback simulation process will log any errors it encounters
   exit_status = player.Playback(FLAGS_iterations,
                                 FLAGS_duration,
                                 FLAGS_delay,

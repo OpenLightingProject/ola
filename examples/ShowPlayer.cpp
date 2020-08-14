@@ -142,7 +142,7 @@ void ShowPlayer::Loop() {
     case ShowLoader::OK:
       m_status = ola::EXIT_OK;
       break;
-      // All other states are considered errors of some sort
+    // All other states are considered errors of some sort
     case ShowLoader::INVALID_LINE:
       StopPlayback(ola::EXIT_DATAERR);
       break;
