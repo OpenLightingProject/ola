@@ -205,9 +205,7 @@ int PlaybackShow() {
     // Verify the show and print a summary before running
     std::ostringstream summary;
     const int verified = VerifyShow(filename, &summary);
-    // Printing a newline first makes this output look better in interactive
-    // terminal logs.
-    OLA_INFO << endl << summary.str();
+    OLA_INFO << "Verification of " << filename << ":" << endl << summary.str();
     if (verified != ola::EXIT_OK) {
       // Show did not pass verification
       // The Verify method has already informed the user, so fail with that
