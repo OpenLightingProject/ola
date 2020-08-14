@@ -126,6 +126,11 @@ int ShowPlayer::Playback(unsigned int iterations,
     }
   }
 
+  if (m_iteration_remaining > 0) {
+    OLA_WARN << "More iterations requested than can fit in the duration "
+                "(" << m_iteration_remaining << " iteration(s) remain)";
+  }
+
   return m_status;
 }
 
