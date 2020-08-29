@@ -209,6 +209,17 @@ bool PidDescriptor::IsSetValid(uint16_t sub_device) const {
 
 
 /**
+ * @brief Compare PIDs by name
+ *
+ * Suitable for use as a sort comparison function
+ */
+bool PidDescriptor::OrderByName(const PidDescriptor *a,
+                                const PidDescriptor *b) {
+  return a->Name() < b->Name();
+}
+
+
+/**
  * Returns is a request is valid
  */
 bool PidDescriptor::RequestValid(uint16_t sub_device,
