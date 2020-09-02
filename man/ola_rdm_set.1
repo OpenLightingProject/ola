@@ -7,7 +7,7 @@ ola_rdm_set \- Set the value of a PID for an RDM device
 \fI--universe <universe> --uid <uid> <pid> <value>\fR
 .SH DESCRIPTION
 Set the value of a PID for a device.
-Use 'ola_rdm_set \fB\-\-list\-pids\fR' to get a list of PIDs.
+Use 'ola_rdm_set \fB\-\-list\-pids\fR' to get a list of applicable PIDs.
 .TP
 \fB\-\-frames\fR
 display the raw RDM frames if available.
@@ -21,7 +21,7 @@ the UID of the device to control.
 display this help message and exit.
 .TP
 \fB\-l\fR, \fB\-\-list\-pids\fR
-display a list of PIDs
+display a list of PIDs that support SET.
 .TP
 \fB\-p\fR, \fB\-\-pid\-location\fR
 the directory to read PID definitions from
