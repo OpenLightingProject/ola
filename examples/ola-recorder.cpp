@@ -105,7 +105,11 @@ int RecordShow() {
 
   {
     ola::thread::SignalThread signal_thread;
-    cout << "Recording, hit Control-C to end" << endl;
+    cout << "Recording, ";
+    if (FLAGS_duration != 0) {
+      cout << "will stop automatically after " << FLAGS_duration << "s, or ";
+    }
+    cout << "hit Control-C to end" << endl;
     signal_thread.InstallSignalHandler(
         SIGINT, ola::NewCallback(TerminateRecorder, &show_recorder));
     signal_thread.InstallSignalHandler(
