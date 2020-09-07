@@ -9,6 +9,11 @@ common_libolacommon_la_SOURCES += \
     common/base/SysExits.cpp \
     common/base/Version.cpp
 
+if HAVE_STRERROR_R
+common_libolacommon_la_SOURCES += common/base/StrError_R.cpp \
+                                  common/base/StrError_R_XSI.cpp
+endif
+
 # TESTS
 ##################################################
 

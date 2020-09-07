@@ -36,6 +36,10 @@
 // which needs to be after WinSock2.h, hence this order
 #include "olad/OlaDaemon.h"
 
+#if HAVE_LIBSYSTEMD
+#include "olad/Systemd.h"
+#endif  // HAVE_LIBSYSTEMD
+
 #include "ola/Logging.h"
 #include "ola/base/Credentials.h"
 #include "ola/base/Flags.h"
@@ -172,6 +176,18 @@ int main(int argc, char *argv[]) {
       ola::NewCallback(olad->GetOlaServer(), &ola::OlaServer::ReloadPlugins));
 #endif  // _WIN32
 
+#if HAVE_LIBSYSTEMD
+  if (ola::SystemdNotifyAvailable()) {
+    OLA_INFO << "Systemd notification socket address present, "
+             << "sending notifications.";
+  } else {
+    OLA_WARN << "Systemd notification socket address not present, "
+             << "not sending notifications.";
+  }
+  // Does not need to be guarded. sd_notify does its own internal check on
+  // the socket's presence, as well.
+  ola::SystemdNotify(0, "READY=1\nSTATUS=Startup complete\n");
+#endif  // HAVE_LIBSYSTEMD
   olad->Run();
   return ola::EXIT_OK;
 }

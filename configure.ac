@@ -231,8 +231,8 @@ AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
-                socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
-                getgrnam_r getgrgid_r secure_getenv])
+                socket strerror strerror_r getifaddrs getloadavg getpwnam_r \
+                getpwuid_r getgrnam_r getgrgid_r secure_getenv])
 
 LT_INIT([win32-dll])
 
@@ -251,6 +251,9 @@ AM_CONDITIONAL(HAVE_EPOLL, test "${ax_cv_have_epoll}" = "yes")
 # kqueue
 AC_CHECK_FUNCS([kqueue])
 AM_CONDITIONAL(HAVE_KQUEUE, test "${ac_cv_func_kqueue}" = "yes")
+
+# strerror_r
+AM_CONDITIONAL([HAVE_STRERROR_R], [test "x$ac_cv_func_strerror_r" = "xyes"])
 
 # check if the compiler supports -rdynamic
 AC_MSG_CHECKING(for -rdynamic support)
@@ -781,6 +784,31 @@ AC_ARG_ENABLE(
   [doxygen-version],
   [AS_HELP_STRING([--disable-doxygen-version],
   [Substitute the Doxygen version with latest, for the website])])
+
+# systemd support
+AC_ARG_ENABLE(
+  [systemd],
+  [AS_HELP_STRING([--disable-systemd], [Disable systemd support])])
+
+have_libsystemd="no"
+AS_IF([test "x$enable_systemd" != xno],
+  [PKG_CHECK_MODULES([libsystemd], [libsystemd >= 38], [have_libsystemd=yes], 
+                     [AC_MSG_WARN([disabling systemd support: can't find libsystemd])])
+   AC_CHECK_HEADER([systemd/sd-daemon.h], [],
+                   [have_libsystemd=no
+                    AC_MSG_WARN([disabling systemd support: can't find systemd/sd-daemon.h])])
+   AS_IF([test "x$ac_cv_func_strerror_r" = xno],
+         [have_libsystemd=no
+          AC_MSG_WARN([disabling systemd support: can't find strerror_r])])])
+
+AS_IF([test "x$have_libsystemd" = xyes],
+      [AC_DEFINE([HAVE_LIBSYSTEMD], [1],
+                 [define if systemd support is wanted and libsystemd is present])])
+
+AM_CONDITIONAL([HAVE_LIBSYSTEMD], [test "x$have_libsystemd" = xyes])
+
+AS_IF([test "x$enable_systemd" = xyes && test "x$have_libsystemd" = xno],
+      [AC_MSG_ERROR([could not enable systemd support])])
 
 # UUCP Lock directory
 AC_ARG_WITH([uucp-lock],

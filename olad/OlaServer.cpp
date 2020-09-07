@@ -63,6 +63,10 @@
 #include "olad/OladHTTPServer.h"
 #endif  // HAVE_LIBMICROHTTPD
 
+#ifdef HAVE_LIBSYSTEMD
+#include "olad/Systemd.h"
+#endif  // HAVE_LIBSYSTEMD
+
 DEFINE_s_uint16(rpc_port, r, ola::OlaServer::DEFAULT_RPC_PORT,
                 "The port to listen for RPCs on. Defaults to 9010.");
 DEFINE_default_bool(register_with_dns_sd, true,
@@ -472,9 +476,15 @@ bool OlaServer::InternalNewConnection(
 }
 
 void OlaServer::ReloadPluginsInternal() {
+#ifdef HAVE_LIBSYSTEMD
+  ola::SystemdNotify(0, "RELOADING=1\nSTATUS=Reloading plugins\n");
+#endif  // HAVE_LIBSYSTEMD
   OLA_INFO << "Reloading plugins";
   StopPlugins();
   m_plugin_manager->LoadAll();
+#ifdef HAVE_LIBSYSTEMD
+  ola::SystemdNotify(0, "READY=1\nSTATUS=Plugin reload complete\n");
+#endif  // HAVE_LIBSYSTEMD
 }
 
 void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {
