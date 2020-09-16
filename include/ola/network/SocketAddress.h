@@ -176,7 +176,7 @@ class GenericSocketAddress: public SocketAddress {
     GenericSocketAddress(const GenericSocketAddress& other) {
       memcpy(&m_addr, &(other.m_addr), sizeof(m_addr));
     }
- 
+
     bool IsValid() const;
 
     uint16_t Family() const {
