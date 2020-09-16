@@ -52,7 +52,7 @@ struct OSCTarget {
       socket_address = other.socket_address;
       osc_address = other.osc_address;
   }
-  
+
   std::string ToString() const {
     return socket_address.ToString() + osc_address;
   }
