@@ -676,7 +676,9 @@ void DummyPortTest::testParamDescription() {
 #ifndef __clang__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
   strncpy(param_description.description, description.c_str(), str_len);
+#ifndef __clang__
 #pragma GCC diagnostic pop
 #endif
 
