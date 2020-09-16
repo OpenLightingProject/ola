@@ -42,8 +42,8 @@ class MissingPropertyException(Error):
   """
 
 
-class CircularDepdendancyException(Error):
-  """Raised if there is a circular depdendancy created by PROVIDES &
+class CircularDependencyException(Error):
+  """Raised if there is a circular dependency created by PROVIDES &
      REQUIRES statements.
   """
 
@@ -397,8 +397,8 @@ class TestRunner(object):
     dep_objects = []
     for dep_class in dep_classes:
       if dep_class in new_parents:
-        raise CircularDepdendancyException(
-            'Circular depdendancy found %s in %s' % (dep_class, new_parents))
+        raise CircularDependencyException(
+            'Circular dependency found %s in %s' % (dep_class, new_parents))
       obj = self._AddTest(device,
                           class_name_to_object,
                           deps_map,

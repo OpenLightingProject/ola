@@ -41,6 +41,21 @@
 
 #include "protoc/StrUtil.h"
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
+// Required for Protobuf 3.7 onwards
+#ifdef HAVE_GOOGLE_PROTOBUF_IO_STRTOD_H
+#include <google/protobuf/io/strtod.h>
+#endif  // HAVE_GOOGLE_PROTOBUF_IO_STRTOD_H
+#ifdef HAVE_GOOGLE_PROTOBUF_STUBS_LOGGING_H
+#include <google/protobuf/stubs/logging.h>
+#endif  // HAVE_GOOGLE_PROTOBUF_STUBS_LOGGING_H
+#ifdef HAVE_GOOGLE_PROTOBUF_STUBS_STL_UTIL_H
+#include <google/protobuf/stubs/stl_util.h>
+#endif  // HAVE_GOOGLE_PROTOBUF_STUBS_STL_UTIL_H
+
 #ifdef _WIN32
 // MSVC has only _snprintf, not snprintf.
 //

@@ -409,7 +409,7 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
 
   vector<const PidDescriptor*> all_pids;
   esta_store->AllPids(&all_pids);
-  OLA_ASSERT_EQ(static_cast<size_t>(4), all_pids.size());
+  OLA_ASSERT_EQ(static_cast<size_t>(6), all_pids.size());
 
   // check manufacturer pids
   const PidStore *open_lighting_store =

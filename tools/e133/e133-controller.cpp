@@ -16,7 +16,7 @@
  * e133-controller.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * This connects to the device specified in --target.
+ * This connects to the device specified in \--target.
  *
  * It then sends some RDM commands to the E1.33 node and waits for the
  * response.
