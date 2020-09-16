@@ -42,7 +42,7 @@ class TransportHeader {
 
   TransportHeader() : m_transport_type(UNDEFINED) {}
 
-  TransportHeader(TransportHeader& other)
+  TransportHeader(const TransportHeader& other)
       : m_source(other.m_source),
         m_transport_type(other.m_transport_type) {}
 
