@@ -35,7 +35,7 @@ for man_file in *.1; do
   output_file=$output_dir/man1/$man_file.html;
   man2html -r $man_file -M ../index.html | sed 1,2d > $output_file;
   chmod a+r $output_file;
-  echo "<li><a href='./man1/$man_file.html'>$man_file</a></li>" >> $index_file
+  echo "<li><a href='./man1/$man_file.html'>$man_file</a> - `grep "\.SH NAME" $man_file -A 1 | tail -n 1 | sed -e 's/\\\-/-/g'`</li>" >> $index_file
 done
 
 cat << 'EOF' >> $index_file

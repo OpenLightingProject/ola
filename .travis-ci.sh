@@ -10,7 +10,8 @@ CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cppli
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
-      -wholename "./.codespellignore" -or \
+      -wholename "./.codespellignorewords" -or \
+      -wholename "./.codespellignorelines" -or \
       -wholename "./.git/*" -or \
       -wholename "./aclocal.m4" -or \
       -wholename "./config/config.guess" -or \
@@ -168,10 +169,10 @@ elif [[ $TASK = 'codespell' ]]; then
       $SPELLINGBLACKLIST \
       \) | xargs")
   # count the number of codespell errors
-  spellingerrors=$(zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignore $spellingfiles 2>&1 | wc -l)
+  spellingerrors=$(zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
     # print the output for info
-    zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignore $spellingfiles
+    zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles
     echo "Found $spellingerrors spelling errors via codespell"
     exit 1;
   else
@@ -243,7 +244,7 @@ elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "make_builtfiles"
   make builtfiles;
   travis_fold end "make_builtfiles"
-  flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129,W504 data/rdm include/ola python scripts tools/ola_mon tools/rdm
+  flake8
 else
   # Otherwise compile and check as normal
   if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then

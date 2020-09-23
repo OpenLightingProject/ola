@@ -20,26 +20,31 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
+#include <iterator>
+#include <vector>
 
+#include "ola/StringUtils.h"
 #include "ola/file/Util.h"
 #include "ola/testing/TestUtils.h"
-
 
 using ola::file::FilenameFromPath;
 using ola::file::FilenameFromPathOrDefault;
 using ola::file::FilenameFromPathOrPath;
 using ola::file::JoinPaths;
+using ola::file::FindMatchingFiles;
 using std::string;
 
 class UtilTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UtilTest);
   CPPUNIT_TEST(testJoinPaths);
   CPPUNIT_TEST(testFilenameFromPath);
+  CPPUNIT_TEST(testFindMatchingFiles);
   CPPUNIT_TEST_SUITE_END();
 
  public:
   void testFilenameFromPath();
   void testJoinPaths();
+  void testFindMatchingFiles();
 };
 
 
@@ -90,3 +95,57 @@ void UtilTest::testFilenameFromPath() {
   OLA_ASSERT_EQ(string("baz"), FilenameFromPathOrPath("/foo/bar/baz"));
 }
 
+/*
+ * Test the FindMatchingFiles function
+ */
+void UtilTest::testFindMatchingFiles() {
+  bool okay = false;
+
+  std::vector<std::string> files;
+  std::vector<std::string>::iterator file;
+
+  OLA_ASSERT_TRUE_MSG(ola::file::PATH_SEPARATOR == '/' ||
+                      ola::file::PATH_SEPARATOR == '\\',
+                      "ola::file::PATH_SEPARATOR is neither / nor \\");
+
+  okay = FindMatchingFiles(std::string(TEST_SRC_DIR) +
+                           ola::file::PATH_SEPARATOR + std::string("man"),
+                           std::string("rdm_"), &files);
+
+  OLA_ASSERT_TRUE_MSG(okay, "FindMatchingFiles returned false");
+
+  // At the time this test was written, there were 3 files in folder "man"
+  // starting with "rdm_". If this changed, please adapt the number below
+  // Or find something better to match against
+  OLA_ASSERT_EQ_MSG(3, (int)files.size(),
+                    "Not exactly 3 files man/rdm_* returned");
+
+  bool rdm_model_collector_found = false;
+  bool rdm_responder_test_found = false;
+  bool rdm_test_server_found = false;
+
+  // Iterate over all files that have been returned and check if the ones
+  // we expected are in that list
+  for (file = files.begin(); file < files.end(); file++) {
+    if (ola::StringEndsWith(*file, "rdm_model_collector.py.1")) {
+      // make sure it has not been reported as found before
+      OLA_ASSERT_FALSE(rdm_model_collector_found);
+      rdm_model_collector_found = true;
+    } else if (ola::StringEndsWith(*file, "rdm_responder_test.py.1")) {
+      // make sure it has not been reported as found before
+      OLA_ASSERT_FALSE(rdm_responder_test_found);
+      rdm_responder_test_found = true;
+    } else if (ola::StringEndsWith(*file, "rdm_test_server.py.1")) {
+      // make sure it has not been reported as found before
+      OLA_ASSERT_FALSE(rdm_test_server_found);
+      rdm_test_server_found = true;
+    }
+  }
+
+  OLA_ASSERT_TRUE_MSG(rdm_model_collector_found,
+                      "Result lacks rdm_model_collector.py.1");
+  OLA_ASSERT_TRUE_MSG(rdm_responder_test_found,
+                      "Result lacks rdm_responder_test.py.1");
+  OLA_ASSERT_TRUE_MSG(rdm_test_server_found,
+                      "Result lacks rdm_test_server.py.1");
+}
