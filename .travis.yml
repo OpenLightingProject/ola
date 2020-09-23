@@ -112,7 +112,7 @@ matrix:
           sources:
            - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: TASK='coverage'
       addons:
@@ -134,7 +134,7 @@ matrix:
           sources:
            - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='doxygen'
       addons:
         apt:
