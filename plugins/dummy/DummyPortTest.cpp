@@ -666,7 +666,7 @@ void DummyPortTest::testParamDescription() {
  * Some versions of GCC 9 claim that the strncpy overflows the target
  * string. While that's (kindof) true, all that happens is that we drop
  * the NUL byte, but that's on purpose.
-
+ *
  * Disable the warning to avoid it being an issue, but only for this
  * line.
  *
