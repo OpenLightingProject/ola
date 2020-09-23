@@ -101,7 +101,7 @@ matrix:
            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: TASK='compile'
       python: '2.7'
