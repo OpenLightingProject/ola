@@ -33,7 +33,7 @@ addons:
      - libmicrohttpd-dev
     packages: &core_build_gpp_latest
      - *core_build
-     - g++-8
+     - g++-9
     packages: &core_build_clang_latest
      - *core_build
      - clang-6.0
@@ -227,6 +227,7 @@ jobs:
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - PROTOBUF='latest'
       - LIBFTDI='1'
       addons:
         homebrew:
@@ -241,6 +242,7 @@ jobs:
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - PROTOBUF='latest'
       - LIBFTDI='1'
       addons:
         homebrew:
@@ -332,6 +334,22 @@ jobs:
       - TASK='compile'
       - CPPUNIT='1.14'
       - LIBFTDI='1'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='1'
+      - PROTOBUF='latest'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - LIBFTDI='1'
+      - PROTOBUF='latest'
     - os: linux
       dist: xenial
       compiler: gcc
@@ -385,6 +403,8 @@ before_cache:
 before_install:
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall libtool; fi
+#Fix a broken homebrew gnupg install
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall --ignore-dependencies gnupg; fi
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
@@ -393,7 +413,7 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link -f https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
- - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-8" CC="ccache gcc-8"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-9" CC="ccache gcc-9"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
@@ -403,7 +423,7 @@ install:
   - pip install --user protobuf==3.1.0
   # disable until can be added to all build variants
   #- pip install --user timeout-decorator
-# We need to use pip rather than apt on Xenial
+# We need to use pip rather than apt on Bionic
   - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" = "bionic" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
 # Later versions of numpy don't install on arm via pip  
   - pip install --user numpy==1.16.6
