@@ -257,7 +257,7 @@ matrix:
       - LIBFTDI='1'
       - PROTOBUF='latest'
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: TASK='coverage'
     - os: linux
