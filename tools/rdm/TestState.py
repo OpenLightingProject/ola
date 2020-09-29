@@ -26,8 +26,34 @@ class TestState(object):
   def __str__(self):
     return self._state
 
-  def __cmp__(self, other):
-    return cmp(self._state, other._state)
+  def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
+    return self._state == other._state
+
+  def __lt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self._state < other._state
+
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
+  def __le__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
+
+  def __gt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
+
+  def __ge__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
+
+  def __ne__(self, other):
+    return not self == other
 
   def __hash__(self):
     return hash(self._state)

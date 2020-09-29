@@ -234,29 +234,6 @@ AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
                 getgrnam_r getgrgid_r secure_getenv])
 
-AC_MSG_CHECKING(for readdir_r deprecation)
-old_cxxflags=$CXXFLAGS
-CXXFLAGS="${CXXFLAGS} -Werror=deprecated-declarations"
-AC_CACHE_VAL(ac_cv_readdir_r_deprecation,
-  AC_COMPILE_IFELSE(
-     [AC_LANG_PROGRAM([[#include <dirent.h>
-#include <unistd.h>]],[[
-        const char* arg = "/";
-        DIR * dir;
-        struct dirent *buf, *de;
-        dir = opendir(arg);
-        readdir_r(dir,buf,&de);
-]])],
-     [ac_cv_readdir_r_deprecation=no],
-     [ac_cv_readdir_r_deprecation=yes])
-)
-CXXFLAGS=$old_cxxflags
-AC_MSG_RESULT($ac_cv_readdir_r_deprecation)
-
-AS_IF([test "x$ac_cv_readdir_r_deprecation" = xyes],
-      [CXXFLAGS="$CXXFLAGS -Wno-error=deprecated-declarations"],
-      [])
-
 LT_INIT([win32-dll])
 
 # Decide if we're building on Windows early on.
@@ -443,6 +420,14 @@ AM_CONDITIONAL([HAVE_LIBFTD2XX], [test "x$have_libftd2xx" = xyes])
 AC_CHECK_HEADERS([curses.h ncurses/curses.h])
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL([HAVE_NCURSES], [test "x$have_ncurses" = xyes])
+# Defines libncurses_LIBS that we can use to link against ncurses
+# Needed since >=ncurses-6 where -ltinfo is needed in addition to -lncurses
+PKG_CHECK_MODULES(libncurses,
+                  [ncurses >= 5],
+                  [have_ncurses_pkgconfig="yes"],
+                  [have_ncurses_pkgconfig="no"])
+AM_CONDITIONAL([HAVE_NCURSES_PKGCONFIG],
+               [test "x$have_ncurses_pkgconfig" = xyes])
 
 # pthread
 ACX_PTHREAD([
@@ -856,6 +841,9 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
 AS_IF([test "x$build_java_libs" = xyes],
       [PROTOBUF_SUPPORT([2.4.0])],
       [PROTOBUF_SUPPORT([2.3.0])])
+# Version 3.7 and above of protoc require some additional includes
+AC_CHECK_HEADERS([google/protobuf/io/strtod.h google/protobuf/stubs/logging.h \
+                  google/protobuf/stubs/stl_util.h])
 
 
 # Doxygen
@@ -970,11 +958,21 @@ fi
 # the non-generated files $srcdir/python/ols/PidStore.py). To get the tests
 # to pass we symlink the files we need for the tests from the builddir to the
 # srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
-AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
+AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
+                 python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
+                 python/ola/OlaClient.py:python/ola/OlaClient.py
+                 python/ola/PidStore.py:python/ola/PidStore.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/TestUtils.py:python/ola/TestUtils.py
                  python/ola/UID.py:python/ola/UID.py
-                 python/ola/__init__.py:python/ola/__init__.py])
+                 python/ola/rpc/__init__.py:python/ola/rpc/__init__.py
+                 python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
+                 python/ola/rpc/StreamRpcChannel.py:python/ola/rpc/StreamRpcChannel.py
+                 tools/rdm/ExpectedResults.py:tools/rdm/ExpectedResults.py
+                 tools/rdm/TestCategory.py:tools/rdm/TestCategory.py
+                 tools/rdm/TestState.py:tools/rdm/TestState.py
+                 tools/rdm/TimingStats.py:tools/rdm/TimingStats.py])
 
 # Non-makefile generated files.
 AC_CONFIG_FILES([include/ola/base/Version.h
