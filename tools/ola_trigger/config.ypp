@@ -122,7 +122,7 @@ optional_falling_action:
 
 action:
       assignment { $$ = CreateAssignmentAction($1); }
-    | '`' program arguments '`' {
+    | '`' program arguments '`' optional_whitespace {
         $$ = CreateCommandAction(*$2, $3);
         delete $2;
       }
