@@ -132,7 +132,7 @@ void *FtdiDmxThread::Run() {
     TimeInterval elapsed = ts2 - ts1;
 
     if (m_granularity == GOOD) {
-      while (elapsed.InMilliSeconds() < frameTime) {
+      while (elapsed.InMilliseconds() < frameTime) {
         usleep(1000);
         clock.CurrentTime(&ts2);
         elapsed = ts2 - ts1;
@@ -142,13 +142,13 @@ void *FtdiDmxThread::Run() {
       usleep(1000);
       clock.CurrentTime(&ts3);
       TimeInterval interval = ts3 - ts2;
-      if (interval.InMilliSeconds() < BAD_GRANULARITY_LIMIT) {
+      if (interval.InMilliseconds() < BAD_GRANULARITY_LIMIT) {
         m_granularity = GOOD;
         OLA_INFO << "Switching from BAD to GOOD granularity for ftdi thread";
       }
 
       elapsed = ts3 - ts1;
-      while (elapsed.InMilliSeconds() < frameTime) {
+      while (elapsed.InMilliseconds() < frameTime) {
         clock.CurrentTime(&ts2);
         elapsed = ts2 - ts1;
       }
@@ -170,7 +170,7 @@ void FtdiDmxThread::CheckTimeGranularity() {
   clock.CurrentTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
-  m_granularity = (interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT) ?
+  m_granularity = (interval.InMilliseconds() > BAD_GRANULARITY_LIMIT) ?
       BAD : GOOD;
   OLA_INFO << "Granularity for FTDI thread is "
            << ((m_granularity == GOOD) ? "GOOD" : "BAD");

@@ -123,7 +123,7 @@ void ConditionVariable::Wait(Mutex *mutex) {
 bool ConditionVariable::TimedWait(Mutex *mutex, const TimeStamp &wake_up_time) {
   struct timespec ts = {
     wake_up_time.Seconds(),
-    wake_up_time.MicroSeconds() * ONE_THOUSAND
+    wake_up_time.Microseconds() * ONE_THOUSAND
   };
   int i = pthread_cond_timedwait(&m_condition, &mutex->m_mutex, &ts);
   return i == 0;

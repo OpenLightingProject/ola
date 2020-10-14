@@ -132,7 +132,7 @@ void UartDmxThread::CheckTimeGranularity() {
   clock.CurrentTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
-  m_granularity = interval.InMilliSeconds() > threshold ? BAD : GOOD;
+  m_granularity = interval.InMilliseconds() > threshold ? BAD : GOOD;
   OLA_INFO << "Granularity for UART thread is "
            << (m_granularity == GOOD ? "GOOD" : "BAD");
 }

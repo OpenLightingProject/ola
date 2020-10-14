@@ -252,7 +252,7 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
 
   struct timespec sleep_time;
   sleep_time.tv_sec = sleep_interval.Seconds();
-  sleep_time.tv_nsec = sleep_interval.MicroSeconds() * 1000;
+  sleep_time.tv_nsec = sleep_interval.Microseconds() * ONE_THOUSAND;
 
   int ready = kevent(
       m_kqueue_fd, reinterpret_cast<struct kevent*>(m_change_set),

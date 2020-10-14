@@ -305,7 +305,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
       (*m_loop_iterations)++;
   }
 
-  int ms_to_sleep = sleep_interval.InMilliSeconds();
+  int ms_to_sleep = sleep_interval.InMilliseconds();
 
   // Prepare events
   vector<HANDLE> events;

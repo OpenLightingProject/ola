@@ -96,7 +96,7 @@ void Tracker::Start() {
   // if you want.
   cout << "--------------" << endl;
   cout << "Sent " << m_count << " RPCs" << endl;
-  cout << "Max was " << m_max.MicroSeconds() << " microseconds" << endl;
+  cout << "Max was " << m_max.Microseconds() << " microseconds" << endl;
   cout << "Mean " << m_sum / m_count << " microseconds" << endl;
 }
 
@@ -130,7 +130,7 @@ void Tracker::LogTime() {
   if (delta > m_max) {
     m_max = delta;
   }
-  m_sum += delta.MicroSeconds();
+  m_sum += delta.Microseconds();
 
   OLA_INFO << "RPC took " << delta;
   if (FLAGS_count == ++m_count) {
