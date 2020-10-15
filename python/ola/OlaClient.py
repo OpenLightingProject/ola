@@ -1357,7 +1357,11 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.uid.device_id = uid.device_id
     request.sub_device = sub_device
     request.param_id = param_id
-    request.data = data
+    if sys.version >= '3.2':
+      request.data = eval(data)[0] if data else bytes(data, 'utf-8')
+    else:
+      #request.data = eval(data)[0] if data else data # started breaking (MultiDim), 2019-10-31
+      request.data = data # works, 2019-10-31
     request.is_set = set
     request.include_raw_response = include_frames
     try:
