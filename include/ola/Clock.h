@@ -222,7 +222,11 @@ class Clock {
  public:
   Clock() {}
   virtual ~Clock() {}
+  // Get the current monotonic clock if available,
+  // otherwise falls back to wall clock time.
   virtual void CurrentTime(TimeStamp *timestamp) const;
+  // Get wall clock time.
+  virtual void CurrentRealTime(TimeStamp *timestamp) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Clock);
