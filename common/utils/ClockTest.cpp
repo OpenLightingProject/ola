@@ -36,16 +36,24 @@ class ClockTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testTimeStamp);
   CPPUNIT_TEST(testTimeInterval);
   CPPUNIT_TEST(testTimeIntervalMutliplication);
-  CPPUNIT_TEST(testClock);
-  CPPUNIT_TEST(testMockClock);
+  CPPUNIT_TEST(testClockMonotonic);
+  CPPUNIT_TEST(testClockRealTime);
+  CPPUNIT_TEST(testClockCurrentTime);
+  CPPUNIT_TEST(testMockClockMonotonic);
+  CPPUNIT_TEST(testMockClockRealTime);
+  CPPUNIT_TEST(testMockClockCurrentTime);
   CPPUNIT_TEST_SUITE_END();
 
  public:
     void testTimeStamp();
     void testTimeInterval();
     void testTimeIntervalMutliplication();
-    void testClock();
-    void testMockClock();
+    void testClockMonotonic();
+    void testClockRealTime();
+    void testClockCurrentTime();
+    void testMockClockMonotonic();
+    void testMockClockRealTime();
+    void testMockClockCurrentTime();
 };
 
 
@@ -143,11 +151,11 @@ void ClockTest::testTimeIntervalMutliplication() {
   OLA_ASSERT_EQ((int64_t) 20000, twenty_seconds.InMilliSeconds());
 }
 
-
 /**
- * test the clock
+ * @brief Test the monotonic clock
+ *
  */
-void ClockTest::testClock() {
+void ClockTest::testClockMonotonic() {
   Clock clock;
   TimeStamp first;
   clock.CurrentMonotonicTime(&first);
@@ -162,11 +170,49 @@ void ClockTest::testClock() {
   OLA_ASSERT_LT(first, second);
 }
 
+/**
+ * @brief Test the real time clock
+ *
+ */
+void ClockTest::testClockRealTime() {
+  Clock clock;
+  TimeStamp first;
+  clock.CurrentRealTime(&first);
+#ifdef _WIN32
+  Sleep(1000);
+#else
+  sleep(1);
+#endif  // _WIN32
+
+  TimeStamp second;
+  clock.CurrentRealTime(&second);
+  OLA_ASSERT_LT(first, second);
+}
 
 /**
- * test the Mock Clock
+ * @brief Test the CurrentTime wrapper method
+ *
  */
-void ClockTest::testMockClock() {
+void ClockTest::testClockCurrentTime() {
+  Clock clock;
+  TimeStamp first;
+  clock.CurrentTime(&first);
+#ifdef _WIN32
+  Sleep(1000);
+#else
+  sleep(1);
+#endif  // _WIN32
+
+  TimeStamp second;
+  clock.CurrentTime(&second);
+  OLA_ASSERT_LT(first, second);
+}
+
+/**
+ * @brief Test the mock monotonic clock
+ * 
+ */
+void ClockTest::testMockClockMonotonic() {
   MockClock clock;
 
   TimeStamp first;
@@ -188,3 +234,58 @@ void ClockTest::testMockClock() {
   OLA_ASSERT_LT(second, third);
   OLA_ASSERT_TRUE(ten_point_five_seconds <= (third - second));
 }
+
+/**
+ * @brief Test the mock real time clock
+ * 
+ */
+void ClockTest::testMockClockRealTime() {
+  MockClock clock;
+
+  TimeStamp first;
+  clock.CurrentRealTime(&first);
+
+  TimeInterval one_second(1, 0);
+  clock.AdvanceTime(one_second);
+
+  TimeStamp second;
+  clock.CurrentRealTime(&second);
+  OLA_ASSERT_LT(first, second);
+  OLA_ASSERT_TRUE(one_second <= (second - first));
+
+  TimeInterval ten_point_five_seconds(10, 500000);
+  clock.AdvanceTime(10, 500000);
+
+  TimeStamp third;
+  clock.CurrentRealTime(&third);
+  OLA_ASSERT_LT(second, third);
+  OLA_ASSERT_TRUE(ten_point_five_seconds <= (third - second));
+}
+
+/**
+ * @brief Test the mock CurrentTime wrapper method
+ * 
+ */
+void ClockTest::testMockClockCurrentTime() {
+  MockClock clock;
+
+  TimeStamp first;
+  clock.CurrentTime(&first);
+
+  TimeInterval one_second(1, 0);
+  clock.AdvanceTime(one_second);
+
+  TimeStamp second;
+  clock.CurrentTime(&second);
+  OLA_ASSERT_LT(first, second);
+  OLA_ASSERT_TRUE(one_second <= (second - first));
+
+  TimeInterval ten_point_five_seconds(10, 500000);
+  clock.AdvanceTime(10, 500000);
+
+  TimeStamp third;
+  clock.CurrentTime(&third);
+  OLA_ASSERT_LT(second, third);
+  OLA_ASSERT_TRUE(ten_point_five_seconds <= (third - second));
+}
+

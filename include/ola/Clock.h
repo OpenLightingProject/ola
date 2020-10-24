@@ -276,6 +276,8 @@ class MockClock: public Clock {
   void AdvanceTime(int32_t sec, int32_t usec);
 
   void CurrentMonotonicTime(TimeStamp *timestamp) const;
+  void CurrentRealTime(TimeStamp *timestamp) const;
+  void CurrentTime(TimeStamp *timestamp) const;
 
  private:
   TimeInterval m_offset;

@@ -261,7 +261,6 @@ void Clock::CurrentMonotonicTime(TimeStamp *timestamp) const {
   tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
   *timestamp = tv;
 #else
-  OLA_DEBUG << "Monotonic clock unavailable. Falling back to CurrentRealTime.";
   CurrentRealTime(timestamp);
 #endif
 }
@@ -285,10 +284,29 @@ void MockClock::AdvanceTime(int32_t sec, int32_t usec) {
   m_offset += interval;
 }
 
-void MockClock::CurrentMonotonicTime(TimeStamp *timestamp) const {
+void MockClock::CurrentMonotonicTime(TimeStamp* timestamp) const {
+#ifdef CLOCK_MONOTONIC
+  struct timeval tv;
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  tv.tv_sec = ts.tv_sec;
+  tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
+  *timestamp = tv;
+  *timestamp += m_offset;
+#else
+  OLA_DEBUG << "Monotonic clock unavailable. Falling back to CurrentRealTime.";
+  CurrentRealTime(timestamp);
+#endif
+}
+
+void MockClock::CurrentRealTime(TimeStamp* timestamp) const {
   struct timeval tv;
   gettimeofday(&tv, NULL);
   *timestamp = tv;
   *timestamp += m_offset;
+}
+
+void MockClock::CurrentTime(TimeStamp* timestamp) const {
+  CurrentMonotonicTime(timestamp);
 }
 }  // namespace ola
