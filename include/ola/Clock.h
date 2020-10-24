@@ -214,7 +214,6 @@ class TimeStamp {
     explicit TimeStamp(const BaseTimeVal &time_val) : m_tv(time_val) {}
 };
 
-
 /**
  * @brief Used to get the current time.
  */
@@ -227,11 +226,19 @@ class Clock {
   virtual void CurrentMonotonicTime(TimeStamp *timestamp) const;
   // Get wall clock time.
   virtual void CurrentRealTime(TimeStamp *timestamp) const;
+  /**
+   * @brief Wrapper around CurrentMonotonicTime
+   *
+   * @param timestamp A TimeStamp pointer
+   *
+   * @deprecated This method is deprecated as of v0.10. Please use either
+   * CurrentMonotonicTime or CurrentRealTime as appropriate.
+   */
+  virtual void CurrentTime(TimeStamp *timestamp) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Clock);
 };
-
 
 /**
  * A Mock Clock used for testing.
