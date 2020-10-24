@@ -221,20 +221,44 @@ class Clock {
  public:
   Clock() {}
   virtual ~Clock() {}
-  // Get the current monotonic clock if available,
-  // otherwise falls back to wall clock time.
-  virtual void CurrentMonotonicTime(TimeStamp *timestamp) const;
-  // Get wall clock time.
-  virtual void CurrentRealTime(TimeStamp *timestamp) const;
   /**
-   * @brief Wrapper around CurrentMonotonicTime
+   * @brief Sets timestamp to the current monotonic time.
    *
+   * The timestamp parameter will be set to the current monotonic time only if
+   * the system has a monotonic clock available.  If a monotonic clock is
+   * unavailable, this method will fallback to CurrentRealTime.
+   *
+   * The system's monotonic clock is not subject to discontinuous jumps due to
+   * administrative action, but may be affected by incremental adjustment due to
+   * time synchronization protocol e.g. NTP.  The monotonic clock does not
+   * advance while the system is suspended.
    * @param timestamp A TimeStamp pointer
+   * @return void
+   */
+  virtual void CurrentMonotonicTime(TimeStamp* timestamp) const;
+
+  /**
+   * @brief Sets timestamp to the current real time.
    *
+   * The timestamp parameter will be set to the current real e.g. wall-clock
+   * time.
+   *
+   * The system's realtime clock is subject to discontinuous and incremental
+   * adjustment due to administrative action or time synchronization protocol
+   * e.g. NTP.
+   * @param timestamp A TimeStamp pointer
+   * @return void
+   */
+  virtual void CurrentRealTime(TimeStamp* timestamp) const;
+
+  /**
+   * @brief Wrapper around CurrentMonotonicTime.
+   * @param timestamp A TimeStamp pointer
+   * @return void
    * @deprecated This method is deprecated as of v0.10. Please use either
    * CurrentMonotonicTime or CurrentRealTime as appropriate.
    */
-  virtual void CurrentTime(TimeStamp *timestamp) const;
+  virtual void CurrentTime(TimeStamp* timestamp) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Clock);
