@@ -27,6 +27,7 @@
  */
 
 #include <ola/Clock.h>
+#include <ola/Logging.h>
 #include <stdint.h>
 #include <sys/time.h>
 
@@ -260,6 +261,7 @@ void Clock::CurrentMonotonicTime(TimeStamp *timestamp) const {
   tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
   *timestamp = tv;
 #else
+  OLA_DEBUG << "Monotonic clock unavailable. Falling back to CurrentRealTime.";
   CurrentRealTime(timestamp);
 #endif
 }
