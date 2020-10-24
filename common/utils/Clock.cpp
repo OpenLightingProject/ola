@@ -252,16 +252,16 @@ const TimeStamp TimeStamp::operator-(const TimeInterval &interval) const {
 }
 
 void Clock::CurrentMonotonicTime(TimeStamp *timestamp) const {
-  struct timeval tv;
 #ifdef CLOCK_MONOTONIC
+  struct timeval tv;
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   tv.tv_sec = ts.tv_sec;
   tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
-#else
-  gettimeofday(&tv, NULL);
-#endif
   *timestamp = tv;
+#else
+  CurrentRealTime(timestamp);
+#endif
 }
 
 void Clock::CurrentRealTime(TimeStamp *timestamp) const {
