@@ -53,7 +53,7 @@ void *PeriodicThread::Run() {
   Clock clock;
   TimeStamp last_run_at;
 
-  clock.CurrentTime(&last_run_at);
+  clock.CurrentMonotonicTime(&last_run_at);
   if (!m_callback->Run()) {
     return NULL;
   }
@@ -72,7 +72,7 @@ void *PeriodicThread::Run() {
         continue;
       }
     }
-    clock.CurrentTime(&last_run_at);
+    clock.CurrentMonotonicTime(&last_run_at);
     if (!m_callback->Run()) {
       return NULL;
     }

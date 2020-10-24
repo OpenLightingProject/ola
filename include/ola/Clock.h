@@ -224,7 +224,7 @@ class Clock {
   virtual ~Clock() {}
   // Get the current monotonic clock if available,
   // otherwise falls back to wall clock time.
-  virtual void CurrentTime(TimeStamp *timestamp) const;
+  virtual void CurrentMonotonicTime(TimeStamp *timestamp) const;
   // Get wall clock time.
   virtual void CurrentRealTime(TimeStamp *timestamp) const;
 
@@ -244,7 +244,7 @@ class MockClock: public Clock {
   void AdvanceTime(const TimeInterval &interval);
   void AdvanceTime(int32_t sec, int32_t usec);
 
-  void CurrentTime(TimeStamp *timestamp) const;
+  void CurrentMonotonicTime(TimeStamp *timestamp) const;
 
  private:
   TimeInterval m_offset;

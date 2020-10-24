@@ -68,7 +68,7 @@ void ClockTest::testTimeStamp() {
   OLA_ASSERT_FALSE(timestamp2.IsSet());
 
   // test assignment & copy constructor
-  clock.CurrentTime(&timestamp);
+  clock.CurrentMonotonicTime(&timestamp);
   OLA_ASSERT_TRUE(timestamp.IsSet());
   timestamp2 = timestamp;
   OLA_ASSERT_TRUE(timestamp2.IsSet());
@@ -81,7 +81,7 @@ void ClockTest::testTimeStamp() {
   // Windows only seems to have ms resolution, to make the tests pass we need
   // to sleep here; XP only has 16ms resolution, so sleep a bit longer
   usleep(20000);
-  clock.CurrentTime(&timestamp3);
+  clock.CurrentMonotonicTime(&timestamp3);
   OLA_ASSERT_NE(timestamp3, timestamp);
   OLA_ASSERT_GT(timestamp3, timestamp);
   OLA_ASSERT_LT(timestamp, timestamp3);
@@ -150,7 +150,7 @@ void ClockTest::testTimeIntervalMutliplication() {
 void ClockTest::testClock() {
   Clock clock;
   TimeStamp first;
-  clock.CurrentTime(&first);
+  clock.CurrentMonotonicTime(&first);
 #ifdef _WIN32
   Sleep(1000);
 #else
@@ -158,7 +158,7 @@ void ClockTest::testClock() {
 #endif  // _WIN32
 
   TimeStamp second;
-  clock.CurrentTime(&second);
+  clock.CurrentMonotonicTime(&second);
   OLA_ASSERT_LT(first, second);
 }
 
@@ -170,13 +170,13 @@ void ClockTest::testMockClock() {
   MockClock clock;
 
   TimeStamp first;
-  clock.CurrentTime(&first);
+  clock.CurrentMonotonicTime(&first);
 
   TimeInterval one_second(1, 0);
   clock.AdvanceTime(one_second);
 
   TimeStamp second;
-  clock.CurrentTime(&second);
+  clock.CurrentMonotonicTime(&second);
   OLA_ASSERT_LT(first, second);
   OLA_ASSERT_TRUE(one_second <= (second - first));
 
@@ -184,7 +184,7 @@ void ClockTest::testMockClock() {
   clock.AdvanceTime(10, 500000);
 
   TimeStamp third;
-  clock.CurrentTime(&third);
+  clock.CurrentMonotonicTime(&third);
   OLA_ASSERT_LT(second, third);
   OLA_ASSERT_TRUE(ten_point_five_seconds <= (third - second));
 }

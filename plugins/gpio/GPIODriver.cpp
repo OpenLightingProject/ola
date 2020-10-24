@@ -90,7 +90,7 @@ void *GPIODriver::Run() {
     bool update_pins = false;
 
     TimeStamp wake_up;
-    clock.CurrentTime(&wake_up);
+    clock.CurrentMonotonicTime(&wake_up);
     wake_up += TimeInterval(1, 0);
 
     // Wait for one of: i) termination ii) DMX changed iii) timeout

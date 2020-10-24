@@ -79,7 +79,7 @@ void *OpenDmxThread::Run() {
 
     if (m_fd == INVALID_FD) {
       TimeStamp wake_up;
-      clock.CurrentTime(&wake_up);
+      clock.CurrentMonotonicTime(&wake_up);
       wake_up += TimeInterval(1, 0);
 
       // wait for either a signal that we should terminate, or ts seconds

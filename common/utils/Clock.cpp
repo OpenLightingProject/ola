@@ -251,7 +251,7 @@ const TimeStamp TimeStamp::operator-(const TimeInterval &interval) const {
   return TimeStamp(m_tv - interval.m_interval);
 }
 
-void Clock::CurrentTime(TimeStamp *timestamp) const {
+void Clock::CurrentMonotonicTime(TimeStamp *timestamp) const {
   struct timeval tv;
 #ifdef CLOCK_MONOTONIC
   struct timespec ts;
@@ -279,7 +279,7 @@ void MockClock::AdvanceTime(int32_t sec, int32_t usec) {
   m_offset += interval;
 }
 
-void MockClock::CurrentTime(TimeStamp *timestamp) const {
+void MockClock::CurrentMonotonicTime(TimeStamp *timestamp) const {
   struct timeval tv;
   gettimeofday(&tv, NULL);
   *timestamp = tv;

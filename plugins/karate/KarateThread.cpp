@@ -76,7 +76,7 @@ void *KarateThread::Run() {
     if (!k.IsActive()) {
       // try to reopen the device...
       TimeStamp wake_up;
-      clock.CurrentTime(&wake_up);
+      clock.CurrentMonotonicTime(&wake_up);
       wake_up += TimeInterval(2, 0);
 
       // wait for either a signal that we should terminate, or ts seconds
