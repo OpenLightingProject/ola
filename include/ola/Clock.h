@@ -240,7 +240,7 @@ class Clock {
   /**
    * @brief Sets timestamp to the current real time.
    *
-   * The timestamp parameter will be set to the current real e.g. wall-clock
+   * The timestamp parameter will be set to the current real i.e. wall-clock
    * time.
    *
    * The system's realtime clock is subject to discontinuous and incremental
