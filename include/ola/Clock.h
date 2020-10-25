@@ -233,8 +233,7 @@ class Clock {
    * time synchronization protocol e.g. NTP.  The monotonic clock does not
    * advance while the system is suspended. An appropriate use of this method is
    * to measure elapsed time.
-   * @sa Do not use this method to display a user-facing timestamp, instead see
-   * Clock::CurrentRealTime
+   * @sa Clock::CurrentRealTime
    * @param timestamp A TimeStamp pointer
    */
   virtual void CurrentMonotonicTime(TimeStamp* timestamp) const;
@@ -249,8 +248,7 @@ class Clock {
    * adjustment due to administrative action or time synchronization protocol
    * e.g. NTP. An appropriate use of this method is to display a user-facing
    * timestamp.
-   * @sa Avoid using this method to measure elapsed time, instead see
-   * Clock::CurrentMonotonicTime.
+   * @sa Clock::CurrentMonotonicTime
    * @param timestamp A TimeStamp pointer
    */
   virtual void CurrentRealTime(TimeStamp* timestamp) const;
