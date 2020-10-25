@@ -261,8 +261,8 @@ class Clock {
    * @brief Wrapper around CurrentMonotonicTime.
    * @param timestamp A TimeStamp pointer
    * @return void
-   * @deprecated This method is deprecated as of v0.10. Please use either
-   * CurrentMonotonicTime or CurrentRealTime as appropriate.
+   * @deprecated Please use either Clock::CurrentMonotonicTime or
+   * Clock::CurrentRealTime as appropriate (25 Oct 2020).
    */
   virtual void CurrentTime(TimeStamp* timestamp) const;
 
