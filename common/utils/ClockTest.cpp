@@ -153,7 +153,6 @@ void ClockTest::testTimeIntervalMutliplication() {
 
 /**
  * @brief Test the monotonic clock
- *
  */
 void ClockTest::testClockMonotonic() {
   Clock clock;
@@ -172,7 +171,6 @@ void ClockTest::testClockMonotonic() {
 
 /**
  * @brief Test the real time clock
- *
  */
 void ClockTest::testClockRealTime() {
   Clock clock;
@@ -191,7 +189,6 @@ void ClockTest::testClockRealTime() {
 
 /**
  * @brief Test the CurrentTime wrapper method
- *
  */
 void ClockTest::testClockCurrentTime() {
   Clock clock;
@@ -210,7 +207,6 @@ void ClockTest::testClockCurrentTime() {
 
 /**
  * @brief Test the mock monotonic clock
- * 
  */
 void ClockTest::testMockClockMonotonic() {
   MockClock clock;
@@ -264,7 +260,6 @@ void ClockTest::testMockClockRealTime() {
 
 /**
  * @brief Test the mock CurrentTime wrapper method
- * 
  */
 void ClockTest::testMockClockCurrentTime() {
   MockClock clock;
