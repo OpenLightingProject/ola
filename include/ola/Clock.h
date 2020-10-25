@@ -236,7 +236,6 @@ class Clock {
    * @sa Do not use this method to display a user-facing timestamp, instead see
    * Clock::CurrentRealTime
    * @param timestamp A TimeStamp pointer
-   * @return void
    */
   virtual void CurrentMonotonicTime(TimeStamp* timestamp) const;
 
@@ -253,14 +252,12 @@ class Clock {
    * @sa Avoid using this method to measure elapsed time, instead see
    * Clock::CurrentMonotonicTime.
    * @param timestamp A TimeStamp pointer
-   * @return void
    */
   virtual void CurrentRealTime(TimeStamp* timestamp) const;
 
   /**
    * @brief Wrapper around CurrentMonotonicTime.
    * @param timestamp A TimeStamp pointer
-   * @return void
    * @deprecated Please use either Clock::CurrentMonotonicTime or
    * Clock::CurrentRealTime as appropriate (25 Oct 2020).
    */
