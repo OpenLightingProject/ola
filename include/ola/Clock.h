@@ -231,7 +231,10 @@ class Clock {
    * The system's monotonic clock is not subject to discontinuous jumps due to
    * administrative action, but may be affected by incremental adjustment due to
    * time synchronization protocol e.g. NTP.  The monotonic clock does not
-   * advance while the system is suspended.
+   * advance while the system is suspended. An appropriate use of this method is
+   * to measure elapsed time.
+   * @sa Do not use this method to display a user-facing timestamp, instead see
+   * Clock::CurrentRealTime
    * @param timestamp A TimeStamp pointer
    * @return void
    */
@@ -245,7 +248,10 @@ class Clock {
    *
    * The system's realtime clock is subject to discontinuous and incremental
    * adjustment due to administrative action or time synchronization protocol
-   * e.g. NTP.
+   * e.g. NTP. An appropriate use of this method is to display a user-facing
+   * timestamp.
+   * @sa Avoid using this method to measure elapsed time, instead see
+   * Clock::CurrentMonotonicTime.
    * @param timestamp A TimeStamp pointer
    * @return void
    */
