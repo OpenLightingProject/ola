@@ -61,6 +61,7 @@ class BaseTimeVal {
   // Assignable
   BaseTimeVal& operator=(const BaseTimeVal& other);
   BaseTimeVal& operator=(const struct timeval &tv);
+  BaseTimeVal& operator=(const struct timespec &ts);
 
   // Comparables
   bool operator==(const BaseTimeVal &other) const;
@@ -179,6 +180,7 @@ class TimeStamp {
     // Assignable
     TimeStamp& operator=(const TimeStamp& other);
     TimeStamp& operator=(const struct timeval &tv);
+    TimeStamp& operator=(const struct timespec &ts);
 
     // Comparables
     bool operator==(const TimeStamp &other) const { return m_tv == other.m_tv; }

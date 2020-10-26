@@ -61,6 +61,12 @@ BaseTimeVal& BaseTimeVal::operator=(const struct timeval &tv) {
   return *this;
 }
 
+BaseTimeVal& BaseTimeVal::operator=(const struct timespec &ts) {
+  m_tv.tv_sec = ts.tv_sec;
+  m_tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
+  return *this;
+}
+
 bool BaseTimeVal::operator==(const BaseTimeVal &other) const {
   return timercmp(&m_tv, &other.m_tv, ==);
 }
@@ -230,6 +236,11 @@ TimeStamp& TimeStamp::operator=(const struct timeval &tv) {
   return *this;
 }
 
+TimeStamp& TimeStamp::operator=(const struct timespec &ts) {
+  m_tv = ts;
+  return *this;
+}
+
 TimeStamp &TimeStamp::operator+=(const TimeInterval &interval) {
   m_tv += interval.m_interval;
   return *this;
@@ -254,12 +265,9 @@ const TimeStamp TimeStamp::operator-(const TimeInterval &interval) const {
 
 void Clock::CurrentMonotonicTime(TimeStamp *timestamp) const {
 #ifdef CLOCK_MONOTONIC
-  struct timeval tv;
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  tv.tv_sec = ts.tv_sec;
-  tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
-  *timestamp = tv;
+  *timestamp = ts;
 #else
   CurrentRealTime(timestamp);
 #endif
