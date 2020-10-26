@@ -50,30 +50,51 @@ class UID(object):
     return '%04x:%08x' % (self._manufacturer_id, self._device_id)
 
   def __hash__(self):
-    return hash(str(self))
+    return hash((self._manufacturer_id, self._device_id))
 
   def __repr__(self):
     return self.__str__()
 
-  def __cmp__(self, other):
-    if other is None:
-      return 1
-    if self._manufacturer_id == other._manufacturer_id:
-      return cmp(self._device_id, other._device_id)
-    return cmp(self.manufacturer_id, other.manufacturer_id)
+  def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
+    return (self.manufacturer_id == other.manufacturer_id and
+            self.device_id == other.device_id)
 
   def __lt__(self, other):
+    if other is None:
+      return False
+    if not isinstance(other, self.__class__):
+      return NotImplemented
     if self.manufacturer_id != other.manufacturer_id:
       return self.manufacturer_id < other.manufacturer_id
     else:
       return self.device_id < other.device_id
 
-  def __eq__(self, other):
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
+  def __le__(self, other):
     if other is None:
       return False
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
 
-    return self.manufacturer_id == other.manufacturer_id and \
-           self.device_id == other.device_id
+  def __gt__(self, other):
+    if other is None:
+      return True
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
+
+  def __ge__(self, other):
+    if other is None:
+      return True
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
+
+  def __ne__(self, other):
+    return not self == other
 
   @staticmethod
   def AllDevices():

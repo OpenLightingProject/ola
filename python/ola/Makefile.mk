@@ -58,16 +58,42 @@ python/ola/Version.py: python/ola/Makefile.mk configure.ac config/ola_version.m4
 # TESTS
 ##################################################
 
+python/ola/ClientWrapperTest.sh: python/ola/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/python/ola/ClientWrapperTest.py; exit \$$?" > $(top_builddir)/python/ola/ClientWrapperTest.sh
+	chmod +x $(top_builddir)/python/ola/ClientWrapperTest.sh
+
+python/ola/OlaClientTest.sh: python/ola/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/python/ola/OlaClientTest.py; exit \$$?" > $(top_builddir)/python/ola/OlaClientTest.sh
+	chmod +x $(top_builddir)/python/ola/OlaClientTest.sh
+
+python/ola/PidStoreTest.sh: python/ola/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python TESTDATADIR=$(srcdir)/common/rdm/testdata $(PYTHON) ${srcdir}/python/ola/PidStoreTest.py; exit \$$?" > $(top_builddir)/python/ola/PidStoreTest.sh
+	chmod +x $(top_builddir)/python/ola/PidStoreTest.sh
+
 dist_check_SCRIPTS += \
     python/ola/DUBDecoderTest.py \
+    python/ola/ClientWrapperTest.py \
     python/ola/MACAddressTest.py \
+    python/ola/OlaClientTest.py \
+    python/ola/PidStoreTest.py \
+    python/ola/TestUtils.py \
     python/ola/UIDTest.py
 
 if BUILD_PYTHON_LIBS
 test_scripts += \
     python/ola/DUBDecoderTest.py \
+    python/ola/ClientWrapperTest.sh \
     python/ola/MACAddressTest.py \
+    python/ola/OlaClientTest.sh \
+    python/ola/PidStoreTest.sh \
     python/ola/UIDTest.py
 endif
 
-CLEANFILES += python/ola/*.pyc
+CLEANFILES += \
+    python/ola/*.pyc \
+    python/ola/ClientWrapperTest.sh \
+    python/ola/OlaClientTest.sh \
+    python/ola/PidStoreTest.sh
