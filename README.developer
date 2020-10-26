@@ -239,10 +239,10 @@ it yourself or await the Travis CI results of your pull request.
 flake8 can be installed following the instructions here:
   https://gitlab.com/pycqa/flake8/
 
-Run it with:
-  --max-line-length 80 --exclude *_pb2.py,.git,__pycache \
-  --ignore E111,E121,E127,E129 data/rdm include/ola python scripts \
-  tools/ola_mon tools/rdm
+Run it as:
+  flake8
+
+It takes its config from the .flake8 file in the root of the repository.
 
 Build System
 ===============================================================================

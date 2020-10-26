@@ -86,7 +86,7 @@ class EnttecPortImpl
       SendCallback;
 
     EnttecPortImpl(const OperationLabels &ops, const ola::rdm::UID &uid,
-                   SendCallback *send_cb);
+                   SendCallback *send_cb, bool no_rdm_dub_timeout = false);
 
     void Stop();
 
@@ -148,6 +148,7 @@ class EnttecPortImpl
   // holds the discovery response while we're waiting for the timeout message
   const uint8_t *m_discovery_response;
   unsigned int m_discovery_response_size;
+  bool m_no_rdm_dub_timeout;
 
   void HandleDMX(const uint8_t *data, unsigned int length);
   void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
