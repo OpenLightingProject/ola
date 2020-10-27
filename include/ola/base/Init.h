@@ -161,6 +161,11 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map);
  * @sa @ref logging
  */
 void Daemonise();
+
+/**
+ * @brief Logs status of clock capabilities
+ */
+void ClockInit();
 /**@}*/
 }  // namespace ola
 #endif  // INCLUDE_OLA_BASE_INIT_H_
