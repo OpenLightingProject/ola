@@ -257,7 +257,7 @@ class Clock {
 
   /**
    * @brief Wrapper around CurrentMonotonicTime.
-   * @param timestamp[out] A TimeStamp pointer
+   * @param[out] timestamp A TimeStamp pointer
    * @deprecated Please use either Clock::CurrentMonotonicTime or
    * Clock::CurrentRealTime as appropriate (25 Oct 2020).
    */
