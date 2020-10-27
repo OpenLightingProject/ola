@@ -225,3 +225,12 @@ EXTRA_DIST += \
   config/stl_hash.m4 \
   mac_build.sh \
   ola.spec
+
+# -----------------------------------------------------------------------------
+
+# Create a flake8 python linter target
+if FOUND_FLAKE8
+.PHONY : flake8
+flake8:
+	flake8
+endif
