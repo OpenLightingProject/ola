@@ -74,7 +74,7 @@ void *PeriodicThread::Run() {
         continue;
       }
     }
-    clock.CurrentMonotonicTime(&last_run_at);
+    clock.CurrentRealTime(&last_run_at);
     if (!m_callback->Run()) {
       return NULL;
     }
