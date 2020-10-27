@@ -74,6 +74,8 @@ void *PeriodicThread::Run() {
         continue;
       }
     }
+    // Real time is used here again to maintain clock consistency with the
+    // previous call to CurrentRealTime()
     clock.CurrentRealTime(&last_run_at);
     if (!m_callback->Run()) {
       return NULL;
