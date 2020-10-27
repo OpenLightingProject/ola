@@ -4,7 +4,8 @@ x/y/2020 ola-0.10.8
 
  API:
  * Deprecated Clock::CurrentTime and added Clock::CurrentMonotonicTime and 
-   Clock::CurrentRealTime
+   Clock::CurrentRealTime. Occurrences of Clock::CurrentTime have been
+   replaced with Clock::CurrentRealTime where applicable.
 
  RDM Tests:
  * Fix a bug in the RDM tests to ensure they can cope with 255 personalities
