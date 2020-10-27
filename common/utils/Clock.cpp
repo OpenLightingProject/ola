@@ -280,7 +280,7 @@ void Clock::CurrentRealTime(TimeStamp *timestamp) const {
 }
 
 void Clock::CurrentTime(TimeStamp *timestamp) const {
-  CurrentMonotonicTime(timestamp);
+  CurrentRealTime(timestamp);
 }
 
 void MockClock::AdvanceTime(const TimeInterval &interval) {
