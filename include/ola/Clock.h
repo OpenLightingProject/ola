@@ -236,7 +236,7 @@ class Clock {
    * advance while the system is suspended. An appropriate use of this method is
    * to measure elapsed time.
    * @sa Clock::CurrentRealTime
-   * @param timestamp A TimeStamp pointer
+   * @param[out] timestamp A TimeStamp pointer
    */
   virtual void CurrentMonotonicTime(TimeStamp* timestamp) const;
 
@@ -251,13 +251,13 @@ class Clock {
    * e.g. NTP. An appropriate use of this method is to display a user-facing
    * timestamp.
    * @sa Clock::CurrentMonotonicTime
-   * @param timestamp A TimeStamp pointer
+   * @param[out] timestamp A TimeStamp pointer
    */
   virtual void CurrentRealTime(TimeStamp* timestamp) const;
 
   /**
    * @brief Wrapper around CurrentMonotonicTime.
-   * @param timestamp A TimeStamp pointer
+   * @param timestamp[out] A TimeStamp pointer
    * @deprecated Please use either Clock::CurrentMonotonicTime or
    * Clock::CurrentRealTime as appropriate (25 Oct 2020).
    */
