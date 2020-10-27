@@ -393,16 +393,16 @@ void Daemonise() {
 }
 
 void ClockInit() {
-Clock clock;
-TimeStamp now_monotonic;
-TimeStamp now_realtime;
+  Clock clock;
+  TimeStamp now_monotonic;
+  TimeStamp now_realtime;
 #ifndef CLOCK_MONOTONIC
   OLA_DEBUG << "Monotonic clock unavailable. Falling back to real time clock."
 #endif
-clock.CurrentMonotonicTime(&now_monotonic);
-clock.CurrentRealTime(&now_realtime);
-OLA_DEBUG << "Monotonic clock: " << std::setw(18) << now_monotonic;
-OLA_DEBUG << "Real clock     : " << std::setw(18) << now_realtime;
+  clock.CurrentMonotonicTime(&now_monotonic);
+  clock.CurrentRealTime(&now_realtime);
+  OLA_DEBUG << "Monotonic clock: " << std::setw(18) << now_monotonic;
+  OLA_DEBUG << "Real clock     : " << std::setw(18) << now_realtime;
 }
 /**@}*/
 }  // namespace ola
