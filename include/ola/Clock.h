@@ -54,6 +54,7 @@ class BaseTimeVal {
   BaseTimeVal(int32_t sec, int32_t usec);
 
   explicit BaseTimeVal(const struct timeval &timestamp) { m_tv = timestamp; }
+  explicit BaseTimeVal(const struct timespec &timestamp) { Set(timestamp); }
   explicit BaseTimeVal(int64_t interval_useconds) { Set(interval_useconds); }
 
   BaseTimeVal(const BaseTimeVal &other) : m_tv(other.m_tv) {}
@@ -111,6 +112,12 @@ class BaseTimeVal {
                 struct timeval *result) const;
 
   void Set(int64_t interval_useconds);
+
+  /**
+   * @brief Sets m_tv
+   * @param ts A reference to struct timespec
+   */
+  void Set(const struct timespec &ts);
 };
 
 /*
@@ -174,6 +181,7 @@ class TimeStamp {
     // Constructors
     TimeStamp() {}
     explicit TimeStamp(const struct timeval &timestamp) : m_tv(timestamp) {}
+    explicit TimeStamp(const struct timespec &timestamp) : m_tv(timestamp) {}
 
     TimeStamp(const TimeStamp &other) : m_tv(other.m_tv) {}
 

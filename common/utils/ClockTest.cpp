@@ -65,7 +65,6 @@ using ola::TimeStamp;
 using ola::TimeInterval;
 using std::string;
 
-
 /*
  * Test the TimeStamp class
  */
@@ -84,6 +83,38 @@ void ClockTest::testTimeStamp() {
   OLA_ASSERT_TRUE(timestamp3.IsSet());
   OLA_ASSERT_EQ(timestamp, timestamp2);
   OLA_ASSERT_EQ(timestamp, timestamp3);
+  
+  // test timespec assignment
+  TimeStamp timestamp4;
+  struct timespec ts1;
+  const time_t test_secs = 1604140280;
+  const int test_nsecs = 42000;
+  ts1.tv_sec = test_secs;
+  ts1.tv_nsec = test_nsecs;
+  timestamp4 = ts1;
+  OLA_ASSERT_TRUE(timestamp4.IsSet());
+  OLA_ASSERT_EQ(test_secs, timestamp4.Seconds());
+  OLA_ASSERT_EQ(test_nsecs/1000, timestamp4.MicroSeconds());
+  // test timeval assignment
+  TimeStamp timestamp5;
+  struct timeval tv1;
+  tv1.tv_sec = test_secs;
+  tv1.tv_usec = test_nsecs/1000;
+  timestamp5 = tv1;
+  OLA_ASSERT_TRUE(timestamp5.IsSet());
+  OLA_ASSERT_EQ(test_secs, timestamp5.Seconds());
+  OLA_ASSERT_EQ(test_nsecs/1000, timestamp5.MicroSeconds());
+  // test timespec copy constructor
+  TimeStamp timestamp6(ts1);
+  OLA_ASSERT_TRUE(timestamp6.IsSet());
+  OLA_ASSERT_EQ(test_secs, timestamp6.Seconds());
+  OLA_ASSERT_EQ(test_nsecs/1000, timestamp6.MicroSeconds());
+  // test timeval copy constructor
+  TimeStamp timestamp7(tv1);
+  OLA_ASSERT_TRUE(timestamp7.IsSet());
+  OLA_ASSERT_EQ(test_secs, timestamp7.Seconds());
+  OLA_ASSERT_EQ(test_nsecs/1000, timestamp7.MicroSeconds());
+
 
   // test equalities
   // Windows only seems to have ms resolution, to make the tests pass we need

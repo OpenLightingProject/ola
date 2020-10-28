@@ -62,8 +62,7 @@ BaseTimeVal& BaseTimeVal::operator=(const struct timeval &tv) {
 }
 
 BaseTimeVal& BaseTimeVal::operator=(const struct timespec &ts) {
-  m_tv.tv_sec = ts.tv_sec;
-  m_tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
+  Set(ts);
   return *this;
 }
 
@@ -182,6 +181,11 @@ void BaseTimeVal::Set(int64_t interval_useconds) {
 #endif  // HAVE_SUSECONDS_T
 }
 
+void BaseTimeVal::Set(const struct timespec& ts) {
+  m_tv.tv_sec = ts.tv_sec;
+  m_tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
+}
+
 TimeInterval& TimeInterval::operator=(const TimeInterval& other) {
   if (this != &other) {
     m_interval = other.m_interval;
@@ -294,12 +298,9 @@ void MockClock::AdvanceTime(int32_t sec, int32_t usec) {
 
 void MockClock::CurrentMonotonicTime(TimeStamp* timestamp) const {
 #ifdef CLOCK_MONOTONIC
-  struct timeval tv;
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  tv.tv_sec = ts.tv_sec;
-  tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
-  *timestamp = tv;
+  *timestamp = ts;
   *timestamp += m_offset;
 #else
   OLA_DEBUG << "Monotonic clock unavailable. Falling back to CurrentRealTime.";
