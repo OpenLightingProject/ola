@@ -114,7 +114,7 @@ class BaseTimeVal {
   void Set(int64_t interval_useconds);
 
   /**
-   * @brief Sets m_tv
+   * @brief Sets the value with a timespec
    * @param ts A reference to struct timespec
    */
   void Set(const struct timespec &ts);
