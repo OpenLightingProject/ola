@@ -235,12 +235,12 @@ class Clock {
    * @brief Sets timestamp to the current monotonic time.
    *
    * The timestamp parameter will be set to the current monotonic time only if
-   * the system has a monotonic clock available.  If a monotonic clock is
+   * the system has a monotonic clock available. If a monotonic clock is
    * unavailable, this method will fallback to CurrentRealTime.
    *
    * The system's monotonic clock is not subject to discontinuous jumps due to
    * administrative action, but may be affected by incremental adjustment due to
-   * time synchronization protocol e.g. NTP.  The monotonic clock does not
+   * time synchronization protocol e.g. NTP. The monotonic clock does not
    * advance while the system is suspended. An appropriate use of this method is
    * to measure elapsed time.
    * @sa Clock::CurrentRealTime
