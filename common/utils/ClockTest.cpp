@@ -83,7 +83,7 @@ void ClockTest::testTimeStamp() {
   OLA_ASSERT_TRUE(timestamp3.IsSet());
   OLA_ASSERT_EQ(timestamp, timestamp2);
   OLA_ASSERT_EQ(timestamp, timestamp3);
-  
+
   // test timespec assignment
   TimeStamp timestamp4;
   struct timespec ts1;
