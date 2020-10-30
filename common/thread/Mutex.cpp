@@ -113,6 +113,7 @@ void ConditionVariable::Wait(Mutex *mutex) {
   pthread_cond_wait(&m_condition, &mutex->m_mutex);
 }
 
+
 /**
  * Timed Wait
  * @param mutex the mutex that is locked
