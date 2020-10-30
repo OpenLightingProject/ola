@@ -104,7 +104,7 @@ void *FtdiDmxThread::Run() {
       buffer.Set(m_buffer);
     }
 
-    clock.CurrentTime(&ts1);
+    clock.CurrentMonotonicTime(&ts1);
 
     if (!m_interface->SetBreak(true)) {
       goto framesleep;
@@ -128,19 +128,19 @@ void *FtdiDmxThread::Run() {
 
   framesleep:
     // Sleep for the remainder of the DMX frame time
-    clock.CurrentTime(&ts2);
+    clock.CurrentMonotonicTime(&ts2);
     TimeInterval elapsed = ts2 - ts1;
 
     if (m_granularity == GOOD) {
       while (elapsed.InMilliSeconds() < frameTime) {
         usleep(1000);
-        clock.CurrentTime(&ts2);
+        clock.CurrentMonotonicTime(&ts2);
         elapsed = ts2 - ts1;
       }
     } else {
       // See if we can drop out of bad mode.
       usleep(1000);
-      clock.CurrentTime(&ts3);
+      clock.CurrentMonotonicTime(&ts3);
       TimeInterval interval = ts3 - ts2;
       if (interval.InMilliSeconds() < BAD_GRANULARITY_LIMIT) {
         m_granularity = GOOD;
@@ -149,7 +149,7 @@ void *FtdiDmxThread::Run() {
 
       elapsed = ts3 - ts1;
       while (elapsed.InMilliSeconds() < frameTime) {
-        clock.CurrentTime(&ts2);
+        clock.CurrentMonotonicTime(&ts2);
         elapsed = ts2 - ts1;
       }
     }
@@ -165,9 +165,9 @@ void FtdiDmxThread::CheckTimeGranularity() {
   TimeStamp ts1, ts2;
   Clock clock;
 
-  clock.CurrentTime(&ts1);
+  clock.CurrentMonotonicTime(&ts1);
   usleep(1000);
-  clock.CurrentTime(&ts2);
+  clock.CurrentMonotonicTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
   m_granularity = (interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT) ?

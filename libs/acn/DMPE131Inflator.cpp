@@ -247,7 +247,7 @@ bool DMPE131Inflator::TrackSourceIfRequired(
 
   *buffer = NULL;  // default the buffer to NULL
   ola::TimeStamp now;
-  m_clock.CurrentTime(&now);
+  m_clock.CurrentMonotonicTime(&now);
   const E131Header &e131_header = headers.GetE131Header();
   uint8_t priority = e131_header.Priority();
   vector<dmx_source> &sources = universe_data->sources;
