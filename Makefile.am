@@ -231,6 +231,6 @@ EXTRA_DIST += \
 # Create a flake8 python linter target
 if FOUND_FLAKE8
 .PHONY : flake8
-flake8:
+flake8: Makefile.am
 	flake8
 endif
