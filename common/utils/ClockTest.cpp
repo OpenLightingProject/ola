@@ -35,7 +35,7 @@ class ClockTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClockTest);
   CPPUNIT_TEST(testTimeStamp);
   CPPUNIT_TEST(testTimeInterval);
-  CPPUNIT_TEST(testTimeIntervalMutliplication);
+  CPPUNIT_TEST(testTimeIntervalMultiplication);
   CPPUNIT_TEST(testClockMonotonic);
   CPPUNIT_TEST(testClockRealTime);
   CPPUNIT_TEST(testClockCurrentTime);
@@ -47,7 +47,7 @@ class ClockTest: public CppUnit::TestFixture {
  public:
     void testTimeStamp();
     void testTimeInterval();
-    void testTimeIntervalMutliplication();
+    void testTimeIntervalMultiplication();
     void testClockMonotonic();
     void testClockRealTime();
     void testClockCurrentTime();
@@ -167,7 +167,7 @@ void ClockTest::testTimeInterval() {
 /*
  * Test multiplication of TimeIntervals.
  */
-void ClockTest::testTimeIntervalMutliplication() {
+void ClockTest::testTimeIntervalMultiplication() {
   TimeInterval half_second(500000);  // 0.5s
   TimeInterval zero_seconds = half_second * 0;
   OLA_ASSERT_EQ((int64_t) 0, zero_seconds.InMilliSeconds());
