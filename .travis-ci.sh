@@ -244,7 +244,7 @@ elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "make_builtfiles"
   make builtfiles;
   travis_fold end "make_builtfiles"
-  flake8
+  make flake8
 else
   # Otherwise compile and check as normal
   if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
