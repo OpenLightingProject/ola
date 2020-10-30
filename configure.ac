@@ -1008,4 +1008,5 @@ Now type 'make @<:@<target>@:>@'
     all          - build everything
     check        - run the tests
     doxygen-doc  - generate the HTML documentation
+    lint         - run the linters
 -------------------------------------------------------"

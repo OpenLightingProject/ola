@@ -228,9 +228,15 @@ EXTRA_DIST += \
 
 # -----------------------------------------------------------------------------
 
-# Create a flake8 python linter target
-if FOUND_FLAKE8
+# Create a linter target
+.PHONY : lint
+lint: flake8
+
+# flake8 linter
 .PHONY : flake8
 flake8: Makefile.am
+if FOUND_FLAKE8
 	flake8
+else
+	$(error flake8 not found. Install flake8 and re-run configure)
 endif
