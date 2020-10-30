@@ -3,7 +3,9 @@ x/y/2020 ola-0.10.8
  * Support DragonFly BSD
 
  API:
- * 
+ * Deprecated Clock::CurrentTime and added Clock::CurrentMonotonicTime and 
+   Clock::CurrentRealTime. Occurrences of Clock::CurrentTime have been
+   replaced with either variant as applicable.
 
  RDM Tests:
  * Fix a bug in the RDM tests to ensure they can cope with 255 personalities

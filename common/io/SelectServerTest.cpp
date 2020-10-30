@@ -66,7 +66,7 @@ class CustomMockClock: public ola::Clock {
       : m_timestamp(timestamp) {
   }
 
-  void CurrentTime(TimeStamp *timestamp) const {
+  void CurrentMonotonicTime(TimeStamp *timestamp) const {
     *timestamp = *m_timestamp;
   }
 
@@ -632,7 +632,7 @@ void SelectServerTest::testTimeout() {
 void SelectServerTest::testOffByOneTimeout() {
   TimeStamp now;
   ola::Clock actual_clock;
-  actual_clock.CurrentTime(&now);
+  actual_clock.CurrentMonotonicTime(&now);
 
   CustomMockClock clock(&now);
   SelectServer ss(NULL, &clock);
