@@ -251,7 +251,9 @@ void ClockTest::testMockClockMonotonic() {
   TimeStamp second;
   clock.CurrentMonotonicTime(&second);
   OLA_ASSERT_LT(first, second);
-  OLA_ASSERT_TRUE(one_second <= (second - first));
+  OLA_ASSERT_TRUE_MSG(
+      one_second <= (second - first),
+      "This test should not have failed. Was the time changed?");
 
   TimeInterval ten_point_five_seconds(10, 500000);
   clock.AdvanceTime(10, 500000);
@@ -259,7 +261,9 @@ void ClockTest::testMockClockMonotonic() {
   TimeStamp third;
   clock.CurrentMonotonicTime(&third);
   OLA_ASSERT_LT(second, third);
-  OLA_ASSERT_TRUE(ten_point_five_seconds <= (third - second));
+  OLA_ASSERT_TRUE_MSG(
+      ten_point_five_seconds <= (third - second),
+      "This test should not have failed. Was the time changed?");
 }
 
 /**
@@ -278,7 +282,9 @@ void ClockTest::testMockClockRealTime() {
   TimeStamp second;
   clock.CurrentRealTime(&second);
   OLA_ASSERT_LT(first, second);
-  OLA_ASSERT_TRUE(one_second <= (second - first));
+  OLA_ASSERT_TRUE_MSG(
+      one_second <= (second - first),
+      "This test should not have failed. Was the time changed?");
 
   TimeInterval ten_point_five_seconds(10, 500000);
   clock.AdvanceTime(10, 500000);
@@ -286,7 +292,9 @@ void ClockTest::testMockClockRealTime() {
   TimeStamp third;
   clock.CurrentRealTime(&third);
   OLA_ASSERT_LT(second, third);
-  OLA_ASSERT_TRUE(ten_point_five_seconds <= (third - second));
+  OLA_ASSERT_TRUE_MSG(
+      ten_point_five_seconds <= (third - second),
+      "This test should not have failed. Was the time changed?");
 }
 
 /**
