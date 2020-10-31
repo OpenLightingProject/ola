@@ -230,7 +230,7 @@ EXTRA_DIST += \
 
 # Create a linter target
 .PHONY : lint
-lint: flake8
+lint: flake8 cpplint
 
 # flake8 linter
 .PHONY : flake8
@@ -238,5 +238,21 @@ flake8: Makefile.am
 if FOUND_FLAKE8
 	flake8
 else
-	$(error flake8 not found. Install flake8 and re-run configure)
+	$(error flake8 not found. Install flake8 and re-run configure.)
+endif
+
+# cpplint linter
+CPP_LINT_URL = "https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py"
+.PHONY : cpplint
+if FOUND_CPPLINT
+cpplint: Makefile.am
+else
+cpplint: Makefile.am cpplint.py
+endif
+	./run_cpplint.sh
+
+if !FOUND_CPPLINT
+cpplint.py:
+	wget -O cpplint.py $(CPP_LINT_URL)
+	chmod u+x cpplint.py
 endif
