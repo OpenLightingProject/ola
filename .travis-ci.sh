@@ -68,9 +68,6 @@ if [[ $TASK = 'lint' ]]; then
   fi;
   # run the cpplint tool, fetching it if necessary
   make cpplint
-  if [[ $? -ne 0 ]]; then
-    exit 1;
-  fi;
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   travis_fold start "autoreconf"
