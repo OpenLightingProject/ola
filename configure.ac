@@ -827,6 +827,10 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
            eval ac_cv_have_pymod_numpy=\$AS_TR_CPP([HAVE_PYMOD_numpy])])
      ])
 
+# Check if the flake8 python linter is available
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+
 # Libraries, that depend on the feature args above.
 #####################################################
 
@@ -1004,4 +1008,5 @@ Now type 'make @<:@<target>@:>@'
     all          - build everything
     check        - run the tests
     doxygen-doc  - generate the HTML documentation
+    lint         - run the linters
 -------------------------------------------------------"

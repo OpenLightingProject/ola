@@ -225,3 +225,18 @@ EXTRA_DIST += \
   config/stl_hash.m4 \
   mac_build.sh \
   ola.spec
+
+# -----------------------------------------------------------------------------
+
+# Create a linter target
+.PHONY : lint
+lint: flake8
+
+# flake8 linter
+.PHONY : flake8
+flake8: Makefile.am
+if FOUND_FLAKE8
+	flake8
+else
+	$(error flake8 not found. Install flake8 and re-run configure)
+endif
