@@ -217,6 +217,8 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
     }
   }
   m_playback_pos = playhead_time;
+  m_clock.CurrentTime(&m_start_ts);
+  m_start_playback_pos = m_playback_pos;
 
   // Send data in the state it would be in at the given time
   map<unsigned int, ShowEntry>::iterator entry_it;
@@ -270,8 +272,17 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
   SendFrame(entry);
   m_playback_pos += entry.next_wait;
 
+  unsigned int timeout = entry.next_wait;
+  if (!m_simulate) {
+    uint64_t target_delta = m_playback_pos - m_start_playback_pos;
+    ola::TimeStamp now;
+    m_clock.CurrentTime(&now);
+    uint64_t delay = (target_delta - (now - m_start_ts).InMilliSeconds());
+    // Handle overflow
+    timeout = (delay >= (~((unsigned int)0))) ? 0 : delay;
+  }
   // Set when next to send data
-  RegisterNextTimeout(entry.next_wait);
+  RegisterNextTimeout(timeout);
 }
 
 
