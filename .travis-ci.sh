@@ -66,7 +66,7 @@ if [[ $TASK = 'lint' ]]; then
   else
     echo "Found $nolints generic NOLINTs"
   fi;
-  # then fetch and run the main cpplint tool
+  # run the cpplint tool, fetching it if necessary
   make cpplint
   if [[ $? -ne 0 ]]; then
     exit 1;
