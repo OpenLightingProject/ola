@@ -945,6 +945,12 @@ if test "x$enable_ja_rule" = xyes; then
   BUILDING_JA_RULE='yes'
 fi
 
+# Linters
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+AC_CHECK_PROG([cpplint],[cpplint.py],[yes],[no])
+AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
+
 # Output
 #####################################################
 # Hack alert!

@@ -66,23 +66,8 @@ if [[ $TASK = 'lint' ]]; then
   else
     echo "Found $nolints generic NOLINTs"
   fi;
-  # then fetch and run the main cpplint tool
-  wget -O cpplint.py $CPP_LINT_URL;
-  chmod u+x cpplint.py;
-  ./cpplint.py \
-    --filter=-legal/copyright,-readability/streams,-runtime/arrays \
-    $(find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
-        -wholename "./common/protocol/Ola.pb.*" -or \
-        -wholename "./common/rpc/Rpc.pb.*" -or \
-        -wholename "./common/rpc/TestService.pb.*" -or \
-        -wholename "./common/rdm/Pids.pb.*" -or \
-        -wholename "./config.h" -or \
-        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
-        -wholename "./tools/ola_trigger/config.tab.*" -or \
-        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
-  if [[ $? -ne 0 ]]; then
-    exit 1;
-  fi;
+  # run the cpplint tool, fetching it if necessary
+  make cpplint
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   travis_fold start "autoreconf"

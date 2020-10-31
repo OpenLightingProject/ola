@@ -230,7 +230,7 @@ EXTRA_DIST += \
 
 # Create a linter target
 .PHONY : lint
-lint: flake8
+lint: flake8 cpplint
 
 # flake8 linter
 .PHONY : flake8
@@ -238,5 +238,32 @@ flake8: Makefile.am
 if FOUND_FLAKE8
 	flake8
 else
-	$(error flake8 not found. Install flake8 and re-run configure)
+	$(error flake8 not found. Install flake8 and re-run configure.)
+endif
+
+# cpplint linter
+CPP_LINT_URL = "https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py"
+CPP_LINT_FILTER = "-legal/copyright,-readability/streams,-runtime/arrays"
+CPP_LINT_FILES = $(shell find . \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
+        -wholename "./common/protocol/Ola.pb.*" -or \
+        -wholename "./common/rpc/Rpc.pb.*" -or \
+        -wholename "./common/rpc/TestService.pb.*" -or \
+        -wholename "./common/rdm/Pids.pb.*" -or \
+        -wholename "./config.h" -or \
+        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
+        -wholename "./tools/ola_trigger/config.tab.*" -or \
+        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
+.PHONY : cpplint
+if FOUND_CPPLINT
+cpplint: Makefile.am
+	cpplint.py --filter=$(CPP_LINT_FILTER) $(CPP_LINT_FILES)
+else
+cpplint: Makefile.am cpplint.py
+	./cpplint.py --filter=$(CPP_LINT_FILTER) $(CPP_LINT_FILES)
+endif
+
+if !FOUND_CPPLINT
+cpplint.py:
+	wget -O cpplint.py $(CPP_LINT_URL)
+	chmod u+x cpplint.py
 endif
