@@ -233,7 +233,7 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
 
   TimeInterval sleep_interval = poll_interval;
   TimeStamp now;
-  m_clock->CurrentTime(&now);
+  m_clock->CurrentMonotonicTime(&now);
 
   TimeInterval next_event_in = timeout_manager->ExecuteTimeouts(&now);
   if (!next_event_in.IsZero()) {
@@ -261,7 +261,7 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
   m_next_change_entry = 0;
 
   if (ready == 0) {
-    m_clock->CurrentTime(&m_wake_up_time);
+    m_clock->CurrentMonotonicTime(&m_wake_up_time);
     timeout_manager->ExecuteTimeouts(&m_wake_up_time);
     return true;
   } else if (ready == -1) {
@@ -271,7 +271,7 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
     return false;
   }
 
-  m_clock->CurrentTime(&m_wake_up_time);
+  m_clock->CurrentMonotonicTime(&m_wake_up_time);
 
   for (int i = 0; i < ready; i++) {
     if (events[i].flags & EV_ERROR) {
@@ -295,7 +295,7 @@ bool KQueuePoller::Poll(TimeoutManager *timeout_manager,
   }
   m_orphaned_descriptors.clear();
 
-  m_clock->CurrentTime(&m_wake_up_time);
+  m_clock->CurrentMonotonicTime(&m_wake_up_time);
   timeout_manager->ExecuteTimeouts(&m_wake_up_time);
   return true;
 }

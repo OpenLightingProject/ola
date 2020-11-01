@@ -117,7 +117,8 @@ void ConditionVariable::Wait(Mutex *mutex) {
 /**
  * Timed Wait
  * @param mutex the mutex that is locked
- * @param wake_up_time the time to wait up.
+ * @param wake_up_time the time to wake up. This must be an absolute i.e. real
+ * time.
  * @returns true if we received a signal, false if the timeout expired.
  */
 bool ConditionVariable::TimedWait(Mutex *mutex, const TimeStamp &wake_up_time) {
