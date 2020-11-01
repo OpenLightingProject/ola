@@ -274,12 +274,20 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
 
   unsigned int timeout = entry.next_wait;
   if (!m_simulate) {
-    uint64_t target_delta = m_playback_pos - m_start_playback_pos;
+    // Using int64_t for target_delta here because
+    // we have to lose 1 bit anyway as InMilliSeconds() returns a signed
+    // 64-bit integer.
     ola::TimeStamp now;
     m_clock.CurrentTime(&now);
-    uint64_t delay = (target_delta - (now - m_start_ts).InMilliSeconds());
-    // Handle overflow
-    timeout = (delay >= (~((unsigned int)0))) ? 0 : delay;
+    int64_t target_delta = m_playback_pos - m_start_playback_pos;
+    int64_t current_delta = (now - m_start_ts).InMilliSeconds();
+    int64_t delay = target_delta - current_delta;
+    if (delay < 0) {
+      OLA_WARN << "Current frame was meant to be played in the past:"
+                  " System too slow?";
+      delay = 0;
+    }
+    timeout = delay;
   }
   // Set when next to send data
   RegisterNextTimeout(timeout);
