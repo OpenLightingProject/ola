@@ -256,7 +256,7 @@ void UniverseTest::testReceiveDmx() {
 
   // Setup the port with some data, and check that signalling the universe
   // works.
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.WriteDMX(m_buffer);
   port.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -385,7 +385,7 @@ void UniverseTest::testLtpMerging() {
 
   // Setup the ports with some data, and check that signalling the universe
   // works.
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -393,7 +393,7 @@ void UniverseTest::testLtpMerging() {
   OLA_ASSERT_DMX_EQUALS(buffer1, universe->GetDMX());
 
   // Now the second port gets data
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -401,7 +401,7 @@ void UniverseTest::testLtpMerging() {
   OLA_ASSERT_DMX_EQUALS(buffer2, universe->GetDMX());
 
   // now resend the first port
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -411,7 +411,7 @@ void UniverseTest::testLtpMerging() {
   // now check a client
   DmxBuffer client_buffer;
   client_buffer.SetFromString("255,0,0,255,10");
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   ola::DmxSource source(client_buffer, time_stamp,
                         ola::dmx::SOURCE_PRIORITY_DEFAULT);
   MockClient input_client;
@@ -465,7 +465,7 @@ void UniverseTest::testHtpMerging() {
 
   // Setup the ports with some data, and check that signalling the universe
   // works.
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -473,7 +473,7 @@ void UniverseTest::testHtpMerging() {
   OLA_ASSERT_DMX_EQUALS(buffer1, universe->GetDMX());
 
   // Now the second port gets data
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -483,7 +483,7 @@ void UniverseTest::testHtpMerging() {
   // now raise the priority of the second port
   uint8_t new_priority = 120;
   port2.SetPriority(new_priority);
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port2.DmxChanged();
   OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
   OLA_ASSERT_EQ(buffer2.Size(), universe->GetDMX().Size());
@@ -491,7 +491,7 @@ void UniverseTest::testHtpMerging() {
 
   // raise the priority of the first port
   port.SetPriority(new_priority);
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.DmxChanged();
   OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
   OLA_ASSERT_EQ(htp_buffer.Size(), universe->GetDMX().Size());
@@ -500,7 +500,7 @@ void UniverseTest::testHtpMerging() {
   // now check a client
   DmxBuffer client_buffer;
   client_buffer.SetFromString("255,0,0,255,10");
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   ola::DmxSource source(client_buffer, time_stamp, new_priority);
   MockClient input_client;
   input_client.DMXReceived(TEST_UNIVERSE, source);
