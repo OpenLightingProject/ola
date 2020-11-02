@@ -43,13 +43,13 @@ addons:
 matrix:
   fast_finish: true
   include:
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
 #    - os: osx
 #      osx_image: xcode9.3
 #      compiler: clang
@@ -57,13 +57,13 @@ matrix:
 #      - TASK='compile'
 #      - CPPUNIT='latest'
 #      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
 #    - os: osx
 #      osx_image: xcode9.3
 #      compiler: gcc
@@ -99,62 +99,62 @@ matrix:
 #      - TASK='compile'
 #      - CPPUNIT='latest'
 #      - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
-      - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='latest'
-      - LIBFTDI='0'
-      - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
-      - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='latest'
-      - LIBFTDI='0'
-      - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='1'
-      - PROTOBUF='latest'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
+#      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='latest'
-      - LIBFTDI='1'
+      - LIBFTDI='0'
       - PROTOBUF='latest'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
+#      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
-      - CPPUNIT='1.13'
+      - CPPUNIT='latest'
+      - LIBFTDI='0'
+      - PROTOBUF='latest'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#      - PROTOBUF='latest'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='latest'
       - LIBFTDI='1'
       - PROTOBUF='latest'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
@@ -290,13 +290,13 @@ matrix:
           packages:
            - *base_build
   allow_failures:
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
 #    - os: osx
 #      osx_image: xcode9.3
 #      compiler: clang
@@ -304,13 +304,13 @@ matrix:
 #      - TASK='compile'
 #      - CPPUNIT='latest'
 #      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
 #    - os: osx
 #      osx_image: xcode9.3
 #      compiler: gcc
