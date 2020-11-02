@@ -216,9 +216,10 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
       break;
     }
   }
+  uint64_t timeout = playhead_time - seek_time;
   m_playback_pos = playhead_time;
   m_clock.CurrentTime(&m_start_ts);
-  m_start_playback_pos = m_playback_pos;
+  m_start_playback_pos = m_playback_pos - timeout;
 
   // Send data in the state it would be in at the given time
   map<unsigned int, ShowEntry>::iterator entry_it;
@@ -226,7 +227,7 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
     SendFrame(entry_it->second);
   }
   // Adjust the timeout to handle landing in the middle of the entry's timeout
-  RegisterNextTimeout(playhead_time-seek_time);
+  RegisterNextTimeout(timeout);
 
   return ShowLoader::OK;
 }
