@@ -283,8 +283,9 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
     int64_t current_delta = (now - m_start_ts).InMilliSeconds();
     int64_t delay = target_delta - current_delta;
     if (delay < 0) {
-      OLA_WARN << "Current frame was meant to be played in the past:"
-                  " System too slow?";
+      OLA_WARN << "Frame at line " << m_loader.GetCurrentLineNumber()
+               << " was meant to have completed " << -delay << " ms ago."
+               << " System too slow?";
       delay = 0;
     }
     timeout = delay;
