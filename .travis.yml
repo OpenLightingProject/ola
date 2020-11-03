@@ -35,7 +35,7 @@ addons:
      - libmicrohttpd-dev
     packages: &core_build_gpp_latest
      - *core_build
-     - g++-8
+     - g++-9
     packages: &core_build_clang_latest
      - *core_build
      - clang-6.0
@@ -43,13 +43,13 @@ addons:
 matrix:
   fast_finish: true
   include:
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
 #    - os: osx
 #      osx_image: xcode9.3
 #      compiler: clang
@@ -57,13 +57,13 @@ matrix:
 #      - TASK='compile'
 #      - CPPUNIT='latest'
 #      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
 #    - os: osx
 #      osx_image: xcode9.3
 #      compiler: gcc
@@ -99,62 +99,62 @@ matrix:
 #      - TASK='compile'
 #      - CPPUNIT='latest'
 #      - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
-      - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='latest'
-      - LIBFTDI='0'
-      - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
-      - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='latest'
-      - LIBFTDI='0'
-      - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='1'
-      - PROTOBUF='latest'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
+#      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='latest'
-      - LIBFTDI='1'
+      - LIBFTDI='0'
       - PROTOBUF='latest'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
+#      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
       env:
       - TASK='compile'
-      - CPPUNIT='1.13'
+      - CPPUNIT='latest'
+      - LIBFTDI='0'
+      - PROTOBUF='latest'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#      - PROTOBUF='latest'
+    - os: osx
+      osx_image: xcode9.3
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='latest'
       - LIBFTDI='1'
       - PROTOBUF='latest'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='1'
+#      - PROTOBUF='latest'
     - os: osx
       osx_image: xcode9.3
       compiler: gcc
@@ -290,13 +290,13 @@ matrix:
           packages:
            - *base_build
   allow_failures:
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
 #    - os: osx
 #      osx_image: xcode9.3
 #      compiler: clang
@@ -304,13 +304,13 @@ matrix:
 #      - TASK='compile'
 #      - CPPUNIT='latest'
 #      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.3
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
 #    - os: osx
 #      osx_image: xcode9.3
 #      compiler: gcc
@@ -420,6 +420,8 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/Cellar/gnupg2/2.2.5 ]; then sudo mkdir -p /usr/local/Cellar/gnupg2/2.2.5 && sudo chown -R $(whoami) /usr/local/Cellar/gnupg2/2.2.5; fi; fi
+#We install packages via brew which pull in numpy, so try a reinstall over the pip numpy to avoid conflicts
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall numpy || brew link --overwrite numpy; fi
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall libtool; fi
 #Fix a broken homebrew gnupg install
@@ -439,8 +441,10 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "latest" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "latest" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
+#Put back the old pip numpy we need to work
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install --upgrade --no-deps --force-reinstall --user numpy; fi
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
- - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-8" CC="ccache gcc-8"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-9" CC="ccache gcc-9"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi

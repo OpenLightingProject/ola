@@ -109,7 +109,7 @@ void Tracker::SendComplete(const string &) {
 }
 
 void Tracker::SendRequest() {
-  m_clock.CurrentTime(&m_send_time);
+  m_clock.CurrentMonotonicTime(&m_send_time);
   if (FLAGS_send_dmx) {
     m_wrapper.GetClient()->SendDmx(
         FLAGS_universe,
@@ -125,7 +125,7 @@ void Tracker::SendRequest() {
 
 void Tracker::LogTime() {
   TimeStamp now;
-  m_clock.CurrentTime(&now);
+  m_clock.CurrentMonotonicTime(&now);
   TimeInterval delta = now - m_send_time;
   if (delta > m_max) {
     m_max = delta;

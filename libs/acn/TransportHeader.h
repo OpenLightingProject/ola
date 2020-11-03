@@ -41,6 +41,11 @@ class TransportHeader {
   };
 
   TransportHeader() : m_transport_type(UNDEFINED) {}
+
+  TransportHeader(const TransportHeader& other)
+      : m_source(other.m_source),
+        m_transport_type(other.m_transport_type) {}
+
   TransportHeader(const ola::network::IPV4SocketAddress &source,
                   TransportType type)
       : m_source(source),

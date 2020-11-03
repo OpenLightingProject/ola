@@ -321,7 +321,12 @@ void WidgetDetectorThread::UsbProWidgetReady(
   if (information->has_firmware_version) {
     // 2.4 is the first version that properly supports RDM.
     options.enable_rdm = information->firmware_version >= 0x0204;
-    if (!options.enable_rdm) {
+    if (options.enable_rdm) {
+      // TODO(Peter): Double check the firmware versioning
+      options.no_rdm_dub_timeout = information->firmware_version >= 0x040f;
+      OLA_DEBUG << "USB Pro no RDM DUB timeout behaviour: "
+                << options.no_rdm_dub_timeout;
+    } else {
       OLA_WARN << "USB Pro Firmware >= 2.4 is required for RDM support, this "
                << "widget is running " << (information->firmware_version >> 8)
                << "." << (information->firmware_version & 0xff);
