@@ -28,6 +28,23 @@
 #define EXAMPLES_SHOWLOADER_H_
 
 /**
+ * Show header for V1 showfiles.
+ *
+ * - Relative frame times (up to ms resolution).
+ * - DMX data in human-readable form.
+ */
+extern const char OLA_SHOW_HEADER_V1[];
+
+/**
+ * Show header for V2 showfiles.
+ *
+ * - Absolute frame times (up to ms resolution).
+ * - DMX data in human-readable form.
+ */
+extern const char OLA_SHOW_HEADER_V2[];
+
+
+/**
  * Holds a single entry in the show file
  */
 struct ShowEntry {
