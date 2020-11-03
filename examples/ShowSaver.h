@@ -62,6 +62,14 @@ class ShowSaverV1: public ShowSaver {
 };
 
 
-  static const char OLA_SHOW_HEADER[];
+class ShowSaverV2: public ShowSaver {
+ public:
+  explicit ShowSaverV2(const std::string &filename);
+  virtual bool NewFrame(const ola::TimeStamp &arrival_time,
+                        unsigned int universe,
+                        const ola::DmxBuffer &data);
+ private:
+  ola::TimeStamp m_first_frame;
+  virtual std::string GetHeader();
 };
 #endif  // EXAMPLES_SHOWSAVER_H_

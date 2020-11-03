@@ -106,6 +106,9 @@ int RecordShow() {
     case 1:
       saver.reset(new ShowSaverV1(FLAGS_record.str()));
       break;
+    case 2:
+      saver.reset(new ShowSaverV2(FLAGS_record.str()));
+      break;
     default:
       OLA_FATAL << "Show file version " << FLAGS_record_version
                 << " is not supported";

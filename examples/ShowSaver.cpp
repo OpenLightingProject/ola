@@ -100,3 +100,30 @@ string ShowSaverV1::GetHeader() {
   return string(OLA_SHOW_HEADER_V1);
 }
 
+
+ShowSaverV2::ShowSaverV2(const string &filename) 
+    : ShowSaver(filename) {
+}
+
+
+bool ShowSaverV2::NewFrame(const ola::TimeStamp &arrival_time,
+                           unsigned int universe,
+                           const ola::DmxBuffer &data) {
+  // TODO(shenghao): add much better error handling here
+  if (m_first_frame.IsSet()) {
+    const ola::TimeInterval delta = arrival_time - m_first_frame;
+
+    struct timeval tv;
+    delta.AsTimeval(&tv);
+    m_show_file << tv.tv_sec << " " << tv.tv_usec << endl;
+  } else {
+    m_first_frame = arrival_time;
+  }
+
+  m_show_file << universe << " " << data.ToString() << endl;
+  return true;
+}
+
+string ShowSaverV2::GetHeader() {
+  return string(OLA_SHOW_HEADER_V2);
+}
