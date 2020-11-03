@@ -81,6 +81,7 @@ bool ShowLoader::Load() {
 void ShowLoader::Reset() {
   m_show_file.clear();
   m_show_file.seekg(0, std::ios::beg);
+  m_line = 0;
   // skip over the first line
   string line;
   ReadLine(&line);
