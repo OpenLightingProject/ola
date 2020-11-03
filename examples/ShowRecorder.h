@@ -22,6 +22,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/client/ClientWrapper.h>
 #include <stdint.h>
+#include <memory>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -36,8 +37,8 @@
  */
 class ShowRecorder {
  public:
-  ShowRecorder(const std::string &filename,
-               const std::vector<unsigned int> &universes);
+  ShowRecorder(const std::vector<unsigned int> &universes,
+               std::auto_ptr<ShowSaver> &saver);
   ~ShowRecorder();
 
   int Init();
@@ -48,7 +49,7 @@ class ShowRecorder {
 
  private:
   ola::client::OlaClientWrapper m_client;
-  ShowSaver m_saver;
+  std::auto_ptr<ShowSaver> m_saver;
   std::vector<unsigned int> m_universes;
   ola::Clock m_clock;
   uint64_t m_frame_count;

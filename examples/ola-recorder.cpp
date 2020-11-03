@@ -32,6 +32,7 @@
 #include <string>
 #include <vector>
 
+#include "examples/ShowSaver.h"
 #include "examples/ShowPlayer.h"
 #include "examples/ShowLoader.h"
 #include "examples/ShowRecorder.h"
@@ -49,6 +50,9 @@ using std::string;
 
 DEFINE_s_string(playback, p, "", "The show file to playback.");
 DEFINE_s_string(record, r, "", "The show file to record data to.");
+DEFINE_uint32(record_version, 1,
+              "Version of showfile to create when recording. Defaults to 1. "
+              "Supported: 1");
 DEFINE_string(verify, "", "The show file to verify.");
 DEFINE_default_bool(verify_playback, true,
                     "Don't verify show file before playback");
@@ -97,7 +101,18 @@ int RecordShow() {
     universes.push_back(universe);
   }
 
-  ShowRecorder show_recorder(FLAGS_record.str(), universes);
+  auto_ptr<ShowSaver> saver;
+  switch (FLAGS_record_version) {
+    case 1:
+      saver.reset(new ShowSaverV1(FLAGS_record.str()));
+      break;
+    default:
+      OLA_FATAL << "Show file version " << FLAGS_record_version
+                << " is not supported";
+      exit(ola::EXIT_USAGE);
+  }
+
+  ShowRecorder show_recorder(universes, saver);
   int status = show_recorder.Init();
   if (status)
     return status;

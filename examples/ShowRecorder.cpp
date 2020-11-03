@@ -46,9 +46,9 @@ using std::string;
 using std::vector;
 
 
-ShowRecorder::ShowRecorder(const string &filename,
-                           const vector<unsigned int> &universes)
-    : m_saver(filename),
+ShowRecorder::ShowRecorder(const vector<unsigned int> &universes,
+                           std::auto_ptr<ShowSaver> &saver)
+    : m_saver(saver),
       m_universes(universes),
       m_frame_count(0) {
 }
@@ -67,7 +67,7 @@ int ShowRecorder::Init() {
     return ola::EXIT_UNAVAILABLE;
   }
 
-  if (!m_saver.Open()) {
+  if (!m_saver->Open()) {
     return ola::EXIT_CANTCREAT;
   }
 
@@ -110,7 +110,7 @@ void ShowRecorder::NewFrame(const ola::client::DMXMetadata &meta,
                             const ola::DmxBuffer &data) {
   ola::TimeStamp now;
   m_clock.CurrentMonotonicTime(&now);
-  m_saver.NewFrame(now, meta.universe, data);
+  m_saver->NewFrame(now, meta.universe, data);
   m_frame_count++;
 }
 

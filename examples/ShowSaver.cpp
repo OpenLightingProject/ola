@@ -31,14 +31,13 @@
 #include <iostream>
 #include <string>
 
+#include "examples/ShowLoader.h"
 #include "examples/ShowSaver.h"
 
 using std::string;
 using ola::DmxBuffer;
 using std::endl;
 
-
-const char ShowSaver::OLA_SHOW_HEADER[] = "OLA Show";
 
 ShowSaver::ShowSaver(const string &filename)
     : m_filename(filename) {
@@ -61,10 +60,9 @@ bool ShowSaver::Open() {
     return false;
   }
 
-  m_show_file << OLA_SHOW_HEADER << endl;
+  m_show_file << GetHeader() << endl;
   return true;
 }
-
 
 
 /**
@@ -77,12 +75,14 @@ void ShowSaver::Close() {
 }
 
 
-/**
- * Write a new frame
- */
-bool ShowSaver::NewFrame(const ola::TimeStamp &arrival_time,
-                         unsigned int universe,
-                         const ola::DmxBuffer &data) {
+ShowSaverV1::ShowSaverV1(const string &filename)
+    : ShowSaver(filename) {
+}
+
+
+bool ShowSaverV1::NewFrame(const ola::TimeStamp &arrival_time,
+                           unsigned int universe,
+                           const ola::DmxBuffer &data) {
   // TODO(simon): add much better error handling here
   if (m_last_frame.IsSet()) {
     // this is not the first frame so write the delay in ms
@@ -94,3 +94,9 @@ bool ShowSaver::NewFrame(const ola::TimeStamp &arrival_time,
   m_show_file << universe << " " << data.ToString() << endl;
   return true;
 }
+
+
+string ShowSaverV1::GetHeader() {
+  return string(OLA_SHOW_HEADER_V1);
+}
+

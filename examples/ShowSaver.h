@@ -33,19 +33,34 @@
 class ShowSaver {
  public:
   explicit ShowSaver(const std::string &filename);
-  ~ShowSaver();
+  virtual ~ShowSaver();
 
   bool Open();
   void Close();
 
-  bool NewFrame(const ola::TimeStamp &arrival_time,
-                unsigned int universe,
-                const ola::DmxBuffer &data);
-
- private:
+  virtual bool NewFrame(const ola::TimeStamp &arrival_time,
+                        unsigned int universe,
+                        const ola::DmxBuffer &data) = 0;
+ protected:
   const std::string m_filename;
   std::ofstream m_show_file;
+
+ private:
+  virtual std::string GetHeader() = 0;
+};
+
+
+class ShowSaverV1: public ShowSaver {
+ public:
+  explicit ShowSaverV1(const std::string &filename);
+  virtual bool NewFrame(const ola::TimeStamp &arrival_time,
+                        unsigned int universe,
+                        const ola::DmxBuffer &data);
+ private:
   ola::TimeStamp m_last_frame;
+  virtual std::string GetHeader();
+};
+
 
   static const char OLA_SHOW_HEADER[];
 };
