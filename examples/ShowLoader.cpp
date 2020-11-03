@@ -37,12 +37,13 @@
 
 #include "examples/ShowLoader.h"
 
+using std::auto_ptr;
 using std::vector;
 using std::string;
 using ola::DmxBuffer;
 
 
-const char ShowLoader::OLA_SHOW_HEADER[] = "OLA Show";
+const char OLA_SHOW_HEADER_V1[] = "OLA Show";
 
 ShowLoader::ShowLoader(const string &filename)
     : m_filename(filename),
@@ -68,14 +69,7 @@ bool ShowLoader::Load() {
     return false;
   }
 
-  string line;
-  ReadLine(&line);
-  if (line != OLA_SHOW_HEADER) {
-    OLA_WARN << "Invalid show file, expecting " << OLA_SHOW_HEADER << " got "
-             << line;
-    return false;
-  }
-  return true;
+  return VerifyVersion();
 }
 
 
@@ -97,26 +91,6 @@ void ShowLoader::Reset() {
 unsigned int ShowLoader::GetCurrentLineNumber() const {
   return m_line;
 }
-
-
-/**
- * Get the next time offset
- * @param timeout a pointer to the timeout in ms
- */
-ShowLoader::State ShowLoader::NextTimeout(unsigned int *timeout) {
-  string line;
-  ReadLine(&line);
-  if (line.empty()) {
-    return END_OF_FILE;
-  }
-
-  if (!ola::StringToInt(line, timeout, true)) {
-    OLA_WARN << "Line " << m_line << ": Invalid timeout: " << line;
-    return INVALID_LINE;
-  }
-  return OK;
-}
-
 
 /**
  * Read the next DMX frame.
@@ -173,4 +147,61 @@ void ShowLoader::ReadLine(string *line) {
   getline(m_show_file, *line);
   ola::StripSuffix(line, "\r");
   m_line++;
+}
+
+
+class ShowLoaderV1: public ShowLoader {
+ public:
+  explicit ShowLoaderV1(const string &filename);
+ private:
+  virtual bool VerifyVersion();
+  virtual State NextTimeout(unsigned int *timeout);
+};
+
+
+ShowLoaderV1::ShowLoaderV1(const string &filename)
+    : ShowLoader(filename) {
+}
+
+
+/**
+ * Verify that this show file has the correct version.
+ */
+bool ShowLoaderV1::VerifyVersion() {
+  string line;
+  ReadLine(&line);
+
+  return line == OLA_SHOW_HEADER_V1;
+}
+
+
+/**
+ * Get the next time offset.
+ * @param timeout a pointer to the timeout in ms
+ */
+ShowLoader::State ShowLoaderV1::NextTimeout(unsigned int *timeout) {
+  string line;
+  ReadLine(&line);
+  if (line.empty()) {
+    return END_OF_FILE;
+  }
+
+  if (!ola::StringToInt(line, timeout, true)) {
+    OLA_WARN << "Line " << GetCurrentLineNumber()
+             << ": Invalid timeout: " << line;
+    return INVALID_LINE;
+  }
+  return OK;
+}
+
+
+auto_ptr<ShowLoader> LoadShow(const string &filename) {
+  typedef auto_ptr<ShowLoader> slp;
+  slp out;
+  {
+    slp sl(new ShowLoaderV1(filename));
+    if (sl->Load())
+      out = sl;
+  }
+  return out;
 }

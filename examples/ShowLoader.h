@@ -20,6 +20,7 @@
 
 #include <ola/DmxBuffer.h>
 
+#include <memory>
 #include <string>
 #include <fstream>
 
@@ -41,7 +42,7 @@ struct ShowEntry {
 class ShowLoader {
  public:
   explicit ShowLoader(const std::string &filename);
-  ~ShowLoader();
+  virtual ~ShowLoader();
 
   typedef enum {
     OK,
@@ -50,20 +51,31 @@ class ShowLoader {
   } State;
 
   bool Load();
-  void Reset();
+  virtual void Reset();
   unsigned int GetCurrentLineNumber() const;
 
   State NextEntry(ShowEntry *entry);
+
+ protected:
+  void ReadLine(std::string *line);
 
  private:
   const std::string m_filename;
   std::ifstream m_show_file;
   unsigned int m_line;
 
-  static const char OLA_SHOW_HEADER[];
-
-  void ReadLine(std::string *line);
-  State NextTimeout(unsigned int *timeout);
-  State NextFrame(unsigned int *universe, ola::DmxBuffer *data);
+  virtual bool VerifyVersion() = 0;
+  virtual State NextTimeout(unsigned int *timeout) = 0;
+  virtual State NextFrame(unsigned int *universe, ola::DmxBuffer *data);
 };
+
+/**
+ * LoadShow return an appropriate \c ShowLoader based on the format of the
+ * showfile.
+ *
+ * @param filename name of file
+ * @return Pointer to show loader. \c NULL if no show loader can be found.
+ */
+std::auto_ptr<ShowLoader> LoadShow(const std::string &filename);
+
 #endif  // EXAMPLES_SHOWLOADER_H_
