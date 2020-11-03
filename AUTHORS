@@ -30,5 +30,6 @@ Contributors:
   Rui Barreiros, ftdidmx plugin
   Sean Sill, various fixes.
   Stefan Krüger, added APA102 support to the SPI Plugin
+  Stefan S, improved timing with monotonic clock
   Tobi Schäfer, for the MacPort files
   Tor Håkon Gjerde, added AVLdiy D512 support

@@ -97,7 +97,7 @@ void PortTest::testInputPortPriorities() {
   port_manager.PatchPort(&input_port, universe_id);
 
   ola::DmxBuffer buffer("foo bar baz");
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   input_port.WriteDMX(buffer);
   input_port.DmxChanged();
 
@@ -110,7 +110,7 @@ void PortTest::testInputPortPriorities() {
   uint8_t new_priority = 120;
   port_manager.SetPriorityStatic(&input_port, new_priority);
 
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   input_port.WriteDMX(buffer);
   input_port.DmxChanged();
   OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
@@ -118,7 +118,7 @@ void PortTest::testInputPortPriorities() {
   new_priority = 0;
   port_manager.SetPriorityStatic(&input_port, new_priority);
 
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   input_port.WriteDMX(buffer);
   input_port.DmxChanged();
   OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
@@ -131,13 +131,13 @@ void PortTest::testInputPortPriorities() {
   // the default mode is static, lets change it to inherit
   input_port2.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);
   input_port2.SetInheritedPriority(99);
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
   OLA_ASSERT_EQ((uint8_t) 99, universe->ActivePriority());
 
   input_port2.SetInheritedPriority(123);
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
   OLA_ASSERT_EQ((uint8_t) 123, universe->ActivePriority());
@@ -145,7 +145,7 @@ void PortTest::testInputPortPriorities() {
   // now try static mode
   new_priority = 108;
   port_manager.SetPriorityStatic(&input_port2, new_priority);
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
   OLA_ASSERT_EQ(new_priority,  universe->ActivePriority());

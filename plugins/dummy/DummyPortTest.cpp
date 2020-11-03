@@ -662,7 +662,25 @@ void DummyPortTest::testParamDescription() {
   const string description("Code Version");
   size_t str_len = std::min(sizeof(param_description.description),
                             description.size());
+/*
+ * Some versions of GCC 9 claim that the strncpy overflows the target
+ * string. While that's (kindof) true, all that happens is that we drop
+ * the NUL byte, but that's on purpose.
+ *
+ * Disable the warning to avoid it being an issue, but only for this
+ * line.
+ *
+ * Also, work around clang producing an error on the
+ * "stringop-truncation" warning not existing there.
+ */
+#ifndef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
   strncpy(param_description.description, description.c_str(), str_len);
+#ifndef __clang__
+#pragma GCC diagnostic pop
+#endif
 
   unsigned int param_data_length = (
       sizeof(param_description) - sizeof(param_description.description) +
