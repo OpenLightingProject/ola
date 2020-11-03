@@ -23,6 +23,7 @@
 #include <ola/client/ClientWrapper.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <fstream>
 
@@ -80,7 +81,7 @@ class ShowPlayer {
 
  private:
   ola::client::OlaClientWrapper m_client;
-  ShowLoader m_loader;
+  std::auto_ptr<ShowLoader> m_loader;
   bool m_infinite_loop;
   unsigned int m_iteration_remaining;
   uint64_t m_loop_delay;

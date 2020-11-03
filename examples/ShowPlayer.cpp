@@ -46,7 +46,7 @@ using ola::DmxBuffer;
 
 
 ShowPlayer::ShowPlayer(const string &filename)
-    : m_loader(filename),
+    : m_loader(LoadShow(filename)),
       m_infinite_loop(false),
       m_iteration_remaining(0),
       m_loop_delay(0),
@@ -68,7 +68,8 @@ int ShowPlayer::Init(const bool simulate) {
     return ola::EXIT_UNAVAILABLE;
   }
 
-  if (!m_loader.Load()) {
+  if (m_loader.get() == NULL) {
+    OLA_FATAL << "Show file cannot be loaded: Incorrect format / I/O error.";
     return ola::EXIT_NOINPUT;
   }
 
@@ -170,7 +171,7 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
   // Seeking to the current position can result in the frame being skipped;
   // ensure the frame is loaded in this case as well.
   if (seek_time <= m_playback_pos) {
-    m_loader.Reset();
+    m_loader->Reset();
     m_playback_pos = 0;
   }
 
@@ -181,7 +182,7 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
   bool found = false;
   while (true) {
     ShowEntry entry;
-    state = m_loader.NextEntry(&entry);
+    state = m_loader->NextEntry(&entry);
 
     // Handle abnormal conditions
     if (state == ShowLoader::END_OF_FILE) {
@@ -238,7 +239,7 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
  */
 void ShowPlayer::SendNextFrame() {
   ShowEntry entry;
-  ShowLoader::State state = m_loader.NextEntry(&entry);
+  ShowLoader::State state = m_loader->NextEntry(&entry);
 
   if (state == ShowLoader::OK) {
     m_status = ola::EXIT_OK;
@@ -284,7 +285,7 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
     int64_t current_delta = (now - m_start_ts).InMilliSeconds();
     int64_t delay = target_delta - current_delta;
     if (delay < 0) {
-      OLA_WARN << "Frame at line " << m_loader.GetCurrentLineNumber()
+      OLA_WARN << "Frame at line " << m_loader->GetCurrentLineNumber()
                << " was meant to have completed " << -delay << " ms ago."
                << " System too slow?";
       delay = 0;
@@ -373,7 +374,7 @@ void ShowPlayer::HandleEndOfShow() {
  * Handle reading an invalid line from the show file
  */
 void ShowPlayer::HandleInvalidLine() {
-  OLA_FATAL << "Invalid data at line " << m_loader.GetCurrentLineNumber();
+  OLA_FATAL << "Invalid data at line " << m_loader->GetCurrentLineNumber();
   StopPlayback(ola::EXIT_DATAERR);
 }
 
