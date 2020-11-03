@@ -25,6 +25,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <ola/Clock.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
@@ -44,6 +45,7 @@ using ola::DmxBuffer;
 
 
 const char OLA_SHOW_HEADER_V1[] = "OLA Show";
+const char OLA_SHOW_HEADER_V2[] = "OLA Show V2";
 
 ShowLoader::ShowLoader(const string &filename)
     : m_filename(filename),
@@ -195,6 +197,75 @@ ShowLoader::State ShowLoaderV1::NextTimeout(unsigned int *timeout) {
 }
 
 
+class ShowLoaderV2: public ShowLoader {
+ public:
+  explicit ShowLoaderV2(const string &filename);
+  void Reset();
+
+ private:
+  ola::TimeStamp m_last_entry_time;
+
+  virtual bool VerifyVersion();
+  virtual State NextTimeout(unsigned int *timeout);
+};
+
+
+ShowLoaderV2::ShowLoaderV2(const string &filename)
+    : ShowLoader(filename) {
+}
+
+
+void ShowLoaderV2::Reset() {
+  ShowLoader::Reset();
+  m_last_entry_time = ola::TimeStamp();
+}
+
+
+/**
+ * Verify that this show file has the correct version.
+ */
+bool ShowLoaderV2::VerifyVersion() {
+  string line;
+  ReadLine(&line);
+
+  return line == OLA_SHOW_HEADER_V2;
+}
+
+
+/**
+ * Get the next time offset.
+ * @param timeout a pointer to the timeout in ms
+ */
+ShowLoader::State ShowLoaderV2::NextTimeout(unsigned int *timeout) {
+  string line;
+  ReadLine(&line);
+  if (line.empty()) {
+    return END_OF_FILE;
+  }
+
+  vector<string> tv;
+  ola::StringSplit(line, &tv);
+  int sec, usec;
+  if (!ola::StringToInt(tv[0], &sec, true) ||
+      !ola::StringToInt(tv[1], &usec, true)) {
+    OLA_WARN << "Timestamp component at line " << GetCurrentLineNumber()
+             << " invalid: " << line;
+    return INVALID_LINE;
+  }
+
+  struct timeval stv;
+  stv.tv_sec = sec;
+  stv.tv_usec = usec;
+  ola::TimeStamp ts(stv);
+
+  *timeout = (ts - m_last_entry_time).InMilliSeconds();
+
+  m_last_entry_time = ts;
+
+  return OK;
+}
+
+
 auto_ptr<ShowLoader> LoadShow(const string &filename) {
   typedef auto_ptr<ShowLoader> slp;
   slp out;
@@ -203,5 +274,11 @@ auto_ptr<ShowLoader> LoadShow(const string &filename) {
     if (sl->Load())
       out = sl;
   }
+  {
+    slp sl(new ShowLoaderV2(filename));
+    if (sl->Load())
+      out = sl;
+  }
+
   return out;
 }
