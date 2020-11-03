@@ -218,7 +218,7 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
   }
   uint64_t timeout = playhead_time - seek_time;
   m_playback_pos = playhead_time;
-  m_clock.CurrentTime(&m_start_ts);
+  m_clock.CurrentMonotonicTime(&m_start_ts);
   m_start_playback_pos = m_playback_pos - timeout;
 
   // Send data in the state it would be in at the given time
@@ -279,7 +279,7 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
     // we have to lose 1 bit anyway as InMilliSeconds() returns a signed
     // 64-bit integer.
     ola::TimeStamp now;
-    m_clock.CurrentTime(&now);
+    m_clock.CurrentMonotonicTime(&now);
     int64_t target_delta = m_playback_pos - m_start_playback_pos;
     int64_t current_delta = (now - m_start_ts).InMilliSeconds();
     int64_t delay = target_delta - current_delta;
