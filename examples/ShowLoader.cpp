@@ -136,12 +136,12 @@ ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
   ola::StringSplit(line, &inputs);
 
   if (inputs.size() != 2) {
-    OLA_WARN << "Line " << m_line << " invalid: " << line;
+    OLA_WARN << "Line " << GetCurrentLineNumber() << " invalid: " << line;
     return INVALID_LINE;
   }
 
   if (!ola::StringToInt(inputs[0], universe, true)) {
-    OLA_WARN << "Line " << m_line << " invalid: " << line;
+    OLA_WARN << "Line " << GetCurrentLineNumber() << " invalid: " << line;
     return INVALID_LINE;
   }
 
