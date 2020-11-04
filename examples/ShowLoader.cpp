@@ -272,17 +272,17 @@ ShowLoader::State ShowLoaderV2::NextTimeout(unsigned int *timeout) {
 
 auto_ptr<ShowLoader> LoadShow(const string &filename) {
   typedef auto_ptr<ShowLoader> slp;
-  slp out;
+  slp null;
   {
     slp sl(new ShowLoaderV1(filename));
     if (sl->Load())
-      out = sl;
+      return sl;
   }
   {
     slp sl(new ShowLoaderV2(filename));
     if (sl->Load())
-      out = sl;
+      return sl;
   }
 
-  return out;
+  return null;
 }
