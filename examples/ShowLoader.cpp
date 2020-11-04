@@ -246,9 +246,9 @@ ShowLoader::State ShowLoaderV2::NextTimeout(unsigned int *timeout) {
 
   vector<string> tv;
   ola::StringSplit(line, &tv);
-  int sec, usec;
+  int sec, msec;
   if (!ola::StringToInt(tv[0], &sec, true) ||
-      !ola::StringToInt(tv[1], &usec, true)) {
+      !ola::StringToInt(tv[1], &msec, true)) {
     OLA_WARN << "Timestamp component at line " << GetCurrentLineNumber()
              << " invalid: " << line;
     return INVALID_LINE;
@@ -256,7 +256,10 @@ ShowLoader::State ShowLoaderV2::NextTimeout(unsigned int *timeout) {
 
   struct timeval stv;
   stv.tv_sec = sec;
-  stv.tv_usec = usec;
+  stv.tv_usec = msec;
+  // Do mult separately to guarantee a cast to a wider type if int is not wide
+  // enough.
+  stv.tv_usec *= 1000;
   ola::TimeStamp ts(stv);
 
   *timeout = (ts - m_last_entry_time).InMilliSeconds();

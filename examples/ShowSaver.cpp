@@ -115,7 +115,7 @@ bool ShowSaverV2::NewFrame(const ola::TimeStamp &arrival_time,
 
     struct timeval tv;
     delta.AsTimeval(&tv);
-    m_show_file << tv.tv_sec << " " << tv.tv_usec << endl;
+    m_show_file << tv.tv_sec << " " << (tv.tv_usec / 1000) << endl;
   } else {
     m_first_frame = arrival_time;
   }
