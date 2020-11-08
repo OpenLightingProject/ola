@@ -58,7 +58,10 @@ class RDMTest(unittest.TestCase):
       expected = binascii.unhexlify(
         "29000010080110001a0a52444d436f6d6d616e6422170801120908f0f4011500"
         "ffffff180020602a0030003800")
-      self.assertEqual(data, expected)
+      self.assertEqual(data, expected,
+                       msg="Regression check failed. If protocol change "
+                       "was intended set expected to: " +
+                       str(binascii.hexlify(data)))
       results.gotrequest = True
       response = binascii.unhexlify(
         "3f0000100802100022390800100018002213010000017fff0000000300050204"

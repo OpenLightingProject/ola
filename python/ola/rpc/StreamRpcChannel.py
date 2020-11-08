@@ -51,7 +51,8 @@ class StreamRpcChannel(service.RpcChannel):
   SIZE_MASK = 0x0fffffff
   RECEIVE_BUFFER_SIZE = 8192
 
-  def __init__(self, socket, service_impl, close_callback=None):
+  def __init__(self, socket, service_impl, close_callback=None,
+               log_msgs=False):
     """Create a new StreamRpcChannel.
 
     Args:
@@ -67,6 +68,7 @@ class StreamRpcChannel(service.RpcChannel):
     self._expected_size = None  # The size of the message we're receiving
     self._skip_message = False  # Skip the current message
     self._close_callback = close_callback
+    self._log_msgs = log_msgs  # logs sent and rcvd messages for mocks
 
   def SocketReady(self):
     """Read data from the socket and handle when we get a full message.
@@ -171,7 +173,9 @@ class StreamRpcChannel(service.RpcChannel):
     data = message.SerializeToString()
     # combine into one buffer to send so we avoid sending two packets
     data = self._EncodeHeader(len(data)) + data
-    logging.debug("send->" + str(binascii.hexlify(data)))
+    # this log is useful for building mock regression tests
+    if self._log_msgs:
+      logging.debug("send->" + str(binascii.hexlify(data)))
 
     sent_bytes = self._socket.send(data)
     if sent_bytes != len(data):
@@ -242,7 +246,8 @@ class StreamRpcChannel(service.RpcChannel):
         if not raw_header:
           # not enough data yet
           return
-        logging.debug("recvhdr<-" + str(binascii.hexlify(raw_header)))
+        if self._log_msgs:
+          logging.debug("recvhdr<-" + str(binascii.hexlify(raw_header)))
         header = struct.unpack('=L', raw_header)[0]
         version, size = self._DecodeHeader(header)
 
@@ -257,7 +262,8 @@ class StreamRpcChannel(service.RpcChannel):
         # not enough data yet
         return
 
-      logging.debug("recvmsg<-" + str(binascii.hexlify(data)))
+      if self._log_msgs:
+        logging.debug("recvmsg<-" + str(binascii.hexlify(data)))
       if not self._skip_message:
         self._HandleNewMessage(data)
       self._expected_size = 0

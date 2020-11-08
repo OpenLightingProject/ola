@@ -215,7 +215,10 @@ class ClientWrapperTest(unittest.TestCase):
         "000000000000000000000000000000000000000000000000000000000000000"
         "000000000000000000000000000000000000000000000000000000000000000"
         "000000")
-      self.assertEqual(data, expected)
+      self.assertEqual(data, expected,
+                       msg="Regression check failed. If protocol change "
+                       "was intended set expected to: " +
+                       str(binascii.hexlify(data)))
       results.gotdata = True
       wrapper.AddEvent(0, wrapper.Stop)
 

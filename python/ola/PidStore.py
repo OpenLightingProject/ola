@@ -53,7 +53,7 @@ class Error(Exception):
 
 
 class InvalidPidFormat(Error):
-  "Indicates the PID data file was invalid."""
+  """Indicates the PID data file was invalid."""
 
 
 class PidStructureException(Error):
