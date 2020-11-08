@@ -49,6 +49,7 @@ config.h.in~
 config.log
 config.status
 configure
+cpplint.py
 doxygen_entrydb_*.tmp
 doxygen_objdb_*.tmp
 html/
