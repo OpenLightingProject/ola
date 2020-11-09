@@ -90,8 +90,9 @@ matrix:
     - os: linux
       dist: xenial
       compiler: clang
-      env: TASK='compile'
-      python: '3.8'
+      env:
+      - TASK='compile'
+      - PYTHON='python3'
       addons:
         apt:
           packages:
@@ -104,7 +105,6 @@ matrix:
       dist: xenial
       compiler: gcc
       env: TASK='compile'
-      python: '2.7'
       addons:
         apt:
           packages:
@@ -306,12 +306,12 @@ before_cache:
 
 install:
 # Match the version of protobuf being installed via apt
-  - if [[ "$PROTOBUF" == "latest" ]]; then pip install --user protobuf; fi
-  - if [[ "$PROTOBUF" != "latest" ]]; then pip install --user protobuf==3.1.0; fi
+  - if [[ "$PROTOBUF" == "latest" ]]; then pip install --user protobuf; pip3 install --user protobuf; fi
+  - if [[ "$PROTOBUF" != "latest" ]]; then pip install --user protobuf==3.1.0; pip3 install --user protobuf==3.1.0; fi
   # disable until can be added to all build variants
-  #- pip install --user timeout-decorator
+  #- pip install --user timeout-decorator; pip3 install --user timeout-decorator
 # We need to use pip rather than apt on Xenial
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; pip3 install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
@@ -344,9 +344,10 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
 #Put back the old pip numpy we need to work
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install --upgrade --no-deps --force-reinstall --user numpy; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install --upgrade --no-deps --force-reinstall --user numpy; pip3 install --upgrade --no-deps --force-reinstall --user numpy; fi
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-9" CC="ccache gcc-9"; fi
+ - if [ "$PYTHON" == "python3" ]; then export PYTHON="python3"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
