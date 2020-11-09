@@ -813,13 +813,10 @@ class Group(Atom):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
 
-      if sys.version >= '3.2':
-        return ''.join(str(data)), arg_offset
-      else:
-        return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
     elif self._group_size == 0:
-      return '', 0
+      return b'', 0
     else:
       # this could be groups of fields, but we don't support that yet
       data = []
@@ -832,10 +829,7 @@ class Group(Atom):
       if arg_offset < len(args):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
-      if sys.version >= '3.2':
-        return ''.join(str(data)), arg_offset
-      else:
-        return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
   def Unpack(self, data):
     """Unpack binary data.

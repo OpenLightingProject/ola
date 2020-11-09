@@ -51,8 +51,7 @@ class StreamRpcChannel(service.RpcChannel):
   SIZE_MASK = 0x0fffffff
   RECEIVE_BUFFER_SIZE = 8192
 
-  def __init__(self, socket, service_impl, close_callback=None,
-               log_msgs=False):
+  def __init__(self, socket, service_impl, close_callback=None):
     """Create a new StreamRpcChannel.
 
     Args:
@@ -68,7 +67,9 @@ class StreamRpcChannel(service.RpcChannel):
     self._expected_size = None  # The size of the message we're receiving
     self._skip_message = False  # Skip the current message
     self._close_callback = close_callback
-    self._log_msgs = log_msgs  # logs sent and rcvd messages for mocks
+    self._log_msgs = False  # set to enable wire message logging
+    if self._log_msgs:
+      logging.basicConfig(level=logging.DEBUG)
 
   def SocketReady(self):
     """Read data from the socket and handle when we get a full message.

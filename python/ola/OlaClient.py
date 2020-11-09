@@ -1224,7 +1224,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RDMGet(self, universe, uid, sub_device, param_id, callback, data='',
+  def RDMGet(self, universe, uid, sub_device, param_id, callback, data=b'',
              include_frames=False):
     """Send an RDM get command.
 
@@ -1246,7 +1246,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
                             data, include_frames)
 
-  def RDMSet(self, universe, uid, sub_device, param_id, callback, data='',
+  def RDMSet(self, universe, uid, sub_device, param_id, callback, data=b'',
              include_frames=False):
     """Send an RDM set command.
 
@@ -1274,7 +1274,7 @@ class OlaClient(Ola_pb2.OlaClientService):
                           sub_device,
                           param_id,
                           callback,
-                          data='',
+                          data=b'',
                           include_frames=False):
     """Send an RDM Discovery command. Unless you're writing RDM tests you
       shouldn't need to use this.
@@ -1357,10 +1357,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.uid.device_id = uid.device_id
     request.sub_device = sub_device
     request.param_id = param_id
-    if sys.version >= '3.2':
-      request.data = eval(data)[0] if data else bytes(data, 'utf-8')
-    else:
-      request.data = data
+    request.data = data
     request.is_set = set
     request.include_raw_response = include_frames
     try:

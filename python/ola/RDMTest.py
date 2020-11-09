@@ -54,6 +54,7 @@ class RDMTest(unittest.TestCase):
       # request and response for
       # ola_rdm_get.py -u 1 --uid 7a70:ffffff00 device_info
       # against olad dummy plugin
+      # enable logging in rpc/StreamRpcChannel.py
       data = sockets[1].recv(4096)
       expected = binascii.unhexlify(
         "29000010080110001a0a52444d436f6d6d616e6422170801120908f0f4011500"
@@ -90,8 +91,63 @@ class RDMTest(unittest.TestCase):
     wrapper._ss.AddReadDescriptor(sockets[1], lambda: DataCallback(self))
 
     uid = UID.FromString("7a70:ffffff00")
-    pid = pid_store.GetName("DEVICE_INFO", uid.manufacturer_id)
+    pid = pid_store.GetName("DEVICE_INFO")
     rdm_api.Get(1, uid, 0, pid, lambda x, y, z: ResponseCallback(self, x, y, z))
+
+    wrapper.Run()
+
+    sockets[0].close()
+    sockets[1].close()
+
+    self.assertTrue(results.gotrequest)
+    self.assertTrue(results.gotresponse)
+
+  # @timeout_decorator.timeout(2)
+  def testGetParamsWithResponse(self):
+    """uses client to send an RDM get with mocked olad.
+    Regression test that confirms sent message is correct and
+    sends fixed response message."""
+    sockets = socket.socketpair()
+    wrapper = ClientWrapper(sockets[0])
+    pid_store = PidStore.GetStore(pidStorePath)
+    client = wrapper.Client()
+    rdm_api = RDMAPI(client, pid_store)
+
+    class results:
+      gotrequest = False
+      gotresponse = False
+
+    def DataCallback(self):
+      # request and response for
+      # ola_rdm_get.py -u 1 --uid 7a70:ffffff00 parameter_description 17
+      # against olad dummy plugin
+      # enable logging in rpc/StreamRpcChannel.py
+      data = sockets[1].recv(4096)
+      expected = binascii.unhexlify(
+        "2b000010080110001a0a52444d436f6d6d616e6422190801120908f0f4011500"
+        "ffffff180020512a02001130003800")
+      self.assertEqual(data, expected,
+                       msg="Regression check failed. If protocol change "
+                       "was intended set expected to: " +
+                       str(binascii.hexlify(data)))
+      results.gotrequest = True
+      response = binascii.unhexlify(
+        "2e000010080210002228080010021800220200062851300038004a0908f0f401"
+        "1500ffffff520908f0f40115ac107de05811")
+      sent_bytes = sockets[1].send(response)
+      self.assertEqual(sent_bytes, len(response))
+
+    def ResponseCallback(self, response, data, unpack_exception):
+      results.gotresponse = True
+      self.assertEqual(response.response_type, client.RDM_NACK_REASON)
+      wrapper.AddEvent(0, wrapper.Stop)
+
+    wrapper._ss.AddReadDescriptor(sockets[1], lambda: DataCallback(self))
+
+    uid = UID.FromString("7a70:ffffff00")
+    pid = pid_store.GetName("PARAMETER_DESCRIPTION")
+    rdm_api.Get(1, uid, 0, pid,
+                lambda x, y, z: ResponseCallback(self, x, y, z), args=["17"])
 
     wrapper.Run()
 

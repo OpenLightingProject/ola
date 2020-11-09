@@ -198,6 +198,79 @@ class PidStoreTest(unittest.TestCase):
     self.assertNotEqual(hash(p1b), hash(p2))
     self.assertNotEqual(hash(p1a), hash(p3))
 
+  def testPackUnpack(self):
+    store = PidStore.PidStore()
+    store.Load([os.path.join(path, "test_pids.proto")])
+
+    pid = store.GetName("DMX_PERSONALITY_DESCRIPTION")
+
+    # Pid.Pack only packs requests and Pid.Unpack responses
+    # so test in two halves
+    args = ["42"]
+    blob = pid.Pack(args, PidStore.RDM_GET)
+    decoded = pid._requests.get(PidStore.RDM_GET).Unpack(blob)[0]
+    self.assertEqual(decoded['personality'], 42)
+
+    args = ["42", "7", "UnpackTest"]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    self.assertEqual(decoded['personality'], 42)
+    self.assertEqual(decoded['slots_required'], 7)
+    self.assertEqual(decoded['name'], "UnpackTest")
+
+  def testPackRanges(self):
+    store = PidStore.PidStore()
+    store.Load([os.path.join(path, "test_pids.proto")])
+
+    pid = store.GetName("REAL_TIME_CLOCK")
+
+    args = ["2020", "6", "20", "20", "20", "20"]
+    blob = pid.Pack(args, PidStore.RDM_SET)
+    self.assertTrue(len(blob) > 1)
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2000", "6", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2020", "0", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2020", "13", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2020", "255", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2020", "-1", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    pid = store.GetName("LANGUAGE_CAPABILITIES")
+    args = ["Aa"]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertTrue(len(blob) > 1)
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["a"]
+      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["zzz"]
+      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+
+    pid = store.GetName("STATUS_ID_DESCRIPTION")
+    args = [""]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    self.assertEqual(decoded['label'], "")
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["123456789012345678901234567890123"]
+      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+
 
 if __name__ == '__main__':
   path = (os.environ.get('TESTDATADIR', "../common/rdm/testdata"))
