@@ -52,7 +52,7 @@ OlaHTTPServer::OlaHTTPServer(const HTTPServer::HTTPServerOptions &options,
 
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
   data_dir_var->Set(m_server.DataDir());
-  m_clock.CurrentTime(&m_start_time);
+  m_clock.CurrentMonotonicTime(&m_start_time);
   export_map->GetStringVar(K_UPTIME_VAR);
 }
 
@@ -73,7 +73,7 @@ int OlaHTTPServer::DisplayDebug(const HTTPRequest*,
                                 HTTPResponse *raw_response) {
   auto_ptr<HTTPResponse> response(raw_response);
   ola::TimeStamp now;
-  m_clock.CurrentTime(&now);
+  m_clock.CurrentMonotonicTime(&now);
   ola::TimeInterval diff = now - m_start_time;
   ostringstream str;
   str << diff.InMilliSeconds();

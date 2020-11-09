@@ -226,7 +226,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
                 socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
-                getgrnam_r getgrgid_r secure_getenv])
+                getgrnam_r getgrgid_r secure_getenv clock_gettime])
 
 LT_INIT([win32-dll])
 
@@ -827,6 +827,10 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
            eval ac_cv_have_pymod_numpy=\$AS_TR_CPP([HAVE_PYMOD_numpy])])
      ])
 
+# Check if the flake8 python linter is available
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+
 # Libraries, that depend on the feature args above.
 #####################################################
 
@@ -941,6 +945,12 @@ if test "x$enable_ja_rule" = xyes; then
   BUILDING_JA_RULE='yes'
 fi
 
+# Linters
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+AC_CHECK_PROG([cpplint],[cpplint.py],[yes],[no])
+AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
+
 # Output
 #####################################################
 # Hack alert!
@@ -1004,4 +1014,5 @@ Now type 'make @<:@<target>@:>@'
     all          - build everything
     check        - run the tests
     doxygen-doc  - generate the HTML documentation
+    lint         - run the linters
 -------------------------------------------------------"

@@ -53,7 +53,9 @@ void *PeriodicThread::Run() {
   Clock clock;
   TimeStamp last_run_at;
 
-  clock.CurrentTime(&last_run_at);
+  // Real time is used here because it gets passed into pthread_cond_timedwait
+  // which expects an absolute time
+  clock.CurrentRealTime(&last_run_at);
   if (!m_callback->Run()) {
     return NULL;
   }
@@ -72,7 +74,9 @@ void *PeriodicThread::Run() {
         continue;
       }
     }
-    clock.CurrentTime(&last_run_at);
+    // Real time is used here again to maintain clock consistency with the
+    // previous call to CurrentRealTime()
+    clock.CurrentRealTime(&last_run_at);
     if (!m_callback->Run()) {
       return NULL;
     }
