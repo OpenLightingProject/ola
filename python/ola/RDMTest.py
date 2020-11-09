@@ -134,7 +134,7 @@ class RDMTest(unittest.TestCase):
       response = binascii.unhexlify(
         "3d0000100802100022370800100018002210020005506572736f6e616c697479"
         "203228e101300038004a0908f0f4011500ffffff520908f0f40115ac107de058"
-        "29" )
+        "29")
       sent_bytes = sockets[1].send(response)
       self.assertEqual(sent_bytes, len(response))
 
