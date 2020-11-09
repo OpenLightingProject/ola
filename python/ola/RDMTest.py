@@ -119,35 +119,40 @@ class RDMTest(unittest.TestCase):
 
     def DataCallback(self):
       # request and response for
-      # ola_rdm_get.py -u 1 --uid 7a70:ffffff00 parameter_description 17
+      # ola_rdm_get.py -u 1 --uid 7a70:ffffff00 DMX_PERSONALITY_DESCRIPTION 2
       # against olad dummy plugin
       # enable logging in rpc/StreamRpcChannel.py
       data = sockets[1].recv(4096)
       expected = binascii.unhexlify(
         "2b000010080110001a0a52444d436f6d6d616e6422190801120908f0f4011500"
-        "ffffff180020512a02001130003800")
+        "ffffff180020e1012a010230003800")
       self.assertEqual(data, expected,
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
       results.gotrequest = True
       response = binascii.unhexlify(
-        "2e000010080210002228080010021800220200062851300038004a0908f0f401"
-        "1500ffffff520908f0f40115ac107de05811")
+        "3d0000100802100022370800100018002210020005506572736f6e616c697479"
+        "203228e101300038004a0908f0f4011500ffffff520908f0f40115ac107de058"
+        "29" )
       sent_bytes = sockets[1].send(response)
       self.assertEqual(sent_bytes, len(response))
 
     def ResponseCallback(self, response, data, unpack_exception):
       results.gotresponse = True
-      self.assertEqual(response.response_type, client.RDM_NACK_REASON)
+      self.assertEqual(response.response_type, client.RDM_ACK)
+      self.assertEqual(response.pid, 0xe1)
+      self.assertEqual(data['personality'], 2)
+      self.assertEqual(data['slots_required'], 5)
+      self.assertEqual(data['name'], "Personality 2")
       wrapper.AddEvent(0, wrapper.Stop)
 
     wrapper._ss.AddReadDescriptor(sockets[1], lambda: DataCallback(self))
 
     uid = UID.FromString("7a70:ffffff00")
-    pid = pid_store.GetName("PARAMETER_DESCRIPTION")
+    pid = pid_store.GetName("DMX_PERSONALITY_DESCRIPTION")
     rdm_api.Get(1, uid, 0, pid,
-                lambda x, y, z: ResponseCallback(self, x, y, z), args=["17"])
+                lambda x, y, z: ResponseCallback(self, x, y, z), args=["2"])
 
     wrapper.Run()
 

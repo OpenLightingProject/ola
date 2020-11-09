@@ -204,7 +204,7 @@ class PidStoreTest(unittest.TestCase):
 
     pid = store.GetName("DMX_PERSONALITY_DESCRIPTION")
 
-    # Pid.Pack only packs requests and Pid.Unpack responses
+    # Pid.Pack only packs requests and Pid.Unpack only unpacks responses
     # so test in two halves
     args = ["42"]
     blob = pid.Pack(args, PidStore.RDM_GET)
@@ -228,45 +228,53 @@ class PidStoreTest(unittest.TestCase):
     blob = pid.Pack(args, PidStore.RDM_SET)
     self.assertTrue(len(blob) > 1)
 
+    # invalid year (2002 < 2003)
     with self.assertRaises(PidStore.ArgsValidationError):
-      args = ["2000", "6", "20", "20", "20", "20"]
+      args = ["2002", "6", "20", "20", "20", "20"]
       blob = pid.Pack(args, PidStore.RDM_SET)
 
+    # invalid month < 1
     with self.assertRaises(PidStore.ArgsValidationError):
       args = ["2020", "0", "20", "20", "20", "20"]
       blob = pid.Pack(args, PidStore.RDM_SET)
 
+    # invalid month > 12
     with self.assertRaises(PidStore.ArgsValidationError):
       args = ["2020", "13", "20", "20", "20", "20"]
       blob = pid.Pack(args, PidStore.RDM_SET)
 
+    # invalid month > 255
     with self.assertRaises(PidStore.ArgsValidationError):
       args = ["2020", "255", "20", "20", "20", "20"]
       blob = pid.Pack(args, PidStore.RDM_SET)
 
+    # invalid negative month
     with self.assertRaises(PidStore.ArgsValidationError):
       args = ["2020", "-1", "20", "20", "20", "20"]
       blob = pid.Pack(args, PidStore.RDM_SET)
 
+    # tests for string with min=max=2
     pid = store.GetName("LANGUAGE_CAPABILITIES")
-    args = ["Aa"]
+    args = ["en"]
     blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
     self.assertTrue(len(blob) > 1)
 
     with self.assertRaises(PidStore.ArgsValidationError):
-      args = ["a"]
+      args = ["e"]
       blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
 
     with self.assertRaises(PidStore.ArgsValidationError):
-      args = ["zzz"]
+      args = ["enx"]
       blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
 
+    # valid empty string
     pid = store.GetName("STATUS_ID_DESCRIPTION")
     args = [""]
     blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
     decoded = pid.Unpack(blob, PidStore.RDM_GET)
     self.assertEqual(decoded['label'], "")
 
+    # string too long
     with self.assertRaises(PidStore.ArgsValidationError):
       args = ["123456789012345678901234567890123"]
       blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]

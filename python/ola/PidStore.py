@@ -669,9 +669,9 @@ class String(Atom):
       raise UnpackException(e)
 
     if sys.version >= '3.2':
-      return value[0].rstrip(bytes('\x00', 'utf-8')).decode('utf-8')
+      return value[0].rstrip(b'\x00').decode('utf-8')
     else:
-      return value[0].rstrip('\x00')
+      return value[0].rstrip(b'\x00')
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
