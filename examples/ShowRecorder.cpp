@@ -109,7 +109,7 @@ void ShowRecorder::Stop() {
 void ShowRecorder::NewFrame(const ola::client::DMXMetadata &meta,
                             const ola::DmxBuffer &data) {
   ola::TimeStamp now;
-  m_clock.CurrentTime(&now);
+  m_clock.CurrentMonotonicTime(&now);
   m_saver.NewFrame(now, meta.universe, data);
   m_frame_count++;
 }

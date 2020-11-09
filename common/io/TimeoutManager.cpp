@@ -118,7 +118,7 @@ TimeInterval TimeoutManager::ExecuteTimeouts(TimeStamp *now) {
       if (m_export_map)
         (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
     }
-    m_clock->CurrentTime(now);
+    m_clock->CurrentMonotonicTime(now);
   }
 
   if (m_events.empty())
