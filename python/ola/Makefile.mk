@@ -104,4 +104,5 @@ CLEANFILES += \
     python/ola/ClientWrapperTest.sh \
     python/ola/OlaClientTest.sh \
     python/ola/PidStoreTest.sh \
-    python/ola/RDMTest.sh
+    python/ola/RDMTest.sh \
+    python/ola/__pycache__/*

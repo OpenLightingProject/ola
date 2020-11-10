@@ -29,4 +29,5 @@ python/ola/rpc/SimpleRpcControllerTest.sh: python/ola/rpc/Makefile.mk
 	chmod +x $(top_builddir)/python/ola/rpc/SimpleRpcControllerTest.sh
 
 CLEANFILES += python/ola/rpc/SimpleRpcControllerTest.sh \
-              python/ola/rpc/*.pyc
+              python/ola/rpc/*.pyc \
+              python/ola/rpc/__pycache__/*
