@@ -245,7 +245,7 @@ class PidStoreTest(unittest.TestCase):
 
     # invalid month > 255
     with self.assertRaises(PidStore.ArgsValidationError):
-      args = ["2020", "255", "20", "20", "20", "20"]
+      args = ["2020", "256", "20", "20", "20", "20"]
       blob = pid.Pack(args, PidStore.RDM_SET)
 
     # invalid negative month
