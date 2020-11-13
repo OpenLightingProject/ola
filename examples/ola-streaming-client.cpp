@@ -41,6 +41,12 @@ DEFINE_s_string(dmx, d, "", "Comma separated DMX values to send, e.g. "
 DEFINE_s_uint32(universe, u, 1, "The universe to send data for");
 DEFINE_uint8(priority, ola::dmx::SOURCE_PRIORITY_DEFAULT,
              "The source priority to send data at");
+DEFINE_s_default_bool(universe_from_source, s, false,
+                      "Read universe number from source. Only allowed when "
+                      "processing STDIN. The universe number must be formatted "
+                      "in base 10, and be separated by at least one whitespace"
+                      " character from the start and end of the sequence of "
+                      "DMX values.");
 
 bool terminate = false;
 
@@ -78,11 +84,31 @@ int main(int argc, char *argv[]) {
 
   if (FLAGS_dmx.str().empty()) {
     string input;
+    bool have_universe = false;
+    unsigned int read_universe = FLAGS_universe;
+
     while (!terminate && std::cin >> input) {
       ola::StringTrim(&input);
-      SendDataFromString(&ola_client, FLAGS_universe, input);
+      if (!have_universe && FLAGS_universe_from_source) {
+        if (!ola::StringToInt(input, &read_universe, true)) {
+          OLA_FATAL << "Could not convert universe number.";
+          exit(1);
+        }
+
+        have_universe = true;
+        continue;
+      }
+
+      if (have_universe || !FLAGS_universe_from_source) {
+        SendDataFromString(&ola_client, read_universe, input);
+        have_universe = false;
+      }
     }
   } else {
+    if (FLAGS_universe_from_source) {
+      OLA_FATAL << "Not reading from STDIN. Use -u to sepcify universe.";
+      exit(1);
+    }
     SendDataFromString(&ola_client, FLAGS_universe, FLAGS_dmx.str());
   }
   ola_client.Stop();
