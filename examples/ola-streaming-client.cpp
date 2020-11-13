@@ -88,7 +88,6 @@ int main(int argc, char *argv[]) {
     unsigned int read_universe = FLAGS_universe;
 
     while (!terminate && std::cin >> input) {
-      ola::StringTrim(&input);
       if (!have_universe && FLAGS_universe_from_source) {
         if (!ola::StringToInt(input, &read_universe, true)) {
           OLA_FATAL << "Could not convert universe number.";
