@@ -50,6 +50,7 @@ x/11/2020 ola-0.10.8
  * Fix Enttec USB Pro Mk2 firmware >=4.15 RDM Discovery #1631
  * Fix compatibility with libmicrohttpd v0.9.71 and newer
  * Fix some Doxygen escaping
+ * Rename AppendMultipler(sic) to AppendMultiplier in the RDM messaging code
 
  Internal:
  * Replace "readdir_r" with "readdir" since the former has been deprecated

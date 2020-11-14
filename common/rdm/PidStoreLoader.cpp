@@ -494,16 +494,16 @@ const FieldDescriptor *PidStoreLoader::IntegerFieldToFieldDescriptor(
     }
   }
 
-  int8_t multipler = 0;
+  int8_t multiplier = 0;
   if (field.has_multiplier())
-    multipler = field.multiplier();
+    multiplier = field.multiplier();
 
   return new descriptor_class(
       field.name(),
       intervals,
       labels,
       false,
-      multipler);
+      multiplier);
 }
 
 /*
