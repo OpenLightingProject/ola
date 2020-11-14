@@ -248,6 +248,7 @@ class ModelCollector(object):
     this_version = self._GetVersion()
     this_version['manufacturer_pids'].append({
       'pid': data['pid'],
+      'pdl_size': data['pdl_size'],
       'description': data['description'],
       'command_class': data['command_class'],
       'data_type': data['data_type'],

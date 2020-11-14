@@ -198,7 +198,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
                            int8_t multiplier = 0)
         : FieldDescriptor(name),
           m_little_endian(little_endian),
-          m_multipler(multiplier) {
+          m_multiplier(multiplier) {
     }
 
     IntegerFieldDescriptor(const std::string &name,
@@ -208,7 +208,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
                            int8_t multiplier = 0)
         : FieldDescriptor(name),
           m_little_endian(little_endian),
-          m_multipler(multiplier),
+          m_multiplier(multiplier),
           m_intervals(intervals),
           m_labels(labels) {
     }
@@ -216,7 +216,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
     bool FixedSize() const { return true; }
     bool LimitedSize() const { return true; }
     unsigned int MaxSize() const { return sizeof(type); }
-    int8_t Multiplier() const { return m_multipler; }
+    int8_t Multiplier() const { return m_multiplier; }
     bool IsLittleEndian() const { return m_little_endian; }
 
     const IntervalVector &Intervals() const { return m_intervals; }
@@ -258,7 +258,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
 
  private:
     bool m_little_endian;
-    int8_t m_multipler;
+    int8_t m_multiplier;
     IntervalVector m_intervals;
     LabeledValues m_labels;
 };
