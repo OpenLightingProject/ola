@@ -23,6 +23,7 @@ import socket
 import unittest
 from ola import PidStore
 from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
 
@@ -201,6 +202,9 @@ class RDMTest(unittest.TestCase):
       results.got_response = True
       self.assertEqual(response.response_type, client.RDM_NACK_REASON)
       self.assertEqual(response.pid, 0xe0)
+      self.assertEqual(response.nack_reason,
+                       RDMNack.LookupCode(RDMNack.NACK_SYMBOLS_TO_VALUES
+                                          ['NR_DATA_OUT_OF_RANGE'][0]))
       wrapper.AddEvent(0, wrapper.Stop)
 
     wrapper._ss.AddReadDescriptor(sockets[1], lambda: DataCallback(self))
