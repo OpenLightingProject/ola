@@ -31,7 +31,7 @@ from ola.UID import UID
 
 __author__ = 'bruce@lowekamp.net (Bruce Lowekamp)'
 
-global pidStorePath
+global pid_store_path
 
 
 class RDMTest(unittest.TestCase):
@@ -42,13 +42,13 @@ class RDMTest(unittest.TestCase):
     sends fixed response message."""
     sockets = socket.socketpair()
     wrapper = ClientWrapper(sockets[0])
-    pid_store = PidStore.GetStore(pidStorePath)
+    pid_store = PidStore.GetStore(pid_store_path)
     client = wrapper.Client()
     rdm_api = RDMAPI(client, pid_store)
 
     class results:
-      gotrequest = False
-      gotresponse = False
+      got_request = False
+      got_response = False
 
     def DataCallback(self):
       # request and response for
@@ -63,7 +63,7 @@ class RDMTest(unittest.TestCase):
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
-      results.gotrequest = True
+      results.got_request = True
       response = binascii.unhexlify(
         "3f0000100802100022390800100018002213010000017fff0000000300050204"
         "00010000032860300038004a0908f0f4011500ffffff520908f0f40115ac1100"
@@ -72,7 +72,7 @@ class RDMTest(unittest.TestCase):
       self.assertEqual(sent_bytes, len(response))
 
     def ResponseCallback(self, response, data, unpack_exception):
-      results.gotresponse = True
+      results.got_response = True
       self.assertEqual(response.response_type, client.RDM_ACK)
       self.assertEqual(response.pid, 0x60)
       self.assertEqual(data["dmx_footprint"], 5)
@@ -99,8 +99,8 @@ class RDMTest(unittest.TestCase):
     sockets[0].close()
     sockets[1].close()
 
-    self.assertTrue(results.gotrequest)
-    self.assertTrue(results.gotresponse)
+    self.assertTrue(results.got_request)
+    self.assertTrue(results.got_response)
 
   # @timeout_decorator.timeout(2)
   def testGetParamsWithResponse(self):
@@ -109,13 +109,13 @@ class RDMTest(unittest.TestCase):
     sends fixed response message."""
     sockets = socket.socketpair()
     wrapper = ClientWrapper(sockets[0])
-    pid_store = PidStore.GetStore(pidStorePath)
+    pid_store = PidStore.GetStore(pid_store_path)
     client = wrapper.Client()
     rdm_api = RDMAPI(client, pid_store)
 
     class results:
-      gotrequest = False
-      gotresponse = False
+      got_request = False
+      got_response = False
 
     def DataCallback(self):
       # request and response for
@@ -130,7 +130,7 @@ class RDMTest(unittest.TestCase):
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
-      results.gotrequest = True
+      results.got_request = True
       response = binascii.unhexlify(
         "3d0000100802100022370800100018002210020005506572736f6e616c697479"
         "203228e101300038004a0908f0f4011500ffffff520908f0f40115ac107de058"
@@ -139,7 +139,7 @@ class RDMTest(unittest.TestCase):
       self.assertEqual(sent_bytes, len(response))
 
     def ResponseCallback(self, response, data, unpack_exception):
-      results.gotresponse = True
+      results.got_response = True
       self.assertEqual(response.response_type, client.RDM_ACK)
       self.assertEqual(response.pid, 0xe1)
       self.assertEqual(data['personality'], 2)
@@ -159,10 +159,66 @@ class RDMTest(unittest.TestCase):
     sockets[0].close()
     sockets[1].close()
 
-    self.assertTrue(results.gotrequest)
-    self.assertTrue(results.gotresponse)
+    self.assertTrue(results.got_request)
+    self.assertTrue(results.got_response)
+
+  # @timeout_decorator.timeout(2)
+  def testSetParamsWithNack(self):
+    """uses client to send an RDM set with mocked olad.
+    Regression test that confirms sent message is correct and
+    sends fixed response message."""
+    sockets = socket.socketpair()
+    wrapper = ClientWrapper(sockets[0])
+    pid_store = PidStore.GetStore(pid_store_path)
+    client = wrapper.Client()
+    rdm_api = RDMAPI(client, pid_store)
+
+    class results:
+      got_request = False
+      got_response = False
+
+    def DataCallback(self):
+      # request and response for
+      # ola_rdm_set.py -u 1 --uid 7a70:ffffff00 DMX_PERSONALITY 10
+      # against olad dummy plugin
+      # enable logging in rpc/StreamRpcChannel.py
+      data = sockets[1].recv(4096)
+      expected = binascii.unhexlify(
+        "2b000010080110001a0a52444d436f6d6d616e6422190801120908f0f401150"
+        "0ffffff180020e0012a010a30013800")
+      self.assertEqual(data, expected,
+                       msg="Regression check failed. If protocol change "
+                       "was intended set expected to: " +
+                       str(binascii.hexlify(data)))
+      results.got_request = True
+      response = binascii.unhexlify(
+        "2f0000100802100022290800100218002202000628e001300138004a0908f0f"
+        "4011500ffffff520908f0f40115ac107de05831")
+      sent_bytes = sockets[1].send(response)
+      self.assertEqual(sent_bytes, len(response))
+
+    def ResponseCallback(self, response, data, unpack_exception):
+      results.got_response = True
+      self.assertEqual(response.response_type, client.RDM_NACK_REASON)
+      self.assertEqual(response.pid, 0xe0)
+      wrapper.AddEvent(0, wrapper.Stop)
+
+    wrapper._ss.AddReadDescriptor(sockets[1], lambda: DataCallback(self))
+
+    uid = UID.FromString("7a70:ffffff00")
+    pid = pid_store.GetName("DMX_PERSONALITY")
+    rdm_api.Set(1, uid, 0, pid,
+                lambda x, y, z: ResponseCallback(self, x, y, z), args=["10"])
+
+    wrapper.Run()
+
+    sockets[0].close()
+    sockets[1].close()
+
+    self.assertTrue(results.got_request)
+    self.assertTrue(results.got_response)
 
 
 if __name__ == '__main__':
-  pidStorePath = (os.environ.get('PIDSTOREDIR', "../data/rdm"))
+  pid_store_path = (os.environ.get('PIDSTOREDIR', "../data/rdm"))
   unittest.main()

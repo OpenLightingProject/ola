@@ -226,7 +226,10 @@ class PidStoreTest(unittest.TestCase):
 
     args = ["2020", "6", "20", "20", "20", "20"]
     blob = pid.Pack(args, PidStore.RDM_SET)
-    self.assertTrue(len(blob) > 1)
+    decoded = pid._requests.get(PidStore.RDM_SET).Unpack(blob)[0]
+    self.assertEqual(decoded, {'year': 2020, 'month': 6,
+                               'day': 20, 'hour': 20,
+                               'minute': 20, 'second': 20})
 
     # invalid year (2002 < 2003)
     with self.assertRaises(PidStore.ArgsValidationError):
@@ -257,7 +260,8 @@ class PidStoreTest(unittest.TestCase):
     pid = store.GetName("LANGUAGE_CAPABILITIES")
     args = ["en"]
     blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
-    self.assertTrue(len(blob) > 1)
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    self.assertEqual(decoded, {'languages': [{'language': 'en'}]})
 
     with self.assertRaises(PidStore.ArgsValidationError):
       args = ["e"]
@@ -271,6 +275,7 @@ class PidStoreTest(unittest.TestCase):
     pid = store.GetName("STATUS_ID_DESCRIPTION")
     args = [""]
     blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertEqual(len(blob), 0)
     decoded = pid.Unpack(blob, PidStore.RDM_GET)
     self.assertEqual(decoded['label'], "")
 
