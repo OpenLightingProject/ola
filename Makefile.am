@@ -175,8 +175,8 @@ include plugins/Makefile.mk
 include olad/Makefile.mk
 include protoc/Makefile.mk
 include python/Makefile.mk
-include tools/Makefile.mk
 include scripts/Makefile.mk
+include tools/Makefile.mk
 
 # -----------------------------------------------------------------------------
 
