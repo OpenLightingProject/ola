@@ -16,6 +16,7 @@
 # PidStoreTest.py
 # Copyright (C) 2020 Bruce Lowekamp
 
+import binascii
 import os
 import unittest
 import ola.PidStore as PidStore
@@ -224,13 +225,16 @@ class PidStoreTest(unittest.TestCase):
 
     pid = store.GetName("REAL_TIME_CLOCK")
 
-    args = ["2020", "6", "20", "20", "20", "20"]
+    # first check encoding of valid RTC data
+    args = ["2020", "6", "20", "21", "22", "23"]
     blob = pid.Pack(args, PidStore.RDM_SET)
+    self.assertEqual(blob, binascii.unhexlify("07e40614151617"))
     decoded = pid._requests.get(PidStore.RDM_SET).Unpack(blob)[0]
     self.assertEqual(decoded, {'year': 2020, 'month': 6,
-                               'day': 20, 'hour': 20,
-                               'minute': 20, 'second': 20})
+                               'day': 20, 'hour': 21,
+                               'minute': 22, 'second': 23})
 
+    # next check that ranges are being enforced properly
     # invalid year (2002 < 2003)
     with self.assertRaises(PidStore.ArgsValidationError):
       args = ["2002", "6", "20", "20", "20", "20"]
