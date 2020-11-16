@@ -429,6 +429,12 @@ class RequestStatus(object):
 
 
 class RDMNack(object):
+  """Nack response to a request.
+
+      Individual NACK response reasons can be access as attrs, e.g.
+      RMDNack.NR_FORMAT_ERROR
+      """
+
   NACK_SYMBOLS_TO_VALUES = {
     'NR_UNKNOWN_PID': (0, 'Unknown PID'),
     'NR_FORMAT_ERROR': (1, 'Format Error'),
