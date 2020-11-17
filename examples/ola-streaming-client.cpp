@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
     }
   } else {
     if (FLAGS_universe_from_source) {
-      OLA_FATAL << "Not reading from STDIN. Use -u to sepcify universe.";
+      OLA_FATAL << "Not reading from STDIN. Use -u to specify universe.";
       exit(1);
     }
     SendDataFromString(&ola_client, FLAGS_universe, FLAGS_dmx.str());
