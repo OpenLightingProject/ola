@@ -14,6 +14,8 @@ Display the help message.
 Comma separated DMX values to send, e.g. 0,255,128 sets first channel to 0, second channel to 255 and third channel to 128.
 .IP "-l, --log-level <int8_t>"
 Set the logging level 0 .. 4.
+.IP "-s, --universe-from-source"
+Read universe number from source. Only allowed when processing STDIN. The universe number must be formatted in base 10, and be separated by at least one whitespace character from the start and end of the sequence of DMX values.
 .IP "-u, --universe <universe-id>"
 Id of the universe to send data for.
 .IP "-v, --version"
