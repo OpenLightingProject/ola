@@ -7,8 +7,8 @@ Depends: ola
 Test-Command: rdm_responder_test.py --help
 Depends: ola-rdm-tests
 
-Test-Command: set -e ; for py in $(pyversions -s 2>/dev/null) ; do cd "$ADTTMP" ; echo "Testing with $py:" ; $py -c "from ola.ClientWrapper import ClientWrapper; print(ClientWrapper)" ; done
-Depends: python-all, ola, ola-python
+Test-Command: set -e ; for py in $(py3versions -s 2>/dev/null) ; do cd "$ADTTMP" ; echo "Testing with $py:" ; $py -c "from ola.ClientWrapper import ClientWrapper; print(ClientWrapper)" ; done
+Depends: python3-all, ola, ola-python
 
 Test-Command: pkg-config --cflags --libs libola
 Depends: libola-dev, pkg-config
