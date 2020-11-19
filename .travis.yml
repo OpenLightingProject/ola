@@ -90,8 +90,9 @@ matrix:
     - os: linux
       dist: xenial
       compiler: clang
-      env: TASK='compile'
-      python: '2.7'
+      env:
+      - TASK='compile'
+      - PYTHON='python3'
       addons:
         apt:
           packages:
@@ -104,7 +105,6 @@ matrix:
       dist: xenial
       compiler: gcc
       env: TASK='compile'
-      python: '2.7'
       addons:
         apt:
           packages:
@@ -178,7 +178,7 @@ matrix:
       dist: xenial
       env:
        - TASK='codespell'
-       - PATH=/opt/python/3.7.1/bin:$PATH
+       - PYTHON='python3'
       addons:
         apt:
           packages:
@@ -314,10 +314,11 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
-  - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
+  - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
+ - if [ "$PYTHON" == "python3" ]; then pyenv global 3.7.1 ; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
@@ -352,15 +353,14 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-10" CC="clang-10"; fi
 #Report the compiler version
  - $CXX --version
- - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then wget "http://archive.ubuntu.com/ubuntu/pool/main/l/lintian/lintian_2.5.104_all.deb"; sudo dpkg -i lintian_*.deb; sudo apt-get install -f -y; fi # Install a later lintian
+ - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then wget "http://old-releases.ubuntu.com/ubuntu/pool/main/l/lintian/lintian_2.5.104_all.deb"; sudo dpkg -i lintian_*.deb; sudo apt-get install -f -y; fi # Install a later lintian
 
 after_failure:
-# Disabled as otherwise the logfile is too big
-#  - if [ -f ${TRAVIS_BUILD_DIR}/config.log ]; then cat ${TRAVIS_BUILD_DIR}/config.log; fi
-  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log; fi
-  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/config.log ]; then cat ${TRAVIS_BUILD_DIR}/config.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
 
 after_success:
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-8 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi

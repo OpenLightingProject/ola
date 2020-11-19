@@ -10,6 +10,7 @@
    to minimum and overiding(sic) to overriding, all of which may or may not
  * Renamed RESONSE_INVALID_DESTINATION(sic) to RESPONSE_INVALID_DESTINATION in
  * Rename CircularDepdendancyException(sic) to CircularDependencyException in
+ * Rename AppendMultipler(sic) to AppendMultiplier in the RDM messaging code
         /^(?:([0-9]{1,3})(?:\s(THRU)\s(?:([0-9]{1,3}))?)?(?:\s(@)\s(?:([0-9]{1,3}|FULL))?)?)/;
  *   channel_range ::= "ALL" | "*" | channel "THRU" channel | channel > channel
       /(?:([0-9]{1,3})(?:\s+THRU\s+([0-9]{0,3}))?)\s+@\s+([0-9]{0,3})$/);

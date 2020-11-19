@@ -149,6 +149,9 @@ built_sources =
 # Test scripts are run if BUILD_TESTS is true.
 test_scripts =
 
+# directories with python code that should be test compiled during the build
+PYTHON_BUILD_DIRS =
+
 # The includes
 # -----------------------------------------------------------------------------
 
@@ -172,6 +175,7 @@ include plugins/Makefile.mk
 include olad/Makefile.mk
 include protoc/Makefile.mk
 include python/Makefile.mk
+include scripts/Makefile.mk
 include tools/Makefile.mk
 
 # -----------------------------------------------------------------------------
