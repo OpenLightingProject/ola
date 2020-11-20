@@ -71,8 +71,9 @@ test_scripts += \
 endif
 
 CLEANFILES += \
-   tools/rdm/*.pyc \
-   tools/rdm/ResponderTestTest.sh
+    tools/rdm/*.pyc \
+    tools/rdm/ResponderTestTest.sh
+    tools/rdm/__pycache__/*
 
 if INSTALL_RDM_TESTS
 
