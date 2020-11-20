@@ -23,6 +23,5 @@ common_utils_UtilsTester_SOURCES = \
     common/utils/TokenBucketTest.cpp \
     common/utils/UtilsTest.cpp \
     common/utils/WatchdogTest.cpp
-# DmxBufferTest.cpp assigns a value to itself which clang complains about, so explicitly allow that here
-common_utils_UtilsTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) -Wno-error=self-assign-overloaded
+common_utils_UtilsTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 common_utils_UtilsTester_LDADD = $(COMMON_TESTING_LIBS)
