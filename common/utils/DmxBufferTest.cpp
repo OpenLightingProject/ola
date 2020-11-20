@@ -197,11 +197,14 @@ void DmxBufferTest::testAssign() {
   // Clang 7 onwards complain about this, the *& supresses that warning
   buffer = *&buffer;
   // validate the data hasn't changed
-  OLA_ASSERT_EQ((size_t) sizeof(TEST_DATA), buffer.length());
-  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.data(), buffer.length()));
+  unsigned int size = result_length;
+  buffer.Get(result, &size);
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), buffer.Size());
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), size);
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, size));
   
   // assigning to a previously init'ed buffer
-  unsigned int size = result_length;
+  size = result_length;
   assignment_buffer = buffer;
   assignment_buffer.Get(result, &size);
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA),
