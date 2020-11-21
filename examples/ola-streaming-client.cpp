@@ -25,6 +25,7 @@
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/dmx/SourcePriorities.h>
 
 #include <iostream>
@@ -78,7 +79,7 @@ int main(int argc, char *argv[]) {
   StreamingClient ola_client;
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
-    exit(1);
+    exit(ola::EXIT_SOFTWARE);
   }
 
   if (FLAGS_dmx.str().empty()) {
@@ -89,8 +90,8 @@ int main(int argc, char *argv[]) {
     while (!terminate && std::cin >> input) {
       if (!have_universe && FLAGS_universe_from_stdin) {
         if (!ola::StringToInt(input, &read_universe, true)) {
-          OLA_FATAL << "Could not convert universe number.";
-          exit(1);
+          OLA_FATAL << "Could not convert universe number: read " << input;
+          exit(ola::EXIT_DATAERR);
         }
 
         have_universe = true;
@@ -105,10 +106,10 @@ int main(int argc, char *argv[]) {
   } else {
     if (FLAGS_universe_from_stdin) {
       OLA_FATAL << "Not reading from STDIN. Use -u to specify universe.";
-      exit(1);
+      exit(ola::EXIT_USAGE);
     }
     SendDataFromString(&ola_client, FLAGS_universe, FLAGS_dmx.str());
   }
   ola_client.Stop();
-  return 0;
+  return ola::EXIT_OK;
 }
