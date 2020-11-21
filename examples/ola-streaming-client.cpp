@@ -44,8 +44,8 @@ DEFINE_uint8(priority, ola::dmx::SOURCE_PRIORITY_DEFAULT,
 DEFINE_s_default_bool(universe_from_source, s, false,
                       "Read universe number from source. Only allowed when "
                       "processing STDIN. The universe number must be formatted "
-                      "in base 10, and be separated by at least one whitespace"
-                      " character from the start and end of the sequence of "
+                      "in base 10, and be separated by at least one whitespace "
+                      "character from the start and end of the sequence of "
                       "DMX values.");
 
 bool terminate = false;
