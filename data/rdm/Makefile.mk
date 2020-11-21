@@ -32,5 +32,5 @@ data_rdm_PidDataTester_LDADD = $(COMMON_TESTING_LIBS)
 
 CLEANFILES += \
     data/rdm/*.pyc \
-    data/rdm/PidDataTest.sh
+    data/rdm/PidDataTest.sh \
     data/rdm/__pycache__/*
