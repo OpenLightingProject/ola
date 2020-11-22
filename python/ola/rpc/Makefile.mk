@@ -28,6 +28,7 @@ python/ola/rpc/SimpleRpcControllerTest.sh: python/ola/rpc/Makefile.mk
 	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/python/ola/rpc/SimpleRpcControllerTest.py; exit \$$?" > $(top_builddir)/python/ola/rpc/SimpleRpcControllerTest.sh
 	chmod +x $(top_builddir)/python/ola/rpc/SimpleRpcControllerTest.sh
 
-CLEANFILES += python/ola/rpc/SimpleRpcControllerTest.sh \
-              python/ola/rpc/*.pyc \
-              python/ola/rpc/__pycache__/*
+CLEANFILES += \
+    python/ola/rpc/*.pyc \
+    python/ola/rpc/SimpleRpcControllerTest.sh \
+    python/ola/rpc/__pycache__/*
