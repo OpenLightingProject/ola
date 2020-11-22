@@ -57,7 +57,7 @@ x/y/2020 ola-0.10.9
  * Fix a bug with the Python ola_rdm_get and PROXIED_DEVICES display
  * Renamed RESONSE_INVALID_DESTINATION(sic) to RESPONSE_INVALID_DESTINATION in
    the ArduinoWidget code
- * Fix compatibility with GCC 9 #1553 Debain #925793
+ * Fix compatibility with GCC 9 #1553 Debian #925793
  * Ensure the GPIO plugin correctly writes to the last configured pin
  * Fix compatibility with ncurses 6
  * Fix compatibility with Protobuf 3.7 and newer (tested with up to 3.12.2)
