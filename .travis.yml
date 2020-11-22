@@ -332,7 +332,8 @@ before_install:
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
 #Having fixed everything up, update to the bleeding edge
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+#Skip updating for now as it seems to be breaking the build
+# - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 #Install build dependencies
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
