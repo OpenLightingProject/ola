@@ -332,8 +332,7 @@ before_install:
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
 #Uninstall some homebrew packages which aren't required so we don't end up updating and rebuilding them. Force so it doesn't reinstall
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall --ignore-dependencies --force postgis; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall --ignore-dependencies --force postgres; fi
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall --ignore-dependencies --force cgal liblwgeom libspatialite postgis postgres sfcgal sqlite; fi
 #Having fixed everything up, update to the bleeding edge
 #Skip updating for now as it seems to be breaking the build
 # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
