@@ -44,35 +44,35 @@ matrix:
   fast_finish: true
   include:
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode12.2
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode12.2
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
       - LIBFTDI='0'
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode12.2
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode12.2
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
       - LIBFTDI='0'
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode12.2
       compiler: clang
       env:
       - TASK='compile'
@@ -80,7 +80,7 @@ matrix:
       - PROTOBUF='latest'
       - LIBFTDI='1'
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode12.2
       compiler: gcc
       env:
       - TASK='compile'
@@ -199,49 +199,49 @@ matrix:
            - *base_build
   allow_failures:
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode12.2
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode12.2
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
       - LIBFTDI='0'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode12.2
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.13'
       - LIBFTDI='0'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode12.2
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
       - LIBFTDI='0'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode12.2
       compiler: clang
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
       - LIBFTDI='1'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode12.2
       compiler: gcc
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
       - LIBFTDI='1'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode12.2
       compiler: clang
       env:
       - TASK='compile'
@@ -249,7 +249,7 @@ matrix:
       - LIBFTDI='1'
       - PROTOBUF='latest'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode12.2
       compiler: gcc
       env:
       - TASK='compile'
