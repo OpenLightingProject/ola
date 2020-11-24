@@ -400,7 +400,7 @@ void RDMSniffer::MaybePrintTimestamp() {
 
   ola::TimeStamp now;
   ola::Clock clock;
-  clock.CurrentTime(&now);
+  clock.CurrentRealTime(&now);
   time_t seconds_since_epoch = now.Seconds();
   struct tm local_time;
   localtime_r(&seconds_since_epoch, &local_time);
