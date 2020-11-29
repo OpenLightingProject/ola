@@ -26,6 +26,7 @@ from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
+from ola.TestUtils import handleRPCByteOrder
 
 
 """Test cases for RDM device commands."""
@@ -60,7 +61,7 @@ class RDMTest(unittest.TestCase):
       expected = binascii.unhexlify(
         "29000010080110001a0a52444d436f6d6d616e6422170801120908f0f4011500"
         "ffffff180020602a0030003800")
-      self.assertEqual(data, expected,
+      self.assertEqual(data, handleRPCByteOrder(expected),
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
@@ -127,7 +128,7 @@ class RDMTest(unittest.TestCase):
       expected = binascii.unhexlify(
         "2b000010080110001a0a52444d436f6d6d616e6422190801120908f0f4011500"
         "ffffff180020e1012a010230003800")
-      self.assertEqual(data, expected,
+      self.assertEqual(data, handleRPCByteOrder(expected),
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
@@ -187,7 +188,7 @@ class RDMTest(unittest.TestCase):
       expected = binascii.unhexlify(
         "2b000010080110001a0a52444d436f6d6d616e6422190801120908f0f401150"
         "0ffffff180020e0012a010a30013800")
-      self.assertEqual(data, expected,
+      self.assertEqual(data, handleRPCByteOrder(expected),
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))

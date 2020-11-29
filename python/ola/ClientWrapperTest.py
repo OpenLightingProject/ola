@@ -24,6 +24,7 @@ import socket
 import unittest
 from ola.ClientWrapper import ClientWrapper
 from ola.ClientWrapper import _Event
+from ola.TestUtils import handleRPCByteOrder
 
 
 """Test cases for the Event and Event loop of ClientWrapper class."""
@@ -215,7 +216,7 @@ class ClientWrapperTest(unittest.TestCase):
         "000000000000000000000000000000000000000000000000000000000000000"
         "000000000000000000000000000000000000000000000000000000000000000"
         "000000")
-      self.assertEqual(data, expected,
+      self.assertEqual(data, handleRPCByteOrder(expected),
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
