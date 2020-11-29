@@ -39,7 +39,7 @@ def allHashNotEqual(testCase, t):
 def handleRPCByteOrder(expected):
   # The RPC header (version and size) is encoded in native format, so flip that
   # part of the expected data where necessary (as our expected is from a
-  # little endian source
+  # little endian source)
   if sys.byteorder == 'big':
     expected = (struct.pack('=L', struct.unpack_from('<L', expected)[0]) +
                 expected[4:])
