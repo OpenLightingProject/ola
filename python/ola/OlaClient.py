@@ -1172,11 +1172,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     if request.universe in self._universe_callbacks:
-      data = array.array('B')
-      if sys.version >= '3.2':
-        data.frombytes(request.data)
-      else:
-        data.fromstring(request.data)
+      data = array.array('B', request.data)
       self._universe_callbacks[request.universe](data)
     response = Ola_pb2.Ack()
     callback(response)
@@ -1480,11 +1476,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     universe = None
 
     if status.Succeeded():
-      data = array.array('B')
-      if sys.version >= '3.2':
-        data.frombytes(response.data)
-      else:
-        data.fromstring(response.data)
+      data = array.array('B', response.data)
       universe = response.universe
 
     callback(status, universe, data)
