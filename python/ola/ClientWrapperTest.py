@@ -210,13 +210,13 @@ class ClientWrapperTest(unittest.TestCase):
 
     def DataCallback(self):
       data = sockets[1].recv(4096)
-      expected = binascii.unhexlify(
+      expected = handleRPCByteOrder(binascii.unhexlify(
         "7d000010080110001a0d557064617465446d784461746122680801126400000"
         "000000000000000000000000000000000000000000000000000000000000000"
         "000000000000000000000000000000000000000000000000000000000000000"
         "000000000000000000000000000000000000000000000000000000000000000"
-        "000000")
-      self.assertEqual(data, handleRPCByteOrder(expected),
+        "000000"))
+      self.assertEqual(data, expected,
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
