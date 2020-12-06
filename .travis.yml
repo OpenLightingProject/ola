@@ -318,7 +318,7 @@ install:
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
- - if [ "$PYTHON" == "python3" ]; then pyenv global 3.7.1 ; fi
+ - if [ "$PYTHON" == "python3" ]; then pyenv global 3.9.0 ; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
@@ -337,7 +337,9 @@ before_install:
 #Skip updating for now as it seems to be breaking the build
 # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
 #Install build dependencies
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install ccache bison flex liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install bison flex liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
+# Remove ccache on OS X for now as it's not installing due to cmake
+#ccache
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "latest" ]; then brew install protobuf; fi
@@ -346,7 +348,8 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
+# Remove ccache on OS X for now as it's not installing due to cmake
+# - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
 #Put back the old pip numpy we need to work
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install --upgrade --no-deps --force-reinstall --user numpy; fi
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
