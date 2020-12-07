@@ -233,8 +233,7 @@ elif [[ $TASK = 'flake8' ]]; then
 else
   # Otherwise compile and check as normal
   if [[ "$TRAVIS_CPU_ARCH" = "s390x" ]]; then
-    # No python on s390x initially
-    export DISTCHECK_CONFIGURE_FLAGS='--disable-python-libs --enable-ja-rule --enable-e133'
+    export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
   elif [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
     # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
     export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133 CPPFLAGS=-Wno-deprecated-declarations'
