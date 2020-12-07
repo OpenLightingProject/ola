@@ -120,6 +120,8 @@ matrix:
         apt:
           packages:
            - *core_build
+           - python-protobuf
+           - python-numpy
     - os: linux
       dist: xenial
       arch: s390x
@@ -130,6 +132,8 @@ matrix:
         apt:
           packages:
            - *core_build_gpp_latest
+           - python-protobuf
+           - python-numpy
           sources:
            - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
