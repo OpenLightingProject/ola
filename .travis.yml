@@ -232,6 +232,7 @@ matrix:
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - PROTOBUF='latest'
       - LIBFTDI='1'
     - os: osx
       osx_image: xcode9.3
@@ -239,23 +240,8 @@ matrix:
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
-      - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='1'
       - PROTOBUF='latest'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
       - LIBFTDI='1'
-      - PROTOBUF='latest'
     - os: linux
       dist: xenial
       compiler: gcc
@@ -318,7 +304,7 @@ install:
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 
 before_install:
- - if [ "$PYTHON" == "python3" ]; then pyenv global 3.9.0 ; fi
+ - if [ "$PYTHON" == "python3" ]; then pyenv install 3.9.0 && pyenv global 3.9.0 ; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
