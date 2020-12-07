@@ -332,7 +332,7 @@ install:
   # disable until can be added to all build variants
   #- pip install --user timeout-decorator
 # We need to use pip rather than apt on Xenial
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_CPU_ARCH" != "s390x" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
