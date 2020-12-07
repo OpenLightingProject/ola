@@ -209,11 +209,13 @@ class PidStoreTest(unittest.TestCase):
     # so test in two halves
     args = ["42"]
     blob = pid.Pack(args, PidStore.RDM_GET)
+    self.assertEqual(blob, binascii.unhexlify("2a"))
     decoded = pid._requests.get(PidStore.RDM_GET).Unpack(blob)[0]
     self.assertEqual(decoded['personality'], 42)
 
     args = ["42", "7", "UnpackTest"]
     blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertEqual(blob, binascii.unhexlify("2a0007556e7061636b54657374"))
     decoded = pid.Unpack(blob, PidStore.RDM_GET)
     self.assertEqual(decoded['personality'], 42)
     self.assertEqual(decoded['slots_required'], 7)
@@ -264,6 +266,7 @@ class PidStoreTest(unittest.TestCase):
     pid = store.GetName("LANGUAGE_CAPABILITIES")
     args = ["en"]
     blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertEqual(blob, binascii.unhexlify("656e"))
     decoded = pid.Unpack(blob, PidStore.RDM_GET)
     self.assertEqual(decoded, {'languages': [{'language': 'en'}]})
 
