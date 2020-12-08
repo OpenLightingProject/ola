@@ -151,12 +151,10 @@ jobs:
       addons:
         apt:
           packages:
-           - *core_build_clang_latest
+           - *core_build
            - *bionic_build_extras
-          sources:
-           - sourceline: "ppa:ubuntu-toolchain-r/test"
-           - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
-             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+           - python-protobuf
+           - python-numpy
     - os: linux
       dist: bionic
       arch: arm64
@@ -168,6 +166,8 @@ jobs:
           packages:
            - *core_build_gpp_latest
            - *bionic_build_extras
+           - python-protobuf
+           - python-numpy
           sources:
            - ubuntu-toolchain-r-test
     - os: osx
@@ -438,21 +438,21 @@ before_install:
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-9" CC="ccache gcc-9"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
-#Use the latest clang if we're compiling with clang
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-11" CC="clang-11"; fi
+#Use the latest clang if we're compiling with clang, except on arm64 where it's not available
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then export CXX="clang++-11" CC="clang-11"; fi
 #Report the compiler version
  - $CXX --version
 
 install:
 # Match the version of protobuf being installed via apt/Homebrew
-  - if [[ "$PROTOBUF" == "latest" ]]; then pip install --user protobuf; fi
-  - if [[ "$PROTOBUF" != "latest" ]]; then pip install --user protobuf==3.1.0; fi
+  - if [[ "$PROTOBUF" == "latest" -a "$TRAVIS_CPU_ARCH" != "arm64" ]]; then pip install --user protobuf; fi
+  - if [[ "$PROTOBUF" != "latest" -a "$TRAVIS_CPU_ARCH" != "arm64" ]]; then pip install --user protobuf==3.1.0; fi
   # disable until can be added to all build variants
   #- pip install --user timeout-decorator
 # We need to use pip rather than apt on Bionic
-  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" = "bionic" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
-# Later versions of numpy don't install on arm via pip  
-  - pip install --user numpy==1.16.6
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" = "bionic" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
+# Install numpy via deb on arm
+  - if [ "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
