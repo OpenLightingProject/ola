@@ -54,6 +54,7 @@ class BaseTimeVal {
   BaseTimeVal(int32_t sec, int32_t usec);
 
   explicit BaseTimeVal(const struct timeval &timestamp) { m_tv = timestamp; }
+  explicit BaseTimeVal(const struct timespec &timestamp) { Set(timestamp); }
   explicit BaseTimeVal(int64_t interval_useconds) { Set(interval_useconds); }
 
   BaseTimeVal(const BaseTimeVal &other) : m_tv(other.m_tv) {}
@@ -61,6 +62,7 @@ class BaseTimeVal {
   // Assignable
   BaseTimeVal& operator=(const BaseTimeVal& other);
   BaseTimeVal& operator=(const struct timeval &tv);
+  BaseTimeVal& operator=(const struct timespec &ts);
 
   // Comparables
   bool operator==(const BaseTimeVal &other) const;
@@ -110,6 +112,12 @@ class BaseTimeVal {
                 struct timeval *result) const;
 
   void Set(int64_t interval_useconds);
+
+  /**
+   * @brief Sets the value with a timespec
+   * @param ts A reference to struct timespec
+   */
+  void Set(const struct timespec &ts);
 };
 
 /*
@@ -173,12 +181,14 @@ class TimeStamp {
     // Constructors
     TimeStamp() {}
     explicit TimeStamp(const struct timeval &timestamp) : m_tv(timestamp) {}
+    explicit TimeStamp(const struct timespec &timestamp) : m_tv(timestamp) {}
 
     TimeStamp(const TimeStamp &other) : m_tv(other.m_tv) {}
 
     // Assignable
     TimeStamp& operator=(const TimeStamp& other);
     TimeStamp& operator=(const struct timeval &tv);
+    TimeStamp& operator=(const struct timespec &ts);
 
     // Comparables
     bool operator==(const TimeStamp &other) const { return m_tv == other.m_tv; }
@@ -214,7 +224,6 @@ class TimeStamp {
     explicit TimeStamp(const BaseTimeVal &time_val) : m_tv(time_val) {}
 };
 
-
 /**
  * @brief Used to get the current time.
  */
@@ -222,12 +231,49 @@ class Clock {
  public:
   Clock() {}
   virtual ~Clock() {}
-  virtual void CurrentTime(TimeStamp *timestamp) const;
+  /**
+   * @brief Sets timestamp to the current monotonic time.
+   *
+   * The timestamp parameter will be set to the current monotonic time only if
+   * the system has a monotonic clock available. If a monotonic clock is
+   * unavailable, this method will fallback to CurrentRealTime.
+   *
+   * The system's monotonic clock is not subject to discontinuous jumps due to
+   * administrative action, but may be affected by incremental adjustment due to
+   * time synchronization protocol e.g. NTP. The monotonic clock does not
+   * advance while the system is suspended. An appropriate use of this method is
+   * to measure elapsed time.
+   * @sa Clock::CurrentRealTime
+   * @param[out] timestamp A TimeStamp pointer
+   */
+  virtual void CurrentMonotonicTime(TimeStamp* timestamp) const;
+
+  /**
+   * @brief Sets timestamp to the current real time.
+   *
+   * The timestamp parameter will be set to the current real i.e. wall-clock
+   * time.
+   *
+   * The system's realtime clock is subject to discontinuous and incremental
+   * adjustment due to administrative action or time synchronization protocol
+   * e.g. NTP. An appropriate use of this method is to display a user-facing
+   * timestamp.
+   * @sa Clock::CurrentMonotonicTime
+   * @param[out] timestamp A TimeStamp pointer
+   */
+  virtual void CurrentRealTime(TimeStamp* timestamp) const;
+
+  /**
+   * @brief Wrapper around CurrentRealime.
+   * @param[out] timestamp A TimeStamp pointer
+   * @deprecated Please use either Clock::CurrentMonotonicTime or
+   * Clock::CurrentRealTime as appropriate (25 Oct 2020).
+   */
+  virtual void CurrentTime(TimeStamp* timestamp) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Clock);
 };
-
 
 /**
  * A Mock Clock used for testing.
@@ -240,6 +286,8 @@ class MockClock: public Clock {
   void AdvanceTime(const TimeInterval &interval);
   void AdvanceTime(int32_t sec, int32_t usec);
 
+  void CurrentMonotonicTime(TimeStamp *timestamp) const;
+  void CurrentRealTime(TimeStamp *timestamp) const;
   void CurrentTime(TimeStamp *timestamp) const;
 
  private:

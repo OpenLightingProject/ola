@@ -27,6 +27,7 @@
  */
 
 #include <ola/Clock.h>
+#include <ola/Logging.h>
 #include <stdint.h>
 #include <sys/time.h>
 
@@ -57,6 +58,11 @@ BaseTimeVal& BaseTimeVal::operator=(const BaseTimeVal& other) {
 
 BaseTimeVal& BaseTimeVal::operator=(const struct timeval &tv) {
   m_tv = tv;
+  return *this;
+}
+
+BaseTimeVal& BaseTimeVal::operator=(const struct timespec &ts) {
+  Set(ts);
   return *this;
 }
 
@@ -175,6 +181,11 @@ void BaseTimeVal::Set(int64_t interval_useconds) {
 #endif  // HAVE_SUSECONDS_T
 }
 
+void BaseTimeVal::Set(const struct timespec& ts) {
+  m_tv.tv_sec = ts.tv_sec;
+  m_tv.tv_usec = ts.tv_nsec / ONE_THOUSAND;
+}
+
 TimeInterval& TimeInterval::operator=(const TimeInterval& other) {
   if (this != &other) {
     m_interval = other.m_interval;
@@ -229,6 +240,11 @@ TimeStamp& TimeStamp::operator=(const struct timeval &tv) {
   return *this;
 }
 
+TimeStamp& TimeStamp::operator=(const struct timespec &ts) {
+  m_tv = ts;
+  return *this;
+}
+
 TimeStamp &TimeStamp::operator+=(const TimeInterval &interval) {
   m_tv += interval.m_interval;
   return *this;
@@ -251,10 +267,24 @@ const TimeStamp TimeStamp::operator-(const TimeInterval &interval) const {
   return TimeStamp(m_tv - interval.m_interval);
 }
 
-void Clock::CurrentTime(TimeStamp *timestamp) const {
+void Clock::CurrentMonotonicTime(TimeStamp *timestamp) const {
+#ifdef CLOCK_MONOTONIC
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  *timestamp = ts;
+#else
+  CurrentRealTime(timestamp);
+#endif
+}
+
+void Clock::CurrentRealTime(TimeStamp *timestamp) const {
   struct timeval tv;
   gettimeofday(&tv, NULL);
   *timestamp = tv;
+}
+
+void Clock::CurrentTime(TimeStamp *timestamp) const {
+  CurrentRealTime(timestamp);
 }
 
 void MockClock::AdvanceTime(const TimeInterval &interval) {
@@ -266,10 +296,26 @@ void MockClock::AdvanceTime(int32_t sec, int32_t usec) {
   m_offset += interval;
 }
 
-void MockClock::CurrentTime(TimeStamp *timestamp) const {
+void MockClock::CurrentMonotonicTime(TimeStamp* timestamp) const {
+#ifdef CLOCK_MONOTONIC
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  *timestamp = ts;
+  *timestamp += m_offset;
+#else
+  OLA_DEBUG << "Monotonic clock unavailable. Falling back to CurrentRealTime.";
+  CurrentRealTime(timestamp);
+#endif
+}
+
+void MockClock::CurrentRealTime(TimeStamp* timestamp) const {
   struct timeval tv;
   gettimeofday(&tv, NULL);
   *timestamp = tv;
   *timestamp += m_offset;
+}
+
+void MockClock::CurrentTime(TimeStamp* timestamp) const {
+  CurrentMonotonicTime(timestamp);
 }
 }  // namespace ola

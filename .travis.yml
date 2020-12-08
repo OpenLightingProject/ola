@@ -36,7 +36,7 @@ addons:
      - g++-9
     packages: &core_build_clang_latest
      - *core_build
-     - clang-6.0
+     - clang-11
     packages: &bionic_build_extras
      - python-pip
      # To compile numpy
@@ -117,15 +117,19 @@ jobs:
       dist: bionic
       arch: amd64
       compiler: clang
-      env: TASK='compile'
-      python: '2.7'
+      env:
+        - TASK='compile'
+        - PYTHON='python3'
+      python: '3.8'
       addons:
         apt:
           packages:
            - *core_build_clang_latest
+           - *bionic_build_extras
           sources:
-           - ubuntu-toolchain-r-test
-           - llvm-toolchain-xenial-6.0
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
+           - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
+             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
     - os: linux
       dist: bionic
       arch: amd64
@@ -150,8 +154,9 @@ jobs:
            - *core_build_clang_latest
            - *bionic_build_extras
           sources:
-           - ubuntu-toolchain-r-test
-           - llvm-toolchain-xenial-6.0
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
+           - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
+             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
     - os: linux
       dist: bionic
       arch: arm64
@@ -411,6 +416,13 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 before_install:
+ - if [ "$PYTHON" == "python3" ]; then pyenv global 3.8.1 ; fi
+#Fix permissions for unbound (and possibly others)
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
+#Add a missing gnupg folder
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/Cellar/gnupg2/2.2.5 ]; then sudo mkdir -p /usr/local/Cellar/gnupg2/2.2.5 && sudo chown -R $(whoami) /usr/local/Cellar/gnupg2/2.2.5; fi; fi
+#We install packages via brew which pull in numpy, so try a reinstall over the pip numpy to avoid conflicts
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall numpy || brew link --overwrite numpy; fi
 #Fix a broken homebrew libtool install
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall libtool; fi
 #Fix a broken homebrew gnupg install
@@ -427,7 +439,9 @@ before_install:
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-9" CC="ccache gcc-9"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-6.0" CC="clang-6.0"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-11" CC="clang-11"; fi
+#Report the compiler version
+ - $CXX --version
 
 install:
 # Match the version of protobuf being installed via apt/Homebrew
@@ -445,16 +459,13 @@ install:
   - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
 # Installing via the addon isn't currently working so do it the old fashioned way
   - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
-#Report the compiler version
-  - $CXX --version
 
 after_failure:
-# Disabled as otherwise the logfile is too big
-  - if [ -f ${TRAVIS_BUILD_DIR}/config.log -a "$TRAVIS_OS_NAME" == "osx" ]; then cat ${TRAVIS_BUILD_DIR}/config.log; fi
-  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log; fi
-  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/config.log ]; then cat ${TRAVIS_BUILD_DIR}/config.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log; fi
+  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
 
 after_success:
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-9 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
