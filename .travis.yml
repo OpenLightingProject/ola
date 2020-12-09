@@ -445,8 +445,8 @@ before_install:
 
 install:
 # Match the version of protobuf being installed via apt/Homebrew
-  - if [[ "$PROTOBUF" == "latest" -a "$TRAVIS_CPU_ARCH" != "arm64" ]]; then pip install --user protobuf; fi
-  - if [[ "$PROTOBUF" != "latest" -a "$TRAVIS_CPU_ARCH" != "arm64" ]]; then pip install --user protobuf==3.1.0; fi
+  - if [ "$PROTOBUF" == "latest" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user protobuf; fi
+  - if [ "$PROTOBUF" != "latest" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user protobuf==3.1.0; fi
   # disable until can be added to all build variants
   #- pip install --user timeout-decorator
 # We need to use pip rather than apt on Bionic
