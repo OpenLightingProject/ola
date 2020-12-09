@@ -38,9 +38,9 @@ addons:
      - *core_build
      - clang-11
     packages: &bionic_build_extras
+     - python-protobuf
+     - python-numpy
      - python-pip
-     # To compile numpy
-     - python-dev
      # To fix the build/add missing components
      - libtool
      - pkg-config
@@ -153,8 +153,6 @@ jobs:
           packages:
            - *core_build
            - *bionic_build_extras
-           - python-protobuf
-           - python-numpy
     - os: linux
       dist: bionic
       arch: arm64
@@ -166,8 +164,6 @@ jobs:
           packages:
            - *core_build_gpp_latest
            - *bionic_build_extras
-           - python-protobuf
-           - python-numpy
           sources:
            - ubuntu-toolchain-r-test
     - os: osx
@@ -445,14 +441,14 @@ before_install:
 
 install:
 # Match the version of protobuf being installed via apt/Homebrew
-  - if [ "$PROTOBUF" == "latest" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user protobuf; fi
-  - if [ "$PROTOBUF" != "latest" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user protobuf==3.1.0; fi
+  - if [ "$PROTOBUF" == "latest" -a "$TRAVIS_DIST" != "bionic" ]; then pip install --user protobuf; fi
+  - if [ "$PROTOBUF" != "latest" -a "$TRAVIS_DIST" != "bionic" ]; then pip install --user protobuf==3.1.0; fi
   # disable until can be added to all build variants
   #- pip install --user timeout-decorator
-# We need to use pip rather than apt on Bionic
-  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" = "bionic" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
-# Install numpy via deb on arm
-  - if [ "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user numpy; fi
+# We sometimes need to use pip rather than apt on Bionic
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" == "bionic" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
+# Install numpy via deb where it works, otherwise on OS X and non-bionic Linux install via pip
+  - if [ "$TRAVIS_DIST" != "bionic" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
