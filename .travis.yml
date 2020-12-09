@@ -38,12 +38,19 @@ addons:
      - *core_build
      - clang-11
     packages: &bionic_build_extras
-     - python-protobuf
-     - python-numpy
-     - python-pip
      # To fix the build/add missing components
      - libtool
      - pkg-config
+    packages: &bionic_build_extras_python2
+     - *bionic_build_extras
+     - python-protobuf
+     - python-numpy
+     - python-pip
+    packages: &bionic_build_extras_python3
+     - *bionic_build_extras
+     - python3-protobuf
+     - python3-numpy
+     - python3-pip
   homebrew:
     packages: &mac_core_build
      - ccache
@@ -72,6 +79,7 @@ jobs:
         apt:
           packages:
            - *core_build_gpp_latest
+           - *bionic_build_extras_python2
            - doxygen
            - graphviz
           sources:
@@ -83,6 +91,7 @@ jobs:
         apt:
           packages:
            - *core_build
+           - *bionic_build_extras_python2
     - os: linux
       dist: bionic
       env: TASK='check-licences'
@@ -90,15 +99,17 @@ jobs:
         apt:
           packages:
            - *core_build
+           - *bionic_build_extras_python2
     - os: linux
       dist: bionic
       env:
-       - TASK='codespell'
-       - PATH=/opt/python/3.8.1/bin:$PATH
+        - TASK='codespell'
+        - PYTHON='python3'
       addons:
         apt:
           packages:
            - *core_build
+           - *bionic_build_extras_python3
            - moreutils
     - os: linux
       dist: bionic
@@ -113,6 +124,7 @@ jobs:
         apt:
           packages:
            - *base_build
+           - *bionic_build_extras_python2
     - os: linux
       dist: bionic
       arch: amd64
@@ -125,7 +137,7 @@ jobs:
         apt:
           packages:
            - *core_build_clang_latest
-           - *bionic_build_extras
+           - *bionic_build_extras_python3
           sources:
            - sourceline: "ppa:ubuntu-toolchain-r/test"
            - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
@@ -140,6 +152,7 @@ jobs:
         apt:
           packages:
            - *core_build_gpp_latest
+           - *bionic_build_extras_python2
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
@@ -152,7 +165,7 @@ jobs:
         apt:
           packages:
            - *core_build
-           - *bionic_build_extras
+           - *bionic_build_extras_python2
     - os: linux
       dist: bionic
       arch: arm64
@@ -163,7 +176,7 @@ jobs:
         apt:
           packages:
            - *core_build_gpp_latest
-           - *bionic_build_extras
+           - *bionic_build_extras_python2
           sources:
            - ubuntu-toolchain-r-test
     - os: osx
