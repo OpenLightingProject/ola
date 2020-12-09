@@ -104,7 +104,7 @@ jobs:
       dist: bionic
       env:
         - TASK='codespell'
-        - PYTHON='python3'
+      python: '3.8'
       addons:
         apt:
           packages:
@@ -131,7 +131,6 @@ jobs:
       compiler: clang
       env:
         - TASK='compile'
-        - PYTHON='python3'
       python: '3.8'
       addons:
         apt:
@@ -139,9 +138,9 @@ jobs:
            - *core_build_clang_latest
            - *bionic_build_extras_python3
           sources:
-           - sourceline: "ppa:ubuntu-toolchain-r/test"
            - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+           - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
       dist: bionic
       arch: amd64
@@ -194,7 +193,7 @@ jobs:
            - *mac_cppunit_113
            - protobuf
            - libftdi0
-          update: true
+          update: false
     - os: osx
       osx_image: xcode9.4
       compiler: gcc
@@ -210,7 +209,7 @@ jobs:
            - *mac_cppunit_113
            - protobuf
            - libftdi0
-          update: true
+          update: false
     - os: osx
       osx_image: xcode9.4
       compiler: clang
@@ -226,7 +225,7 @@ jobs:
            - cppunit
            - protobuf
            - libftdi0
-          update: true
+          update: false
     - os: osx
       osx_image: xcode9.4
       compiler: gcc
@@ -242,7 +241,7 @@ jobs:
            - cppunit
            - protobuf
            - libftdi0
-          update: true
+          update: false
     - os: osx
       osx_image: xcode9.4
       compiler: clang
@@ -258,7 +257,7 @@ jobs:
            - cppunit
            - protobuf
            - libftdi # install the latest cppunit, which needs C++11
-          update: true
+          update: false
     - os: osx
       osx_image: xcode9.4
       compiler: gcc
@@ -274,7 +273,7 @@ jobs:
            - cppunit
            - protobuf
            - libftdi # install the latest cppunit, which needs C++11
-          update: true
+          update: false
     - os: linux
       dist: xenial
       compiler: gcc
