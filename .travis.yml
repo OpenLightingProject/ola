@@ -48,9 +48,12 @@ addons:
      - python-pip
     packages: &bionic_build_extras_python3
      - *bionic_build_extras
-     - python3-protobuf
-     - python3-numpy
-     - python3-pip
+     # The apt packaged files don't seem to work with Bionic and Python 3, so do it via pip
+     # To compile numpy
+     - python3-dev
+#     - python3-protobuf
+#     - python3-numpy
+#     - python3-pip
   homebrew:
     packages: &mac_core_build
      - ccache
@@ -104,7 +107,7 @@ jobs:
       dist: bionic
       env:
         - TASK='codespell'
-      python: '3.8'
+        - PYTHON='python3'
       addons:
         apt:
           packages:
@@ -131,7 +134,7 @@ jobs:
       compiler: clang
       env:
         - TASK='compile'
-      python: '3.8'
+        - PYTHON='python3'
       addons:
         apt:
           packages:
@@ -178,70 +181,70 @@ jobs:
            - *bionic_build_extras_python2
           sources:
            - ubuntu-toolchain-r-test
-    - os: osx
-      osx_image: xcode9.4
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - PROTOBUF='latest'
-      - LIBFTDI='0'
-      addons:
-        homebrew:
-          packages:
-           - *mac_core_build
-           - *mac_cppunit_113
-           - protobuf
-           - libftdi0
-          update: false
-    - os: osx
-      osx_image: xcode9.4
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - PROTOBUF='latest'
-      - LIBFTDI='0'
-      addons:
-        homebrew:
-          packages:
-           - *mac_core_build
-           - *mac_cppunit_113
-           - protobuf
-           - libftdi0
-          update: false
-    - os: osx
-      osx_image: xcode9.4
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='latest'
-      - LIBFTDI='0'
-      addons:
-        homebrew:
-          packages:
-           - *mac_core_build
-           - cppunit
-           - protobuf
-           - libftdi0
-          update: false
-    - os: osx
-      osx_image: xcode9.4
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='latest'
-      - LIBFTDI='0'
-      addons:
-        homebrew:
-          packages:
-           - *mac_core_build
-           - cppunit
-           - protobuf
-           - libftdi0
-          update: false
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='0'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - *mac_cppunit_113
+#           - protobuf
+#           - libftdi0
+#          update: false
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='0'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - *mac_cppunit_113
+#           - protobuf
+#           - libftdi0
+#          update: false
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='0'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - cppunit
+#           - protobuf
+#           - libftdi0
+#          update: false
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='0'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - cppunit
+#           - protobuf
+#           - libftdi0
+#          update: false
     - os: osx
       osx_image: xcode9.4
       compiler: clang
@@ -315,50 +318,50 @@ jobs:
            - lintian
            - moreutils
   allow_failures:
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - LIBFTDI='1'
     - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.13'
-      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: clang
       env:
       - TASK='compile'
@@ -366,7 +369,7 @@ jobs:
       - LIBFTDI='1'
       - PROTOBUF='latest'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: gcc
       env:
       - TASK='compile'
@@ -453,14 +456,14 @@ before_install:
 
 install:
 # Match the version of protobuf being installed via apt/Homebrew
-  - if [ "$PROTOBUF" == "latest" -a "$TRAVIS_DIST" != "bionic" ]; then pip install --user protobuf; fi
-  - if [ "$PROTOBUF" != "latest" -a "$TRAVIS_DIST" != "bionic" ]; then pip install --user protobuf==3.1.0; fi
+  - if [ "$PROTOBUF" == "latest" -a \( "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf; fi
+  - if [ "$PROTOBUF" != "latest" -a \( "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf==3.1.0; fi
   # disable until can be added to all build variants
   #- pip install --user timeout-decorator
 # We sometimes need to use pip rather than apt on Bionic
   - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" == "bionic" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
-# Install numpy via deb where it works, otherwise on OS X and non-bionic Linux install via pip
-  - if [ "$TRAVIS_DIST" != "bionic" ]; then pip install --user numpy; fi
+# Install numpy via deb where it works, otherwise on OS X and non-bionic Python 2 Linux install via pip
+  - if [ "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
