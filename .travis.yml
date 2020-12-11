@@ -182,7 +182,7 @@ jobs:
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: xenial
+      dist: bionic
       arch: s390x
       compiler: clang
       env: TASK='compile'
@@ -192,7 +192,7 @@ jobs:
            - *core_build
            - *bionic_build_extras_python2
     - os: linux
-      dist: xenial
+      dist: bionic
       arch: s390x
       compiler: gcc
       env:
