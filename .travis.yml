@@ -374,6 +374,8 @@ jobs:
       env:
       - TASK='compile'
       - CPPUNIT='1.14'
+      - PROTOBUF='latest'
+      - LIBFTDI='1'
     - os: linux
       dist: xenial
       compiler: gcc
