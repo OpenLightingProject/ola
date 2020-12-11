@@ -1,6 +1,4 @@
 language: cpp
-# Default to the fully visualised "sudo" GCE environments, as they are faster for longer running jobs. We don't actually need sudo
-sudo: required
 # Use the latest Travis images since they are more up to date than the stable release.
 group: edge
 
@@ -39,78 +37,246 @@ addons:
     packages: &core_build_clang_latest
      - *core_build
      - clang-11
+    packages: &bionic_build_extras
+     # To fix the build/add missing components
+     - libtool
+     - pkg-config
+    packages: &bionic_build_extras_python2
+     - *bionic_build_extras
+     - python-protobuf
+     - python-numpy
+     - python-pip
+    packages: &bionic_build_extras_python3
+     - *bionic_build_extras
+     # The apt packaged files don't seem to work with Bionic and Python 3, so do it via pip
+     # To compile numpy
+     - python3-dev
+#     - python3-protobuf
+#     - python3-numpy
+#     - python3-pip
+  homebrew:
+    packages: &mac_core_build
+     - ccache
+     # This is all the bits we need to enable all options on Mac
+     - bison
+     - flex
+     # Installing via the addon isn't currently working so do it the old fashioned way below
+     # - https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb
+     - liblo
+     - libmicrohttpd
+     - ossp-uuid
+     # Looks like this is Python 3 only, so install via pip
+     # - numpy
+     - libusb
+    packages: &mac_cppunit_113
+     # Installing via the addon isn't currently working so do it the old fashioned way below
+     # - https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3^/Formula/cppunit.rb # install a slightly older cppunit, as latest needs C++11 support
 
-matrix:
+jobs:
   fast_finish: true
   include:
-#    - os: osx
-#      osx_image: xcode9.3
-#      compiler: clang
-#      env:
-#      - TASK='compile'
-#      - CPPUNIT='1.13'
-#      - LIBFTDI='0'
-#    - os: osx
-#      osx_image: xcode9.3
-#      compiler: clang
-#      env:
-#      - TASK='compile'
-#      - CPPUNIT='1.14'
-#      - LIBFTDI='0'
-#    - os: osx
-#      osx_image: xcode9.3
-#      compiler: gcc
-#      env:
-#      - TASK='compile'
-#      - CPPUNIT='1.13'
-#      - LIBFTDI='0'
-#    - os: osx
-#      osx_image: xcode9.3
-#      compiler: gcc
-#      env:
-#      - TASK='compile'
-#      - CPPUNIT='1.14'
-#      - LIBFTDI='0'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='latest'
-      - LIBFTDI='1'
-    - os: osx
-      osx_image: xcode9.3
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='latest'
-      - LIBFTDI='1'
     - os: linux
-      dist: xenial
-      compiler: clang
-      env:
-      - TASK='compile'
-      - PYTHON='python3'
-      addons:
-        apt:
-          packages:
-           - *core_build_clang_latest
-          sources:
-           - sourceline: "ppa:ubuntu-toolchain-r/test"
-           - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-11 main"
-             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-    - os: linux
-      dist: xenial
-      compiler: gcc
-      env: TASK='compile'
+      dist: bionic
+      env: TASK='doxygen'
       addons:
         apt:
           packages:
            - *core_build_gpp_latest
+           - *bionic_build_extras_python2
+           - doxygen
+           - graphviz
           sources:
+           - ubuntu-toolchain-r-test
+    - os: linux
+      dist: bionic
+      env: TASK='lint'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - *bionic_build_extras_python2
+    - os: linux
+      dist: bionic
+      env: TASK='check-licences'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - *bionic_build_extras_python2
+    - os: linux
+      dist: bionic
+      env:
+        - TASK='codespell'
+        - PYTHON='python3'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - *bionic_build_extras_python3
+           - moreutils
+    - os: linux
+      dist: bionic
+      env: TASK='jshint'
+      addons:
+        apt:
+          packages:
+    - os: linux
+      dist: bionic
+      env: TASK='flake8'
+      addons:
+        apt:
+          packages:
+           - *base_build
+           - *bionic_build_extras_python2
+    - os: linux
+      dist: bionic
+      arch: amd64
+      compiler: clang
+      env:
+        - TASK='compile'
+        - PYTHON='python3'
+      addons:
+        apt:
+          packages:
+           - *core_build_clang_latest
+           - *bionic_build_extras_python3
+          sources:
+           - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
+             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
            - sourceline: "ppa:ubuntu-toolchain-r/test"
+    - os: linux
+      dist: bionic
+      arch: amd64
+      compiler: gcc
+      env: TASK='compile'
+      python: '2.7'
+      addons:
+        apt:
+          packages:
+           - *core_build_gpp_latest
+           - *bionic_build_extras_python2
+          sources:
+           - ubuntu-toolchain-r-test
+    - os: linux
+      dist: bionic
+      arch: arm64
+      compiler: clang
+      env: TASK='compile'
+      python: '2.7'
+      addons:
+        apt:
+          packages:
+           - *core_build
+           - *bionic_build_extras_python2
+    - os: linux
+      dist: bionic
+      arch: arm64
+      compiler: gcc
+      env: TASK='compile'
+      python: '2.7'
+      addons:
+        apt:
+          packages:
+           - *core_build_gpp_latest
+           - *bionic_build_extras_python2
+          sources:
+           - ubuntu-toolchain-r-test
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='0'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - *mac_cppunit_113
+#           - protobuf
+#           - libftdi0
+#          update: false
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.13'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='0'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - *mac_cppunit_113
+#           - protobuf
+#           - libftdi0
+#          update: false
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='0'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - cppunit
+#           - protobuf
+#           - libftdi0
+#          update: false
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='0'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - cppunit
+#           - protobuf
+#           - libftdi0
+#          update: false
+    - os: osx
+      osx_image: xcode9.4
+      compiler: clang
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - PROTOBUF='latest'
+      - LIBFTDI='1'
+      addons:
+        homebrew:
+          packages:
+           - *mac_core_build
+           - cppunit
+           - protobuf
+           - libftdi # install the latest cppunit, which needs C++11
+          update: false
+    - os: osx
+      osx_image: xcode9.4
+      compiler: gcc
+      env:
+      - TASK='compile'
+      - CPPUNIT='1.14'
+      - PROTOBUF='latest'
+      - LIBFTDI='1'
+      addons:
+        homebrew:
+          packages:
+           - *mac_core_build
+           - cppunit
+           - protobuf
+           - libftdi # install the latest cppunit, which needs C++11
+          update: false
     - os: linux
       dist: xenial
       compiler: gcc
@@ -134,100 +300,68 @@ matrix:
           sources:
            - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
-      dist: xenial
-      env: TASK='doxygen'
-      addons:
-        apt:
-          packages:
-           - *core_build_gpp_latest
-           - doxygen
-           - graphviz
-          sources:
-           - sourceline: "ppa:ubuntu-toolchain-r/test"
-    - os: linux
-      dist: xenial
-      env: TASK='lint'
-      addons:
-        apt:
-          packages:
-           - *core_build
-    - os: linux
-      dist: xenial
-      env: TASK='check-licences'
-      addons:
-        apt:
-          packages:
-           - *core_build
-    - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian'
       addons:
         apt:
           packages:
            - *core_build
+           - lintian
            - moreutils
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian-duplicates'
       addons:
         apt:
           packages:
            - *core_build
+           - lintian
            - moreutils
-    - os: linux
-      dist: xenial
-      env:
-       - TASK='codespell'
-       - PYTHON='python3'
-      addons:
-        apt:
-          packages:
-           - *core_build
-           - moreutils
-    - os: linux
-      dist: xenial
-      env: TASK='jshint'
-      addons:
-        apt:
-          packages:
-    - os: linux
-      dist: xenial
-      env: TASK='flake8'
-      addons:
-        apt:
-          packages:
-           - *base_build
   allow_failures:
 #    - os: osx
-#      osx_image: xcode9.3
+#      osx_image: xcode9.4
 #      compiler: clang
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.13'
 #      - LIBFTDI='0'
 #    - os: osx
-#      osx_image: xcode9.3
+#      osx_image: xcode9.4
 #      compiler: clang
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.14'
 #      - LIBFTDI='0'
 #    - os: osx
-#      osx_image: xcode9.3
+#      osx_image: xcode9.4
 #      compiler: gcc
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.13'
 #      - LIBFTDI='0'
 #    - os: osx
-#      osx_image: xcode9.3
+#      osx_image: xcode9.4
 #      compiler: gcc
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.14'
 #      - LIBFTDI='0'
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - LIBFTDI='1'
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - LIBFTDI='1'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: clang
       env:
       - TASK='compile'
@@ -235,7 +369,7 @@ matrix:
       - PROTOBUF='latest'
       - LIBFTDI='1'
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode9.4
       compiler: gcc
       env:
       - TASK='compile'
@@ -251,10 +385,10 @@ matrix:
       compiler: gcc
       env: TASK='coverity'
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian'
     - os: linux
-      dist: xenial
+      dist: bionic
       env: TASK='spellintian-duplicates'
 
 env:
@@ -281,30 +415,19 @@ env:
 
 cache:
   apt: true
+  ccache: true
+  npm: true
+  pip: true
   directories:
-    - $HOME/.cache/pip # pip cache
-    - $HOME/.npm # npm cache
-    - $HOME/.ccache # ccache cache
+    - $HOME/Library/Caches/Homebrew # homebrew bottle cache
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log # erase log
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cleanup; fi # avoid caching old package versions
   - ccache -s # see how many hits ccache got
 
-install:
-# Match the version of protobuf being installed via apt
-  - if [[ "$PROTOBUF" == "latest" ]]; then pip install --user protobuf; fi
-  - if [[ "$PROTOBUF" != "latest" ]]; then pip install --user protobuf==3.1.0; fi
-  # disable until can be added to all build variants
-  #- pip install --user timeout-decorator
-# We need to use pip rather than apt on Xenial
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then pip install --user numpy; fi
-  - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
-  - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
-  - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
-  - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
-
 before_install:
- - if [ "$PYTHON" == "python3" ]; then pyenv global 3.7.1; fi
+ - if [ "$PYTHON" == "python3" ]; then pyenv global 3.8.1; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
@@ -320,32 +443,42 @@ before_install:
 #Uninstall some homebrew packages which aren't required so we don't end up updating and rebuilding them. Force so it doesn't reinstall
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall --ignore-dependencies --force cgal liblwgeom libspatialite mercurial postgis postgres sfcgal; fi
 #Having fixed everything up, update to the bleeding edge
-#Skip updating for now as it seems to be breaking the build
+#Skip updating for now as it seems to be breaking the build, also now done via the addon
 # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-#Install build dependencies
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install bison flex liblo libmicrohttpd; fi # ossp-uuid, homebrew/python/numpy and libusb already present
-# Remove ccache on OS X for now as it's not installing due to cmake
-#ccache
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" != "1" ]; then brew install libftdi0; fi # install libftdi0
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$LIBFTDI" == "1" ]; then brew install libftdi; fi # install the latest libftdi
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" == "latest" ]; then brew install protobuf; fi
+ # This is no longer allowed, so build all Mac builds as protobuf latest
+ #- if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb; fi # install protobuf 3.1 as that's the latest we support everywhere
+ #- if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew link -f https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew install protobuf@3.6; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew link -f protobuf@3.6; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.6/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
- - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" == "1.14" ]; then brew install cppunit; fi # install the latest cppunit, which needs C++11
-# Remove ccache on OS X for now as it's not installing due to cmake
-# - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
 #Put back the old pip numpy we need to work
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install --upgrade --no-deps --force-reinstall --user numpy; fi
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-9" CC="ccache gcc-9"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
-#Use the latest clang if we're compiling with clang
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" ]; then export CXX="clang++-11" CC="clang-11"; fi
+#Use the latest clang if we're compiling with clang, except on arm64 where it's not available
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then export CXX="clang++-11" CC="clang-11"; fi
 #Report the compiler version
  - $CXX --version
- - if [ "$TASK" == "spellintian" -o "$TASK" == "spellintian-duplicates" ]; then wget "http://old-releases.ubuntu.com/ubuntu/pool/main/l/lintian/lintian_2.5.104_all.deb"; sudo dpkg -i lintian_*.deb; sudo apt-get install -f -y; fi # Install a later lintian
+
+install:
+# Match the version of protobuf being installed via apt/Homebrew
+  - if [ "$PROTOBUF" == "latest" -a \( "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf; fi
+  - if [ "$PROTOBUF" != "latest" -a \( "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf==3.1.0; fi
+  # disable until can be added to all build variants
+  #- pip install --user timeout-decorator
+# We sometimes need to use pip rather than apt on Bionic
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" == "bionic" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
+# Install numpy via deb where it works, otherwise on OS X and non-bionic Python 2 Linux install via pip
+  - if [ "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" ]; then pip install --user numpy; fi
+  - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
+  - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
+  - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
+  - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
+# Installing via the addon isn't currently working so do it the old fashioned way
+  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
 
 after_failure:
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log; fi
@@ -355,7 +488,7 @@ after_failure:
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
 
 after_success:
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-8 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-9 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
 
 after_script:
   - if [ "$TASK" = "coverity" ]; then tail -n 10000 ${TRAVIS_BUILD_DIR}/cov-int/build-log.txt; cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi
