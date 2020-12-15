@@ -446,6 +446,8 @@ before_cache:
 before_install:
 #Switch to python 3 where required (focal is Python 3 by default)
  - if [ "$TRAVIS_DIST" != "focal" -a "$PYTHON" == "python3" ]; then pyenv global 3.9.0 || pyenv versions && false; fi
+#Install pip (2) on focal
+ - if [ "$TRAVIS_DIST" == "focal" -a "$PYTHON" != "python3" ]; then curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && sudo python2 get-pip.py; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
@@ -474,8 +476,8 @@ before_install:
 
 install:
 # Match the version of protobuf being installed via apt/Homebrew
-  - if [ "$PROTOBUF" == "latest" -a \( \( "$TRAVIS_DIST" != "bionic" -a "$TRAVIS_DIST" != "focal" \) -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf; fi
-  - if [ "$PROTOBUF" != "latest" -a \( \( "$TRAVIS_DIST" != "bionic" -a "$TRAVIS_DIST" != "focal" \) -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf==3.1.0; fi
+  - if [ "$PROTOBUF" == "latest" -a \( \( ! \( "$TRAVIS_DIST" == "bionic" -o "$TRAVIS_DIST" == "focal" \) \) -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf; fi
+  - if [ "$PROTOBUF" != "latest" -a \( \( ! \( "$TRAVIS_DIST" == "bionic" -o "$TRAVIS_DIST" == "focal" \) \) -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf==3.1.0; fi
   # disable until can be added to all build variants
   #- pip install --user timeout-decorator
 # We sometimes need to use pip rather than apt on Bionic
