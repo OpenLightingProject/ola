@@ -60,10 +60,12 @@ addons:
      - pkg-config
     packages: &focal_build_extras_python2
      - *focal_build_extras
+     - python-is-python2
      - python-protobuf
      - python-numpy
     packages: &focal_build_extras_python3
      - *focal_build_extras
+     - python-is-python3
      # To compile numpy
      #- python3-dev
      - python3-protobuf
@@ -442,7 +444,8 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 before_install:
- - if [ "$PYTHON" == "python3" ]; then pyenv global 3.9.0 || pyenv versions && false; fi
+#Switch to python 3 where required (focal is Python 3 by default)
+ - if [ "$TRAVIS_DIST" != "focal" -a "$PYTHON" == "python3" ]; then pyenv global 3.9.0 || pyenv versions && false; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
