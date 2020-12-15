@@ -151,9 +151,6 @@ void PidStore::AllPids(vector<const PidDescriptor*> *pids) const {
 }
 
 
-/**
- * Clean up
- */
 PidDescriptor::~PidDescriptor() {
   delete m_get_request;
   delete m_get_response;
@@ -162,10 +159,6 @@ PidDescriptor::~PidDescriptor() {
 }
 
 
-/**
- * Lookup a PID by value.
- * @param pid_value the 16 bit pid value.
- */
 const PidDescriptor *PidStore::LookupPID(uint16_t pid_value) const {
   PidMap::const_iterator iter = m_pid_by_value.find(pid_value);
   if (iter == m_pid_by_value.end())
@@ -175,10 +168,6 @@ const PidDescriptor *PidStore::LookupPID(uint16_t pid_value) const {
 }
 
 
-/**
- * Lookup a PID by name
- * @param pid_name the name of the pid.
- */
 const PidDescriptor *PidStore::LookupPID(const string &pid_name) const {
   PidNameMap::const_iterator iter = m_pid_by_name.find(pid_name);
   if (iter == m_pid_by_name.end())
@@ -189,7 +178,7 @@ const PidDescriptor *PidStore::LookupPID(const string &pid_name) const {
 
 
 /**
- * Check if a GET request to this subdevice is valid
+ * @brief Check if a GET request to this subdevice is valid
  * @param sub_device the sub device for this request.
  * @returns true if the request is valid, false otherwise.
  */
@@ -199,7 +188,7 @@ bool PidDescriptor::IsGetValid(uint16_t sub_device) const {
 
 
 /**
- * Check if a SET request to this subdevice is valid
+ * @brief Check if a SET request to this subdevice is valid
  * @param sub_device the sub device for this request.
  * @returns true if the request is valid, false otherwise.
  */
@@ -209,7 +198,7 @@ bool PidDescriptor::IsSetValid(uint16_t sub_device) const {
 
 
 /**
- * Returns is a request is valid
+ * @brief Returns is a request is valid
  */
 bool PidDescriptor::RequestValid(uint16_t sub_device,
                                  const sub_device_validator &validator) const {
