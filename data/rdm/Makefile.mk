@@ -30,4 +30,7 @@ data_rdm_PidDataTester_SOURCES = data/rdm/PidDataTest.cpp
 data_rdm_PidDataTester_CXXFLAGS = $(COMMON_TESTING_FLAGS) -DDATADIR=\"$(srcdir)/data/rdm\"
 data_rdm_PidDataTester_LDADD = $(COMMON_TESTING_LIBS)
 
-CLEANFILES += data/rdm/PidDataTest.sh
+CLEANFILES += \
+    data/rdm/*.pyc \
+    data/rdm/PidDataTest.sh \
+    data/rdm/__pycache__/*

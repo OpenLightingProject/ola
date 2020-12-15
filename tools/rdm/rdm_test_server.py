@@ -16,6 +16,7 @@
 # rdm_test_server.py
 # Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
 
+from __future__ import print_function
 import cgi
 import json
 import logging
@@ -623,7 +624,7 @@ class DownloadModelDataHandler(RequestHandler):
   """Take the data in the form and return it as a downloadable file."""
 
   def HandleRequest(self, request, response):
-    print dir(request)
+    print(dir(request))
     model_data = request.PostParam('model_data') or ''
     logging.info(model_data)
 
