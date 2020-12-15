@@ -62,7 +62,6 @@ addons:
      - *focal_build_extras
      - python-protobuf
      - python-numpy
-     - python-pip
     packages: &focal_build_extras_python3
      - *focal_build_extras
      # To compile numpy
@@ -477,7 +476,7 @@ install:
   # disable until can be added to all build variants
   #- pip install --user timeout-decorator
 # We sometimes need to use pip rather than apt on Bionic
-  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TRAVIS_DIST" == "bionic" -o "$TRAVIS_DIST" == "focal" \) -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TRAVIS_DIST" == "bionic" \) -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
 # Install numpy via deb where it works, otherwise on OS X and non-bionic Python 2 Linux install via pip
   - if [ \( "$TRAVIS_DIST" != "bionic" -a "$TRAVIS_DIST" != "focal" \) -o "$PYTHON" == "python3" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
