@@ -337,7 +337,6 @@ jobs:
     - os: linux
       dist: xenial
       env: TASK='pychecker-wip'
-      python: '2.7'
 #    - os: osx
 #      osx_image: xcode9.4
 #      compiler: clang
