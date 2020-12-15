@@ -53,7 +53,7 @@ class Error(Exception):
 
 
 class InvalidPidFormat(Error):
-  "Indicates the PID data file was invalid."""
+  """Indicates the PID data file was invalid."""
 
 
 class PidStructureException(Error):
@@ -471,7 +471,7 @@ class IntAtom(FixedSizeAtom):
         raise ArgsValidationError(
             'Conversion will lose data: %d -> %d' %
             (new_value, (new_value / multiplier * multiplier)))
-      new_value = new_value / multiplier
+      new_value = int(new_value / multiplier)
 
     else:
       try:
@@ -658,7 +658,10 @@ class String(Atom):
                                 (self.name, self.min))
 
     try:
-      data = struct.unpack('%ds' % arg_size, arg)
+      if sys.version >= '3.2':
+        data = struct.unpack('%ds' % arg_size, bytes(arg, 'utf8'))
+      else:
+        data = struct.unpack('%ds' % arg_size, arg)
     except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data[0], 1
@@ -678,7 +681,10 @@ class String(Atom):
     except struct.error as e:
       raise UnpackException(e)
 
-    return value[0].rstrip('\x00')
+    if sys.version >= '3.2':
+      return value[0].rstrip(b'\x00').decode('utf-8')
+    else:
+      return value[0].rstrip(b'\x00')
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
@@ -820,10 +826,10 @@ class Group(Atom):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
 
-      return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
     elif self._group_size == 0:
-      return '', 0
+      return b'', 0
     else:
       # this could be groups of fields, but we don't support that yet
       data = []
@@ -836,7 +842,7 @@ class Group(Atom):
       if arg_offset < len(args):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
-      return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
   def Unpack(self, data):
     """Unpack binary data.

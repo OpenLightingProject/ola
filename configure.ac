@@ -973,6 +973,7 @@ AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
                  python/ola/OlaClient.py:python/ola/OlaClient.py
                  python/ola/PidStore.py:python/ola/PidStore.py
+                 python/ola/RDMAPI.py:python/ola/RDMAPI.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
                  python/ola/TestUtils.py:python/ola/TestUtils.py
                  python/ola/UID.py:python/ola/UID.py

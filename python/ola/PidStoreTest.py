@@ -16,6 +16,7 @@
 # PidStoreTest.py
 # Copyright (C) 2020 Bruce Lowekamp
 
+import binascii
 import os
 import unittest
 import ola.PidStore as PidStore
@@ -197,6 +198,98 @@ class PidStoreTest(unittest.TestCase):
     self.assertNotEqual(hash(p1a), hash(p2))
     self.assertNotEqual(hash(p1b), hash(p2))
     self.assertNotEqual(hash(p1a), hash(p3))
+
+  def testPackUnpack(self):
+    store = PidStore.PidStore()
+    store.Load([os.path.join(path, "test_pids.proto")])
+
+    pid = store.GetName("DMX_PERSONALITY_DESCRIPTION")
+
+    # Pid.Pack only packs requests and Pid.Unpack only unpacks responses
+    # so test in two halves
+    args = ["42"]
+    blob = pid.Pack(args, PidStore.RDM_GET)
+    self.assertEqual(blob, binascii.unhexlify("2a"))
+    decoded = pid._requests.get(PidStore.RDM_GET).Unpack(blob)[0]
+    self.assertEqual(decoded['personality'], 42)
+
+    args = ["42", "7", "UnpackTest"]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertEqual(blob, binascii.unhexlify("2a0007556e7061636b54657374"))
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    self.assertEqual(decoded['personality'], 42)
+    self.assertEqual(decoded['slots_required'], 7)
+    self.assertEqual(decoded['name'], "UnpackTest")
+
+  def testPackRanges(self):
+    store = PidStore.PidStore()
+    store.Load([os.path.join(path, "test_pids.proto")])
+
+    pid = store.GetName("REAL_TIME_CLOCK")
+
+    # first check encoding of valid RTC data
+    args = ["2020", "6", "20", "21", "22", "23"]
+    blob = pid.Pack(args, PidStore.RDM_SET)
+    self.assertEqual(blob, binascii.unhexlify("07e40614151617"))
+    decoded = pid._requests.get(PidStore.RDM_SET).Unpack(blob)[0]
+    self.assertEqual(decoded, {'year': 2020, 'month': 6,
+                               'day': 20, 'hour': 21,
+                               'minute': 22, 'second': 23})
+
+    # next check that ranges are being enforced properly
+    # invalid year (2002 < 2003)
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2002", "6", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    # invalid month < 1
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2020", "0", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    # invalid month > 12
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2020", "13", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    # invalid month > 255
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2020", "256", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    # invalid negative month
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["2020", "-1", "20", "20", "20", "20"]
+      blob = pid.Pack(args, PidStore.RDM_SET)
+
+    # tests for string with min=max=2
+    pid = store.GetName("LANGUAGE_CAPABILITIES")
+    args = ["en"]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertEqual(blob, binascii.unhexlify("656e"))
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    self.assertEqual(decoded, {'languages': [{'language': 'en'}]})
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["e"]
+      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["enx"]
+      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+
+    # valid empty string
+    pid = store.GetName("STATUS_ID_DESCRIPTION")
+    args = [""]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertEqual(len(blob), 0)
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    self.assertEqual(decoded['label'], "")
+
+    # string too long
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["123456789012345678901234567890123"]
+      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
 
 
 if __name__ == '__main__':
