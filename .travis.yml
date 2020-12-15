@@ -442,7 +442,7 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 before_install:
- - if [ "$PYTHON" == "python3" ]; then pyenv global 3.8.1 ; fi
+ - if [ "$PYTHON" == "python3" ]; then pyenv global 3.9.0 || pyenv versions && false; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
