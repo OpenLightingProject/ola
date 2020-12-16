@@ -447,7 +447,7 @@ before_install:
 #Switch to python 3 where required (focal is Python 3 by default)
  - if [ "$TRAVIS_DIST" != "focal" -a "$PYTHON" == "python3" ]; then pyenv global 3.9.0 || pyenv versions && false; fi
 #Install pip (2) on focal
- - if [ "$TRAVIS_DIST" == "focal" -a "$PYTHON" != "python3" ]; then curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && sudo python2 get-pip.py; fi
+ - if [ "$TRAVIS_DIST" == "focal" -a "$PYTHON" != "python3" -a -x /usr/bin/python2 ]; then curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && sudo python2 get-pip.py && rm get-pip.py; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
