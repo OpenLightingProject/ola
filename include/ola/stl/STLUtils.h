@@ -18,18 +18,6 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-/**
- * @defgroup stl STL
- * @brief Various helper functions related to STL classes.
- *
- * @addtogroup stl
- * @{
- *
- * @file STLUtils.h
- * @brief Helper functions for STL classes.
- * @}
- */
-
 #ifndef INCLUDE_OLA_STL_STLUTILS_H_
 #define INCLUDE_OLA_STL_STLUTILS_H_
 
@@ -39,6 +27,17 @@
 #include <set>
 #include <vector>
 #include <utility>
+
+/**
+ * @defgroup stl STL
+ * @brief Various helper functions related to STL classes.
+ *
+ * @addtogroup stl
+ * @{
+ * @file STLUtils.h
+ * @brief Helper functions for STL classes.
+ * @}
+ */
 
 namespace ola {
 

@@ -19,14 +19,6 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-/**
- * @addtogroup logging
- * @{
- *
- * @file Logging.cpp
- *
- * @}
- */
 #include <stdio.h>
 
 #ifdef _WIN32
@@ -44,6 +36,15 @@
 #include <string>
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
+
+/**
+ * @addtogroup logging
+ * @{
+ *
+ * @file Logging.cpp
+ *
+ * @}
+ */
 
 /**@private*/
 DEFINE_s_int8(log_level, l, ola::OLA_LOG_WARN, "Set the logging level 0 .. 4.");
