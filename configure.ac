@@ -401,6 +401,9 @@ AC_CHECK_HEADER([dmx/dmxioctl.h], [], [have_dmx4linux="no"])
 AS_IF([test "x$have_dmx4linux" = xyes],
       [AC_DEFINE([HAVE_DMX4LINUX], [1], [define if dmx4linux is installed])])
 
+# librt - may be separate or part of libc
+AC_SEARCH_LIBS([clock_gettime], [rt])
+
 # libexecinfo
 # FreeBSD required -lexecinfo to call backtrace - checking for presence of
 # header execinfo.h isn't enough

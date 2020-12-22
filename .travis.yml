@@ -33,7 +33,7 @@ addons:
      - libmicrohttpd-dev
     packages: &core_build_gpp_latest
      - *core_build
-     - g++-9
+     - g++-10
     packages: &core_build_clang_latest
      - *core_build
      - clang-11
@@ -294,7 +294,7 @@ jobs:
            - libftdi # install the latest cppunit, which needs C++11
           update: false
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: TASK='coverage'
       addons:
@@ -396,7 +396,7 @@ jobs:
       - PROTOBUF='latest'
       - LIBFTDI='1'
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc
       env: TASK='coverage'
     - os: linux
@@ -467,7 +467,7 @@ before_install:
 # Installing via the addon isn't currently working so do it the old fashioned way
  - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "latest" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
- - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-9" CC="ccache gcc-9"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-10" CC="ccache gcc-10"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
 #Use the latest clang if we're compiling with clang, except on arm64 where it's not available
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then export CXX="clang++-11" CC="clang-11"; fi
@@ -506,7 +506,7 @@ after_failure:
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
 
 after_success:
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-9 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-10 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
 
 after_script:
   - if [ "$TASK" = "coverity" ]; then tail -n 10000 ${TRAVIS_BUILD_DIR}/cov-int/build-log.txt; cat ${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt; fi
