@@ -95,7 +95,7 @@ int ShowPlayer::Playback(unsigned int iterations,
           duration * 1000,
           ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
     }
-    if ((SeekTo(m_start) != ShowLoader::State::OK)) {
+    if ((SeekTo(m_start) != ShowLoader::OK)) {
       return ola::EXIT_DATAERR;
     }
     ss->Run();
