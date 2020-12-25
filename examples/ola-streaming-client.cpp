@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     while (!terminate && std::cin >> input) {
       if (!have_universe && FLAGS_universe_from_stdin) {
         if (!ola::StringToInt(input, &read_universe, true)) {
-          OLA_FATAL << "Could not convert universe number: read " << input;
+          OLA_FATAL << "Could not convert universe number, read " << input;
           exit(ola::EXIT_DATAERR);
         }
 
