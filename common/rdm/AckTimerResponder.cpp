@@ -188,7 +188,7 @@ uint8_t AckTimerResponder::QueuedMessageCount() const {
  */
 void AckTimerResponder::QueueAnyNewMessages() {
   TimeStamp now;
-  m_clock.CurrentTime(&now);
+  m_clock.CurrentMonotonicTime(&now);
   PendingResponses::iterator iter = m_upcoming_queued_messages.begin();
   while (iter != m_upcoming_queued_messages.end()) {
     if ((*iter)->IsValid(now)) {
@@ -336,7 +336,7 @@ RDMResponse *AckTimerResponder::SetDmxStartAddress(const RDMRequest *request) {
   m_start_address = address;
 
   TimeStamp valid_after;
-  m_clock.CurrentTime(&valid_after);
+  m_clock.CurrentMonotonicTime(&valid_after);
   valid_after += TimeInterval(0, ACK_TIMER_MS * 1000);
 
   QueuedResponse *our_response = new QueuedResponse(
@@ -379,7 +379,7 @@ RDMResponse *AckTimerResponder::SetIdentify(const RDMRequest *request) {
   }
 
   TimeStamp valid_after;
-  m_clock.CurrentTime(&valid_after);
+  m_clock.CurrentMonotonicTime(&valid_after);
   valid_after += TimeInterval(0, ACK_TIMER_MS * 1000);
 
   QueuedResponse *our_response = new QueuedResponse(

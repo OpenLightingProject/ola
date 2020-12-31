@@ -56,6 +56,12 @@ class RobeWidgetInformation {
   uint8_t hardware_version;
   uint8_t software_version;
   uint8_t eeprom_version;
+  void operator=(const RobeWidgetInformation& other) {
+      uid = other.uid;
+      hardware_version = other.hardware_version;
+      software_version = other.software_version;
+      eeprom_version = other.eeprom_version;
+  }
 };
 
 
