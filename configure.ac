@@ -103,23 +103,29 @@ AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
 # force us into gnu++98 mode if necessary
 # If gnu++11 and gnu++98 then
 #   If random works with gnu++98
-#     If no unit tests, force to gnu++98
-#     If unittests and cppunit < 1.14.0, force to gnu++98
-#     Else turn off deprecation messages for std::auto_ptr and run gnu++11
-#   Else run gnu++11
+#     If protobuf < 3.6
+#       If no unit tests, force to gnu++98
+#       Else we have unit tests
+#         If cppunit < 1.14.0, force to gnu++98
+#         Else turn off deprecation messages for std::auto_ptr and run gnu++11
+#     Else assume we have protobuf >= 3.6 (later checks will confirm that for certain), turn off deprecation messages for std::auto_ptr and run gnu++11
+#   Else turn off deprecation messages for std::auto_ptr and run gnu++11
 require_gnu_plus_plus_11="no"
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
       [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
              [AS_IF([test "x$ac_cv_header_random_98" = xyes],
-                    [AS_IF([test "x$enable_unittests" = xno],
-                           [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                           [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+                    [PKG_CHECK_MODULES([PROTOBUF1], [protobuf < 3.6],
+                                       [AS_IF([test "x$enable_unittests" = xno],
                                               [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                                              [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
-                                                                 [require_gnu_plus_plus_11="yes"],
-                                                                 [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                              [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+                                                                 [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                                                 [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
+                                                                                    [require_gnu_plus_plus_11="yes"],
+                                                                                    [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                                                 ])
                                               ])
-                           ])
+                                       ],
+                                       [require_gnu_plus_plus_11="yes"])
                     ],
                     [require_gnu_plus_plus_11="yes"])
              ])
