@@ -408,8 +408,9 @@ AC_SEARCH_LIBS([clock_gettime], [rt])
 # FreeBSD required -lexecinfo to call backtrace - checking for presence of
 # header execinfo.h isn't enough
 AC_CHECK_LIB([execinfo], [backtrace], [use_lexecinfo="yes"])
+# TODO(Peter): This should really be AC_COMPILE_IFELSE and AC_LANG_PROGRAM
 case "${host_os}" in
-  *freebsd* | *dragonfly*)
+  *freebsd* | *netbsd* | *dragonfly*)
   LIBS="$LIBS -lexecinfo"
   ;;
 esac
