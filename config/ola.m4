@@ -98,7 +98,7 @@ else
   LIBS=$SAVED_LIBS
 fi
 AC_SUBST([OLA_PROTOC])
-AM_CONDITIONAL(BUILD_OLA_PROTOC_PLUGIN, test "${with_ola_protoc_plugin}" == "no")
+AM_CONDITIONAL(BUILD_OLA_PROTOC_PLUGIN, test "${with_ola_protoc_plugin}" = "no")
 ])
 
 
@@ -149,7 +149,7 @@ AC_DEFUN([PLUGIN_SUPPORT],
   fi
 
   # If dependencies are not met...
-  if test "$3" == "no"; then
+  if test "$3" = "no"; then
     # ...and the user has explicitly requested this plugin to be enabled,
     # error out.
     if test "${enable_plugin}" = "yes"; then
