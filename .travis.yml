@@ -136,6 +136,7 @@ jobs:
         apt:
           packages:
            - *base_build
+           - python-tk
     - os: linux
       dist: xenial
       env: TASK='pychecker-wip'
@@ -144,6 +145,7 @@ jobs:
         apt:
           packages:
            - *base_build
+           - python-tk
     - os: linux
       dist: bionic
       arch: amd64
