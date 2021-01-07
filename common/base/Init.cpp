@@ -397,7 +397,7 @@ void ClockInit() {
   TimeStamp now_monotonic;
   TimeStamp now_realtime;
 #ifndef CLOCK_MONOTONIC
-  OLA_DEBUG << "Monotonic clock unavailable. Falling back to real time clock."
+  OLA_DEBUG << "Monotonic clock unavailable. Falling back to real time clock.";
 #endif
   clock.CurrentMonotonicTime(&now_monotonic);
   clock.CurrentRealTime(&now_realtime);
