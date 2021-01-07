@@ -14,4 +14,6 @@ dist_noinst_SCRIPTS += \
     python/examples/rdm_compare.py \
     python/examples/rdm_snapshot.py
 
-CLEANFILES += python/examples/*.pyc
+CLEANFILES += \
+    python/examples/*.pyc \
+    python/examples/__pycache__/*

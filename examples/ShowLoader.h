@@ -27,6 +27,15 @@
 #define EXAMPLES_SHOWLOADER_H_
 
 /**
+ * Holds a single entry in the show file
+ */
+struct ShowEntry {
+  unsigned int universe;
+  ola::DmxBuffer buffer;
+  unsigned int next_wait;
+};
+
+/**
  * Loads a show file and reads the DMX data.
  */
 class ShowLoader {
@@ -42,9 +51,9 @@ class ShowLoader {
 
   bool Load();
   void Reset();
+  unsigned int GetCurrentLineNumber() const;
 
-  State NextTimeout(unsigned int *timeout);
-  State NextFrame(unsigned int *universe, ola::DmxBuffer *data);
+  State NextEntry(ShowEntry *entry);
 
  private:
   const std::string m_filename;
@@ -54,5 +63,7 @@ class ShowLoader {
   static const char OLA_SHOW_HEADER[];
 
   void ReadLine(std::string *line);
+  State NextTimeout(unsigned int *timeout);
+  State NextFrame(unsigned int *universe, ola::DmxBuffer *data);
 };
 #endif  // EXAMPLES_SHOWLOADER_H_

@@ -15,6 +15,7 @@
 # ModelCollector.py
 # Copyright (C) 2011 Simon Newton
 
+from __future__ import print_function
 import logging
 from ola import PidStore, RDMConstants
 from ola.OlaClient import OlaClient, RDMNack
@@ -314,6 +315,7 @@ class ModelCollector(object):
       this_version = self._GetVersion()
       this_version['manufacturer_pids'].append({
         'pid': data['pid'],
+        'pdl_size': data['pdl_size'],
         'description': data['description'],
         'command_class': data['command_class'],
         'data_type': data['data_type'],
@@ -590,21 +592,22 @@ class ModelCollector(object):
     # at this stage the response is either a ack or nack
     if (response.pid == self.pid_store.GetName('SLOT_DESCRIPTION').value or
         response.pid == self.pid_store.GetName('PARAMETER_DESCRIPTION').value):
-      # We have to allow nacks from any iterating PIDs, as they may not respond
-      # for every iteration; display the errors for information
+      # We have to allow nacks or other failures from any iterating PIDs, as
+      # they may not respond for every iteration; display the errors for
+      # information
       if (response.response_type == OlaClient.RDM_NACK_REASON):
-        print ('Got nack with reason for PID %s: %s' %
-               (response.pid, response.nack_reason))
+        print('Got nack with reason for PID %s: %s' %
+              (response.pid, response.nack_reason))
       elif unpack_exception:
-        print ('Unpack error: %s' % (unpack_exception))
+        print('Unpack error: %s' % (unpack_exception))
       self._HandleResponse(unpacked_data)
     else:
       if (response.response_type == OlaClient.RDM_NACK_REASON):
-        print ('Got nack with reason for PID %s: %s' %
-               (response.pid, response.nack_reason))
+        print('Got nack with reason for PID %s: %s' %
+              (response.pid, response.nack_reason))
         self._NextState()
       elif unpack_exception:
-        print ('Unpack error: %s' % (unpack_exception))
+        print('Unpack error: %s' % (unpack_exception))
         self._NextState()
       else:
         self._HandleResponse(unpacked_data)
@@ -628,11 +631,11 @@ class ModelCollector(object):
         logging.debug('Device doesn\'t support queued messages')
         self._NextState()
       else:
-        print ('Got nack for 0x%04hx with reason: %s' %
-               (response.pid, response.nack_reason))
+        print('Got nack for 0x%04hx with reason: %s' %
+              (response.pid, response.nack_reason))
 
     elif unpack_exception:
-      print ('Invalid Param data: %s' % unpack_exception)
+      print('Invalid Param data: %s' % unpack_exception)
       self.queued_message_failures += 1
       if self.queued_message_failures >= 10:
         # declare this bad and move on
@@ -666,12 +669,12 @@ class ModelCollector(object):
       True if this response was an ACK or NACK, False for all other cases.
     """
     if not response.status.Succeeded():
-      print ('Status: %s' % response.status.message)
+      print('Status: %s' % response.status.message)
       self.wrapper.Stop()
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print ('Got RDM failure: %s' % response.ResponseCodeAsString())
+      print('Got RDM failure: %s' % response.ResponseCodeAsString())
       self.wrapper.Stop()
       return False
 
