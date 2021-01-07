@@ -73,12 +73,18 @@ python/ola/PidStoreTest.sh: python/ola/Makefile.mk
 	echo "PYTHONPATH=${top_builddir}/python TESTDATADIR=$(srcdir)/common/rdm/testdata $(PYTHON) ${srcdir}/python/ola/PidStoreTest.py; exit \$$?" > $(top_builddir)/python/ola/PidStoreTest.sh
 	chmod +x $(top_builddir)/python/ola/PidStoreTest.sh
 
+python/ola/RDMTest.sh: python/ola/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python PIDSTOREDIR=$(srcdir)/data/rdm $(PYTHON) ${srcdir}/python/ola/RDMTest.py; exit \$$?" > $(top_builddir)/python/ola/RDMTest.sh
+	chmod +x $(top_builddir)/python/ola/RDMTest.sh
+
 dist_check_SCRIPTS += \
     python/ola/DUBDecoderTest.py \
     python/ola/ClientWrapperTest.py \
     python/ola/MACAddressTest.py \
     python/ola/OlaClientTest.py \
     python/ola/PidStoreTest.py \
+    python/ola/RDMTest.py \
     python/ola/TestUtils.py \
     python/ola/UIDTest.py
 
@@ -89,6 +95,7 @@ test_scripts += \
     python/ola/MACAddressTest.py \
     python/ola/OlaClientTest.sh \
     python/ola/PidStoreTest.sh \
+    python/ola/RDMTest.sh \
     python/ola/UIDTest.py
 endif
 
@@ -96,4 +103,6 @@ CLEANFILES += \
     python/ola/*.pyc \
     python/ola/ClientWrapperTest.sh \
     python/ola/OlaClientTest.sh \
-    python/ola/PidStoreTest.sh
+    python/ola/PidStoreTest.sh \
+    python/ola/RDMTest.sh \
+    python/ola/__pycache__/*
