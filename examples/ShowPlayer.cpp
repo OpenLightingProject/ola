@@ -31,6 +31,7 @@
 #include <ola/base/SysExits.h>
 #include <ola/client/ClientWrapper.h>
 #include <ola/client/OlaClient.h>
+#include <climits>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -288,6 +289,16 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
                << " System too slow?";
       delay = 0;
     }
+
+#if UINT_MAX < INT64_MAX
+    if (delay > UINT_MAX) {
+      OLA_WARN << "Calculated delay of " << delay << " ms"
+               << " exceeded maximum delay of " << UINT_MAX << " ms."
+               << " Clamping to maximum.";
+      delay = UINT_MAX;
+    }
+#endif
+
     timeout = delay;
   }
   // Set when next to send data
