@@ -275,9 +275,8 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
 
   unsigned int timeout = entry.next_wait;
   if (!m_simulate) {
-    // Using int64_t for target_delta here because
-    // we have to lose 1 bit anyway as InMilliSeconds() returns a signed
-    // 64-bit integer.
+    // Using int64_t for target_delta here because we have to lose 1 bit anyway
+    // as InMilliSeconds() returns a signed 64-bit integer.
     ola::TimeStamp now;
     m_clock.CurrentMonotonicTime(&now);
     int64_t target_delta = m_playback_pos - m_start_playback_pos;
