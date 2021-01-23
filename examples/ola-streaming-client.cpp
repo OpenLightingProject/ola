@@ -45,8 +45,8 @@ DEFINE_uint8(priority, ola::dmx::SOURCE_PRIORITY_DEFAULT,
 DEFINE_s_default_bool(universe_from_stdin, s, false,
                       "Also read the destination universe number from STDIN "
                       "when reading DMX data from STDIN. The universe number "
-                      "must precede the channel values, and be delimited "
-                      "by whitespace, e.g. 1 0,255,128 2 0,255,127");
+                      "must precede the channel values, and be delimited by "
+                      "whitespace, e.g. 1 0,255,128 2 0,255,127");
 
 bool terminate = false;
 
