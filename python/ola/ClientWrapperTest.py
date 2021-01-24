@@ -187,14 +187,14 @@ class ClientWrapperTest(unittest.TestCase):
     self.assertIsNotNone(results.c_called)
     self.assertIsNotNone(results.d_called)
 
-    self.assertTrue(results.a_called - self.start <
+    self.assertLess(results.a_called - self.start,
                     datetime.timedelta(milliseconds=5))
-    self.assertTrue(results.b_called - self.start >=
-                    datetime.timedelta(milliseconds=5))
-    self.assertTrue(results.c_called - self.start >=
-                    datetime.timedelta(milliseconds=10))
-    self.assertTrue(results.d_called - self.start >=
-                    datetime.timedelta(milliseconds=15))
+    self.assertGreaterEqual(results.b_called - self.start,
+                            datetime.timedelta(milliseconds=5))
+    self.assertGreaterEqual(results.c_called - self.start,
+                            datetime.timedelta(milliseconds=10))
+    self.assertGreaterEqual(results.d_called - self.start,
+                            datetime.timedelta(milliseconds=15))
 
     sockets[0].close()
     sockets[1].close()
