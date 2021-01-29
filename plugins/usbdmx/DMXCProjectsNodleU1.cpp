@@ -104,13 +104,31 @@ libusb_device_handle *OpenDMXCProjectsNodleU1Widget(
     return NULL;
   }
 
-  // this device only has one configuration
-  ret_code = adaptor->SetConfiguration(usb_handle, CONFIGURATION);
-  if (ret_code) {
-    OLA_WARN << "Nodle set config failed, with libusb error code "
-             << adaptor->ErrorCodeToString(ret_code);
-    adaptor->Close(usb_handle);
-    return NULL;
+  // If we are connected to a RP2040-based device, we cannot
+  // "Set the configuration", because the additional CDC ACM interface might
+  // be running that would block changing the USB device's config
+  bool rp2040 = false;
+
+  libusb_device_descriptor descriptor;
+  ola::usb::LibUsbAdaptor::DeviceInformation info;
+  if (!(adaptor->GetDeviceDescriptor(usb_device, &descriptor)) &&
+      (adaptor->GetDeviceInfo(usb_device, descriptor, &info)) &&
+      (info.serial.find("RP2040_", 0) != std::string::npos))
+  {
+    OLA_INFO << "Found a RP2040-based device, "
+             << "will skip (re) setting the USB configuration";
+    rp2040 = true;
+  }
+
+  if (!rp2040) {
+    // this device only has one configuration
+    ret_code = adaptor->SetConfiguration(usb_handle, CONFIGURATION);
+    if (ret_code) {
+      OLA_WARN << "Nodle set config failed, with libusb error code "
+               << adaptor->ErrorCodeToString(ret_code);
+      adaptor->Close(usb_handle);
+      return NULL;
+    }
   }
 
   if (adaptor->ClaimInterface(usb_handle, INTERFACE)) {
