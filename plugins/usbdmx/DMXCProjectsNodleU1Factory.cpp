@@ -33,15 +33,26 @@ namespace usbdmx {
 const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID = 0x16d0;
 const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID = 0x0830;
 
+// Those IDs are not officially registered or "free for everyone"
+// but there seems to be one clone using them.
+// See also: https://github.com/mcallegari/qlcplus/blob/3b69452d0679333c6e60ff0928c20f2107ccc81f/plugins/hid/hiddmxdevice.h#L34
+const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID_FX5 = 0x16c0;
+const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID_FX5 = 0x088b;
+
 bool DMXCProjectsNodleU1Factory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID) {
+  if (
+    ((descriptor.idVendor != VENDOR_ID) &&
+    (descriptor.idVendor != VENDOR_ID_FX5)) ||
+    ((descriptor.idProduct != PRODUCT_ID) &&
+    (descriptor.idProduct != PRODUCT_ID_FX5))
+    ) {
     return false;
   }
 
-  OLA_INFO << "Found a new Nodle U1 device";
+  OLA_INFO << "Found a new Nodle U1 or clone device";
   ola::usb::LibUsbAdaptor::DeviceInformation info;
   if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
     return false;
