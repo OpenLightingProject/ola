@@ -81,6 +81,7 @@ class DMXCProjectsNodleU1: public SimpleWidget {
 
  private:
   std::string m_serial;
+  bool m_rp2040AdvancedMode;
 
  protected:
   unsigned int m_mode;
