@@ -281,12 +281,19 @@ SynchronousDMXCProjectsNodleU1::SynchronousDMXCProjectsNodleU1(
     libusb_device *usb_device,
     PluginAdaptor *plugin_adaptor,
     const string &serial,
-    unsigned int mode)
-    : DMXCProjectsNodleU1(adaptor, usb_device, plugin_adaptor, serial, mode),
+    unsigned int mode,
+    unsigned int ins,
+    unsigned int outs)
+    : DMXCProjectsNodleU1(adaptor, usb_device, plugin_adaptor, serial, mode, 
+      ins, outs),
       m_usb_device(usb_device) {
+  OLA_DEBUG << "SynchronousDMXCProjectsNodleU1 CTOR";
 }
 
 bool SynchronousDMXCProjectsNodleU1::Init() {
+
+  OLA_DEBUG << "SynchronousDMXCProjectsNodleU1 INIT";
+
   libusb_device_handle *usb_handle = OpenDMXCProjectsNodleU1Widget(
       m_adaptor, m_usb_device);
 
@@ -506,8 +513,13 @@ AsynchronousDMXCProjectsNodleU1::AsynchronousDMXCProjectsNodleU1(
     libusb_device *usb_device,
     PluginAdaptor *plugin_adaptor,
     const string &serial,
-    unsigned int mode)
-    : DMXCProjectsNodleU1(adaptor, usb_device, plugin_adaptor, serial, mode) {
+    unsigned int mode,
+    unsigned int ins,
+    unsigned int outs)
+    : DMXCProjectsNodleU1(adaptor, usb_device, plugin_adaptor, serial, mode,
+    ins, outs) {
+  OLA_DEBUG << "AsynchronousDMXCProjectsNodleU1 CTOR";
+
   if (mode & OUTPUT_ENABLE_MASK) {  // output port active
     m_sender.reset(new DMXCProjectsNodleU1AsyncUsbSender(m_adaptor,
                                                          usb_device, mode));
@@ -523,6 +535,9 @@ AsynchronousDMXCProjectsNodleU1::AsynchronousDMXCProjectsNodleU1(
 
 bool AsynchronousDMXCProjectsNodleU1::Init() {
   bool ok = true;
+
+  OLA_DEBUG << "AsynchronousDMXCProjectsNodleU1 INIT";
+
   if (m_sender.get()) {
     ok &= m_sender->Init();
   }

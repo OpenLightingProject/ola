@@ -40,6 +40,8 @@ DMXCProjectsNodleU1Device::DMXCProjectsNodleU1Device(
       m_in_port() {
   unsigned int mode = widget->Mode();
 
+  OLA_DEBUG << "Device CTOR: checking serial number: " << widget->SerialNumber();
+
   if (mode & DMXCProjectsNodleU1::OUTPUT_ENABLE_MASK) {  // output port active
     m_out_port.reset(new GenericOutputPort(this, 0, widget));
   }

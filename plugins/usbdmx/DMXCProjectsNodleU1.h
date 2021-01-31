@@ -46,7 +46,9 @@ class DMXCProjectsNodleU1: public SimpleWidget {
                                libusb_device *usb_device,
                                PluginAdaptor *plugin_adaptor,
                                const std::string &serial,
-                               unsigned int mode)
+                               unsigned int mode,
+                               unsigned int ins,
+                               unsigned int out)
       : SimpleWidget(adaptor, usb_device),
         m_serial(serial),
         m_mode(mode),
@@ -81,7 +83,7 @@ class DMXCProjectsNodleU1: public SimpleWidget {
 
  private:
   std::string m_serial;
-  bool m_rp2040AdvancedMode;
+  std::string m_product;
 
  protected:
   unsigned int m_mode;
@@ -100,6 +102,7 @@ class SynchronousDMXCProjectsNodleU1: public DMXCProjectsNodleU1 {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param plugin_adaptor the PluginAdaptor used to execute callbacks
+   * @param product the product name of this widget
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */
@@ -107,7 +110,9 @@ class SynchronousDMXCProjectsNodleU1: public DMXCProjectsNodleU1 {
                                  libusb_device *usb_device,
                                  PluginAdaptor *plugin_adaptor,
                                  const std::string &serial,
-                                 unsigned int mode);
+                                 unsigned int mode,
+                                 unsigned int ins,
+                                 unsigned int outs);
 
   bool Init();
 
@@ -134,6 +139,7 @@ class AsynchronousDMXCProjectsNodleU1 : public DMXCProjectsNodleU1 {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param plugin_adaptor the PluginAdaptor used to execute callbacks
+   * @param product the product name of this widget
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */
@@ -141,6 +147,8 @@ class AsynchronousDMXCProjectsNodleU1 : public DMXCProjectsNodleU1 {
                                   libusb_device *usb_device,
                                   PluginAdaptor *plugin_adaptor,
                                   const std::string &serial,
+                                  unsigned int ins,
+                                  unsigned int outs,
                                   unsigned int mode);
 
   bool Init();
