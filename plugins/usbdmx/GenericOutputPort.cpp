@@ -34,6 +34,7 @@ GenericOutputPort::GenericOutputPort(Device *parent,
     : BasicOutputPort(parent, id),
       m_widget(widget) {
   OLA_DEBUG << "NEW GENERICOUTPUTPORT ID: " << id;
+  m_description = "Output " + std::to_string(id);
 }
 
 bool GenericOutputPort::WriteDMX(const DmxBuffer &buffer,

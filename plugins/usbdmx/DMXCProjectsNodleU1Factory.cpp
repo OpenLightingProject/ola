@@ -68,10 +68,10 @@ bool DMXCProjectsNodleU1Factory::DeviceAdded(
   char variant = 'S';     // Variant: S = simple, R = RDM (not yet implemented)
   if (info.serial.find('RP2040_') != std::string::npos) {
     // Model format: ??Tx ??Rx S
-    ret = sscanf(info.product.c_str(), "%u2Tx %u2Rx %c", &ins, &outs, &variant);
+    ret = sscanf(info.product.c_str(), "%uTx %uRx %c", &outs, &ins, &variant);
     if (ret == 3) {
       OLA_INFO << "It's a RP2040-based device with " << ins << " INs and " <<
-       outs << " OUTs";
+        outs << " OUTs";
     } else {
       // Reset the values back to their default, just in case
       ins = 1;

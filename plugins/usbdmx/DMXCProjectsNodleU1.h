@@ -48,10 +48,12 @@ class DMXCProjectsNodleU1: public SimpleWidget {
                                const std::string &serial,
                                unsigned int mode,
                                unsigned int ins,
-                               unsigned int out)
+                               unsigned int outs)
       : SimpleWidget(adaptor, usb_device),
         m_serial(serial),
         m_mode(mode),
+        m_ins(ins),
+        m_outs(outs),
         m_plugin_adaptor(plugin_adaptor) {
   }
 
@@ -71,6 +73,22 @@ class DMXCProjectsNodleU1: public SimpleWidget {
     return m_mode;
   }
 
+   /**
+   * @brief Get the number of inputs suppported by this widget.
+   * @returns The number of inputs.
+   */
+  unsigned int Ins() const {
+    return m_ins;
+  }
+
+  /**
+   * @brief Get the number of outouts suppported by this widget.
+   * @returns The number of outouts.
+   */
+  unsigned int Outs() const {
+    return m_outs;
+  }
+
   virtual void SetDmxCallback(Callback0<void> *callback) = 0;
   virtual const DmxBuffer &GetDmxInBuffer() = 0;
 
@@ -87,6 +105,8 @@ class DMXCProjectsNodleU1: public SimpleWidget {
 
  protected:
   unsigned int m_mode;
+  unsigned int m_ins;
+  unsigned int m_outs;
   PluginAdaptor *m_plugin_adaptor;
 };
 

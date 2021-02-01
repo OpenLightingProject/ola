@@ -57,30 +57,15 @@ class DMXCProjectsNodleU1Device: public Device {
     return m_device_id;
   }
 
+  bool AllowMultiPortPatching() const { return true; }
+
  protected:
   bool StartHook();
 
  private:
   const std::string m_device_id;
-  std::auto_ptr<class GenericOutputPort> m_out_port;
-  /*
-  std::auto_ptr<class GenericOutputPort> m_out_port1;
-  std::auto_ptr<class GenericOutputPort> m_out_port2;
-  std::auto_ptr<class GenericOutputPort> m_out_port3;
-  std::auto_ptr<class GenericOutputPort> m_out_port4;
-  std::auto_ptr<class GenericOutputPort> m_out_port5;
-  std::auto_ptr<class GenericOutputPort> m_out_port6;
-  std::auto_ptr<class GenericOutputPort> m_out_port7;
-  std::auto_ptr<class GenericOutputPort> m_out_port8;
-  std::auto_ptr<class GenericOutputPort> m_out_port9;
-  std::auto_ptr<class GenericOutputPort> m_out_port10;
-  std::auto_ptr<class GenericOutputPort> m_out_port11;
-  std::auto_ptr<class GenericOutputPort> m_out_port12;
-  std::auto_ptr<class GenericOutputPort> m_out_port13;
-  std::auto_ptr<class GenericOutputPort> m_out_port14;
-  std::auto_ptr<class GenericOutputPort> m_out_port15;
-  */
-  std::auto_ptr<class DMXCProjectsNodleU1InputPort> m_in_port;
+  DMXCProjectsNodleU1 *m_widget;
+  PluginAdaptor*m_plugin_adaptor;
 
   DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1Device);
 };

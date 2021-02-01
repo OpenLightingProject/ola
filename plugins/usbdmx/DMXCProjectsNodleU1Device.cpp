@@ -36,30 +36,63 @@ DMXCProjectsNodleU1Device::DMXCProjectsNodleU1Device(
     PluginAdaptor *plugin_adaptor)
     : Device(owner, device_name),
       m_device_id(device_id),
-      m_out_port(),
-      m_in_port() {
-  unsigned int mode = widget->Mode();
-
-  OLA_DEBUG << "Device CTOR: checking serial number: " << widget->SerialNumber();
-
-  if (mode & DMXCProjectsNodleU1::OUTPUT_ENABLE_MASK) {  // output port active
-    m_out_port.reset(new GenericOutputPort(this, 0, widget));
-  }
-
-  if (mode & DMXCProjectsNodleU1::INPUT_ENABLE_MASK) {  // input port active
-    m_in_port.reset(new DMXCProjectsNodleU1InputPort(this, 0, plugin_adaptor,
-                                                     widget));
-  }
+      m_widget(widget),
+      m_plugin_adaptor(plugin_adaptor) {
 }
 
 bool DMXCProjectsNodleU1Device::StartHook() {
-  if (m_out_port.get()) {
-    AddPort(m_out_port.release());
+  unsigned int mode = m_widget->Mode();
+  unsigned int ins = m_widget->Ins();
+  unsigned int outs = m_widget->Outs();
+
+  bool ok = true;
+
+  OLA_DEBUG << "StartHook, will create " << ins << " INs and " << outs << " OUTs";
+
+  if (ins != 1) {
+    for (unsigned i = 0; i < ins; i++) {
+      OLA_DEBUG << "IN " << i;
+      DMXCProjectsNodleU1InputPort *port = new DMXCProjectsNodleU1InputPort(
+                                                 this, i, m_plugin_adaptor,
+                                                 m_widget); 
+      if (!AddPort(port)) {
+        OLA_DEBUG << "FAILED";
+        delete port;
+        ok = false;
+      }
+    }
+  } else if (mode & DMXCProjectsNodleU1::INPUT_ENABLE_MASK) {
+    // input port active
+    DMXCProjectsNodleU1InputPort *port = new DMXCProjectsNodleU1InputPort(
+                                              this, 0, m_plugin_adaptor,
+                                              m_widget); 
+    if (!AddPort(port)) {
+      delete port;
+      ok = false;
+    }
   }
-  if (m_in_port.get()) {
-    AddPort(m_in_port.release());
+
+  if (outs != 1) {
+    for (unsigned i = 0; i < outs; i++) {
+      OLA_DEBUG << "OUT " << i;
+      GenericOutputPort *port = new GenericOutputPort(this, i, m_widget);
+      if (!AddPort(port)) {
+        OLA_DEBUG << "FAILED";
+        delete port;
+        ok = false;
+      }
+    }
+  } else if (mode & DMXCProjectsNodleU1::OUTPUT_ENABLE_MASK) {
+    // output port active
+    GenericOutputPort *port = new GenericOutputPort(this, 0, m_widget);
+    if (!AddPort(port)) {
+      delete port;
+      ok = false;
+    }
   }
-  return true;
+
+  OLA_DEBUG << "StartHook will return " << ok;
+  return ok;
 }
 }  // namespace usbdmx
 }  // namespace plugin
