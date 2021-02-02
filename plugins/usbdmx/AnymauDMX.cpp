@@ -136,7 +136,7 @@ class AnymaAsyncUsbSender : public AsyncUsbSender {
     return ok ? usb_handle : NULL;
   }
 
-  bool PerformTransfer(const DmxBuffer &buffer) {
+  bool PerformTransfer(const DmxBuffer &buffer, unsigned int portId) {
     m_adaptor->FillControlSetup(
         m_control_setup_buffer,
         LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_DEVICE |

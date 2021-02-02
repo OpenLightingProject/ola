@@ -184,7 +184,7 @@ class SunliteAsyncUsbSender : public AsyncUsbSender {
     return ok ? usb_handle : NULL;
   }
 
-  bool PerformTransfer(const DmxBuffer &buffer) {
+  bool PerformTransfer(const DmxBuffer &buffer, unsigned int portId) {
     UpdatePacket(buffer, m_packet);
     FillBulkTransfer(ENDPOINT, m_packet, SUNLITE_PACKET_SIZE, TIMEOUT);
     return (SubmitTransfer() == 0);

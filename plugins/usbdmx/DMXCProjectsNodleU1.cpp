@@ -428,7 +428,7 @@ class DMXCProjectsNodleU1AsyncUsbSender : public AsyncUsbSender {
     return handle;
   }
 
-  bool PerformTransfer(const DmxBuffer &buffer);
+  bool PerformTransfer(const DmxBuffer &buffer, unsigned int portId = 0);
 
   void PostTransferHook();
 
@@ -442,7 +442,7 @@ class DMXCProjectsNodleU1AsyncUsbSender : public AsyncUsbSender {
 
   bool ContinueTransfer();
 
-  bool SendInitialChunk(const DmxBuffer &buffer);
+  bool SendInitialChunk(const DmxBuffer &buffer, unsigned int portId);
 
   bool SendChunk() {
     FillInterruptTransfer(WRITE_ENDPOINT, m_packet,
@@ -454,9 +454,9 @@ class DMXCProjectsNodleU1AsyncUsbSender : public AsyncUsbSender {
 };
 
 bool DMXCProjectsNodleU1AsyncUsbSender::PerformTransfer(
-    const DmxBuffer &buffer) {
+    const DmxBuffer &buffer, unsigned int portId) {
   if (m_buffer_offset == 0) {
-    return SendInitialChunk(buffer);
+    return SendInitialChunk(buffer, portId);
   }
   // Otherwise we're part way through a transfer, do nothing.
   return true;
@@ -489,7 +489,10 @@ bool DMXCProjectsNodleU1AsyncUsbSender::ContinueTransfer() {
 }
 
 bool DMXCProjectsNodleU1AsyncUsbSender::SendInitialChunk(
-    const DmxBuffer &buffer) {
+    const DmxBuffer &buffer, unsigned int portId) {
+
+  OLA_DEBUG << "SendInitialChunk for portId" << portId;
+
   unsigned int length = 32;
 
   m_tx_buffer.SetRange(0, buffer.GetRaw(), buffer.Size());
@@ -558,7 +561,7 @@ bool AsynchronousDMXCProjectsNodleU1::Init() {
 
 bool AsynchronousDMXCProjectsNodleU1::SendDMX(const DmxBuffer &buffer,
                                               unsigned int portId) {
-  return m_sender.get() ? m_sender->SendDMX(buffer) : false;
+  return m_sender.get() ? m_sender->SendDMX(buffer, portId) : false;
 }
 
 void AsynchronousDMXCProjectsNodleU1::SetDmxCallback(

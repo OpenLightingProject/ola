@@ -352,7 +352,7 @@ class VellemanAsyncUsbSender : public AsyncUsbSender {
     return handle;
   }
 
-  bool PerformTransfer(const DmxBuffer &buffer);
+  bool PerformTransfer(const DmxBuffer &buffer, unsigned int portId);
 
   void PostTransferHook();
 
@@ -380,7 +380,8 @@ class VellemanAsyncUsbSender : public AsyncUsbSender {
   DISALLOW_COPY_AND_ASSIGN(VellemanAsyncUsbSender);
 };
 
-bool VellemanAsyncUsbSender::PerformTransfer(const DmxBuffer &buffer) {
+bool VellemanAsyncUsbSender::PerformTransfer(const DmxBuffer &buffer,
+                                             unsigned int portId) {
   if (m_buffer_offset == 0) {
     return SendInitialChunk(buffer);
   }
@@ -402,7 +403,7 @@ void VellemanAsyncUsbSender::PostTransferHook() {
     } else {
       // No pending transfer. The widget only actually sends a frame once the
       // next frame begins, so kick off the next frame here.
-      PerformTransfer(m_tx_buffer);
+      PerformTransfer(m_tx_buffer, 0);
     }
   }
 }
