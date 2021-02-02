@@ -39,7 +39,7 @@ GenericOutputPort::GenericOutputPort(Device *parent,
 
 bool GenericOutputPort::WriteDMX(const DmxBuffer &buffer,
                                  OLA_UNUSED uint8_t priority) {
-  m_widget->SendDMX(buffer);
+  m_widget->SendDMX(buffer, this->PortId());
   return true;
 }
 }  // namespace usbdmx
