@@ -136,7 +136,7 @@ class SynchronousDMXCProjectsNodleU1: public DMXCProjectsNodleU1 {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
   void SetDmxCallback(Callback0<void> *callback);
   const DmxBuffer &GetDmxInBuffer();
@@ -173,7 +173,7 @@ class AsynchronousDMXCProjectsNodleU1 : public DMXCProjectsNodleU1 {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
   void SetDmxCallback(Callback0<void> *callback);
   const DmxBuffer &GetDmxInBuffer();

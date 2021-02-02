@@ -275,7 +275,8 @@ bool SynchronousScanlimeFadecandy::Init() {
   return true;
 }
 
-bool SynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer,
+                                           unsigned int portId) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -338,7 +339,8 @@ bool AsynchronousScanlimeFadecandy::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer,
+                                            unsigned int portId) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx

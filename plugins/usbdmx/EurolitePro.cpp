@@ -184,7 +184,8 @@ bool SynchronousEurolitePro::Init() {
   return true;
 }
 
-bool SynchronousEurolitePro::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousEurolitePro::SendDMX(const DmxBuffer &buffer,
+                                     unsigned int portId) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -241,7 +242,8 @@ bool AsynchronousEurolitePro::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousEurolitePro::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousEurolitePro::SendDMX(const DmxBuffer &buffer,
+                                      unsigned int portId) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx

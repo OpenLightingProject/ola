@@ -320,7 +320,8 @@ bool SynchronousVellemanK8062::Init() {
   return true;
 }
 
-bool SynchronousVellemanK8062::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousVellemanK8062::SendDMX(const DmxBuffer &buffer,
+                                       unsigned int portId) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -508,7 +509,8 @@ bool AsynchronousVellemanK8062::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousVellemanK8062::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousVellemanK8062::SendDMX(const DmxBuffer &buffer,
+                                        unsigned int portId) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx

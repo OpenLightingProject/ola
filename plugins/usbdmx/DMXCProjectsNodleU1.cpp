@@ -326,7 +326,8 @@ bool SynchronousDMXCProjectsNodleU1::Init() {
   return true;
 }
 
-bool SynchronousDMXCProjectsNodleU1::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousDMXCProjectsNodleU1::SendDMX(const DmxBuffer &buffer,
+                                             unsigned int portId) {
   if (m_sender.get()) {
     return m_sender->SendDMX(buffer);
   } else {
@@ -555,7 +556,8 @@ bool AsynchronousDMXCProjectsNodleU1::Init() {
   return ok;
 }
 
-bool AsynchronousDMXCProjectsNodleU1::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousDMXCProjectsNodleU1::SendDMX(const DmxBuffer &buffer,
+                                              unsigned int portId) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 

@@ -158,7 +158,8 @@ bool SynchronousSunlite::Init() {
   return true;
 }
 
-bool SynchronousSunlite::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousSunlite::SendDMX(const DmxBuffer &buffer,
+                                 unsigned int portId) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -209,7 +210,8 @@ bool AsynchronousSunlite::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousSunlite::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousSunlite::SendDMX(const DmxBuffer &buffer,
+                                  unsigned int portId) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx
