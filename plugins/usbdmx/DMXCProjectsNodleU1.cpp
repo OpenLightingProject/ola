@@ -54,6 +54,7 @@ static const int CONFIGURATION = 1;
 static const int INTERFACE = 0;
 
 static const unsigned int DATABLOCK_SIZE = 33;
+static const unsigned int DATABLOCK_MAX_SIZE = 64;
 
 /*
  * @brief Send chosen mode to the DMX device
@@ -438,15 +439,16 @@ class DMXCProjectsNodleU1AsyncUsbSender : public AsyncUsbSender {
   // This tracks where we are in m_tx_buffer. A value of 0 means we're at the
   // start of a DMX frame.
   unsigned int m_buffer_offset;
-  uint8_t m_packet[DATABLOCK_SIZE];
+  unsigned int m_portId;
+  uint8_t m_packet[DATABLOCK_MAX_SIZE];
 
   bool ContinueTransfer();
 
-  bool SendInitialChunk(const DmxBuffer &buffer, unsigned int portId);
+  bool SendInitialChunk(const DmxBuffer &buffer);
 
-  bool SendChunk() {
+  bool SendChunk(unsigned int size) {
     FillInterruptTransfer(WRITE_ENDPOINT, m_packet,
-                          DATABLOCK_SIZE, URB_TIMEOUT_MS);
+                          size, URB_TIMEOUT_MS);
     return (SubmitTransfer() == 0);
   }
 
@@ -456,7 +458,8 @@ class DMXCProjectsNodleU1AsyncUsbSender : public AsyncUsbSender {
 bool DMXCProjectsNodleU1AsyncUsbSender::PerformTransfer(
     const DmxBuffer &buffer, unsigned int portId) {
   if (m_buffer_offset == 0) {
-    return SendInitialChunk(buffer, portId);
+    m_portId = portId;
+    return SendInitialChunk(buffer);
   }
   // Otherwise we're part way through a transfer, do nothing.
   return true;
@@ -478,35 +481,61 @@ void DMXCProjectsNodleU1AsyncUsbSender::PostTransferHook() {
 }
 
 bool DMXCProjectsNodleU1AsyncUsbSender::ContinueTransfer() {
-  unsigned int length = 32;
+  if (!m_portId) {
+    unsigned int length = 32;
 
-  m_packet[0] = m_buffer_offset / 32;
+    m_packet[0] = m_buffer_offset / 32;
 
-  m_tx_buffer.GetRange(m_buffer_offset, m_packet + 1, &length);
-  memset(m_packet + 1 + length, 0, 32 - length);
-  m_buffer_offset += length;
-  return (SendChunk() == 0);
+    m_tx_buffer.GetRange(m_buffer_offset, m_packet + 1, &length);
+    memset(m_packet + 1 + length, 0, 32 - length);
+    m_buffer_offset += length;
+    return (SendChunk(DATABLOCK_SIZE) == 0);
+  } else {
+    unsigned int length = 60;
+
+    m_packet[0] = 32;
+    m_packet[1] = ((m_portId << 4) & 0xF0) | ((m_buffer_offset / 60) & 0x0F);
+
+    m_tx_buffer.GetRange(m_buffer_offset, m_packet + 2, &length);
+    m_buffer_offset += length;
+    return (SendChunk(length + 2) == 0);
+  }
 }
 
 bool DMXCProjectsNodleU1AsyncUsbSender::SendInitialChunk(
-    const DmxBuffer &buffer, unsigned int portId) {
+    const DmxBuffer &buffer) {
 
-  OLA_DEBUG << "SendInitialChunk for portId" << portId;
+  OLA_DEBUG << "SendInitialChunk for portId " << m_portId;
 
-  unsigned int length = 32;
-
+  // Copy the incoming buffer to our m_tx_buffer
   m_tx_buffer.SetRange(0, buffer.GetRaw(), buffer.Size());
 
-  m_packet[0] = 0;
-  m_tx_buffer.GetRange(0, m_packet + 1, &length);
-  memset(m_packet + 1 + length, 0, 32 - length);
+  if (!m_portId) {
+    unsigned int length = 32;
 
-  unsigned int slots_sent = length;
-  if (slots_sent < m_tx_buffer.Size()) {
-    // There are more frames to send.
-    m_buffer_offset = slots_sent;
+    m_packet[0] = 0;
+    m_tx_buffer.GetRange(0, m_packet + 1, &length);
+    memset(m_packet + 1 + length, 0, 32 - length);
+
+    unsigned int slots_sent = length;
+    if (slots_sent < m_tx_buffer.Size()) {
+      // There are more frames to send.
+      m_buffer_offset = slots_sent;
+    }
+    return (SendChunk(DATABLOCK_SIZE) == 0);
+  } else {
+    unsigned int length = 60;
+    m_packet[0] = 32; // Command code for advanced data (universe1-15)
+    m_packet[1] = m_portId << 4 & 0xF0; // Universe are the first 4 bits, offset the remaining 4
+    m_tx_buffer.GetRange(0, m_packet + 2, &length);
+
+    unsigned int slots_sent = length;
+    if (slots_sent < m_tx_buffer.Size()) {
+      // There are more frames to send.
+      m_buffer_offset = slots_sent;
+    }
+    return (SendChunk(slots_sent + 2) == 0);
   }
-  return (SendChunk() == 0);
 }
 
 // AsynchronousDMXCProjectsNodleU1
