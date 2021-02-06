@@ -95,7 +95,7 @@ int ShowPlayer::Playback(unsigned int iterations,
           duration * 1000,
           ola::NewSingleCallback(ss, &ola::io::SelectServer::Terminate));
     }
-    if ((SeekTo(m_start) != ShowLoader::State::OK)) {
+    if ((SeekTo(m_start) != ShowLoader::OK)) {
       return ola::EXIT_DATAERR;
     }
     ss->Run();
@@ -108,7 +108,7 @@ int ShowPlayer::Playback(unsigned int iterations,
     // Simple event loop to simulate playback without involving olad
     // Start by seeking to start point
     m_next_task = TASK_LOOP;
-    while (m_next_task != Task::TASK_COMPLETE) {
+    while (m_next_task != TASK_COMPLETE) {
       if (duration > 0 && m_run_time >= duration * 1000) {
         m_run_time = duration * 1000;
         break;
