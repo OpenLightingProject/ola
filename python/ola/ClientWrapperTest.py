@@ -191,7 +191,7 @@ class ClientWrapperTest(unittest.TestCase):
     # Check when the callbacks were called. Allow 500 microseconds of drift.
     # Called immediately
     a_diff = results.a_called - self.start
-    self.assertAlmostEqual(a_diff, datetime.timedelta(microseconds=0),
+    self.assertAlmostEqual(a_diff, datetime.timedelta(milliseconds=0),
                            delta=datetime.timedelta(microseconds=500))
 
     # Called in 5 milliseconds
