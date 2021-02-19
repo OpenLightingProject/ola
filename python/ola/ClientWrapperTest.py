@@ -243,9 +243,11 @@ class ClientWrapperTest(unittest.TestCase):
 
     wrapper.Run()
 
+    sockets[0].close()
+    sockets[1].close()
+
     self.assertTrue(results.gotdata)
 
-<<<<<<< HEAD
   # @timeout_decorator.timeout(2)
   def testFetchDmx(self):
     """uses client to send a FetchDMX with mocked olad.
@@ -312,12 +314,6 @@ class ClientWrapperTest(unittest.TestCase):
 
     self.assertTrue(results.got_request)
     self.assertTrue(results.got_response)
-
-=======
-    sockets[0].close()
-    sockets[1].close()
-
->>>>>>> 448603ac989b06f64778a6956784d40ae2565feb
 
 if __name__ == '__main__':
   unittest.main()
