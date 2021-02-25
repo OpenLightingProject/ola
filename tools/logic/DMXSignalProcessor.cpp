@@ -118,7 +118,7 @@ void DMXSignalProcessor::ProcessSample(bool bit) {
           SetState(MAB);
         } else {
           OLA_WARN << "Break too short, was " << TicksAsMicroSeconds()
-                   << " us";
+                   << " us (" << m_ticks << " ticks)";
           SetState(IDLE);
         }
       } else {
@@ -136,7 +136,8 @@ void DMXSignalProcessor::ProcessSample(bool bit) {
           // OLA_INFO << "In start bit!";
           SetState(START_BIT);
         } else {
-          OLA_WARN << "Mark too short, was " << TicksAsMicroSeconds() << "us";
+          OLA_WARN << "Mark too short, was " << TicksAsMicroSeconds() << "us ("
+                   << m_ticks << " ticks)";
           SetState(UNDEFINED);
         }
       }
@@ -222,7 +223,7 @@ void DMXSignalProcessor::ProcessBit(bool bit) {
       SetState(static_cast<State>(m_state + 1));
     } else {
       OLA_WARN << "Bit " << m_state << " was too short, was "
-               << TicksAsMicroSeconds() << "us";
+               << TicksAsMicroSeconds() << "us (" << m_ticks << " ticks)";
       SetState(UNDEFINED);
     }
   }
@@ -283,7 +284,7 @@ void DMXSignalProcessor::HandleFrame() {
  */
 void DMXSignalProcessor::SetState(State state, unsigned int ticks) {
   OLA_INFO << "Transition to " << state << ", prev duration was "
-           << TicksAsMicroSeconds();
+           << TicksAsMicroSeconds() << " us (" << m_ticks << " ticks)";
   m_state = state;
   m_ticks = ticks;
   if (state == UNDEFINED) {
