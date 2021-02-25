@@ -226,6 +226,8 @@ tools/e133/slp_sa_test
 tools/e133/slp_sa_test.exe
 tools/logic/logic_rdm_sniffer
 tools/logic/logic_rdm_sniffer.exe
+tools/logic/sigrok_rdm_sniffer
+tools/logic/sigrok_rdm_sniffer.exe
 tools/ola_trigger/config.tab.cpp
 tools/ola_trigger/config.tab.h
 tools/ola_trigger/lex.yy.cpp

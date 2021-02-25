@@ -559,9 +559,13 @@ AS_IF([test "x$have_avahi" = xyes],
       [AC_DEFINE([HAVE_AVAHI], [1], [Defined to use Avahi])])
 AM_CONDITIONAL([HAVE_AVAHI], [test "x$have_avahi" = xyes])
 
-# Look for -lSaleaeDevice, if we have it we build the logic sniffer.
+# Look for -lSaleaeDevice, if we have it we build the Saleae logic sniffer.
 SALEAE_DEVICE
 
+# Look for -lsigrok, if we have it we build the sigrok logic sniffer.
+PKG_CHECK_MODULES([libsigrok], [libsigrok], [have_libsigrok="yes"], [have_libsigrok="no"])
+AM_CONDITIONAL([HAVE_LIBSIGROK],
+               [test "x$have_libsigrok" = xyes])
 
 # Features
 #####################################################
