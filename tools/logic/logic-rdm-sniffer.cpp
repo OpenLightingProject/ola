@@ -90,6 +90,10 @@ DEFINE_s_default_bool(display_dmx, d, false,
 DEFINE_uint16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
               "Only display the first N slots of DMX data.");
 DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
+// Set the sample rate.  Must be a supported value, i.e.:  24000000, 16000000,
+// 12000000, 8000000, 4000000, 2000000, 1000000, 500000, 250000, 200000,
+// 100000, 50000, 25000
+// TODO(Peter): Trap and report this, don't just crash
 DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
 
