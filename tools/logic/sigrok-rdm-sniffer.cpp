@@ -22,10 +22,9 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
-#ifdef HAVE_SALEAEDEVICEAPI_H
+// Perhaps add an ifdef
 #include <stdio.h>
 #include <libsigrok/libsigrok.h>
-#endif  // HAVE_SALEAEDEVICEAPI_H
 
 #include <string.h>
 #include <time.h>
@@ -93,7 +92,8 @@ DEFINE_uint16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
 DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
 DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
-//DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from " + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
+//DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from "
+                + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
 DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Set the Sigrok logging level from 0 .. 5.");
 DEFINE_uint32(sigrok_samples, 200, "Set the Sigrok sample count.");
 DEFINE_uint32(sigrok_time, 2000, "Set the Sigrok sample time in ms.");
@@ -134,7 +134,7 @@ class LogicReader {
     bool IsConnected() const {
       MutexLocker lock(&m_mu);
 //      return m_logic != NULL;
-	return false;
+      return false;
     }
 
  private:
@@ -200,7 +200,7 @@ class SigrokThread : public ola::thread::Thread {
  public:
     SigrokThread(LogicReader *reader)
      : m_reader(reader) {
-    };
+    }
     ~SigrokThread();
 
     bool Stop();
