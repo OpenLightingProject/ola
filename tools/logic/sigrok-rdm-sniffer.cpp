@@ -93,7 +93,7 @@ DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
 DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
 //DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from "
-                + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
+//                + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
 DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Set the Sigrok logging level from 0 .. 5.");
 DEFINE_uint32(sigrok_samples, 200, "Set the Sigrok sample count.");
 DEFINE_uint32(sigrok_time, 2000, "Set the Sigrok sample time in ms.");
@@ -149,7 +149,7 @@ class LogicReader {
     Mutex m_data_mu;
 //    std::queue<U8*> m_free_data;
     //uint8_t* copy_data;
-    uint8_t copy_data[50000];
+    uint8_t copy_data[5000000];
 
 
     void ProcessData(uint8_t *data, uint64_t data_length);
@@ -337,7 +337,7 @@ void *SigrokThread::Run() {
 //    return NULL;
 //  }
 
-  if (sr_dev_has_option(sdi, SR_CONF_LIMIT_MSEC)) {
+/*  if (sr_dev_has_option(sdi, SR_CONF_LIMIT_MSEC)) {
     gvar = g_variant_new_uint64(FLAGS_sigrok_time);
     if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_MSEC, gvar) != SR_OK) {
       OLA_FATAL << "Failed to configure time limit.";
@@ -358,7 +358,14 @@ void *SigrokThread::Run() {
       OLA_FATAL << "Failed to configure time-based sample limit.";
       return NULL;
     }
-  }
+  }*/
+
+    // Just samples based
+    gvar = g_variant_new_uint64(FLAGS_sigrok_samples);
+    if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES, gvar) != SR_OK) {
+      OLA_FATAL << "Failed to configure time-based sample limit.";
+      return NULL;
+    }
 
   if ((ret = sr_session_datafeed_callback_add(sigrok_feed_callback, &m_reader)) != SR_OK) {
     OLA_FATAL << "Error adding session datafeed callback via libsigrok ("
