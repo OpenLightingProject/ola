@@ -164,16 +164,22 @@ class LogicReader {
 static void sigrok_feed_callback(const struct sr_dev_inst *sdi,
                                  const struct sr_datafeed_packet *packet,
                                  void *cb_data) {
-  OLA_DEBUG << "Got feed callback for " << sdi->driver->name;
+#ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
+  sr_dev_driver *driver = sr_dev_inst_driver_get(sdi);
+#else
+  sr_dev_driver *driver = sdi->driver;
+#endif  // HAVE_LIBSIGROK_DEV_INST_OPAQUE
+
+  OLA_DEBUG << "Got feed callback for " << driver->name;
 
   if (packet->type == SR_DF_HEADER) {
-    OLA_INFO << "Sigrok header for " << sdi->driver->name << " got header";
+    OLA_INFO << "Sigrok header for " << driver->name << " got header";
     return;
   }
 
   if (packet->type == SR_DF_END) {
     // TODO(Peter): try to restart acquisition after a delay?
-    OLA_WARN << "Sigrok acquisition for " << sdi->driver->name << " ended";
+    OLA_WARN << "Sigrok acquisition for " << driver->name << " ended";
     return;
   }
 
@@ -242,21 +248,26 @@ void *SigrokThread::Run() {
   }
 
   struct sr_session *sr_sess;
+#ifdef HAVE_LIBSIGROK_CONTEXT
+  if ((ret = sr_session_new(sr_ctx, &sr_sess)) != SR_OK) {
+    OLA_FATAL << "Error initializing libsigrok session ("
+              << sr_strerror_name(ret) << "): " << sr_strerror(ret);
+#else
   if ((sr_sess = sr_session_new()) == NULL) {
     OLA_FATAL << "Error initializing libsigrok session";
+#endif  // HAVE_LIBSIGROK_SESSION
     return NULL;
   }
-
-//  if ((ret = sr_session_new(sr_ctx, &sr_sess)) != SR_OK) {
-//    OLA_FATAL << "Error initializing libsigrok session (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-//    return NULL;
-//  }
 
   struct sr_dev_driver **drivers;
   struct sr_dev_driver *driver = {};
   int i;
 
+#ifdef HAVE_LIBSIGROK_CONTEXT
+  drivers = sr_driver_list(sr_ctx);
+#else
   drivers = sr_driver_list();
+#endif  // HAVE_LIBSIGROK_SESSION
   if (drivers == NULL) {
     OLA_FATAL << "No drivers found";
     return NULL;
@@ -295,9 +306,18 @@ void *SigrokThread::Run() {
   g_slist_free(devlist);
 
   OLA_INFO << "Found device (using first):";
+#ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
+  OLA_INFO << "\tVendor: "
+           << (sr_dev_inst_vendor_get(sdi) ? sr_dev_inst_vendor_get(sdi) : "");
+  OLA_INFO << "\tModel: "
+           << (sr_dev_inst_model_get(sdi) ? sr_dev_inst_model_get(sdi) : "");
+  OLA_INFO << "\tVersion: " << (sr_dev_inst_version_get(sdi) ?
+                                sr_dev_inst_version_get(sdi) : "");
+#else
   OLA_INFO << "\tVendor: " << (sdi->vendor ? sdi->vendor : "");
   OLA_INFO << "\tModel: " << (sdi->model ? sdi->model : "");
   OLA_INFO << "\tVersion: " << (sdi->version ? sdi->version : "");
+#endif  // HAVE_LIBSIGROK_DEV_INST_OPAQUE
 
   if ((ret = sr_dev_open(sdi)) != SR_OK) {
     OLA_FATAL << "Error opening device via libsigrok driver " << driver->name
@@ -305,7 +325,11 @@ void *SigrokThread::Run() {
     return NULL;
   }
 
+#ifdef HAVE_LIBSIGROK_CONTEXT
+  if ((ret = sr_session_dev_add(sr_sess, sdi)) != SR_OK) {
+#else
   if ((ret = sr_session_dev_add(sdi)) != SR_OK) {
+#endif  // HAVE_LIBSIGROK_SESSION
     OLA_FATAL << "Error adding device to session via libsigrok driver "
               << driver->name << " (" << sr_strerror_name(ret) << "): "
               << sr_strerror(ret);
@@ -313,7 +337,13 @@ void *SigrokThread::Run() {
   }
 
   GVariant *gvar;
-  sr_config_get(sdi->driver, sdi, NULL, SR_CONF_SAMPLERATE, &gvar);
+  sr_config_get(
+#ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
+      sr_dev_inst_driver_get(sdi),
+#else
+      sdi->driver,
+#endif  // HAVE_LIBSIGROK_DEV_INST_OPAQUE
+      sdi, NULL, SR_CONF_SAMPLERATE, &gvar);
   OLA_INFO << "Initial sample rate is " << g_variant_get_uint64(gvar) << "Hz";
   g_variant_unref(gvar);
 
@@ -326,7 +356,13 @@ void *SigrokThread::Run() {
     return NULL;
   }
 
-  sr_config_get(sdi->driver, sdi, NULL, SR_CONF_SAMPLERATE, &gvar);
+  sr_config_get(
+#ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
+      sr_dev_inst_driver_get(sdi),
+#else
+      sdi->driver,
+#endif  // HAVE_LIBSIGROK_DEV_INST_OPAQUE
+      sdi, NULL, SR_CONF_SAMPLERATE, &gvar);
   OLA_INFO << "New sample rate is " << g_variant_get_uint64(gvar) << "Hz";
   g_variant_unref(gvar);
 
@@ -367,27 +403,53 @@ void *SigrokThread::Run() {
       return NULL;
     }
 
-  if ((ret = sr_session_datafeed_callback_add(sigrok_feed_callback, &m_reader)) != SR_OK) {
+#ifdef HAVE_LIBSIGROK_CONTEXT
+  if ((ret = sr_session_datafeed_callback_add(sr_sess, sigrok_feed_callback,
+                                              &m_reader)) != SR_OK) {
+#else
+  if ((ret = sr_session_datafeed_callback_add(sigrok_feed_callback,
+                                              &m_reader)) != SR_OK) {
+#endif  // HAVE_LIBSIGROK_SESSION
     OLA_FATAL << "Error adding session datafeed callback via libsigrok ("
               << sr_strerror_name(ret) << "): " << sr_strerror(ret);
     return NULL;
   }
 
   // Start acquisition on device.
+#ifdef HAVE_LIBSIGROK_CONTEXT
+  if ((ret = sr_session_start(sr_sess)) != SR_OK) {
+#else
   if ((ret = sr_session_start()) != SR_OK) {
+#endif  // HAVE_LIBSIGROK_SESSION
     OLA_FATAL << "Error starting session (" << sr_strerror_name(ret) << "): "
               << sr_strerror(ret);
     return NULL;
   }
 
   // Main loop, runs forever.
+#ifdef HAVE_LIBSIGROK_CONTEXT
+  sr_session_run(sr_sess);
+#else
   sr_session_run();
+#endif  // HAVE_LIBSIGROK_SESSION
 
+#ifdef HAVE_LIBSIGROK_CONTEXT
+  sr_session_stop(sr_sess);
+#else
   sr_session_stop();
-  sr_session_dev_remove_all();
+#endif  // HAVE_LIBSIGROK_SESSION
 
-  // if ((ret = sr_session_destroy(sr_sess)) != SR_OK) {
+#ifdef HAVE_LIBSIGROK_CONTEXT
+  sr_session_dev_remove_all(sr_sess);
+#else
+  sr_session_dev_remove_all();
+#endif  // HAVE_LIBSIGROK_SESSION
+
+#ifdef HAVE_LIBSIGROK_CONTEXT
+  if ((ret = sr_session_destroy(sr_sess)) != SR_OK) {
+#else
   if ((ret = sr_session_destroy()) != SR_OK) {
+#endif  // HAVE_LIBSIGROK_SESSION
     OLA_FATAL << "Error destroying libsigrok session ("
               << sr_strerror_name(ret) << "): " << sr_strerror(ret);
     return NULL;
