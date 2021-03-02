@@ -567,6 +567,14 @@ PKG_CHECK_MODULES([libsigrok], [libsigrok], [have_libsigrok="yes"], [have_libsig
 AM_CONDITIONAL([HAVE_LIBSIGROK],
                [test "x$have_libsigrok" = xyes])
 
+have_libsigrok_session="no"
+AS_IF([test "x$have_libsigrok" != xno],
+      [PKG_CHECK_MODULES([libsigrok_session], [libsigrok >= 0.4.0],
+                         [have_libsigrok_session="yes"], [true])])
+AS_IF([test "x$have_libsigrok_session" = xyes],
+      [AC_DEFINE([HAVE_LIBSIGROK_SESSION], [1],
+                 [define if libsigrok is installed and has sessions])])
+
 # Features
 #####################################################
 
