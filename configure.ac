@@ -567,13 +567,21 @@ PKG_CHECK_MODULES([libsigrok], [libsigrok], [have_libsigrok="yes"], [have_libsig
 AM_CONDITIONAL([HAVE_LIBSIGROK],
                [test "x$have_libsigrok" = xyes])
 
-have_libsigrok_session="no"
+have_libsigrok_context="no"
 AS_IF([test "x$have_libsigrok" != xno],
-      [PKG_CHECK_MODULES([libsigrok_session], [libsigrok >= 0.4.0],
-                         [have_libsigrok_session="yes"], [true])])
-AS_IF([test "x$have_libsigrok_session" = xyes],
-      [AC_DEFINE([HAVE_LIBSIGROK_SESSION], [1],
-                 [define if libsigrok is installed and has sessions])])
+      [PKG_CHECK_MODULES([libsigrok_context], [libsigrok >= 0.4.0],
+                         [have_libsigrok_context="yes"], [true])])
+AS_IF([test "x$have_libsigrok_context" = xyes],
+      [AC_DEFINE([HAVE_LIBSIGROK_CONTEXT], [1],
+                 [define if libsigrok is installed and uses it's context])])
+
+have_libsigrok_dev_inst_opaque="no"
+AS_IF([test "x$have_libsigrok" != xno],
+      [PKG_CHECK_MODULES([libsigrok_context], [libsigrok >= 0.4.0],
+                         [have_libsigrok_dev_inst_opaque="yes"], [true])])
+AS_IF([test "x$have_libsigrok_dev_inst_opaque" = xyes],
+      [AC_DEFINE([HAVE_LIBSIGROK_DEV_INST_OPAQUE], [1],
+                 [define if libsigrok is installed and the sr_dev_inst struct is opaque])])
 
 # Features
 #####################################################
