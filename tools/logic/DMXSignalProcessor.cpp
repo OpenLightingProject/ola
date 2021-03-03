@@ -69,6 +69,7 @@ DMXSignalProcessor::DMXSignalProcessor(DataCallback *callback,
       m_ticks(0),
       m_may_be_in_break(false),
       m_ticks_in_break(0) {
+  OLA_DEBUG << "Microseconds per tick " << m_microseconds_per_tick;
   if (m_sample_rate % DMX_BITRATE) {
     OLA_WARN << "Sample rate is not a multiple of " << DMX_BITRATE;
   }
