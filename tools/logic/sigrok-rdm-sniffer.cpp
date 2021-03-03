@@ -99,6 +99,12 @@ DEFINE_uint32(sigrok_samples, 200, "Set the Sigrok sample count.");
 DEFINE_uint32(sigrok_time, 2000, "Set the Sigrok sample time in ms.");
 DEFINE_string(sigrok_device, "demo", "Set the Sigrok device to use.");
 
+#ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
+#define SIGROK_DRIVER_FROM_INSTANCE(sdi) sr_dev_inst_driver_get(sdi)
+#else
+#define SIGROK_DRIVER_FROM_INSTANCE(sdi) sdi->driver
+#endif  // HAVE_LIBSIGROK_DEV_INST_OPAQUE
+
 //void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
 //                void *user_data);
 //void OnError(U64 device_id, void *user_data);
@@ -148,8 +154,6 @@ class LogicReader {
     CommandPrinter m_command_printer;
     Mutex m_data_mu;
 //    std::queue<U8*> m_free_data;
-    //uint8_t* copy_data;
-    uint8_t copy_data[5000000];
 
 
     void ProcessData(uint8_t *data, uint64_t data_length);
@@ -164,11 +168,7 @@ class LogicReader {
 static void sigrok_feed_callback(const struct sr_dev_inst *sdi,
                                  const struct sr_datafeed_packet *packet,
                                  void *cb_data) {
-#ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
-  sr_dev_driver *driver = sr_dev_inst_driver_get(sdi);
-#else
-  sr_dev_driver *driver = sdi->driver;
-#endif  // HAVE_LIBSIGROK_DEV_INST_OPAQUE
+  sr_dev_driver *driver = SIGROK_DRIVER_FROM_INSTANCE(sdi);
 
   OLA_DEBUG << "Got feed callback for " << driver->name;
 
@@ -337,18 +337,11 @@ void *SigrokThread::Run() {
   }
 
   GVariant *gvar;
-  sr_config_get(
-#ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
-      sr_dev_inst_driver_get(sdi),
-#else
-      sdi->driver,
-#endif  // HAVE_LIBSIGROK_DEV_INST_OPAQUE
-      sdi, NULL, SR_CONF_SAMPLERATE, &gvar);
+  sr_config_get(SIGROK_DRIVER_FROM_INSTANCE(sdi), sdi, NULL, SR_CONF_SAMPLERATE, &gvar);
   OLA_INFO << "Initial sample rate is " << g_variant_get_uint64(gvar) << "Hz";
   g_variant_unref(gvar);
 
-  if ((ret = sr_config_set(
-           sdi, NULL, SR_CONF_SAMPLERATE,
+  if ((ret = sr_config_set(sdi, NULL, SR_CONF_SAMPLERATE,
            g_variant_new_uint64(FLAGS_sample_rate))) != SR_OK) {
     OLA_FATAL << "Error setting config sample rate via libsigrok driver "
               << driver->name << " (" << sr_strerror_name(ret) << "): "
@@ -356,13 +349,8 @@ void *SigrokThread::Run() {
     return NULL;
   }
 
-  sr_config_get(
-#ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
-      sr_dev_inst_driver_get(sdi),
-#else
-      sdi->driver,
-#endif  // HAVE_LIBSIGROK_DEV_INST_OPAQUE
-      sdi, NULL, SR_CONF_SAMPLERATE, &gvar);
+  sr_config_get(SIGROK_DRIVER_FROM_INSTANCE(sdi), sdi, NULL,
+                SR_CONF_SAMPLERATE, &gvar);
   OLA_INFO << "New sample rate is " << g_variant_get_uint64(gvar) << "Hz";
   g_variant_unref(gvar);
 
@@ -373,7 +361,7 @@ void *SigrokThread::Run() {
 //    return NULL;
 //  }
 
-/*  if (sr_dev_has_option(sdi, SR_CONF_LIMIT_MSEC)) {
+  if (sr_dev_has_option(sdi, SR_CONF_LIMIT_MSEC)) {
     gvar = g_variant_new_uint64(FLAGS_sigrok_time);
     if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_MSEC, gvar) != SR_OK) {
       OLA_FATAL << "Failed to configure time limit.";
@@ -381,7 +369,8 @@ void *SigrokThread::Run() {
     }
   } else if (sr_dev_has_option(sdi, SR_CONF_SAMPLERATE)) {
     // Convert to samples based on the samplerate.
-    sr_config_get(sdi->driver, sdi, NULL, SR_CONF_SAMPLERATE, &gvar);
+    sr_config_get(SIGROK_DRIVER_FROM_INSTANCE(sdi), sdi, NULL,
+                  SR_CONF_SAMPLERATE, &gvar);
     uint64_t limit_samples = (g_variant_get_uint64(gvar) *
         (FLAGS_sigrok_time / (uint64_t)1000));
     g_variant_unref(gvar);
@@ -394,21 +383,21 @@ void *SigrokThread::Run() {
       OLA_FATAL << "Failed to configure time-based sample limit.";
       return NULL;
     }
-  }*/
+  }
 
-    // Just samples based
+/*    // Just samples based
     gvar = g_variant_new_uint64(FLAGS_sigrok_samples);
     if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES, gvar) != SR_OK) {
       OLA_FATAL << "Failed to configure time-based sample limit.";
       return NULL;
-    }
+    }*/
 
 #ifdef HAVE_LIBSIGROK_CONTEXT
   if ((ret = sr_session_datafeed_callback_add(sr_sess, sigrok_feed_callback,
-                                              &m_reader)) != SR_OK) {
+                                              m_reader)) != SR_OK) {
 #else
   if ((ret = sr_session_datafeed_callback_add(sigrok_feed_callback,
-                                              &m_reader)) != SR_OK) {
+                                              m_reader)) != SR_OK) {
 #endif  // HAVE_LIBSIGROK_SESSION
     OLA_FATAL << "Error adding session datafeed callback via libsigrok ("
               << sr_strerror_name(ret) << "): " << sr_strerror(ret);
@@ -527,19 +516,11 @@ void LogicReader::DataReceived(uint8_t *data, uint64_t data_length) {
 //  for (unsigned int i = 0 ; i < data_length; i++) {
 //    OLA_DEBUG << "Got sample (before) " << ToHex(data[i]);
 //  }
-  OLA_DEBUG << "Copied...";
-  //uint8_t* copy_data;
-  //copy_data = new uint8_t[data_length];
-  //copy_data = (uint8_t*) malloc(data_length);
-  memcpy(copy_data, data, data_length);
   //ola::strings::FormatData(&std::cout, copy_data, data_length);
 //  OLA_DEBUG << "Got " << logic->length << " samples";
   OLA_DEBUG << "Got " << data_length << " samples";
-  // TODO(Peter): The callback segfaults, but this works...
-  LogicReader::ProcessData(copy_data, data_length);
-//  m_ss->Execute(
-//      NewSingleCallback(this, &LogicReader::ProcessData, data, data_length));
-//      NewSingleCallback(this, &LogicReader::ProcessData, copy_data, data_length));
+  m_ss->Execute(
+      NewSingleCallback(this, &LogicReader::ProcessData, data, data_length));
 //      NewSingleCallback(this, &LogicReader::ProcessData, data_length));
 //      NewSingleCallback(this, &LogicReader::ProcessData, logic));
 //  for (unsigned int i = 0 ; i < data_length; i++) {
@@ -599,7 +580,6 @@ void LogicReader::ProcessData(uint8_t *data, uint64_t data_length) {
 //    OLA_DEBUG << "Got sample " << ToHex(data[i]);
 //  }
   m_signal_processor.Process(data, data_length, 0x01);
-  //m_signal_processor.Process(copy_data, data_length, 0x01);
 //  DevicesManagerInterface::DeleteU8ArrayPtr(data);
 
   /*
