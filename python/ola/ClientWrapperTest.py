@@ -315,5 +315,6 @@ class ClientWrapperTest(unittest.TestCase):
     self.assertTrue(results.got_request)
     self.assertTrue(results.got_response)
 
+
 if __name__ == '__main__':
   unittest.main()
