@@ -89,7 +89,7 @@ DEFINE_s_default_bool(display_dmx, d, false,
                       "Display DMX Frames. Defaults to false.");
 DEFINE_uint16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
               "Only display the first N slots of DMX data.");
-DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
+DEFINE_uint32(sample_rate, 4000000, "Sample rate in Hz.");
 DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
 //DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from "
@@ -360,34 +360,43 @@ void *SigrokThread::Run() {
   OLA_INFO << "New sample rate is " << g_variant_get_uint64(gvar) << "Hz";
   g_variant_unref(gvar);
 
-/*  // Just samples based
-  if ((ret = sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES, g_variant_new_uint64(FLAGS_sigrok_samples))) != SR_OK) {
-    OLA_FATAL << "Error setting config limit samples via libsigrok driver "
-              << driver->name << " (" << sr_strerror_name(ret) << "): "
-              << sr_strerror(ret);
-    return NULL;
-  } */
-
-  if (sr_dev_has_option(sdi, SR_CONF_LIMIT_MSEC)) {
-    gvar = g_variant_new_uint64(FLAGS_sigrok_time);
-    if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_MSEC, gvar) != SR_OK) {
-      OLA_FATAL << "Failed to configure time limit.";
-      return NULL;
+  if (FLAGS_sigrok_time.present()) {
+    OLA_INFO << "Configuring sigrok to capture for " << FLAGS_sigrok_time
+             << " milliseconds";
+    if (sr_dev_has_option(sdi, SR_CONF_LIMIT_MSEC)) {
+      gvar = g_variant_new_uint64(FLAGS_sigrok_time);
+      if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_MSEC, gvar) != SR_OK) {
+        OLA_FATAL << "Failed to configure time limit " << FLAGS_sigrok_time
+                  << " milliseconds";
+        return NULL;
+      }
+    } else if (sr_dev_has_option(sdi, SR_CONF_SAMPLERATE)) {
+      // Convert to samples based on the sample rate.
+      sr_config_get(SIGROK_DRIVER_FROM_INSTANCE(sdi), sdi, NULL,
+                    SR_CONF_SAMPLERATE, &gvar);
+      uint64_t limit_samples = (g_variant_get_uint64(gvar) *
+          (FLAGS_sigrok_time / (uint64_t)1000));
+      g_variant_unref(gvar);
+      if (limit_samples == 0) {
+        OLA_FATAL << "Not enough time supported at this sample rate";
+        return NULL;
+      }
+      gvar = g_variant_new_uint64(limit_samples);
+      if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES, gvar) != SR_OK) {
+        OLA_FATAL << "Failed to configure time-based sample limit";
+        return NULL;
+      }
     }
-  } else if (sr_dev_has_option(sdi, SR_CONF_SAMPLERATE)) {
-    // Convert to samples based on the samplerate.
-    sr_config_get(SIGROK_DRIVER_FROM_INSTANCE(sdi), sdi, NULL,
-                  SR_CONF_SAMPLERATE, &gvar);
-    uint64_t limit_samples = (g_variant_get_uint64(gvar) *
-        (FLAGS_sigrok_time / (uint64_t)1000));
-    g_variant_unref(gvar);
-    if (limit_samples == 0) {
-      OLA_FATAL << "Not enough time at this samplerate.";
-      return NULL;
-    }
-    gvar = g_variant_new_uint64(limit_samples);
-    if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES, gvar) != SR_OK) {
-      OLA_FATAL << "Failed to configure time-based sample limit.";
+  } else if (FLAGS_sigrok_samples.present()) {
+    OLA_INFO << "Configuring sigrok to capture " << FLAGS_sigrok_samples
+             << " samples";
+    // Just samples based
+    if ((ret = sr_config_set(
+             sdi, NULL, SR_CONF_LIMIT_SAMPLES,
+             g_variant_new_uint64(FLAGS_sigrok_samples))) != SR_OK) {
+      OLA_FATAL << "Error setting config limit samples via libsigrok driver "
+                << driver->name << " (" << sr_strerror_name(ret) << "): "
+                << sr_strerror(ret);
       return NULL;
     }
   }
