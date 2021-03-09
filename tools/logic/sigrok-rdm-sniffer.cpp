@@ -109,7 +109,7 @@ DEFINE_string(sigrok_device, "demo", "Set the Sigrok device to use.");
 //                void *user_data);
 //void OnError(U64 device_id, void *user_data);
 //void ProcessData(uint8_t *data, uint64_t data_length);
-void ProcessData(const sr_datafeed_logic *logic);
+//void ProcessData(const sr_datafeed_logic *logic);
 
 class LogicReader {
  public:
@@ -157,7 +157,6 @@ class LogicReader {
 
 
     void ProcessData(uint8_t *data, uint64_t data_length);
-    //void ProcessData(uint64_t data_length);
     //void ProcessData(const sr_datafeed_logic *logic);
     void DisplayDMXFrame(const uint8_t *data, unsigned int length);
     void DisplayRDMFrame(const uint8_t *data, unsigned int length);
@@ -171,6 +170,13 @@ static void sigrok_feed_callback(const struct sr_dev_inst *sdi,
   sr_dev_driver *driver = SIGROK_DRIVER_FROM_INSTANCE(sdi);
 
   OLA_DEBUG << "Got feed callback for " << driver->name;
+
+  if (!cb_data) {
+    OLA_WARN << "Callback missing our data";
+    // Free data
+    //DevicesManagerInterface::DeleteU8ArrayPtr(data);
+    return;
+  }
 
   if (packet->type == SR_DF_HEADER) {
     OLA_INFO << "Sigrok header for " << driver->name << " got header";
@@ -354,12 +360,13 @@ void *SigrokThread::Run() {
   OLA_INFO << "New sample rate is " << g_variant_get_uint64(gvar) << "Hz";
   g_variant_unref(gvar);
 
-//  if ((ret = sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES, g_variant_new_uint64(FLAGS_sigrok_samples))) != SR_OK) {
-//    OLA_FATAL << "Error setting config limit samples via libsigrok driver "
-//              << driver->name << " (" << sr_strerror_name(ret) << "): "
-//              << sr_strerror(ret);
-//    return NULL;
-//  }
+/*  // Just samples based
+  if ((ret = sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES, g_variant_new_uint64(FLAGS_sigrok_samples))) != SR_OK) {
+    OLA_FATAL << "Error setting config limit samples via libsigrok driver "
+              << driver->name << " (" << sr_strerror_name(ret) << "): "
+              << sr_strerror(ret);
+    return NULL;
+  } */
 
   if (sr_dev_has_option(sdi, SR_CONF_LIMIT_MSEC)) {
     gvar = g_variant_new_uint64(FLAGS_sigrok_time);
@@ -384,13 +391,6 @@ void *SigrokThread::Run() {
       return NULL;
     }
   }
-
-/*    // Just samples based
-    gvar = g_variant_new_uint64(FLAGS_sigrok_samples);
-    if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES, gvar) != SR_OK) {
-      OLA_FATAL << "Failed to configure time-based sample limit.";
-      return NULL;
-    }*/
 
 #ifdef HAVE_LIBSIGROK_CONTEXT
   if ((ret = sr_session_datafeed_callback_add(sr_sess, sigrok_feed_callback,
@@ -521,7 +521,6 @@ void LogicReader::DataReceived(uint8_t *data, uint64_t data_length) {
   OLA_DEBUG << "Got " << data_length << " samples";
   m_ss->Execute(
       NewSingleCallback(this, &LogicReader::ProcessData, data, data_length));
-//      NewSingleCallback(this, &LogicReader::ProcessData, data_length));
 //      NewSingleCallback(this, &LogicReader::ProcessData, logic));
 //  for (unsigned int i = 0 ; i < data_length; i++) {
 //    OLA_DEBUG << "Got sample (after) " << ToHex(data[i]);
@@ -572,7 +571,6 @@ void LogicReader::Stop() {
  * @param data_length the size of the data
  */
 void LogicReader::ProcessData(uint8_t *data, uint64_t data_length) {
-//void LogicReader::ProcessData(uint64_t data_length) {
 //void LogicReader::ProcessData(const sr_datafeed_logic *logic) {
   //OLA_DEBUG << "Got " << logic->length << " samples";
   OLA_DEBUG << "Got " << data_length << " samples";
@@ -709,115 +707,6 @@ int main(int argc, char *argv[]) {
   //DevicesManagerInterface::RegisterOnConnect(&OnConnect, &reader);
   //DevicesManagerInterface::RegisterOnDisconnect(&OnDisconnect, &reader);
   //DevicesManagerInterface::BeginConnect();
-
-/*  int ret;
-  struct sr_context *sr_ctx;
-
-  sr_log_loglevel_set(FLAGS_sigrok_log_level);
-
-  if ((ret = sr_init(&sr_ctx)) != SR_OK) {
-    OLA_FATAL << "Error initializing libsigrok (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-    return 1;
-  }
-
-  struct sr_session *sr_sess;
-  if ((sr_sess = sr_session_new()) == NULL) {
-    OLA_FATAL << "Error initializing libsigrok session";
-    return 1;
-  }
-//  if ((ret = sr_session_new(sr_ctx, &sr_sess)) != SR_OK) {
-//    OLA_FATAL << "Error initializing libsigrok session (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-//    return 1;
-//  }
-
-  struct sr_dev_driver **drivers;
-  struct sr_dev_driver *driver = {};
-  int i;
-
-  drivers = sr_driver_list();
-//  fail_unless(drivers != NULL, "No drivers found.");
-
-  for (i = 0; drivers[i]; i++) {
-    //OLA_DEBUG << "Found driver: " << drivers[i]->name;
-    if (string(drivers[i]->name) == FLAGS_sigrok_device.str()) {
-      OLA_INFO << "Got demo: " << drivers[i]->name << " - " << drivers[i]->longname;
-      driver = drivers[i];
-    }
-  }
-
-  if (driver == NULL) {
-    OLA_FATAL << "Failed to find driver";
-    return 1;
-  }
-
-  if ((ret = sr_driver_init(sr_ctx, driver)) != SR_OK) {
-    OLA_FATAL << "Error initializing libsigrok driver " << driver->name << " (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-    return 1;
-  }
-
-  GSList *devlist;
-  devlist = sr_driver_scan(driver, NULL);
-  if (devlist == NULL) {
-    OLA_FATAL << "Scanning with libsigrok driver " << driver->name << " didn't find any devices";
-    return 1;
-  } else {
-    OLA_INFO << "Found " << g_slist_length(devlist) << " devices";
-  }
-
-  struct sr_dev_inst *sdi;
-  //sdi = (sr_dev_inst*)devlist->data;
-  sdi = (sr_dev_inst*)g_slist_nth_data(devlist, 0);
-  g_slist_free(devlist);
-
-  OLA_INFO << "Found device:";
-  OLA_INFO << "\tVendor: " << (sdi->vendor ? sdi->vendor : "");
-  OLA_INFO << "\tModel: " << (sdi->model ? sdi->model : "");
-  OLA_INFO << "\tVersion: " << (sdi->version ? sdi->version : "");
-
-  if ((ret = sr_dev_open(sdi)) != SR_OK) {
-    OLA_FATAL << "Error opening device via libsigrok driver " << driver->name << " (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-    return 1;
-  }
-
-  if ((ret = sr_session_dev_add(sdi)) != SR_OK) {
-    OLA_FATAL << "Error adding device to session via libsigrok driver " << driver->name << " (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-    return 1;
-  }
-
-  if ((ret = sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES, g_variant_new_uint64(FLAGS_sigrok_samples))) != SR_OK) {
-    OLA_FATAL << "Error setting config limit samples via libsigrok driver " << driver->name << " (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-    return 1;
-  }
-
-  // Use libsigrok functions here...
-
-  if ((ret = sr_session_datafeed_callback_add(sigrok_feed_callback, &reader)) != SR_OK) {
-    OLA_FATAL << "Error adding session datafeed callback via libsigrok (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-    return 1;
-  }
-
-  // Start acquisition on all devices.
-  if ((ret = sr_session_start()) != SR_OK) {
-    OLA_FATAL << "Error starting session (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-    return 1;
-  }
-
-  // Main loop, runs forever.
-  sr_session_run();
-
-  sr_session_stop();
-  sr_session_dev_remove_all();
-
-  //if ((ret = sr_session_destroy(sr_sess)) != SR_OK) {
-  if ((ret = sr_session_destroy()) != SR_OK) {
-    OLA_FATAL << "Error destroying libsigrok session (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-    return 1;
-  }
-
-  if ((ret = sr_exit(sr_ctx)) != SR_OK) {
-    OLA_FATAL << "Error shutting down libsigrok (" << sr_strerror_name(ret) << "): " << sr_strerror(ret);
-    return 1;
-  }*/
 
   OLA_INFO << "Running...";
 //  ss.RegisterSingleTimeout(3000, NewSingleCallback(DisplayReminder, &reader));
