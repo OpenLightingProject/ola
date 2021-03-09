@@ -95,8 +95,8 @@ DEFINE_string(pid_location, "",
 //DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from "
 //                + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
 DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Set the Sigrok logging level from 0 .. 5.");
-DEFINE_uint32(sigrok_samples, 200, "Set the Sigrok sample count.");
-DEFINE_uint32(sigrok_time, 2000, "Set the Sigrok sample time in ms.");
+DEFINE_uint32(sigrok_samples, 2000, "Limit capture to this many samples.");
+DEFINE_uint32(sigrok_time, 2000, "Limit capture to this many ms.");
 DEFINE_string(sigrok_device, "demo", "Set the Sigrok device to use.");
 
 #ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
@@ -399,6 +399,8 @@ void *SigrokThread::Run() {
                 << sr_strerror(ret);
       return NULL;
     }
+  } else {
+    OLA_INFO << "Sigrok will capture continuously";
   }
 
 #ifdef HAVE_LIBSIGROK_CONTEXT
