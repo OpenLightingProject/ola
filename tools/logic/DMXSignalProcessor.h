@@ -42,7 +42,8 @@ class DMXSignalProcessor {
     }
 
     // Process more data.
-    void Process(uint8_t *ptr, unsigned int size, uint8_t mask = 0xff);
+    void Process(uint8_t *ptr, unsigned int size, uint8_t mask = 0xff,
+                 unsigned int width = 1);
 
  private:
     enum State {

@@ -83,10 +83,11 @@ DMXSignalProcessor::DMXSignalProcessor(DataCallback *callback,
  * @param size the number of samples in the stream
  * @param mask the value to be AND'ed with each sample to determine if the
  *   signal is high or low.
+ * @param width the width (in bytes) of each sample within the stream
  */
 void DMXSignalProcessor::Process(uint8_t *ptr, unsigned int size,
-                                 uint8_t mask) {
-  for (unsigned int i = 0 ; i < size; i++) {
+                                 uint8_t mask, unsigned int width) {
+  for (unsigned int i = 0 ; i < size; i += width) {
     ProcessSample(ptr[i] & mask);
   }
 }

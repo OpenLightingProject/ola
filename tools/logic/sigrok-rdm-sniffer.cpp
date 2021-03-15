@@ -108,8 +108,6 @@ DEFINE_string(sigrok_device, "demo", "Set the Sigrok device to use.");
 //void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
 //                void *user_data);
 //void OnError(U64 device_id, void *user_data);
-//void ProcessData(uint8_t *data, uint64_t data_length);
-//void ProcessData(const sr_datafeed_logic *logic);
 
 class LogicReader {
  public:
@@ -130,9 +128,7 @@ class LogicReader {
 
 //    void DeviceConnected(U64 device, GenericInterface *interface);
 //    void DeviceDisconnected(U64 device);
-    //void DataReceived(U64 device, U8 *data, uint32_t data_length);
-    void DataReceived(uint8_t *data, uint64_t data_length);
-    //void DataReceived(const sr_datafeed_logic *logic);
+    void DataReceived(uint8_t *data, uint64_t data_length, uint16_t data_width);
     void FrameReceived(const uint8_t *data, unsigned int length);
 
     void Stop();
@@ -156,8 +152,7 @@ class LogicReader {
 //    std::queue<U8*> m_free_data;
 
 
-    void ProcessData(uint8_t *data, uint64_t data_length);
-    //void ProcessData(const sr_datafeed_logic *logic);
+    void ProcessData(uint8_t *data, uint64_t data_length, uint16_t data_width);
     void DisplayDMXFrame(const uint8_t *data, unsigned int length);
     void DisplayRDMFrame(const uint8_t *data, unsigned int length);
     void DisplayAlternateFrame(const uint8_t *data, unsigned int length);
@@ -201,10 +196,7 @@ static void sigrok_feed_callback(const struct sr_dev_inst *sdi,
   //ola::strings::FormatData(&std::cout, ((uint8_t*)logic->data), logic->length);
   LogicReader *reader =
       (LogicReader*) cb_data;  // NOLINT(readability/casting)
-  reader->DataReceived(((uint8_t*)logic->data), logic->length);
-  //reader->DataReceived(data, logic->length);
-  //reader->DataReceived(logic);
-  //reader->DataReceived((logic->data), logic->length);
+  reader->DataReceived(((uint8_t*)logic->data), logic->length, logic->unitsize);
 }
 
 
@@ -512,9 +504,9 @@ void LogicReader::DeviceDisconnected(U64 device) {
  * @param data pointer to the data, ownership is transferred, use
  *   DeleteU8ArrayPtr to free.
  * @param data_length the size of the data
+ * @param data_width the width (in bytes) of each sample within the data
  */
-void LogicReader::DataReceived(uint8_t *data, uint64_t data_length) {
-//void LogicReader::DataReceived(const sr_datafeed_logic *logic) {
+void LogicReader::DataReceived(uint8_t *data, uint64_t data_length, uint16_t data_width) {
 /*  {
     MutexLocker lock(&m_mu);
     if (device != m_device_id) {
@@ -524,19 +516,11 @@ void LogicReader::DataReceived(uint8_t *data, uint64_t data_length) {
       return;
     }
   }*/
-//  for (unsigned int i = 0 ; i < data_length; i++) {
-//    OLA_DEBUG << "Got sample (before) " << ToHex(data[i]);
-//  }
   //ola::strings::FormatData(&std::cout, copy_data, data_length);
-//  OLA_DEBUG << "Got " << logic->length << " samples";
-  OLA_DEBUG << "Got " << data_length << " samples";
+  OLA_DEBUG << "Got " << data_length << " samples of width " << data_width;
   m_ss->Execute(
-      NewSingleCallback(this, &LogicReader::ProcessData, data, data_length));
-//      NewSingleCallback(this, &LogicReader::ProcessData, logic));
-//  for (unsigned int i = 0 ; i < data_length; i++) {
-//    OLA_DEBUG << "Got sample (after) " << ToHex(data[i]);
-//  }
-
+      NewSingleCallback(this, &LogicReader::ProcessData,
+                        data, data_length, data_width));
 /*  {
     MutexLocker lock(&m_data_mu);
     while (!m_free_data.empty()) {
@@ -580,15 +564,12 @@ void LogicReader::Stop() {
  * @param data pointer to the data, ownership is transferred, use
  *   DeleteU8ArrayPtr to free.
  * @param data_length the size of the data
+ * @param data_width the width (in bytes) of each sample within the data
  */
-void LogicReader::ProcessData(uint8_t *data, uint64_t data_length) {
-//void LogicReader::ProcessData(const sr_datafeed_logic *logic) {
-  //OLA_DEBUG << "Got " << logic->length << " samples";
-  OLA_DEBUG << "Got " << data_length << " samples";
-//  for (unsigned int i = 0 ; i < data_length; i++) {
-//    OLA_DEBUG << "Got sample " << ToHex(data[i]);
-//  }
-  m_signal_processor.Process(data, data_length, 0x01);
+void LogicReader::ProcessData(uint8_t *data, uint64_t data_length,
+                              uint16_t data_width) {
+  OLA_DEBUG << "Got " << data_length << " samples of width " << data_width;
+  m_signal_processor.Process(data, data_length, 0x01, data_width);
 //  DevicesManagerInterface::DeleteU8ArrayPtr(data);
 
   /*
