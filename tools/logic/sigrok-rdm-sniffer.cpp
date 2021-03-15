@@ -97,7 +97,7 @@ DEFINE_string(pid_location, "",
 DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Set the Sigrok logging level from 0 .. 5.");
 DEFINE_uint32(sigrok_samples, 2000, "Limit capture to this many samples.");
 DEFINE_uint32(sigrok_time, 2000, "Limit capture to this many ms.");
-DEFINE_string(sigrok_device, "demo", "Set the Sigrok device to use.");
+DEFINE_string(sigrok_device, "", "Set the Sigrok device to use.");
 
 #ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
 #define SIGROK_DRIVER_FROM_INSTANCE(sdi) sr_dev_inst_driver_get(sdi)
@@ -690,6 +690,11 @@ int main(int argc, char *argv[]) {
       (FLAGS_sigrok_log_level > SR_LOG_SPEW)) {
     OLA_WARN << "Invalid sigrok log level, should be between " << SR_LOG_NONE
              << " and " << SR_LOG_NONE;
+  }
+
+  if (!FLAGS_sigrok_device.present() || (FLAGS_sigrok_device.str() == "")) {
+    OLA_FATAL << "Please specify a sigrok device to connect to";
+    exit(ola::EXIT_USAGE);
   }
 
   SelectServer ss;
