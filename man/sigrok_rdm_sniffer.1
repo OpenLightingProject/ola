@@ -1,12 +1,13 @@
 .TH sigrok_rdm_sniffer 1 "March 2021"
 .SH NAME
-sigrok_rdm_sniffer \- Decode DMX/RDM data from devices supported by sigrok
+sigrok_rdm_sniffer \- Decode DMX/RDM data from logic analyzers supported by
+sigrok
 .SH SYNOPSIS
 .B sigrok_rdm_sniffer
 [ options ]
 .SH DESCRIPTION
 .B sigrok_rdm_sniffer
-Decode DMX/RDM data from devices supported by sigrok
+Decode DMX/RDM data from logic analyzers supported by sigrok
 .SH OPTIONS
 .IP "-d, --display-dmx"
 Display DMX Frames. Defaults to false.
@@ -16,8 +17,6 @@ Display the help message
 Set the logging level 0 .. 4.
 .IP "-r, --full-rdm"
 Unpack RDM parameter data.
-.IP "-t, --timestamp"
-Include timestamps.
 .IP "-v, --version"
 Print
 .B sigrok_rdm_sniffer
@@ -37,7 +36,7 @@ The thread scheduling policy, one of {fifo, rr}.
 .IP "--scheduler-priority <uint16_t>"
 The thread priority, only used if --scheduler-policy is set.
 .IP "--sigrok-device <string>"
-Set the sigrok device to use.
+Set the sigrok logic analyzer to use.
 .IP "--sigrok-log-level <uint32_t>"
 Set the sigrok logging level from 0 .. 5.
 .IP "--sigrok-samples <uint32_t>"

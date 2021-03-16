@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * sigrok-rdm-sniffer.cpp
- * RDM Sniffer software for any devices supported by sigrok.
+ * RDM Sniffer software for any logic analyzers supported by sigrok.
  * Copyright (C) 2021 Peter Newman
  */
 
@@ -84,7 +84,7 @@ DEFINE_default_bool(display_asc, false,
                     "Display non-RDM alternate start code frames.");
 DEFINE_s_default_bool(full_rdm, r, false, "Unpack RDM parameter data.");
 // TODO(Peter): Implement this!
-DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
+// DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
 DEFINE_s_default_bool(display_dmx, d, false,
                       "Display DMX Frames. Defaults to false.");
 DEFINE_uint16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
@@ -98,7 +98,7 @@ DEFINE_uint32(sigrok_log_level, SR_LOG_NONE,
               "Set the sigrok logging level from 0 .. 5.");
 DEFINE_uint32(sigrok_samples, 2000, "Limit capture to this many samples.");
 DEFINE_uint32(sigrok_time, 2000, "Limit capture to this many ms.");
-DEFINE_string(sigrok_device, "", "Set the sigrok device to use.");
+DEFINE_string(sigrok_device, "", "Set the sigrok logic analyzer to use.");
 
 #ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
 #define SIGROK_DRIVER_FROM_INSTANCE(sdi) sr_dev_inst_driver_get(sdi)
@@ -689,7 +689,7 @@ void DisplayReminder(LogicReader *reader) {
  */
 int main(int argc, char *argv[]) {
   ola::AppInit(&argc, argv, "[ options ]",
-               "Decode DMX/RDM data from devices supported by sigrok");
+               "Decode DMX/RDM data from logic analyzers supported by sigrok");
 
   if (
     // (FLAGS_sigrok_log_level < SR_LOG_NONE) ||
@@ -699,7 +699,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (!FLAGS_sigrok_device.present() || (FLAGS_sigrok_device.str() == "")) {
-    OLA_FATAL << "Please specify a sigrok device to connect to";
+    OLA_FATAL << "Please specify a sigrok logic analyzer to connect to";
     exit(ola::EXIT_USAGE);
   }
 
