@@ -94,7 +94,8 @@ DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
 // DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from "
 //                 + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
-DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Set the sigrok logging level from 0 .. 5.");
+DEFINE_uint32(sigrok_log_level, SR_LOG_NONE,
+              "Set the sigrok logging level from 0 .. 5.");
 DEFINE_uint32(sigrok_samples, 2000, "Limit capture to this many samples.");
 DEFINE_uint32(sigrok_time, 2000, "Limit capture to this many ms.");
 DEFINE_string(sigrok_device, "", "Set the sigrok device to use.");
@@ -510,7 +511,8 @@ void LogicReader::DeviceDisconnected(U64 device) {
  * @param data_length the size of the data
  * @param data_width the width (in bytes) of each sample within the data
  */
-void LogicReader::DataReceived(uint8_t *data, uint64_t data_length, uint16_t data_width) {
+void LogicReader::DataReceived(uint8_t *data, uint64_t data_length,
+                               uint16_t data_width) {
 /*  {
     MutexLocker lock(&m_mu);
     if (device != m_device_id) {
