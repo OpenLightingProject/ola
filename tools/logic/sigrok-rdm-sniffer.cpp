@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * sigrok-rdm-sniffer.cpp
- * RDM Sniffer software for the any devices supported by Sigrok.
+ * RDM Sniffer software for any devices supported by sigrok.
  * Copyright (C) 2021 Peter Newman
  */
 
@@ -94,10 +94,10 @@ DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
 //DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from "
 //                + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
-DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Set the Sigrok logging level from 0 .. 5.");
+DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Set the sigrok logging level from 0 .. 5.");
 DEFINE_uint32(sigrok_samples, 2000, "Limit capture to this many samples.");
 DEFINE_uint32(sigrok_time, 2000, "Limit capture to this many ms.");
-DEFINE_string(sigrok_device, "", "Set the Sigrok device to use.");
+DEFINE_string(sigrok_device, "", "Set the sigrok device to use.");
 
 #ifdef HAVE_LIBSIGROK_DEV_INST_OPAQUE
 #define SIGROK_DRIVER_FROM_INSTANCE(sdi) sr_dev_inst_driver_get(sdi)
@@ -174,13 +174,13 @@ static void sigrok_feed_callback(const struct sr_dev_inst *sdi,
   }
 
   if (packet->type == SR_DF_HEADER) {
-    OLA_INFO << "Sigrok header for " << driver->name << " got header";
+    OLA_INFO << "sigrok header for " << driver->name << " got header";
     return;
   }
 
   if (packet->type == SR_DF_END) {
     // TODO(Peter): try to restart acquisition after a delay?
-    OLA_WARN << "Sigrok acquisition for " << driver->name << " ended";
+    OLA_WARN << "sigrok acquisition for " << driver->name << " ended";
     return;
   }
 
@@ -392,7 +392,7 @@ void *SigrokThread::Run() {
       return NULL;
     }
   } else {
-    OLA_INFO << "Sigrok will capture continuously";
+    OLA_INFO << "sigrok will capture continuously";
   }
 
 #ifdef HAVE_LIBSIGROK_CONTEXT
@@ -552,7 +552,7 @@ void LogicReader::FrameReceived(const uint8_t *data, unsigned int length) {
 
 void LogicReader::Stop() {
   MutexLocker lock(&m_mu);
-  // TODO(Peter): Stop the Sigrok thread
+  // TODO(Peter): Stop the sigrok thread
 //  if (m_logic) {
 //    m_logic->Stop();
 //  }
@@ -683,7 +683,7 @@ void DisplayReminder(LogicReader *reader) {
  */
 int main(int argc, char *argv[]) {
   ola::AppInit(&argc, argv, "[ options ]",
-               "Decode DMX/RDM data from devices supported by Sigrok");
+               "Decode DMX/RDM data from devices supported by sigrok");
 
   if (
     // (FLAGS_sigrok_log_level < SR_LOG_NONE) ||
