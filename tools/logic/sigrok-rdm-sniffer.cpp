@@ -92,8 +92,8 @@ DEFINE_uint16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
 DEFINE_uint32(sample_rate, 4000000, "Sample rate in Hz.");
 DEFINE_string(pid_location, "",
               "The directory containing the PID definitions.");
-//DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from "
-//                + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
+// DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from "
+//                 + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
 DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Set the sigrok logging level from 0 .. 5.");
 DEFINE_uint32(sigrok_samples, 2000, "Limit capture to this many samples.");
 DEFINE_uint32(sigrok_time, 2000, "Limit capture to this many ms.");
@@ -105,17 +105,17 @@ DEFINE_string(sigrok_device, "", "Set the sigrok device to use.");
 #define SIGROK_DRIVER_FROM_INSTANCE(sdi) sdi->driver
 #endif  // HAVE_LIBSIGROK_DEV_INST_OPAQUE
 
-//void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
-//                void *user_data);
-//void OnError(U64 device_id, void *user_data);
+// void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
+//                 void *user_data);
+// void OnError(U64 device_id, void *user_data);
 
 class LogicReader {
  public:
     explicit LogicReader(SelectServer *ss, unsigned int sample_rate)
-      : m_sample_rate(sample_rate),
+//      : m_sample_rate(sample_rate),
 //        m_device_id(0),
 //        m_logic(NULL),
-        m_ss(ss),
+      : m_ss(ss),
         m_signal_processor(ola::NewCallback(this, &LogicReader::FrameReceived),
                            sample_rate),
         m_pid_helper(FLAGS_pid_location.str(), 4),
@@ -140,7 +140,7 @@ class LogicReader {
     }
 
  private:
-    const unsigned int m_sample_rate;
+//    const unsigned int m_sample_rate;
 //    U64 m_device_id;  // GUARDED_BY(m_mu);
 //    LogicInterface *m_logic;  // GUARDED_BY(m_mu);
     mutable Mutex m_mu;
@@ -168,8 +168,8 @@ static void sigrok_feed_callback(const struct sr_dev_inst *sdi,
 
   if (!cb_data) {
     OLA_WARN << "Callback missing our data";
-    // Free data
-    //DevicesManagerInterface::DeleteU8ArrayPtr(data);
+    // TODO(Peter): Free data
+    // DevicesManagerInterface::DeleteU8ArrayPtr(data);
     return;
   }
 
@@ -193,7 +193,8 @@ static void sigrok_feed_callback(const struct sr_dev_inst *sdi,
   logic = (const sr_datafeed_logic*)packet->payload;
   OLA_DEBUG << "Got " << logic->length << " bytes of unitsize "
             << logic->unitsize;
-  //ola::strings::FormatData(&std::cout, ((uint8_t*)logic->data), logic->length);
+  // ola::strings::FormatData(&std::cout, ((uint8_t*)logic->data),
+  //                          logic->length);
   LogicReader *reader =
       (LogicReader*) cb_data;  // NOLINT(readability/casting)
   reader->DataReceived(((uint8_t*)logic->data), logic->length, logic->unitsize);
@@ -272,9 +273,10 @@ void *SigrokThread::Run() {
   }
 
   for (i = 0; drivers[i]; i++) {
-    //OLA_DEBUG << "Found driver: " << drivers[i]->name;
+    OLA_DEBUG << "Found driver: " << drivers[i]->name;
     if (string(drivers[i]->name) == FLAGS_sigrok_device.str()) {
-      OLA_INFO << "Got driver: " << drivers[i]->name << " - " << drivers[i]->longname;
+      OLA_INFO << "Got driver: " << drivers[i]->name << " - "
+               << drivers[i]->longname;
       driver = drivers[i];
     }
   }
@@ -293,7 +295,8 @@ void *SigrokThread::Run() {
   GSList *devlist;
   devlist = sr_driver_scan(driver, NULL);
   if ((devlist == NULL) || (g_slist_length(devlist) <= 0)) {
-    OLA_FATAL << "Scanning with libsigrok driver " << driver->name << " didn't find any devices";
+    OLA_FATAL << "Scanning with libsigrok driver " << driver->name
+              << " didn't find any devices";
     return NULL;
   } else {
     OLA_INFO << "Found " << g_slist_length(devlist) << " devices";
@@ -335,7 +338,8 @@ void *SigrokThread::Run() {
   }
 
   GVariant *gvar;
-  sr_config_get(SIGROK_DRIVER_FROM_INSTANCE(sdi), sdi, NULL, SR_CONF_SAMPLERATE, &gvar);
+  sr_config_get(SIGROK_DRIVER_FROM_INSTANCE(sdi), sdi, NULL,
+                SR_CONF_SAMPLERATE, &gvar);
   OLA_INFO << "Initial sample rate is " << g_variant_get_uint64(gvar) << "Hz";
   g_variant_unref(gvar);
 
@@ -516,7 +520,7 @@ void LogicReader::DataReceived(uint8_t *data, uint64_t data_length, uint16_t dat
       return;
     }
   }*/
-  //ola::strings::FormatData(&std::cout, copy_data, data_length);
+  // ola::strings::FormatData(&std::cout, copy_data, data_length);
   OLA_DEBUG << "Got " << data_length << " samples of width " << data_width;
   m_ss->Execute(
       NewSingleCallback(this, &LogicReader::ProcessData,
@@ -701,9 +705,9 @@ int main(int argc, char *argv[]) {
   LogicReader reader(&ss, FLAGS_sample_rate);
   SigrokThread thread(&reader);
 
-  //DevicesManagerInterface::RegisterOnConnect(&OnConnect, &reader);
-  //DevicesManagerInterface::RegisterOnDisconnect(&OnDisconnect, &reader);
-  //DevicesManagerInterface::BeginConnect();
+  // DevicesManagerInterface::RegisterOnConnect(&OnConnect, &reader);
+  // DevicesManagerInterface::RegisterOnDisconnect(&OnDisconnect, &reader);
+  // DevicesManagerInterface::BeginConnect();
 
   OLA_INFO << "Running...";
 //  ss.RegisterSingleTimeout(3000, NewSingleCallback(DisplayReminder, &reader));
