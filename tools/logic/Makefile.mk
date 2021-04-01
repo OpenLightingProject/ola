@@ -14,6 +14,8 @@ tools_logic_logic_rdm_sniffer_LDADD = common/libolacommon.la \
                                       $(libSaleaeDevice_LIBS)
 
 tools_logic_sigrok_rdm_sniffer_SOURCES = \
+    tools/logic/BaseSnifferReader.cpp \
+    tools/logic/BaseSnifferReader.h \
     tools/logic/DMXSignalProcessor.cpp \
     tools/logic/DMXSignalProcessor.h \
     tools/logic/sigrok-rdm-sniffer.cpp

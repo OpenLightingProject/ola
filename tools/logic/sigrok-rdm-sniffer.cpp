@@ -57,7 +57,7 @@
 #include <vector>
 #include <queue>
 
-#include "tools/logic/DMXSignalProcessor.h"
+#include "tools/logic/BaseSnifferReader.h"
 
 using std::auto_ptr;
 using std::cerr;
@@ -80,18 +80,7 @@ using ola::thread::MutexLocker;
 using ola::NewSingleCallback;
 
 
-DEFINE_default_bool(display_asc, false,
-                    "Display non-RDM alternate start code frames.");
-DEFINE_s_default_bool(full_rdm, r, false, "Unpack RDM parameter data.");
-// TODO(Peter): Implement this!
-// DEFINE_s_default_bool(timestamp, t, false, "Include timestamps.");
-DEFINE_s_default_bool(display_dmx, d, false,
-                      "Display DMX Frames. Defaults to false.");
-DEFINE_uint16(dmx_slot_limit, ola::DMX_UNIVERSE_SIZE,
-              "Only display the first N slots of DMX data.");
 DEFINE_uint32(sample_rate, 4000000, "Sample rate in Hz.");
-DEFINE_string(pid_location, "",
-              "The directory containing the PID definitions.");
 // DEFINE_uint32(sigrok_log_level, SR_LOG_NONE, "Sigrok log level, from "
 //                 + SR_LOG_NONE + " to " + SR_LOG_SPEW + ".");
 DEFINE_uint32(sigrok_log_level, SR_LOG_NONE,
@@ -110,27 +99,15 @@ DEFINE_string(sigrok_device, "", "Set the sigrok logic analyzer to use.");
 //                 void *user_data);
 // void OnError(U64 device_id, void *user_data);
 
-class LogicReader {
+class LogicReader: public BaseSnifferReader {
  public:
     explicit LogicReader(SelectServer *ss, unsigned int sample_rate)
-//      : m_sample_rate(sample_rate),
-//        m_device_id(0),
-//        m_logic(NULL),
-      : m_ss(ss),
-        m_signal_processor(ola::NewCallback(this, &LogicReader::FrameReceived),
-                           sample_rate),
-        m_pid_helper(FLAGS_pid_location.str(), 4),
-        m_command_printer(&cout, &m_pid_helper) {
-      if (!m_pid_helper.Init()) {
-        OLA_WARN << "Failed to init PidStore";
-      }
+      : BaseSnifferReader(ss, sample_rate) {
     }
-    ~LogicReader();
 
 //    void DeviceConnected(U64 device, GenericInterface *interface);
 //    void DeviceDisconnected(U64 device);
     void DataReceived(uint8_t *data, uint64_t data_length, uint16_t data_width);
-    void FrameReceived(const uint8_t *data, unsigned int length);
 
     void Stop();
 
@@ -141,23 +118,14 @@ class LogicReader {
     }
 
  private:
-//    const unsigned int m_sample_rate;
 //    U64 m_device_id;  // GUARDED_BY(m_mu);
 //    LogicInterface *m_logic;  // GUARDED_BY(m_mu);
     mutable Mutex m_mu;
-    SelectServer *m_ss;
-    DMXSignalProcessor m_signal_processor;
-    PidStoreHelper m_pid_helper;
-    CommandPrinter m_command_printer;
     Mutex m_data_mu;
 //    std::queue<U8*> m_free_data;
 
 
     void ProcessData(uint8_t *data, uint64_t data_length, uint16_t data_width);
-    void DisplayDMXFrame(const uint8_t *data, unsigned int length);
-    void DisplayRDMFrame(const uint8_t *data, unsigned int length);
-    void DisplayAlternateFrame(const uint8_t *data, unsigned int length);
-    void DisplayRawData(const uint8_t *data, unsigned int length);
 };
 
 static void sigrok_feed_callback(const struct sr_dev_inst *sdi,
@@ -430,17 +398,23 @@ void *SigrokThread::Run() {
   sr_session_run();
 #endif  // HAVE_LIBSIGROK_SESSION
 
+  OLA_INFO << "Session finished";
+
 #ifdef HAVE_LIBSIGROK_CONTEXT
   sr_session_stop(sr_sess);
 #else
   sr_session_stop();
 #endif  // HAVE_LIBSIGROK_SESSION
 
+  OLA_INFO << "Session stopped";
+
 #ifdef HAVE_LIBSIGROK_CONTEXT
   sr_session_dev_remove_all(sr_sess);
 #else
   sr_session_dev_remove_all();
 #endif  // HAVE_LIBSIGROK_SESSION
+
+  OLA_INFO << "Devices removed";
 
 #ifdef HAVE_LIBSIGROK_CONTEXT
   if ((ret = sr_session_destroy(sr_sess)) != SR_OK) {
@@ -452,16 +426,15 @@ void *SigrokThread::Run() {
     return NULL;
   }
 
+  OLA_INFO << "Session destroyed";
+
   if ((ret = sr_exit(sr_ctx)) != SR_OK) {
     OLA_FATAL << "Error shutting down libsigrok (" << sr_strerror_name(ret)
               << "): " << sr_strerror(ret);
     return NULL;
   }
+  OLA_INFO << "SR Exited";
   return NULL;
-}
-
-LogicReader::~LogicReader() {
-  m_ss->DrainCallbacks();
 }
 
 /*void LogicReader::DeviceConnected(U64 device, GenericInterface *interface) {
@@ -538,24 +511,6 @@ void LogicReader::DataReceived(uint8_t *data, uint64_t data_length,
 }
 
 
-void LogicReader::FrameReceived(const uint8_t *data, unsigned int length) {
-  if (!length) {
-    return;
-  }
-
-  switch (data[0]) {
-    case ola::DMX512_START_CODE:
-      DisplayDMXFrame(data + 1, length - 1);
-      break;
-    case ola::rdm::START_CODE:
-      DisplayRDMFrame(data + 1, length - 1);
-      break;
-    default:
-      DisplayAlternateFrame(data, length);
-  }
-}
-
-
 void LogicReader::Stop() {
   MutexLocker lock(&m_mu);
   // TODO(Peter): Stop the sigrok thread
@@ -590,55 +545,6 @@ void LogicReader::ProcessData(uint8_t *data, uint64_t data_length,
   */
 }
 
-
-void LogicReader::DisplayDMXFrame(const uint8_t *data, unsigned int length) {
-  if (!FLAGS_display_dmx) {
-    return;
-  }
-
-  cout << "DMX " << std::dec;
-  cout << length << ":" << std::hex;
-  DisplayRawData(data, length);
-}
-
-void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
-  auto_ptr<RDMCommand> command(RDMCommand::Inflate(data, length));
-  if (command.get()) {
-    if (FLAGS_full_rdm) {
-      cout << "---------------------------------------" << endl;
-    }
-    command->Print(&m_command_printer, !FLAGS_full_rdm, true);
-  } else {
-    cout << "RDM " << std::dec;
-    cout << length << ":" << std::hex;
-    DisplayRawData(data, length);
-  }
-}
-
-
-void LogicReader::DisplayAlternateFrame(const uint8_t *data,
-                                        unsigned int length) {
-  if (!FLAGS_display_asc || length == 0) {
-    return;
-  }
-
-  unsigned int slot_count = length - 1;
-  cout << "SC " << ToHex(static_cast<int>(data[0]))
-       << " " << slot_count << ":";
-  DisplayRawData(data + 1, slot_count);
-}
-
-
-/**
- * Dump out the raw data if we couldn't parse it correctly.
- */
-void LogicReader::DisplayRawData(const uint8_t *data, unsigned int length) {
-  for (unsigned int i = 0; i < length; i++) {
-    cout << std::hex << std::setw(2) << std::setfill('0')
-         << static_cast<int>(data[i]) << " ";
-  }
-  cout << endl;
-}
 
 // SaleaeDeviceApi callbacks
 /*void OnConnect(U64 device_id, GenericInterface* device_interface,
