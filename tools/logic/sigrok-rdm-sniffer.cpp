@@ -172,7 +172,7 @@ static void sigrok_feed_callback(const struct sr_dev_inst *sdi,
 
 class SigrokThread : public ola::thread::Thread {
  public:
-    SigrokThread(LogicReader *reader)
+    explicit SigrokThread(LogicReader *reader)
      : m_reader(reader) {
     }
     ~SigrokThread();

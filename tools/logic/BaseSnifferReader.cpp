@@ -63,8 +63,9 @@ DEFINE_string(pid_location, "",
 BaseSnifferReader::BaseSnifferReader(SelectServer *ss,
                                      unsigned int sample_rate)
   : m_ss(ss),
-    m_signal_processor(ola::NewCallback(this, &BaseSnifferReader::FrameReceived),
-                       sample_rate),
+    m_signal_processor(
+        ola::NewCallback(this, &BaseSnifferReader::FrameReceived),
+        sample_rate),
     m_pid_helper(FLAGS_pid_location.str(), 4),
     m_command_printer(&cout, &m_pid_helper) {
   if (!m_pid_helper.Init()) {
@@ -77,7 +78,8 @@ BaseSnifferReader::~BaseSnifferReader() {
   m_ss->DrainCallbacks();
 }
 
-void BaseSnifferReader::FrameReceived(const uint8_t *data, unsigned int length) {
+void BaseSnifferReader::FrameReceived(const uint8_t *data,
+                                      unsigned int length) {
   if (!length) {
     return;
   }
@@ -94,7 +96,8 @@ void BaseSnifferReader::FrameReceived(const uint8_t *data, unsigned int length) 
   }
 }
 
-void BaseSnifferReader::DisplayDMXFrame(const uint8_t *data, unsigned int length) {
+void BaseSnifferReader::DisplayDMXFrame(const uint8_t *data,
+                                        unsigned int length) {
   if (!FLAGS_display_dmx) {
     return;
   }
@@ -104,7 +107,8 @@ void BaseSnifferReader::DisplayDMXFrame(const uint8_t *data, unsigned int length
   DisplayRawData(data, length);
 }
 
-void BaseSnifferReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
+void BaseSnifferReader::DisplayRDMFrame(const uint8_t *data,
+                                        unsigned int length) {
   auto_ptr<RDMCommand> command(RDMCommand::Inflate(data, length));
   if (command.get()) {
     if (FLAGS_full_rdm) {
@@ -120,7 +124,7 @@ void BaseSnifferReader::DisplayRDMFrame(const uint8_t *data, unsigned int length
 
 
 void BaseSnifferReader::DisplayAlternateFrame(const uint8_t *data,
-                                        unsigned int length) {
+                                              unsigned int length) {
   if (!FLAGS_display_asc || length == 0) {
     return;
   }
@@ -135,7 +139,8 @@ void BaseSnifferReader::DisplayAlternateFrame(const uint8_t *data,
 /**
  * Dump out the raw data if we couldn't parse it correctly.
  */
-void BaseSnifferReader::DisplayRawData(const uint8_t *data, unsigned int length) {
+void BaseSnifferReader::DisplayRawData(const uint8_t *data,
+                                       unsigned int length) {
   for (unsigned int i = 0; i < length; i++) {
     cout << std::hex << std::setw(2) << std::setfill('0')
          << static_cast<int>(data[i]) << " ";
