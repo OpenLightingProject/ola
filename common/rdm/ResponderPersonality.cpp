@@ -47,6 +47,11 @@ Personality::Personality(uint16_t footprint, const string &description,
     : m_footprint(footprint),
       m_description(description),
       m_slot_data(slot_data) {
+  if (m_slot_data.SlotCount() > m_footprint) {
+    OLA_WARN << "Provided slot count of " << m_slot_data.SlotCount()
+             << " for personality \"" << description
+             << "\" is greater than it's footprint of " << m_footprint;
+  }
 }
 
 /**
