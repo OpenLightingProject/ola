@@ -95,8 +95,13 @@ uint8_t PersonalityManager::PersonalityCount() const {
 }
 
 bool PersonalityManager::SetActivePersonality(uint8_t personality) {
-  if (personality == 0 || personality > m_personalities->PersonalityCount())
+  if (personality == 0 || personality > m_personalities->PersonalityCount()) {
+    OLA_WARN << "Tried to set to invalid personality "
+             << static_cast<int>(personality) << ", only 1 to "
+             << static_cast<int>(m_personalities->PersonalityCount())
+             << " are valid";
     return false;
+  }
   m_active_personality = personality;
   return true;
 }
