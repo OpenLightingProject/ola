@@ -2472,14 +2472,14 @@ class GetSlotInfo(OptionalParameterTestFixture):
     for slot in fields['slots']:
       if slot['slot_offset'] > TestMixins.MAX_DMX_ADDRESS:
         self.AddWarning(
-                "SLOT_INFO slot %d has an offset more than %d"
-                % (slot['slot_offset'], TestMixins.MAX_DMX_ADDRESS))
+            "SLOT_INFO slot %d has an offset more than %d"
+            % (slot['slot_offset'], TestMixins.MAX_DMX_ADDRESS))
       # footprint is 1 based, offset is 0 based
       if slot['slot_offset'] >= self.Property('dmx_footprint'):
         self.AddWarning(
-                "SLOT_INFO slot %d has an offset greater than or equal to the "
-                "personality's defined footprint (%d)"
-                % (slot['slot_offset'], self.Property('dmx_footprint')))
+            "SLOT_INFO slot %d has an offset greater than or equal to the "
+            "personality's defined footprint (%d)"
+            % (slot['slot_offset'], self.Property('dmx_footprint')))
       if slot['slot_type'] not in RDMConstants.SLOT_TYPE_TO_NAME:
         self.AddWarning('Unknown slot type %d for slot %d' %
                         (slot['slot_type'], slot['slot_offset']))
@@ -2511,7 +2511,8 @@ class GetSlotInfo(OptionalParameterTestFixture):
           if primary_slot is None:
             self.SetBroken('Failed to find primary slot for %d (%d)'
                            % (slot['slot_offset'], slot['slot_label_id']))
-          elif primary_slot['slot_type'] != RDMConstants.SLOT_TYPES['ST_PRIMARY']:
+          elif (primary_slot['slot_type'] !=
+                RDMConstants.SLOT_TYPES['ST_PRIMARY']):
             self.AddWarning(
                 "Slot %d is of type secondary and references slot %d which "
                 "isn't a primary slot"
@@ -2711,29 +2712,29 @@ class GetDefaultSlotValues(OptionalParameterTestFixture):
     for slot in fields['slot_values']:
       if slot['slot_offset'] > TestMixins.MAX_DMX_ADDRESS:
         self.AddWarning(
-                "DEFAULT_SLOT_VALUE slot %d has an offset more than %d"
-                % (slot['slot_offset'], TestMixins.MAX_DMX_ADDRESS))
+            "DEFAULT_SLOT_VALUE slot %d has an offset more than %d"
+            % (slot['slot_offset'], TestMixins.MAX_DMX_ADDRESS))
       # footprint is 1 based, offset is 0 based
       if slot['slot_offset'] >= self.Property('dmx_footprint'):
         self.AddWarning(
-                "SLOT_INFO slot %d has an offset greater than or equal to the "
-                "personality's defined footprint (%d)"
-                % (slot['slot_offset'], self.Property('dmx_footprint')))
+            "SLOT_INFO slot %d has an offset greater than or equal to the "
+            "personality's defined footprint (%d)"
+            % (slot['slot_offset'], self.Property('dmx_footprint')))
       if slot['slot_offset'] in default_slots:
         self.AddWarning(
-          "DEFAULT_SLOT_VALUE contained slot %d more than once" %
-          slot['slot_offset'])
+            "DEFAULT_SLOT_VALUE contained slot %d more than once" %
+            slot['slot_offset'])
       if slot['slot_offset'] not in defined_slots:
         self.AddWarning(
-          "DEFAULT_SLOT_VALUE contained slot %d, which wasn't in SLOT_INFO" %
-          slot['slot_offset'])
+            "DEFAULT_SLOT_VALUE contained slot %d, which wasn't in SLOT_INFO" %
+            slot['slot_offset'])
       default_slots.add(slot['slot_offset'])
 
     for slot_offset in defined_slots:
       if slot_offset not in default_slots:
         self.AddAdvisory(
-          "SLOT_INFO contained slot %d, which wasn't in DEFAULT_SLOT_VALUE" %
-          slot_offset)
+            "SLOT_INFO contained slot %d, which wasn't in DEFAULT_SLOT_VALUE" %
+            slot_offset)
 
 
 class GetDefaultSlotValueWithData(TestMixins.GetWithDataMixin,
