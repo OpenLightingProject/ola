@@ -239,8 +239,8 @@ class ModelCollector(object):
     else:
       # We need software version to do anything, so abort and move onto the
       # next responder
-      print ('Failed to get device info for UID %s so moving onto the next one'
-             % self.uid)
+      print('Failed to get device info for UID %s so moving onto the next one'
+            % self.uid)
       self._FetchNextUID()
 
   def _HandleDeviceLabel(self, data):
@@ -339,8 +339,8 @@ class ModelCollector(object):
     if not this_version:
       # We need software version to do anything, so abort and move onto the
       # next responder
-      print ('Failed to get software version for UID %s so moving onto the '
-             'next one' % self.uid)
+      print('Failed to get software version for UID %s so moving onto the '
+            'next one' % self.uid)
       self._FetchNextUID()
     for language in data['languages']:
       this_version['languages'].append(language['language'])
@@ -386,8 +386,8 @@ class ModelCollector(object):
       if not self._GetVersion():
         # We need software version to do anything, so abort and move onto the
         # next responder
-        print ('Failed to get software version for UID %s so moving onto the '
-               'next one' % self.uid)
+        print('Failed to get software version for UID %s so moving onto the '
+              'next one' % self.uid)
         self._FetchNextUID()
       else:
         # fetch device label
