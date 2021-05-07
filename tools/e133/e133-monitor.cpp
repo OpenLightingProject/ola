@@ -16,7 +16,7 @@
  * e133-monitor.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * This opens a TCP connection to each device in --targets.
+ * This opens a TCP connection to each device in \--targets.
  *
  * It then waits to receive E1.33 messages on the TCP connections.
  */
@@ -58,7 +58,7 @@ using std::string;
 using std::vector;
 
 DEFINE_s_string(pid_location, p, "",
-                "The directory to read PID definitiions from");
+                "The directory to read PID definitions from");
 DEFINE_s_string(target_addresses, t, "",
                 "List of IPs to connect to");
 
@@ -182,12 +182,14 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (!pid_helper.Init())
+  if (!pid_helper.Init()) {
     exit(ola::EXIT_OSFILE);
+  }
 
   SimpleE133Monitor monitor(&pid_helper);
-  if (!monitor.Init())
+  if (!monitor.Init()) {
     exit(ola::EXIT_UNAVAILABLE);
+  }
 
   // manually add the responder IPs
   vector<IPV4Address>::const_iterator iter = targets.begin();

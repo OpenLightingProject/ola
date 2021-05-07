@@ -18,6 +18,7 @@
 import array
 import socket
 import struct
+import sys
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
@@ -85,25 +86,37 @@ class Plugin(object):
                     active=self.active,
                     enabled=self.enabled)
 
-  def __lt__(self, other):
-    return self.id < other.id
-
   def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
     return self.id == other.id
 
-  # These 4 could be replaced by functools.total_ordering when support
-  # for 2.6 is dropped.
+  def __lt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self.id < other.id
+
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
-    return self.id <= other.id
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
 
   def __gt__(self, other):
-    return self.id > other.id
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
 
   def __ge__(self, other):
-    return self.id >= other.id
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
 
   def __ne__(self, other):
-    return self.id != other.id
+    return not self == other
+
+  def __hash__(self):
+    return hash(self._id)
 
 
 # Populate the Plugin class attributes from the protobuf
@@ -177,25 +190,34 @@ class Device(object):
                     nr_inputs=len(self.input_ports),
                     nr_outputs=len(self.output_ports))
 
-  def __lt__(self, other):
-    return self.alias < other.alias
-
   def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
     return self.alias == other.alias
 
-  # These 3 could be replaced by functools.total_ordering when support
-  # for 2.6 is dropped.
+  def __lt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self.alias < other.alias
+
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
-    return self.alias <= other.alias
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
 
   def __gt__(self, other):
-    return self.alias > other.alias
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
 
   def __ge__(self, other):
-    return self.alias >= other.alias
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
 
   def __ne__(self, other):
-    return self.alias != other.alias
+    return not self == other
 
 
 class Port(object):
@@ -253,25 +275,37 @@ class Port(object):
                     desc=self.description,
                     supports_rdm=self.supports_rdm)
 
-  def __lt__(self, other):
-    return self.id < other.id
-
   def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
     return self.id == other.id
 
-  # These 4 could be replaced by functools.total_ordering when support
-  # for 2.6 is dropped.
+  def __lt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self.id < other.id
+
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
-    return self.id <= other.id
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
 
   def __gt__(self, other):
-    return self.id > other.id
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
 
   def __ge__(self, other):
-    return self.id >= other.id
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
 
   def __ne__(self, other):
-    return self.id != other.id
+    return not self == other
+
+  def __hash__(self):
+    return hash(self._id)
 
 
 class Universe(object):
@@ -331,25 +365,34 @@ class Universe(object):
                     name=self.name,
                     merge_mode=merge_mode)
 
-  def __lt__(self, other):
-    return self.id < other.id
-
   def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
     return self.id == other.id
 
-  # These 4 could be replaced by functools.total_ordering when support
-  # for 2.6 is dropped.
+  def __lt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self.id < other.id
+
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
-    return self.id <= other.id
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
 
   def __gt__(self, other):
-    return self.id > other.id
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
 
   def __ge__(self, other):
-    return self.id >= other.id
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
 
   def __ne__(self, other):
-    return self.id != other.id
+    return not self == other
 
 
 class RequestStatus(object):
@@ -386,6 +429,12 @@ class RequestStatus(object):
 
 
 class RDMNack(object):
+  """Nack response to a request.
+
+      Individual NACK response reasons can be access as attrs, e.g.
+      RMDNack.NR_FORMAT_ERROR
+      """
+
   NACK_SYMBOLS_TO_VALUES = {
     'NR_UNKNOWN_PID': (0, 'Unknown PID'),
     'NR_FORMAT_ERROR': (1, 'Format Error'),
@@ -398,6 +447,15 @@ class RDMNack(object):
     'NR_PACKET_SIZE_UNSUPPORTED': (8, 'Packet size unsupported'),
     'NR_SUB_DEVICE_OUT_OF_RANGE': (9, 'Sub device out of range'),
     'NR_PROXY_BUFFER_FULL': (10, 'Proxy buffer full'),
+    'NR_ACTION_NOT_SUPPORTED': (11, 'Action not supported'),
+    'NR_ENDPOINT_NUMBER_INVALID': (12, 'Endpoint number invalid'),
+    'NR_INVALID_ENDPOINT_MODE': (13, 'Invalid endpoint mode'),
+    'NR_UNKNOWN_UID': (14, 'Unknown UID'),
+    'NR_UNKNOWN_SCOPE': (15, 'Unknown scope'),
+    'NR_INVALID_STATIC_CONFIG_TYPE': (16, 'Invalid static config type'),
+    'NR_INVALID_IPV4_ADDRESS': (17, 'Invalid IPv4 address'),
+    'NR_INVALID_IPV6_ADDRESS': (18, 'Invalid IPv6 address'),
+    'NR_INVALID_PORT': (19, 'Invalid port'),
   }
 
   # this is populated below
@@ -420,25 +478,37 @@ class RDMNack(object):
     return s.format(value=self.value,
                     desc=self.description)
 
-  def __lt__(self, other):
-    return self.value < other.value
-
   def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
     return self.value == other.value
 
-  # These 4 could be replaced by functools.total_ordering when support
-  # for 2.6 is dropped.
+  def __lt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self.value < other.value
+
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
   def __le__(self, other):
-    return self.value <= other.value
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
 
   def __gt__(self, other):
-    return self.value > other.value
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
 
   def __ge__(self, other):
-    return self.value >= other.value
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
 
   def __ne__(self, other):
-    return self.value != other.value
+    return not self == other
+
+  def __hash__(self):
+    return hash(self._value)
 
   @classmethod
   def LookupCode(cls, code):
@@ -707,19 +777,22 @@ class OlaClient(Ola_pb2.OlaClientService):
         created.
       close_callback: A callable to run if the socket is closed
     """
+    self._close_callback = close_callback
     self._socket = our_socket
 
     if self._socket is None:
       self._socket = socket.socket()
       try:
-        self._socket.connect(('localhost', 9010))
+        self._socket.connect(('localhost', OLA_PORT))
       except socket.error:
         raise OLADNotRunningException('Failed to connect to olad')
 
-    self._close_callback = close_callback
     self._channel = StreamRpcChannel(self._socket, self, self._SocketClosed)
     self._stub = Ola_pb2.OlaServerService_Stub(self._channel)
     self._universe_callbacks = {}
+
+  def __del__(self):
+    self._SocketClosed()
 
   def GetSocket(self):
     """Returns the socket used to communicate with the server."""
@@ -879,7 +952,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.DmxData()
     request.universe = universe
-    request.data = data.tostring()
+    if sys.version >= '3.2':
+      request.data = data.tobytes()
+    else:
+      request.data = data.tostring()
     try:
       self._stub.UpdateDmxData(
           controller, request,
@@ -942,7 +1018,8 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RegisterUniverse(self, universe, action, data_callback, callback=None):
+  def RegisterUniverse(self, universe, action,
+                       data_callback=None, callback=None):
     """Register to receive dmx updates for a universe.
 
     Args:
@@ -956,6 +1033,10 @@ class OlaClient(Ola_pb2.OlaClientService):
     Returns:
       True if the request was sent, False otherwise.
     """
+
+    if data_callback is None and action == self.REGISTER:
+      raise TypeError("data_callback is None and action is REGISTER")
+
     if self._socket is None:
       return False
 
@@ -1091,8 +1172,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     if request.universe in self._universe_callbacks:
-      data = array.array('B')
-      data.fromstring(request.data)
+      data = array.array('B', request.data)
       self._universe_callbacks[request.universe](data)
     response = Ola_pb2.Ack()
     callback(response)
@@ -1149,7 +1229,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RDMGet(self, universe, uid, sub_device, param_id, callback, data='',
+  def RDMGet(self, universe, uid, sub_device, param_id, callback, data=b'',
              include_frames=False):
     """Send an RDM get command.
 
@@ -1171,7 +1251,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
                             data, include_frames)
 
-  def RDMSet(self, universe, uid, sub_device, param_id, callback, data='',
+  def RDMSet(self, universe, uid, sub_device, param_id, callback, data=b'',
              include_frames=False):
     """Send an RDM set command.
 
@@ -1199,7 +1279,7 @@ class OlaClient(Ola_pb2.OlaClientService):
                           sub_device,
                           param_id,
                           callback,
-                          data='',
+                          data=b'',
                           include_frames=False):
     """Send an RDM Discovery command. Unless you're writing RDM tests you
       shouldn't need to use this.
@@ -1396,8 +1476,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     universe = None
 
     if status.Succeeded():
-      data = array.array('B')
-      data.fromstring(response.data)
+      data = array.array('B', response.data)
       universe = response.universe
 
     callback(status, universe, data)

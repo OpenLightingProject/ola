@@ -16,7 +16,7 @@
  * e133-controller.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * This connects to the device specified in --target.
+ * This connects to the device specified in \--target.
  *
  * It then sends some RDM commands to the E1.33 node and waits for the
  * response.
@@ -60,7 +60,7 @@ DEFINE_s_uint16(endpoint, e, 0, "The endpoint to use");
 DEFINE_s_string(target, t, "", "List of IPs to connect to");
 DEFINE_string(listen_ip, "", "The IP address to listen on");
 DEFINE_s_string(pid_location, p, "",
-                "The directory to read PID definitiions from");
+                "The directory to read PID definitions from");
 DEFINE_s_default_bool(set, s, false, "Perform a SET (default is GET)");
 DEFINE_default_bool(list_pids, false, "Display a list of pids");
 DEFINE_s_string(uid, u, "", "The UID of the device to control.");

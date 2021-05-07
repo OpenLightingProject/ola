@@ -23,6 +23,7 @@
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
+#include "olad/Preferences.h"
 #include "plugins/usbdmx/EurolitePro.h"
 #include "plugins/usbdmx/WidgetFactory.h"
 
@@ -35,22 +36,30 @@ namespace usbdmx {
  */
 class EuroliteProFactory : public BaseWidgetFactory<class EurolitePro> {
  public:
-  explicit EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor)
-      : BaseWidgetFactory<class EurolitePro>("EuroliteProFactory"),
-        m_adaptor(adaptor) {}
+  explicit EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
+                              Preferences *preferences);
 
   bool DeviceAdded(WidgetObserver *observer,
                    libusb_device *usb_device,
                    const struct libusb_device_descriptor &descriptor);
 
+  static bool IsEuroliteMk2Enabled(Preferences *preferences);
+
+  static const char ENABLE_EUROLITE_MK2_KEY[];
+
  private:
   ola::usb::LibUsbAdaptor *m_adaptor;
+  bool m_enable_eurolite_mk2;
 
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;
   static const char EXPECTED_MANUFACTURER[];
   static const char EXPECTED_PRODUCT[];
 
+  static const uint16_t PRODUCT_ID_MK2;
+  static const uint16_t VENDOR_ID_MK2;
+  static const char EXPECTED_MANUFACTURER_MK2[];
+  static const char EXPECTED_PRODUCT_MK2[];
 
   DISALLOW_COPY_AND_ASSIGN(EuroliteProFactory);
 };

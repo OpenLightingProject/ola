@@ -313,7 +313,7 @@ void StringMessageBuilder::Visit(
 
 
 /**
- * This is a noop since we handle decending ourselves in Visit()
+ * This is a no-op since we handle descending ourselves in Visit()
  */
 void StringMessageBuilder::PostVisit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
@@ -343,8 +343,12 @@ void StringMessageBuilder::VisitInt(
   if (descriptor->LookupLabel(input, &int_value) ||
       ola::PrefixedHexStringToInt(input, &int_value) ||
       ola::StringToInt(input, &int_value)) {
-    m_groups.top().push_back(
-        new ola::messaging::BasicMessageField<type>(descriptor, int_value));
+    if (descriptor->IsValid(int_value)) {
+      m_groups.top().push_back(
+          new ola::messaging::BasicMessageField<type>(descriptor, int_value));
+    } else {
+      SetError(descriptor->Name());
+    }
   } else {
     SetError(descriptor->Name());
   }

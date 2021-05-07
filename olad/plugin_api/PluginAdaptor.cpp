@@ -129,7 +129,7 @@ const TimeStamp *PluginAdaptor::WakeUpTime() const {
   return m_ss->WakeUpTime();
 }
 
-const std::string PluginAdaptor::InstanceName() {
+const std::string PluginAdaptor::InstanceName() const {
   if (m_instance_name) {
     return *m_instance_name;
   } else {

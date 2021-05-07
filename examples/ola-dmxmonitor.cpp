@@ -25,8 +25,12 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
-
+#ifdef HAVE_CURSES_H
 #include <curses.h>
+#elif defined(HAVE_NCURSES_CURSES_H)
+#include <ncurses/curses.h>
+#endif  // HAVE_CURSES_H
+
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -237,7 +241,7 @@ void DmxMonitor::NewDmx(OLA_UNUSED const ola::client::DMXMetadata &meta,
   m_counter++;
 
   Clock clock;
-  clock.CurrentTime(&m_last_data);
+  clock.CurrentMonotonicTime(&m_last_data);
   Values();
   refresh();
 }
@@ -365,7 +369,7 @@ bool DmxMonitor::CheckDataLoss() {
   if (m_last_data.IsSet()) {
     TimeStamp now;
     Clock clock;
-    clock.CurrentTime(&now);
+    clock.CurrentMonotonicTime(&now);
     TimeInterval diff = now - m_last_data;
     if (diff > TimeInterval(2, 5000000)) {
       // loss of data

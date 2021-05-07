@@ -37,6 +37,7 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
+#include <ola/rdm/RDMPacket.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
 #include <ola/strings/Format.h>
@@ -305,7 +306,7 @@ void RDMSniffer::ProcessFrame() {
         DisplayDmxFrame();
       }
       break;
-    case RDMCommand::START_CODE:
+    case ola::rdm::START_CODE:
       DisplayRDMFrame();
       break;
     default:
@@ -399,7 +400,7 @@ void RDMSniffer::MaybePrintTimestamp() {
 
   ola::TimeStamp now;
   ola::Clock clock;
-  clock.CurrentTime(&now);
+  clock.CurrentRealTime(&now);
   time_t seconds_since_epoch = now.Seconds();
   struct tm local_time;
   localtime_r(&seconds_since_epoch, &local_time);

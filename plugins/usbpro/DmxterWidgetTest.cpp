@@ -29,6 +29,7 @@
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/rdm/RDMCommandSerializer.h"
+#include "ola/rdm/RDMPacket.h"
 #include "plugins/usbpro/DmxterWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 #include "ola/testing/TestUtils.h"
@@ -343,7 +344,7 @@ void DmxterWidgetTest::testSendRDMMute() {
   uint8_t *response_frame = new uint8_t[response_size + 3];
   response_frame[0] = 0;  // version
   response_frame[1] = 14;  // status ok
-  response_frame[2] = ola::rdm::RDMCommand::START_CODE;
+  response_frame[2] = ola::rdm::START_CODE;
   memset(&response_frame[3], 0, response_size);
   OLA_ASSERT(RDMCommandSerializer::Pack(*response, &response_frame[3],
                                         &response_size));

@@ -47,7 +47,7 @@ bool EndpointManager::RegisterEndpoint(uint16_t endpoint_id,
 
 /**
  * Unregister a E133Endpoint
- * @param endpoint_id the index of the endpont to un-register
+ * @param endpoint_id the index of the endpoint to un-register
  */
 void EndpointManager::UnRegisterEndpoint(uint16_t endpoint_id) {
   if (ola::STLRemove(&m_endpoint_map, endpoint_id)) {

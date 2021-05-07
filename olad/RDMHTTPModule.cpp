@@ -85,6 +85,8 @@ const char RDMHTTPModule::UID_KEY[] = "uid";
 
 // URL params for particular sections
 const char RDMHTTPModule::ADDRESS_FIELD[] = "address";
+const char RDMHTTPModule::DIMMER_MINIMUM_DECREASING_FIELD[] = "min_increasing";
+const char RDMHTTPModule::DIMMER_MINIMUM_INCREASING_FIELD[] = "min_decreasing";
 const char RDMHTTPModule::DISPLAY_INVERT_FIELD[] = "invert";
 const char RDMHTTPModule::GENERIC_BOOL_FIELD[] = "bool";
 const char RDMHTTPModule::GENERIC_STRING_FIELD[] = "string";
@@ -99,9 +101,13 @@ const char RDMHTTPModule::SUB_DEVICE_FIELD[] = "sub_device";
 const char RDMHTTPModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
 const char RDMHTTPModule::CLOCK_SECTION[] = "clock";
 const char RDMHTTPModule::COMMS_STATUS_SECTION[] = "comms_status";
+const char RDMHTTPModule::CURVE_SECTION[] = "curve";
 const char RDMHTTPModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHTTPModule::DEVICE_INFO_SECTION[] = "device_info";
 const char RDMHTTPModule::DEVICE_LABEL_SECTION[] = "device_label";
+const char RDMHTTPModule::DIMMER_INFO_SECTION[] = "dimmer_info";
+const char RDMHTTPModule::DIMMER_MAXIMUM_SECTION[] = "dimmer_maximum";
+const char RDMHTTPModule::DIMMER_MINIMUM_SECTION[] = "dimmer_minimum";
 const char RDMHTTPModule::DISPLAY_INVERT_SECTION[] = "display_invert";
 const char RDMHTTPModule::DISPLAY_LEVEL_SECTION[] = "display_level";
 const char RDMHTTPModule::DMX_ADDRESS_SECTION[] = "dmx_address";
@@ -131,9 +137,13 @@ const char RDMHTTPModule::BOOT_SOFTWARE_SECTION_NAME[] =
   "Boot Software Version";
 const char RDMHTTPModule::CLOCK_SECTION_NAME[] = "Clock";
 const char RDMHTTPModule::COMMS_STATUS_SECTION_NAME[] = "Communication Status";
+const char RDMHTTPModule::CURVE_SECTION_NAME[] = "Dimmer Curve";
 const char RDMHTTPModule::DEVICE_HOURS_SECTION_NAME[] = "Device Hours";
 const char RDMHTTPModule::DEVICE_INFO_SECTION_NAME[] = "Device Info";
 const char RDMHTTPModule::DEVICE_LABEL_SECTION_NAME[] = "Device Label";
+const char RDMHTTPModule::DIMMER_INFO_SECTION_NAME[] = "Dimmer Info";
+const char RDMHTTPModule::DIMMER_MAXIMUM_SECTION_NAME[] = "Dimmer Maximum";
+const char RDMHTTPModule::DIMMER_MINIMUM_SECTION_NAME[] = "Dimmer Minimum";
 const char RDMHTTPModule::DISPLAY_INVERT_SECTION_NAME[] = "Display Invert";
 const char RDMHTTPModule::DISPLAY_LEVEL_SECTION_NAME[] = "Display Level";
 const char RDMHTTPModule::DMX_ADDRESS_SECTION_NAME[] = "DMX Start Address";
@@ -558,6 +568,14 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
     error = GetDnsHostname(response, universe_id, *uid);
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = GetDnsDomainName(response, universe_id, *uid);
+  } else if (section_id == CURVE_SECTION) {
+    error = GetCurve(request, response, universe_id, *uid, true);
+  } else if (section_id == DIMMER_INFO_SECTION) {
+    error = GetDimmerInfo(response, universe_id, *uid);
+  } else if (section_id == DIMMER_MINIMUM_SECTION) {
+    error = GetDimmerMinimumLevels(response, universe_id, *uid);
+  } else if (section_id == DIMMER_MAXIMUM_SECTION) {
+    error = GetDimmerMaximumLevel(response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -643,6 +661,12 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
     error = SetDnsHostname(request, response, universe_id, *uid);
   } else if (section_id == DNS_DOMAIN_NAME_SECTION) {
     error = SetDnsDomainName(request, response, universe_id, *uid);
+  } else if (section_id == CURVE_SECTION) {
+    error = SetCurve(request, response, universe_id, *uid);
+  } else if (section_id == DIMMER_MINIMUM_SECTION) {
+    error = SetDimmerMinimumLevels(request, response, universe_id, *uid);
+  } else if (section_id == DIMMER_MAXIMUM_SECTION) {
+    error = SetDimmerMaximumLevel(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -1153,6 +1177,20 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         AddSection(&sections,
                    DNS_DOMAIN_NAME_SECTION,
                    DNS_DOMAIN_NAME_SECTION_NAME);
+        break;
+      case ola::rdm::PID_CURVE:
+        AddSection(&sections, CURVE_SECTION, CURVE_SECTION_NAME);
+        break;
+      case ola::rdm::PID_DIMMER_INFO:
+        AddSection(&sections, DIMMER_INFO_SECTION, DIMMER_INFO_SECTION_NAME);
+        break;
+      case ola::rdm::PID_MINIMUM_LEVEL:
+        AddSection(&sections, DIMMER_MINIMUM_SECTION,
+                   DIMMER_MINIMUM_SECTION_NAME);
+        break;
+      case ola::rdm::PID_MAXIMUM_LEVEL:
+        AddSection(&sections, DIMMER_MAXIMUM_SECTION,
+                   DIMMER_MAXIMUM_SECTION_NAME);
         break;
     }
   }
@@ -2836,6 +2874,11 @@ string RDMHTTPModule::SetPanInvert(const HTTPRequest *request,
                                    unsigned int universe_id,
                                    const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+
+  if (mode.empty()) {
+    return "Invalid mode value";
+  }
+
   string error;
   m_rdm_api.SetPanInvert(
       universe_id,
@@ -2878,6 +2921,11 @@ string RDMHTTPModule::SetTiltInvert(const HTTPRequest *request,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+
+  if (mode.empty()) {
+    return "Invalid mode value";
+  }
+
   string error;
   m_rdm_api.SetTiltInvert(
       universe_id,
@@ -2920,6 +2968,11 @@ string RDMHTTPModule::SetPanTiltSwap(const HTTPRequest *request,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+
+  if (mode.empty()) {
+    return "Invalid mode value";
+  }
+
   string error;
   m_rdm_api.SetPanTiltSwap(
       universe_id,
@@ -3041,6 +3094,11 @@ string RDMHTTPModule::SetIdentifyDevice(const HTTPRequest *request,
                                         unsigned int universe_id,
                                         const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+
+  if (mode.empty()) {
+    return "Invalid mode value";
+  }
+
   string error;
   m_rdm_api.IdentifyDevice(
       universe_id,
@@ -3313,6 +3371,361 @@ string RDMHTTPModule::SetDnsDomainName(const HTTPRequest *request,
   return error;
 }
 
+/**
+ * @brief Handle the request for the dimmer curve section.
+ */
+string RDMHTTPModule::GetCurve(OLA_UNUSED const HTTPRequest *request,
+                               HTTPResponse *response,
+                               unsigned int universe_id,
+                               const UID &uid,
+                               bool include_descriptions) {
+  string error;
+
+  curve_info *info = new curve_info;
+  info->universe_id = universe_id;
+  info->uid = new UID(uid);
+  info->include_descriptions = include_descriptions;
+  info->active = 0;
+  info->next = 1;
+  info->total = 0;
+
+  m_rdm_api.GetCurve(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::GetCurveHandler,
+                        response,
+                        info),
+      &error);
+  return error;
+}
+
+/**
+ * @brief Handle the response to a dimmer curve call and build the curve info
+ * object
+ */
+void RDMHTTPModule::GetCurveHandler(
+    HTTPResponse *response,
+    curve_info *info,
+    const ola::rdm::ResponseStatus &status,
+    uint8_t active_curve,
+    uint8_t curve_count) {
+  if (CheckForRDMError(response, status)) {
+    delete info->uid;
+    delete info;
+    return;
+  }
+
+  info->active = active_curve;
+  info->total = curve_count;
+
+  if (info->include_descriptions) {
+    GetNextCurveDescription(response, info);
+  } else {
+    SendCurveResponse(response, info);
+  }
+}
+
+/**
+ * @brief Handle the response to a curve description call and add to curve
+ * info object
+ */
+void RDMHTTPModule::GetNextCurveDescription(HTTPResponse *response,
+                                            curve_info *info) {
+  string error;
+  while (info->next <= info->total) {
+    bool r = m_rdm_api.GetCurveDescription(
+        info->universe_id,
+        *(info->uid),
+        ola::rdm::ROOT_RDM_DEVICE,
+        info->next,
+        NewSingleCallback(this,
+                          &RDMHTTPModule::GetCurveDescriptionHandler,
+                          response,
+                          info),
+        &error);
+    if (r) {
+      return;
+    }
+
+    info->next++;
+  }
+
+  SendCurveResponse(response, info);
+}
+
+void RDMHTTPModule::GetCurveDescriptionHandler(
+    HTTPResponse *response,
+    curve_info *info,
+    const ola::rdm::ResponseStatus &status,
+    OLA_UNUSED uint8_t curve,
+    const string &resp_description) {
+  string description = "";
+
+  if (CheckForRDMSuccess(status)) {
+    description = resp_description;
+  }
+
+  info->curve_descriptions.push_back(description);
+
+  if (info->next == info->total) {
+    SendCurveResponse(response, info);
+  } else {
+    info->next++;
+    GetNextCurveDescription(response, info);
+  }
+}
+
+/**
+ * @brief Build the curve http response
+ */
+void RDMHTTPModule::SendCurveResponse(HTTPResponse *response,
+                                      curve_info *info) {
+  JsonSection section;
+  SelectItem *item = new SelectItem("Active Curve", GENERIC_UINT_FIELD);
+
+  for (unsigned int i = 1; i <= info->total; i++) {
+    if (i <= info->curve_descriptions.size() &&
+        !info->curve_descriptions[i - 1].empty()) {
+      ostringstream str;
+      str << info->curve_descriptions[i - 1] << " ("
+          << i << ")";
+      item->AddItem(str.str(), i);
+    } else {
+      item->AddItem(IntToString(i), i);
+    }
+  }
+  item->SetSelectedOffset(info->active - 1);
+
+  section.AddItem(item);
+  section.AddItem(new StringItem("Available Curves",
+                                 IntToString(info->total)));
+  RespondWithSection(response, section);
+}
+
+/**
+ * @brief Set the dimmer curve
+ */
+string RDMHTTPModule::SetCurve(const HTTPRequest *request,
+                                     HTTPResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string curve_str = request->GetParameter(GENERIC_UINT_FIELD);
+  uint8_t curve;
+
+  if (!StringToInt(curve_str, &curve)) {
+    return "Invalid curve";
+  }
+
+  string error;
+  m_rdm_api.SetCurve(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      curve,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+/**
+ * @brief Handle the request for Dimmer Info.
+ */
+string RDMHTTPModule::GetDimmerInfo(HTTPResponse *response,
+                                    unsigned int universe_id,
+                                    const UID &uid) {
+  string error;
+  m_rdm_api.GetDimmerInfo(
+    universe_id,
+    uid,
+    ola::rdm::ROOT_RDM_DEVICE,
+    NewSingleCallback(this,
+                      &RDMHTTPModule::GetDimmerInfoHandler,
+                      response),
+    &error);
+  return error;
+}
+
+/*
+ * @brief Handle the response to a dimmer info call and build the response
+ */
+void RDMHTTPModule::GetDimmerInfoHandler(
+    HTTPResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const ola::rdm::DimmerInfoDescriptor &info) {
+  if (CheckForRDMError(response, status)) {
+    return;
+  }
+
+  JsonSection section;
+  section.AddItem(new UIntItem("Minimum Level Lower Limit",
+                               info.min_level_lower_limit));
+  section.AddItem(new UIntItem("Minimum Level Upper Limit",
+                               info.min_level_upper_limit));
+  section.AddItem(new UIntItem("Maximum Level Lower Limit",
+                               info.max_level_lower_limit));
+  section.AddItem(new UIntItem("Maximum Level Upper Limit",
+                               info.max_level_upper_limit));
+  section.AddItem(new UIntItem("# of Supported Curves", info.curves_supported));
+  section.AddItem(new UIntItem("Levels Resolution", info.resolution));
+  section.AddItem(new BoolItem("Split Levels Supported",
+                               info.split_levels_supported));
+
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * @brief Handle the request for Dimmer Minimum Levels.
+ */
+string RDMHTTPModule::GetDimmerMinimumLevels(HTTPResponse *response,
+                                             unsigned int universe_id,
+                                             const UID &uid) {
+  string error;
+  m_rdm_api.GetDimmerMinimumLevels(
+    universe_id,
+    uid,
+    ola::rdm::ROOT_RDM_DEVICE,
+    NewSingleCallback(this,
+                      &RDMHTTPModule::GetDimmerMinimumLevelsHandler,
+                      response),
+    &error);
+  return error;
+}
+
+
+/*
+ * @brief Handle the response to a dimmer minimum levels and build the response
+ */
+void RDMHTTPModule::GetDimmerMinimumLevelsHandler(
+    HTTPResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const ola::rdm::DimmerMinimumDescriptor &info) {
+  if (CheckForRDMError(response, status)) {
+    return;
+  }
+
+  JsonSection section;
+  section.AddItem(new UIntItem("Minimum Level - Increasing",
+                               info.min_level_increasing,
+                               DIMMER_MINIMUM_INCREASING_FIELD));
+  section.AddItem(new UIntItem("Minimum Level - Decreasing",
+                               info.min_level_decreasing,
+                               DIMMER_MINIMUM_DECREASING_FIELD));
+  section.AddItem(new BoolItem("On Below Minimum", info.on_below_min,
+                               GENERIC_BOOL_FIELD));
+
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * @brief Set the dimmer minimum levels
+ */
+string RDMHTTPModule::SetDimmerMinimumLevels(const HTTPRequest *request,
+                                             HTTPResponse *response,
+                                             unsigned int universe_id,
+                                             const UID &uid) {
+  string raw_value = request->GetParameter(DIMMER_MINIMUM_INCREASING_FIELD);
+  uint16_t min_increasing, min_decreasing;
+
+  if (!StringToInt(raw_value, &min_increasing)) {
+    return "Invalid minimum level - increasing";
+  }
+
+  raw_value = request->GetParameter(DIMMER_MINIMUM_DECREASING_FIELD);
+
+  if (!StringToInt(raw_value, &min_decreasing)) {
+    return "Invalid minimum level - decreasing";
+  }
+
+  raw_value = request->GetParameter(GENERIC_BOOL_FIELD);
+
+  if (raw_value.empty()) {
+    return "Invalid on below minimum value";
+  }
+
+  string error;
+  m_rdm_api.SetDimmerMinimumLevels(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      min_increasing,
+      min_decreasing,
+      raw_value == "1",
+      NewSingleCallback(this,
+                        &RDMHTTPModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+/**
+ * @brief Handle the request for the dimmer maximum levels
+ */
+string RDMHTTPModule::GetDimmerMaximumLevel(HTTPResponse *response,
+                                            unsigned int universe_id,
+                                            const UID &uid) {
+  string error;
+
+  m_rdm_api.GetDimmerMaximumLevel(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::GetDimmerMaximumLevelHandler,
+                        response),
+      &error);
+  return error;
+}
+
+/*
+ * @brief Handle the response to a dimmer maximum call and build the response
+ */
+void RDMHTTPModule::GetDimmerMaximumLevelHandler(
+    HTTPResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    uint16_t maximum_level) {
+  if (CheckForRDMError(response, status)) {
+    return;
+  }
+
+  JsonSection section;
+  section.AddItem(new UIntItem("Maximum Level",
+                               maximum_level, GENERIC_UINT_FIELD));
+
+  RespondWithSection(response, section);
+}
+
+/*
+ * @brief Set the Dimmer maximum level
+ */
+string RDMHTTPModule::SetDimmerMaximumLevel(const HTTPRequest *request,
+                                      HTTPResponse *response,
+                                      unsigned int universe_id,
+                                      const UID &uid) {
+  string s_max_level = request->GetParameter(GENERIC_UINT_FIELD);
+  uint16_t maximum_level;
+
+  if (!StringToInt(s_max_level, &maximum_level)) {
+    return "Invalid maximum level";
+  }
+
+  string error;
+  m_rdm_api.SetDimmerMaximumLevel(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      maximum_level,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
 
 /**
  * @brief Check if the id URL param exists and is valid.

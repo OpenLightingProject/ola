@@ -160,7 +160,7 @@ SimpleE133Controller::~SimpleE133Controller() {}
 
 bool SimpleE133Controller::Start() {
   ola::Clock clock;
-  clock.CurrentTime(&m_start_time);
+  clock.CurrentMonotonicTime(&m_start_time);
 
   if (!m_listen_socket.Listen(m_listen_address, FLAGS_listen_backlog)) {
     return false;
@@ -240,7 +240,7 @@ void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
   if (m_device_map.size() == FLAGS_expected_devices) {
     ola::Clock clock;
     TimeStamp now;
-    clock.CurrentTime(&now);
+    clock.CurrentMonotonicTime(&now);
     OLA_INFO << FLAGS_expected_devices << " connected in "
              << (now - m_start_time);
     if (FLAGS_stop_after_all_devices) {

@@ -173,6 +173,28 @@ struct clock_value_s {
 typedef struct clock_value_s ClockValue;
 
 /*
+ * Dimmer info values
+ */
+typedef struct {
+  uint16_t min_level_lower_limit;
+  uint16_t min_level_upper_limit;
+  uint16_t max_level_lower_limit;
+  uint16_t max_level_upper_limit;
+  uint8_t curves_supported;
+  uint8_t resolution;
+  bool split_levels_supported;
+} DimmerInfoDescriptor;
+
+/*
+ * Dimmer minimum values
+ */
+typedef struct {
+  uint16_t min_level_increasing;
+  uint16_t min_level_decreasing;
+  bool on_below_min;
+} DimmerMinimumDescriptor;
+
+/*
  * The interface for objects which deal with queued messages
  */
 class QueuedMessageHandler {
@@ -926,6 +948,80 @@ class RDMAPI {
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         std::string *error);
 
+    bool GetCurve(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                uint8_t> *callback,
+        std::string *error);
+
+    bool SetCurve(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t curve,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
+    bool GetCurveDescription(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t curve,
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                const std::string&> *callback,
+        std::string *error);
+
+    bool GetDimmerInfo(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DimmerInfoDescriptor&> *callback,
+        std::string *error);
+
+    bool GetDimmerMinimumLevels(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DimmerMinimumDescriptor&> *callback,
+        std::string *error);
+
+    bool SetDimmerMinimumLevels(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t min_increasing,
+        uint16_t min_decreasing,
+        bool on_below_min,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
+    bool GetDimmerMaximumLevel(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t pid,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
+        std::string *error);
+
+    bool SetDimmerMaximumLevel(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t maximum_level,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        std::string *error);
+
     bool SelfTestEnabled(
         unsigned int universe,
         const UID &uid,
@@ -1011,6 +1107,13 @@ class RDMAPI {
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
                                 uint8_t> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleU16Response(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
         const ResponseStatus &status,
         const std::string &data);
 
@@ -1137,13 +1240,6 @@ class RDMAPI {
         const ResponseStatus &status,
         const std::string &data);
 
-    void _HandleGetDMXAddress(
-        ola::SingleUseCallback2<void,
-                                const ResponseStatus&,
-                                uint16_t> *callback,
-        const ResponseStatus &status,
-        const std::string &data);
-
     void _HandleGetSlotInfo(
         ola::SingleUseCallback2<void,
                                 const ResponseStatus&,
@@ -1203,6 +1299,36 @@ class RDMAPI {
         const ResponseStatus &status,
         const std::string &data);
 
+    void _HandleGetCurve(
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                uint8_t> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleGetCurveDescription(
+        ola::SingleUseCallback3<void,
+                                const ResponseStatus&,
+                                uint8_t,
+                                const std::string&> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleGetDimmerInfo(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DimmerInfoDescriptor&> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
+    void _HandleGetDimmerMinimumLevels(
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                const DimmerMinimumDescriptor&> *callback,
+        const ResponseStatus &status,
+        const std::string &data);
+
  private:
     class RDMAPIImplInterface *m_impl;
     std::map<UID, uint8_t> m_outstanding_messages;
@@ -1220,6 +1346,25 @@ class RDMAPI {
         const UID &uid,
         uint16_t sub_device,
         uint8_t value,
+        ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
+        uint16_t pid,
+        std::string *error);
+
+    bool GenericGetU16(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        ola::SingleUseCallback2<void,
+                                const ResponseStatus&,
+                                uint16_t> *callback,
+        uint16_t pid,
+        std::string *error);
+
+    bool GenericSetU16(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t value,
         ola::SingleUseCallback1<void, const ResponseStatus&> *callback,
         uint16_t pid,
         std::string *error);

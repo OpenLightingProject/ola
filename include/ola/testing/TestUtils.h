@@ -168,7 +168,7 @@ inline void _FailIf(const SourceLine &source_line,
   ola::testing::ASSERT_DATA_EQUALS(OLA_SOURCELINE(), \
                                    (expected.GetRaw()), (expected.Size()), \
                                    (actual.GetRaw()), (actual.Size())); \
-  OLA_ASSERT_TRUE(expected == actual)
+  OLA_ASSERT_EQ(expected, actual)
 
 #define OLA_ASSERT_NULL(value) \
   CPPUNIT_NS::Asserter::failIf( \

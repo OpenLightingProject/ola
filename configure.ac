@@ -64,23 +64,70 @@ AC_MSG_RESULT($ac_cv_gnu_plus_plus_11)
 
 AM_CONDITIONAL([SUPPORTS_GNU_PLUS_PLUS_11], [test "x$ac_cv_gnu_plus_plus_11" = xyes])
 
+# This checks whether random needs gnu++11 or not, it doesn't set HAVE_RANDOM
+# (as it's using AC_CHECK_HEADER not HEADERS), we do that later as normal
+# We don't pass the compiler flag to the preprocessor (CPPFLAGS) because that
+# variable is used by the C preprocessor too, and some of the pthread checks
+# test for C code, which complains it doesn't understand gnu++. We may
+# therefore generate some warnings in configure, but it should all work!
+ac_cv_header_random_98="no"
+ac_cv_header_random_11="no"
+
+AC_MSG_NOTICE([checking for random gnu++98 compatibility])
+old_cxxflags=$CXXFLAGS
+CXXFLAGS="${CXXFLAGS} -std=gnu++98 -Wall -Werror"
+# Manually purge the cache
+AS_UNSET([ac_cv_header_random])
+AC_CHECK_HEADER(
+   [random],
+   [ac_cv_header_random_98="yes"],
+   [ac_cv_header_random_98="no"])
+# Manually purge the cache
+AS_UNSET([ac_cv_header_random])
+CXXFLAGS=$old_cxxflags
+
+AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
+      [AC_MSG_NOTICE([checking for random gnu++11 compatibility])
+       old_cxxflags=$CXXFLAGS
+       CXXFLAGS="${CXXFLAGS} -std=gnu++11 -Wall -Werror"
+       # Manually purge the cache
+       AS_UNSET([ac_cv_header_random])
+       AC_CHECK_HEADER(
+          [random],
+          [ac_cv_header_random_11=yes],
+          [ac_cv_header_random_11=no])
+       # Manually purge the cache
+       AS_UNSET([ac_cv_header_random])
+       CXXFLAGS=$old_cxxflags])
+
 # force us into gnu++98 mode if necessary
 # If gnu++11 and gnu++98 then
-#   If no unit tests, force to gnu++98
-#   If unittests and cppunit < 1.14.0, force to gnu++98
+#   If random works with gnu++98
+#     If protobuf < 3.6
+#       If no unit tests, force to gnu++98
+#       Else we have unit tests
+#         If cppunit < 1.14.0, force to gnu++98
+#         Else turn off deprecation messages for std::auto_ptr and run gnu++11
+#     Else assume we have protobuf >= 3.6 (later checks will confirm that for certain), turn off deprecation messages for std::auto_ptr and run gnu++11
 #   Else turn off deprecation messages for std::auto_ptr and run gnu++11
 require_gnu_plus_plus_11="no"
 AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
       [AS_IF([test "x$ac_cv_gnu_plus_plus_98" = xyes],
-             [AS_IF([test "x$enable_unittests" = xno],
-                    [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                    [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
-                                       [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
-                                       [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
-                                                          [require_gnu_plus_plus_11="yes"],
-                                                          [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
-                                       ])
-                    ])
+             [AS_IF([test "x$ac_cv_header_random_98" = xyes],
+                    [PKG_CHECK_MODULES([PROTOBUF1], [protobuf < 3.6],
+                                       [AS_IF([test "x$enable_unittests" = xno],
+                                              [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                              [PKG_CHECK_MODULES([CPPUNIT1], [cppunit < 1.14.0],
+                                                                 [CXXFLAGS="$CXXFLAGS -std=gnu++98"],
+                                                                 [PKG_CHECK_MODULES([CPPUNIT2], [cppunit >= 1.14.0],
+                                                                                    [require_gnu_plus_plus_11="yes"],
+                                                                                    [AC_MSG_WARN([OLA requires std::auto_ptr support.])])
+                                                                 ])
+                                              ])
+                                       ],
+                                       [require_gnu_plus_plus_11="yes"])
+                    ],
+                    [require_gnu_plus_plus_11="yes"])
              ])
       ])
 AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
@@ -185,35 +232,16 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
                 socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
-                getgrnam_r getgrgid_r secure_getenv])
-
-AC_MSG_CHECKING(for readdir_r deprecation)
-old_cxxflags=$CXXFLAGS
-CXXFLAGS="${CXXFLAGS} -Werror=deprecated-declarations"
-AC_CACHE_VAL(ac_cv_readdir_r_deprecation,
-  AC_COMPILE_IFELSE(
-     [AC_LANG_PROGRAM([[#include <dirent.h>
-#include <unistd.h>]],[[
-        const char* arg = "/";
-        DIR * dir;
-        struct dirent *buf, *de;
-        dir = opendir(arg);
-        readdir_r(dir,buf,&de);
-]])],
-     [ac_cv_readdir_r_deprecation=no],
-     [ac_cv_readdir_r_deprecation=yes])
-)
-CXXFLAGS=$old_cxxflags
-AC_MSG_RESULT($ac_cv_readdir_r_deprecation)
-
-AS_IF([test "x$ac_cv_readdir_r_deprecation" = xyes],
-      [CXXFLAGS="$CXXFLAGS -Wno-error=deprecated-declarations"],
-      [])
+                getgrnam_r getgrgid_r secure_getenv clock_gettime])
 
 LT_INIT([win32-dll])
 
 # Decide if we're building on Windows early on.
 AM_CONDITIONAL([USING_WIN32], [test "x$host_os" = xmingw32])
+have_not_win32="yes"
+if test "x$host_os" = xmingw32; then
+  have_not_win32="no"
+fi
 
 # Epoll
 AX_HAVE_EPOLL(
@@ -373,12 +401,16 @@ AC_CHECK_HEADER([dmx/dmxioctl.h], [], [have_dmx4linux="no"])
 AS_IF([test "x$have_dmx4linux" = xyes],
       [AC_DEFINE([HAVE_DMX4LINUX], [1], [define if dmx4linux is installed])])
 
+# librt - may be separate or part of libc
+AC_SEARCH_LIBS([clock_gettime], [rt])
+
 # libexecinfo
 # FreeBSD required -lexecinfo to call backtrace - checking for presence of
 # header execinfo.h isn't enough
 AC_CHECK_LIB([execinfo], [backtrace], [use_lexecinfo="yes"])
+# TODO(Peter): This should really be AC_COMPILE_IFELSE and AC_LANG_PROGRAM
 case "${host_os}" in
-  *freebsd*)
+  *freebsd* | *netbsd* | *dragonfly*)
   LIBS="$LIBS -lexecinfo"
   ;;
 esac
@@ -388,8 +420,18 @@ have_libftd2xx="no"
 AM_CONDITIONAL([HAVE_LIBFTD2XX], [test "x$have_libftd2xx" = xyes])
 
 # ncurses
+# Location is ncurses/curses.h on DragonFly
+AC_CHECK_HEADERS([curses.h ncurses/curses.h])
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL([HAVE_NCURSES], [test "x$have_ncurses" = xyes])
+# Defines libncurses_LIBS that we can use to link against ncurses
+# Needed since >=ncurses-6 where -ltinfo is needed in addition to -lncurses
+PKG_CHECK_MODULES(libncurses,
+                  [ncurses >= 5],
+                  [have_ncurses_pkgconfig="yes"],
+                  [have_ncurses_pkgconfig="no"])
+AM_CONDITIONAL([HAVE_NCURSES_PKGCONFIG],
+               [test "x$have_ncurses_pkgconfig" = xyes])
 
 # pthread
 ACX_PTHREAD([
@@ -612,19 +654,33 @@ AC_ARG_ENABLE(
   [ja-rule],
   [AS_HELP_STRING([--enable-ja-rule], [Build the Ja Rule test tool])])
 
-# libftdi: this requires libusb-0.1.4+ don't know if I should also
+# libftdi0: this requires libusb-0.1.4+ don't know if I should also
 # check for it, since the libusb check above is not for 0.1.4 but for libusb-1
 AC_ARG_ENABLE(
   [libftdi],
   [AS_HELP_STRING([--disable-libftdi],
-                  [Avoid using libftdi even if it exists])])
+                  [Avoid using libftdi0 or libftdi1 even if either exists])])
 
-have_libftdi="no"
+have_libftdi0="no"
 AS_IF([test "x$enable_libftdi" != xno],
-      [PKG_CHECK_MODULES([libftdi], [libftdi >= 0.18], [have_libftdi="yes"],
+      [PKG_CHECK_MODULES([libftdi0], [libftdi >= 0.18], [have_libftdi0="yes"],
                          [true])])
+AM_CONDITIONAL([HAVE_LIBFTDI0], [test "x$have_libftdi0" = xyes])
+AS_IF([test "x$have_libftdi0" = xyes],
+      [AC_DEFINE([HAVE_LIBFTDI0], [1], [define if libftdi0 is installed])])
+have_libftdi1="no"
+AS_IF([test "x$enable_libftdi" != xno],
+      [PKG_CHECK_MODULES([libftdi1], [libftdi1 >= 1.0], [have_libftdi1="yes"],
+                         [true])])
+AM_CONDITIONAL([HAVE_LIBFTDI1], [test "x$have_libftdi1" = xyes])
+AS_IF([test "x$have_libftdi1" = xyes],
+      [AC_DEFINE([HAVE_LIBFTDI1], [1], [define if libftdi1 is installed])])
+have_libftdi="no"
+if test "x$have_libftdi0" = xyes || test "x$have_libftdi1" = xyes; then
+  have_libftdi="yes"
+fi
 AS_IF([test "x$have_libftdi" = xyes],
-      [AC_DEFINE([HAVE_LIBFTDI], [1], [define if libftdi is installed])])
+      [AC_DEFINE([HAVE_LIBFTDI], [1], [define if libftdi0 or libftdi1 is installed])])
 
 # libusb
 AC_ARG_ENABLE(
@@ -756,8 +812,9 @@ esac
 
 AS_IF([test "x$with_uucp_lock" != x], [UUCPLOCK=$with_uucp_lock])
 AS_IF([test -d $UUCPLOCK],
-      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")],
-      AC_MSG_ERROR(No suitable lock directory))
+      [AC_DEFINE_UNQUOTED(UUCP_LOCK_DIR, "$UUCPLOCK")
+       AC_MSG_RESULT($UUCPLOCK)],
+      AC_MSG_ERROR(no suitable lock directory))
 
 # Python wrappers & RDM Responder tests.
 #####################################################
@@ -780,6 +837,10 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
            eval ac_cv_have_pymod_numpy=\$AS_TR_CPP([HAVE_PYMOD_numpy])])
      ])
 
+# Check if the flake8 python linter is available
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+
 # Libraries, that depend on the feature args above.
 #####################################################
 
@@ -788,6 +849,9 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
 AS_IF([test "x$build_java_libs" = xyes],
       [PROTOBUF_SUPPORT([2.4.0])],
       [PROTOBUF_SUPPORT([2.3.0])])
+# Version 3.7 and above of protoc require some additional includes
+AC_CHECK_HEADERS([google/protobuf/io/strtod.h google/protobuf/stubs/logging.h \
+                  google/protobuf/stubs/stl_util.h])
 
 
 # Doxygen
@@ -835,7 +899,7 @@ PLUGIN_SUPPORT(karate, USE_KARATE)
 PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(milinst, USE_MILINST)
 PLUGIN_SUPPORT(nanoleaf, USE_NANOLEAF)
-PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
+PLUGIN_SUPPORT(opendmx, USE_OPENDMX, [$have_not_win32])
 PLUGIN_SUPPORT(openpixelcontrol, USE_OPENPIXELCONTROL)
 PLUGIN_SUPPORT(osc, USE_OSC, [$have_liblo])
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
@@ -864,7 +928,7 @@ fi
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
-# html & data directories
+# HTML & data directories
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
@@ -893,6 +957,12 @@ if test "x$enable_ja_rule" = xyes; then
   BUILDING_JA_RULE='yes'
 fi
 
+# Linters
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+AC_CHECK_PROG([cpplint],[cpplint.py],[yes],[no])
+AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
+
 # Output
 #####################################################
 # Hack alert!
@@ -902,11 +972,22 @@ fi
 # the non-generated files $srcdir/python/ols/PidStore.py). To get the tests
 # to pass we symlink the files we need for the tests from the builddir to the
 # srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
-AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
+AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
+                 python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
+                 python/ola/OlaClient.py:python/ola/OlaClient.py
+                 python/ola/PidStore.py:python/ola/PidStore.py
+                 python/ola/RDMAPI.py:python/ola/RDMAPI.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/TestUtils.py:python/ola/TestUtils.py
                  python/ola/UID.py:python/ola/UID.py
-                 python/ola/__init__.py:python/ola/__init__.py])
+                 python/ola/rpc/__init__.py:python/ola/rpc/__init__.py
+                 python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
+                 python/ola/rpc/StreamRpcChannel.py:python/ola/rpc/StreamRpcChannel.py
+                 tools/rdm/ExpectedResults.py:tools/rdm/ExpectedResults.py
+                 tools/rdm/TestCategory.py:tools/rdm/TestCategory.py
+                 tools/rdm/TestState.py:tools/rdm/TestState.py
+                 tools/rdm/TimingStats.py:tools/rdm/TimingStats.py])
 
 # Non-makefile generated files.
 AC_CONFIG_FILES([include/ola/base/Version.h
@@ -946,5 +1027,6 @@ Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
     all          - build everything
     check        - run the tests
-    doxygen-doc  - generate the html documentation
+    doxygen-doc  - generate the HTML documentation
+    lint         - run the linters
 -------------------------------------------------------"

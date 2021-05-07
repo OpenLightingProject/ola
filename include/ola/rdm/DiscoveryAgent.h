@@ -130,7 +130,7 @@ class DiscoveryTargetInterface {
  * We also track responders that fail to ack a mute request (we attempt to mute
  * MAX_MUTE_ATTEMPTS times) and branches that contain responders which continue
  * to respond once muted. The latter causes a branch to be marked as corrupt,
- * which prevents us from looping forver.
+ * which prevents us from looping forever.
  */
 class DiscoveryAgent {
  public:
@@ -196,6 +196,8 @@ class DiscoveryAgent {
   UIDSet m_uids;
   // uids that are misbehaved in some way
   UIDSet m_bad_uids;
+  // uids that are misbehaved in some way which we've already split around
+  UIDSet m_split_uids;
   DiscoveryCompleteCallback *m_on_complete;
   // uids to mute during incremental discovery
   std::queue<UID> m_uids_to_mute;
@@ -226,6 +228,7 @@ class DiscoveryAgent {
   void BranchComplete(const uint8_t *data, unsigned int length);
   void BranchMuteComplete(bool status);
   void HandleCollision();
+  void SplitAroundBadUID(UID bad_uid);
   void FreeCurrentRange();
 
   static const unsigned int PREAMBLE_SIZE = 8;

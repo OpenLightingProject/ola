@@ -72,10 +72,6 @@ olad_olad_LDADD = olad/libolaserver.la \
                   common/libolacommon.la \
                   ola/libola.la
 
-if USE_FTDI
-olad_olad_LDADD += -lftdi -lusb
-endif
-
 # TESTS
 ##################################################
 test_programs += \

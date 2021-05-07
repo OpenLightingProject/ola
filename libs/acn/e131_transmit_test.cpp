@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * e131_transmit_test.cpp
- * The sends custom E1.31 packets in order to test the implementation of a
+ * This sends custom E1.31 packets in order to test the implementation of a
  * remote node.
  * Copyright (C) 2010 Simon Newton
  *

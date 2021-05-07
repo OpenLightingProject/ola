@@ -175,8 +175,9 @@ class RDMCommand {
 
   /**
    * @brief The RDM Start Code.
+   * @deprecated Use ola::rdm::START_CODE from RDMPacket.h instead (10 Mar 2019).
    */
-  static const uint8_t START_CODE = 0xcc;
+  static const uint8_t START_CODE = ola::rdm::START_CODE;
 
   /**
    * @brief Extract a RDMCommand from raw data.
@@ -514,7 +515,7 @@ class RDMResponse: public RDMCommand {
 
   /**
    * @brief The Response Type.
-   * @returns The Response Typpe (ACK, NACK, etc.)
+   * @returns The Response Type (ACK, NACK, etc.)
    */
   uint8_t ResponseType() const { return m_port_id; }
 

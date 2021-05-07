@@ -50,7 +50,7 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 776
-  manufacturer_name: "ImageCue LLC "
+  manufacturer_name: "ImageCue LLC"
   pid {
     name: "SERIAL_NUMBER"
     value: 32976
@@ -2559,6 +2559,132 @@ manufacturer {
     }
     set_sub_device_range: ROOT_DEVICE
   }
+  pid {
+    name: "AUTO_MODE"
+    value: 34559
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "program"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "program"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
 }
 manufacturer {
   manufacturer_id: 18501
@@ -3213,14 +3339,14 @@ manufacturer {
     get_response {
       field {
         type: UINT16
-        name: "enabled"
+        name: "fixture_id"
       }
     }
     get_sub_device_range: ROOT_DEVICE
     set_request {
       field {
         type: UINT16
-        name: "enabled"
+        name: "fixture_id"
       }
     }
     set_response {
@@ -3556,7 +3682,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "LIGHTSENSOR_LEVEL_TRIGGER_ENABLE"
+    name: "LIGHT_SENSOR_LEVEL_TRIGGER_ENABLE"
     value: 33032
     get_request {
     }
@@ -3578,7 +3704,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "CAPTURE_CURRENT_SENSOR_VALUE"
+    name: "CAPTURE_CURRENT_LIGHT_LEVEL"
     value: 33033
     set_request {
     }
@@ -3587,7 +3713,7 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "LIGHTSENSOR_TRIGGER_LEVEL"
+    name: "LIGHT_SENSOR_TRIGGER_LEVEL"
     value: 33034
     get_request {
     }
@@ -6793,6 +6919,182 @@ manufacturer {
     }
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
+  pid {
+    name: "PT_FEEDBACK"
+    value: 40960
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Pan Tilt Feedback"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Pan Tilt Feedback"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "OUTPUT_UNIFORMITY"
+    value: 40969
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Output Uniformity"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Output Uniformity"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DL_COMPATIBLE_MODE"
+    value: 40973
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "DL Compatible Mode"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "DL Compatible Mode"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "TOUCHSCREEN_LOCK"
+    value: 40975
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Touchscreen Lock Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Touchscreen Lock Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
 }
 manufacturer {
   manufacturer_id: 21324
@@ -7229,6 +7531,32 @@ manufacturer {
     set_response {
     }
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 21367
+  manufacturer_name: "SWISSON AG"
+  pid {
+    name: "SWPID_AUTO_UNIVERSE_NUMBER"
+    value: 32898
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "universe_number"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "universe_number"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
   }
 }
 manufacturer {
@@ -9054,4 +9382,4 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-version: 1521301591
+version: 1605848134

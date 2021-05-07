@@ -1,5 +1,18 @@
 Test-Command: olad --help
 Depends: ola
 
+Test-Command: ola_rdm_get --list-pids
+Depends: ola
+
+Test-Command: rdm_responder_test.py --help
+Depends: ola-rdm-tests
+
 Test-Command: set -e ; for py in $(pyversions -s 2>/dev/null) ; do cd "$ADTTMP" ; echo "Testing with $py:" ; $py -c "from ola.ClientWrapper import ClientWrapper; print(ClientWrapper)" ; done
 Depends: python-all, ola, ola-python
+
+Test-Command: pkg-config --cflags --libs libola
+Depends: libola-dev, pkg-config
+
+Test-Command: set -e; g++ -o linktest $(pkg-config --cflags --libs libola) debian/tests/hw.cc; ./linktest
+Depends: libola-dev, g++, pkg-config
+Restrictions: rw-build-tree

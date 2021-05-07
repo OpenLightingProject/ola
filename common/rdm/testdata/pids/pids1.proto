@@ -36,6 +36,59 @@ pid {
   }
   get_sub_device_range: ROOT_DEVICE
 }
+pid {
+  name: "DEVICE_INFO"
+  value: 96
+  get_request {
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "protocol_major"
+    }
+    field {
+      type: UINT8
+      name: "protocol_minor"
+    }
+    field {
+      type: UINT16
+      name: "device_model"
+    }
+    field {
+      type: UINT16
+      name: "product_category"
+    }
+    field {
+      type: UINT32
+      name: "software_version"
+    }
+    field {
+      type: UINT16
+      name: "dmx_footprint"
+    }
+    field {
+      type: UINT8
+      name: "current_personality"
+    }
+    field {
+      type: UINT8
+      name: "personality_count"
+    }
+    field {
+      type: UINT16
+      name: "dmx_start_address"
+    }
+    field {
+      type: UINT16
+      name: "sub_device_count"
+    }
+    field {
+      type: UINT8
+      name: "sensor_count"
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
 manufacturer {
   manufacturer_id: 31344
   manufacturer_name: "Open Lighting"

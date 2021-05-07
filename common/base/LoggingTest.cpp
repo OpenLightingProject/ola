@@ -71,7 +71,6 @@ void MockLogDestination::AddExpected(log_level level, string log_line) {
 void MockLogDestination::Write(log_level level, const string &log_line) {
   vector<string> tokens;
   ola::StringSplit(log_line, &tokens, ":");
-  vector<string>::iterator iter;
   OLA_ASSERT_EQ(tokens.size() , (size_t) 3);
   OLA_ASSERT_GT(m_log_lines.size(), 0);
   std::pair<log_level, string> expected_result = m_log_lines.at(0);

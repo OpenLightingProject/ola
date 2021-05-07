@@ -16,6 +16,7 @@
 # rdm_test_server.py
 # Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
 
+from __future__ import print_function
 import cgi
 import json
 import logging
@@ -313,7 +314,7 @@ class RDMTestThread(Thread):
 
   def _RunCollector(self, universe, skip_queued_messages):
     """Run the device model collector for a universe."""
-    logging.info('Collecting for %d' % universe)
+    logging.info('Collecting for universe %d' % universe)
     self._test_state_lock.acquire()
     self._test_state = {
       'action': self.COLLECTOR,
@@ -635,7 +636,7 @@ class DownloadModelDataHandler(RequestHandler):
   """Take the data in the form and return it as a downloadable file."""
 
   def HandleRequest(self, request, response):
-    print dir(request)
+    print(dir(request))
     model_data = request.PostParam('model_data') or ''
     logging.info(model_data)
 
@@ -970,7 +971,7 @@ def BuildApplication(ola_thread, test_thread, pid_store):
   app.RegisterHandler('/RunTests', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatTests', run_tests_handler.HandleRequest)
-  app.RegisterRegex('/static/.*',
+  app.RegisterRegex(r'/static/.*',
                     StaticFileHandler(settings['www_dir']).HandleRequest)
   return app
 
@@ -992,7 +993,8 @@ def parse_options():
   parser.add_option('-p', '--pid-location', metavar='DIR',
                     help='The directory to load the PID definitions from.')
   parser.add_option('-d', '--www-dir', default=DataLocation.location,
-                    help='The root directory to serve static files.')
+                    help='The root directory to serve static files, this must '
+                         'be absolute.')
   parser.add_option('-l', '--log-directory',
                     default=os.path.abspath('/tmp/ola-rdm-logs'),
                     help='The directory to store log files.')

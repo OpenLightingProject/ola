@@ -988,6 +988,33 @@ bool DmxTriWidgetImpl::ReturnCodeToNackReason(
     case EC_PROXY_BUFFER_FULL:
       *reason = ola::rdm::NR_PROXY_BUFFER_FULL;
       break;
+    case EC_ACTION_NOT_SUPPORTED:
+      *reason = ola::rdm::NR_ACTION_NOT_SUPPORTED;
+      break;
+    case EC_ENDPOINT_NUMBER_INVALID:
+      *reason = ola::rdm::NR_ENDPOINT_NUMBER_INVALID;
+      break;
+    case EC_INVALID_ENDPOINT_MODE:
+      *reason = ola::rdm::NR_INVALID_ENDPOINT_MODE;
+      break;
+    case EC_UNKNOWN_UID:
+      *reason = ola::rdm::NR_UNKNOWN_UID;
+      break;
+    case EC_UNKNOWN_SCOPE:
+      *reason = ola::rdm::NR_UNKNOWN_SCOPE;
+      break;
+    case EC_INVALID_STATIC_CONFIG_TYPE:
+      *reason = ola::rdm::NR_INVALID_STATIC_CONFIG_TYPE;
+      break;
+    case EC_INVALID_IPV4_ADDRESS:
+      *reason = ola::rdm::NR_INVALID_IPV4_ADDRESS;
+      break;
+    case EC_INVALID_IPV6_ADDRESS:
+      *reason = ola::rdm::NR_INVALID_IPV6_ADDRESS;
+      break;
+    case EC_INVALID_PORT:
+      *reason = ola::rdm::NR_INVALID_PORT;
+      break;
     default:
       return false;
   }
