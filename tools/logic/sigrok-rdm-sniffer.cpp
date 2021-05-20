@@ -36,19 +36,9 @@
 #include <ola/Callback.h>
 #include <ola/Constants.h>
 #include <ola/Clock.h>
-#include <ola/DmxBuffer.h>
 #include <ola/io/SelectServer.h>
 #include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
-#include <ola/rdm/CommandPrinter.h>
-#include <ola/rdm/PidStoreHelper.h>
-#include <ola/rdm/RDMCommand.h>
-#include <ola/rdm/RDMEnums.h>
-#include <ola/rdm/RDMHelper.h>
-#include <ola/rdm/RDMPacket.h>
-#include <ola/rdm/RDMResponseCodes.h>
-#include <ola/rdm/UID.h>
-#include <ola/StringUtils.h>
 
 #include <iostream>
 #include <fstream>
@@ -66,13 +56,6 @@ using std::endl;
 using std::string;
 using std::vector;
 using ola::io::SelectServer;
-using ola::messaging::Descriptor;
-using ola::messaging::Message;
-using ola::rdm::CommandPrinter;
-using ola::rdm::PidStoreHelper;
-using ola::rdm::RDMCommand;
-using ola::rdm::UID;
-using ola::strings::ToHex;
 
 
 using ola::thread::Mutex;

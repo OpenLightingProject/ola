@@ -7,6 +7,8 @@ bin_PROGRAMS += tools/logic/sigrok_rdm_sniffer
 endif
 
 tools_logic_logic_rdm_sniffer_SOURCES = \
+    tools/logic/BaseSnifferReader.cpp \
+    tools/logic/BaseSnifferReader.h \
     tools/logic/DMXSignalProcessor.cpp \
     tools/logic/DMXSignalProcessor.h \
     tools/logic/logic-rdm-sniffer.cpp
