@@ -118,7 +118,7 @@ jobs:
            - moreutils
     - os: linux
       dist: bionic
-      env: TASK='jshint'
+      env: TASK='weblint'
       addons:
         apt:
           packages:
@@ -491,7 +491,7 @@ install:
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
-  - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
+  - if [ "$TASK" = "weblint" ]; then npm install -g grunt-cli; fi
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 # This is a very bodgy workaround to the fact that the pip install of the archive doesn't seem to work properly now on Travis

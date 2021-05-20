@@ -214,7 +214,7 @@ elif [[ $TASK = 'coverity' ]]; then
   else
     echo "Skipping Coverity Scan as no token found, probably a Pull Request"
   fi;
-elif [[ $TASK = 'jshint' ]]; then
+elif [[ $TASK = 'weblint' ]]; then
   cd ./javascript/new-src;
   travis_fold start "npm_install"
   npm install;
