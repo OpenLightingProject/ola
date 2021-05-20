@@ -7,7 +7,8 @@ In order to compile the Sigrok RDM sniffer, you need libsigrok, there is
 probably one in your package system, or there is a version available from:
 https://sigrok.org/wiki/Libsigrok
 
-If it isn't in the normal place, you will also need to set the include path to your libsigrok. Example:
+If it isn't in the normal place, you may also need to set the include path to
+your libsigrok. Example:
 
 ```
 ./configure CPPFLAGS="-I/path/to/your/libsigrok/include"
