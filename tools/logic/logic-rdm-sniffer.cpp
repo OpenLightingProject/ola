@@ -74,7 +74,6 @@ DEFINE_uint32(sample_rate, 4000000, "Sample rate in HZ.");
 void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
                 void *user_data);
 void OnError(U64 device_id, void *user_data);
-//void ProcessData(U8 *data, uint32_t data_length);
 
 class LogicReader: public BaseSnifferReader {
  public:

@@ -18,8 +18,8 @@
  * Copyright (C) 2021 Peter Newman
  */
 
-#ifndef TOOLS_LOGIC_BASESNIFFERREADER_H_
-#define TOOLS_LOGIC_BASESNIFFERREADER_H_
+#ifndef LIBS_SNIFFER_BASESNIFFERREADER_H_
+#define LIBS_SNIFFER_BASESNIFFERREADER_H_
 
 #include <ola/io/SelectServer.h>
 #include <ola/rdm/CommandPrinter.h>
@@ -49,4 +49,4 @@ class BaseSnifferReader {
     void DisplayAlternateFrame(const uint8_t *data, unsigned int length);
     void DisplayRawData(const uint8_t *data, unsigned int length);
 };
-#endif  // TOOLS_LOGIC_BASESNIFFERREADER_H_
+#endif  // LIBS_SNIFFER_BASESNIFFERREADER_H_
