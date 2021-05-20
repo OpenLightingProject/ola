@@ -34,7 +34,7 @@
 #include <iostream>
 #include <memory>
 
-#include "tools/logic/BaseSnifferReader.h"
+#include "libs/sniffer/BaseSnifferReader.h"
 
 using std::auto_ptr;
 using std::cerr;

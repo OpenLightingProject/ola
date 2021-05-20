@@ -25,7 +25,7 @@
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
 
-#include "tools/logic/DMXSignalProcessor.h"
+#include "libs/sniffer/DMXSignalProcessor.h"
 
 class BaseSnifferReader {
  public:

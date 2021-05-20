@@ -44,7 +44,7 @@
 #include <ola/Logging.h>
 #include <vector>
 
-#include "tools/logic/DMXSignalProcessor.h"
+#include "libs/sniffer/DMXSignalProcessor.h"
 
 using std::vector;
 

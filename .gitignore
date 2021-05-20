@@ -226,8 +226,6 @@ tools/e133/slp_sa_test
 tools/e133/slp_sa_test.exe
 tools/logic/logic_rdm_sniffer
 tools/logic/logic_rdm_sniffer.exe
-tools/logic/sigrok_rdm_sniffer
-tools/logic/sigrok_rdm_sniffer.exe
 tools/ola_trigger/config.tab.cpp
 tools/ola_trigger/config.tab.h
 tools/ola_trigger/lex.yy.cpp
@@ -238,6 +236,8 @@ tools/rdm/DataLocation.py
 tools/rdm/ResponderTestTest.sh
 tools/rdmpro/rdmpro_sniffer
 tools/rdmpro/rdmpro_sniffer.exe
+tools/sigrok/sigrok_rdm_sniffer
+tools/sigrok/sigrok_rdm_sniffer.exe
 tools/slp/slp_client
 tools/slp/slp_client.exe
 tools/slp/slp_server

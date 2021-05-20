@@ -577,7 +577,7 @@ AS_IF([test "x$have_libsigrok_context" = xyes],
 
 have_libsigrok_dev_inst_opaque="no"
 AS_IF([test "x$have_libsigrok" != xno],
-      [PKG_CHECK_MODULES([libsigrok_context], [libsigrok >= 0.4.0],
+      [PKG_CHECK_MODULES([libsigrok_dev_inst_opaque], [libsigrok >= 0.4.0],
                          [have_libsigrok_dev_inst_opaque="yes"], [true])])
 AS_IF([test "x$have_libsigrok_dev_inst_opaque" = xyes],
       [AC_DEFINE([HAVE_LIBSIGROK_DEV_INST_OPAQUE], [1],
