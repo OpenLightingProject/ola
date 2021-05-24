@@ -22,6 +22,7 @@ import httplib
 import rrdtool
 import time
 import os.path
+import re
 import socket
 import sys
 import textwrap
@@ -90,7 +91,7 @@ class RRDStore(object):
 
     data_sources = []
     for type, variable, _ in variables:
-      data_sources.append('DS:%s:%s:30:0:U' % (variable, type))
+      data_sources.append('DS:%s:%s:30:0:U' % (SanitizeName(variable), type))
 
     if not os.path.exists(filename):
       rrdtool.create(filename,
@@ -155,10 +156,12 @@ class Grapher(threading.Thread):
                     '--title', title,
                     '--start', 'end-30s',
                     'DEF:%s=%s:%s:AVERAGE' %
-                      (variable, self._rrd_file, variable),
-                    'LINE1:%s#FF0000' % variable)
+                      (SanitizeName(variable),
+                       self._rrd_file,
+                       SanitizeName(variable)),
+                    'LINE1:%s#FF0000' % SanitizeName(variable))
 
-    variables = set([x for _, x, _ in self._variables])
+    variables = set([SanitizeName(x) for _, x, _ in self._variables])
     for cdef_name, function, title in self._cdefs:
       output_file = os.path.join(self._directory, '%s.png' % cdef_name)
       values = function.split(',')
@@ -166,7 +169,9 @@ class Grapher(threading.Thread):
       defs = []
       for variable in used_variables:
         defs.append('DEF:%s=%s:%s:AVERAGE' %
-                    (variable, self._rrd_file, variable))
+                    (SanitizeName(variable),
+                     self._rrd_file,
+                     SanitizeName(variable)))
 
       rrdtool.graph(output_file,
                     '--imgformat', 'PNG',
@@ -174,8 +179,12 @@ class Grapher(threading.Thread):
                     '--start', 'end-30s',
                     defs,
                     'CDEF:%s=%s' %
-                      (cdef_name, function),
-                    'LINE1:%s#FF0000' % cdef_name)
+                      (SanitizeName(cdef_name), function),
+                    'LINE1:%s#FF0000' % SanitizeName(cdef_name))
+
+
+def SanitizeName(variable):
+  return re.sub("[^a-zA-Z0-9_]", "_", variable)
 
 
 def LoadConfig(config_file):
