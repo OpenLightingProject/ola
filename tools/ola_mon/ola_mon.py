@@ -18,7 +18,6 @@
 
 from __future__ import print_function
 import getopt
-import httplib
 import rrdtool
 import time
 import os.path
@@ -27,6 +26,11 @@ import socket
 import sys
 import textwrap
 import threading
+
+try:
+    import http.client as httplib
+except ImportError:
+    import httplib
 
 DEFAULT_CONFIG = 'ola_mon.conf'
 DEFAULT_PORT = 9090
@@ -59,7 +63,10 @@ class OlaFetcher(object):
     try:
       response = connection.getresponse()
       if response.status == 200:
-        return response.read()
+        if sys.version >= '3.2':
+          return response.read().decode('utf-8')
+        else:
+          return response.read()
     except httplib.BadStatusLine:
       return None
     return None
@@ -197,7 +204,8 @@ def LoadConfig(config_file):
     A dict with the config parameters.
   """
   locals = {}
-  execfile(config_file, {}, locals)
+  # Python 2 and 3 compatible version of execfile
+  exec(open(config_file).read(), {}, locals)
 
   keys = set(['OLAD_SERVERS', 'DATA_DIRECTORY', 'VARIABLES', 'WWW_DIRECTORY',
               'CDEFS'])
