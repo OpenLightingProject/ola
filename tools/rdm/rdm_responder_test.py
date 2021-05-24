@@ -33,6 +33,11 @@ from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
 from optparse import OptionParser
 
+try:
+  raw_input
+except NameError:
+  raw_input = input
+
 '''Automated testing for RDM responders.'''
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
