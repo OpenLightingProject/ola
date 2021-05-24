@@ -2778,7 +2778,7 @@ class GetUndefinedSensorValues(OptionalParameterTestFixture):
   def Test(self):
     sensors = self.Property('sensor_definitions')
     self._missing_sensors = []
-    for i in xrange(0, 0xff):
+    for i in range(0, 0xff):
       if i not in sensors:
         self._missing_sensors.append(i)
 
@@ -5694,7 +5694,7 @@ class SetCurve(OptionalParameterTestFixture):
   def Test(self):
     curves = self.Property('number_curves')
     if curves:
-      self.curves = [i + 1 for i in xrange(curves)]
+      self.curves = [i + 1 for i in range(curves)]
       self._SetCurve()
     else:
       # Check we get a NR_UNKNOWN_PID
@@ -5862,7 +5862,7 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
   def Test(self):
     times = self.Property('number_response_options')
     if times:
-      self.output_response_times = [i + 1 for i in xrange(times)]
+      self.output_response_times = [i + 1 for i in range(times)]
       self._SetOutputResponseTime()
     else:
       # Check we get a NR_UNKNOWN_PID
@@ -6036,7 +6036,7 @@ class SetModulationFrequency(OptionalParameterTestFixture):
   def Test(self):
     items = self.Property('number_modulation_frequencies')
     if items:
-      self.frequencies = [i + 1 for i in xrange(items)]
+      self.frequencies = [i + 1 for i in range(items)]
       self._SetModulationFrequency()
     else:
       # Check we get a NR_UNKNOWN_PID
