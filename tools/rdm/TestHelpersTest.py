@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -12,29 +13,28 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# TestHelpers.py
-# Copyright (C) 2013 Peter Newman
+# TestHelpersTest.py
+# Copyright (C) 2021 Peter Newman
 
-import sys
+import unittest
+from TestHelpers import ContainsUnprintable
 
-try:
-  unicode
-except NameError:
-  unicode = str
+"""Test cases for TestHelpers utilities."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
-def ContainsUnprintable(s):
-  """Check if a string s contain unprintable characters."""
-  # TODO(Peter): How does this interact with the E1.20 Unicode flag?
-  # We don't use sys.version_info.major to support Python 2.6.
-  if sys.version_info[0] == 2 and type(s) == str:
-    return s != s.encode('string-escape')
-  elif sys.version_info[0] == 2 and type(s) == unicode:
-    return s != s.encode('unicode-escape')
-  elif type(s) == str:
-    # All strings in Python 3 are unicode
-    return s.encode() != s.encode('unicode-escape')
-  else:
-    return False
+class TestHelpersContainsUnprintableTest(unittest.TestCase):
+  def testContainsUnprintable(self):
+    self.assertFalse(ContainsUnprintable("foo"))
+    self.assertFalse(ContainsUnprintable("bar"))
+    self.assertFalse(ContainsUnprintable("bar[]"))
+    self.assertFalse(ContainsUnprintable(u'foo-bar'))
+    self.assertTrue(ContainsUnprintable("foo\x00bar"))
+    # TODO(Peter): How does this interact with the E1.20 Unicode flag?
+    self.assertTrue(ContainsUnprintable(u'caf\xe9'))
+    self.assertTrue(ContainsUnprintable(u'foo\u2014bar'))
+
+
+if __name__ == '__main__':
+  unittest.main()
