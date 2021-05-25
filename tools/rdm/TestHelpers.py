@@ -17,10 +17,11 @@
 
 import sys
 
-try:
-  unicode
-except NameError:
-  unicode = str
+if sys.version_info >= (3, 0):
+  try:
+    unicode
+  except NameError:
+    unicode = str
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 

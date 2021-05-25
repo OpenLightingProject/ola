@@ -16,6 +16,9 @@
 # ola_mon.py
 # Copyright (C) 2010 Simon Newton
 
+# TODO(Peter): On Python 2 at least, when you try and exit this with Ctrl+C it
+# doesn't stop
+
 from __future__ import print_function
 import getopt
 import rrdtool
@@ -27,9 +30,10 @@ import sys
 import textwrap
 import threading
 
-try:
+if sys.version_info >= (3, 0):
+  try:
     import http.client as httplib
-except ImportError:
+  except ImportError:
     import httplib
 
 DEFAULT_CONFIG = 'ola_mon.conf'

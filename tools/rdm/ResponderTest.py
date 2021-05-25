@@ -35,10 +35,11 @@ from TimingStats import TimingStats
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 
-try:
-  unicode
-except NameError:
-  unicode = str
+if sys.version_info >= (3, 0):
+  try:
+    unicode
+  except NameError:
+    unicode = str
 
 '''Automated testing for RDM responders.'''
 

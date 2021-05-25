@@ -33,10 +33,11 @@ from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
 from optparse import OptionParser
 
-try:
-  raw_input
-except NameError:
-  raw_input = input
+if sys.version_info >= (3, 0):
+  try:
+    raw_input
+  except NameError:
+    raw_input = input
 
 '''Automated testing for RDM responders.'''
 
