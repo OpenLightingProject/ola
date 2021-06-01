@@ -915,7 +915,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
       return
 
     supported_pids = set()
-    for pids in self._params.itervalues():
+    for pids in self._params.values():
       if not supported_pids:
         supported_pids = pids
       elif supported_pids != pids:
@@ -2539,7 +2539,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
         self.SetProperty('sensor_definitions', self._sensors)
 
         supports_recording = False
-        for sensor_def in self._sensors.itervalues():
+        for sensor_def in self._sensors.values():
           supports_recording |= (
               sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
         self.SetProperty('sensor_recording_supported', supports_recording)
