@@ -17,7 +17,6 @@
 # Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
 
 from __future__ import print_function
-import cgi
 import json
 import logging
 import mimetypes
@@ -51,11 +50,10 @@ try:
 except ImportError:
   import urlparse
 
-if sys.version_info >= (3, 2):
-  try:
-    import html
-  except ImportError:
-    import cgi
+try:
+  import html
+except ImportError:
+  import cgi
 
 
 __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
