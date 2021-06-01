@@ -776,7 +776,7 @@ class GetSupportedParameters(ResponderTestFixture):
         manufacturer_parameters.append(param_id)
 
     # Check for duplicate PIDs
-    for pid, count in count_by_pid.iteritems():
+    for pid, count in count_by_pid.items():
       if count > 1:
         pid_obj = self.LookupPidValue(pid)
         if pid_obj:
@@ -3631,7 +3631,7 @@ class GetRealTimeClock(OptionalParameterTestFixture):
     if not response.WasAcked():
       return
 
-    for field, range in self.ALLOWED_RANGES.iteritems():
+    for field, range in self.ALLOWED_RANGES.items():
       value = fields[field]
       if value < range[0] or value > range[1]:
         self.AddWarning('%s in GET %s is out of range, was %d, expected %s' %
@@ -5320,7 +5320,7 @@ class GetDimmerInfo(OptionalParameterTestFixture):
     if self.LookupPid(pid_name).value in self.Property('supported_parameters'):
       return
 
-    for key, expected_value in keys.iteritems():
+    for key, expected_value in keys.items():
       if fields[key] != expected_value:
         self.AddWarning(
             "%s isn't supported but %s in DIMMER_INFO was not %hx" %
@@ -6444,7 +6444,7 @@ class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
     self.scene = None
     scene_writable_states = self.Property('scene_writable_states')
     if scene_writable_states is not None:
-      for scene_number, is_writeable in scene_writable_states.iteritems():
+      for scene_number, is_writeable in scene_writable_states.items():
         if not is_writeable:
           self.scene = scene_number
           break
@@ -6482,7 +6482,7 @@ class SetPresetStatus(OptionalParameterTestFixture):
     self.scene = None
     scene_writable_states = self.Property('scene_writable_states')
     if scene_writable_states is not None:
-      for scene_number, is_writeable in scene_writable_states.iteritems():
+      for scene_number, is_writeable in scene_writable_states.items():
         if is_writeable:
           self.scene = scene_number
           break
@@ -6503,7 +6503,7 @@ class SetPresetStatus(OptionalParameterTestFixture):
     self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
     self.SendSet(ROOT_DEVICE, self.pid,
                  [self.scene, self.max_fade, self.max_fade, self.max_wait,
-                   False])
+                  False])
 
   def VerifySet(self):
     self.AddExpectedResults(self.AckGetResult(field_values={
@@ -6525,7 +6525,7 @@ class ClearPresetStatus(OptionalParameterTestFixture):
     self.scene = None
     scene_writable_states = self.Property('scene_writable_states')
     if scene_writable_states is not None:
-      for scene_number, is_writeable in scene_writable_states.iteritems():
+      for scene_number, is_writeable in scene_writable_states.items():
         if is_writeable:
           self.scene = scene_number
           break

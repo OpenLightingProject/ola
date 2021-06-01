@@ -424,7 +424,7 @@ class HTTPResponse(object):
 
   def GetHeaders(self):
     headers = []
-    for header, value in self._headers.iteritems():
+    for header, value in self._headers.items():
       headers.append((header, value))
     return headers
 

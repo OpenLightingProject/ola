@@ -226,7 +226,7 @@ def DisplaySummary(options, runner, tests, device):
 
   logging.info('------------------ By Category ------------------')
 
-  for category, counts in by_category.iteritems():
+  for category, counts in by_category.items():
     passed = counts.get(TestState.PASSED, 0)
     total_run = (passed + counts.get(TestState.FAILED, 0))
     if total_run == 0:
