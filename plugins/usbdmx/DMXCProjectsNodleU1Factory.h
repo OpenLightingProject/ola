@@ -57,8 +57,12 @@ class DMXCProjectsNodleU1Factory :
   PluginAdaptor* const m_plugin_adaptor;
   Preferences* const m_preferences;
 
-  static const uint16_t VENDOR_ID;
-  static const uint16_t PRODUCT_ID;
+  static const uint16_t VENDOR_ID_DMXC_PROJECTS;
+  static const uint16_t VENDOR_ID_DE;
+  static const uint16_t VENDOR_ID_FX5;
+  static const uint16_t PRODUCT_ID_DMXC_P_NODLE_U1;
+  static const uint16_t PRODUCT_ID_DE_USB_DMX;
+  static const uint16_t PRODUCT_ID_FX5_DMX;
 
   DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1Factory);
 };
