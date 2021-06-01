@@ -51,9 +51,9 @@ except ImportError:
   import urlparse
 
 try:
-  import html
+  from html import escape
 except ImportError:
-  import cgi
+  from cgi import escape
 
 
 __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
@@ -852,14 +852,6 @@ class RunTestsHandler(OLAServerRequestHandler):
       raise ServerException("Universe %d doesn't exist" % universe)
     return universe
 
-  def _EscapeJson(self, string):
-    # TODO(Peter): Check if we actually want this to be false or not!
-    # I think the JSON dump stuff handles it so it doesn't matter either way.
-    if sys.version_info >= (3, 2):
-      return html.escape(string, False)
-    else:
-      return cgi.escape(string, False)
-
   def _FormatTestResults(self, tests, json_data):
     results = []
     stats_by_catg = {}
@@ -893,10 +885,13 @@ class RunTestsHandler(OLAServerRequestHandler):
           'definition': test.__str__(),
           'state': state,
           'category': category,
-          'warnings': [self._EscapeJson(w) for w in test.warnings],
-          'advisories': [self._EscapeJson(a) for a in test.advisories],
-          'debug': [self._EscapeJson(d) for d in test._debug],
-          'doc': self._EscapeJson(test.__doc__),
+          # TODO(Peter): Check if we actually want this to be false or not!
+          # I think the JSON dump stuff handles it so it doesn't matter either
+          # way.
+          'warnings': [escape(w, False) for w in test.warnings],
+          'advisories': [escape(a, False) for a in test.advisories],
+          'debug': [escape(d, False) for d in test._debug],
+          'doc': escape(test.__doc__, False),
         }
       )
 
