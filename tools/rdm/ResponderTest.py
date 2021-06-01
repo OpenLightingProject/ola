@@ -625,7 +625,8 @@ class ResponderTestFixture(TestFixture):
     elif type(data) == str:
       # All strings in Python 3 are unicode
       # This encode/decode pair gets us an escaped string
-      return data.encode('unicode-escape').decode(encoding="ascii",errors="backslashreplace")
+      return data.encode('unicode-escape').decode(encoding="ascii",
+                                                  errors="backslashreplace")
     else:
       return data
 
