@@ -612,7 +612,7 @@ class ResponderTestFixture(TestFixture):
       return [self._EscapeData(i) for i in data]
     elif type(data) == dict:
       d = {}
-      for k, v in data.iteritems():
+      for k, v in data.items():
         # We can't escape the key as then it may become a new key
         d[k] = self._EscapeData(v)
       return d
@@ -624,7 +624,8 @@ class ResponderTestFixture(TestFixture):
       return data.encode('unicode-escape')
     elif type(data) == str:
       # All strings in Python 3 are unicode
-      return data.encode('unicode-escape')
+      # This encode/decode pair gets us an escaped string
+      return data.encode('unicode-escape').decode(encoding="ascii",errors="backslashreplace")
     else:
       return data
 
