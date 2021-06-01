@@ -6208,19 +6208,19 @@ class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
     self.SetProperty('preset_info', fields)
     self.SetProperty('max_scene_number', fields['max_scene_number'])
 
-  def CrossCheckPidSupportIsZero(self, pid_name, fields, key):
-    if not (self.IsSupported(pid_name) or fields[key] is False):
+  def CrossCheckPidSupportIsZero(self, pid_name, fields, field_name):
+    if not (self.IsSupported(pid_name) or fields[field_name] is False):
       self.AddWarning('%s not supported, but %s in PRESET_INFO is non-0' %
-                      (pid_name, key))
+                      (pid_name, field_name))
 
-  def CrossCheckPidSupportIsMax(self, pid_name, fields, key):
-    for key in ['min_%s' % key, 'max_%s' % key]:
+  def CrossCheckPidSupportIsMax(self, pid_name, fields, base_name):
+    for field_name in ['min_%s' % base_name, 'max_%s' % base_name]:
       if not (self.IsSupported(pid_name) or
-              fields[key] == self.pid.GetResponseField(
-                  RDM_GET, key).DisplayValue(0xffff)):
+              fields[field_name] == self.pid.GetResponseField(
+                  RDM_GET, field_name).DisplayValue(0xffff)):
         self.AddWarning(
             '%s not supported, but %s in PRESET_INFO is not 0xffff' %
-            (pid_name, key))
+            (pid_name, field_name))
 
   def IsSupported(self, pid_name):
     pid = self.LookupPid(pid_name)
