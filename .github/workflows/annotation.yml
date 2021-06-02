@@ -6,15 +6,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 2.7
       - name: Flake8 with annotations - Python 2
         # Using the flake8 options in the .flake8 file
-        uses: peternewman/actions-flake8@python2
+        uses: TrueBrain/actions-flake8@main
   flake8-annotation-python3:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
       - name: Flake8 with annotations - Python 3
         # Using the flake8 options in the .flake8 file
-        uses: TrueBrain/actions-flake8@master
+        uses: TrueBrain/actions-flake8@main
         with:
           only_warn: 1
