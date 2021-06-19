@@ -236,6 +236,8 @@ tools/rdm/DataLocation.py
 tools/rdm/ResponderTestTest.sh
 tools/rdmpro/rdmpro_sniffer
 tools/rdmpro/rdmpro_sniffer.exe
+tools/sigrok/sigrok_rdm_sniffer
+tools/sigrok/sigrok_rdm_sniffer.exe
 tools/slp/slp_client
 tools/slp/slp_client.exe
 tools/slp/slp_server
