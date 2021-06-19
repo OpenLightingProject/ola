@@ -37,9 +37,11 @@ IGNORE_PATTERNS = [
   '*/Makefile',
   '*_pb2.py',
   '*~',
-  '.codespellignore',
+  '.codespellignore*',
+  '.flake8',
   '.git',
   '.git/*',
+  '.github/*',
   '.gitignore',
   '.travis-ci.sh',
   '.travis.yml',
@@ -65,7 +67,7 @@ IGNORE_PATTERNS = [
 
 
 def Usage(arg0):
-  print (textwrap.dedent("""\
+  print(textwrap.dedent("""\
   Usage: %s <treeA> <treeB>
 
   Check for files that exist in treeA but aren't in treeB. This can be used to

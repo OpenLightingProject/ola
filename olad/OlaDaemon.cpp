@@ -48,7 +48,7 @@
 #include "olad/Preferences.h"
 
 DEFINE_s_string(config_dir, c, "",
-                "The path to the config directory, Defaults to ~/.ola/ " \
+                "The path to the config directory, defaults to ~/.ola/ " \
                 "on *nix and %LOCALAPPDATA%\\.ola\\ on Windows.");
 
 namespace ola {

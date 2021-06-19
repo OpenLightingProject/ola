@@ -49,6 +49,7 @@ config.h.in~
 config.log
 config.status
 configure
+cpplint.py
 doxygen_entrydb_*.tmp
 doxygen_objdb_*.tmp
 html/
@@ -185,8 +186,13 @@ protoc/ola_protoc
 protoc/ola_protoc.exe
 protoc/ola_protoc_plugin
 protoc/ola_protoc_plugin.exe
+python/PyCompileTest.sh
 python/examples/ola_rdm_set.py
+python/ola/ClientWrapperTest.sh
+python/ola/OlaClientTest.sh
 python/ola/PidStoreLocation.py
+python/ola/PidStoreTest.sh
+python/ola/RDMTest.sh
 python/ola/Version.py
 python/ola/rpc/SimpleRpcControllerTest.sh
 slp/slp_client
@@ -218,6 +224,7 @@ tools/ola_trigger/ola_trigger
 tools/ola_trigger/ola_trigger.exe
 tools/ola_trigger/FileValidateTest.sh
 tools/rdm/DataLocation.py
+tools/rdm/ResponderTestTest.sh
 tools/rdmpro/rdmpro_sniffer
 tools/rdmpro/rdmpro_sniffer.exe
 tools/slp/slp_client

@@ -16,6 +16,7 @@
 # rdm_responder_test.py
 # Copyright (C) 2010 Simon Newton
 
+from __future__ import print_function
 from ola.testing.rdm import TestDefinitions, TestRunner
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm.TestState import TestState
@@ -97,7 +98,7 @@ def ParseOptions():
   uid = UID.FromString(args[0])
   if uid is None:
     parser.print_usage()
-    print 'Invalid UID: %s' % args[0]
+    print('Invalid UID: %s' % args[0])
     sys.exit(2)
 
   options.uid = uid
@@ -108,7 +109,8 @@ class MyFilter(object):
   """Filter out the ascii coloring."""
   def filter(self, record):
     msg = record.msg
-    record.msg = re.sub('\x1b\[\d*m', '', str(msg))
+    # Use a raw string for the regex
+    record.msg = re.sub(r'\x1b\[\d*m', '', str(msg))
     return True
 
 
@@ -242,7 +244,7 @@ def main():
   test_classes = TestRunner.GetTestClasses(TestDefinitions)
   if options.list_tests:
     for test_name in sorted(c.__name__ for c in test_classes):
-      print test_name
+      print(test_name)
     sys.exit(0)
 
   SetupLogging(options)
@@ -288,7 +290,7 @@ def main():
   wrapper.Reset()
 
   if not uid_ok:
-    sys.exit()
+    sys.exit(1)
 
   test_filter = None
   if options.tests is not None:

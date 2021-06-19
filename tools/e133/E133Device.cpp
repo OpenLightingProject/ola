@@ -205,8 +205,7 @@ void E133Device::EndpointRequest(
     const string &raw_request) {
   IPV4SocketAddress target = transport_header->Source();
   uint16_t endpoint_id = e133_header->Endpoint();
-  OLA_INFO << "Got request for to endpoint " << endpoint_id
-           << " from " << target;
+  OLA_INFO << "Got request for endpoint " << endpoint_id << " from " << target;
 
   E133EndpointInterface *endpoint = NULL;
   if (endpoint_id)

@@ -98,8 +98,8 @@ class UniverseStore {
   Preferences *m_preferences;
   ExportMap *m_export_map;
   UniverseMap m_universe_map;
-  std::set<Universe*> m_deletion_candiates;  // list of universes we may be
-                                             // able to delete
+  std::set<Universe*> m_deletion_candidates;  // list of universes we may be
+                                              // able to delete
   Clock m_clock;
 
   bool RestoreUniverseSettings(Universe *universe) const;

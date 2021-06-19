@@ -98,12 +98,12 @@ class GenericMessagePrinter: public MessagePrinter {
     void AppendUInt(const std::string &name,
                     unsigned int value,
                     const std::string &label,
-                    int8_t multipler);
+                    int8_t multiplier);
     void AppendInt(const std::string &name,
                    int value,
                    const std::string &label,
-                   int8_t multipler);
-    void AppendMultipler(int8_t multipler);
+                   int8_t multiplier);
+    void AppendMultiplier(int8_t multiplier);
 };
 }  // namespace messaging
 }  // namespace ola

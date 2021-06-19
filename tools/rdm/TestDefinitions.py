@@ -253,7 +253,6 @@ class DUBSingleUID(TestMixins.DiscoveryMixin,
                    ResponderTestFixture):
   """Confirm the device responds to just it's own range."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
@@ -1567,16 +1566,16 @@ class SetLanguage(OptionalParameterTestFixture):
     ack = self.AckSetResult(action=self.VerifySet)
     nack = self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
 
-    available_langugages = list(self.Property('languages_capabilities'))
-    if available_langugages:
-      if len(available_langugages) > 1:
+    available_languages = list(self.Property('languages_capabilities'))
+    if available_languages:
+      if len(available_languages) > 1:
         # If the responder only supports 1 lang, we may not be able to set it
         self.AddIfSetSupported(ack)
-        self.new_language = available_langugages[0]
+        self.new_language = available_languages[0]
         if self.new_language == self.Property('language'):
-          self.new_language = available_langugages[1]
+          self.new_language = available_languages[1]
       else:
-        self.new_language = available_langugages[0]
+        self.new_language = available_languages[0]
         self.AddIfSetSupported([ack, nack])
     else:
       # Get languages returned no languages so we expect a nack
@@ -1756,6 +1755,7 @@ class GetOutOfRangePersonalityDescription(TestMixins.GetOutOfRangeByteMixin,
   """GET the personality description for the N + 1 personality."""
   PID = 'DMX_PERSONALITY_DESCRIPTION'
   REQUIRES = ['personality_count']
+  LABEL = 'personality descriptions'
 
 
 class AllSubDevicesGetPersonalityDescription(TestMixins.AllSubDevicesGetMixin,
@@ -1858,7 +1858,7 @@ class GetPersonalityDescriptions(OptionalParameterTestFixture):
       self.Stop()
       return
 
-    if self._current_index >= MAX_PERSONALITY_NUMBER:
+    if self._current_index > MAX_PERSONALITY_NUMBER:
       # This should never happen because personality_count is a uint8
       self.SetFailed('Could not find all personalities')
       self.Stop()
@@ -6369,13 +6369,13 @@ class GetPresetStatus(OptionalParameterTestFixture):
 
   def CheckFieldIsBetween(self, fields, key, min_value, max_value):
     if fields[key] < min_value:
-          self.AddWarning(
-              '%s for scene %d (%d s) is less than the min of %s' %
-              (key, self.index, fields[key], min_value))
+      self.AddWarning(
+          '%s for scene %d (%d s) is less than the min of %s' %
+          (key, self.index, fields[key], min_value))
     if fields[key] > max_value:
-          self.AddWarning(
-              '%s for scene %d (%d s) is more than the min of %s' %
-              (key, self.index, fields[key], max_value))
+      self.AddWarning(
+          '%s for scene %d (%d s) is more than the min of %s' %
+          (key, self.index, fields[key], max_value))
 
 
 class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,
@@ -6696,13 +6696,14 @@ class GetListInterfaces(TestMixins.GetMixin,
 
     for interface in fields['interfaces']:
       interface_id = interface['interface_identifier']
-      interfaces.append(interface_id)
       if (interface_id < RDM_INTERFACE_INDEX_MIN or
           interface_id > RDM_INTERFACE_INDEX_MAX):
         self.AddWarning('Interface index %d is outside allowed range (%d to '
                         '%d)' % (interface_id,
                                  RDM_INTERFACE_INDEX_MIN,
                                  RDM_INTERFACE_INDEX_MAX))
+      else:
+        interfaces.append(interface_id)
       if (interface['interface_hardware_type'] !=
           INTERFACE_HARDWARE_TYPE_ETHERNET):
         self.AddAdvisory('Possible error, found unusual hardware type %d for '

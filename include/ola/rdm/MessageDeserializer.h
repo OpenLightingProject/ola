@@ -52,7 +52,7 @@ class MessageDeserializer: public ola::messaging::FieldDescriptorVisitor {
         const uint8_t *data,
         unsigned int length);
 
-    // we handle decending into groups ourself
+    // we handle descending into groups ourself
     bool Descend() const { return false; }
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);

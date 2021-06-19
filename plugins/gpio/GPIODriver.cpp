@@ -90,7 +90,8 @@ void *GPIODriver::Run() {
     bool update_pins = false;
 
     TimeStamp wake_up;
-    clock.CurrentTime(&wake_up);
+    // Use real time here because wake_up is passed to pthread_cond_timedwait
+    clock.CurrentRealTime(&wake_up);
     wake_up += TimeInterval(1, 0);
 
     // Wait for one of: i) termination ii) DMX changed iii) timeout
@@ -166,12 +167,13 @@ bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
     TURN_OFF,
     NO_CHANGE,
   };
+  const uint16_t first_slot = m_options.start_address - 1;
 
   for (uint16_t i = 0;
-       i < m_gpio_pins.size() && (i + m_options.start_address < dmx.Size());
+       i < m_gpio_pins.size() && (i + first_slot < dmx.Size());
        i++) {
     Action action = NO_CHANGE;
-    uint8_t slot_value = dmx.Get(i + m_options.start_address - 1);
+    uint8_t slot_value = dmx.Get(i + first_slot);
 
     switch (m_gpio_pins[i].state) {
       case ON:

@@ -231,7 +231,7 @@ bool EspNetNode::SendDMX(uint8_t universe, const ola::DmxBuffer &buffer) {
 
 
 /*
- * Setup the networking compoents.
+ * Setup the networking components.
  */
 bool EspNetNode::InitNetwork() {
   if (!m_socket.Init()) {

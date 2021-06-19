@@ -256,7 +256,7 @@ void UniverseTest::testReceiveDmx() {
 
   // Setup the port with some data, and check that signalling the universe
   // works.
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.WriteDMX(m_buffer);
   port.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -385,7 +385,7 @@ void UniverseTest::testLtpMerging() {
 
   // Setup the ports with some data, and check that signalling the universe
   // works.
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -393,7 +393,7 @@ void UniverseTest::testLtpMerging() {
   OLA_ASSERT(buffer1 == universe->GetDMX());
 
   // Now the second port gets data
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -401,7 +401,7 @@ void UniverseTest::testLtpMerging() {
   OLA_ASSERT(buffer2 == universe->GetDMX());
 
   // now resend the first port
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -411,7 +411,7 @@ void UniverseTest::testLtpMerging() {
   // now check a client
   DmxBuffer client_buffer;
   client_buffer.SetFromString("255,0,0,255,10");
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   ola::DmxSource source(client_buffer, time_stamp,
                         ola::dmx::SOURCE_PRIORITY_DEFAULT);
   MockClient input_client;
@@ -465,7 +465,7 @@ void UniverseTest::testHtpMerging() {
 
   // Setup the ports with some data, and check that signalling the universe
   // works.
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -473,7 +473,7 @@ void UniverseTest::testHtpMerging() {
   OLA_ASSERT(buffer1 == universe->GetDMX());
 
   // Now the second port gets data
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
   OLA_ASSERT_EQ(ola::dmx::SOURCE_PRIORITY_DEFAULT, universe->ActivePriority());
@@ -483,7 +483,7 @@ void UniverseTest::testHtpMerging() {
   // now raise the priority of the second port
   uint8_t new_priority = 120;
   port2.SetPriority(new_priority);
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port2.DmxChanged();
   OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
   OLA_ASSERT_EQ(buffer2.Size(), universe->GetDMX().Size());
@@ -491,7 +491,7 @@ void UniverseTest::testHtpMerging() {
 
   // raise the priority of the first port
   port.SetPriority(new_priority);
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   port.DmxChanged();
   OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
   OLA_ASSERT_EQ(htp_buffer.Size(), universe->GetDMX().Size());
@@ -500,7 +500,7 @@ void UniverseTest::testHtpMerging() {
   // now check a client
   DmxBuffer client_buffer;
   client_buffer.SetFromString("255,0,0,255,10");
-  m_clock.CurrentTime(&time_stamp);
+  m_clock.CurrentMonotonicTime(&time_stamp);
   ola::DmxSource source(client_buffer, time_stamp, new_priority);
   MockClient input_client;
   input_client.DMXReceived(TEST_UNIVERSE, source);
@@ -632,7 +632,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_UNKNOWN_UID,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // ok, now try something that returns a response from the port
   request = new ola::rdm::RDMGetRequest(
@@ -654,7 +658,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_TIMEOUT,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // now try a broadcast fan out
   UID vendorcast_uid = UID::VendorcastAddress(0x7a70);
@@ -683,7 +691,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_WAS_BROADCAST,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // now confirm that if one of the ports fails to send, we see this response
   request = new ola::rdm::RDMGetRequest(
@@ -707,7 +719,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_FAILED_TO_SEND,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // DUB responses are slightly different
   request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
@@ -727,7 +743,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_DUB_RESPONSE,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // now check that we still get a RDM_DUB_RESPONSE even if one port returns an
   // RDM_TIMEOUT
@@ -744,7 +764,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_DUB_RESPONSE,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // and the same again but the second port returns
   // RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED
@@ -761,7 +785,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_DUB_RESPONSE,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // now the first port returns a RDM_TIMEOUT
   request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
@@ -777,7 +805,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_TIMEOUT,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   // finally if neither ports support the DUB, we should return that
   request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
@@ -793,7 +825,11 @@ void UniverseTest::testRDMSend() {
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
                         ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
+#ifdef __FreeBSD__
+                        reinterpret_cast<const RDMResponse*>(0)));
+#else
                         reinterpret_cast<const RDMResponse*>(NULL)));
+#endif  // __FreeBSD__
 
   universe->RemovePort(&port1);
   universe->RemovePort(&port2);

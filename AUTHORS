@@ -6,18 +6,21 @@ Primary author:
 
 Contributors:
   Bastien Andrès, contributed to the dmx4linux plugin
+  Bruce Lowekamp, various fixes and python updates
   Carsten Presser, Karate USB plugin
   Dave Olsthoorn, working on a new web-ui
   E.S. Rosenberg, further work on ftdidmx plugin.
   Hakan Lindestaf, Renard plugin
   Harry F, for the Eurolite USB Pro code
   Heikki Junnila, bug fixes for the debian packaging files
+  Jannis Achstetter, compile fixes for newer dependencies and various fixes
   Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
   Lukas Erlinghagen, win32 port.
   Johan Nilsson, Philips Hue trigger config
   Joshua Moyerman, ArtNet fixes.
   Masaki Muranaka, various patches
   Nicolas, for the win32 port of libartnet
+  Nils Van Zuijlen, typos and python lib small update
   Peter Newman, MilInst Plugin, Scanlime Fadecandy support and numerous fixes
   Ravindra Nath Kakarla, RDM Test Server (Google Summer of Code 2012)
   Rowan Maclachlan (hippy) for various changes
@@ -25,3 +28,4 @@ Contributors:
   Sean Sill, various fixes.
   Stefan Krüger, added APA102 support to the SPI Plugin
   Tobi Schäfer, for the MacPort files
+  Stefan S, improved timing with monotonic clock

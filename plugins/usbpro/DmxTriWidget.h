@@ -191,7 +191,17 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
       EC_FRAME_OVERFLOW = 0x28,
       EC_SUBDEVICE_UNKNOWN = 0x29,
       EC_PROXY_BUFFER_FULL = 0x2a,  // this isn't included in the docs
+      EC_ACTION_NOT_SUPPORTED = 0x2b,  // this is a guess
+      EC_ENDPOINT_NUMBER_INVALID = 0x2c,  // this is a guess
+      EC_INVALID_ENDPOINT_MODE = 0x2d,  // this is a guess
+      EC_UNKNOWN_UID = 0x2e,  // this is a guess
+      EC_UNKNOWN_SCOPE = 0x2f,  // this is a guess
+      EC_INVALID_STATIC_CONFIG_TYPE = 0x30,  // this is a guess
+      EC_INVALID_IPV4_ADDRESS = 0x31,  // this is a guess
+      EC_INVALID_IPV6_ADDRESS = 0x32,  // this is a guess
+      EC_INVALID_PORT = 0x33  // this is a guess
     } dmx_tri_error_codes;
+    // TODO(Peter): try and test the guessed values
 
     static const unsigned int DATA_OFFSET = 2;  // first two bytes are CI & RC
     static const uint8_t EXTENDED_COMMAND_LABEL = 88;  // 'X'
