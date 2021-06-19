@@ -30,14 +30,25 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID = 0x16d0;
-const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID = 0x0830;
+const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID_DMXC_PROJECTS = 0x16d0;
+const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID_DMXC_P_NODLE_U1 = 0x0830;
+
+const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID_DE = 0x4b4;
+const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID_DE_USB_DMX = 0xf1f;
+
+const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID_FX5 = 0x16c0;
+const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID_FX5_DMX = 0x88b;
 
 bool DMXCProjectsNodleU1Factory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID) {
+  if (!((descriptor.idVendor == VENDOR_ID_DMXC_PROJECTS &&
+         descriptor.idProduct == PRODUCT_ID_DMXC_P_NODLE_U1) ||
+        (descriptor.idVendor == VENDOR_ID_DE &&
+         descriptor.idProduct == PRODUCT_ID_DE_USB_DMX) ||
+        (descriptor.idVendor == VENDOR_ID_FX5 &&
+         descriptor.idProduct == PRODUCT_ID_FX5_DMX) )) {
     return false;
   }
 
