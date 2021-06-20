@@ -77,6 +77,7 @@ jobs:
   include:
     - os: linux
       dist: bionic
+      arch: arm64
       env: TASK='doxygen'
       addons:
         apt:
@@ -89,6 +90,7 @@ jobs:
            - ubuntu-toolchain-r-test
     - os: linux
       dist: bionic
+      arch: arm64
       env: TASK='lint'
       addons:
         apt:
@@ -97,6 +99,7 @@ jobs:
            - *bionic_build_extras_python2
     - os: linux
       dist: bionic
+      arch: arm64
       env: TASK='check-licences'
       addons:
         apt:
@@ -105,6 +108,7 @@ jobs:
            - *bionic_build_extras_python2
     - os: linux
       dist: bionic
+      arch: arm64
       env:
         - TASK='codespell'
         - PYTHON='python3'
@@ -116,21 +120,52 @@ jobs:
            - moreutils
     - os: linux
       dist: bionic
+      arch: arm64
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
       dist: bionic
+      arch: arm64
       env: TASK='flake8'
       addons:
         apt:
           packages:
            - *base_build
            - *bionic_build_extras_python2
+#    - os: linux
+#      dist: bionic
+#      arch: amd64
+#      compiler: clang
+#      env:
+#        - TASK='compile'
+#        - PYTHON='python3'
+#      addons:
+#        apt:
+#          packages:
+#           - *core_build_clang_latest
+#           - *bionic_build_extras_python3
+#          sources:
+#           - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
+#             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+#           - sourceline: "ppa:ubuntu-toolchain-r/test"
+#    - os: linux
+#      dist: bionic
+#      arch: amd64
+#      compiler: gcc
+#      env: TASK='compile'
+#      python: '2.7'
+#      addons:
+#        apt:
+#          packages:
+#           - *core_build_gpp_latest
+#           - *bionic_build_extras_python2
+#          sources:
+#           - ubuntu-toolchain-r-test
     - os: linux
       dist: bionic
-      arch: amd64
+      arch: arm64
       compiler: clang
       env:
         - TASK='compile'
@@ -138,36 +173,8 @@ jobs:
       addons:
         apt:
           packages:
-           - *core_build_clang_latest
-           - *bionic_build_extras_python3
-          sources:
-           - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
-             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-           - sourceline: "ppa:ubuntu-toolchain-r/test"
-    - os: linux
-      dist: bionic
-      arch: amd64
-      compiler: gcc
-      env: TASK='compile'
-      python: '2.7'
-      addons:
-        apt:
-          packages:
-           - *core_build_gpp_latest
-           - *bionic_build_extras_python2
-          sources:
-           - ubuntu-toolchain-r-test
-    - os: linux
-      dist: bionic
-      arch: arm64
-      compiler: clang
-      env: TASK='compile'
-      python: '2.7'
-      addons:
-        apt:
-          packages:
            - *core_build
-           - *bionic_build_extras_python2
+           - *bionic_build_extras_python3
     - os: linux
       dist: bionic
       arch: arm64
@@ -245,40 +252,41 @@ jobs:
 #           - protobuf
 #           - libftdi0
 #          update: false
-    - os: osx
-      osx_image: xcode9.4
-      compiler: clang
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='latest'
-      - LIBFTDI='1'
-      addons:
-        homebrew:
-          packages:
-           - *mac_core_build
-           - cppunit
-           - protobuf
-           - libftdi # install the latest cppunit, which needs C++11
-          update: false
-    - os: osx
-      osx_image: xcode9.4
-      compiler: gcc
-      env:
-      - TASK='compile'
-      - CPPUNIT='1.14'
-      - PROTOBUF='latest'
-      - LIBFTDI='1'
-      addons:
-        homebrew:
-          packages:
-           - *mac_core_build
-           - cppunit
-           - protobuf
-           - libftdi # install the latest cppunit, which needs C++11
-          update: false
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: clang
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='1'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - cppunit
+#           - protobuf
+#           - libftdi # install the latest cppunit, which needs C++11
+#          update: false
+#    - os: osx
+#      osx_image: xcode9.4
+#      compiler: gcc
+#      env:
+#      - TASK='compile'
+#      - CPPUNIT='1.14'
+#      - PROTOBUF='latest'
+#      - LIBFTDI='1'
+#      addons:
+#        homebrew:
+#          packages:
+#           - *mac_core_build
+#           - cppunit
+#           - protobuf
+#           - libftdi # install the latest cppunit, which needs C++11
+#          update: false
     - os: linux
       dist: bionic
+      arch: arm64
       compiler: gcc
       env: TASK='coverage'
       addons:
@@ -289,6 +297,7 @@ jobs:
            - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
       dist: xenial
+      arch: arm64
       compiler: gcc
       env: TASK='coverity'
       addons:
@@ -301,6 +310,7 @@ jobs:
            - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
       dist: bionic
+      arch: arm64
       env: TASK='spellintian'
       addons:
         apt:
@@ -310,6 +320,7 @@ jobs:
            - moreutils
     - os: linux
       dist: bionic
+      arch: arm64
       env: TASK='spellintian-duplicates'
       addons:
         apt:
@@ -378,17 +389,21 @@ jobs:
       - LIBFTDI='1'
     - os: linux
       dist: bionic
+      arch: arm64
       compiler: gcc
       env: TASK='coverage'
     - os: linux
       dist: xenial
+      arch: arm64
       compiler: gcc
       env: TASK='coverity'
     - os: linux
       dist: bionic
+      arch: arm64
       env: TASK='spellintian'
     - os: linux
       dist: bionic
+      arch: arm64
       env: TASK='spellintian-duplicates'
 
 env:
