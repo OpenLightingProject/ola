@@ -5,8 +5,6 @@
 
 set -e
 
-CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py";
-
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
@@ -236,7 +234,8 @@ else
     # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
     export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133 CPPFLAGS=-Wno-deprecated-declarations'
   else
-    export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
+    # Silence all deprecated declarations on OS X due to auto_ptr making the build log too long
+    export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133 CPPFLAGS=-Wno-deprecated-declarations'
   fi
   travis_fold start "autoreconf"
   autoreconf -i;

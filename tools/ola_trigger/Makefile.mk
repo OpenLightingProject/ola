@@ -46,9 +46,9 @@ tools_ola_trigger_ola_trigger_LDADD = common/libolacommon.la \
                                       $(LEXLIB)
 
 built_sources += \
-    tools/ola_trigger/lex.yy.cpp \
-    tools/ola_trigger/config.tab.cpp \
-    tools/ola_trigger/config.tab.h
+    $(top_builddir)/tools/ola_trigger/lex.yy.cpp \
+    $(top_builddir)/tools/ola_trigger/config.tab.cpp \
+    $(top_builddir)/tools/ola_trigger/config.tab.h
 
 tools/ola_trigger/lex.yy.cpp: tools/ola_trigger/Makefile.mk tools/ola_trigger/config.lex
 	$(LEX) -o$(top_builddir)/tools/ola_trigger/lex.yy.cpp $(srcdir)/tools/ola_trigger/config.lex

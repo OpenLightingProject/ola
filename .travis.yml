@@ -182,7 +182,7 @@ jobs:
           sources:
            - ubuntu-toolchain-r-test
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: clang
 #      env:
 #      - TASK='compile'
@@ -198,7 +198,7 @@ jobs:
 #           - libftdi0
 #          update: false
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: gcc
 #      env:
 #      - TASK='compile'
@@ -214,7 +214,7 @@ jobs:
 #           - libftdi0
 #          update: false
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: clang
 #      env:
 #      - TASK='compile'
@@ -230,7 +230,7 @@ jobs:
 #           - libftdi0
 #          update: false
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: gcc
 #      env:
 #      - TASK='compile'
@@ -246,7 +246,7 @@ jobs:
 #           - libftdi0
 #          update: false
     - os: osx
-      osx_image: xcode9.4
+      osx_image: xcode12.2
       compiler: clang
       env:
       - TASK='compile'
@@ -262,7 +262,7 @@ jobs:
            - libftdi # install the latest cppunit, which needs C++11
           update: false
     - os: osx
-      osx_image: xcode9.4
+      osx_image: xcode12.2
       compiler: gcc
       env:
       - TASK='compile'
@@ -319,49 +319,49 @@ jobs:
            - moreutils
   allow_failures:
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: clang
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.13'
 #      - LIBFTDI='0'
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: clang
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.14'
 #      - LIBFTDI='0'
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: gcc
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.13'
 #      - LIBFTDI='0'
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: gcc
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.14'
 #      - LIBFTDI='0'
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: clang
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.14'
 #      - LIBFTDI='1'
 #    - os: osx
-#      osx_image: xcode9.4
+#      osx_image: xcode12.2
 #      compiler: gcc
 #      env:
 #      - TASK='compile'
 #      - CPPUNIT='1.14'
 #      - LIBFTDI='1'
     - os: osx
-      osx_image: xcode9.4
+      osx_image: xcode12.2
       compiler: clang
       env:
       - TASK='compile'
@@ -369,7 +369,7 @@ jobs:
       - PROTOBUF='latest'
       - LIBFTDI='1'
     - os: osx
-      osx_image: xcode9.4
+      osx_image: xcode12.2
       compiler: gcc
       env:
       - TASK='compile'

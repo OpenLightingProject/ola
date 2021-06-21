@@ -13,8 +13,9 @@ usbproincludedir = $(includedir)/ola/usbpro
 nodist_usbproinclude_HEADERS = \
     plugins/usbpro/messages/UsbProConfigMessages.pb.h
 
-built_sources += plugins/usbpro/messages/UsbProConfigMessages.pb.cc \
-                 plugins/usbpro/messages/UsbProConfigMessages.pb.h
+built_sources += \
+    $(top_builddir)/plugins/usbpro/messages/UsbProConfigMessages.pb.cc \
+    $(top_builddir)/plugins/usbpro/messages/UsbProConfigMessages.pb.h
 
 nodist_plugins_usbpro_messages_libolausbproconf_la_SOURCES = \
     plugins/usbpro/messages/UsbProConfigMessages.pb.cc

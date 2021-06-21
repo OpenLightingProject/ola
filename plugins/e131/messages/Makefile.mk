@@ -14,8 +14,9 @@ e131includedir = $(includedir)/ola/e131
 nodist_e131include_HEADERS = \
     plugins/e131/messages/E131ConfigMessages.pb.h
 
-built_sources += plugins/e131/messages/E131ConfigMessages.pb.cc \
-                 plugins/e131/messages/E131ConfigMessages.pb.h
+built_sources += \
+    $(top_builddir)/plugins/e131/messages/E131ConfigMessages.pb.cc \
+    $(top_builddir)/plugins/e131/messages/E131ConfigMessages.pb.h
 
 nodist_plugins_e131_messages_libolae131conf_la_SOURCES = \
     plugins/e131/messages/E131ConfigMessages.pb.cc

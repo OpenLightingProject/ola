@@ -41,7 +41,7 @@ nodist_pkginclude_HEADERS += include/ola/plugin_id.h
 
 # BUILT_SOURCES is our only option here since we can't override the generated
 # automake rules for common/libolacommon.la
-built_sources += include/ola/plugin_id.h
+built_sources += $(top_builddir)/include/ola/plugin_id.h
 
 include/ola/plugin_id.h: include/ola/Makefile.mk include/ola/make_plugin_id.sh common/protocol/Ola.proto
 	mkdir -p $(top_builddir)/include/ola

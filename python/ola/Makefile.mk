@@ -15,12 +15,12 @@ usbpro_proto = $(usbpro_path)/UsbProConfigMessages.proto
 
 if BUILD_PYTHON_LIBS
 output_files = \
-    python/ola/ArtNetConfigMessages_pb2.py \
-    python/ola/Ola_pb2.py \
-    python/ola/UsbProConfigMessages_pb2.py \
-    python/ola/Pids_pb2.py \
-    python/ola/PidStoreLocation.py \
-    python/ola/Version.py
+    $(top_builddir)/python/ola/ArtNetConfigMessages_pb2.py \
+    $(top_builddir)/python/ola/Ola_pb2.py \
+    $(top_builddir)/python/ola/UsbProConfigMessages_pb2.py \
+    $(top_builddir)/python/ola/Pids_pb2.py \
+    $(top_builddir)/python/ola/PidStoreLocation.py \
+    $(top_builddir)/python/ola/Version.py
 built_sources += $(output_files)
 
 nodist_pkgpython_PYTHON = $(output_files)

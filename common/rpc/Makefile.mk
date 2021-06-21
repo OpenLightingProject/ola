@@ -1,10 +1,10 @@
 built_sources += \
-    common/rpc/Rpc.pb.cc \
-    common/rpc/Rpc.pb.h \
-    common/rpc/TestService.pb.cc \
-    common/rpc/TestService.pb.h \
-    common/rpc/TestServiceService.pb.cpp \
-    common/rpc/TestServiceService.pb.h
+    $(top_builddir)/common/rpc/Rpc.pb.cc \
+    $(top_builddir)/common/rpc/Rpc.pb.h \
+    $(top_builddir)/common/rpc/TestService.pb.cc \
+    $(top_builddir)/common/rpc/TestService.pb.h \
+    $(top_builddir)/common/rpc/TestServiceService.pb.cpp \
+    $(top_builddir)/common/rpc/TestServiceService.pb.h
 
 # LIBRARIES
 ##################################################
