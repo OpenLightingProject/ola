@@ -157,15 +157,15 @@ bool GPIODriver::SetupGPIO() {
     if (inverted) {
         direction = &inverted_direction;
     } else {
-	direction = &normal_direction;
+        direction = &normal_direction;
     }
 
     OLA_DEBUG << "Configuring GPIO pin " << static_cast<int>(*iter)
-	      << " with " << ( inverted ? "inverted" : "normal" ) << " logic";
+              << " with " << (inverted ? "inverted" : "normal") << " logic";
     if (write(fd, direction->c_str(), direction->size()) < 0) {
       OLA_WARN << "Failed to enable output on " << str.str()
-	       << " with " << ( inverted ? "inverted" : "normal" ) << " logic"
-	       << " : " << strerror(errno);
+               << " with " << (inverted ? "inverted" : "normal") << " logic"
+               << " : " << strerror(errno);
       failed = true;
     }
     close(fd);
