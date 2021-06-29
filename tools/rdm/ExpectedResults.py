@@ -58,7 +58,7 @@ class BaseExpectedResult(object):
       advisory: An advisory message to log is this result matches
     """
     self._action = action
-    self._warning_messae = warning
+    self._warning_message = warning
     self._advisory_message = advisory
 
   @property
@@ -67,7 +67,7 @@ class BaseExpectedResult(object):
 
   @property
   def warning(self):
-    return self._warning_messae
+    return self._warning_message
 
   @property
   def advisory(self):
