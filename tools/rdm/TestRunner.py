@@ -274,7 +274,7 @@ class TestRunner(object):
 
     Returns:
       A tuple in the form (tests, device), where tests is a list of tests that
-      exectuted, and device is an instance of DeviceProperties.
+      executed, and device is an instance of DeviceProperties.
     """
     device = DeviceProperties(self._property_map.keys())
     if whitelist is None:
