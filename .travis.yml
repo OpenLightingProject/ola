@@ -317,6 +317,7 @@ jobs:
         apt:
           packages:
            - *core_build
+           - *bionic_build_extras_python2
            - lintian
            - moreutils
     - os: linux
@@ -327,6 +328,7 @@ jobs:
         apt:
           packages:
            - *core_build
+           - *bionic_build_extras_python2
            - lintian
            - moreutils
   allow_failures:
