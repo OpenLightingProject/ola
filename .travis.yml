@@ -128,12 +128,14 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
-      env: TASK='flake8'
+      env:
+        - TASK='flake8'
+        - PYTHON='python3'
       addons:
         apt:
           packages:
            - *base_build
-           - *bionic_build_extras_python2
+           - *bionic_build_extras_python3
 # Only run Travis builds against the zero credit partner queue solution
 #    - os: linux
 #      dist: bionic
@@ -390,6 +392,12 @@ jobs:
       - CPPUNIT='1.14'
       - PROTOBUF='latest'
       - LIBFTDI='1'
+    - os: linux
+      dist: bionic
+      arch: arm64
+      env:
+      - TASK='flake8'
+      - PYTHON='python3'
     - os: linux
       dist: bionic
       arch: arm64
