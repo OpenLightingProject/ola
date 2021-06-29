@@ -173,6 +173,7 @@ class ClientWrapperTest(unittest.TestCase):
     wrapper.AddEvent(datetime.timedelta(milliseconds=5), b)
     wrapper.AddEvent(10, c)
 
+    # Nothing has been called yet
     self.assertIsNone(results.a_called)
     self.assertIsNone(results.b_called)
     self.assertIsNone(results.c_called)
@@ -181,19 +182,32 @@ class ClientWrapperTest(unittest.TestCase):
     self.start = datetime.datetime.now()
     wrapper.Run()
 
+    # Everything has been called
     self.assertIsNotNone(results.a_called)
     self.assertIsNotNone(results.b_called)
     self.assertIsNotNone(results.c_called)
     self.assertIsNotNone(results.d_called)
 
-    self.assertTrue(results.a_called - self.start <
-                    datetime.timedelta(milliseconds=5))
-    self.assertTrue(results.b_called - self.start >=
-                    datetime.timedelta(milliseconds=5))
-    self.assertTrue(results.c_called - self.start >=
-                    datetime.timedelta(milliseconds=10))
-    self.assertTrue(results.d_called - self.start >=
-                    datetime.timedelta(milliseconds=15))
+    # Check when the callbacks were called. Allow 500 microseconds of drift.
+    # Called immediately
+    a_diff = results.a_called - self.start
+    self.assertAlmostEqual(a_diff, datetime.timedelta(milliseconds=0),
+                           delta=datetime.timedelta(microseconds=500))
+
+    # Called in 5 milliseconds
+    b_diff = results.b_called - self.start
+    self.assertAlmostEqual(b_diff, datetime.timedelta(milliseconds=5),
+                           delta=datetime.timedelta(microseconds=500))
+
+    # Called in 10 milliseconds
+    c_diff = results.c_called - self.start
+    self.assertAlmostEqual(c_diff, datetime.timedelta(milliseconds=10),
+                           delta=datetime.timedelta(microseconds=500))
+
+    # Called in 15 milliseconds
+    d_diff = results.d_called - self.start
+    self.assertAlmostEqual(d_diff, datetime.timedelta(milliseconds=15),
+                           delta=datetime.timedelta(microseconds=500))
 
     sockets[0].close()
     sockets[1].close()
@@ -229,6 +243,9 @@ class ClientWrapperTest(unittest.TestCase):
     wrapper.Run()
 
     self.assertTrue(results.gotdata)
+
+    sockets[0].close()
+    sockets[1].close()
 
 
 if __name__ == '__main__':
