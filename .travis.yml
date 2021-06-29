@@ -443,7 +443,8 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 before_install:
- - if [ "$PYTHON" == "python3" ]; then pyenv global 3.8.1 ; fi
+# Try doing nothing (on arm64 at least)
+# - if [ "$PYTHON" == "python3" ]; then pyenv global 3.8.1 ; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
