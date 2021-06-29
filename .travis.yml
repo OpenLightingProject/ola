@@ -397,12 +397,6 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
-      env:
-      - TASK='flake8'
-      - PYTHON='python3'
-    - os: linux
-      dist: bionic
-      arch: arm64
       compiler: gcc
       env: TASK='coverage'
     - os: linux
