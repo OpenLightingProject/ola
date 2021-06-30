@@ -11,9 +11,9 @@
     "grunt-contrib-uglify": "^0.7.0",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-jscs": "^1.8.0",
-    "grunt-stylelint": "^0.15.0",
+    "grunt-stylelint": "^0.14.0",
     "olp-javascript-style": "git://github.com/OpenLightingProject/javascript-style",
-    "stylelint": "^13.3.3",
-    "stylelint-config-recommended": "^3.0.0"
+    "stylelint": "~13.3.3",
+    "stylelint-config-recommended": "~3.0.0"
   }
 }
