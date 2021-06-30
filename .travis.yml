@@ -482,6 +482,8 @@ before_cache:
 before_install:
 # Try doing nothing (on arm64 at least)
 # - if [ "$PYTHON" == "python3" ]; then pyenv global 3.8.1 ; fi
+# Fix the npm version
+  - if [ "$TASK" = "weblint" ]; then npm i -g npm@v10.23.0; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
@@ -521,7 +523,6 @@ install:
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
-  - if [ "$TASK" = "weblint" ]; then npm i -g npm@v14.15.0; fi
   - if [ "$TASK" = "weblint" ]; then npm install -g grunt-cli; fi
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
