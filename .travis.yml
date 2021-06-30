@@ -540,6 +540,7 @@ after_failure:
   - if [ -f ${TRAVIS_BUILD_DIR}/config.log ]; then cat ${TRAVIS_BUILD_DIR}/config.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi
+  - if [ -f /home/travis/.npm/_logs/*-debug.log ]; then cat /home/travis/.npm/_logs/*-debug.log; fi
 
 after_success:
   - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-10 -b . -E '.*Test\.cpp$' -E '.*\.pb\.cc$' -E '.*\.pb\.cpp$' -E '.*\.pb\.h$' -E '.*\.yy\.cpp$' -E '.*\.tab\.cpp$' -E '.*\.tab\.h$' -E '.*/doxygen/examples.*$' --gcov-options '\-lp' > /dev/null; fi
