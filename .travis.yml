@@ -133,6 +133,16 @@ jobs:
       arch: arm64
       env:
         - TASK='flake8'
+      addons:
+        apt:
+          packages:
+           - *base_build
+           - *bionic_build_extras_python2
+    - os: linux
+      dist: bionic
+      arch: arm64
+      env:
+        - TASK='flake8'
         - PYTHON='python3'
       addons:
         apt:
@@ -456,8 +466,9 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 before_install:
-# Try doing nothing (on arm64 at least)
-# - if [ "$PYTHON" == "python3" ]; then pyenv global 3.8.1 ; fi
+ - if [ "$PYTHON" == "python3" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pyenv global 3.8.1; fi
+#On arm64 (at least) pip is now pip3, so symlink it to pip2 unless we're using python3.
+ - if [ "$PYTHON" != "python3" ]; then rm /usr/local/bin/pip && ln -s /usr/local/bin/pip2 /usr/local/bin/pip; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
