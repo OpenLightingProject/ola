@@ -217,9 +217,9 @@ elif [[ $TASK = 'coverity' ]]; then
 elif [[ $TASK = 'weblint' ]]; then
   cd ./javascript/new-src;
   travis_fold start "npm_install"
-  npm install;
+  npm --verbose install;
   travis_fold end "npm_install"
-  grunt test
+  grunt -v -d --stack test
 elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "autoreconf"
   autoreconf -i;
