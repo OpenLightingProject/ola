@@ -492,7 +492,7 @@ before_cache:
 before_install:
  - if [ "$PYTHON" == "python3" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pyenv global 3.8.1; fi
 #On arm64 (at least) pip is now pip3, so symlink it to pip2 unless we're using python3.
- - if [ "$PYTHON" != "python3" ]; then rm /usr/local/bin/pip && ln -s /usr/local/bin/pip2 /usr/local/bin/pip; fi
+ - if [ "$PYTHON" != "python3" ]; then sudo rm /usr/local/bin/pip && sudo ln -s /usr/local/bin/pip2 /usr/local/bin/pip; fi
 #Switch node to the latest LTS version
  - if [ "$TASK" = "weblint" ]; then nvm install lts/* && nvm use lts/*; fi
 #Fix permissions for unbound (and possibly others)
