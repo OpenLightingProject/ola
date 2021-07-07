@@ -485,9 +485,10 @@ before_install:
 #Check the node version
  - if [ "$TASK" = "weblint" ]; then node -v; fi
 #Default node to the latest version
- - if [ "$TASK" = "weblint" ]; then echo "node" > .nvmrc; fi
+ - if [ "$TASK" = "weblint" ]; then echo "node" > .nvmrc && nvm use; fi
 #Check the node version again
  - if [ "$TASK" = "weblint" ]; then node -v; fi
+ - if [ "$TASK" = "weblint" ]; then which node && ls -al `which node`; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
