@@ -153,6 +153,7 @@ jobs:
           packages:
            - *base_build
            - python-tk
+           - python-dev
     - os: linux
       dist: xenial
       arch: arm64
@@ -163,6 +164,7 @@ jobs:
           packages:
            - *base_build
            - python-tk
+           - python-dev
       addons:
         apt:
           packages:
