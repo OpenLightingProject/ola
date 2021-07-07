@@ -55,9 +55,10 @@ DEFINE_default_bool(verify_playback, true,
 DEFINE_s_string(universes, u, "",
                 "A comma separated list of universes to record");
 DEFINE_s_uint32(delay, d, 0, "The delay in ms between successive iterations.");
-DEFINE_uint32(duration, 0, "Total playback time (seconds); the program will "
-                           "close after this time has elapsed. This "
-                           "option overrides the iteration option.");
+DEFINE_uint32(duration, 0, "Total playback time (seconds) to play or record "
+                           "for; the program will close after this time has "
+                           "elapsed. This option overrides the iteration "
+                           "option during playback.");
 // 0 means infinite looping
 DEFINE_s_uint32(iterations, i, 1,
                 "The number of times to repeat the show, 0 means unlimited. "
@@ -97,14 +98,18 @@ int RecordShow() {
     universes.push_back(universe);
   }
 
-  ShowRecorder show_recorder(FLAGS_record.str(), universes);
+  ShowRecorder show_recorder(FLAGS_record.str(), universes, FLAGS_duration);
   int status = show_recorder.Init();
   if (status)
     return status;
 
   {
     ola::thread::SignalThread signal_thread;
-    cout << "Recording, hit Control-C to end" << endl;
+    cout << "Recording, ";
+    if (FLAGS_duration != 0) {
+      cout << "will stop automatically after " << FLAGS_duration << "s, or ";
+    }
+    cout << "hit Control-C to end" << endl;
     signal_thread.InstallSignalHandler(
         SIGINT, ola::NewCallback(TerminateRecorder, &show_recorder));
     signal_thread.InstallSignalHandler(
