@@ -525,7 +525,7 @@ install:
   - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
   - if [ "$TASK" = "weblint" ]; then npm install -g grunt-cli; fi
   - if [ "$TASK" = "weblint" ]; then grunt --version --verbose; fi
-  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then which python && python --version && which pip && pip --version; fi
+  - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then which python && ls -al `which python` && python --version && which pip && ls -al `which pip` && pip --version; fi
 # If this causes SSL errors, then Sourceforge is probably in disaster recovery mode and needing Javascript. Could switch to a specific mirror, e.g. kent.dl.sourceforge.net
   - if [ "$TASK" = "pychecker" -o "$TASK" = "pychecker-wip" ]; then pip install --user http://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download; fi
 # This is a very bodgy workaround to the fact that the pip install of the archive doesn't seem to work properly now on Travis
