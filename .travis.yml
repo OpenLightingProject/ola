@@ -484,6 +484,8 @@ before_install:
 # - if [ "$PYTHON" == "python3" ]; then pyenv global 3.8.1 ; fi
 # Fix the npm version
 # - if [ "$TASK" = "weblint" ]; then npm i -g npm@v10.23.0; fi
+- if [ "$TASK" = "weblint" ]; then node -v; fi
+- if [ "$TASK" = "weblint" ]; then grunt --version --verbose; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
