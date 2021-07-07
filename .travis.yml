@@ -485,7 +485,7 @@ before_install:
 #Check the node version
  - if [ "$TASK" = "weblint" ]; then node -v && nvm ls && nvm ls-remote; fi
 #Default node to the latest LTS version
- - if [ "$TASK" = "weblint" ]; then nvm ls && echo "lts/*" > .nvmrc && nvm use; fi
+ - if [ "$TASK" = "weblint" ]; then nvm install lts/* && nvm install lts/*; fi
 #Check the node version again
  - if [ "$TASK" = "weblint" ]; then node -v; fi
  - if [ "$TASK" = "weblint" ]; then which node && ls -al `which node`; fi
