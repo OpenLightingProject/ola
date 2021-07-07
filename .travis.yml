@@ -165,11 +165,6 @@ jobs:
            - *base_build
            - python-tk
            - python-dev
-      addons:
-        apt:
-          packages:
-           - *base_build
-           - *bionic_build_extras_python3
 # Only run Travis builds against the zero credit partner queue solution
 #    - os: linux
 #      dist: bionic
