@@ -219,7 +219,7 @@ elif [[ $TASK = 'weblint' ]]; then
   travis_fold start "npm_install"
   npm --verbose install;
   travis_fold end "npm_install"
-  grunt -v -d test
+  grunt -v -d --stack test
 elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "autoreconf"
   autoreconf -i;
