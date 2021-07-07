@@ -483,9 +483,9 @@ before_install:
 # Try doing nothing (on arm64 at least)
 # - if [ "$PYTHON" == "python3" ]; then pyenv global 3.8.1 ; fi
 #Check the node version
- - if [ "$TASK" = "weblint" ]; then node -v; fi
-#Default node to the latest version
- - if [ "$TASK" = "weblint" ]; then echo "node" > .nvmrc && nvm use; fi
+ - if [ "$TASK" = "weblint" ]; then node -v && nvm ls && nvm ls-remote; fi
+#Default node to the latest LTS version
+ - if [ "$TASK" = "weblint" ]; then nvm ls && echo "lts/*" > .nvmrc && nvm use; fi
 #Check the node version again
  - if [ "$TASK" = "weblint" ]; then node -v; fi
  - if [ "$TASK" = "weblint" ]; then which node && ls -al `which node`; fi
