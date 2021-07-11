@@ -45,6 +45,7 @@ const char E131Plugin::DRAFT_DISCOVERY_KEY[] = "draft_discovery";
 const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
 const char E131Plugin::INPUT_PORT_COUNT_KEY[] = "input_ports";
 const char E131Plugin::IP_KEY[] = "ip";
+const char E131Plugin::INTERFACE_KEY[] = "interface";
 const char E131Plugin::OUTPUT_PORT_COUNT_KEY[] = "output_ports";
 const char E131Plugin::PLUGIN_NAME[] = "E1.31 (sACN)";
 const char E131Plugin::PLUGIN_PREFIX[] = "e131";
@@ -61,6 +62,7 @@ const unsigned int E131Plugin::DEFAULT_PORT_COUNT = 5;
 bool E131Plugin::StartHook() {
   CID cid = CID::FromString(m_preferences->GetValue(CID_KEY));
   string ip_addr = m_preferences->GetValue(IP_KEY);
+  string interface = m_preferences->GetValue(INTERFACE_KEY);
 
   E131Device::E131DeviceOptions options;
   options.use_rev2 = (m_preferences->GetValue(REVISION_KEY) == REVISION_0_2);
@@ -96,7 +98,15 @@ bool E131Plugin::StartHook() {
     OLA_WARN << "Invalid value for input_ports";
   }
 
-  m_device = new E131Device(this, cid, ip_addr, m_plugin_adaptor, options);
+  options.force_interface = !interface.empty();
+  if (!interface.empty() && !ip_addr.empty()) {
+    OLA_WARN << "interface=" + interface + "option overrides ip=" + ip_addr;
+  }
+
+  m_device = new E131Device(this,
+                            cid,
+                            options.force_interface ? interface : ip_addr,
+                            m_plugin_adaptor, options);
 
   if (!m_device->Start()) {
     delete m_device;

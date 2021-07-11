@@ -34,6 +34,7 @@
 #include <ola/io/Descriptor.h>
 #include <ola/io/IOQueue.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/Interface.h>
 #include <string>
 
 namespace ola {
@@ -196,9 +197,9 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
 
   /**
    * @brief Set the outgoing interface to be used for multicast transmission.
-   * @param iface the address of the interface to use.
+   * @param iface the interface to use.
    */
-  virtual bool SetMulticastInterface(const IPV4Address &iface) = 0;
+  virtual bool SetMulticastInterface(const Interface &iface) = 0;
 
   /**
    * @brief Join a multicast group
@@ -277,7 +278,7 @@ class UDPSocket: public UDPSocketInterface {
                 IPV4SocketAddress *source);
 
   bool EnableBroadcast();
-  bool SetMulticastInterface(const IPV4Address &iface);
+  bool SetMulticastInterface(const Interface &iface);
   bool JoinMulticast(const IPV4Address &iface,
                      const IPV4Address &group,
                      bool multicast_loop = false);
