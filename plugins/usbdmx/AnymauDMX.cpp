@@ -124,7 +124,6 @@ class AnymaAsyncUsbSender : public AsyncUsbSender {
   }
 
   ~AnymaAsyncUsbSender() {
-    CancelTransfer();
     delete[] m_control_setup_buffer;
   }
 

@@ -124,7 +124,6 @@ class AVLdiyAsyncUsbSender : public AsyncUsbSender {
   }
 
   ~AVLdiyAsyncUsbSender() {
-    CancelTransfer();
     delete[] m_control_setup_buffer;
   }
 
