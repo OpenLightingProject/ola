@@ -17,6 +17,8 @@
 # Copyright (C) 2020 Bruce Lowekamp
 
 import itertools
+import struct
+import sys
 
 """Common utils for ola python tests"""
 
@@ -32,3 +34,13 @@ def allHashNotEqual(testCase, t):
   h = map(hash, t)
   for pair in itertools.combinations(h, 2):
     testCase.assertNotEqual(pair[0], pair[1])
+
+
+def handleRPCByteOrder(expected):
+  # The RPC header (version and size) is encoded in native format, so flip that
+  # part of the expected data where necessary (as our expected is from a
+  # little endian source)
+  if sys.byteorder == 'big':
+    expected = (struct.pack('=L', struct.unpack_from('<L', expected)[0]) +
+                expected[4:])
+  return expected
