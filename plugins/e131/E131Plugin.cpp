@@ -92,7 +92,7 @@ bool E131Plugin::StartHook() {
 
   if (!StringToInt(m_preferences->GetValue(OUTPUT_PORT_COUNT_KEY),
                    &options.output_ports)) {
-    OLA_WARN << "Invalid value for input_ports";
+    OLA_WARN << "Invalid value for output_ports";
   }
 
   m_device = new E131Device(this, cid, ip_addr, m_plugin_adaptor, options);
@@ -150,14 +150,14 @@ string E131Plugin::Description() const {
 "Ignore preview data.\n"
 "\n"
 "input_ports = [int]\n"
-"The number of input ports to create up to a max of 32.\n"
+"The number of input ports to create up to an arbitrary max of 512.\n"
 "\n"
 "ip = [a.b.c.d|<interface_name>]\n"
 "The ip address or interface name to bind to. If not specified it will\n"
 "use the first non-loopback interface.\n"
 "\n"
 "output_ports = [int]\n"
-"The number of output ports to create up to a max of 32.\n"
+"The number of output ports to create up to an arbitrary max of 512.\n"
 "\n"
 "prepend_hostname = [true|false]\n"
 "Prepend the hostname to the source name when sending packets.\n"
