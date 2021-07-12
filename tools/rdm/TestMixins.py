@@ -81,7 +81,7 @@ class GetMixin(object):
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+      for i in range(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 
@@ -136,7 +136,7 @@ class GetRequiredMixin(object):
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+      for i in range(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 
@@ -157,7 +157,7 @@ class GetRequiredStringMixin(GetRequiredMixin):
     string_field = fields[self.EXPECTED_FIELDS[0]]
 
     if self.PROVIDES:
-      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+      for i in range(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
     if ContainsUnprintable(string_field):
@@ -281,7 +281,7 @@ class SetLabelMixin(object):
   TEST_LABEL = 'test label'
   PROVIDES = []
 
-  SET, VERIFY, RESET = xrange(3)
+  SET, VERIFY, RESET = range(3)
 
   def ExpectedResults(self):
     return [
@@ -473,7 +473,7 @@ class SetUInt32Mixin(SetMixin):
 # -----------------------------------------------------------------------------
 class SetStartAddressMixin(object):
   """Set the dmx start address."""
-  SET, VERIFY, RESET = xrange(3)
+  SET, VERIFY, RESET = range(3)
 
   def CalculateNewAddress(self, current_address, footprint):
     if footprint == MAX_DMX_ADDRESS:
@@ -596,7 +596,7 @@ class SetUndefinedSensorValues(object):
   def Test(self):
     sensors = self.Property('sensor_definitions')
     self._missing_sensors = []
-    for i in xrange(0, 0xff):
+    for i in range(0, 0xff):
       if i not in sensors:
         self._missing_sensors.append(i)
 

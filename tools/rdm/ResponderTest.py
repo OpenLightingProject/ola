@@ -25,6 +25,7 @@
 #                                  SUPPORTED_PARAMETERS
 
 import logging
+import sys
 import time
 from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
                              NackDiscoveryResult, NackGetResult, NackSetResult)
@@ -33,6 +34,12 @@ from TestState import TestState
 from TimingStats import TimingStats
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
+
+if sys.version_info >= (3, 0):
+  try:
+    unicode
+  except NameError:
+    unicode = str
 
 '''Automated testing for RDM responders.'''
 
@@ -605,13 +612,21 @@ class ResponderTestFixture(TestFixture):
       return [self._EscapeData(i) for i in data]
     elif type(data) == dict:
       d = {}
-      for k, v in data.iteritems():
+      for k, v in data.items():
+        # We can't escape the key as then it may become a new key
         d[k] = self._EscapeData(v)
       return d
-    elif type(data) == str:
+    # TODO(Peter): How does this interact with the E1.20 Unicode flag?
+    # We don't use sys.version_info.major to support Python 2.6.
+    elif sys.version_info[0] == 2 and type(data) == str:
       return data.encode('string-escape')
-    elif type(data) == unicode:
+    elif sys.version_info[0] == 2 and type(data) == unicode:
       return data.encode('unicode-escape')
+    elif type(data) == str:
+      # All strings in Python 3 are unicode
+      # This encode/decode pair gets us an escaped string
+      return data.encode('unicode-escape').decode(encoding="ascii",
+                                                  errors="backslashreplace")
     else:
       return data
 

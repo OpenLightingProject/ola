@@ -33,6 +33,12 @@ from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
 from optparse import OptionParser
 
+if sys.version_info >= (3, 0):
+  try:
+    raw_input
+  except NameError:
+    raw_input = input
+
 '''Automated testing for RDM responders.'''
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
@@ -220,7 +226,7 @@ def DisplaySummary(options, runner, tests, device):
 
   logging.info('------------------ By Category ------------------')
 
-  for category, counts in by_category.iteritems():
+  for category, counts in by_category.items():
     passed = counts.get(TestState.PASSED, 0)
     total_run = (passed + counts.get(TestState.FAILED, 0))
     if total_run == 0:

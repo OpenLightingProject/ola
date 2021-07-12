@@ -420,9 +420,9 @@ class TestRunner(object):
     tests = []
 
     remaining_tests = [
-        test for test, deps in deps_dict.iteritems() if len(deps)]
+        test for test, deps in deps_dict.items() if len(deps)]
     no_deps = set(
-        test for test, deps in deps_dict.iteritems() if len(deps) == 0)
+        test for test, deps in deps_dict.items() if len(deps) == 0)
 
     while len(no_deps) > 0:
       current_test = no_deps.pop()

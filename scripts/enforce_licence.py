@@ -26,7 +26,7 @@ import re
 import sys
 import textwrap
 
-CPP, JS, PROTOBUF, PYTHON = xrange(4)
+CPP, JS, PROTOBUF, PYTHON = range(4)
 
 IGNORED_DIRECTORIES = [
   'javascript/new-src/node_modules/',
@@ -322,7 +322,7 @@ def main():
   diff, fix = ParseArgs()
   licences = GetDirectoryLicences(os.getcwd())
   errors = 0
-  for dir_name, licence in licences.iteritems():
+  for dir_name, licence in licences.items():
     errors += CheckLicenceForDir(dir_name, licence, diff=diff, fix=fix)
   print('Found %d files with incorrect licences' % errors)
   if errors > 0:
