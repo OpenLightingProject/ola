@@ -50,6 +50,11 @@ class GPIODriver : private ola::thread::Thread {
     std::vector<uint16_t> gpio_pins;
 
     /**
+     * @brief A list of gpio_pins which use inverted logic.
+     */
+    std::vector<uint16_t> gpio_inverted_pins;
+
+    /**
      * @brief The DMX512 start address of the first pin
      */
     uint16_t start_address;
@@ -108,6 +113,7 @@ class GPIODriver : private ola::thread::Thread {
     int fd;
     GPIOState state;
     bool last_value;
+    bool inverted;
   };
 
   typedef std::vector<GPIOPin> GPIOPins;
