@@ -131,8 +131,8 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
-      env:
-        - TASK='flake8'
+      env: TASK='flake8'
+      python: '2.7'
       addons:
         apt:
           packages:
@@ -209,17 +209,18 @@ jobs:
       arch: s390x
       compiler: clang
       env: TASK='compile'
+      python: '2.7'
       addons:
         apt:
           packages:
-           - *core_build
+           - *core_build_clang_recent
            - *bionic_build_extras_python2
     - os: linux
       dist: bionic
       arch: s390x
       compiler: gcc
-      env:
-      - TASK='compile'
+      env: TASK='compile'
+      python: '2.7'
       addons:
         apt:
           packages:
@@ -516,7 +517,7 @@ before_install:
 #Use the latest clang if we're compiling with clang, except on arm64 and s390x where it's not available
  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" != "arm64" -a "$TRAVIS_CPU_ARCH" != "s390x" ]; then export CXX="clang++-11" CC="clang-11"; fi
 #Use a recent clang if we're compiling with clang on arm64 or s390x as the latest isn't available
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a \( "$TRAVIS_CPU_ARCH" == "arm64" -o "$TRAVIS_CPU_ARCH" != "s390x" \) ]; then export CXX="clang++-10" CC="clang-10"; fi
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a \( "$TRAVIS_CPU_ARCH" == "arm64" -o "$TRAVIS_CPU_ARCH" == "s390x" \) ]; then export CXX="clang++-10" CC="clang-10"; fi
 #Report the compiler version
  - $CXX --version
 
