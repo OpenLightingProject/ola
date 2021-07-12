@@ -160,7 +160,7 @@ string BonjourDiscoveryAgent::BuildTxtRecord(
     unsigned int pair_size = iter->first.size() + iter->second.size() + 1;
     if (pair_size > UINT8_MAX) {
       OLA_WARN << "Discovery data of " << iter->first << ": " << iter->second
-               << " exceeed " << static_cast<int>(UINT8_MAX)
+               << " exceed " << static_cast<int>(UINT8_MAX)
                << " bytes. Data skipped";
       continue;
     }
