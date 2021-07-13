@@ -275,7 +275,8 @@ bool SynchronousScanlimeFadecandy::Init() {
   return true;
 }
 
-bool SynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer,
+                                           unsigned int portId) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -290,7 +291,7 @@ class FadecandyAsyncUsbSender : public AsyncUsbSender {
 
   libusb_device_handle* SetupHandle();
 
-  bool PerformTransfer(const DmxBuffer &buffer);
+  bool PerformTransfer(const DmxBuffer &buffer, unsigned int portId);
 
  private:
   fadecandy_packet m_data_packets[PACKETS_PER_UPDATE];
@@ -312,7 +313,8 @@ libusb_device_handle* FadecandyAsyncUsbSender::SetupHandle() {
   return usb_handle;
 }
 
-bool FadecandyAsyncUsbSender::PerformTransfer(const DmxBuffer &buffer) {
+bool FadecandyAsyncUsbSender::PerformTransfer(const DmxBuffer &buffer,
+                                              unsigned int portId) {
   UpdatePacketsWithDMX(m_data_packets, buffer);
   // We do a single bulk transfer of the entire data, rather than one transfer
   // for each 64 bytes.
@@ -338,7 +340,8 @@ bool AsynchronousScanlimeFadecandy::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousScanlimeFadecandy::SendDMX(const DmxBuffer &buffer,
+                                            unsigned int portId) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx

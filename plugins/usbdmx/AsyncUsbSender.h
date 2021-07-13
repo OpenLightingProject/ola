@@ -22,6 +22,7 @@
 #define PLUGINS_USBDMX_ASYNCUSBSENDER_H_
 
 #include <libusb.h>
+#include <map>
 
 #include "AsyncUsbTransceiverBase.h"
 #include "libs/usb/LibUsbAdaptor.h"
@@ -59,7 +60,7 @@ class AsyncUsbSender: public AsyncUsbTransceiverBase {
    * @param buffer the DMX data to send.
    * @returns the value of PerformTransfer().
    */
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
   /**
    * @brief Called from the libusb callback when the asynchronous transfer
@@ -78,7 +79,8 @@ class AsyncUsbSender: public AsyncUsbTransceiverBase {
    * FillControlTransfer() / FillBulkTransfer() as appropriate and then call
    * SubmitTransfer().
    */
-  virtual bool PerformTransfer(const DmxBuffer &buffer) = 0;
+  virtual bool PerformTransfer(const DmxBuffer &buffer,
+                               unsigned int portId) = 0;
 
   /**
    * @brief Called when the transfer completes.
@@ -92,11 +94,10 @@ class AsyncUsbSender: public AsyncUsbTransceiverBase {
    * @brief Check if there is a pending transfer.
    * @returns true if there is a transfer in progress, false otherwise.
    */
-  bool TransferPending() const { return m_pending_tx; }
+  bool TransferPending() const { return (bool)(m_tx_buffers.size()); }
 
  private:
-  DmxBuffer m_tx_buffer;  // GUARDED_BY(m_mutex);
-  bool m_pending_tx;  // GUARDED_BY(m_mutex);
+  std::map<unsigned int, DmxBuffer> m_tx_buffers;  // GUARDED_BY(m_mutex);
 
   DISALLOW_COPY_AND_ASSIGN(AsyncUsbSender);
 };
