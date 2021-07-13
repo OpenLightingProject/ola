@@ -103,7 +103,7 @@ string FtdiDmxPlugin::Description() const {
 "FTDI USB Chipset DMX Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin is compatible with Enttec OpenDmx and other\n"
+"This plugin is compatible with Enttec Open DMX USB and other\n"
 "FTDI chipset based USB to DMX converters where the host\n"
 "needs to create the DMX stream itself and not the interface\n"
 "(the interface has no microprocessor to do so).\n"
