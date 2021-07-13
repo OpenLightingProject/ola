@@ -61,23 +61,14 @@ bool DMXCProjectsNodleU1Factory::DeviceAdded(
 
   OLA_INFO << "Nodle U1 serial: " << info.serial;
 
-  // Check if it's a RP2040-based widget and if so, how many ins and outs it has
-  int ret = 0;
+  // Check if it's a rp2040-dongle that supports multiple universes
   unsigned int ins = 1;   // Input universes
   unsigned int outs = 1;  // Output universes
-  char variant = 'S';     // Variant: S = simple, R = RDM (not yet implemented)
   if (info.serial.find('RP2040_') != std::string::npos) {
-    // Model format: ??Tx ??Rx S
-    ret = sscanf(info.product.c_str(), "%uTx %uRx %c", &outs, &ins, &variant);
-    if (ret == 3) {
-      OLA_INFO << "It's a RP2040-based device with " << ins << " INs and " <<
-        outs << " OUTs";
-    } else {
-      // Reset the values back to their default, just in case
-      ins = 1;
-      outs = 1;
-      variant = 'S';
-    }
+    // The rp2040-dongle supports at most 8 inputs or 16 outputs
+    // However, inputs are not yet implemented
+    ins = 0;
+    outs = 16;
   }
 
   if (m_preferences->SetDefaultValue(
