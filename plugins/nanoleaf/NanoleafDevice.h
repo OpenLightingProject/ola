@@ -33,32 +33,33 @@ namespace nanoleaf {
 
 class NanoleafDevice: public ola::Device {
  public:
-    NanoleafDevice(AbstractPlugin *owner,
-                   class Preferences *preferences,
-                   class PluginAdaptor *plugin_adaptor,
-                   const ola::network::IPV4Address &controller);
+  NanoleafDevice(AbstractPlugin *owner,
+                 class Preferences *preferences,
+                 class PluginAdaptor *plugin_adaptor,
+                 const ola::network::IPV4Address &controller);
 
-    std::string DeviceId() const;
+  std::string DeviceId() const;
+
  protected:
-    bool StartHook();
-    void PrePortStop();
-    void PostPortStop();
+  bool StartHook();
+  void PrePortStop();
+  void PostPortStop();
 
  private:
-    class NanoleafNode *m_node;
-    class Preferences *m_preferences;
-    class PluginAdaptor *m_plugin_adaptor;
-    const ola::network::IPV4Address m_controller;
+  class NanoleafNode *m_node;
+  class Preferences *m_preferences;
+  class PluginAdaptor *m_plugin_adaptor;
+  const ola::network::IPV4Address m_controller;
 
-    void SetDefaults();
-    std::string IPPortKey() const;
-    std::string PanelsKey() const;
-    std::string VersionKey() const;
+  void SetDefaults();
+  std::string IPPortKey() const;
+  std::string PanelsKey() const;
+  std::string VersionKey() const;
 
-    static const uint16_t DEFAULT_STREAMING_PORT = 60221;
+  static const uint16_t DEFAULT_STREAMING_PORT = 60221;
 
-    static const char VERSION_V1_TEXT[];
-    static const char VERSION_V2_TEXT[];
+  static const char VERSION_V1_TEXT[];
+  static const char VERSION_V2_TEXT[];
 };
 }  // namespace nanoleaf
 }  // namespace plugin

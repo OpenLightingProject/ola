@@ -29,5 +29,5 @@ enabling external control, defaults to v1. Canvas only supports v2.
 
 `<controller IP>-panels = [int]`
 The list of panel IDs to control, each panel is mapped to three DMX512 slots
-(for Red, Green and Blue). There is currently no support for white control via
-the v2 protocol.
+(for Red, Green and Blue). There is currently no support for white control
+via the v2 protocol.
