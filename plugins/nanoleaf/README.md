@@ -23,6 +23,11 @@ one controller by adding multiple `controller =` lines
 `<controller IP>-port = <int>`
 The port to stream to on the controller, range is 1 - 65535.
 
+`<controller IP>-version = [v1 | v2]`
+The streaming control version to use, set via the extControlVersion key when
+enabling external control, defaults to v1. Canvas only supports v2.
+
 `<controller IP>-panels = [int]`
 The list of panel IDs to control, each panel is mapped to three DMX512 slots
-(for Red, Green and Blue).
+(for Red, Green and Blue). There is currently no support for white control via
+the v2 protocol.

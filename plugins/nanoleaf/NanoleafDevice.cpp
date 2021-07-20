@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <limits>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -43,8 +44,12 @@ namespace nanoleaf {
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using std::auto_ptr;
+using std::set;
 using std::string;
 using std::vector;
+
+const char NanoleafDevice::VERSION_V1_TEXT[] = "v1";
+const char NanoleafDevice::VERSION_V2_TEXT[] = "v2";
 
 /*
  * Create a new Nanoleaf Device
@@ -68,7 +73,19 @@ NanoleafDevice::NanoleafDevice(
  * @return true on success, false on failure
  */
 bool NanoleafDevice::StartHook() {
-  vector<uint8_t> panels;
+  string text_version = m_preferences->GetValue(VersionKey());
+
+  NanoleafNode::NanoleafVersion version = NanoleafNode::VERSION_V1;
+  if (text_version == VERSION_V1_TEXT) {
+    version = NanoleafNode::VERSION_V1;
+  } else if (text_version == VERSION_V1_TEXT) {
+    version = NanoleafNode::VERSION_V2;
+  } else {
+    OLA_WARN << "Unknown Nanoleaf protocol version " << version
+             << ", defaulting to v1";
+  }
+
+  vector<uint16_t> panels;
   vector<string> panel_list;
   StringSplit(m_preferences->GetValue(PanelsKey()), &panel_list, ",");
   vector<string>::const_iterator iter = panel_list.begin();
@@ -77,7 +94,8 @@ bool NanoleafDevice::StartHook() {
       continue;
     }
 
-    uint8_t panel;
+    // TODO(Peter): Check < 255 if version 1
+    uint16_t panel;
     if (!StringToInt(*iter, &panel)) {
       OLA_WARN << "Invalid value for panel: " << *iter;
       return false;
@@ -91,7 +109,11 @@ bool NanoleafDevice::StartHook() {
     return false;
   }
 
-  m_node = new NanoleafNode(m_plugin_adaptor, panels);
+  // TODO(Peter): Check and warn if we have more than a universe of panels,
+  // possibly truncate the extra panels too
+
+  // Don't bother passing in a source socket, let the node generate it's own
+  m_node = new NanoleafNode(m_plugin_adaptor, panels, NULL, version);
 
   if (!m_node->Start()) {
     delete m_node;
@@ -124,9 +146,23 @@ string NanoleafDevice::PanelsKey() const {
 }
 
 
+string NanoleafDevice::VersionKey() const {
+  return m_controller.ToString() + "-version";
+}
+
+
 void NanoleafDevice::SetDefaults() {
   // Set device options
   m_preferences->SetDefaultValue(PanelsKey(), StringValidator(), "");
+
+  set<string> valid_versions;
+  valid_versions.insert(VERSION_V1_TEXT);
+  valid_versions.insert(VERSION_V2_TEXT);
+
+  m_preferences->SetDefaultValue(VersionKey(),
+                                 SetValidator<string>(valid_versions),
+                                 VERSION_V1_TEXT);
+
   m_preferences->SetDefaultValue(
       IPPortKey(),
       UIntValidator(1, std::numeric_limits<uint16_t>::max()),

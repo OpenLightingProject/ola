@@ -39,7 +39,6 @@ class NanoleafDevice: public ola::Device {
                    const ola::network::IPV4Address &controller);
 
     std::string DeviceId() const;
-
  protected:
     bool StartHook();
     void PrePortStop();
@@ -54,8 +53,12 @@ class NanoleafDevice: public ola::Device {
     void SetDefaults();
     std::string IPPortKey() const;
     std::string PanelsKey() const;
+    std::string VersionKey() const;
 
     static const uint16_t DEFAULT_STREAMING_PORT = 60221;
+
+    static const char VERSION_V1_TEXT[];
+    static const char VERSION_V2_TEXT[];
 };
 }  // namespace nanoleaf
 }  // namespace plugin

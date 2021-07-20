@@ -26,7 +26,7 @@
 
 #include "ola/DmxBuffer.h"
 #include "ola/base/Macro.h"
-#include "ola/io/OutputStream.h"
+#include "ola/io/BigEndianStream.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/Interface.h"
@@ -39,36 +39,48 @@ namespace nanoleaf {
 
 class NanoleafNode {
  public:
-    NanoleafNode(ola::io::SelectServerInterface *ss,
-                 std::vector<uint8_t> panels,
-                 ola::network::UDPSocketInterface *socket = NULL);
-    virtual ~NanoleafNode();
+  // The different versions we support.
+  enum NanoleafVersion {
+    VERSION_V1,
+    VERSION_V2,
+  };
 
-    bool Start();
-    bool Stop();
+  NanoleafNode(ola::io::SelectServerInterface *ss,
+               std::vector<uint16_t> panels,
+               ola::network::UDPSocketInterface *socket = NULL,
+               NanoleafVersion version = VERSION_V1);
+  virtual ~NanoleafNode();
 
-    // The following apply to Input Ports (those which send data)
-    bool SendDMX(const ola::network::IPV4SocketAddress &target,
-                 const ola::DmxBuffer &buffer);
+  bool Start();
+  bool Stop();
+
+  // The following apply to Input Ports (those which send data)
+  bool SendDMX(const ola::network::IPV4SocketAddress &target,
+               const ola::DmxBuffer &buffer);
 
  private:
-    bool m_running;
-    ola::io::SelectServerInterface *m_ss;
-    std::vector<uint8_t> m_panels;
-    ola::io::IOQueue m_output_queue;
-    ola::io::OutputStream m_output_stream;
-    ola::network::Interface m_interface;
-    std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
+  bool m_running;
+  ola::io::SelectServerInterface *m_ss;
+  std::vector<uint16_t> m_panels;
+  NanoleafVersion m_version;
+  ola::io::IOQueue m_output_queue;
+  // v2 protocol is BigEndian
+  ola::io::BigEndianOutputStream m_output_stream;
+  ola::network::Interface m_interface;
+  std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
 
-    void SocketReady();
-    bool InitNetwork();
+  void SocketReady();
+  bool InitNetwork();
 
-    static const uint8_t NANOLEAF_FRAME_COUNT = 0x01;
-    static const uint8_t NANOLEAF_WHITE_LEVEL = 0x00;
-    static const uint8_t NANOLEAF_TRANSITION_TIME = 0x01;
-    static const uint8_t NANOLEAF_SLOTS_PER_PANEL = 3;
+  static const uint8_t NANOLEAF_FRAME_COUNT_V1 = 0x01;
+  static const uint8_t NANOLEAF_TRANSITION_TIME_V1 = 0x01;
 
-    DISALLOW_COPY_AND_ASSIGN(NanoleafNode);
+  static const uint16_t NANOLEAF_TRANSITION_TIME_V2 = 0x0001;
+
+  static const uint8_t NANOLEAF_WHITE_LEVEL = 0x00;
+  static const uint8_t NANOLEAF_SLOTS_PER_PANEL = 3;
+
+  DISALLOW_COPY_AND_ASSIGN(NanoleafNode);
 };
 }  // namespace nanoleaf
 }  // namespace plugin
