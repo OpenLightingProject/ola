@@ -28,10 +28,6 @@
 
       pre { margin: 0px; }
 
-      .ola-table {
-        text-align: left;
-      }
-
       #header {
         margin: 0px;
         padding: 0px;
@@ -154,6 +150,7 @@
       /* Tables are used in various frames */
       .ola-table {
         width: 100%;
+        text-align: left;
         border-bottom: 1px solid #e4e9fe;
       }
 
@@ -228,45 +225,6 @@
         margin: 0 -1px;
         border-width: 0 1px;
         padding: 3px 4px;
-      }
-
-      /* Pre-IE7 IE hack; ignored by IE7 and all non-IE browsers. */
-      * html .goog-menu-button-inner-box {
-        /* IE6 needs to have the box shifted to make the borders line up. */
-        left: -1px;
-      }
-
-      /* Pre-IE7 BiDi fixes. */
-      * html .goog-menu-button-rtl .goog-menu-button-outer-box {
-        /* @noflip */ left: -1px;
-        /* @noflip */ right: auto;
-      }
-      * html .goog-menu-button-rtl .goog-menu-button-inner-box {
-        /* @noflip */ right: auto;
-      }
-
-      /* IE7-only hack; ignored by all other browsers. */
-      *:first-child+html .goog-menu-button-inner-box {
-        /* IE7 needs to have the box shifted to make the borders line up. */
-        left: -1px;
-      }
-      /* IE7 BiDi fix. */
-      *:first-child+html .goog-menu-button-rtl .goog-menu-button-inner-box {
-        /* @noflip */ left: 1px;
-        /* @noflip */ right: auto;
-      }
-
-      /* Safari-only hacks. */
-      ::root .goog-menu-button,
-      ::root .goog-menu-button-outer-box,
-      ::root .goog-menu-button-inner-box {
-        /* Required to make pseudo-rounded corners work on Safari. */
-        line-height: 0;
-      }
-      ::root .goog-menu-button-caption,
-      ::root .goog-menu-button-dropdown {
-        /* Required to make pseudo-rounded corners work on Safari. */
-        line-height: normal;
       }
 
       /* State: hover. */
@@ -385,6 +343,52 @@
         font-family: monospace;
         white-space: pre-wrap;
       }
+
+
+      /* START: HACKS */
+      /* stylelint-disable */
+
+      /* Pre-IE7 IE hack; ignored by IE7 and all non-IE browsers. */
+      * html .goog-menu-button-inner-box {
+        /* IE6 needs to have the box shifted to make the borders line up. */
+        left: -1px;
+      }
+
+      /* Pre-IE7 BiDi fixes. */
+      * html .goog-menu-button-rtl .goog-menu-button-outer-box {
+        /* @noflip */ left: -1px;
+        /* @noflip */ right: auto;
+      }
+      * html .goog-menu-button-rtl .goog-menu-button-inner-box {
+        /* @noflip */ right: auto;
+      }
+
+      /* IE7-only hack; ignored by all other browsers. */
+      *:first-child+html .goog-menu-button-inner-box {
+        /* IE7 needs to have the box shifted to make the borders line up. */
+        left: -1px;
+      }
+      /* IE7 BiDi fix. */
+      *:first-child+html .goog-menu-button-rtl .goog-menu-button-inner-box {
+        /* @noflip */ left: 1px;
+        /* @noflip */ right: auto;
+      }
+
+      /* Safari-only hacks. */
+      ::root .goog-menu-button,
+      ::root .goog-menu-button-outer-box,
+      ::root .goog-menu-button-inner-box {
+        /* Required to make pseudo-rounded corners work on Safari. */
+        line-height: 0;
+      }
+      ::root .goog-menu-button-caption,
+      ::root .goog-menu-button-dropdown {
+        /* Required to make pseudo-rounded corners work on Safari. */
+        line-height: normal;
+      }
+
+      /* stylelint-enable */
+      /* END: HACKS */
     </style>
   </head>
   <body onload='ola.mobile.Setup()'>
@@ -459,7 +463,7 @@
     </noscript>
 
     <div id='footer'>
-      OLA &copy; 2005-2019 Open Lighting Project<br/>
+      OLA &copy; 2005-2020 Open Lighting Project<br/>
       <a href="ola.html">Full Version</a> - <a href="new/">New UI (Beta)</a>
     </div>
   </body>

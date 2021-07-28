@@ -18,6 +18,7 @@
 
 '''Get a PID from a UID.'''
 
+from __future__ import print_function
 import cmd
 import getopt
 import os.path
@@ -183,7 +184,7 @@ class InteractiveModeController(cmd.Cmd):
       return
     self._sub_device = sub_device
 
-  def do_print(self, l):
+  def do_print(self, line):
     """Prints the current universe, UID and sub device."""
     print(textwrap.dedent("""\
       Universe: %d
@@ -193,7 +194,7 @@ class InteractiveModeController(cmd.Cmd):
         self._uid,
         self._sub_device)))
 
-  def do_uids(self, l):
+  def do_uids(self, line):
     """List the UIDs for this universe."""
     self.client.FetchUIDList(self._universe, self._DisplayUids)
     self.wrapper.Run()
@@ -206,12 +207,12 @@ class InteractiveModeController(cmd.Cmd):
         print(str(uid))
     self.wrapper.Stop()
 
-  def do_full_discovery(self, l):
+  def do_full_discovery(self, line):
     """Run full RDM discovery for this universe."""
     self.client.RunRDMDiscovery(self._universe, True, self._DiscoveryDone)
     self.wrapper.Run()
 
-  def do_incremental_discovery(self, l):
+  def do_incremental_discovery(self, line):
     """Run incremental RDM discovery for this universe."""
     self.client.RunRDMDiscovery(self._universe, False, self._DiscoveryDone)
     self.wrapper.Run()
@@ -459,7 +460,7 @@ def main():
   try:
     PidStore.GetStore(pid_location)
   except PidStore.MissingPLASAPIDs as e:
-    print e
+    print(e)
     sys.exit()
 
   controller = InteractiveModeController(universe,

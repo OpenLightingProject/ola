@@ -21,6 +21,12 @@ SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0483", ATTRS{idPro
 # udev rules for the DMXControl Projects e.V. Nodle U1
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0830", GROUP="plugdev", TAG+="uaccess"
 
+# udev rules for the Digital Enlightenment USB-DMX device
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="04b4", ATTRS{idProduct}=="0f1f", GROUP="plugdev"
+
+# udev rules for the FX5 DMX device
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="088b", GROUP="plugdev"
+
 # udev rules for the DMXCreator 512 Basic device
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0a30", ATTRS{idProduct}=="0002", GROUP="plugdev"
 
