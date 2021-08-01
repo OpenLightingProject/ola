@@ -22,6 +22,19 @@
 ola.factory('$ola', ['$http', '$window', 'OLA',
   function($http, $window, OLA) {
     'use strict';
+    var highestChannelNumberUsed = 0;
+
+    var updatehighestChannelNumberUsed = function(dmx) {
+      for (var channel = dmx.length; channel > highestChannelNumberUsed;
+           channel--) {
+
+        if ((dmx[channel - 1] > OLA.MIN_CHANNEL_VALUE) &&
+            (highestChannelNumberUsed < channel)) {
+          highestChannelNumberUsed = channel;
+        }
+      }
+    };
+
     // TODO(Dave_o): once olad supports json post data postEncode
     // can go away and the header in post requests too.
     var postEncode = function(data) {
@@ -62,6 +75,9 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
           integers[i - 1] = value;
           strip = false;
         }
+      }
+      while (integers.length < highestChannelNumberUsed) {
+        integers.push(OLA.MIN_CHANNEL_VALUE);
       }
       return integers.join(',');
     };
@@ -118,6 +134,7 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
             }
           })
             .then(function(response) {
+              updatehighestChannelNumberUsed(response.data.dmx);
               return response.data;
             });
         },
