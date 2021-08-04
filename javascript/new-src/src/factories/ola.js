@@ -24,7 +24,7 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
     'use strict';
     var highestChannelNumberUsed = 0;
 
-    var updatehighestChannelNumberUsed = function(dmx) {
+    var updateHighestChannelNumberUsed = function(dmx) {
       for (var channel = dmx.length; channel > highestChannelNumberUsed;
            channel--) {
 
@@ -65,23 +65,28 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
       return i;
     };
     var dmxConvert = function(dmx) {
-      var strip = true;
       var integers = [];
-      for (var i = OLA.MAX_CHANNEL_NUMBER; i >= OLA.MIN_CHANNEL_NUMBER; i--) {
-        var value = channelValueCheck(dmx[i - 1]);
+      for (var channel = OLA.MAX_CHANNEL_NUMBER;
+           channel >= OLA.MIN_CHANNEL_NUMBER;
+           channel--) {
+
+        var value = channelValueCheck(dmx[channel - 1]);
         if (value > OLA.MIN_CHANNEL_VALUE ||
-          !strip ||
-          i === OLA.MIN_CHANNEL_NUMBER) {
-          integers[i - 1] = value;
-          strip = false;
+            channel <= highestChannelNumberUsed) {
+
+          integers[channel - 1] = value;
+
+          if (highestChannelNumberUsed < channel) {
+            highestChannelNumberUsed = channel;
+          }
         }
-      }
-      while (integers.length < highestChannelNumberUsed) {
-        integers.push(OLA.MIN_CHANNEL_VALUE);
       }
       return integers.join(',');
     };
     return {
+      resetHighestChannelNumberUsed: function() {
+        highestChannelNumberUsed = 0;
+      },
       get: {
         ItemList: function() {
           return $http.get('/json/universe_plugin_list')
@@ -134,7 +139,7 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
             }
           })
             .then(function(response) {
-              updatehighestChannelNumberUsed(response.data.dmx);
+              updateHighestChannelNumberUsed(response.data.dmx);
               return response.data;
             });
         },
