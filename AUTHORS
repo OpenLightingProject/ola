@@ -29,3 +29,4 @@ Contributors:
   Stefan Krüger, added APA102 support to the SPI Plugin
   Tobi Schäfer, for the MacPort files
   Stefan S, improved timing with monotonic clock
+  Christian Mouttet, fix in new web-ui
