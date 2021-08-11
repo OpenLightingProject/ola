@@ -28,9 +28,8 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
       for (var channel = dmx.length; channel > highestChannelNumberUsed;
            channel--) {
 
-        if ((dmx[channel - 1] > OLA.MIN_CHANNEL_VALUE) &&
-            (highestChannelNumberUsed < channel)) {
-          highestChannelNumberUsed = channel;
+        if (dmx[channel - 1] > OLA.MIN_CHANNEL_VALUE) {
+          highestChannelNumberUsed = $window.Math.max(highestChannelNumberUsed, channel);
         }
       }
     };

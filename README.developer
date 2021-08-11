@@ -197,10 +197,10 @@ Please follow the Sun Java style guide.
 Javascript
 ===============================================================================
 
-Javascript is used for the olad web UI. Instructions for building the
-javascript can be found in javascript/README.
+Javascript is used for the olad web UIs. Instructions for building the
+original UI's Javascript can be found in javascript/README.
 
-The sources for the new UI is located in javascript/new-src. The built artifact
+The sources for the new UI is located in javascript/new-src. The built artifacts
 is copied to olad/www/new/js/app.min.js.
 
 Closure Compiler
