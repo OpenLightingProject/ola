@@ -22,14 +22,25 @@
 ola.factory('$ola', ['$http', '$window', 'OLA',
   function($http, $window, OLA) {
     'use strict';
+    // holds the highest channel that was used by faders or the keypad
     var highestChannelNumberUsed = 0;
 
+    // Search for the highest channel in the array `dmx`
+    // that having a value greater than MIN_CHANNEL_VALUE
+    // and update `highestChannelNumberUsed` if needed.
+    //
+    // Only channels higher than the current `highestChannelNumberUsed`
+    // will be checked.
     var updateHighestChannelNumberUsed = function(dmx) {
       for (var channel = dmx.length; channel > highestChannelNumberUsed;
            channel--) {
 
-        if (dmx[channel - 1] > OLA.MIN_CHANNEL_VALUE) {
-          highestChannelNumberUsed = $window.Math.max(highestChannelNumberUsed, channel);
+        var value = parseInt(dmx[channel - 1], 10);
+        if (value > OLA.MIN_CHANNEL_VALUE) {
+          // if `Math.max` changed `highestChannelNumberUsed`
+          // the for-loop will be terminated
+          highestChannelNumberUsed = $window.Math.max(
+              highestChannelNumberUsed, channel);
         }
       }
     };
@@ -75,9 +86,8 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
 
           integers[channel - 1] = value;
 
-          if (highestChannelNumberUsed < channel) {
-            highestChannelNumberUsed = channel;
-          }
+          highestChannelNumberUsed = $window.Math.max(
+              highestChannelNumberUsed, channel);
         }
       }
       return integers.join(',');
