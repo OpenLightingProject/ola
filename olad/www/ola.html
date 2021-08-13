@@ -7,6 +7,8 @@
     <script src='ola.js'></script>
     <title>OLA Admin</title>
     <style type='text/css'>
+      /* stylelint-disable no-descending-specificity */
+
       body {
         margin: 0px;
         padding: 0px;
@@ -354,45 +356,6 @@
         padding: 3px 4px;
       }
 
-      /* Pre-IE7 IE hack; ignored by IE7 and all non-IE browsers. */
-      * html .goog-menu-button-inner-box {
-        /* IE6 needs to have the box shifted to make the borders line up. */
-        left: -1px;
-      }
-
-      /* Pre-IE7 BiDi fixes. */
-      * html .goog-menu-button-rtl .goog-menu-button-outer-box {
-        /* @noflip */ left: -1px;
-        /* @noflip */ right: auto;
-      }
-      * html .goog-menu-button-rtl .goog-menu-button-inner-box {
-        /* @noflip */ right: auto;
-      }
-
-      /* IE7-only hack; ignored by all other browsers. */
-      *:first-child+html .goog-menu-button-inner-box {
-        /* IE7 needs to have the box shifted to make the borders line up. */
-        left: -1px;
-      }
-      /* IE7 BiDi fix. */
-      *:first-child+html .goog-menu-button-rtl .goog-menu-button-inner-box {
-        /* @noflip */ left: 1px;
-        /* @noflip */ right: auto;
-      }
-
-      /* Safari-only hacks. */
-      ::root .goog-menu-button,
-      ::root .goog-menu-button-outer-box,
-      ::root .goog-menu-button-inner-box {
-        /* Required to make pseudo-rounded corners work on Safari. */
-        line-height: 0;
-      }
-      ::root .goog-menu-button-caption,
-      ::root .goog-menu-button-dropdown {
-        /* Required to make pseudo-rounded corners work on Safari. */
-        line-height: normal;
-      }
-
       /* State: hover. */
       .goog-menu-button-hover .goog-menu-button-outer-box,
       .goog-menu-button-hover .goog-menu-button-inner-box {
@@ -663,13 +626,13 @@
 
       /* plugin frame styles */
       .plugin_enabled {
-        font-color: #ffffff;
+        color: #ffffff;
         background-color: #00ff00;
       }
 
       .plugin_disabled {
         background-color: #ff0000;
-        font-color: #ffffff;
+        color: #ffffff;
       }
 
       #plugin_state_table { padding: 4px; }
@@ -691,6 +654,52 @@
       #plugin_conflict_list .goog-control-hover {
         text-decoration: underline;
       }
+
+
+      /* START: HACKS */
+      /* stylelint-disable */
+
+      /* Pre-IE7 IE hack; ignored by IE7 and all non-IE browsers. */
+      * html .goog-menu-button-inner-box {
+        /* IE6 needs to have the box shifted to make the borders line up. */
+        left: -1px;
+      }
+
+      /* Pre-IE7 BiDi fixes. */
+      * html .goog-menu-button-rtl .goog-menu-button-outer-box {
+        /* @noflip */ left: -1px;
+        /* @noflip */ right: auto;
+      }
+      * html .goog-menu-button-rtl .goog-menu-button-inner-box {
+        /* @noflip */ right: auto;
+      }
+
+      /* IE7-only hack; ignored by all other browsers. */
+      *:first-child+html .goog-menu-button-inner-box {
+        /* IE7 needs to have the box shifted to make the borders line up. */
+        left: -1px;
+      }
+      /* IE7 BiDi fix. */
+      *:first-child+html .goog-menu-button-rtl .goog-menu-button-inner-box {
+        /* @noflip */ left: 1px;
+        /* @noflip */ right: auto;
+      }
+
+      /* Safari-only hacks. */
+      ::root .goog-menu-button,
+      ::root .goog-menu-button-outer-box,
+      ::root .goog-menu-button-inner-box {
+        /* Required to make pseudo-rounded corners work on Safari. */
+        line-height: 0;
+      }
+      ::root .goog-menu-button-caption,
+      ::root .goog-menu-button-dropdown {
+        /* Required to make pseudo-rounded corners work on Safari. */
+        line-height: normal;
+      }
+
+      /* stylelint-enable */
+      /* END: HACKS */
     </style>
   </head>
   <body onload='ola.Setup()'>
@@ -726,7 +735,7 @@
 
       <div class='goog-splitpane-second-container ola-splitpane-content'
           id='ola-splitpane-content'>
-        <div class='ola-scroller ola-container' id='home_frame' style=''>
+        <div class='ola-scroller ola-container' id='home_frame'>
           <fieldset>
             <legend>Active Universes</legend>
             <table class='ola-table'>
@@ -1026,7 +1035,7 @@
     </noscript>
 
     <div id='footer'>
-      OLA &copy; 2005-2019 Open Lighting Project<br>
+      OLA &copy; 2005-2020 Open Lighting Project<br>
       <a href="mobile.html">Mobile Version</a> - <a href="new/">New UI (Beta)</a>
     </div>
   </body>

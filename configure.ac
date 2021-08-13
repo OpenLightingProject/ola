@@ -232,7 +232,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
                 socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
-                getgrnam_r getgrgid_r secure_getenv])
+                getgrnam_r getgrgid_r secure_getenv clock_gettime])
 
 LT_INIT([win32-dll])
 
@@ -401,12 +401,16 @@ AC_CHECK_HEADER([dmx/dmxioctl.h], [], [have_dmx4linux="no"])
 AS_IF([test "x$have_dmx4linux" = xyes],
       [AC_DEFINE([HAVE_DMX4LINUX], [1], [define if dmx4linux is installed])])
 
+# librt - may be separate or part of libc
+AC_SEARCH_LIBS([clock_gettime], [rt])
+
 # libexecinfo
 # FreeBSD required -lexecinfo to call backtrace - checking for presence of
 # header execinfo.h isn't enough
 AC_CHECK_LIB([execinfo], [backtrace], [use_lexecinfo="yes"])
+# TODO(Peter): This should really be AC_COMPILE_IFELSE and AC_LANG_PROGRAM
 case "${host_os}" in
-  *freebsd* | *dragonfly*)
+  *freebsd* | *netbsd* | *dragonfly*)
   LIBS="$LIBS -lexecinfo"
   ;;
 esac
@@ -833,6 +837,10 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
            eval ac_cv_have_pymod_numpy=\$AS_TR_CPP([HAVE_PYMOD_numpy])])
      ])
 
+# Check if the flake8 python linter is available
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+
 # Libraries, that depend on the feature args above.
 #####################################################
 
@@ -949,6 +957,12 @@ if test "x$enable_ja_rule" = xyes; then
   BUILDING_JA_RULE='yes'
 fi
 
+# Linters
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+AC_CHECK_PROG([cpplint],[cpplint.py],[yes],[no])
+AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
+
 # Output
 #####################################################
 # Hack alert!
@@ -963,6 +977,7 @@ AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
                  python/ola/OlaClient.py:python/ola/OlaClient.py
                  python/ola/PidStore.py:python/ola/PidStore.py
+                 python/ola/RDMAPI.py:python/ola/RDMAPI.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
                  python/ola/TestUtils.py:python/ola/TestUtils.py
                  python/ola/UID.py:python/ola/UID.py
@@ -1013,4 +1028,5 @@ Now type 'make @<:@<target>@:>@'
     all          - build everything
     check        - run the tests
     doxygen-doc  - generate the HTML documentation
+    lint         - run the linters
 -------------------------------------------------------"
