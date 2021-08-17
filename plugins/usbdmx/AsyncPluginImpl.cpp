@@ -54,6 +54,7 @@
 #include "plugins/usbdmx/ScanlimeFadecandyFactory.h"
 #include "plugins/usbdmx/ShowJockeyDMXU1Factory.h"
 #include "plugins/usbdmx/SunliteFactory.h"
+#include "plugins/usbdmx/USBDMXComFactory.h"
 #include "plugins/usbdmx/VellemanK8062.h"
 #include "plugins/usbdmx/VellemanK8062Factory.h"
 
@@ -133,6 +134,8 @@ bool AsyncPluginImpl::Start() {
       new ScanlimeFadecandyFactory(m_usb_adaptor));
   m_widget_factories.push_back(new ShowJockeyDMXU1Factory(m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(m_usb_adaptor));
+  m_widget_factories.push_back(
+      new USBDMXComFactory(m_usb_adaptor, m_preferences));
   m_widget_factories.push_back(new VellemanK8062Factory(m_usb_adaptor));
 
   // If we're using hotplug, this starts the hotplug thread.
@@ -237,6 +240,14 @@ bool AsyncPluginImpl::NewWidget(Sunlite *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2"));
+}
+
+bool AsyncPluginImpl::NewWidget(USBDMXCom *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      // TODO(Someone): Add the serial here like ShowJockey if present)
+      new GenericDevice(m_plugin, widget, "USBDMX.com Device",
+                        "usbdmxcom-" + widget->SerialNumber()));
 }
 
 bool AsyncPluginImpl::NewWidget(VellemanK8062 *widget) {

@@ -62,6 +62,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/ThreadedUsbReceiver.h \
     plugins/usbdmx/ThreadedUsbSender.cpp \
     plugins/usbdmx/ThreadedUsbSender.h \
+    plugins/usbdmx/USBDMXCom.cpp \
+    plugins/usbdmx/USBDMXCom.h \
+    plugins/usbdmx/USBDMXComFactory.cpp \
+    plugins/usbdmx/USBDMXComFactory.h \
     plugins/usbdmx/VellemanK8062.cpp \
     plugins/usbdmx/VellemanK8062.h \
     plugins/usbdmx/VellemanK8062Factory.cpp \

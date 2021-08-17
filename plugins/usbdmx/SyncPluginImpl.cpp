@@ -52,6 +52,8 @@
 #include "plugins/usbdmx/ShowJockeyDMXU1Factory.h"
 #include "plugins/usbdmx/Sunlite.h"
 #include "plugins/usbdmx/SunliteFactory.h"
+#include "plugins/usbdmx/USBDMXCom.h"
+#include "plugins/usbdmx/USBDMXComFactory.h"
 #include "plugins/usbdmx/VellemanK8062.h"
 #include "plugins/usbdmx/VellemanK8062Factory.h"
 
@@ -82,6 +84,8 @@ SyncPluginImpl::SyncPluginImpl(PluginAdaptor *plugin_adaptor,
   m_widget_factories.push_back(new ScanlimeFadecandyFactory(&m_usb_adaptor));
   m_widget_factories.push_back(new ShowJockeyDMXU1Factory(&m_usb_adaptor));
   m_widget_factories.push_back(new SunliteFactory(&m_usb_adaptor));
+  m_widget_factories.push_back(new USBDMXComFactory(&m_usb_adaptor,
+      m_preferences));
   m_widget_factories.push_back(new VellemanK8062Factory(&m_usb_adaptor));
 }
 
@@ -196,6 +200,14 @@ bool SyncPluginImpl::NewWidget(Sunlite *widget) {
   return StartAndRegisterDevice(
       widget,
       new GenericDevice(m_plugin, widget, "Sunlite USBDMX2 Device", "usbdmx2"));
+}
+
+bool SyncPluginImpl::NewWidget(USBDMXCom *widget) {
+  return StartAndRegisterDevice(
+      widget,
+      // TODO(Someone): Add serial if present like ShowJockey
+      new GenericDevice(m_plugin, widget, "USBDMX.com Device",
+                        "usbdmxcom-" + widget->SerialNumber()));
 }
 
 bool SyncPluginImpl::NewWidget(VellemanK8062 *widget) {
