@@ -109,20 +109,20 @@ void ShowRecorder::Stop() {
 /**
  * Record the new frame
  */
-bool recordingStarted = false;							//global variable to hold recording state 
-ola::DmxBuffer oldFrame;			 					//global variable to hold previous frame data
-ola::DmxBuffer firstRun;								//global variable to test on first run
-using namespace std; 
+bool recordingStarted = false;	
+ola::DmxBuffer oldFrame;		
+bool firstRun;					
+
 void ShowRecorder::NewFrame(const ola::client::DMXMetadata &meta,
                             const ola::DmxBuffer &data) {
   if (b_autotrigger) {
-    if (recordingStarted == false) {						//If we haven't started recording...
-      if (oldFrame == firstRun or oldFrame == data) {		//If first run OR if new frame is the same as old frame...
-        oldFrame = data;									//Assign the new incoming data to oldFrame...
-        return;											//And exit without writing frame
-      } else {											//If not first run AND new frame is not same as last frame...
-        recordingStarted = true;							//Set recording state to true
-        oldFrame = data;
+    if (recordingStarted == false) {		
+      if (firstRun or oldFrame == data) {	
+        oldFrame = data;					
+        firstRun = false;
+        return;
+      } else {
+        recordingStarted = true;
       }
     }
   }
