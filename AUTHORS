@@ -33,3 +33,4 @@ Contributors:
   Stefan S, improved timing with monotonic clock
   Tobi Schäfer, for the MacPort files
   Tor Håkon Gjerde, added AVLdiy D512 support
+  cLxJaguar, currently trying to add USBDMX.COM adapter support
