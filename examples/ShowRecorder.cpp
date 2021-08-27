@@ -45,12 +45,15 @@ using ola::client::Result;
 using std::string;
 using std::vector;
 
+bool b_autotrigger;
 
 ShowRecorder::ShowRecorder(const string &filename,
-                           const vector<unsigned int> &universes)
+                           const vector<unsigned int> &universes,
+                           const bool &autotrigger)
     : m_saver(filename),
       m_universes(universes),
       m_frame_count(0) {
+  b_autotrigger = autotrigger;
 }
 
 
@@ -106,8 +109,23 @@ void ShowRecorder::Stop() {
 /**
  * Record the new frame
  */
+bool recordingStarted = false;							//global variable to hold recording state 
+ola::DmxBuffer oldFrame;			 					//global variable to hold previous frame data
+ola::DmxBuffer firstRun;								//global variable to test on first run
+using namespace std; 
 void ShowRecorder::NewFrame(const ola::client::DMXMetadata &meta,
                             const ola::DmxBuffer &data) {
+  if (b_autotrigger) {
+    if (recordingStarted == false) {						//If we haven't started recording...
+      if (oldFrame == firstRun or oldFrame == data) {		//If first run OR if new frame is the same as old frame...
+        oldFrame = data;									//Assign the new incoming data to oldFrame...
+        return;											//And exit without writing frame
+      } else {											//If not first run AND new frame is not same as last frame...
+        recordingStarted = true;							//Set recording state to true
+        oldFrame = data;
+      }
+    }
+  }
   ola::TimeStamp now;
   m_clock.CurrentMonotonicTime(&now);
   m_saver.NewFrame(now, meta.universe, data);

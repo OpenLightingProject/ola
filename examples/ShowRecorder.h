@@ -37,7 +37,8 @@
 class ShowRecorder {
  public:
   ShowRecorder(const std::string &filename,
-               const std::vector<unsigned int> &universes);
+               const std::vector<unsigned int> &universes,
+               const bool &autotrigger);
   ~ShowRecorder();
 
   int Init();

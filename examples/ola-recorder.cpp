@@ -68,7 +68,8 @@ DEFINE_uint32(stop, 0,
               "Time (milliseconds) in show file to stop playback at. If "
               "the show file is shorter, the last look will be held until the "
               "stop point.");
-
+DEFINE_default_bool(autotrigger, false,
+                    "Don't start recording until a DMX value changes.");
 
 void TerminateRecorder(ShowRecorder *recorder) {
   recorder->Stop();
@@ -97,7 +98,7 @@ int RecordShow() {
     universes.push_back(universe);
   }
 
-  ShowRecorder show_recorder(FLAGS_record.str(), universes);
+  ShowRecorder show_recorder(FLAGS_record.str(), universes, FLAGS_autotrigger);
   int status = show_recorder.Init();
   if (status)
     return status;
