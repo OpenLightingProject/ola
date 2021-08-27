@@ -109,16 +109,16 @@ void ShowRecorder::Stop() {
 /**
  * Record the new frame
  */
-bool recordingStarted = false;	
-ola::DmxBuffer oldFrame;		
-bool firstRun;					
+bool recordingStarted = false;
+ola::DmxBuffer oldFrame;
+bool firstRun;
 
 void ShowRecorder::NewFrame(const ola::client::DMXMetadata &meta,
                             const ola::DmxBuffer &data) {
   if (b_autotrigger) {
-    if (recordingStarted == false) {		
-      if (firstRun or oldFrame == data) {	
-        oldFrame = data;					
+    if (recordingStarted == false) {
+      if (firstRun or oldFrame == data) {
+        oldFrame = data;	
         firstRun = false;
         return;
       } else {
