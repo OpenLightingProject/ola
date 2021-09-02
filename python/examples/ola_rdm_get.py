@@ -18,6 +18,7 @@
 
 '''Get a PID from a UID.'''
 
+from __future__ import print_function
 import cmd
 import getopt
 import os.path
@@ -459,7 +460,7 @@ def main():
   try:
     PidStore.GetStore(pid_location)
   except PidStore.MissingPLASAPIDs as e:
-    print e
+    print(e)
     sys.exit()
 
   controller = InteractiveModeController(universe,

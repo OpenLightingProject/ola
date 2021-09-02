@@ -127,9 +127,9 @@ void UartDmxThread::CheckTimeGranularity() {
    */
   const int threshold = 3;
 
-  clock.CurrentTime(&ts1);
+  clock.CurrentMonotonicTime(&ts1);
   usleep(1000);
-  clock.CurrentTime(&ts2);
+  clock.CurrentMonotonicTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
   m_granularity = interval.InMilliSeconds() > threshold ? BAD : GOOD;

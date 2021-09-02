@@ -66,23 +66,8 @@ if [[ $TASK = 'lint' ]]; then
   else
     echo "Found $nolints generic NOLINTs"
   fi;
-  # then fetch and run the main cpplint tool
-  wget -O cpplint.py $CPP_LINT_URL;
-  chmod u+x cpplint.py;
-  ./cpplint.py \
-    --filter=-legal/copyright,-readability/streams,-runtime/arrays \
-    $(find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
-        -wholename "./common/protocol/Ola.pb.*" -or \
-        -wholename "./common/rpc/Rpc.pb.*" -or \
-        -wholename "./common/rpc/TestService.pb.*" -or \
-        -wholename "./common/rdm/Pids.pb.*" -or \
-        -wholename "./config.h" -or \
-        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
-        -wholename "./tools/ola_trigger/config.tab.*" -or \
-        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
-  if [[ $? -ne 0 ]]; then
-    exit 1;
-  fi;
+  # run the cpplint tool, fetching it if necessary
+  make cpplint
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   travis_fold start "autoreconf"
@@ -171,8 +156,8 @@ elif [[ $TASK = 'codespell' ]]; then
   # count the number of codespell errors
   spellingerrors=$(zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
-    # print the output for info
-    zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles
+    # print the output for info, including the count
+    zrun codespell --count --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles
     echo "Found $spellingerrors spelling errors via codespell"
     exit 1;
   else
@@ -244,7 +229,7 @@ elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "make_builtfiles"
   make builtfiles;
   travis_fold end "make_builtfiles"
-  flake8
+  make flake8
 else
   # Otherwise compile and check as normal
   if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then

@@ -19,7 +19,7 @@
 # -----------------------------------------------------------------------------
 m4_define([ola_major_version], [0])
 m4_define([ola_minor_version], [10])
-m4_define([ola_revision_version], [7])
+m4_define([ola_revision_version], [8])
 
 m4_define([ola_version],
       [ola_major_version.ola_minor_version.ola_revision_version])
