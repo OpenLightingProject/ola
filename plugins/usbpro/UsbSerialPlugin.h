@@ -55,6 +55,8 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
                    const RobeWidgetInformation &information);
     void NewWidget(UltraDMXProWidget *widget,
                    const UsbProWidgetInformation &information);
+    void NewWidget(OpenDeckWidget *widget,
+                   const UsbProWidgetInformation &information);
 
  private:
     void AddDevice(UsbSerialDevice *device);

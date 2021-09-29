@@ -37,6 +37,7 @@
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/DmxterWidget.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
+#include "plugins/usbpro/OpenDeckWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
 #include "plugins/usbpro/UltraDMXProWidget.h"
@@ -306,6 +307,15 @@ void WidgetDetectorThread::UsbProWidgetReady(
               descriptor,
               information->esta_id,
               information->serial),
+            information);
+        return;
+      }
+      break;
+
+    case SHANTEA_CONTROLS_ESTA_ID:
+      if (information->device_id == SHANTEA_CONTROLS_OPEN_DECK_ID) {
+        DispatchWidget(
+            new OpenDeckWidget(descriptor),
             information);
         return;
       }

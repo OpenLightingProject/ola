@@ -34,6 +34,7 @@
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/DmxterDevice.h"
+#include "plugins/usbpro/OpenDeckDevice.h"
 #include "plugins/usbpro/RobeDevice.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
 #include "plugins/usbpro/UltraDMXProDevice.h"
@@ -201,6 +202,22 @@ void UsbSerialPlugin::NewWidget(UltraDMXProWidget *widget,
       GetUltraDMXProFrameLimit()));
 }
 
+/**
+ * A New OpenDeck Widget
+ */
+void UsbSerialPlugin::NewWidget(OpenDeckWidget *widget,
+                                const UsbProWidgetInformation &information) {
+  AddDevice(new OpenDeckDevice(
+      m_plugin_adaptor,
+      this,
+      GetDeviceName(information),
+      widget,
+      information.esta_id,
+      information.device_id,
+      information.serial,
+      information.firmware_version,
+      GetUltraDMXProFrameLimit()));
+}
 
 /*
  * Add a new device to the list

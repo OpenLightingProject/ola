@@ -11,6 +11,7 @@ includes:
 * Enttec DMX USB Pro & USB Pro Mk II
 * Robe Universe Interface
 * LumenRadio CRMX Nova TX USB
+* Shantea Controls OpenDeck
 
 See https://wiki.openlighting.org/index.php/USB_Protocol_Extensions for 
 more info.
