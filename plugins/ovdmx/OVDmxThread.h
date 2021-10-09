@@ -14,8 +14,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OVDmxThread.h
- * Thread for the Open DMX device
- * Copyright (C) 2005 Simon Newton
+ * Thread for the OVDMX device
+ * Copyright (C) 2005 Simon Newton, 2017 Jan Ove Saltvedt
  */
 
 #ifndef PLUGINS_OVDMX_OVDMXTHREAD_H_

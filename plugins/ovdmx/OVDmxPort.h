@@ -14,8 +14,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * OVDmxPort.h
- * The Open DMX plugin for ola
- * Copyright (C) 2005 Simon Newton
+ * The OVDMX plugin for ola
+ * Copyright (C) 2005 Simon Newton, 2017 Jan Ove Saltvedt
  */
 
 #ifndef PLUGINS_OVDMX_OVDMXPORT_H_
