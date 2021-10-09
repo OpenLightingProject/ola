@@ -26,7 +26,10 @@
     <modalias>usb:v16C0p05DCd*</modalias> <!-- Anyma DMX -->
     <modalias>usb:v0962p*</modalias> <!-- USBDMX2 -->
     <modalias>usb:v10CFp8062d*</modalias> <!-- Velleman -->
+    <modalias>usb:v0a30p0002d*</modalias> <!-- DMXCreator 512 Basic -->
     <modalias>usb:v16D0p0830d*</modalias> <!-- DMXControl Projects e.V. Nodle U1 -->
+    <modalias>usb:v04B4p0F1Fd*</modalias> <!-- Digital Enlightenment DMX-USB -->
+    <modalias>usb:v16C0p088Bd*</modalias> <!-- FX5 DMX -->
     <modalias>usb:v04D8pFA63d*</modalias> <!-- Eurolite -->
     <!--<modalias>usb:vpd*</modalias>--> <!-- Karate -->
     <modalias>usb:v1D50p607Ad*</modalias> <!-- Scanlime Fadecandy -->

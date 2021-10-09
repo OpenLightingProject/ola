@@ -35,6 +35,10 @@ from ola.UID import UID
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
+# magic filenames
+OVERRIDE_FILE_NAME = "overrides.proto"
+MANUFACTURER_NAMES_FILE_NAME = "manufacturer_names.proto"
+
 # Various sub device enums
 ROOT_DEVICE = 0
 MAX_VALID_SUB_DEVICE = 0x0200
@@ -49,7 +53,7 @@ class Error(Exception):
 
 
 class InvalidPidFormat(Error):
-  "Indicates the PID data file was invalid."""
+  """Indicates the PID data file was invalid."""
 
 
 class PidStructureException(Error):
@@ -157,14 +161,51 @@ class Pid(object):
         return False
     return True
 
-  def __cmp__(self, other):
-    return cmp(self._value, other._value)
+  def _GroupCmp(self, a, b):
+    def setToDescription(x):
+      def descOrNone(y):
+        d = y.GetDescription() if y is not None else "None"
+        return '::'.join(d) if isinstance(d, tuple) else d
+      return ':'.join([descOrNone(x[f])
+                       for f in [RDM_GET, RDM_SET, RDM_DISCOVERY]])
+    ax = setToDescription(a)
+    bx = setToDescription(b)
+    return (ax > bx) - (ax < bx)  # canonical for cmp(a,b)
+
+  def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
+    return self.value == other.value
+
+  def __lt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self._value < other._value
+
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
+  def __le__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
+
+  def __gt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
+
+  def __ge__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
+
+  def __ne__(self, other):
+    return not self == other
 
   def __str__(self):
     return '%s (0x%04hx)' % (self.name, self.value)
 
   def __hash__(self):
-    return self._value
+    return hash(self._value)
 
   def Pack(self, args, command_class):
     """Pack args
@@ -201,7 +242,8 @@ class Pid(object):
       command_class: RDM_GET or RDM_SET or RDM_DISCOVERY
 
     Returns:
-      A help string.
+      A tuple of two strings, the first is a list of the names
+      and the second is the descriptions, one per line.
     """
     group = self._requests.get(command_class)
     return group.GetDescription()
@@ -376,8 +418,8 @@ class IntAtom(FixedSizeAtom):
     if self._multiplier:
       increment = ', increment %s' % (10 ** self._multiplier)
 
-    return ('%s%s: <%s> %s' % (indent, self.name, self._GetAllowedRanges(),
-                               increment))
+    return ('%s%s: <%s>%s' % (indent, self.name, self._GetAllowedRanges(),
+                              increment))
 
   def DisplayValue(self, value):
     """Converts a raw value, e.g. UInt16 (as opposed to an array of bytes) into
@@ -429,7 +471,7 @@ class IntAtom(FixedSizeAtom):
         raise ArgsValidationError(
             'Conversion will lose data: %d -> %d' %
             (new_value, (new_value / multiplier * multiplier)))
-      new_value = new_value / multiplier
+      new_value = int(new_value / multiplier)
 
     else:
       try:
@@ -616,7 +658,10 @@ class String(Atom):
                                 (self.name, self.min))
 
     try:
-      data = struct.unpack('%ds' % arg_size, arg)
+      if sys.version >= '3.2':
+        data = struct.unpack('%ds' % arg_size, bytes(arg, 'utf8'))
+      else:
+        data = struct.unpack('%ds' % arg_size, arg)
     except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data[0], 1
@@ -636,7 +681,10 @@ class String(Atom):
     except struct.error as e:
       raise UnpackException(e)
 
-    return value[0].rstrip('\x00')
+    if sys.version >= '3.2':
+      return value[0].rstrip(b'\x00').decode('utf-8')
+    else:
+      return value[0].rstrip(b'\x00')
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
@@ -778,10 +826,10 @@ class Group(Atom):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
 
-      return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
     elif self._group_size == 0:
-      return '', 0
+      return b'', 0
     else:
       # this could be groups of fields, but we don't support that yet
       data = []
@@ -794,7 +842,7 @@ class Group(Atom):
       if arg_offset < len(args):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
-      return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
   def Unpack(self, data):
     """Unpack binary data.
@@ -942,17 +990,34 @@ class PidStore(object):
     self._manufacturer_id_to_name = {}
 
   def Load(self, pid_files, validate=True):
-    """Load a PidStore from a file.
+    """Load a PidStore from a list of files.
 
     Args:
-      pid_files: A list of PID files on disk to load
+      pid_files: A list of PID files on disk to load.  If
+      a file "overrides.proto" is in the list it will be loaded
+      last and its PIDs override any previously loaded.
       validate: When True, enable strict checking.
     """
     self._pid_store.Clear()
+
+    raw_list = pid_files
+    pid_files = []
+    override_file = None
+
+    for f in raw_list:
+      if os.path.basename(f) == OVERRIDE_FILE_NAME:
+        override_file = f
+        continue
+      if os.path.basename(f) == MANUFACTURER_NAMES_FILE_NAME:
+        continue
+      pid_files.append(f)
+
     for pid_file in pid_files:
       self.LoadFile(pid_file, validate)
+    if override_file is not None:
+      self.LoadFile(override_file, validate, True)
 
-  def LoadFile(self, pid_file_name, validate):
+  def LoadFile(self, pid_file_name, validate, override=False):
     """Load a pid file."""
     pid_file = open(pid_file_name, 'r')
     lines = pid_file.readlines()
@@ -962,8 +1027,11 @@ class PidStore(object):
       text_format.Merge('\n'.join(lines), self._pid_store)
     except text_format.ParseError as e:
       raise InvalidPidFormat(str(e))
-
     for pid_pb in self._pid_store.pid:
+      if override:  # if processing overrides delete any conflicting entry
+        old = self._pids.pop(pid_pb.value, None)
+        if old is not None:
+          del self._name_to_pid[old.name]
       if validate:
         if ((pid_pb.value >= RDMConstants.RDM_MANUFACTURER_PID_MIN) and
             (pid_pb.value <= RDMConstants.RDM_MANUFACTURER_PID_MAX)):
@@ -995,6 +1063,10 @@ class PidStore(object):
           manufacturer.manufacturer_name)
 
       for pid_pb in manufacturer.pid:
+        if override:  # if processing overrides delete any conflicting entry
+          old = pid_dict.pop(pid_pb.value, None)
+          if old is not None:
+            del name_dict[old.name]
         if validate:
           if ((pid_pb.value < RDMConstants.RDM_MANUFACTURER_PID_MIN) or
               (pid_pb.value > RDMConstants.RDM_MANUFACTURER_PID_MAX)):

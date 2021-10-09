@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * OutputStream.h
- * A class that you can write structed data to.
+ * A class that you can write structured data to.
  * Copyright (C) 2012 Simon Newton
  */
 

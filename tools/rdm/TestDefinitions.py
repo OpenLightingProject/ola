@@ -256,7 +256,6 @@ class DUBSingleUID(TestMixins.DiscoveryMixin,
                    ResponderTestFixture):
   """Confirm the device responds to just it's own range."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
@@ -1177,7 +1176,7 @@ class GetParameterDescription(ParamDescriptionTestFixture):
     self.params = self.Property('manufacturer_parameters')[:]
     if len(self.params) == 0:
       self.SetNotRun('No manufacturer params found')
-      # This case is tested in GetParamDescriptionForNonManufacturerPid
+      # This case is tested in GetParameterDescriptionForNonManufacturerPid
       return
     self._GetParam()
 

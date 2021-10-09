@@ -44,7 +44,9 @@ std::default_random_engine generator_;
 void InitRandom() {
   Clock clock;
   TimeStamp now;
-  clock.CurrentTime(&now);
+  // The clock type here should not matter because only the microseconds field
+  // is being used to seed the random number generator.
+  clock.CurrentRealTime(&now);
 
   uint64_t seed = (static_cast<uint64_t>(now.MicroSeconds()) << 32) +
                    static_cast<uint64_t>(getpid());

@@ -2496,132 +2496,6 @@ manufacturer {
   manufacturer_id: 17742
   manufacturer_name: "ENTTEC Pty Ltd"
   pid {
-    name: "AUTO_MODE"
-    value: 34559
-    get_request {
-    }
-    get_response {
-      field {
-        type: UINT8
-        name: "program"
-        range {
-          min: 0
-          max: 9
-        }
-        label {
-          value: 0
-          label: "Disabled"
-        }
-        label {
-          value: 6
-          label: "1 colour chase, 4 chans"
-        }
-        label {
-          value: 7
-          label: "2 colour chase, 4 chans"
-        }
-        label {
-          value: 8
-          label: "1 colour chase, 3 chans FW>=1.2"
-        }
-      }
-      field {
-        type: UINT8
-        name: "speed"
-        range {
-          min: 0
-          max: 9
-        }
-        label {
-          value: 0
-          label: "Fastest"
-        }
-        label {
-          value: 9
-          label: "Slowest"
-        }
-      }
-      field {
-        type: UINT8
-        name: "delay"
-        range {
-          min: 0
-          max: 9
-        }
-        label {
-          value: 0
-          label: "Shortest"
-        }
-        label {
-          value: 9
-          label: "Longest"
-        }
-      }
-    }
-    get_sub_device_range: ROOT_OR_SUBDEVICE
-    set_request {
-      field {
-        type: UINT8
-        name: "program"
-        range {
-          min: 0
-          max: 9
-        }
-        label {
-          value: 0
-          label: "Disabled"
-        }
-        label {
-          value: 6
-          label: "1 colour chase, 4 chans"
-        }
-        label {
-          value: 7
-          label: "2 colour chase, 4 chans"
-        }
-        label {
-          value: 8
-          label: "1 colour chase, 3 chans FW>=1.2"
-        }
-      }
-      field {
-        type: UINT8
-        name: "speed"
-        range {
-          min: 0
-          max: 9
-        }
-        label {
-          value: 0
-          label: "Fastest"
-        }
-        label {
-          value: 9
-          label: "Slowest"
-        }
-      }
-      field {
-        type: UINT8
-        name: "delay"
-        range {
-          min: 0
-          max: 9
-        }
-        label {
-          value: 0
-          label: "Shortest"
-        }
-        label {
-          value: 9
-          label: "Longest"
-        }
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
-  }
-  pid {
     name: "PWM_OUTPUT_FREQUENCY"
     value: 32770
     get_request {
@@ -2678,6 +2552,132 @@ manufacturer {
         range {
           min: 50
           max: 100
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "AUTO_MODE"
+    value: 34559
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "program"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "program"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+        range {
+          min: 0
+          max: 9
         }
       }
     }
@@ -3339,14 +3339,14 @@ manufacturer {
     get_response {
       field {
         type: UINT16
-        name: "enabled"
+        name: "fixture_id"
       }
     }
     get_sub_device_range: ROOT_DEVICE
     set_request {
       field {
         type: UINT16
-        name: "enabled"
+        name: "fixture_id"
       }
     }
     set_response {
@@ -6920,6 +6920,72 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
   pid {
+    name: "PT_FEEDBACK"
+    value: 40960
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Pan Tilt Feedback"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Pan Tilt Feedback"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "OUTPUT_UNIFORMITY"
+    value: 40969
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Output Uniformity"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Output Uniformity"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DL_COMPATIBLE_MODE"
+    value: 40973
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "DL Compatible Mode"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "DL Compatible Mode"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
     name: "TOUCHSCREEN_LOCK"
     value: 40975
     get_request {
@@ -7465,6 +7531,32 @@ manufacturer {
     set_response {
     }
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 21367
+  manufacturer_name: "SWISSON AG"
+  pid {
+    name: "SWPID_AUTO_UNIVERSE_NUMBER"
+    value: 32898
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "universe_number"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "universe_number"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
   }
 }
 manufacturer {
@@ -9290,4 +9382,4 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-version: 1528709287
+version: 1605848134

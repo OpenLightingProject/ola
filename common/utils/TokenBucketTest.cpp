@@ -57,7 +57,7 @@ void TokenBucketTest::testTokenBucket() {
   TimeInterval ten_ms(10000);
   TimeInterval one_hundred_ms(100000);
   TimeInterval one_second(1000000);
-  clock.CurrentTime(&now);
+  clock.CurrentMonotonicTime(&now);
   TokenBucket bucket(0, 10, 10, now);  // one every 100ms
   OLA_ASSERT_EQ(0u, bucket.Count(now));
 
@@ -86,7 +86,7 @@ void TokenBucketTest::testTokenBucketTwo() {
   TimeInterval one_hundred_ms(100000);
   TimeInterval one_second(1000000);
   TimeInterval five_minutes(5 * 60 * 1000000);
-  clock.CurrentTime(&now);
+  clock.CurrentMonotonicTime(&now);
   TokenBucket bucket(0, 40, 40, now);  // one every 25ms
   OLA_ASSERT_EQ(0u, bucket.Count(now));
 

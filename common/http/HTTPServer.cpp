@@ -90,8 +90,8 @@ const char HTTPServer::CONTENT_TYPE_XML[] = "application/xml";
  * @param key the header name
  * @param value the header value
  */
-static int AddHeaders(void *cls, OLA_UNUSED enum MHD_ValueKind kind,
-                      const char *key, const char *value) {
+static MHD_RESULT AddHeaders(void *cls, OLA_UNUSED enum MHD_ValueKind kind,
+                             const char *key, const char *value) {
   HTTPRequest *request = static_cast<HTTPRequest*>(cls);
   string key_string = key;
   string value_string = value;
@@ -112,11 +112,12 @@ static int AddHeaders(void *cls, OLA_UNUSED enum MHD_ValueKind kind,
  * @param off the offset of the data
  * @param size the number of bytes available
  */
-int IteratePost(void *request_cls, OLA_UNUSED enum MHD_ValueKind kind,
-                const char *key, OLA_UNUSED const char *filename,
-                OLA_UNUSED const char *content_type,
-                OLA_UNUSED const char *transfer_encoding, const char *data,
-                OLA_UNUSED uint64_t off, OLA_UNUSED size_t size) {
+MHD_RESULT IteratePost(void *request_cls, OLA_UNUSED enum MHD_ValueKind kind,
+                       const char *key, OLA_UNUSED const char *filename,
+                       OLA_UNUSED const char *content_type,
+                       OLA_UNUSED const char *transfer_encoding,
+                       const char *data,
+                       OLA_UNUSED uint64_t off, OLA_UNUSED size_t size) {
   // libmicrohttpd has a bug where the size isn't set correctly.
   HTTPRequest *request = static_cast<HTTPRequest*>(request_cls);
   string value(data);
@@ -131,14 +132,14 @@ int IteratePost(void *request_cls, OLA_UNUSED enum MHD_ValueKind kind,
  * This sets up HTTPRequest & HTTPResponse objects and then calls
  * DispatchRequest.
  */
-static int HandleRequest(void *http_server_ptr,
-                         struct MHD_Connection *connection,
-                         const char *url,
-                         const char *method,
-                         const char *version,
-                         const char *upload_data,
-                         size_t *upload_data_size,
-                         void **ptr) {
+static MHD_RESULT HandleRequest(void *http_server_ptr,
+                                struct MHD_Connection *connection,
+                                const char *url,
+                                const char *method,
+                                const char *version,
+                                const char *upload_data,
+                                size_t *upload_data_size,
+                                void **ptr) {
   HTTPServer *http_server = static_cast<HTTPServer*>(http_server_ptr);
   HTTPRequest *request;
 
@@ -167,7 +168,8 @@ static int HandleRequest(void *http_server_ptr,
   if (request->Method() == MHD_HTTP_METHOD_GET) {
     HTTPResponse *response = new HTTPResponse(connection);
     request->SetInFlight();
-    return http_server->DispatchRequest(request, response);
+    return static_cast<MHD_RESULT>(
+      http_server->DispatchRequest(request, response));
 
   } else if (request->Method() == MHD_HTTP_METHOD_POST) {
     if (*upload_data_size != 0) {
@@ -177,7 +179,8 @@ static int HandleRequest(void *http_server_ptr,
     }
     request->SetInFlight();
     HTTPResponse *response = new HTTPResponse(connection);
-    return http_server->DispatchRequest(request, response);
+    return static_cast<MHD_RESULT>(
+      http_server->DispatchRequest(request, response));
   }
   return MHD_NO;
 }
@@ -375,6 +378,19 @@ void HTTPResponse::SetNoCache() {
 
 
 /**
+ * @brief Set the appropriate headers so this response is accessible from any origin
+ */
+void HTTPResponse::SetAccessControlAllowOriginAll() {
+#ifdef MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN
+  SetHeader(MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+#else
+  // Old versions of libmicrohttpd don't have
+  // MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN so do it manually
+  SetHeader("Access-Control-Allow-Origin", "*");
+#endif  // MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN
+}
+
+/**
  * @brief Set a header in the response
  * @param key the header name
  * @param value the header value
@@ -391,6 +407,7 @@ void HTTPResponse::SetHeader(const string &key, const string &value) {
  * @return true on success, false on error
  */
 int HTTPResponse::SendJson(const JsonValue &json) {
+  SetAccessControlAllowOriginAll();
   const string output = JsonWriter::AsString(json);
   struct MHD_Response *response = HTTPServer::BuildResponse(
       static_cast<void*>(const_cast<char*>(output.data())),
@@ -412,6 +429,7 @@ int HTTPResponse::SendJson(const JsonValue &json) {
  * @return true on success, false on error
  */
 int HTTPResponse::Send() {
+  SetAccessControlAllowOriginAll();
   HeadersMultiMap::const_iterator iter;
   struct MHD_Response *response = HTTPServer::BuildResponse(
       static_cast<void*>(const_cast<char*>(m_data.data())),

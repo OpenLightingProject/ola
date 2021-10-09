@@ -232,30 +232,7 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 if_nametoindex inet_ntoa inet_ntop inet_aton inet_pton select \
                 socket strerror getifaddrs getloadavg getpwnam_r getpwuid_r \
-                getgrnam_r getgrgid_r secure_getenv])
-
-AC_MSG_CHECKING(for readdir_r deprecation)
-old_cxxflags=$CXXFLAGS
-CXXFLAGS="${CXXFLAGS} -Werror=deprecated-declarations"
-AC_CACHE_VAL(ac_cv_readdir_r_deprecation,
-  AC_COMPILE_IFELSE(
-     [AC_LANG_PROGRAM([[#include <dirent.h>
-#include <unistd.h>]],[[
-        const char* arg = "/";
-        DIR * dir;
-        struct dirent *buf, *de;
-        dir = opendir(arg);
-        readdir_r(dir,buf,&de);
-]])],
-     [ac_cv_readdir_r_deprecation=no],
-     [ac_cv_readdir_r_deprecation=yes])
-)
-CXXFLAGS=$old_cxxflags
-AC_MSG_RESULT($ac_cv_readdir_r_deprecation)
-
-AS_IF([test "x$ac_cv_readdir_r_deprecation" = xyes],
-      [CXXFLAGS="$CXXFLAGS -Wno-error=deprecated-declarations"],
-      [])
+                getgrnam_r getgrgid_r secure_getenv clock_gettime])
 
 LT_INIT([win32-dll])
 
@@ -424,12 +401,16 @@ AC_CHECK_HEADER([dmx/dmxioctl.h], [], [have_dmx4linux="no"])
 AS_IF([test "x$have_dmx4linux" = xyes],
       [AC_DEFINE([HAVE_DMX4LINUX], [1], [define if dmx4linux is installed])])
 
+# librt - may be separate or part of libc
+AC_SEARCH_LIBS([clock_gettime], [rt])
+
 # libexecinfo
 # FreeBSD required -lexecinfo to call backtrace - checking for presence of
 # header execinfo.h isn't enough
 AC_CHECK_LIB([execinfo], [backtrace], [use_lexecinfo="yes"])
+# TODO(Peter): This should really be AC_COMPILE_IFELSE and AC_LANG_PROGRAM
 case "${host_os}" in
-  *freebsd* | *dragonfly*)
+  *freebsd* | *netbsd* | *dragonfly*)
   LIBS="$LIBS -lexecinfo"
   ;;
 esac
@@ -443,6 +424,14 @@ AM_CONDITIONAL([HAVE_LIBFTD2XX], [test "x$have_libftd2xx" = xyes])
 AC_CHECK_HEADERS([curses.h ncurses/curses.h])
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL([HAVE_NCURSES], [test "x$have_ncurses" = xyes])
+# Defines libncurses_LIBS that we can use to link against ncurses
+# Needed since >=ncurses-6 where -ltinfo is needed in addition to -lncurses
+PKG_CHECK_MODULES(libncurses,
+                  [ncurses >= 5],
+                  [have_ncurses_pkgconfig="yes"],
+                  [have_ncurses_pkgconfig="no"])
+AM_CONDITIONAL([HAVE_NCURSES_PKGCONFIG],
+               [test "x$have_ncurses_pkgconfig" = xyes])
 
 # pthread
 ACX_PTHREAD([
@@ -848,6 +837,10 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
            eval ac_cv_have_pymod_numpy=\$AS_TR_CPP([HAVE_PYMOD_numpy])])
      ])
 
+# Check if the flake8 python linter is available
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+
 # Libraries, that depend on the feature args above.
 #####################################################
 
@@ -856,6 +849,9 @@ AS_IF([test "${enable_rdm_tests}" = "yes"],
 AS_IF([test "x$build_java_libs" = xyes],
       [PROTOBUF_SUPPORT([2.4.0])],
       [PROTOBUF_SUPPORT([2.3.0])])
+# Version 3.7 and above of protoc require some additional includes
+AC_CHECK_HEADERS([google/protobuf/io/strtod.h google/protobuf/stubs/logging.h \
+                  google/protobuf/stubs/stl_util.h])
 
 
 # Doxygen
@@ -933,7 +929,7 @@ fi
 AC_SUBST(PLUGIN_LIBS)
 AC_SUBST(OLA_SERVER_LIBS)
 
-# html & data directories
+# HTML & data directories
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 piddatadir=$datadir/ola/pids
@@ -962,6 +958,12 @@ if test "x$enable_ja_rule" = xyes; then
   BUILDING_JA_RULE='yes'
 fi
 
+# Linters
+AC_CHECK_PROG([flake8],[flake8],[yes],[no])
+AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
+AC_CHECK_PROG([cpplint],[cpplint.py],[yes],[no])
+AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
+
 # Output
 #####################################################
 # Hack alert!
@@ -971,11 +973,22 @@ fi
 # the non-generated files $srcdir/python/ols/PidStore.py). To get the tests
 # to pass we symlink the files we need for the tests from the builddir to the
 # srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
-AC_CONFIG_LINKS([python/ola/PidStore.py:python/ola/PidStore.py
+AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
+                 python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
+                 python/ola/OlaClient.py:python/ola/OlaClient.py
+                 python/ola/PidStore.py:python/ola/PidStore.py
+                 python/ola/RDMAPI.py:python/ola/RDMAPI.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/TestUtils.py:python/ola/TestUtils.py
                  python/ola/UID.py:python/ola/UID.py
-                 python/ola/__init__.py:python/ola/__init__.py])
+                 python/ola/rpc/__init__.py:python/ola/rpc/__init__.py
+                 python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
+                 python/ola/rpc/StreamRpcChannel.py:python/ola/rpc/StreamRpcChannel.py
+                 tools/rdm/ExpectedResults.py:tools/rdm/ExpectedResults.py
+                 tools/rdm/TestCategory.py:tools/rdm/TestCategory.py
+                 tools/rdm/TestState.py:tools/rdm/TestState.py
+                 tools/rdm/TimingStats.py:tools/rdm/TimingStats.py])
 
 # Non-makefile generated files.
 AC_CONFIG_FILES([include/ola/base/Version.h
@@ -1015,5 +1028,6 @@ Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
     all          - build everything
     check        - run the tests
-    doxygen-doc  - generate the html documentation
+    doxygen-doc  - generate the HTML documentation
+    lint         - run the linters
 -------------------------------------------------------"

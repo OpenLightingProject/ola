@@ -16,6 +16,7 @@
 # enforce_licence.py
 # Copyright (C) 2013 Simon Newton
 
+from __future__ import print_function
 import difflib
 import getopt
 import glob
@@ -69,7 +70,7 @@ IGNORED_FILES = [
 
 
 def Usage(arg0):
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
   Usage: %s
 
   Walk the directory tree from the current directory, and make sure all .cpp,
@@ -78,7 +79,7 @@ def Usage(arg0):
 
     --diff               Print the diffs.
     --fix                Fix the files.
-    --help               Display this message.""" % arg0)
+    --help               Display this message.""" % arg0))
 
 
 def ParseArgs():
@@ -86,8 +87,8 @@ def ParseArgs():
   try:
     opts, args = getopt.getopt(sys.argv[1:], '',
                                ['diff', 'fix', 'help'])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as e:
+    print(str(e))
     Usage(sys.argv[0])
     sys.exit(2)
 
@@ -143,8 +144,8 @@ def TransformCppToJsLicence(licence):
   lines = licence.split('\n')
   output = []
   output.append('/**')
-  for l in lines[1:]:
-    output.append(TransformJsLine(l[2:]))
+  for line in lines[1:]:
+    output.append(TransformJsLine(line[2:]))
   return '\n'.join(output)
 
 
@@ -161,8 +162,8 @@ def TransformCppToPythonLicence(licence):
   """Change a C++ licence to Python style"""
   lines = licence.split('\n')
   output = []
-  for l in lines[1:]:
-    output.append(TransformPythonLine(l[3:]))
+  for line in lines[1:]:
+    output.append(TransformPythonLine(line[3:]))
   return '\n'.join(output)
 
 
@@ -192,7 +193,7 @@ def ReplaceHeader(file_name, new_header, lang):
     line = f.readline()
 
   if breaks < 3:
-    print "Couldn't find header for %s so couldn't fix it" % file_name
+    print("Couldn't find header for %s so couldn't fix it" % file_name)
     f.close()
     return
 
@@ -233,7 +234,7 @@ def GetDirectoryLicences(root_dir):
       lines = f.readlines()
       f.close()
       licences[dir_name] = TransformLicence(lines)
-      print 'Found LICENCE for directory %s' % dir_name
+      print('Found LICENCE for directory %s' % dir_name)
 
     # use this licence for all subdirs
     licence = licences.get(dir_name)
@@ -293,22 +294,22 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   if header == licence:
     expected_line = TransformLine(os.path.basename(file_name), lang)
     if lang != JS and file_name_line.rstrip('\n') != expected_line:
-      print ("File %s does not have a filename line after the licence; found "
-             "\"%s\" expected \"%s\"" %
-             (file_name, file_name_line.rstrip('\n'), expected_line))
+      print("File %s does not have a filename line after the licence; found "
+            "\"%s\" expected \"%s\"" %
+            (file_name, file_name_line.rstrip('\n'), expected_line))
       return 1
     return 0
 
   if fix:
-    print 'Fixing %s' % file_name
+    print('Fixing %s' % file_name)
     if lang == PYTHON and first_line is not None:
       licence = first_line + licence
     ReplaceHeader(file_name, licence, lang)
     return 1
   else:
-    print "File %s does not start with \"%s...\"" % (
+    print("File %s does not start with \"%s...\"" % (
         file_name,
-        licence.split('\n')[(0 if (lang == PYTHON) else 1)])
+        licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
     if diff:
       d = difflib.Differ()
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
@@ -322,7 +323,7 @@ def main():
   errors = 0
   for dir_name, licence in licences.iteritems():
     errors += CheckLicenceForDir(dir_name, licence, diff=diff, fix=fix)
-  print 'Found %d files with incorrect licences' % errors
+  print('Found %d files with incorrect licences' % errors)
   if errors > 0:
     sys.exit(1)
   else:

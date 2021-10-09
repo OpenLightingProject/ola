@@ -199,7 +199,7 @@ class TestLogger(object):
       if include_description:
         results_log.append(str(test['doc']))
       if include_debug:
-        results_log.extend(str(l) for l in test.get('debug', []))
+        results_log.extend(str(s) for s in test.get('debug', []))
       results_log.append('')
       warnings.extend(str(s) for s in test.get('warnings', []))
       advisories.extend(str(s) for s in test.get('advisories', []))
