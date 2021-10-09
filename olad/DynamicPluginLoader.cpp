@@ -125,7 +125,7 @@
 
 #ifdef USE_OVDMX
 #include "plugins/ovdmx/OVDmxPlugin.h"
-#endif
+#endif  // USE_OVDMX
 
 namespace ola {
 
@@ -262,7 +262,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef USE_OVDMX
   m_plugins.push_back(
       new ola::plugin::ovdmx::OVDmxPlugin(m_plugin_adaptor));
-#endif
+#endif  // USE_OVDMX
 }
 
 void DynamicPluginLoader::UnloadPlugins() {
