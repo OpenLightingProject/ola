@@ -47,7 +47,7 @@ class OVDmxOutputPort: public BasicOutputPort {
 
   std::string Description() const { return "OVDMX at " + m_path; }
 
-  bool WriteDMX(OLA_UNUSED const DmxBuffer &buffer, 
+  bool WriteDMX(OLA_UNUSED const DmxBuffer &buffer,
                 OLA_UNUSED uint8_t priority) {
     return m_thread.WriteDmx(buffer);
   }

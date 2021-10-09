@@ -20,6 +20,11 @@
 
 #include "plugins/ovdmx/OVDmxThread.h"
 
+#include "ola/Clock.h"
+#include "ola/Constants.h"
+#include "ola/Logging.h"
+#include "ola/io/IOUtils.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -33,11 +38,6 @@
 #include <unistd.h>
 #include <string>
 #include <termios.h>
-
-#include "ola/Clock.h"
-#include "ola/Constants.h"
-#include "ola/Logging.h"
-#include "ola/io/IOUtils.h"
 
 namespace ola {
 namespace plugin {
