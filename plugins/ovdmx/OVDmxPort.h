@@ -47,14 +47,14 @@ class OVDmxOutputPort: public BasicOutputPort {
 
   std::string Description() const { return "OVDMX at " + m_path; }
 
-  bool WriteDMX(OLA_UNUSED const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
+  bool WriteDMX(OLA_UNUSED const DmxBuffer &buffer, 
+                OLA_UNUSED uint8_t priority) {
     return m_thread.WriteDmx(buffer);
   }
 
  private:
   OVDmxThread m_thread;
   std::string m_path;
-
 };
 }  // namespace ovdmx
 }  // namespace plugin

@@ -18,6 +18,8 @@
  * Copyright (C) 2005 Simon Newton, 2017 Jan Ove Saltvedt
  */
 
+#include "plugins/ovdmx/OVDmxThread.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -36,7 +38,6 @@
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
-#include "plugins/ovdmx/OVDmxThread.h"
 
 namespace ola {
 namespace plugin {
@@ -63,7 +64,7 @@ OVDmxThread::OVDmxThread(const string &path)
 
 void OVDmxThread::MakeRaw(int fd) {
     struct termios ios;
-    //Not a TTY: nothing to do
+    // Not a TTY: nothing to do
     if (!isatty(fd))
         return;
 
@@ -142,8 +143,7 @@ void *OVDmxThread::Run() {
         if (close(m_fd) < 0)
           OLA_WARN << "Close failed " << strerror(errno);
         m_fd = INVALID_FD;
-      }
-      else {
+      } else {
           fsync(m_fd);
       }
     }
