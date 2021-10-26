@@ -217,7 +217,7 @@ bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
         state = !state;
       }
       // Convert to char and write to sysfs
-      data = (state ? '0' : '1');
+      data = (state ? '1' : '0');
       if (write(m_gpio_pins[i].fd, &data, sizeof(data)) < 0) {
         OLA_WARN << "Failed to toggle GPIO pin " << i << ", fd "
                  << static_cast<int>(m_gpio_pins[i].fd) << ": "
