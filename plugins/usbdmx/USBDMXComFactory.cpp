@@ -33,8 +33,8 @@ namespace usbdmx {
 using ola::usb::LibUsbAdaptor;
 
 // "USBDMX.com"
-const char USBDMXComFactory::EXPECTED_MANUFACTURER[] = "FTDI";
-const char USBDMXComFactory::EXPECTED_PRODUCT[] = "FT232R USB UART";
+const char USBDMXComFactory::EXPECTED_MANUFACTURER[] = "USBDMX.COM";
+const char USBDMXComFactory::EXPECTED_PRODUCT[] = "DMX Adapter";
 const uint16_t USBDMXComFactory::PRODUCT_ID = 0x6001;
 const uint16_t USBDMXComFactory::VENDOR_ID = 0x0403;
 
