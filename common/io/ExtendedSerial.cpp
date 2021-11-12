@@ -32,6 +32,10 @@
 #ifdef HAVE_STROPTS_H
 // this provides ioctl() definition without conflicting with asm/termios.h
 #include <stropts.h>
+#else
+// this provides a minimal ioctl() definition for modern systems
+// which don't have <stropts.h> anymore
+#include <ola/io/IOCtl.h>
 #endif  // HAVE_STROPTS_H
 
 #ifdef HAVE_ASM_TERMIOS_H
@@ -52,7 +56,7 @@ namespace ola {
 namespace io {
 
 bool LinuxHelper::SetDmxBaud(int fd) {
-#if defined(HAVE_STROPTS_H) && defined(HAVE_TERMIOS2)
+#if defined(HAVE_TERMIOS2)
   static const int rate = 250000;
 
   struct termios2 tio;  // linux-specific terminal stuff
@@ -84,7 +88,7 @@ bool LinuxHelper::SetDmxBaud(int fd) {
   OLA_INFO << "Failed to set baud rate, due to missing stropts.h or termios2";
   return false;
   (void) fd;
-#endif  // defined(HAVE_STROPTS_H) && defined(HAVE_TERMIOS2)
+#endif  // defined(HAVE_TERMIOS2)
 }
 }  // namespace io
 }  // namespace ola
