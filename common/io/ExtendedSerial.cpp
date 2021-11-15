@@ -85,7 +85,7 @@ bool LinuxHelper::SetDmxBaud(int fd) {
   }
   return true;
 #else
-  OLA_INFO << "Failed to set baud rate, due to missing stropts.h or termios2";
+  OLA_INFO << "Failed to set baud rate, missing termios2";
   return false;
   (void) fd;
 #endif  // defined(HAVE_TERMIOS2)
