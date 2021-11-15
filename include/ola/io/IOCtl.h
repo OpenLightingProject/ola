@@ -23,7 +23,7 @@
 #define INCLUDE_OLA_IO_IOCTL_H_
 
 extern "C" {
-  extern int ioctl(int __fd, unsigned long int __request, ...) __THROW;  // NOLINT(runtime/int)
+  extern int ioctl(int f, unsigned long r, ...) __THROW;  // NOLINT(runtime/int)
 }
 
 #endif  // INCLUDE_OLA_IO_IOCTL_H_
