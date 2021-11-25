@@ -68,8 +68,11 @@ DEFINE_uint32(stop, 0,
               "Time (milliseconds) in show file to stop playback at. If "
               "the show file is shorter, the last look will be held until the "
               "stop point.");
-DEFINE_default_bool(autotrigger, false,
-                    "Don't start recording until a DMX value changes.");
+DEFINE_s_string(start_trigger_channel, stc, "",
+                    "Will not start recording until specified universe and channel "
+                    "(comma separated) is set to 255. Example "
+                    "(for universe 0 and channel 4): --start-trigger-channel 0,4 ");
+
 
 void TerminateRecorder(ShowRecorder *recorder) {
   recorder->Stop();
@@ -98,7 +101,7 @@ int RecordShow() {
     universes.push_back(universe);
   }
 
-  ShowRecorder show_recorder(FLAGS_record.str(), universes, FLAGS_autotrigger);
+  ShowRecorder show_recorder(FLAGS_record.str(), universes, FLAGS_start_trigger_channel);
   int status = show_recorder.Init();
   if (status)
     return status;

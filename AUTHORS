@@ -15,6 +15,7 @@ Contributors:
   Hakan Lindestaf, Renard plugin
   Harry F, for the Eurolite USB Pro code
   Heikki Junnila, bug fixes for the debian packaging files
+  Homan Towliat, added --start-trigger-channel functionality (ola_recorder)
   Jannis Achstetter, compile fixes for newer dependencies and various fixes
   Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
   Lukas Erlinghagen, win32 port.
