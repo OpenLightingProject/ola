@@ -80,7 +80,7 @@ void OVDmxThread::MakeRaw(int fd) {
  * Run this thread
  */
 void *OVDmxThread::Run() {
-  struct __attribute__((__packed__))  {
+  PACK(struct {
     uint8_t magic[2];
     uint8_t type;
     union {
@@ -92,7 +92,7 @@ void *OVDmxThread::Run() {
       uint16_t crc;
       uint8_t crc_parts[2];
     };
-  } dmx_packet;
+  } dmx_packet;)
 
   dmx_packet.magic[0] = 'O';
   dmx_packet.magic[1] = 'V';
