@@ -39,6 +39,7 @@
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
+#include "ola/util/Utils.h"
 
 namespace ola {
 namespace plugin {
@@ -96,8 +97,7 @@ void *OVDmxThread::Run() {
   dmx_packet.magic[0] = 'O';
   dmx_packet.magic[1] = 'V';
   dmx_packet.type  = 'D';
-  dmx_packet.data_length_parts[0] = ((((uint16_t)DMX_UNIVERSE_SIZE)>>8) & 0xff);
-  dmx_packet.data_length_parts[1] = ((((uint16_t)DMX_UNIVERSE_SIZE)) & 0xff);
+  ola::utils::SplitUInt16((uint16_t)DMX_UNIVERSE_SIZE, &dmx_packet.data_length_parts[0], &dmx_packet.data_length_parts[1]);
   dmx_packet.crc_parts[0] = 0;
   dmx_packet.crc_parts[1] = 0;
 
