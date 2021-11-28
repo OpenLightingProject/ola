@@ -145,7 +145,7 @@ void *OVDmxThread::Run() {
           OLA_WARN << "Close failed " << strerror(errno);
         m_fd = INVALID_FD;
       } else {
-          fsync(m_fd);
+        fsync(m_fd);
       }
     }
   }
