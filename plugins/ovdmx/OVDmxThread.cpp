@@ -97,8 +97,8 @@ void *OVDmxThread::Run() {
   dmx_packet.magic[0] = 'O';
   dmx_packet.magic[1] = 'V';
   dmx_packet.type  = 'D';
-  ola::utils::SplitUInt16((uint16_t)DMX_UNIVERSE_SIZE, 
-                      &dmx_packet.data_length_parts[0], 
+  ola::utils::SplitUInt16((uint16_t)DMX_UNIVERSE_SIZE,
+                      &dmx_packet.data_length_parts[0],
                       &dmx_packet.data_length_parts[1]);
   dmx_packet.crc_parts[0] = 0;
   dmx_packet.crc_parts[1] = 0;
