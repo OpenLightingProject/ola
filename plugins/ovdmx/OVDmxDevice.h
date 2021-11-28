@@ -31,9 +31,9 @@ namespace ovdmx {
 class OVDmxDevice: public ola::Device {
  public:
     OVDmxDevice(ola::AbstractPlugin *owner,
-                  const std::string &name,
-                  const std::string &path,
-                  unsigned int device_id);
+                const std::string &name,
+                const std::string &path,
+                unsigned int device_id);
 
     // we only support one widget for now
     std::string DeviceId() const { return m_device_id; }
