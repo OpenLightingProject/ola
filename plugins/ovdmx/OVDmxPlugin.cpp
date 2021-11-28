@@ -122,7 +122,7 @@ bool OVDmxPlugin::SetDefaultPreferences() {
     m_preferences->Save();
   }
 
-  // check if this save correctly
+  // check if this saved correctly
   // we don't want to use it if null
   if (m_preferences->GetValue(DEVICE_KEY).empty()) {
     return false;
