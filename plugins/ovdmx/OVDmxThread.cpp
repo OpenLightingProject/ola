@@ -40,6 +40,7 @@
 #include "ola/Logging.h"
 #include "ola/io/IOUtils.h"
 #include "ola/util/Utils.h"
+#include "ola/base/Macro.h"
 
 namespace ola {
 namespace plugin {
@@ -80,7 +81,8 @@ void OVDmxThread::MakeRaw(int fd) {
  * Run this thread
  */
 void *OVDmxThread::Run() {
-  PACK(struct {
+  PACK(
+    struct dmx_packet_s {
     uint8_t magic[2];
     uint8_t type;
     union {
@@ -92,7 +94,9 @@ void *OVDmxThread::Run() {
       uint16_t crc;
       uint8_t crc_parts[2];
     };
-  } dmx_packet;)
+  });
+
+  dmx_packet_s dmx_packet;
 
   dmx_packet.magic[0] = 'O';
   dmx_packet.magic[1] = 'V';
