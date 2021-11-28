@@ -42,9 +42,9 @@ using std::string;
  * @param path to device
  */
 OVDmxDevice::OVDmxDevice(AbstractPlugin *owner,
-                             const string &name,
-                             const string &path,
-                             unsigned int device_id)
+                         const string &name,
+                         const string &path,
+                         unsigned int device_id)
     : Device(owner, name),
       m_path(path) {
   std::ostringstream str;
