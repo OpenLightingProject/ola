@@ -62,7 +62,6 @@ OVDmxThread::OVDmxThread(const string &path)
 /*
  * Strips away tty rewriting of \n to \r\n (bad for binary transfers)
  */
-
 void OVDmxThread::MakeRaw(int fd) {
     struct termios ios;
     // Not a TTY: nothing to do
