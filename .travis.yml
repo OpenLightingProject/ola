@@ -57,6 +57,23 @@ addons:
 #     - python3-protobuf
 #     - python3-numpy
 #     - python3-pip
+    packages: &focal_build_extras
+     # To fix the build/add missing components
+     - libtool
+     - pkg-config
+    packages: &focal_build_extras_python2
+     - *focal_build_extras
+     - python-is-python2
+     - python-protobuf
+     - python-numpy
+    packages: &focal_build_extras_python3
+     - *focal_build_extras
+     - python-is-python3
+     # To compile numpy
+     #- python3-dev
+     - python3-protobuf
+     - python3-numpy
+     - python3-pip
   homebrew:
     packages: &mac_core_build
      - ccache
@@ -79,38 +96,38 @@ jobs:
   fast_finish: true
   include:
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env: TASK='doxygen'
       addons:
         apt:
           packages:
            - *core_build_gpp_latest
-           - *bionic_build_extras_python2
+           - *focal_build_extras_python2
            - doxygen
            - graphviz
           sources:
            - ubuntu-toolchain-r-test
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env: TASK='lint'
       addons:
         apt:
           packages:
            - *core_build
-           - *bionic_build_extras_python2
+           - *focal_build_extras_python2
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env: TASK='check-licences'
       addons:
         apt:
           packages:
            - *core_build
-           - *bionic_build_extras_python2
+           - *focal_build_extras_python2
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env:
         - TASK='codespell'
@@ -119,17 +136,17 @@ jobs:
         apt:
           packages:
            - *core_build
-           - *bionic_build_extras_python3
+           - *focal_build_extras_python3
            - moreutils
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env: TASK='jshint'
       addons:
         apt:
           packages:
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env:
         - TASK='flake8'
@@ -137,10 +154,11 @@ jobs:
         apt:
           packages:
            - *base_build
-           - *bionic_build_extras_python2
+           - *focal_build_extras_python2
     - os: linux
-      dist: bionic
-      arch: arm64
+      dist: focal
+      arch: amd64
+      compiler: clang
       env:
         - TASK='flake8'
         - PYTHON='python3'
@@ -163,11 +181,11 @@ jobs:
 #           - *core_build_clang_latest
 #           - *bionic_build_extras_python3
 #          sources:
-#           - sourceline: "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
+#           - sourceline: "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main"
 #             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
 #           - sourceline: "ppa:ubuntu-toolchain-r/test"
 #    - os: linux
-#      dist: bionic
+#      dist: focal
 #      arch: amd64
 #      compiler: gcc
 #      env: TASK='compile'
@@ -176,11 +194,11 @@ jobs:
 #        apt:
 #          packages:
 #           - *core_build_gpp_latest
-#           - *bionic_build_extras_python2
+#           - *focal_build_extras_python2
 #          sources:
 #           - ubuntu-toolchain-r-test
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       compiler: clang
       env:
@@ -190,9 +208,9 @@ jobs:
         apt:
           packages:
            - *core_build_clang_recent
-           - *bionic_build_extras_python3
+           - *focal_build_extras_python3
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       compiler: gcc
       env: TASK='compile'
@@ -201,7 +219,7 @@ jobs:
         apt:
           packages:
            - *core_build_gpp_latest
-           - *bionic_build_extras_python2
+           - *focal_build_extras_python2
           sources:
            - ubuntu-toolchain-r-test
 #    - os: osx
@@ -325,7 +343,7 @@ jobs:
           sources:
            - sourceline: "ppa:ubuntu-toolchain-r/test"
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env: TASK='spellintian'
       addons:
@@ -336,7 +354,7 @@ jobs:
            - lintian
            - moreutils
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env: TASK='spellintian-duplicates'
       addons:
@@ -422,11 +440,11 @@ jobs:
       compiler: gcc
       env: TASK='coverity'
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env: TASK='spellintian'
     - os: linux
-      dist: bionic
+      dist: focal
       arch: arm64
       env: TASK='spellintian-duplicates'
 
@@ -466,9 +484,10 @@ before_cache:
   - ccache -s # see how many hits ccache got
 
 before_install:
- - if [ "$PYTHON" == "python3" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pyenv global 3.8.1; fi
-#On arm64 (at least) pip is now pip3, so symlink it to pip2 unless we're using python3.
- - if [ "$PYTHON" != "python3" ]; then sudo rm /usr/local/bin/pip && sudo ln -s /usr/local/bin/pip2 /usr/local/bin/pip; fi
+#Switch to python 3 where required (focal is Python 3 by default)
+ - if [ "$TRAVIS_DIST" != "focal" -a "$PYTHON" == "python3" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pyenv global 3.9.0 || pyenv versions && false; fi
+#Install pip (2) on focal
+ - if [ "$TRAVIS_DIST" == "focal" -a "$PYTHON" != "python3" -a -x /usr/bin/python2 ]; then curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && sudo python2 get-pip.py && rm get-pip.py; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
@@ -498,15 +517,15 @@ before_install:
  - $CXX --version
 
 install:
-# Match the version of protobuf being installed via apt/Homebrew
-  - if [ "$PROTOBUF" == "latest" -a \( "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf; fi
-  - if [ "$PROTOBUF" != "latest" -a \( "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" \) ]; then pip install --user protobuf==3.1.0; fi
+# Match the version of protobuf being installed via apt/Homebrew if required
+  - if [ "$PROTOBUF" == "latest" -a \( \( ! \( "$TRAVIS_DIST" == "bionic" -o "$TRAVIS_DIST" == "focal" \) \) -o \( "$TRAVIS_DIST" == "bionic" -a "$PYTHON" == "python3" \) \) ]; then pip install --user protobuf; fi
+  - if [ "$PROTOBUF" != "latest" -a \( \( ! \( "$TRAVIS_DIST" == "bionic" -o "$TRAVIS_DIST" == "focal" \) \) -o \( "$TRAVIS_DIST" == "bionic" -a "$PYTHON" == "python3" \) \) ]; then pip install --user protobuf==3.1.0; fi
   # disable until can be added to all build variants
   #- pip install --user timeout-decorator
 # We sometimes need to use pip rather than apt on Bionic
-  - if [ "$TRAVIS_OS_NAME" == "linux" -a "$TRAVIS_DIST" == "bionic" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
+  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TRAVIS_DIST" == "bionic" \) -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pip install --user wheel; fi # Wheel only needed to fix a broken bionic build
 # Install numpy via deb where it works, otherwise on OS X and non-bionic Python 2 Linux install via pip
-  - if [ "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" ]; then pip install --user numpy; fi
+  - if [ \( "$TRAVIS_DIST" != "bionic" -a "$TRAVIS_DIST" != "focal" \) -o "$PYTHON" == "python3" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi

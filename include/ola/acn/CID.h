@@ -22,6 +22,10 @@
 #ifndef INCLUDE_OLA_ACN_CID_H_
 #define INCLUDE_OLA_ACN_CID_H_
 
+#include <stdint.h>
+#include <ola/io/OutputBuffer.h>
+#include <string>
+
 /**
  * @addtogroup acn
  * @{
@@ -29,10 +33,6 @@
  * @brief The ACN component identifier.
  * @}
  */
-
-#include <stdint.h>
-#include <ola/io/OutputBuffer.h>
-#include <string>
 
 namespace ola {
 namespace acn {
@@ -140,8 +140,5 @@ class CID {
 };
 }  // namespace acn
 }  // namespace ola
-
-/**
- * @}
- */
+/**@}*/
 #endif  // INCLUDE_OLA_ACN_CID_H_

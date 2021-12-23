@@ -19,14 +19,6 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-/**
- * @addtogroup json
- * @{
- * @file Json.h
- * @brief Basic data types used to represent elements in a JSON document.
- * @}
- */
-
 #ifndef INCLUDE_OLA_WEB_JSON_H_
 #define INCLUDE_OLA_WEB_JSON_H_
 
@@ -39,6 +31,14 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+/**
+ * @addtogroup json
+ * @{
+ * @file Json.h
+ * @brief Basic data types used to represent elements in a JSON document.
+ * @}
+ */
 
 namespace ola {
 namespace web {
@@ -1331,7 +1331,7 @@ template <>
 inline JsonValue* JsonValue::NewValue<bool>(const bool &value) {
   return new JsonBool(value);
 }
-/**@}*/
 }  // namespace web
 }  // namespace ola
+/**@}*/
 #endif  // INCLUDE_OLA_WEB_JSON_H_

@@ -17,6 +17,14 @@
  * Header file for the logging
  * Copyright (C) 2005 Simon Newton
  */
+
+#ifndef INCLUDE_OLA_LOGGING_H_
+#define INCLUDE_OLA_LOGGING_H_
+
+#include <ostream>
+#include <string>
+#include <sstream>
+
 /**
  * @defgroup logging Logging
  * @brief The OLA logging system.
@@ -40,13 +48,6 @@
  * @file Logging.h
  * @brief Header file for OLA Logging
  */
-
-#ifndef INCLUDE_OLA_LOGGING_H_
-#define INCLUDE_OLA_LOGGING_H_
-
-#include <ostream>
-#include <string>
-#include <sstream>
 
 /**
  * Provide a stream interface to log a message at the specified log level.
