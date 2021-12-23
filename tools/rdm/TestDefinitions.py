@@ -611,8 +611,8 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
     self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self.MAX_PDL)
 
   def VerifyResult(self, response, fields):
-    ok = response not in [OlaClient.RDM_INVALID_RESPONSE,
-                          OlaClient.RDM_TIMEOUT]
+    ok = response.response_code not in [OlaClient.RDM_INVALID_RESPONSE,
+                                        OlaClient.RDM_TIMEOUT]
 
     self.SetProperty('supports_max_sized_pdl', ok)
 
