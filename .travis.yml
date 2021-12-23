@@ -157,7 +157,7 @@ jobs:
            - *focal_build_extras_python2
     - os: linux
       dist: focal
-      arch: amd64
+      arch: arm64
       compiler: clang
       env:
         - TASK='flake8'
