@@ -67,7 +67,7 @@ class OlaFetcher(object):
     try:
       response = connection.getresponse()
       if response.status == 200:
-        if sys.version >= '3.2':
+        if sys.version_info >= (3, 2):
           return response.read().decode('utf-8')
         else:
           return response.read()
