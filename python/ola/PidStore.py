@@ -645,7 +645,7 @@ class String(Atom):
                                 (self.name, self.min))
 
     try:
-      if sys.version >= '3.2':
+      if sys.version_info >= (3, 2):
         data = struct.unpack('%ds' % arg_size, bytes(arg, 'utf8'))
       else:
         data = struct.unpack('%ds' % arg_size, arg)
@@ -668,7 +668,7 @@ class String(Atom):
     except struct.error as e:
       raise UnpackException(e)
 
-    if sys.version >= '3.2':
+    if sys.version_info >= (3, 2):
       return value[0].rstrip(b'\x00').decode('utf-8')
     else:
       return value[0].rstrip(b'\x00')
