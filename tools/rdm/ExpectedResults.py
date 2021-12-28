@@ -54,11 +54,11 @@ class BaseExpectedResult(object):
 
     Args:
       action: The action to run if this result matches
-      warning: A warning message to log is this result matches
-      advisory: An advisory message to log is this result matches
+      warning: A warning message to log if this result matches
+      advisory: An advisory message to log if this result matches
     """
     self._action = action
-    self._warning_messae = warning
+    self._warning_message = warning
     self._advisory_message = advisory
 
   @property
@@ -67,7 +67,7 @@ class BaseExpectedResult(object):
 
   @property
   def warning(self):
-    return self._warning_messae
+    return self._warning_message
 
   @property
   def advisory(self):
@@ -337,7 +337,7 @@ class AckResult(SuccessfulResult):
         if field not in field_keys:
           return False
 
-    for field, value in self._field_values.iteritems():
+    for field, value in self._field_values.items():
       if field not in unpacked_data:
         return False
       if value != unpacked_data[field]:
