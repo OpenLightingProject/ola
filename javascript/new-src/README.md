@@ -1,5 +1,5 @@
 # web-interface
-the web interface for ola is build using
+the web interface for ola is built using
 - [angularjs](http://angularjs.com)
 - [bootstrap](http://getbootstrap.com)
 - [jquery](http://jquery.com)
