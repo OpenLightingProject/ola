@@ -58,6 +58,7 @@ bool LinuxHelper::SetDmxBaud(int fd) {
   struct termios2 tio;  // linux-specific terminal stuff
 
   if (ioctl(fd, TCGETS2, &tio) < 0) {
+    OLA_INFO << "Failed to get current serial port settings";
     return false;
   }
 
@@ -66,6 +67,7 @@ bool LinuxHelper::SetDmxBaud(int fd) {
   tio.c_ispeed = rate;
   tio.c_ospeed = rate;  // set custom speed directly
   if (ioctl(fd, TCSETS2, &tio) < 0) {
+    OLA_INFO << "Failed to update serial port settings";
     return false;
   }
 
@@ -79,6 +81,7 @@ bool LinuxHelper::SetDmxBaud(int fd) {
   }
   return true;
 #else
+  OLA_INFO << "Failed to set baud rate, due to missing stropts.h or termios2";
   return false;
   (void) fd;
 #endif  // defined(HAVE_STROPTS_H) && defined(HAVE_TERMIOS2)
