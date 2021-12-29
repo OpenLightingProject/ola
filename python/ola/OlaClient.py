@@ -952,7 +952,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.DmxData()
     request.universe = universe
-    if sys.version >= '3.2':
+    if sys.version_info >= (3, 2):
       request.data = data.tobytes()
     else:
       request.data = data.tostring()
