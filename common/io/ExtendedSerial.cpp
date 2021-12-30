@@ -68,7 +68,9 @@ namespace ola {
 namespace io {
 
 bool LinuxHelper::SetDmxBaud(int fd) {
-#if (defined(HAVE_STROPTS_H) || (defined(HAVE_SYS_IOCTL_H) && defined(HAVE_ASM_TERMBITS_H))) && defined(HAVE_TERMIOS2)
+#if (defined(HAVE_STROPTS_H) || \
+     (defined(HAVE_SYS_IOCTL_H) && defined(HAVE_ASM_TERMBITS_H))) && \
+    defined(HAVE_TERMIOS2)
   static const int rate = 250000;
 
   struct termios2 tio;  // linux-specific terminal stuff
@@ -107,7 +109,9 @@ bool LinuxHelper::SetDmxBaud(int fd) {
            << "termios2";
   return false;
   (void) fd;
-#endif  // (defined(HAVE_STROPTS_H) || (defined(HAVE_SYS_IOCTL_H) && defined(HAVE_ASM_TERMBITS_H))) && defined(HAVE_TERMIOS2)
+#endif  // (defined(HAVE_STROPTS_H) ||
+//  (defined(HAVE_SYS_IOCTL_H) && defined(HAVE_ASM_TERMBITS_H))) &&
+// defined(HAVE_TERMIOS2)
 }
 }  // namespace io
 }  // namespace ola
