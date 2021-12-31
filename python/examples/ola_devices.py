@@ -57,3 +57,7 @@ def main():
   client = wrapper.Client()
   client.FetchDevices(Devices)
   wrapper.Run()
+
+
+if __name__ == "__main__":
+  main()

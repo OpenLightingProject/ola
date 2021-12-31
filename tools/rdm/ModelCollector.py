@@ -103,7 +103,7 @@ class ModelCollector(object):
   def _GetVersion(self):
     this_device = self._GetDevice()
     software_versions = this_device['software_versions']
-    return software_versions[software_versions.keys()[0]]
+    return software_versions[list(software_versions.keys())[0]]
 
   def _GetCurrentPersonality(self):
     this_device = self._GetDevice()
