@@ -3264,7 +3264,7 @@ class SetLampOnMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELDS = ['mode']
   REQUIRES = ['lamp_on_mode']
   ALLOWED_MODES = [0, 1, 2]
-  ALL_MODES = ALLOWED_MODES + [3] + range(0x80, 0xe0)
+  ALL_MODES = ALLOWED_MODES + [3] + list(range(0x80, 0xe0))
 
   def OldValue(self):
     old = self.Property('lamp_on_mode')
