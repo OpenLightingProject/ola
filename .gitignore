@@ -226,6 +226,7 @@ tools/ola_trigger/FileValidateTest.sh
 tools/rdm/DataLocation.py
 tools/rdm/ResponderTestTest.sh
 tools/rdm/TestHelpersTest.sh
+tools/rdm/TestRunnerTest.sh
 tools/rdm/TestStateTest.sh
 tools/rdmpro/rdmpro_sniffer
 tools/rdmpro/rdmpro_sniffer.exe

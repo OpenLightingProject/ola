@@ -65,6 +65,11 @@ tools/rdm/TestHelpersTest.sh: tools/rdm/Makefile.mk
 	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/TestHelpersTest.py; exit \$$?" > $(top_builddir)/tools/rdm/TestHelpersTest.sh
 	chmod +x $(top_builddir)/tools/rdm/TestHelpersTest.sh
 
+tools/rdm/TestRunnerTest.sh: tools/rdm/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/TestRunnerTest.py; exit \$$?" > $(top_builddir)/tools/rdm/TestRunnerTest.sh
+	chmod +x $(top_builddir)/tools/rdm/TestRunnerTest.sh
+
 tools/rdm/TestStateTest.sh: tools/rdm/Makefile.mk
 	mkdir -p $(top_builddir)/python/ola
 	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/TestStateTest.py; exit \$$?" > $(top_builddir)/tools/rdm/TestStateTest.sh
@@ -73,12 +78,14 @@ tools/rdm/TestStateTest.sh: tools/rdm/Makefile.mk
 dist_check_SCRIPTS += \
    tools/rdm/ResponderTestTest.py \
    tools/rdm/TestHelpersTest.py \
+   tools/rdm/TestRunnerTest.py \
    tools/rdm/TestStateTest.py
 
 if BUILD_PYTHON_LIBS
 test_scripts += \
    tools/rdm/ResponderTestTest.sh \
    tools/rdm/TestHelpersTest.sh \
+   tools/rdm/TestRunnerTest.sh \
    tools/rdm/TestStateTest.sh
 endif
 
@@ -86,6 +93,7 @@ CLEANFILES += \
     tools/rdm/*.pyc \
     tools/rdm/ResponderTestTest.sh \
     tools/rdm/TestHelpersTest.sh \
+    tools/rdm/TestRunnerTest.sh \
     tools/rdm/TestStateTest.sh \
     tools/rdm/__pycache__/*
 
