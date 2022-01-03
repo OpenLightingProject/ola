@@ -17,8 +17,8 @@
 # Copyright (C) 2022 Peter Newman
 
 import unittest
+import TestDefinitions
 from TestRunner import GetTestClasses
-from ola.testing.rdm import TestDefinitions
 
 """Test cases for TestRunner utilities."""
 
