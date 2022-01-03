@@ -248,6 +248,9 @@ def main():
   options = ParseOptions()
 
   test_classes = TestRunner.GetTestClasses(TestDefinitions)
+  if len(test_classes) <= 0:
+    print('Failed to find any tests to run')
+    sys.exit(2)
   if options.list_tests:
     for test_name in sorted(c.__name__ for c in test_classes):
       print(test_name)
