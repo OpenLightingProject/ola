@@ -31,7 +31,8 @@ class TestRunnerGetTestClasses(unittest.TestCase):
     self.assertTrue(len(TestRunner.GetTestClasses(TestDefinitions)) > 100,
                     "Didn't find a realistic number of test classes")
     # Check for a common test
-    self.assertTrue("GetDeviceInfo" in TestRunner.GetTestClasses(TestDefinitions))
+    self.assertTrue("GetDeviceInfo" in
+                        TestRunner.GetTestClasses(TestDefinitions))
     # Check we don't contain the base classes:
     for classname in ["OptionalParameterTestFixture",
                       "ResponderTestFixture",
@@ -39,7 +40,8 @@ class TestRunnerGetTestClasses(unittest.TestCase):
                       "ResponderTest.OptionalParameterTestFixture",
                       "ResponderTest.ResponderTestFixture",
                       "ResponderTest.TestFixture"]:
-      self.assertTrue(classname not in TestRunner.GetTestClasses(TestDefinitions),
+      self.assertTrue(classname not in
+                          TestRunner.GetTestClasses(TestDefinitions),
                       "Class %s found in list of test classes" % classname)
 
 
