@@ -17,8 +17,7 @@
 # Copyright (C) 2022 Peter Newman
 
 import unittest
-import TestDefinitions
-from TestRunner import GetTestClasses
+from ola.testing.rdm import TestDefinitions, TestRunner
 
 """Test cases for TestRunner utilities."""
 
@@ -27,12 +26,12 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 class TestRunnerGetTestClasses(unittest.TestCase):
   def testGetTestClasses(self):
-    self.assertTrue(len(GetTestClasses(TestDefinitions)) > 0,
+    self.assertTrue(len(TestRunner.GetTestClasses(TestDefinitions)) > 0,
                     "Didn't find any test classes")
-    self.assertTrue(len(GetTestClasses(TestDefinitions)) > 100,
+    self.assertTrue(len(TestRunner.GetTestClasses(TestDefinitions)) > 100,
                     "Didn't find a realistic number of test classes")
     # Check for a common test
-    self.assertTrue("GetDeviceInfo" in GetTestClasses(TestDefinitions))
+    self.assertTrue("GetDeviceInfo" in TestRunner.GetTestClasses(TestDefinitions))
     # Check we don't contain the base classes:
     for classname in ["OptionalParameterTestFixture",
                       "ResponderTestFixture",
@@ -40,7 +39,7 @@ class TestRunnerGetTestClasses(unittest.TestCase):
                       "ResponderTest.OptionalParameterTestFixture",
                       "ResponderTest.ResponderTestFixture",
                       "ResponderTest.TestFixture"]:
-      self.assertTrue(classname not in GetTestClasses(TestDefinitions),
+      self.assertTrue(classname not in TestRunner.GetTestClasses(TestDefinitions),
                       "Class %s found in list of test classes" % classname)
 
 

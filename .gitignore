@@ -195,6 +195,8 @@ python/ola/PidStoreTest.sh
 python/ola/RDMTest.sh
 python/ola/Version.py
 python/ola/rpc/SimpleRpcControllerTest.sh
+python/ola/testing/
+python/ola/testing/__init__.py
 slp/slp_client
 slp/slp_client.exe
 slp/slp_server
