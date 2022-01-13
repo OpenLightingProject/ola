@@ -102,7 +102,8 @@ class RRDStore(object):
 
     data_sources = []
     for data_type, variable, _ in variables:
-      data_sources.append('DS:%s:%s:30:0:U' % (SanitizeName(variable), data_type))
+      data_sources.append('DS:%s:%s:30:0:U' %
+                          (SanitizeName(variable), data_type))
 
     if not os.path.exists(filename):
       rrdtool.create(filename,

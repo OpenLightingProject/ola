@@ -610,8 +610,9 @@ class GetMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
                    self.MAX_PDL),
     ])
     # Incrementing list, so we can find out which bit we have where in memory
+    # if it overflows
     data = ''
-    for i in xrange(0, self.MAX_PDL):
+    for i in range(0, self.MAX_PDL):
       data += chr(i)
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
