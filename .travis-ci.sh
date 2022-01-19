@@ -254,7 +254,7 @@ elif [[ $TASK = 'pychecker' ]]; then
   travis_fold end "pychecker_a"
   # More restricted checking for files that import files that break pychecker
   travis_fold start "pychecker_b"
-  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only $(find ./ -name "*.py" -and \( -wholename "./tools/rdm/ModelCollector.py" -or -wholename "./tools/rdm/DMXSender.py" -or -wholename "./tools/rdm/TestCategory.py" -or -wholename "./tools/rdm/TestHelpers.py" -or -wholename "./tools/rdm/TestState.py" -or -wholename "./tools/rdm/TimingStats.py" -or -wholename "./tools/rdm/list_rdm_tests.py" \) | xargs)
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only $(find ./ -name "*.py" -and \( -wholename "./tools/rdm/ModelCollector.py" -or -wholename "./tools/rdm/DMXSender.py" -or -wholename "./tools/rdm/TestCategory.py" -or -wholename "./tools/rdm/TestState.py" -or -wholename "./tools/rdm/TimingStats.py" -or -wholename "./tools/rdm/list_rdm_tests.py" \) | xargs)
   travis_fold end "pychecker_b"
   # Even more restricted checking for files that import files that break pychecker and have unused parameters
   travis_fold start "pychecker_c"
@@ -262,8 +262,12 @@ elif [[ $TASK = 'pychecker' ]]; then
   travis_fold end "pychecker_c"
   # Special case checking for some python 3 compatibility workarounds
   travis_fold start "pychecker_d"
-  pychecker --quiet --limit 500 --no-shadowbuiltin --no-noeffect ./include/ola/gen_callbacks.py
+  pychecker --quiet --limit 500 --no-shadowbuiltin --no-noeffect ./include/ola/gen_callbacks.py ./tools/rdm/ResponderTest.py
   travis_fold end "pychecker_d"
+  # Special case checking for some python 3 compatibility workarounds that import files that break pychecker
+  travis_fold start "pychecker_e"
+  pychecker --quiet --limit 500 --only --no-shadowbuiltin --no-noeffect ./tools/rdm/TestHelpers.py
+  travis_fold end "pychecker_e"
 elif [[ $TASK = 'pychecker-wip' ]]; then
   travis_fold start "autoreconf"
   autoreconf -i;
