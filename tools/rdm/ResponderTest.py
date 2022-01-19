@@ -688,14 +688,15 @@ class ResponderTestFixture(TestFixture):
     self._LogFrameTiming(response)
     return True
 
-  def _EscapeData(self, data):
+  @staticmethod
+  def _EscapeData(data):
     if type(data) == list:
-      return [self._EscapeData(i) for i in data]
+      return [ResponderTestFixture._EscapeData(i) for i in data]
     elif type(data) == dict:
       d = {}
       for k, v in data.items():
         # We can't escape the key as then it may become a new key
-        d[k] = self._EscapeData(v)
+        d[k] = ResponderTestFixture._EscapeData(v)
       return d
     # TODO(Peter): How does this interact with the E1.20 Unicode flag?
     # We don't use sys.version_info.major to support Python 2.6.
