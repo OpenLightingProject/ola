@@ -267,7 +267,7 @@ class SelectServer(object):
       runnable()
 
   def _GetThreadID(self):
-    return threading.currentThread().ident
+    return threading.current_thread().ident
 
   def _Stop(self):
     self._quit = True

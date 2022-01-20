@@ -53,7 +53,7 @@ class ModelCollector(object):
    LANGUAGES,
    SLOT_INFO,
    SLOT_DEFAULT_VALUE,
-   SLOT_DESCRIPTION) = xrange(14)
+   SLOT_DESCRIPTION) = range(14)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -218,7 +218,7 @@ class ModelCollector(object):
           'sensors': [],
       }
 
-      self.personalities = list(xrange(1, data['personality_count'] + 1))
+      self.personalities = list(range(1, data['personality_count'] + 1))
       if self.personalities:
         # If we have personalities populate the basic data structure to add the
         # other info to
@@ -231,10 +231,10 @@ class ModelCollector(object):
         this_personality = self._GetCurrentPersonality()
         if this_personality is not None:
           this_personality['slot_count'] = data['dmx_footprint']
-      self.slots.update(xrange(0, data['dmx_footprint']))
+      self.slots.update(range(0, data['dmx_footprint']))
       logging.debug("Populated %d slots from device info"
                     % (data['dmx_footprint']))
-      self.sensors = list(xrange(0, data['sensor_count']))
+      self.sensors = list(range(0, data['sensor_count']))
       self._NextState()
     else:
       # We need software version to do anything, so abort and move onto the
@@ -287,7 +287,7 @@ class ModelCollector(object):
         this_device = self._GetDevice()
         if (this_device and
             (this_device['current_personality'] == data['personality'])):
-          self.slots.update(xrange(0, data['slots_required']))
+          self.slots.update(range(0, data['slots_required']))
           logging.debug("Populated %d slots from personality description"
                         % (data['slots_required']))
     self._FetchNextPersonality()
