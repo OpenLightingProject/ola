@@ -17,7 +17,6 @@
 # Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
 
 from __future__ import print_function
-import cgi
 import json
 import logging
 import mimetypes
@@ -28,7 +27,6 @@ import stat
 import sys
 import textwrap
 import traceback
-import urlparse
 
 from datetime import datetime
 from optparse import OptionParser
@@ -46,6 +44,16 @@ from ola.testing.rdm import TestLogger
 from ola.testing.rdm import TestRunner
 from ola.testing.rdm.ModelCollector import ModelCollector
 from ola.testing.rdm.TestState import TestState
+
+try:
+  import urllib.parse as urlparse
+except ImportError:
+  import urlparse
+
+try:
+  from html import escape
+except ImportError:
+  from cgi import escape
 
 
 __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
@@ -424,7 +432,7 @@ class HTTPResponse(object):
 
   def GetHeaders(self):
     headers = []
-    for header, value in self._headers.iteritems():
+    for header, value in self._headers.items():
       headers.append((header, value))
     return headers
 
@@ -889,10 +897,13 @@ class RunTestsHandler(OLAServerRequestHandler):
           'definition': test.__str__(),
           'state': state,
           'category': category,
-          'warnings': [cgi.escape(w) for w in test.warnings],
-          'advisories': [cgi.escape(a) for a in test.advisories],
-          'debug': [cgi.escape(d) for d in test._debug],
-          'doc': cgi.escape(test.__doc__),
+          # TODO(Peter): Check if we actually want this to be false or not!
+          # I think the JSON dump stuff handles it so it doesn't matter either
+          # way.
+          'warnings': [escape(w, False) for w in test.warnings],
+          'advisories': [escape(a, False) for a in test.advisories],
+          'debug': [escape(d, False) for d in test._debug],
+          'doc': escape(test.__doc__, False),
         }
       )
 
