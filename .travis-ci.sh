@@ -258,7 +258,7 @@ elif [[ $TASK = 'pychecker' ]]; then
   travis_fold end "pychecker_b"
   # Even more restricted checking for files that import files that break pychecker and have unused parameters
   travis_fold start "pychecker_c"
-  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only --no-argsused $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -name "ola_universe_info.py" -or -name "rdm_snapshot.py" -or -name "ClientWrapper.py" -or -name "PidStore.py" -or -name "enforce_licence.py" -or -name "ola_mon.py" -or -name "TestLogger.py" -or -name "TestRunner.py" -or -name "rdm_model_collector.py" -or -name "rdm_responder_test.py" -or -name "rdm_test_server.py" -or -wholename "./include/ola/gen_callbacks.py" -or -wholename "./tools/rdm/TestHelpers.py" \) | xargs)
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only --no-argsused $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -name "ola_universe_info.py" -or -name "rdm_snapshot.py" -or -name "ClientWrapper.py" -or -name "PidStore.py" -or -name "enforce_licence.py" -or -name "ola_mon.py" -or -name "TestLogger.py" -or -name "TestRunner.py" -or -name "rdm_model_collector.py" -or -name "rdm_responder_test.py" -or -name "rdm_test_server.py" -or -wholename "./include/ola/gen_callbacks.py" -or -wholename "./tools/rdm/ResponderTest.py" -or -wholename "./tools/rdm/TestHelpers.py" \) | xargs)
   travis_fold end "pychecker_c"
   # Special case checking for some python 3 compatibility workarounds
   travis_fold start "pychecker_d"
