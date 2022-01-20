@@ -262,12 +262,16 @@ elif [[ $TASK = 'pychecker' ]]; then
   travis_fold end "pychecker_c"
   # Special case checking for some python 3 compatibility workarounds
   travis_fold start "pychecker_d"
-  pychecker --quiet --limit 500 --no-shadowbuiltin --no-noeffect ./include/ola/gen_callbacks.py ./tools/rdm/ResponderTest.py
+  pychecker --quiet --limit 500 --no-shadowbuiltin --no-noeffect ./include/ola/gen_callbacks.py
   travis_fold end "pychecker_d"
   # Special case checking for some python 3 compatibility workarounds that import files that break pychecker
   travis_fold start "pychecker_e"
   pychecker --quiet --limit 500 --only --no-shadowbuiltin --no-noeffect ./tools/rdm/TestHelpers.py
   travis_fold end "pychecker_e"
+  # Extra special case checking for some python 3 compatibility workarounds that import files that break pychecker and have unused parameters
+  travis_fold start "pychecker_f"
+  pychecker --quiet --limit 500 --only --no-argsused --no-shadowbuiltin --no-noeffect ./tools/rdm/ResponderTest.py
+  travis_fold end "pychecker_f"
 elif [[ $TASK = 'pychecker-wip' ]]; then
   travis_fold start "autoreconf"
   autoreconf -i;
