@@ -61,6 +61,7 @@ const char UsbSerialPlugin::BSD_DEVICE_PREFIX[] = "ttyU";
 const char UsbSerialPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
 const char UsbSerialPlugin::PLUGIN_NAME[] = "Serial USB";
 const char UsbSerialPlugin::PLUGIN_PREFIX[] = "usbserial";
+const char UsbSerialPlugin::OPENDECK_FPS_LIMIT_KEY[] = "opendeck_fps_limit";
 const char UsbSerialPlugin::ROBE_DEVICE_NAME[] = "Robe Universal Interface";
 const char UsbSerialPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbSerialPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
@@ -216,7 +217,7 @@ void UsbSerialPlugin::NewWidget(OpenDeckWidget *widget,
       information.device_id,
       information.serial,
       information.firmware_version,
-      GetUltraDMXProFrameLimit()));
+      GetOpenDeckFrameLimit()));
 }
 
 /*
@@ -295,6 +296,11 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(DEVICE_DIR_KEY, StringValidator(),
                                          DEFAULT_DEVICE_DIR);
 
+  save |= m_preferences->SetDefaultValue(OPENDECK_FPS_LIMIT_KEY,
+                                         UIntValidator(0,
+                                         MAX_OPENDECK_FPS_LIMIT),
+                                         DEFAULT_OPENDECK_FPS_LIMIT);
+
   save |= m_preferences->SetDefaultValue(USB_PRO_FPS_LIMIT_KEY,
                                          UIntValidator(0, MAX_PRO_FPS_LIMIT),
                                          DEFAULT_PRO_FPS_LIMIT);
@@ -340,6 +346,18 @@ string UsbSerialPlugin::GetDeviceName(
   }
   device_name += information.device;
   return device_name;
+}
+
+/*
+ * Get the Frames per second limit for OpenDeck device
+ */
+unsigned int UsbSerialPlugin::GetOpenDeckFrameLimit() {
+  unsigned int fps_limit;
+  if (!StringToInt(m_preferences->GetValue(OPENDECK_FPS_LIMIT_KEY) ,
+                   &fps_limit)) {
+    return DEFAULT_OPENDECK_FPS_LIMIT;
+  }
+  return fps_limit;
 }
 
 

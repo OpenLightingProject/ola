@@ -28,6 +28,9 @@ The prefix of filenames to consider as devices. Multiple keys are allowed.
 `ignore_device = /dev/ttyUSB`  
 Ignore the device matching this string. Multiple keys are allowed.
 
+`opendeck_fps_limit = 40`  
+The max frames per second to send to a OpenDeck device.
+
 `pro_fps_limit = 190`  
 The max frames per second to send to a Usb Pro or DMXKing device.
 
