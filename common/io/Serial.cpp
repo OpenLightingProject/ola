@@ -27,6 +27,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
@@ -57,6 +58,7 @@ using std::string;
 
 namespace {
 
+#ifdef UUCP_LOCKING
 string GetLockFile(const string &path) {
   const string base_name = ola::file::FilenameFromPath(path);
   return ola::file::JoinPaths(UUCP_LOCK_DIR, "LCK.." + base_name);
@@ -113,6 +115,7 @@ bool RemoveLockFile(const string &lock_file) {
   }
   return true;
 }
+#endif  // UUCP_LOCKING
 
 }  // namespace
 
@@ -140,7 +143,41 @@ bool UIntToSpeedT(uint32_t value, speed_t *output) {
   return false;
 }
 
+#ifdef HAVE_FLOCK
+bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
+  // First, check if the path exists, there's no point trying to open it if not
+  if (!FileExists(path)) {
+    OLA_INFO << "Device " << path << " doesn't exist.";
+    return false;
+  }
 
+  // Now try to open the serial device.
+  if (!TryOpen(path, oflag, fd)) {
+    OLA_DEBUG << "Failed to open device " << path;
+    return false;
+  }
+
+  if (flock(*fd, LOCK_EX | LOCK_NB) == -1) {
+    OLA_INFO << "Failed to flock() device " << path;
+    close(*fd);
+    return false;
+  }
+
+#if HAVE_SYS_IOCTL_H
+  // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
+  // further opens.
+  if (ioctl(*fd, TIOCEXCL) == -1) {
+    OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
+    close(*fd);
+    return false;
+  }
+#endif  // HAVE_SYS_IOCTL_H
+  return true;
+}
+#endif // HAVE_FLOCK
+
+
+#ifdef UUCP_LOCKING
 bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   // This is rather tricky since there is no real convention for LCK files.
   // If it was only a single process doing the locking we could use fnctl as
@@ -231,9 +268,11 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
 #endif  // HAVE_SYS_IOCTL_H
   return true;
 }
+#endif // UUCP_LOCKING
 
 
 void ReleaseUUCPLock(const std::string &path) {
+#ifdef UUCP_LOCKING
   const string lock_file = GetLockFile(path);
 
   pid_t locked_pid;
@@ -247,6 +286,16 @@ void ReleaseUUCPLock(const std::string &path) {
       OLA_INFO << "Released " << lock_file;
     }
   }
+#endif  /* else no action needed */
 }
+
+bool AcquireLockAndOpen(const std::string &path, int oflag, int *fd) {
+#ifdef UUCP_LOCKING
+	return AcquireUUCPLockAndOpen(path, oflag, fd);
+#else
+	return OpenAndFlock(path, oflag, fd);
+#endif
+}
+
 }  // namespace io
 }  // namespace ola

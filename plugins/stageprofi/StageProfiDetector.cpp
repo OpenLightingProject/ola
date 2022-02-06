@@ -164,9 +164,9 @@ ConnectedDescriptor* StageProfiDetector::ConnectToUSB(
   struct termios newtio;
 
   int fd;
-  if (!ola::io::AcquireUUCPLockAndOpen(widget_path,
-                                       O_RDWR | O_NONBLOCK | O_NOCTTY,
-                                       &fd)) {
+  if (!ola::io::AcquireLockAndOpen(widget_path,
+                                   O_RDWR | O_NONBLOCK | O_NOCTTY,
+                                   &fd)) {
     return NULL;
   }
 
