@@ -46,7 +46,7 @@ using std::string;
  * Create a new device
  * @param owner  the plugin that owns this device
  * @param name  the device name
- * @param dev_path  path to the pro widget
+ * @param dev_path  path to the OpenDeck widget
  */
 OpenDeckDevice::OpenDeckDevice(ola::PluginAdaptor *plugin_adaptor,
                                ola::AbstractPlugin *owner,
