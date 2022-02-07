@@ -174,25 +174,9 @@ void OpenDeckDevice::HandleParametersRequest(RpcController *controller,
       (request->parameters().has_break_time() ||
        request->parameters().has_mab_time() ||
        request->parameters().has_rate())) {
-    if (!m_got_parameters) {
-      controller->SetFailed("SetParameters failed, startup not complete");
-      done->Run();
-      return;
-    }
-
-    bool ret = m_opendeck_widget->SetParameters(
-      request->parameters().has_break_time() ?
-        request->parameters().break_time() : m_break_time,
-      request->parameters().has_mab_time() ?
-        request->parameters().mab_time() : m_mab_time,
-      request->parameters().has_rate() ?
-        request->parameters().rate() : m_rate);
-
-    if (!ret) {
-      controller->SetFailed("SetParameters failed");
-      done->Run();
-      return;
-    }
+    controller->SetFailed("SetParameters failed");
+    done->Run();
+    return;
   }
 
   m_opendeck_widget->GetParameters(NewSingleCallback(
