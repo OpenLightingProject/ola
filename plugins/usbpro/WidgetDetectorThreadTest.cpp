@@ -216,7 +216,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
                    const UsbProWidgetInformation &information) {
       OLA_ASSERT_EQ(static_cast<uint16_t>(0x6555), information.esta_id);
       OLA_ASSERT_EQ(string("Shantea Controls"), information.manufacturer);
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0x0), information.device_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x0000), information.device_id);
       OLA_ASSERT_EQ(string("OpenDeck"), information.device);
       OLA_ASSERT_EQ(static_cast<uint32_t>(0xABCDEF99), information.serial);
       OLA_ASSERT_EQ(static_cast<uint16_t>(0x0600), information.firmware_version);
