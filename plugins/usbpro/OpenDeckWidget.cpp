@@ -63,7 +63,7 @@ bool OpenDeckWidget::SendDMX(const DmxBuffer &data) {
 
       return SendMessage(DMX_LABEL,
                          reinterpret_cast<uint8_t*>(&full_frame),
-                         length + 1);
+                         length + sizeof(full_frame.start_code));
     } else {
       return SendMessage(DMX_SLOT_VALUE_DIFF_LABEL,
                          &send_buffer[0],
