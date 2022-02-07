@@ -83,10 +83,10 @@ OpenDeckDevice::OpenDeckDevice(ola::PluginAdaptor *plugin_adaptor,
   uint8_t major;
   uint8_t minor;
 
-  SplitUInt16(firmware_version, &minor, &major);
+  SplitUInt16(firmware_version, &major, &minor);
 
   str << "Serial #: " << m_serial << ", firmware "
-      << major << "." << minor;
+      << static_cast<int>(major) << "." << static_cast<int>(minor);
 
   m_opendeck_widget->GetParameters(NewSingleCallback(
     this,
