@@ -17,7 +17,7 @@
  * An OpenDeck Device
  * Copyright (C) 2021 Simon Newton, Igor Petrovic
  *
- * This device creates a single output port
+ * This device creates a single OpenDeck output port
  */
 
 #include <iomanip>
