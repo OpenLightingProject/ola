@@ -16,7 +16,7 @@
  * OpenDeckWidget.h
  * The OpenDeck Widget.
  * This is similar to Ultra DMX Pro, but uses diff mode protocol for sending data.
- * Copyright (C) 2021 Simon Newton, Igor Petrovic
+ * Copyright (C) 2022 Igor Petrovic
  */
 
 #ifndef PLUGINS_USBPRO_OPENDECKWIDGET_H_

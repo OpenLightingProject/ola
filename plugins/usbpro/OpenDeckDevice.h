@@ -15,7 +15,7 @@
  *
  * OpenDeckDevice.h
  * An OpenDeck Device
- * Copyright (C) 2021 Simon Newton, Igor Petrovic
+ * Copyright (C) 2022 Igor Petrovic
  */
 
 #ifndef PLUGINS_USBPRO_OPENDECKDEVICE_H_

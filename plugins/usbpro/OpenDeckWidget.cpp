@@ -15,7 +15,7 @@
  *
  * OpenDeckWidget.cpp
  * The OpenDeck Widget.
- * Copyright (C) 2021 Simon Newton, Igor Petrovic
+ * Copyright (C) 2022 Igor Petrovic
  */
 
 #include <vector>
