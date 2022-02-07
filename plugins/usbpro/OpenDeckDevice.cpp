@@ -29,6 +29,7 @@
 #include "ola/Callback.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/strings/Format.h"
 #include "plugins/usbpro/OpenDeckDevice.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
 
@@ -40,6 +41,7 @@ using ola::plugin::usbpro::Request;
 using ola::plugin::usbpro::Reply;
 using ola::rpc::RpcController;
 using ola::utils::SplitUInt16;
+using ola::strings::ToHex;
 using std::string;
 
 /*
@@ -64,14 +66,11 @@ OpenDeckDevice::OpenDeckDevice(ola::PluginAdaptor *plugin_adaptor,
     m_break_time(0),
     m_mab_time(0),
     m_rate(0) {
+  // Serial number is stored as series of 4 bytes.
+  // Display the serial in hex format so that it
+  // matches (partially) with USB serial number.
   std::ostringstream str;
-  str << std::setfill('0');
-  uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
-  for (int i = 0; i < UsbProWidgetInformation::SERIAL_LENGTH; i++) {
-    str << std::setfill('0') << std::setw(2) << std::hex
-        << static_cast<int>(ptr[i]);
-  }
-
+  str << ToHex(serial);
   m_serial = str.str();
   str.str("");
 
