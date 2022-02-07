@@ -204,7 +204,7 @@ void OpenDeckDevice::HandleParametersResponse(
     Reply reply;
     reply.set_type(ola::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
     ola::plugin::usbpro::ParameterReply *parameters_reply =
-      reply.mutable_parameters();
+        reply.mutable_parameters();
 
     parameters_reply->set_firmware_high(params.firmware_high);
     parameters_reply->set_firmware(params.firmware);
