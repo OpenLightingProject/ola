@@ -219,7 +219,8 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       OLA_ASSERT_EQ(static_cast<uint16_t>(0x0000), information.device_id);
       OLA_ASSERT_EQ(string("OpenDeck"), information.device);
       OLA_ASSERT_EQ(static_cast<uint32_t>(0xABCDEF99), information.serial);
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0x0600), information.firmware_version);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x0600),
+                    information.firmware_version);
       m_thread->FreeWidget(widget);
       m_received_widget_type = OPENDECK;
       m_ss.Terminate();
