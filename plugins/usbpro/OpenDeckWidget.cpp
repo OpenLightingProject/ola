@@ -73,8 +73,8 @@ bool OpenDeckWidget::SendDMX(const DmxBuffer &data) {
           internal_buffer = data;
 
           return SendMessage(DMX_LABEL,
-                            reinterpret_cast<uint8_t*>(&full_frame),
-                            length + sizeof(full_frame.start_code));
+                             reinterpret_cast<uint8_t*>(&full_frame),
+                             length + sizeof(full_frame.start_code));
         }
       }
     }
