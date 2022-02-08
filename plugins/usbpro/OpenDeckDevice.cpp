@@ -227,7 +227,7 @@ void OpenDeckDevice::HandleSerialRequest(
   Reply reply;
   reply.set_type(ola::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
   ola::plugin::usbpro::SerialNumberReply *serial_reply =
-    reply.mutable_serial_number();
+      reply.mutable_serial_number();
   serial_reply->set_serial(m_serial);
   reply.SerializeToString(response);
   done->Run();
