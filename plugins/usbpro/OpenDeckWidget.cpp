@@ -81,8 +81,8 @@ bool OpenDeckWidget::SendDMX(const DmxBuffer &data) {
 
     internal_buffer = data;
     return SendMessage(DMX_SLOT_VALUE_DIFF_LABEL,
-                        &send_buffer[0],
-                        send_buffer.size());
+                       &send_buffer[0],
+                       send_buffer.size());
   } else {
     OLA_DEBUG << "Data unchanged - not sending data to device";
     return true;
