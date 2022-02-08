@@ -299,7 +299,7 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(OPENDECK_FPS_LIMIT_KEY,
                                          UIntValidator(0,
                                              MAX_OPENDECK_FPS_LIMIT),
-                                             DEFAULT_OPENDECK_FPS_LIMIT);
+                                         DEFAULT_OPENDECK_FPS_LIMIT);
 
   save |= m_preferences->SetDefaultValue(USB_PRO_FPS_LIMIT_KEY,
                                          UIntValidator(0, MAX_PRO_FPS_LIMIT),
