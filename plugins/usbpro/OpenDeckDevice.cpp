@@ -70,8 +70,9 @@ OpenDeckDevice::OpenDeckDevice(ola::PluginAdaptor *plugin_adaptor,
   // Display the serial in hex format so that it
   // matches (partially) with USB serial number.
   std::ostringstream str;
-  str << ToHex(serial);
+  str << ToHex(serial, false);
   m_serial = str.str();
+  ToUpper(&m_serial);
   str.str("");
 
   // Firmware version is stored in major.minor format.
