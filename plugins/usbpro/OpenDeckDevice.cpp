@@ -159,21 +159,18 @@ void OpenDeckDevice::UpdateParams(bool status,
 
 
 /*
- * Handle a parameter request. This may set some parameters in the widget.
- * If no parameters are set we simply fetch the parameters and return them to
- * the client. If we are setting parameters, we send a SetParam() request and
- * then another GetParam() request in order to return the latest values to the
- * client.
+ * Handle a parameter request. On OpenDeck devices, setting the parameters
+ * isn't supported. OpenDeck firmware runs on various architectures and
+ * microcontrollers, and on some of them it's not really feasible to make
+ * the timings configurable. Instead, firmware switches between 100000 and
+ * 250000 baudrate to generate the correct timings. Failure is indicated
+ * to the requester in this case. Fetching the parameters and returning
+ * them to the client works normally.
  */
 void OpenDeckDevice::HandleParametersRequest(RpcController *controller,
                                              const Request *request,
                                              string *response,
                                              ConfigureCallback *done) {
-  // OpenDeck firmware runs on various architectures
-  // and microcontrollers, and on some of them it's
-  // not really feasible to make the timings configurable.
-  // Instead, firmware switches between 100000 and 250000
-  // baudrate to generate the correct timings.
   if (request->has_parameters() &&
       (request->parameters().has_break_time() ||
        request->parameters().has_mab_time() ||
