@@ -169,11 +169,16 @@ void OpenDeckDevice::HandleParametersRequest(RpcController *controller,
                                              const Request *request,
                                              string *response,
                                              ConfigureCallback *done) {
+  // OpenDeck firmware runs on various architectures
+  // and microcontrollers, and on some of them it's
+  // not really feasible to make the timings configurable.
+  // Instead, firmware switches between 100000 and 250000
+  // baudrate to generate the correct timings.
   if (request->has_parameters() &&
       (request->parameters().has_break_time() ||
        request->parameters().has_mab_time() ||
        request->parameters().has_rate())) {
-    controller->SetFailed("SetParameters failed");
+    controller->SetFailed("Parameters on this device are read-only.");
     done->Run();
     return;
   }
