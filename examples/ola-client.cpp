@@ -31,6 +31,7 @@
 #include <olad/PortConstants.h>
 
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -70,6 +71,17 @@ typedef enum {
   SET_PORT_PRIORITY,
 } mode;
 
+static const int CONSOLE_TAB_WIDTH = 8;
+
+static const int PLUGIN_ID_WIDTH = 5;
+
+static const int UNI_ID_WIDTH = 5;
+static const int UNI_NAME_WIDTH = 30;
+
+static const char UNI_MERGE_MODE[] = "Merge Mode";
+static const char UNI_INPUT_PORTS[] = "Input Ports";
+static const char UNI_OUTPUT_PORTS[] = "Output Ports";
+static const char UNI_RDM_DEVICES[] = "RDM Devices";
 
 typedef struct {
   mode m;          // mode
@@ -141,6 +153,15 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
 }
 
 
+int OutputColumnTitle(const string title,
+                      const size_t width_override,
+                      const int overall_width) {
+  int width = std::max(width_override, title.length());
+  cout << "\t" << setw(width) << title;
+  return width + (CONSOLE_TAB_WIDTH - (overall_width % CONSOLE_TAB_WIDTH));
+}
+
+
 /*
  * This is called when we receive universe results from the client
  * @param list_ids_only show ids only
@@ -154,8 +175,6 @@ void DisplayUniverses(SelectServer *ss,
                       const vector <OlaUniverse> &universes) {
   vector<OlaUniverse>::const_iterator iter;
 
-  string divider = string(58 + (extended ? 41 : 0), '-');
-
   if (!result.Success()) {
     cerr << result.Error() << endl;
     ss->Terminate();
@@ -167,36 +186,42 @@ void DisplayUniverses(SelectServer *ss,
       cout << iter->Id() << endl;
     }
   } else {
-    cout << setw(5) << "Id" << "\t" << setw(30) << "Name" << "\t";
-    if (extended) {
-      cout << setw(10);
-    } else {
+    // Pre-set the first title
+    int divider_width = UNI_ID_WIDTH;
+    cout << setw(UNI_ID_WIDTH) << "Id";
+    divider_width += OutputColumnTitle("Name", UNI_NAME_WIDTH, divider_width);
+    if (!extended) {
       // By default keep the double tab for backwards compatibility of anyone
       // parsing the shell, not that we'd recommend that
-      cout << "\t";
+      // Output an empty title to cover this
+      divider_width += OutputColumnTitle("", 0, divider_width);
     }
-    cout << "Merge Mode";
+    divider_width += OutputColumnTitle(UNI_MERGE_MODE, 0, divider_width);
     if (extended) {
-      cout << "\t" << setw(11) << "Input Ports" << "\t" << setw(12)
-           << "Output Ports" << "\t" << setw(11) << "RDM Devices";
+      divider_width += OutputColumnTitle(UNI_INPUT_PORTS, 0, divider_width);
+      divider_width += OutputColumnTitle(UNI_OUTPUT_PORTS, 0, divider_width);
+      divider_width += OutputColumnTitle(UNI_RDM_DEVICES, 0, divider_width);
     }
     cout << endl;
+    string divider = string(divider_width, '-');
     cout << divider << endl;
 
     for (iter = universes.begin(); iter != universes.end(); ++iter) {
-      cout << setw(5) << iter->Id() << "\t" << setw(30) << iter->Name()
-           << "\t";
-      if (extended) {
-        cout << setw(10);
-      } else {
+      cout << setw(UNI_ID_WIDTH) << iter->Id()
+           << "\t" << setw(UNI_NAME_WIDTH) << iter->Name();
+      if (!extended) {
         // By default keep the double tab for backwards compatibility of anyone
         // parsing the shell, not that we'd recommend that
         cout << "\t";
       }
-        cout << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP");
+      cout << "\t" << setw(strlen(UNI_MERGE_MODE))
+           << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP");
       if (extended) {
-        cout << "\t" << setw(11) << iter->InputPortCount() << "\t" << setw(12)
-             << iter->OutputPortCount() << "\t" << setw(11)
+        cout << "\t" << setw(strlen(UNI_INPUT_PORTS))
+             << iter->InputPortCount()
+             << "\t" << setw(strlen(UNI_OUTPUT_PORTS))
+             << iter->OutputPortCount()
+             << "\t" << setw(strlen(UNI_RDM_DEVICES))
              << iter->RDMDeviceCount();
       }
       cout << endl;
@@ -230,11 +255,15 @@ void DisplayPlugins(SelectServer *ss,
       cout << iter->Id() << endl;
     }
   } else {
-    cout << setw(5) << "Id" << "\tPlugin Name" << endl;
+    // Leave for backwards compatibility (in case anyone is parsing the shell,
+    // not that we'd recommend that), but this could use OutputColumnTitle with
+    // a setw of 30 on the plugin name
+    cout << setw(PLUGIN_ID_WIDTH) << "Id" << "\tPlugin Name" << endl;
     cout << "--------------------------------------" << endl;
 
     for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-      cout << setw(5) << iter->Id() << "\t" << iter->Name() << endl;
+      cout << setw(PLUGIN_ID_WIDTH) << iter->Id()
+           << "\t" << iter->Name() << endl;
     }
 
     cout << "--------------------------------------" << endl;
