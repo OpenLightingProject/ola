@@ -58,7 +58,7 @@ using std::string;
 
 namespace {
 
-string GetLockFile(const string &path) {
+string GetUUCPLockFile(const string &path) {
   const string base_name = ola::file::FilenameFromPath(path);
   return ola::file::JoinPaths(UUCP_LOCK_DIR, "LCK.." + base_name);
 }
@@ -107,7 +107,7 @@ bool ProcessExists(pid_t pid) {
 #endif  // _WIN32
 }
 
-bool RemoveLockFile(const string &lock_file) {
+bool RemoveUUCPLockFile(const string &lock_file) {
   if (unlink(lock_file.c_str())) {
     OLA_WARN << "Failed to remove UUCP lock file: " << lock_file;
     return false;
@@ -188,7 +188,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   }
 
   // Second, clean up a stale lockfile.
-  const string lock_file = GetLockFile(path);
+  const string lock_file = GetUUCPLockFile(path);
   OLA_DEBUG << "Checking for " << lock_file;
   pid_t locked_pid;
   if (!GetPidFromFile(lock_file, &locked_pid)) {
@@ -207,7 +207,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
     }
     // There is a race between the read & the unlink here. I'm not convinced it
     // can be solved.
-    if (!RemoveLockFile(lock_file)) {
+    if (!RemoveUUCPLockFile(lock_file)) {
       OLA_INFO << "Device " << path << " was locked by PID " << locked_pid
                << " which is no longer active, however failed to remove stale "
                << "lock file";
@@ -241,7 +241,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   close(lock_fd);
   if (r != pid_file_contents.size()) {
     OLA_WARN << "Failed to write complete LCK file: " << lock_file;
-    RemoveLockFile(lock_file);
+    RemoveUUCPLockFile(lock_file);
     return false;
   }
 
@@ -249,7 +249,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   if (!TryOpen(path, oflag, fd)) {
     OLA_DEBUG << "Failed to open device " << path << " despite having the "
               << "lock file";
-    RemoveLockFile(lock_file);
+    RemoveUUCPLockFile(lock_file);
     return false;
   }
 
@@ -259,7 +259,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   if (ioctl(*fd, TIOCEXCL) == -1) {
     OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
     close(*fd);
-    RemoveLockFile(lock_file);
+    RemoveUUCPLockFile(lock_file);
     return false;
   }
 #endif  // HAVE_SYS_IOCTL_H
@@ -269,7 +269,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
 
 void ReleaseUUCPLock(const std::string &path) {
 #ifdef UUCP_LOCKING
-  const string lock_file = GetLockFile(path);
+  const string lock_file = GetUUCPLockFile(path);
 
   pid_t locked_pid;
   if (!GetPidFromFile(lock_file, &locked_pid)) {
@@ -278,7 +278,7 @@ void ReleaseUUCPLock(const std::string &path) {
 
   pid_t our_pid = getpid();
   if (our_pid == locked_pid) {
-    if (RemoveLockFile(lock_file)) {
+    if (RemoveUUCPLockFile(lock_file)) {
       OLA_INFO << "Released " << lock_file;
     }
   }
