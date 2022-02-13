@@ -285,9 +285,9 @@ void ReleaseUUCPLock(const std::string &path) {
 
 bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
 #ifdef UUCP_LOCKING
-	return AcquireUUCPLockAndOpen(path, oflag, fd);
+  return AcquireUUCPLockAndOpen(path, oflag, fd);
 #else
-	return OpenAndFlock(path, oflag, fd);
+  return OpenAndFlock(path, oflag, fd);
 #endif
 }
 
