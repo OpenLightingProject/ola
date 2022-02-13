@@ -58,7 +58,6 @@ using std::string;
 
 namespace {
 
-#ifdef UUCP_LOCKING
 string GetLockFile(const string &path) {
   const string base_name = ola::file::FilenameFromPath(path);
   return ola::file::JoinPaths(UUCP_LOCK_DIR, "LCK.." + base_name);
@@ -115,7 +114,6 @@ bool RemoveLockFile(const string &lock_file) {
   }
   return true;
 }
-#endif  // UUCP_LOCKING
 
 }  // namespace
 
@@ -177,7 +175,6 @@ bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
 #endif // HAVE_FLOCK
 
 
-#ifdef UUCP_LOCKING
 bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   // This is rather tricky since there is no real convention for LCK files.
   // If it was only a single process doing the locking we could use fnctl as
@@ -268,7 +265,6 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
 #endif  // HAVE_SYS_IOCTL_H
   return true;
 }
-#endif // UUCP_LOCKING
 
 
 void ReleaseUUCPLock(const std::string &path) {
