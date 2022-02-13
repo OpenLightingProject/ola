@@ -60,6 +60,31 @@ typedef enum {
 bool UIntToSpeedT(uint32_t value, speed_t *output);
 
 /**
+ * @brief Try to open the path, respecting UUCP locking.
+ * @param path the path to open
+ * @param oflag flags passed to open
+ * @param[out] fd a pointer to the fd which is returned.
+ * @returns true if the open succeeded, false otherwise.
+ *
+ * This fails-fast, it we can't get the lock immediately, we'll return false.
+ *
+ * @deprecated Use AcquireLockAndOpenSerialPort() instead.
+ * @see ReleaseUUCPLock()
+ */
+bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd);
+
+/**
+ * @brief Remove a UUCP lock file for the device.
+ * @param path The path to unlock.
+ *
+ * The lock is only removed if the PID matches.
+ *
+ * @deprecated Use ReleaseSerialPortLock() instead.
+ * @see AcquireUUCPLockAndOpen()
+ */
+void ReleaseUUCPLock(const std::string &path);
+
+/**
  * @brief Try to open the path and obtain a lock to control access
  * @param path the path to open
  * @param oflag flags passed to open
@@ -70,6 +95,8 @@ bool UIntToSpeedT(uint32_t value, speed_t *output);
  * (the default) or UUCP locking.  See: ./configure --enable-uucp-locking.
  *
  * This fails-fast, it we can't get the lock immediately, we'll return false.
+ *
+ * @see ReleaseSerialPortLock()
  */
 bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd);
 
@@ -81,6 +108,8 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd);
  * will be removed (but only if the PID matches).
  *
  * Does nothing if flock() was used (see ./configure --enable-uucp-locking).
+ *
+ * @see AcquireLockAndOpenSerialPort()
  */
 void ReleaseSerialPortLock(const std::string &path);
 
