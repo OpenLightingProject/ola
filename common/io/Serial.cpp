@@ -161,6 +161,7 @@ bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
     return false;
   }
 #else // HAVE_FLOCK
+  close(*fd);
   return false;
 #endif // HAVE_FLOCK
 
