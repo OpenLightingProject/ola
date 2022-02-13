@@ -74,15 +74,16 @@ bool UIntToSpeedT(uint32_t value, speed_t *output);
 bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd);
 
 /**
- * @brief Remove a UUCP lock file for the device.
+ * @brief Release a lock for the serial port
  * @param path The path to unlock.
  *
- * The lock is only removed if the PID matches.
+ * If UUCP locking was used (see AcquireLockAndOpenSerialPort), the lockfile
+ * will be removed (but only if the PID matches).
  *
- * Does nothing if UUCP locking is not in use
- * (see ./configure --enable-uucp-locking).
+ * Does nothing if flock() was used (see ./configure --enable-uucp-locking).
  */
-void ReleaseUUCPLock(const std::string &path);
+void ReleaseSerialPortLock(const std::string &path);
+
 }  // namespace io
 }  // namespace ola
 #endif  // INCLUDE_OLA_IO_SERIAL_H_

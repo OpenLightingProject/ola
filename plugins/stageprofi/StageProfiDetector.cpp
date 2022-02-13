@@ -126,7 +126,7 @@ void StageProfiDetector::ReleaseWidget(const std::string &widget_path) {
   // the map.
   DescriptorMap::iterator iter = m_usb_widgets.find(widget_path);
   if (iter != m_usb_widgets.end()) {
-    ola::io::ReleaseUUCPLock(widget_path);
+    ola::io::ReleaseSerialPortLock(widget_path);
     iter->second = NULL;
     return;
   }

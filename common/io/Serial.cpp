@@ -268,7 +268,6 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
 
 
 void ReleaseUUCPLock(const std::string &path) {
-#ifdef UUCP_LOCKING
   const string lock_file = GetUUCPLockFile(path);
 
   pid_t locked_pid;
@@ -282,7 +281,6 @@ void ReleaseUUCPLock(const std::string &path) {
       OLA_INFO << "Released " << lock_file;
     }
   }
-#endif  /* else no action needed */
 }
 
 bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
@@ -292,6 +290,13 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
 	return OpenAndFlock(path, oflag, fd);
 #endif
 }
+
+void ReleaseSerialPortLock(const std::string &path) {
+#ifdef UUCP_LOCKING
+  ReleaseUUCPLock(path);
+#endif  // UUCP_LOCKING
+}
+
 
 }  // namespace io
 }  // namespace ola
