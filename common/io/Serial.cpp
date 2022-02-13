@@ -160,10 +160,10 @@ bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
     close(*fd);
     return false;
   }
-#else // HAVE_FLOCK
+#else  // HAVE_FLOCK
   close(*fd);
   return false;
-#endif // HAVE_FLOCK
+#endif  // HAVE_FLOCK
 
 #if HAVE_SYS_IOCTL_H
   // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
