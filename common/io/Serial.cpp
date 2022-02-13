@@ -141,7 +141,6 @@ bool UIntToSpeedT(uint32_t value, speed_t *output) {
   return false;
 }
 
-#ifdef HAVE_FLOCK
 bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
   // First, check if the path exists, there's no point trying to open it if not
   if (!FileExists(path)) {
@@ -155,11 +154,15 @@ bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
     return false;
   }
 
+#ifdef HAVE_FLOCK
   if (flock(*fd, LOCK_EX | LOCK_NB) == -1) {
     OLA_INFO << "Failed to flock() device " << path;
     close(*fd);
     return false;
   }
+#else // HAVE_FLOCK
+  return false;
+#endif // HAVE_FLOCK
 
 #if HAVE_SYS_IOCTL_H
   // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
@@ -172,7 +175,6 @@ bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
 #endif  // HAVE_SYS_IOCTL_H
   return true;
 }
-#endif // HAVE_FLOCK
 
 
 bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
