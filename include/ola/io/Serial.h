@@ -71,7 +71,7 @@ bool UIntToSpeedT(uint32_t value, speed_t *output);
  *
  * This fails-fast, it we can't get the lock immediately, we'll return false.
  */
-bool AcquireLockAndOpen(const std::string &path, int oflag, int *fd);
+bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd);
 
 /**
  * @brief Remove a UUCP lock file for the device.

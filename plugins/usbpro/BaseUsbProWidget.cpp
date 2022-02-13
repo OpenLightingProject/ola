@@ -129,7 +129,7 @@ ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
     const string &path) {
   struct termios newtio;
   int fd;
-  if (!ola::io::AcquireLockAndOpen(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
+  if (!ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR | O_NONBLOCK | O_NOCTTY, &fd)) {
     return NULL;
   }
 
