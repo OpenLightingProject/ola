@@ -173,6 +173,8 @@ bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
     return false;
   }
 #endif  // HAVE_SYS_IOCTL_H
+
+  OLA_INFO << "Locked " << path << " using flock()";
   return true;
 }
 
