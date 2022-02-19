@@ -45,15 +45,15 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SerialLockTest);
 void SerialLockTest::testLock() {
 
 	bool r1, r2;
-	int fd;
+	int fd1, fd2;
 	const std::string path = "ChangeLog";
 
-	r1 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd);
+	r1 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd1);
 	OLA_ASSERT_TRUE(r1);
 
-	r2 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd);
+	r2 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd2);
 	OLA_ASSERT_FALSE(r2);
 
 	ola::io::ReleaseSerialPortLock(path);
-	close(fd);
+	close(fd1);
 };

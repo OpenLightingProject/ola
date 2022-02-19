@@ -171,8 +171,6 @@ bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
   // further opens.
   if (ioctl(*fd, TIOCEXCL) == -1) {
     OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
-    close(*fd);
-    return false;
   }
 #endif  // HAVE_SYS_IOCTL_H
 
@@ -264,9 +262,6 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   // further opens.
   if (ioctl(*fd, TIOCEXCL) == -1) {
     OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
-    close(*fd);
-    RemoveUUCPLockFile(lock_file);
-    return false;
   }
 #endif  // HAVE_SYS_IOCTL_H
   return true;
