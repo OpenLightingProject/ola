@@ -161,6 +161,7 @@ bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
     return false;
   }
 #else  // HAVE_FLOCK
+  OLA_WARN << "Tried to flock " << path << ", but flock() is unavailable";
   close(*fd);
   return false;
 #endif  // HAVE_FLOCK
@@ -299,6 +300,8 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
 void ReleaseSerialPortLock(const std::string &path) {
 #ifdef UUCP_LOCKING
   ReleaseUUCPLock(path);
+#else   // UUCP_LOCKING
+  OLA_INFO << "No unlock necessary for " << path;
 #endif  // UUCP_LOCKING
 }
 
