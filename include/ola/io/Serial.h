@@ -104,7 +104,7 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd);
  * @brief Release a lock for the serial port
  * @param path The path to unlock.
  *
- * If UUCP locking was used (see AcquireLockAndOpenSerialPort), the lockfile
+ * If UUCP locking was used (see AcquireLockAndOpenSerialPort()), the lockfile
  * will be removed (but only if the PID matches).
  *
  * Does nothing if flock() was used (see ./configure --enable-uucp-locking).
