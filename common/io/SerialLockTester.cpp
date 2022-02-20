@@ -24,8 +24,8 @@
 
 #include <unistd.h>
 #include <fcntl.h>
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
 
 #include "ola/io/Serial.h"
 #include "ola/testing/TestUtils.h"
