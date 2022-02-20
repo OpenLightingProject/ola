@@ -22,9 +22,9 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
-#include <string>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "ola/io/Serial.h"
