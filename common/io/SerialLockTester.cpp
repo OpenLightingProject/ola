@@ -22,6 +22,7 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
+#include <string>
 #include <unistd.h>
 #include <fcntl.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -43,17 +44,16 @@ class SerialLockTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(SerialLockTest);
 
 void SerialLockTest::testLock() {
+  bool r1, r2;
+  int fd1, fd2;
+  const std::string path = "ChangeLog";
 
-	bool r1, r2;
-	int fd1, fd2;
-	const std::string path = "ChangeLog";
+  r1 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd1);
+  OLA_ASSERT_TRUE(r1);
 
-	r1 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd1);
-	OLA_ASSERT_TRUE(r1);
+  r2 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd2);
+  OLA_ASSERT_FALSE(r2);
 
-	r2 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd2);
-	OLA_ASSERT_FALSE(r2);
-
-	ola::io::ReleaseSerialPortLock(path);
-	close(fd1);
-};
+  ola::io::ReleaseSerialPortLock(path);
+  close(fd1);
+}
