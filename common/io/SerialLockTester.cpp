@@ -28,6 +28,7 @@
 #include <string>
 
 #include "ola/io/Serial.h"
+#include "ola/io/IOUtils.h"
 #include "ola/testing/TestUtils.h"
 
 class SerialLockTest: public CppUnit::TestFixture {
@@ -45,8 +46,19 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SerialLockTest);
 
 void SerialLockTest::testLock() {
   bool r1, r2;
-  int fd1, fd2;
-  const std::string path = "ChangeLog";
+  int fd1, fd2, fd3;
+  const std::string path = "serialLockTestFile";
+
+  OLA_ASSERT_FALSE(ola::io::FileExists(path));
+
+  fd3 = open(path.c_str(), O_CREAT | O_RDWR,
+             S_IRUSR | S_IWUSR
+#ifndef _WIN32
+             | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+#endif  // !_WIN32
+             );  // NOLINT(whitespace/parens)
+  OLA_ASSERT_FALSE(fd3 < 0);
+  close(fd3);
 
   r1 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd1);
   OLA_ASSERT_TRUE(r1);
@@ -56,4 +68,6 @@ void SerialLockTest::testLock() {
 
   ola::io::ReleaseSerialPortLock(path);
   close(fd1);
+
+  OLA_ASSERT_FALSE(unlink(path.c_str()));
 }
