@@ -68,7 +68,7 @@ bool UIntToSpeedT(uint32_t value, speed_t *output);
  *
  * This fails-fast, it we can't get the lock immediately, we'll return false.
  *
- * @deprecated Use AcquireLockAndOpenSerialPort() instead (19 Feb 2022).
+ * @deprecated Use the more general AcquireLockAndOpenSerialPort() instead (19 Feb 2022).
  * @see ReleaseUUCPLock()
  */
 bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd);
