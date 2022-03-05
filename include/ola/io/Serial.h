@@ -79,7 +79,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd);
  *
  * The lock is only removed if the PID matches.
  *
- * @deprecated Use ReleaseSerialPortLock() instead (19 Feb 2022).
+ * @deprecated Use the more general ReleaseSerialPortLock() instead (19 Feb 2022).
  * @see AcquireUUCPLockAndOpen()
  */
 void ReleaseUUCPLock(const std::string &path);
