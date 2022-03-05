@@ -63,8 +63,7 @@ void SerialLockTest::testLock() {
   r1 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd1);
   OLA_ASSERT_TRUE(r1);
 
-  r2 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd2);
-  OLA_ASSERT_FALSE(r2);
+  OLA_ASSERT_FALSE(ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd2));
 
   ola::io::ReleaseSerialPortLock(path);
   close(fd1);
