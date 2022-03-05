@@ -160,7 +160,7 @@ bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
     close(*fd);
     return false;
   }
-#else  // HAVE_FLOCK
+#else
   OLA_WARN << "Tried to flock " << path << ", but flock() is unavailable";
   close(*fd);
   return false;
