@@ -296,7 +296,7 @@ void ReleaseSerialPortLock(const std::string &path) {
 #ifdef UUCP_LOCKING
   ReleaseUUCPLock(path);
 #else   // UUCP_LOCKING
-  OLA_INFO << "No unlock necessary for " << path;
+  OLA_INFO << "No unlock necessary with for " << path << " as we're using flock()";
 #endif  // UUCP_LOCKING
 }
 
