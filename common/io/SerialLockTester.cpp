@@ -22,11 +22,11 @@
 #include <config.h>
 #endif  // HAVE_CONFIG_H
 
+#include <sys/file.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
-#include <sys/file.h>
 
 #include "ola/io/Serial.h"
 #include "ola/io/IOUtils.h"
