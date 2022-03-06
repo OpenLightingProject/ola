@@ -45,7 +45,7 @@ class SerialLockTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(SerialLockTest);
 
 void SerialLockTest::testLock() {
-  bool r1, r2;
+  bool r1;
   int fd1, fd2, fd3;
   const std::string path = "serialLockTestFile";
 
