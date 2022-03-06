@@ -224,7 +224,6 @@ bool LockTIOCEXCL(int fd, const std::string &path) {
 }
 
 bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
-
   // First, check if the path exists, there's no point trying to open it if not
   if (!FileExists(path)) {
     OLA_INFO << "Device " << path << " doesn't exist, so there's no point "
@@ -272,7 +271,6 @@ void ReleaseUUCPLock(const std::string &path) {
 }
 
 bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
-
   // First, check if the path exists, there's no point trying to open it if not
   if (!FileExists(path)) {
     OLA_INFO << "Device " << path << " doesn't exist, so there's no point "
@@ -320,7 +318,7 @@ void ReleaseSerialPortLock(const std::string &path) {
 #ifdef UUCP_LOCKING
   ReleaseUUCPLock(path);
 #else
-  OLA_INFO << "No unlock necessary for " << path << " (UUCP locking not in use)";
+  OLA_INFO << "No unlock necessary for " << path << " (UUCP locking not used)";
 #endif
 }
 
