@@ -26,6 +26,7 @@
 #include <fcntl.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
+#include <sys/file.h>
 
 #include "ola/io/Serial.h"
 #include "ola/io/IOUtils.h"
@@ -45,28 +46,38 @@ class SerialLockTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(SerialLockTest);
 
 void SerialLockTest::testLock() {
-  bool r1;
-  int fd1, fd2, fd3;
-  const std::string path = "serialLockTestFile";
+  int fd;
+  pid_t our_pid = getpid();
 
-  OLA_ASSERT_FALSE(ola::io::FileExists(path));
+  std::stringstream str;
+  str << "serialLockTestFile." << our_pid;
+  const std::string path = str.str();
 
-  fd3 = open(path.c_str(), O_CREAT | O_RDWR,
+  OLA_ASSERT_FALSE_MSG(ola::io::FileExists(path),
+                       "Test file already exists");
+
+  fd = open(path.c_str(), O_CREAT | O_RDWR,
              S_IRUSR | S_IWUSR
 #ifndef _WIN32
              | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
 #endif  // !_WIN32
              );  // NOLINT(whitespace/parens)
-  OLA_ASSERT_FALSE(fd3 < 0);
-  close(fd3);
+  OLA_ASSERT_FALSE_MSG(fd < 0, "Couldn't create test file");
 
-  r1 = ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd1);
-  OLA_ASSERT_TRUE(r1);
+#ifdef HAVE_FLOCK
+  OLA_ASSERT_TRUE(flock(fd, LOCK_EX | LOCK_NB) != -1);
+#else
 
-  OLA_ASSERT_FALSE(ola::io::AcquireLockAndOpenSerialPort(path, O_RDWR, &fd2));
+#ifdef UUCP_LOCKING
+  // flock() is not available, but UUCP locking was selected.  OK.
+#else
+  OLA_FAIL("Not using UUCP locking, and flock() is not available");
+#endif
 
-  ola::io::ReleaseSerialPortLock(path);
-  close(fd1);
+#endif
 
-  OLA_ASSERT_FALSE(unlink(path.c_str()));
+  close(fd);
+
+  OLA_ASSERT_FALSE_MSG(unlink(path.c_str()),
+                       "Couldn't delete test file");
 }

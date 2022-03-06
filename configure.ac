@@ -797,11 +797,12 @@ AC_CHECK_FUNC([flock], [AC_DEFINE([HAVE_FLOCK], [1],
                                   [Define if flock() is available])
                         have_flock=yes], [])
 
+UUCP_LOCKING="no"
 AS_IF([test "x$enable_uucp_locking" = xyes || test "x$have_flock" != xyes],
       [AC_DEFINE([UUCP_LOCKING], [1],
-                 [Define if UUCP locking should be used instead of flock()])
-       SERIAL_LOCK_METHOD=UUCP],
-      [SERIAL_LOCK_METHOD=flock])
+                 [Define if UUCP locking should be used])
+       UUCP_LOCKING=yes],
+      [])
 
 # UUCP Lock directory
 AC_ARG_WITH([uucp-lock],
@@ -1038,7 +1039,7 @@ Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
 Ja Rule: ${BUILDING_JA_RULE}
 Enabled Plugins:${PLUGINS}
-Serial port locking: $SERIAL_LOCK_METHOD
+UUCP Locking: $UUCP_LOCKING
 UUCP Lock Directory: $UUCPLOCK
 
 Now type 'make @<:@<target>@:>@'

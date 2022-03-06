@@ -141,57 +141,12 @@ bool UIntToSpeedT(uint32_t value, speed_t *output) {
   return false;
 }
 
-bool OpenAndFlock(const std::string &path, int oflag, int *fd) {
-  // First, check if the path exists, there's no point trying to open it if not
-  if (!FileExists(path)) {
-    OLA_INFO << "Device " << path << " doesn't exist.";
-    return false;
-  }
 
-  // Now try to open the serial device.
-  if (!TryOpen(path, oflag, fd)) {
-    OLA_DEBUG << "Failed to open device " << path;
-    return false;
-  }
-
-#ifdef HAVE_FLOCK
-  if (flock(*fd, LOCK_EX | LOCK_NB) == -1) {
-    OLA_INFO << "Failed to flock() device " << path;
-    close(*fd);
-    return false;
-  }
-#else
-  OLA_WARN << "Tried to flock " << path << ", but flock() is unavailable";
-  close(*fd);
-  return false;
-#endif  // HAVE_FLOCK
-
-#if HAVE_SYS_IOCTL_H
-  // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
-  // further opens.
-  if (ioctl(*fd, TIOCEXCL) == -1) {
-    OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
-  }
-#endif  // HAVE_SYS_IOCTL_H
-
-  OLA_INFO << "Locked " << path << " using flock()";
-  return true;
-}
-
-
-bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
+bool AcquireUUCPLock(const std::string &path) {
   // This is rather tricky since there is no real convention for LCK files.
   // If it was only a single process doing the locking we could use fnctl as
   // described in 55.6 of the Linux Programming Interface book.
 
-  // First, check if the path exists, there's no point trying to open it if not
-  if (!FileExists(path)) {
-    OLA_INFO << "Device " << path << " doesn't exist, so there's no point "
-                "trying to acquire a lock";
-    return false;
-  }
-
-  // Second, clean up a stale lockfile.
   const string lock_file = GetUUCPLockFile(path);
   OLA_DEBUG << "Checking for " << lock_file;
   pid_t locked_pid;
@@ -200,6 +155,7 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
     return false;
   }
 
+  // Clean up a stale lockfile.
   if (locked_pid) {
     // This will return false even if we have the lock, this is what we want
     // since different plugins may try to open the same serial port - see issue
@@ -249,21 +205,52 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
     return false;
   }
 
+  return true;
+}
+
+bool LockTIOCEXCL(int fd, const std::string &path) {
+#if HAVE_SYS_IOCTL_H
+  // This is a final safety mechanism, on top of UUCP locking or flock()
+  if (ioctl(fd, TIOCEXCL) == -1) {
+    OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
+    return false;
+  } else {
+    OLA_INFO << "Set TIOCEXCL on " << path;
+  }
+#else
+    OLA_INFO << "Not setting " << path << " - ioctl.h unavailable";
+#endif  // HAVE_SYS_IOCTL_H
+  return true;
+}
+
+bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
+
+  // First, check if the path exists, there's no point trying to open it if not
+  if (!FileExists(path)) {
+    OLA_INFO << "Device " << path << " doesn't exist, so there's no point "
+                "trying to acquire a lock";
+    return false;
+  }
+
+  if (!AcquireUUCPLock(path)) {
+    return false;
+  }
+
   // Now try to open the serial device.
   if (!TryOpen(path, oflag, fd)) {
     OLA_DEBUG << "Failed to open device " << path << " despite having the "
               << "lock file";
-    RemoveUUCPLockFile(lock_file);
+    ReleaseUUCPLock(path);
+    close(*fd);
     return false;
   }
 
-#if HAVE_SYS_IOCTL_H
-  // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
-  // further opens.
-  if (ioctl(*fd, TIOCEXCL) == -1) {
-    OLA_WARN << "TIOCEXCL " << path << " failed: " << strerror(errno);
+  if (!LockTIOCEXCL(*fd, path)) {
+    ReleaseUUCPLock(path);
+    close(*fd);
+    return false;
   }
-#endif  // HAVE_SYS_IOCTL_H
+
   return true;
 }
 
@@ -285,19 +272,56 @@ void ReleaseUUCPLock(const std::string &path) {
 }
 
 bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
+
+  // First, check if the path exists, there's no point trying to open it if not
+  if (!FileExists(path)) {
+    OLA_INFO << "Device " << path << " doesn't exist, so there's no point "
+                "trying to acquire a lock";
+    return false;
+  }
+
 #ifdef UUCP_LOCKING
-  return AcquireUUCPLockAndOpen(path, oflag, fd);
-#else
-  return OpenAndFlock(path, oflag, fd);
+  if (!AcquireUUCPLock(path)) {
+    return false;
+  }
 #endif
+
+  // Now try to open the serial device.
+  if (!TryOpen(path, oflag, fd)) {
+#ifdef UUCP_LOCKING
+    OLA_DEBUG << "Failed to open device " << path << " despite having the "
+              << "lock file";
+    ReleaseUUCPLock(path);
+#else
+    OLA_DEBUG << "Failed to open device " << path;
+#endif
+    return false;
+  }
+
+#ifdef HAVE_FLOCK
+  if (flock(*fd, LOCK_EX | LOCK_NB) == -1) {
+    OLA_INFO << "Failed to flock() device " << path;
+    close(*fd);
+    return false;
+  } else {
+    OLA_INFO << "Locked " << path << " using flock()";
+  }
+#endif
+
+  if (!LockTIOCEXCL(*fd, path)) {
+    close(*fd);
+    return false;
+  }
+
+  return true;
 }
 
 void ReleaseSerialPortLock(const std::string &path) {
 #ifdef UUCP_LOCKING
   ReleaseUUCPLock(path);
-#else   // UUCP_LOCKING
-  OLA_INFO << "No unlock necessary for " << path << " as we're using flock()";
-#endif  // UUCP_LOCKING
+#else
+  OLA_INFO << "No unlock necessary for " << path << " (UUCP locking not in use)";
+#endif
 }
 
 
