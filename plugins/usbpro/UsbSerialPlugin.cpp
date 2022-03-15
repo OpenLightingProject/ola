@@ -349,7 +349,7 @@ string UsbSerialPlugin::GetDeviceName(
 }
 
 /*
- * Get the Frames per second limit for OpenDeck device
+ * Get the frames per second limit for OpenDeck device
  */
 unsigned int UsbSerialPlugin::GetOpenDeckFrameLimit() {
   unsigned int fps_limit;
@@ -362,7 +362,7 @@ unsigned int UsbSerialPlugin::GetOpenDeckFrameLimit() {
 
 
 /*
- * Get the Frames per second limit for a pro device
+ * Get the frames per second limit for a pro device
  */
 unsigned int UsbSerialPlugin::GetProFrameLimit() {
   unsigned int fps_limit;
@@ -375,7 +375,7 @@ unsigned int UsbSerialPlugin::GetProFrameLimit() {
 
 
 /*
- * Get the Frames per second limit for a Ultra DMX Pro Device
+ * Get the frames per second limit for a Ultra DMX Pro Device
  */
 unsigned int UsbSerialPlugin::GetUltraDMXProFrameLimit() {
   unsigned int fps_limit;
