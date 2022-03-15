@@ -40,13 +40,13 @@ OpenDeckWidget::OpenDeckWidget(
 }
 
 
-bool OpenDeckWidget::SendDMX(const DmxBuffer &data) {
-  if (data != internal_buffer) {
+bool OpenDeckWidget::SendDMX(const DmxBuffer &buffer) {
+  if (buffer != internal_buffer) {
     std::vector<uint8_t> send_buffer;
     uint16_t changed_values = 0;
 
-    for (size_t index = 0; index < data.Size(); index++) {
-      if (data.Get(index) != internal_buffer.Get(index)) {
+    for (size_t index = 0; index < buffer.Size(); index++) {
+      if (buffer.Get(index) != internal_buffer.Get(index)) {
         // In diff mode a packet is composed of 2 bytes of channel number to
         // update and 1 byte of actual channel value.
         uint8_t high;
@@ -56,17 +56,17 @@ bool OpenDeckWidget::SendDMX(const DmxBuffer &data) {
 
         send_buffer.push_back(low);
         send_buffer.push_back(high);
-        send_buffer.push_back(data.Get(index));
+        send_buffer.push_back(buffer.Get(index));
 
         if (++changed_values >= MAX_DIFF_CHANNELS) {
           // Just send the full frame in this case
-          internal_buffer = data;
-          return GenericUsbProWidget::SendDMX(data);
+          internal_buffer = buffer;
+          return GenericUsbProWidget::SendDMX(buffer);
         }
       }
     }
 
-    internal_buffer = data;
+    internal_buffer = buffer;
     return SendMessage(DMX_SLOT_VALUE_DIFF_LABEL,
                        &send_buffer[0],
                        send_buffer.size());
