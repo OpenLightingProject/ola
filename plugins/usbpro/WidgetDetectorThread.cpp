@@ -311,7 +311,6 @@ void WidgetDetectorThread::UsbProWidgetReady(
         return;
       }
       break;
-
     case SHANTEA_CONTROLS_ESTA_ID:
       if (information->device_id == SHANTEA_CONTROLS_OPEN_DECK_ID) {
         DispatchWidget(
