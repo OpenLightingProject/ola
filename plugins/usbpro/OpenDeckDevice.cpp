@@ -66,9 +66,9 @@ OpenDeckDevice::OpenDeckDevice(ola::PluginAdaptor *plugin_adaptor,
     m_break_time(0),
     m_mab_time(0),
     m_rate(0) {
-  // Serial number is stored as series of 4 bytes.
+  // Serial number is stored as a series of 4 bytes.
   // Display the serial in hex format so that it
-  // matches (partially) with USB serial number.
+  // matches (partially) with the USB serial number.
   std::ostringstream str;
   str << ToHex(serial, false, true);
   m_serial = str.str();
