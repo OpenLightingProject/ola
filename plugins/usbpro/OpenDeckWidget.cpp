@@ -42,7 +42,7 @@ OpenDeckWidget::OpenDeckWidget(
 
 bool OpenDeckWidget::SendDMX(const DmxBuffer &data) {
   if (data != internal_buffer) {
-    std::vector<uint8_t> send_buffer = {};
+    std::vector<uint8_t> send_buffer;
     uint16_t changed_values = 0;
 
     for (size_t index = 0; index < data.Size(); index++) {
