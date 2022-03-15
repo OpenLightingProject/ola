@@ -60,19 +60,8 @@ bool OpenDeckWidget::SendDMX(const DmxBuffer &data) {
 
         if (++changed_values >= MAX_DIFF_CHANNELS) {
           // Just send the full frame in this case
-          struct {
-            uint8_t start_code;
-            uint8_t dmx[DMX_UNIVERSE_SIZE];
-          } full_frame;
-
-          full_frame.start_code = DMX512_START_CODE;
-          unsigned int length = DMX_UNIVERSE_SIZE;
-          data.Get(full_frame.dmx, &length);
           internal_buffer = data;
-
-          return SendMessage(DMX_LABEL,
-                             reinterpret_cast<uint8_t*>(&full_frame),
-                             length + sizeof(full_frame.start_code));
+          return GenericUsbProWidget::SendDMX(data);
         }
       }
     }
