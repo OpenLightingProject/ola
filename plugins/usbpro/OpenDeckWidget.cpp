@@ -47,9 +47,8 @@ bool OpenDeckWidget::SendDMX(const DmxBuffer &data) {
 
     for (size_t index = 0; index < data.Size(); index++) {
       if (data.Get(index) != internal_buffer.Get(index)) {
-        // In diff mode a packet is composed of 2 bytes of
-        // channel to update and 1 byte of actual channel
-        // value.
+        // In diff mode a packet is composed of 2 bytes of channel number to
+        // update and 1 byte of actual channel value.
         uint8_t high;
         uint8_t low;
 
