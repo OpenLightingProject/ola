@@ -393,7 +393,7 @@ void StringUtilsTest::testIntToHexString() {
   str << ToHex((uint16_t)0xABCD, false);
   OLA_ASSERT_EQ(string("abcd"), str.str());
   str.str("");
-  
+
   // Value case option - lower
   str << ToHex((uint8_t)0, true, false);
   OLA_ASSERT_EQ(string("0x00"), str.str());
@@ -418,7 +418,7 @@ void StringUtilsTest::testIntToHexString() {
   str << ToHex((uint32_t)0xDEADBEEF, false, false);
   OLA_ASSERT_EQ(string("0xdeadbeef"), str.str());
   str.str("");
-  
+
   // Value case option - upper
   str << ToHex((uint8_t)0, true, true);
   OLA_ASSERT_EQ(string("0x00"), str.str());
