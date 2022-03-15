@@ -50,11 +50,10 @@ bool OpenDeckWidget::SendDMX(const DmxBuffer &data) {
         // In diff mode a packet is composed of 2 bytes of
         // channel to update and 1 byte of actual channel
         // value.
-        uint16_t channel = index+1;
         uint8_t high;
         uint8_t low;
 
-        SplitUInt16(channel, &high, &low);
+        SplitUInt16((index + 1), &high, &low);
 
         send_buffer.push_back(low);
         send_buffer.push_back(high);
