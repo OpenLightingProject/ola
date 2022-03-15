@@ -109,12 +109,9 @@ class OpenDeckOutputPort: public BasicOutputPort {
         {}
 
   bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
-    if (m_bucket.GetToken(*m_wake_time)) {
-      return m_widget->SendDMX(buffer);
-    } else {
-      OLA_INFO << "Port rated limited, dropping frame";
-    }
-    return true;
+      // Logic for sending data is in Widget class, so
+      // token bucket is being handled there
+      return m_widget->SendDMX(buffer, m_bucket, m_wake_time);
   }
 
   std::string Description() const { return m_description; }

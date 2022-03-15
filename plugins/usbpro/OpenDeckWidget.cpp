@@ -40,10 +40,13 @@ OpenDeckWidget::OpenDeckWidget(
 }
 
 
-bool OpenDeckWidget::SendDMX(const DmxBuffer &buffer) {
+bool OpenDeckWidget::SendDMX(const DmxBuffer &buffer,
+                             const TokenBucket &bucket,
+                             const TimeStamp *wake_time) {
   if (buffer != internal_buffer) {
     std::vector<uint8_t> send_buffer;
     uint16_t changed_values = 0;
+    bool send_full_frame = false;
 
     for (size_t index = 0; index < buffer.Size(); index++) {
       if (buffer.Get(index) != internal_buffer.Get(index)) {
@@ -60,16 +63,26 @@ bool OpenDeckWidget::SendDMX(const DmxBuffer &buffer) {
 
         if (++changed_values >= MAX_DIFF_CHANNELS) {
           // Just send the full frame in this case
-          internal_buffer = buffer;
-          return GenericUsbProWidget::SendDMX(buffer);
+          send_full_frame = true;
+          break;
         }
       }
     }
 
     internal_buffer = buffer;
-    return SendMessage(DMX_SLOT_VALUE_DIFF_LABEL,
+
+    if (bucket.GetToken(*wake_time)) {
+      if (send_full_frame) {
+        return GenericUsbProWidget::SendDMX(buffer);
+      } else {
+        return SendMessage(DMX_SLOT_VALUE_DIFF_LABEL,
                        &send_buffer[0],
                        send_buffer.size());
+      }
+    } else {
+      OLA_INFO << "Port rated limited, dropping frame";
+      return false;
+    }
   } else {
     OLA_DEBUG << "Data unchanged - not sending data to device";
     return true;

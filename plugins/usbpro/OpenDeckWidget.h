@@ -26,6 +26,7 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "olad/TokenBucket.h"
 #include "plugins/usbpro/GenericUsbProWidget.h"
 
 namespace ola {
@@ -41,7 +42,9 @@ class OpenDeckWidget: public GenericUsbProWidget {
     ~OpenDeckWidget() {}
     void Stop() { GenericStop(); }
 
-    bool SendDMX(const DmxBuffer &buffer);
+    bool SendDMX(const DmxBuffer &buffer,
+                 const TokenBucket &bucket,
+                 const TimeStamp *wake_time);
 
  private:
     static const size_t MAX_DIFF_CHANNELS = 128;
