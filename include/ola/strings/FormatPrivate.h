@@ -45,15 +45,17 @@ enum { HEX_BIT_WIDTH = 4 };
 template<typename T>
 struct _ToHex {
  public:
-  _ToHex(T v, int _width, bool _prefix)
+  _ToHex(T v, int _width, bool _prefix, bool _uppercase)
       : width(_width),
         value(v),
-        prefix(_prefix) {
+        prefix(_prefix),
+        uppercase(_uppercase) {
   }
 
   int width;  // setw takes an int
   T value;
   bool prefix;
+  bool uppercase;
 };
 
 inline uint32_t _HexCast(uint8_t v) { return v; }

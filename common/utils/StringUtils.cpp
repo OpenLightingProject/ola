@@ -114,7 +114,7 @@ bool StripSuffix(string *s, const string &suffix) {
 
 string IntToHexString(unsigned int i, unsigned int width) {
   strings::_ToHex<unsigned int> v = strings::_ToHex<unsigned int>(
-      i, static_cast<int>(width), true);
+      i, static_cast<int>(width), true, false);
   ostringstream str;
   str << v;
   return str.str();
