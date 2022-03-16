@@ -76,8 +76,8 @@ bool OpenDeckWidget::SendDMX(const DmxBuffer &buffer,
         return GenericUsbProWidget::SendDMX(buffer);
       } else {
         return SendMessage(DMX_SLOT_VALUE_DIFF_LABEL,
-                       &send_buffer[0],
-                       send_buffer.size());
+                           &send_buffer[0],
+                           send_buffer.size());
       }
     } else {
       OLA_INFO << "Port rated limited, dropping frame";
