@@ -24,6 +24,7 @@
 #include <string>
 #include <sstream>
 #include "ola/DmxBuffer.h"
+#include "ola/Logging.h"
 #include "olad/TokenBucket.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
@@ -109,9 +110,17 @@ class OpenDeckOutputPort: public BasicOutputPort {
         {}
 
   bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
-      // Logic for sending data is in Widget class, so
-      // token bucket is being handled there
-      return m_widget->SendDMX(buffer, m_bucket, m_wake_time);
+    if (m_widget->IsBufferDiff(buffer)) {
+      if (m_bucket.GetToken(*m_wake_time)) {
+        return m_widget->SendDMX(buffer);
+      } else {
+        OLA_INFO << "Port rated limited, dropping frame";
+        return false;
+      }
+    } else {
+      OLA_DEBUG << "Data unchanged - not sending data to device";
+      return true;
+    }
   }
 
   std::string Description() const { return m_description; }

@@ -42,9 +42,8 @@ class OpenDeckWidget: public GenericUsbProWidget {
     ~OpenDeckWidget() {}
     void Stop() { GenericStop(); }
 
-    bool SendDMX(const DmxBuffer &buffer,
-                 const TokenBucket &bucket,
-                 const TimeStamp *wake_time);
+    bool IsBufferDiff(const DmxBuffer &buffer);
+    bool SendDMX(const DmxBuffer &buffer);
 
  private:
     static const size_t MAX_DIFF_CHANNELS = 128;

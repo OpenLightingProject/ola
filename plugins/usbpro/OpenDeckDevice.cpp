@@ -28,7 +28,6 @@
 #include "common/rpc/RpcController.h"
 #include "ola/Callback.h"
 #include "ola/Constants.h"
-#include "ola/Logging.h"
 #include "ola/strings/Format.h"
 #include "plugins/usbpro/OpenDeckDevice.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
