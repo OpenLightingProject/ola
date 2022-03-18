@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "ola/io/Serial.h"
 #include "ola/Logging.h"
@@ -35,6 +36,7 @@ namespace milinst {
 
 using std::set;
 using std::string;
+using std::vector;
 
 const speed_t MilInstWidget1553::DEFAULT_BAUDRATE = B9600;
 
@@ -90,6 +92,8 @@ bool MilInstWidget1553::Connect() {
  * Called when there is data to read
  */
 void MilInstWidget1553::SocketReady() {
+  vector<uint8_t> data;
+
   while (m_socket->DataRemaining() > 0) {
     uint8_t byte = 0x00;
     unsigned int data_read;
@@ -98,8 +102,55 @@ void MilInstWidget1553::SocketReady() {
 
     if (ret == -1 || data_read != 1) {
     } else {
-      OLA_DEBUG << "Received byte " << static_cast<int>(byte);
+      OLA_DEBUG << "Received byte 0x" << std::hex << static_cast<int>(byte);
+      data.push_back(byte);
     }
+  }
+
+  OLA_DEBUG << "Received " << static_cast<int>(data.size()) << " bytes";
+  switch (m_current_receive_state) {
+    case LOAD:
+      OLA_DEBUG << "Rx in load";
+      break;
+    case SET_CHANNEL_COUNT:
+      OLA_DEBUG << "Rx in set chan count";
+      if (data.size() == 1) {
+        if (data[0] == MILINST_1553_END_BYTE) {
+          OLA_DEBUG << "Set chan count successful";
+        } else {
+          OLA_DEBUG << "Received unexpected byte, got "
+                    << static_cast<int>(data[0]) << " expecting "
+                    << static_cast<int>(MILINST_1553_END_BYTE);
+        }
+      } else {
+        OLA_DEBUG << "Received unexpected number of bytes, got "
+                  << static_cast<int>(data.size()) << " expecting 1";
+      }
+      break;
+    case GET_CHANNEL_COUNT:
+      OLA_DEBUG << "Rx in get chan count";
+      if (data.size() == 2) {
+        uint16_t channels = ola::utils::JoinUInt8(data[1], data[0]);
+        OLA_DEBUG << "Got channel count of " << channels << " channels";
+        if (channels < m_channels) {
+          OLA_DEBUG << "Config mismatch, device is configured for " << channels
+                    << " channels, but config says " << m_channels
+                    << " channels; reducing config to match";
+          // Todo(Peter): Run this value through the set validator?
+          m_preferences->SetValue(ChannelsKey(), channels);
+          m_preferences->Save();
+          m_channels = channels;
+
+          // Todo(Peter): Work out what to do here, set the device to match the
+          // config or the config to match the device?
+        }
+      } else {
+        OLA_DEBUG << "Received unexpected number of bytes, got "
+                  << static_cast<int>(data.size()) << " expecting 2";
+      }
+      break;
+    default:
+      OLA_WARN << "Unknown state " << static_cast<int>(m_current_receive_state);
   }
 }
 
@@ -110,6 +161,17 @@ void MilInstWidget1553::SocketReady() {
  */
 bool MilInstWidget1553::DetectDevice() {
   // TODO(Peter): Fixme, check channel count or something!
+  uint8_t msg[1];
+  msg[0] = MILINST_1553_GET_CHANNEL_COUNT_COMMAND;
+  m_current_receive_state = GET_CHANNEL_COUNT;
+
+//  uint8_t msg[2];
+//  msg[0] = MILINST_1553_SET_CHANNEL_COUNT_COMMAND;
+//  msg[1] = 1;
+//  m_current_receive_state = SET_CHANNEL_COUNT;
+
+  m_socket->Send(msg, sizeof(msg));
+
   return true;
 }
 
@@ -117,7 +179,7 @@ bool MilInstWidget1553::DetectDevice() {
 /*
  * Send a DMX msg.
   */
-bool MilInstWidget1553::SendDmx(const DmxBuffer &buffer) const {
+bool MilInstWidget1553::SendDmx(const DmxBuffer &buffer) {
   // TODO(Peter): Probably add offset in here to send higher channels shifted
   // down
   int bytes_sent = Send(buffer);
@@ -132,13 +194,14 @@ bool MilInstWidget1553::SendDmx(const DmxBuffer &buffer) const {
 /*
  * Set a single channel
  */
-int MilInstWidget1553::SetChannel(unsigned int chan, uint8_t val) const {
+int MilInstWidget1553::SetChannel(unsigned int chan, uint8_t val) {
   uint8_t msg[4];
 
   msg[0] = MILINST_1553_LOAD_COMMAND;
   ola::utils::SplitUInt16(chan, &msg[1], &msg[2]);
   msg[3] = val;
   OLA_DEBUG << "Setting " << chan << " to " << static_cast<int>(val);
+  m_current_receive_state = LOAD;
   return m_socket->Send(msg, sizeof(msg));
 }
 
@@ -147,7 +210,7 @@ int MilInstWidget1553::SetChannel(unsigned int chan, uint8_t val) const {
  * Send data
  * @param buffer a DmxBuffer with the data
  */
-int MilInstWidget1553::Send(const DmxBuffer &buffer) const {
+int MilInstWidget1553::Send(const DmxBuffer &buffer) {
   unsigned int channels = std::min(static_cast<unsigned int>(m_channels),
                                    buffer.Size());
   uint8_t msg[3 + channels];
@@ -156,6 +219,8 @@ int MilInstWidget1553::Send(const DmxBuffer &buffer) const {
   ola::utils::SplitUInt16(1, &msg[1], &msg[2]);
 
   buffer.Get(msg + 3, &channels);
+
+  m_current_receive_state = LOAD;
 
   return m_socket->Send(msg, sizeof(msg));
 }
