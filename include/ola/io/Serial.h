@@ -91,8 +91,10 @@ void ReleaseUUCPLock(const std::string &path);
  * @param[out] fd a pointer to the fd which is returned.
  * @returns true if the open succeeded, false otherwise.
  *
- * Depending on the compile-time configuration, this will use either flock()
- * (the default) or UUCP locking.  See: ./configure --enable-uucp-locking.
+ * Depending on the compile-time configuration, this will use as many as
+ * possible out of the flock() system call, UUCP lockfiles and the TIOCEXCL
+ * ioctl.  UUCP lockfiles are disabled by default, unless flock() is
+ * unavailable.  See: ./configure --enable-uucp-locking.
  *
  * This fails-fast, it we can't get the lock immediately, we'll return false.
  *
@@ -104,10 +106,10 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd);
  * @brief Release a lock for the serial port
  * @param path The path to unlock.
  *
- * If UUCP locking was used (see AcquireLockAndOpenSerialPort()), the lockfile
- * will be removed (but only if the PID matches).
- *
- * Does nothing if flock() was used (see ./configure --enable-uucp-locking).
+ * If UUCP locking was used (see AcquireLockAndOpenSerialPort()), and the PID
+ * in the lockfile matches our own, the lockfile will be removed.  Otherwise,
+ * this call does nothing because the other locking methods do not require an
+ * explicit unlock.
  *
  * @see AcquireLockAndOpenSerialPort()
  */

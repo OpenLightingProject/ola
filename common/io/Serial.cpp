@@ -308,6 +308,8 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
   }
 #endif
 
+  // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
+  // further opens.
   if (!LockTIOCEXCL(*fd, path)) {
     close(*fd);
     return false;
