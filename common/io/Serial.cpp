@@ -244,6 +244,8 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
     return false;
   }
 
+  // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
+  // further opens.
   if (!LockTIOCEXCL(*fd, path)) {
     ReleaseUUCPLock(path);
     close(*fd);
