@@ -72,9 +72,9 @@ void SerialLockTest::testLock() {
   // flock() is not available, but UUCP locking was selected.  OK.
 #else
   OLA_FAIL("Not using UUCP locking, and flock() is not available");
-#endif
+#endif  // UUCP_LOCKING
 
-#endif
+#endif  // HAVE_FLOCK
 
   close(fd);
 

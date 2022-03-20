@@ -284,7 +284,7 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
   if (!AcquireUUCPLock(path)) {
     return false;
   }
-#endif
+#endif  // UUCP_LOCKING
 
   // Now try to open the serial device.
   if (!TryOpen(path, oflag, fd)) {
@@ -294,7 +294,7 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
     ReleaseUUCPLock(path);
 #else
     OLA_DEBUG << "Failed to open device " << path;
-#endif
+#endif  // UUCP_LOCKING
     return false;
   }
 
@@ -306,7 +306,7 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
   } else {
     OLA_INFO << "Locked " << path << " using flock()";
   }
-#endif
+#endif  // HAVE_FLOCK
 
   // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
   // further opens.
