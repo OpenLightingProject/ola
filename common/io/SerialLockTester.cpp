@@ -50,7 +50,7 @@ void SerialLockTest::testLock() {
   pid_t our_pid = getpid();
 
   std::stringstream str;
-  str << "serialLockTestFile." << our_pid;
+  str << "serialLockTestFile." << our_pid << ".pid";
   const std::string path = str.str();
 
   OLA_ASSERT_FALSE_MSG(ola::io::FileExists(path),
