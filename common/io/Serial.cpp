@@ -239,16 +239,16 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd) {
   if (!TryOpen(path, oflag, fd)) {
     OLA_DEBUG << "Failed to open device " << path << " despite having the "
               << "lock file";
-    ReleaseUUCPLock(path);
     close(*fd);
+    ReleaseUUCPLock(path);
     return false;
   }
 
   // As a final safety mechanism, use ioctl(TIOCEXCL) if available to prevent
   // further opens.
   if (!LockTIOCEXCL(*fd, path)) {
-    ReleaseUUCPLock(path);
     close(*fd);
+    ReleaseUUCPLock(path);
     return false;
   }
 
