@@ -218,7 +218,7 @@ bool LockTIOCEXCL(int fd, const std::string &path) {
     OLA_INFO << "Set TIOCEXCL on " << path;
   }
 #else
-    OLA_INFO << "Not setting " << path << " - ioctl.h unavailable";
+    OLA_INFO << "Not setting TIOCEXCL on " << path << " - ioctl.h unavailable";
 #endif  // HAVE_SYS_IOCTL_H
   return true;
 }
