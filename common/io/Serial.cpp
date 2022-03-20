@@ -321,7 +321,7 @@ void ReleaseSerialPortLock(const std::string &path) {
   ReleaseUUCPLock(path);
 #else
   OLA_INFO << "No unlock necessary for " << path << " (UUCP locking not used)";
-#endif
+#endif  // UUCP_LOCKING
 }
 
 
