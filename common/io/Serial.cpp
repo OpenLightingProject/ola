@@ -302,6 +302,9 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
   if (flock(*fd, LOCK_EX | LOCK_NB) == -1) {
     OLA_INFO << "Failed to flock() device " << path;
     close(*fd);
+#ifdef UUCP_LOCKING
+    ReleaseUUCPLock(path);
+#endif  // UUCP_LOCKING
     return false;
   } else {
     OLA_INFO << "Locked " << path << " using flock()";
@@ -312,6 +315,9 @@ bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd) {
   // further opens.
   if (!LockTIOCEXCL(*fd, path)) {
     close(*fd);
+#ifdef UUCP_LOCKING
+    ReleaseUUCPLock(path);
+#endif  // UUCP_LOCKING
     return false;
   }
 
