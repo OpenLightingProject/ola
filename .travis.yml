@@ -103,12 +103,14 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
-      env: TASK='check-licences'
+      env:
+        - TASK='check-licences'
+        - PYTHON='python3'
       addons:
         apt:
           packages:
            - *core_build
-           - *bionic_build_extras_python2
+           - *bionic_build_extras_python3
     - os: linux
       dist: bionic
       arch: arm64
@@ -428,12 +430,6 @@ jobs:
       - CPPUNIT='1.14'
       - PROTOBUF='latest'
       - LIBFTDI='1'
-    - os: linux
-      dist: bionic
-      arch: arm64
-      env:
-      - TASK='flake8'
-      - PYTHON='python3'
     - os: linux
       dist: bionic
       arch: arm64

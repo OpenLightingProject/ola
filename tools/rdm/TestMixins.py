@@ -111,7 +111,7 @@ class GetMixin(ResponderTestFixture):
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+      for i in range(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 
@@ -173,7 +173,7 @@ class GetRequiredMixin(ResponderTestFixture):
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+      for i in range(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 
@@ -194,7 +194,7 @@ class GetRequiredStringMixin(GetRequiredMixin):
     string_field = fields[self.EXPECTED_FIELDS[0]]
 
     if self.PROVIDES:
-      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+      for i in range(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
     if ContainsUnprintable(string_field):
@@ -360,7 +360,7 @@ class SetLabelMixin(ResponderTestFixture):
   TEST_LABEL = 'test label'
   PROVIDES = []
 
-  SET, VERIFY, RESET = xrange(3)
+  SET, VERIFY, RESET = range(3)
 
   def OldValue(self):
     self.SetBroken('Base OldValue method of SetLabelMixin called')
@@ -574,7 +574,7 @@ class SetUInt32Mixin(SetMixin):
 # -----------------------------------------------------------------------------
 class SetDMXStartAddressMixin(ResponderTestFixture):
   """Set the dmx start address."""
-  SET, VERIFY, RESET = xrange(3)
+  SET, VERIFY, RESET = range(3)
   start_address = 1
 
   def CalculateNewAddress(self, current_address, footprint):
@@ -714,7 +714,7 @@ class SetUndefinedSensorValues(ResponderTestFixture):
   def Test(self):
     sensors = self.Property('sensor_definitions')
     self._missing_sensors = []
-    for i in xrange(0, 0xff):
+    for i in range(0, 0xff):
       if i not in sensors:
         self._missing_sensors.append(i)
 

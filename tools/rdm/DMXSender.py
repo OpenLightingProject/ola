@@ -50,7 +50,7 @@ class DMXSender(object):
 
   def SendDMXFrame(self):
     """Send the next DMX Frame."""
-    for i in xrange(0, self._slot_count):
+    for i in range(0, self._slot_count):
       self._data[i] = self._frame_count % 255
     self._frame_count += 1
     self._wrapper.Client().SendDmx(self._universe,

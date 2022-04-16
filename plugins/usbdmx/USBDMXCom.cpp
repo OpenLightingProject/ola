@@ -46,10 +46,10 @@ static const unsigned char ENDPOINT = 0x02;
 enum { USBDMXCOM_MAX_FRAME_SIZE = (512*3)+5 };
 
 // USBDMX.COM adapter commands
-USBDMXCOM_COMMAND_NOOP                           0x26
-USBDMXCOM_COMMAND_DMX_TX_ON                      0x44
-USBDMXCOM_COMMAND_SET_CHANNEL_VALUE_LOWRNG       0x48
-USBDMXCOM_COMMAND_SET_CHANNEL_VALUE_HIGHRNG      0x49
+#define USBDMXCOM_COMMAND_NOOP                           0x26
+#define USBDMXCOM_COMMAND_DMX_TX_ON                      0x44
+#define USBDMXCOM_COMMAND_SET_CHANNEL_VALUE_LOWRNG       0x48
+#define USBDMXCOM_COMMAND_SET_CHANNEL_VALUE_HIGHRNG      0x49
 
 /*
  * Create a USBDMX.com message to match the supplied DmxBuffer.
