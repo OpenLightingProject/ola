@@ -45,10 +45,17 @@ static const unsigned int URB_TIMEOUT_MS = 500;
 static const unsigned char ENDPOINT = 0x02;
 enum { USBDMXCOM_MAX_FRAME_SIZE = (512*3)+5 };
 
+// USBDMX.COM adapter commands
+USBDMXCOM_COMMAND_NOOP                           0x26
+USBDMXCOM_COMMAND_DMX_TX_ON                      0x44
+USBDMXCOM_COMMAND_SET_CHANNEL_VALUE_LOWRNG       0x48
+USBDMXCOM_COMMAND_SET_CHANNEL_VALUE_HIGHRNG      0x49
+
 /*
  * Create a USBDMX.com message to match the supplied DmxBuffer.
  */
-size_t CreateFrame(const DmxBuffer &buffer, uint8_t frame[USBDMXCOM_MAX_FRAME_SIZE]) {
+size_t CreateFrame(const DmxBuffer &buffer,
+                   uint8_t frame[USBDMXCOM_MAX_FRAME_SIZE]) {
   static uint8_t old_Values[512];
   static bool first_use = true;
   size_t frame_length = 0;
@@ -56,26 +63,32 @@ size_t CreateFrame(const DmxBuffer &buffer, uint8_t frame[USBDMXCOM_MAX_FRAME_SI
   if (first_use) {
     first_use = false;
     OLA_INFO << "Sending 'Tx ON' message to USBDMX.COM adapter";
-    frame[frame_length++] = 0x26; // No-Op
-    frame[frame_length++] = 0x26; // No-Op
-    frame[frame_length++] = 0x26; // No-Op
-    frame[frame_length++] = 0x26; // No-Op
-    frame[frame_length++] = 0x44; // DMX TX ON
+    frame[frame_length++] = USBDMXCOM_COMMAND_NOOP;
+    frame[frame_length++] = USBDMXCOM_COMMAND_NOOP;
+    frame[frame_length++] = USBDMXCOM_COMMAND_NOOP;
+    frame[frame_length++] = USBDMXCOM_COMMAND_NOOP;
+    frame[frame_length++] = USBDMXCOM_COMMAND_DMX_TX_ON;
     memset(old_Values, 0, 512);
   }
 
-  for (unsigned int channel=0; channel<buffer.Size(); channel++) {
+  for (unsigned int channel=0; channel < buffer.Size(); channel++) {
     uint8_t value = buffer.Get(channel);
     if (value != old_Values[channel]) {
       old_Values[channel] = value;
-      OLA_DEBUG << "Ch. " << channel << " = " << (int)value;
-      frame[frame_length++] = (channel < 256) ? 0x48 : 0x49;
+      OLA_INFO << "Ch. " << channel << " = " << static_cast<int>(value);
+
+      if (channel < 256) {
+        frame[frame_length++] = USBDMXCOM_COMMAND_SET_CHANNEL_VALUE_LOWRNG;
+      }
+      else {
+        frame[frame_length++] = USBDMXCOM_COMMAND_SET_CHANNEL_VALUE_HIGHRNG;
+      }
+
       frame[frame_length++] = channel & 0xff;
       frame[frame_length++] = value;
     }
   }
 
-  //OLA_INFO << "CreateFrame(), frame_length=" << frame_length;
   return frame_length;
 }
 
@@ -156,8 +169,8 @@ bool USBDMXComThreadedSender::TransmitBuffer(libusb_device_handle *handle,
   }
 
   int transferred;
-  int r = m_adaptor->BulkTransfer(handle, ENDPOINT, frame, frame_length, &transferred, URB_TIMEOUT_MS);
-  OLA_DEBUG << "USBDMXComThreadedSender(), frame_length=" << frame_length << " r=" << r; // todo: remove this
+  int r = m_adaptor->BulkTransfer(handle, ENDPOINT, frame, frame_length,
+                                  &transferred, URB_TIMEOUT_MS);
 
   if ((size_t)transferred != frame_length) {
     // not sure if this is fatal or not
@@ -238,7 +251,6 @@ class USBDMXComAsyncUsbSender : public AsyncUsbSender {
       return true;
     }
     FillBulkTransfer(ENDPOINT, m_tx_frame, frame_length, URB_TIMEOUT_MS);
-    OLA_DEBUG << "USBDMXComAsyncUsbSender::PerformTransfer(), frame_length=" << frame_length; // todo: remove this
     return (SubmitTransfer() == 0);
   }
 

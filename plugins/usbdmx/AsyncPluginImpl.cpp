@@ -245,8 +245,8 @@ bool AsyncPluginImpl::NewWidget(Sunlite *widget) {
 bool AsyncPluginImpl::NewWidget(USBDMXCom *widget) {
   return StartAndRegisterDevice(
       widget,
-      // TODO(Someone): Add the serial here like ShowJockey if present)
-      new GenericDevice(m_plugin, widget, "USBDMX.com Device",
+      new GenericDevice(m_plugin, widget,
+                        "USBDMX.com Device (" + widget->SerialNumber() + ")",
                         "usbdmxcom-" + widget->SerialNumber()));
 }
 
