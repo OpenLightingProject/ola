@@ -185,3 +185,5 @@ function ok(a,b){for(var c=a.wa[b].data.items,d=c.length,g=N(a.wa[b].id),h="",i=
 import java.nio.ByteOrder;
         byte[] header = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder()).putInt(headerContent).array();
         int headerValue = ByteBuffer.wrap(header).order(ByteOrder.nativeOrder()).getInt();
+# This is a very bodgy workaround to the fact that the pip install of the archive doesn't seem to work properly now on Travis
+    "uest\032\036.ola.rpc.STREAMING_NO_RESPONSEB\006\200\001"
