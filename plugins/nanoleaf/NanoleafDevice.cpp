@@ -78,7 +78,7 @@ bool NanoleafDevice::StartHook() {
   NanoleafNode::NanoleafVersion version = NanoleafNode::VERSION_V1;
   if (text_version == VERSION_V1_TEXT) {
     version = NanoleafNode::VERSION_V1;
-  } else if (text_version == VERSION_V1_TEXT) {
+  } else if (text_version == VERSION_V2_TEXT) {
     version = NanoleafNode::VERSION_V2;
   } else {
     OLA_WARN << "Unknown Nanoleaf protocol version " << version
