@@ -369,6 +369,10 @@ jobs:
            - moreutils
   allow_failures:
     - os: linux
+      dist: bionic
+      arch: arm64
+      env: TASK='weblint'
+    - os: linux
       dist: xenial
       arch: arm64
       env: TASK='pychecker-wip'
