@@ -66,7 +66,7 @@ ola.DmxConsoleTab.prototype.setUniverse = function(universe_id) {
 
 
 /**
- * Called when the tab changes visibiliy.
+ * Called when the tab changes visibility.
  */
 ola.DmxConsoleTab.prototype.setActive = function(state) {
   ola.DmxConsoleTab.superClass_.setActive.call(this, state);
