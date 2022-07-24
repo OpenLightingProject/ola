@@ -349,13 +349,6 @@ jobs:
            - lintian
            - moreutils
   allow_failures:
-    - os: linux
-      dist: bionic
-      arch: arm64
-      env: TASK='jshint'
-      addons:
-        apt:
-          packages:
 #    - os: osx
 #      osx_image: xcode9.4
 #      compiler: clang
@@ -472,6 +465,8 @@ before_install:
  - if [ "$PYTHON" == "python3" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pyenv global 3.8.1; fi
 #On arm64 (at least) pip is now pip3, so symlink it to pip2 unless we're using python3.
  - if [ "$PYTHON" != "python3" ]; then sudo rm /usr/local/bin/pip && sudo ln -s /usr/local/bin/pip2 /usr/local/bin/pip; fi
+#Switch node to the latest LTS version
+ - if [ "$TASK" = "jshint" ]; then nvm install lts/* && nvm use lts/*; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
@@ -513,7 +508,8 @@ install:
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
   - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
-  - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
+  - if [ "$TASK" = "jshint" ]; then npm --verbose install -g grunt-cli; fi
+  - if [ "$TASK" = "jshint" ]; then grunt --version --verbose; fi
 # Installing via the addon isn't currently working so do it the old fashioned way
   - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
 
