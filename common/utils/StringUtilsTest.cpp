@@ -393,6 +393,56 @@ void StringUtilsTest::testIntToHexString() {
   str << ToHex((uint16_t)0xABCD, false);
   OLA_ASSERT_EQ(string("abcd"), str.str());
   str.str("");
+
+  // Value case option - lower
+  str << ToHex((uint8_t)0, true, false);
+  OLA_ASSERT_EQ(string("0x00"), str.str());
+  str.str("");
+
+  str << ToHex((uint8_t)1, true, false);
+  OLA_ASSERT_EQ(string("0x01"), str.str());
+  str.str("");
+
+  str << ToHex((uint8_t)255, true, false);
+  OLA_ASSERT_EQ(string("0xff"), str.str());
+  str.str("");
+
+  str << ToHex((uint8_t)0x42, false, false);
+  OLA_ASSERT_EQ(string("42"), str.str());
+  str.str("");
+
+  str << ToHex((uint16_t)0xABCD, false, false);
+  OLA_ASSERT_EQ(string("abcd"), str.str());
+  str.str("");
+
+  str << ToHex((uint32_t)0xDEADBEEF, false, false);
+  OLA_ASSERT_EQ(string("deadbeef"), str.str());
+  str.str("");
+
+  // Value case option - upper
+  str << ToHex((uint8_t)0, true, true);
+  OLA_ASSERT_EQ(string("0x00"), str.str());
+  str.str("");
+
+  str << ToHex((uint8_t)1, true, true);
+  OLA_ASSERT_EQ(string("0x01"), str.str());
+  str.str("");
+
+  str << ToHex((uint8_t)255, true, true);
+  OLA_ASSERT_EQ(string("0xFF"), str.str());
+  str.str("");
+
+  str << ToHex((uint8_t)0x42, false, true);
+  OLA_ASSERT_EQ(string("42"), str.str());
+  str.str("");
+
+  str << ToHex((uint16_t)0xABCD, false, true);
+  OLA_ASSERT_EQ(string("ABCD"), str.str());
+  str.str("");
+
+  str << ToHex((uint32_t)0xDEADBEEF, false, true);
+  OLA_ASSERT_EQ(string("DEADBEEF"), str.str());
+  str.str("");
 }
 
 

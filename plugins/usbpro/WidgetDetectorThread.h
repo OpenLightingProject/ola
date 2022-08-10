@@ -32,6 +32,7 @@
 #include "ola/io/SelectServer.h"
 #include "ola/thread/Thread.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/OpenDeckWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
@@ -64,6 +65,8 @@ class NewWidgetHandler {
     virtual void NewWidget(class RobeWidget *widget,
                            const RobeWidgetInformation &information) = 0;
     virtual void NewWidget(class UltraDMXProWidget *widget,
+                           const UsbProWidgetInformation &information) = 0;
+    virtual void NewWidget(class OpenDeckWidget *widget,
                            const UsbProWidgetInformation &information) = 0;
 };
 
@@ -179,10 +182,14 @@ class WidgetDetectorThread: public ola::thread::Thread {
     static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
     static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
 
+    // Shantea Controls device models
+    static const uint16_t SHANTEA_CONTROLS_OPEN_DECK_ID = 0;
+
     // ESTA Ids
     static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
     static const uint16_t GODDARD_ESTA_ID = 0x4744;
     static const uint16_t JESE_ESTA_ID = 0x6864;
+    static const uint16_t SHANTEA_CONTROLS_ESTA_ID = 0x6555;
 };
 }  // namespace usbpro
 }  // namespace plugin

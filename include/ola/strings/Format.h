@@ -59,14 +59,18 @@ std::string IntToString(unsigned int i);
  * @tparam T the type of value to convert
  * @param v the value to convert
  * @param prefix show the 0x prefix
+ * @param uppercase make the value uppercase
  * @return A _ToHex struct representing the value, output it to an ostream to
  *     use it.
  * @note We only currently support unsigned ints due to a lack of requirement
  * for anything else
  */
 template<typename T>
-_ToHex<T> ToHex(T v, bool prefix = true) {
-  return _ToHex<T>(v, (std::numeric_limits<T>::digits / HEX_BIT_WIDTH), prefix);
+_ToHex<T> ToHex(T v, bool prefix = true, bool uppercase = false) {
+  return _ToHex<T>(v,
+                   (std::numeric_limits<T>::digits / HEX_BIT_WIDTH),
+                   prefix,
+                   uppercase);
 }
 
 /**
@@ -79,6 +83,9 @@ std::ostream& operator<<(std::ostream &out, const ola::strings::_ToHex<T> &i) {
   // add it for all values if we want it
   if (i.prefix) {
     out << "0x";
+  }
+  if (i.uppercase) {
+    out << std::uppercase;
   }
   out << std::setw(i.width) << std::hex << std::setfill('0')
       << ola::strings::_HexCast(i.value);

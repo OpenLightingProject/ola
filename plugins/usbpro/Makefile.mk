@@ -20,6 +20,8 @@ plugins_usbpro_libolausbprowidget_la_SOURCES = \
     plugins/usbpro/EnttecUsbProWidgetImpl.h \
     plugins/usbpro/GenericUsbProWidget.cpp \
     plugins/usbpro/GenericUsbProWidget.h \
+    plugins/usbpro/OpenDeckWidget.cpp \
+    plugins/usbpro/OpenDeckWidget.h \
     plugins/usbpro/RobeWidget.cpp \
     plugins/usbpro/RobeWidget.h \
     plugins/usbpro/RobeWidgetDetector.cpp \
@@ -53,6 +55,8 @@ plugins_usbpro_libolausbpro_la_SOURCES = \
     plugins/usbpro/DmxTriDevice.h \
     plugins/usbpro/DmxterDevice.cpp \
     plugins/usbpro/DmxterDevice.h \
+    plugins/usbpro/OpenDeckDevice.cpp \
+    plugins/usbpro/OpenDeckDevice.h \
     plugins/usbpro/RobeDevice.cpp \
     plugins/usbpro/RobeDevice.h \
     plugins/usbpro/UltraDMXProDevice.cpp \

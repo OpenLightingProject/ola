@@ -32,6 +32,7 @@
 #include "plugins/usbpro/DmxterWidget.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/MockEndpoint.h"
+#include "plugins/usbpro/OpenDeckWidget.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/UltraDMXProWidget.h"
@@ -48,6 +49,7 @@ using ola::plugin::usbpro::DmxTriWidget;
 using ola::plugin::usbpro::DmxterWidget;
 using ola::plugin::usbpro::EnttecUsbProWidget;
 using ola::plugin::usbpro::NewWidgetHandler;
+using ola::plugin::usbpro::OpenDeckWidget;
 using ola::plugin::usbpro::RobeWidget;
 using ola::plugin::usbpro::RobeWidgetInformation;
 using ola::plugin::usbpro::UltraDMXProWidget;
@@ -94,6 +96,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
   CPPUNIT_TEST(testUsbProWidget);
   CPPUNIT_TEST(testUsbProMkIIWidget);
   CPPUNIT_TEST(testUsbProMkIIBWidget);
+  CPPUNIT_TEST(testOpenDeckWidget);
   CPPUNIT_TEST(testRobeWidget);
   CPPUNIT_TEST(testUltraDmxWidget);
   CPPUNIT_TEST(testTimeout);
@@ -110,6 +113,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void testUsbProWidget();
     void testUsbProMkIIWidget();
     void testUsbProMkIIBWidget();
+    void testOpenDeckWidget();
     void testRobeWidget();
     void testUltraDmxWidget();
     void testTimeout();
@@ -124,6 +128,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       DMXTER,
       ROBE,
       ULTRA_DMX,
+      OPENDECK
     } WidgetType;
 
     ola::io::SelectServer m_ss;
@@ -205,6 +210,19 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = ULTRA_DMX;
+      m_ss.Terminate();
+    }
+    void NewWidget(OpenDeckWidget *widget,
+                   const UsbProWidgetInformation &information) {
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x6555), information.esta_id);
+      OLA_ASSERT_EQ(string("Shantea Controls"), information.manufacturer);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x0000), information.device_id);
+      OLA_ASSERT_EQ(string("OpenDeck"), information.device);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0xABCDEF99), information.serial);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x0600),
+                    information.firmware_version);
+      m_thread->FreeWidget(widget);
+      m_received_widget_type = OPENDECK;
       m_ss.Terminate();
     }
 
@@ -517,6 +535,41 @@ void WidgetDetectorThreadTest::testUltraDmxWidget() {
   m_thread->WaitUntilRunning();
   m_ss.Run();
   OLA_ASSERT_EQ(ULTRA_DMX, m_received_widget_type);
+}
+
+/**
+ * Check that we can locate OpenDeck widget
+ */
+void WidgetDetectorThreadTest::testOpenDeckWidget() {
+  uint8_t serial_data[] = {0x99, 0xEF, 0xCD, 0xAB};
+  uint8_t manufacturer_data[] = "\x55\x65Shantea Controls";
+  uint8_t device_data[] = "\x00\x00OpenDeck";
+  uint8_t get_params_request[] = {0x00, 0x00};
+  uint8_t get_params_response[] = {0x00, 0x06, 0x00, 0x00, 0x00};
+
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
+      BaseUsbProWidget::MANUFACTURER_LABEL,
+      manufacturer_data,
+      sizeof(manufacturer_data));
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::DEVICE_LABEL, NULL, 0,
+      BaseUsbProWidget::DEVICE_LABEL, device_data, sizeof(device_data));
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
+      BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::GET_PARAMS,
+      &get_params_request[0],
+      sizeof(get_params_request),
+      BaseUsbProWidget::GET_PARAMS,
+      get_params_response,
+      sizeof(get_params_response));
+
+  m_thread->Start();
+  m_thread->WaitUntilRunning();
+  m_ss.Run();
+  OLA_ASSERT_EQ(OPENDECK, m_received_widget_type);
 }
 
 

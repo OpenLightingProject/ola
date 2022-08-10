@@ -55,6 +55,8 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
                    const RobeWidgetInformation &information);
     void NewWidget(UltraDMXProWidget *widget,
                    const UsbProWidgetInformation &information);
+    void NewWidget(OpenDeckWidget *widget,
+                   const UsbProWidgetInformation &information);
 
  private:
     void AddDevice(UsbSerialDevice *device);
@@ -63,6 +65,7 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     bool SetDefaultPreferences();
     void DeleteDevice(UsbSerialDevice *device);
     std::string GetDeviceName(const UsbProWidgetInformation &information);
+    unsigned int GetOpenDeckFrameLimit();
     unsigned int GetProFrameLimit();
     unsigned int GetDmxTriFrameLimit();
     unsigned int GetUltraDMXProFrameLimit();
@@ -79,14 +82,17 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     static const char MAC_DEVICE_PREFIX[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
+    static const char OPENDECK_FPS_LIMIT_KEY[];
     static const char ROBE_DEVICE_NAME[];
     static const char TRI_USE_RAW_RDM_KEY[];
     static const char USBPRO_DEVICE_NAME[];
     static const char USB_PRO_FPS_LIMIT_KEY[];
     static const char ULTRA_FPS_LIMIT_KEY[];
 
+    static const uint8_t DEFAULT_OPENDECK_FPS_LIMIT = 40;
     static const uint8_t DEFAULT_PRO_FPS_LIMIT = 190;
     static const uint8_t DEFAULT_ULTRA_FPS_LIMIT = 40;
+    static const unsigned int MAX_OPENDECK_FPS_LIMIT = 1000;
     static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
     static const unsigned int MAX_ULTRA_FPS_LIMIT = 1000;
 };
