@@ -20,9 +20,12 @@
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/base/Init.h>
+#include <ola/io/SelectServer.h>
+#include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
+#include <ola/network/SocketAddress.h>
 
 #include <iostream>
 #include <string>
@@ -30,9 +33,11 @@
 using std::cout;
 using std::endl;
 using std::string;
-using ola::network::SelectServer;
-using ola::network::UDPSocket;
+using ola::io::SelectServer;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::LittleEndianToHost;
+using ola::network::UDPSocket;
 
 
 /*
@@ -156,7 +161,7 @@ struct kinet_port_out_flags {
 
 struct kinet_port_out_sync {
   uint32_t padding;
-}
+};
 
 // A KiNet DMX port out packet
 PACK(
@@ -164,7 +169,7 @@ struct kinet_port_out {
   uint32_t universe;
   uint8_t port;        // 1- 16
   uint8_t pad;         // set to 0
-  portoutflags flags;
+  kinet_port_out_flags flags;
   uint16_t length;     // little endian
   uint16_t startCode;  // 0x0fff for chomASIC products, 0x0000 otherwise
   uint8_t payload[512];
@@ -236,9 +241,9 @@ bool IsKiNet(const kinet_packet *packet, unsigned int size) {
 /**
  * Handle a KiNet poll packet
  */
-void HandlePoll(const struct sockaddr_in &source,
-                const kinet_packet &packet,
-                unsigned int size) {
+void HandlePoll(const IPV4SocketAddress &source,
+                OLA_UNUSED const kinet_packet &packet,
+                OLA_UNUSED unsigned int size) {
   ssize_t r = udp_socket.SendTo(peer0_0, sizeof(peer0_0), source);
   OLA_INFO << "sent " << r << " bytes";
 }
@@ -247,22 +252,20 @@ void HandlePoll(const struct sockaddr_in &source,
 /**
  * Handle a KiNet DMX packet
  */
-void HandleDmx(const struct sockaddr_in &source,
-               const kinet_packet &packet,
-               unsigned int size) {
+void HandleDmx(OLA_UNUSED const IPV4SocketAddress &source,
+               OLA_UNUSED const kinet_packet &packet,
+               OLA_UNUSED unsigned int size) {
 }
 
 
 void SocketReady() {
   kinet_packet packet;
   ssize_t data_read = sizeof(packet);
-  struct sockaddr_in source;
-  socklen_t src_size = sizeof(source);
+  IPV4SocketAddress source;
 
   udp_socket.RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                       &data_read,
-                      source,
-                      src_size);
+                      &source);
   if (IsKiNet(&packet, data_read)) {
     uint16_t command = LittleEndianToHost(packet.header.type);
     switch (command) {
@@ -285,14 +288,14 @@ void SocketReady() {
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  ola::AppInit(&argc, argv, "", "Run the Kinet scratchpad.");
 
   udp_socket.SetOnData(ola::NewCallback(&SocketReady));
   if (!udp_socket.Init()) {
     OLA_WARN << "Failed to init";
     return 1;
   }
-  if (!udp_socket.Bind(6038)) {
+  if (!udp_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), 6038))) {
     OLA_WARN << "Failed to bind";
     return 1;
   }
@@ -301,7 +304,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  ss.AddSocket(&udp_socket);
+  ss.AddReadDescriptor(&udp_socket);
 
   ss.Run();
   return 0;
