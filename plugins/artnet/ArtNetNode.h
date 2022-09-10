@@ -252,7 +252,7 @@ class ArtNetNodeImpl {
    * @brief Send some DMX data
    * @param port_id port to send on
    * @param buffer the DMX data
-   * @return true if it was send successfully, false otherwise
+   * @return true if it was sent successfully, false otherwise
    */
   bool SendDMX(uint8_t port_id, const ola::DmxBuffer &buffer);
 
