@@ -37,6 +37,7 @@ using ola::testing::MockUDPSocket;
 class KiNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(KiNetNodeTest);
   CPPUNIT_TEST(testSendDMX);
+  CPPUNIT_TEST(testSendPortOut);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -48,6 +49,8 @@ class KiNetNodeTest: public CppUnit::TestFixture {
     void setUp();
 
     void testSendDMX();
+
+    void testSendPortOut();
 
  private:
     ola::io::SelectServer ss;
@@ -85,6 +88,30 @@ void KiNetNodeTest::testSendDMX() {
   DmxBuffer buffer;
   buffer.SetFromString("1,5,8,10,14,45,100,255");
   OLA_ASSERT_TRUE(node.SendDMX(target_ip, buffer));
+  m_socket->Verify();
+  OLA_ASSERT(node.Stop());
+}
+
+/**
+ * Check sending PORTOUT works.
+ */
+void KiNetNodeTest::testSendPortOut() {
+  KiNetNode node(&ss, m_socket);
+  OLA_ASSERT_TRUE(node.Start());
+
+  const uint8_t expected_data[] = {
+    0x04, 0x01, 0xdc, 0x4a, 0x01, 0x00,
+    0x01, 0x08, 0, 0, 0, 0,
+    0xff, 0xff, 0xff, 0xff, 7, 0, 0, 0, 0, 8, 0,
+    0, 1, 5, 8, 10, 14, 45, 100, 255
+  };
+
+  m_socket->AddExpectedData(expected_data, sizeof(expected_data), target_ip,
+                            KINET_PORT);
+
+  DmxBuffer buffer;
+  buffer.SetFromString("1,5,8,10,14,45,100,255");
+  OLA_ASSERT_TRUE(node.SendPortOut(target_ip, 7, buffer));
   m_socket->Verify();
   OLA_ASSERT(node.Stop());
 }

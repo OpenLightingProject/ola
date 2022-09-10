@@ -61,9 +61,10 @@ typedef enum {
   KINET_SET_NAME = 0x0006,
   // KINET_?? = 0x000a;
   KINET_DMX = 0x0101,
+  // KINET_?? = 0x0105;  // ?
   // KINET_PORTOUT = 0x0108;  // portout
   // KINET_PORTOUT_SYNC = 0x0109;  // portout_sync
-  // KINET_?? = 0x0201;  // seems to be a discovery packet
+  // KINET_?? = 0x0201;  // seems to be a discovery packet, maybe for fixtures?
   // KINET_?? = 0x0203;  // get dmx address?
 } kinet_packet_type;
 
@@ -146,7 +147,7 @@ struct kinet_dmx {
   uint8_t flags;  // set to 0
   uint16_t timerVal;  // set to 0
   uint32_t universe;
-  uint8_t paylod[513];  // payload inc start code
+  uint8_t payload[513];  // payload inc start code
 });
 
 
@@ -191,9 +192,9 @@ uint8_t peer0_0[] = {
   0x01, 0x00,  // version #
   0x02, 0x00,  // packet type (poll reply)
   0x00, 0x00, 0x00, 0x00,  // sequence
-  0x0a, 0x00, 0x00, 0x01,  // 192.168.1.207
+  0x0a, 0x00, 0x00, 0x9d,  // IP (was 192.168.1.207 in original sample)
   0x00, 0x0a, 0xc5, 0xff, 0xae, 0x01,  // mac address
-  0x01, 0x00,
+  0x01, 0x00,  // ?
   0xff, 0xff, 0x00, 0x2d,  // serial #
   0x00, 0x00, 0x00, 0x00,  // padding
   // What follows is ascii text, with fields separated by new lines. Each field
@@ -216,7 +217,7 @@ uint8_t peer0_0[] = {
   0x00,
   // offset 92
   0x64, 0x73, 0x2d, 0x64, 0x61, 0x6e, 0x63, 0x65, 0x2d, 0x72, 0x65, 0x61, 0x72,
-  0x00,  // device name?
+  0x00,  // ds-dance-rear - device name
   0x00, 0x95, 0x8c, 0xc7, 0xb6, 0x00,
   0x00,
   0xff, 0x00, 0x00,
@@ -270,9 +271,11 @@ void SocketReady() {
     uint16_t command = LittleEndianToHost(packet.header.type);
     switch (command) {
       case KINET_POLL:
+        OLA_INFO << "Got a poll packet";
         HandlePoll(source, packet, data_read);
         break;
       case KINET_DMX:
+        OLA_INFO << "Got a DMX packet";
         HandleDmx(source, packet, data_read);
         break;
       default:
@@ -300,7 +303,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   if (!udp_socket.EnableBroadcast()) {
-    OLA_WARN << "Failed to enabl bcast";
+    OLA_WARN << "Failed to enable broadcast";
     return 1;
   }
 

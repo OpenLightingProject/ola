@@ -107,8 +107,45 @@ bool KiNetNode::SendDMX(const IPV4Address &target_ip, const DmxBuffer &buffer) {
 
   IPV4SocketAddress target(target_ip, KINET_PORT);
   bool ok = m_socket->SendTo(&m_output_queue, target);
-  if (!ok)
+  if (!ok) {
     OLA_WARN << "Failed to send KiNet DMX packet";
+  }
+
+  if (!m_output_queue.Empty()) {
+    OLA_WARN << "Failed to send complete KiNet packet";
+    m_output_queue.Clear();
+  }
+  return ok;
+}
+
+
+/*
+ * Send some PORTOUT data
+ */
+bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
+                            const uint8_t port,
+                            const DmxBuffer &buffer) {
+  static const uint8_t flags = 0;
+  static const uint8_t padding = 0;
+  static const uint32_t universe = 0xffffffff;
+
+  if (!buffer.Size()) {
+    OLA_DEBUG << "Not sending 0 length packet";
+    return true;
+  }
+
+  m_output_queue.Clear();
+  PopulatePacketHeader(KINET_PORTOUT_MSG);
+  m_output_stream << universe << port << padding
+                  << flags << padding << static_cast<uint16_t>(buffer.Size());
+  m_output_stream << padding << DMX512_START_CODE;
+  m_output_stream.Write(buffer.GetRaw(), buffer.Size());
+
+  IPV4SocketAddress target(target_ip, KINET_PORT);
+  bool ok = m_socket->SendTo(&m_output_queue, target);
+  if (!ok) {
+    OLA_WARN << "Failed to send KiNet PORTOUT packet";
+  }
 
   if (!m_output_queue.Empty()) {
     OLA_WARN << "Failed to send complete KiNet packet";
