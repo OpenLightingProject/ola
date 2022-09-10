@@ -307,7 +307,7 @@ bool Flag<T>::SetValue(const std::string &input) {
 
 
 /**
- * @brief This class holds all the flags, and is responsbile for parsing the
+ * @brief This class holds all the flags, and is responsible for parsing the
  * command line.
  */
 class FlagRegistry {
