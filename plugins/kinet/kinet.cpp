@@ -50,7 +50,7 @@ const uint32_t KINET_MAGIC = 0x4adc0104;
 // We haven't seen a non V1 protocol in the wild yet.
 const uint16_t KINET_VERSION = 0x0001;
 // No idea what this is, but we should send a poll reply when we see it
-const uint32_t KINET_DISCOVERY_COMMAND = 0x8988870a;
+// const uint32_t KINET_DISCOVERY_COMMAND = 0x8988870a;
 
 // KiNet packet types
 typedef enum {
