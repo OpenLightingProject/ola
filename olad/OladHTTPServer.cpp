@@ -880,7 +880,7 @@ void OladHTTPServer::HandlePortsForUniverse(
  * @brief Handle the list of candidate ports
  * @param response the HTTPResponse that is associated with the request.
  * @param result the result of the API call
- * @param devices the possbile devices & ports
+ * @param devices the possible devices & ports
  */
 void OladHTTPServer::HandleCandidatePorts(
     HTTPResponse *response,
