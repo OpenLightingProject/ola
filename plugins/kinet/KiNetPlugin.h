@@ -41,7 +41,8 @@ class KiNetPlugin : public Plugin {
     std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-    std::auto_ptr<class KiNetDevice> m_device;  // only have one device
+    class KiNetNode *m_node;
+    std::vector<class KiNetDevice*> m_devices;
 
     bool StartHook();
     bool StopHook();

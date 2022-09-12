@@ -34,11 +34,12 @@ namespace kinet {
 class KiNetDevice: public ola::Device {
  public:
     KiNetDevice(AbstractPlugin *owner,
-                const std::vector<ola::network::IPV4Address> &power_supplies,
-                class PluginAdaptor *plugin_adaptor);
+                const ola::network::IPV4Address &power_supply,
+                class PluginAdaptor *plugin_adaptor,
+                class KiNetNode *node,
+                class Preferences *preferences);
 
-    // Only one KiNet device
-    std::string DeviceId() const { return "1"; }
+    std::string DeviceId() const;
 
     // We can stream the same universe to multiple IPs
     // TODO(Peter): Remove this when we have a device per IP
@@ -46,13 +47,14 @@ class KiNetDevice: public ola::Device {
 
  protected:
     bool StartHook();
-    void PrePortStop();
-    void PostPortStop();
 
  private:
-    const std::vector<ola::network::IPV4Address> m_power_supplies;
-    class KiNetNode *m_node;
+    const ola::network::IPV4Address m_power_supply;
     class PluginAdaptor *m_plugin_adaptor;
+    class KiNetNode *m_node;
+    class Preferences *m_preferences;
+
+    static const char KINET_DEVICE_NAME[];
 };
 }  // namespace kinet
 }  // namespace plugin

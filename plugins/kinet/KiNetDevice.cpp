@@ -19,6 +19,7 @@
  */
 
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
+#include "olad/Preferences.h"
 #include "plugins/kinet/KiNetDevice.h"
 #include "plugins/kinet/KiNetPort.h"
 
@@ -39,19 +41,26 @@ namespace kinet {
 
 using ola::network::IPV4Address;
 using std::auto_ptr;
+using std::ostringstream;
+using std::string;
 using std::vector;
+
+const char KiNetDevice::KINET_DEVICE_NAME[] = "KiNet";
 
 /*
  * Create a new KiNet Device
  */
 KiNetDevice::KiNetDevice(
     AbstractPlugin *owner,
-    const vector<ola::network::IPV4Address> &power_supplies,
-    PluginAdaptor *plugin_adaptor)
-    : Device(owner, "KiNet Device"),
-      m_power_supplies(power_supplies),
-      m_node(NULL),
-      m_plugin_adaptor(plugin_adaptor) {
+    const ola::network::IPV4Address &power_supply,
+    PluginAdaptor *plugin_adaptor,
+    KiNetNode *node,
+    Preferences *preferences)
+    : Device(owner, KINET_DEVICE_NAME),
+      m_power_supply(power_supply),
+      m_plugin_adaptor(plugin_adaptor),
+      m_node(node),
+      m_preferences(preferences) {
 }
 
 
@@ -60,38 +69,27 @@ KiNetDevice::KiNetDevice(
  * @return true on success, false on failure
  */
 bool KiNetDevice::StartHook() {
-  m_node = new KiNetNode(m_plugin_adaptor);
+  ostringstream str;
+  str << KINET_DEVICE_NAME << " [Power Supply " << m_power_supply.ToString()
+      << "]";
+  SetName(str.str());
 
-  if (!m_node->Start()) {
-    delete m_node;
-    m_node = NULL;
-    return false;
-  }
-
-  vector<IPV4Address>::const_iterator iter = m_power_supplies.begin();
   unsigned int port_id = 0;
-  for (; iter != m_power_supplies.end(); ++iter) {
-    AddPort(new KiNetOutputPort(this, *iter, m_node, port_id++));
-  }
+//  for (; iter != m_power_supply.end(); ++iter) {
+    AddPort(new KiNetOutputPort(this, m_power_supply, m_node, port_id++));
+//  }
   return true;
 }
 
 
-/**
- * Stop this device. This is called before the ports are deleted
- */
-void KiNetDevice::PrePortStop() {
-  m_node->Stop();
+string KiNetDevice::DeviceId() const {
+  return m_power_supply.ToString();
 }
 
 
-/*
- * Stop this device
- */
-void KiNetDevice::PostPortStop() {
-  delete m_node;
-  m_node = NULL;
-}
+//string NanoleafDevice::IPPortKey() const {
+//  return m_controller.ToString() + "-port";
+//}
 }  // namespace kinet
 }  // namespace plugin
 }  // namespace ola
