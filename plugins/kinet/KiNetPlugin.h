@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
 
