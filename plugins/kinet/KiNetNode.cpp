@@ -137,8 +137,9 @@ bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
   m_output_queue.Clear();
   PopulatePacketHeader(KINET_PORTOUT_MSG);
   m_output_stream << universe << port << padding
-                  << flags << padding << static_cast<uint16_t>(buffer.Size());
-  m_output_stream << padding << DMX512_START_CODE;
+                  << flags << padding  // Are the flags actually 16 bit?
+                  << static_cast<uint16_t>(buffer.Size());
+  m_output_stream << static_cast<uint16_t>(DMX512_START_CODE);
   m_output_stream.Write(buffer.GetRaw(), buffer.Size());
 
   IPV4SocketAddress target(target_ip, KINET_PORT);
