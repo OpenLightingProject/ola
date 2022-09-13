@@ -74,10 +74,9 @@ bool KiNetDevice::StartHook() {
       << "]";
   SetName(str.str());
 
-  unsigned int port_id = 0;
-//  for (; iter != m_power_supply.end(); ++iter) {
-    AddPort(new KiNetOutputPort(this, m_power_supply, m_node, port_id++));
-//  }
+  for (uint8_t i = 1; i <= KINET_PORTOUT_MAX_PORT_COUNT; i++) {
+    AddPort(new KiNetOutputPort(this, m_power_supply, m_node, i));
+  }
   return true;
 }
 

@@ -65,6 +65,7 @@ bool KiNetPlugin::StartHook() {
       POWER_SUPPLY_KEY);
   vector<string>::const_iterator iter = power_supplies_strings.begin();
 
+  // TODO(Peter): De-duplicate PSU IPs (via a set?)
   for (; iter != power_supplies_strings.end(); ++iter) {
     if (iter->empty()) {
       continue;

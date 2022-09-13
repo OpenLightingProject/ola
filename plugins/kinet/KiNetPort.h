@@ -23,6 +23,7 @@
 
 #include <string>
 #include "ola/network/IPV4Address.h"
+#include "ola/strings/Format.h"
 #include "olad/Port.h"
 #include "plugins/kinet/KiNetDevice.h"
 #include "plugins/kinet/KiNetNode.h"
@@ -43,11 +44,18 @@ class KiNetOutputPort: public BasicOutputPort {
   }
 
   bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
-    return m_node->SendDMX(m_target, buffer);
+    // return m_node->SendDMX(m_target, buffer);
+
+    if ((PortId() <= 0) || (PortId() > KINET_PORTOUT_MAX_PORT_COUNT)) {
+      OLA_WARN << "Invalid KiNet port id " << PortId();
+      return false;
+    }
+    return m_node->SendPortOut(m_target, PortId(), buffer);
   }
 
   std::string Description() const {
-    return "Power Supply: " + m_target.ToString();
+    return ola::strings::IntToString(PortId());
+//    return "Power Supply: " + m_target.ToString();
   }
 
  private:

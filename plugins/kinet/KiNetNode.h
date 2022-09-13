@@ -36,6 +36,8 @@ namespace ola {
 namespace plugin {
 namespace kinet {
 
+static const uint8_t KINET_PORTOUT_MAX_PORT_COUNT = 16;
+
 class KiNetNode {
  public:
     KiNetNode(ola::io::SelectServerInterface *ss,
