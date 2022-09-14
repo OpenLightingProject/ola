@@ -101,7 +101,7 @@ void KiNetNodeTest::testSendPortOut() {
 
   const uint8_t expected_data[] = {
     0x04, 0x01, 0xdc, 0x4a, 0x01, 0x00,
-    0x01, 0x08, 0, 0, 0, 0,
+    0x08, 0x01, 0, 0, 0, 0,
     0xff, 0xff, 0xff, 0xff, 7, 0, 0, 0, 0, 8, 0,
     0, 1, 5, 8, 10, 14, 45, 100, 255
   };
