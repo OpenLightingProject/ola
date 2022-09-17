@@ -37,6 +37,11 @@ using ola::network::UDPSocket;
 using std::auto_ptr;
 
 /*
+ * Initialize packet counter to 0.
+ */
+uint32_t KiNetNode::m_packet_number = 0;
+
+/*
  * Create a new KiNet node.
  * @param ss a SelectServerInterface to use
  * @param socket a UDPSocket or Null. Ownership is transferred.
@@ -44,7 +49,6 @@ using std::auto_ptr;
 KiNetNode::KiNetNode(ola::io::SelectServerInterface *ss,
                      ola::network::UDPSocketInterface *socket)
     : m_running(false),
-      m_packet_number(0),
       m_ss(ss),
       m_output_stream(&m_output_queue),
       m_socket(socket) {

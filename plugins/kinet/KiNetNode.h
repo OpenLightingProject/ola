@@ -56,7 +56,7 @@ class KiNetNode {
 
  private:
     bool m_running;
-    uint32_t m_packet_number;
+    static uint32_t m_packet_number;
     ola::io::SelectServerInterface *m_ss;
     ola::io::IOQueue m_output_queue;
     ola::io::BigEndianOutputStream m_output_stream;
