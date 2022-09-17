@@ -204,6 +204,38 @@ int32_t HostToLittleEndian(int32_t value) {
   }
 }
 
+uint16_t HostToBigEndian(uint16_t value) {
+  if (IsBigEndian()) {
+    return value;
+  } else {
+    return ByteSwap16(value);
+  }
+}
+
+int16_t HostToBigEndian(int16_t value) {
+  if (IsBigEndian()) {
+    return value;
+  } else {
+    return ByteSwap16(value);
+  }
+}
+
+uint32_t HostToBigEndian(uint32_t value) {
+  if (IsBigEndian()) {
+    return value;
+  } else {
+    return ByteSwap32(value);
+  }
+}
+
+int32_t HostToBigEndian(int32_t value) {
+  if (IsBigEndian()) {
+    return value;
+  } else {
+    return ByteSwap32(value);
+  }
+}
+
 uint16_t LittleEndianToHost(uint16_t value) {
   if (IsBigEndian()) {
     return ByteSwap16(value);

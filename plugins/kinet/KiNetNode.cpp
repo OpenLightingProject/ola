@@ -30,6 +30,7 @@ namespace ola {
 namespace plugin {
 namespace kinet {
 
+using ola::network::HostToBigEndian;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
@@ -43,6 +44,7 @@ using std::auto_ptr;
 KiNetNode::KiNetNode(ola::io::SelectServerInterface *ss,
                      ola::network::UDPSocketInterface *socket)
     : m_running(false),
+      m_packet_number(0),
       m_ss(ss),
       m_output_stream(&m_output_queue),
       m_socket(socket) {
@@ -125,8 +127,8 @@ bool KiNetNode::SendDMX(const IPV4Address &target_ip, const DmxBuffer &buffer) {
 bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
                             const uint8_t port,
                             const DmxBuffer &buffer) {
-  static const uint8_t flags = 0;
-  static const uint8_t padding = 0;
+  static const uint8_t flags1 = 0; // Definitely flags of some sort, seems to be impacted by buffer size
+  static const uint16_t flags2 = 0; // Possibly always 0
   static const uint32_t universe = 0xffffffff;
 
   if (!buffer.Size()) {
@@ -136,9 +138,9 @@ bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
 
   m_output_queue.Clear();
   PopulatePacketHeader(KINET_PORTOUT_MSG);
-  m_output_stream << universe << port << padding
-                  << flags << padding  // Are the flags actually 16 bit?
-                  << static_cast<uint16_t>(buffer.Size());
+  m_output_stream << universe << port
+                  << flags1 << flags2
+                  << HostToBigEndian(static_cast<uint16_t>(buffer.Size())); // Buffer must be at least 24 bytes
   m_output_stream << static_cast<uint16_t>(DMX512_START_CODE);
   m_output_stream.Write(buffer.GetRaw(), buffer.Size());
 
@@ -177,9 +179,9 @@ void KiNetNode::SocketReady() {
  * Fill in the header for a packet
  */
 void KiNetNode::PopulatePacketHeader(uint16_t msg_type) {
-  uint32_t sequence_number = 0;  // everything seems to set this to 0.
   m_output_stream << KINET_MAGIC_NUMBER << KINET_VERSION_ONE;
-  m_output_stream << msg_type << sequence_number;
+  m_output_stream << msg_type << HostToBigEndian(m_packet_number);
+  m_packet_number++;
 }
 
 
