@@ -141,13 +141,21 @@ bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
     return true;
   }
 
+  uint16_t buffSize = static_cast<uint16_t>(buffer.Size());
+  uint16_t buffSizeRegulated = std::max(buffSize, KINET_PORTOUT_MINIMUM_BUFFER_SIZE);
+
   m_output_queue.Clear();
   PopulatePacketHeader(KINET_PORTOUT_MSG);
   m_output_stream << universe << port
                   << flags1 << flags2
-                  << HostToNetwork(static_cast<uint16_t>(buffer.Size())); // Buffer must be at least 24 bytes
+                  << HostToNetwork(buffSizeRegulated);
   m_output_stream << static_cast<uint16_t>(DMX512_START_CODE);
   m_output_stream.Write(buffer.GetRaw(), buffer.Size());
+
+  // Buffer must be at least 24 bytes, pad with zeros if needed
+  for (uint16_t i = 0; i < (KINET_PORTOUT_MINIMUM_BUFFER_SIZE - buffSize); i++) {
+    m_output_stream << ((uint8_t)0);
+  }
 
   IPV4SocketAddress target(target_ip, KINET_PORT);
   bool ok = m_socket->SendTo(&m_output_queue, target);
