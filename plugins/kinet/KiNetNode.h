@@ -31,6 +31,7 @@
 #include "ola/network/Interface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
+#include "ola/util/SequenceNumber.h"
 
 namespace ola {
 namespace plugin {
@@ -56,7 +57,7 @@ class KiNetNode {
 
  private:
     bool m_running;
-    static uint32_t m_packet_number;
+    static ola::SequenceNumber<uint32_t> m_transaction_number;
     ola::io::SelectServerInterface *m_ss;
     ola::io::IOQueue m_output_queue;
     ola::io::BigEndianOutputStream m_output_stream;

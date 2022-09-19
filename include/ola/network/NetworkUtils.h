@@ -122,36 +122,6 @@ int16_t HostToLittleEndian(int16_t value);
 int32_t HostToLittleEndian(int32_t value);
 
 /**
- * @brief 8-bit unsigned host to big endian conversion.
- */
-inline uint8_t HostToBigEndian(uint8_t value) { return value; }
-
-/**
- * @brief 16-bit unsigned host to big endian conversion.
- */
-uint16_t HostToBigEndian(uint16_t value);
-
-/**
- * @brief 32-bit unsigned host to big endian conversion.
- */
-uint32_t HostToBigEndian(uint32_t value);
-
-/**
- * @brief 8-bit signed host to big endian conversion.
- */
-inline int8_t HostToBigEndian(int8_t value) { return value; }
-
-/**
- * @brief 16-bit signed host to big endian conversion.
- */
-int16_t HostToBigEndian(int16_t value);
-
-/**
- * @brief 32-bit signed host to big endian conversion.
- */
-int32_t HostToBigEndian(int32_t value);
-
-/**
  * @brief 8-bit unsigned little endian to host conversion.
  */
 inline uint8_t LittleEndianToHost(uint8_t value) { return value; }

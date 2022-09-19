@@ -24,22 +24,23 @@
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/SocketAddress.h"
+#include "ola/util/SequenceNumber.h"
 #include "plugins/kinet/KiNetNode.h"
 
 namespace ola {
 namespace plugin {
 namespace kinet {
 
-using ola::network::HostToBigEndian;
+using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
 using std::auto_ptr;
 
 /*
- * Initialize packet counter to 0.
+ * Initialize packet counter.
  */
-uint32_t KiNetNode::m_packet_number = 0;
+ola::SequenceNumber<uint32_t> KiNetNode::m_transaction_number = ola::SequenceNumber<uint32_t>();
 
 /*
  * Create a new KiNet node.
@@ -144,7 +145,7 @@ bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
   PopulatePacketHeader(KINET_PORTOUT_MSG);
   m_output_stream << universe << port
                   << flags1 << flags2
-                  << HostToBigEndian(static_cast<uint16_t>(buffer.Size())); // Buffer must be at least 24 bytes
+                  << HostToNetwork(static_cast<uint16_t>(buffer.Size())); // Buffer must be at least 24 bytes
   m_output_stream << static_cast<uint16_t>(DMX512_START_CODE);
   m_output_stream.Write(buffer.GetRaw(), buffer.Size());
 
@@ -184,8 +185,7 @@ void KiNetNode::SocketReady() {
  */
 void KiNetNode::PopulatePacketHeader(uint16_t msg_type) {
   m_output_stream << KINET_MAGIC_NUMBER << KINET_VERSION_ONE;
-  m_output_stream << msg_type << HostToBigEndian(m_packet_number);
-  m_packet_number++;
+  m_output_stream << msg_type << HostToNetwork(m_transaction_number.Next());
 }
 
 
