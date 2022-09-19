@@ -74,7 +74,16 @@ bool KiNetDevice::StartHook() {
       << "]";
   SetName(str.str());
 
-  for (uint8_t i = 1; i <= KINET_PORTOUT_MAX_PORT_COUNT; i++) {
+  SetDefaults();
+
+  uint8_t port_count;
+  if (!StringToInt(m_preferences->GetValue(PortCountKey()), &port_count)) {
+    port_count = KINET_PORTOUT_MAX_PORT_COUNT;
+  } else if ((port_count < 1) || (port_count > KINET_PORTOUT_MAX_PORT_COUNT)) {
+    OLA_WARN << "Invalid port count value for " << PortCountKey();
+  }
+
+  for (uint8_t i = 1; i <= port_count; i++) {
     AddPort(new KiNetOutputPort(this, m_power_supply, m_node, i));
   }
   return true;
@@ -86,9 +95,18 @@ string KiNetDevice::DeviceId() const {
 }
 
 
-//string NanoleafDevice::IPPortKey() const {
-//  return m_controller.ToString() + "-port";
-//}
+string KiNetDevice::PortCountKey() const {
+  return m_power_supply.ToString() + "-ports";
+}
+
+void KiNetDevice::SetDefaults() {
+  // Set device options
+  m_preferences->SetDefaultValue(
+      PortCountKey(),
+      UIntValidator(1, KINET_PORTOUT_MAX_PORT_COUNT),
+      KINET_PORTOUT_MAX_PORT_COUNT);
+  m_preferences->Save();
+}
 }  // namespace kinet
 }  // namespace plugin
 }  // namespace ola
