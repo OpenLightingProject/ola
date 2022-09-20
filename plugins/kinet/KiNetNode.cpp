@@ -18,6 +18,7 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#include <algorithm>
 #include <memory>
 
 #include "ola/Constants.h"
@@ -40,7 +41,8 @@ using std::auto_ptr;
 /*
  * Initialize packet counter.
  */
-ola::SequenceNumber<uint32_t> KiNetNode::m_transaction_number = ola::SequenceNumber<uint32_t>();
+ola::SequenceNumber<uint32_t> KiNetNode::m_transaction_number = (
+  ola::SequenceNumber<uint32_t>());
 
 /*
  * Create a new KiNet node.
@@ -132,8 +134,8 @@ bool KiNetNode::SendDMX(const IPV4Address &target_ip, const DmxBuffer &buffer) {
 bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
                             const uint8_t port,
                             const DmxBuffer &buffer) {
-  static const uint8_t flags1 = 0; // Definitely flags of some sort, seems to be impacted by buffer size
-  static const uint16_t flags2 = 0; // Possibly always 0
+  static const uint8_t flags1 = 0;  // Definitely flags of some sort
+  static const uint16_t flags2 = 0;  // Possibly always 0
   static const uint32_t universe = 0xffffffff;
 
   if (!buffer.Size()) {
@@ -142,7 +144,9 @@ bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
   }
 
   uint16_t buffSize = static_cast<uint16_t>(buffer.Size());
-  uint16_t buffSizeRegulated = std::max(buffSize, KINET_PORTOUT_MINIMUM_BUFFER_SIZE);
+  uint16_t buffSizeRegulated = std::max(
+    buffSize,
+    KINET_PORTOUT_MIN_BUFFER_SIZE);
 
   m_output_queue.Clear();
   PopulatePacketHeader(KINET_PORTOUT_MSG);
@@ -153,7 +157,7 @@ bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
   m_output_stream.Write(buffer.GetRaw(), buffer.Size());
 
   // Buffer must be at least 24 bytes, pad with zeros if needed
-  for (uint16_t i = 0; i < (KINET_PORTOUT_MINIMUM_BUFFER_SIZE - buffSize); i++) {
+  for (uint16_t i = 0; i < (KINET_PORTOUT_MIN_BUFFER_SIZE - buffSize); i++) {
     m_output_stream << ((uint8_t)0);
   }
 

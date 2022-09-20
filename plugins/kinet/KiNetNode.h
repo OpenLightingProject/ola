@@ -73,7 +73,7 @@ class KiNetNode {
     static const uint16_t KINET_VERSION_ONE = 0x0100;
     static const uint16_t KINET_DMX_MSG = 0x0101;
     static const uint16_t KINET_PORTOUT_MSG = 0x0801;
-    static const uint16_t KINET_PORTOUT_MINIMUM_BUFFER_SIZE = 24;
+    static const uint16_t KINET_PORTOUT_MIN_BUFFER_SIZE = 24;
 
     DISALLOW_COPY_AND_ASSIGN(KiNetNode);
 };
