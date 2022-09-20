@@ -40,6 +40,8 @@ class KiNetDevice: public ola::Device {
                 class Preferences *preferences);
 
     std::string DeviceId() const;
+    std::string PortCountKey() const;
+    void SetDefaults();
 
     // We can stream the same universe to multiple IPs
     // TODO(Peter): Remove this when we have a device per IP
