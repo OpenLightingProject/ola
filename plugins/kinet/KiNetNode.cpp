@@ -110,7 +110,7 @@ bool KiNetNode::SendDMX(const IPV4Address &target_ip, const DmxBuffer &buffer) {
 
   m_output_queue.Clear();
   PopulatePacketHeader(KINET_DMX_MSG);
-  m_output_stream << port << flags << timer_val << universe;
+  m_output_stream << port << flags << timer_val << HostToNetwork(universe);
   m_output_stream << DMX512_START_CODE;
   m_output_stream.Write(buffer.GetRaw(), buffer.Size());
 
@@ -150,7 +150,7 @@ bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
 
   m_output_queue.Clear();
   PopulatePacketHeader(KINET_PORTOUT_MSG);
-  m_output_stream << universe << port
+  m_output_stream << HostToNetwork(universe) << port
                   << flags1 << flags2
                   << HostToNetwork(buffSizeRegulated);
   m_output_stream << static_cast<uint16_t>(DMX512_START_CODE);
