@@ -39,12 +39,6 @@ using ola::network::UDPSocket;
 using std::auto_ptr;
 
 /*
- * Initialize packet counter.
- */
-ola::SequenceNumber<uint32_t> KiNetNode::m_transaction_number = (
-  ola::SequenceNumber<uint32_t>());
-
-/*
  * Create a new KiNet node.
  * @param ss a SelectServerInterface to use
  * @param socket a UDPSocket or Null. Ownership is transferred.
