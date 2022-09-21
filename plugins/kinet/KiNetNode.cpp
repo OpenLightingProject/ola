@@ -39,12 +39,6 @@ using ola::network::UDPSocket;
 using std::auto_ptr;
 
 /*
- * Initialize packet counter.
- */
-ola::SequenceNumber<uint32_t> KiNetNode::m_transaction_number = (
-  ola::SequenceNumber<uint32_t>());
-
-/*
  * Create a new KiNet node.
  * @param ss a SelectServerInterface to use
  * @param socket a UDPSocket or Null. Ownership is transferred.
@@ -143,21 +137,23 @@ bool KiNetNode::SendPortOut(const IPV4Address &target_ip,
     return true;
   }
 
-  uint16_t buffSize = static_cast<uint16_t>(buffer.Size());
-  uint16_t buffSizeRegulated = std::max(
-    buffSize,
+  uint16_t buffer_size = static_cast<uint16_t>(buffer.Size());
+  uint16_t buffer_size_regulated = std::max(
+    buffer_size,
     KINET_PORTOUT_MIN_BUFFER_SIZE);
 
   m_output_queue.Clear();
   PopulatePacketHeader(KINET_PORTOUT_MSG);
   m_output_stream << HostToNetwork(universe) << port
                   << flags1 << flags2
-                  << HostToNetwork(buffSizeRegulated);
+                  << HostToNetwork(buffer_size_regulated);
   m_output_stream << static_cast<uint16_t>(DMX512_START_CODE);
   m_output_stream.Write(buffer.GetRaw(), buffer.Size());
 
+  // TODO(Peter): Update to our new DmxBuffer padding options when we add and
+  //              write them.
   // Buffer must be at least 24 bytes, pad with zeros if needed
-  for (uint16_t i = 0; i < (KINET_PORTOUT_MIN_BUFFER_SIZE - buffSize); i++) {
+  for (uint16_t i = buffer_size; i < KINET_PORTOUT_MIN_BUFFER_SIZE; i++) {
     m_output_stream << ((uint8_t)0);
   }
 

@@ -105,7 +105,7 @@ void KiNetNodeTest::testSendPortOut() {
   const uint8_t expected_data[] = {
     0x04, 0x01, 0xdc, 0x4a, 0x01, 0x00,  // magic number
     0x08, 0x01,  // packet type
-    1, 0, 0, 0,  // packet counter
+    0, 0, 0, 0,  // packet counter
     0xff, 0xff, 0xff, 0xff,  // universe
     7,  // port number
     0, 0, 0,  // unknown flags
