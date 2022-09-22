@@ -76,10 +76,13 @@ void KiNetNodeTest::testSendDMX() {
   OLA_ASSERT_TRUE(node.Start());
 
   const uint8_t expected_data[] = {
-    0x04, 0x01, 0xdc, 0x4a, 0x01, 0x00,
-    0x01, 0x01, 0, 0, 0, 0,
-    0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff,
-    0, 1, 5, 8, 10, 14, 45, 100, 255
+    0x04, 0x01, 0xdc, 0x4a, 0x01, 0x00,  // magic number
+    0x01, 0x01,  // packet type
+    0, 0, 0, 0,  // packet counter
+    0, 0, 0, 0,  // unknown flags
+    0xff, 0xff, 0xff, 0xff,  // universe
+    0,  // unknown start code
+    1, 5, 8, 10, 14, 45, 100, 255  // data
   };
 
   m_socket->AddExpectedData(expected_data, sizeof(expected_data), target_ip,
@@ -100,10 +103,16 @@ void KiNetNodeTest::testSendPortOut() {
   OLA_ASSERT_TRUE(node.Start());
 
   const uint8_t expected_data[] = {
-    0x04, 0x01, 0xdc, 0x4a, 0x01, 0x00,
-    0x08, 0x01, 0, 0, 0, 0,
-    0xff, 0xff, 0xff, 0xff, 7, 0, 0, 0, 8, 0, 0,
-    0, 1, 5, 8, 10, 14, 45, 100, 255
+    0x04, 0x01, 0xdc, 0x4a, 0x01, 0x00,  // magic number
+    0x08, 0x01,  // packet type
+    0, 0, 0, 0,  // packet counter
+    0xff, 0xff, 0xff, 0xff,  // universe
+    7,  // port number
+    0, 0, 0,  // unknown flags
+    24, 0,  // buffer size
+    0, 0,  // unknown start code
+    1, 5, 8, 10, 14, 45, 100, 255,  // data
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  // data pad to 24 bytes
   };
 
   m_socket->AddExpectedData(expected_data, sizeof(expected_data), target_ip,
