@@ -142,11 +142,13 @@ void KiNetNodeTest::testSendPortOut() {
                             KINET_PORT);
 
   DmxBuffer buffer2;
-  buffer2.SetFromString("1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24");
+  buffer2.SetFromString(
+      "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24");
   OLA_ASSERT_TRUE(node.SendPortOut(target_ip, 7, buffer2));
   m_socket->Verify();
 
-  // Above minimum length frame, no padding, counter increments, different port number
+  // Above minimum length frame, no padding, counter increments, different port
+  // number
   const uint8_t expected_data_3[] = {
     0x04, 0x01, 0xdc, 0x4a, 0x01, 0x00,  // magic number
     0x08, 0x01,  // packet type
