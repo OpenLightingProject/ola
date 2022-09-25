@@ -8,6 +8,8 @@ Port Out (V2) modes of the KiNET protocol.
 
 ## Config file: `ola-kinet.conf`
 
+### Per Power Supply Settings
+
 `power_supply = <ip>`
 The IP of the power supply to send to. You can communicate with more than
 one power supply by adding multiple `power_supply =` lines.
