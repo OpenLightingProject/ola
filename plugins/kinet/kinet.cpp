@@ -62,7 +62,7 @@ typedef enum {
   // KINET_?? = 0x000a;
   KINET_DMX = 0x0101,
   // KINET_?? = 0x0105;  // ?
-  // KINET_PORTOUT = 0x0108;  // portout
+  // KINET_PORTOUT = 0x0108;  // portout - is this the wrong endianness?
   // KINET_PORTOUT_SYNC = 0x0109;  // portout_sync
   // KINET_?? = 0x0201;  // seems to be a discovery packet, maybe for fixtures?
   // KINET_?? = 0x0203;  // get dmx address?

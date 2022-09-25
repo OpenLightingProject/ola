@@ -83,8 +83,10 @@ bool KiNetDevice::StartHook() {
     OLA_WARN << "Invalid port count value for " << PortCountKey();
   }
 
+  // TODO(Peter): Split this off!
+  AddPort(new KiNetDmxOutOutputPort(this, m_power_supply, m_node));
   for (uint8_t i = 1; i <= port_count; i++) {
-    AddPort(new KiNetOutputPort(this, m_power_supply, m_node, i));
+    AddPort(new KiNetPortOutOutputPort(this, m_power_supply, m_node, i));
   }
   return true;
 }
@@ -94,6 +96,10 @@ string KiNetDevice::DeviceId() const {
   return m_power_supply.ToString();
 }
 
+
+string KiNetDevice::ModeKey() const {
+  return m_power_supply.ToString() + "-mode";
+}
 
 string KiNetDevice::PortCountKey() const {
   return m_power_supply.ToString() + "-ports";

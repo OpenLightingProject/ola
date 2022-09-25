@@ -40,6 +40,7 @@ class KiNetDevice: public ola::Device {
                 class Preferences *preferences);
 
     std::string DeviceId() const;
+    std::string ModeKey() const;
     std::string PortCountKey() const;
     void SetDefaults();
 

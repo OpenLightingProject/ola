@@ -43,9 +43,44 @@ class KiNetOutputPort: public BasicOutputPort {
         m_target(target) {
   }
 
-  bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
-    // return m_node->SendDMX(m_target, buffer);
+  virtual bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) = 0;
 
+  virtual std::string Description() const = 0;
+
+ protected:
+  KiNetNode *m_node;
+  const ola::network::IPV4Address m_target;
+};
+
+
+class KiNetDmxOutOutputPort: public KiNetOutputPort {
+ public:
+  KiNetDmxOutOutputPort(KiNetDevice *device,
+                        const ola::network::IPV4Address &target,
+                        KiNetNode *node)
+      : KiNetOutputPort(device, target, node, 0) {
+  }
+
+  bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
+    return m_node->SendDMX(m_target, buffer);
+  }
+
+  std::string Description() const {
+    return "DMX Out Port";
+  }
+};
+
+
+class KiNetPortOutOutputPort: public KiNetOutputPort {
+ public:
+  KiNetPortOutOutputPort(KiNetDevice *device,
+                         const ola::network::IPV4Address &target,
+                         KiNetNode *node,
+                         unsigned int port_id)
+      : KiNetOutputPort(device, target, node, port_id) {
+  }
+
+  bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) {
     if ((PortId() <= 0) || (PortId() > KINET_PORTOUT_MAX_PORT_COUNT)) {
       OLA_WARN << "Invalid KiNet port id " << PortId();
       return false;
@@ -54,13 +89,8 @@ class KiNetOutputPort: public BasicOutputPort {
   }
 
   std::string Description() const {
-    return ola::strings::IntToString(PortId());
-//    return "Power Supply: " + m_target.ToString();
+    return "Port Out Port " + ola::strings::IntToString(PortId());
   }
-
- private:
-  KiNetNode *m_node;
-  const ola::network::IPV4Address m_target;
 };
 }  // namespace kinet
 }  // namespace plugin
