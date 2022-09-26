@@ -33,31 +33,65 @@ namespace kinet {
 
 class KiNetDevice: public ola::Device {
  public:
-    KiNetDevice(AbstractPlugin *owner,
-                const ola::network::IPV4Address &power_supply,
-                class PluginAdaptor *plugin_adaptor,
-                class KiNetNode *node,
-                class Preferences *preferences);
+  KiNetDevice(AbstractPlugin *owner,
+              const ola::network::IPV4Address &power_supply,
+              class PluginAdaptor *plugin_adaptor,
+              class KiNetNode *node,
+              class Preferences *preferences);
 
-    std::string DeviceId() const;
-    std::string ModeKey() const;
-    std::string PortCountKey() const;
-    void SetDefaults();
+  std::string DeviceId() const;
+  static std::string ModeKey(const ola::network::IPV4Address &power_supply);
+  std::string ModeKey() const;
+  void SetDefaults();
 
-    // We can stream the same universe to multiple IPs
-    // TODO(Peter): Remove this when we have a device per IP
-    bool AllowMultiPortPatching() const { return true; }
+  // We can stream the same universe to multiple IPs
+  // TODO(Peter): Remove this when we have a device per IP
+  bool AllowMultiPortPatching() const { return true; }
+
+  static const char DMXOUT_MODE[];
+  static const char PORTOUT_MODE[];
 
  protected:
-    bool StartHook();
+  const ola::network::IPV4Address m_power_supply;
+  class PluginAdaptor *m_plugin_adaptor;
+  class KiNetNode *m_node;
+  class Preferences *m_preferences;
 
  private:
-    const ola::network::IPV4Address m_power_supply;
-    class PluginAdaptor *m_plugin_adaptor;
-    class KiNetNode *m_node;
-    class Preferences *m_preferences;
+  static const char KINET_DEVICE_NAME[];
+};
 
-    static const char KINET_DEVICE_NAME[];
+class KiNetPortOutDevice: public KiNetDevice {
+ public:
+  KiNetPortOutDevice(AbstractPlugin *owner,
+                     const ola::network::IPV4Address &power_supply,
+                     class PluginAdaptor *plugin_adaptor,
+                     class KiNetNode *node,
+                     class Preferences *preferences);
+
+  std::string PortCountKey() const;
+  void SetDefaults();
+
+ protected:
+  bool StartHook();
+
+ private:
+  static const char KINET_PORT_OUT_DEVICE_NAME[];
+};
+
+class KiNetDmxOutDevice: public KiNetDevice {
+ public:
+  KiNetDmxOutDevice(AbstractPlugin *owner,
+                    const ola::network::IPV4Address &power_supply,
+                    class PluginAdaptor *plugin_adaptor,
+                    class KiNetNode *node,
+                    class Preferences *preferences);
+
+ protected:
+  bool StartHook();
+
+ private:
+  static const char KINET_DMX_OUT_DEVICE_NAME[];
 };
 }  // namespace kinet
 }  // namespace plugin

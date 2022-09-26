@@ -19,6 +19,7 @@
  */
 
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -42,10 +43,13 @@ namespace kinet {
 using ola::network::IPV4Address;
 using std::auto_ptr;
 using std::ostringstream;
+using std::set;
 using std::string;
 using std::vector;
 
-const char KiNetDevice::KINET_DEVICE_NAME[] = "KiNet";
+const char KiNetDevice::KINET_DEVICE_NAME[] = "KiNET";
+const char KiNetDevice::DMXOUT_MODE[] = "dmxout";
+const char KiNetDevice::PORTOUT_MODE[] = "portout";
 
 /*
  * Create a new KiNet Device
@@ -56,6 +60,7 @@ KiNetDevice::KiNetDevice(
     PluginAdaptor *plugin_adaptor,
     KiNetNode *node,
     Preferences *preferences)
+    // TODO(Peter): Override this name properly
     : Device(owner, KINET_DEVICE_NAME),
       m_power_supply(power_supply),
       m_plugin_adaptor(plugin_adaptor),
@@ -64,14 +69,60 @@ KiNetDevice::KiNetDevice(
 }
 
 
+string KiNetDevice::DeviceId() const {
+  return m_power_supply.ToString();
+}
+
+
+string KiNetDevice::ModeKey(const ola::network::IPV4Address &power_supply) {
+  return power_supply.ToString() + "-mode";
+}
+
+string KiNetDevice::ModeKey() const {
+  return ModeKey(m_power_supply);
+}
+
+
+// TODO(Peter): Inherit and call this too!
+void KiNetDevice::SetDefaults() {
+  // Set device options
+  set<string> valid_modes;
+  valid_modes.insert(DMXOUT_MODE);
+  valid_modes.insert(PORTOUT_MODE);
+  m_preferences->SetDefaultValue(ModeKey(),
+                                 SetValidator<string>(valid_modes),
+                                 DMXOUT_MODE);
+  m_preferences->Save();
+}
+
+const char KiNetPortOutDevice::KINET_PORT_OUT_DEVICE_NAME[] =
+    "KiNET Port Out Mode";
+
+/*
+ * Create a new KiNET Port Out Device
+ */
+KiNetPortOutDevice::KiNetPortOutDevice(
+    AbstractPlugin *owner,
+    const ola::network::IPV4Address &power_supply,
+    PluginAdaptor *plugin_adaptor,
+    KiNetNode *node,
+    Preferences *preferences)
+    : KiNetDevice(owner,
+                  power_supply,
+                  plugin_adaptor,
+                  node,
+                  preferences) {
+}
+
+
 /*
  * Start this device
  * @return true on success, false on failure
  */
-bool KiNetDevice::StartHook() {
+bool KiNetPortOutDevice::StartHook() {
   ostringstream str;
-  str << KINET_DEVICE_NAME << " [Power Supply " << m_power_supply.ToString()
-      << "]";
+  str << KINET_PORT_OUT_DEVICE_NAME << " [Power Supply "
+      << m_power_supply.ToString() << "]";
   SetName(str.str());
 
   SetDefaults();
@@ -92,26 +143,51 @@ bool KiNetDevice::StartHook() {
 }
 
 
-string KiNetDevice::DeviceId() const {
-  return m_power_supply.ToString();
-}
-
-
-string KiNetDevice::ModeKey() const {
-  return m_power_supply.ToString() + "-mode";
-}
-
-string KiNetDevice::PortCountKey() const {
+string KiNetPortOutDevice::PortCountKey() const {
   return m_power_supply.ToString() + "-ports";
 }
 
-void KiNetDevice::SetDefaults() {
+void KiNetPortOutDevice::SetDefaults() {
   // Set device options
   m_preferences->SetDefaultValue(
       PortCountKey(),
       UIntValidator(1, KINET_PORTOUT_MAX_PORT_COUNT),
       KINET_PORTOUT_MAX_PORT_COUNT);
   m_preferences->Save();
+}
+
+const char KiNetDmxOutDevice::KINET_DMX_OUT_DEVICE_NAME[] =
+    "KiNET DMX Out Mode";
+
+/*
+ * Create a new KiNET DMX Out Device
+ */
+KiNetDmxOutDevice::KiNetDmxOutDevice(
+    AbstractPlugin *owner,
+    const ola::network::IPV4Address &power_supply,
+    PluginAdaptor *plugin_adaptor,
+    KiNetNode *node,
+    Preferences *preferences)
+    : KiNetDevice(owner,
+                  power_supply,
+                  plugin_adaptor,
+                  node,
+                  preferences) {
+}
+
+
+/*
+ * Start this device
+ * @return true on success, false on failure
+ */
+bool KiNetDmxOutDevice::StartHook() {
+  ostringstream str;
+  str << KINET_DMX_OUT_DEVICE_NAME << " [Power Supply "
+      << m_power_supply.ToString() << "]";
+  SetName(str.str());
+
+  AddPort(new KiNetDmxOutOutputPort(this, m_power_supply, m_node));
+  return true;
 }
 }  // namespace kinet
 }  // namespace plugin

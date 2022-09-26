@@ -72,11 +72,22 @@ bool KiNetPlugin::StartHook() {
     }
     IPV4Address target;
     if (IPV4Address::FromString(*iter, &target)) {
-      KiNetDevice *device = new KiNetDevice(this,
-                                            target,
-                                            m_plugin_adaptor,
-                                            m_node,
-                                            m_preferences);
+      string mode = m_preferences->GetValue(KiNetDevice::ModeKey(target));
+      OLA_DEBUG << "Got mode " << mode;
+      KiNetDevice *device = NULL;
+      if (mode.compare(KiNetDevice::PORTOUT_MODE) == 0) {
+        device = new KiNetPortOutDevice(this,
+                                        target,
+                                        m_plugin_adaptor,
+                                        m_node,
+                                        m_preferences);
+      } else {
+        device = new KiNetDmxOutDevice(this,
+                                       target,
+                                       m_plugin_adaptor,
+                                       m_node,
+                                       m_preferences);
+      }
 
       if (!device) {
         continue;
