@@ -43,7 +43,8 @@ class KiNetOutputPort: public BasicOutputPort {
         m_target(target) {
   }
 
-  virtual bool WriteDMX(const DmxBuffer &buffer, OLA_UNUSED uint8_t priority) = 0;
+  virtual bool WriteDMX(const DmxBuffer &buffer,
+                        OLA_UNUSED uint8_t priority) = 0;
 
   virtual std::string Description() const = 0;
 
