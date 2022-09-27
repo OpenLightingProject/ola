@@ -36,4 +36,4 @@ in OLA.
 The number of physical ports available on the power supply in Port Out mode.
 Each physical port will create an OLA port that may be assigned to any
 universe. This setting is ignored in DMX Out mode. The default and maximum
-number of ports per power supply supported by OLA is 16.
+number of ports per power supply is 16.
