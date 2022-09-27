@@ -65,7 +65,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(KiNetNodeTest);
 
 void KiNetNodeTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  ola::network::IPV4Address::FromString("10.0.0.10", &target_ip);
+  ola::network::IPV4Address::FromString("10.0.0.11", &target_ip);
 }
 
 /**
