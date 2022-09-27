@@ -177,3 +177,8 @@ import java.nio.ByteOrder;
         byte[] header = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder()).putInt(headerContent).array();
         int headerValue = ByteBuffer.wrap(header).order(ByteOrder.nativeOrder()).getInt();
 # This is a very bodgy workaround to the fact that the pip install of the archive doesn't seem to work properly now on Travis
+    "uest\032\036.ola.rpc.STREAMING_NO_RESPONSEB\006\200\001"
+  s1 = "one\"two\\three/four\bfive\fsix\nseven\reight\tnine";
+      string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
+  s1 = "one\"two\\three/four\bfive\fsix\nseven\reight\tnine";
+      string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
