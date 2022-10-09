@@ -18,7 +18,11 @@
 
 import binascii
 import os
-import unittest
+try:
+  # Python 2.6 needs backport
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 import ola.PidStore as PidStore
 from ola.TestUtils import allNotEqual, allHashNotEqual
 

@@ -21,7 +21,11 @@ import binascii
 import datetime
 import socket
 # import timeout_decorator
-import unittest
+try:
+  # Python 2.6 needs backport
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from ola.ClientWrapper import ClientWrapper
 from ola.ClientWrapper import _Event
 
