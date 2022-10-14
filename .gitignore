@@ -152,6 +152,8 @@ examples/ola_streaming_client
 examples/ola_streaming_client.exe
 examples/ola_throughput
 examples/ola_throughput.exe
+examples/ola_throughput_multi
+examples/ola_throughput_multi.exe
 examples/ola_timecode
 examples/ola_timecode.exe
 examples/ola_uni_info
