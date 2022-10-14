@@ -1,9 +1,32 @@
-x/y/2019 ola-0.10.8
+x/y/2020 ola-0.10.9
  Features:
- * Support DragonFly BSD
+ * 
 
  API:
  * 
+
+ RDM Tests:
+ * 
+
+ Bugs:
+ * 
+
+ Internal:
+ *
+
+22/11/2020 ola-0.10.8
+ Features:
+ * Support DragonFly BSD
+ * Add another Debian test
+ * Add the E1.33 NACK Reasons
+ * Add the E1.37-7 NACK Reasons
+ * Use clock_gettime's CLOCK_MONOTONIC if available
+ * Collect the PDL size in the model collector
+
+ API:
+ * Deprecated Clock::CurrentTime and added Clock::CurrentMonotonicTime and 
+   Clock::CurrentRealTime. Occurrences of Clock::CurrentTime have been
+   replaced with either variant as applicable.
 
  RDM Tests:
  * Fix a bug in the RDM tests to ensure they can cope with 255 personalities
@@ -20,8 +43,9 @@ x/y/2019 ola-0.10.8
  * Clarify some of the man page options for olad
  * Fix some dead links in documentation
  * Properly close socket on destruction of Python OlaClient
- * Fix some Python 3.2 compatibility
+ * Fix various Python 3 compatibility issues
  * Try and fetch index and type via sockaddr_dl struct for better *BSD support
+ * Backport some Debian changes
  * Use C++11 if required by random #1477
  * Correct uartdmx plugin documentation for the example UART #1320
  * Ensure we don't return unsuitable network indices via RDM #1478
@@ -30,9 +54,30 @@ x/y/2019 ola-0.10.8
  * Fix an RDM discovery bug for how we handle phantom UIDs
  * Ensure _close_callback is assigned before we might need to run it in the
    Python API
+ * Fix a bug with the Python ola_rdm_get and PROXIED_DEVICES display
+ * Renamed RESONSE_INVALID_DESTINATION(sic) to RESPONSE_INVALID_DESTINATION in
+   the ArduinoWidget code
+ * Fix compatibility with GCC 9 #1553 Debian #925793
+ * Ensure the GPIO plugin correctly writes to the last configured pin
+ * Fix compatibility with ncurses 6
+ * Fix compatibility with Protobuf 3.7 and newer (tested with up to 3.12.2)
+   #1550, #1634
+ * Rename CircularDepdendancyException(sic) to CircularDependencyException in
+   the Python RDM Test code, also the relevant comments
+ * Fix a minor longstanding logging bug with Avahi subtype registration errors
+ * Fix Enttec USB Pro Mk2 firmware >=4.15 RDM Discovery #1631
+ * Fix compatibility with libmicrohttpd v0.9.71 and newer #1650
+ * Fix some Doxygen escaping
+ * Rename AppendMultipler(sic) to AppendMultiplier in the RDM messaging code
+ * Fix a few edge cases in ola_trigger around whitespace in the config files
+ * Fix compatibility with clang 7 and newer (tested with up to 11) #1564
 
  Internal:
- *
+ * Replace "readdir_r" with "readdir" since the former has been deprecated
+ * Add a unit test for the functions that used readdir_r before
+ * Add a new 'make flake8' target #1619
+ * Add a new 'make cpplint' target
+ * Add a new 'make lint' target which runs the flake8 and cpplint runs
 
 13/7/2018 ola-0.10.7
  Features:

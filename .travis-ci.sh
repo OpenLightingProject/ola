@@ -12,7 +12,8 @@ COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coveri
 PYCHECKER_BLACKLIST="threading,unittest,cmd,optparse,google,google.protobuf,ssl,fftpack,lapack_lite,mtrand"
 
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
-      -wholename "./.codespellignore" -or \
+      -wholename "./.codespellignorewords" -or \
+      -wholename "./.codespellignorelines" -or \
       -wholename "./.git/*" -or \
       -wholename "./aclocal.m4" -or \
       -wholename "./config/config.guess" -or \
@@ -68,23 +69,8 @@ if [[ $TASK = 'lint' ]]; then
   else
     echo "Found $nolints generic NOLINTs"
   fi;
-  # then fetch and run the main cpplint tool
-  wget -O cpplint.py $CPP_LINT_URL;
-  chmod u+x cpplint.py;
-  ./cpplint.py \
-    --filter=-legal/copyright,-readability/streams,-runtime/arrays \
-    $(find ./ \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
-        -wholename "./common/protocol/Ola.pb.*" -or \
-        -wholename "./common/rpc/Rpc.pb.*" -or \
-        -wholename "./common/rpc/TestService.pb.*" -or \
-        -wholename "./common/rdm/Pids.pb.*" -or \
-        -wholename "./config.h" -or \
-        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
-        -wholename "./tools/ola_trigger/config.tab.*" -or \
-        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
-  if [[ $? -ne 0 ]]; then
-    exit 1;
-  fi;
+  # run the cpplint tool, fetching it if necessary
+  make cpplint
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   travis_fold start "autoreconf"
@@ -171,10 +157,10 @@ elif [[ $TASK = 'codespell' ]]; then
       $SPELLINGBLACKLIST \
       \) | xargs")
   # count the number of codespell errors
-  spellingerrors=$(zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignore $spellingfiles 2>&1 | wc -l)
+  spellingerrors=$(zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles 2>&1 | wc -l)
   if [[ $spellingerrors -ne 0 ]]; then
-    # print the output for info
-    zrun codespell --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignore $spellingfiles
+    # print the output for info, including the count
+    zrun codespell --count --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles
     echo "Found $spellingerrors spelling errors via codespell"
     exit 1;
   else
@@ -228,12 +214,12 @@ elif [[ $TASK = 'coverity' ]]; then
   else
     echo "Skipping Coverity Scan as no token found, probably a Pull Request"
   fi;
-elif [[ $TASK = 'jshint' ]]; then
+elif [[ $TASK = 'weblint' ]]; then
   cd ./javascript/new-src;
   travis_fold start "npm_install"
-  npm install;
+  npm --verbose install;
   travis_fold end "npm_install"
-  grunt test
+  grunt -v -d --stack test
 elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "autoreconf"
   autoreconf -i;
@@ -246,7 +232,7 @@ elif [[ $TASK = 'flake8' ]]; then
   travis_fold start "make_builtfiles"
   make builtfiles;
   travis_fold end "make_builtfiles"
-  flake8 --max-line-length 80 --exclude *_pb2.py,.git,__pycache --ignore E111,E114,E121,E127,E129,W504 data/rdm include/ola python scripts tools/ola_mon tools/rdm
+  make flake8
 elif [[ $TASK = 'pychecker' ]]; then
   travis_fold start "autoreconf"
   autoreconf -i;
@@ -264,16 +250,28 @@ elif [[ $TASK = 'pychecker' ]]; then
   mkdir ./python/ola/testing/
   ln -s ./tools/rdm ./python/ola/testing/rdm
   travis_fold start "pychecker_a"
-  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and \( -wholename "./data/*" -or -wholename "./include/*" -or -wholename "./scripts/*" -or -wholename "./python/examples/rdm_compare.py" -or -wholename "./python/ola/*" \) -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -wholename "./scripts/enforce_licence.py" -or -wholename "./python/ola/rpc/*" -or -wholename "./python/ola/ClientWrapper.py" -or -wholename "./python/ola/PidStore.py" -or -wholename "./python/ola/RDMAPI.py" \) | xargs)
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST $(find ./ -name "*.py" -and \( -wholename "./data/*" -or -wholename "./include/*" -or -wholename "./scripts/*" -or -wholename "./python/examples/rdm_compare.py" -or -wholename "./python/ola/*" \) -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "OlaClientTest.py" -or -name "ola_candidate_ports.py" -or -wholename "./scripts/enforce_licence.py" -or -wholename "./python/ola/rpc/*" -or -wholename "./python/ola/ClientWrapper.py" -or -wholename "./python/ola/PidStore.py" -or -wholename "./python/ola/RDMAPI.py" -or -wholename "./python/ola/RDMTest.py" -or -wholename "./include/ola/gen_callbacks.py" \) | xargs)
   travis_fold end "pychecker_a"
   # More restricted checking for files that import files that break pychecker
   travis_fold start "pychecker_b"
-  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only $(find ./ -name "*.py" -and \( -wholename "./tools/rdm/ModelCollector.py" -or -wholename "./tools/rdm/DMXSender.py" -or -wholename "./tools/rdm/TestCategory.py" -or -wholename "./tools/rdm/TestHelpers.py" -or -wholename "./tools/rdm/TestState.py" -or -wholename "./tools/rdm/TimingStats.py" -or -wholename "./tools/rdm/list_rdm_tests.py" \) | xargs)
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only $(find ./ -name "*.py" -and \( -wholename "./tools/rdm/ModelCollector.py" -or -wholename "./tools/rdm/DMXSender.py" -or -wholename "./tools/rdm/TestCategory.py" -or -wholename "./tools/rdm/TestState.py" -or -wholename "./tools/rdm/TimingStats.py" -or -wholename "./tools/rdm/list_rdm_tests.py" \) | xargs)
   travis_fold end "pychecker_b"
   # Even more restricted checking for files that import files that break pychecker and have unused parameters
   travis_fold start "pychecker_c"
-  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only --no-argsused $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -name "ola_universe_info.py" -or -name "rdm_snapshot.py" -or -name "ClientWrapper.py" -or -name "PidStore.py" -or -name "enforce_licence.py" -or -name "ola_mon.py" -or -name "TestLogger.py" -or -name "TestRunner.py" -or -name "rdm_model_collector.py" -or -name "rdm_responder_test.py" -or -name "rdm_test_server.py" \) | xargs)
+  pychecker --quiet --limit 500 --blacklist $PYCHECKER_BLACKLIST --only --no-argsused $(find ./ -name "*.py" -and ! \( -name "*_pb2.py" -or -name "OlaClient.py" -or -name "ola_candidate_ports.py" -or -name "ola_universe_info.py" -or -name "rdm_snapshot.py" -or -name "ClientWrapper.py" -or -name "PidStore.py" -or -name "enforce_licence.py" -or -name "ola_mon.py" -or -name "TestLogger.py" -or -name "TestRunner.py" -or -name "rdm_model_collector.py" -or -name "rdm_responder_test.py" -or -name "rdm_test_server.py" -or -wholename "./include/ola/gen_callbacks.py" -or -wholename "./tools/rdm/ResponderTest.py" -or -wholename "./tools/rdm/TestHelpers.py" \) | xargs)
   travis_fold end "pychecker_c"
+  # Special case checking for some python 3 compatibility workarounds
+  travis_fold start "pychecker_d"
+  pychecker --quiet --limit 500 --no-shadowbuiltin --no-noeffect ./include/ola/gen_callbacks.py
+  travis_fold end "pychecker_d"
+  # Special case checking for some python 3 compatibility workarounds that import files that break pychecker
+  travis_fold start "pychecker_e"
+  pychecker --quiet --limit 500 --only --no-shadowbuiltin --no-noeffect ./tools/rdm/TestHelpers.py
+  travis_fold end "pychecker_e"
+  # Extra special case checking for some python 3 compatibility workarounds that import files that break pychecker and have unused parameters
+  travis_fold start "pychecker_f"
+  pychecker --quiet --limit 500 --only --no-argsused --no-shadowbuiltin --no-noeffect ./tools/rdm/ResponderTest.py
+  travis_fold end "pychecker_f"
 elif [[ $TASK = 'pychecker-wip' ]]; then
   travis_fold start "autoreconf"
   autoreconf -i;

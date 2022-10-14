@@ -92,6 +92,14 @@ void ShowLoader::Reset() {
 
 
 /**
+ * @brief Get most recent line number read (1-indexed)
+ */
+unsigned int ShowLoader::GetCurrentLineNumber() const {
+  return m_line;
+}
+
+
+/**
  * Get the next time offset
  * @param timeout a pointer to the timeout in ms
  */
@@ -138,6 +146,26 @@ ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
   }
 
   return (data->SetFromString(inputs[1]) ? OK : INVALID_LINE);
+}
+
+
+/**
+ * Read the next show file entry
+ * @param entry a ShowEntry to fill with data
+ */
+ShowLoader::State ShowLoader::NextEntry(ShowEntry *entry) {
+  State state = NextFrame(&entry->universe, &entry->buffer);
+  if (state != OK) {
+    return state;
+  }
+
+  state = NextTimeout(&entry->next_wait);
+  if (state == END_OF_FILE) {
+    // Ensure the entry is whole before sending.
+    entry->next_wait = 0;
+  }
+
+  return state;
 }
 
 

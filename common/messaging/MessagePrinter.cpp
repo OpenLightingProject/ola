@@ -150,11 +150,11 @@ void GenericMessagePrinter::PostVisit(const GroupMessageField *message) {
 void GenericMessagePrinter::AppendUInt(const string &name,
                                        unsigned int value,
                                        const string &label,
-                                       int8_t multipler) {
+                                       int8_t multiplier) {
   Stream() << string(m_indent, ' ') << TransformLabel(name) << ": ";
   if (label.empty()) {
     Stream() << value;
-    AppendMultipler(multipler);
+    AppendMultiplier(multiplier);
   } else {
     Stream() << label;
   }
@@ -165,11 +165,11 @@ void GenericMessagePrinter::AppendUInt(const string &name,
 void GenericMessagePrinter::AppendInt(const string &name,
                                       int value,
                                       const string &label,
-                                      int8_t multipler) {
+                                      int8_t multiplier) {
   Stream() << string(m_indent, ' ') << TransformLabel(name) << ": ";
   if (label.empty()) {
     Stream() << value;
-    AppendMultipler(multipler);
+    AppendMultiplier(multiplier);
   } else {
     Stream() << label;
   }
@@ -177,9 +177,9 @@ void GenericMessagePrinter::AppendInt(const string &name,
 }
 
 
-void GenericMessagePrinter::AppendMultipler(int8_t multipler) {
-  if (multipler)
-    Stream() << " x 10 ^ " << static_cast<int>(multipler);
+void GenericMessagePrinter::AppendMultiplier(int8_t multiplier) {
+  if (multiplier)
+    Stream() << " x 10 ^ " << static_cast<int>(multiplier);
 }
 }  // namespace messaging
 }  // namespace ola

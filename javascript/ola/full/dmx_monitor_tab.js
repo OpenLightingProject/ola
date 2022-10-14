@@ -38,7 +38,7 @@ goog.inherits(ola.DmxMonitorTab, ola.common.BaseUniverseTab);
 
 
 /**
- * Called when the tab changes visibiliy.
+ * Called when the tab changes visibility.
  */
 ola.DmxMonitorTab.prototype.setActive = function(state) {
   ola.DmxMonitorTab.superClass_.setActive.call(this, state);

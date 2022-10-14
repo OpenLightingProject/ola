@@ -16,6 +16,7 @@
 # rdm_responder_test.py
 # Copyright (C) 2010 Simon Newton
 
+from __future__ import print_function
 from ola.testing.rdm import TestDefinitions, TestRunner
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm.TestState import TestState
@@ -31,6 +32,12 @@ from ola import Version
 from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
 from optparse import OptionParser
+
+if sys.version_info >= (3, 0):
+  try:
+    raw_input
+  except NameError:
+    raw_input = input
 
 '''Automated testing for RDM responders.'''
 
@@ -97,7 +104,7 @@ def ParseOptions():
   uid = UID.FromString(args[0])
   if uid is None:
     parser.print_usage()
-    print 'Invalid UID: %s' % args[0]
+    print('Invalid UID: %s' % args[0])
     sys.exit(2)
 
   options.uid = uid
@@ -224,7 +231,7 @@ def DisplaySummary(options, runner, tests, device, pid_store):
 
   logging.info('------------------ By Category ------------------')
 
-  for category, counts in by_category.iteritems():
+  for category, counts in by_category.items():
     passed = counts.get(TestState.PASSED, 0)
     total_run = (passed + counts.get(TestState.FAILED, 0))
     if total_run == 0:
@@ -248,7 +255,7 @@ def main():
   test_classes = TestRunner.GetTestClasses(TestDefinitions)
   if options.list_tests:
     for test_name in sorted(c.__name__ for c in test_classes):
-      print test_name
+      print(test_name)
     sys.exit(0)
 
   SetupLogging(options)

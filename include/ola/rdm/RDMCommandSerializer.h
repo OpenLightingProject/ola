@@ -78,7 +78,7 @@ class RDMCommandSerializer {
   /**
    * @brief Serialize a RDMCommand to an array of bytes.
    * @param command the RDMCommand to serialize.
-   * @param buffer The memory location to serailize to.
+   * @param buffer The memory location to serialize to.
    * @param[in,out] size The size of the memory location.
    * @returns True if the command was serialized correctly, false otherwise.
    *

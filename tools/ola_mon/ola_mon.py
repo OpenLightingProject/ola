@@ -16,15 +16,25 @@
 # ola_mon.py
 # Copyright (C) 2010 Simon Newton
 
+# TODO(Peter): On Python 2 at least, when you try and exit this with Ctrl+C it
+# doesn't stop
+
+from __future__ import print_function
 import getopt
-import httplib
 import rrdtool
 import time
 import os.path
+import re
 import socket
 import sys
 import textwrap
 import threading
+
+if sys.version_info >= (3, 0):
+  try:
+    import http.client as httplib
+  except ImportError:
+    import httplib
 
 DEFAULT_CONFIG = 'ola_mon.conf'
 DEFAULT_PORT = 9090
@@ -57,7 +67,10 @@ class OlaFetcher(object):
     try:
       response = connection.getresponse()
       if response.status == 200:
-        return response.read()
+        if sys.version_info >= (3, 2):
+          return response.read().decode('utf-8')
+        else:
+          return response.read()
     except httplib.BadStatusLine:
       return None
     return None
@@ -89,7 +102,8 @@ class RRDStore(object):
 
     data_sources = []
     for data_type, variable, _ in variables:
-      data_sources.append('DS:%s:%s:30:0:U' % (variable, data_type))
+      data_sources.append('DS:%s:%s:30:0:U' %
+                          (SanitizeName(variable), data_type))
 
     if not os.path.exists(filename):
       rrdtool.create(filename,
@@ -154,10 +168,12 @@ class Grapher(threading.Thread):
                     '--title', title,
                     '--start', 'end-30s',
                     'DEF:%s=%s:%s:AVERAGE' %
-                      (variable, self._rrd_file, variable),
-                    'LINE1:%s#FF0000' % variable)
+                      (SanitizeName(variable),
+                       self._rrd_file,
+                       SanitizeName(variable)),
+                    'LINE1:%s#FF0000' % SanitizeName(variable))
 
-    variables = set([x for _, x, _ in self._variables])
+    variables = set([SanitizeName(x) for _, x, _ in self._variables])
     for cdef_name, function, title in self._cdefs:
       output_file = os.path.join(self._directory, '%s.png' % cdef_name)
       values = function.split(',')
@@ -165,7 +181,9 @@ class Grapher(threading.Thread):
       defs = []
       for variable in used_variables:
         defs.append('DEF:%s=%s:%s:AVERAGE' %
-                    (variable, self._rrd_file, variable))
+                    (SanitizeName(variable),
+                     self._rrd_file,
+                     SanitizeName(variable)))
 
       rrdtool.graph(output_file,
                     '--imgformat', 'PNG',
@@ -173,8 +191,12 @@ class Grapher(threading.Thread):
                     '--start', 'end-30s',
                     defs,
                     'CDEF:%s=%s' %
-                      (cdef_name, function),
-                    'LINE1:%s#FF0000' % cdef_name)
+                      (SanitizeName(cdef_name), function),
+                    'LINE1:%s#FF0000' % SanitizeName(cdef_name))
+
+
+def SanitizeName(variable):
+  return re.sub("[^a-zA-Z0-9_]", "_", variable)
 
 
 def LoadConfig(config_file):
@@ -187,20 +209,21 @@ def LoadConfig(config_file):
     A dict with the config parameters.
   """
   locals_dict = {}
-  execfile(config_file, {}, locals_dict)
+  # Python 2 and 3 compatible version of execfile
+  exec(open(config_file).read(), {}, locals_dict)
 
   keys = set(['OLAD_SERVERS', 'DATA_DIRECTORY', 'VARIABLES', 'WWW_DIRECTORY',
               'CDEFS'])
   if not keys.issubset(locals.keys()):
-    print 'Invalid config file'
+    print('Invalid config file')
     sys.exit(2)
 
   if not len(locals['OLAD_SERVERS']):
-    print 'No hosts defined'
+    print('No hosts defined')
     sys.exit(2)
 
   if not len(locals['VARIABLES']):
-    print 'No variables defined'
+    print('No variables defined')
     sys.exit(2)
 
   return locals
@@ -208,20 +231,20 @@ def LoadConfig(config_file):
 
 def Usage(binary):
   """Display the usage information."""
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
     Usage: %s [options]
 
     Start the OLAD monitoring system
       -h, --help   Display this help message
       -c, --config The config file to use
-    """ % binary)
+    """ % binary))
 
 
 def main():
   try:
     opts, args = getopt.getopt(sys.argv[1:], "hc:v", ["help", "config="])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as e:
+    print(str(e))
     Usage(sys.argv[0])
     sys.exit(2)
 

@@ -21,6 +21,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/client/ClientWrapper.h>
 
+#include <map>
 #include <string>
 #include <fstream>
 
@@ -43,31 +44,69 @@ class ShowPlayer {
 
   /**
    * @brief Initialize the show player.
+   * @param simulate if true, no connection will be made to olad and nothing
+   * will be sent for output.
    * @return EXIT_OK if successful.
    */
-  int Init();
+  int Init(bool simulate = false);
 
   /**
    * @brief Playback the show
    * @param iterations the number of iterations of the show to play.
-   * @param duration the duration in seconds after which playback is stopped.
-   * @param delay the hold time at the end of a show before playback starts
-   * from the beginning again.
+   * @param duration the duration (in seconds) after which playback is stopped.
+   * @param delay the hold time (in milliseconds) at the end of a show before
+   * playback starts from the beginning again.
+   * @param start the time (in milliseconds) to start playback from
+   * @param stop the time (in milliseconds) to stop playback from; 0 will run
+   * until EOF.
    */
   int Playback(unsigned int iterations,
-               unsigned int duration,
-               unsigned int delay);
+               uint64_t duration,
+               uint64_t delay,
+               uint64_t start = 0,
+               uint64_t stop = 0);
+
+
+  uint64_t GetRunTime() const {
+    return m_run_time;
+  }
+
+
+  const std::map<unsigned int, uint64_t> &GetFrameCount() const {
+    return m_frame_count;
+  }
+
 
  private:
   ola::client::OlaClientWrapper m_client;
   ShowLoader m_loader;
   bool m_infinite_loop;
   unsigned int m_iteration_remaining;
-  unsigned int m_loop_delay;
+  uint64_t m_loop_delay;
+  uint64_t m_start;
+  uint64_t m_stop;
+  uint64_t m_playback_pos;
+  uint64_t m_run_time;
+  std::map<unsigned int, uint64_t> m_frame_count;
+  bool m_simulate;
 
+  /** Used for tracking simulation progress */
+  typedef enum {
+    TASK_COMPLETE,
+    TASK_NEXT_FRAME,
+    TASK_LOOP,
+  } Task;
+  Task m_next_task;
+  int m_status;
+
+  void Loop();
+  ShowLoader::State SeekTo(uint64_t seek_time);
   void SendNextFrame();
-  ShowLoader::State RegisterNextTimeout();
-  bool ReadNextFrame(unsigned int *universe, ola::DmxBuffer *data);
-  void HandleEndOfFile();
+  void SendEntry(const ShowEntry &entry);
+  void RegisterNextTimeout(unsigned int timeout);
+  void SendFrame(const ShowEntry &entry);
+  void HandleEndOfShow();
+  void HandleInvalidLine();
+  void StopPlayback(int exit_status);
 };
 #endif  // EXAMPLES_SHOWPLAYER_H_

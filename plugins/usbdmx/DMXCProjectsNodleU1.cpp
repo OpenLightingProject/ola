@@ -49,7 +49,10 @@ namespace {
 
 static const unsigned char WRITE_ENDPOINT = 0x02;
 static const unsigned char READ_ENDPOINT = 0x81;
-static const unsigned int URB_TIMEOUT_MS = 50;
+// On a non-overclocked Raspberry Pi 1 the previous value of 50ms lead to some
+// timeout transfer errors. Changing to 60 and a nice level of -20 made them go
+// away. Changing to 70 made them go away without touching the nice level.
+static const unsigned int URB_TIMEOUT_MS = 70;
 static const int CONFIGURATION = 1;
 static const int INTERFACE = 0;
 

@@ -22,7 +22,6 @@
 #include <string.h>
 #include <string>
 
-#include "ola/StringUtils.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/testing/TestUtils.h"
@@ -71,13 +70,13 @@ void UIDTest::testUID() {
   OLA_ASSERT_EQ((uint16_t) 2, uid3.ManufacturerId());
   OLA_ASSERT_EQ((uint32_t) 10, uid3.DeviceId());
 
-  UID uid4(0x0000000400000002);
+  UID uid4(0x0000000400000002ULL);
   OLA_ASSERT_EQ((uint16_t) 4, uid4.ManufacturerId());
   OLA_ASSERT_EQ((uint32_t) 2, uid4.DeviceId());
 
   // ToUInt64
-  OLA_ASSERT_EQ((uint64_t) 0x000100000002, uid.ToUInt64());
-  OLA_ASSERT_EQ((uint64_t) 0x00020000000a, uid3.ToUInt64());
+  OLA_ASSERT_EQ((uint64_t) 0x000100000002ULL, uid.ToUInt64());
+  OLA_ASSERT_EQ((uint64_t) 0x00020000000aULL, uid3.ToUInt64());
 
   // ToString
   OLA_ASSERT_EQ(string("0001:00000002"), uid.ToString());

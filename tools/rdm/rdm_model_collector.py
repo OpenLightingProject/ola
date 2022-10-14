@@ -16,6 +16,7 @@
 # rdm_model_collector.py
 # Copyright (C) 2011 Simon Newton
 
+from __future__ import print_function
 import getopt
 import logging
 import pprint
@@ -31,7 +32,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 def Usage():
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
   Usage: rdm_model_collector.py --universe <universe>
 
   Collect information about responders attached to a universe and output in a
@@ -43,7 +44,7 @@ def Usage():
     -p, --pid-location        The directory to read PID definitions from.
     --skip-queued-messages    Don't attempt to fetch queued messages for the
                               device.
-    -u, --universe <universe> Universe number.""")
+    -u, --universe <universe> Universe number."""))
 
 
 def main():
@@ -52,8 +53,8 @@ def main():
         sys.argv[1:],
         'dhp:u:',
         ['debug', 'help', 'skip-queued-messages', 'pid-location=', 'universe='])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as e:
+    print(str(e))
     Usage()
     sys.exit(2)
 
