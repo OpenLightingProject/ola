@@ -23,6 +23,8 @@
 #include <unistd.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
+#include <ola/client/ClientWrapper.h>
+#include <ola/io/SelectServer.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>
@@ -36,7 +38,11 @@
 using std::cout;
 using std::endl;
 using std::string;
+using ola::client::OlaClientWrapper;
 using ola::StreamingClient;
+using std::chrono::milliseconds;
+
+const unsigned int MICROSECONDS_PER_MILLISECOND = 1000;
 
 DEFINE_s_uint32(universes, u, 24, "The number of universes to send data on");
 DEFINE_s_uint32(sleep, s, 40000, "Time between DMX updates in micro-seconds");
@@ -44,6 +50,48 @@ DEFINE_s_default_bool(oscillate_data, d, false,
                       "Flip all channels in each universe between 0 and 255 "
                       "for each frame. CAUTION: This will produce rapid "
                       "strobing on any connected outputs!");
+DEFINE_s_default_bool(advanced, a, false, "Use the advanced ClientWrapper API "
+                      "instead of the StreamingClient API");
+
+void oscillateData(std::vector<ola::DmxBuffer> &buffers) {
+  static bool channelsOnNext = true;
+  for (size_t i = 0; i < FLAGS_universes - 1; i++) {
+    if (channelsOnNext) {
+      for (size_t j = 0; j < 512; j++) {
+        buffers[i].SetChannel(j, 255);
+      }
+      channelsOnNext = false;
+    } else {
+      buffers[i].Blackout();
+      channelsOnNext = true;
+    }
+  }
+}
+
+void AdvancedConnectionClosed(ola::io::SelectServer *ss) {
+  std::cerr << "Connection to olad was closed" << endl;
+  ss->Terminate();  // terminate the program.
+}
+
+bool AdvancedSendData(ola::client::OlaClientWrapper *wrapper,
+                      std::vector<ola::DmxBuffer> *buffers) {
+  if (FLAGS_oscillate_data) {
+    oscillateData(*buffers);
+  }
+
+  auto startTime = std::chrono::high_resolution_clock::now();
+  for (size_t i = 0; i < FLAGS_universes - 1; i++) {
+    wrapper->GetClient()->SendDMX(
+      i + 1,
+      (*buffers)[i],
+      ola::client::SendDMXArgs());
+  }
+  auto endTime = (std::chrono::high_resolution_clock::now() - startTime);
+  auto endTimeMs = (
+    std::chrono::duration_cast<milliseconds>(endTime).count());
+  printf("frame time: %04ld ms\n", endTimeMs);  // fast write
+  return true;
+}
 
 /*
  * Main
@@ -51,10 +99,18 @@ DEFINE_s_default_bool(oscillate_data, d, false,
 int main(int argc, char *argv[]) {
   ola::AppInit(&argc, argv, "[options]", "Send DMX512 data to OLA.");
 
+  OlaClientWrapper wrapper;
   StreamingClient ola_client;
-  if (!ola_client.Setup()) {
-    OLA_FATAL << "Setup failed";
-    exit(1);
+  if (FLAGS_advanced) {
+    if (!wrapper.Setup()) {
+      OLA_FATAL << "Setup failed";
+      exit(1);
+    }
+  } else {
+    if (!ola_client.Setup()) {
+      OLA_FATAL << "Setup failed";
+      exit(1);
+    }
   }
 
   std::vector<ola::DmxBuffer> buffers;
@@ -63,35 +119,36 @@ int main(int argc, char *argv[]) {
     buffers[i].Blackout();
   }
 
-  bool channelsOnNext = true;
-  while (1) {
-    usleep(FLAGS_sleep);
+  if (FLAGS_advanced) {
+    ola::io::SelectServer *ss = wrapper.GetSelectServer();
+    ss->RegisterRepeatingTimeout(
+      FLAGS_sleep / MICROSECONDS_PER_MILLISECOND,
+      ola::NewCallback(&AdvancedSendData, &wrapper, &buffers));
 
-    if (FLAGS_oscillate_data) {
+    wrapper.GetClient()->SetCloseHandler(
+    ola::NewSingleCallback(AdvancedConnectionClosed, ss));
+
+    ss->Run();
+  } else {
+    while (1) {
+      usleep(FLAGS_sleep);
+
+      if (FLAGS_oscillate_data) {
+        oscillateData(buffers);
+      }
+
+      auto startTime = std::chrono::high_resolution_clock::now();
       for (size_t i = 0; i < FLAGS_universes - 1; i++) {
-        if (channelsOnNext) {
-          for (size_t j = 1; j <= 512; j++) {
-            buffers[i].SetChannel(j, 255);
-          }
-          channelsOnNext = false;
-        } else {
-          buffers[i].Blackout();
-          channelsOnNext = true;
+        if (!ola_client.SendDmx(i + 1, buffers[i])) {
+          cout << "Send DMX failed" << endl;
+          exit(1);
         }
       }
+      auto endTime = (std::chrono::high_resolution_clock::now() - startTime);
+      auto endTimeMs = (
+        std::chrono::duration_cast<milliseconds>(endTime).count());
+      printf("frame time: %04ld ms\n", endTimeMs);  // fast write
     }
-
-    auto startTime = std::chrono::high_resolution_clock::now();
-    for (size_t i = 0; i < FLAGS_universes - 1; i++) {
-      if (!ola_client.SendDmx(i + 1, buffers[i])) {
-        cout << "Send DMX failed" << endl;
-        exit(1);
-      }
-    }
-    auto endTime = (std::chrono::high_resolution_clock::now() - startTime);
-    auto endTimeMs = (
-      std::chrono::duration_cast<std::chrono::milliseconds>(endTime).count());
-    printf("frame time: %04ld ms\n", endTimeMs);  // fast write
   }
   return 0;
 }
