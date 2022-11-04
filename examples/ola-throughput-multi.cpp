@@ -40,7 +40,9 @@ using std::endl;
 using std::string;
 using ola::client::OlaClientWrapper;
 using ola::StreamingClient;
-using std::chrono::milliseconds;
+using std::chrono::high_resolution_clock;
+using std::chrono::microseconds;
+using std::chrono::nanoseconds;
 
 const unsigned int MICROSECONDS_PER_MILLISECOND = 1000;
 
@@ -53,16 +55,16 @@ DEFINE_s_default_bool(oscillate_data, d, false,
 DEFINE_s_default_bool(advanced, a, false, "Use the advanced ClientWrapper API "
                       "instead of the StreamingClient API");
 
-void oscillateData(std::vector<ola::DmxBuffer> &buffers) {
+void oscillateData(std::vector<ola::DmxBuffer> *buffers) {
   static bool channelsOnNext = true;
-  for (size_t i = 0; i < FLAGS_universes - 1; i++) {
+  for (size_t i = 0; i < FLAGS_universes; i++) {
     if (channelsOnNext) {
       for (size_t j = 0; j < 512; j++) {
-        buffers[i].SetChannel(j, 255);
+        (*buffers)[i].SetChannel(j, 255);
       }
       channelsOnNext = false;
     } else {
-      buffers[i].Blackout();
+      (*buffers)[i].Blackout();
       channelsOnNext = true;
     }
   }
@@ -74,22 +76,32 @@ void AdvancedConnectionClosed(ola::io::SelectServer *ss) {
 }
 
 bool AdvancedSendData(ola::client::OlaClientWrapper *wrapper,
-                      std::vector<ola::DmxBuffer> *buffers) {
+                      std::vector<ola::DmxBuffer> *buffers,
+                      std::vector<nanoseconds> *sendDmxTimes) {
   if (FLAGS_oscillate_data) {
-    oscillateData(*buffers);
+    oscillateData(buffers);
   }
 
   auto startTime = std::chrono::high_resolution_clock::now();
-  for (size_t i = 0; i < FLAGS_universes - 1; i++) {
+  for (size_t i = 0; i < FLAGS_universes; i++) {
+    auto startTimeSendDmx = high_resolution_clock::now();
     wrapper->GetClient()->SendDMX(
       i + 1,
       (*buffers)[i],
       ola::client::SendDMXArgs());
+    (*sendDmxTimes)[i] = (high_resolution_clock::now() - startTimeSendDmx);
   }
   auto endTime = (std::chrono::high_resolution_clock::now() - startTime);
-  auto endTimeMs = (
-    std::chrono::duration_cast<milliseconds>(endTime).count());
-  printf("frame time: %04ld ms\n", endTimeMs);  // fast write
+
+  printf("sendDmx times (us):");  // fast write
+  for (size_t i = 0; i < FLAGS_universes; i++) {
+    auto endTimeSendDmxUs = (
+      std::chrono::duration_cast<microseconds>((*sendDmxTimes)[i]).count());
+    printf(" %04ld", endTimeSendDmxUs);  // fast write
+  }
+  auto endTimeUs = (
+    std::chrono::duration_cast<microseconds>(endTime).count());
+  printf("\nframe time: %08ld us\n", endTimeUs);  // fast write
   return true;
 }
 
@@ -114,16 +126,18 @@ int main(int argc, char *argv[]) {
   }
 
   std::vector<ola::DmxBuffer> buffers;
-  for (size_t i = 0; i < FLAGS_universes - 1; i++) {
+  for (size_t i = 0; i < FLAGS_universes; i++) {
     buffers.push_back(ola::DmxBuffer());
     buffers[i].Blackout();
   }
+
+  std::vector<nanoseconds> sendDmxTimes(FLAGS_universes);
 
   if (FLAGS_advanced) {
     ola::io::SelectServer *ss = wrapper.GetSelectServer();
     ss->RegisterRepeatingTimeout(
       FLAGS_sleep / MICROSECONDS_PER_MILLISECOND,
-      ola::NewCallback(&AdvancedSendData, &wrapper, &buffers));
+      ola::NewCallback(&AdvancedSendData, &wrapper, &buffers, &sendDmxTimes));
 
     wrapper.GetClient()->SetCloseHandler(
     ola::NewSingleCallback(AdvancedConnectionClosed, ss));
@@ -134,20 +148,29 @@ int main(int argc, char *argv[]) {
       usleep(FLAGS_sleep);
 
       if (FLAGS_oscillate_data) {
-        oscillateData(buffers);
+        oscillateData(&buffers);
       }
 
-      auto startTime = std::chrono::high_resolution_clock::now();
-      for (size_t i = 0; i < FLAGS_universes - 1; i++) {
+      auto startTime = high_resolution_clock::now();
+      for (size_t i = 0; i < FLAGS_universes; i++) {
+        auto startTimeSendDmx = high_resolution_clock::now();
         if (!ola_client.SendDmx(i + 1, buffers[i])) {
           cout << "Send DMX failed" << endl;
           exit(1);
         }
+        sendDmxTimes[i] = (high_resolution_clock::now() - startTimeSendDmx);
       }
-      auto endTime = (std::chrono::high_resolution_clock::now() - startTime);
-      auto endTimeMs = (
-        std::chrono::duration_cast<milliseconds>(endTime).count());
-      printf("frame time: %04ld ms\n", endTimeMs);  // fast write
+      auto endTime = (high_resolution_clock::now() - startTime);
+
+      printf("sendDmx times (us):");  // fast write
+      for (size_t i = 0; i < FLAGS_universes; i++) {
+        auto endTimeSendDmxUs = (
+          std::chrono::duration_cast<microseconds>(sendDmxTimes[i]).count());
+        printf(" %04ld", endTimeSendDmxUs);  // fast write
+      }
+      auto endTimeUs = (
+        std::chrono::duration_cast<microseconds>(endTime).count());
+      printf("\nframe time: %08ld us\n", endTimeUs);  // fast write
     }
   }
   return 0;
