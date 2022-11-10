@@ -465,7 +465,7 @@ before_install:
  - if [ "$PYTHON" == "python3" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pyenv global 3.8.1; fi
 #On arm64 (at least) pip is now pip3, so symlink it to pip2 unless we're using python3.
  - if [ "$PYTHON" != "python3" ]; then sudo rm /usr/local/bin/pip && sudo ln -s /usr/local/bin/pip2 /usr/local/bin/pip; fi
-#Switch node to version 17, as newer ones don't work with Ubuntu 18.04 and some older ones are too old
+#Switch node to version 16 LTS, as newer LTS ones don't work with Ubuntu 18.04 and some older ones are too old
  - if [ "$TASK" = "jshint" ]; then nvm install 16 && nvm use 16; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
