@@ -133,7 +133,7 @@ void ShowNetNode::SetName(const string &name) {
  * Send some DMX data
  * @param universe the id of the universe to send
  * @param buffer the DMX data
- * @return true if it was send successfully, false otherwise
+ * @return true if it was sent successfully, false otherwise
  */
 bool ShowNetNode::SendDMX(unsigned int universe,
                           const ola::DmxBuffer &buffer) {
