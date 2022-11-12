@@ -300,7 +300,7 @@ class ClientWrapperTest(unittest.TestCase):
       self.assertTrue(status.Succeeded())
       self.assertEqual(universe, 0)
       self.assertEqual(len(data), 512)
-      # TODO(Peter): Validate universe data
+      self.assertEqual(data, array.array('B', [0] * 512))
       wrapper.AddEvent(0, wrapper.Stop)
 
     wrapper._ss.AddReadDescriptor(sockets[1], lambda: DataCallback(self))
