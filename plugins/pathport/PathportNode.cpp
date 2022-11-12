@@ -261,7 +261,7 @@ bool PathportNode::SendArpReply() {
 /*
  * Send some DMX data
  * @param buffer the DMX data
- * @return true if it was send successfully, false otherwise
+ * @return true if it was sent successfully, false otherwise
  */
 bool PathportNode::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
   if (!m_running)
