@@ -193,22 +193,22 @@ class ClientWrapperTest(unittest.TestCase):
     # Called immediately
     a_diff = results.a_called - self.start
     self.assertAlmostEqual(a_diff, datetime.timedelta(milliseconds=0),
-                           delta=datetime.timedelta(microseconds=500))
+                           delta=datetime.timedelta(microseconds=750))
 
     # Called in 5 milliseconds
     b_diff = results.b_called - self.start
     self.assertAlmostEqual(b_diff, datetime.timedelta(milliseconds=5),
-                           delta=datetime.timedelta(microseconds=500))
+                           delta=datetime.timedelta(microseconds=750))
 
     # Called in 10 milliseconds
     c_diff = results.c_called - self.start
     self.assertAlmostEqual(c_diff, datetime.timedelta(milliseconds=10),
-                           delta=datetime.timedelta(microseconds=500))
+                           delta=datetime.timedelta(microseconds=750))
 
     # Called in 15 milliseconds
     d_diff = results.d_called - self.start
     self.assertAlmostEqual(d_diff, datetime.timedelta(milliseconds=15),
-                           delta=datetime.timedelta(microseconds=500))
+                           delta=datetime.timedelta(microseconds=750))
 
     sockets[0].close()
     sockets[1].close()
