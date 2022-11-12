@@ -200,7 +200,7 @@ elif [[ $TASK = 'coverage' ]]; then
   make;
   travis_fold end "make"
   travis_fold start "make_check"
-  make check;
+  make check VERBOSE=1;
   travis_fold end "make_check"
 elif [[ $TASK = 'coverity' ]]; then
   # Run Coverity Scan unless token is zero length
