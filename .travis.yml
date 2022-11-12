@@ -133,8 +133,8 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
-      env:
-        - TASK='flake8'
+      env: TASK='flake8'
+      python: '2.7'
       addons:
         apt:
           packages:
@@ -196,6 +196,30 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
+      compiler: gcc
+      env: TASK='compile'
+      python: '2.7'
+      addons:
+        apt:
+          packages:
+           - *core_build_gpp_latest
+           - *bionic_build_extras_python2
+          sources:
+           - ubuntu-toolchain-r-test
+    - os: linux
+      dist: bionic
+      arch: s390x
+      compiler: clang
+      env: TASK='compile'
+      python: '2.7'
+      addons:
+        apt:
+          packages:
+           - *core_build_clang_recent
+           - *bionic_build_extras_python2
+    - os: linux
+      dist: bionic
+      arch: s390x
       compiler: gcc
       env: TASK='compile'
       python: '2.7'
@@ -497,10 +521,10 @@ before_install:
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-10" CC="ccache gcc-10"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
-#Use the latest clang if we're compiling with clang, except on arm64 where it's not available
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then export CXX="clang++-11" CC="clang-11"; fi
-#Use a recent clang if we're compiling with clang on arm64 as the latest isn't available
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" == "arm64" ]; then export CXX="clang++-10" CC="clang-10"; fi
+#Use the latest clang if we're compiling with clang, except on arm64 and s390x where it's not available
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" != "arm64" -a "$TRAVIS_CPU_ARCH" != "s390x" ]; then export CXX="clang++-11" CC="clang-11"; fi
+#Use a recent clang if we're compiling with clang on arm64 or s390x as the latest isn't available
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a \( "$TRAVIS_CPU_ARCH" == "arm64" -o "$TRAVIS_CPU_ARCH" == "s390x" \) ]; then export CXX="clang++-10" CC="clang-10"; fi
 #Report the compiler version
  - $CXX --version
 
