@@ -186,7 +186,6 @@
     required Type type = 1;
     optional uint32 id = 2;
     optional string name = 3;
-    optional string name = 3;
     optional bytes buffer = 4;
   }
   ~~~~~~~~~~~~~~~~~~~~~
