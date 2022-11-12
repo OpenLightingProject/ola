@@ -41,7 +41,7 @@
 class EndpointManager {
  public:
     typedef ola::Callback1<void, uint16_t> EndpointNotificationCallback;
-    typedef enum { ADD, REMOVE, BOTH } EndpointNoticationEvent;
+    typedef enum { ADD, REMOVE, BOTH } EndpointNotificationEvent;
 
     EndpointManager()
         : m_list_change_number(0) {
@@ -60,7 +60,7 @@ class EndpointManager {
     void EndpointIDs(std::vector<uint16_t> *id_list) const;
 
     // control notifications
-    void RegisterNotification(EndpointNoticationEvent event_type,
+    void RegisterNotification(EndpointNotificationEvent event_type,
                               EndpointNotificationCallback *callback);
     bool UnRegisterNotification(EndpointNotificationCallback *callback);
 
@@ -73,12 +73,12 @@ class EndpointManager {
 
     // list of callbacks to run
     typedef struct {
-      EndpointNoticationEvent event_type;
+      EndpointNotificationEvent event_type;
       EndpointNotificationCallback *callback;
     } EndpointNotification;
     std::vector<EndpointNotification> m_callbacks;
 
     void RunNotifications(uint16_t endpoint_id,
-                          EndpointNoticationEvent event_type);
+                          EndpointNotificationEvent event_type);
 };
 #endif  // TOOLS_E133_ENDPOINTMANAGER_H_
