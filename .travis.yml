@@ -507,8 +507,7 @@ install:
   - if [ "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
-  - if [ "$TASK" = "codespell" ]; then pip3 install -U setuptools>=64; fi
-  - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
+  - if [ "$TASK" = "codespell" ]; then pip3 install --user codespell==2.2.1; fi
   - if [ "$TASK" = "jshint" ]; then npm --verbose install -g grunt-cli; fi
   - if [ "$TASK" = "jshint" ]; then grunt --version --verbose; fi
 # Installing via the addon isn't currently working so do it the old fashioned way
