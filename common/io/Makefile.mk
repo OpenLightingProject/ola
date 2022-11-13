@@ -47,8 +47,8 @@ test_programs += \
     common/io/MemoryBlockTester \
     common/io/SelectServerTester \
     common/io/StreamTester \
-    common/io/TimeoutManagerTester \
-    common/io/SerialLockTester
+    common/io/SerialLockTester \
+    common/io/TimeoutManagerTester
 
 common_io_IOQueueTester_SOURCES = common/io/IOQueueTest.cpp
 common_io_IOQueueTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
