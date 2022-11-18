@@ -73,6 +73,7 @@ tools/rdm/TestHelpersTest.sh: tools/rdm/Makefile.mk
 tools/rdm/TestRunnerTest.sh: tools/rdm/Makefile.mk
 	mkdir -p $(top_builddir)/python/ola/testing
 	touch $(top_builddir)/python/ola/testing/__init__.py
+        # This link is relative within the builddir
 	$(LN_S) -f ../../../tools/rdm $(top_builddir)/python/ola/testing/rdm
 	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/TestRunnerTest.py; exit \$$?" > $(top_builddir)/tools/rdm/TestRunnerTest.sh
 	chmod +x $(top_builddir)/tools/rdm/TestRunnerTest.sh
