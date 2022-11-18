@@ -973,6 +973,8 @@ AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
 # srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
 AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
                  python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
+                 python/ola/DMXConstants.py:python/ola/DMXConstants.py
+                 python/ola/DUBDecoder.py:python/ola/DUBDecoder.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
                  python/ola/OlaClient.py:python/ola/OlaClient.py
                  python/ola/PidStore.py:python/ola/PidStore.py
@@ -984,7 +986,10 @@ AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
                  python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
                  python/ola/rpc/StreamRpcChannel.py:python/ola/rpc/StreamRpcChannel.py
                  tools/rdm/ExpectedResults.py:tools/rdm/ExpectedResults.py
+                 tools/rdm/ResponderTest.py:tools/rdm/ResponderTest.py
                  tools/rdm/TestCategory.py:tools/rdm/TestCategory.py
+                 tools/rdm/TestDefinitions.py:tools/rdm/TestDefinitions.py
+                 tools/rdm/TestRunner.py:tools/rdm/TestRunner.py
                  tools/rdm/TestState.py:tools/rdm/TestState.py
                  tools/rdm/TimingStats.py:tools/rdm/TimingStats.py])
 
