@@ -100,9 +100,9 @@ class ResponderTestFixtureTest(unittest.TestCase):
 
     self.assertEqual('%s' % ResponderTestFixture._EscapeData({"a": 0}),
                      "{'a': 0}")
-    # The tests below that are commented out are non-deterministic on Python 3
-    # Might be able to get round it with a sort or something? We don't
-    # actually care about the order...
+    # TODO(Peter): The tests below that are commented out are non-deterministic
+    # on Python 3. We might be able to get round it with a sort or something? We
+    # don't actually care about the order...
 #    self.assertEqual('%s' % ResponderTestFixture._EscapeData(
 #                     {'a': 0, 'bar': 1}),
 #                     "{'a': 0, 'bar': 1}")
