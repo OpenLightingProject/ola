@@ -985,6 +985,7 @@ AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
                  python/ola/rpc/__init__.py:python/ola/rpc/__init__.py
                  python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
                  python/ola/rpc/StreamRpcChannel.py:python/ola/rpc/StreamRpcChannel.py
+                 tools/rdm/__init__.py:tools/rdm/__init__.py
                  tools/rdm/ExpectedResults.py:tools/rdm/ExpectedResults.py
                  tools/rdm/ResponderTest.py:tools/rdm/ResponderTest.py
                  tools/rdm/TestCategory.py:tools/rdm/TestCategory.py
