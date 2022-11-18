@@ -175,6 +175,7 @@ libs/acn/e131_loadtest
 libs/acn/e131_loadtest.exe
 libs/acn/e131_transmit_test
 libs/acn/e131_transmit_test.exe
+ola-*/
 ola.spec
 olad/olad
 olad/olad.exe
