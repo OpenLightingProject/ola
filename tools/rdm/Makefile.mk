@@ -99,6 +99,7 @@ test_scripts += \
 endif
 
 CLEANFILES += \
+    python/ola/testing/*.pyc \
     python/ola/testing/__init__.py \
     tools/rdm/*.pyc \
     tools/rdm/ExpectedResultsTest.sh \
