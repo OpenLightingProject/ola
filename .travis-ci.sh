@@ -244,6 +244,8 @@ else
   travis_fold start "configure"
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
   travis_fold end "configure"
+  make tools/rdm/TestRunnerTest.sh
+  ./tools/rdm/TestRunnerTest.sh
   travis_fold start "make_distcheck"
   make distcheck VERBOSE=1;
   travis_fold end "make_distcheck"
