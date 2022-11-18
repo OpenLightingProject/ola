@@ -18,12 +18,18 @@
 # Expected result classes are broken down as follows:
 #
 # BaseExpectedResult - the base class
-#  BroadcastResult   - expects the request to be broadcast
+#  BroadcastResult   - expects the request to be broadcast, hence no response
+#  TimeoutResult     - expects the response to be a timeout
+#  InvalidResult     - expects the response to be invalid
+#  UnsupportedResult - expects RDM Discovery to be unsupported
+#  DUBResult         - expects an RDM DUB response
 #  SuccessfulResult  - expects a well formed response from the device
 #   NackResult       - parent NACK class
+#    NackDiscoveryResult - expects DISCOVERY_COMMAND_RESPONSE with a NACK
 #    NackGetResult   - expects GET_COMMAND_RESPONSE with a NACK
 #    NackSetResult   - expects SET_COMMAND_RESPONSE with a NACK
 #   AckResult        - parent ACK class
+#    AckDiscoveryResult - expects DISCOVERY_COMMAND_RESPONSE with an ACK
 #    AckGetResult    - expects GET_COMMAND_RESPONSE with an ACK
 #    AckSetResult    - expects SET_COMMAND_RESPONSE with an ACK
 #   QueuedMessageResult - expects an ACK or NACK for any PID other than
@@ -134,8 +140,8 @@ class SuccessfulResult(BaseExpectedResult):
   """This checks that we received a valid response from the device.
 
   This doesn't check that the response was a certain type, but simply that the
-  message was formed correctly. Other classes inherit from this an perform more
-  specific checking.
+  message was formed correctly. Other classes inherit from this and perform
+  more specific checking.
   """
   def __str__(self):
     return 'RDM_COMPLETED_OK'

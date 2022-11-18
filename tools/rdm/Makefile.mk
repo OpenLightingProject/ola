@@ -55,6 +55,11 @@ launcher_files = \
 
 EXTRA_DIST += $(launcher_files)
 
+tools/rdm/ExpectedResultsTest.sh: tools/rdm/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/ExpectedResultsTest.py; exit \$$?" > $(top_builddir)/tools/rdm/ExpectedResultsTest.sh
+	chmod +x $(top_builddir)/tools/rdm/ExpectedResultsTest.sh
+
 tools/rdm/ResponderTestTest.sh: tools/rdm/Makefile.mk
 	mkdir -p $(top_builddir)/python/ola
 	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/ResponderTestTest.py; exit \$$?" > $(top_builddir)/tools/rdm/ResponderTestTest.sh
@@ -78,6 +83,7 @@ tools/rdm/TestStateTest.sh: tools/rdm/Makefile.mk
 	chmod +x $(top_builddir)/tools/rdm/TestStateTest.sh
 
 dist_check_SCRIPTS += \
+   tools/rdm/ExpectedResultsTest.py \
    tools/rdm/ResponderTestTest.py \
    tools/rdm/TestHelpersTest.py \
    tools/rdm/TestRunnerTest.py \
@@ -85,6 +91,7 @@ dist_check_SCRIPTS += \
 
 if BUILD_PYTHON_LIBS
 test_scripts += \
+   tools/rdm/ExpectedResultsTest.sh \
    tools/rdm/ResponderTestTest.sh \
    tools/rdm/TestHelpersTest.sh \
    tools/rdm/TestRunnerTest.sh \
@@ -94,6 +101,7 @@ endif
 CLEANFILES += \
     python/ola/testing/__init__.py \
     tools/rdm/*.pyc \
+    tools/rdm/ExpectedResultsTest.sh \
     tools/rdm/ResponderTestTest.sh \
     tools/rdm/TestHelpersTest.sh \
     tools/rdm/TestRunnerTest.sh \

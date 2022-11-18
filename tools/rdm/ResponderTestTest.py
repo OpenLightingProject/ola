@@ -33,7 +33,6 @@ class ZTestFixture(TestFixture):
 
 
 class TestFixtureTest(unittest.TestCase):
-
   def testCmp(self):
     base = TestFixture({}, 2, 123, None)
     base2 = TestFixture({}, 3, 456, None)
