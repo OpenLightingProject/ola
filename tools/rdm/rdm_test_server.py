@@ -505,7 +505,7 @@ class JsonRequestHandler(RequestHandler):
 
     try:
       json_data = self.GetJson(request, response)
-      response.AppendData(json.dumps(json_data, sort_keys=True))
+      response.AppendData(json.dumps(json_data, sort_keys=True).encode())
     except ServerException as e:
       # For JSON requests, rather than returning 500s we return the error as
       # JSON
@@ -514,7 +514,7 @@ class JsonRequestHandler(RequestHandler):
           'status': False,
           'error': str(e),
       }
-      response.AppendData(json.dumps(json_data, sort_keys=True))
+      response.AppendData(json.dumps(json_data, sort_keys=True).encode())
 
   def RaiseExceptionIfMissing(self, request, param):
     """Helper method to raise an exception if the param is missing."""
@@ -545,7 +545,7 @@ class OLAServerRequestHandler(JsonRequestHandler):
           'status': False,
           'error': 'The OLA Server instance is no longer running',
       }
-      response.AppendData(json.dumps(json_data, sort_keys=True))
+      response.AppendData(json.dumps(json_data, sort_keys=True).encode())
 
 
 class TestDefinitionsHandler(JsonRequestHandler):
