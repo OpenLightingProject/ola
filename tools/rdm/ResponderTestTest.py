@@ -33,7 +33,6 @@ class ZTestFixture(TestFixture):
 
 
 class TestFixtureTest(unittest.TestCase):
-
   def testCmp(self):
     base = TestFixture({}, 2, 123, None)
     base2 = TestFixture({}, 3, 456, None)
@@ -91,9 +90,9 @@ class ResponderTestFixtureTest(unittest.TestCase):
                      "['foo', 'foo\\\\u2014bar']")
 
     self.assertEqual('%s' % rtf._EscapeData({"a": 0}), "{'a': 0}")
-    # The tests below that are commented out are non-deterministic on Python 3
-    # Might be able to get round it with a sort or something? We don't
-    # actually care about the order...
+    # TODO(Peter): The tests below that are commented out are non-deterministic
+    # on Python 3. We might be able to get round it with a sort or something? We
+    # don't actually care about the order...
 #    self.assertEqual('%s' % rtf._EscapeData({'a': 0, 'bar': 1}),
 #                     "{'a': 0, 'bar': 1}")
     self.assertEqual('%s' % rtf._EscapeData({"a": "bar"}), "{'a': 'bar'}")
