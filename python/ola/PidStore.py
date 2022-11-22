@@ -877,7 +877,7 @@ class Group(Atom):
             'Too many repeated group_count for %s, limit is %d, found %d' %
             (self.name, self.max, group_count))
 
-      if self.max is not None and group_count < self.min:
+      if self.min is not None and group_count < self.min:
         raise UnpackException(
             'Too few repeated group_count for %s, limit is %d, found %d' %
             (self.name, self.min, group_count))

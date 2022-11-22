@@ -345,7 +345,7 @@ class NonUnicastSetLabelMixin(SetLabelMixin):
 
 class SetOversizedLabelMixin(object):
   """Send an over-sized SET label command."""
-  LONG_STRING = 'this is a string which is more than 32 characters'
+  LONG_STRING = b'this is a string which is more than 32 characters'
 
   def Test(self):
     self.verify_result = False
