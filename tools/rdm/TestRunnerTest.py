@@ -18,8 +18,9 @@
 
 import unittest
 from ola.testing.rdm import TestDefinitions, TestRunner
-from ola.testing.rdm.ResponderTest import OptionalParameterTestFixture
-from ola.testing.rdm.ResponderTest import ResponderTestFixture, TestFixture
+from ola.testing.rdm import ResponderTest
+from ola.testing.rdm.ResponderTest import OptionalParameterTestFixture, \
+    ResponderTestFixture, TestFixture
 from ola.testing.rdm.TestDefinitions import GetDeviceInfo
 
 """Test cases for TestRunner utilities."""
@@ -38,9 +39,17 @@ class TestRunnerGetTestClasses(unittest.TestCase):
                         TestRunner.GetTestClasses(TestDefinitions),
                     "GetDeviceInfo missing from list of test classes")
     # Check we don't contain the base classes:
+    # Test for various versions of them due to issues with Python 3
+    # The static versions are probably a better test for the test run
     for classname in [OptionalParameterTestFixture,
                       ResponderTestFixture,
-                      TestFixture]:
+                      TestFixture,
+                      ResponderTest.OptionalParameterTestFixture,
+                      ResponderTest.ResponderTestFixture,
+                      ResponderTest.TestFixture,
+                      TestDefinitions.OptionalParameterTestFixture,
+                      TestDefinitions.ResponderTestFixture,
+                      TestDefinitions.TestFixture]:
       self.assertTrue(classname not in
                           TestRunner.GetTestClasses(TestDefinitions),
                       "Class %s found in list of test classes" % classname)

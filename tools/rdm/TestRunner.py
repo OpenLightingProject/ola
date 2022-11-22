@@ -194,15 +194,20 @@ def GetTestClasses(module):
     cls = getattr(module, symbol)
     if not inspect.isclass(cls):
       continue
+    # Test for dynamic versions of these due to issues with Python 3
     base_classes = [
-        ResponderTest.OptionalParameterTestFixture,
-        ResponderTest.ResponderTestFixture,
-        ResponderTest.TestFixture
+        # Original
+        getattr(module, "OptionalParameterTestFixture"),
+        getattr(module, "ResponderTestFixture"),
+        getattr(module, "TestFixture")
     ]
 
     if cls in base_classes:
       continue
-    if issubclass(cls, ResponderTest.TestFixture):
+    # This seems to confuse Python 3 if we compare it to
+    # ResponderTest.TestFixture, some sort of diamond inheritance issue?
+    # So test for the dynamic version of it instead
+    if issubclass(cls, getattr(module, "TestFixture")):
       classes.append(cls)
   return classes
 
