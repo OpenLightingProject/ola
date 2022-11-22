@@ -94,7 +94,7 @@ class MuteDeviceWithData(ResponderTestFixture):
       TimeoutResult(),
       UnsupportedResult()
     ])
-    self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid, b'x')
 
 
 class UnMuteDevice(ResponderTestFixture):
@@ -133,7 +133,7 @@ class UnMuteDeviceWithData(ResponderTestFixture):
       TimeoutResult(),
       UnsupportedResult()
     ])
-    self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid, b'x')
 
 
 class RequestsWhileUnmuted(ResponderTestFixture):
@@ -583,7 +583,7 @@ class GetDeviceInfoWithData(ResponderTestFixture, DeviceInfoTest):
         field_values=self.FIELD_VALUES,
         warning='Get %s with data returned an ack' % self.pid.name)
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'x')
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'x')
 
   def VerifyResult(self, response, fields):
     self.SetProperty('supports_over_sized_pdl', True)
@@ -608,7 +608,7 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
           advisory='Responder timed out to a command with PDL of %d' %
                    self.MAX_PDL),
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self.MAX_PDL)
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'x' * self.MAX_PDL)
 
   def VerifyResult(self, response, fields):
     ok = response.response_code not in [OlaClient.RDM_INVALID_RESPONSE,
@@ -645,7 +645,7 @@ class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
       InvalidResponse(action=self.GetFailed),
       TimeoutResult(action=self.GetFailed),
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self._current)
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'x' * self._current)
 
   def GetPassed(self):
     self._lower = self._current
@@ -855,7 +855,7 @@ class GetSupportedParametersWithData(ResponderTestFixture):
       ])
     else:
       self.AddExpectedResults(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'foo')
 
 
 class SetSupportedParameters(ResponderTestFixture):
@@ -1104,7 +1104,7 @@ class GetParamDescriptionWithData(ResponderTestFixture):
     if self.Property('manufacturer_parameters'):
       results = self.NackGetResult(RDMNack.NR_FORMAT_ERROR)
     self.AddExpectedResults(results)
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'foo')
 
 
 class SetParamDescription(TestMixins.UnsupportedSetMixin,
@@ -1317,7 +1317,7 @@ class SetDeviceModelDescriptionWithData(TestMixins.UnsupportedSetMixin,
   """SET the device model description with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_MODEL_DESCRIPTION'
-  DATA = 'FOO BAR'
+  DATA = b'FOO BAR'
 
 
 class AllSubDevicesGetModelDescription(TestMixins.AllSubDevicesGetMixin,
@@ -1357,7 +1357,7 @@ class SetManufacturerLabelWithData(TestMixins.UnsupportedSetMixin,
   """SET the manufacturer label with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MANUFACTURER_LABEL'
-  DATA = 'FOO BAR'
+  DATA = b'FOO BAR'
 
 
 class AllSubDevicesGetManufacturerLabel(TestMixins.AllSubDevicesGetMixin,
@@ -1997,7 +1997,7 @@ class SetOversizedPersonality(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'foo')
 
 
 class AllSubDevicesGetPersonality(TestMixins.AllSubDevicesGetMixin,
@@ -2066,7 +2066,7 @@ class GetStartAddressWithData(ResponderTestFixture):
           warning='Get %s with data returned an ack' % self.pid.name),
       ]
     self.AddExpectedResults(results)
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, b'foo')
 
 
 class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
@@ -2181,7 +2181,7 @@ class SetOversizedStartAddress(ResponderTestFixture):
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
       ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'foo')
 
 
 class AllSubDevicesGetStartAddress(TestMixins.AllSubDevicesGetMixin,
@@ -2294,7 +2294,7 @@ class GetSlotDescriptionWithTooMuchData(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'foo')
 
 
 class GetUndefinedSlotDefinitionDescriptions(OptionalParameterTestFixture):
@@ -2645,7 +2645,7 @@ class GetSensorDefinitionWithTooMuchData(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'foo')
 
 
 class GetInvalidSensorDefinition(OptionalParameterTestFixture):
@@ -2922,7 +2922,7 @@ class ResetSensorValueWithNoData(OptionalParameterTestFixture):
         self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
     ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class AllSubDevicesGetSensorValue(TestMixins.AllSubDevicesGetMixin,
@@ -3069,7 +3069,7 @@ class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class AllSubDevicesGetDeviceHours(TestMixins.AllSubDevicesGetMixin,
@@ -3128,7 +3128,7 @@ class SetLampHoursWithNoData(OptionalParameterTestFixture):
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class AllSubDevicesGetLampHours(TestMixins.AllSubDevicesGetMixin,
@@ -3186,7 +3186,7 @@ class SetLampStrikesWithNoData(OptionalParameterTestFixture):
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class AllSubDevicesGetLampStrikes(TestMixins.AllSubDevicesGetMixin,
@@ -3369,7 +3369,7 @@ class SetDevicePowerCyclesWithNoData(OptionalParameterTestFixture):
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class AllSubDevicesGetDevicePowerCycles(TestMixins.AllSubDevicesGetMixin,
@@ -3486,6 +3486,7 @@ class AllSubDevicesGetDisplayLevel(TestMixins.AllSubDevicesGetMixin,
 class GetPanInvert(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the pan invert setting."""
   CATEGORY = TestCategory.CONFIGURATION
+
   PID = 'PAN_INVERT'
   EXPECTED_FIELDS = ['invert']
   PROVIDES = ['pan_invert']
@@ -3624,7 +3625,7 @@ class GetRealTimeClock(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(
-      self.AckGetResult(field_names=self.ALLOWED_RANGES.keys() + ['second']))
+      self.AckGetResult(field_names=list(self.ALLOWED_RANGES.keys()) + ['second']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
@@ -3671,7 +3672,7 @@ class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
         self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
     ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class AllSubDevicesGetRealTimeClock(TestMixins.AllSubDevicesGetMixin,
@@ -3795,7 +3796,7 @@ class SetIdentifyDeviceWithNoData(ResponderTestFixture):
 
   def Test(self):
     self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
   def ResetState(self):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('identify_state')])
@@ -5116,7 +5117,7 @@ class GetLockPinWithData(TestMixins.GetWithDataMixin,
   """Get LOCK_PIN with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_PIN'
-  DATA = 'foo'
+  DATA = b'foo'
   # Some responders may not let you GET the pin.
   ALLOWED_NACKS = [RDMNack.NR_UNSUPPORTED_COMMAND_CLASS]
 
@@ -6817,7 +6818,7 @@ class GetIPv4DefaultRouteWithData(TestMixins.GetWithDataMixin,
 #   """SET the IPv4 default route with data."""
 #   CATEGORY = TestCategory.ERROR_CONDITIONS
 #   PID = 'IPV4_DEFAULT_ROUTE'
-#   DATA = 'FOOBAR'
+#   DATA = b'FOOBAR'
 
 
 class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
@@ -6853,7 +6854,7 @@ class GetInterfaceLabelWithTooMuchData(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foobar')
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'foobar')
 
 
 class GetZeroInterfaceLabel(TestMixins.GetZeroUInt32Mixin,
@@ -6874,7 +6875,7 @@ class SetInterfaceLabelWithData(TestMixins.UnsupportedSetMixin,
   """SET the interface label with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'INTERFACE_LABEL'
-  DATA = 'FOO BAR'
+  DATA = b'FOO BAR'
 
 
 # Cross check the control fields with various other properties

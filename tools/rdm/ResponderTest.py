@@ -374,7 +374,7 @@ class ResponderTestFixture(TestFixture):
                                args,
                                include_frames=True)
 
-  def SendRawDiscovery(self, sub_device, pid, data=""):
+  def SendRawDiscovery(self, sub_device, pid, data=b''):
     """Send a raw Discovery request.
 
     Args:
@@ -424,7 +424,7 @@ class ResponderTestFixture(TestFixture):
                              include_frames=True)
     return ret_code
 
-  def SendRawGet(self, sub_device, pid, data=""):
+  def SendRawGet(self, sub_device, pid, data=b''):
     """Send a raw GET request.
 
     Args:
@@ -476,7 +476,7 @@ class ResponderTestFixture(TestFixture):
       self.SleepAfterBroadcastSet()
     return ret_code
 
-  def SendRawSet(self, sub_device, pid, data=""):
+  def SendRawSet(self, sub_device, pid, data=b''):
     """Send a raw SET request.
 
     Args:

@@ -185,7 +185,7 @@ class GetWithDataMixin(object):
     If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
     of allowed results for each entry.
   """
-  DATA = 'foo'
+  DATA = b'foo'
   ALLOWED_NACKS = []
 
   def Test(self):
@@ -202,7 +202,7 @@ class GetWithDataMixin(object):
 
 class GetMandatoryPIDWithDataMixin(object):
   """GET a mandatory PID with junk param data."""
-  DATA = 'foo'
+  DATA = b'foo'
 
   def Test(self):
     # PID must return something as this PID is required (can't return
@@ -248,7 +248,7 @@ class UnsupportedSetMixin(object):
 
 class SetWithDataMixin(ResponderTestFixture):
   """SET a PID with random param data."""
-  DATA = 'foo'
+  DATA = b'foo'
 
   def Test(self):
     self.AddIfSetSupported([
@@ -263,7 +263,7 @@ class SetWithNoDataMixin(object):
   """Attempt a set with no data."""
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, b'')
 
   # TODO(simon): add a method to check this didn't change the value
 
