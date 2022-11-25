@@ -1042,8 +1042,8 @@ class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
     if self.NumberOfSettings() is None:
         return []
     else:
-      return range(self.FIRST_INDEX_OFFSET,
-                   self.NumberOfSettings() + self.FIRST_INDEX_OFFSET)
+      return list(range(self.FIRST_INDEX_OFFSET,
+                        self.NumberOfSettings() + self.FIRST_INDEX_OFFSET))
 
 
 class GetSettingDescriptionsListMixin(GetSettingDescriptionsMixin):

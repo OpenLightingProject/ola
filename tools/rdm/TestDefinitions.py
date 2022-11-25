@@ -889,7 +889,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
                     'IDENTIFY_DEVICE']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._params = {}
     self._GetSupportedParams()
@@ -1664,7 +1664,7 @@ class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
   REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._GetSoftwareVersion()
 
@@ -2688,7 +2688,7 @@ class GetSensorValues(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -2826,7 +2826,7 @@ class ResetSensorValue(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -2952,7 +2952,7 @@ class RecordSensorValues(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -3625,7 +3625,8 @@ class GetRealTimeClock(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(
-      self.AckGetResult(field_names=list(self.ALLOWED_RANGES.keys()) + ['second']))
+      self.AckGetResult(field_names=list(self.ALLOWED_RANGES.keys()) +
+                        ['second']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
@@ -3817,7 +3818,7 @@ class GetSubDeviceIdentifyDevice(ResponderTestFixture):
   REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._GetIdentifyDevice()
 
