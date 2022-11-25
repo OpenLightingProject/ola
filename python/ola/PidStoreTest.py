@@ -283,7 +283,7 @@ class PidStoreTest(unittest.TestCase):
     blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
     self.assertEqual(blob, binascii.unhexlify("0ec0"))
     decoded = pid.Unpack(blob, PidStore.RDM_GET)
-    self.assertEqual(decoded, {'languages': [{'language': '\\x0e\\xc0'}]})
+    self.assertEqual(decoded, {'languages': [{'language': '\x0e\xc0'}]})
 
     # valid empty string
     pid = store.GetName("STATUS_ID_DESCRIPTION")
