@@ -405,8 +405,8 @@ class HTTPRequest(object):
       for p in post_params:
         # In Python 3, the param name and value is a bytestring not a string,
         # so convert it for backwards compatibility and sanity
-        self._post_params[p.decode('utf-8')] =
-            post_params[p][0].decode('utf-8')
+        self._post_params[p.decode('utf-8')] = (
+            post_params[p][0].decode('utf-8'))
     return self._post_params.get(param, default)
 
 
