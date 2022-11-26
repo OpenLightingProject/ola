@@ -21,6 +21,7 @@ from ola.testing.rdm import TestDefinitions, TestRunner
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm.TestState import TestState
 from ola.testing.rdm.TimingStats import TimingStats
+from ola.StringUtils import StringEscape
 import datetime
 import logging
 import re
@@ -200,17 +201,15 @@ def DisplaySummary(options, runner, tests, device):
 
   manufacturer_label = getattr(device, 'manufacturer_label', None)
   if manufacturer_label:
-    logging.info('Manufacturer: %s' %
-                 manufacturer_label.encode('string-escape'))
+    logging.info('Manufacturer: %s' % StringEscape(manufacturer_label))
 
   model_description = getattr(device, 'model_description', None)
   if model_description:
-    logging.info('Model Description: %s' %
-                 model_description.encode('string-escape'))
+    logging.info('Model Description: %s' % StringEscape(model_description))
 
   software_version = getattr(device, 'software_version', None)
   if software_version:
-    logging.info('Software Version: %s' % software_version)
+    logging.info('Software Version: %s' % StringEscape(software_version))
 
   if options.timing:
     timing_stats = runner.TimingStats()
