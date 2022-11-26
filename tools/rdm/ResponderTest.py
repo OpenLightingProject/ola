@@ -34,6 +34,7 @@ from TestState import TestState
 from TimingStats import TimingStats
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
+from ola.StringUtils import StringEscape
 
 if sys.version_info >= (3, 0):
   try:
@@ -616,17 +617,8 @@ class ResponderTestFixture(TestFixture):
         # We can't escape the key as then it may become a new key
         d[k] = self._EscapeData(v)
       return d
-    # TODO(Peter): How does this interact with the E1.20 Unicode flag?
-    # We don't use sys.version_info.major to support Python 2.6.
-    elif sys.version_info[0] == 2 and type(data) == str:
-      return data.encode('string-escape')
-    elif sys.version_info[0] == 2 and type(data) == unicode:
-      return data.encode('unicode-escape')
-    elif type(data) == str:
-      # All strings in Python 3 are unicode
-      # This encode/decode pair gets us an escaped string
-      return data.encode('unicode-escape').decode(encoding="ascii",
-                                                  errors="backslashreplace")
+    elif type(data) == str or type(data) == unicode:
+      return StringEscape(data)
     else:
       return data
 
