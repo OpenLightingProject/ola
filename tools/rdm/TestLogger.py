@@ -21,6 +21,7 @@ import pickle
 import re
 
 from ola import Version
+from ola.StringUtils import StringEscape
 from ola.testing.rdm.TestState import TestState
 
 
@@ -93,7 +94,9 @@ class TestLogger(object):
     filename = os.path.join(self._log_dir, filename)
 
     try:
-      log_file = open(filename, 'w')
+      # We need to write as binary because pickle on Python 3 generates binary
+      # data
+      log_file = open(filename, 'wb')
     except IOError as e:
       raise TestLoggerException(
           'Failed to write to %s: %s' % (filename, e.message))
@@ -211,17 +214,17 @@ class TestLogger(object):
 
     manufacturer_label = test_data['properties'].get('manufacturer_label', None)
     if manufacturer_label:
-      results_log.append('Manufacturer: %s' %
-                         manufacturer_label.encode('string-escape'))
+      results_log.append('Manufacturer: %s' % StringEscape(manufacturer_label))
 
     model_description = test_data['properties'].get('model_description', None)
     if model_description:
       results_log.append('Model Description: %s' %
-                         model_description.encode('string-escape'))
+                         StringEscape(model_description))
 
     software_version = test_data['properties'].get('software_version', None)
     if software_version:
-      results_log.append('Software Version: %s' % software_version)
+      results_log.append('Software Version: %s' %
+                         StringEscape(software_version))
 
     results_log.append("------------------- Warnings --------------------")
     results_log.extend(warnings)
