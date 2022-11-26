@@ -223,8 +223,7 @@ class TestLogger(object):
 
     software_version = test_data['properties'].get('software_version', None)
     if software_version:
-      results_log.append('Software Version: %s' %
-                         StringEscape(software_version))
+      results_log.append('Software Version: %s' % software_version)
 
     results_log.append("------------------- Warnings --------------------")
     results_log.extend(warnings)

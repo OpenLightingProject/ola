@@ -209,7 +209,7 @@ def DisplaySummary(options, runner, tests, device):
 
   software_version = getattr(device, 'software_version', None)
   if software_version:
-    logging.info('Software Version: %s' % StringEscape(software_version))
+    logging.info('Software Version: %s' % software_version)
 
   if options.timing:
     timing_stats = runner.TimingStats()
