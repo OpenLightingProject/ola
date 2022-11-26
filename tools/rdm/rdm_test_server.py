@@ -403,7 +403,10 @@ class HTTPRequest(object):
       request_body = self._environ['wsgi.input'].read(request_body_size)
       post_params = urlparse.parse_qs(request_body)
       for p in post_params:
-        self._post_params[p] = post_params[p][0]
+        # In Python 3, the param name and value is a bytestring not a string,
+        # so convert it for backwards compatibility and sanity
+        self._post_params[p.decode('utf-8')] =
+            post_params[p][0].decode('utf-8')
     return self._post_params.get(param, default)
 
 
@@ -632,7 +635,6 @@ class DownloadModelDataHandler(RequestHandler):
   """Take the data in the form and return it as a downloadable file."""
 
   def HandleRequest(self, request, response):
-    print(dir(request))
     model_data = request.PostParam('model_data') or ''
     logging.info(model_data)
 
@@ -642,7 +644,7 @@ class DownloadModelDataHandler(RequestHandler):
                        'attachment; filename="%s"' % filename)
     response.SetHeader('Content-type', 'text/plain')
     response.SetHeader('Content-length', '%d' % len(model_data))
-    response.AppendData(model_data)
+    response.AppendData(model_data.encode())
 
 
 class DownloadResultsHandler(RequestHandler):
@@ -678,7 +680,7 @@ class DownloadResultsHandler(RequestHandler):
                        'attachment; filename="%s"' % filename)
     response.SetHeader('Content-type', 'text/plain')
     response.SetHeader('Content-length', '%d' % len(output))
-    response.AppendData(output)
+    response.AppendData(output.encode())
 
 
 class RunTestsHandler(OLAServerRequestHandler):
