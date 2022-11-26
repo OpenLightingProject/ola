@@ -42,4 +42,4 @@ def StringEscape(s):
     return s.encode('unicode-escape').decode(encoding="ascii",
                                              errors="backslashreplace")
   else:
-    raise TypeError('Only strings are supported')
+    raise TypeError('Only strings are supported not %s' % type(s))
