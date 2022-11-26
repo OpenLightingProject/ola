@@ -28,6 +28,7 @@ from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import RDM_MAX_STRING_LENGTH
+from ola.StringUtils import StringEscape
 from ola.UID import UID
 
 '''Mixins used by the test definitions.
@@ -108,7 +109,7 @@ class GetStringMixin(GetMixin):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
-           string_field.encode('string-escape')))
+           StringEscape(string_field)))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
@@ -164,7 +165,7 @@ class GetRequiredStringMixin(GetRequiredMixin):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
-           string_field.encode('string-escape')))
+           StringEscape(string_field)))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
@@ -317,8 +318,8 @@ class SetLabelMixin(object):
                        (self.pid, len(new_label)))
     else:
       self.SetFailed('Labels didn\'t match, expected "%s", got "%s"' %
-                     (self.TEST_LABEL.encode('string-escape'),
-                      new_label.encode('string-escape')))
+                     (StringEscape(self.TEST_LABEL),
+                      StringEscape(new_label)))
 
   def ResetState(self):
     if not self.OldValue():
@@ -1023,7 +1024,7 @@ class GetSettingDescriptionsMixin(object):
            self.PID,
            self.DESCRIPTION_FIELD,
            self.current_item,
-           fields[self.DESCRIPTION_FIELD].encode('string-escape')))
+           StringEscape(fields[self.DESCRIPTION_FIELD])))
 
 
 class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
