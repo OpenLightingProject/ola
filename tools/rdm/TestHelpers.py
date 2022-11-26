@@ -16,6 +16,7 @@
 # Copyright (C) 2013 Peter Newman
 
 import sys
+from ola.StringUtils import StringEscape
 
 if sys.version_info >= (3, 0):
   try:
@@ -30,12 +31,10 @@ def ContainsUnprintable(s):
   """Check if a string s contain unprintable characters."""
   # TODO(Peter): How does this interact with the E1.20 Unicode flag?
   # We don't use sys.version_info.major to support Python 2.6.
-  if sys.version_info[0] == 2 and type(s) == str:
-    return s != s.encode('string-escape')
-  elif sys.version_info[0] == 2 and type(s) == unicode:
-    return s != s.encode('unicode-escape')
+  if sys.version_info[0] == 2 and (type(s) == str or type(s) == unicode):
+    return s != StringEscape(s)
   elif type(s) == str:
     # All strings in Python 3 are unicode
-    return s.encode() != s.encode('unicode-escape')
+    return s.encode() != StringEscape(s)
   else:
     return False

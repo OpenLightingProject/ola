@@ -17,7 +17,7 @@
 # Copyright (C) 2022 Peter Newman
 
 import unittest
-from StringUtils import StringEscape
+from ola.StringUtils import StringEscape
 
 """Test cases for StringUtils utilities."""
 
