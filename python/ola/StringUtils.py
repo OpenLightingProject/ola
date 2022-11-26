@@ -39,3 +39,5 @@ def StringEscape(s):
   elif type(s) == str:
     # All strings in Python 3 are unicode
     return s.encode('unicode-escape')
+  else:
+    raise TypeError('Only strings are supported')

@@ -35,6 +35,9 @@ class StringUtilsTest(unittest.TestCase):
     self.assertEqual(b'caf\\xe9', StringEscape(u'caf\xe9'))
     self.assertEqual(b'foo\\u2014bar', StringEscape(u'foo\u2014bar'))
 
+    with self.assertRaises(TypeError):
+      result = StringEscape(42)
+
 
 if __name__ == '__main__':
   unittest.main()
