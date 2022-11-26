@@ -35,6 +35,6 @@ def ContainsUnprintable(s):
     return s != StringEscape(s)
   elif type(s) == str:
     # All strings in Python 3 are unicode
-    return s.encode() != StringEscape(s)
+    return s != StringEscape(s)
   else:
     raise TypeError('Only strings are supported')
