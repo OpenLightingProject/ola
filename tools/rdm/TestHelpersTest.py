@@ -31,9 +31,13 @@ class TestHelpersContainsUnprintableTest(unittest.TestCase):
     self.assertFalse(ContainsUnprintable("bar[]"))
     self.assertFalse(ContainsUnprintable(u'foo-bar'))
     self.assertTrue(ContainsUnprintable("foo\x00bar"))
-    # TODO(Peter): How does this interact with the E1.20 Unicode flag?
+    # TODO(Peter): How do these interact with the E1.20 Unicode flag?
     self.assertTrue(ContainsUnprintable(u'caf\xe9'))
+    self.assertTrue(ContainsUnprintable(u'c\xc0f\xe9'))
     self.assertTrue(ContainsUnprintable(u'foo\u2014bar'))
+
+    with self.assertRaises(TypeError):
+      result = ContainsUnprintable(42)
 
 
 if __name__ == '__main__':
