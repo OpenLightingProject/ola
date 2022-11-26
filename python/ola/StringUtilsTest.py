@@ -26,15 +26,27 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 class StringUtilsTest(unittest.TestCase):
   def testStringEscape(self):
-    self.assertEqual(b'foo', StringEscape("foo"))
-    self.assertEqual(b'bar', StringEscape("bar"))
-    self.assertEqual(b'bar[]', StringEscape("bar[]"))
-    self.assertEqual(b'foo-bar', StringEscape(u'foo-bar'))
-    self.assertEqual(b'foo\\x00bar', StringEscape("foo\x00bar"))
+    # Test we escape properly
+    self.assertEqual('foo', StringEscape("foo"))
+    self.assertEqual('bar', StringEscape("bar"))
+    self.assertEqual('bar[]', StringEscape("bar[]"))
+    self.assertEqual('foo-bar', StringEscape(u'foo-bar'))
+    self.assertEqual('foo\\x00bar', StringEscape("foo\x00bar"))
     # TODO(Peter): How does this interact with the E1.20 Unicode flag?
-    self.assertEqual(b'caf\\xe9', StringEscape(u'caf\xe9'))
-    self.assertEqual(b'foo\\u2014bar', StringEscape(u'foo\u2014bar'))
+    self.assertEqual('caf\\xe9', StringEscape(u'caf\xe9'))
+    self.assertEqual('foo\\u2014bar', StringEscape(u'foo\u2014bar'))
 
+    # Test that we display nicely in a string
+    self.assertEqual('foo', ("%s" % StringEscape("foo")))
+    self.assertEqual('bar[]', ("%s" % StringEscape("bar[]")))
+    self.assertEqual('foo-bar', ("%s" % StringEscape(u'foo-bar')))
+    self.assertEqual('foo\\x00bar', ("%s" % StringEscape("foo\x00bar")))
+    # TODO(Peter): How does this interact with the E1.20 Unicode flag?
+    self.assertEqual('caf\\xe9', ("%s" % StringEscape(u'caf\xe9')))
+    self.assertEqual('foo\\u2014bar', ("%s" % StringEscape(u'foo\u2014bar')))
+
+    # Confirm we throw an exception if we pass in a number or something else
+    # that's not a string
     with self.assertRaises(TypeError):
       result = StringEscape(42)
 

@@ -38,6 +38,8 @@ def StringEscape(s):
     return s.encode('unicode-escape')
   elif type(s) == str:
     # All strings in Python 3 are unicode
-    return s.encode('unicode-escape')
+    # This encode/decode pair gets us an escaped string
+    return s.encode('unicode-escape').decode(encoding="ascii",
+                                             errors="backslashreplace")
   else:
     raise TypeError('Only strings are supported')
