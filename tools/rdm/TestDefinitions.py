@@ -36,6 +36,7 @@ from ola.RDMConstants import (RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH,
                               RDM_MANUFACTURER_SD_MIN, RDM_MANUFACTURER_SD_MAX)
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
+from ola.StringUtils import StringEscape
 from ola.UID import UID
 from TestHelpers import ContainsUnprintable
 import TestMixins
@@ -1062,7 +1063,7 @@ class GetParamDescription(ResponderTestFixture):
     if ContainsUnprintable(fields['description']):
       self.AddAdvisory(
           'Description field in %s contains unprintable characters, was %s' %
-          (self.PID, fields['description'].encode('string-escape')))
+          (self.PID, StringEscape(fields['description'])))
 
 
 class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
@@ -1446,13 +1447,13 @@ class SetFullSizeDeviceLabel(TestMixins.SetLabelMixin,
     return self.Property('device_label')
 
 
-class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
-                             OptionalParameterTestFixture):
-  """SET the device label to something that contains non-ascii data."""
+class SetNonPrintableAsciiDeviceLabel(TestMixins.SetLabelMixin,
+                                      OptionalParameterTestFixture):
+  """SET the device label to something that contains non-printable ASCII characters."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   REQUIRES = ['device_label']
-  TEST_LABEL = 'string with\x0d non ascii\xc0'
+  TEST_LABEL = 'str w\x0d non\x1bprint ASCII\x7f'
 
   def ExpectedResults(self):
     return [
@@ -1464,6 +1465,34 @@ class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
 
   def OldValue(self):
     return self.Property('device_label')
+
+
+class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
+                             OptionalParameterTestFixture):
+  """SET the device label to something that contains non-ASCII data."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'DEVICE_LABEL'
+  REQUIRES = ['device_label']
+  TEST_LABEL = 'string with\x0d non ASCII\xc0'
+
+  def ExpectedResults(self):
+    return [
+      self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+      self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.AckSetResult(action=self.VerifySet)
+    ]
+
+  def OldValue(self):
+    return self.Property('device_label')
+
+  def Test(self):
+    # We have to override test here as this has to be raw as we can't encode it
+    # on Python 3 as it turns it to UTF-8
+    # It's also technically out of spec for E1.20 unless it's sent as UTF-8
+    self._test_state = self.SET
+    self.AddIfSetSupported(self.ExpectedResults())
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.TEST_LABEL.encode())
 
 
 class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
@@ -1520,7 +1549,7 @@ class GetLanguageCapabilities(OptionalParameterTestFixture):
       if ContainsUnprintable(language):
         self.AddAdvisory(
             'Language name in languague capabilities contains unprintable '
-            'characters, was %s' % language.encode('string-escape'))
+            'characters, was %s' % StringEscape(language))
 
     self.SetProperty('languages_capabilities', language_set)
 
@@ -1590,14 +1619,48 @@ class SetLanguage(OptionalParameterTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
-class SetNonAsciiLanguage(OptionalParameterTestFixture):
-  """Try to set the language to non-ascii characters."""
+class SetNumericLanguage(OptionalParameterTestFixture):
+  """Try to set the language to ASCII numeric characters."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'LANGUAGE'
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(ROOT_DEVICE, self.pid, ['\x0d\xc0'])
+    self.SendSet(ROOT_DEVICE, self.pid, ['01'])
+
+
+class SetNullLanguage(OptionalParameterTestFixture):
+  """Try to set the language to two null ASCII characters."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, ['\x00\x00'])
+
+
+class SetNonPrintableAsciiLanguage(OptionalParameterTestFixture):
+  """Try to set the language to non-printable ASCII characters."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, ['\x1b\x7f'])
+
+
+class SetNonAsciiLanguage(OptionalParameterTestFixture):
+  """Try to set the language to non-ASCII characters."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    # This has to be raw as we can't encode it on Python 3 as it turns it to
+    # UTF-8 and too many characters
+    # It's also technically out of spec for E1.20 unless it's sent as UTF-8 at
+    # which point we're back at square one
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'\x0d\xc0')
 
 
 class SetUnsupportedLanguage(OptionalParameterTestFixture):
@@ -1797,7 +1860,7 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
     if ContainsUnprintable(fields['name']):
       self.AddAdvisory(
           'Name field in %s contains unprintable characters, was %s' %
-          (self.PID, fields['name'].encode('string-escape')))
+          (self.PID, StringEscape(fields['name'])))
 
 
 class GetPersonality(OptionalParameterTestFixture):
@@ -1878,7 +1941,7 @@ class GetPersonalityDescriptions(OptionalParameterTestFixture):
       if ContainsUnprintable(fields['name']):
         self.AddAdvisory(
             'Name field in %s contains unprintable characters, was %s' %
-            (self.PID, fields['name'].encode('string-escape')))
+            (self.PID, StringEscape(fields['name'])))
 
 
 class SetPersonality(OptionalParameterTestFixture):
@@ -2620,7 +2683,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
       self.AddAdvisory(
           'Name field in sensor definition for sensor %d  contains unprintable'
           ' characters, was %s' % (self._current_index,
-                                   fields['name'].encode('string-escape')))
+                                   StringEscape(fields['name'])))
 
   def CheckCondition(self, sensor_number, fields, lhs, predicate_str, rhs):
     """Check for a condition and add a warning if it isn't true."""
@@ -3973,7 +4036,7 @@ class GetSelfTestDescription(OptionalParameterTestFixture):
       self.AddAdvisory(
           'Description field in self test description for test number %d '
           'contains unprintable characters, was %s' %
-          (1, fields['description'].encode('string-escape')))
+          (1, StringEscape(fields['description'])))
 
 
 class GetSelfTestDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
@@ -4026,8 +4089,7 @@ class FindSelfTests(OptionalParameterTestFixture):
         self.AddAdvisory(
             'Description field in self test description for test number %d '
             'contains unprintable characters, was %s' %
-            (fields['test_number'],
-             fields['description'].encode('string-escape')))
+            (fields['test_number'], StringEscape(fields['description'])))
 
 
 class AllSubDevicesGetSelfTestDescription(TestMixins.AllSubDevicesGetMixin,
