@@ -636,6 +636,10 @@ class String(Atom):
     arg = args[0]
     arg_size = len(arg)
 
+    # Handle the fact a UTF-8 character could be multi-byte
+    if sys.version_info >= (3, 2):
+      arg_size = max(arg_size, len(bytes(arg, 'utf8')))
+
     if self.max is not None and arg_size > self.max:
       raise ArgsValidationError('%s can be at most %d,' %
                                 (self.name, self.max))

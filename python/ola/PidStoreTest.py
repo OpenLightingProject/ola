@@ -278,12 +278,24 @@ class PidStoreTest(unittest.TestCase):
       args = ["enx"]
       blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
 
-    # test packing some non-ascii characters
-    args = ["\x0d\xc0"]
+    # test packing some non-printable characters
+    args = ["\x0d\x7f"]
     blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
-    self.assertEqual(blob, binascii.unhexlify("0ec0"))
+    self.assertEqual(blob, binascii.unhexlify("0d7f"))
     decoded = pid.Unpack(blob, PidStore.RDM_GET)
-    self.assertEqual(decoded, {'languages': [{'language': '\x0d\xc0'}]})
+    self.assertEqual(decoded, {'languages': [{'language': '\x0d\x7f'}]})
+
+    # test packing some non-ascii characters, this fails on Python 3 as the
+    # LATIN CAPITAL LETTER A WITH GRAVE, unicode U+00C0 gets encoded as two
+    # bytes (\xc3\x80) so the total length is three bytes and it doesn't fit!
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["\x0d\xc0"]
+      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+
+    # It works on it's own as it's short enough...
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = ["\xc0"]
+      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
 
     # valid empty string
     pid = store.GetName("STATUS_ID_DESCRIPTION")
