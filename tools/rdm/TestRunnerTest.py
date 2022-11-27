@@ -39,7 +39,7 @@ class TestRunnerGetTestClasses(unittest.TestCase):
                         TestRunner.GetTestClasses(TestDefinitions),
                     "GetDeviceInfo missing from list of test classes")
     # Check we don't contain the base classes:
-    # Test for various versions of them due to issues with Python 3
+    # Test for various versions of them due to potential issues with Python 3
     # The static versions are probably a better test for the test run
     for classname in [OptionalParameterTestFixture,
                       ResponderTestFixture,

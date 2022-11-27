@@ -22,6 +22,8 @@ import time
 
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
+from ola.testing.rdm.ResponderTest import (OptionalParameterTestFixture,
+                                           ResponderTestFixture, TestFixture)
 from ola.testing.rdm.TimingStats import TimingStats
 
 from ola import PidStore
@@ -195,12 +197,10 @@ def GetTestClasses(module):
     cls = getattr(module, symbol)
     if not inspect.isclass(cls):
       continue
-    # Test for dynamic versions of these due to issues with Python 3
     base_classes = [
-        # Original
-        getattr(module, "OptionalParameterTestFixture"),
-        getattr(module, "ResponderTestFixture"),
-        getattr(module, "TestFixture")
+        OptionalParameterTestFixture,
+        ResponderTestFixture,
+        TestFixture
     ]
 
     if cls in base_classes:
@@ -208,7 +208,7 @@ def GetTestClasses(module):
     # This seems to confuse Python 3 if we compare it to
     # ResponderTest.TestFixture, some sort of diamond inheritance issue?
     # So test for the dynamic version of it instead
-    if issubclass(cls, getattr(module, "TestFixture")):
+    if issubclass(cls, TestFixture):
       classes.append(cls)
   return classes
 
