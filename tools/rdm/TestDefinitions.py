@@ -3554,7 +3554,6 @@ class AllSubDevicesGetDisplayLevel(TestMixins.AllSubDevicesGetMixin,
 class GetPanInvert(TestMixins.GetMixin, OptionalParameterTestFixture):
   """GET the pan invert setting."""
   CATEGORY = TestCategory.CONFIGURATION
-
   PID = 'PAN_INVERT'
   EXPECTED_FIELDS = ['invert']
   PROVIDES = ['pan_invert']
