@@ -221,6 +221,10 @@ class PidStoreTest(unittest.TestCase):
     self.assertEqual(decoded['slots_required'], 7)
     self.assertEqual(decoded['name'], "UnpackTest")
 
+    with self.assertRaises(PidStore.UnpackException):
+      blob = binascii.unhexlify("2a0007556e7061636bc054657374")
+      decoded = pid.Unpack(blob, PidStore.RDM_GET)
+
   def testPackRanges(self):
     store = PidStore.PidStore()
     store.Load([os.path.join(path, "test_pids.proto")])
@@ -285,9 +289,9 @@ class PidStoreTest(unittest.TestCase):
     decoded = pid.Unpack(blob, PidStore.RDM_GET)
     self.assertEqual(decoded, {'languages': [{'language': '\x0d\x7f'}]})
 
-    # test packing some non-ascii characters, this fails on Python 3 as the
+    # test packing some non-ascii characters, as the
     # LATIN CAPITAL LETTER A WITH GRAVE, unicode U+00C0 gets encoded as two
-    # bytes (\xc3\x80) so the total length is three bytes and it doesn't fit!
+    # bytes (\xc3\x80) the total length is three bytes and it doesn't fit!
     with self.assertRaises(PidStore.ArgsValidationError):
       args = [u"\x0d\xc0"]
       blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]

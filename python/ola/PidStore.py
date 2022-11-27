@@ -674,7 +674,12 @@ class String(Atom):
     except struct.error as e:
       raise UnpackException(e)
 
-    return value[0].rstrip(b'\x00').decode('utf-8')
+    try:
+      value = value[0].rstrip(b'\x00').decode('utf-8')
+    except UnicodeDecodeError as e:
+      raise UnpackException(e)
+
+    return value
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
