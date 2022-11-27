@@ -22,7 +22,7 @@ import time
 
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
-from TimingStats import TimingStats
+from ola.testing.rdm.TimingStats import TimingStats
 
 from ola import PidStore
 

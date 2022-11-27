@@ -18,7 +18,7 @@
 
 import unittest
 
-from TestHelpers import ContainsUnprintable
+from ola.testing.rdm.TestHelpers import ContainsUnprintable
 
 """Test cases for TestHelpers utilities."""
 

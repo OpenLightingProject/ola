@@ -19,10 +19,6 @@ import datetime
 import operator
 import struct
 
-import TestMixins
-from ExpectedResults import (RDM_GET, RDM_SET, AckGetResult, BroadcastResult,
-                             InvalidResponse, NackGetResult, TimeoutResult,
-                             UnsupportedResult)
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
@@ -34,12 +30,17 @@ from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
                               RDM_MAX_HOSTNAME_LENGTH, RDM_MIN_HOSTNAME_LENGTH,
                               RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
 from ola.StringUtils import StringEscape
+from ola.testing.rdm import TestMixins
+from ola.testing.rdm.ExpectedResults import (RDM_GET, RDM_SET, AckGetResult,
+                                             BroadcastResult, InvalidResponse,
+                                             NackGetResult, TimeoutResult,
+                                             UnsupportedResult)
+from ola.testing.rdm.ResponderTest import (OptionalParameterTestFixture,
+                                           ResponderTestFixture, TestFixture)
+from ola.testing.rdm.TestCategory import TestCategory
+from ola.testing.rdm.TestHelpers import ContainsUnprintable
+from ola.testing.rdm.TestMixins import MAX_DMX_ADDRESS
 from ola.UID import UID
-from ResponderTest import (OptionalParameterTestFixture, ResponderTestFixture,
-                           TestFixture)
-from TestCategory import TestCategory
-from TestHelpers import ContainsUnprintable
-from TestMixins import MAX_DMX_ADDRESS
 
 from ola import PidStore, RDMConstants
 

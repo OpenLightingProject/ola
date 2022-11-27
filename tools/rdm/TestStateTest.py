@@ -18,8 +18,8 @@
 
 import unittest
 
+from ola.testing.rdm.TestState import TestState
 from ola.TestUtils import allHashNotEqual, allNotEqual
-from TestState import TestState
 
 """Test cases for sorting TestState."""
 
