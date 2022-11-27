@@ -13,7 +13,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 # StringUtils.py
-# Copyright (C) 2013 Peter Newman
+# Copyright (C) 2022 Peter Newman
 
 """Common utils for OLA Python string handling"""
 
