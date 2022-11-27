@@ -221,6 +221,16 @@ class PidStoreTest(unittest.TestCase):
     self.assertEqual(decoded['slots_required'], 7)
     self.assertEqual(decoded['name'], "UnpackTest")
 
+    # Test null handling, trailing null should be truncated on the way back in
+    args = ["42", "7", "Foo\0"]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    # Not truncated here
+    self.assertEqual(blob, binascii.unhexlify("2a0007466f6f00"))
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    self.assertEqual(decoded['personality'], 42)
+    self.assertEqual(decoded['slots_required'], 7)
+    self.assertEqual(decoded['name'], "Foo")
+
     with self.assertRaises(PidStore.UnpackException):
       blob = binascii.unhexlify("2a0007556e7061636bc054657374")
       decoded = pid.Unpack(blob, PidStore.RDM_GET)
