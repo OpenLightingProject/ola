@@ -61,7 +61,10 @@ tools/rdm/ExpectedResultsTest.sh: tools/rdm/Makefile.mk
 	chmod +x $(top_builddir)/tools/rdm/ExpectedResultsTest.sh
 
 tools/rdm/ResponderTestTest.sh: tools/rdm/Makefile.mk
-	mkdir -p $(top_builddir)/python/ola
+	mkdir -p $(top_builddir)/python/ola/testing
+	touch $(top_builddir)/python/ola/testing/__init__.py
+        # This link is relative within the builddir
+	$(LN_S) -f ../../../tools/rdm $(top_builddir)/python/ola/testing/rdm
 	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/ResponderTestTest.py; exit \$$?" > $(top_builddir)/tools/rdm/ResponderTestTest.sh
 	chmod +x $(top_builddir)/tools/rdm/ResponderTestTest.sh
 

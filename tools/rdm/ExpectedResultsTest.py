@@ -20,9 +20,11 @@ import unittest
 from collections import namedtuple
 
 from ola.OlaClient import OlaClient
-from ola.testing.rdm.ExpectedResults import (BroadcastResult, DUBResult,
-                                             InvalidResponse, SuccessfulResult,
-                                             TimeoutResult, UnsupportedResult)
+
+# Keep this import relative to simplify the testing
+from ExpectedResults import (BroadcastResult, DUBResult, InvalidResponse,
+                             SuccessfulResult, TimeoutResult,
+                             UnsupportedResult)
 
 """Test cases for ExpectedResults classes."""
 
