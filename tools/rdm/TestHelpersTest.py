@@ -38,6 +38,7 @@ class TestHelpersContainsUnprintableTest(unittest.TestCase):
 
     with self.assertRaises(TypeError):
       result = ContainsUnprintable(42)
+      self.assertNone(result)
 
 
 if __name__ == '__main__':

@@ -23,7 +23,6 @@ from TimingStats import TimingStats
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
-from ola.testing.rdm import ResponderTest
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 

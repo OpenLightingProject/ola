@@ -1449,7 +1449,9 @@ class SetFullSizeDeviceLabel(TestMixins.SetLabelMixin,
 
 class SetNonPrintableAsciiDeviceLabel(TestMixins.SetLabelMixin,
                                       OptionalParameterTestFixture):
-  """SET the device label to something that contains non-printable ASCII characters."""
+  """SET the device label to something that contains non-printable ASCII
+     characters.
+  """
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   REQUIRES = ['device_label']

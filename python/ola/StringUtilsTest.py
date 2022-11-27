@@ -49,6 +49,7 @@ class StringUtilsTest(unittest.TestCase):
     # that's not a string
     with self.assertRaises(TypeError):
       result = StringEscape(42)
+      self.assertNone(result)
 
 
 if __name__ == '__main__':
