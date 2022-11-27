@@ -992,6 +992,7 @@ AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
                  tools/rdm/TestCategory.py:tools/rdm/TestCategory.py
                  tools/rdm/TestDefinitions.py:tools/rdm/TestDefinitions.py
                  tools/rdm/TestHelpers.py:tools/rdm/TestHelpers.py
+                 tools/rdm/TestMixins.py:tools/rdm/TestMixins.py
                  tools/rdm/TestRunner.py:tools/rdm/TestRunner.py
                  tools/rdm/TestState.py:tools/rdm/TestState.py
                  tools/rdm/TimingStats.py:tools/rdm/TimingStats.py])
