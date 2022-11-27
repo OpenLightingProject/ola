@@ -17,10 +17,10 @@
 # Copyright (C) 2022 Peter Newman
 
 import unittest
-from ola.testing.rdm import TestDefinitions, TestRunner
-from ola.testing.rdm import ResponderTest
-from ola.testing.rdm.ResponderTest import OptionalParameterTestFixture, \
-    ResponderTestFixture, TestFixture
+
+from ola.testing.rdm import ResponderTest, TestDefinitions, TestRunner
+from ola.testing.rdm.ResponderTest import (OptionalParameterTestFixture,
+                                           ResponderTestFixture, TestFixture)
 from ola.testing.rdm.TestDefinitions import GetDeviceInfo
 
 """Test cases for TestRunner utilities."""

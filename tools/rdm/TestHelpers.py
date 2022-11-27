@@ -16,6 +16,7 @@
 # Copyright (C) 2013 Peter Newman
 
 import sys
+
 from ola.StringUtils import StringEscape
 
 if sys.version_info >= (3, 0):

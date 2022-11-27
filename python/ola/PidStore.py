@@ -17,18 +17,19 @@
 # Holds all the information about RDM PIDs
 
 from __future__ import print_function
+
 import binascii
 import math
 import os
 import socket
 import struct
 import sys
+
 from google.protobuf import text_format
-from ola import PidStoreLocation
-from ola import Pids_pb2
 from ola.MACAddress import MACAddress
-from ola import RDMConstants
 from ola.UID import UID
+
+from ola import Pids_pb2, PidStoreLocation, RDMConstants
 
 """The PID Store."""
 

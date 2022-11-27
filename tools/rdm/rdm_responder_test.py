@@ -17,22 +17,24 @@
 # Copyright (C) 2010 Simon Newton
 
 from __future__ import print_function
-from ola.testing.rdm import TestDefinitions, TestRunner
-from ola.testing.rdm.DMXSender import DMXSender
-from ola.testing.rdm.TestState import TestState
-from ola.testing.rdm.TimingStats import TimingStats
-from ola.StringUtils import StringEscape
+
 import datetime
 import logging
 import re
 import sys
 import textwrap
 import time
-from ola import PidStore
-from ola import Version
-from ola.ClientWrapper import ClientWrapper
-from ola.UID import UID
 from optparse import OptionParser
+
+from ola.ClientWrapper import ClientWrapper
+from ola.StringUtils import StringEscape
+from ola.testing.rdm import TestDefinitions, TestRunner
+from ola.testing.rdm.DMXSender import DMXSender
+from ola.testing.rdm.TestState import TestState
+from ola.testing.rdm.TimingStats import TimingStats
+from ola.UID import UID
+
+from ola import PidStore, Version
 
 if sys.version_info >= (3, 0):
   try:

@@ -19,8 +19,9 @@
 import binascii
 import os
 import unittest
+
 import ola.PidStore as PidStore
-from ola.TestUtils import allNotEqual, allHashNotEqual
+from ola.TestUtils import allHashNotEqual, allNotEqual
 
 """Test cases for the PidStore class.
    Relies on the PID data from RDM tests in the directory

@@ -18,29 +18,30 @@
 import datetime
 import operator
 import struct
-from ExpectedResults import (AckGetResult, BroadcastResult, NackGetResult,
-                             InvalidResponse, TimeoutResult, UnsupportedResult,
-                             RDM_GET, RDM_SET)
-from ResponderTest import ResponderTestFixture, TestFixture
-from ResponderTest import OptionalParameterTestFixture
-from TestCategory import TestCategory
-from ola import PidStore
-from ola import RDMConstants
-from ola.RDMConstants import (RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH,
-                              RDM_MAX_DOMAIN_NAME_LENGTH,
-                              RDM_MANUFACTURER_PID_MIN,
-                              RDM_MANUFACTURER_PID_MAX, RDM_INTERFACE_INDEX_MIN,
-                              RDM_INTERFACE_INDEX_MAX,
-                              INTERFACE_HARDWARE_TYPE_ETHERNET,
-                              RDM_ZERO_FOOTPRINT_DMX_ADDRESS,
-                              RDM_MANUFACTURER_SD_MIN, RDM_MANUFACTURER_SD_MAX)
+
+import TestMixins
+from ExpectedResults import (RDM_GET, RDM_SET, AckGetResult, BroadcastResult,
+                             InvalidResponse, NackGetResult, TimeoutResult,
+                             UnsupportedResult)
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
+from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
+                              RDM_INTERFACE_INDEX_MAX, RDM_INTERFACE_INDEX_MIN,
+                              RDM_MANUFACTURER_PID_MAX,
+                              RDM_MANUFACTURER_PID_MIN,
+                              RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
+                              RDM_MAX_DOMAIN_NAME_LENGTH,
+                              RDM_MAX_HOSTNAME_LENGTH, RDM_MIN_HOSTNAME_LENGTH,
+                              RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
 from ola.StringUtils import StringEscape
 from ola.UID import UID
+from ResponderTest import (OptionalParameterTestFixture, ResponderTestFixture,
+                           TestFixture)
+from TestCategory import TestCategory
 from TestHelpers import ContainsUnprintable
-import TestMixins
 from TestMixins import MAX_DMX_ADDRESS
+
+from ola import PidStore, RDMConstants
 
 '''This defines all the tests for RDM responders.'''
 

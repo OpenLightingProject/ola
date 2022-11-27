@@ -27,14 +27,16 @@
 import logging
 import sys
 import time
+
 from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
                              NackDiscoveryResult, NackGetResult, NackSetResult)
+from ola.OlaClient import OlaClient, RDMNack
+from ola.StringUtils import StringEscape
 from TestCategory import TestCategory
 from TestState import TestState
 from TimingStats import TimingStats
+
 from ola import PidStore
-from ola.OlaClient import OlaClient, RDMNack
-from ola.StringUtils import StringEscape
 
 if sys.version_info >= (3, 0):
   try:
