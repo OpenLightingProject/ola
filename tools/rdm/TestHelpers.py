@@ -35,4 +35,4 @@ def ContainsUnprintable(s):
     # All strings in Python 3 are unicode, Python 2 ones might not be
     return s != StringEscape(s)
   else:
-    raise TypeError('Only strings are supported')
+    raise TypeError('Only strings are supported not %s' % type(s))

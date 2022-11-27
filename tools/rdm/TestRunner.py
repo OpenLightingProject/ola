@@ -207,7 +207,7 @@ def GetTestClasses(module):
       continue
     # This seems to confuse Python 3 if we compare it to
     # ResponderTest.TestFixture, some sort of diamond inheritance issue?
-    # So test for the dynamic version of it instead
+    # So test for the base version of it instead
     if issubclass(cls, TestFixture):
       classes.append(cls)
   return classes

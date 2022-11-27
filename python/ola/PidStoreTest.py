@@ -232,6 +232,8 @@ class PidStoreTest(unittest.TestCase):
     self.assertEqual(decoded['slots_required'], 7)
     self.assertEqual(decoded['name'], "Foo")
 
+    # Confirm we raise an error if we try and unpack a non-ASCII, non-UTF-8
+    # containing packet (0xc0)
     with self.assertRaises(PidStore.UnpackException):
       blob = binascii.unhexlify("2a0007556e7061636bc054657374")
       decoded = pid.Unpack(blob, PidStore.RDM_GET)
