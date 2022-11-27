@@ -289,16 +289,16 @@ class PidStoreTest(unittest.TestCase):
     # LATIN CAPITAL LETTER A WITH GRAVE, unicode U+00C0 gets encoded as two
     # bytes (\xc3\x80) so the total length is three bytes and it doesn't fit!
     with self.assertRaises(PidStore.ArgsValidationError):
-      args = ["\x0d\xc0"]
+      args = [u"\x0d\xc0"]
       blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
 
     # It works on it's own as it's short enough...
-    args = ["\xc0"]
+    args = [u"\u00c0"]
     blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
     self.assertEqual(blob, binascii.unhexlify("c380"))
     decoded = pid.Unpack(blob, PidStore.RDM_GET)
     # This is the unicode code point for it
-    self.assertEqual(decoded, {'languages': [{'language': '\u00c0'}]})
+    self.assertEqual(decoded, {'languages': [{'language': u'\u00c0'}]})
 
     # valid empty string
     pid = store.GetName("STATUS_ID_DESCRIPTION")
