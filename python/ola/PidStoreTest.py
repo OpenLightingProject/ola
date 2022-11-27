@@ -293,9 +293,12 @@ class PidStoreTest(unittest.TestCase):
       blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
 
     # It works on it's own as it's short enough...
-    with self.assertRaises(PidStore.ArgsValidationError):
-      args = ["\xc0"]
-      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    args = ["\xc0"]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertEqual(blob, binascii.unhexlify("c380"))
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    # This is the unicode code point for it
+    self.assertEqual(decoded, {'languages': [{'language': '\u00c0'}]})
 
     # valid empty string
     pid = store.GetName("STATUS_ID_DESCRIPTION")

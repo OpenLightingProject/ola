@@ -639,6 +639,8 @@ class String(Atom):
     # Handle the fact a UTF-8 character could be multi-byte
     if sys.version_info >= (3, 2):
       arg_size = max(arg_size, len(bytes(arg, 'utf8')))
+    else:
+      arg_size = max(arg_size, len(arg.encode('utf8')))
 
     if self.max is not None and arg_size > self.max:
       raise ArgsValidationError('%s can be at most %d,' %
@@ -652,7 +654,7 @@ class String(Atom):
       if sys.version_info >= (3, 2):
         data = struct.unpack('%ds' % arg_size, bytes(arg, 'utf8'))
       else:
-        data = struct.unpack('%ds' % arg_size, arg)
+        data = struct.unpack('%ds' % arg_size, arg.encode('utf8'))
     except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data[0], 1
