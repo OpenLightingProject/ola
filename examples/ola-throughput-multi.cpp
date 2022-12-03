@@ -30,7 +30,7 @@
 #include <ola/StreamingClient.h>
 #include <ola/StringUtils.h>
 
-#include <chrono>  // NOLINT
+#include <chrono>  // NOLINT(build/c++11)
 #include <iostream>
 #include <string>
 #include <vector>
