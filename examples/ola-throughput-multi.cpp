@@ -15,7 +15,8 @@
  *
  * ola-throughput-multi.cpp
  * Send a bunch of frames quickly on multiple universes to load test the server.
- * Copyright (C) 2005 Simon Newton
+ * Copyright (C) 2022 Perry Naseck (git@perrynaseck.com)
+ * Copyright (C) 2005 Simon Newton (this file based on ola-throughput.cpp)
  */
 
 #include <errno.h>
