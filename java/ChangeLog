@@ -1,7 +1,0 @@
-04/22/2017 Erez Makavy <hepi.yellow@gmail.com>
- * v0.0.2 
-  - Add OlaClient.getUniverseList()
-
-03/11/2012 Simon Newton <nomis52@gmail.com>
- * v0.0.1
-  - Add initial Java API from Favy Vanherbergen

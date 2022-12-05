@@ -1,9 +1,0 @@
-debian/org.openlighting.ola.ola.metainfo.xml usr/share/metainfo
-usr/bin/ola*
-usr/bin/rdmpro_sniffer
-usr/bin/usbpro_firmware
-usr/share/man/man1/ola*
-usr/share/man/man1/rdmpro_sniffer*
-usr/share/man/man1/usbpro_firmware*
-usr/share/olad/*
-usr/share/ola/pids/*

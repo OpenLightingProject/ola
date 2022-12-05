@@ -1,4 +1,0 @@
-{
- "plugins": ["olp-javascript-style"],
- "preset": "OLP"
-}

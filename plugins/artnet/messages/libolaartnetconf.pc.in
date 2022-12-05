@@ -1,9 +1,0 @@
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
-
-Name: libolaartnetconf
-Version: @VERSION@
-Description: Open Lighting Architecture - Art-Net Config Messages
-Libs: -lprotobuf
