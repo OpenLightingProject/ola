@@ -133,7 +133,7 @@ void *UartDmxThread::Run() {
         m_granularity = GOOD;
         OLA_INFO << "Switching from BAD to GOOD granularity for UART thread";
       }
-      
+
       elapsed = ts3 - ts1;
       while (elapsed.InMilliSeconds() < frameTime) {
         clock.CurrentMonotonicTime(&ts2);
@@ -157,7 +157,8 @@ void UartDmxThread::CheckTimeGranularity() {
   clock.CurrentMonotonicTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
-  m_granularity = interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT ? BAD : GOOD;
+  m_granularity = (interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT) ? 
+      BAD : GOOD;
   OLA_INFO << "Granularity for UART thread is "
            << (m_granularity == GOOD ? "GOOD" : "BAD");
 }
