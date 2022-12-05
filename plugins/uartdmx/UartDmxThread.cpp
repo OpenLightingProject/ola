@@ -72,10 +72,13 @@ bool UartDmxThread::WriteDMX(const DmxBuffer &buffer) {
  * The method called by the thread
  */
 void *UartDmxThread::Run() {
-  TimeStamp ts1, ts2;
+  TimeStamp ts1, ts2, ts3;
   Clock clock;
   CheckTimeGranularity();
   DmxBuffer buffer;
+
+  int frameTime = static_cast<int>(floor(
+    (m_malft / static_cast<double>(1000)) + static_cast<double>(0.5)));
 
   // Setup the widget
   if (!m_widget->IsOpen())
@@ -92,6 +95,8 @@ void *UartDmxThread::Run() {
       ola::thread::MutexLocker locker(&m_buffer_mutex);
       buffer.Set(m_buffer);
     }
+
+    clock.CurrentMonotonicTime(&ts1);
 
     if (!m_widget->SetBreak(true))
       goto framesleep;
@@ -110,7 +115,31 @@ void *UartDmxThread::Run() {
 
   framesleep:
     // Sleep for the remainder of the DMX frame time
-    usleep(m_malft);
+    clock.CurrentMonotonicTime(&ts2);
+    TimeInterval elapsed = ts2 - ts1;
+
+    if (m_granularity == GOOD) {
+      while (elapsed.InMilliSeconds() < frameTime) {
+        usleep(1000);
+        clock.CurrentMonotonicTime(&ts2);
+        elapsed = ts2 - ts1;
+      }
+    } else {
+      // See if we can drop out of bad mode.
+      usleep(1000);
+      clock.CurrentMonotonicTime(&ts3);
+      TimeInterval interval = ts3 - ts2;
+      if (interval.InMilliSeconds() <= BAD_GRANULARITY_LIMIT) {
+        m_granularity = GOOD;
+        OLA_INFO << "Switching from BAD to GOOD granularity for UART thread";
+      }
+
+      elapsed = ts3 - ts1;
+      while (elapsed.InMilliSeconds() < frameTime) {
+        clock.CurrentMonotonicTime(&ts2);
+        elapsed = ts2 - ts1;
+      }
+    }
   }
   return NULL;
 }
@@ -122,17 +151,14 @@ void *UartDmxThread::Run() {
 void UartDmxThread::CheckTimeGranularity() {
   TimeStamp ts1, ts2;
   Clock clock;
-  /** If sleeping for 1ms takes longer than this, don't trust
-   * usleep for this session
-   */
-  const int threshold = 3;
 
   clock.CurrentMonotonicTime(&ts1);
   usleep(1000);
   clock.CurrentMonotonicTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
-  m_granularity = interval.InMilliSeconds() > threshold ? BAD : GOOD;
+  m_granularity = (interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT) ?
+	  BAD : GOOD;
   OLA_INFO << "Granularity for UART thread is "
            << (m_granularity == GOOD ? "GOOD" : "BAD");
 }

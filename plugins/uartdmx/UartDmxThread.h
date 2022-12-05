@@ -53,6 +53,7 @@ class UartDmxThread : public ola::thread::Thread {
   void CheckTimeGranularity();
 
   static const uint32_t DMX_MAB = 16;
+  static const uint32_t BAD_GRANULARITY_LIMIT = 3;
 
   DISALLOW_COPY_AND_ASSIGN(UartDmxThread);
 };
