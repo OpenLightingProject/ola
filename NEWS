@@ -9,7 +9,8 @@ x/y/2020 ola-0.10.9
  * 
 
  Bugs:
- * 
+ * Renamed EndpointNoticationEvent(sic) to EndpointNotificationEvent in the
+   E1.33 EndpointManager code
 
  Internal:
  *
