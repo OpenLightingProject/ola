@@ -14,6 +14,7 @@ include plugins/renard/Makefile.mk
 include plugins/sandnet/Makefile.mk
 include plugins/shownet/Makefile.mk
 include plugins/spi/Makefile.mk
+include plugins/spidmx/Makefile.mk
 include plugins/stageprofi/Makefile.mk
 include plugins/usbdmx/Makefile.mk
 
