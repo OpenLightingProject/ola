@@ -18,9 +18,11 @@
 from __future__ import print_function
 
 import logging
-from ola import PidStore, RDMConstants
+
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
+
+from ola import PidStore, RDMConstants
 
 '''Quick script to collect information about responders.'''
 

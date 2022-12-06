@@ -20,9 +20,10 @@ import logging
 import struct
 
 from google.protobuf import service
-from ola import ola_logger
 from ola.rpc import Rpc_pb2
 from ola.rpc.SimpleRpcController import SimpleRpcController
+
+from ola import ola_logger
 
 """A RpcChannel that works over a TCP socket."""
 
