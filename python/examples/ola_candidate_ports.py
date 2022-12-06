@@ -72,5 +72,5 @@ def main():
   wrapper.Run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()
