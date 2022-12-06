@@ -20,6 +20,7 @@
 
 import os
 import unittest
+
 from ola import PidStore
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'

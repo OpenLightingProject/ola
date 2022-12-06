@@ -25,6 +25,7 @@ import select
 import termios
 import threading
 import traceback
+
 from ola.OlaClient import OlaClient
 
 """A simple client wrapper for the OlaClient."""

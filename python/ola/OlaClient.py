@@ -19,10 +19,12 @@ import array
 import socket
 import struct
 import sys
-from ola.rpc.StreamRpcChannel import StreamRpcChannel
+
 from ola.rpc.SimpleRpcController import SimpleRpcController
-from ola import Ola_pb2
+from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.UID import UID
+
+from ola import Ola_pb2
 
 """The client used to communicate with the Ola Server."""
 

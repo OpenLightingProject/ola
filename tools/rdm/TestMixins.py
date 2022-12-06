@@ -16,19 +16,21 @@
 # Copyright (C) 2010 Simon Newton
 
 import struct
-from ExpectedResults import (AckGetResult, AckDiscoveryResult, BroadcastResult,
+
+from ExpectedResults import (AckDiscoveryResult, AckGetResult, BroadcastResult,
                              DUBResult, NackSetResult, TimeoutResult,
                              UnsupportedResult)
-from ResponderTest import ResponderTestFixture
-from TestCategory import TestCategory
-from TestHelpers import ContainsUnprintable
-from ola import PidStore
 from ola.DMXConstants import DMX_UNIVERSE_SIZE
 from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import RDM_MAX_STRING_LENGTH
 from ola.UID import UID
+from ResponderTest import ResponderTestFixture
+from TestCategory import TestCategory
+from TestHelpers import ContainsUnprintable
+
+from ola import PidStore
 
 '''Mixins used by the test definitions.
 

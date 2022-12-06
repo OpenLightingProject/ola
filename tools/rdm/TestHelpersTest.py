@@ -17,6 +17,7 @@
 # Copyright (C) 2021 Peter Newman
 
 import unittest
+
 from TestHelpers import ContainsUnprintable
 
 """Test cases for TestHelpers utilities."""

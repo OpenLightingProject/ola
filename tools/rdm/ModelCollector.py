@@ -16,11 +16,14 @@
 # Copyright (C) 2011 Simon Newton
 
 from __future__ import print_function
+
 import logging
+
 import ola.RDMConstants
-from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
+
+from ola import PidStore
 
 '''Quick script to collect information about responders.'''
 

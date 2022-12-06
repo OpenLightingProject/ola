@@ -17,7 +17,8 @@
 # Copyright (C) 2019 Bruce Lowekamp
 
 import unittest
-from ResponderTest import TestFixture, ResponderTestFixture
+
+from ResponderTest import ResponderTestFixture, TestFixture
 
 """Test cases for sorting TestFixtures."""
 

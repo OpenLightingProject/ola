@@ -19,9 +19,11 @@
 """Lists the active universes."""
 
 from __future__ import print_function
+
+import sys
+
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
-import sys
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
