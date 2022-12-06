@@ -17,10 +17,12 @@
 # Copyright (C) 2021 Peter Newman
 
 import unittest
-from ExpectedResults import (BroadcastResult, DUBResult, InvalidResponse,
-                             TimeoutResult, SuccessfulResult, UnsupportedResult)
-from ola.OlaClient import OlaClient
 from collections import namedtuple
+
+from ExpectedResults import (BroadcastResult, DUBResult, InvalidResponse,
+                             SuccessfulResult, TimeoutResult,
+                             UnsupportedResult)
+from ola.OlaClient import OlaClient
 
 """Test cases for ExpectedResults classes."""
 
