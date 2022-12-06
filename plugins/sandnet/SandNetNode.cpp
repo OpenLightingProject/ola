@@ -291,7 +291,7 @@ bool SandNetNode::SendAdvertisement() {
 /*
  * Send some DMX data
  * @param buffer the DMX data
- * @return true if it was send successfully, false otherwise
+ * @return true if it was sent successfully, false otherwise
  */
 bool SandNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
   if (!m_running || port_id >= SANDNET_MAX_PORTS)

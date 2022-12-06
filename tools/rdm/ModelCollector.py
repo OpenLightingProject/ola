@@ -53,7 +53,7 @@ class ModelCollector(object):
    LANGUAGES,
    SLOT_INFO,
    SLOT_DESCRIPTION,
-   SLOT_DEFAULT_VALUE) = xrange(13)
+   SLOT_DEFAULT_VALUE) = range(13)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -103,7 +103,7 @@ class ModelCollector(object):
   def _GetVersion(self):
     this_device = self._GetDevice()
     software_versions = this_device['software_versions']
-    return software_versions[software_versions.keys()[0]]
+    return software_versions[list(software_versions.keys())[0]]
 
   def _GetCurrentPersonality(self):
     this_device = self._GetDevice()
@@ -195,8 +195,8 @@ class ModelCollector(object):
         'sensors': [],
     }
 
-    self.personalities = list(xrange(1, data['personality_count'] + 1))
-    self.sensors = list(xrange(0, data['sensor_count']))
+    self.personalities = list(range(1, data['personality_count'] + 1))
+    self.sensors = list(range(0, data['sensor_count']))
     self._NextState()
 
   def _HandleDeviceModelDescription(self, data):
