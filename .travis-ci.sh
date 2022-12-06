@@ -56,7 +56,7 @@ if [[ $TASK = 'lint' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for linting to run against
   travis_fold start "make_builtfiles"
-  make builtfiles;
+  make builtfiles VERBOSE=1;
   travis_fold end "make_builtfiles"
   # first check we've not got any generic NOLINTs
   # count the number of generic NOLINTs
@@ -70,7 +70,7 @@ if [[ $TASK = 'lint' ]]; then
     echo "Found $nolints generic NOLINTs"
   fi;
   # run the cpplint tool, fetching it if necessary
-  make cpplint
+  make cpplint VERBOSE=1
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   travis_fold start "autoreconf"
@@ -82,7 +82,7 @@ elif [[ $TASK = 'check-licences' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for licence checking to run against
   travis_fold start "make_builtfiles"
-  make builtfiles;
+  make builtfiles VERBOSE=1;
   travis_fold end "make_builtfiles"
   ./scripts/enforce_licence.py
   if [[ $? -ne 0 ]]; then
@@ -99,7 +99,7 @@ elif [[ $TASK = 'spellintian' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for spellintian to run against
   travis_fold start "make_builtfiles"
-  make builtfiles;
+  make builtfiles VERBOSE=1;
   travis_fold end "make_builtfiles"
   spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
@@ -125,7 +125,7 @@ elif [[ $TASK = 'spellintian-duplicates' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for spellintian to run against
   travis_fold start "make_builtfiles"
-  make builtfiles;
+  make builtfiles VERBOSE=1;
   travis_fold end "make_builtfiles"
   spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
@@ -151,7 +151,7 @@ elif [[ $TASK = 'codespell' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for codespell to run against
   travis_fold start "make_builtfiles"
-  make builtfiles;
+  make builtfiles VERBOSE=1;
   travis_fold end "make_builtfiles"
   spellingfiles=$(eval "find ./ -type f -and ! \( \
       $SPELLINGBLACKLIST \
@@ -178,13 +178,13 @@ elif [[ $TASK = 'doxygen' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   travis_fold start "make_builtfiles"
-  make builtfiles;
+  make builtfiles VERBOSE=1;
   travis_fold end "make_builtfiles"
   # count the number of warnings
   warnings=$(make doxygen-doc 2>&1 >/dev/null | wc -l)
   if [[ $warnings -ne 0 ]]; then
     # print the output for info
-    make doxygen-doc
+    make doxygen-doc VERBOSE=1
     echo "Found $warnings doxygen warnings"
     exit 1;
   else
@@ -230,7 +230,7 @@ elif [[ $TASK = 'flake8' ]]; then
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for flake8 to run against
   travis_fold start "make_builtfiles"
-  make builtfiles;
+  make builtfiles VERBOSE=1;
   travis_fold end "make_builtfiles"
   make flake8
 elif [[ $TASK = 'pychecker' ]]; then
@@ -304,7 +304,7 @@ else
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
   travis_fold end "configure"
   travis_fold start "make_distcheck"
-  make distcheck;
+  make distcheck VERBOSE=1;
   travis_fold end "make_distcheck"
   travis_fold start "make_dist"
   make dist;

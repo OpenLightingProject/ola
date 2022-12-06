@@ -17,8 +17,9 @@
 # Copyright (C) 2019 Bruce Lowekamp
 
 import unittest
+
+from ola.TestUtils import allHashNotEqual, allNotEqual
 from TestState import TestState
-from ola.TestUtils import allNotEqual, allHashNotEqual
 
 """Test cases for sorting TestState."""
 

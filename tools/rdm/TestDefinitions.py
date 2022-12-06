@@ -18,28 +18,31 @@
 import datetime
 import operator
 import struct
-from ExpectedResults import (AckGetResult, BroadcastResult, NackGetResult,
-                             InvalidResponse, TimeoutResult, UnsupportedResult,
-                             RDM_GET, RDM_SET)
-from ResponderTest import ResponderTestFixture, TestFixture
-from ResponderTest import (ParamDescriptionTestFixture,
-                           OptionalParameterTestFixture)
-from TestCategory import TestCategory
-from ola import PidStore
-from ola import RDMConstants
-from ola.RDMConstants import (RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH,
-                              RDM_MAX_DOMAIN_NAME_LENGTH,
-                              RDM_MANUFACTURER_PID_MIN,
-                              RDM_MANUFACTURER_PID_MAX, RDM_INTERFACE_INDEX_MIN,
-                              RDM_INTERFACE_INDEX_MAX,
-                              INTERFACE_HARDWARE_TYPE_ETHERNET,
-                              RDM_ZERO_FOOTPRINT_DMX_ADDRESS,
-                              RDM_MANUFACTURER_SD_MIN, RDM_MANUFACTURER_SD_MAX)
+
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
+from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
+                              RDM_INTERFACE_INDEX_MAX, RDM_INTERFACE_INDEX_MIN,
+                              RDM_MANUFACTURER_PID_MAX,
+                              RDM_MANUFACTURER_PID_MIN,
+                              RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
+                              RDM_MAX_DOMAIN_NAME_LENGTH,
+                              RDM_MAX_HOSTNAME_LENGTH, RDM_MIN_HOSTNAME_LENGTH,
+                              RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
 from ola.UID import UID
-from TestHelpers import ContainsUnprintable
-import TestMixins
+from ola.testing.rdm import TestMixins
+from ola.testing.rdm.ExpectedResults import (RDM_GET, RDM_SET, AckGetResult,
+                                             BroadcastResult, InvalidResponse,
+                                             NackGetResult, TimeoutResult,
+                                             UnsupportedResult)
+from ola.testing.rdm.ResponderTest import (OptionalParameterTestFixture,
+                                           ParamDescriptionTestFixture,
+                                           ResponderTestFixture, TestFixture)
+from ola.testing.rdm.TestCategory import TestCategory
+from ola.testing.rdm.TestHelpers import ContainsUnprintable
+from ola.testing.rdm.TestMixins import MAX_DMX_ADDRESS
+
+from ola import PidStore, RDMConstants
 
 '''This defines all the tests for RDM responders.'''
 
@@ -3551,7 +3554,7 @@ class SetLampOnMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELDS = ['mode']
   REQUIRES = ['lamp_on_mode']
   ALLOWED_MODES = [0, 1, 2]
-  ALL_MODES = ALLOWED_MODES + [3] + range(0x80, 0xe0)
+  ALL_MODES = ALLOWED_MODES + [3] + list(range(0x80, 0xe0))
 
   def OldValue(self):
     old = self.Property('lamp_on_mode')

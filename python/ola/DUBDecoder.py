@@ -16,6 +16,7 @@
 # Copyright (C) 2012 Simon Newton
 
 import itertools
+
 from ola.UID import UID
 
 """Decodes a DUB response."""

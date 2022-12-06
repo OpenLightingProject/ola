@@ -17,7 +17,9 @@
 # Copyright (C) 2012 Simon Newton
 
 from __future__ import print_function
+
 import logging
+
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient, Plugin
 

@@ -18,6 +18,7 @@
 import binascii
 import logging
 import struct
+
 from google.protobuf import service
 from ola import ola_logger
 from ola.rpc import Rpc_pb2

@@ -17,6 +17,7 @@
 # Copyright (C) 2013 Simon Newton
 
 from __future__ import print_function
+
 import difflib
 import getopt
 import glob
