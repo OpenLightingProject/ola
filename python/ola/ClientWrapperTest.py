@@ -22,10 +22,9 @@ import datetime
 import socket
 # import timeout_decorator
 import unittest
-from ola.ClientWrapper import ClientWrapper
-from ola.ClientWrapper import _Event
-from ola.TestUtils import handleRPCByteOrder
 
+from ola.ClientWrapper import ClientWrapper, _Event
+from ola.TestUtils import handleRPCByteOrder
 
 """Test cases for the Event and Event loop of ClientWrapper class."""
 

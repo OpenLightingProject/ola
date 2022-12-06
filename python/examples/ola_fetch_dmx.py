@@ -19,10 +19,12 @@
 """Gets a current frame of DMX for a universe."""
 
 from __future__ import print_function
-from ola.ClientWrapper import ClientWrapper
+
 import getopt
-import textwrap
 import sys
+import textwrap
+
+from ola.ClientWrapper import ClientWrapper
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
