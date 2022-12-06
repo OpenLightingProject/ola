@@ -15,14 +15,27 @@
 # TestHelpers.py
 # Copyright (C) 2013 Peter Newman
 
+import sys
+
+if sys.version_info >= (3, 0):
+  try:
+    unicode
+  except NameError:
+    unicode = str
+
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 def ContainsUnprintable(s):
   """Check if a string s contain unprintable characters."""
-  if type(s) == str:
+  # TODO(Peter): How does this interact with the E1.20 Unicode flag?
+  # We don't use sys.version_info.major to support Python 2.6.
+  if sys.version_info[0] == 2 and type(s) == str:
     return s != s.encode('string-escape')
-  elif type(s) == unicode:
+  elif sys.version_info[0] == 2 and type(s) == unicode:
     return s != s.encode('unicode-escape')
+  elif type(s) == str:
+    # All strings in Python 3 are unicode
+    return s.encode() != s.encode('unicode-escape')
   else:
     return False

@@ -1,4 +1,4 @@
-# The ArtNet plugin config messages. This needs to be available to client
+# The Art-Net plugin config messages. This needs to be available to client
 # programs.
 EXTRA_DIST += plugins/artnet/messages/ArtNetConfigMessages.proto
 
@@ -24,7 +24,7 @@ plugins_artnet_messages_libolaartnetconf_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAG
 plugins_artnet_messages_libolaartnetconf_la_LIBADD = $(libprotobuf_LIBS)
 
 plugins/artnet/messages/ArtNetConfigMessages.pb.cc plugins/artnet/messages/ArtNetConfigMessages.pb.h: plugins/artnet/messages/Makefile.mk plugins/artnet/messages/ArtNetConfigMessages.proto
-	$(PROTOC) --cpp_out plugins/artnet/messages/ --proto_path $(srcdir)/plugins/artnet/messages $(srcdir)/plugins/artnet/messages/ArtNetConfigMessages.proto
+	$(PROTOC) --cpp_out $(top_builddir)/plugins/artnet/messages/ --proto_path $(srcdir)/plugins/artnet/messages $(srcdir)/plugins/artnet/messages/ArtNetConfigMessages.proto
 
 endif
 

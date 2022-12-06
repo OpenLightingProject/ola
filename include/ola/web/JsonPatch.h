@@ -57,7 +57,7 @@ class JsonPatchOp {
    * @brief Apply the patch operation to the value.
    * @param value A pointer to a JsonValue object. This may be modified,
    * replaced or deleted entirely by the patch operation.
-   * @returns True if the patch was sucessfully applied, false otherwise.
+   * @returns True if the patch was successfully applied, false otherwise.
    */
   virtual bool Apply(JsonValue **value) const = 0;
 };
@@ -87,7 +87,7 @@ class JsonPatchAddOp : public JsonPatchOp {
 };
 
 /**
- * @brief Remove the value at the specifed path.
+ * @brief Remove the value at the specified path.
  */
 class JsonPatchRemoveOp : public JsonPatchOp {
  public:
@@ -108,7 +108,7 @@ class JsonPatchRemoveOp : public JsonPatchOp {
 };
 
 /**
- * @brief Replace the value at the specifed path.
+ * @brief Replace the value at the specified path.
  */
 class JsonPatchReplaceOp : public JsonPatchOp {
  public:

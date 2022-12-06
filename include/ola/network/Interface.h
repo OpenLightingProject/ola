@@ -47,7 +47,25 @@ class Interface {
             uint16_t type = ARP_VOID_TYPE);
   Interface(const Interface &other);
   Interface& operator=(const Interface &other);
-  bool operator==(const Interface &other);
+  bool operator==(const Interface &other) const;
+
+  /**
+   * @brief Convert the Interface to a string.
+   * @param separator the separator to use between items, defaults to ", ".
+   * @returns the string representation of this Interface.
+   */
+  std::string ToString(const std::string &separator = ", ") const;
+
+  /**
+   * @brief Write the string representation of this Interface to an
+   * ostream.
+   * @param out the ostream to write to.
+   * @param iface the iface to write.
+   */
+  friend std::ostream& operator<<(std::ostream &out,
+                                  const Interface &iface) {
+    return out << iface.ToString();
+  }
 
   std::string name;
   IPV4Address ip_address;

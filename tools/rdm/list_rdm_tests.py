@@ -29,7 +29,7 @@ __author__ = 'Peter Newman'
 
 
 def Usage():
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
   Usage: list_rdm_tests.py
 
   Generate RDM test names or code.
@@ -38,7 +38,7 @@ def Usage():
     -h, --help                Display this help message and exit.
     -p, --pid-location        The directory to read PID definitions from.
     --include-draft           Include draft PIDs.
-    --names                   Just output the test names.""")
+    --names                   Just output the test names."""))
 
 
 def GenerateDummyData(size):
@@ -305,8 +305,8 @@ def main():
         sys.argv[1:],
         'dhnp:',
         ['debug', 'help', 'names', 'pid-location=', 'include-draft'])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 

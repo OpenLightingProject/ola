@@ -25,6 +25,7 @@
 
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
+#include "ola/Constants.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -442,6 +443,15 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
 #endif  // _WIN32
 
   JsonObject json;
+#ifdef OLA_SCREENSHOT_MODE
+  json.Add("hostname", "***");
+  json.Add("instance_name", "***");
+  json.Add("config_dir", "***");
+  json.Add("ip", "***.***.***.***");
+  json.Add("broadcast", "***.***.***.***");
+  json.Add("subnet", "***.***.***.***");
+  json.Add("hw_address", "**:**:**:**:**:**");
+#else
   json.Add("hostname", ola::network::FQDN());
   json.Add("instance_name", m_ola_server->InstanceName());
   json.Add("config_dir",
@@ -450,6 +460,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   json.Add("broadcast", m_interface.bcast_address.ToString());
   json.Add("subnet", m_interface.subnet_mask.ToString());
   json.Add("hw_address", m_interface.hw_address.ToString());
+#endif  // OLA_SCREENSHOT_MODE
   json.Add("version", ola::base::Version::GetVersion());
   json.Add("up_since", start_time_str);
   json.Add("quit_enabled", m_enable_quit);
@@ -1035,7 +1046,7 @@ void OladHTTPServer::HandlePortsForUniverse(
  * @brief Handle the list of candidate ports
  * @param response the HTTPResponse that is associated with the request.
  * @param result the result of the API call
- * @param devices the possbile devices & ports
+ * @param devices the possible devices & ports
  */
 void OladHTTPServer::HandleCandidatePorts(
     HTTPResponse *response,
@@ -1155,7 +1166,7 @@ void OladHTTPServer::SendModifyUniverseResponse(HTTPResponse *response,
 
 /**
  * @brief Serve usage information.
- * @param response the reponse to use.
+ * @param response the response to use.
  * @param details the usage information
  */
 int OladHTTPServer::ServeUsage(HTTPResponse *response, const string &details) {

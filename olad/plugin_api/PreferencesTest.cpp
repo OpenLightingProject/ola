@@ -366,7 +366,7 @@ void PreferencesTest::testSave() {
   preferences->SetMultipleValue(multi_key, "3");
   preferences->Save();
 
-  saver_thread.Syncronize();
+  saver_thread.Synchronize();
 
   FileBackedPreferences *input_preferences = new
     FileBackedPreferences("", "input", NULL);

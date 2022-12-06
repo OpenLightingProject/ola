@@ -199,7 +199,7 @@ class TestLogger(object):
       if include_description:
         results_log.append(str(test['doc']))
       if include_debug:
-        results_log.extend(str(l) for l in test.get('debug', []))
+        results_log.extend(str(s) for s in test.get('debug', []))
       results_log.append('')
       warnings.extend(str(s) for s in test.get('warnings', []))
       advisories.extend(str(s) for s in test.get('advisories', []))
@@ -234,10 +234,12 @@ class TestLogger(object):
       for category, counts in sorted(count_by_category.items()):
         cat_passed = counts['passed']
         cat_total = counts['total']
+        if cat_total == 0:
+          continue
         try:
           percent = int(round(100.0 * cat_passed / cat_total))
         except ZeroDivisionError:
-          percent = '-'
+          percent = ' - '
         results_log.append(' %26s:   %3d / %3d    %s%%' %
                            (category, cat_passed, cat_total, percent))
 

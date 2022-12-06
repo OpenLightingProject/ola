@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * ArtNetPlugin.h
- * Interface for the ArtNet plugin class
+ * Interface for the Art-Net plugin class
  * Copyright (C) 2005 Simon Newton
  */
 

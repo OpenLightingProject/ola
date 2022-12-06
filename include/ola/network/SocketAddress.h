@@ -34,6 +34,7 @@
 #include <stdint.h>
 #ifdef _WIN32
 #define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
 #include <ola/win/CleanWinSock2.h>
 #else
 #include <sys/socket.h>
@@ -170,6 +171,10 @@ class GenericSocketAddress: public SocketAddress {
 
     GenericSocketAddress() {
       memset(reinterpret_cast<uint8_t*>(&m_addr), 0, sizeof(m_addr));
+    }
+
+    GenericSocketAddress(const GenericSocketAddress& other) {
+      memcpy(&m_addr, &(other.m_addr), sizeof(m_addr));
     }
 
     bool IsValid() const;

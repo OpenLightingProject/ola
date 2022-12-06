@@ -135,6 +135,16 @@ class RDMHTTPModule {
       std::vector<std::pair<uint32_t, std::string> > personalities;
     } personality_info;
 
+    typedef struct {
+      unsigned int universe_id;
+      const ola::rdm::UID *uid;
+      bool include_descriptions;
+      unsigned int active;
+      unsigned int next;
+      unsigned int total;
+      std::vector<std::string> curve_descriptions;
+    } curve_info;
+
     // UID resolution methods
     void HandleUIDList(ola::http::HTTPResponse *response,
                        unsigned int universe_id,
@@ -573,6 +583,70 @@ class RDMHTTPModule {
                                  unsigned int universe_id,
                                  const ola::rdm::UID &uid);
 
+    std::string GetCurve(const ola::http::HTTPRequest *request,
+                         ola::http::HTTPResponse *response,
+                         unsigned int universe_id,
+                         const ola::rdm::UID &uid,
+                         bool include_descriptions);
+
+    void GetCurveHandler(ola::http::HTTPResponse *response,
+                            curve_info *info,
+                            const ola::rdm::ResponseStatus &status,
+                            uint8_t current_curve,
+                            uint8_t curve_count);
+
+    void GetNextCurveDescription(ola::http::HTTPResponse *response,
+                                 curve_info *info);
+
+    void GetCurveDescriptionHandler(ola::http::HTTPResponse *response,
+                                    curve_info *info,
+                                    const ola::rdm::ResponseStatus &status,
+                                    uint8_t curve,
+                                    const std::string &resp_description);
+
+    void SendCurveResponse(ola::http::HTTPResponse *response,
+                           curve_info *info);
+
+    std::string SetCurve(const ola::http::HTTPRequest *request,
+                         ola::http::HTTPResponse *response,
+                         unsigned int universe_id,
+                         const ola::rdm::UID &uid);
+
+    std::string GetDimmerInfo(ola::http::HTTPResponse *response,
+                              unsigned int universe_id,
+                              const ola::rdm::UID &uid);
+
+    void GetDimmerInfoHandler(ola::http::HTTPResponse *response,
+                              const ola::rdm::ResponseStatus &status,
+                              const ola::rdm::DimmerInfoDescriptor &dimmer);
+
+    std::string GetDimmerMinimumLevels(ola::http::HTTPResponse *response,
+                                       unsigned int universe_id,
+                                       const ola::rdm::UID &uid);
+
+    void GetDimmerMinimumLevelsHandler(
+        ola::http::HTTPResponse *response,
+        const ola::rdm::ResponseStatus &status,
+        const ola::rdm::DimmerMinimumDescriptor &dimmer);
+
+    std::string SetDimmerMinimumLevels(const ola::http::HTTPRequest *request,
+                                       ola::http::HTTPResponse *response,
+                                       unsigned int universe_id,
+                                       const ola::rdm::UID &uid);
+
+    std::string GetDimmerMaximumLevel(ola::http::HTTPResponse *response,
+                                      unsigned int universe_id,
+                                      const ola::rdm::UID &uid);
+
+    void GetDimmerMaximumLevelHandler(ola::http::HTTPResponse *response,
+                                      const ola::rdm::ResponseStatus &status,
+                                      uint16_t maximum_level);
+
+    std::string SetDimmerMaximumLevel(const ola::http::HTTPRequest *request,
+                                      ola::http::HTTPResponse *response,
+                                      unsigned int universe_id,
+                                      const ola::rdm::UID &uid);
+
     // util methods
     bool CheckForInvalidId(const ola::http::HTTPRequest *request,
                            unsigned int *universe_id);
@@ -627,6 +701,8 @@ class RDMHTTPModule {
     static const char UID_KEY[];
 
     static const char ADDRESS_FIELD[];
+    static const char DIMMER_MINIMUM_INCREASING_FIELD[];
+    static const char DIMMER_MINIMUM_DECREASING_FIELD[];
     static const char DISPLAY_INVERT_FIELD[];
     static const char GENERIC_BOOL_FIELD[];
     static const char GENERIC_STRING_FIELD[];
@@ -640,9 +716,13 @@ class RDMHTTPModule {
     static const char BOOT_SOFTWARE_SECTION[];
     static const char CLOCK_SECTION[];
     static const char COMMS_STATUS_SECTION[];
+    static const char CURVE_SECTION[];
     static const char DEVICE_HOURS_SECTION[];
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];
+    static const char DIMMER_INFO_SECTION[];
+    static const char DIMMER_MAXIMUM_SECTION[];
+    static const char DIMMER_MINIMUM_SECTION[];
     static const char DISPLAY_INVERT_SECTION[];
     static const char DISPLAY_LEVEL_SECTION[];
     static const char DMX_ADDRESS_SECTION[];
@@ -670,9 +750,13 @@ class RDMHTTPModule {
     static const char BOOT_SOFTWARE_SECTION_NAME[];
     static const char CLOCK_SECTION_NAME[];
     static const char COMMS_STATUS_SECTION_NAME[];
+    static const char CURVE_SECTION_NAME[];
     static const char DEVICE_HOURS_SECTION_NAME[];
     static const char DEVICE_INFO_SECTION_NAME[];
     static const char DEVICE_LABEL_SECTION_NAME[];
+    static const char DIMMER_INFO_SECTION_NAME[];
+    static const char DIMMER_MAXIMUM_SECTION_NAME[];
+    static const char DIMMER_MINIMUM_SECTION_NAME[];
     static const char DISPLAY_INVERT_SECTION_NAME[];
     static const char DISPLAY_LEVEL_SECTION_NAME[];
     static const char DMX_ADDRESS_SECTION_NAME[];

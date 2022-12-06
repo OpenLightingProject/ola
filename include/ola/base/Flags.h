@@ -28,7 +28,7 @@
  * Features:
  *  - bool, uint8, uint16, uint32, int8, int16, int32 & string types.
  *  - short options (e.g. -x).
- *  - inverted bools, e.g. --no-foo
+ *  - inverted bools, e.g. \--no-foo
  *
  * @note
  *   - Setting flags is not thread safe
@@ -44,7 +44,7 @@
  *  --name is simon
  *  --baz (-b) is 0
  *  @endcode
- *  Compare with <tt>./flags  --foo --name bob -b 10 --nobar</tt>
+ *  Compare with <tt>./flags \--foo \--name bob -b 10 \--no-bar</tt>
  *  @code
  *  --foo is 1
  *  --bar is 0
@@ -79,7 +79,7 @@ namespace ola {
 
 /**
  * @brief Set the help string for the program.
- * @param first_line the inital line that is displayed in the help section.
+ * @param first_line the initial line that is displayed in the help section.
  *     This is displayed after argv[0].
  * @param description a multiline description of the program
  */

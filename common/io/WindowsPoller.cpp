@@ -20,12 +20,20 @@
 
 #include "common/io/WindowsPoller.h"
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
 #include <string.h>
 #include <errno.h>
 
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <ola/win/CleanWinSock2.h>
+
+#if HAVE_WINERROR_H
+#include <winerror.h>
+#endif  // HAVE_WINERROR_H
 
 #include <algorithm>
 #include <queue>
@@ -280,7 +288,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
                          const TimeInterval &poll_interval) {
   TimeInterval sleep_interval = poll_interval;
   TimeStamp now;
-  m_clock->CurrentTime(&now);
+  m_clock->CurrentMonotonicTime(&now);
 
   TimeInterval next_event_in = timeout_manager->ExecuteTimeouts(&now);
   if (!next_event_in.IsZero()) {
@@ -465,7 +473,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     CancelIOs(&data);
 
     if (result == WAIT_TIMEOUT) {
-      m_clock->CurrentTime(&m_wake_up_time);
+      m_clock->CurrentMonotonicTime(&m_wake_up_time);
       timeout_manager->ExecuteTimeouts(&m_wake_up_time);
       // We can't return here since any of the cancelled IO calls still might
       // have succeeded.
@@ -501,7 +509,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
     CancelIOs(&data);
   }
 
-  m_clock->CurrentTime(&m_wake_up_time);
+  m_clock->CurrentMonotonicTime(&m_wake_up_time);
   timeout_manager->ExecuteTimeouts(&m_wake_up_time);
 
   FinalCheckIOs(data);
@@ -527,7 +535,7 @@ bool WindowsPoller::Poll(TimeoutManager *timeout_manager,
   STLDeleteElements(&data);
   STLDeleteElements(&event_holders);
 
-  m_clock->CurrentTime(&m_wake_up_time);
+  m_clock->CurrentMonotonicTime(&m_wake_up_time);
   timeout_manager->ExecuteTimeouts(&m_wake_up_time);
   return return_value;
 }

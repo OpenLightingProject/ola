@@ -50,6 +50,8 @@ using std::string;
 using std::vector;
 
 const char PidStoreLoader::OVERRIDE_FILE_NAME[] = "overrides.proto";
+const char PidStoreLoader::MANUFACTURER_NAMES_FILE_NAME[] =
+    "manufacturer_names.proto";
 const uint16_t PidStoreLoader::ESTA_MANUFACTURER_ID = 0;
 const uint16_t PidStoreLoader::MANUFACTURER_PID_MIN = 0x8000;
 const uint16_t PidStoreLoader::MANUFACTURER_PID_MAX = 0xffe0;
@@ -74,15 +76,30 @@ const RootPidStore *PidStoreLoader::LoadFromDirectory(
   vector<string> files;
 
   string override_file;
+  string manufacturer_names_file;
   vector<string> all_files;
-  ola::file::ListDirectory(directory, &all_files);
+  if (!ola::file::ListDirectory(directory, &all_files)) {
+    OLA_WARN << "Failed to list files in " << directory;
+    return NULL;
+  }
+  if (all_files.empty()) {
+    OLA_WARN << "Didn't find any files in " << directory;
+    return NULL;
+  }
   vector<string>::const_iterator file_iter = all_files.begin();
   for (; file_iter != all_files.end(); ++file_iter) {
     if (ola::file::FilenameFromPath(*file_iter) == OVERRIDE_FILE_NAME) {
       override_file = *file_iter;
+    } else if (ola::file::FilenameFromPath(*file_iter) ==
+               MANUFACTURER_NAMES_FILE_NAME) {
+      manufacturer_names_file = *file_iter;
     } else if (StringEndsWith(*file_iter, ".proto")) {
       files.push_back(*file_iter);
     }
+  }
+  if (files.empty() && override_file.empty()) {
+    OLA_WARN << "Didn't find any files to load in " << directory;
+    return NULL;
   }
 
   ola::rdm::pid::PidStore pid_store_pb;
@@ -112,7 +129,14 @@ const RootPidStore *PidStoreLoader::LoadFromDirectory(
     }
   }
 
-  return BuildStore(pid_store_pb, override_pb, validate);
+  ola::rdm::pid::PidStore manufacturer_names_pb;
+  if (!manufacturer_names_file.empty()) {
+    if (!ReadFile(manufacturer_names_file, &manufacturer_names_pb)) {
+      return NULL;
+    }
+  }
+
+  return BuildStore(pid_store_pb, override_pb, manufacturer_names_pb, validate);
 }
 
 const RootPidStore *PidStoreLoader::LoadFromStream(std::istream *data,
@@ -152,6 +176,7 @@ bool PidStoreLoader::ReadFile(const std::string &file_path,
 const RootPidStore *PidStoreLoader::BuildStore(
     const ola::rdm::pid::PidStore &store_pb,
     const ola::rdm::pid::PidStore &override_pb,
+    const ola::rdm::pid::PidStore &manufacturer_names_pb,
     bool validate) {
   ManufacturerMap pid_data;
   // Load the overrides first so they get first dibs on each PID.
@@ -186,6 +211,12 @@ const RootPidStore *PidStoreLoader::BuildStore(
     }
   }
   pid_data.clear();
+
+  // Load the manufacturer names last so they update the names on the PIDs.
+  if (!LoadFromProto(&pid_data, manufacturer_names_pb, validate)) {
+    FreeManufacturerMap(&pid_data);
+    return NULL;
+  }
 
   OLA_DEBUG << "Load Complete";
   return new RootPidStore(esta_store.release(),
@@ -483,16 +514,16 @@ const FieldDescriptor *PidStoreLoader::IntegerFieldToFieldDescriptor(
     }
   }
 
-  int8_t multipler = 0;
+  int8_t multiplier = 0;
   if (field.has_multiplier())
-    multipler = field.multiplier();
+    multiplier = field.multiplier();
 
   return new descriptor_class(
       field.name(),
       intervals,
       labels,
       false,
-      multipler);
+      multiplier);
 }
 
 /*

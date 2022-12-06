@@ -22,6 +22,7 @@
 #ifndef INCLUDE_OLA_IO_BIGENDIANSTREAM_H_
 #define INCLUDE_OLA_IO_BIGENDIANSTREAM_H_
 
+#include <ola/base/Macro.h>
 #include <ola/io/InputStream.h>
 #include <ola/io/OutputStream.h>
 #include <ola/network/NetworkUtils.h>
@@ -67,8 +68,7 @@ class BigEndianInputStreamAdaptor: public BigEndianInputStreamInterface {
       return ok;
     }
 
-    BigEndianInputStreamAdaptor(const BigEndianInputStreamAdaptor&);
-    BigEndianInputStreamAdaptor& operator=(const BigEndianInputStreamAdaptor&);
+    DISALLOW_COPY_AND_ASSIGN(BigEndianInputStreamAdaptor);
 };
 
 
@@ -99,8 +99,7 @@ class BigEndianInputStream: public BigEndianInputStreamInterface {
     InputStream m_input_stream;
     BigEndianInputStreamAdaptor m_adaptor;
 
-    BigEndianInputStream(const BigEndianInputStream&);
-    BigEndianInputStream& operator=(const BigEndianInputStream&);
+    DISALLOW_COPY_AND_ASSIGN(BigEndianInputStream);
 };
 
 
@@ -157,14 +156,12 @@ class BigEndianOutputStreamAdaptor: public BigEndianOutputStreamInterface {
       return *this;
     }
 
-    BigEndianOutputStreamAdaptor(const BigEndianOutputStreamAdaptor&);
-    BigEndianOutputStreamAdaptor& operator=(
-        const BigEndianOutputStreamAdaptor&);
+    DISALLOW_COPY_AND_ASSIGN(BigEndianOutputStreamAdaptor);
 };
 
 
 /**
- * A Big Endian Input stream that wraps an OutputBufferInterface
+ * A Big Endian Output stream that wraps an OutputBufferInterface
  */
 class BigEndianOutputStream: public BigEndianOutputStreamInterface {
  public:
@@ -196,8 +193,7 @@ class BigEndianOutputStream: public BigEndianOutputStreamInterface {
       return *this;
     }
 
-    BigEndianOutputStream(const BigEndianOutputStream&);
-    BigEndianOutputStream& operator=(const BigEndianOutputStream&);
+    DISALLOW_COPY_AND_ASSIGN(BigEndianOutputStream);
 };
 }  // namespace io
 }  // namespace ola

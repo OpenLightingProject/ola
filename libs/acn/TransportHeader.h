@@ -16,7 +16,7 @@
  * TransportHeader.h
  * Interface for the TransportHeader class.
  * This holds the source IP of the packet which is used to address replies
- * correctly. At some point in the future we should try to abtract the
+ * correctly. At some point in the future we should try to abstract the
  * transport protocol (IP/UDP in this case).
  * Copyright (C) 2011 Simon Newton
  */
@@ -41,6 +41,11 @@ class TransportHeader {
   };
 
   TransportHeader() : m_transport_type(UNDEFINED) {}
+
+  TransportHeader(const TransportHeader& other)
+      : m_source(other.m_source),
+        m_transport_type(other.m_transport_type) {}
+
   TransportHeader(const ola::network::IPV4SocketAddress &source,
                   TransportType type)
       : m_source(source),

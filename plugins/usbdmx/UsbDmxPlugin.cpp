@@ -26,6 +26,7 @@
 #include "ola/base/Flags.h"
 #include "olad/Preferences.h"
 #include "plugins/usbdmx/AsyncPluginImpl.h"
+#include "plugins/usbdmx/EuroliteProFactory.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncPluginImpl.h"
 #include "plugins/usbdmx/UsbDmxPluginDescription.h"
@@ -101,12 +102,27 @@ bool UsbDmxPlugin::SetDefaultPreferences() {
       UIntValidator(LIBUSB_DEFAULT_DEBUG_LEVEL, LIBUSB_MAX_DEBUG_LEVEL),
       LIBUSB_DEFAULT_DEBUG_LEVEL);
 
+  save |= m_preferences->SetDefaultValue(
+      EuroliteProFactory::ENABLE_EUROLITE_MK2_KEY,
+      BoolValidator(),
+      false);
+
   if (save) {
     m_preferences->Save();
   }
 
   return true;
 }
+
+void UsbDmxPlugin::ConflictsWith(
+    std::set<ola_plugin_id>* conflicting_plugins) const {
+  if (EuroliteProFactory::IsEuroliteMk2Enabled(m_preferences)) {
+    conflicting_plugins->insert(OLA_PLUGIN_FTDIDMX);
+    conflicting_plugins->insert(OLA_PLUGIN_STAGEPROFI);
+    conflicting_plugins->insert(OLA_PLUGIN_USBPRO);
+  }
+}
+
 }  // namespace usbdmx
 }  // namespace plugin
 }  // namespace ola

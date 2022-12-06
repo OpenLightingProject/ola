@@ -38,36 +38,71 @@ pkgpython_PYTHON = \
 endif
 
 python/ola/ArtNetConfigMessages_pb2.py: $(artnet_proto)
-	$(PROTOC) --python_out python/ola/ -I $(artnet_path) $(artnet_proto)
+	$(PROTOC) --python_out $(top_builddir)/python/ola/ -I $(artnet_path) $(artnet_proto)
 
 python/ola/Ola_pb2.py: $(ola_proto)
-	$(PROTOC) --python_out python/ola/ -I $(ola_path) $(ola_proto)
+	$(PROTOC) --python_out $(top_builddir)/python/ola/ -I $(ola_path) $(ola_proto)
 
 python/ola/Pids_pb2.py: $(pids_proto)
-	$(PROTOC) --python_out python/ola/ -I $(pids_path) $(pids_proto)
+	$(PROTOC) --python_out $(top_builddir)/python/ola/ -I $(pids_path) $(pids_proto)
 
 python/ola/UsbProConfigMessages_pb2.py: $(usbpro_proto)
-	$(PROTOC) --python_out python/ola/ -I $(usbpro_path) $(usbpro_proto)
+	$(PROTOC) --python_out $(top_builddir)/python/ola/ -I $(usbpro_path) $(usbpro_proto)
 
 python/ola/PidStoreLocation.py: python/ola/Makefile.mk configure.ac
-	echo "location = '${piddatadir}'" > python/ola/PidStoreLocation.py
+	echo "location = '${piddatadir}'" > $(top_builddir)/python/ola/PidStoreLocation.py
 
 python/ola/Version.py: python/ola/Makefile.mk configure.ac config/ola_version.m4
-	echo "version = '${VERSION}'" > python/ola/Version.py
+	echo "version = '${VERSION}'" > $(top_builddir)/python/ola/Version.py
 
 # TESTS
 ##################################################
 
+python/ola/ClientWrapperTest.sh: python/ola/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/python/ola/ClientWrapperTest.py; exit \$$?" > $(top_builddir)/python/ola/ClientWrapperTest.sh
+	chmod +x $(top_builddir)/python/ola/ClientWrapperTest.sh
+
+python/ola/OlaClientTest.sh: python/ola/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/python/ola/OlaClientTest.py; exit \$$?" > $(top_builddir)/python/ola/OlaClientTest.sh
+	chmod +x $(top_builddir)/python/ola/OlaClientTest.sh
+
+python/ola/PidStoreTest.sh: python/ola/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python TESTDATADIR=$(srcdir)/common/rdm/testdata $(PYTHON) ${srcdir}/python/ola/PidStoreTest.py; exit \$$?" > $(top_builddir)/python/ola/PidStoreTest.sh
+	chmod +x $(top_builddir)/python/ola/PidStoreTest.sh
+
+python/ola/RDMTest.sh: python/ola/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola
+	echo "PYTHONPATH=${top_builddir}/python PIDSTOREDIR=$(srcdir)/data/rdm $(PYTHON) ${srcdir}/python/ola/RDMTest.py; exit \$$?" > $(top_builddir)/python/ola/RDMTest.sh
+	chmod +x $(top_builddir)/python/ola/RDMTest.sh
+
 dist_check_SCRIPTS += \
     python/ola/DUBDecoderTest.py \
+    python/ola/ClientWrapperTest.py \
     python/ola/MACAddressTest.py \
+    python/ola/OlaClientTest.py \
+    python/ola/PidStoreTest.py \
+    python/ola/RDMTest.py \
+    python/ola/TestUtils.py \
     python/ola/UIDTest.py
 
 if BUILD_PYTHON_LIBS
 test_scripts += \
     python/ola/DUBDecoderTest.py \
+    python/ola/ClientWrapperTest.sh \
     python/ola/MACAddressTest.py \
+    python/ola/OlaClientTest.sh \
+    python/ola/PidStoreTest.sh \
+    python/ola/RDMTest.sh \
     python/ola/UIDTest.py
 endif
 
-CLEANFILES += python/ola/*.pyc
+CLEANFILES += \
+    python/ola/*.pyc \
+    python/ola/ClientWrapperTest.sh \
+    python/ola/OlaClientTest.sh \
+    python/ola/PidStoreTest.sh \
+    python/ola/RDMTest.sh \
+    python/ola/__pycache__/*

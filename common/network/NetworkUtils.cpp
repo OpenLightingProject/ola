@@ -31,6 +31,9 @@ typedef uint32_t in_addr_t;
 #define WIN_32_LEAN_AND_MEAN
 #include <ola/win/CleanWinSock2.h>
 #include <Iphlpapi.h>
+#if HAVE_WINERROR_H
+#include <winerror.h>
+#endif  // HAVE_WINERROR_H
 #else
 #include <netinet/in.h>
 #endif  // _WIN32
@@ -88,7 +91,8 @@ using ola::network::Interface;
 namespace {
 
 inline bool IsBigEndian() {
-#ifdef HAVE_ENDIAN_H
+// Some versions of NetBSD have endian.h but not __BIG_ENDIAN
+#if defined(HAVE_ENDIAN_H) && defined(__BIG_ENDIAN)
   return BYTE_ORDER == __BIG_ENDIAN;
 #else
 #ifdef _WIN32
@@ -99,7 +103,7 @@ inline bool IsBigEndian() {
 #else
   return BYTE_ORDER == BIG_ENDIAN;
 #endif  // _WIN32
-#endif  // HAVE_ENDIAN_H
+#endif  // defined(HAVE_ENDIAN_H) && defined(__BIG_ENDIAN)
 }
 
 inline uint32_t ByteSwap32(uint32_t value) {

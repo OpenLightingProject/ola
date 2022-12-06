@@ -33,7 +33,7 @@
 /**
  * DMXCreator 512 Basic expects two or three URB packets for each change:
  * 1. A constant byte string to endpoint 1 that indicates if we want to transmit
- *    the the full universe or only the first half.
+ *    the full universe or only the first half.
  * 2. The actual DMX data (channels 1..256) to endpoint 2.
  * 3. The actual DMX data (channels 257..512) to endpoint 2. (optional)
  */

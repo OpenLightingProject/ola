@@ -16,21 +16,28 @@
 # rdm_responder_test.py
 # Copyright (C) 2010 Simon Newton
 
+from __future__ import print_function
 from ola.testing.rdm import TestDefinitions, TestRunner
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm.TestState import TestState
+from ola.testing.rdm.TimingStats import TimingStats
 import datetime
 import logging
 import re
 import sys
 import textwrap
 import time
-from ola.testing.rdm.TimingStats import TimingStats
 from ola import PidStore
 from ola import Version
 from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
 from optparse import OptionParser
+
+if sys.version_info >= (3, 0):
+  try:
+    raw_input
+  except NameError:
+    raw_input = input
 
 '''Automated testing for RDM responders.'''
 
@@ -97,7 +104,7 @@ def ParseOptions():
   uid = UID.FromString(args[0])
   if uid is None:
     parser.print_usage()
-    print 'Invalid UID: %s' % args[0]
+    print('Invalid UID: %s' % args[0])
     sys.exit(2)
 
   options.uid = uid
@@ -108,7 +115,8 @@ class MyFilter(object):
   """Filter out the ascii coloring."""
   def filter(self, record):
     msg = record.msg
-    record.msg = re.sub('\x1b\[\d*m', '', str(msg))
+    # Use a raw string for the regex
+    record.msg = re.sub(r'\x1b\[\d*m', '', str(msg))
     return True
 
 
@@ -167,7 +175,7 @@ def DisplayTiming(timing_stats):
   LogAllTimingParams('DISCOVERY_UNIQUE_BRANCH', stats)
 
 
-def DisplaySummary(options, runner, tests, device):
+def DisplaySummary(options, runner, tests, device, pid_store):
   """Log a summary of the tests."""
   by_category = {}
   warnings = []
@@ -191,6 +199,11 @@ def DisplaySummary(options, runner, tests, device):
   logging.info('UID: %s' % options.uid)
 
   manufacturer_label = getattr(device, 'manufacturer_label', None)
+  if not manufacturer_label:
+    manufacturer_label = (
+        pid_store.ManufacturerIdToName(options.uid.manufacturer_id))
+    if manufacturer_label:
+      manufacturer_label = str(manufacturer_label)
   if manufacturer_label:
     logging.info('Manufacturer: %s' %
                  manufacturer_label.encode('string-escape'))
@@ -218,7 +231,7 @@ def DisplaySummary(options, runner, tests, device):
 
   logging.info('------------------ By Category ------------------')
 
-  for category, counts in by_category.iteritems():
+  for category, counts in by_category.items():
     passed = counts.get(TestState.PASSED, 0)
     total_run = (passed + counts.get(TestState.FAILED, 0))
     if total_run == 0:
@@ -242,13 +255,14 @@ def main():
   test_classes = TestRunner.GetTestClasses(TestDefinitions)
   if options.list_tests:
     for test_name in sorted(c.__name__ for c in test_classes):
-      print test_name
+      print(test_name)
     sys.exit(0)
 
   SetupLogging(options)
   logging.info('OLA Responder Tests Version %s' % Version.version)
   pid_store = PidStore.GetStore(options.pid_location,
-                                ('pids.proto', 'draft_pids.proto'))
+                                ('pids.proto', 'draft_pids.proto',
+                                 'manufacturer_names.proto'))
   wrapper = ClientWrapper()
 
   global uid_ok
@@ -288,7 +302,7 @@ def main():
   wrapper.Reset()
 
   if not uid_ok:
-    sys.exit()
+    sys.exit(1)
 
   test_filter = None
   if options.tests is not None:
@@ -319,7 +333,7 @@ def main():
 
   tests, device = runner.RunTests(test_filter, options.no_factory_defaults)
 
-  DisplaySummary(options, runner, tests, device)
+  DisplaySummary(options, runner, tests, device, pid_store)
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * e131_transmit_test.cpp
- * The sends custom E1.31 packets in order to test the implementation of a
+ * This sends custom E1.31 packets in order to test the implementation of a
  * remote node.
  * Copyright (C) 2010 Simon Newton
  *
@@ -106,10 +106,10 @@ TestState s11("Single Source Terminate with data",
 
 // now test sequence handling
 TestState s12("Single Source Sequence Test",
-              // 1 in 4 change of sending a packet with 0s rather than 255s
+              // 1 in 4 chance of sending a packet with 0s rather than 255s
               new NodeVarySequenceNumber(255, 0, 4),
               new NodeInactive(),
-              "512x255, any 0s indicate a problem ith seq #",
+              "512x255, any 0s indicate a problem with seq #",
               BufferFromValue(255));
 TestState s13("Single Source Terminate",
               new NodeTerminate(),

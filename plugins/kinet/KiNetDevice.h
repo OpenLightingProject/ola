@@ -40,6 +40,10 @@ class KiNetDevice: public ola::Device {
     // Only one KiNet device
     std::string DeviceId() const { return "1"; }
 
+    // We can stream the same universe to multiple IPs
+    // TODO(Peter): Remove this when we have a device per IP
+    bool AllowMultiPortPatching() const { return true; }
+
  protected:
     bool StartHook();
     void PrePortStop();

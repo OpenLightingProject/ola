@@ -391,7 +391,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
   // enable an input port and check that we send a poll
   ExpectedBroadcast(POLL_MESSAGE, sizeof(POLL_MESSAGE));
 
-  // we should see an unsolicted poll reply sent because conditions have
+  // we should see an unsolicited poll reply sent because conditions have
   // changed.
   uint8_t expected_poll_reply_packet[sizeof(POLL_REPLY_MESSAGE)];
   memcpy(expected_poll_reply_packet, POLL_REPLY_MESSAGE,
@@ -698,7 +698,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
 }
 
 /**
- * Check sending DMX using broadcast works to ArtNet universe 0.
+ * Check sending DMX using broadcast works to Art-Net universe 0.
  */
 void ArtNetNodeTest::testBroadcastSendDMXZeroUniverse() {
   m_socket->SetDiscardMode(true);

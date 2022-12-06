@@ -75,7 +75,7 @@
 #define OLA_WARN OLA_LOG(ola::OLA_LOG_WARN)
 
 /**
- * Provide a stream to log an infomational message.
+ * Provide a stream to log an informational message.
  * @code
  *     OLA_INFO << "Reading configs from " << config_dir;
  * @endcode
@@ -256,7 +256,7 @@ void IncrementLogLevel();
 /**
  * @brief Initialize the OLA logging system from flags.
  * @pre ParseFlags() must have been called before calling this.
- * @returns true if logging was initialized sucessfully, false otherwise.
+ * @returns true if logging was initialized successfully, false otherwise.
  */
 bool InitLoggingFromFlags();
 
@@ -264,7 +264,7 @@ bool InitLoggingFromFlags();
  * @brief Initialize the OLA logging system
  * @param level the level to log at
  * @param output the destination for the logs
- * @returns true if logging was initialized sucessfully, false otherwise.
+ * @returns true if logging was initialized successfully, false otherwise.
  */
 bool InitLogging(log_level level, log_output output);
 

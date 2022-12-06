@@ -96,7 +96,8 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
       m_export_map(export_map),
       m_clock(clock),
       m_rdm_discovery_interval(),
-      m_last_discovery_time() {
+      m_last_discovery_time(),
+      m_transaction_number_sequence() {
   ostringstream universe_id_str, universe_name_str;
   universe_id_str << universe_id;
   m_universe_id_str = universe_id_str.str();
@@ -124,7 +125,7 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
 
   // We set the last discovery time to now, since most ports will trigger
   // discovery when they are patched.
-  clock->CurrentTime(&m_last_discovery_time);
+  clock->CurrentMonotonicTime(&m_last_discovery_time);
 }
 
 
@@ -525,7 +526,7 @@ void Universe::RunRDMDiscovery(RDMDiscoveryCallback *on_complete, bool full) {
              << m_universe_id;
   }
 
-  m_clock->CurrentTime(&m_last_discovery_time);
+  m_clock->CurrentMonotonicTime(&m_last_discovery_time);
 
   // we need to make a copy of the ports first, because the callback may run at
   // any time so we need to guard against the port list changing.
@@ -607,6 +608,12 @@ unsigned int Universe::UIDCount() const {
   return m_output_uids.size();
 }
 
+/**
+ * Return the RDM transaction number to use
+ */
+uint8_t Universe::GetRDMTransactionNumber() {
+  return m_transaction_number_sequence.Next();
+}
 
 /*
  * Return true if this universe is in use (has at least one port or client).
@@ -703,7 +710,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
 
   m_active_priority = ola::dmx::SOURCE_PRIORITY_MIN;
   TimeStamp now;
-  m_clock->CurrentTime(&now);
+  m_clock->CurrentMonotonicTime(&now);
   bool changed_source_is_active = false;
 
   // Find the highest active ports

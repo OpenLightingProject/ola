@@ -78,7 +78,7 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
     static const uint8_t RESPONSE_WAS_BROADCAST;
     static const uint8_t RESPONSE_FAILED;
     static const uint8_t RESPONSE_FAILED_CHECKSUM;
-    static const uint8_t RESONSE_INVALID_DESTINATION;
+    static const uint8_t RESPONSE_INVALID_DESTINATION;
     static const uint8_t RESPONSE_INVALID_COMMAND;
 };
 

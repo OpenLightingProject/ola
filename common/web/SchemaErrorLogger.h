@@ -36,7 +36,7 @@ namespace web {
  *
  * The SchemaErrorLogger allows schema parsing errors to be logged. It prepends
  * the error with the value of the JsonPointer so users have a decent idea of
- * where the error occured in the JSON document.
+ * where the error occurred in the JSON document.
  */
 class SchemaErrorLogger {
  public:

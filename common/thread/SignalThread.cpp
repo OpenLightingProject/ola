@@ -18,8 +18,18 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
 #include <errno.h>
 #include <string.h>
+#ifdef _WIN32
+// On MinGW, pthread.h pulls in Windows.h, which in turn pollutes the global
+// namespace. We define VC_EXTRALEAN and WIN32_LEAN_AND_MEAN to reduce this.
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#endif  // _WIN32
 #include <pthread.h>
 #include <signal.h>
 #include <map>
@@ -121,7 +131,7 @@ bool SignalThread::AddSignals(sigset_t *signals) {
   for (; iter != m_signal_handlers.end(); ++iter) {
     if (sigaddset(signals, iter->first)) {
       OLA_WARN << "Failed to add " << strsignal(iter->first)
-               << " to the signal set:" << strerror(errno);
+               << " to the signal set: " << strerror(errno);
       return false;
     }
   }
@@ -146,7 +156,7 @@ bool SignalThread::BlockSignal(int signal) {
 
   if (sigaddset(&signals, signal)) {
     OLA_WARN << "Failed to add " << strsignal(signal)
-             << " to the signal set:" << strerror(errno);
+             << " to the signal set: " << strerror(errno);
     return false;
   }
 

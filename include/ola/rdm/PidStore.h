@@ -44,7 +44,7 @@ namespace rdm {
 class PidStore;
 class PidDescriptor;
 
-// The following % before Device is to stop Doxygen interpretting it as a class
+// The following % before Device is to stop Doxygen interpreting it as a class
 /**
  * @brief The root of the RDM parameter descriptor store.
  *
@@ -286,6 +286,8 @@ class PidDescriptor {
 
   bool IsGetValid(uint16_t sub_device) const;
   bool IsSetValid(uint16_t sub_device) const;
+
+  static bool OrderByName(const PidDescriptor* a, const PidDescriptor* b);
 
  private:
   const std::string m_name;

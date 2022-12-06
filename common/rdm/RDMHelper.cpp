@@ -196,7 +196,21 @@ string NackReasonToString(uint16_t reason) {
     case NR_ACTION_NOT_SUPPORTED:
       return "Action not supported";
     case NR_ENDPOINT_NUMBER_INVALID:
-      return "Invalid endpoint";
+      return "Endpoint number invalid";
+    case NR_INVALID_ENDPOINT_MODE:
+      return "Invalid endpoint mode";
+    case NR_UNKNOWN_UID:
+      return "Unknown UID";
+    case NR_UNKNOWN_SCOPE:
+      return "Unknown scope";
+    case NR_INVALID_STATIC_CONFIG_TYPE:
+      return "Invalid static config type";
+    case NR_INVALID_IPV4_ADDRESS:
+      return "Invalid IPv4 address";
+    case NR_INVALID_IPV6_ADDRESS:
+      return "Invalid IPv6 address";
+    case NR_INVALID_PORT:
+      return "Invalid port";
     default:
       ostringstream str;
       str << "Unknown, was " << reason;
@@ -581,8 +595,8 @@ string ProductDetailToString(uint16_t detail) {
       return "Data Patch";
     case PRODUCT_DETAIL_WIRELESS_LINK:
       return "Wireless link";
-    case PRODUCT_DETAIL_PROTOCOL_CONVERTOR:
-      return "Protocol Convertor";
+    case PRODUCT_DETAIL_PROTOCOL_CONVERTER:
+      return "Protocol Converter";
     case PRODUCT_DETAIL_ANALOG_DEMULTIPLEX:
       return "DMX512 to DC Voltage";
     case PRODUCT_DETAIL_ANALOG_MULTIPLEX:
@@ -786,7 +800,7 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
       case SD_COLOR_SCROLL:
         return "Primary, scroll";
       case SD_COLOR_SEMAPHORE:
-        return "Primary, color semaphone";
+        return "Primary, color semaphore";
       case SD_COLOR_ADD_AMBER:
         return "Primary, additive amber";
       case SD_COLOR_ADD_WHITE:
@@ -879,7 +893,8 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         str << "undefined for slot " << slot_label;
         break;
       default:
-        str << "unknown for slot " << slot_label;
+        str << "unknown, was type " << static_cast<int>(slot_type)
+            << ", for slot " << slot_label;
     }
     return str.str();
   }

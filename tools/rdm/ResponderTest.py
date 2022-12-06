@@ -28,6 +28,7 @@
 #                                  SUPPORTED_PARAMETERS
 
 import logging
+import sys
 import time
 from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
                              NackDiscoveryResult, NackGetResult, NackSetResult)
@@ -36,6 +37,12 @@ from TestState import TestState
 from TimingStats import TimingStats
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
+
+if sys.version_info >= (3, 0):
+  try:
+    unicode
+  except NameError:
+    unicode = str
 
 '''Automated testing for RDM responders.'''
 
@@ -83,8 +90,35 @@ class TestFixture(object):
   def __repr__(self):
     return self.__class__.__name__
 
-  def __cmp__(self, other):
-    return cmp(self.__class__.__name__, other.__class__.__name__)
+  # TestFixture and its subclasses are equal/ordered based on comparing
+  # class name.  Two TestFixtures are equal if they are the same class,
+  # and ordering is based on comparing __class__.__name__
+  def __eq__(self, other):
+    return other.__class__ is self.__class__
+
+  def __lt__(self, other):
+    if not issubclass(other.__class__, TestFixture):
+      return NotImplemented
+    return self.__class__.__name__ < other.__class__.__name__
+
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
+  def __le__(self, other):
+    if not issubclass(other.__class__, TestFixture):
+      return NotImplemented
+    return self < other or self == other
+
+  def __gt__(self, other):
+    if not issubclass(other.__class__, TestFixture):
+      return NotImplemented
+    return not self <= other
+
+  def __ge__(self, other):
+    if not issubclass(other.__class__, TestFixture):
+      return NotImplemented
+    return not self < other
+
+  def __ne__(self, other):
+    return not self == other
 
   def PidRequired(self):
     """Whether a valid PID is required for this test"""
@@ -255,7 +289,7 @@ class ResponderTestFixture(TestFixture):
     self._broadcast_write_delay_s = broadcast_write_delay / 1000.0
     self._timing_stats = timing_stats
 
-    # This is set to the tuple of (sub_device, command_class, pid) when we sent
+    # This is set to the tuple of (sub_device, command_class, pid) when we send
     # a message. It's used to identify the response if we get an ACK_TIMER and
     # use QUEUED_MESSAGEs
     self._outstanding_request = None
@@ -591,12 +625,17 @@ class ResponderTestFixture(TestFixture):
         self.Stop()
         return
     elif (response.pid == status_messages_pid.value and
+          response.response_type != OlaClient.RDM_NACK_REASON and
           unpacked_data.get('messages', None) == []):
         # This means we've run out of messages
         if self._state == TestState.NOT_RUN:
           self.SetFailed('ACK_TIMER issued but the response was never queued')
         self.Stop()
         return
+    elif (response.pid == status_messages_pid.value and
+          response.response_type == OlaClient.RDM_NACK_REASON):
+        self.LogDebug('Status message returned nack, fetching next message: %s'
+                      % response.nack_reason)
 
     # Otherwise fetch the next one
     self._GetQueuedMessage()
@@ -649,18 +688,27 @@ class ResponderTestFixture(TestFixture):
     self._LogFrameTiming(response)
     return True
 
-  def _EscapeData(self, data):
+  @staticmethod
+  def _EscapeData(data):
     if type(data) == list:
-      return [self._EscapeData(i) for i in data]
+      return [ResponderTestFixture._EscapeData(i) for i in data]
     elif type(data) == dict:
       d = {}
-      for k, v in data.iteritems():
-        d[k] = self._EscapeData(v)
+      for k, v in data.items():
+        # We can't escape the key as then it may become a new key
+        d[k] = ResponderTestFixture._EscapeData(v)
       return d
-    elif type(data) == str:
+    # TODO(Peter): How does this interact with the E1.20 Unicode flag?
+    # We don't use sys.version_info.major to support Python 2.6.
+    elif sys.version_info[0] == 2 and type(data) == str:
       return data.encode('string-escape')
-    elif type(data) == unicode:
+    elif sys.version_info[0] == 2 and type(data) == unicode:
       return data.encode('unicode-escape')
+    elif type(data) == str:
+      # All strings in Python 3 are unicode
+      # This encode/decode pair gets us an escaped string
+      return data.encode('unicode-escape').decode(encoding="ascii",
+                                                  errors="backslashreplace")
     else:
       return data
 

@@ -1,4 +1,4 @@
-.TH ola_recorder 1 "December 2013"
+.TH ola_recorder 1 "July 2020"
 .SH NAME
 ola_recorder \- Record to, or playback from, a file a number of universes for a
 show
@@ -11,15 +11,18 @@ ola_recorder
 Record a series of universes, or playback a previously recorded show.
 .SH OPTIONS
 .IP "-d, --delay <uint32_t>"
-The delay in ms between successive iterations.
+The delay time (milliseconds) between successive iterations.
 .IP "-h, --help"
 Display the help message
 .IP "-i, --iterations <uint32_t>"
-The number of times to repeat the show, 0 means unlimited.
+The number of times to repeat the show, 0 means unlimited. The duration option
+overrides this option.
 .IP "-l, --log-level <int8_t>"
 Set the logging level 0 .. 4.
 .IP "-p, --playback <string>"
 The show file to playback.
+.IP "--no-verify-playback"
+Don't verify the show file before playback.
 .IP "-r, --record <string>"
 The show file to record data to.
 .IP "-u, --universes <string>"
@@ -31,7 +34,13 @@ Print
 .B ola_recorder
 version information
 .IP "--duration <uint32_t>"
-The length of time (seconds) to run for.
+Total playback time (seconds); the program will close after this time has
+elapsed. This option overrides the iterations option.
+.IP "--start <uint_32_t>"
+Time (milliseconds) in show file to start playback from.
+.IP "--stop <uint32_t>"
+Time (milliseconds) in show file to stop playback at.  If the show file is
+shorter, the last look will be held until the stop point.
 .IP "--syslog"
 Send to syslog rather than stderr.
 .IP "--no-use-epoll"
@@ -49,7 +58,13 @@ ola_recorder --universes 1,2 --record foo
 ola_recorder --verify bar
 .SS Playback the previously recorded file baz for 30 seconds:
 ola_recorder --playback baz --duration 30
+.SS Playback the previously recorded file baz for 30 seconds, looping between \
+1 second and 10 seconds:
+ola_recorder --playback baz --duration 30 --start 1000 --stop 10000
 .SS Playback the previously recorded file baz for 3 iterations:
 ola_recorder --playback baz --iterations 3
 .SS Playback the previously recorded file baz, repeating forever:
 ola_recorder --playback baz --iterations 0
+.SS Playback the previously recorded file baz forever, looping between \
+1 second and 10 seconds:
+ola_recorder --playback baz --iterations 0 --start 1000 --stop 10000

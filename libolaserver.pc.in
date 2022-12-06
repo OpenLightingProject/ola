@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: libolaserver
 Version: @VERSION@
 Description: Open Lighting Architecture Server
-Requires:
-Libs: -L${libdir} -L${libdir}/olad -lola -lolacommon -lolaserver -lprotobuf @OLA_SERVER_LIBS@
+Requires: protobuf
+Libs: -L${libdir} -L${libdir}/olad -lola -lolacommon -lolaserver @OLA_SERVER_LIBS@
 Cflags: -I${includedir}

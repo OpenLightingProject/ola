@@ -48,6 +48,10 @@ class FtdiDmxDevice : public Device {
   std::string Description() const { return m_widget_info.Description(); }
   FtdiWidget* GetDevice() { return m_widget; }
 
+  // We can send the same universe to multiple ports, or patch port 2 before
+  // port 1
+  bool AllowMultiPortPatching() const { return true; }
+
  protected:
   bool StartHook();
 

@@ -16,6 +16,7 @@
 # setup_patch.py
 # Copyright (C) 2012 Simon Newton
 
+from __future__ import print_function
 import logging
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient, Plugin
@@ -58,7 +59,7 @@ class AutoPatcher(object):
 
     for device in sorted(devices):
       if device.plugin_id == Plugin.OLA_PLUGIN_ARTNET:
-        # skip over artnet devices
+        # skip over Art-Net devices
         continue
 
       for port in device.output_ports:
@@ -148,10 +149,10 @@ def main():
   patch_results = PatchPorts()
 
   if patch_results.status:
-    print ('Patched %d of %d ports' %
+    print('Patched %d of %d ports' %
            (patch_results.ports_patched, patch_results.ports_found))
   else:
-    print 'Failed to patch'
+    print('Failed to patch')
 
 
 if __name__ == '__main__':

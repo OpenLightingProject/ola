@@ -56,7 +56,7 @@ common_libolacommon_la_LIBADD += $(libprotobuf_LIBS)
 EXTRA_DIST += common/rdm/Pids.proto
 
 common/rdm/Pids.pb.cc common/rdm/Pids.pb.h: common/rdm/Makefile.mk common/rdm/Pids.proto
-	$(PROTOC) --cpp_out common/rdm --proto_path $(srcdir)/common/rdm $(srcdir)/common/rdm/Pids.proto
+	$(PROTOC) --cpp_out $(top_builddir)/common/rdm --proto_path $(srcdir)/common/rdm $(srcdir)/common/rdm/Pids.proto
 
 # TESTS_DATA
 ##################################################
@@ -67,6 +67,7 @@ EXTRA_DIST += \
     common/rdm/testdata/duplicate_pid_value.proto \
     common/rdm/testdata/inconsistent_pid.proto \
     common/rdm/testdata/invalid_esta_pid.proto \
+    common/rdm/testdata/pids/manufacturer_names.proto \
     common/rdm/testdata/pids/overrides.proto \
     common/rdm/testdata/pids/pids1.proto \
     common/rdm/testdata/pids/pids2.proto \

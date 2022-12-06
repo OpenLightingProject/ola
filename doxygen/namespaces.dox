@@ -5,6 +5,9 @@
  * @namespace ola::acn
  * @brief ACN related code.
  *
+ * @namespace ola::base
+ * @brief Core base functionality (arrays, exit codes, flags, versioning).
+ *
  * @namespace ola::client
  * @brief OLA C++ API
  *
@@ -36,7 +39,7 @@
  * @brief Code for supported devices and protocols.
  *
  * @namespace ola::plugin::artnet
- * @brief The ArtNet plugin.
+ * @brief The Art-Net plugin.
  *
  * @namespace ola::plugin::dmx4linux
  * @brief Code for DMX4Linux devices.
@@ -65,6 +68,9 @@
  * @namespace ola::plugin::milinst
  * @brief Code for Milford Instruments devices.
  *
+ * @namespace ola::plugin::nanoleaf
+ * @brief Code for Nanoleaf Aurora.
+ *
  * @namespace ola::plugin::opendmx
  * @brief Code for the Enttec OpenDMX.
  *
@@ -88,6 +94,9 @@
  *
  * @namespace ola::plugin::spi
  * @brief Code for SPI devices.
+ *
+ * @namespace ola::plugin::spidmx
+ * @brief Code for receiving DMX using SPI devices.
  *
  * @namespace ola::plugin::stageprofi
  * @brief Code for Stageprofi devices.
@@ -120,7 +129,7 @@
  * @brief Code used for unit testing.
  *
  * @namespace ola::thread
- * @brief Threads and syncronization mechanisms.
+ * @brief Threads and synchronization mechanisms.
  *
  * @namespace ola::timecode
  * @brief Timecode

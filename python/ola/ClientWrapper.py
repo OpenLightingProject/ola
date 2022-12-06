@@ -19,12 +19,12 @@ import array
 import datetime
 import fcntl
 import heapq
-import logging
 import os
 import select
 import termios
 import threading
 import traceback
+from ola import ola_logger
 from ola.OlaClient import OlaClient
 
 """A simple client wrapper for the OlaClient."""
@@ -36,16 +36,48 @@ class _Event(object):
   """An _Event represents a timer scheduled to expire in the future.
 
   Args:
-    time_ms: the number of ms before this event fires
+    delay: datetime.timedelta or number of ms before this event fires
     callback: the callable to run
   """
-  def __init__(self, time_ms, callback):
+  def __init__(self, delay, callback):
     self._run_at = (datetime.datetime.now() +
-                    datetime.timedelta(milliseconds=time_ms))
+                    (delay if isinstance(delay, datetime.timedelta)
+                     else datetime.timedelta(milliseconds=delay)))
     self._callback = callback
 
-  def __cmp__(self, other):
-    return cmp(self._run_at, other._run_at)
+  def __eq__(self, other):
+    if not isinstance(other, self.__class__):
+      return False
+    return self._run_at == other._run_at and self._callback == other._callback
+
+  def __lt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    if self._run_at != other._run_at:
+      return self._run_at < other._run_at
+    return self._callback.__name__ < other._callback.__name__
+
+  # These 4 can be replaced with functools:total_ordering when 2.6 is dropped
+  def __le__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return self < other or self == other
+
+  def __gt__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self <= other
+
+  def __ge__(self, other):
+    if not isinstance(other, self.__class__):
+      return NotImplemented
+    return not self < other
+
+  def __ne__(self, other):
+    return not self == other
+
+  def __hash__(self):
+    return hash((self._run_at, self._callback))
 
   def TimeLeft(self, now):
     """Get the time remaining before this event triggers.
@@ -103,7 +135,7 @@ class SelectServer(object):
     self._function_list_lock.acquire()
     self._functions.append(f)
     # can write anything here, this wakes up the select() call
-    os.write(self._local_socket[1], 'a')
+    os.write(self._local_socket[1], b'a')
     self._function_list_lock.release()
 
   def Terminate(self):
@@ -173,7 +205,7 @@ class SelectServer(object):
       False if the calling thread isn't the one that created the select server.
     """
     if self._ss_thread_id != self._GetThreadID():
-      logging.critical(
+      ola_logger.critical(
          'SelectServer called in a thread other than the owner. '
          'Owner %d, caller %d' % (self._ss_thread_id, self._GetThreadID()))
       traceback.print_stack()
@@ -186,8 +218,10 @@ class SelectServer(object):
       sleep_time = 1
       now = datetime.datetime.now()
       self._CheckTimeouts(now)
+      if self._quit:
+        sleep_time = 0
       if len(self._events):
-        sleep_time = min(1.0, self._events[0].TimeLeft(now))
+        sleep_time = min(sleep_time, self._events[0].TimeLeft(now))
 
       i, o, e = select.select(self._read_descriptors.keys(),
                               self._write_descriptors.keys(),
@@ -204,14 +238,14 @@ class SelectServer(object):
     # descriptors).
     self.RemoveReadDescriptor(self._local_socket[0])
 
-  def AddEvent(self, time_in_ms, callback):
+  def AddEvent(self, delay, callback):
     """Schedule an event to run in the future.
 
     Args:
-      time_in_ms: An interval in milliseconds when this should run.
+      delay: timedelta or number of ms before this event fires
       callback: The function to run.
     """
-    event = _Event(time_in_ms, callback)
+    event = _Event(delay, callback)
     heapq.heappush(self._events, event)
 
   def _CheckTimeouts(self, now):
@@ -233,7 +267,7 @@ class SelectServer(object):
       runnable()
 
   def _GetThreadID(self):
-    return threading.currentThread().ident
+    return threading.current_thread().ident
 
   def _Stop(self):
     self._quit = True
@@ -256,9 +290,9 @@ class SelectServer(object):
 
 
 class ClientWrapper(object):
-  def __init__(self):
+  def __init__(self, socket=None):
     self._ss = SelectServer()
-    self._client = OlaClient()
+    self._client = OlaClient(socket)
     self._ss.AddReadDescriptor(self._client.GetSocket(),
                                self._client.SocketReady)
 

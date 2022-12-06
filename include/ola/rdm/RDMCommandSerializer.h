@@ -43,7 +43,7 @@ namespace rdm {
  * @brief Serializes RDMCommands.
  *
  * This creates the binary representation of an RDMCommand. The binary
- * representation is restricted to 231 bytes of paramater data. If
+ * representation is restricted to 231 bytes of parameter data. If
  * the message is more than 231 bytes then the methods will return false.
  */
 class RDMCommandSerializer {
@@ -78,7 +78,7 @@ class RDMCommandSerializer {
   /**
    * @brief Serialize a RDMCommand to an array of bytes.
    * @param command the RDMCommand to serialize.
-   * @param buffer The memory location to serailize to.
+   * @param buffer The memory location to serialize to.
    * @param[in,out] size The size of the memory location.
    * @returns True if the command was serialized correctly, false otherwise.
    *

@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 
-#include "ola/StringUtils.h"
 #include "ola/base/Macro.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMAPI.h"
@@ -315,7 +314,7 @@ class RDMAPITest: public CppUnit::TestFixture {
     }
 
     void CheckLabel(const ResponseStatus &status,
-                                  const string &description) {
+                    const string &description) {
       CheckResponseStatus(status);
       OLA_ASSERT_EQ(string(TEST_DESCRIPTION), description);
     }
@@ -408,7 +407,7 @@ class RDMAPITest: public CppUnit::TestFixture {
 const char RDMAPITest::BROADCAST_ERROR[] = "Cannot send to broadcast address";
 const char RDMAPITest::DEVICE_RANGE_ERROR[] = "Sub device must be <= 0x0200";
 const char RDMAPITest::DEVICE_RANGE_BCAST_ERROR[] =
-  "Sub device must be <= 0x0200 or 0xffff";
+    "Sub device must be <= 0x0200 or 0xffff";
 const char RDMAPITest::TEST_DESCRIPTION[] = "This is a description";
 
 void RDMAPITest::tearDown() {
@@ -425,16 +424,16 @@ void RDMAPITest::testProxyCommands() {
   string error;
   // get proxied device count
   OLA_ASSERT_FALSE(m_api.GetProxiedDeviceCount(
-    UNIVERSE,
-    m_bcast_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckProxiedDeviceCount),
-    &error));
+      UNIVERSE,
+      m_bcast_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckProxiedDeviceCount),
+      &error));
   CheckForBroadcastError(&error);
   OLA_ASSERT_FALSE(m_api.GetProxiedDeviceCount(
-    UNIVERSE,
-    m_group_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckProxiedDeviceCount),
-    &error));
+      UNIVERSE,
+      m_group_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckProxiedDeviceCount),
+      &error));
   CheckForBroadcastError(&error);
 
   struct {
@@ -450,23 +449,23 @@ void RDMAPITest::testProxyCommands() {
                         ola::rdm::ROOT_RDM_DEVICE,
                         ola::rdm::PID_PROXIED_DEVICE_COUNT);
   OLA_ASSERT_TRUE(m_api.GetProxiedDeviceCount(
-    UNIVERSE,
-    m_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckProxiedDeviceCount),
-    &error));
+      UNIVERSE,
+      m_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckProxiedDeviceCount),
+      &error));
 
   // get proxied devices
   OLA_ASSERT_FALSE(m_api.GetProxiedDevices(
-    UNIVERSE,
-    m_bcast_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckProxiedDevices),
-    &error));
+      UNIVERSE,
+      m_bcast_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckProxiedDevices),
+      &error));
   CheckForBroadcastError(&error);
   OLA_ASSERT_FALSE(m_api.GetProxiedDevices(
-    UNIVERSE,
-    m_group_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckProxiedDevices),
-    &error));
+      UNIVERSE,
+      m_group_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckProxiedDevices),
+      &error));
   CheckForBroadcastError(&error);
 
   struct {
@@ -482,10 +481,10 @@ void RDMAPITest::testProxyCommands() {
                         ola::rdm::ROOT_RDM_DEVICE,
                         ola::rdm::PID_PROXIED_DEVICES);
   OLA_ASSERT_TRUE(m_api.GetProxiedDevices(
-    UNIVERSE,
-    m_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckProxiedDevices),
-    &error));
+      UNIVERSE,
+      m_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckProxiedDevices),
+      &error));
 }
 
 
@@ -496,16 +495,16 @@ void RDMAPITest::testNetworkCommands() {
   string error;
   // get comms status
   OLA_ASSERT_FALSE(m_api.GetCommStatus(
-    UNIVERSE,
-    m_bcast_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckCommsStatus),
-    &error));
+      UNIVERSE,
+      m_bcast_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckCommsStatus),
+      &error));
   CheckForBroadcastError(&error);
   OLA_ASSERT_FALSE(m_api.GetCommStatus(
-    UNIVERSE,
-    m_group_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckCommsStatus),
-    &error));
+      UNIVERSE,
+      m_group_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckCommsStatus),
+      &error));
   CheckForBroadcastError(&error);
 
   struct {
@@ -523,10 +522,10 @@ void RDMAPITest::testNetworkCommands() {
                         ola::rdm::ROOT_RDM_DEVICE,
                         ola::rdm::PID_COMMS_STATUS);
   OLA_ASSERT_TRUE(m_api.GetCommStatus(
-    UNIVERSE,
-    m_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckCommsStatus),
-    &error));
+      UNIVERSE,
+      m_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckCommsStatus),
+      &error));
 
   // clear comms status
   m_impl.AddExpectedSet(UNIVERSE,
@@ -534,38 +533,38 @@ void RDMAPITest::testNetworkCommands() {
                         ola::rdm::ROOT_RDM_DEVICE,
                         ola::rdm::PID_COMMS_STATUS);
   OLA_ASSERT_TRUE(m_api.ClearCommStatus(
-    UNIVERSE,
-    m_bcast_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckWasBroadcast),
-    &error));
+      UNIVERSE,
+      m_bcast_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckWasBroadcast),
+      &error));
 
   m_impl.AddExpectedSet(UNIVERSE,
                         m_uid,
                         ola::rdm::ROOT_RDM_DEVICE,
                         ola::rdm::PID_COMMS_STATUS);
   OLA_ASSERT_TRUE(m_api.ClearCommStatus(
-    UNIVERSE,
-    m_uid,
-    NewSingleCallback(this, &RDMAPITest::CheckResponseStatus),
-    &error));
+      UNIVERSE,
+      m_uid,
+      NewSingleCallback(this, &RDMAPITest::CheckResponseStatus),
+      &error));
 
   // TODO(simon): test status message here
 
   // status id description
   uint16_t status_id = 12;
   OLA_ASSERT_FALSE(m_api.GetStatusIdDescription(
-    UNIVERSE,
-    m_bcast_uid,
-    status_id,
-    NewSingleCallback(this, &RDMAPITest::CheckLabel),
-    &error));
+      UNIVERSE,
+      m_bcast_uid,
+      status_id,
+      NewSingleCallback(this, &RDMAPITest::CheckLabel),
+      &error));
   CheckForBroadcastError(&error);
   OLA_ASSERT_FALSE(m_api.GetStatusIdDescription(
-    UNIVERSE,
-    m_group_uid,
-    status_id,
-    NewSingleCallback(this, &RDMAPITest::CheckLabel),
-    &error));
+      UNIVERSE,
+      m_group_uid,
+      status_id,
+      NewSingleCallback(this, &RDMAPITest::CheckLabel),
+      &error));
   CheckForBroadcastError(&error);
 
   m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
@@ -574,11 +573,11 @@ void RDMAPITest::testNetworkCommands() {
                         ola::rdm::ROOT_RDM_DEVICE,
                         ola::rdm::PID_STATUS_ID_DESCRIPTION);
   OLA_ASSERT_TRUE(m_api.GetStatusIdDescription(
-    UNIVERSE,
-    m_uid,
-    status_id,
-    NewSingleCallback(this, &RDMAPITest::CheckLabel),
-    &error));
+      UNIVERSE,
+      m_uid,
+      status_id,
+      NewSingleCallback(this, &RDMAPITest::CheckLabel),
+      &error));
 
   // clear status id
   uint16_t sub_device = 3;
@@ -587,21 +586,21 @@ void RDMAPITest::testNetworkCommands() {
                         sub_device,
                         ola::rdm::PID_CLEAR_STATUS_ID);
   OLA_ASSERT_TRUE(m_api.ClearStatusId(
-    UNIVERSE,
-    m_bcast_uid,
-    sub_device,
-    NewSingleCallback(this, &RDMAPITest::CheckWasBroadcast),
-    &error));
+      UNIVERSE,
+      m_bcast_uid,
+      sub_device,
+      NewSingleCallback(this, &RDMAPITest::CheckWasBroadcast),
+      &error));
   m_impl.AddExpectedSet(UNIVERSE,
                         m_uid,
                         ola::rdm::ROOT_RDM_DEVICE,
                         ola::rdm::PID_CLEAR_STATUS_ID);
   OLA_ASSERT_TRUE(m_api.ClearStatusId(
-    UNIVERSE,
-    m_uid,
-    ola::rdm::ROOT_RDM_DEVICE,
-    NewSingleCallback(this, &RDMAPITest::CheckResponseStatus),
-    &error));
+      UNIVERSE,
+      m_uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this, &RDMAPITest::CheckResponseStatus),
+      &error));
 
   // TODO(simon): add sub device reporting threshold here
 }

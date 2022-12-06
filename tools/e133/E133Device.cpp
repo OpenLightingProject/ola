@@ -205,8 +205,7 @@ void E133Device::EndpointRequest(
     const string &raw_request) {
   IPV4SocketAddress target = transport_header->Source();
   uint16_t endpoint_id = e133_header->Endpoint();
-  OLA_INFO << "Got request for to endpoint " << endpoint_id
-           << " from " << target;
+  OLA_INFO << "Got request for endpoint " << endpoint_id << " from " << target;
 
   E133EndpointInterface *endpoint = NULL;
   if (endpoint_id)
@@ -217,7 +216,7 @@ void E133Device::EndpointRequest(
   if (!endpoint) {
     OLA_INFO << "Request to non-existent endpoint " << endpoint_id;
     SendStatusMessage(target, e133_header->Sequence(), endpoint_id,
-                      ola::e133::SC_E133_NONEXISTANT_ENDPOINT,
+                      ola::e133::SC_E133_NONEXISTENT_ENDPOINT,
                       "No such endpoint");
     return;
   }
