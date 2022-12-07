@@ -238,22 +238,22 @@ else
   else
     export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
   fi
-  travis_fold start "autoreconf"
+  #travis_fold start "autoreconf"
   autoreconf -i;
-  travis_fold end "autoreconf"
-  travis_fold start "configure"
+  #travis_fold end "autoreconf"
+  #travis_fold start "configure"
   ./configure $DISTCHECK_CONFIGURE_FLAGS;
-  travis_fold end "configure"
-  travis_fold start "make_distcheck"
+  #travis_fold end "configure"
+  #travis_fold start "make_distcheck"
   make distcheck VERBOSE=1;
-  travis_fold end "make_distcheck"
-  travis_fold start "make_dist"
+  #travis_fold end "make_distcheck"
+  #travis_fold start "make_dist"
   make dist;
-  travis_fold end "make_dist"
-  travis_fold start "verify_trees"
+  #travis_fold end "make_dist"
+  #travis_fold start "verify_trees"
   tarball=$(ls -Ut ola*.tar.gz | head -1)
   tar -zxf $tarball;
   tarball_root=$(echo $tarball | sed 's/.tar.gz$//')
   ./scripts/verify_trees.py ./ $tarball_root
-  travis_fold end "verify_trees"
+  #travis_fold end "verify_trees"
 fi
