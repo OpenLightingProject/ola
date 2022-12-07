@@ -236,7 +236,9 @@ else
     # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
     export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133 CPPFLAGS=-Wno-deprecated-declarations'
   else
-    export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
+    #export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
+    # Disable the Python stuff temporarily...
+    export DISTCHECK_CONFIGURE_FLAGS='--enable-ja-rule --enable-e133'
   fi
   #travis_fold start "autoreconf"
   autoreconf -i;
