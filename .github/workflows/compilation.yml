@@ -3,9 +3,7 @@ name: compilation
 on: [push, pull_request]
 jobs:
   compile:
-    strategy:
-      matrix:
-        os: [macos-12]
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@master
       - name: Install dependencies
