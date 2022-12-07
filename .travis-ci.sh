@@ -238,7 +238,7 @@ else
   else
     #export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133'
     # Disable the Python stuff temporarily...
-    export DISTCHECK_CONFIGURE_FLAGS='--enable-ja-rule --enable-e133'
+    export DISTCHECK_CONFIGURE_FLAGS='--disable-python-libs --disable-rdm-tests --enable-ja-rule --enable-e133'
   fi
   #travis_fold start "autoreconf"
   autoreconf -i;
