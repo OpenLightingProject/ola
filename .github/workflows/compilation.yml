@@ -23,7 +23,6 @@ jobs:
           brew install libusb
           brew install protobuf
           brew install cppunit
-      - run: codespell --help
       - name: Compile
         env:
           TASK: 'compile'
