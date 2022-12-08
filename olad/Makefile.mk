@@ -88,4 +88,12 @@ olad_OlaTester_SOURCES = \
 olad_OlaTester_CXXFLAGS = $(COMMON_TESTING_PROTOBUF_FLAGS)
 olad_OlaTester_LDADD = $(COMMON_OLAD_TEST_LDADD)
 
-CLEANFILES += olad/ola-output.conf
+test_scripts += olad/OladHelpTest.sh
+
+OladHelpTest.sh: olad/Makefile.mk
+	echo "${top_builddir}/olad/olad${EXEEXT} --help; STATUS=\$$?; if [ \$$STATUS -ne 0 ]; then echo \"FAIL: olad exited with status \$$STATUS\"; exit \$$STATUS; fi" > $(top_builddir)/olad/OladHelpTest.sh
+	chmod +x $(top_builddir)/olad/OladHelpTest.sh
+
+CLEANFILES += \
+    olad/OladHelpTest.sh \
+    olad/ola-output.conf
