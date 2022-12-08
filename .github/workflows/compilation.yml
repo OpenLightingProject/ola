@@ -25,8 +25,11 @@ jobs:
           brew install pkg-config
           brew install protobuf
           brew install cppunit
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
       - name: Compile
         env:
           TASK: 'compile'
         run: |
+          PATH=/usr/local/opt/ccache/libexec:$PATH # Use ccache on Mac too
           bash -ex .travis-ci.sh
