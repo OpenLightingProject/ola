@@ -5,6 +5,7 @@ jobs:
   compile:
     runs-on: macos-12
     strategy:
+      fail-fast: false
       matrix:
         cxx: [g++, clang++]
     steps:
