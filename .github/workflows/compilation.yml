@@ -4,6 +4,9 @@ on: [push, pull_request]
 jobs:
   compile:
     runs-on: macos-12
+    strategy:
+      matrix:
+        cxx: [g++, clang++]
     steps:
       - uses: actions/checkout@master
       - name: Install dependencies
@@ -30,6 +33,7 @@ jobs:
       - name: Compile
         env:
           TASK: 'compile'
+          CXX: ${{ matrix.cxx }}
         run: |
           PATH=/usr/local/opt/ccache/libexec:$PATH # Use ccache on Mac too
           bash -ex .travis-ci.sh
