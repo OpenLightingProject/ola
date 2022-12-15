@@ -49,8 +49,12 @@ class UartDmxThread : public ola::thread::Thread {
   DmxBuffer m_buffer;
   ola::thread::Mutex m_term_mutex;
   ola::thread::Mutex m_buffer_mutex;
+  unsigned int m_frameTime;
 
   void CheckTimeGranularity();
+
+  void frameSleep(const TimeStamp &ts1);
+  void writeDmxData(const DmxBuffer &buffer);
 
   static const uint32_t DMX_MAB = 16;
   static const uint32_t BAD_GRANULARITY_LIMIT = 3;
