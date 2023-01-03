@@ -24,8 +24,7 @@ from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import RDM_MAX_STRING_LENGTH
 from ola.testing.rdm.ExpectedResults import (AckDiscoveryResult, AckGetResult,
                                              BroadcastResult, DUBResult,
-                                             NackSetResult, TimeoutResult,
-                                             UnsupportedResult)
+                                             TimeoutResult, UnsupportedResult)
 from ola.testing.rdm.ResponderTest import ResponderTestFixture
 from ola.testing.rdm.TestCategory import TestCategory
 from ola.testing.rdm.TestHelpers import ContainsUnprintable
