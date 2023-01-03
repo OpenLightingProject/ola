@@ -17,6 +17,7 @@
 # Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
 
 from __future__ import print_function
+
 import json
 import logging
 import mimetypes
@@ -27,23 +28,22 @@ import stat
 import sys
 import textwrap
 import traceback
-
 from datetime import datetime
 from optparse import OptionParser
 from threading import Condition, Event, Lock, Thread
 from time import time
 from wsgiref.simple_server import make_server
-from ola.UID import UID
+
 from ola.ClientWrapper import ClientWrapper, SelectServer
 from ola.OlaClient import OlaClient, OLADNotRunningException
-from ola import PidStore
+from ola.testing.rdm import (DataLocation, TestDefinitions, TestLogger,
+                             TestRunner)
 from ola.testing.rdm.DMXSender import DMXSender
-from ola.testing.rdm import DataLocation
-from ola.testing.rdm import TestDefinitions
-from ola.testing.rdm import TestLogger
-from ola.testing.rdm import TestRunner
 from ola.testing.rdm.ModelCollector import ModelCollector
 from ola.testing.rdm.TestState import TestState
+from ola.UID import UID
+
+from ola import PidStore
 
 try:
   import urllib.parse as urlparse
@@ -505,7 +505,7 @@ class JsonRequestHandler(RequestHandler):
 
     try:
       json_data = self.GetJson(request, response)
-      response.AppendData(json.dumps(json_data, sort_keys=True))
+      response.AppendData(json.dumps(json_data, sort_keys=True).encode())
     except ServerException as e:
       # For JSON requests, rather than returning 500s we return the error as
       # JSON
@@ -514,7 +514,7 @@ class JsonRequestHandler(RequestHandler):
           'status': False,
           'error': str(e),
       }
-      response.AppendData(json.dumps(json_data, sort_keys=True))
+      response.AppendData(json.dumps(json_data, sort_keys=True).encode())
 
   def RaiseExceptionIfMissing(self, request, param):
     """Helper method to raise an exception if the param is missing."""
@@ -549,7 +549,7 @@ class OLAServerRequestHandler(JsonRequestHandler):
           'status': False,
           'error': 'The OLA Server instance is no longer running',
       }
-      response.AppendData(json.dumps(json_data, sort_keys=True))
+      response.AppendData(json.dumps(json_data, sort_keys=True).encode())
 
 
 class TestDefinitionsHandler(JsonRequestHandler):

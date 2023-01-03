@@ -1,14 +1,17 @@
-x/y/2020 ola-0.10.9
+x/y/2022 ola-0.10.9
  Features:
- * 
+ *
 
  API:
- * 
+ * Python: Add a fetch current DMX example.
 
  RDM Tests:
  * 
 
  Bugs:
+ * Fix some tests not working on Big Endian machines because our RPC is encoded
+   with native format and those tests used sample data from a Little Endian
+   machine
  * Renamed EndpointNoticationEvent(sic) to EndpointNotificationEvent in the
    E1.33 EndpointManager code
 
