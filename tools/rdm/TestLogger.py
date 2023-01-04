@@ -20,9 +20,9 @@ import os
 import pickle
 import re
 
-from ola import Version
 from ola.testing.rdm.TestState import TestState
 
+from ola import Version
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 

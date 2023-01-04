@@ -185,6 +185,7 @@ libs/acn/e131_loadtest
 libs/acn/e131_loadtest.exe
 libs/acn/e131_transmit_test
 libs/acn/e131_transmit_test.exe
+ola-*/
 ola.spec
 olad/olad
 olad/olad.exe
@@ -235,6 +236,7 @@ tools/ola_trigger/ola_trigger
 tools/ola_trigger/ola_trigger.exe
 tools/ola_trigger/FileValidateTest.sh
 tools/rdm/DataLocation.py
+tools/rdm/ExpectedResultsTest.sh
 tools/rdm/ResponderTestTest.sh
 tools/rdm/TestHelpersTest.sh
 tools/rdm/TestStateTest.sh
