@@ -24,6 +24,7 @@ ola.controller('universeCtrl',
       'use strict';
       $scope.dmx = [];
       $scope.Universe = $routeParams.id;
+      $ola.resetHighestChannelNumberUsed();
 
       var interval = $interval(function() {
         $ola.get.Dmx($scope.Universe).then(function(data) {
