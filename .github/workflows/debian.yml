@@ -1,0 +1,45 @@
+# This action originally modeled off of the Debian build action:
+# https://salsa.debian.org/wouter/ola/-/blob/a38a396f6994b2b1af8efec9e208aee4e67f77aa/.gitlab-ci.yml
+
+name: debian
+on: [push, pull_request]
+jobs:
+  debian-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image_tag: [stable, testing, unstable]
+    container: debian:${{ matrix.image_tag }}
+    steps:
+      - uses: actions/checkout@master
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install build tools
+        run: apt-get -y install devscripts adduser fakeroot sudo
+      - name: Install build dependencies
+        run: mk-build-deps -t "apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends" -i -r
+      - name: Set up build user
+        run: |
+          adduser --disabled-password --gecos "" builduser
+          chown -R builduser:builduser .
+          chown builduser:builduser ..
+      - name: Build
+        run: sudo -u builduser dpkg-buildpackage -b -rfakeroot
+      - name: Move built files
+        run: |
+          mkdir built
+          dcmd mv ../*ges built/
+      - name: Display structure of built files
+        run: ls -alR
+        working-directory: built
+        continue-on-error: true
+      - name: SHA256 files
+        shell: bash
+        run: find . -type f -name "*.deb" -exec sha256sum {} \;
+        working-directory: built
+        continue-on-error: true
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ola-built-debian-${{ matrix.image_tag }}-amd64
+          path: ./built/*.deb
