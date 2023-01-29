@@ -192,3 +192,4 @@ import java.nio.ByteOrder;
   s1 = "one\"two\\three/four\bfive\fsix\nseven\reight\tnine";
       string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
           dcmd mv ../*ges built/
+        run: autopkgtest built/*ges -- null

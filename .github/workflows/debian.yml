@@ -5,6 +5,7 @@ name: debian
 on: [push, pull_request]
 jobs:
   debian-build:
+    name: 'Debian Build ${{ matrix.image_tag }} amd64'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -34,12 +35,38 @@ jobs:
         run: ls -alR
         working-directory: built
         continue-on-error: true
-      - name: SHA256 files
+      - name: SHA256 built files
         shell: bash
-        run: find . -type f -name "*.deb" -exec sha256sum {} \;
+        run: find . -type f -exec sha256sum {} \;
         working-directory: built
         continue-on-error: true
       - uses: actions/upload-artifact@v3
         with:
           name: ola-built-debian-${{ matrix.image_tag }}-amd64
-          path: ./built/*.deb
+          path: ./built
+  debian-test:
+    name: 'Debian Test ${{ matrix.image_tag }} amd64'
+    needs: debian-build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image_tag: [stable, testing, unstable]
+    container: debian:${{ matrix.image_tag }}
+    steps:
+      - uses: actions/checkout@master
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-built-debian-${{ matrix.image_tag }}-amd64
+          path: built
+      - name: Display structure of artifact files
+        run: ls -alR
+        working-directory: built
+        continue-on-error: true
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install test tools
+        run: apt-get -y install autopkgtest
+      - name: Test
+        run: autopkgtest built/*ges -- null
