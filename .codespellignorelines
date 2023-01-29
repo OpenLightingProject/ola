@@ -191,3 +191,4 @@ import java.nio.ByteOrder;
       string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
   s1 = "one\"two\\three/four\bfive\fsix\nseven\reight\tnine";
       string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
+          dcmd mv ../*ges built/
