@@ -11,7 +11,7 @@
 export VERBOSE=1
 
 %:
-	dh $@ --parallel --with autotools_dev,autoreconf,bash_completion,python2
+	dh $@ --parallel --with autotools_dev,autoreconf,bash_completion,python3
 
 override_dh_auto_configure:
 	dh_auto_configure -- --enable-python-libs --enable-rdm-tests
