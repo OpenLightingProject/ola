@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
@@ -282,6 +282,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   f = open(file_name)
   # + 1 to include the newline to have a complete line
   header_size = len(licence) + 1
+  file_name_line_count = licence.count('\n') + 2
   first_line = None
   if lang == PYTHON:
     first_line = f.readline()
@@ -289,6 +290,8 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       # First line isn't a shebang, ignore it.
       f.seek(0, os.SEEK_SET)
       first_line = None
+    else:
+      file_name_line_count += 1
   # strip the trailing newline off as we don't actually want it
   header = f.read(header_size).rstrip('\n')
   file_name_line = f.readline()
@@ -299,6 +302,12 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       print("File %s does not have a filename line after the licence; found "
             "\"%s\" expected \"%s\"" %
             (file_name, file_name_line.rstrip('\n'), expected_line))
+      if "GH_ACTION" in os.environ:
+        rel_path = os.path.relpath(file_name)
+        print("::error file=%s,line=%s,title=check-licences::Missing filename "
+              "line after the licence; found \"%s\" expected \"%s\"" %
+              (rel_path, file_name_line_count, file_name_line.rstrip('\n'),
+               expected_line))
       return 1
     return 0
 
@@ -309,13 +318,20 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     ReplaceHeader(file_name, licence, lang)
     return 1
   else:
-    print("File %s does not start with \"%s...\"" % (
+    print("File %s does not start with or not exact match of \"%s...\"" % (
         file_name,
         licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
     if diff:
       d = difflib.Differ()
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
       pprint.pprint(result)
+    if "GH_ACTION" in os.environ:
+      rel_path = os.path.relpath(file_name)
+      print("::error file=%s,line=1,endLine=%s,title=check-licences::File "
+            "does not start with or not exact match of or not exact match of "
+            "\"%s...\"" %
+            (rel_path, file_name_line_count,
+             licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
     return 1
 
 

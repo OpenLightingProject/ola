@@ -1,0 +1,119 @@
+name: lint
+on: [push, pull_request]
+env:
+  GH_ACTION: "TRUE"
+jobs:
+  check-licences:
+    name: Check Licences
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+      - name: Check licenses
+        shell: bash
+        run: ./scripts/enforce_licence.py
+  generic-nolints:
+    name: Count generic NOLINTs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Count the number of generic NOLINTs
+        shell: bash
+        run: ./scripts/count_generic_nolints.sh
+  build:
+    name: Build for Lint Tasks
+    runs-on: ubuntu-latest
+    container: debian:stable
+    steps:
+      - uses: actions/checkout@v3
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install build tools
+        shell: bash
+        run: |
+          apt-get -y install pkg-config libtool autoconf \
+            automake g++ bison flex make bash-completion dh-autoreconf \
+            debhelper devscripts wget python3-pip
+      - name: Install Python lint tools
+        run: python3 -m pip install --no-input cpplint flake8
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
+            libmicrohttpd-dev protobuf-compiler python3-protobuf \
+            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
+            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
+      - name: Autoreconf
+        run: autoreconf -i
+      - name: Configure
+        run: ./configure --enable-rdm-tests --enable-ja-rule --enable-e133
+      - name: Build
+        run: make builtfiles VERBOSE=1
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+  cpplint:
+    name: cpplint
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install build tools
+        shell: bash
+        run: |
+          apt-get -y install pkg-config libtool autoconf \
+            automake g++ bison flex make bash-completion dh-autoreconf \
+            debhelper devscripts wget python3-pip
+      - name: Install Python lint tools
+        run: python3 -m pip install --no-input cpplint flake8
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
+            libmicrohttpd-dev protobuf-compiler python3-protobuf \
+            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
+            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
+      - name: cpplint
+        run: make cpplint VERBOSE=1
+  flake8:
+    name: flake8
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install build tools
+        shell: bash
+        run: |
+          apt-get -y install pkg-config libtool autoconf \
+            automake g++ bison flex make bash-completion dh-autoreconf \
+            debhelper devscripts wget python3-pip
+      - name: Install Python lint tools
+        run: python3 -m pip install --no-input cpplint flake8
+      - name: Setup flake8 annotations
+        uses: rbialon/flake8-annotations@v1
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
+            libmicrohttpd-dev protobuf-compiler python3-protobuf \
+            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
+            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
+      - name: flake8
+        run: make flake8 VERBOSE=1
