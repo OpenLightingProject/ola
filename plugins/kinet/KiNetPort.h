@@ -44,7 +44,7 @@ class KiNetOutputPort: public BasicOutputPort {
   }
 
   virtual bool WriteDMX(const DmxBuffer &buffer,
-                        OLA_UNUSED uint8_t priority) = 0;
+                        uint8_t priority) = 0;
 
   virtual std::string Description() const = 0;
 
@@ -67,7 +67,7 @@ class KiNetDmxOutOutputPort: public KiNetOutputPort {
   }
 
   std::string Description() const {
-    return "DMX Out Port";
+    return "DMX Out Mode Port";
   }
 };
 
@@ -90,7 +90,7 @@ class KiNetPortOutOutputPort: public KiNetOutputPort {
   }
 
   std::string Description() const {
-    return "Port Out Port " + ola::strings::IntToString(PortId());
+    return "Port Out Mode Port " + ola::strings::IntToString(PortId());
   }
 };
 }  // namespace kinet

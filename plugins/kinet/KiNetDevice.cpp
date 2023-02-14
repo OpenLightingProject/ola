@@ -78,12 +78,12 @@ string KiNetDevice::ModeKey(const ola::network::IPV4Address &power_supply) {
   return power_supply.ToString() + "-mode";
 }
 
+
 string KiNetDevice::ModeKey() const {
   return ModeKey(m_power_supply);
 }
 
 
-// TODO(Peter): Inherit and call this too!
 void KiNetDevice::SetDefaults() {
   // Set device options
   set<string> valid_modes;
@@ -134,8 +134,6 @@ bool KiNetPortOutDevice::StartHook() {
     OLA_WARN << "Invalid port count value for " << PortCountKey();
   }
 
-  // TODO(Peter): Split this off!
-  AddPort(new KiNetDmxOutOutputPort(this, m_power_supply, m_node));
   for (uint8_t i = 1; i <= port_count; i++) {
     AddPort(new KiNetPortOutOutputPort(this, m_power_supply, m_node, i));
   }
@@ -147,7 +145,10 @@ string KiNetPortOutDevice::PortCountKey() const {
   return m_power_supply.ToString() + "-ports";
 }
 
+
 void KiNetPortOutDevice::SetDefaults() {
+  // Set the base device defaults
+  KiNetDevice::SetDefaults();
   // Set device options
   m_preferences->SetDefaultValue(
       PortCountKey(),
@@ -155,6 +156,7 @@ void KiNetPortOutDevice::SetDefaults() {
       KINET_PORTOUT_MAX_PORT_COUNT);
   m_preferences->Save();
 }
+
 
 const char KiNetDmxOutDevice::KINET_DMX_OUT_DEVICE_NAME[] =
     "KiNET DMX Out Mode";
@@ -188,6 +190,12 @@ bool KiNetDmxOutDevice::StartHook() {
 
   AddPort(new KiNetDmxOutOutputPort(this, m_power_supply, m_node));
   return true;
+}
+
+
+void KiNetDmxOutDevice::SetDefaults() {
+  // Set the base device defaults
+  KiNetDevice::SetDefaults();
 }
 }  // namespace kinet
 }  // namespace plugin

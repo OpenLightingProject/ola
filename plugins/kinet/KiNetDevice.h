@@ -87,6 +87,8 @@ class KiNetDmxOutDevice: public KiNetDevice {
                     class KiNetNode *node,
                     class Preferences *preferences);
 
+  void SetDefaults();
+
  protected:
   bool StartHook();
 
