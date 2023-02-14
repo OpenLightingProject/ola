@@ -23,6 +23,7 @@ import sys
 import tempfile
 import textwrap
 import webbrowser
+
 from ola.UID import UID
 
 '''Compare the RDM configurations saves with rdm_snapshot.py'''

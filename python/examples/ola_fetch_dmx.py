@@ -13,40 +13,28 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# ola_universe_info.py
-# Copyright (C) 2005 Simon Newton
+# ola_fetch_dmx.py
+# Copyright (C) 2020 Peter Newman
 
-"""Lists the active universes."""
+"""Gets a current frame of DMX for a universe."""
 
 from __future__ import print_function
 
+import getopt
 import sys
+import textwrap
 
 from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import Universe
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 wrapper = None
 
 
-def Universes(status, universes):
+def DMXData(status, universe, data):
   if status.Succeeded():
-    for uni in universes:
-      print('Universe %d' % uni.id)
-      print('  - Name: %s' % uni.name)
-      print('  - Merge mode: %s' %
-            ('LTP' if uni.merge_mode == Universe.LTP else 'HTP'))
+    print(data)
 
-      if len(uni.input_ports) > 0:
-        print('  - Input ports:')
-        for p in uni.input_ports:
-          print('    - %s' % p)
-
-      if len(uni.output_ports) > 0:
-        print('  - Output ports:')
-        for p in uni.output_ports:
-          print('    - %s' % p)
   else:
     print('Error: %s' % status.message, file=sys.stderr)
 
@@ -55,11 +43,36 @@ def Universes(status, universes):
     wrapper.Stop()
 
 
+def Usage():
+  print(textwrap.dedent("""
+  Usage: ola_fetch_dmx.py --universe <universe>
+
+  Fetch the current DXM512 data for the universe and exit.
+
+  -h, --help                Display this help message and exit.
+  -u, --universe <universe> Universe number."""))
+
+
 def main():
+  try:
+      opts, args = getopt.getopt(sys.argv[1:], "hu:", ["help", "universe="])
+  except getopt.GetoptError as err:
+    print(str(err))
+    Usage()
+    sys.exit(2)
+
+  universe = 1
+  for o, a in opts:
+    if o in ("-h", "--help"):
+      Usage()
+      sys.exit()
+    elif o in ("-u", "--universe"):
+      universe = int(a)
+
   global wrapper
   wrapper = ClientWrapper()
   client = wrapper.Client()
-  client.FetchUniverses(Universes)
+  client.FetchDmx(universe, DMXData)
   wrapper.Run()
 
 
