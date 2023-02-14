@@ -1471,33 +1471,36 @@ class SetNonPrintableAsciiDeviceLabel(TestMixins.SetLabelMixin,
     return self.Property('device_label')
 
 
-class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
-                             OptionalParameterTestFixture):
-  """SET the device label to something that contains non-ASCII data."""
-  CATEGORY = TestCategory.PRODUCT_INFORMATION
-  PID = 'DEVICE_LABEL'
-  REQUIRES = ['device_label']
-  # Store directly as bytes so we don't try and decode as UTF-8
-  TEST_LABEL = b'string with\x0d non ASCII\xc0'
-
-  def ExpectedResults(self):
-    return [
-      self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
-      self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
-      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-      self.AckSetResult(action=self.VerifySet)
-    ]
-
-  def OldValue(self):
-    return self.Property('device_label')
-
-  def Test(self):
-    # We have to override test here as this has to be raw as we can't encode it
-    # on Python 3 as it turns it to UTF-8 or escapes it
-    # It's also technically out of spec for E1.20 unless it's sent as UTF-8
-    self._test_state = self.SET
-    self.AddIfSetSupported(self.ExpectedResults())
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.TEST_LABEL)
+# TODO(Peter): Get this test to work where we just compare the returned string
+# as bytes so we don't try and fail to decode it as ASCII/UTF-8
+# class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
+#                              OptionalParameterTestFixture):
+#   """SET the device label to something that contains non-ASCII data."""
+#   CATEGORY = TestCategory.PRODUCT_INFORMATION
+#   PID = 'DEVICE_LABEL'
+#   REQUIRES = ['device_label']
+#   # Store directly as bytes so we don't try and decode as UTF-8
+#   TEST_LABEL = b'string with\x0d non ASCII\xc0'
+#
+#   def ExpectedResults(self):
+#     return [
+#       self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+#       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+#       self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+#       self.AckSetResult(action=self.VerifySet)
+#     ]
+#
+#   def OldValue(self):
+#     return self.Property('device_label')
+#
+#   def Test(self):
+#     # We have to override test here as this has to be raw as we can't encode
+#     # it
+#     # on Python 3 as it turns it to UTF-8 or escapes it
+#     # It's also technically out of spec for E1.20 unless it's sent as UTF-8
+#     self._test_state = self.SET
+#     self.AddIfSetSupported(self.ExpectedResults())
+#     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.TEST_LABEL)
 
 
 class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
