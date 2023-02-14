@@ -1,4 +1,4 @@
-x/y/2022 ola-0.10.9
+x/y/2023 ola-0.10.9
  Features:
  *
 
@@ -14,6 +14,10 @@ x/y/2022 ola-0.10.9
    machine
  * Renamed EndpointNoticationEvent(sic) to EndpointNotificationEvent in the
    E1.33 EndpointManager code
+ * Update Angular and Angular-Route versions used by the new web UI and add
+   workaround to be compatible #1782 Debian #1016447
+ * Significantly reduce the delay when using StreamingClient with EPoll and
+   multiple universes #1793
 
  Internal:
  *
