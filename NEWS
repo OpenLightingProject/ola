@@ -1,13 +1,15 @@
 x/y/2023 ola-0.10.9
  Features:
  * Python 3 compatibility across the board (including the RDM Responder Tests)!
+   #1506
  * Support for the JMS USB2DMX PRO V2.1 device via the FTDI plugin #1728
 
  API:
  * Python: Add a fetch current DMX example.
 
  RDM Tests:
- * 
+ * Python 3 compatibility of the RDM Tests #1599
+ * Fix a longstanding bug in the GetMaxPacketSize RDM test around timeouts
 
  Bugs:
  * Fix some tests not working on Big Endian machines because our RPC is encoded
@@ -23,10 +25,9 @@ x/y/2023 ola-0.10.9
  * Relax the timing on the ClientWrapperTest so it doesn't fail occasionally
    #1714
  * Correct the documentation of some existing limits in the E1.31 plugin
- * Fix a longstanding bug in the GetMaxPacketSize RDM test around timeouts
  * Fix some undefined behaviour in TimeoutManager::ExecuteTimeouts #1726
  * Fix UARTs on Debian Bullseye #1749
- * Fix Python version detection for versions > 3.9 #1755
+ * Fix Python version detection for versions > 3.9 #1755, #1780
  * Update Angular and Angular-Route versions used by the new web UI and add
    workaround to be compatible #1782 Debian #1016447
  * Significantly reduce the delay when using StreamingClient with EPoll and
