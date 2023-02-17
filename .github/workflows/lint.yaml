@@ -1,7 +1,5 @@
 name: lint
 on: [push, pull_request]
-env:
-  GH_ACTION: "TRUE"
 jobs:
   check-licences:
     name: Check Licences

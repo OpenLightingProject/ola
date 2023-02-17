@@ -18,7 +18,7 @@
 
 # This script is based on a Travis CI test by Peter Newman
 nolints="$(grep -n --exclude "$(basename $0)" -IR NOLINT * | grep -v "NOLINT(")"
-if [[ -v GH_ACTION ]]; then
+if [[ -v GITHUB_ACTIONS ]]; then
   nolints="$(printf "%s\n" "$nolints" | sed 's/^\(\(.*\):\([0-9]\+\):\(.*\)\)$/\1\n::error file=\2,line=\3,title=generic-nolints::Generic NOLINT not permitted/g')"
 fi
 nolints_count="$(grep --exclude "$(basename $0)" -IR NOLINT * | grep -c -v "NOLINT(")"

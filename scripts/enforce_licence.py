@@ -302,7 +302,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       print("File %s does not have a filename line after the licence; found "
             "\"%s\" expected \"%s\"" %
             (file_name, file_name_line.rstrip('\n'), expected_line))
-      if "GH_ACTION" in os.environ:
+      if "GITHUB_ACTIONS" in os.environ:
         rel_path = os.path.relpath(file_name)
         print("::error file=%s,line=%s,title=check-licences::Missing filename "
               "line after the licence; found \"%s\" expected \"%s\"" %
@@ -325,7 +325,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       d = difflib.Differ()
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
       pprint.pprint(result)
-    if "GH_ACTION" in os.environ:
+    if "GITHUB_ACTIONS" in os.environ:
       rel_path = os.path.relpath(file_name)
       print("::error file=%s,line=1,endLine=%s,title=check-licences::File "
             "does not start with or not exact match of or not exact match of "
