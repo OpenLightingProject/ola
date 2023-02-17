@@ -101,6 +101,8 @@ jobs:
             libmicrohttpd-dev protobuf-compiler python3-protobuf \
             libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
             libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::.github/problem-matcher-lint-cpplint.json"
       - name: cpplint
         run: make cpplint VERBOSE=1
   flake8:
