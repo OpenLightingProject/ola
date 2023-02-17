@@ -49,22 +49,36 @@ jobs:
         run: ./configure --enable-rdm-tests --enable-ja-rule --enable-e133
       - name: Build
         run: make builtfiles VERBOSE=1
+      - name: Archive artifacts to speed up slow GH Actions upload/download
+        shell: bash
+        run: |
+          touch ola-debian-stable-built-source-tree.tar.xz
+          tar --exclude=ola-debian-stable-built-source-tree.tar.xz -cvJf ola-debian-stable-built-source-tree.tar.xz .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.xz
       - uses: actions/upload-artifact@v3
         with:
           name: ola-debian-stable-built-source-tree
-          path: .
+          path: ola-debian-stable-built-source-tree.tar.xz
   cpplint:
     name: cpplint
     runs-on: ubuntu-latest
     container: debian:stable
     needs: build
     steps:
-      - name: Download built source tree
+      - name: Download built source tree archive
         uses: actions/download-artifact@v3
         with:
           name: ola-debian-stable-built-source-tree
           path: .
-      - name: Display structure of downloaded files
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.xz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvJf ola-debian-stable-built-source-tree.tar.xz .
+          rm ola-debian-stable-built-source-tree.tar.xz
+      - name: Display structure of extracted files
         run: ls -alR
       - name: Update package database
         run: apt-get update -y
@@ -91,11 +105,20 @@ jobs:
     container: debian:stable
     needs: build
     steps:
-      - name: Download built source tree
+      - name: Download built source tree archive
         uses: actions/download-artifact@v3
         with:
           name: ola-debian-stable-built-source-tree
           path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.xz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvJf ola-debian-stable-built-source-tree.tar.xz .
+          rm ola-debian-stable-built-source-tree.tar.xz
+      - name: Display structure of extracted files
+        run: ls -alR
       - name: Update package database
         run: apt-get update -y
       - name: Install build tools
