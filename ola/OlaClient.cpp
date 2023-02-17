@@ -33,7 +33,7 @@
 
 namespace ola {
 namespace client {
-
+NOLINT
 using std::string;
 using std::vector;
 using ola::rdm::RDMAPIImplInterface;

@@ -17,16 +17,13 @@
 # Copyright (C) 2023 Perry Naseck, Peter Newman
 
 # This script is based on a Travis CI test by Peter Newman
-nolints="$(grep -n --exclude "$(basename $0)" -IR NOLINT * | grep -v "NOLINT(")"
-if [[ -v GITHUB_ACTIONS ]]; then
-  nolints="$(printf "%s\n" "$nolints" | sed 's/^\(\(.*\):\([0-9]\+\):\(.*\)\)$/\1\n::error file=\2,line=\3,title=generic-nolints::Generic NOLINT not permitted/g')"
-fi
+nolints="$(grep -n --exclude "$(basename $0)" -IR NOLINT * | grep -v "NOLINT(" | sed 's/^\(.*\):\([0-9]\+\):\(.*\)$/error:file:\.\/\1:line \2: Generic NOLINT not permitted/g')"
 nolints_count="$(grep --exclude "$(basename $0)" -IR NOLINT * | grep -c -v "NOLINT(")"
 if [[ $nolints_count -ne 0 ]]; then
   # print the output for info
   printf "%s\n" "$nolints"
-  printf "Found $nolints_count generic NOLINTs\n"
+  printf "error: Found $nolints_count generic NOLINTs\n"
   exit 1
 else
-  printf "Found $nolints_count generic NOLINTs\n"
+  printf "info: Found $nolints_count generic NOLINTs\n"
 fi

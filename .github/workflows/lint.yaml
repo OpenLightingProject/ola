@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::.github/problem-matcher-lint-generic-nolints.json"
       - name: Count the number of generic NOLINTs
         shell: bash
         run: ./scripts/count_generic_nolints.sh
