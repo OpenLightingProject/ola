@@ -10,7 +10,7 @@ jobs:
         with:
           python-version: '3.10'
       - name: Enable Problem Matcher for GitHub annotations
-        run: echo "::add-matcher::problem-matcher-lint-check-licences.json"
+        run: echo "::add-matcher::.github/problem-matcher-lint-check-licences.json"
       - name: Check licenses
         shell: bash
         run: ./scripts/enforce_licence.py
