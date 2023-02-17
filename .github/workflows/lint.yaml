@@ -8,7 +8,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10' 
+          python-version: '3.10'
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::problem-matcher-lint-check-licences.json"
       - name: Check licenses
         shell: bash
         run: ./scripts/enforce_licence.py

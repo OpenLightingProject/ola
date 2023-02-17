@@ -236,7 +236,8 @@ def GetDirectoryLicences(root_dir):
       lines = f.readlines()
       f.close()
       licences[dir_name] = TransformLicence(lines)
-      print('Found LICENCE for directory %s' % dir_name)
+      rel_path = "./" + os.path.relpath(dir_name)
+      print('info:dir:%s: Found LICENCE for directory' % rel_path)
 
     # use this licence for all subdirs
     licence = licences.get(dir_name)
@@ -280,6 +281,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     return 0
 
   f = open(file_name)
+  rel_path = "./" + os.path.relpath(file_name)
   # + 1 to include the newline to have a complete line
   header_size = len(licence) + 1
   file_name_line_count = licence.count('\n') + 2
@@ -299,39 +301,26 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   if header == licence:
     expected_line = TransformLine(os.path.basename(file_name), lang)
     if lang != JS and file_name_line.rstrip('\n') != expected_line:
-      print("File %s does not have a filename line after the licence; found "
+      print("error:file:%s:line %s: File does not have a filename line after the licence; found "
             "\"%s\" expected \"%s\"" %
-            (file_name, file_name_line.rstrip('\n'), expected_line))
-      if "GITHUB_ACTIONS" in os.environ:
-        rel_path = os.path.relpath(file_name)
-        print("::error file=%s,line=%s,title=check-licences::Missing filename "
-              "line after the licence; found \"%s\" expected \"%s\"" %
-              (rel_path, file_name_line_count, file_name_line.rstrip('\n'),
-               expected_line))
+            (rel_path, file_name_line_count, file_name_line.rstrip('\n'), expected_line))
       return 1
     return 0
 
   if fix:
-    print('Fixing %s' % file_name)
+    print('info:file:%s: Fixing file' % rel_path)
     if lang == PYTHON and first_line is not None:
       licence = first_line + licence
     ReplaceHeader(file_name, licence, lang)
     return 1
   else:
-    print("File %s does not start with or not exact match of \"%s...\"" % (
-        file_name,
+    print("error:file:%s:lines 1-%s: File does not start with or not exact match of \"%s...\"" % (
+        rel_path, file_name_line_count,
         licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
     if diff:
       d = difflib.Differ()
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
       pprint.pprint(result)
-    if "GITHUB_ACTIONS" in os.environ:
-      rel_path = os.path.relpath(file_name)
-      print("::error file=%s,line=1,endLine=%s,title=check-licences::File "
-            "does not start with or not exact match of or not exact match of "
-            "\"%s...\"" %
-            (rel_path, file_name_line_count,
-             licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
     return 1
 
 
@@ -341,10 +330,11 @@ def main():
   errors = 0
   for dir_name, licence in licences.items():
     errors += CheckLicenceForDir(dir_name, licence, diff=diff, fix=fix)
-  print('Found %d files with incorrect licences' % errors)
-  if errors > 0:
+  if (errors > 0):
+    print('error: Found %d files with incorrect licences' % errors)
     sys.exit(1)
   else:
+    print('info: Found %d files with incorrect licences' % errors)
     sys.exit()
 
 

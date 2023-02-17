@@ -1,0 +1,34 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "lint-check-licences",
+            "pattern": [
+                {
+                    "regexp": "^(info|error):file:(.+):lines (\\d+)-(\\d+): (.+)$",
+                    "severity": 1,
+                    "file": 2,
+                    "line": 3,
+                    "message": 5
+                },
+                {
+                    "regexp": "^(info|error):file:(.+):line (\\d+): (.+)$",
+                    "severity": 1,
+                    "file": 2,
+                    "line": 3,
+                    "message": 4
+                },
+                {
+                    "regexp": "^(info|error):dir:(.+): (.+)$",
+                    "severity": 1,
+                    "file": 2,
+                    "message": 3
+                },
+                {
+                    "regexp": "^(info|error): (.+)$",
+                    "severity": 1,
+                    "message": 2
+                }
+            ]
+        }
+    ]
+}
