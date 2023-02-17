@@ -66,6 +66,8 @@ jobs:
         with:
           name: ola-debian-stable-built-source-tree
           path: .
+      - name: Display structure of downloaded files
+        run: ls -alR
       - name: Update package database
         run: apt-get update -y
       - name: Install build tools
