@@ -301,9 +301,10 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   if header == licence:
     expected_line = TransformLine(os.path.basename(file_name), lang)
     if lang != JS and file_name_line.rstrip('\n') != expected_line:
-      print("error:file:%s:line %s: File does not have a filename line after the licence; found "
-            "\"%s\" expected \"%s\"" %
-            (rel_path, file_name_line_count, file_name_line.rstrip('\n'), expected_line))
+      print("error:file:%s:line %s: File does not have a filename line after "
+            "the licence; found \"%s\" expected \"%s\"" %
+            (rel_path, file_name_line_count, file_name_line.rstrip('\n'),
+             expected_line))
       return 1
     return 0
 
@@ -314,9 +315,10 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     ReplaceHeader(file_name, licence, lang)
     return 1
   else:
-    print("error:file:%s:lines 1-%s: File does not start with or not exact match of \"%s...\"" % (
-        rel_path, file_name_line_count,
-        licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
+    print("error:file:%s:lines 1-%s: File does not start with or not exact "
+          "match of \"%s...\"" %
+          (rel_path, file_name_line_count,
+           licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
     if diff:
       d = difflib.Differ()
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
