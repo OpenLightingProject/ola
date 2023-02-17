@@ -52,14 +52,14 @@ jobs:
       - name: Archive artifacts to speed up slow GH Actions upload/download
         shell: bash
         run: |
-          touch ola-debian-stable-built-source-tree.tar.xz
-          tar --exclude=ola-debian-stable-built-source-tree.tar.xz -cvJf ola-debian-stable-built-source-tree.tar.xz .
+          touch ola-debian-stable-built-source-tree.tar.gz
+          tar --exclude=ola-debian-stable-built-source-tree.tar.gz -cvzf ola-debian-stable-built-source-tree.tar.gz .
       - name: SHA256 artifact archive
-        run: sha256sum ola-debian-stable-built-source-tree.tar.xz
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
       - uses: actions/upload-artifact@v3
         with:
           name: ola-debian-stable-built-source-tree
-          path: ola-debian-stable-built-source-tree.tar.xz
+          path: ola-debian-stable-built-source-tree.tar.gz
   cpplint:
     name: cpplint
     runs-on: ubuntu-latest
@@ -72,12 +72,12 @@ jobs:
           name: ola-debian-stable-built-source-tree
           path: .
       - name: SHA256 artifact archive
-        run: sha256sum ola-debian-stable-built-source-tree.tar.xz
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
       - name: Unarchive artifacts and delete archive
         shell: bash
         run: |
-          tar -xvJf ola-debian-stable-built-source-tree.tar.xz .
-          rm ola-debian-stable-built-source-tree.tar.xz
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
       - name: Display structure of extracted files
         run: ls -alR
       - name: Update package database
@@ -111,12 +111,12 @@ jobs:
           name: ola-debian-stable-built-source-tree
           path: .
       - name: SHA256 artifact archive
-        run: sha256sum ola-debian-stable-built-source-tree.tar.xz
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
       - name: Unarchive artifacts and delete archive
         shell: bash
         run: |
-          tar -xvJf ola-debian-stable-built-source-tree.tar.xz .
-          rm ola-debian-stable-built-source-tree.tar.xz
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
       - name: Display structure of extracted files
         run: ls -alR
       - name: Update package database
