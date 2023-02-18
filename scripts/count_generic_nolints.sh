@@ -25,5 +25,5 @@ if [[ $nolints_count -ne 0 ]]; then
   printf "error: Found $nolints_count generic NOLINTs\n"
   exit 1
 else
-  printf "info: Found $nolints_count generic NOLINTs\n"
+  printf "notice: Found $nolints_count generic NOLINTs\n"
 fi

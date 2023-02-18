@@ -4,7 +4,7 @@
             "owner": "lint-check-licences",
             "pattern": [
                 {
-                    "regexp": "^(info|error)(:(file|dir):([^:]+)(:lines? (\\d+)(-(\\d+))?)?)?: (.+)$",
+                    "regexp": "^(notice|error)(:(file|dir):([^:]+)(:lines? (\\d+)(-(\\d+))?)?)?: (.+)$",
                     "severity": 1,
                     "file": 4,
                     "line": 6,

@@ -237,7 +237,7 @@ def GetDirectoryLicences(root_dir):
       f.close()
       licences[dir_name] = TransformLicence(lines)
       rel_path = "./" + os.path.relpath(dir_name)
-      print('info:dir:%s: Found LICENCE for directory' % rel_path)
+      print('notice:dir:%s: Found LICENCE for directory' % rel_path)
 
     # use this licence for all subdirs
     licence = licences.get(dir_name)
@@ -309,7 +309,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     return 0
 
   if fix:
-    print('info:file:%s: Fixing file' % rel_path)
+    print('notice:file:%s: Fixing file' % rel_path)
     if lang == PYTHON and first_line is not None:
       licence = first_line + licence
     ReplaceHeader(file_name, licence, lang)
@@ -336,7 +336,7 @@ def main():
     print('error: Found %d files with incorrect licences' % errors)
     sys.exit(1)
   else:
-    print('info: Found %d files with incorrect licences' % errors)
+    print('notice: Found %d files with incorrect licences' % errors)
     sys.exit()
 
 
