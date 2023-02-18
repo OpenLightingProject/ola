@@ -232,12 +232,15 @@ def GetDirectoryLicences(root_dir):
     subdirs[:] = [d for d in subdirs if not d.startswith('.')]
 
     if LICENCE_FILE in files:
-      f = open(os.path.join(dir_name, LICENCE_FILE))
+      licence_path = os.path.join(dir_name, LICENCE_FILE)
+      f = open(licence_path)
       lines = f.readlines()
       f.close()
       licences[dir_name] = TransformLicence(lines)
-      rel_path = "./" + os.path.relpath(dir_name)
-      print('notice:dir:%s: Found LICENCE for directory' % rel_path)
+      rel_licence_path = "./" + os.path.relpath(licence_path)
+      rel_dir_path = "./" + os.path.relpath(dir_name)
+      print('debug:file:%s: Found LICENCE for directory %s' %
+            (rel_licence_path, rel_dir_path))
 
     # use this licence for all subdirs
     licence = licences.get(dir_name)
