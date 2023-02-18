@@ -28,7 +28,7 @@
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif  // HAVE_CONFIG_H
- 
+
 #include <errno.h>
 #ifndef _WIN32
 #include <grp.h>
@@ -50,7 +50,7 @@ using std::string;
  * @{
  */
 
- bool SupportsUIDs() {
+bool SupportsUIDs() {
 #ifdef _WIN32
   return false;
 #else
@@ -58,8 +58,7 @@ using std::string;
 #endif  // _WIN32
 }
 
-bool GetUID(uid_t* uid)
-{
+bool GetUID(uid_t* uid) {
 #ifdef _WIN32
   (void) uid;
   return false;
@@ -67,9 +66,9 @@ bool GetUID(uid_t* uid)
   if (uid) {
     *uid = getuid();
     return true;
-  } else 
+  } else {
     return false;
-  
+  }
 #endif  // _WIN32
 }
 
