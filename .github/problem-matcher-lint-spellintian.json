@@ -1,0 +1,15 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "lint-generic-spellintian",
+            "pattern": [
+                {
+                    "regexp": "^(notice|error)(:(file|dir):([^:]+))?: (.+)$",
+                    "severity": 1,
+                    "file": 4,
+                    "message": 5
+                }
+            ]
+        }
+    ]
+}

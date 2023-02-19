@@ -153,3 +153,32 @@ jobs:
             libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
       - name: flake8
         run: make flake8 VERBOSE=1
+  spellintian:
+    name: spellintian
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
+      - name: Display structure of extracted files
+        run: ls -alR
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install lint tools
+        shell: bash
+        run: apt-get -y install moreutils lintian
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::.github/problem-matcher-lint-spellintian.json"
+      - name: spellintian
+        run: make spellintian VERBOSE=1
