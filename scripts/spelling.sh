@@ -70,15 +70,15 @@ spellingfiles=$(eval "find ./ -type f -and ! \( \
     $SPELLINGBLACKLIST \
     \) | xargs")
 
-# count the number of spellintian errors, including duplicate words
-spellintian_errors="$(zrun spellintian $spellingfiles 2>&1)"
-spellintian_errors_count=$([ "$spellintian_errors" == "" ] && printf "0" || (printf "%s\n" "$spellintian_errors" | wc -l))
-spellintian_severity="$([ "$spellintian_errors_count" == "0" ] && printf "notice" || printf "error" )"
-
 # count the number of codespell errors
 codespell_errors="$(zrun codespell --interactive 0 --disable-colors --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles 2>&1)"
 codespell_errors_count="$([ "$codespell_errors" == "" ] && printf "0" || (printf "%s\n" "$codespell_errors" | wc -l))"
 codespell_severity="$([ "$codespell_errors_count" == "0" ] && printf "notice" || printf "error" )"
+
+# count the number of spellintian errors, including duplicate words
+spellintian_errors="$(zrun spellintian $spellingfiles 2>&1)"
+spellintian_errors_count=$([ "$spellintian_errors" == "" ] && printf "0" || (printf "%s\n" "$spellintian_errors" | wc -l))
+spellintian_severity="$([ "$spellintian_errors_count" == "0" ] && printf "notice" || printf "error" )"
 
 total_errors_count="$(($spellintian_errors_count + $codespell_errors_count))"
 total_severity="$([ "$total_errors_count" == "0" ] && printf "notice" || printf "error" )"
