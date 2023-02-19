@@ -16,7 +16,20 @@
 # spellintian.sh
 # Copyright (C) 2023 Perry Naseck, Peter Newman
 
-# This script is based on a Travis CI test by Peter Newman
+# This script is based on Travis CI tests by Peter Newman
+if ! [ -x "$(command -v zrun)" ]; then
+  echo "error: Cannot find zrun. Do you need the moreutils package?"
+  exit 1;
+fi;
+if ! [ -x "$(command -v spellintian)" ]; then
+  echo "error: Cannot find spellintian. Do you need the lintian package?"
+  exit 1;
+fi;
+if ! [ -x "$(command -v codespell)" ]; then
+  echo "error: Cannot find codespell. Install via pip."
+  exit 1;
+fi;
+
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./.codespellignorewords" -or \
       -wholename "./.codespellignorelines" -or \
@@ -56,14 +69,33 @@ BLACKLIST
 spellingfiles=$(eval "find ./ -type f -and ! \( \
     $SPELLINGBLACKLIST \
     \) | xargs")
-# count the number of spellintian errors, ignoring duplicate words
-spellingerrors="$(zrun spellintian $spellingfiles 2>&1)"
-spellingerrors_count=$([ "$spellingerrors" == "" ] && printf "0" || (printf "%s\n" "$spellingerrors" | wc -l))
-if [[ $spellingerrors_count -ne 0 ]]; then
+
+# count the number of spellintian errors, including duplicate words
+spellintian_errors="$(zrun spellintian $spellingfiles 2>&1)"
+spellintian_errors_count=$([ "$spellintian_errors" == "" ] && printf "0" || (printf "%s\n" "$spellintian_errors" | wc -l))
+spellintian_severity="$([ "$spellintian_errors_count" == "0" ] && printf "notice" || printf "error" )"
+
+# count the number of codespell errors
+codespell_errors="$(zrun codespell --interactive 0 --disable-colors --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles 2>&1)"
+codespell_errors_count="$([ "$codespell_errors" == "" ] && printf "0" || (printf "%s\n" "$codespell_errors" | wc -l))"
+codespell_severity="$([ "$codespell_errors_count" == "0" ] && printf "notice" || printf "error" )"
+
+total_errors_count="$(($spellintian_errors_count + $codespell_errors_count))"
+total_severity="$([ "$total_errors_count" == "0" ] && printf "notice" || printf "error" )"
+
+if [[ $spellintian_errors_count -ne 0 ]]; then
   # print the output for info
-  printf "%s\n" "$spellingerrors"| sed 's/^\(.*\): \(.*\)$/error:file:\1: \2/g'
-  echo "error: Found $spellingerrors_count spelling errors via spellintian"
+  printf "%s\n" "$spellintian_errors" | sed 's/^\(.*\): \(.*\)$/error:file:\1: spellintian: \2/g'
+fi;
+
+if [[ $codespell_errors_count -ne 0 ]]; then
+  # print the output for info
+  printf "%s\n" "$codespell_errors" | sed 's/^\(.*\):\([0-9]\+\): \(.*\)$/error:file:\1:line \2: codespell: \3/g'
+fi;
+
+echo "$spellintian_severity: Found $spellintian_errors_count spelling errors via spellintian"
+echo "$codespell_severity: Found $codespell_errors_count spelling errors via codespell"
+echo "$total_severity: Found $total_errors_count total spelling errors"
+if [[ $total_errors_count -ne 0 ]]; then
   exit 1;
-else
-  echo "notice: Found $spellingerrors_count spelling errors via spellintian"
 fi;

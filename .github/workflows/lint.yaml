@@ -153,8 +153,8 @@ jobs:
             libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
       - name: flake8
         run: make flake8 VERBOSE=1
-  spellintian:
-    name: spellintian
+  spelling:
+    name: spelling
     runs-on: ubuntu-latest
     container: debian:stable
     needs: build
@@ -178,7 +178,9 @@ jobs:
       - name: Install lint tools
         shell: bash
         run: apt-get -y install moreutils lintian
+      - name: Install Python lint tools
+        run: python3 -m pip install --no-input codespell==2.2.1
       - name: Enable Problem Matcher for GitHub annotations
-        run: echo "::add-matcher::.github/problem-matcher-lint-spellintian.json"
-      - name: spellintian
-        run: make spellintian VERBOSE=1
+        run: echo "::add-matcher::.github/problem-matcher-lint-spelling.json"
+      - name: spelling
+        run: ./scripts/spelling.sh VERBOSE=1
