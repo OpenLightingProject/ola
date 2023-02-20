@@ -13,7 +13,7 @@ jobs:
         run: echo "::add-matcher::.github/problem-matcher-lint-check-licences.json"
       - name: Check licenses
         shell: bash
-        run: ./scripts/enforce_licence.py
+        run: python3 ./scripts/enforce_licence.py
   generic-nolints:
     name: Count generic NOLINTs
     runs-on: ubuntu-latest
