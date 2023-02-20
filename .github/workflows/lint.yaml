@@ -38,6 +38,9 @@ jobs:
         run: ./configure --enable-rdm-tests --enable-ja-rule --enable-e133
       - name: Build
         run: make builtfiles VERBOSE=1
+      - name: Display structure of the built files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
       - name: Archive artifacts to speed up slow GH Actions upload/download
         shell: bash
         # If the file does not exist when tar excludes it, then it will not
@@ -70,6 +73,7 @@ jobs:
           tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
           rm ola-debian-stable-built-source-tree.tar.gz
       - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
       - name: Update package database
         run: apt-get update -y
@@ -99,6 +103,7 @@ jobs:
           tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
           rm ola-debian-stable-built-source-tree.tar.gz
       - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
       - name: Enable Problem Matcher for GitHub annotations
         run: echo "::add-matcher::.github/problem-matcher-lint-generic-nolints.json"
@@ -124,6 +129,7 @@ jobs:
           tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
           rm ola-debian-stable-built-source-tree.tar.gz
       - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
       - name: Update package database
         run: apt-get update -y
@@ -165,6 +171,7 @@ jobs:
           tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
           rm ola-debian-stable-built-source-tree.tar.gz
       - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
       - name: Update package database
         run: apt-get update -y
