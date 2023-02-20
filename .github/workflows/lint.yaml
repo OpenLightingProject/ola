@@ -1,29 +1,6 @@
 name: lint
 on: [push, pull_request]
 jobs:
-  check-licences:
-    name: Check Licences
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Enable Problem Matcher for GitHub annotations
-        run: echo "::add-matcher::.github/problem-matcher-lint-check-licences.json"
-      - name: Check licenses
-        shell: bash
-        run: python3 ./scripts/enforce_licence.py
-  generic-nolints:
-    name: Count generic NOLINTs
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Enable Problem Matcher for GitHub annotations
-        run: echo "::add-matcher::.github/problem-matcher-lint-generic-nolints.json"
-      - name: Count the number of generic NOLINTs
-        shell: bash
-        run: ./scripts/count_generic_nolints.sh
   build:
     name: Build for Lint Tasks
     runs-on: ubuntu-latest
@@ -71,6 +48,59 @@ jobs:
         with:
           name: ola-debian-stable-built-source-tree
           path: ola-debian-stable-built-source-tree.tar.gz
+  check-licences:
+    name: Check Licences
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
+      - name: Display structure of extracted files
+        run: ls -alR
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::.github/problem-matcher-lint-check-licences.json"
+      - name: Check licenses
+        shell: bash
+        run: python3 ./scripts/enforce_licence.py
+  generic-nolints:
+    name: Count generic NOLINTs
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
+      - name: Display structure of extracted files
+        run: ls -alR
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::.github/problem-matcher-lint-generic-nolints.json"
+      - name: Count the number of generic NOLINTs
+        shell: bash
+        run: ./scripts/count_generic_nolints.sh
   cpplint:
     name: cpplint
     runs-on: ubuntu-latest
