@@ -237,8 +237,8 @@ def GetDirectoryLicences(root_dir):
       lines = f.readlines()
       f.close()
       licences[dir_name] = TransformLicence(lines)
-      rel_licence_path = "./" + os.path.relpath(licence_path)
-      rel_dir_path = "./" + os.path.relpath(dir_name)
+      rel_licence_path = os.path.relpath(licence_path)
+      rel_dir_path = os.path.relpath(dir_name)
       print('debug:file:%s: Found LICENCE for directory %s' %
             (rel_licence_path, rel_dir_path))
 
@@ -284,7 +284,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     return 0
 
   f = open(file_name)
-  rel_path = "./" + os.path.relpath(file_name)
+  rel_path = os.path.relpath(file_name)
   # + 1 to include the newline to have a complete line
   header_size = len(licence) + 1
   file_name_line_count = licence.count('\n') + 2
