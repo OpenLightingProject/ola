@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
@@ -237,8 +237,8 @@ def GetDirectoryLicences(root_dir):
       lines = f.readlines()
       f.close()
       licences[dir_name] = TransformLicence(lines)
-      rel_licence_path = "./" + os.path.relpath(licence_path)
-      rel_dir_path = "./" + os.path.relpath(dir_name)
+      rel_licence_path = os.path.relpath(licence_path)
+      rel_dir_path = os.path.relpath(dir_name)
       print('debug:file:%s: Found LICENCE for directory %s' %
             (rel_licence_path, rel_dir_path))
 
@@ -284,7 +284,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     return 0
 
   f = open(file_name)
-  rel_path = "./" + os.path.relpath(file_name)
+  rel_path = os.path.relpath(file_name)
   # + 1 to include the newline to have a complete line
   header_size = len(licence) + 1
   file_name_line_count = licence.count('\n') + 2
@@ -318,8 +318,8 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     ReplaceHeader(file_name, licence, lang)
     return 1
   else:
-    print("error:file:%s:lines 1-%s: File does not start with or not exact "
-          "match of \"%s...\"" %
+    print("error:file:%s:lines 1-%s: File does not start with, or not exact "
+          "match of, \"%s...\"" %
           (rel_path, file_name_line_count,
            licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
     if diff:
