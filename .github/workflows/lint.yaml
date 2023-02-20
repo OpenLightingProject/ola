@@ -40,6 +40,8 @@ jobs:
         run: make builtfiles VERBOSE=1
       - name: Archive artifacts to speed up slow GH Actions upload/download
         shell: bash
+        # If the file does not exist when tar excludes it, then it will not
+        # actually exclude it, so it must first be touched
         run: |
           touch ola-debian-stable-built-source-tree.tar.gz
           tar --exclude=ola-debian-stable-built-source-tree.tar.gz -cvzf ola-debian-stable-built-source-tree.tar.gz .
