@@ -318,8 +318,8 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     ReplaceHeader(file_name, licence, lang)
     return 1
   else:
-    print("error:file:%s:lines 1-%s: File does not start with or not exact "
-          "match of \"%s...\"" %
+    print("error:file:%s:lines 1-%s: File does not start with, or not exact "
+          "match of, \"%s...\"" %
           (rel_path, file_name_line_count,
            licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
     if diff:
