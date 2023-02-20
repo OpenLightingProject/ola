@@ -74,7 +74,8 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./common/protocol/Ola.pb.*" -or \
       -wholename "./plugins/artnet/messages/ArtNetConfigMessages.pb.*" -or \
       -wholename "./tools/ola_trigger/config.tab.*" -or \
-      -wholename "./tools/ola_trigger/lex.yy.cpp"
+      -wholename "./tools/ola_trigger/lex.yy.cpp" -or \
+      -wholename "*.cc"
 BLACKLIST
 )
 
