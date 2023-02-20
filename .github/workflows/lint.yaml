@@ -69,9 +69,8 @@ jobs:
           rm ola-debian-stable-built-source-tree.tar.gz
       - name: Display structure of extracted files
         run: ls -alR
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+      - name: Install Python
+        run: apt-get -y install python3
       - name: Enable Problem Matcher for GitHub annotations
         run: echo "::add-matcher::.github/problem-matcher-lint-check-licences.json"
       - name: Check licenses
