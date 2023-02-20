@@ -8,7 +8,8 @@ jobs:
     steps:
       - name: Update package database
         run: apt-get update -y
-      # See comments beginning at https://github.com/actions/runner/issues/763#issuecomment-1435474884
+      # See comments beginning at
+      # https://github.com/actions/runner/issues/763#issuecomment-1435474884
       # Without Git, actions/checkout@v3 will resort to REST and will not
       # create a .git folder or .git.config. The Problem Matcher looks for
       # .git/config to find where the root of the repo is, so it must be
