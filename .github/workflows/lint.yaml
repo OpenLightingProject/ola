@@ -36,7 +36,7 @@ jobs:
         run: autoreconf -i
       - name: Configure
         run: ./configure --enable-rdm-tests --enable-ja-rule --enable-e133
-      - name: Build
+      - name: Build builtfiles
         run: make builtfiles VERBOSE=1
       - name: Display structure of the built files
         if: env.ACTIONS_STEP_DEBUG == 'true'
