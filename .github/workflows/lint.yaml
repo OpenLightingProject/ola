@@ -249,7 +249,7 @@ jobs:
       - name: Install lint tools
         run: apt-get -y install python3-pip moreutils
       - name: Install Python lint tools
-        run: python3 -m pip install --no-input codespell
+        run: python3 -m pip install --no-input git+https://github.com/codespell-project/codespell.git
       - name: Setup codespell annotations
         uses: codespell-project/codespell-problem-matcher@v1
       - name: codespell
