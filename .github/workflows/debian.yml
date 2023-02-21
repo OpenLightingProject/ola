@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image_tag: [stable, testing, unstable]
+        image_tag: [bullseye, bookworm, sid]
     container: debian:${{ matrix.image_tag }}
     steps:
       - name: Update package database
@@ -55,11 +55,12 @@ jobs:
   debian-test:
     name: 'Debian Test ${{ matrix.image_tag }} amd64'
     needs: debian-build
+    if: "always()" # Run if some builds fail but ensure they all complete first
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        image_tag: [stable, testing, unstable]
+        image_tag: [bullseye, bookworm, sid]
     container: debian:${{ matrix.image_tag }}
     steps:
       - uses: actions/checkout@master
