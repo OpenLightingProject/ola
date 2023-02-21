@@ -45,6 +45,7 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./.codespellignorelines" -or \
       -wholename "./.git/*" -or \
       -wholename "./aclocal.m4" -or \
+      -wholename "./common/rpc/TestService.pb.*" -or \
       -wholename "./config/config.guess" -or \
       -wholename "./config/config.sub" -or \
       -wholename "./config/depcomp" -or \
@@ -72,8 +73,7 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./common/protocol/Ola.pb.*" -or \
       -wholename "./plugins/artnet/messages/ArtNetConfigMessages.pb.*" -or \
       -wholename "./tools/ola_trigger/config.tab.*" -or \
-      -wholename "./tools/ola_trigger/lex.yy.cpp" -or \
-      -wholename "*.cc"
+      -wholename "./tools/ola_trigger/lex.yy.cpp"
 BLACKLIST
 )
 
