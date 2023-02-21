@@ -13,6 +13,9 @@ jobs:
         image_tag: [bullseye, bookworm, sid]
     container: debian:${{ matrix.image_tag }}
     steps:
+      - name: Get number of CPU cores
+        run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
+        id: num-cpu-cores
       - name: Update package database
         run: apt-get update -y
       # See comments beginning at
@@ -36,7 +39,7 @@ jobs:
           chown -R builduser:builduser .
           chown builduser:builduser ..
       - name: Build
-        run: sudo -u builduser dpkg-buildpackage -b -rfakeroot
+        run: sudo -u builduser dpkg-buildpackage -b -rfakeroot -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
       - name: Move built files
         run: |
           mkdir built
