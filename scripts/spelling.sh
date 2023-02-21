@@ -18,10 +18,8 @@
 
 # This script is based on Travis CI tests by Peter Newman
 current_test=""
-# run_single_only=false
 if [ "$1" = "spellintian" ]; then
   current_test="spellintian"
-  # run_single_only=true
 elif [ "$1" = "codespell" ]; then
   current_test="codespell"
 else
