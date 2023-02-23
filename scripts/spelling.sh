@@ -89,6 +89,8 @@ if [ $current_test = "spellintian" ]; then
   if [[ -n $spellintian_issues ]]; then
     printf "%s\n" "$spellintian_issues"
     # For now we always exit with success, as these errors are manually checked
+    # TODO: Actively match and skip printing known false positives, exit with
+    #       errors properly.
     # exit 1;
     exit 0;
   fi;
