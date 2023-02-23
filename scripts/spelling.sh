@@ -41,11 +41,17 @@ if [ $current_test = "codespell" ] && ! [ -x "$(command -v codespell)" ]; then
 fi;
 
 SPELLINGBLACKLIST=$(cat <<-BLACKLIST
-      -wholename "./.codespellignorewords" -or \
       -wholename "./.codespellignorelines" -or \
+      -wholename "./.codespellignorewords" -or \
       -wholename "./.git/*" -or \
+      -wholename "./Makefile" -or \
+      -wholename "./Makefile.in" -or \
       -wholename "./aclocal.m4" -or \
+      -wholename "./autom4te.cache/*" -or \
+      -wholename "./common/protocol/Ola.pb.*" -or \
       -wholename "./common/rpc/TestService.pb.*" -or \
+      -wholename "./config.log" -or \
+      -wholename "./config.status" -or \
       -wholename "./config/config.guess" -or \
       -wholename "./config/config.sub" -or \
       -wholename "./config/depcomp" -or \
@@ -55,22 +61,16 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./config/ltoptions.m4" -or \
       -wholename "./config/ltsugar.m4" -or \
       -wholename "./config/missing" -or \
-      -wholename "./libtool" -or \
-      -wholename "./config.log" -or \
-      -wholename "./config.status" -or \
-      -wholename "./Makefile" -or \
-      -wholename "./Makefile.in" -or \
-      -wholename "./autom4te.cache/*" -or \
+      -wholename "./configure" -or \
       -wholename "./java/Makefile" -or \
       -wholename "./java/Makefile.in" -or \
+      -wholename "./libtool" -or \
+      -wholename "./olad/www/mobile.js" -or \
       -wholename "./olad/www/new/js/app.min.js" -or \
       -wholename "./olad/www/new/js/app.min.js.map" -or \
       -wholename "./olad/www/new/libs/angular/js/angular.min.js" -or \
       -wholename "./olad/www/new/libs/marked/js/marked.min.js" -or \
-      -wholename "./olad/www/mobile.js" -or \
       -wholename "./olad/www/ola.js" -or \
-      -wholename "./configure" -or \
-      -wholename "./common/protocol/Ola.pb.*" -or \
       -wholename "./plugins/artnet/messages/ArtNetConfigMessages.pb.*" -or \
       -wholename "./tools/ola_trigger/config.tab.*" -or \
       -wholename "./tools/ola_trigger/lex.yy.cpp"
