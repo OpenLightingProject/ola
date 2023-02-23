@@ -23,7 +23,7 @@ if [ "$1" = "spellintian" ]; then
 elif [ "$1" = "codespell" ]; then
   current_test="codespell"
 else
-  echo "Unknown test specified in first argument. Options are spellintian and codespell."
+  echo "Unknown test \"$1\" specified in first argument. Options are spellintian and codespell."
   exit 1;
 fi;
 
