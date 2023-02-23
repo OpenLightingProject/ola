@@ -95,7 +95,10 @@ if [ $current_test = "spellintian" ]; then
     exit 0;
   fi;
 elif [ $current_test = "codespell" ]; then
-  if ! zrun codespell --interactive 0 --check-filenames --check-hidden --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignorelines --ignore-words .codespellignorewords $spellingfiles 2>&1; then
+  if ! zrun codespell --interactive 0 --check-filenames --check-hidden \
+       --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" \
+       --exclude-file .codespellignorelines \
+       --ignore-words .codespellignorewords $spellingfiles 2>&1; then
     exit 1;
   fi;
 fi;
