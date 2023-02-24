@@ -191,3 +191,11 @@ import java.nio.ByteOrder;
       string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
   s1 = "one\"two\\three/four\bfive\fsix\nseven\reight\tnine";
       string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
+    self.assertEqual(rtf._EscapeData(u'caf\xe9'), "caf\\xe9")
+    self.assertEqual('%s' % rtf._EscapeData(u'caf\xe9'), "caf\\xe9")
+    self.assertEqual('%s' % rtf._EscapeData(['caf\xe9']), "['caf\\\\xe9']")
+    self.assertEqual('%s' % rtf._EscapeData({"a": "caf\xe9"}),
+                     "{'a': 'caf\\\\xe9'}")
+#    self.assertEqual('%s' % rtf._EscapeData({"caf\xe9": "bar"}),
+#                     "{'caf\xe9': 'bar'}")
+  "forin": true,

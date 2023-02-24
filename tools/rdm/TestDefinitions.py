@@ -1520,7 +1520,7 @@ class GetLanguageCapabilities(OptionalParameterTestFixture):
       language_set.add(language)
       if ContainsUnprintable(language):
         self.AddAdvisory(
-            'Language name in languague capabilities contains unprintable '
+            'Language name in language capabilities contains unprintable '
             'characters, was %s' % language.encode('string-escape'))
 
     self.SetProperty('languages_capabilities', language_set)
