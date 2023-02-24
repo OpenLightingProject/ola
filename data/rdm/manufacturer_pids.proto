@@ -1,0 +1,9385 @@
+manufacturer {
+  manufacturer_id: 161
+  manufacturer_name: "Creative Lighting And Sound Systems Pty Ltd."
+  pid {
+    name: "DEVICE_MODE"
+    value: 32768
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "DMX512"
+        }
+        label {
+          value: 1
+          label: "DALI"
+        }
+        label {
+          value: 2
+          label: "DSI"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "DMX512"
+        }
+        label {
+          value: 1
+          label: "DALI"
+        }
+        label {
+          value: 2
+          label: "DSI"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 776
+  manufacturer_name: "ImageCue LLC"
+  pid {
+    name: "SERIAL_NUMBER"
+    value: 32976
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "serial_number"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 8377
+  manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
+  pid {
+    name: "FAN_MODE"
+    value: 32769
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fan_mode"
+        label {
+          value: 0
+          label: "FAN_OFF"
+        }
+        label {
+          value: 1
+          label: "FAN_LOW"
+        }
+        label {
+          value: 2
+          label: "FAN_HIGH"
+        }
+        label {
+          value: 3
+          label: "FAN_AUTO_LOW"
+        }
+        label {
+          value: 4
+          label: "FAN_AUTO_HIGH"
+        }
+        label {
+          value: 5
+          label: "FAN_VARI"
+        }
+        label {
+          value: 6
+          label: "FAN_PASS"
+        }
+        label {
+          value: 7
+          label: "FAN_HI45"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fan_mode"
+        label {
+          value: 0
+          label: "FAN_OFF"
+        }
+        label {
+          value: 1
+          label: "FAN_LOW"
+        }
+        label {
+          value: 2
+          label: "FAN_HIGH"
+        }
+        label {
+          value: 3
+          label: "FAN_AUTO_LOW"
+        }
+        label {
+          value: 4
+          label: "FAN_AUTO_HIGH"
+        }
+        label {
+          value: 5
+          label: "FAN_VARI"
+        }
+        label {
+          value: 6
+          label: "FAN_PASS"
+        }
+        label {
+          value: 7
+          label: "FAN_HI45"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "STATUS_LEDS"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "disable_status_leds"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "disable_status_leds"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CCT_ADJUST"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: INT32
+        name: "CCT_value"
+        multiplier: -2
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: INT32
+        name: "CCT_value"
+        multiplier: -2
+        range {
+          min: 280000
+          max: 1000000
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "GN_ADJUST"
+    value: 32772
+    get_request {
+    }
+    get_response {
+      field {
+        type: INT32
+        name: "GN_value"
+        multiplier: -2
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: INT32
+        name: "GN_value"
+        multiplier: -2
+        range {
+          min: -100
+          max: 100
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DMX_SIGNAL_LOSS_MODE"
+    value: 32773
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "HOLD"
+        }
+        label {
+          value: 1
+          label: "HOLD_FOR_2_MINUTES"
+        }
+        label {
+          value: 2
+          label: "BLACK_OUT"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "HOLD"
+        }
+        label {
+          value: 1
+          label: "HOLD_FOR_2_MINUTES"
+        }
+        label {
+          value: 2
+          label: "BLACK_OUT"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 11720
+  manufacturer_name: "Stellascapes"
+  pid {
+    name: "MODEL_ID"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "model_id"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "model_id"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "MODEL_ID_LIST"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: GROUP
+        name: "models"
+        field {
+          type: UINT16
+          name: "model_id"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PIXEL_TYPE"
+    value: 32773
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "pixel_type"
+        label {
+          value: 1
+          label: "LPD8806"
+        }
+        label {
+          value: 2
+          label: "WS2801"
+        }
+        label {
+          value: 3
+          label: "P9813"
+        }
+        label {
+          value: 4
+          label: "APA102"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "pixel_type"
+        label {
+          value: 1
+          label: "LPD8806"
+        }
+        label {
+          value: 2
+          label: "WS2801"
+        }
+        label {
+          value: 3
+          label: "P9813"
+        }
+        label {
+          value: 4
+          label: "APA102"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PIXEL_COUNT"
+    value: 32774
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "pixel_count"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "pixel_count"
+        range {
+          min: 1
+          max: 65535
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 13364
+  manufacturer_name: "Global Design Solutions, Ltd."
+  pid {
+    name: "LED_DRIVE_CURRENT"
+    value: 32800
+    get_request {
+      field {
+        type: UINT8
+        name: "channel"
+        range {
+          min: 1
+          max: 4
+        }
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "channel"
+        range {
+          min: 1
+          max: 4
+        }
+      }
+      field {
+        type: UINT8
+        name: "value"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "channel"
+        label {
+          value: 255
+          label: "All"
+        }
+        range {
+          min: 1
+          max: 4
+        }
+        range {
+          min: 255
+          max: 255
+        }
+      }
+      field {
+        type: UINT8
+        name: "value"
+      }
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "channel"
+        label {
+          value: 0
+          label: "All"
+        }
+        range {
+          min: 0
+          max: 4
+        }
+      }
+      field {
+        type: UINT8
+        name: "value"
+      }
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "SERIAL_NUMBER"
+    value: 65503
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "serial_number"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 16761
+  manufacturer_name: "AYRTON"
+  pid {
+    name: "DIMMER_MODE"
+    value: 32769
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "dimmer_mode"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "dimmer_mode"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "LIGHT_MODE"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "light_mode"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "light_mode"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CONSTANT_COLOR_MODES"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "constant_color_modes"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "constant_color_modes"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 17232
+  manufacturer_name: "CLAY PAKY S.p.A"
+  pid {
+    name: "CP_DISPLAYON"
+    value: 34048
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "display_on"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "display_on"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_FIXTID"
+    value: 34304
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fixture_id"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fixture_id"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_EVAN_RGBCMY"
+    value: 34305
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "cmy_on"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "cmy_on"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_FIXWHEELSC"
+    value: 34306
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "fix_wheel_shortcut"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "fix_wheel_shortcut"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_LAMPONDMX"
+    value: 34307
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "lamp_on_dmx"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "lamp_on_dmx"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_ENCPT"
+    value: 34308
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enable_PanTilt_encoder"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enable_PanTilt_encoder"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_PTSPEEDMODE"
+    value: 34309
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "PanTilt_Speed"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Fast"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "PanTilt_Speed"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Fast"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_DIMMERCURVE"
+    value: 34310
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "dimmer_curve"
+        label {
+          value: 0
+          label: "Curve 1 Conventional"
+        }
+        label {
+          value: 1
+          label: "Curve 2 Linear"
+        }
+        label {
+          value: 2
+          label: "Curve 3"
+        }
+        label {
+          value: 3
+          label: "Curve 4"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "dimmer_curve"
+        label {
+          value: 0
+          label: "Curve 1 Conventional"
+        }
+        label {
+          value: 1
+          label: "Curve 2 Linear"
+        }
+        label {
+          value: 2
+          label: "Curve 3"
+        }
+        label {
+          value: 3
+          label: "Curve 4"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_SILENTMODE"
+    value: 34311
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "silent_mode"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Quiet"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "silent_mode"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Quiet"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_SHUTTERONERR"
+    value: 34312
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "shutter_on_error"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "shutter_on_error"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_DIMMONSHUTTER"
+    value: 34313
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "close_dimmer_if_shutter_closed"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "close_dimmer_if_shutter_closed"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_POWERFANSMODE"
+    value: 34314
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fan_power_mode"
+        label {
+          value: 0
+          label: "Full Fan Speed"
+        }
+        label {
+          value: 1
+          label: "Low Fan Speed (reduced output)"
+        }
+        label {
+          value: 2
+          label: "Auto Fan Speed"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fan_power_mode"
+        label {
+          value: 0
+          label: "Full Fan Speed"
+        }
+        label {
+          value: 1
+          label: "Low Fan Speed (reduced output)"
+        }
+        label {
+          value: 2
+          label: "Auto Fan Speed"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_ARTNET_MODE"
+    value: 34315
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "control_protocol_artnet"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Art-Net on IP 2.x.x.x"
+        }
+        label {
+          value: 2
+          label: "Art-Net on IP 10.x.x.x"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "control_protocol_artnet"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Art-Net on IP 2.x.x.x"
+        }
+        label {
+          value: 2
+          label: "Art-Net on IP 10.x.x.x"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_NETREPEATDMX"
+    value: 34316
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "artnet_repeat_to_dmx"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Enabled on primary"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "artnet_repeat_to_dmx"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Enabled on primary"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_UNIVERSE"
+    value: 34317
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "artnet_universe"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "artnet_universe"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_AFAUTOSCALEOFF"
+    value: 34318
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "auto_focus_mode"
+        label {
+          value: 0
+          label: "Limited Zoom Range"
+        }
+        label {
+          value: 1
+          label: "Complete Zoom Range"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "auto_focus_mode"
+        label {
+          value: 0
+          label: "Limited Zoom Range"
+        }
+        label {
+          value: 1
+          label: "Complete Zoom Range"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_MCOLORADJUST"
+    value: 34319
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "macro_color_adjust"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "macro_color_adjust"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_MEFFRANDID"
+    value: 34320
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "scene_phase_displacement"
+        label {
+          value: 0
+          label: "Auto by DMX address"
+        }
+        range {
+          min: 0
+          max: 255
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "scene_phase_displacement"
+        label {
+          value: 0
+          label: "Auto by DMX address"
+        }
+        range {
+          min: 0
+          max: 255
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_MEFFDISTRIB"
+    value: 34321
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "number_of_projectors_in_macro"
+        range {
+          min: 2
+          max: 255
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "number_of_projectors_in_macro"
+        range {
+          min: 2
+          max: 255
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_EVANCURVEMODE"
+    value: 34322
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "color_mixing_curve"
+        label {
+          value: 0
+          label: "Curve 1"
+        }
+        label {
+          value: 1
+          label: "Curve 2"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "color_mixing_curve"
+        label {
+          value: 0
+          label: "Curve 1"
+        }
+        label {
+          value: 1
+          label: "Curve 2"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_PT_HOMING_SPEC"
+    value: 34323
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "pantilt_homing_sequence"
+        label {
+          value: 0
+          label: "Not Sequenced"
+        }
+        label {
+          value: 1
+          label: "Sequenced"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "pantilt_homing_sequence"
+        label {
+          value: 0
+          label: "Not Sequenced"
+        }
+        label {
+          value: 1
+          label: "Sequenced"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_PAN_HOME_ANGLE"
+    value: 34324
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "pan_homing_angle"
+        label {
+          value: 0
+          label: "0 Deg"
+        }
+        label {
+          value: 1
+          label: "90 Deg"
+        }
+        label {
+          value: 2
+          label: "180 Deg"
+        }
+        label {
+          value: 3
+          label: "270 Deg"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "pan_homing_angle"
+        label {
+          value: 0
+          label: "0 Deg"
+        }
+        label {
+          value: 1
+          label: "90 Deg"
+        }
+        label {
+          value: 2
+          label: "180 Deg"
+        }
+        label {
+          value: 3
+          label: "270 Deg"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_TILT_HOME_ANGLE"
+    value: 34325
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "tilt_homing_angle"
+        label {
+          value: 0
+          label: "0 Percent"
+        }
+        label {
+          value: 1
+          label: "12.5 Percent"
+        }
+        label {
+          value: 2
+          label: "25 Percent"
+        }
+        label {
+          value: 3
+          label: "50 Percent"
+        }
+        label {
+          value: 4
+          label: "75 Percent"
+        }
+        label {
+          value: 5
+          label: "87.5 Percent"
+        }
+        label {
+          value: 6
+          label: "100 Percent"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "tilt_homing_angle"
+        label {
+          value: 0
+          label: "0 Percent"
+        }
+        label {
+          value: 1
+          label: "12.5 Percent"
+        }
+        label {
+          value: 2
+          label: "25 Percent"
+        }
+        label {
+          value: 3
+          label: "50 Percent"
+        }
+        label {
+          value: 4
+          label: "75 Percent"
+        }
+        label {
+          value: 5
+          label: "87.5 Percent"
+        }
+        label {
+          value: 6
+          label: "100 Percent"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_CWHEEL_LINEAR"
+    value: 34326
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "color_wheel_linear"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "color_wheel_linear"
+        label {
+          value: 0
+          label: "On"
+        }
+        label {
+          value: 1
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_ANTI_BLIND"
+    value: 34327
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "anti_blind"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "color_wheel_linear"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_PIXELS_UNIVERSE"
+    value: 34328
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "pixel_engine_artnet_universe"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "pixel_engine_artnet_universe"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_RPTONDMX_UNIVERSE"
+    value: 34332
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "repeat_on_dmx_artnet_universe"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "repeat_on_dmx_artnet_universe"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CP_CHNLMODE_PIXELS"
+    value: 34335
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "channel_mode_pixels"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "RGB"
+        }
+        label {
+          value: 2
+          label: "RGBW"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "channel_mode_pixels"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "RGB"
+        }
+        label {
+          value: 2
+          label: "RGBW"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 17236
+  manufacturer_name: "City Theatrical, Inc."
+  pid {
+    name: "SHOW_ID"
+    value: 32768
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "show_id"
+        range {
+          min: 1
+          max: 64
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "show_id"
+        range {
+          min: 1
+          max: 64
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "OUTPUT_POWER"
+    value: 32769
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "output_power"
+        label {
+          value: 0
+          label: "5mW"
+        }
+        label {
+          value: 1
+          label: "10mW"
+        }
+        label {
+          value: 2
+          label: "50mW"
+        }
+        label {
+          value: 3
+          label: "100mW"
+        }
+        label {
+          value: 4
+          label: "125mW (NA Only)"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "output_power"
+        label {
+          value: 0
+          label: "5mW"
+        }
+        label {
+          value: 1
+          label: "10mW"
+        }
+        label {
+          value: 2
+          label: "50mW"
+        }
+        label {
+          value: 3
+          label: "100mW"
+        }
+        label {
+          value: 4
+          label: "125mW (NA Only)"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "HOP_PATTERN"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "hop_pattern"
+        range {
+          min: 1
+          max: 16
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "hop_pattern"
+        range {
+          min: 1
+          max: 16
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "BANDWIDTH"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "bandwidth"
+        label {
+          value: 1
+          label: "Full"
+        }
+        label {
+          value: 2
+          label: "WiFi 1-6"
+        }
+        label {
+          value: 3
+          label: "WiFi 4-9"
+        }
+        label {
+          value: 4
+          label: "WiFi 7-11"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "bandwidth"
+        label {
+          value: 1
+          label: "Full"
+        }
+        label {
+          value: 2
+          label: "WiFi 1-6"
+        }
+        label {
+          value: 3
+          label: "WiFi 4-9"
+        }
+        label {
+          value: 4
+          label: "WiFi 7-11"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "NUM_OF_CHANNELS"
+    value: 32772
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "number_of_channels"
+        label {
+          value: 1
+          label: "30"
+        }
+        label {
+          value: 2
+          label: "62"
+        }
+        label {
+          value: 3
+          label: "94"
+        }
+        label {
+          value: 4
+          label: "126"
+        }
+        label {
+          value: 5
+          label: "158"
+        }
+        label {
+          value: 6
+          label: "190"
+        }
+        label {
+          value: 7
+          label: "222"
+        }
+        label {
+          value: 8
+          label: "254"
+        }
+        label {
+          value: 9
+          label: "286"
+        }
+        label {
+          value: 10
+          label: "318"
+        }
+        label {
+          value: 11
+          label: "350"
+        }
+        label {
+          value: 12
+          label: "382"
+        }
+        label {
+          value: 13
+          label: "414"
+        }
+        label {
+          value: 14
+          label: "446"
+        }
+        label {
+          value: 15
+          label: "478"
+        }
+        label {
+          value: 16
+          label: "512"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "number_of_channels"
+        label {
+          value: 1
+          label: "30"
+        }
+        label {
+          value: 2
+          label: "62"
+        }
+        label {
+          value: 3
+          label: "94"
+        }
+        label {
+          value: 4
+          label: "126"
+        }
+        label {
+          value: 5
+          label: "158"
+        }
+        label {
+          value: 6
+          label: "190"
+        }
+        label {
+          value: 7
+          label: "222"
+        }
+        label {
+          value: 8
+          label: "254"
+        }
+        label {
+          value: 9
+          label: "286"
+        }
+        label {
+          value: 10
+          label: "318"
+        }
+        label {
+          value: 11
+          label: "350"
+        }
+        label {
+          value: 12
+          label: "382"
+        }
+        label {
+          value: 13
+          label: "414"
+        }
+        label {
+          value: 14
+          label: "446"
+        }
+        label {
+          value: 15
+          label: "478"
+        }
+        label {
+          value: 16
+          label: "512"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LEVEL_TEST"
+    value: 32773
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "test_level"
+        range {
+          min: 0
+          max: 100
+        }
+      }
+    }
+    get_sub_device_range: ONLY_SUBDEVICES
+    set_request {
+      field {
+        type: UINT8
+        name: "test_level"
+        range {
+          min: 0
+          max: 100
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ONLY_SUBDEVICES
+  }
+  pid {
+    name: "CURVE"
+    value: 32774
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "curve"
+        label {
+          value: 1
+          label: "ISL"
+        }
+        label {
+          value: 2
+          label: "Linear"
+        }
+        label {
+          value: 3
+          label: "Non-Dim"
+        }
+        label {
+          value: 4
+          label: "LED"
+        }
+      }
+    }
+    get_sub_device_range: ONLY_SUBDEVICES
+    set_request {
+      field {
+        type: UINT8
+        name: "curve"
+        label {
+          value: 1
+          label: "ISL"
+        }
+        label {
+          value: 2
+          label: "Linear"
+        }
+        label {
+          value: 3
+          label: "Non-Dim"
+        }
+        label {
+          value: 4
+          label: "LED"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ONLY_SUBDEVICES
+  }
+  pid {
+    name: "BUMP_ENABLED"
+    value: 32775
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "bump_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "bump_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DATA_LOSS_TIMEOUT"
+    value: 32776
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "minutes"
+        range {
+          min: 0
+          max: 120
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "minutes"
+        range {
+          min: 0
+          max: 120
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "BACKLIGHT_TIMEOUT"
+    value: 32777
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "seconds"
+        label {
+          value: 0
+          label: "Always On"
+        }
+        label {
+          value: 241
+          label: "Always Off"
+        }
+        range {
+          min: 0
+          max: 241
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "seconds"
+        label {
+          value: 0
+          label: "Always On"
+        }
+        label {
+          value: 241
+          label: "Always Off"
+        }
+        range {
+          min: 0
+          max: 241
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "RDM_PROXY_ENABLED"
+    value: 32778
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "rdm_proxy_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "rdm_proxy_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "INPUT_FORMAT"
+    value: 32779
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "input_format"
+        label {
+          value: 0
+          label: "DMX"
+        }
+        label {
+          value: 1
+          label: "Art-Net"
+        }
+        label {
+          value: 2
+          label: "E1.31"
+        }
+        label {
+          value: 3
+          label: "KiNet"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "input_format"
+        label {
+          value: 0
+          label: "DMX"
+        }
+        label {
+          value: 1
+          label: "Art-Net"
+        }
+        label {
+          value: 2
+          label: "E1.31"
+        }
+        label {
+          value: 3
+          label: "KiNet"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "IP_ADDRESS"
+    value: 32780
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "ip_address"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT32
+        name: "ip_address"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "IP_SUBNET_MASK"
+    value: 32781
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "subnet_mask"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT32
+        name: "subnet_mask"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "IP_GATEWAY"
+    value: 32782
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "default_gateway"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT32
+        name: "default_gateway"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "DHCP_MODE"
+    value: 32783
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "dhcp_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "dhcp_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "MAC_ADDRESS"
+    value: 32784
+    get_request {
+    }
+    get_response {
+      field {
+        type: GROUP
+        name: "languages"
+        min_size: 6
+        max_size: 6
+        field {
+          type: UINT8
+          name: "octet"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: GROUP
+        name: "languages"
+        min_size: 6
+        max_size: 6
+        field {
+          type: UINT8
+          name: "octet"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "SET_UID"
+    value: 32788
+    set_request {
+      field {
+        type: UID
+        name: "uid"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DMX_OUTPUT_STANDARD"
+    value: 32789
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "output_format"
+        label {
+          value: 1
+          label: "DMX512/199"
+        }
+        label {
+          value: 2
+          label: "DMX512-A"
+        }
+        label {
+          value: 3
+          label: "RDM E1.20-200"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "output_format"
+        label {
+          value: 1
+          label: "DMX512/199"
+        }
+        label {
+          value: 2
+          label: "DMX512-A"
+        }
+        label {
+          value: 3
+          label: "RDM E1.20-200"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "ADD_DISCOVERY"
+    value: 32790
+    set_request {
+      field {
+        type: UINT8
+        name: "enabled"
+        label {
+          value: 1
+          label: "On"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DMX_INTERSLOT_TIME"
+    value: 32791
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "micro_seconds"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "micro_seconds"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LATENCY"
+    value: 32793
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "latency_setting"
+        label {
+          value: 0
+          label: "Normal"
+        }
+        label {
+          value: 1
+          label: "Low"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "latency_setting"
+        label {
+          value: 0
+          label: "Normal"
+        }
+        label {
+          value: 1
+          label: "Low"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FACTORY_SETTINGS_LOCK"
+    value: 32794
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "lock_code"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT32
+        name: "lock_code"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DMX_RDM_INTERLEAVE"
+    value: 32795
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "interleave_ratio"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "interleave_ratio"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PROXIED_DEVICES_ENHANCED"
+    value: 32796
+    get_request {
+    }
+    get_response {
+      field {
+        type: GROUP
+        name: "uids"
+        field {
+          type: UID
+          name: "uid"
+        }
+        field {
+          type: UINT16
+          name: "control_bits"
+        }
+        field {
+          type: UID
+          name: "binding_uid"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "ADAPTIVE_ON_OFF"
+    value: 32797
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 17742
+  manufacturer_name: "ENTTEC Pty Ltd"
+  pid {
+    name: "PWM_OUTPUT_FREQUENCY"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "frequency"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "frequency"
+        range {
+          min: 500
+          max: 2000
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "FAN_ON_PERCENTAGE"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "percentage"
+        label {
+          value: 0
+          label: "Auto"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "percentage"
+        label {
+          value: 0
+          label: "Auto"
+        }
+        range {
+          min: 0
+          max: 0
+        }
+        range {
+          min: 50
+          max: 100
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "AUTO_MODE"
+    value: 34559
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "program"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "program"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 6
+          label: "1 colour chase, 4 chans"
+        }
+        label {
+          value: 7
+          label: "2 colour chase, 4 chans"
+        }
+        label {
+          value: 8
+          label: "1 colour chase, 3 chans FW>=1.2"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "speed"
+        label {
+          value: 0
+          label: "Fastest"
+        }
+        label {
+          value: 9
+          label: "Slowest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+      field {
+        type: UINT8
+        name: "delay"
+        label {
+          value: 0
+          label: "Shortest"
+        }
+        label {
+          value: 9
+          label: "Longest"
+        }
+        range {
+          min: 0
+          max: 9
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 18501
+  manufacturer_name: "Howard Eaton Lighting Ltd."
+  pid {
+    name: "PWRUP_TEST"
+    value: 51287
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+      field {
+        type: UINT8
+        name: "max_allowed"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "INTERNAL_STATS"
+    value: 51298
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "dmx_nsc_packet_count"
+      }
+      field {
+        type: UINT16
+        name: "dmx_asc_packet_count"
+      }
+      field {
+        type: UINT16
+        name: "rdm_asc_packet_count"
+      }
+      field {
+        type: UINT8
+        name: "uart_errors"
+      }
+      field {
+        type: UINT8
+        name: "device_minutes"
+      }
+      field {
+        type: UINT8
+        name: "brownout_count"
+      }
+      field {
+        type: UINT8
+        name: "watchdog_resets"
+      }
+      field {
+        type: UINT8
+        name: "software_resets"
+      }
+      field {
+        type: UINT16
+        name: "dither_adjust"
+      }
+      field {
+        type: UINT8
+        name: "record_sensor_counts"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 19041
+  manufacturer_name: "Jands Pty Ltd."
+  pid {
+    name: "NE_FAULT_DETECT_MODE"
+    value: 32896
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DMX_PROTECT_MODE"
+    value: 32898
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DMX_LOSS_MODE"
+    value: 32900
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "Hold"
+        }
+        label {
+          value: 1
+          label: "Fade to scene #1"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "Hold"
+        }
+        label {
+          value: 1
+          label: "Fade to scene #1"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PREHEAT_LEVEL"
+    value: 32902
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "level"
+        label {
+          value: 0
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "level"
+        label {
+          value: 0
+          label: "Off"
+        }
+        range {
+          min: 0
+          max: 50
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "OUTPUT_CAP_VALUE"
+    value: 32904
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "cap"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "95%"
+        }
+        label {
+          value: 2
+          label: "90%"
+        }
+        label {
+          value: 3
+          label: "85%"
+        }
+        label {
+          value: 4
+          label: "80%"
+        }
+        label {
+          value: 5
+          label: "75%"
+        }
+        label {
+          value: 6
+          label: "70%"
+        }
+        label {
+          value: 7
+          label: "65%"
+        }
+        label {
+          value: 8
+          label: "60%"
+        }
+        label {
+          value: 9
+          label: "55%"
+        }
+        label {
+          value: 10
+          label: "50%"
+        }
+        label {
+          value: 11
+          label: "45%"
+        }
+        label {
+          value: 12
+          label: "40%"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "cap"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "95%"
+        }
+        label {
+          value: 2
+          label: "90%"
+        }
+        label {
+          value: 3
+          label: "85%"
+        }
+        label {
+          value: 4
+          label: "80%"
+        }
+        label {
+          value: 5
+          label: "75%"
+        }
+        label {
+          value: 6
+          label: "70%"
+        }
+        label {
+          value: 7
+          label: "65%"
+        }
+        label {
+          value: 8
+          label: "60%"
+        }
+        label {
+          value: 9
+          label: "55%"
+        }
+        label {
+          value: 10
+          label: "50%"
+        }
+        label {
+          value: 11
+          label: "45%"
+        }
+        label {
+          value: 12
+          label: "40%"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DMX_TERM_MODE"
+    value: 32906
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 19541
+  manufacturer_name: "LumenRadio AB"
+  pid {
+    name: "FULL_DISCOVERY"
+    value: 32768
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "OUTPUT_DEFAULT_VALUE"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "dmx_level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "dmx_level"
+      }
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "dmx_level"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DALI_FADE_TIME"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fade_time"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fade_time"
+      }
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "fade_time"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "INCREMENTAL_DISCOVERY_INTERVAL"
+    value: 33025
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "interval"
+        multiplier: -1
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "interval"
+        multiplier: -1
+        range {
+          min: 257
+          max: 65535
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "ACK_TIMER_FACTOR"
+    value: 33026
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "timer_factor"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "timer_factor"
+        range {
+          min: 257
+          max: 65535
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 19780
+  manufacturer_name: "Les Generateurs de brouillard MDG Fog Generators Ltd."
+  pid {
+    name: "MDG_NETWORK_UNIVERSE_NUMBER"
+    value: 32768
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "universe_number"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "universe_number"
+        range {
+          min: 0
+          max: 128
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "MDG_NETWORK_UNIVERSE_NAME"
+    value: 32769
+    get_request {
+    }
+    get_response {
+      field {
+        type: STRING
+        name: "universe_name"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: STRING
+        name: "universe_name"
+        max_size: 32
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "MDG_GENERATOR_STATE"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: STRING
+        name: "generator_state"
+        max_size: 20
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 19792
+  manufacturer_name: "Martin Professional A/S"
+  pid {
+    name: "DMX_LAMP_OFF_ENABLE"
+    value: 32768
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DMX_RESET_ENABLE"
+    value: 32769
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "reset_mode"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "On"
+        }
+        label {
+          value: 2
+          label: "5 second delay"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "reset_mode"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "On"
+        }
+        label {
+          value: 2
+          label: "5 second delay"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "MCX_LAMP_OFF_ENABLE"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FIXTURE_ID"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "fixture_id"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "fixture_id"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "STAND_ALONE_OPERATION_ENABLE"
+    value: 33024
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SYNCHRONIZED"
+    value: 33025
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "Single Fixture"
+        }
+        label {
+          value: 1
+          label: "Master Fixture"
+        }
+        label {
+          value: 2
+          label: "Synchronized fixture"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "synchronization_mode"
+        label {
+          value: 0
+          label: "Single Fixture"
+        }
+        label {
+          value: 1
+          label: "Master Fixture"
+        }
+        label {
+          value: 2
+          label: "Synchronized fixture"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "AUTO_PROGRAM_ENABLE"
+    value: 33026
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "auto_program_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "auto_program_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "ENABLE_TIMERS"
+    value: 33027
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "timer_settings"
+        label {
+          value: 0
+          label: "No timers enabled"
+        }
+        label {
+          value: 1
+          label: "Timer 1 enabled"
+        }
+        label {
+          value: 2
+          label: "Timer 2 enabled"
+        }
+        label {
+          value: 3
+          label: "Timer 1 & Timer 2 enabled"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "timer_settings"
+        label {
+          value: 0
+          label: "No timers enabled"
+        }
+        label {
+          value: 1
+          label: "Timer 1 enabled"
+        }
+        label {
+          value: 2
+          label: "Timer 2 enabled"
+        }
+        label {
+          value: 3
+          label: "Timer 1 & Timer 2 enabled"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "TIMER1_START_TIME"
+    value: 33028
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "hour"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minute"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "hour"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minute"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "TIMER1_END_TIME"
+    value: 33029
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "hour"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minute"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "hour"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minute"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "TIMER2_START_TIME"
+    value: 33030
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "hour"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minute"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "hour"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minute"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "TIMER2_END_TIME"
+    value: 33031
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "hour"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minute"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "hour"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minute"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LIGHT_SENSOR_LEVEL_TRIGGER_ENABLE"
+    value: 33032
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "CAPTURE_CURRENT_LIGHT_LEVEL"
+    value: 33033
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LIGHT_SENSOR_TRIGGER_LEVEL"
+    value: 33034
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "trigger_level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "trigger_level"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "ADD_SCENE"
+    value: 33280
+    set_request {
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "current_scene"
+      }
+      field {
+        type: UINT8
+        name: "total_scenes"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "INSERT_SCENE"
+    value: 33281
+    set_request {
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "current_scene"
+      }
+      field {
+        type: UINT8
+        name: "total_scenes"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "STORE_SCENE"
+    value: 33282
+    set_request {
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "current_scene"
+      }
+      field {
+        type: UINT8
+        name: "total_scenes"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DELETE_SCENE"
+    value: 33283
+    set_request {
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "current_scene"
+      }
+      field {
+        type: UINT8
+        name: "total_scenes"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DELETE_ALL_SCENES"
+    value: 33284
+    set_request {
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "current_scene"
+      }
+      field {
+        type: UINT8
+        name: "total_scenes"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "NEXT_SCENE"
+    value: 33285
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "current_scene"
+      }
+      field {
+        type: UINT8
+        name: "total_scenes"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PREVIOUS_SCENE"
+    value: 33286
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "current_scene"
+      }
+      field {
+        type: UINT8
+        name: "total_scenes"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_SETTINGS"
+    value: 33287
+    get_request {
+    }
+    get_response {
+      field {
+        type: GROUP
+        name: "scene_settings"
+        field {
+          type: UINT8
+          name: "setting"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "RUN_PROGRAM"
+    value: 33288
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_NUMBER"
+    value: 33290
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "current_scene"
+      }
+      field {
+        type: UINT8
+        name: "total_scenes"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_WAIT_TIME"
+    value: 33291
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "hours"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minutes"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+      field {
+        type: UINT8
+        name: "seconds"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "hours"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minutes"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+      field {
+        type: UINT8
+        name: "seconds"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_FADE_TIME"
+    value: 33292
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "hours"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minutes"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+      field {
+        type: UINT8
+        name: "seconds"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "hours"
+        range {
+          min: 0
+          max: 23
+        }
+      }
+      field {
+        type: UINT8
+        name: "minutes"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+      field {
+        type: UINT8
+        name: "seconds"
+        range {
+          min: 0
+          max: 59
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_INTENSITY"
+    value: 33293
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "intensity"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "intensity"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_CYAN"
+    value: 33294
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_MAGENTA"
+    value: 33295
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_YELLOW"
+    value: 33296
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_RED"
+    value: 33297
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_GREEN"
+    value: 33298
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_BLUE"
+    value: 33299
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_AMBER"
+    value: 33300
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_WHITE"
+    value: 33301
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "level"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_ZOOM"
+    value: 33302
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "zoom"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "zoom"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_FOCUS"
+    value: 33303
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "focus"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "focus"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_RANDOM_COLOR"
+    value: 33304
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "color_wheel"
+        label {
+          value: 0
+          label: "Random colors off"
+        }
+        label {
+          value: 1
+          label: "CMY slow"
+        }
+        label {
+          value: 2
+          label: "CMY medium"
+        }
+        label {
+          value: 3
+          label: "CMY fast"
+        }
+        label {
+          value: 4
+          label: "Magenta/Yellow slow"
+        }
+        label {
+          value: 5
+          label: "Magenta/Yellow medium"
+        }
+        label {
+          value: 6
+          label: "Cyan/Magenta slow"
+        }
+        label {
+          value: 7
+          label: "Cyan/Magenta medium"
+        }
+        label {
+          value: 8
+          label: "Cyan/Magenta fast"
+        }
+        label {
+          value: 9
+          label: "Cyan/Yellow slow"
+        }
+        label {
+          value: 10
+          label: "Cyan/Yellow medium"
+        }
+        label {
+          value: 11
+          label: "Cyan/Yellow fast"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "color_wheel"
+        label {
+          value: 0
+          label: "Random colors off"
+        }
+        label {
+          value: 1
+          label: "CMY slow"
+        }
+        label {
+          value: 2
+          label: "CMY medium"
+        }
+        label {
+          value: 3
+          label: "CMY fast"
+        }
+        label {
+          value: 4
+          label: "Magenta/Yellow slow"
+        }
+        label {
+          value: 5
+          label: "Magenta/Yellow medium"
+        }
+        label {
+          value: 6
+          label: "Cyan/Magenta slow"
+        }
+        label {
+          value: 7
+          label: "Cyan/Magenta medium"
+        }
+        label {
+          value: 8
+          label: "Cyan/Magenta fast"
+        }
+        label {
+          value: 9
+          label: "Cyan/Yellow slow"
+        }
+        label {
+          value: 10
+          label: "Cyan/Yellow medium"
+        }
+        label {
+          value: 11
+          label: "Cyan/Yellow fast"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_COLOR_WHEEL"
+    value: 33305
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "color_wheel"
+        label {
+          value: 0
+          label: "White (Open)"
+        }
+        label {
+          value: 1
+          label: "Color 1"
+        }
+        label {
+          value: 2
+          label: "Color 2"
+        }
+        label {
+          value: 3
+          label: "Color 3"
+        }
+        label {
+          value: 4
+          label: "Color 4"
+        }
+        label {
+          value: 5
+          label: "Color 5"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "color_wheel"
+        label {
+          value: 0
+          label: "White (Open)"
+        }
+        label {
+          value: 1
+          label: "Color 1"
+        }
+        label {
+          value: 2
+          label: "Color 2"
+        }
+        label {
+          value: 3
+          label: "Color 3"
+        }
+        label {
+          value: 4
+          label: "Color 4"
+        }
+        label {
+          value: 5
+          label: "Color 5"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_GOBO_SELECTION"
+    value: 33306
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "gobo_wheel"
+        label {
+          value: 0
+          label: "White (Open)"
+        }
+        label {
+          value: 1
+          label: "Gobo 1"
+        }
+        label {
+          value: 2
+          label: "Gobo 2"
+        }
+        label {
+          value: 3
+          label: "Gobo 3"
+        }
+        label {
+          value: 4
+          label: "Gobo 1 rotation"
+        }
+        label {
+          value: 5
+          label: "Gobo 2 rotation"
+        }
+        label {
+          value: 6
+          label: "Gobo 3 rotation"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "gobo_wheel"
+        label {
+          value: 0
+          label: "White (Open)"
+        }
+        label {
+          value: 1
+          label: "Gobo 1"
+        }
+        label {
+          value: 2
+          label: "Gobo 2"
+        }
+        label {
+          value: 3
+          label: "Gobo 3"
+        }
+        label {
+          value: 4
+          label: "Gobo 1 rotation"
+        }
+        label {
+          value: 5
+          label: "Gobo 2 rotation"
+        }
+        label {
+          value: 6
+          label: "Gobo 3 rotation"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_GOBO_INDEXING"
+    value: 33307
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "gobo_index"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "gobo_index"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_ANIMATION_POSITION"
+    value: 33308
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "animation_position"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "animation_position"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_ANIMATION_INDEXING"
+    value: 33309
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "animation_indexing"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "animation_indexing"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_GET_DMX"
+    value: 33310
+    set_request {
+      field {
+        type: UINT8
+        name: "capture_dmx"
+        label {
+          value: 0
+          label: "Add to the end of the scene list"
+        }
+        label {
+          value: 1
+          label: "Insert before the current scene"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SCENE_FROST_ENABLE"
+    value: 33311
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "frost_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "frost_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "AUTO_SHUTTER_BO_ENABLE"
+    value: 33536
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "shutter_blackout_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "shutter_blackout_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "EFFECT_SPEED"
+    value: 33537
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "effect_speed"
+        label {
+          value: 0
+          label: "Follow pan/tilt speed"
+        }
+        label {
+          value: 1
+          label: "Normal Speed"
+        }
+        label {
+          value: 2
+          label: "Fast Speed"
+        }
+        label {
+          value: 3
+          label: "Slow Speed"
+        }
+        label {
+          value: 4
+          label: "Safe Speed"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "effect_speed"
+        label {
+          value: 0
+          label: "Follow pan/tilt speed"
+        }
+        label {
+          value: 1
+          label: "Normal Speed"
+        }
+        label {
+          value: 2
+          label: "Fast Speed"
+        }
+        label {
+          value: 3
+          label: "Slow Speed"
+        }
+        label {
+          value: 4
+          label: "Safe Speed"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "EFFECT_SHORTCUTS_ENABLE"
+    value: 33538
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "effect_shortcuts_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "effect_shortcuts_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "EFFECT_FEEDBACK_ENABLE"
+    value: 33539
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "effect_feedback_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "effect_feedback_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LAMP_HOUR_WARNING_ENABLE"
+    value: 33540
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "lamp_warning_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "lamp_warning_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LAMP_HOUR_WARNING_HOURS"
+    value: 33541
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "lamp_hours"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "lamp_hours"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "AIR_FILTER_HOUR"
+    value: 33542
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "air_filter_hours"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "air_filter_hours"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "AIR_FILTER_HOUR_WARNING_HOURS"
+    value: 33543
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "air_filter_hours"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "air_filter_hours"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DISPLAY_ERRORS_ENABLE"
+    value: 33544
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enable_error_display"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enable_error_display"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LAMP_ERROR_TEST_ENABLE"
+    value: 33545
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "lamp_error_test_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "lamp_error_test_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SAVE_CUSTOM_CONFIGURATION"
+    value: 33546
+    set_request {
+      field {
+        type: UINT8
+        name: "configuration_number"
+        range {
+          min: 0
+          max: 255
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LOAD_CUSTOM_CONFIGURATION"
+    value: 33547
+    set_request {
+      field {
+        type: UINT8
+        name: "configuration_number"
+        range {
+          min: 0
+          max: 255
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "BARNDOOR_SOFTWARE_VERSION"
+    value: 33548
+    get_request {
+    }
+    get_response {
+      field {
+        type: STRING
+        name: "barndoor_software_version"
+        min_size: 6
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "CMY_BLACKOUT_ENABLE"
+    value: 33549
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "cmy_blackout_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "cmy_blackout_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "TRACKING_MODE"
+    value: 33550
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "tracking_mode"
+        label {
+          value: 0
+          label: "Absolute delta value algorithm"
+        }
+        label {
+          value: 1
+          label: "Real delta value algorithm"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "tracking_mode"
+        label {
+          value: 0
+          label: "Absolute delta value algorithm"
+        }
+        label {
+          value: 1
+          label: "Real delta value algorithm"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "TRACKING_CAL"
+    value: 33551
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "tracking_mode"
+        range {
+          min: 1
+          max: 10
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "tracking_mode"
+        range {
+          min: 1
+          max: 10
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DIMMER_CURVE"
+    value: 33552
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "dimmer_curve"
+        label {
+          value: 0
+          label: "Optical linear"
+        }
+        label {
+          value: 1
+          label: "Square law"
+        }
+        label {
+          value: 2
+          label: "Inverse square law"
+        }
+        label {
+          value: 3
+          label: "S-curve"
+        }
+        range {
+          min: 0
+          max: 255
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "dimmer_curve"
+        label {
+          value: 0
+          label: "Optical linear"
+        }
+        label {
+          value: 1
+          label: "Square law"
+        }
+        label {
+          value: 2
+          label: "Inverse square law"
+        }
+        label {
+          value: 3
+          label: "S-curve"
+        }
+        range {
+          min: 0
+          max: 255
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FOCUS_TRACKING"
+    value: 33553
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "focus_tracking"
+        label {
+          value: 0
+          label: "Focus tracking off"
+        }
+        label {
+          value: 1
+          label: "Focus tracking range is near"
+        }
+        label {
+          value: 2
+          label: "Focus tracking range is medium"
+        }
+        label {
+          value: 3
+          label: "Focus tracking range is far"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "focus_tracking"
+        label {
+          value: 0
+          label: "Focus tracking off"
+        }
+        label {
+          value: 1
+          label: "Focus tracking range is near"
+        }
+        label {
+          value: 2
+          label: "Focus tracking range is medium"
+        }
+        label {
+          value: 3
+          label: "Focus tracking range is far"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DISPLAY_AUTO_OFF"
+    value: 33554
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "display_auto_off"
+        label {
+          value: 0
+          label: "Display is always on"
+        }
+        label {
+          value: 1
+          label: "Display off after 2 minutes"
+        }
+        label {
+          value: 2
+          label: "Display off after 5 minutes"
+        }
+        label {
+          value: 3
+          label: "Display off after 10 minutes"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "display_auto_off"
+        label {
+          value: 0
+          label: "Display is always on"
+        }
+        label {
+          value: 1
+          label: "Display off after 2 minutes"
+        }
+        label {
+          value: 2
+          label: "Display off after 5 minutes"
+        }
+        label {
+          value: 3
+          label: "Display off after 10 minutes"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LAMP_PREHEAT_ENABLE"
+    value: 33555
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "lamp_preheat_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "lamp_preheat_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LAMP_PREHEAT_VALUE"
+    value: 33556
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "preheat_value"
+        range {
+          min: 0
+          max: 20
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "preheat_value"
+        range {
+          min: 0
+          max: 20
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LAMP_POWER_ENABLE"
+    value: 33557
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "economy_mode_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "economy_mode_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LAMP_POWER_VALUE"
+    value: 33558
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "lamp_power_value"
+        range {
+          min: 70
+          max: 100
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "lamp_power_value"
+        range {
+          min: 70
+          max: 100
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "IRIS_BLACKOUT_ENABLE"
+    value: 33559
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "iris_blackout_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "iris_blackout_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "COLOR_WHEEL_BLACKOUT_ENABLE"
+    value: 33560
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "color_wheel_blackout_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "color_wheel_blackout_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "STUDIO_MODE"
+    value: 33561
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "studio_mode"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Enabled"
+        }
+        label {
+          value: 2
+          label: "Silent Mode"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "studio_mode"
+        label {
+          value: 0
+          label: "Disabled"
+        }
+        label {
+          value: 1
+          label: "Enabled"
+        }
+        label {
+          value: 2
+          label: "Silent Mode"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "BLOCK_TEMP_SETTING"
+    value: 33562
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "block_temperature_setting"
+        label {
+          value: 0
+          label: "Low"
+        }
+        label {
+          value: 1
+          label: "Normal"
+        }
+        label {
+          value: 2
+          label: "High"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "block_temperature_setting"
+        label {
+          value: 0
+          label: "Low"
+        }
+        label {
+          value: 1
+          label: "Normal"
+        }
+        label {
+          value: 2
+          label: "High"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "GOBO3_ANIMATION_START"
+    value: 33567
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "gobo3_animation_start"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "gobo3_animation_start"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "GOBO3_ANIMATION_END"
+    value: 33568
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "gobo3_animation_end"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+        label {
+          value: 9
+          label: "Position 9"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "gobo3_animation_start"
+        label {
+          value: 0
+          label: "Position Off"
+        }
+        label {
+          value: 1
+          label: "Position 1"
+        }
+        label {
+          value: 2
+          label: "Position 2"
+        }
+        label {
+          value: 3
+          label: "Position 3"
+        }
+        label {
+          value: 4
+          label: "Position 4"
+        }
+        label {
+          value: 5
+          label: "Position 5"
+        }
+        label {
+          value: 6
+          label: "Position 6"
+        }
+        label {
+          value: 7
+          label: "Position 7"
+        }
+        label {
+          value: 8
+          label: "Position 8"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PAN_TILT_SPEED"
+    value: 33792
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "Normal"
+        }
+        label {
+          value: 1
+          label: "Fast"
+        }
+        label {
+          value: 2
+          label: "Slow"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "Normal"
+        }
+        label {
+          value: 1
+          label: "Fast"
+        }
+        label {
+          value: 2
+          label: "Slow"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PAN_TILT_MOVE_ON_RESET_ENABLE"
+    value: 33793
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PAN_TILT_LIMITATION_ENABLE"
+    value: 33794
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PAN_LIMITATION_MINIMUM"
+    value: 33795
+    get_request {
+    }
+    get_response {
+      field {
+        type: INT16
+        name: "pan_minimum"
+        range {
+          min: 0
+          max: 360
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: INT16
+        name: "pan_minimum"
+        range {
+          min: 0
+          max: 360
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PAN_LIMITATION_MAXIMUM"
+    value: 33796
+    get_request {
+    }
+    get_response {
+      field {
+        type: INT16
+        name: "pan_maximum"
+        range {
+          min: 0
+          max: 360
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: INT16
+        name: "pan_maximum"
+        range {
+          min: 0
+          max: 360
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "TILT_LIMITATION_MINIMUM"
+    value: 33797
+    get_request {
+    }
+    get_response {
+      field {
+        type: INT16
+        name: "tilt_minimum"
+        range {
+          min: -134
+          max: 134
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: INT16
+        name: "tilt_minimum"
+        range {
+          min: -134
+          max: 134
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "TILT_LIMITATION_MAXIMUM"
+    value: 33798
+    get_request {
+    }
+    get_response {
+      field {
+        type: INT16
+        name: "tilt_maximum"
+        range {
+          min: -134
+          max: 134
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: INT16
+        name: "tilt_maximum"
+        range {
+          min: -134
+          max: 134
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PAN_TILT_LIMITATION_AREA"
+    value: 33799
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "Inside limits"
+        }
+        label {
+          value: 1
+          label: "Outside limits"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "Inside limits"
+        }
+        label {
+          value: 1
+          label: "Outside limits"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FOLLOW_SPOT_MODE_ENABLE"
+    value: 34048
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FOLLOW_SPOT_MODE_LOCK_TOGGLE"
+    value: 34049
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "locked"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "locked"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FOLLOW_SPOT_MODE_LOCK_PAN"
+    value: 34050
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "locked"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "locked"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FOLLOW_SPOT_MODE_LOCK_TILT"
+    value: 34051
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "locked"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "locked"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "REGULATE_LAMP_FAN"
+    value: 34304
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "regulate_fan_speed"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "regulate_fan_speed"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "REGULATE_GOBO_FAN"
+    value: 34305
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "regulate_fan_speed"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "regulate_fan_speed"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LAMP_COOLING"
+    value: 34306
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "cooling_level"
+        label {
+          value: 0
+          label: "50%"
+        }
+        label {
+          value: 1
+          label: "80%"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "cooling_level"
+        label {
+          value: 0
+          label: "50%"
+        }
+        label {
+          value: 1
+          label: "80%"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FAN_CLEAN"
+    value: 34307
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fan_clean_mode"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "Auto"
+        }
+        label {
+          value: 2
+          label: "Forced"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fan_clean_mode"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "Auto"
+        }
+        label {
+          value: 2
+          label: "Forced"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FAN_MODE"
+    value: 34308
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fan_mode"
+        label {
+          value: 0
+          label: "Normal"
+        }
+        label {
+          value: 1
+          label: "Silent"
+        }
+        label {
+          value: 2
+          label: "Full"
+        }
+        label {
+          value: 3
+          label: "Regulated"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fan_mode"
+        label {
+          value: 0
+          label: "Normal"
+        }
+        label {
+          value: 1
+          label: "Silent"
+        }
+        label {
+          value: 2
+          label: "Full"
+        }
+        label {
+          value: 3
+          label: "Regulated"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "SERIAL_NUMBER"
+    value: 34560
+    get_request {
+    }
+    get_response {
+      field {
+        type: STRING
+        name: "serial"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "EVENT_LOG_USER_EVENT_TRIGGER"
+    value: 34562
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 20562
+  manufacturer_name: "Production Resource Group"
+  pid {
+    name: "FAN_ERROR_STATUS"
+    value: 33280
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fan_error_status"
+        label {
+          value: 0
+          label: "No Error"
+        }
+        label {
+          value: 1
+          label: "Main Fan Error"
+        }
+        label {
+          value: 2
+          label: "UPE Fans Error"
+        }
+        label {
+          value: 3
+          label: "Pinch Fan Error"
+        }
+        label {
+          value: 4
+          label: "Stack Fan Error"
+        }
+        label {
+          value: 5
+          label: "Stack Fan Error"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "regulate_fan_speed"
+        label {
+          value: 0
+          label: "No Error"
+        }
+        label {
+          value: 1
+          label: "Main Fan Error"
+        }
+        label {
+          value: 2
+          label: "UPE Fans Error"
+        }
+        label {
+          value: 3
+          label: "Pinch Fan Error"
+        }
+        label {
+          value: 4
+          label: "Stack Fan Error"
+        }
+        label {
+          value: 5
+          label: "Stack Fan Error"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "MAX_LAMP_POWER"
+    value: 33792
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "max_lamp_power"
+        label {
+          value: 1
+          label: "900 Watt"
+        }
+        label {
+          value: 2
+          label: "1200 Watt"
+        }
+        label {
+          value: 3
+          label: "1400 Watt"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "max_lamp_power"
+        label {
+          value: 1
+          label: "900 Watt"
+        }
+        label {
+          value: 2
+          label: "1200 Watt"
+        }
+        label {
+          value: 3
+          label: "1400 Watt"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LAMP_FADE_ON_COMM_LOSS"
+    value: 33793
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fade_on_comm_loss"
+        label {
+          value: 1
+          label: "Hold"
+        }
+        label {
+          value: 2
+          label: "30 Sec"
+        }
+        label {
+          value: 3
+          label: "60 Sec"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fade_on_comm_loss"
+        label {
+          value: 1
+          label: "Hold"
+        }
+        label {
+          value: 2
+          label: "30 Sec"
+        }
+        label {
+          value: 3
+          label: "60 Sec"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LOCK_PAN"
+    value: 34304
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "pan_lock"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "pan_lock"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "LOCK_TILT"
+    value: 34305
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "tilt_lock"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "tilt_lock"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PAN_TILT_FREE_MOTION"
+    value: 34306
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "free_motion"
+        label {
+          value: 1
+          label: "Normal Operation"
+        }
+        label {
+          value: 2
+          label: "Pan Tilt Free Motion"
+        }
+        label {
+          value: 3
+          label: "Pan Tilt Locked"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "free_motion"
+        label {
+          value: 1
+          label: "Normal Operation"
+        }
+        label {
+          value: 2
+          label: "Pan Tilt Free Motion"
+        }
+        label {
+          value: 3
+          label: "Pan Tilt Locked"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FOLLOW_SPOT_CONTROLLER_MODE"
+    value: 34312
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "followspot_control"
+        label {
+          value: 0
+          label: "Normal Operation"
+        }
+        label {
+          value: 1
+          label: "Intensity Control"
+        }
+        label {
+          value: 2
+          label: "Iris Control"
+        }
+        label {
+          value: 3
+          label: "Intensity & Iris Control"
+        }
+        label {
+          value: 4
+          label: "Zoom Control"
+        }
+        label {
+          value: 5
+          label: "Intensity & Zoom Control"
+        }
+        label {
+          value: 6
+          label: "Iris & Zoom Control"
+        }
+        label {
+          value: 7
+          label: "Intensity, Iris & Zoom Control"
+        }
+        label {
+          value: 8
+          label: "Edge Control"
+        }
+        label {
+          value: 9
+          label: "Intensity & Edge Control"
+        }
+        label {
+          value: 10
+          label: "Iris & Edge Control"
+        }
+        label {
+          value: 11
+          label: "Intensity, Iris & Edge Control"
+        }
+        label {
+          value: 12
+          label: "Edge & Zoom Control"
+        }
+        label {
+          value: 13
+          label: "Intensity, Edge & Zoom Control"
+        }
+        label {
+          value: 14
+          label: "Iris + Edge + Zoom Control"
+        }
+        label {
+          value: 15
+          label: "Intensity, Iris, Edge & Zoom Control"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "followspot_control"
+        label {
+          value: 0
+          label: "Normal Operation"
+        }
+        label {
+          value: 1
+          label: "Intensity Control"
+        }
+        label {
+          value: 2
+          label: "Iris Control"
+        }
+        label {
+          value: 3
+          label: "Intensity & Iris Control"
+        }
+        label {
+          value: 4
+          label: "Zoom Control"
+        }
+        label {
+          value: 5
+          label: "Intensity & Zoom Control"
+        }
+        label {
+          value: 6
+          label: "Iris & Zoom Control"
+        }
+        label {
+          value: 7
+          label: "Intensity, Iris & Zoom Control"
+        }
+        label {
+          value: 8
+          label: "Edge Control"
+        }
+        label {
+          value: 9
+          label: "Intensity & Edge Control"
+        }
+        label {
+          value: 10
+          label: "Iris & Edge Control"
+        }
+        label {
+          value: 11
+          label: "Intensity, Iris & Edge Control"
+        }
+        label {
+          value: 12
+          label: "Edge & Zoom Control"
+        }
+        label {
+          value: 13
+          label: "Intensity, Edge & Zoom Control"
+        }
+        label {
+          value: 14
+          label: "Iris + Edge + Zoom Control"
+        }
+        label {
+          value: 15
+          label: "Intensity, Iris, Edge & Zoom Control"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "ZOOM_TYPE"
+    value: 34336
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "zoom_type"
+        label {
+          value: 0
+          label: "Fast"
+        }
+        label {
+          value: 1
+          label: "In Focus"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "followspot_control"
+        label {
+          value: 0
+          label: "Fast"
+        }
+        label {
+          value: 1
+          label: "In Focus"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "FOLLOW_SPOT_ZOOM"
+    value: 34337
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "zoom_table"
+        label {
+          value: 0
+          label: "30ft Throw"
+        }
+        label {
+          value: 1
+          label: "50ft Throw"
+        }
+        label {
+          value: 2
+          label: "75ft Throw"
+        }
+        label {
+          value: 3
+          label: "100ft Throw"
+        }
+        label {
+          value: 4
+          label: "300ft Throw"
+        }
+        label {
+          value: 5
+          label: "15ft Throw"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "zoom_table"
+        label {
+          value: 0
+          label: "30ft Throw"
+        }
+        label {
+          value: 1
+          label: "50ft Throw"
+        }
+        label {
+          value: 2
+          label: "75ft Throw"
+        }
+        label {
+          value: 3
+          label: "100ft Throw"
+        }
+        label {
+          value: 4
+          label: "300ft Throw"
+        }
+        label {
+          value: 5
+          label: "15ft Throw"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "ZERO_GOBO_WHEELS"
+    value: 34368
+    set_request {
+      field {
+        type: BOOL
+        name: "followspot_control"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "CLEAR_LOG"
+    value: 34400
+    set_request {
+      field {
+        type: BOOL
+        name: "clear_log"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DISABLE_MECHS"
+    value: 36864
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "disable_mechanics"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "disable_mechanics"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 21075
+  manufacturer_name: "Robe Show Lighting s.r.o."
+  pid {
+    name: "DMX_INPUT"
+    value: 36880
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Input"
+        label {
+          value: 0
+          label: "Wired"
+        }
+        label {
+          value: 1
+          label: "Wireless"
+        }
+        label {
+          value: 2
+          label: "Wireless In, XLR Out"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Input"
+        label {
+          value: 0
+          label: "Wired"
+        }
+        label {
+          value: 1
+          label: "Wireless"
+        }
+        label {
+          value: 2
+          label: "Wireless In, XLR Out"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "WIRELESS_UNLINK"
+    value: 36896
+    get_request {
+    }
+    get_response {
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Unlink"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "SCREENSAVER_DELAY"
+    value: 36912
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Screensaver Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Screensaver Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "PT_FEEDBACK"
+    value: 40960
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Pan Tilt Feedback"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Pan Tilt Feedback"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "OUTPUT_UNIFORMITY"
+    value: 40969
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Output Uniformity"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Output Uniformity"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DL_COMPATIBLE_MODE"
+    value: 40973
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "DL Compatible Mode"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "DL Compatible Mode"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "TOUCHSCREEN_LOCK"
+    value: 40975
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Touchscreen Lock Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Touchscreen Lock Delay"
+        label {
+          value: 0
+          label: "Off"
+        }
+        label {
+          value: 1
+          label: "1 Minute"
+        }
+        label {
+          value: 2
+          label: "2 Minutes"
+        }
+        label {
+          value: 3
+          label: "3 Minutes"
+        }
+        label {
+          value: 4
+          label: "4 Minutes"
+        }
+        label {
+          value: 5
+          label: "5 Minutes"
+        }
+        label {
+          value: 6
+          label: "6 Minutes"
+        }
+        label {
+          value: 7
+          label: "7 Minutes"
+        }
+        label {
+          value: 8
+          label: "8 Minutes"
+        }
+        label {
+          value: 9
+          label: "9 Minutes"
+        }
+        label {
+          value: 10
+          label: "10 Minutes"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 21324
+  manufacturer_name: "SOUNDLIGHT"
+  pid {
+    name: "DMX_HOLD_MODE"
+    value: 33009
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "Outputs to 0%"
+        }
+        label {
+          value: 1
+          label: "Output to 100%"
+        }
+        label {
+          value: 2
+          label: "Hold"
+        }
+        label {
+          value: 3
+          label: "Go to predefined scene"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "SLOT_LABELS"
+    value: 33057
+    get_request {
+      field {
+        type: UINT16
+        name: "slot_number"
+      }
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "slot_number"
+      }
+      field {
+        type: STRING
+        name: "name"
+        max_size: 16
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "slot_number"
+      }
+      field {
+        type: STRING
+        name: "name"
+        max_size: 16
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "MODIFY_SENSOR_DEFINITION"
+    value: 33280
+    get_request {
+      field {
+        type: UINT8
+        name: "sensor_number"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "sensor_number"
+      }
+      field {
+        type: UINT8
+        name: "type"
+      }
+      field {
+        type: UINT8
+        name: "unit"
+      }
+      field {
+        type: UINT8
+        name: "prefix"
+      }
+      field {
+        type: UINT16
+        name: "range_min"
+      }
+      field {
+        type: UINT16
+        name: "range_max"
+      }
+      field {
+        type: UINT16
+        name: "normal_min"
+      }
+      field {
+        type: UINT16
+        name: "normal_max"
+      }
+      field {
+        type: UINT8
+        name: "supports_recording"
+      }
+      field {
+        type: STRING
+        name: "name"
+        max_size: 20
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "sensor_number"
+      }
+      field {
+        type: UINT8
+        name: "type"
+      }
+      field {
+        type: UINT8
+        name: "unit"
+      }
+      field {
+        type: UINT8
+        name: "prefix"
+      }
+      field {
+        type: UINT16
+        name: "range_min"
+      }
+      field {
+        type: UINT16
+        name: "range_max"
+      }
+      field {
+        type: UINT16
+        name: "normal_min"
+      }
+      field {
+        type: UINT16
+        name: "normal_max"
+      }
+      field {
+        type: UINT8
+        name: "supports_recording"
+      }
+      field {
+        type: STRING
+        name: "name"
+        max_size: 20
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "NETWORK_ADDRESS"
+    value: 34817
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "ip_address"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT32
+        name: "ip_address"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "NETWORK_MASK"
+    value: 34818
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "net_mask"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT32
+        name: "net_mask"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "GATEWAY_ADDRESS"
+    value: 34819
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "gateway_address"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT32
+        name: "gateway_address"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DNS_ADDRESS"
+    value: 34820
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT32
+        name: "dns_address"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT32
+        name: "dns_address"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DC_OFFSET"
+    value: 56334
+    get_request {
+    }
+    get_response {
+      field {
+        type: GROUP
+        name: "dc_offsets"
+        field {
+          type: UINT8
+          name: "offset_value"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: GROUP
+        name: "dc_offsets"
+        field {
+          type: UINT8
+          name: "offset_value"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DC_FADER_OFFSET"
+    value: 56335
+    set_request {
+      field {
+        type: GROUP
+        name: "offsets"
+        field {
+          type: UINT8
+          name: "offset_value"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DC_CALIBRATION"
+    value: 56522
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "scale_value"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "scale_value"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CURVE_DEFINITION"
+    value: 56525
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "curve_number"
+      }
+      field {
+        type: UINT8
+        name: "total_curves"
+      }
+      field {
+        type: UINT8
+        name: "segment_count"
+      }
+      field {
+        type: UINT8
+        name: "interpolation_method"
+        label {
+          value: 0
+          label: "Step"
+        }
+        label {
+          value: 1
+          label: "Linear"
+        }
+        label {
+          value: 2
+          label: "Square"
+        }
+        label {
+          value: 3
+          label: "Cubic"
+        }
+      }
+      field {
+        type: UINT8
+        name: "start_value"
+      }
+      field {
+        type: GROUP
+        name: "curve_values"
+        field {
+          type: UINT8
+          name: "value"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "curve_number"
+      }
+      field {
+        type: UINT8
+        name: "total_curves"
+      }
+      field {
+        type: UINT8
+        name: "segment_count"
+      }
+      field {
+        type: UINT8
+        name: "interpolation_method"
+        label {
+          value: 0
+          label: "Step"
+        }
+        label {
+          value: 1
+          label: "Linear"
+        }
+        label {
+          value: 2
+          label: "Square"
+        }
+        label {
+          value: 3
+          label: "Cubic"
+        }
+      }
+      field {
+        type: UINT8
+        name: "start_value"
+      }
+      field {
+        type: GROUP
+        name: "curve_values"
+        field {
+          type: UINT8
+          name: "value"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 21367
+  manufacturer_name: "SWISSON AG"
+  pid {
+    name: "SWPID_AUTO_UNIVERSE_NUMBER"
+    value: 32898
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "universe_number"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "universe_number"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 22355
+  manufacturer_name: "Wireless Solution Sweden AB"
+  pid {
+    name: "WDMX_LOGIN"
+    value: 32768
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_LOGOUT"
+    value: 32784
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_RADIO_POWER_24"
+    value: 32817
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Output Power 2.4GHz"
+        label {
+          value: 0
+          label: "25mW"
+        }
+        label {
+          value: 1
+          label: "100mW"
+        }
+        label {
+          value: 2
+          label: "375mW"
+        }
+        label {
+          value: 3
+          label: "500mW"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Output Power 2.4GHz"
+        label {
+          value: 0
+          label: "25mW"
+        }
+        label {
+          value: 1
+          label: "100mW"
+        }
+        label {
+          value: 2
+          label: "375mW"
+        }
+        label {
+          value: 3
+          label: "500mW"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_RADIO_POWER_58"
+    value: 32818
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Output Power 5.8GHz"
+        label {
+          value: 0
+          label: "TBA (Low)"
+        }
+        label {
+          value: 1
+          label: "TBA"
+        }
+        label {
+          value: 2
+          label: "TBA"
+        }
+        label {
+          value: 3
+          label: "TBA (High)"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Output Power 5.8GHz"
+        label {
+          value: 0
+          label: "TBA (Low)"
+        }
+        label {
+          value: 1
+          label: "TBA"
+        }
+        label {
+          value: 2
+          label: "TBA"
+        }
+        label {
+          value: 3
+          label: "TBA (High)"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_MASK_24"
+    value: 32819
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_MASK_58"
+    value: 32820
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_RADIO_MODE"
+    value: 32821
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Radio Mode"
+        label {
+          value: 0
+          label: "Receiver"
+        }
+        label {
+          value: 1
+          label: "Transmitter G3"
+        }
+        label {
+          value: 2
+          label: "Not used"
+        }
+        label {
+          value: 3
+          label: "Transmitter G4 Compatibility mode"
+        }
+        label {
+          value: 4
+          label: "Not used"
+        }
+        label {
+          value: 5
+          label: "Transmitter G4S 2.4Ghz"
+        }
+        label {
+          value: 6
+          label: "Transmitter G4S 5.8Ghz"
+        }
+        label {
+          value: 7
+          label: "Transmitter G4S 2.4Ghz Repeater mode"
+        }
+        label {
+          value: 8
+          label: "Transmitter G4S 5.8Ghz Repeater mode"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "Radio Mode"
+        label {
+          value: 0
+          label: "Receiver"
+        }
+        label {
+          value: 1
+          label: "Transmitter G3"
+        }
+        label {
+          value: 2
+          label: "Not used"
+        }
+        label {
+          value: 3
+          label: "Transmitter G4 Compatibility mode"
+        }
+        label {
+          value: 4
+          label: "Not used"
+        }
+        label {
+          value: 5
+          label: "Transmitter G4S 2.4Ghz"
+        }
+        label {
+          value: 6
+          label: "Transmitter G4S 5.8Ghz"
+        }
+        label {
+          value: 7
+          label: "Transmitter G4S 2.4Ghz Repeater mode"
+        }
+        label {
+          value: 8
+          label: "Transmitter G4S 5.8Ghz Repeater mode"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_RADIO_AHFSS"
+    value: 32822
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "AFHSS_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "AFHSS_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_AFHSS_MASK_24"
+    value: 32823
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_AFHSS_MASK_54"
+    value: 32824
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Mask 0"
+      }
+      field {
+        type: UINT8
+        name: "Mask 1"
+      }
+      field {
+        type: UINT8
+        name: "Mask 2"
+      }
+      field {
+        type: UINT8
+        name: "Mask 3"
+      }
+      field {
+        type: UINT8
+        name: "Mask 4"
+      }
+      field {
+        type: UINT8
+        name: "Mask 5"
+      }
+      field {
+        type: UINT8
+        name: "Mask 6"
+      }
+      field {
+        type: UINT8
+        name: "Mask 7"
+      }
+      field {
+        type: UINT8
+        name: "Mask 8"
+      }
+      field {
+        type: UINT8
+        name: "Mask 9"
+      }
+      field {
+        type: UINT8
+        name: "Mask 10"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_SIGNAL_STRENGTH"
+    value: 32832
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "Signal Strength"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_DMX_TO_RDM_RATIO"
+    value: 33536
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "DMX to RDM ratio"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "DMX to RDM ratio"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_DOWNSTREAM_RDM"
+    value: 33537
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "Downstream RDM enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "Downstream RDM enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "WDMX_IDENTIFY_PROXIES"
+    value: 33792
+    set_request {
+      field {
+        type: BOOL
+        name: "Identify Proxies enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 25972
+  manufacturer_name: "Electronic Theatre Controls, Inc."
+  pid {
+    name: "ETC_LED_CURVE"
+    value: 33025
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "curve_setting"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Incandescent"
+        }
+        label {
+          value: 2
+          label: "Linear Response"
+        }
+        label {
+          value: 3
+          label: "Quick Curve (No Smoothing)"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "curve_setting"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Incandescent"
+        }
+        label {
+          value: 2
+          label: "Linear Response"
+        }
+        label {
+          value: 3
+          label: "Quick Curve (No Smoothing)"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_CURVE_DESCRIPTION"
+    value: 33026
+    get_request {
+      field {
+        type: UINT8
+        name: "curve"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "curve_number"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_STROBE"
+    value: 33027
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "strobe_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "strobe_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_OUTPUT_MODE"
+    value: 33028
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "output_mode"
+        label {
+          value: 0
+          label: "Regulated mode, droop com, LEDs dim at high temps"
+        }
+        label {
+          value: 1
+          label: "Boost mode, no droop comp, LEDs dim at high temps"
+        }
+        label {
+          value: 2
+          label: "Protected mode, LEDs are always dim to prevent overtemp."
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "output_mode"
+        label {
+          value: 0
+          label: "Regulated"
+        }
+        label {
+          value: 1
+          label: "Boost"
+        }
+        label {
+          value: 2
+          label: "Protected"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_OUTPUT_MODE_DESCRIPTION"
+    value: 33029
+    get_request {
+      field {
+        type: UINT8
+        name: "output_mode"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "output_mode"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_RED_SHIFT"
+    value: 33030
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "red_shift_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "red_shift_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_WHITE_POINT"
+    value: 33031
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "white_point"
+        label {
+          value: 0
+          label: "2950K"
+        }
+        label {
+          value: 1
+          label: "3200K"
+        }
+        label {
+          value: 2
+          label: "5600K"
+        }
+        label {
+          value: 3
+          label: "6500K"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "white_point"
+        label {
+          value: 0
+          label: "2950K"
+        }
+        label {
+          value: 1
+          label: "3200K"
+        }
+        label {
+          value: 2
+          label: "5600K"
+        }
+        label {
+          value: 3
+          label: "6500K"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_WHITE_POINT_DESCRIPTION"
+    value: 33032
+    get_request {
+      field {
+        type: UINT8
+        name: "white_point"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "white_point"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_FREQUENCY"
+    value: 33033
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "frequency"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "frequency"
+        range {
+          min: 900
+          max: 1500
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DMX_LOSS_BEHAVIOR"
+    value: 33034
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "loss_behavior"
+        label {
+          value: 0
+          label: "Instant go dark."
+        }
+        label {
+          value: 1
+          label: "Hold for 2 mins"
+        }
+        label {
+          value: 2
+          label: "Hold forever"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "loss_behavior"
+        label {
+          value: 0
+          label: "Instant go dark."
+        }
+        label {
+          value: 1
+          label: "Hold for 2 mins"
+        }
+        label {
+          value: 2
+          label: "Hold forever"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DMX_LOSS_BEHAVIOR_DESCRIPTION"
+    value: 33035
+    get_request {
+      field {
+        type: UINT8
+        name: "loss_behavior"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "loss_behavior"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_PLUS_SEVEN"
+    value: 33036
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "plus_seven_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "plus_seven_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_BACKLIGHT_BRIGHTNESS"
+    value: 33037
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "backlight_brightness"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "backlight_brightness"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_BACKLIGHT_TIMEOUT"
+    value: 33038
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "backlight_timeout"
+        label {
+          value: 0
+          label: "Never"
+        }
+        label {
+          value: 1
+          label: "30 seconds"
+        }
+        label {
+          value: 2
+          label: "1 minute"
+        }
+        label {
+          value: 3
+          label: "5 minutes"
+        }
+        label {
+          value: 4
+          label: "15 minutes"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "backlight_timeout"
+        label {
+          value: 0
+          label: "Never"
+        }
+        label {
+          value: 1
+          label: "30 seconds"
+        }
+        label {
+          value: 2
+          label: "1 minute"
+        }
+        label {
+          value: 3
+          label: "5 minutes"
+        }
+        label {
+          value: 4
+          label: "15 minutes"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_STATUS_INDICATORS"
+    value: 33039
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "status_indicators"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "status_indicators"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_RECALIBRATE_FIXTURE"
+    value: 33040
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_OVER_TEMP_MODE"
+    value: 33041
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "over_temperature_mode"
+        label {
+          value: 0
+          label: "Dark"
+        }
+        label {
+          value: 1
+          label: "Red"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "over_temperature_mode"
+        label {
+          value: 0
+          label: "Dark"
+        }
+        label {
+          value: 1
+          label: "Red"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_SIMPLE_SETUP_MODE"
+    value: 33042
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "quick_setup_mode"
+        label {
+          value: 0
+          label: "General Use"
+        }
+        label {
+          value: 1
+          label: "State Setup"
+        }
+        label {
+          value: 2
+          label: "Architectural Setup"
+        }
+        label {
+          value: 3
+          label: "Effects Setup"
+        }
+        label {
+          value: 4
+          label: "Studio Setup"
+        }
+        label {
+          value: 5
+          label: "Advanced Setup"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "quick_setup_mode"
+        label {
+          value: 0
+          label: "General Use"
+        }
+        label {
+          value: 1
+          label: "State Setup"
+        }
+        label {
+          value: 2
+          label: "Architectural Setup"
+        }
+        label {
+          value: 3
+          label: "Effects Setup"
+        }
+        label {
+          value: 4
+          label: "Studio Setup"
+        }
+        label {
+          value: 5
+          label: "Advanced Setup"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_STROBE_DESCRIPTION"
+    value: 33043
+    get_request {
+      field {
+        type: UINT8
+        name: "strobe_number"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "strobe_number"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_RED_SHIFT_DESCRIPTION"
+    value: 33044
+    get_request {
+      field {
+        type: UINT8
+        name: "red_shift_value"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "red_shift_value"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_PLUS_SEVEN_DESCRIPTION"
+    value: 33045
+    get_request {
+      field {
+        type: UINT8
+        name: "plus_seven_mode"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "plus_seven_mode"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_BACKLIGHT_TIMEOUT_DESCRIPTION"
+    value: 33046
+    get_request {
+      field {
+        type: UINT8
+        name: "backlight_timeout"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "backlight_timeout"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_SIMPLE_SETUP_MODE_DESCRIPTION"
+    value: 33047
+    get_request {
+      field {
+        type: UINT8
+        name: "simple_setup_mode"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "simple_setup_mode"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_OVER_TEMP_MODE_DESCRIPTION"
+    value: 33048
+    get_request {
+      field {
+        type: UINT8
+        name: "over_temperature_mode"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "over_temperature_mode"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_SEQUENCE_PLAYBACK"
+    value: 33055
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "sequence"
+        label {
+          value: 0
+          label: "Off"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "sequence"
+        label {
+          value: 0
+          label: "Off"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_SEQUENCE_CONFIG"
+    value: 33056
+    get_request {
+    }
+    get_response {
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LOW_POWER_TIMEOUT"
+    value: 33057
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "low_power_timeout"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "low_power_timeout"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LOW_POWER_TIMEOUT_DESCRIPTION"
+    value: 33058
+    get_request {
+      field {
+        type: UINT8
+        name: "low_power_timeout"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "low_power_timeout"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_FREQUENCY_ENUM"
+    value: 33059
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "frequency"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "frequency"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_FREQUENCY_ENUM_DESCRIPTION"
+    value: 33060
+    get_request {
+      field {
+        type: UINT8
+        name: "frequency"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "frequency"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_PRESET_CONFIG"
+    value: 33061
+    get_request {
+    }
+    get_response {
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_HAS_ENUM_TEXT"
+    value: 36865
+    get_request {
+    }
+    get_response {
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_GET_ENUM_TEXT"
+    value: 36866
+    get_request {
+    }
+    get_response {
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_POWER_COMMAND"
+    value: 40960
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "power_command"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "power_command"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_POWER_COMMAND_DESCRIPTION"
+    value: 40961
+    get_request {
+      field {
+        type: UINT8
+        name: "power_command"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "power_command"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DALI_SHORT_ADDRESS"
+    value: 40964
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "dali_short_address"
+        range {
+          min: 0
+          max: 63
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "dali_short_address"
+        range {
+          min: 0
+          max: 63
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DALI_GROUP_MEMBERSHIP"
+    value: 40965
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "dali_group_membership"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "dali_group_membership"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_AUTOBIND"
+    value: 40966
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "autobind"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "autobind"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DELETE_SUBDEVICE"
+    value: 40967
+    set_request {
+      field {
+        type: UINT16
+        name: "subdevice_number"
+        range {
+          min: 1
+          max: 512
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "ETC_PREPARE_FOR_SOFTWARE_DOWNLOAD"
+    value: 61440
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 31344
+  manufacturer_name: "Open Lighting"
+  pid {
+    name: "SERIAL_NUMBER"
+    value: 32768
+    set_request {
+      field {
+        type: UINT32
+        name: "serial_number"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CODE_VERSION"
+    value: 32769
+    get_request {
+    }
+    get_response {
+      field {
+        type: STRING
+        name: "code_version"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "MODEL_ID"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "model_id"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "model_id"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "MODEL_ID_LIST"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: GROUP
+        name: "models"
+        field {
+          type: UINT16
+          name: "model_id"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PIXEL_TYPE"
+    value: 32773
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "pixel_type"
+        label {
+          value: 1
+          label: "LPD8806"
+        }
+        label {
+          value: 2
+          label: "WS2801"
+        }
+        label {
+          value: 3
+          label: "P9813"
+        }
+        label {
+          value: 4
+          label: "APA102"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "pixel_type"
+        label {
+          value: 1
+          label: "LPD8806"
+        }
+        label {
+          value: 2
+          label: "WS2801"
+        }
+        label {
+          value: 3
+          label: "P9813"
+        }
+        label {
+          value: 4
+          label: "APA102"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "PIXEL_COUNT"
+    value: 32774
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "pixel_count"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "pixel_count"
+        range {
+          min: 1
+          max: 65535
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+version: 1605848134

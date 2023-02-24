@@ -1,0 +1,70 @@
+/**
+ * @page dmx_cpp_client_tutorial C++ DMX Client API Tutorial
+ * @brief Send and Receive DMX512 data using the C++ API.
+ *
+ * [TOC]
+ *
+ * @section dmx_cpp_client_Overview Overview
+ * This page introduces the OLA Client API, and provides sample programs to
+ * send and receive DMX512 data from olad. For information on how to use more
+ * advanced features of the API, see \ref cpp_client_tutorial.
+ *
+ * OLA comes with two C++ clients. The ola::client::StreamingClient is a
+ * simplified client that is limited to sending DMX512 data.
+ * ola::client::OlaClient is a full featured client that can both send and
+ * receive data, as well as control all aspects of OLA, like patching ports,
+ * configuring devices etc.
+ *
+ * @section dmx_cpp_client_Building Building
+ * Once OLA is installed on your system, the examples can be built with:
+ *
+ *     g++ example.cpp $(pkg-config --cflags --libs libola)
+ *
+ * @section dmx_cpp_client_StreamingClient Streaming Client DMX512 Transmit
+ *
+ * The quickest way to get started is by using ola::client::StreamingClient
+ * The program below sends 100 frames of DMX data to the olad server on universe
+ * number 1. The frames are sent 25ms apart which gives a frame rate of 40 fps.
+ *
+ * Each frame consists of 512 DMX data slots. The first slot is incremented by
+ * one each frame, the other slots are always 0. This produces the following
+ * sequence of DMX frames:
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~
+ *   Time (ms)  DMX Data
+ *        0     0,0,0,0,.....
+ *       25     1,0,0,0,.....
+ *       50     2,0,0,0,.....
+ *       75     3,0,0,0,.....
+ *     ....
+ *     2475     100,0,0,0,.....
+ * ~~~~~~~~~~~~~~~~~~~~~
+ *
+ * @snippet streaming_client.cpp Tutorial Example
+ *
+ * @section dmx_cpp_client_OLAClient_TX OLA Client DMX512 Transmit
+ *
+ * While ola::client::StreamingClient is easy to use, it has the drawback that
+ * it can only send DMX512 data. It's not possible to receive DMX512, use RDM or
+ * control the behavior of olad with the StreamingClient. To do that we need
+ * to use ola::client::OlaClient.
+ *
+ * ola::client::OlaClient provides a much richer interface for interacting
+ * with the server and uses a @ref event_driven "Event Driven" programming
+ * model. This makes it more complicated to use. For more examples showing the
+ * non-DMX512 aspects of OlaClient, see the @ref cpp_client_tutorial.
+ *
+ * The following code uses ola::client::OlaClient and behaves the same as the
+ * \ref dmx_cpp_client_StreamingClient example above.
+ *
+ * @snippet callback_client_transmit.cpp Tutorial Example
+ *
+ * @section dmx_cpp_client_OLAClient_RX DMX512 Receive
+ *
+ * Receiving DMX involves setting up a callback handler and then instructing the
+ * OlaClient to call the handler when new DMX512 data is received. The example
+ * below will print a line for each DMX512 frame received on universe 1.
+ *
+ * @snippet receiver.cpp Tutorial Example
+ *
+ */

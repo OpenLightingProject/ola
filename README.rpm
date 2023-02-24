@@ -1,0 +1,33 @@
+Instructions on how to build RPM's for Fedora, this may work with other RPM
+based distros like CentOS.
+
+1. Install RPM build tools:
+   $ sudo dnf install rpmdevtools
+
+2. Create the build environment as the user you want to build as (NOT root):
+   $ rpmdev-setuptree
+
+3. Clone the ola git repository to /tmp:
+   $ sudo dnf install git # install git if you haven't already
+   $ cd /tmp
+   $ git clone https://github.com/OpenLightingProject/ola.git
+   $ cd ola
+   $ git checkout X.Y.Z # If you want a specific version
+   $ autoreconf -i && ./configure && make dist
+   $ cp ola-X.Y.Z.tar.gz ~/rpmbuild/SOURCES/
+
+4. Install requires build dependencies of ola:
+   $ sudo dnf install libmicrohttpd-devel cppunit-devel protobuf-devel \
+                      protobuf-compiler protobuf-python libftdi-devel \
+                      openslp-devel uuid-devel libtool bison flex \
+                      pkgconfig gcc gcc-c++ python2-devel avahi-devel
+
+5. Build ola from the spec file:
+   $ cd ~/rpmbuild/SPECS/
+   $ cp /tmp/ola/ola.spec ./
+   $ rpmbuild -ba ./ola.spec
+
+6. Et voila ! Your RPM's are in ~/rpmbuild/RPMS/noarch/ and ~/rpmbuild/RPMS/<my arch>/ !
+
+7. (OPTIONAL) Further reading: https://fedoraproject.org/wiki/How_to_create_an_RPM_package
+   

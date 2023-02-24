@@ -1,0 +1,30 @@
+.TH ola_patch 1 "July 2013"
+.SH NAME
+ola_patch \- Control OLA port bindings.
+.SH SYNOPSIS
+.B ola_patch [ options ]
+.SH DESCRIPTION
+.B ola_patch
+is used to control the port to universe mappings in olad(1).
+.SH OPTIONS
+.IP "-d, --device <device>"
+The id of device to patch.
+.IP "-h, --help"
+Display the help message.
+.IP "-p, --port <port>"
+The id of the port to patch.
+.IP "-r, --unpatch"
+Unpatch this port.
+.IP "-i, --input"
+Patch the input port (default is output).
+.IP "-u, --universe <universe-id>"
+The id of the universe to patch to (default 0).
+.SH EXAMPLES
+.SS Patch output port 1 of device 4 to universe 3:
+ola_patch -d 4 -p 1 -u 3
+.SS Patch input port 2 of device 5 to universe 10:
+ola_patch -d 5 -p 2 -i -u 10
+.SH SEE ALSO
+.BR olad(1) ,
+.BR ola_dev_info(1) ,
+.

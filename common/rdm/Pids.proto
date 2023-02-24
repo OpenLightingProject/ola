@@ -1,0 +1,108 @@
+/*
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ * Pids.proto
+ * Defines the structure for describing RDM PIDs
+ * Copyright (C) 2010 Simon Newton
+ */
+
+package ola.rdm.pid;
+
+
+enum SubDeviceRange {
+  ROOT_DEVICE = 1;  // 0
+  ROOT_OR_ALL_SUBDEVICE = 2;  // 0 - 512 or 0xffff
+  ROOT_OR_SUBDEVICE = 3;  // 0 - 512
+  ONLY_SUBDEVICES = 4;  // 1 - 512
+}
+
+
+enum FieldType {
+  BOOL = 1;
+  UINT8 = 2;
+  UINT16 = 3;
+  UINT32 = 4;
+  STRING = 5;
+  GROUP = 6;
+  INT8 = 7;
+  INT16 = 8;
+  INT32 = 9;
+  IPV4 = 10;
+  UID = 11;
+  MAC = 12;
+}
+
+// A value which has a label applied
+message LabeledValue {
+  required int64 value = 1;
+  required string label = 2;
+}
+
+// An allowable range, only used for int fields
+message Range {
+  // min and max are inclusive
+  required int64 min = 1;
+  required int64 max = 2;
+}
+
+// A field within a frame, this can contain other fields
+message Field {
+  required FieldType type = 1;
+  required string name = 2;
+  optional uint32 min_size = 3;  // used for strings & groups
+  optional uint32 max_size = 4;  // used for strings & groups
+  optional sint32 multiplier = 5; // used for ints, these are the exponents
+  repeated LabeledValue label = 6;  // values with labels applied
+  repeated Range range = 7; // valid ranges
+  repeated Field field = 8; // for type == GROUP
+}
+
+
+// Describes the format of a frame
+message FrameFormat {
+  repeated Field field = 1;
+}
+
+
+// A definition for a PID
+message Pid {
+  required string name = 1;  // A short name
+  required uint32 value = 2;  // The 2 byte PID value
+  optional FrameFormat get_request = 3;
+  optional FrameFormat get_response = 4;
+  optional FrameFormat set_request = 5;
+  optional FrameFormat set_response = 6;
+  optional SubDeviceRange get_sub_device_range = 7;
+  optional SubDeviceRange set_sub_device_range = 8;
+  optional FrameFormat discovery_request = 9;
+  optional FrameFormat discovery_response = 10;
+  optional SubDeviceRange discovery_sub_device_range = 11;
+}
+
+
+// Groups of Manufacturer PIDs
+message Manufacturer {
+  required uint32 manufacturer_id = 1;
+  required string manufacturer_name = 2;
+  repeated Pid pid = 3;
+}
+
+
+// The PID Store, which holds all PIDs
+message PidStore {
+  repeated Pid pid = 1;
+  repeated Manufacturer manufacturer = 2;
+  required uint64 version = 3;
+}

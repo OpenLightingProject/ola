@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 80
+exclude = .svn,CVS,.bzr,.hg,.git,__pycache__,.tox,*_pb2.py
+ignore = E111,E114,E121,E127,E129,W504

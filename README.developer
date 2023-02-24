@@ -1,0 +1,263 @@
+                            Developer Information
+###############################################################################
+
+This file provides some information for developers looking to submit patches to
+OLA. The first section contains some general notes, and the latter
+sections address particular languages.
+
+Also take a look at README which includes some relevant information for
+developers too.
+
+General
+===============================================================================
+
+Code Reviews
+------------
+
+To have patches reviewed please push your changes to GitHub and create a Pull
+Request from within your fork.
+
+If you're using Google Code please enable comments on the repo. Under
+Administer -> Source check:
+  Enable code reviews
+  Allow non-members to review code
+
+Licensing
+---------
+
+Think carefully about the license for each file. Code to be used by clients
+(./ola , ./python) should be under the LGPL, so that it may be used in
+commercial projects.
+
+Plugins and code used solely in olad should be under the GPL.
+
+scripts/enforce_licence.py will look for a LICENCE file in each directory, and
+ensure that all source files in the directory ( & subdirectories) start with
+the LICENCE. You can pass --fix to automatically add the licence.
+
+Unittests
+---------
+
+Unittests are *highly* encouraged. At the very least please make sure any
+changes don't break the tests.
+
+The tests are performed with `make check` in the root ola directory. The same
+command can be run within a sub directory to only run a particular set of
+tests (although you may experience issues with this method, running from the
+root ola directory is guaranteed to work).
+
+Branches, Versioning & Releases
+-------------------------------
+
+Version numbers take the form MAJOR.MINOR.PATCH based on http://semver.org/.
+The release lifecycle is:
+
+- New feature work occurs on the master branch.
+- Once the new features are considered stable or enough time has passed, a new
+  minor release branch will be created, e.g. 0.10.
+- The minor release branch will be stablized with bugfixes, these bug fixes
+  will also be merged back into master.
+- Once declared stable, a new patch branch 0 will be created e.g. 0.10.0
+- Release specific changes like the version number, debian files etc. will be
+  pushed to the patch branch.
+- The release will occur.
+- Changes on the release branch will be merged back into the minor version
+  branch.
+- Bug fixes will continue on the minor version branch, leading to another patch
+  release.
+
+What this means for you as a developer is that depending on the scope of your
+change, we may request that you merge it into the minor release branch rather
+than master. This allows us to get your change out to end uses faster than if
+it was merged into master directly.
+
+C++
+===============================================================================
+
+The bulk of OLA code is written in C++. This includes the daemon olad, and
+plugins.
+
+https://wiki.openlighting.org/index.php/OLA_developer_info describes many of
+the underlying classes used.
+
+C++ 11
+------
+
+As much as we'd like to start using C++11, Ubuntu 12.04 still comes with g++
+4.6 which has partial support. Once 12.04 is end-of-lifed, we'll consider
+using C++ 11 constructs.
+
+Endian Issues
+-------------
+
+Be aware that OLA runs on big endian systems. When dealing with wire formats
+always use the functions in include/ola/network/NetworkUtils.h to convert or
+use the BigEndianOutputStream to manage this automatically for you.
+
+Structure Packing
+-----------------
+
+Structure packing syntax differs between platforms and compilers. If you declare
+a struct or class that needs to be packed, use the PACK() macro from
+ola/base/Macro.h . See below for an example of PACK() usage.
+
+Note that this macro doesn't work for enums. See plugins/espnet/EspNetPackets.h
+for an example of how to pack an enum.
+
+Non x86 platforms
+-----------------
+
+OLA also runs on more than just x86. Some platforms like ARM can't de-reference
+pointers which aren't aligned.
+
+For example:
+
+PACK(struct f {
+  uint8_t value1;
+  uint16_t value2;
+});
+
+struct f foo = {1, 2};
+uint16_t *ptr = &foo.value2;
+// Bug! Will not be true on all platforms.
+if (*ptr == 2)
+
+http://netwinder.osuosl.org/users/b/brianbr/public_html/alignment.html has a good
+explanation.
+
+
+Style / Coding Standards
+------------------------
+
+We use the Google C++ Style Guide:
+  https://google.github.io/styleguide/cppguide.html
+
+We provide formatting configuration files for some IDEs at
+https://github.com/OpenLightingProject/editor-configs . If you use an IDE
+which isn't listed there please consider submitting the formatting
+configuration files.
+
+Please run the cpplint.py script on all files before requesting a review,
+alternatively it will be run automatically by Travis CI on pull requests.
+
+cpplint.py can be downloaded here:
+  https://github.com/google/styleguide/tree/gh-pages/cpplint
+
+Run it with:
+   --filter=-legal/copyright,-readability/streams,-runtime/arrays
+
+Doxygen
+-------
+
+The code is documented using Doxygen. There is an automatically generated
+version available from:
+  https://docs.openlighting.org/ola/doc/latest/
+
+If you want to build it yourself, install Doxygen, run ./configure in the ola
+root directory, then run make doxygen-doc. The files will be generated into 
+html/
+
+Race Conditions
+---------------
+
+If possible, code should be tested with slower machines (embedded platforms,
+virtual machines etc.). This has discovered race conditions in the past.
+
+Valgrind
+--------
+
+All code must be tested with valgrind to ensure it doesn't leak memory.
+
+Coverage (gcov)
+---------------
+
+To enable the coverage tools, you need lcov and gcov installed. To enable run
+./configure --enable-gcov and then build as normal.
+
+To generate the HTML pages run:
+
+  mkdir /tmp/lcov
+  tmpdir=`mktemp -d /tmp/lcov.XXXXXX`
+  coverage="${tmpdir}/coverage.info"
+  lcov --capture --directory ./ --output-file $coverage
+  genhtml $coverage --output-directory /tmp/lcov
+
+
+Java
+===============================================================================
+
+An experimental Java API is provided.
+
+Style / Coding Standards
+------------------------
+
+Please follow the Sun Java style guide.
+
+
+Javascript
+===============================================================================
+
+Javascript is used for the olad web UI. Instructions for building the
+javascript can be found in javascript/README.
+
+Closure Compiler
+----------------
+
+The closure compiler catches many errors. The javascript code should build
+cleanly.
+
+Style / Coding Standards
+------------------------
+
+We use the Google Javascript style guide:
+  https://google.github.io/styleguide/javascriptguide.xml
+
+A javascript linter can be downloaded from:
+  https://developers.google.com/closure/utilities/docs/linter_howto?csw=1
+
+Please make sure all Javascript code is lint clean.
+
+
+Python
+===============================================================================
+
+Python is used for tools like the RDM responder tests and the device model
+collector. To enable these a OLA Python API is provided.
+
+Style / Coding Standards
+------------------------
+
+We use the Google Python style guide:
+  https://google.github.io/styleguide/pyguide.html
+
+However we deviate from the standard and use 2 space indents, so it's
+consistent with the C++ code.
+
+It's linted and static analysis is performed using flake8, you can either run
+it yourself or await the Travis CI results of your pull request.
+
+flake8 can be installed following the instructions here:
+  https://gitlab.com/pycqa/flake8/
+
+Run it as:
+  flake8
+
+It takes its config from the .flake8 file in the root of the repository.
+
+Build System
+===============================================================================
+
+Autotools is a complex beast. Even after reading two books and a using it for a
+decade I still feel like I hardly understand it.
+
+Useful tips
+-----------
+
+* Run `make distcheck` to ensure you haven't broken anything.
+* Use $(srcdir), $(top_srcdir) to reference files where required. This is to
+  support VPATH builds:
+  http://www.gnu.org/software/automake/manual/html_node/VPATH-Builds.html
+* Prefer manual dependencies over BUILT_SOURCES where possible, see
+  http://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html
+  However this doesn't work in some cases (libraries?) because it overrides the
+  automake generated rules.

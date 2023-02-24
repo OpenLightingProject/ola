@@ -1,0 +1,59 @@
+<div ng-include="'/new/views/universe-header.html'"></div>
+<div class="panel panel-default keypad">
+ <div class="panel-body">
+  <div class="keypad-field static-fake">{{field}}</div>
+  <button ng-click="input('backspace')" class="btn btn-keypad backspace">&lt;</button>
+ </div>
+ <table class="keypad-keys">
+  <tr>
+   <td>
+    <button ng-click="input('7')" class="btn btn-keypad">7</button>
+   </td>
+   <td>
+    <button ng-click="input('8')" class="btn btn-keypad">8</button>
+   </td>
+   <td>
+    <button ng-click="input('9')" class="btn btn-keypad">9</button>
+   </td>
+   <td>
+    <button ng-click="input(' THRU ')" class="btn btn-keypad">THRU</button>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <button ng-click="input('4')" class="btn btn-keypad">4</button>
+   </td>
+   <td>
+    <button ng-click="input('5')" class="btn btn-keypad">5</button>
+   </td>
+   <td>
+    <button ng-click="input('6')" class="btn btn-keypad">6</button>
+   </td>
+   <td>
+    <button ng-click="input(' @ ')" class="btn btn-keypad">@</button>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <button ng-click="input('1')" class="btn btn-keypad">1</button>
+   </td>
+   <td>
+    <button ng-click="input('2')" class="btn btn-keypad">2</button>
+   </td>
+   <td>
+    <button ng-click="input('3')" class="btn btn-keypad">3</button>
+   </td>
+   <td>
+    <button ng-click="input('FULL')" class="btn btn-keypad">FULL</button>
+   </td>
+  </tr>
+  <tr>
+   <td>
+    <button ng-click="input('0')" class="btn btn-keypad">0</button>
+   </td>
+   <td colspan="3">
+    <button ng-click="submit()" class="btn btn-keypad">ENTER</button>
+   </td>
+  </tr>
+ </table>
+</div>

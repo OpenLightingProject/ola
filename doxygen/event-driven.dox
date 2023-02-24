@@ -1,0 +1,131 @@
+/**
+ * @page event_driven OLA & Event Driven Programming
+ *
+ * [TOC]
+ *
+ * @section event_Overview Overview
+ *
+ * This page describes event driven programming and how OLA uses it. It also
+ * provides pointers on how OLA's event driven model can be used with other
+ * event driven frameworks.
+ *
+ * @section event_Background Background
+ *
+ * [Event Driven
+ * Programming](http://en.wikipedia.org/wiki/Event-driven_programming) is a
+ * programming style where actions within the program are triggered by various
+ * events. Event driven programs typically have a main event loop which then
+ * executes the required handlers when events occur.
+ *
+ * The simplest event loop may look something like:
+  ~~~~~~~~~~~~~~~~~~~~~
+  while ((c = getchar()) != EOF) {
+    switch (c) {
+      case 'q':
+        printf("'q' was pressed\n");
+        break;
+      default:
+        printf("Something other than 'q' was pressed\n");
+      }
+  }
+  ~~~~~~~~~~~~~~~~~~~~~
+ *
+ * While this works for key-presses, it doesn't support any other type of I/O
+ * event. To support more generic types of events, the
+ * [select()](http://linux.die.net/man/2/select) call (or a variant thereof) is
+ * often used.
+ *
+ * Event driven frameworks allow the programmer to register to
+ * receive notifications of certain events. Notifications are usually delivered
+ * by executing a callback function. For example, for a timer event, the code
+ * may look like:
+  ~~~~~~~~~~~~~~~~~~~~~
+  app.RunAfter(1000, TimerFunction);
+  ~~~~~~~~~~~~~~~~~~~~~
+ *
+ * Usually after any initialization is performed, the application gives up
+ * control to the main event loop. This is usually done with a call to Run():
+  ~~~~~~~~~~~~~~~~~~~~~
+  app.Run();
+  ~~~~~~~~~~~~~~~~~~~~~
+ *
+ * The Run() call will only return when the application shuts down.
+ *
+ * While this appears limiting at first, the method is in fact very powerful.
+ * Event driven programming allows the programmer to focus on writing code to
+ * handle the events, rather than determining what action to take next.
+ *
+ * A caveat however that is that callbacks triggered by events can't block.
+ * Doing so prevents control returning to the main event loop and will starve
+ * other event notifications. Typical approaches are to either use
+ * non-blocking I/O or perform blocking I/O in a separate thread.
+ *
+ * @section event_OLA OLA Event Management
+ *
+ * In OLA, there are two main types of events:
+ *  - Timer events, which trigger after a certain time interval.
+ *  - I/O events, which trigger when a network packet arrives, a device has new
+ *    data or some other I/O occurs.
+ *
+ * @subsection event_CPlusPlus C++
+ *
+ * The ola::io::SelectServer is the core of OLA's event driven system. It
+ * invokes \ref callbacks when events occur.
+ *
+ * For the OLA Client, the ola::OlaClientWrapper class encapsulates the
+ * SelectServer behind an easy to use interface. This is described in the @ref
+ * dmx_cpp_client_tutorial.
+ *
+ * @subsection event_Python Python
+ *
+ * The Python classes are similar to the C++ ones. The ola.ClientWrapper module
+ * provides a basic SelectServer class.
+ *
+ * As the in C++ clase, the ola.ClientWrapper.ClientWrapper class encapsulates
+ * this all so in the basic case you can just call:
+  ~~~~~~~~~~~~~~~~~~~~~
+    from ola.ClientWrapper import ClientWrapper
+
+    wrapper = ClientWrapper()
+    wrapper.Run()  # event loop is running
+  ~~~~~~~~~~~~~~~~~~~~~
+ *
+ * @section event_Integration Integration with other frameworks
+ *
+ * This section is for those who want to use the OLA client within another
+ * event management framework. The OLA client code does not use timers so the
+ * only events you need to handle are socket I/O.
+ *
+ * There are two main approaches. For frameworks that allow file descriptors to
+ * be added to the main event loop, one can simply add the file descriptor for
+ * the OLA server and call the appropriate read/write methods when the event
+ * triggers.
+ *
+ * For frameworks that do not support raw file descriptor access the best
+ * solution is to run the OLA client in a \ref cpp_client_Thread
+ * "separate thread" and use a callback queue to pass control between the
+ * threads.
+ *
+ * The OLA clients are not thread safe, and must only be accessed from the
+ * thread in which the event loop is running.
+ *
+ * @subsection event_GLib Integration with GLib
+ *
+ * [GLib](https://developer.gnome.org/glib/stable/) has a
+ * [g_source_add_unix_fd](https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#g-source-add-unix-fd)
+ * function.
+ *
+ * @subsection event_QT Integration with QT
+ *
+ * [Qt](http://qt-project.org/) provides a
+ * [QSocketNotifier](http://qt-project.org/doc/qt-4.8/qsocketnotifier.html)
+ * which allows the OLA socket to be added to Qt's main loop.
+ *
+ * @subsection event_kivy Integration with Kivy
+ *
+ * See https://github.com/jesseanderson/ola-rpiui for an example.
+ *
+ * @subsection event_pygame Integration with PyGame
+ *
+ * See [Example](https://groups.google.com/d/msg/open-lighting/hBq00uYXioA/zpG88fjJFDAJ)
+ */

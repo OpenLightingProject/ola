@@ -1,0 +1,138 @@
+<div ng-include="'/new/views/universe-header.html'"></div>
+<div class="form-inline settings">
+ <div class="input-group">
+  <div class="input-group-addon">Id:</div>
+  <input type="text" class="form-control number" ng-model="Data.old.id" disabled>
+ </div>
+ <div class="input-group">
+  <div class="input-group-addon">Mode:</div>
+  <select class="form-control priority" ng-model="Data.model.merge_mode" >
+   <option>HTP</option>
+   <option>LTP</option>
+  </select>
+ </div>
+ <div class="input-group">
+  <div class="input-group-addon">Name:</div>
+  <input type="text" class="form-control" ng-model="Data.model.name">
+ </div>
+ <button class="btn btn-primary btn-md save-settings" ng-click="Save()" >Save</button>
+</div>
+<br/>
+<div class="row">
+ <div class="col-md-6 settings-table">
+  <table class="table table-condensed">
+   <caption>Input Ports:</caption>
+   <tr>
+    <th>Enabled</th>
+    <th>Device</th>
+    <th>Description</th>
+    <th>Mode</th>
+    <th>Priority</th>
+   </tr>
+   <tr class="striped-table" ng-repeat="port in ActivePorts" ng-if="!port.is_output">
+    <td>
+     <div class="checkbox-tr">
+      <input type="checkbox" ng-model="Data.Remove[$index]" ng-true-value="''" ng-false-value="'{{port.id}}'">
+     </div>
+    </td>
+    <td>{{port.device}}</td>
+    <td>{{port.description}}</td>
+    <td>
+     <div ng-if="port.priority.priority_capability">
+      <div ng-if="port.priority.priority_capability === 'full'">
+       <select class="form-control priority" ng-model="port.priority.current_mode">
+        <option value="inherit">Inherit</option>
+        <option value="static">Static</option>
+       </select>
+      </div>
+      <div class="static-fake" ng-if="port.priority.priority_capability === 'static'">static</div>
+     </div>
+    </td>
+    <td>
+     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode === 'inherit'"/>
+    </td>
+   </tr>
+   <tr class="striped-table" ng-repeat="port in DeactivePorts" ng-if="!port.is_output">
+    <td>
+     <div class="checkbox-tr">
+      <input type="checkbox" ng-model="Data.Add[$index]" ng-true-value="'{{port.id}}'" ng-false-value="''">
+     </div>
+    </td>
+    <td>{{port.device}}</td>
+    <td>{{port.description}}</td>
+    <td>
+     <div ng-if="port.priority.priority_capability">
+      <div ng-if="port.priority.priority_capability === 'full'">
+       <select class="form-control priority" ng-model="port.priority.current_mode">
+        <option value="inherit">Inherit</option>
+        <option value="static">Static</option>
+       </select>
+      </div>
+      <div class="static-fake" ng-if="port.priority.priority_capability === 'static'">static</div>
+     </div>
+    </td>
+    <td>
+     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode === 'inherit'"/>
+    </td>
+   </tr>
+  </table>
+ </div>
+ <div class="col-md-6 settings-table">
+  <table class="table table-condensed">
+   <caption>Output Ports:</caption>
+   <tr>
+    <th>Enabled</th>
+    <th>Device</th>
+    <th>Description</th>
+    <th>Mode</th>
+    <th>Priority</th>
+   </tr>
+   <tr class="striped-table" ng-repeat="port in ActivePorts" ng-if="port.is_output">
+    <td>
+     <div class="checkbox-tr">
+      <input type="checkbox" ng-model="Data.Remove[$index]" ng-true-value="''" ng-false-value="'{{port.id}}'">
+     </div>
+    </td>
+    <td>{{port.device}}</td>
+    <td>{{port.description}}</td>
+    <td>
+     <div ng-if="port.priority.priority_capability">
+      <div ng-if="port.priority.priority_capability === 'full'">
+       <select class="form-control priority" ng-model="port.priority.current_mode">
+        <option value="inherit">Inherit</option>
+        <option value="static">Static</option>
+       </select>
+      </div>
+      <div class="static-fake" ng-if="port.priority.priority_capability === 'static'">static</div>
+     </div>
+    </td>
+    <td>
+      <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode === 'inherit'"/>
+    </td>
+   </tr>
+   <tr class="striped-table" ng-repeat="port in DeactivePorts" ng-if="port.is_output">
+    <td>
+     <div class="checkbox-tr">
+      <input type="checkbox" ng-model="Data.Add[$index]" ng-true-value="'{{port.id}}'" ng-false-value="''">
+     </div>
+    </td>
+    <td>{{port.device}}</td>
+    <td>{{port.description}}</td>
+    <td>
+     <div ng-if="port.priority.priority_capability">
+      <div ng-if="port.priority.priority_capability === 'full'">
+       <select class="form-control priority" ng-model="port.priority.current_mode">
+        <option value="inherit">Inherit</option>
+        <option value="static">Static</option>
+       </select>
+      </div>
+      <div class="static-fake" ng-if="port.priority.priority_capability === 'static'">static</div>
+     </div>
+    </td>
+    <td>
+     <input class="form-control priority" ng-if="port.priority.current_mode" ng-model="port.priority.value" type="number" ng-disabled="port.priority.current_mode === 'inherit'"/>
+    </td>
+   </tr>
+  </table>
+ </div>
+</div>

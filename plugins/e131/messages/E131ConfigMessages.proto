@@ -1,0 +1,102 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * E131ConfigMessages.proto
+ * Defines the protocol buffers used to configure the Artnet device
+ * Copyright (C) 2005 Simon Newton
+ */
+
+package ola.plugin.e131;
+
+/*
+ * Controls the preview bit for output ports.
+ */
+message PreviewModeRequest {
+  required int32 port_id = 1;
+  required bool preview_mode = 2;
+  required bool input_port = 3;
+}
+
+
+message InputPortInfo {
+  required int32 port_id = 1;
+  required bool preview_mode = 2;
+}
+
+
+message OutputPortInfo {
+  required int32 port_id = 1;
+  required bool preview_mode = 2;
+}
+
+
+/*
+ * Contains the status of input & output ports
+ */
+message PortInfoReply {
+  repeated InputPortInfo input_port = 1;
+  repeated OutputPortInfo output_port = 2;
+}
+
+/**
+ * The SourceList request message.
+ */
+message SourceListRequest {
+  // No options for now.
+}
+
+message SourceEntry {
+  // The CID of the source
+  required string cid = 1;
+  // The IP address of the source
+  required string ip_address = 2;
+  // The name of the source
+  optional string source_name = 3;
+  // The universes reported by the source.
+  repeated int32 universe = 4;
+}
+
+message SourceListReply {
+  // True if discovery wasn't enabled
+  optional bool unsupported = 1 [ default = true ];
+
+  repeated SourceEntry source = 2;
+}
+
+
+/*
+ * A generic request
+ */
+message Request {
+  enum RequestType {
+    E131_PORT_INFO = 1;
+    E131_PREVIEW_MODE = 2;
+    E131_SOURCES_LIST = 3;
+  }
+
+  required RequestType type = 1;
+  optional PreviewModeRequest preview_mode = 2;
+  optional SourceListRequest source_list = 3;
+}
+
+message Reply {
+  enum ReplyType {
+    E131_PORT_INFO = 1;
+    E131_SOURCES_LIST = 2;
+  }
+  required ReplyType type = 1;
+  optional PortInfoReply port_info = 2;
+  optional SourceListReply source_list = 3;
+}

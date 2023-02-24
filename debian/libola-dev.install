@@ -1,0 +1,6 @@
+usr/include/*
+usr/lib/*/pkgconfig/*
+usr/lib/*/libola*.so
+usr/lib/*/libola*.a
+usr/lib/*/libola*.so
+usr/lib/*/libola*.a

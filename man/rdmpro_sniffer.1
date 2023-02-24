@@ -1,0 +1,41 @@
+.TH rdmpro_sniffer 1 "December 2013"
+.SH NAME
+rdmpro_sniffer \- Sniffer tool for use with the ENTTEC RDM Pro
+.SH SYNOPSIS
+rdmpro_sniffer [ options ] <usb-device-path>
+.SH DESCRIPTION
+Sniff traffic from a ENTTEC RDM Pro device.
+.SH OPTIONS
+.IP "-d, --display-dmx"
+Display DMX frames. Defaults to false.
+.IP "-h, --help"
+Display the help message
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4.
+.IP "-p, --readfile <string>"
+Display data from a previously captured file.
+.IP "-r, --full-rdm"
+Unpack RDM parameter data.
+.IP "-t, --timestamp"
+Include timestamps.
+.IP "-v, --version"
+Print
+.B rdmpro_sniffer
+version information
+.IP "-w, --savefile <string>"
+Also write the captured data to a file.
+.IP "--display-asc"
+Display non-RDM alternate start code frames.
+.IP "--dmx-slot-limit <int16_t>"
+Only display the first N slots of DMX data.
+.IP "--syslog"
+Send to syslog rather than stderr.
+.SH EXAMPLES
+.SS Display RDM messages from the RDM Pro device connected to /dev/tty.usbserial-00001014
+rdmpro_sniffer -r /dev/tty.usbserial-00001014
+.SS Display RDM and DMX frames from an RDM Pro device
+rdmpro_sniffer -r -d /dev/tty.usbserial-00001014
+.SS Save a capture to a file for viewing later
+rdmpro_sniffer -w /tmp/savefile /dev/tty.usbserial-00001014
+.SS Print the messages from a previously captured session.
+rdmpro_sniffer -p /tmp/savefile

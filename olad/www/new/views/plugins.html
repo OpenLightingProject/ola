@@ -1,0 +1,36 @@
+<div class="row">
+ <div style="text-align: left" class="col-md-6">
+  <h2>&nbsp;Plugins:</h2>
+ </div>
+ <div style="text-align: right" class="col-md-6">
+  <button class="btn btn-default btn-md btn-grey" type="button" ng-click="Reload()">Reload plugins</button>
+ </div>
+</div>
+<div class="round-corners">
+  <table class="plugin-table">
+    <tr>
+      <th class="top-table">Name</th>
+      <th class="top-table">Enabled</th>
+      <th class="top-table">Active</th>
+    </tr>
+    <tr class="striped-table" ng-repeat="plugin in Items.plugins">
+      <td class="special-mouse" ng-click="go(plugin.id)">
+          {{plugin.name}}&nbsp;<span class="glyphicon glyphicon-info-sign plugin-icon"></span>
+      </td>
+      <td>
+          <input class="form-control"
+                 type="checkbox"
+                 id="enable{{plugin.id}}"
+                 ng-change="changeStatus(plugin.id, plugin.enabled)"
+                 ng-model="plugin.enabled"/>
+          <label class="fake-check" for="enable{{plugin.id}}">
+              <span class="glyphicon"></span>
+              <span class="sr-only">Toggle plugin</span>
+          </label>
+      </td>
+      <td>
+          <div class="status-light" ng-style="getStyle(plugin.active)">&nbsp;</div>
+      </td>
+    </tr>
+  </table>
+</div>

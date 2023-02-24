@@ -1,0 +1,925 @@
+# bash completion for Debian ola tools
+# Copyright Peter Newman 2013, based on apache2 and apt-file completion
+
+#General todo: change over to use _get_comp_words_by_ref instead of ${COMP_WORDS[COMP_CWORD]}
+#General todo: tidy up and use logic to not call _ola_list_pids or offer unnecessary options when possible
+#General todo: add completion for all the python examples in python/examples/
+#Todo: ola_dev_info feeds into ola_usbpro, ola_e131 and ola_artnet -d <device>, ideally filtering based on type
+
+#General functions
+#Martin (lots of extra pids) 4d50:ffffffff
+#Open Lighting (only up to two extra pids) 0081:ffffffff
+_ola_list_pids()
+{
+  local pidstore uid
+  if [ -n "$2" ]
+  then
+    pidstore="-p $2"
+  fi
+  if [ -n "$3" ]
+  then
+    uid="--uid $3"
+  fi
+  COMPREPLY=( $( compgen -W '$( command ${COMP_WORDS[0]} $pidstore $uid --list-pids 2>/dev/null ) $1' -- $cur  ) )
+}
+
+_ola_get_options_for_list_pids()
+{
+  local i cword words
+
+  #Fetch complete words, without splitting on :, so we get the UID as one item
+  __reassemble_comp_words_by_ref ":" words cword
+
+  #Check from 1 to count-1, ignoring first word, the command
+  #and last, count-1, as we're looking for the option, we then check it's value
+  for (( i=1; i<=(cword-1); i++ )) do
+    case "${words[$i]}" in
+      -p | --pid-location)
+        if [ -d "${words[$i+1]}" ]
+        then
+          #Found an alternative pidstore, capture to pass into _ola_list_pids
+          pidstore=${words[$i+1]}
+        fi
+        ;;
+      --uid)
+        #Found a possible UID, capture to pass into _ola_list_pids
+        #For manufacturer specific ones
+        uid=${words[$i+1]}
+        ;;
+    esac;
+  done
+}
+
+_ola_list_uids()
+{
+  local universe
+  if [ -n "$1" ]
+  then
+    COMPREPLY=( $( compgen -W '$( command ola_rdm_discover -u $1 2>/dev/null )' -- $cur  ) )
+
+    #Strip colons to fix completion with colons in
+    __ltrim_colon_completions "$cur"
+  fi
+}
+
+_ola_get_options_for_list_uids()
+{
+  local i cword words
+
+  #Fetch complete words, without splitting on :, so we get the UID as one item
+  __reassemble_comp_words_by_ref ":" words cword
+
+  #Check from 1 to count-1, ignoring first word, the command
+  #and last, count-1, as we're looking for the option, we then check it's value
+  for (( i=1; i<=(cword-1); i++ )) do
+    case "${words[$i]}" in
+      -u | --universe)
+        if [ -n "${words[$i+1]}" ]
+        then
+          #Found a universe, capture to pass into _ola_list_pids
+          universe=${words[$i+1]}
+        fi
+        ;;
+    esac;
+  done
+}
+
+_ola_list_universes()
+{
+  _have ola_uni_info && COMPREPLY=( $( compgen -W '$( command ola_uni_info --list-universe-ids 2>/dev/null )' -- $cur  ) )
+}
+
+_ola_list_plugins()
+{
+  _have ola_plugin_info && COMPREPLY=( $( compgen -W '$( command ola_plugin_info --list-plugin-ids 2>/dev/null )' -- $cur  ) )
+}
+
+#Commands
+#ola_artnet
+have ola_artnet && _ola_artnet()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--device --net --long-name --name --subnet --universe' -- $cur ) )
+}
+complete -F _ola_artnet ola_artnet
+
+#olad
+have olad && _olad()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--config-dir --http-data-dir --daemon --interface --log-level --http-port --rpc-port --syslog --version --no-http --no-http-quit'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+    -c | --config-dir | -d | --http-data-dir)
+      #Both config and data dir want directories
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
+      return 0
+      ;;
+    -i | --interface)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _configured_interfaces
+      _ip_addresses
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _olad olad
+
+#ola_dev_info
+have ola_dev_info && _ola_dev_info()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -p | --plugin-id)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_plugins
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
+}
+complete -F _ola_dev_info ola_dev_info
+
+#ola_dmxconsole
+have ola_dmxconsole && _ola_dmxconsole()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W '--universe' -- $cur ) )
+}
+complete -F _ola_dmxconsole ola_dmxconsole
+
+#ola_dmxmonitor
+have ola_dmxmonitor && _ola_dmxmonitor()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W '--universe' -- $cur ) )
+}
+complete -F _ola_dmxmonitor ola_dmxmonitor
+
+#ola_e131
+have ola_e131 && _ola_e131()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--device --input --port-id --preview-mode'
+
+  case "$prev" in
+    --preview-mode)
+      opts='on off'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _ola_e131 ola_e131
+
+#ola_patch
+have ola_patch && _ola_patch()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--patch --device --port --unpatch --input --universe' -- $cur ) )
+}
+complete -F _ola_patch ola_patch
+
+#ola_plugin_info
+have ola_plugin_info && _ola_plugin_info()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -p | --plugin-id)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_plugins
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W '--list-plugin-ids --plugin-id' -- $cur ) )
+}
+complete -F _ola_plugin_info ola_plugin_info
+
+#ola_plugin_state
+have ola_plugin_state && _ola_plugin_state()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -p | --plugin-id)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_plugins
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
+}
+complete -F _ola_plugin_state ola_plugin_state
+
+#ola_rdm_discover
+have ola_rdm_discover && _ola_rdm_discover()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W '--full --incremental --universe' -- $cur ) )
+}
+complete -F _ola_rdm_discover ola_rdm_discover
+
+#ola_rdm_get
+#ola_rdm_set
+#Same command and same set of options, so use same completion
+_ola_rdm_getset()
+{
+  local cur prev pidstore universe uid
+
+  COMPREPLY=()
+  #Fetch complete words, without splitting on :, so we get the UID as one item
+  _get_comp_words_by_ref -n : cur prev
+  
+  case "$prev" in
+    -p | --pid-location)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
+        return 0
+      ;;
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+    --uid)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_get_options_for_list_uids
+      _ola_list_uids "$universe"
+      return 0
+      ;;
+  esac;
+
+  #Fetch and pass in the UID and alternative pidstore if set to widen the
+  #list of PIDs offered
+  _ola_get_options_for_list_pids
+
+  #TODO: Don't bother generating list of pids if we're completing an option or it's value
+  #Possible todo: populate UID list from ola_rdm_discover (without force options)
+  _ola_list_pids '--sub-device --list-pids --pid-location --universe --uid' "$pidstore" "$uid"
+}
+have ola_rdm_get && complete -F _ola_rdm_getset ola_rdm_get
+have ola_rdm_set && complete -F _ola_rdm_getset ola_rdm_set
+
+#ola_recorder
+#Todo: only show additional playback options --delay --iterations when in playback
+have ola_recorder && _ola_recorder()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --record --playback --universes --verify --version --delay --iterations'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+    -r | --record | -p | --playback | --verify)
+      #Record, playback and verify all want files
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir
+      return 0
+      ;;
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _ola_recorder ola_recorder
+
+#ola_set_dmx
+have ola_set_dmx && _ola_set_dmx()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
+  COMPREPLY=($( compgen -W '--universe --dmx' -- $cur ) )
+}
+complete -F _ola_set_dmx ola_set_dmx
+
+#ola_set_priority
+have ola_set_priority && _ola_set_priority()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--device --input --override --port' -- $cur ) )
+}
+complete -F _ola_set_priority ola_set_priority
+
+#ola_streaming_client
+have ola_streaming_client && _ola_streaming_client()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
+  COMPREPLY=($( compgen -W '--universe --dmx --version' -- $cur ) )
+}
+complete -F _ola_streaming_client ola_streaming_client
+
+#ola_timecode
+have ola_timecode && _ola_timecode()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--format'
+
+  case "$prev" in
+    -f | --format)
+      opts='FILM EBU DF SMPTE'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _ola_timecode ola_timecode
+
+#ola_trigger
+have ola_trigger && _ola_trigger()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --offset --universe'
+
+  if [[ "$prev" == -* ]]; then
+    #An option, check if it's a special one
+    case "$prev" in
+      -l | --log-level)
+        #We're not interested in supplying further opts, so set compreply and break out with a return
+        COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) )
+        return 0
+        opts='0 1 2 3 4'
+        ;;
+    esac;
+  else
+    #Could be a conf file or an option, so add conf files
+    _filedir conf
+  fi
+
+  #Append to possible existing list of options
+  COMPREPLY+=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _ola_trigger ola_trigger
+
+#ola_uni_info
+#No options apart from help
+have ola_uni_info && _ola_uni_info()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--list-universe-ids' -- $cur ) )
+}
+complete -F _ola_uni_info ola_uni_info
+
+#ola_uni_merge
+have ola_uni_merge && _ola_uni_merge()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
+  COMPREPLY=($( compgen -W '--ltp --universe' -- $cur ) )
+}
+complete -F _ola_uni_merge ola_uni_merge
+
+#ola_uni_name
+have ola_uni_name && _ola_uni_name()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
+  COMPREPLY=($( compgen -W '--name --universe' -- $cur ) )
+}
+complete -F _ola_uni_name ola_uni_name
+
+#ola_uni_stats
+have ola_uni_stats && _ola_uni_stats()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _ola_uni_stats ola_uni_stats
+
+#ola_usbpro
+have ola_usbpro && _ola_usbpro()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--assignments --brk --device --get-params --mab --port --rate --serial' -- $cur ) )
+}
+complete -F _ola_usbpro ola_usbpro
+
+#rdmpro_sniffer
+have rdmpro_sniffer && _rdmpro_sniffer()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--display-asc --display-dmx --dmx-slot-limit --log-level --parse-raw-dump --full-rdm --timestamp --version --write-raw-dump'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+    -w | --write-raw-dump | -p | --parse-raw-dump)
+      #Both write and parse want files
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _rdmpro_sniffer rdmpro_sniffer
+
+###############################################################################
+# The below completions are all for commands that are still in development    #
+# So we don't check if the command exists/is installed, we just offer options #
+###############################################################################
+
+#e131_transmit_test
+#have e131_transmit_test && 
+_e131_transmit_test()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--interactive' -- $cur ) )
+}
+complete -F _e131_transmit_test e131_transmit_test
+
+#e131_loadtest
+#have e131_loadtest && 
+_e131_loadtest()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--fps --universes' -- $cur ) )
+}
+complete -F _e131_loadtest e131_loadtest
+
+#slp_client
+#have slp_client && 
+_slp_client()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --scopes --lifetime'
+
+  #TODO: Check if scopes are listed anywhere
+  #TODO: Get/output a list of command-and-arguments and complete them
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_client slp_client
+
+#slp_server
+#have slp_server && 
+_slp_server()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--ip --log-level --slp-port --no-http --no-da --setuid --setgid --scopes --services'
+
+  #TODO: Check if scopes are listed anywhere
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+    --setuid)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _uids
+      COMPREPLY+=( $( compgen -u -- "$cur" ) )
+      return 0
+      ;;
+    --setgid)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _gids
+      COMPREPLY+=( $( compgen -g -- "$cur" ) )
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_server slp_server
+
+#e133_controller
+#have e133_controller && 
+_e133_controller()
+{
+  local cur prev opts pidstore uid
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--endpoint --target --ip --log-level --pid-location --list-pids --set --uid'
+  
+  #Because of the way this completion is working out, set COMPREPLY in each case and don't do anything centrally
+  case "$prev" in
+    -l | --log-level)
+      COMPREPLY=($( compgen -W "0 1 2 3 4" -- $cur ) )
+      ;;
+    -p | --pid-location)
+      _filedir -d
+      ;;
+    -i | --ip)
+      _ip_addresses
+      ;;
+    *)
+      #TODO: This should probably be an if statement, as we don't really care about prev
+      #TODO: Don't bother generating list of pids if we're completing an option or it's value
+      #Fetch and pass in the UID and alternative pidstore if set to widen the
+      #list of PIDs offered
+      _ola_get_options_for_list_pids
+      _ola_list_pids "$opts" "$pidstore" "$uid"
+  esac;
+
+  return 0
+}
+complete -F _e133_controller e133_controller
+
+#e133_monitor
+#have e133_monitor && 
+_e133_monitor()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--targets --log-level --pid-location'
+
+  #TODO: Auto complete PIDs, probably add an option to list them too
+  #TODO: Could autocomplete targets if it could map hosts to IPs or handle hostnames
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+    -p | --pid-location)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _e133_monitor e133_monitor
+
+#e133_receiver
+#have e133_receiver && 
+_e133_receiver()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--ip --log-level --timeout --universe --uid'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+    -i | --ip)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ip_addresses
+      return 0
+      ;;
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _e133_receiver e133_receiver
+
+#slp_locate
+#have slp_locate && 
+_slp_locate()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --refresh'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_locate slp_locate
+
+#slp_register
+#have slp_register && 
+_slp_register()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --timeout --openslp'
+  #TODO: Ensure binary reports if --openslp option is used without it being installed
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_register slp_register
+
+#slp_sa_test
+#have slp_sa_test && 
+_slp_sa_test()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --timeout --list-tests --tests'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+    -t | --tests)
+      #TODO: Check if this needs to work with a comma separated list of tests
+      opts="$( command ${COMP_WORDS[0]} --list-tests 2>/dev/null )"
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_sa_test slp_sa_test
+
+#usbpro_firmware
+#have usbpro_firmware && 
+_usbpro_firmware()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--device --firmware --log-level'
+
+  #Because of the way this completion is working out, set COMPREPLY in each case and don't do anything centrally
+  case "$prev" in
+    -l | --log-level)
+      COMPREPLY=($( compgen -W "0 1 2 3 4" -- $cur ) )
+      ;;
+    -d | --device)
+      COMPREPLY=($( compgen -G "/dev/ttyUSB*" -- $cur ) )
+      ;;
+    -f | --firmware)
+      _filedir bin
+      ;;
+    *)
+      #TODO: This should probably be an if statement, as we don't really care about prev
+      COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+      ;;
+  esac;
+
+  return 0
+}
+complete -F _usbpro_firmware usbpro_firmware
+
+#ola_throughput
+#have ola_throughput && 
+_ola_throughput()
+{
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
+  COMPREPLY=($( compgen -W '--dmx --sleep --universe' -- $cur ) )
+}
+complete -F _ola_throughput ola_throughput

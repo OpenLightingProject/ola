@@ -1,0 +1,55 @@
+.TH ola_recorder 1 "December 2013"
+.SH NAME
+ola_recorder \- Record to, or playback from, a file a number of universes for a
+show
+.SH SYNOPSIS
+ola_recorder [--record <file> --universes <universe_list>] [--playback <file>] 
+[--verify <file>]
+
+.SH DESCRIPTION
+ola_recorder
+Record a series of universes, or playback a previously recorded show.
+.SH OPTIONS
+.IP "-d, --delay <uint32_t>"
+The delay in ms between successive iterations.
+.IP "-h, --help"
+Display the help message
+.IP "-i, --iterations <uint32_t>"
+The number of times to repeat the show, 0 means unlimited.
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4.
+.IP "-p, --playback <string>"
+The show file to playback.
+.IP "-r, --record <string>"
+The show file to record data to.
+.IP "-u, --universes <string>"
+A comma separated list of universes to record
+.IP "--verify <string>"
+The show file to verify.
+.IP "-v, --version"
+Print
+.B ola_recorder
+version information
+.IP "--duration <uint32_t>"
+The length of time (seconds) to run for.
+.IP "--syslog"
+Send to syslog rather than stderr.
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
+.IP "--scheduler-policy <policy>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <priority>"
+The thread priority, only used if --scheduler-policy is set.
+.SH EXAMPLES
+.SS Record universes 1 and 2 to the file foo:
+ola_recorder --universes 1,2 --record foo
+.SS Verify the previously recorded file bar:
+ola_recorder --verify bar
+.SS Playback the previously recorded file baz for 30 seconds:
+ola_recorder --playback baz --duration 30
+.SS Playback the previously recorded file baz for 3 iterations:
+ola_recorder --playback baz --iterations 3
+.SS Playback the previously recorded file baz, repeating forever:
+ola_recorder --playback baz --iterations 0

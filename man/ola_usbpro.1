@@ -1,0 +1,55 @@
+.TH ola_usbpro 1 "July 2013"
+.SH NAME
+ola_usbpro \- Configure Enttec USB Pro Devices managed by OLA.
+.SH SYNOPSIS
+.B ola_usbpro
+-d <dev_id> [--serial | -p <port> --g | -p <port> -b <brk> -m <mab> -r <rate>]
+.SH DESCRIPTION
+.B ola_usbpro
+is used to query and control the parameters of Enttec USB Pro devices.
+.SH OPTIONS
+.IP "-a, --assignments"
+Get the port assignments.
+.IP "-b, --brk <break>"
+Set the break time (9 - 127).
+.IP "-d, --device <device>"
+Id of the device to control.
+.IP "-g, --get-params"
+Get the current parameters.
+.IP "-h, --help"
+Display the help message
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4.
+.IP "-m, --mab <man>"
+Set the make after-break-time (1 - 127).
+.IP "-p, --port <port>"
+The port to configure.
+.IP "-r, --rate <rate>"
+Set the transmission rate (1 - 40).
+.IP "-s, --serial"
+Get the serial number.
+.IP "-v, --version"
+Display version information
+.IP "--syslog"
+Send to syslog rather than stderr.
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--no-use-kqueue"
+Disable the use of kqueue(), revert to select()
+.IP "--scheduler-policy <policy>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <priority>"
+The thread priority, only used if --scheduler-policy is set.
+.SH EXAMPLES
+.SS See the current parameters of port 0 of device 9:
+ola_usbpro -d 9 -p 0 --get-params
+.SS See the port assignments of device 9:
+ola_usbpro -d 9 --assignments
+.SS Set the packet rate of port 0 of device 9 to 40 packets/s:
+ola_usbpro -d 9 -p 0 -r 40
+.SS See the serial number of device 9:
+ola_usbpro -d 9 --serial
+.SH SEE ALSO
+.BR olad(1) ,
+.BR usbpro_firmware(1) ,
+.

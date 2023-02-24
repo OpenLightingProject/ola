@@ -1,0 +1,96 @@
+# bash completion for Debian ola-rdm-tests tools
+# Copyright Peter Newman 2013, based on apache2 and apt-file completion
+
+#Commands
+#rdm_responder_test.py
+have rdm_responder_test.py && _rdm_responder_test.py()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--slot-count --debug --dmx-frame-rate --log --list-tests --pid-location --skip-check --tests --timestamp --no-factory-defaults --broadcast-write-delay --universe --inter-test-delay'
+
+  case "$prev" in
+    -l | --log)
+      #Log wants a file
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir
+      return 0
+      ;;
+    -p | --pid-location)
+      #pid-location wants a directory
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
+      return 0
+      ;;
+    -t | --tests)
+      #TODO: Get this working with the comma separated list of tests
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      COMPREPLY=( $( compgen -W '$( command ${COMP_WORDS[0]} --list-tests 2>/dev/null )' -- $cur  ) )
+      return 0;
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _rdm_responder_test.py rdm_responder_test.py
+
+#rdm_model_collector.py
+have rdm_model_collector.py && _rdm_model_collector.py()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--debug --pid-location --skip-queued-messages --universe'
+
+  case "$prev" in
+    -p | --pid-location)
+      #Pid location wants a directory
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+  
+  return 0
+}
+complete -F _rdm_model_collector.py rdm_model_collector.py
+
+#rdm_test_server.py
+have rdm_test_server.py && _rdm_test_server.py()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--pid-location --www-dir --log-directory --world-writeable'
+
+  case "$prev" in
+    -p | --pid-location)
+      #pid-location wants a directory
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
+      return 0
+      ;;
+    -d | --www-dir | -l | --log-directory)
+      #WWW dir and log dir want directories
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+  
+  return 0
+}
+complete -F _rdm_test_server.py rdm_test_server.py

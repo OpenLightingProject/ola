@@ -1,0 +1,65 @@
+=== POSITIVE ===
+{
+  "definitions": {
+    "positiveInteger": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "positiveIntegerDefault0": {
+      "allOf": [
+        {
+          "$ref": "#\/definitions\/positiveInteger"
+        },
+        {
+          "default": 0
+        }
+      ]
+    },
+    "schemaArray": {
+      "items": {
+        "$ref": "#"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "simpleTypes": {
+      "enum": ["array", "boolean", "integer", "null", "number", "object", "string"]
+    },
+    "stringArray": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    }
+  }
+}
+=== NEGATIVE ===
+{
+  "definitions": []
+}
+=== NEGATIVE ===
+{
+  "definitions": null
+}
+=== NEGATIVE ===
+{
+  "definitions": false
+}
+=== NEGATIVE ===
+{
+  "definitions": "foo"
+}
+=== NEGATIVE ===
+{
+  "definitions": 1
+}
+=== NEGATIVE ===
+{
+  "definitions": -1
+}
+=== NEGATIVE ===
+{
+  "definitions": 1.2
+}

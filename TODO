@@ -1,0 +1,20 @@
+
+See https://github.com/OpenLightingProject/ola/issues?direction=desc&state=open
+
+--URGENT--
+resend DMX on idle (artnet every 4s)
+
+--REQUIRED--
+
+* allow for finer grained channel control (set_block, set_channel)
+* regression tests for plugins
+
+--WISH LIST--
+
+* consider using filters:
+	o split dmx to different universes OUT = SPLIT(1,0,255)
+	o invert channels OUT = INV(1)
+	o different merge modes OUT = HTP(1,2)
+	o change offset / map  OUT = OFFSET(1, +50)
+	o scaler (OUT = SCALE(1, %40) )
+	o clip (OUT = CLIP(1,%80) )
