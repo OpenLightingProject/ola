@@ -29,4 +29,4 @@ Contributors:
   Stefan Krüger, added APA102 support to the SPI Plugin
   Tobi Schäfer, for the MacPort files
   Stefan S, improved timing with monotonic clock
-  Markus, improved uartdmx plugin
+  Markus, improved uartdmx plugin timing behaviour

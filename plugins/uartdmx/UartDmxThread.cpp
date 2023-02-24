@@ -77,17 +77,16 @@ void *UartDmxThread::Run() {
   CheckTimeGranularity();
   DmxBuffer buffer;
 
-  // basic frame time (without break): MAB + (time per bit * bits per slot * (slots per universe + 1)) + MALFT
-  // the +1 at the slots_per_universe is for the dmx start code
+  // basic frame time (without break): MAB + (time per bit * bits per slot * (slots per universe + slot for start code)) + MALFT
   // the basic_frame_time is in microseconds
-  int basic_frame_time = DMX_MAB + (4 * 11 * (DMX_UNIVERSE_SIZE + 1)) + m_malft;
+  int basic_frame_time = DMX_MAB + (DMX_TIME_PER_BIT * DMX_BITS_PER_SLOT * (DMX_UNIVERSE_SIZE + DMX_SLOT_START_CODE)) + m_malft;
 
   // the maximum time between breaks should be 1 second, and the minimum time 1204
   // the capping of max and min values is done to honor the standard
-  int basic_frame_time_capped = std::max(std::min(basic_frame_time, 1000000), 1204);
+  int basic_frame_time_capped = std::max(std::min(basic_frame_time, DMX_BREAK_TIME_MAX), DMX_BREAK_TIME_MIN);
 
   // converts the frame time into milliseconds for later use
-  m_frameTime = static_cast<int>(floor(basic_frame_time_capped / static_cast<double>(1000)));
+  m_frame_time = static_cast<int>(floor(basic_frame_time_capped / static_cast<double>(ONE_THOUSAND)));
 
   // Setup the widget
   if (!m_widget->IsOpen())
@@ -105,7 +104,7 @@ void *UartDmxThread::Run() {
       buffer.Set(m_buffer);
     }
 
-    writeDmxData(buffer);
+    WriteDMXToUART(buffer);
   }
   return NULL;
 }
@@ -113,7 +112,7 @@ void *UartDmxThread::Run() {
 /**
  * Write the DMX data to the actual UART interface.
  */
-void UartDmxThread::writeDmxData(const DmxBuffer &buffer) {
+void UartDmxThread::WriteDMXToUART(const DmxBuffer &buffer) {
   TimeStamp ts1;
   Clock clock;
 
@@ -151,28 +150,34 @@ void UartDmxThread::frameSleep(const TimeStamp &ts1) {
   TimeStamp ts2, ts3;
   Clock clock;
 
-  // Sleep for the remainder of the DMX frame time
   clock.CurrentMonotonicTime(&ts2);
   TimeInterval elapsed = ts2 - ts1;
 
   if (m_granularity == GOOD) {
-    while (elapsed.InMilliSeconds() < m_frameTime) {
-      usleep(1000);
+    // Sleep for at least the remaining frame time to ensure we start the next frame afresh.
+    while (elapsed.InMilliSeconds() < m_frame_time) {
+      usleep(ONE_THOUSAND);
       clock.CurrentMonotonicTime(&ts2);
       elapsed = ts2 - ts1;
     }
   } else {
     // See if we can drop out of bad mode.
-    usleep(1000);
+    usleep(ONE_THOUSAND);
     clock.CurrentMonotonicTime(&ts3);
     TimeInterval interval = ts3 - ts2;
+
+    /** 
+     * If sleeping for 1ms takes longer than this, don't trust
+     * usleep for this session
+     */
     if (interval.InMilliSeconds() <= BAD_GRANULARITY_LIMIT) {
       m_granularity = GOOD;
       OLA_INFO << "Switching from BAD to GOOD granularity for UART thread";
     }
 
     elapsed = ts3 - ts1;
-    while (elapsed.InMilliSeconds() < m_frameTime) {
+    // Sleep for at least the remaining frame time to ensure we start the next frame afresh.
+    while (elapsed.InMilliSeconds() < m_frame_time) {
       clock.CurrentMonotonicTime(&ts2);
       elapsed = ts2 - ts1;
     }
@@ -191,6 +196,11 @@ void UartDmxThread::CheckTimeGranularity() {
   clock.CurrentMonotonicTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
+
+  /** 
+   * If sleeping for 1ms takes longer than this, don't trust
+   * usleep for this session
+   */
   m_granularity = (interval.InMilliSeconds() > BAD_GRANULARITY_LIMIT) ?
 	  BAD : GOOD;
   OLA_INFO << "Granularity for UART thread is "

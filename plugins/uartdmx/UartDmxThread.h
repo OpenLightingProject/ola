@@ -24,6 +24,7 @@
 
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
+#include "ola/Clock.h"
 
 namespace ola {
 namespace plugin {
@@ -49,15 +50,20 @@ class UartDmxThread : public ola::thread::Thread {
   DmxBuffer m_buffer;
   ola::thread::Mutex m_term_mutex;
   ola::thread::Mutex m_buffer_mutex;
-  unsigned int m_frameTime;
+  unsigned int m_frame_time;
 
   void CheckTimeGranularity();
 
   void frameSleep(const TimeStamp &ts1);
-  void writeDmxData(const DmxBuffer &buffer);
+  void WriteDMXToUART(const DmxBuffer &buffer);
 
   static const uint32_t DMX_MAB = 16;
   static const uint32_t BAD_GRANULARITY_LIMIT = 3;
+  static const int DMX_BREAK_TIME_MIN = 1204; // in microseconds
+  static const int DMX_BREAK_TIME_MAX = USEC_IN_SECONDS; 
+  static const uint32_t DMX_TIME_PER_BIT = 4; // in microseconds
+  static const uint32_t DMX_BITS_PER_SLOT = 11;
+  static const uint32_t DMX_SLOT_START_CODE = 1;
 
   DISALLOW_COPY_AND_ASSIGN(UartDmxThread);
 };
