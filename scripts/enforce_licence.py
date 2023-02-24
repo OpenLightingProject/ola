@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
@@ -232,11 +232,15 @@ def GetDirectoryLicences(root_dir):
     subdirs[:] = [d for d in subdirs if not d.startswith('.')]
 
     if LICENCE_FILE in files:
-      f = open(os.path.join(dir_name, LICENCE_FILE))
+      licence_path = os.path.join(dir_name, LICENCE_FILE)
+      f = open(licence_path)
       lines = f.readlines()
       f.close()
       licences[dir_name] = TransformLicence(lines)
-      print('Found LICENCE for directory %s' % dir_name)
+      rel_licence_path = os.path.relpath(licence_path)
+      rel_dir_path = os.path.relpath(dir_name)
+      print('debug:file:%s: Found LICENCE for directory %s' %
+            (rel_licence_path, rel_dir_path))
 
     # use this licence for all subdirs
     licence = licences.get(dir_name)
@@ -280,8 +284,10 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     return 0
 
   f = open(file_name)
+  rel_path = os.path.relpath(file_name)
   # + 1 to include the newline to have a complete line
   header_size = len(licence) + 1
+  file_name_line_count = licence.count('\n') + 2
   first_line = None
   if lang == PYTHON:
     first_line = f.readline()
@@ -289,6 +295,8 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       # First line isn't a shebang, ignore it.
       f.seek(0, os.SEEK_SET)
       first_line = None
+    else:
+      file_name_line_count += 1
   # strip the trailing newline off as we don't actually want it
   header = f.read(header_size).rstrip('\n')
   file_name_line = f.readline()
@@ -296,22 +304,24 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   if header == licence:
     expected_line = TransformLine(os.path.basename(file_name), lang)
     if lang != JS and file_name_line.rstrip('\n') != expected_line:
-      print("File %s does not have a filename line after the licence; found "
-            "\"%s\" expected \"%s\"" %
-            (file_name, file_name_line.rstrip('\n'), expected_line))
+      print("error:file:%s:line %s: File does not have a filename line after "
+            "the licence; found \"%s\" expected \"%s\"" %
+            (rel_path, file_name_line_count, file_name_line.rstrip('\n'),
+             expected_line))
       return 1
     return 0
 
   if fix:
-    print('Fixing %s' % file_name)
+    print('notice:file:%s: Fixing file' % rel_path)
     if lang == PYTHON and first_line is not None:
       licence = first_line + licence
     ReplaceHeader(file_name, licence, lang)
     return 1
   else:
-    print("File %s does not start with \"%s...\"" % (
-        file_name,
-        licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
+    print("error:file:%s:lines 1-%s: File does not start with, or not exact "
+          "match of, \"%s...\"" %
+          (rel_path, file_name_line_count,
+           licence.split('\n')[(0 if (lang == PYTHON) else 1)]))
     if diff:
       d = difflib.Differ()
       result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
@@ -325,10 +335,11 @@ def main():
   errors = 0
   for dir_name, licence in licences.items():
     errors += CheckLicenceForDir(dir_name, licence, diff=diff, fix=fix)
-  print('Found %d files with incorrect licences' % errors)
-  if errors > 0:
+  if (errors > 0):
+    print('error: Found %d files with incorrect licences' % errors)
     sys.exit(1)
   else:
+    print('notice: Found %d files with incorrect licences' % errors)
     sys.exit()
 
 

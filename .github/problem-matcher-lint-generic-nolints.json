@@ -1,0 +1,16 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "lint-generic-nolints",
+            "pattern": [
+                {
+                    "regexp": "^(notice|error)(:(file|dir):([^:]+)(:lines? (\\d+)(-(\\d+))?)?)?: (.+)$",
+                    "severity": 1,
+                    "file": 4,
+                    "line": 6,
+                    "message": 9
+                }
+            ]
+        }
+    ]
+}
