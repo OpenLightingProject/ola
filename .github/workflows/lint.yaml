@@ -136,18 +136,9 @@ jobs:
       - name: Install build tools
         shell: bash
         run: |
-          apt-get -y install pkg-config libtool autoconf \
-            automake g++ bison flex make bash-completion dh-autoreconf \
-            debhelper devscripts wget python3-pip
+          apt-get -y install make python3-pip
       - name: Install Python lint tools
-        run: python3 -m pip install --no-input cpplint flake8
-      - name: Install build dependencies
-        shell: bash
-        run: |
-          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
-            libmicrohttpd-dev protobuf-compiler python3-protobuf \
-            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
-            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
+        run: python3 -m pip install --no-input cpplint
       - name: Enable Problem Matcher for GitHub annotations
         run: echo "::add-matcher::.github/problem-matcher-lint-cpplint.json"
       - name: cpplint
@@ -178,20 +169,11 @@ jobs:
       - name: Install build tools
         shell: bash
         run: |
-          apt-get -y install pkg-config libtool autoconf \
-            automake g++ bison flex make bash-completion dh-autoreconf \
-            debhelper devscripts wget python3-pip
+          apt-get -y install make python3-pip
       - name: Install Python lint tools
-        run: python3 -m pip install --no-input cpplint flake8
+        run: python3 -m pip install --no-input flake8
       - name: Setup flake8 annotations
         uses: rbialon/flake8-annotations@v1
-      - name: Install build dependencies
-        shell: bash
-        run: |
-          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
-            libmicrohttpd-dev protobuf-compiler python3-protobuf \
-            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
-            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
       - name: flake8
         run: make flake8 VERBOSE=1
   spellintian:
