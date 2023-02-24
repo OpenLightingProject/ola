@@ -23,8 +23,8 @@ jobs:
           apt-get -y install pkg-config libtool autoconf \
             automake g++ bison flex make bash-completion dh-autoreconf \
             debhelper devscripts wget python3-pip
-      #- name: Install Python lint tools
-      #  run: python3 -m pip install --no-input cpplint flake8
+      - name: Install Python lint tools
+        run: python3 -m pip install --no-input cpplint flake8
       - name: Install build dependencies
         shell: bash
         run: |
