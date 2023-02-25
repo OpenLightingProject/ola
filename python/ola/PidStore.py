@@ -45,7 +45,7 @@ ROOT_DEVICE = 0
 MAX_VALID_SUB_DEVICE = 0x0200
 ALL_SUB_DEVICES = 0xffff
 
-# The two types of commands classes
+# The different types of commands classes
 RDM_GET, RDM_SET, RDM_DISCOVERY = range(3)
 
 
