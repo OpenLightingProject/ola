@@ -189,4 +189,14 @@ import java.nio.ByteOrder;
                      "{'a': 'caf\\\\xe9'}")
 #    self.assertEqual('%s' % rtf._EscapeData({"caf\xe9": "bar"}),
 #                     "{'caf\xe9': 'bar'}")
+    self.assertEqual(ResponderTestFixture._EscapeData(u'caf\xe9'), "caf\\xe9")
+    self.assertEqual('%s' % ResponderTestFixture._EscapeData(u'caf\xe9'),
+                     "caf\\xe9")
+    self.assertEqual('%s' % ResponderTestFixture._EscapeData(['caf\xe9']),
+                     "['caf\\\\xe9']")
+    self.assertEqual('%s' % ResponderTestFixture._EscapeData({"a": "caf\xe9"}),
+                     "{'a': 'caf\\\\xe9'}")
+#                     {"caf\xe9": "bar"}),
+#                     "{'caf\\xe9': 'bar'}")
   "forin": true,
+  manufacturer_name: "ags - Wissenschaftliche Arbeitsgemeinschaft fur Studio- und Senderfragen"
