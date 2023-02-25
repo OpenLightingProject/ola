@@ -192,4 +192,6 @@ import java.nio.ByteOrder;
                      "{'a': 'caf\\\\xe9'}")
 #    self.assertEqual('%s' % rtf._EscapeData({"caf\xe9": "bar"}),
 #                     "{'caf\xe9': 'bar'}")
+    self.assertEqual('caf\\xe9', StringEscape(u'caf\xe9'))
+    self.assertEqual('caf\\xe9', ("%s" % StringEscape(u'caf\xe9')))
   "forin": true,
