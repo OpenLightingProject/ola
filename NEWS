@@ -1,12 +1,14 @@
 x/y/2023 ola-0.10.9
  Features:
- * Further improvements on Python 3 compatibility #1506
+ * Python 3 compatibility across the board (including the RDM Responder Tests)!
+   #1506
  * Support for the JMS USB2DMX PRO V2.1 device via the FTDI plugin #1728
 
  API:
  * Python: Add a fetch current DMX example.
 
  RDM Tests:
+ * Python 3 compatibility of the RDM Tests #1599
  * Fix a longstanding bug in the GetMaxPacketSize RDM test around timeouts
 
  Bugs:
