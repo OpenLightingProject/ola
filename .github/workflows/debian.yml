@@ -78,4 +78,9 @@ jobs:
       - name: Install test tools
         run: apt-get -y install autopkgtest
       - name: Test
-        run: autopkgtest built/*ges -- null
+        run: autopkgtest --output-dir=test-output built/*ges -- null
+      - uses: actions/upload-artifact@v3
+        if: always() # Always upload the test output, even on failed tests
+        with:
+          name: ola-test-output-debian-${{ matrix.image_tag }}-amd64
+          path: test-output
