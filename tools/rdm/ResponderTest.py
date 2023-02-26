@@ -31,12 +31,14 @@ import logging
 import sys
 import time
 
-from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
-                             NackDiscoveryResult, NackGetResult, NackSetResult)
 from ola.OlaClient import OlaClient, RDMNack
-from TestCategory import TestCategory
-from TestState import TestState
-from TimingStats import TimingStats
+from ola.StringUtils import StringEscape
+from ola.testing.rdm.ExpectedResults import (AckDiscoveryResult, AckGetResult,
+                                             AckSetResult, NackDiscoveryResult,
+                                             NackGetResult, NackSetResult)
+from ola.testing.rdm.TestCategory import TestCategory
+from ola.testing.rdm.TestState import TestState
+from ola.testing.rdm.TimingStats import TimingStats
 
 from ola import PidStore
 
@@ -452,7 +454,7 @@ class ResponderTestFixture(TestFixture):
                                args,
                                include_frames=True)
 
-  def SendRawDiscovery(self, sub_device, pid, data=""):
+  def SendRawDiscovery(self, sub_device, pid, data=b''):
     """Send a raw Discovery request.
 
     Args:
@@ -502,7 +504,7 @@ class ResponderTestFixture(TestFixture):
                              include_frames=True)
     return ret_code
 
-  def SendRawGet(self, sub_device, pid, data=""):
+  def SendRawGet(self, sub_device, pid, data=b''):
     """Send a raw GET request.
 
     Args:
@@ -554,7 +556,7 @@ class ResponderTestFixture(TestFixture):
       self.SleepAfterBroadcastSet()
     return ret_code
 
-  def SendRawSet(self, sub_device, pid, data=""):
+  def SendRawSet(self, sub_device, pid, data=b''):
     """Send a raw SET request.
 
     Args:
@@ -700,17 +702,8 @@ class ResponderTestFixture(TestFixture):
         # We can't escape the key as then it may become a new key
         d[k] = ResponderTestFixture._EscapeData(v)
       return d
-    # TODO(Peter): How does this interact with the E1.20 Unicode flag?
-    # We don't use sys.version_info.major to support Python 2.6.
-    elif sys.version_info[0] == 2 and type(data) == str:
-      return data.encode('string-escape')
-    elif sys.version_info[0] == 2 and type(data) == unicode:
-      return data.encode('unicode-escape')
-    elif type(data) == str:
-      # All strings in Python 3 are unicode
-      # This encode/decode pair gets us an escaped string
-      return data.encode('unicode-escape').decode(encoding="ascii",
-                                                  errors="backslashreplace")
+    elif type(data) == str or type(data) == unicode:
+      return StringEscape(data)
     else:
       return data
 

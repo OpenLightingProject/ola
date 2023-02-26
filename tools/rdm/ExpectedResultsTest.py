@@ -19,6 +19,7 @@
 import unittest
 from collections import namedtuple
 
+# Keep this import relative to simplify the testing
 from ExpectedResults import (BroadcastResult, DUBResult, InvalidResponse,
                              SuccessfulResult, TimeoutResult,
                              UnsupportedResult)
