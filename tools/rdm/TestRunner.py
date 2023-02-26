@@ -23,6 +23,7 @@ import time
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.testing.rdm.ResponderTest import (OptionalParameterTestFixture,
+                                           ParamDescriptionTestFixture,
                                            ResponderTestFixture, TestFixture)
 from ola.testing.rdm.TestState import TestState
 from ola.testing.rdm.TimingStats import TimingStats

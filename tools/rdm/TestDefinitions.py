@@ -40,7 +40,6 @@ from ola.testing.rdm.ResponderTest import (OptionalParameterTestFixture,
                                            ResponderTestFixture, TestFixture)
 from ola.testing.rdm.TestCategory import TestCategory
 from ola.testing.rdm.TestHelpers import ContainsUnprintable
-from ola.testing.rdm.TestMixins import MAX_DMX_ADDRESS
 from ola.UID import UID
 
 from ola import PidStore, RDMConstants
