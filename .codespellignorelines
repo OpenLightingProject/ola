@@ -196,4 +196,4 @@ import java.nio.ByteOrder;
     self.assertEqual('caf\\xe9', ("%s" % StringEscape(u'caf\xe9')))
   "forin": true,
           dcmd mv ../*ges built/
-        run: autopkgtest built/*ges -- null
+        run: autopkgtest --output-dir=test-output built/*ges -- null
