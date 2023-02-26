@@ -18,7 +18,7 @@
 
 import unittest
 
-from ResponderTest import ResponderTestFixture, TestFixture
+from ola.testing.rdm.ResponderTest import ResponderTestFixture, TestFixture
 
 """Test cases for sorting TestFixtures."""
 

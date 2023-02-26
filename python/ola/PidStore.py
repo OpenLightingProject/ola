@@ -45,7 +45,7 @@ ROOT_DEVICE = 0
 MAX_VALID_SUB_DEVICE = 0x0200
 ALL_SUB_DEVICES = 0xffff
 
-# The two types of commands classes
+# The different types of commands classes
 RDM_GET, RDM_SET, RDM_DISCOVERY = range(3)
 
 
@@ -637,6 +637,12 @@ class String(Atom):
     arg = args[0]
     arg_size = len(arg)
 
+    # Handle the fact a UTF-8 character could be multi-byte
+    if sys.version_info >= (3, 2):
+      arg_size = max(arg_size, len(bytes(arg, 'utf-8')))
+    else:
+      arg_size = max(arg_size, len(arg.encode('utf-8')))
+
     if self.max is not None and arg_size > self.max:
       raise ArgsValidationError('%s can be at most %d,' %
                                 (self.name, self.max))
@@ -647,9 +653,9 @@ class String(Atom):
 
     try:
       if sys.version_info >= (3, 2):
-        data = struct.unpack('%ds' % arg_size, bytes(arg, 'utf8'))
+        data = struct.unpack('%ds' % arg_size, bytes(arg, 'utf-8'))
       else:
-        data = struct.unpack('%ds' % arg_size, arg)
+        data = struct.unpack('%ds' % arg_size, arg.encode('utf-8'))
     except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data[0], 1
@@ -669,10 +675,12 @@ class String(Atom):
     except struct.error as e:
       raise UnpackException(e)
 
-    if sys.version_info >= (3, 2):
-      return value[0].rstrip(b'\x00').decode('utf-8')
-    else:
-      return value[0].rstrip(b'\x00')
+    try:
+      value = value[0].rstrip(b'\x00').decode('utf-8')
+    except UnicodeDecodeError as e:
+      raise UnpackException(e)
+
+    return value
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
@@ -878,7 +886,7 @@ class Group(Atom):
             'Too many repeated group_count for %s, limit is %d, found %d' %
             (self.name, self.max, group_count))
 
-      if self.max is not None and group_count < self.min:
+      if self.min is not None and group_count < self.min:
         raise UnpackException(
             'Too few repeated group_count for %s, limit is %d, found %d' %
             (self.name, self.min, group_count))
