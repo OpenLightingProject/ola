@@ -28,9 +28,7 @@ jobs:
         run: apt-get -y install git
       - uses: actions/checkout@v3
       - name: Install build tools
-        run: apt-get -y install devscripts adduser fakeroot sudo python3-pip
-      - name: Install Python lint tools
-        run: python3 -m pip install --no-input cpplint flake8
+        run: apt-get -y install devscripts adduser fakeroot sudo
       - name: Install build dependencies
         run: mk-build-deps -t "apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends" -i -r
       - name: Set up build user
