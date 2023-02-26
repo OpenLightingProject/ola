@@ -22,6 +22,7 @@ from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import RDM_MAX_STRING_LENGTH
+from ola.StringUtils import StringEscape
 from ola.testing.rdm.ExpectedResults import (AckDiscoveryResult, AckGetResult,
                                              BroadcastResult, DUBResult,
                                              TimeoutResult, UnsupportedResult)
@@ -62,7 +63,7 @@ class UnsupportedGetWithDataMixin(ResponderTestFixture):
     NR_UNSUPPORTED_COMMAND_CLASS.
   """
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = 'foo'
+  DATA = b'foo'
 
   def Test(self):
     self.AddIfGetSupported(
@@ -141,7 +142,7 @@ class GetStringMixin(GetMixin):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
-           string_field.encode('string-escape')))
+           StringEscape(string_field)))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
@@ -204,7 +205,7 @@ class GetRequiredStringMixin(GetRequiredMixin):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
-           string_field.encode('string-escape')))
+           StringEscape(string_field)))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
@@ -226,7 +227,7 @@ class GetWithDataMixin(ResponderTestFixture):
     of allowed results for each entry.
   """
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = 'foo'
+  DATA = b'foo'
   ALLOWED_NACKS = []
 
   def Test(self):
@@ -244,7 +245,7 @@ class GetWithDataMixin(ResponderTestFixture):
 class GetMandatoryPIDWithDataMixin(ResponderTestFixture):
   """GET a mandatory PID with junk param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = 'foo'
+  DATA = b'foo'
 
   def Test(self):
     # PID must return something as this PID is required (can't return
@@ -299,7 +300,7 @@ class UnsupportedSetWithDataMixin(ResponderTestFixture):
     NR_UNSUPPORTED_COMMAND_CLASS.
   """
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = 'foo'
+  DATA = b'foo'
 
   def Test(self):
     self.AddIfSetSupported(
@@ -314,7 +315,7 @@ class SetWithDataMixin(ResponderTestFixture):
     of allowed results for each entry.
   """
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  DATA = 'foo'
+  DATA = b'foo'
   ALLOWED_NACKS = []
 
   def Test(self):
@@ -346,7 +347,7 @@ class SetWithNoDataMixin(ResponderTestFixture):
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR)
     ]
     self.AddIfSetSupported(results)
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, b'')
 
   # TODO(simon): add a method to check this didn't change the value
 
@@ -402,8 +403,8 @@ class SetLabelMixin(ResponderTestFixture):
                        (self.pid.name, len(new_label)))
     else:
       self.SetFailed('Labels didn\'t match, expected "%s", got "%s"' %
-                     (self.TEST_LABEL.encode('string-escape'),
-                      new_label.encode('string-escape')))
+                     (StringEscape(self.TEST_LABEL),
+                      StringEscape(new_label)))
 
   def ResetState(self):
     old_value = self.OldValue()
@@ -439,7 +440,7 @@ class SetNonUnicastLabelMixin(SetLabelMixin):
 class SetOversizedLabelMixin(ResponderTestFixture):
   """Send an over-sized SET label command."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  LONG_STRING = 'this is a string which is more than 32 characters'
+  LONG_STRING = b'this is a string which is more than 32 characters'
 
   def Test(self):
     self.verify_result = False
@@ -1210,7 +1211,7 @@ class GetSettingDescriptionsMixin(ResponderTestFixture):
            self.pid.name,
            self.DESCRIPTION_FIELD,
            self.current_item,
-           fields[self.DESCRIPTION_FIELD].encode('string-escape')))
+           StringEscape(fields[self.DESCRIPTION_FIELD])))
 
 
 class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
@@ -1229,8 +1230,8 @@ class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
     if self.NumberOfSettings() is None:
         return []
     else:
-      return range(self.FIRST_INDEX_OFFSET,
-                   self.NumberOfSettings() + self.FIRST_INDEX_OFFSET)
+      return list(range(self.FIRST_INDEX_OFFSET,
+                        self.NumberOfSettings() + self.FIRST_INDEX_OFFSET))
 
 
 class GetSettingDescriptionsListMixin(GetSettingDescriptionsMixin):
