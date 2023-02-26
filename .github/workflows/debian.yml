@@ -39,17 +39,21 @@ jobs:
       - name: Build
         run: sudo -u builduser dpkg-buildpackage -b -rfakeroot -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
       - name: Move built files
+        if: always()
         run: |
           mkdir built
           dcmd mv ../*ges built/
       - name: Display structure of built files
+        if: always()
         run: ls -alR
         working-directory: built
       - name: SHA256 built files
+        if: always()
         shell: bash
         run: find . -type f -exec sha256sum {} \;
         working-directory: built
       - uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: ola-built-debian-${{ matrix.image_tag }}-amd64
           path: ./built
