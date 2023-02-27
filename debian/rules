@@ -9,10 +9,9 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 export VERBOSE=1
-export PYBUILD_SYSTEM=distutils
 
 %:
-	dh $@ --parallel --with autotools_dev,autoreconf,bash_completion,python3 --buildsystem=pybuild
+	dh $@ --parallel --with autotools_dev,autoreconf,bash_completion,python3
 
 override_dh_auto_configure:
 	dh_auto_configure -- --enable-python-libs --enable-rdm-tests CXXFLAGS='-Wno-error=deprecated-declarations -Wno-error=unused-parameter' pythondir='/usr/lib/python3/dist-packages'
