@@ -9,6 +9,7 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 export VERBOSE=1
+export PYBUILD_SYSTEM=distutils
 
 %:
 	dh $@ --parallel --with autotools_dev,autoreconf,bash_completion,python3 --buildsystem=pybuild
