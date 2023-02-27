@@ -82,6 +82,36 @@ static const uint16_t OPEN_LIGHTING_ESTA_CODE = 0x7a70;
  */
 static const uint32_t MAX_UNIVERSE = 0xffffffff;
 
+/**
+ * @brief The minimum break time for a DMX frame (in microseconds).
+ */
+static const int DMX_BREAK_TIME_MIN = 1204;
+
+/**
+ * @brief The maximum break time for a DMX frame is 1 second (in microseconds).
+ */
+static const int DMX_BREAK_TIME_MAX = 1000000; 
+
+/**
+ * @brief The time a single bit needs for sending (in microseconds).
+ */
+static const uint32_t DMX_TIME_PER_BIT = 4;
+
+/**
+ * @brief The number of bits per slot.
+ */
+static const uint32_t DMX_BITS_PER_SLOT = 11;
+
+/**
+ * @brief The number of slots the start code needs.
+ */
+static const uint32_t DMX_SLOT_START_CODE = 1;
+
+/**
+ * @brief The time in microseconds a single DMX universe needs on its own: time per bit * bits per slot * (slots per universe + slot for start code).
+ */
+static const uint32_t DMX_UNIVERSE_FRAME_TIME = DMX_TIME_PER_BIT * DMX_BITS_PER_SLOT * (DMX_UNIVERSE_SIZE + DMX_SLOT_START_CODE);
+
 }  // namespace ola
 
 #endif  // INCLUDE_OLA_CONSTANTS_H_

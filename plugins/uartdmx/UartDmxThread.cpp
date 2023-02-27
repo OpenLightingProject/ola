@@ -77,11 +77,10 @@ void *UartDmxThread::Run() {
   CheckTimeGranularity();
   DmxBuffer buffer;
 
-  // basic frame time (without break): MAB + (time per bit * bits per slot * (slots per universe + slot for start code)) + MALFT
+  // basic frame time (without break): MAB + time for a DMX universe + MALFT
   // the basic_frame_time is in microseconds
-  int basic_frame_time = DMX_MAB + (DMX_TIME_PER_BIT * DMX_BITS_PER_SLOT * (DMX_UNIVERSE_SIZE + DMX_SLOT_START_CODE)) + m_malft;
+  int basic_frame_time = DMX_MAB + DMX_UNIVERSE_FRAME_TIME + m_malft;
 
-  // the maximum time between breaks should be 1 second, and the minimum time 1204
   // the capping of max and min values is done to honor the standard
   int basic_frame_time_capped = std::max(std::min(basic_frame_time, DMX_BREAK_TIME_MAX), DMX_BREAK_TIME_MIN);
 
@@ -120,7 +119,7 @@ void UartDmxThread::WriteDMXToUART(const DmxBuffer &buffer) {
   clock.CurrentMonotonicTime(&ts1);
 
   if (!m_widget->SetBreak(true)) {
-    frameSleep(ts1);
+    FrameSleep(ts1);
     return;
   }
 
@@ -128,7 +127,7 @@ void UartDmxThread::WriteDMXToUART(const DmxBuffer &buffer) {
     usleep(m_breakt);
 
   if (!m_widget->SetBreak(false)) {
-    frameSleep(ts1);
+    FrameSleep(ts1);
     return;
   }
 
@@ -140,13 +139,13 @@ void UartDmxThread::WriteDMXToUART(const DmxBuffer &buffer) {
 
   m_widget->Write(buffer);
   
-  frameSleep(ts1);
+  FrameSleep(ts1);
 }
 
 /**
  * Sleeps for the rest of the frame time and tries to recover the granularity if needed. 
  */
-void UartDmxThread::frameSleep(const TimeStamp &ts1) {
+void UartDmxThread::FrameSleep(const TimeStamp &ts1) {
   TimeStamp ts2, ts3;
   Clock clock;
 
