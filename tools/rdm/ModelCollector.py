@@ -16,10 +16,13 @@
 # Copyright (C) 2011 Simon Newton
 
 from __future__ import print_function
+
 import logging
-from ola import PidStore, RDMConstants
+
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
+
+from ola import PidStore, RDMConstants
 
 '''Quick script to collect information about responders.'''
 
@@ -106,7 +109,7 @@ class ModelCollector(object):
     if this_device:
       software_versions = this_device['software_versions']
       if software_versions.keys():
-        return software_versions[software_versions.keys()[0]]
+        return software_versions[list(software_versions.keys())[0]]
     return None
 
   def _GetPersonality(self, personality):

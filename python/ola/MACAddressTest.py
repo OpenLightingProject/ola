@@ -18,8 +18,9 @@
 
 import sys
 import unittest
+
 from ola.MACAddress import MACAddress
-from ola.TestUtils import allNotEqual, allHashNotEqual
+from ola.TestUtils import allHashNotEqual, allNotEqual
 
 """Test cases for the MACAddress class."""
 

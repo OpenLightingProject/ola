@@ -17,7 +17,8 @@
 # Copyright (C) 2019 Bruce Lowekamp
 
 import unittest
-from ResponderTest import TestFixture, ResponderTestFixture
+
+from ola.testing.rdm.ResponderTest import ResponderTestFixture, TestFixture
 
 """Test cases for sorting TestFixtures."""
 
@@ -33,7 +34,6 @@ class ZTestFixture(TestFixture):
 
 
 class TestFixtureTest(unittest.TestCase):
-
   def testCmp(self):
     base = TestFixture({}, 2, 123, None)
     base2 = TestFixture({}, 3, 456, None)

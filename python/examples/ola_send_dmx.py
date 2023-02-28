@@ -19,9 +19,11 @@
 """Send some DMX data."""
 
 from __future__ import print_function
-from ola.ClientWrapper import ClientWrapper
+
 import array
 import sys
+
+from ola.ClientWrapper import ClientWrapper
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 

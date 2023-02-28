@@ -21,13 +21,14 @@ import os
 import socket
 # import timeout_decorator
 import unittest
-from ola import PidStore
+
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import RDMNack
 from ola.RDMAPI import RDMAPI
-from ola.UID import UID
 from ola.TestUtils import handleRPCByteOrder
+from ola.UID import UID
 
+from ola import PidStore
 
 """Test cases for RDM device commands."""
 
