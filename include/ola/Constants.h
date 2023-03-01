@@ -108,9 +108,12 @@ static const uint32_t DMX_BITS_PER_SLOT = 11;
 static const uint32_t DMX_SLOT_START_CODE = 1;
 
 /**
- * @brief The time in microseconds a single DMX universe needs on its own: time per bit * bits per slot * (slots per universe + slot for start code).
+ * @brief The time in microseconds a single DMX universe needs on its own:
+ * time per bit * bits per slot * (slots per universe + slot for start code).
+ * The MAB, MALFT and BREAK not added here on purpose.
  */
-static const uint32_t DMX_UNIVERSE_FRAME_TIME = DMX_TIME_PER_BIT * DMX_BITS_PER_SLOT * (DMX_UNIVERSE_SIZE + DMX_SLOT_START_CODE);
+static const uint32_t DMX_UNIVERSE_FRAME_TIME = DMX_TIME_PER_BIT
+  * DMX_BITS_PER_SLOT * (DMX_UNIVERSE_SIZE + DMX_SLOT_START_CODE);
 
 }  // namespace ola
 

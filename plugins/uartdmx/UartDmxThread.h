@@ -58,9 +58,12 @@ class UartDmxThread : public ola::thread::Thread {
   void WriteDMXToUART(const DmxBuffer &buffer);
 
   static const uint32_t DMX_MAB = 16;
-  /** 
-   * If sleeping for 1ms takes longer than this, don't trust
-   * usleep for this session
+
+  /**
+   * If the difference between the time interval actually slept and
+   * the intended one exceeds this limit, don't trust the function usleep
+   * for this frame. See if we can recover on the next loop.
+   * The limit is in microseconds.
    */
   static const uint32_t BAD_GRANULARITY_LIMIT = 3;
 
