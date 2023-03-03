@@ -19,10 +19,12 @@ import array
 import socket
 import struct
 import sys
-from ola.rpc.StreamRpcChannel import StreamRpcChannel
+
 from ola.rpc.SimpleRpcController import SimpleRpcController
-from ola import Ola_pb2
+from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.UID import UID
+
+from ola import Ola_pb2
 
 """The client used to communicate with the Ola Server."""
 
@@ -429,6 +431,12 @@ class RequestStatus(object):
 
 
 class RDMNack(object):
+  """Nack response to a request.
+
+      Individual NACK response reasons can be access as attrs, e.g.
+      RMDNack.NR_FORMAT_ERROR
+      """
+
   NACK_SYMBOLS_TO_VALUES = {
     'NR_UNKNOWN_PID': (0, 'Unknown PID'),
     'NR_FORMAT_ERROR': (1, 'Format Error'),
@@ -946,7 +954,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     controller = SimpleRpcController()
     request = Ola_pb2.DmxData()
     request.universe = universe
-    if sys.version >= '3.2':
+    if sys.version_info >= (3, 2):
       request.data = data.tobytes()
     else:
       request.data = data.tostring()
@@ -1166,8 +1174,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       return False
 
     if request.universe in self._universe_callbacks:
-      data = array.array('B')
-      data.fromstring(request.data)
+      data = array.array('B', request.data)
       self._universe_callbacks[request.universe](data)
     response = Ola_pb2.Ack()
     callback(response)
@@ -1224,7 +1231,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       raise OLADNotRunningException()
     return True
 
-  def RDMGet(self, universe, uid, sub_device, param_id, callback, data='',
+  def RDMGet(self, universe, uid, sub_device, param_id, callback, data=b'',
              include_frames=False):
     """Send an RDM get command.
 
@@ -1246,7 +1253,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
                             data, include_frames)
 
-  def RDMSet(self, universe, uid, sub_device, param_id, callback, data='',
+  def RDMSet(self, universe, uid, sub_device, param_id, callback, data=b'',
              include_frames=False):
     """Send an RDM set command.
 
@@ -1274,7 +1281,7 @@ class OlaClient(Ola_pb2.OlaClientService):
                           sub_device,
                           param_id,
                           callback,
-                          data='',
+                          data=b'',
                           include_frames=False):
     """Send an RDM Discovery command. Unless you're writing RDM tests you
       shouldn't need to use this.
@@ -1471,8 +1478,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     universe = None
 
     if status.Succeeded():
-      data = array.array('B')
-      data.fromstring(response.data)
+      data = array.array('B', response.data)
       universe = response.universe
 
     callback(status, universe, data)

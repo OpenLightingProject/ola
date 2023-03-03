@@ -18,28 +18,31 @@
 import datetime
 import operator
 import struct
-from ExpectedResults import (AckGetResult, BroadcastResult, NackGetResult,
-                             InvalidResponse, TimeoutResult, UnsupportedResult,
-                             RDM_GET, RDM_SET)
-from ResponderTest import ResponderTestFixture, TestFixture
-from ResponderTest import (ParamDescriptionTestFixture,
-                           OptionalParameterTestFixture)
-from TestCategory import TestCategory
-from ola import PidStore
-from ola import RDMConstants
-from ola.RDMConstants import (RDM_MIN_HOSTNAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH,
-                              RDM_MAX_DOMAIN_NAME_LENGTH,
-                              RDM_MANUFACTURER_PID_MIN,
-                              RDM_MANUFACTURER_PID_MAX, RDM_INTERFACE_INDEX_MIN,
-                              RDM_INTERFACE_INDEX_MAX,
-                              INTERFACE_HARDWARE_TYPE_ETHERNET,
-                              RDM_ZERO_FOOTPRINT_DMX_ADDRESS,
-                              RDM_MANUFACTURER_SD_MIN, RDM_MANUFACTURER_SD_MAX)
+
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
+from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
+                              RDM_INTERFACE_INDEX_MAX, RDM_INTERFACE_INDEX_MIN,
+                              RDM_MANUFACTURER_PID_MAX,
+                              RDM_MANUFACTURER_PID_MIN,
+                              RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
+                              RDM_MAX_DOMAIN_NAME_LENGTH,
+                              RDM_MAX_HOSTNAME_LENGTH, RDM_MIN_HOSTNAME_LENGTH,
+                              RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
+from ola.StringUtils import StringEscape
+from ola.testing.rdm import TestMixins
+from ola.testing.rdm.ExpectedResults import (RDM_GET, RDM_SET, AckGetResult,
+                                             BroadcastResult, InvalidResponse,
+                                             NackGetResult, TimeoutResult,
+                                             UnsupportedResult)
+from ola.testing.rdm.ResponderTest import (OptionalParameterTestFixture,
+                                           ParamDescriptionTestFixture,
+                                           ResponderTestFixture, TestFixture)
+from ola.testing.rdm.TestCategory import TestCategory
+from ola.testing.rdm.TestHelpers import ContainsUnprintable
 from ola.UID import UID
-from TestHelpers import ContainsUnprintable
-import TestMixins
+
+from ola import PidStore, RDMConstants
 
 '''This defines all the tests for RDM responders.'''
 
@@ -94,7 +97,7 @@ class MuteDeviceWithData(ResponderTestFixture):
       TimeoutResult(),
       UnsupportedResult()
     ])
-    self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid, b'x')
 
 
 class UnMuteDevice(ResponderTestFixture):
@@ -133,7 +136,7 @@ class UnMuteDeviceWithData(ResponderTestFixture):
       TimeoutResult(),
       UnsupportedResult()
     ])
-    self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid, b'x')
 
 
 class RequestsWhileUnmuted(ResponderTestFixture):
@@ -584,7 +587,7 @@ class GetDeviceInfoWithData(DeviceInfoTest, ResponderTestFixture):
         field_values=self.FIELD_VALUES,
         warning='Get %s with data returned an ack' % self.pid.name)
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'x')
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'x')
 
   def VerifyResult(self, response, fields):
     self.SetProperty('supports_over_sized_pdl', True)
@@ -610,14 +613,15 @@ class GetMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
                    self.MAX_PDL),
     ])
     # Incrementing list, so we can find out which bit we have where in memory
-    data = ''
-    for i in xrange(0, self.MAX_PDL):
+    # if it overflows
+    data = b''
+    for i in range(0, self.MAX_PDL):
       data += chr(i)
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
   def VerifyResult(self, response, fields):
-    ok = response not in [OlaClient.RDM_INVALID_RESPONSE,
-                          OlaClient.RDM_TIMEOUT]
+    ok = response.response_code not in [OlaClient.RDM_INVALID_RESPONSE,
+                                        OlaClient.RDM_TIMEOUT]
 
     self.SetProperty('supports_max_sized_pdl', ok)
 
@@ -650,7 +654,7 @@ class DetermineMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
       InvalidResponse(action=self.GetFailed),
       TimeoutResult(action=self.GetFailed),
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self._current)
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'x' * self._current)
 
   def GetPassed(self):
     self._lower = self._current
@@ -799,7 +803,7 @@ class GetSupportedParameters(ResponderTestFixture):
         manufacturer_parameters.append(param_id)
 
     # Check for duplicate PIDs
-    for pid, count in count_by_pid.iteritems():
+    for pid, count in count_by_pid.items():
       if count > 1:
         pid_obj = self.LookupPidValue(pid)
         if pid_obj:
@@ -918,7 +922,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
                     'IDENTIFY_DEVICE']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._params = {}
     self._GetSupportedParams()
@@ -944,7 +948,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
       return
 
     supported_pids = set()
-    for pids in self._params.itervalues():
+    for pids in self._params.values():
       if not supported_pids:
         supported_pids = pids
       elif supported_pids != pids:
@@ -1210,7 +1214,7 @@ class GetParameterDescription(ParamDescriptionTestFixture):
     if ContainsUnprintable(fields['description']):
       self.AddAdvisory(
           'Description field in %s contains unprintable characters, was %s' %
-          (self.pid.name, fields['description'].encode('string-escape')))
+          (self.pid.name, StringEscape(fields['description'])))
 
 
 class GetParameterDescriptionForNonManufacturerPid(ParamDescriptionTestFixture):
@@ -1599,13 +1603,15 @@ class SetFullSizeDeviceLabel(TestMixins.SetLabelMixin,
     return self.Property('device_label')
 
 
-class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
-                             OptionalParameterTestFixture):
-  """SET the device label to something that contains non-ascii data."""
+class SetNonPrintableAsciiDeviceLabel(TestMixins.SetLabelMixin,
+                                      OptionalParameterTestFixture):
+  """SET the device label to something that contains non-printable ASCII
+     characters.
+  """
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   REQUIRES = ['device_label']
-  TEST_LABEL = 'string with\x0d non ascii\xc0'
+  TEST_LABEL = 'str w\x0d non\x1bprint ASCII\x7f'
 
   def ExpectedResults(self):
     return [
@@ -1617,6 +1623,38 @@ class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
 
   def OldValue(self):
     return self.Property('device_label')
+
+
+# TODO(Peter): Get this test to work where we just compare the returned string
+# as bytes so we don't try and fail to decode it as ASCII/UTF-8
+# class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
+#                              OptionalParameterTestFixture):
+#   """SET the device label to something that contains non-ASCII data."""
+#   CATEGORY = TestCategory.PRODUCT_INFORMATION
+#   PID = 'DEVICE_LABEL'
+#   REQUIRES = ['device_label']
+#   # Store directly as bytes so we don't try and decode as UTF-8
+#   TEST_LABEL = b'string with\x0d non ASCII\xc0'
+#
+#   def ExpectedResults(self):
+#     return [
+#       self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+#       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+#       self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+#       self.AckSetResult(action=self.VerifySet)
+#     ]
+#
+#   def OldValue(self):
+#     return self.Property('device_label')
+#
+#   def Test(self):
+#     # We have to override test here as this has to be raw as we can't encode
+#     # it
+#     # on Python 3 as it turns it to UTF-8 or escapes it
+#     # It's also technically out of spec for E1.20 unless it's sent as UTF-8
+#     self._test_state = self.SET
+#     self.AddIfSetSupported(self.ExpectedResults())
+#     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.TEST_LABEL)
 
 
 class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
@@ -1673,8 +1711,8 @@ class GetLanguageCapabilities(OptionalParameterTestFixture):
       language_set.add(language)
       if ContainsUnprintable(language):
         self.AddAdvisory(
-            'Language name in languague capabilities contains unprintable '
-            'characters, was %s' % language.encode('string-escape'))
+            'Language name in language capabilities contains unprintable '
+            'characters, was %s' % StringEscape(language))
 
     self.SetProperty('languages_capabilities', language_set)
 
@@ -1757,14 +1795,48 @@ class SetLanguage(OptionalParameterTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
-class SetNonAsciiLanguage(OptionalParameterTestFixture):
-  """Try to set the language to non-ascii characters."""
+class SetNumericLanguage(OptionalParameterTestFixture):
+  """Try to set the language to ASCII numeric characters."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'LANGUAGE'
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(ROOT_DEVICE, self.pid, ['\x0d\xc0'])
+    self.SendSet(ROOT_DEVICE, self.pid, ['01'])
+
+
+class SetNullLanguage(OptionalParameterTestFixture):
+  """Try to set the language to two null ASCII characters."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, ['\x00\x00'])
+
+
+class SetNonPrintableAsciiLanguage(OptionalParameterTestFixture):
+  """Try to set the language to non-printable ASCII characters."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, ['\x1b\x7f'])
+
+
+class SetNonAsciiLanguage(OptionalParameterTestFixture):
+  """Try to set the language to non-ASCII characters."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    # This has to be raw as we can't encode it on Python 3 as it turns it to
+    # UTF-8 and too many characters
+    # It's also technically out of spec for E1.20 unless it's sent as UTF-8 at
+    # which point we're back at square one
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'\x0d\xc0')
 
 
 class SetUnsupportedLanguage(OptionalParameterTestFixture):
@@ -1847,7 +1919,7 @@ class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
   REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._GetSoftwareVersion()
 
@@ -2151,7 +2223,7 @@ class GetDMXPersonalityDescription(OptionalParameterTestFixture):
     if ContainsUnprintable(fields['name']):
       self.AddAdvisory(
           'Name field in %s contains unprintable characters, was %s' %
-          (self.pid.name, fields['name'].encode('string-escape')))
+          (self.pid.name, StringEscape(fields['name'])))
 
     # TODO(Peter): Advisory if name is 0 length
 
@@ -2197,7 +2269,7 @@ class GetDMXPersonalityDescriptions(OptionalParameterTestFixture):
       if ContainsUnprintable(fields['name']):
         self.AddAdvisory(
             'Name field in %s contains unprintable characters, was %s' %
-            (self.pid.name, fields['name'].encode('string-escape')))
+            (self.pid.name, StringEscape(fields['name'])))
 
     # TODO(Peter): Advisory if name is 0 length
 
@@ -2789,7 +2861,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
         self.SetProperty('sensor_definitions', self._sensors)
 
         supports_recording = False
-        for sensor_def in self._sensors.itervalues():
+        for sensor_def in self._sensors.values():
           supports_recording |= (
               sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
         self.SetProperty('sensor_recording_supported', supports_recording)
@@ -2870,7 +2942,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
       self.AddAdvisory(
           'Name field in sensor definition for sensor %d  contains unprintable'
           ' characters, was %s' % (self._current_index,
-                                   fields['name'].encode('string-escape')))
+                                   StringEscape(fields['name'])))
 
   def CheckCondition(self, sensor_number, fields, lhs, predicate_str, rhs):
     """Check for a condition and add a warning if it isn't true."""
@@ -2937,7 +3009,7 @@ class GetSensorValues(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -3027,7 +3099,7 @@ class GetUndefinedSensorValues(OptionalParameterTestFixture):
   def Test(self):
     sensors = self.Property('sensor_definitions')
     self._missing_sensors = []
-    for i in xrange(0, 0xff):
+    for i in range(0, 0xff):
       if i not in sensors:
         self._missing_sensors.append(i)
 
@@ -3080,7 +3152,7 @@ class ResetSensorValue(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -3210,7 +3282,7 @@ class RecordSensorValues(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -3337,7 +3409,7 @@ class SetDeviceHoursWithNoData(TestMixins.SetWithNoDataMixin,
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetDeviceHoursWithExtraData(TestMixins.SetWithDataMixin,
@@ -3401,7 +3473,7 @@ class SetLampHoursWithNoData(TestMixins.SetWithNoDataMixin,
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetLampHoursWithExtraData(TestMixins.SetWithDataMixin,
@@ -3464,7 +3536,7 @@ class SetLampStrikesWithNoData(TestMixins.SetWithNoDataMixin,
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetLampStrikesWithExtraData(TestMixins.SetWithDataMixin,
@@ -3550,7 +3622,7 @@ class SetLampOnMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELDS = ['mode']
   REQUIRES = ['lamp_on_mode']
   ALLOWED_MODES = [0, 1, 2]
-  ALL_MODES = ALLOWED_MODES + [3] + range(0x80, 0xe0)
+  ALL_MODES = ALLOWED_MODES + [3] + list(range(0x80, 0xe0))
 
   def OldValue(self):
     old = self.Property('lamp_on_mode')
@@ -3659,7 +3731,7 @@ class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetDevicePowerCyclesWithExtraData(TestMixins.SetWithDataMixin,
@@ -3935,14 +4007,15 @@ class GetRealTimeClock(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(
-      self.AckGetResult(field_names=self.ALLOWED_RANGES.keys() + ['second']))
+      self.AckGetResult(field_names=list(self.ALLOWED_RANGES.keys()) +
+                        ['second']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
       return
 
-    for field, valid_range in self.ALLOWED_RANGES.iteritems():
+    for field, valid_range in self.ALLOWED_RANGES.items():
       value = fields[field]
       if value < valid_range[0] or value > valid_range[1]:
         self.AddWarning('%s in GET %s is out of range, was %d, expected %s' %
@@ -3981,7 +4054,7 @@ class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
         self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
     ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetRealTimeClockWithExtraData(OptionalParameterTestFixture):
@@ -4117,7 +4190,7 @@ class SetIdentifyDeviceWithNoData(ResponderTestFixture):
 
   def Test(self):
     self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
   def ResetState(self):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('identify_state')])
@@ -4152,7 +4225,7 @@ class GetSubDeviceIdentifyDevice(ResponderTestFixture):
   REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._GetIdentifyDevice()
 
@@ -4299,7 +4372,7 @@ class GetSelfTestDescription(OptionalParameterTestFixture):
       self.AddAdvisory(
           'Description field in self test description for test number %d '
           'contains unprintable characters, was %s' %
-          (1, fields['description'].encode('string-escape')))
+          (1, StringEscape(fields['description'])))
 
 
 class GetSelfTestDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
@@ -4357,8 +4430,7 @@ class FindSelfTests(OptionalParameterTestFixture):
         self.AddAdvisory(
             'Description field in self test description for test number %d '
             'contains unprintable characters, was %s' %
-            (fields['test_number'],
-             fields['description'].encode('string-escape')))
+            (fields['test_number'], StringEscape(fields['description'])))
 
 
 class SetSelfTestDescription(TestMixins.UnsupportedSetMixin,
@@ -5722,7 +5794,7 @@ class GetDimmerInfo(OptionalParameterTestFixture):
     if self.LookupPid(pid_name).value in self.Property('supported_parameters'):
       return
 
-    for key, expected_value in keys.iteritems():
+    for key, expected_value in keys.items():
       if fields[key] != expected_value:
         self.AddWarning(
             "%s isn't supported but %s in DIMMER_INFO was not %hx" %
@@ -6120,7 +6192,7 @@ class SetCurve(OptionalParameterTestFixture):
   def Test(self):
     curves = self.Property('number_curves')
     if curves:
-      self.curves = [i + 1 for i in xrange(curves)]
+      self.curves = [i + 1 for i in range(curves)]
       self._SetCurve()
     else:
       # Check we get a NR_UNKNOWN_PID
@@ -6293,7 +6365,7 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
   def Test(self):
     times = self.Property('number_response_options')
     if times:
-      self.output_response_times = [i + 1 for i in xrange(times)]
+      self.output_response_times = [i + 1 for i in range(times)]
       self._SetOutputResponseTime()
     else:
       # Check we get a NR_UNKNOWN_PID
@@ -6473,7 +6545,7 @@ class SetModulationFrequency(OptionalParameterTestFixture):
   def Test(self):
     items = self.Property('number_modulation_frequencies')
     if items:
-      self.frequencies = [i + 1 for i in xrange(items)]
+      self.frequencies = [i + 1 for i in range(items)]
       self._SetModulationFrequency()
     else:
       # Check we get a NR_UNKNOWN_PID
@@ -6653,19 +6725,19 @@ class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
     self.SetProperty('preset_info', fields)
     self.SetProperty('max_scene_number', fields['max_scene_number'])
 
-  def CrossCheckPidSupportIsZero(self, pid_name, fields, key):
-    if not (self.IsSupported(pid_name) or fields[key] is False):
+  def CrossCheckPidSupportIsZero(self, pid_name, fields, field_name):
+    if not (self.IsSupported(pid_name) or fields[field_name] is False):
       self.AddWarning('%s not supported, but %s in PRESET_INFO is non-0' %
-                      (pid_name, key))
+                      (pid_name, field_name))
 
-  def CrossCheckPidSupportIsMax(self, pid_name, fields, key):
-    for key in ['min_%s' % key, 'max_%s' % key]:
+  def CrossCheckPidSupportIsMax(self, pid_name, fields, base_name):
+    for field_name in ['min_%s' % base_name, 'max_%s' % base_name]:
       if not (self.IsSupported(pid_name) or
-              fields[key] == self.pid.GetResponseField(
-                  RDM_GET, key).DisplayValue(0xffff)):
+              fields[field_name] == self.pid.GetResponseField(
+                  RDM_GET, field_name).DisplayValue(0xffff)):
         self.AddWarning(
             '%s not supported, but %s in PRESET_INFO is not 0xffff' %
-            (pid_name, key))
+            (pid_name, field_name))
 
   def IsSupported(self, pid_name):
     pid = self.LookupPid(pid_name)
@@ -6901,7 +6973,7 @@ class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
     self.scene = None
     scene_writable_states = self.Property('scene_writable_states')
     if scene_writable_states is not None:
-      for scene_number, is_writeable in scene_writable_states.iteritems():
+      for scene_number, is_writeable in scene_writable_states.items():
         if not is_writeable:
           self.scene = scene_number
           break
@@ -6939,7 +7011,7 @@ class SetPresetStatus(OptionalParameterTestFixture):
     self.scene = None
     scene_writable_states = self.Property('scene_writable_states')
     if scene_writable_states is not None:
-      for scene_number, is_writeable in scene_writable_states.iteritems():
+      for scene_number, is_writeable in scene_writable_states.items():
         if is_writeable:
           self.scene = scene_number
           break
@@ -6960,7 +7032,7 @@ class SetPresetStatus(OptionalParameterTestFixture):
     self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
     self.SendSet(ROOT_DEVICE, self.pid,
                  [self.scene, self.max_fade, self.max_fade, self.max_wait,
-                   False])
+                  False])
 
   def VerifySet(self):
     self.AddExpectedResults(self.AckGetResult(field_values={
@@ -6982,7 +7054,7 @@ class ClearPresetStatus(OptionalParameterTestFixture):
     self.scene = None
     scene_writable_states = self.Property('scene_writable_states')
     if scene_writable_states is not None:
-      for scene_number, is_writeable in scene_writable_states.iteritems():
+      for scene_number, is_writeable in scene_writable_states.items():
         if is_writeable:
           self.scene = scene_number
           break

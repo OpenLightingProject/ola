@@ -28,14 +28,25 @@
 #                                  SUPPORTED_PARAMETERS
 
 import logging
+import sys
 import time
-from ExpectedResults import (AckDiscoveryResult, AckGetResult, AckSetResult,
-                             NackDiscoveryResult, NackGetResult, NackSetResult)
-from TestCategory import TestCategory
-from TestState import TestState
-from TimingStats import TimingStats
-from ola import PidStore
+
 from ola.OlaClient import OlaClient, RDMNack
+from ola.StringUtils import StringEscape
+from ola.testing.rdm.ExpectedResults import (AckDiscoveryResult, AckGetResult,
+                                             AckSetResult, NackDiscoveryResult,
+                                             NackGetResult, NackSetResult)
+from ola.testing.rdm.TestCategory import TestCategory
+from ola.testing.rdm.TestState import TestState
+from ola.testing.rdm.TimingStats import TimingStats
+
+from ola import PidStore
+
+if sys.version_info >= (3, 0):
+  try:
+    unicode
+  except NameError:
+    unicode = str
 
 '''Automated testing for RDM responders.'''
 
@@ -443,7 +454,7 @@ class ResponderTestFixture(TestFixture):
                                args,
                                include_frames=True)
 
-  def SendRawDiscovery(self, sub_device, pid, data=""):
+  def SendRawDiscovery(self, sub_device, pid, data=b''):
     """Send a raw Discovery request.
 
     Args:
@@ -493,7 +504,7 @@ class ResponderTestFixture(TestFixture):
                              include_frames=True)
     return ret_code
 
-  def SendRawGet(self, sub_device, pid, data=""):
+  def SendRawGet(self, sub_device, pid, data=b''):
     """Send a raw GET request.
 
     Args:
@@ -545,7 +556,7 @@ class ResponderTestFixture(TestFixture):
       self.SleepAfterBroadcastSet()
     return ret_code
 
-  def SendRawSet(self, sub_device, pid, data=""):
+  def SendRawSet(self, sub_device, pid, data=b''):
     """Send a raw SET request.
 
     Args:
@@ -681,18 +692,18 @@ class ResponderTestFixture(TestFixture):
     self._LogFrameTiming(response)
     return True
 
-  def _EscapeData(self, data):
+  @staticmethod
+  def _EscapeData(data):
     if type(data) == list:
-      return [self._EscapeData(i) for i in data]
+      return [ResponderTestFixture._EscapeData(i) for i in data]
     elif type(data) == dict:
       d = {}
-      for k, v in data.iteritems():
-        d[k] = self._EscapeData(v)
+      for k, v in data.items():
+        # We can't escape the key as then it may become a new key
+        d[k] = ResponderTestFixture._EscapeData(v)
       return d
-    elif type(data) == str:
-      return data.encode('string-escape')
-    elif type(data) == unicode:
-      return data.encode('unicode-escape')
+    elif type(data) == str or type(data) == unicode:
+      return StringEscape(data)
     else:
       return data
 

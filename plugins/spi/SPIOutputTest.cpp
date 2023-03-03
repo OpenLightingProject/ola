@@ -82,7 +82,7 @@ void SPIOutputTest::setUp() {
 }
 
 /**
- * Check the descrption, start address & personality.
+ * Check the description, start address & personality.
  */
 void SPIOutputTest::testDescription() {
   FakeSPIBackend backend(2);

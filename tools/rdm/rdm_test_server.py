@@ -16,7 +16,8 @@
 # rdm_test_server.py
 # Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
 
-import cgi
+from __future__ import print_function
+
 import json
 import logging
 import mimetypes
@@ -27,24 +28,32 @@ import stat
 import sys
 import textwrap
 import traceback
-import urlparse
-
 from datetime import datetime
 from optparse import OptionParser
 from threading import Condition, Event, Lock, Thread
 from time import time
 from wsgiref.simple_server import make_server
-from ola.UID import UID
+
 from ola.ClientWrapper import ClientWrapper, SelectServer
 from ola.OlaClient import OlaClient, OLADNotRunningException
-from ola import PidStore
+from ola.testing.rdm import (DataLocation, TestDefinitions, TestLogger,
+                             TestRunner)
 from ola.testing.rdm.DMXSender import DMXSender
-from ola.testing.rdm import DataLocation
-from ola.testing.rdm import TestDefinitions
-from ola.testing.rdm import TestLogger
-from ola.testing.rdm import TestRunner
 from ola.testing.rdm.ModelCollector import ModelCollector
 from ola.testing.rdm.TestState import TestState
+from ola.UID import UID
+
+from ola import PidStore
+
+try:
+  import urllib.parse as urlparse
+except ImportError:
+  import urlparse
+
+try:
+  from html import escape
+except ImportError:
+  from cgi import escape
 
 
 __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
@@ -394,7 +403,10 @@ class HTTPRequest(object):
       request_body = self._environ['wsgi.input'].read(request_body_size)
       post_params = urlparse.parse_qs(request_body)
       for p in post_params:
-        self._post_params[p] = post_params[p][0]
+        # In Python 3, the param name and value is a bytestring not a string,
+        # so convert it for backwards compatibility and sanity
+        self._post_params[p.decode('utf-8')] = (
+            post_params[p][0].decode('utf-8'))
     return self._post_params.get(param, default)
 
 
@@ -423,7 +435,7 @@ class HTTPResponse(object):
 
   def GetHeaders(self):
     headers = []
-    for header, value in self._headers.iteritems():
+    for header, value in self._headers.items():
       headers.append((header, value))
     return headers
 
@@ -496,7 +508,7 @@ class JsonRequestHandler(RequestHandler):
 
     try:
       json_data = self.GetJson(request, response)
-      response.AppendData(json.dumps(json_data, sort_keys=True))
+      response.AppendData(json.dumps(json_data, sort_keys=True).encode())
     except ServerException as e:
       # For JSON requests, rather than returning 500s we return the error as
       # JSON
@@ -505,7 +517,7 @@ class JsonRequestHandler(RequestHandler):
           'status': False,
           'error': str(e),
       }
-      response.AppendData(json.dumps(json_data, sort_keys=True))
+      response.AppendData(json.dumps(json_data, sort_keys=True).encode())
 
   def RaiseExceptionIfMissing(self, request, param):
     """Helper method to raise an exception if the param is missing."""
@@ -540,7 +552,7 @@ class OLAServerRequestHandler(JsonRequestHandler):
           'status': False,
           'error': 'The OLA Server instance is no longer running',
       }
-      response.AppendData(json.dumps(json_data, sort_keys=True))
+      response.AppendData(json.dumps(json_data, sort_keys=True).encode())
 
 
 class TestDefinitionsHandler(JsonRequestHandler):
@@ -635,7 +647,6 @@ class DownloadModelDataHandler(RequestHandler):
   """Take the data in the form and return it as a downloadable file."""
 
   def HandleRequest(self, request, response):
-    print dir(request)
     model_data = request.PostParam('model_data') or ''
     logging.info(model_data)
 
@@ -645,7 +656,7 @@ class DownloadModelDataHandler(RequestHandler):
                        'attachment; filename="%s"' % filename)
     response.SetHeader('Content-type', 'text/plain')
     response.SetHeader('Content-length', '%d' % len(model_data))
-    response.AppendData(model_data)
+    response.AppendData(model_data.encode())
 
 
 class DownloadResultsHandler(RequestHandler):
@@ -681,7 +692,7 @@ class DownloadResultsHandler(RequestHandler):
                        'attachment; filename="%s"' % filename)
     response.SetHeader('Content-type', 'text/plain')
     response.SetHeader('Content-length', '%d' % len(output))
-    response.AppendData(output)
+    response.AppendData(output.encode())
 
 
 class RunTestsHandler(OLAServerRequestHandler):
@@ -888,10 +899,13 @@ class RunTestsHandler(OLAServerRequestHandler):
           'definition': test.__str__(),
           'state': state,
           'category': category,
-          'warnings': [cgi.escape(w) for w in test.warnings],
-          'advisories': [cgi.escape(a) for a in test.advisories],
-          'debug': [cgi.escape(d) for d in test._debug],
-          'doc': cgi.escape(test.__doc__),
+          # TODO(Peter): Check if we actually want this to be false or not!
+          # I think the JSON dump stuff handles it so it doesn't matter either
+          # way.
+          'warnings': [escape(w, False) for w in test.warnings],
+          'advisories': [escape(a, False) for a in test.advisories],
+          'debug': [escape(d, False) for d in test._debug],
+          'doc': escape(test.__doc__, False),
         }
       )
 

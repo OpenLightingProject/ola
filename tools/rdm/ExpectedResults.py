@@ -18,12 +18,18 @@
 # Expected result classes are broken down as follows:
 #
 # BaseExpectedResult - the base class
-#  BroadcastResult   - expects the request to be broadcast
+#  BroadcastResult   - expects the request to be broadcast, hence no response
+#  TimeoutResult     - expects the response to be a timeout
+#  InvalidResult     - expects the response to be invalid
+#  UnsupportedResult - expects RDM Discovery to be unsupported
+#  DUBResult         - expects an RDM DUB response
 #  SuccessfulResult  - expects a well formed response from the device
 #   NackResult       - parent NACK class
+#    NackDiscoveryResult - expects DISCOVERY_COMMAND_RESPONSE with a NACK
 #    NackGetResult   - expects GET_COMMAND_RESPONSE with a NACK
 #    NackSetResult   - expects SET_COMMAND_RESPONSE with a NACK
 #   AckResult        - parent ACK class
+#    AckDiscoveryResult - expects DISCOVERY_COMMAND_RESPONSE with an ACK
 #    AckGetResult    - expects GET_COMMAND_RESPONSE with an ACK
 #    AckSetResult    - expects SET_COMMAND_RESPONSE with an ACK
 #   QueuedMessageResult - expects an ACK or NACK for any PID other than
@@ -54,11 +60,11 @@ class BaseExpectedResult(object):
 
     Args:
       action: The action to run if this result matches
-      warning: A warning message to log is this result matches
-      advisory: An advisory message to log is this result matches
+      warning: A warning message to log if this result matches
+      advisory: An advisory message to log if this result matches
     """
     self._action = action
-    self._warning_messae = warning
+    self._warning_message = warning
     self._advisory_message = advisory
 
   @property
@@ -67,7 +73,7 @@ class BaseExpectedResult(object):
 
   @property
   def warning(self):
-    return self._warning_messae
+    return self._warning_message
 
   @property
   def advisory(self):
@@ -134,8 +140,8 @@ class SuccessfulResult(BaseExpectedResult):
   """This checks that we received a valid response from the device.
 
   This doesn't check that the response was a certain type, but simply that the
-  message was formed correctly. Other classes inherit from this an perform more
-  specific checking.
+  message was formed correctly. Other classes inherit from this and perform
+  more specific checking.
   """
   def __str__(self):
     return 'RDM_COMPLETED_OK'
@@ -337,7 +343,7 @@ class AckResult(SuccessfulResult):
         if field not in field_keys:
           return False
 
-    for field, value in self._field_values.iteritems():
+    for field, value in self._field_values.items():
       if field not in unpacked_data:
         return False
       if value != unpacked_data[field]:

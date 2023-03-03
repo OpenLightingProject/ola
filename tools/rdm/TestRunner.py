@@ -19,12 +19,16 @@ import datetime
 import inspect
 import logging
 import time
-from TestState import TestState
-from TimingStats import TimingStats
-from ola import PidStore
+
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
-from ola.testing.rdm import ResponderTest
+from ola.testing.rdm.ResponderTest import (OptionalParameterTestFixture,
+                                           ParamDescriptionTestFixture,
+                                           ResponderTestFixture, TestFixture)
+from ola.testing.rdm.TestState import TestState
+from ola.testing.rdm.TimingStats import TimingStats
+
+from ola import PidStore
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
@@ -196,15 +200,18 @@ def GetTestClasses(module):
     if not inspect.isclass(cls):
       continue
     base_classes = [
-        ResponderTest.OptionalParameterTestFixture,
-        ResponderTest.ParamDescriptionTestFixture,
-        ResponderTest.ResponderTestFixture,
-        ResponderTest.TestFixture
+        OptionalParameterTestFixture,
+        ParamDescriptionTestFixture,
+        ResponderTestFixture,
+        TestFixture
     ]
 
     if cls in base_classes:
       continue
-    if issubclass(cls, ResponderTest.TestFixture):
+    # This seems to confuse Python 3 if we compare it to
+    # ResponderTest.TestFixture, some sort of diamond inheritance issue?
+    # So test for the base version of it instead
+    if issubclass(cls, TestFixture):
       classes.append(cls)
   return classes
 
@@ -276,7 +283,7 @@ class TestRunner(object):
 
     Returns:
       A tuple in the form (tests, device), where tests is a list of tests that
-      exectuted, and device is an instance of DeviceProperties.
+      executed, and device is an instance of DeviceProperties.
     """
     device = DeviceProperties(self._property_map.keys())
     if whitelist is None:
@@ -426,9 +433,9 @@ class TestRunner(object):
     tests = []
 
     remaining_tests = [
-        test for test, deps in deps_dict.iteritems() if len(deps)]
+        test for test, deps in deps_dict.items() if len(deps)]
     no_deps = set(
-        test for test, deps in deps_dict.iteritems() if len(deps) == 0)
+        test for test, deps in deps_dict.items() if len(deps) == 0)
 
     while len(no_deps) > 0:
       current_test = no_deps.pop()

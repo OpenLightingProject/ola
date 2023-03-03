@@ -1,0 +1,238 @@
+name: lint
+on: [push, pull_request]
+jobs:
+  build:
+    name: Build for Lint Tasks
+    runs-on: ubuntu-latest
+    container: debian:stable
+    steps:
+      - name: Update package database
+        run: apt-get update -y
+      # See comments beginning at
+      # https://github.com/actions/runner/issues/763#issuecomment-1435474884
+      # Without Git, actions/checkout@v3 will resort to REST and will not
+      # create a .git folder or .git.config. The Problem Matcher looks for
+      # .git/config to find where the root of the repo is, so it must be
+      # present.
+      - name: Install Git
+        run: apt-get -y install git
+      - uses: actions/checkout@v3
+      - name: Install build tools
+        shell: bash
+        run: |
+          apt-get -y install pkg-config libtool autoconf \
+            automake g++ bison flex make bash-completion dh-autoreconf \
+            debhelper devscripts wget python3-pip
+      - name: Install Python lint tools
+        run: python3 -m pip install --no-input cpplint flake8
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
+            libmicrohttpd-dev protobuf-compiler python3-protobuf \
+            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
+            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
+      - name: Autoreconf
+        run: autoreconf -i
+      - name: Configure
+        run: ./configure --enable-rdm-tests --enable-ja-rule --enable-e133
+      - name: Build builtfiles
+        run: make builtfiles VERBOSE=1
+      - name: Display structure of the built files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Archive artifacts to speed up slow GH Actions upload/download
+        shell: bash
+        # If the file does not exist when tar excludes it, then it will not
+        # actually exclude it, so it must first be touched
+        run: |
+          touch ola-debian-stable-built-source-tree.tar.gz
+          tar --exclude=ola-debian-stable-built-source-tree.tar.gz -cvzf ola-debian-stable-built-source-tree.tar.gz .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: ola-debian-stable-built-source-tree.tar.gz
+  check-licences:
+    name: Check Licences
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
+      - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install Python
+        run: apt-get -y install python3 python-is-python3
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::.github/problem-matcher-lint-check-licences.json"
+      - name: Check licenses
+        shell: bash
+        run: ./scripts/enforce_licence.py
+  generic-nolints:
+    name: Count generic NOLINTs
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
+      - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::.github/problem-matcher-lint-generic-nolints.json"
+      - name: Count the number of generic NOLINTs
+        shell: bash
+        run: ./scripts/count_generic_nolints.sh
+  cpplint:
+    name: cpplint
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
+      - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install build tools
+        shell: bash
+        run: |
+          apt-get -y install make python3-pip
+      - name: Install Python lint tools
+        run: python3 -m pip install --no-input cpplint
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::.github/problem-matcher-lint-cpplint.json"
+      - name: cpplint
+        run: make cpplint VERBOSE=1
+  flake8:
+    name: flake8
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
+      - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install build tools
+        shell: bash
+        run: |
+          apt-get -y install make python3-pip
+      - name: Install Python lint tools
+        run: python3 -m pip install --no-input flake8
+      - name: Setup flake8 annotations
+        uses: rbialon/flake8-annotations@v1
+      - name: flake8
+        run: make flake8 VERBOSE=1
+  spellintian:
+    name: spellintian
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
+      - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install lint tools
+        run: apt-get -y install moreutils lintian
+      - name: Enable Problem Matcher for GitHub annotations
+        run: echo "::add-matcher::.github/problem-matcher-lint-spellintian.json"
+      - name: spellintian
+        run: ./scripts/spelling.sh spellintian
+  codespell:
+    name: codespell
+    runs-on: ubuntu-latest
+    container: debian:stable
+    needs: build
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-debian-stable-built-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-debian-stable-built-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-debian-stable-built-source-tree.tar.gz .
+          rm ola-debian-stable-built-source-tree.tar.gz
+      - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install lint tools
+        run: apt-get -y install python3-pip git moreutils
+      - name: Install Python lint tools
+        run: python3 -m pip install --no-input git+https://github.com/codespell-project/codespell.git
+      - name: Setup codespell annotations
+        uses: codespell-project/codespell-problem-matcher@v1
+      - name: codespell
+        run: ./scripts/spelling.sh codespell

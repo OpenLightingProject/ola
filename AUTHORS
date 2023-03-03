@@ -24,6 +24,7 @@ Contributors:
   Nicolas, for the win32 port of libartnet
   Nicolas Bertrand, added ShowJockey DMX-U1 support
   Nils Van Zuijlen, typos and python lib small update
+  Perry Naseck, EPoll delay fix, various GitHub Actions CI workflows
   Peter Newman, MilInst Plugin, Scanlime Fadecandy support and numerous fixes
   Ravindra Nath Kakarla, RDM Test Server (Google Summer of Code 2012)
   Rowan Maclachlan (hippy) for various changes

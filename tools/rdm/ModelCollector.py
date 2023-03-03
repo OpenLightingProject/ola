@@ -15,10 +15,14 @@
 # ModelCollector.py
 # Copyright (C) 2011 Simon Newton
 
+from __future__ import print_function
+
 import logging
-from ola import PidStore, RDMConstants
+
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
+
+from ola import PidStore, RDMConstants
 
 '''Quick script to collect information about responders.'''
 
@@ -52,7 +56,7 @@ class ModelCollector(object):
    LANGUAGES,
    SLOT_INFO,
    SLOT_DEFAULT_VALUE,
-   SLOT_DESCRIPTION) = xrange(14)
+   SLOT_DESCRIPTION) = range(14)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -105,7 +109,7 @@ class ModelCollector(object):
     if this_device:
       software_versions = this_device['software_versions']
       if software_versions.keys():
-        return software_versions[software_versions.keys()[0]]
+        return software_versions[list(software_versions.keys())[0]]
     return None
 
   def _GetPersonality(self, personality):
@@ -217,7 +221,7 @@ class ModelCollector(object):
           'sensors': [],
       }
 
-      self.personalities = list(xrange(1, data['personality_count'] + 1))
+      self.personalities = list(range(1, data['personality_count'] + 1))
       if self.personalities:
         # If we have personalities populate the basic data structure to add the
         # other info to
@@ -230,16 +234,16 @@ class ModelCollector(object):
         this_personality = self._GetCurrentPersonality()
         if this_personality is not None:
           this_personality['slot_count'] = data['dmx_footprint']
-      self.slots.update(xrange(0, data['dmx_footprint']))
+      self.slots.update(range(0, data['dmx_footprint']))
       logging.debug("Populated %d slots from device info"
                     % (data['dmx_footprint']))
-      self.sensors = list(xrange(0, data['sensor_count']))
+      self.sensors = list(range(0, data['sensor_count']))
       self._NextState()
     else:
       # We need software version to do anything, so abort and move onto the
       # next responder
-      print ('Failed to get device info for UID %s so moving onto the next one'
-             % self.uid)
+      print('Failed to get device info for UID %s so moving onto the next one'
+            % self.uid)
       self._FetchNextUID()
 
   def _HandleDeviceLabel(self, data):
@@ -286,7 +290,7 @@ class ModelCollector(object):
         this_device = self._GetDevice()
         if (this_device and
             (this_device['current_personality'] == data['personality'])):
-          self.slots.update(xrange(0, data['slots_required']))
+          self.slots.update(range(0, data['slots_required']))
           logging.debug("Populated %d slots from personality description"
                         % (data['slots_required']))
     self._FetchNextPersonality()
@@ -338,8 +342,8 @@ class ModelCollector(object):
     if not this_version:
       # We need software version to do anything, so abort and move onto the
       # next responder
-      print ('Failed to get software version for UID %s so moving onto the '
-             'next one' % self.uid)
+      print('Failed to get software version for UID %s so moving onto the '
+            'next one' % self.uid)
       self._FetchNextUID()
     for language in data['languages']:
       this_version['languages'].append(language['language'])
@@ -385,8 +389,8 @@ class ModelCollector(object):
       if not self._GetVersion():
         # We need software version to do anything, so abort and move onto the
         # next responder
-        print ('Failed to get software version for UID %s so moving onto the '
-               'next one' % self.uid)
+        print('Failed to get software version for UID %s so moving onto the '
+              'next one' % self.uid)
         self._FetchNextUID()
       else:
         # fetch device label
@@ -591,21 +595,22 @@ class ModelCollector(object):
     # at this stage the response is either a ack or nack
     if (response.pid == self.pid_store.GetName('SLOT_DESCRIPTION').value or
         response.pid == self.pid_store.GetName('PARAMETER_DESCRIPTION').value):
-      # We have to allow nacks from any iterating PIDs, as they may not respond
-      # for every iteration; display the errors for information
+      # We have to allow nacks or other failures from any iterating PIDs, as
+      # they may not respond for every iteration; display the errors for
+      # information
       if (response.response_type == OlaClient.RDM_NACK_REASON):
-        print ('Got nack with reason for PID %s: %s' %
-               (response.pid, response.nack_reason))
+        print('Got nack with reason for PID %s: %s' %
+              (response.pid, response.nack_reason))
       elif unpack_exception:
-        print ('Unpack error: %s' % (unpack_exception))
+        print('Unpack error: %s' % (unpack_exception))
       self._HandleResponse(unpacked_data)
     else:
       if (response.response_type == OlaClient.RDM_NACK_REASON):
-        print ('Got nack with reason for PID %s: %s' %
-               (response.pid, response.nack_reason))
+        print('Got nack with reason for PID %s: %s' %
+              (response.pid, response.nack_reason))
         self._NextState()
       elif unpack_exception:
-        print ('Unpack error: %s' % (unpack_exception))
+        print('Unpack error: %s' % (unpack_exception))
         self._NextState()
       else:
         self._HandleResponse(unpacked_data)
@@ -629,11 +634,11 @@ class ModelCollector(object):
         logging.debug('Device doesn\'t support queued messages')
         self._NextState()
       else:
-        print ('Got nack for 0x%04hx with reason: %s' %
-               (response.pid, response.nack_reason))
+        print('Got nack for 0x%04hx with reason: %s' %
+              (response.pid, response.nack_reason))
 
     elif unpack_exception:
-      print ('Invalid Param data: %s' % unpack_exception)
+      print('Invalid Param data: %s' % unpack_exception)
       self.queued_message_failures += 1
       if self.queued_message_failures >= 10:
         # declare this bad and move on
@@ -667,12 +672,12 @@ class ModelCollector(object):
       True if this response was an ACK or NACK, False for all other cases.
     """
     if not response.status.Succeeded():
-      print ('Status: %s' % response.status.message)
+      print('Status: %s' % response.status.message)
       self.wrapper.Stop()
       return False
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      print ('Got RDM failure: %s' % response.ResponseCodeAsString())
+      print('Got RDM failure: %s' % response.ResponseCodeAsString())
       self.wrapper.Stop()
       return False
 

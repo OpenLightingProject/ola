@@ -17,18 +17,19 @@
 # Holds all the information about RDM PIDs
 
 from __future__ import print_function
+
 import binascii
 import math
 import os
 import socket
 import struct
 import sys
+
 from google.protobuf import text_format
-from ola import PidStoreLocation
-from ola import Pids_pb2
 from ola.MACAddress import MACAddress
-from ola import RDMConstants
 from ola.UID import UID
+
+from ola import Pids_pb2, PidStoreLocation, RDMConstants
 
 """The PID Store."""
 
@@ -44,7 +45,7 @@ ROOT_DEVICE = 0
 MAX_VALID_SUB_DEVICE = 0x0200
 ALL_SUB_DEVICES = 0xffff
 
-# The two types of commands classes
+# The different types of commands classes
 RDM_GET, RDM_SET, RDM_DISCOVERY = range(3)
 
 
@@ -53,7 +54,7 @@ class Error(Exception):
 
 
 class InvalidPidFormat(Error):
-  "Indicates the PID data file was invalid."""
+  """Indicates the PID data file was invalid."""
 
 
 class PidStructureException(Error):
@@ -471,7 +472,7 @@ class IntAtom(FixedSizeAtom):
         raise ArgsValidationError(
             'Conversion will lose data: %d -> %d' %
             (new_value, (new_value / multiplier * multiplier)))
-      new_value = new_value / multiplier
+      new_value = int(new_value / multiplier)
 
     else:
       try:
@@ -649,6 +650,12 @@ class String(Atom):
     arg = args[0]
     arg_size = len(arg)
 
+    # Handle the fact a UTF-8 character could be multi-byte
+    if sys.version_info >= (3, 2):
+      arg_size = max(arg_size, len(bytes(arg, 'utf-8')))
+    else:
+      arg_size = max(arg_size, len(arg.encode('utf-8')))
+
     if self.max is not None and arg_size > self.max:
       raise ArgsValidationError('%s can be at most %d,' %
                                 (self.name, self.max))
@@ -658,7 +665,10 @@ class String(Atom):
                                 (self.name, self.min))
 
     try:
-      data = struct.unpack('%ds' % arg_size, arg)
+      if sys.version_info >= (3, 2):
+        data = struct.unpack('%ds' % arg_size, bytes(arg, 'utf-8'))
+      else:
+        data = struct.unpack('%ds' % arg_size, arg.encode('utf-8'))
     except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data[0], 1
@@ -678,7 +688,12 @@ class String(Atom):
     except struct.error as e:
       raise UnpackException(e)
 
-    return value[0].rstrip('\x00')
+    try:
+      value = value[0].rstrip(b'\x00').decode('utf-8')
+    except UnicodeDecodeError as e:
+      raise UnpackException(e)
+
+    return value
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
@@ -820,10 +835,10 @@ class Group(Atom):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
 
-      return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
     elif self._group_size == 0:
-      return '', 0
+      return b'', 0
     else:
       # this could be groups of fields, but we don't support that yet
       data = []
@@ -836,7 +851,7 @@ class Group(Atom):
       if arg_offset < len(args):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
-      return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
   def Unpack(self, data):
     """Unpack binary data.
@@ -884,7 +899,7 @@ class Group(Atom):
             'Too many repeated group_count for %s (%s), limit is %d, found %d' %
             (self.name, self.__str__, self.max, group_count))
 
-      if self.max is not None and group_count < self.min:
+      if self.min is not None and group_count < self.min:
         raise UnpackException(
             'Too few repeated group_count for %s (%s), limit is %d, found %d' %
             (self.name, self.__str__, self.min, group_count))

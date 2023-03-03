@@ -311,8 +311,10 @@ bool EPoller::Poll(TimeoutManager *timeout_manager,
   }
 
   int ms_to_sleep = sleep_interval.InMilliSeconds();
+  // If we haven't been asked to wait as part of the poll interval, then don't
+  // wait in the epoll to allow for fast streaming
   int ready = epoll_wait(m_epoll_fd, reinterpret_cast<epoll_event*>(&events),
-                         MAX_EVENTS, ms_to_sleep ? ms_to_sleep : 1);
+                         MAX_EVENTS, ms_to_sleep ? ms_to_sleep : 0);
 
   if (ready == 0) {
     m_clock->CurrentMonotonicTime(&m_wake_up_time);
