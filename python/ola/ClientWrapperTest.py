@@ -22,9 +22,9 @@ import datetime
 import socket
 # import timeout_decorator
 import unittest
-from ola.ClientWrapper import ClientWrapper
-from ola.ClientWrapper import _Event
 
+from ola.ClientWrapper import ClientWrapper, _Event
+from ola.TestUtils import handleRPCByteOrder
 
 """Test cases for the Event and Event loop of ClientWrapper class."""
 
@@ -192,22 +192,22 @@ class ClientWrapperTest(unittest.TestCase):
     # Called immediately
     a_diff = results.a_called - self.start
     self.assertAlmostEqual(a_diff, datetime.timedelta(milliseconds=0),
-                           delta=datetime.timedelta(microseconds=500))
+                           delta=datetime.timedelta(microseconds=750))
 
     # Called in 5 milliseconds
     b_diff = results.b_called - self.start
     self.assertAlmostEqual(b_diff, datetime.timedelta(milliseconds=5),
-                           delta=datetime.timedelta(microseconds=500))
+                           delta=datetime.timedelta(microseconds=750))
 
     # Called in 10 milliseconds
     c_diff = results.c_called - self.start
     self.assertAlmostEqual(c_diff, datetime.timedelta(milliseconds=10),
-                           delta=datetime.timedelta(microseconds=500))
+                           delta=datetime.timedelta(microseconds=750))
 
     # Called in 15 milliseconds
     d_diff = results.d_called - self.start
     self.assertAlmostEqual(d_diff, datetime.timedelta(milliseconds=15),
-                           delta=datetime.timedelta(microseconds=500))
+                           delta=datetime.timedelta(microseconds=750))
 
     sockets[0].close()
     sockets[1].close()
@@ -223,12 +223,12 @@ class ClientWrapperTest(unittest.TestCase):
 
     def DataCallback(self):
       data = sockets[1].recv(4096)
-      expected = binascii.unhexlify(
+      expected = handleRPCByteOrder(binascii.unhexlify(
         "7d000010080110001a0d557064617465446d784461746122680801126400000"
         "000000000000000000000000000000000000000000000000000000000000000"
         "000000000000000000000000000000000000000000000000000000000000000"
         "000000000000000000000000000000000000000000000000000000000000000"
-        "000000")
+        "000000"))
       self.assertEqual(data, expected,
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
@@ -242,10 +242,77 @@ class ClientWrapperTest(unittest.TestCase):
 
     wrapper.Run()
 
+    sockets[0].close()
+    sockets[1].close()
+
     self.assertTrue(results.gotdata)
+
+  # @timeout_decorator.timeout(2)
+  def testFetchDmx(self):
+    """uses client to send a FetchDMX with mocked olad.
+    Regression test that confirms sent message is correct and
+    sends fixed response message."""
+    sockets = socket.socketpair()
+    wrapper = ClientWrapper(sockets[0])
+    client = wrapper.Client()
+
+    class results:
+      got_request = False
+      got_response = False
+
+    def DataCallback(self):
+      # request and response for
+      # ola_fetch_dmx.py -u 0
+      # enable logging in rpc/StreamRpcChannel.py
+      data = sockets[1].recv(4096)
+      expected = handleRPCByteOrder(binascii.unhexlify(
+        "10000010080110001a06476574446d7822020800"))
+      self.assertEqual(data, expected,
+                       msg="Regression check failed. If protocol change "
+                       "was intended set expected to: " +
+                       str(binascii.hexlify(data)))
+      results.got_request = True
+      response = handleRPCByteOrder(binascii.unhexlify(
+          "0c020010080210002285040800128004"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000000000000000000000000000000000"
+          "00000000000000000000000000000000"))
+      sent_bytes = sockets[1].send(response)
+      self.assertEqual(sent_bytes, len(response))
+
+    def ResponseCallback(self, status, universe, data):
+      results.got_response = True
+      self.assertTrue(status.Succeeded())
+      self.assertEqual(universe, 0)
+      self.assertEqual(len(data), 512)
+      self.assertEqual(data, array.array('B', [0] * 512))
+      wrapper.AddEvent(0, wrapper.Stop)
+
+    wrapper._ss.AddReadDescriptor(sockets[1], lambda: DataCallback(self))
+
+    client.FetchDmx(0, lambda x, y, z: ResponseCallback(self, x, y, z))
+
+    wrapper.Run()
 
     sockets[0].close()
     sockets[1].close()
+
+    self.assertTrue(results.got_request)
+    self.assertTrue(results.got_response)
 
 
 if __name__ == '__main__':

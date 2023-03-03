@@ -12,7 +12,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-jscs": "^1.8.0",
     "grunt-stylelint": "^0.16.0",
-    "olp-javascript-style": "git://github.com/OpenLightingProject/javascript-style",
+    "olp-javascript-style": "OpenLightingProject/javascript-style",
     "stylelint": "^13.8.0",
     "stylelint-config-recommended": "^5.0.0"
   }

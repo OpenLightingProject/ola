@@ -20,15 +20,17 @@
 # doesn't stop
 
 from __future__ import print_function
+
 import getopt
-import rrdtool
-import time
 import os.path
 import re
 import socket
 import sys
 import textwrap
 import threading
+import time
+
+import rrdtool
 
 if sys.version_info >= (3, 0):
   try:
@@ -284,5 +286,5 @@ def main():
     thread.join()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

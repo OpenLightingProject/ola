@@ -2263,7 +2263,7 @@ pid {
     }
     field {
       type: STRING
-      name: "modulation_frequence_description"
+      name: "modulation_frequency_description"
       max_size: 32
     }
   }

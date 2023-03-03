@@ -183,6 +183,7 @@ libs/acn/e131_loadtest
 libs/acn/e131_loadtest.exe
 libs/acn/e131_transmit_test
 libs/acn/e131_transmit_test.exe
+ola-*/
 ola.spec
 olad/olad
 olad/olad.exe
@@ -204,6 +205,8 @@ python/ola/PidStoreTest.sh
 python/ola/RDMTest.sh
 python/ola/Version.py
 python/ola/rpc/SimpleRpcControllerTest.sh
+python/ola/testing/
+python/ola/testing/__init__.py
 slp/slp_client
 slp/slp_client.exe
 slp/slp_server
@@ -233,8 +236,10 @@ tools/ola_trigger/ola_trigger
 tools/ola_trigger/ola_trigger.exe
 tools/ola_trigger/FileValidateTest.sh
 tools/rdm/DataLocation.py
+tools/rdm/ExpectedResultsTest.sh
 tools/rdm/ResponderTestTest.sh
 tools/rdm/TestHelpersTest.sh
+tools/rdm/TestRunnerTest.sh
 tools/rdm/TestStateTest.sh
 tools/rdmpro/rdmpro_sniffer
 tools/rdmpro/rdmpro_sniffer.exe
