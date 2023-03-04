@@ -7,7 +7,7 @@ ola_rdm_get \- Get the value of a PID for an RDM device
 \fI--universe <universe> --uid <uid> <pid> <value>\fR
 .SH DESCRIPTION
 Get the value of a pid for a device.
-Use 'ola_rdm_get \fB\-\-list\-pids\fR' to get a list of pids.
+Use 'ola_rdm_get \fB\-\-list\-pids\fR' to get a list of applicable pids.
 .TP
 \fB\-\-frames\fR
 display the raw RDM frames if available.
@@ -21,7 +21,7 @@ the UID of the device to control.
 display this help message and exit.
 .TP
 \fB\-l\fR, \fB\-\-list\-pids\fR
-display a list of pids
+display a list of pids that support GET.
 .TP
 \fB\-p\fR, \fB\-\-pid\-location\fR
 the directory to read PID definitions from

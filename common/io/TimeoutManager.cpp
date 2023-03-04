@@ -97,8 +97,8 @@ TimeInterval TimeoutManager::ExecuteTimeouts(TimeStamp *now) {
   if (m_events.empty())
     return TimeInterval();
 
-  for (e = m_events.top(); !m_events.empty() && (e->NextTime() <= *now);
-       e = m_events.top()) {
+  // make sure we only try to access m_events.top() if m_events isn't empty
+  while (!m_events.empty() && ((e = m_events.top())->NextTime() <= *now)) {
     m_events.pop();
 
     // if this was removed, skip it
@@ -118,7 +118,7 @@ TimeInterval TimeoutManager::ExecuteTimeouts(TimeStamp *now) {
       if (m_export_map)
         (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
     }
-    m_clock->CurrentTime(now);
+    m_clock->CurrentMonotonicTime(now);
   }
 
   if (m_events.empty())

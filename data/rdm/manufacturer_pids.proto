@@ -7534,6 +7534,32 @@ manufacturer {
   }
 }
 manufacturer {
+  manufacturer_id: 21367
+  manufacturer_name: "SWISSON AG"
+  pid {
+    name: "SWPID_AUTO_UNIVERSE_NUMBER"
+    value: 32898
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "universe_number"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "universe_number"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
   manufacturer_id: 22355
   manufacturer_name: "Wireless Solution Sweden AB"
   pid {
@@ -9356,4 +9382,4 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
 }
-version: 1582652719
+version: 1605848134

@@ -75,7 +75,7 @@
 #define OLA_WARN OLA_LOG(ola::OLA_LOG_WARN)
 
 /**
- * Provide a stream to log an infomational message.
+ * Provide a stream to log an informational message.
  * @code
  *     OLA_INFO << "Reading configs from " << config_dir;
  * @endcode

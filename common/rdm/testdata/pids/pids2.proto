@@ -53,6 +53,23 @@ pid {
   }
   get_sub_device_range: ROOT_DEVICE
 }
+pid {
+  name: "SUPPORTED_PARAMETERS"
+  value: 80
+  get_request {
+  }
+  get_response {
+    field {
+      type: GROUP
+      name: "params"
+      field {
+        type: UINT16
+        name: "param_id"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
 manufacturer {
   manufacturer_id: 161
   manufacturer_name: "Creative Lighting And Sound Systems Pty Ltd."

@@ -293,7 +293,7 @@ bool EPoller::Poll(TimeoutManager *timeout_manager,
   epoll_event events[MAX_EVENTS];
   TimeInterval sleep_interval = poll_interval;
   TimeStamp now;
-  m_clock->CurrentTime(&now);
+  m_clock->CurrentMonotonicTime(&now);
 
   TimeInterval next_event_in = timeout_manager->ExecuteTimeouts(&now);
   if (!next_event_in.IsZero()) {
@@ -311,11 +311,13 @@ bool EPoller::Poll(TimeoutManager *timeout_manager,
   }
 
   int ms_to_sleep = sleep_interval.InMilliSeconds();
+  // If we haven't been asked to wait as part of the poll interval, then don't
+  // wait in the epoll to allow for fast streaming
   int ready = epoll_wait(m_epoll_fd, reinterpret_cast<epoll_event*>(&events),
-                         MAX_EVENTS, ms_to_sleep ? ms_to_sleep : 1);
+                         MAX_EVENTS, ms_to_sleep ? ms_to_sleep : 0);
 
   if (ready == 0) {
-    m_clock->CurrentTime(&m_wake_up_time);
+    m_clock->CurrentMonotonicTime(&m_wake_up_time);
     timeout_manager->ExecuteTimeouts(&m_wake_up_time);
     return true;
   } else if (ready == -1) {
@@ -325,7 +327,7 @@ bool EPoller::Poll(TimeoutManager *timeout_manager,
     return false;
   }
 
-  m_clock->CurrentTime(&m_wake_up_time);
+  m_clock->CurrentMonotonicTime(&m_wake_up_time);
 
   for (int i = 0; i < ready; i++) {
     EPollData *descriptor = reinterpret_cast<EPollData*>(
@@ -346,7 +348,7 @@ bool EPoller::Poll(TimeoutManager *timeout_manager,
   }
   m_orphaned_descriptors.clear();
 
-  m_clock->CurrentTime(&m_wake_up_time);
+  m_clock->CurrentMonotonicTime(&m_wake_up_time);
   timeout_manager->ExecuteTimeouts(&m_wake_up_time);
   return true;
 }

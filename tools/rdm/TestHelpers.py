@@ -15,14 +15,24 @@
 # TestHelpers.py
 # Copyright (C) 2013 Peter Newman
 
+import sys
+
+from ola.StringUtils import StringEscape
+
+if sys.version_info >= (3, 0):
+  try:
+    unicode
+  except NameError:
+    unicode = str
+
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 def ContainsUnprintable(s):
   """Check if a string s contain unprintable characters."""
-  if type(s) == str:
-    return s != s.encode('string-escape')
-  elif type(s) == unicode:
-    return s != s.encode('unicode-escape')
+  # TODO(Peter): How does this interact with the E1.20 Unicode flag?
+  if type(s) == str or type(s) == unicode:
+    # All strings in Python 3 are unicode, Python 2 ones might not be
+    return s != StringEscape(s)
   else:
-    return False
+    raise TypeError('Only strings are supported not %s' % type(s))

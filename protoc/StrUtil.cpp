@@ -41,6 +41,21 @@
 
 #include "protoc/StrUtil.h"
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif  // HAVE_CONFIG_H
+
+// Required for Protobuf 3.7 onwards
+#ifdef HAVE_GOOGLE_PROTOBUF_IO_STRTOD_H
+#include <google/protobuf/io/strtod.h>
+#endif  // HAVE_GOOGLE_PROTOBUF_IO_STRTOD_H
+#ifdef HAVE_GOOGLE_PROTOBUF_STUBS_LOGGING_H
+#include <google/protobuf/stubs/logging.h>
+#endif  // HAVE_GOOGLE_PROTOBUF_STUBS_LOGGING_H
+#ifdef HAVE_GOOGLE_PROTOBUF_STUBS_STL_UTIL_H
+#include <google/protobuf/stubs/stl_util.h>
+#endif  // HAVE_GOOGLE_PROTOBUF_STUBS_STL_UTIL_H
+
 #ifdef _WIN32
 // MSVC has only _snprintf, not snprintf.
 //
@@ -345,39 +360,39 @@ char* FastUInt32ToBufferLeft(uint32_t u, char* buffer) {
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
- sublt100_000_000:
+  sublt100_000_000:
     u -= digits * 100000000;  // 100,000,000
- lt100_000_000:
+  lt100_000_000:
     digits = u / 1000000;  // 1,000,000
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
- sublt1_000_000:
+  sublt1_000_000:
     u -= digits * 1000000;  // 1,000,000
- lt1_000_000:
+  lt1_000_000:
     digits = u / 10000;  // 10,000
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
- sublt10_000:
+  sublt10_000:
     u -= digits * 10000;  // 10,000
- lt10_000:
+  lt10_000:
     digits = u / 100;
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
- sublt100:
+  sublt100:
     u -= digits * 100;
- lt100:
+  lt100:
     digits = u;
     ASCII_digits = two_ASCII_digits[digits];
     buffer[0] = ASCII_digits[0];
     buffer[1] = ASCII_digits[1];
     buffer += 2;
- done:
+  done:
     *buffer = 0;
     return buffer;
   }
