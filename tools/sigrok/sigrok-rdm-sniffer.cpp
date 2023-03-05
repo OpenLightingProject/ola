@@ -588,7 +588,8 @@ int main(int argc, char *argv[]) {
   }
 
   if (!FLAGS_sigrok_device.present() || (FLAGS_sigrok_device.str() == "")) {
-    OLA_FATAL << "Please specify a sigrok logic analyzer to connect to";
+    OLA_FATAL << "Please specify a sigrok logic analyzer to connect to using "
+              << "--sigrok-device";
     exit(ola::EXIT_USAGE);
   }
 
