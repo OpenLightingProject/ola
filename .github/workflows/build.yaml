@@ -30,7 +30,7 @@ jobs:
             libmicrohttpd-dev protobuf-compiler python3-protobuf \
             libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
             libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy \
-            javacc
+            default-jdk-headless
       - name: Autoreconf
         run: autoreconf -i
       - name: Set configure arguments
