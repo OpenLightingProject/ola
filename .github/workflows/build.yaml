@@ -2,7 +2,7 @@ name: build
 on: [push, pull_request]
 jobs:
   distcheck:
-    name: "distcheck {{ matrix.id }}"
+    name: "distcheck ${{ matrix.id }}"
     runs-on: ubuntu-latest
     container: debian:stable
     strategy:
@@ -67,19 +67,19 @@ jobs:
         # If the file does not exist when tar excludes it, then it will not
         # actually exclude it, so it must first be touched
         run: |
-          touch ola-{{ matrix.id }}-distcheck-source-tree.tar.gz
-          tar --exclude=ola-{{ matrix.id }}-distcheck-source-tree.tar.gz -cvzf ola-{{ matrix.id }}-distcheck-source-tree.tar.gz .
+          touch ola-${{ matrix.id }}-distcheck-source-tree.tar.gz
+          tar --exclude=ola-${{ matrix.id }}-distcheck-source-tree.tar.gz -cvzf ola-${{ matrix.id }}-distcheck-source-tree.tar.gz .
       - name: SHA256 artifact archives
         if: always()
         run: sha256sum ola-*.tar.gz
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: ola-{{ matrix.id }}-distcheck-source-tree
-          path: ola-{{ matrix.id }}-distcheck-source-tree.tar.gz
+          name: ola-${{ matrix.id }}-distcheck-source-tree
+          path: ola-${{ matrix.id }}-distcheck-source-tree.tar.gz
       - uses: actions/upload-artifact@v3
         with:
-          name: ola-{{ matrix.id }}-distcheck
+          name: ola-${{ matrix.id }}-distcheck
           path: |
             ola-*.tar.gz
-            !ola-{{ matrix.id }}-distcheck-source-tree.tar.gz
+            !ola-${{ matrix.id }}-distcheck-source-tree.tar.gz
