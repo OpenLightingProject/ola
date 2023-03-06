@@ -9,8 +9,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { id: "debian-stable-amd64-gcc",   compiler: { CC: "/usr/bin/gcc",   CXX: "g++",     pkg: "gcc g++" } }
-          - { id: "debian-stable-amd64-clang", compiler: { CC: "/usr/bin/clang", CXX: "clang++", pkg: "clang"   } }
+          - { id: "debian-stable-amd64-gcc",   compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
+          - { id: "debian-stable-amd64-clang", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
     env:
       CC: "{{ matrix.compiler.CC }}"
       CXX: "{{ matrix.compiler.CXX }}"
@@ -75,12 +75,14 @@ jobs:
       - name: SHA256 artifact archives
         if: always()
         run: sha256sum ola-*.tar.gz
-      - uses: actions/upload-artifact@v3
+      - name: Upload source tree artifact
+        uses: actions/upload-artifact@v3
         if: always()
         with:
           name: ola-${{ matrix.id }}-distcheck-source-tree
           path: ola-${{ matrix.id }}-distcheck-source-tree.tar.gz
-      - uses: actions/upload-artifact@v3
+      - name: Upload built artifact
+        uses: actions/upload-artifact@v3
         with:
           name: ola-${{ matrix.id }}-distcheck
           path: |
