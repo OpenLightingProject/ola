@@ -9,8 +9,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { id: debian:stable-amd64-gcc,   compiler: { cc: "gcc",   cxx: "g++"     } }
-          - { id: debian:stable-amd64-clang, compiler: { cc: "clang", cxx: "clang++" } }
+          - { id: "debian:stable-amd64-gcc",   compiler: { cc: "gcc",   cxx: "g++"     } }
+          - { id: "debian:stable-amd64-clang", compiler: { cc: "clang", cxx: "clang++" } }
     env:
       CC: "{{ matrix.compiler.cc }}"
       CXX: "{{ matrix.compiler.cxx }}"
