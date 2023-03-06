@@ -2,10 +2,21 @@ name: build
 on: [push, pull_request]
 jobs:
   distcheck:
-    name: Distcheck
+    name: "distcheck {{ matrix.id }}"
     runs-on: ubuntu-latest
     container: debian:stable
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: debian:stable-amd64-gcc,   compiler: { cc: "gcc",   cxx: "g++"     }}
+          - { id: debian:stable-amd64-clang, compiler: { cc: "clang", cxx: "clang++" }}
+    env:
+      CC: "{{ matrix.compiler.cc }}"
+      CXX: "{{ matrix.compiler.cxx }}"
     steps:
+      - name: Get number of CPU cores
+        run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
       - name: Update package database
         run: apt-get update -y
       # See comments beginning at
@@ -30,7 +41,7 @@ jobs:
             libmicrohttpd-dev protobuf-compiler python3-protobuf \
             libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
             libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy \
-            default-jdk-headless
+            default-jdk-headless maven
       - name: Autoreconf
         run: autoreconf -i
       - name: Set configure arguments
@@ -45,5 +56,30 @@ jobs:
         run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
       - name: Configure
         run: ./configure $GH_OLA_CONFIGURE_ARGS
-      - name: Distcheck
-        run: make distcheck VERBOSE=1
+      - name: distcheck
+        run: make distcheck -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
+      - name: Display structure of the built files
+        if: always() && env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Archive artifacts to speed up slow GH Actions upload/download
+        if: always()
+        shell: bash
+        # If the file does not exist when tar excludes it, then it will not
+        # actually exclude it, so it must first be touched
+        run: |
+          touch ola-{{ matrix.id }}-distcheck-source-tree.tar.gz
+          tar --exclude=ola-{{ matrix.id }}-distcheck-source-tree.tar.gz -cvzf ola-{{ matrix.id }}-distcheck-source-tree.tar.gz .
+      - name: SHA256 artifact archives
+        if: always()
+        run: sha256sum ola-*.tar.gz
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ola-{{ matrix.id }}-distcheck-source-tree
+          path: ola-{{ matrix.id }}-distcheck-source-tree.tar.gz
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ola-{{ matrix.id }}-distcheck
+          path: |
+            ola-*.tar.gz
+            !ola-{{ matrix.id }}-distcheck-source-tree.tar.gz
