@@ -9,11 +9,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { id: "debian:stable-amd64-gcc",   compiler: { cc: "gcc",   cxx: "g++"     } }
-          - { id: "debian:stable-amd64-clang", compiler: { cc: "clang", cxx: "clang++" } }
+          - { id: "debian-stable-amd64-gcc",   compiler: { CC: "/usr/bin/gcc",   CXX: "g++",     pkg: "gcc g++" } }
+          - { id: "debian-stable-amd64-clang", compiler: { CC: "/usr/bin/clang", CXX: "clang++", pkg: "clang"   } }
     env:
-      CC: "{{ matrix.compiler.cc }}"
-      CXX: "{{ matrix.compiler.cxx }}"
+      CC: "{{ matrix.compiler.CC }}"
+      CXX: "{{ matrix.compiler.CXX }}"
     steps:
       - name: Get number of CPU cores
         run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
@@ -42,6 +42,9 @@ jobs:
             libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
             libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy \
             default-jdk-headless maven
+      - name: Install compiler
+        shell: bash
+        run: apt-get -y install ${{ matrix.compiler.pkg }}
       - name: Autoreconf
         run: autoreconf -i
       - name: Set configure arguments
