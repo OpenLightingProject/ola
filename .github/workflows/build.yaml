@@ -88,3 +88,12 @@ jobs:
           path: |
             ola-*.tar.gz
             !ola-${{ matrix.id }}-distcheck-source-tree.tar.gz
+      - name: Install dependencies to verify trees
+        run: apt-get install -y python-is-python3
+      - name: Verify trees
+        shell: bash
+        run: |
+          tarball=$(ls -Ut ola*.tar.gz | head -1)
+          tar -zxf $tarball;
+          tarball_root=$(echo $tarball | sed 's/.tar.gz$//')
+          ./scripts/verify_trees.py ./ $tarball_root
