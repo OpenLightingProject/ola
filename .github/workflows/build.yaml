@@ -29,7 +29,8 @@ jobs:
           apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
             libmicrohttpd-dev protobuf-compiler python3-protobuf \
             libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
-            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
+            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy \
+            javacc
       - name: Autoreconf
         run: autoreconf -i
       - name: Set configure arguments
@@ -40,6 +41,8 @@ jobs:
         # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
         run: |
           echo "GH_OLA_CONFIGURE_ARGS=$GH_OLA_CONFIGURE_ARGS CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
+      - name: Print configure command
+        run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
       - name: Configure
         run: ./configure $GH_OLA_CONFIGURE_ARGS
       - name: Distcheck
