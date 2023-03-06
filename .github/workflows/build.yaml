@@ -12,8 +12,8 @@ jobs:
           - { id: "debian-stable-amd64-gcc",   compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
           - { id: "debian-stable-amd64-clang", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
     env:
-      CC: "{{ matrix.compiler.CC }}"
-      CXX: "{{ matrix.compiler.CXX }}"
+      CC: "${{ matrix.compiler.CC }}"
+      CXX: "${{ matrix.compiler.CXX }}"
     steps:
       - name: Get number of CPU cores
         run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
