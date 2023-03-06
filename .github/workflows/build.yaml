@@ -1,0 +1,46 @@
+name: build
+on: [push, pull_request]
+jobs:
+  distcheck:
+    name: Distcheck
+    runs-on: ubuntu-latest
+    container: debian:stable
+    steps:
+      - name: Update package database
+        run: apt-get update -y
+      # See comments beginning at
+      # https://github.com/actions/runner/issues/763#issuecomment-1435474884
+      # Without Git, actions/checkout@v3 will resort to REST and will not
+      # create a .git folder or .git.config. The Problem Matcher looks for
+      # .git/config to find where the root of the repo is, so it must be
+      # present.
+      - name: Install Git
+        run: apt-get -y install git
+      - uses: actions/checkout@v3
+      - name: Install build tools
+        shell: bash
+        run: |
+          apt-get -y install pkg-config libtool autoconf \
+            automake g++ bison flex make bash-completion dh-autoreconf \
+            debhelper devscripts wget python3-pip
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
+            libmicrohttpd-dev protobuf-compiler python3-protobuf \
+            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
+            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy
+      - name: Autoreconf
+        run: autoreconf -i
+      - name: Set configure arguments
+        run: |
+          echo "GH_OLA_CONFIGURE_ARGS=\"--enable-rdm-tests --enable-java-libs --enable-ja-rule --enable-e133\"" >> $GITHUB_ENV
+      - name: Set additional Linux configure arguments
+        if: runner.os == 'Linux'
+        # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
+        run: |
+          echo "GH_OLA_CONFIGURE_ARGS=\"$GH_OLA_CONFIGURE_ARGS CPPFLAGS=-Wno-deprecated-declarations\"" >> $GITHUB_ENV
+      - name: Configure
+        run: ./configure $GH_OLA_CONFIGURE_ARGS
+      - name: Distcheck
+        run: make distcheck VERBOSE=1
