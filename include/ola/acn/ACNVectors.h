@@ -100,6 +100,27 @@ enum LLRPVector {
 };
 
 /**
+ * @brief Vectors used at the E1.33 Broker layer.
+ */
+enum BrokerVector {
+  VECTOR_BROKER_CONNECT = 0x0001,  /**< Broker Client Connect */
+  VECTOR_BROKER_CONNECT_REPLY = 0x0002,  /**< Broker Connect Reply */
+  VECTOR_BROKER_CLIENT_ENTRY_UPDATE = 0x0003,  /**< Broker Client Entry Update */
+  VECTOR_BROKER_REDIRECT_V4 = 0x0004,  /**< Broker Client Redirect IPv4 */
+  VECTOR_BROKER_REDIRECT_V6 = 0x0005,  /**< Broker Client Redirect IPv6 */
+  VECTOR_BROKER_FETCH_CLIENT_LIST = 0x0006,  /**< Broker Fetch Client List */
+  VECTOR_BROKER_CONNECTED_CLIENT_LIST = 0x0007,  /**< Broker Connected Client List */
+  VECTOR_BROKER_CLIENT_ADD = 0x0008,  /**< Broker Client Incremental Addition */
+  VECTOR_BROKER_CLIENT_REMOVE = 0x0009,  /**< Broker Client Incremental Deletion */
+  VECTOR_BROKER_CLIENT_ENTRY_CHANGE = 0x000A,  /**< Broker Client Entry Change */
+  VECTOR_BROKER_REQUEST_DYNAMIC_UIDS = 0x000B,  /**< Broker Request Dynamic UID Assignment */
+  VECTOR_BROKER_ASSIGNED_DYNAMIC_UIDS = 0x000C,  /**< Broker Dynamic UID Assignment List */
+  VECTOR_BROKER_FETCH_DYNAMIC_UID_LIST = 0x000D,  /**< Broker Fetch Dynamic UID Assignment List */
+  VECTOR_BROKER_DISCONNECT = 0x000E,  /**< Broker Client Disconnect */
+  VECTOR_BROKER_NULL = 0x000F,  /**< Broker Client Null */
+};
+
+/**
  * @}
  */
 }  // namespace acn
