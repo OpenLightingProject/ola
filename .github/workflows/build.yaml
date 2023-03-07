@@ -5,6 +5,7 @@ jobs:
     name: "distcheck ${{ matrix.id }}"
     runs-on: ubuntu-latest
     container: debian:stable
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
