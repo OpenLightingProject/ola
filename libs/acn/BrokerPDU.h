@@ -25,7 +25,6 @@
 #include <ola/io/IOStack.h>
 
 #include "libs/acn/PDU.h"
-#include "libs/acn/BrokerHeader.h"
 
 namespace ola {
 namespace acn {
