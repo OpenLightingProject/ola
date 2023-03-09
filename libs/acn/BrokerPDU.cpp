@@ -59,7 +59,7 @@ void BrokerPDU::PackData(OutputStream *stream) const {
 
 
 void BrokerPDU::PrependPDU(ola::io::IOStack *stack,
-                         uint32_t vector) {
+                           uint16_t vector) {
   vector = HostToNetwork(vector);
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
   PrependFlagsAndLength(stack, VFLAG_MASK | HFLAG_MASK | DFLAG_MASK, true);
