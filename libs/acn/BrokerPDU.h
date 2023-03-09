@@ -51,7 +51,7 @@ class BrokerPDU: public PDU {
   void PackData(ola::io::OutputStream *stream) const;
 
   static void PrependPDU(ola::io::IOStack *stack,
-                         uint32_t vector);
+                         uint16_t vector);
 
  private:
     const PDU *m_pdu;
