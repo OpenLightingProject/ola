@@ -22,6 +22,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/IOStack.h"
 #include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
@@ -33,6 +34,7 @@ namespace ola {
 namespace acn {
 
 using ola::io::IOQueue;
+using ola::io::IOStack;
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 
@@ -40,11 +42,13 @@ class BrokerClientEntryPDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(BrokerClientEntryPDUTest);
   CPPUNIT_TEST(testSimpleBrokerClientEntryPDU);
   CPPUNIT_TEST(testSimpleBrokerClientEntryPDUToOutputStream);
+  CPPUNIT_TEST(testPrepend);
   CPPUNIT_TEST_SUITE_END();
 
  public:
   void testSimpleBrokerClientEntryPDU();
   void testSimpleBrokerClientEntryPDUToOutputStream();
+  void testPrepend();
 
   void setUp() {
     ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
@@ -136,6 +140,28 @@ void BrokerClientEntryPDUTest::testSimpleBrokerClientEntryPDUToOutputStream() {
   OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), pdu_data, pdu_size);
   output.Pop(output.Size());
   delete[] pdu_data;
+}
+
+
+void BrokerClientEntryPDUTest::testPrepend() {
+  const ola::acn::CID client_cid = CID::FromData(TEST_DATA);
+  IOStack stack;
+  BrokerClientEntryPDU::PrependPDU(&stack,
+                                   TEST_VECTOR,
+                                   client_cid);
+
+  unsigned int length = stack.Size();
+  uint8_t *buffer = new uint8_t[length];
+  OLA_ASSERT(stack.Read(buffer, length));
+
+  const uint8_t expected_data[] = {
+    0xf0, 0x00, 0x17,
+    0, 0, 0, 39,
+    0, 1, 2, 3, 4, 5, 6, 7,
+    8, 9, 10, 11, 12, 13, 14, 15
+  };
+  OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
+  delete[] buffer;
 }
 }  // namespace acn
 }  // namespace ola
