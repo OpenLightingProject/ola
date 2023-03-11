@@ -15,6 +15,10 @@ manufacturer {
   manufacturer_name: "AA Tasarim Ltd."
 }
 manufacturer {
+  manufacturer_id: 2730
+  manufacturer_name: "AAA-LUX"
+}
+manufacturer {
   manufacturer_id: 2223
   manufacturer_name: "AAdyn Technology"
 }
@@ -111,8 +115,8 @@ manufacturer {
   manufacturer_name: "ALS Stanislaw Binkiewicz"
 }
 manufacturer {
-  manufacturer_id: 1576
-  manufacturer_name: "APEX PRO LIGHT CO.,LTD"
+  manufacturer_id: 1312
+  manufacturer_name: "ANLC Ltd"
 }
 manufacturer {
   manufacturer_id: 272
@@ -121,6 +125,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 2165
   manufacturer_name: "ARC Solid-State Lighting Corp."
+}
+manufacturer {
+  manufacturer_id: 1943
+  manufacturer_name: "ARCPROLED Limited"
 }
 manufacturer {
   manufacturer_id: 176
@@ -147,6 +155,22 @@ manufacturer {
   manufacturer_name: "ARRI Rental Deutschland GmbH"
 }
 manufacturer {
+  manufacturer_id: 1018
+  manufacturer_name: "ART-DMX"
+}
+manufacturer {
+  manufacturer_id: 5889
+  manufacturer_name: "ARTBOX"
+}
+manufacturer {
+  manufacturer_id: 936
+  manufacturer_name: "ARTFOX"
+}
+manufacturer {
+  manufacturer_id: 20490
+  manufacturer_name: "AU Optronics Corporation (AUO)"
+}
+manufacturer {
   manufacturer_id: 16710
   manufacturer_name: "AUS FX"
 }
@@ -157,6 +181,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 16705
   manufacturer_name: "AVAB America, Inc."
+}
+manufacturer {
+  manufacturer_id: 1643
+  manufacturer_name: "AVANT-GARDE DE STUDIO FZ LLC"
 }
 manufacturer {
   manufacturer_id: 24932
@@ -177,6 +205,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 1624
   manufacturer_name: "AZCOLOR LITE CO., LIMITED"
+}
+manufacturer {
+  manufacturer_id: 8379
+  manufacturer_name: "Able Laser Tech Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 5860
@@ -200,11 +232,15 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 16740
-  manufacturer_name: "Adelto Limited"
+  manufacturer_name: "Adelto Industries Ltd."
 }
 manufacturer {
   manufacturer_id: 24940
   manufacturer_name: "Advanced Lighting Systems"
+}
+manufacturer {
+  manufacturer_id: 151
+  manufacturer_name: "AdvancedRay (Beijing) Science & Technology Industries Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 24916
@@ -231,8 +267,16 @@ manufacturer {
   manufacturer_name: "Alenco BV"
 }
 manufacturer {
+  manufacturer_id: 20487
+  manufacturer_name: "Alfalite"
+}
+manufacturer {
   manufacturer_id: 8374
   manufacturer_name: "Alkalite LED Technology Corp"
+}
+manufacturer {
+  manufacturer_id: 2084
+  manufacturer_name: "Almotechnos CO.,LTD."
 }
 manufacturer {
   manufacturer_id: 20633
@@ -255,12 +299,20 @@ manufacturer {
   manufacturer_name: "Ambra Elettronica s.r.l."
 }
 manufacturer {
+  manufacturer_id: 20503
+  manufacturer_name: "American Lighting"
+}
+manufacturer {
   manufacturer_id: 1742
   manufacturer_name: "American-Pro International"
 }
 manufacturer {
   manufacturer_id: 747
   manufacturer_name: "Amolvin Research & Development Lab."
+}
+manufacturer {
+  manufacturer_id: 20952
+  manufacturer_name: "Amperor Electronics (Shenzhen) Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 16717
@@ -287,12 +339,24 @@ manufacturer {
   manufacturer_name: "Anytronics Ltd."
 }
 manufacturer {
+  manufacturer_id: 18
+  manufacturer_name: "Apex Pro Light Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 16720
   manufacturer_name: "Apogee Lighting"
 }
 manufacturer {
+  manufacturer_id: 9
+  manufacturer_name: "Aputure Imaging Industries Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 2358
   manufacturer_name: "AquaTronic"
+}
+manufacturer {
+  manufacturer_id: 1777
+  manufacturer_name: "Aqualux Lighting"
 }
 manufacturer {
   manufacturer_id: 16721
@@ -307,12 +371,24 @@ manufacturer {
   manufacturer_name: "Arc Lighting Co. Ltd."
 }
 manufacturer {
+  manufacturer_id: 2407
+  manufacturer_name: "Arcus Licht- und Praesentationstechnik GmbH"
+}
+manufacturer {
   manufacturer_id: 470
   manufacturer_name: "Argent Data Systems, Inc."
 }
 manufacturer {
   manufacturer_id: 2497
   manufacturer_name: "Argetron Elektrik Elektronik Organizasyon Gida San. ve Dis Tic. Ltd. Sti."
+}
+manufacturer {
+  manufacturer_id: 1856
+  manufacturer_name: "Arkalumen"
+}
+manufacturer {
+  manufacturer_id: 529
+  manufacturer_name: "Arkaos S.A."
 }
 manufacturer {
   manufacturer_id: 16724
@@ -383,6 +459,10 @@ manufacturer {
   manufacturer_name: "B2 Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 2064
+  manufacturer_name: "BDS Studios"
+}
+manufacturer {
   manufacturer_id: 16961
   manufacturer_name: "BECKHOFF Automation GmbH"
 }
@@ -395,12 +475,24 @@ manufacturer {
   manufacturer_name: "BEN-RI Electronica S.A."
 }
 manufacturer {
+  manufacturer_id: 1745
+  manufacturer_name: "BIRUN ELECTRONIC INDUSTRIAL CO., LTD"
+}
+manufacturer {
+  manufacturer_id: 1990
+  manufacturer_name: "BK Lighting"
+}
+manufacturer {
   manufacturer_id: 1986
   manufacturer_name: "BOOQlight BV"
 }
 manufacturer {
   manufacturer_id: 16975
   manufacturer_name: "BOTEX"
+}
+manufacturer {
+  manufacturer_id: 4615
+  manufacturer_name: "BSK Networks GbR"
 }
 manufacturer {
   manufacturer_id: 276
@@ -413,6 +505,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 29541
   manufacturer_name: "Ballantyne Strong Inc."
+}
+manufacturer {
+  manufacturer_id: 2184
+  manufacturer_name: "Banglux Lighting Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 16979
@@ -431,8 +527,16 @@ manufacturer {
   manufacturer_name: "BeamZ  (Tronios B.V.)"
 }
 manufacturer {
+  manufacturer_id: 17
+  manufacturer_name: "Beijing Kedeshengye Technology Service Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 1666
   manufacturer_name: "Beijing Ming Rui Lighting Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 8380
+  manufacturer_name: "Beijing Pargolite Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 437
@@ -451,8 +555,16 @@ manufacturer {
   manufacturer_name: "Better Way Lighting"
 }
 manufacturer {
+  manufacturer_id: 2355
+  manufacturer_name: "Beyond Lighting WLL"
+}
+manufacturer {
   manufacturer_id: 675
   manufacturer_name: "Big Bang Lightning"
+}
+manufacturer {
+  manufacturer_id: 88
+  manufacturer_name: "Big Dipper Laser Science and Technology Co.,Ltd."
 }
 manufacturer {
   manufacturer_id: 2308
@@ -463,12 +575,20 @@ manufacturer {
   manufacturer_name: "Bill Coghill Company : Bill Coghill Design"
 }
 manufacturer {
+  manufacturer_id: 2041
+  manufacturer_name: "Bion Technologies GmbH"
+}
+manufacturer {
   manufacturer_id: 17058
   manufacturer_name: "Birket Engineering, Inc."
 }
 manufacturer {
   manufacturer_id: 15100
   manufacturer_name: "Black Tank Engineering"
+}
+manufacturer {
+  manufacturer_id: 87
+  manufacturer_name: "Blackbezt Lighting Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 513
@@ -483,6 +603,14 @@ manufacturer {
   manufacturer_name: "Blossom Communications Corp."
 }
 manufacturer {
+  manufacturer_id: 1747
+  manufacturer_name: "Boerner Distribution International GmbH"
+}
+manufacturer {
+  manufacturer_id: 14288
+  manufacturer_name: "Boogy Brothers Showequipment"
+}
+manufacturer {
   manufacturer_id: 258
   manufacturer_name: "Bortis Elektronik"
 }
@@ -495,6 +623,10 @@ manufacturer {
   manufacturer_name: "Bright Ideas Custom Electronics Inc."
 }
 manufacturer {
+  manufacturer_id: 8385
+  manufacturer_name: "BrightBeats, LLC"
+}
+manufacturer {
   manufacturer_id: 2195
   manufacturer_name: "Brighten LED Lighting Limited"
 }
@@ -505,6 +637,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 716
   manufacturer_name: "Brightix"
+}
+manufacturer {
+  manufacturer_id: 4619
+  manufacturer_name: "Brilliant Stages Ltd."
 }
 manufacturer {
   manufacturer_id: 2429
@@ -521,6 +657,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 8481
   manufacturer_name: "Brother,Brother & Sons Aps"
+}
+manufacturer {
+  manufacturer_id: 4618
+  manufacturer_name: "Bulldog Lighting and Events, Inc."
 }
 manufacturer {
   manufacturer_id: 1761
@@ -567,6 +707,10 @@ manufacturer {
   manufacturer_name: "CDS advanced technology bv"
 }
 manufacturer {
+  manufacturer_id: 2179
+  manufacturer_name: "CEE Lighting Equipment Co.Ltd"
+}
+manufacturer {
   manufacturer_id: 6648
   manufacturer_name: "CEZOS Spolka z ograniczona odpowiedzialnoscia, sp.k."
 }
@@ -577,6 +721,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 8612
   manufacturer_name: "CHAUVET Lighting"
+}
+manufacturer {
+  manufacturer_id: 1784
+  manufacturer_name: "CHONGQING XINYUANHUI OPTOELECTRONIC TECHNOLOGY CO.,LTD"
 }
 manufacturer {
   manufacturer_id: 8628
@@ -597,6 +745,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 1965
   manufacturer_name: "CLS LED BV"
+}
+manufacturer {
+  manufacturer_id: 24867
+  manufacturer_name: "CMYLight (S) Pte. Ltd."
 }
 manufacturer {
   manufacturer_id: 17263
@@ -623,6 +775,10 @@ manufacturer {
   manufacturer_name: "Callegenix LLC"
 }
 manufacturer {
+  manufacturer_id: 1468
+  manufacturer_name: "CantoUSA"
+}
+manufacturer {
   manufacturer_id: 17235
   manufacturer_name: "Capricorn Software"
 }
@@ -639,12 +795,28 @@ manufacturer {
   manufacturer_name: "Carallon Ltd."
 }
 manufacturer {
+  manufacturer_id: 4613
+  manufacturer_name: "Carbon Lighting Limited"
+}
+manufacturer {
+  manufacturer_id: 11743
+  manufacturer_name: "Carpetlight GmbH"
+}
+manufacturer {
   manufacturer_id: 32490
   manufacturer_name: "Cartwright Engineering"
 }
 manufacturer {
   manufacturer_id: 2330
   manufacturer_name: "Celex LED Technology Ltd."
+}
+manufacturer {
+  manufacturer_id: 698
+  manufacturer_name: "Chainzone Technology (Foshan) Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 12291
+  manufacturer_name: "ChamSix"
 }
 manufacturer {
   manufacturer_id: 1290
@@ -655,8 +827,24 @@ manufacturer {
   manufacturer_name: "ChamberPlus Co., Ltd"
 }
 manufacturer {
+  manufacturer_id: 2282
+  manufacturer_name: "Changchun Cedar Electronic Technology Co.,Ltd."
+}
+manufacturer {
   manufacturer_id: 13621
-  manufacturer_name: "ChangshaA Spark Technology Electronics Ltd."
+  manufacturer_name: "Changsha Spark Technology Electronics Ltd."
+}
+manufacturer {
+  manufacturer_id: 27
+  manufacturer_name: "Changsha Sunrise Electronic Technology Co. Ltd."
+}
+manufacturer {
+  manufacturer_id: 20488
+  manufacturer_name: "Chengdu Chengyu Electronic Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 29698
+  manufacturer_name: "Chris Kallas"
 }
 manufacturer {
   manufacturer_id: 21360
@@ -665,6 +853,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 8629
   manufacturer_name: "ChromaCove LLC"
+}
+manufacturer {
+  manufacturer_id: 3
+  manufacturer_name: "Chromatech Lighting Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 13622
@@ -727,6 +919,10 @@ manufacturer {
   manufacturer_name: "Compulite Systems (2000) LTD"
 }
 manufacturer {
+  manufacturer_id: 2457
+  manufacturer_name: "Concept Smoke Systems Ltd."
+}
+manufacturer {
   manufacturer_id: 1799
   manufacturer_name: "Conceptinetics Technologies and Consultancy Ltd."
 }
@@ -735,24 +931,48 @@ manufacturer {
   manufacturer_name: "Connex GmbH"
 }
 manufacturer {
+  manufacturer_id: 200
+  manufacturer_name: "Constell8 NV"
+}
+manufacturer {
   manufacturer_id: 2149
   manufacturer_name: "Contrade GmbH"
+}
+manufacturer {
+  manufacturer_id: 24158
+  manufacturer_name: "Converging Systems Inc."
 }
 manufacturer {
   manufacturer_id: 8627
   manufacturer_name: "Coolon Pty Ltd"
 }
 manufacturer {
+  manufacturer_id: 2056
+  manufacturer_name: "Cooper Lighting - Zero 88"
+}
+manufacturer {
   manufacturer_id: 1851
   manufacturer_name: "Corsair Technology Ltd."
+}
+manufacturer {
+  manufacturer_id: 17231
+  manufacturer_name: "Cortex Design"
 }
 manufacturer {
   manufacturer_id: 19802
   manufacturer_name: "Covert Science GmbH"
 }
 manufacturer {
+  manufacturer_id: 17228
+  manufacturer_name: "Crealux GmbH & Co. KG"
+}
+manufacturer {
   manufacturer_id: 161
   manufacturer_name: "Creative Lighting And Sound Systems Pty Ltd."
+}
+manufacturer {
+  manufacturer_id: 20993
+  manufacturer_name: "Crestron Electronics, Inc."
 }
 manufacturer {
   manufacturer_id: 2353
@@ -761,6 +981,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 2504
   manufacturer_name: "Crystal Fountains Inc."
+}
+manufacturer {
+  manufacturer_id: 2310
+  manufacturer_name: "Crystal Technica Limited"
 }
 manufacturer {
   manufacturer_id: 8609
@@ -777,6 +1001,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 144
   manufacturer_name: "Cyclops Lighting"
+}
+manufacturer {
+  manufacturer_id: 1042
+  manufacturer_name: "D's DMX"
 }
 manufacturer {
   manufacturer_id: 1491
@@ -811,6 +1039,10 @@ manufacturer {
   manufacturer_name: "DAS Integrator Pte Ltd"
 }
 manufacturer {
+  manufacturer_id: 28417
+  manufacturer_name: "DAVAI!JPL"
+}
+manufacturer {
   manufacturer_id: 31164
   manufacturer_name: "DC Reactive"
 }
@@ -839,8 +1071,16 @@ manufacturer {
   manufacturer_name: "DJSI Schinstad ANS (Northern Light)"
 }
 manufacturer {
+  manufacturer_id: 26
+  manufacturer_name: "DLL Ltd."
+}
+manufacturer {
   manufacturer_id: 13105
   manufacturer_name: "DMG Lumiere"
+}
+manufacturer {
+  manufacturer_id: 3342
+  manufacturer_name: "DMX Engineering LLC"
 }
 manufacturer {
   manufacturer_id: 11290
@@ -859,6 +1099,10 @@ manufacturer {
   manufacturer_name: "DaisaLed Ltd."
 }
 manufacturer {
+  manufacturer_id: 2039
+  manufacturer_name: "Dakco Technologies Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 29696
   manufacturer_name: "Danalux"
 }
@@ -875,8 +1119,20 @@ manufacturer {
   manufacturer_name: "David O Smith Design"
 }
 manufacturer {
+  manufacturer_id: 1902
+  manufacturer_name: "DecoLed, LLC"
+}
+manufacturer {
+  manufacturer_id: 152
+  manufacturer_name: "Dedo Weigert Film GmbH"
+}
+manufacturer {
   manufacturer_id: 165
   manufacturer_name: "Delta Electronics, Inc."
+}
+manufacturer {
+  manufacturer_id: 8386
+  manufacturer_name: "Demilight"
 }
 manufacturer {
   manufacturer_id: 17185
@@ -889,6 +1145,14 @@ manufacturer {
 manufacturer {
   manufacturer_id: 17494
   manufacturer_name: "Devantech Ltd."
+}
+manufacturer {
+  manufacturer_id: 30583
+  manufacturer_name: "Develtron A/S"
+}
+manufacturer {
+  manufacturer_id: 2170
+  manufacturer_name: "Dextra Group Plc"
 }
 manufacturer {
   manufacturer_id: 17477
@@ -943,6 +1207,22 @@ manufacturer {
   manufacturer_name: "DongGuan Betterway Lighting Co.,Ltd"
 }
 manufacturer {
+  manufacturer_id: 2442
+  manufacturer_name: "DongGuan JuYang Electric Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 2194
+  manufacturer_name: "DongGuan Ruishen Technology Co.,Ltd"
+}
+manufacturer {
+  manufacturer_id: 2196
+  manufacturer_name: "Dongguan HCP Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 16
+  manufacturer_name: "Dongguan Mi Xing Electronic Technology Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 419
   manufacturer_name: "Dongguan Yongya Technology Co., Ltd"
 }
@@ -969,6 +1249,14 @@ manufacturer {
 manufacturer {
   manufacturer_id: 17481
   manufacturer_name: "Durand Interstellar, Inc."
+}
+manufacturer {
+  manufacturer_id: 1764
+  manufacturer_name: "Dydell B.V."
+}
+manufacturer {
+  manufacturer_id: 5671
+  manufacturer_name: "Dynamic Visual Solutions LLC"
 }
 manufacturer {
   manufacturer_id: 17722
@@ -1001,6 +1289,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 162
   manufacturer_name: "EMP Designs Ltd."
+}
+manufacturer {
+  manufacturer_id: 20486
+  manufacturer_name: "ENEDO Power SpA"
 }
 manufacturer {
   manufacturer_id: 17742
@@ -1039,12 +1331,8 @@ manufacturer {
   manufacturer_name: "EastSun Technology Co. Ltd."
 }
 manufacturer {
-  manufacturer_id: 2056
-  manufacturer_name: "Eaton - Zero 88"
-}
-manufacturer {
   manufacturer_id: 2446
-  manufacturer_name: "Ecosense Lighting Company Limited"
+  manufacturer_name: "Ecosense Lighting Inc"
 }
 manufacturer {
   manufacturer_id: 2361
@@ -1055,10 +1343,6 @@ manufacturer {
   manufacturer_name: "Edward J. Keefe Jr."
 }
 manufacturer {
-  manufacturer_id: 159
-  manufacturer_name: "Efore SpA"
-}
-manufacturer {
   manufacturer_id: 2399
   manufacturer_name: "Elaborated Networks GmbH"
 }
@@ -1067,8 +1351,20 @@ manufacturer {
   manufacturer_name: "Elation Lighting Inc."
 }
 manufacturer {
+  manufacturer_id: 2038
+  manufacturer_name: "Electric Distribution Systems"
+}
+manufacturer {
+  manufacturer_id: 33
+  manufacturer_name: "Electric Foundry Ltd."
+}
+manufacturer {
   manufacturer_id: 411
   manufacturer_name: "ElectroTAS Soluciones Profesionales"
+}
+manufacturer {
+  manufacturer_id: 8376
+  manufacturer_name: "Electron SA"
 }
 manufacturer {
   manufacturer_id: 5806
@@ -1091,8 +1387,20 @@ manufacturer {
   manufacturer_name: "Element Labs Inc."
 }
 manufacturer {
+  manufacturer_id: 12289
+  manufacturer_name: "Elemental LED, Inc."
+}
+manufacturer {
   manufacturer_id: 2342
   manufacturer_name: "Elumeros Lighting Limited"
+}
+manufacturer {
+  manufacturer_id: 21930
+  manufacturer_name: "Emilum GmbH"
+}
+manufacturer {
+  manufacturer_id: 159
+  manufacturer_name: "Enedo Power SpA"
 }
 manufacturer {
   manufacturer_id: 18518
@@ -1115,6 +1423,10 @@ manufacturer {
   manufacturer_name: "Environmental Lighting Solutions"
 }
 manufacturer {
+  manufacturer_id: 2513
+  manufacturer_name: "Environmental Lights"
+}
+manufacturer {
   manufacturer_id: 27630
   manufacturer_name: "Ephesus Lighting"
 }
@@ -1129,6 +1441,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 122
   manufacturer_name: "Equivalent"
+}
+manufacturer {
+  manufacturer_id: 23
+  manufacturer_name: "Ereimul"
 }
 manufacturer {
   manufacturer_id: 25939
@@ -1155,6 +1471,10 @@ manufacturer {
   manufacturer_name: "EverBrighten Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 1026
+  manufacturer_name: "Exato"
+}
+manufacturer {
   manufacturer_id: 28653
   manufacturer_name: "Explorentis"
 }
@@ -1179,6 +1499,10 @@ manufacturer {
   manufacturer_name: "Feiner Lichttechnik GMBH"
 }
 manufacturer {
+  manufacturer_id: 24868
+  manufacturer_name: "Fiilex"
+}
+manufacturer {
   manufacturer_id: 16706
   manufacturer_name: "Filmgear, Inc."
 }
@@ -1189,6 +1513,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 25785
   manufacturer_name: "Finelite, Inc."
+}
+manufacturer {
+  manufacturer_id: 2402
+  manufacturer_name: "Finland Lighting Oy"
 }
 manufacturer {
   manufacturer_id: 5454
@@ -1255,12 +1583,28 @@ manufacturer {
   manufacturer_name: "Foshan Yinhe Lanjing Lighting & Electrical Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 8381
+  manufacturer_name: "Foshan Yoline Lighting Equipment Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 2466
   manufacturer_name: "Fountain People"
 }
 manufacturer {
+  manufacturer_id: 530
+  manufacturer_name: "Frame The Space (FTSLED)"
+}
+manufacturer {
   manufacturer_id: 26227
   manufacturer_name: "Freescale Semiconductor U.K. Ltd."
+}
+manufacturer {
+  manufacturer_id: 2293
+  manufacturer_name: "Fufeng lighting"
+}
+manufacturer {
+  manufacturer_id: 2378
+  manufacturer_name: "Funovation, Inc"
 }
 manufacturer {
   manufacturer_id: 20483
@@ -1279,12 +1623,20 @@ manufacturer {
   manufacturer_name: "GEE"
 }
 manufacturer {
+  manufacturer_id: 1915
+  manufacturer_name: "GENLED Brands"
+}
+manufacturer {
   manufacturer_id: 466
   manufacturer_name: "GIP Innovation Tools GmbH"
 }
 manufacturer {
   manufacturer_id: 26476
   manufacturer_name: "GLP German Light Products GmbH"
+}
+manufacturer {
+  manufacturer_id: 2133
+  manufacturer_name: "GODOX Photo Equipment Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 1708
@@ -1303,12 +1655,16 @@ manufacturer {
   manufacturer_name: "GRE Alpha Electronics Ltd."
 }
 manufacturer {
-  manufacturer_id: 191
-  manufacturer_name: "GTR Industries"
+  manufacturer_id: 1718
+  manufacturer_name: "GUANGDONG VSHINE LIGHTING TECHNOLOGY CO.,LTD"
 }
 manufacturer {
   manufacturer_id: 1515
   manufacturer_name: "GUANGZHOU BO WEI TE LIGHTING  CO.LTD"
+}
+manufacturer {
+  manufacturer_id: 2354
+  manufacturer_name: "GUANGZHOU BORAY ELECTRON CO.,LTD"
 }
 manufacturer {
   manufacturer_id: 1647
@@ -1331,6 +1687,10 @@ manufacturer {
   manufacturer_name: "GVA Lighting, Inc."
 }
 manufacturer {
+  manufacturer_id: 19200
+  manufacturer_name: "Gabor Galyas Lighting"
+}
+manufacturer {
   manufacturer_id: 1842
   manufacturer_name: "Galaxia Electronics"
 }
@@ -1339,8 +1699,16 @@ manufacturer {
   manufacturer_name: "Gantom Lighting & Controls"
 }
 manufacturer {
+  manufacturer_id: 2327
+  manufacturer_name: "Gavtronics"
+}
+manufacturer {
   manufacturer_id: 9138
   manufacturer_name: "Gekko Technology Ltd."
+}
+manufacturer {
+  manufacturer_id: 32494
+  manufacturer_name: "General Lighting Electronic Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 18284
@@ -1371,7 +1739,7 @@ manufacturer {
   manufacturer_name: "Goddard Design Co."
 }
 manufacturer {
-  manufacturer_id: 18259
+  manufacturer_id: 154
   manufacturer_name: "Golden Sea Disco Light Manufacturer"
 }
 manufacturer {
@@ -1421,6 +1789,26 @@ manufacturer {
 manufacturer {
   manufacturer_id: 1416
   manufacturer_name: "GuangZhou XiangMing Light Limited"
+}
+manufacturer {
+  manufacturer_id: 17516
+  manufacturer_name: "Guangdong Delos Lighting Industrial Co.,Ltd."
+}
+manufacturer {
+  manufacturer_id: 2110
+  manufacturer_name: "Guangdong Hua Chen Film & Television Stage Project Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 6154
+  manufacturer_name: "Guangdong Longjoin Optoelectronics Technology Co. Ltd."
+}
+manufacturer {
+  manufacturer_id: 8
+  manufacturer_name: "Guangdong Nanguang Photo & Video Systems Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2449
+  manufacturer_name: "Guangdong Pomelo Photoelectric Equipment Co., Ltd"
 }
 manufacturer {
   manufacturer_id: 270
@@ -1491,8 +1879,16 @@ manufacturer {
   manufacturer_name: "Guangzhou Daisy Electronic Technology Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 2312
+  manufacturer_name: "Guangzhou DeLong Stage Equipment Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 17491
   manufacturer_name: "Guangzhou Desheng Lighting Industrial Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2430
+  manufacturer_name: "Guangzhou Deyi Lighting Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 2323
@@ -1503,8 +1899,16 @@ manufacturer {
   manufacturer_name: "Guangzhou Eagle Wei Photoelectric Technology Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 2246
+  manufacturer_name: "Guangzhou Ever Famous Electronic Co.,Ltd"
+}
+manufacturer {
   manufacturer_id: 767
   manufacturer_name: "Guangzhou Eway Stage Equipment Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2049
+  manufacturer_name: "Guangzhou Favolite Stage Lighting Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 158
@@ -1527,8 +1931,16 @@ manufacturer {
   manufacturer_name: "Guangzhou HOMEI LIGHT Manufacturer"
 }
 manufacturer {
-  manufacturer_id: 154
+  manufacturer_id: 13
+  manufacturer_name: "Guangzhou Haoteng Lighting Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 18259
   manufacturer_name: "Guangzhou Haoyang Electronic Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2482
+  manufacturer_name: "Guangzhou Hedong Electronics Co., LTD"
 }
 manufacturer {
   manufacturer_id: 2158
@@ -1571,6 +1983,10 @@ manufacturer {
   manufacturer_name: "Guangzhou Huaying Stage Lighting Equipment Co. Ltd."
 }
 manufacturer {
+  manufacturer_id: 32231
+  manufacturer_name: "Guangzhou ILightings Equipment Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 456
   manufacturer_name: "Guangzhou JINLIN Stage Lighting Equipment Co., Ltd."
 }
@@ -1583,6 +1999,10 @@ manufacturer {
   manufacturer_name: "Guangzhou JinZhiHui Electronic Technology Co.,Ltd."
 }
 manufacturer {
+  manufacturer_id: 1538
+  manufacturer_name: "Guangzhou Jinhong Stage Lighting Equipment.Co.,ltd"
+}
+manufacturer {
   manufacturer_id: 6152
   manufacturer_name: "Guangzhou Jinye Electronic Technology Co., Ltd."
 }
@@ -1593,6 +2013,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 198
   manufacturer_name: "Guangzhou Lantian Electronic Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 28682
+  manufacturer_name: "Guangzhou Leemc Lighting Tech., Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 138
@@ -1613,6 +2037,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 783
   manufacturer_name: "Guangzhou Litewise Lighting Equipments Co., Ltd. dba \"EK Lights\""
+}
+manufacturer {
+  manufacturer_id: 9767
+  manufacturer_name: "Guangzhou Megota Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 2138
@@ -1647,12 +2075,20 @@ manufacturer {
   manufacturer_name: "Guangzhou Precision Vision Intelligent Equipment Co, Ltd"
 }
 manufacturer {
+  manufacturer_id: 2496
+  manufacturer_name: "Guangzhou Rainbow Lighting Equipment CO.,LTD"
+}
+manufacturer {
   manufacturer_id: 2287
   manufacturer_name: "Guangzhou RuiYang lighting technology co. LTD."
 }
 manufacturer {
   manufacturer_id: 2252
   manufacturer_name: "Guangzhou Santu Stage Lighting Equipment Co.Ltd"
+}
+manufacturer {
+  manufacturer_id: 2185
+  manufacturer_name: "Guangzhou Shenghui Electronic Technology Co., Ltd"
 }
 manufacturer {
   manufacturer_id: 2351
@@ -1663,6 +2099,10 @@ manufacturer {
   manufacturer_name: "Guangzhou Shuozhi Optoelectronic Technology Co., Ltd. (Konelite)"
 }
 manufacturer {
+  manufacturer_id: 20497
+  manufacturer_name: "Guangzhou Skydance Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 2243
   manufacturer_name: "Guangzhou Spark Stage Equipment Co. Ltd"
 }
@@ -1671,12 +2111,20 @@ manufacturer {
   manufacturer_name: "Guangzhou Sunway Entertainment Equipment Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 8383
+  manufacturer_name: "Guangzhou Taifeng Stage Lighting Audio Equipment Factory"
+}
+manufacturer {
   manufacturer_id: 1088
   manufacturer_name: "Guangzhou VAS Lighting Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 2360
   manufacturer_name: "Guangzhou Vanray Lighting Equipment CO.,Ltd."
+}
+manufacturer {
+  manufacturer_id: 779
+  manufacturer_name: "Guangzhou Wanrui Stage Light Equipment Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 1861
@@ -1707,6 +2155,10 @@ manufacturer {
   manufacturer_name: "Guangzhou Yajiang (Yagang - Silver Star) Photoelectric Equipment Ltd."
 }
 manufacturer {
+  manufacturer_id: 2188
+  manufacturer_name: "Guangzhou Yi Sheng Yuan Electronic Co.,Ltd(Esun)"
+}
+manufacturer {
   manufacturer_id: 399
   manufacturer_name: "Guangzhou YiCheng Light Industry Ltd."
 }
@@ -1721,6 +2173,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 32488
   manufacturer_name: "Guangzhou Yingfeng Lighting Equipment Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2491
+  manufacturer_name: "Guangzhou Yiyi Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 114
@@ -1775,12 +2231,24 @@ manufacturer {
   manufacturer_name: "Hale Microsystems LLC"
 }
 manufacturer {
+  manufacturer_id: 4614
+  manufacturer_name: "Hangel Technology Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 170
   manufacturer_name: "Hangzhou Easun Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 2339
   manufacturer_name: "Hangzhou Roleds Lighting System Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2148
+  manufacturer_name: "Hangzhou Youte Power., Co. Ltd"
+}
+manufacturer {
+  manufacturer_id: 29697
+  manufacturer_name: "Harvatek Corporation"
 }
 manufacturer {
   manufacturer_id: 264
@@ -1823,6 +2291,14 @@ manufacturer {
   manufacturer_name: "Hollywood Rentals LLC"
 }
 manufacturer {
+  manufacturer_id: 2418
+  manufacturer_name: "Holochrom GmbH"
+}
+manufacturer {
+  manufacturer_id: 2398
+  manufacturer_name: "Hondel Lighting Limited"
+}
+manufacturer {
   manufacturer_id: 2048
   manufacturer_name: "Hongyeah Light"
 }
@@ -1847,8 +2323,16 @@ manufacturer {
   manufacturer_name: "Huizhou Desay Intelligent Technology Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 32495
+  manufacturer_name: "Huizhou Mounteck Technology Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 2359
   manufacturer_name: "Huizhou Zhonghan Electronic Technology Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 531
+  manufacturer_name: "Huizhou visionX Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 431
@@ -1865,6 +2349,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 18500
   manufacturer_name: "HxDx"
+}
+manufacturer {
+  manufacturer_id: 31403
+  manufacturer_name: "Hyundai Fomex Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 18764
@@ -1895,6 +2383,14 @@ manufacturer {
   manufacturer_name: "ILT Italy SRL"
 }
 manufacturer {
+  manufacturer_id: 1052
+  manufacturer_name: "IMLIGHT"
+}
+manufacturer {
+  manufacturer_id: 1444
+  manufacturer_name: "IMMOLAS"
+}
+manufacturer {
   manufacturer_id: 1880
   manufacturer_name: "IMPOLUX GmbH"
 }
@@ -1903,8 +2399,20 @@ manufacturer {
   manufacturer_name: "INAREX INC."
 }
 manufacturer {
+  manufacturer_id: 20738
+  manufacturer_name: "INDATA d.o.o."
+}
+manufacturer {
+  manufacturer_id: 1671
+  manufacturer_name: "INSMARINE LLC"
+}
+manufacturer {
   manufacturer_id: 18769
   manufacturer_name: "IQAir AG"
+}
+manufacturer {
+  manufacturer_id: 18003
+  manufacturer_name: "IT & Eventtechnik Fabian Stumpf"
 }
 manufacturer {
   manufacturer_id: 9386
@@ -1935,6 +2443,10 @@ manufacturer {
   manufacturer_name: "Immersive Design Studios Inc."
 }
 manufacturer {
+  manufacturer_id: 532
+  manufacturer_name: "Impactrum"
+}
+manufacturer {
   manufacturer_id: 21314
   manufacturer_name: "Industrias Sola Basic S.A. de C.V."
 }
@@ -1960,7 +2472,7 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 20951
-  manufacturer_name: "Innovative Dimmers LLC"
+  manufacturer_name: "Innovative Dimmers LLC (Ratpac dimmers)"
 }
 manufacturer {
   manufacturer_id: 28651
@@ -1973,6 +2485,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 112
   manufacturer_name: "Instalighting GmbH"
+}
+manufacturer {
+  manufacturer_id: 1658
+  manufacturer_name: "Inster Co, Ltd"
 }
 manufacturer {
   manufacturer_id: 18771
@@ -1989,6 +2505,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 5280
   manufacturer_name: "Intense Lighting, LLC"
+}
+manufacturer {
+  manufacturer_id: 10
+  manufacturer_name: "Interactive Imagination Ltd."
 }
 manufacturer {
   manufacturer_id: 18766
@@ -2027,6 +2547,10 @@ manufacturer {
   manufacturer_name: "Iwasaki Electric Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 20489
+  manufacturer_name: "Izzro Optoelectronics Technology Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 19009
   manufacturer_name: "JANUS srl"
 }
@@ -2047,6 +2571,10 @@ manufacturer {
   manufacturer_name: "JIAXING XINHUALI LIGHTING & SOUNDING CO., LTD."
 }
 manufacturer {
+  manufacturer_id: 125
+  manufacturer_name: "JMS Pro Light"
+}
+manufacturer {
   manufacturer_id: 27243
   manufacturer_name: "JPK Systems Limited"
 }
@@ -2057,6 +2585,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 467
   manufacturer_name: "JSC Aksera"
+}
+manufacturer {
+  manufacturer_id: 2244
+  manufacturer_name: "Jacek Wagner"
 }
 manufacturer {
   manufacturer_id: 26724
@@ -2115,6 +2647,10 @@ manufacturer {
   manufacturer_name: "K 5600, Inc."
 }
 manufacturer {
+  manufacturer_id: 888
+  manufacturer_name: "KASUGA"
+}
+manufacturer {
   manufacturer_id: 2421
   manufacturer_name: "KB Design"
 }
@@ -2139,12 +2675,24 @@ manufacturer {
   manufacturer_name: "KORRO PLUS"
 }
 manufacturer {
+  manufacturer_id: 8384
+  manufacturer_name: "KappaStyle Productions."
+}
+manufacturer {
   manufacturer_id: 27492
   manufacturer_name: "Key Delfin"
 }
 manufacturer {
+  manufacturer_id: 5903
+  manufacturer_name: "Kezun Stage Lighting Equipment Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 1546
   manufacturer_name: "Kindwin Opto Electronic (ShenZhen) Co. Ltd"
+}
+manufacturer {
+  manufacturer_id: 28
+  manufacturer_name: "Kindwin Technology (HK) Ltd."
 }
 manufacturer {
   manufacturer_id: 19270
@@ -2171,8 +2719,24 @@ manufacturer {
   manufacturer_name: "Krislite Pte. Ltd."
 }
 manufacturer {
+  manufacturer_id: 24832
+  manufacturer_name: "Krobox Sdn Bhd"
+}
+manufacturer {
+  manufacturer_id: 32235
+  manufacturer_name: "Krypton"
+}
+manufacturer {
   manufacturer_id: 1735
   manufacturer_name: "L&L Luce&Light"
+}
+manufacturer {
+  manufacturer_id: 20492
+  manufacturer_name: "L.E.C. Societe Lyonnaise D' Equipement Et De Controle"
+}
+manufacturer {
+  manufacturer_id: 23808
+  manufacturer_name: "L1 Inc."
 }
 manufacturer {
   manufacturer_id: 19488
@@ -2185,6 +2749,14 @@ manufacturer {
 manufacturer {
   manufacturer_id: 179
   manufacturer_name: "LANTERN"
+}
+manufacturer {
+  manufacturer_id: 20737
+  manufacturer_name: "LBT Electronics Pvt. Ltd."
+}
+manufacturer {
+  manufacturer_id: 5383
+  manufacturer_name: "LC Handels GmbH"
 }
 manufacturer {
   manufacturer_id: 9762
@@ -2205,6 +2777,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 30900
   manufacturer_name: "LED Flex Limited"
+}
+manufacturer {
+  manufacturer_id: 2036
+  manufacturer_name: "LED Flex Ltd."
 }
 manufacturer {
   manufacturer_id: 476
@@ -2231,16 +2807,48 @@ manufacturer {
   manufacturer_name: "LEDIXIS (Exalux brand)"
 }
 manufacturer {
+  manufacturer_id: 1564
+  manufacturer_name: "LEDRAYS INC"
+}
+manufacturer {
   manufacturer_id: 19542
   manufacturer_name: "LEDValley Technologies Sdn Bhd"
+}
+manufacturer {
+  manufacturer_id: 17715
+  manufacturer_name: "LEDdynamics, Inc."
+}
+manufacturer {
+  manufacturer_id: 28160
+  manufacturer_name: "LEDeco solution, s.r.o."
+}
+manufacturer {
+  manufacturer_id: 2249
+  manufacturer_name: "LEDitgo Videowall Germany GmbH"
 }
 manufacturer {
   manufacturer_id: 5670
   manufacturer_name: "LEDsistem Teknolojileri Tic. Ltd. Sti."
 }
 manufacturer {
+  manufacturer_id: 1578
+  manufacturer_name: "LEDstructures"
+}
+manufacturer {
+  manufacturer_id: 25923
+  manufacturer_name: "LES-TV Ltd."
+}
+manufacturer {
+  manufacturer_id: 2349
+  manufacturer_name: "LG Electronics"
+}
+manufacturer {
   manufacturer_id: 364
   manufacturer_name: "LGR"
+}
+manufacturer {
+  manufacturer_id: 6656
+  manufacturer_name: "LIGEO GmbH"
 }
 manufacturer {
   manufacturer_id: 261
@@ -2249,6 +2857,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 516
   manufacturer_name: "LIGHTLINE Lasertechnik GmbH"
+}
+manufacturer {
+  manufacturer_id: 22356
+  manufacturer_name: "LIGHTMAN (Interlite AB)"
 }
 manufacturer {
   manufacturer_id: 19561
@@ -2285,6 +2897,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 135
   manufacturer_name: "LMBD"
+}
+manufacturer {
+  manufacturer_id: 2276
+  manufacturer_name: "LMP Lichttechnik Vertriebsgesellschaft GmbH & Co KG"
 }
 manufacturer {
   manufacturer_id: 1660
@@ -2340,7 +2956,11 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 9776
-  manufacturer_name: "Laservision Pty Ltd"
+  manufacturer_name: "Laservision"
+}
+manufacturer {
+  manufacturer_id: 89
+  manufacturer_name: "Laysion Lighting Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 2026
@@ -2355,12 +2975,20 @@ manufacturer {
   manufacturer_name: "Ledogen"
 }
 manufacturer {
+  manufacturer_id: 2388
+  manufacturer_name: "Ledtop Visual Ltd."
+}
+manufacturer {
   manufacturer_id: 19557
   manufacturer_name: "Legargeant and Associates"
 }
 manufacturer {
   manufacturer_id: 9778
   manufacturer_name: "Lehigh Electric Products"
+}
+manufacturer {
+  manufacturer_id: 528
+  manufacturer_name: "Leksa Lighting Technologies Pvt. Ltd."
 }
 manufacturer {
   manufacturer_id: 9763
@@ -2395,6 +3023,10 @@ manufacturer {
   manufacturer_name: "Leyard Opto Electronics Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 2296
+  manufacturer_name: "Liberal Logic Inc."
+}
+manufacturer {
   manufacturer_id: 19539
   manufacturer_name: "Licht-, Steuer- und Schaltanlagenbau GmbH (LSS GmbH)"
 }
@@ -2403,12 +3035,24 @@ manufacturer {
   manufacturer_name: "Licht-Technik"
 }
 manufacturer {
+  manufacturer_id: 753
+  manufacturer_name: "Lichtmanufaktur Berlin GmbH"
+}
+manufacturer {
   manufacturer_id: 14295
   manufacturer_name: "Lichttechnik & Sonderbau"
 }
 manufacturer {
+  manufacturer_id: 10622
+  manufacturer_name: "Lifetime Music Academy"
+}
+manufacturer {
   manufacturer_id: 416
   manufacturer_name: "Light With LED"
+}
+manufacturer {
+  manufacturer_id: 6155
+  manufacturer_name: "Light stream"
 }
 manufacturer {
   manufacturer_id: 1696
@@ -2467,11 +3111,15 @@ manufacturer {
   manufacturer_name: "Lightronics Inc."
 }
 manufacturer {
+  manufacturer_id: 2300
+  manufacturer_name: "Lights By Brian"
+}
+manufacturer {
   manufacturer_id: 9764
   manufacturer_name: "Lisys Fenyrendszer Zrt."
 }
 manufacturer {
-  manufacturer_id: 5882
+  manufacturer_id: 2006
   manufacturer_name: "Lite Puter Enterprise Co., Ltd."
 }
 manufacturer {
@@ -2479,8 +3127,16 @@ manufacturer {
   manufacturer_name: "LiteGear Inc."
 }
 manufacturer {
+  manufacturer_id: 19
+  manufacturer_name: "Litemover BV"
+}
+manufacturer {
   manufacturer_id: 9781
   manufacturer_name: "LjusDesign AB"
+}
+manufacturer {
+  manufacturer_id: 21333
+  manufacturer_name: "Lochmun Ltd."
 }
 manufacturer {
   manufacturer_id: 2309
@@ -2489,6 +3145,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 475
   manufacturer_name: "Logen Ltd."
+}
+manufacturer {
+  manufacturer_id: 32493
+  manufacturer_name: "Look Solutions GmbH & Co. KG"
 }
 manufacturer {
   manufacturer_id: 9783
@@ -2507,6 +3167,10 @@ manufacturer {
   manufacturer_name: "LumenRadio AB"
 }
 manufacturer {
+  manufacturer_id: 21
+  manufacturer_name: "Lumencraft Lighting Solutions"
+}
+manufacturer {
   manufacturer_id: 9786
   manufacturer_name: "Lumenec Pty. Ltd."
 }
@@ -2515,8 +3179,24 @@ manufacturer {
   manufacturer_name: "Lumenpulse Lighting Inc."
 }
 manufacturer {
+  manufacturer_id: 1805
+  manufacturer_name: "Lumenwerx ULC"
+}
+manufacturer {
+  manufacturer_id: 191
+  manufacturer_name: "LumiOS (GTR Industries)"
+}
+manufacturer {
   manufacturer_id: 28650
   manufacturer_name: "Lumina Visual Productions"
+}
+manufacturer {
+  manufacturer_id: 29
+  manufacturer_name: "Luminator Technology Group"
+}
+manufacturer {
+  manufacturer_id: 11742
+  manufacturer_name: "Luminlite Electronics Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 147
@@ -2547,6 +3227,10 @@ manufacturer {
   manufacturer_name: "Lumos Design"
 }
 manufacturer {
+  manufacturer_id: 1570
+  manufacturer_name: "Lupo SRL"
+}
+manufacturer {
   manufacturer_id: 748
   manufacturer_name: "Lutron Electronics"
 }
@@ -2561,6 +3245,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 2433
   manufacturer_name: "Luxam, Ltd."
+}
+manufacturer {
+  manufacturer_id: 20736
+  manufacturer_name: "Luxibel"
 }
 manufacturer {
   manufacturer_id: 4832
@@ -2583,6 +3271,10 @@ manufacturer {
   manufacturer_name: "MAL Effekt-Technik GmbH"
 }
 manufacturer {
+  manufacturer_id: 2159
+  manufacturer_name: "MARTINI RUS LLC"
+}
+manufacturer {
   manufacturer_id: 19809
   manufacturer_name: "MARTINI S.p.A."
 }
@@ -2595,12 +3287,20 @@ manufacturer {
   manufacturer_name: "MBN GmbH"
 }
 manufacturer {
+  manufacturer_id: 2292
+  manufacturer_name: "MC Electronic Technology(GZ) Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 2226
   manufacturer_name: "MCI Group"
 }
 manufacturer {
   manufacturer_id: 1190
   manufacturer_name: "MEB Veranstaltungstechnik GmbH"
+}
+manufacturer {
+  manufacturer_id: 20485
+  manufacturer_name: "MEDIAM Ltd. (Modus brand)"
 }
 manufacturer {
   manufacturer_id: 9890
@@ -2615,16 +3315,32 @@ manufacturer {
   manufacturer_name: "MH-Sound"
 }
 manufacturer {
+  manufacturer_id: 1426
+  manufacturer_name: "MIRAGE B.V."
+}
+manufacturer {
   manufacturer_id: 421
   manufacturer_name: "MJ Lighting Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 30565
+  manufacturer_name: "MKT engineering GmbH & Co. KG"
 }
 manufacturer {
   manufacturer_id: 2142
   manufacturer_name: "MMS Distribution Ltd"
 }
 manufacturer {
+  manufacturer_id: 2076
+  manufacturer_name: "MR Electronics Ltd."
+}
+manufacturer {
   manufacturer_id: 10465
   manufacturer_name: "MTC maintronic GmbH"
+}
+manufacturer {
+  manufacturer_id: 23809
+  manufacturer_name: "MTS Medientechnik GmbH"
 }
 manufacturer {
   manufacturer_id: 19800
@@ -2641,6 +3357,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 13192
   manufacturer_name: "Macostar International Ltd."
+}
+manufacturer {
+  manufacturer_id: 24
+  manufacturer_name: "Macroblock, Inc."
 }
 manufacturer {
   manufacturer_id: 2001
@@ -2751,6 +3471,10 @@ manufacturer {
   manufacturer_name: "Moss LED Inc"
 }
 manufacturer {
+  manufacturer_id: 1640
+  manufacturer_name: "Motion FX"
+}
+manufacturer {
   manufacturer_id: 2508
   manufacturer_name: "Motomuto Aps"
 }
@@ -2763,16 +3487,16 @@ manufacturer {
   manufacturer_name: "Mueller Elektronik"
 }
 manufacturer {
+  manufacturer_id: 24157
+  manufacturer_name: "Multisenses GmbH"
+}
+manufacturer {
   manufacturer_id: 5584
   manufacturer_name: "Music & Lights S.r.l."
 }
 manufacturer {
   manufacturer_id: 1715
   manufacturer_name: "NANOLUMENS, INC."
-}
-manufacturer {
-  manufacturer_id: 2132
-  manufacturer_name: "NEC Display Solutions, Ltd."
 }
 manufacturer {
   manufacturer_id: 1835
@@ -2803,6 +3527,10 @@ manufacturer {
   manufacturer_name: "Neon Circus Ltd"
 }
 manufacturer {
+  manufacturer_id: 2295
+  manufacturer_name: "Neotek Lighting"
+}
+manufacturer {
   manufacturer_id: 5674
   manufacturer_name: "Nerd's Meter"
 }
@@ -2813,6 +3541,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 20560
   manufacturer_name: "Newton Engineering and Design Group LLC"
+}
+manufacturer {
+  manufacturer_id: 6588
+  manufacturer_name: "Newtone AS"
 }
 manufacturer {
   manufacturer_id: 13107
@@ -2831,6 +3563,10 @@ manufacturer {
   manufacturer_name: "Ningbo Jeg Lighting Tech Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 28672
+  manufacturer_name: "Nippon Ceramic Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 10036
   manufacturer_name: "Nixer Ltd."
 }
@@ -2839,12 +3575,28 @@ manufacturer {
   manufacturer_name: "Nordgas SNe-lightingsystem"
 }
 manufacturer {
+  manufacturer_id: 549
+  manufacturer_name: "Northern Lights Electronic Design, LLC"
+}
+manufacturer {
+  manufacturer_id: 549
+  manufacturer_name: "Northern Lights Electronic Design, LLC"
+}
+manufacturer {
   manufacturer_id: 13623
   manufacturer_name: "Novacorp Inc."
 }
 manufacturer {
   manufacturer_id: 25089
   manufacturer_name: "NuDelta Digital, LLC"
+}
+manufacturer {
+  manufacturer_id: 4616
+  manufacturer_name: "Nuvolight GmbH & Co KG"
+}
+manufacturer {
+  manufacturer_id: 1522
+  manufacturer_name: "O'Light"
 }
 manufacturer {
   manufacturer_id: 117
@@ -2891,6 +3643,10 @@ manufacturer {
   manufacturer_name: "Ocean Thin Films Inc."
 }
 manufacturer {
+  manufacturer_id: 25
+  manufacturer_name: "Odelic Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 20291
   manufacturer_name: "Offstage Controls (formerly Obsidian Control)"
 }
@@ -2923,6 +3679,14 @@ manufacturer {
   manufacturer_name: "Outsight Pty Ltd."
 }
 manufacturer {
+  manufacturer_id: 20341
+  manufacturer_name: "Outsight Pty Ltd."
+}
+manufacturer {
+  manufacturer_id: 2150
+  manufacturer_name: "PAL Lighting"
+}
+manufacturer {
   manufacturer_id: 20561
   manufacturer_name: "PDQ Manufacturing, Inc"
 }
@@ -2937,6 +3701,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 2005
   manufacturer_name: "PHIDA Stage Equipment Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 2087
+  manufacturer_name: "PIXREAL"
 }
 manufacturer {
   manufacturer_id: 2266
@@ -2977,6 +3745,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 1871
   manufacturer_name: "Panasonic Corporation"
+}
+manufacturer {
+  manufacturer_id: 201
+  manufacturer_name: "Pangaea Technology"
 }
 manufacturer {
   manufacturer_id: 28912
@@ -3031,6 +3803,10 @@ manufacturer {
   manufacturer_name: "Phaton Lighting Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 4617
+  manufacturer_name: "Philippe Bergeron Lights"
+}
+manufacturer {
   manufacturer_id: 20545
   manufacturer_name: "Philips Entertainment Lighting Asia"
 }
@@ -3041,6 +3817,14 @@ manufacturer {
 manufacturer {
   manufacturer_id: 20563
   manufacturer_name: "Philips Selecon"
+}
+manufacturer {
+  manufacturer_id: 11
+  manufacturer_name: "Phospec Industries Inc."
+}
+manufacturer {
+  manufacturer_id: 2502
+  manufacturer_name: "Photon Manufacturing"
 }
 manufacturer {
   manufacturer_id: 477
@@ -3059,12 +3843,24 @@ manufacturer {
   manufacturer_name: "Pioneer Corporation"
 }
 manufacturer {
+  manufacturer_id: 2520
+  manufacturer_name: "Pioneer Lighting Solutions India Pvt Ltd"
+}
+manufacturer {
+  manufacturer_id: 34
+  manufacturer_name: "PixelFLEX, LLC"
+}
+manufacturer {
   manufacturer_id: 28792
   manufacturer_name: "PixelRange Inc."
 }
 manufacturer {
   manufacturer_id: 1804
   manufacturer_name: "Pixout SIA"
+}
+manufacturer {
+  manufacturer_id: 27629
+  manufacturer_name: "Planar Systems, Inc."
 }
 manufacturer {
   manufacturer_id: 10294
@@ -3103,6 +3899,10 @@ manufacturer {
   manufacturer_name: "Project SSSHH Incorporated"
 }
 manufacturer {
+  manufacturer_id: 2128
+  manufacturer_name: "Proland Group, LLC"
+}
+manufacturer {
   manufacturer_id: 2469
   manufacturer_name: "Prolight Concepts Ltd."
 }
@@ -3115,8 +3915,16 @@ manufacturer {
   manufacturer_name: "Pulsar Light of Cambridge Ltd."
 }
 manufacturer {
+  manufacturer_id: 12288
+  manufacturer_name: "PushingPixels"
+}
+manufacturer {
   manufacturer_id: 20813
   manufacturer_name: "QMAXZ lighting"
+}
+manufacturer {
+  manufacturer_id: 1632
+  manufacturer_name: "QSTECH CO.,LTD"
 }
 manufacturer {
   manufacturer_id: 2219
@@ -3137,6 +3945,14 @@ manufacturer {
 manufacturer {
   manufacturer_id: 118
   manufacturer_name: "R. S. Schwarze Elektrotechnik Moderne Industrieelektronik GmbH"
+}
+manufacturer {
+  manufacturer_id: 1922
+  manufacturer_name: "R9 Lighting"
+}
+manufacturer {
+  manufacturer_id: 9472
+  manufacturer_name: "RATOC Systems, Inc."
 }
 manufacturer {
   manufacturer_id: 1366
@@ -3172,6 +3988,10 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 32762
+  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
+}
+manufacturer {
+  manufacturer_id: 32753
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
@@ -3243,6 +4063,10 @@ manufacturer {
   manufacturer_name: "ROE Visual Co. Ltd."
 }
 manufacturer {
+  manufacturer_id: 2299
+  manufacturer_name: "RPA Electronic Solutions Inc."
+}
+manufacturer {
   manufacturer_id: 21069
   manufacturer_name: "RUIZ TECH"
 }
@@ -3287,6 +4111,14 @@ manufacturer {
   manufacturer_name: "Red Lighting s.r.l."
 }
 manufacturer {
+  manufacturer_id: 2211
+  manufacturer_name: "Redot Visual Effect Technologies (Shenzhen) Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 27626
+  manufacturer_name: "Remoticom BV"
+}
+manufacturer {
   manufacturer_id: 18561
   manufacturer_name: "Rena Electronica B.V."
 }
@@ -3309,6 +4141,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 2464
   manufacturer_name: "Rnet Lighting Technology Limited"
+}
+manufacturer {
+  manufacturer_id: 32234
+  manufacturer_name: "RobLight A/S"
 }
 manufacturer {
   manufacturer_id: 21075
@@ -3335,8 +4171,24 @@ manufacturer {
   manufacturer_name: "Rotolight"
 }
 manufacturer {
+  manufacturer_id: 6153
+  manufacturer_name: "Rotolight"
+}
+manufacturer {
+  manufacturer_id: 27242
+  manufacturer_name: "Roxx GmbH"
+}
+manufacturer {
+  manufacturer_id: 2474
+  manufacturer_name: "Rushstage Show Lighting Limited"
+}
+manufacturer {
+  manufacturer_id: 1572
+  manufacturer_name: "S4 Lights"
+}
+manufacturer {
   manufacturer_id: 4641
-  manufacturer_name: "SAGITTER  - Proel"
+  manufacturer_name: "SAGITTER-SDJ-Proel"
 }
 manufacturer {
   manufacturer_id: 164
@@ -3353,6 +4205,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 21322
   manufacturer_name: "SAS Productions"
+}
+manufacturer {
+  manufacturer_id: 1989
+  manufacturer_name: "SBS Lighting LLC"
 }
 manufacturer {
   manufacturer_id: 28784
@@ -3379,16 +4235,36 @@ manufacturer {
   manufacturer_name: "SGM Technology For Lighting SPA"
 }
 manufacturer {
+  manufacturer_id: 1934
+  manufacturer_name: "SHENZHEN BGLOPTO TECHNOLOGY Co., LTD."
+}
+manufacturer {
   manufacturer_id: 1686
   manufacturer_name: "SHENZHEN HOION LIGHTING CO.,LTD"
+}
+manufacturer {
+  manufacturer_id: 1760
+  manufacturer_name: "SHENZHEN LONGRUN OPTOELECTRONIC CO., LTD"
+}
+manufacturer {
+  manufacturer_id: 32492
+  manufacturer_name: "SHENZHEN LP Display"
 }
 manufacturer {
   manufacturer_id: 5418
   manufacturer_name: "SHOWTACLE Ltd."
 }
 manufacturer {
+  manufacturer_id: 1264
+  manufacturer_name: "SIGMA NET"
+}
+manufacturer {
   manufacturer_id: 519
   manufacturer_name: "SILL LIGHTS GmbH"
+}
+manufacturer {
+  manufacturer_id: 20
+  manufacturer_name: "SIRS Electronics, Inc."
 }
 manufacturer {
   manufacturer_id: 2181
@@ -3401,6 +4277,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 21323
   manufacturer_name: "SK-Software"
+}
+manufacturer {
+  manufacturer_id: 1204
+  manufacturer_name: "SKT Inc."
 }
 manufacturer {
   manufacturer_id: 4642
@@ -3421,6 +4301,14 @@ manufacturer {
 manufacturer {
   manufacturer_id: 10665
   manufacturer_name: "SRS Light Design"
+}
+manufacturer {
+  manufacturer_id: 7746
+  manufacturer_name: "SSE GmbH"
+}
+manufacturer {
+  manufacturer_id: 287
+  manufacturer_name: "STF s.r.l."
 }
 manufacturer {
   manufacturer_id: 21364
@@ -3459,6 +4347,10 @@ manufacturer {
   manufacturer_name: "Sand Network Systems"
 }
 manufacturer {
+  manufacturer_id: 1982
+  manufacturer_name: "Sanko Device Co.Ltd."
+}
+manufacturer {
   manufacturer_id: 21320
   manufacturer_name: "Schreder"
 }
@@ -3477,6 +4369,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 4608
   manufacturer_name: "Seekway Technology Limited"
+}
+manufacturer {
+  manufacturer_id: 14301
+  manufacturer_name: "Sehr gute GmbH"
 }
 manufacturer {
   manufacturer_id: 28003
@@ -3499,6 +4395,10 @@ manufacturer {
   manufacturer_name: "Sensation Lighting Technology Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 2261
+  manufacturer_name: "Sense Effects"
+}
+manufacturer {
   manufacturer_id: 5902
   manufacturer_name: "Serva Transport Systems GmbH"
 }
@@ -3511,12 +4411,36 @@ manufacturer {
   manufacturer_name: "Shanghai Moons' Automation Control Co., Ltd"
 }
 manufacturer {
+  manufacturer_id: 20484
+  manufacturer_name: "Shanghai Sansi Electronic Engineering Co.,Ltd"
+}
+manufacturer {
   manufacturer_id: 464
   manufacturer_name: "Shanghai Semping Electronics Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 20482
   manufacturer_name: "Shanghai Shylon Optoelectronic Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 25941
+  manufacturer_name: "Shantea Controls"
+}
+manufacturer {
+  manufacturer_id: 4620
+  manufacturer_name: "Shanxi Tian Gong Sheng Optoelectronic Equipment Technology Co."
+}
+manufacturer {
+  manufacturer_id: 2132
+  manufacturer_name: "Sharp NEC Display Solutions, Ltd."
+}
+manufacturer {
+  manufacturer_id: 547
+  manufacturer_name: "ShenZhen Focus Vision Intelligent System Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2229
+  manufacturer_name: "ShenZhen Sunny Xiao Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 2369
@@ -3527,8 +4451,20 @@ manufacturer {
   manufacturer_name: "Shenzhen AOTO Electronics Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 2037
+  manufacturer_name: "Shenzhen ATENTI Technologies Co., Ltd"
+}
+manufacturer {
   manufacturer_id: 25092
   manufacturer_name: "Shenzhen Absen Optoelectronic Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 20992
+  manufacturer_name: "Shenzhen Aotian Technology Co. , Ltd."
+}
+manufacturer {
+  manufacturer_id: 2046
+  manufacturer_name: "Shenzhen Apexls Optoelectronic Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 22101
@@ -3539,8 +4475,12 @@ manufacturer {
   manufacturer_name: "Shenzhen CLT Electronics Co.,LTD"
 }
 manufacturer {
+  manufacturer_id: 2154
+  manufacturer_name: "Shenzhen Chip Optech Co.,LTD"
+}
+manufacturer {
   manufacturer_id: 778
-  manufacturer_name: "Shenzhen Colordreamer Technology Co., Ltd."
+  manufacturer_name: "Shenzhen Colordreamer Tech Ltd."
 }
 manufacturer {
   manufacturer_id: 2368
@@ -3555,12 +4495,24 @@ manufacturer {
   manufacturer_name: "Shenzhen Doit Vision Co., Ltd"
 }
 manufacturer {
+  manufacturer_id: 2098
+  manufacturer_name: "Shenzhen EXC-LED Technology Co.,Ltd"
+}
+manufacturer {
   manufacturer_id: 15240
   manufacturer_name: "Shenzhen Eastar Electronic Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 1971
+  manufacturer_name: "Shenzhen Fabulux Technology Co., Ltd"
+}
+manufacturer {
   manufacturer_id: 2058
   manufacturer_name: "Shenzhen FantaLED Electronics Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 2238
+  manufacturer_name: "Shenzhen FloatStone Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 2209
@@ -3575,16 +4527,40 @@ manufacturer {
   manufacturer_name: "Shenzhen Ifountain Technology Ltd."
 }
 manufacturer {
+  manufacturer_id: 2517
+  manufacturer_name: "Shenzhen ImagineVision Technology Limited"
+}
+manufacturer {
+  manufacturer_id: 2377
+  manufacturer_name: "Shenzhen Jiuzhou Optoelectronic Technology"
+}
+manufacturer {
+  manufacturer_id: 15
+  manufacturer_name: "Shenzhen L-Thinker Technology Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 32232
   manufacturer_name: "Shenzhen LAMP Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 1687
+  manufacturer_name: "Shenzhen LED Innovator Technology Co., Ltd"
 }
 manufacturer {
   manufacturer_id: 2111
   manufacturer_name: "Shenzhen LeiFei Lighting Technologies Co.,Ltd."
 }
 manufacturer {
+  manufacturer_id: 2257
+  manufacturer_name: "Shenzhen Leqi Network Technology Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 1451
   manufacturer_name: "Shenzhen Lesan Lighting Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 20994
+  manufacturer_name: "Shenzhen Lianjin Photoelectricity Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 469
@@ -3599,6 +4575,22 @@ manufacturer {
   manufacturer_name: "Shenzhen Longrich Energy Sources Technology Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 30
+  manufacturer_name: "Shenzhen Lumi Lime Technology Limited"
+}
+manufacturer {
+  manufacturer_id: 2375
+  manufacturer_name: "Shenzhen MOSO Electronics Technology Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 1979
+  manufacturer_name: "Shenzhen SOSEN Electronics Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2067
+  manufacturer_name: "Shenzhen Scenico Optoelectronic Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 184
   manufacturer_name: "Shenzhen Singba Light Technology Co., Ltd."
 }
@@ -3611,12 +4603,44 @@ manufacturer {
   manufacturer_name: "Shenzhen Tecnon EXCO-Vision Technology Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 2451
+  manufacturer_name: "Shenzhen Trigger digital Technology Co., LTD"
+}
+manufacturer {
   manufacturer_id: 425
   manufacturer_name: "Shenzhen Uniview LED Ltd. Co."
 }
 manufacturer {
+  manufacturer_id: 2278
+  manufacturer_name: "Shenzhen VisionMax Technology Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 20496
+  manufacturer_name: "Shenzhen Viye Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 22
+  manufacturer_name: "Shenzhen Xuntek Electronics Co., Ltd"
+}
+manufacturer {
   manufacturer_id: 520
   manufacturer_name: "Shenzhen Yuming Vision Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2493
+  manufacturer_name: "Shenzhen Zhongbo Photoelectric Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 2112
+  manufacturer_name: "Shenzhen Zwich Science and Technology Co.Ltd."
+}
+manufacturer {
+  manufacturer_id: 2415
+  manufacturer_name: "Shenzhen showho technolgy co.,ltd"
+}
+manufacturer {
+  manufacturer_id: 2503
+  manufacturer_name: "ShoCobra"
 }
 manufacturer {
   manufacturer_id: 20592
@@ -3635,12 +4659,24 @@ manufacturer {
   manufacturer_name: "Showtec (Highlite International B.V.)"
 }
 manufacturer {
+  manufacturer_id: 150
+  manufacturer_name: "SiChuan YuZhiWei Information Technology Lt., Co."
+}
+manufacturer {
+  manufacturer_id: 12290
+  manufacturer_name: "Siberian Lighting"
+}
+manufacturer {
   manufacturer_id: 2365
   manufacturer_name: "Sichuan Hushan Electric Co. Ltd"
 }
 manufacturer {
   manufacturer_id: 2318
   manufacturer_name: "Sichuan esRadio Technology Co., Ltd"
+}
+manufacturer {
+  manufacturer_id: 1992
+  manufacturer_name: "Sidus Link Ltd."
 }
 manufacturer {
   manufacturer_id: 4371
@@ -3651,6 +4687,14 @@ manufacturer {
   manufacturer_name: "Simon Tech"
 }
 manufacturer {
+  manufacturer_id: 21369
+  manufacturer_name: "Singularity (UK) Ltd."
+}
+manufacturer {
+  manufacturer_id: 2167
+  manufacturer_name: "Skaff New Zealand Ltd"
+}
+manufacturer {
   manufacturer_id: 517
   manufacturer_name: "SmartShow UK"
 }
@@ -3659,8 +4703,16 @@ manufacturer {
   manufacturer_name: "Smartpark Creative Solutions"
 }
 manufacturer {
+  manufacturer_id: 6257
+  manufacturer_name: "Smoke Factory GmbH"
+}
+manufacturer {
   manufacturer_id: 278
   manufacturer_name: "SmoothLUX B.V."
+}
+manufacturer {
+  manufacturer_id: 1512
+  manufacturer_name: "Snap One"
 }
 manufacturer {
   manufacturer_id: 2164
@@ -3669,6 +4721,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 6456
   manufacturer_name: "Solid State Luminaires"
+}
+manufacturer {
+  manufacturer_id: 1041
+  manufacturer_name: "SoundSwitch"
 }
 manufacturer {
   manufacturer_id: 21321
@@ -3711,8 +4767,16 @@ manufacturer {
   manufacturer_name: "StageLine Electronic"
 }
 manufacturer {
+  manufacturer_id: 2448
+  manufacturer_name: "Stagelight Holding"
+}
+manufacturer {
   manufacturer_id: 21332
   manufacturer_name: "Stagetronics Ltda"
+}
+manufacturer {
+  manufacturer_id: 2455
+  manufacturer_name: "Star Iluminacao Computadorizada LTDA"
 }
 manufacturer {
   manufacturer_id: 2561
@@ -3749,6 +4813,14 @@ manufacturer {
 manufacturer {
   manufacturer_id: 11720
   manufacturer_name: "Stellascapes"
+}
+manufacturer {
+  manufacturer_id: 126
+  manufacturer_name: "Stichting Hypar Collective"
+}
+manufacturer {
+  manufacturer_id: 1837
+  manufacturer_name: "Sting Alleman"
 }
 manufacturer {
   manufacturer_id: 29548
@@ -3791,6 +4863,10 @@ manufacturer {
   manufacturer_name: "Sunlab Technologies S.L."
 }
 manufacturer {
+  manufacturer_id: 6258
+  manufacturer_name: "Super-Can Industry Growing Co. Ltd."
+}
+manufacturer {
   manufacturer_id: 2542
   manufacturer_name: "Suzhou Pinzong Electronic Technology, CO.,Ltd"
 }
@@ -3823,6 +4899,14 @@ manufacturer {
   manufacturer_name: "TBF-PyroTec GmbH"
 }
 manufacturer {
+  manufacturer_id: 21593
+  manufacturer_name: "TDE-Lighttech B.V."
+}
+manufacturer {
+  manufacturer_id: 1536
+  manufacturer_name: "TELMIC Neo"
+}
+manufacturer {
   manufacturer_id: 1335
   manufacturer_name: "TERMINAL-COM"
 }
@@ -3845,6 +4929,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 90
   manufacturer_name: "TPD Lighting"
+}
+manufacturer {
+  manufacturer_id: 2173
+  manufacturer_name: "TPV Technology Group"
 }
 manufacturer {
   manufacturer_id: 737
@@ -3875,6 +4963,14 @@ manufacturer {
   manufacturer_name: "TecArt Lighting"
 }
 manufacturer {
+  manufacturer_id: 2025
+  manufacturer_name: "TechLink Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 1688
+  manufacturer_name: "Techni-Lux"
+}
+manufacturer {
   manufacturer_id: 2222
   manufacturer_name: "Technical Audio Group Pty Ltd"
 }
@@ -3889,6 +4985,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 13106
   manufacturer_name: "Teclumen s.r.l."
+}
+manufacturer {
+  manufacturer_id: 2172
+  manufacturer_name: "Telectran International Pty Ltd."
 }
 manufacturer {
   manufacturer_id: 21580
@@ -3931,8 +5031,24 @@ manufacturer {
   manufacturer_name: "Times Square Stage Lighting Inc."
 }
 manufacturer {
+  manufacturer_id: 19267
+  manufacturer_name: "TmTech Electronic Co.,Ltd."
+}
+manufacturer {
+  manufacturer_id: 2139
+  manufacturer_name: "Tolifo (Dongguan) Photographic Equipment Co. Ltd"
+}
+manufacturer {
+  manufacturer_id: 5384
+  manufacturer_name: "TommyDMX"
+}
+manufacturer {
   manufacturer_id: 10790
   manufacturer_name: "Toni Maroni Gmb"
+}
+manufacturer {
+  manufacturer_id: 30856
+  manufacturer_name: "Tontron Photoelectric Co., Limited"
 }
 manufacturer {
   manufacturer_id: 1245
@@ -3975,12 +5091,28 @@ manufacturer {
   manufacturer_name: "UberDisplays"
 }
 manufacturer {
+  manufacturer_id: 2040
+  manufacturer_name: "Ultimate Technology Solutions GmbH"
+}
+manufacturer {
   manufacturer_id: 19533
   manufacturer_name: "Ultratec Special Effects"
 }
 manufacturer {
+  manufacturer_id: 23810
+  manufacturer_name: "Underwater Lights Limited"
+}
+manufacturer {
+  manufacturer_id: 20558
+  manufacturer_name: "Uni-Bright nv"
+}
+manufacturer {
   manufacturer_id: 2519
   manufacturer_name: "Unilumin Group"
+}
+manufacturer {
+  manufacturer_id: 8382
+  manufacturer_name: "Uranus Lighting Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 10923
@@ -3999,12 +5131,20 @@ manufacturer {
   manufacturer_name: "Ushio Lighting, Inc."
 }
 manufacturer {
+  manufacturer_id: 2065
+  manufacturer_name: "V-PRO"
+}
+manufacturer {
   manufacturer_id: 265
   manufacturer_name: "V-Productions"
 }
 manufacturer {
   manufacturer_id: 18432
   manufacturer_name: "VOD VISUAL.CO. (UK) Ltd."
+}
+manufacturer {
+  manufacturer_id: 1951
+  manufacturer_name: "VPS Group, LLC"
 }
 manufacturer {
   manufacturer_id: 4941
@@ -4015,8 +5155,16 @@ manufacturer {
   manufacturer_name: "ValDim Waterfountains Ltd."
 }
 manufacturer {
+  manufacturer_id: 548
+  manufacturer_name: "Vanguard LED Displays"
+}
+manufacturer {
   manufacturer_id: 22092
   manufacturer_name: "Vari-Lite, Inc."
+}
+manufacturer {
+  manufacturer_id: 8202
+  manufacturer_name: "Vault189 Pty. Ltd."
 }
 manufacturer {
   manufacturer_id: 7296
@@ -4031,8 +5179,20 @@ manufacturer {
   manufacturer_name: "Vello Light Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 1472
+  manufacturer_name: "Vertigo"
+}
+manufacturer {
   manufacturer_id: 2336
   manufacturer_name: "Vexica Technology Limited"
+}
+manufacturer {
+  manufacturer_id: 28683
+  manufacturer_name: "Vice Lighting DWC LLC"
+}
+manufacturer {
+  manufacturer_id: 24842
+  manufacturer_name: "Visenge Pty. Ltd"
 }
 manufacturer {
   manufacturer_id: 22097
@@ -4067,8 +5227,20 @@ manufacturer {
   manufacturer_name: "W.A. Benjamin Electric Co."
 }
 manufacturer {
+  manufacturer_id: 12
+  manufacturer_name: "WAC Lighting Co."
+}
+manufacturer {
   manufacturer_id: 6678
   manufacturer_name: "WADAK GmbH"
+}
+manufacturer {
+  manufacturer_id: 26112
+  manufacturer_name: "WANTS Electronics Co. Ltd."
+}
+manufacturer {
+  manufacturer_id: 31402
+  manufacturer_name: "WEAD (Wagner Electronic and Design)"
 }
 manufacturer {
   manufacturer_id: 11170
@@ -4085,6 +5257,18 @@ manufacturer {
 manufacturer {
   manufacturer_id: 2515
   manufacturer_name: "WLPS Wodielite Production Services"
+}
+manufacturer {
+  manufacturer_id: 32
+  manufacturer_name: "Wattle IT"
+}
+manufacturer {
+  manufacturer_id: 11741
+  manufacturer_name: "Waylight"
+}
+manufacturer {
+  manufacturer_id: 20491
+  manufacturer_name: "WebKat Eletronic's"
 }
 manufacturer {
   manufacturer_id: 22343
@@ -4107,16 +5291,36 @@ manufacturer {
   manufacturer_name: "Wireless Solution Sweden AB"
 }
 manufacturer {
+  manufacturer_id: 2376
+  manufacturer_name: "Wisconsin Lighting Lab, Inc. (WiLL)"
+}
+manufacturer {
   manufacturer_id: 400
   manufacturer_name: "Wizlogics Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 538
+  manufacturer_name: "WizzuLED by Scooon"
+}
+manufacturer {
+  manufacturer_id: 2395
+  manufacturer_name: "Wuhan Zhongtian Jiaye Mechanical and Electrical Engineering Co. LTD"
 }
 manufacturer {
   manufacturer_id: 22361
   manufacturer_name: "Wybron, Inc."
 }
 manufacturer {
+  manufacturer_id: 1957
+  manufacturer_name: "X LED Systems"
+}
+manufacturer {
   manufacturer_id: 22604
   manufacturer_name: "X-Laser"
+}
+manufacturer {
+  manufacturer_id: 2485
+  manufacturer_name: "XBlack Visual Products"
 }
 manufacturer {
   manufacturer_id: 22629
@@ -4139,6 +5343,10 @@ manufacturer {
   manufacturer_name: "Xenio"
 }
 manufacturer {
+  manufacturer_id: 9473
+  manufacturer_name: "Xero Manufacturing Pty Limited"
+}
+manufacturer {
   manufacturer_id: 195
   manufacturer_name: "Xicato"
 }
@@ -4147,8 +5355,20 @@ manufacturer {
   manufacturer_name: "Xtraordinary Musical Accolade Systems"
 }
 manufacturer {
+  manufacturer_id: 2335
+  manufacturer_name: "Yaham Recience Technology Co,. ltd."
+}
+manufacturer {
+  manufacturer_id: 2066
+  manufacturer_name: "Yamagiwa Corporation"
+}
+manufacturer {
   manufacturer_id: 285
   manufacturer_name: "Yangzhou Zhituo Lighting Vision Technology Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 14
+  manufacturer_name: "Yaoxing Lighting Equipment  (Guanghzou)Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 465
@@ -4159,8 +5379,16 @@ manufacturer {
   manufacturer_name: "YeGrin Liteworks"
 }
 manufacturer {
+  manufacturer_id: 29699
+  manufacturer_name: "Yenrich Technology Corporation"
+}
+manufacturer {
   manufacturer_id: 14341
   manufacturer_name: "Yifeng Lighting Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 2350
+  manufacturer_name: "YouEasy (Dongguan) Electronics Technology Co.,Ltd"
 }
 manufacturer {
   manufacturer_id: 5968
@@ -4181,6 +5409,14 @@ manufacturer {
 manufacturer {
   manufacturer_id: 8201
   manufacturer_name: "Zboxes Intelligent Technology (Shanghai) Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 6401
+  manufacturer_name: "Zhongshan Hiline Electronics Co., Ltd."
+}
+manufacturer {
+  manufacturer_id: 6259
+  manufacturer_name: "Zhongshan Wellmake Electronic Technology Co., Ltd."
 }
 manufacturer {
   manufacturer_id: 172
@@ -4215,6 +5451,10 @@ manufacturer {
   manufacturer_name: "acdc LED Ltd."
 }
 manufacturer {
+  manufacturer_id: 19676
+  manufacturer_name: "acdc LED Ltd."
+}
+manufacturer {
   manufacturer_id: 2322
   manufacturer_name: "ags - Wissenschaftliche Arbeitsgemeinschaft fur Studio- und Senderfragen"
 }
@@ -4225,6 +5465,10 @@ manufacturer {
 manufacturer {
   manufacturer_id: 5776
   manufacturer_name: "awaptec GmbH"
+}
+manufacturer {
+  manufacturer_id: 25676
+  manufacturer_name: "bdL KG"
 }
 manufacturer {
   manufacturer_id: 746
@@ -4259,6 +5503,10 @@ manufacturer {
   manufacturer_name: "eldoLED BV"
 }
 manufacturer {
+  manufacturer_id: 1504
+  manufacturer_name: "esp_dmx"
+}
+manufacturer {
   manufacturer_id: 25927
   manufacturer_name: "euroGenie"
 }
@@ -4267,12 +5515,20 @@ manufacturer {
   manufacturer_name: "eventa Aktiengesellschaft"
 }
 manufacturer {
+  manufacturer_id: 32000
+  manufacturer_name: "expanseElectronics"
+}
+manufacturer {
   manufacturer_id: 774
   manufacturer_name: "feno GmbH"
 }
 manufacturer {
   manufacturer_id: 2205
   manufacturer_name: "gobo.ws"
+}
+manufacturer {
+  manufacturer_id: 28418
+  manufacturer_name: "hazebase (Uta Raabe e.K.)"
 }
 manufacturer {
   manufacturer_id: 20480
@@ -4293,6 +5549,14 @@ manufacturer {
 manufacturer {
   manufacturer_id: 26956
   manufacturer_name: "iLight Technologies Inc"
+}
+manufacturer {
+  manufacturer_id: 2146
+  manufacturer_name: "illuminous"
+}
+manufacturer {
+  manufacturer_id: 2214
+  manufacturer_name: "impulswerk.de"
 }
 manufacturer {
   manufacturer_id: 2487
@@ -4347,6 +5611,10 @@ manufacturer {
   manufacturer_name: "numeo GmbH"
 }
 manufacturer {
+  manufacturer_id: 2068
+  manufacturer_name: "squareV"
+}
+manufacturer {
   manufacturer_id: 5658
   manufacturer_name: "techKnow Design Ltd."
 }
@@ -4370,4 +5638,8 @@ manufacturer {
   manufacturer_id: 15664
   manufacturer_name: "zactrack Lighting Technologies Gmbh"
 }
-version: 1582652364
+manufacturer {
+  manufacturer_id: 32238
+  manufacturer_name: "zencontrol Pty Ltd"
+}
+version: 1678125202

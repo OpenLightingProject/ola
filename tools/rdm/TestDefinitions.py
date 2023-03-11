@@ -3416,7 +3416,7 @@ class SetDeviceHoursWithExtraData(TestMixins.SetWithDataMixin,
                                   OptionalParameterTestFixture):
   """Send a SET DEVICE_HOURS command with extra data."""
   PID = 'DEVICE_HOURS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetDeviceHours(TestMixins.AllSubDevicesGetMixin,
@@ -3480,7 +3480,7 @@ class SetLampHoursWithExtraData(TestMixins.SetWithDataMixin,
                                 OptionalParameterTestFixture):
   """Send a SET LAMP_HOURS command with extra data."""
   PID = 'LAMP_HOURS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetLampHours(TestMixins.AllSubDevicesGetMixin,
@@ -3543,7 +3543,7 @@ class SetLampStrikesWithExtraData(TestMixins.SetWithDataMixin,
                                   OptionalParameterTestFixture):
   """Send a SET LAMP_STRIKES command with extra data."""
   PID = 'LAMP_STRIKES'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetLampStrikes(TestMixins.AllSubDevicesGetMixin,
@@ -3738,7 +3738,7 @@ class SetDevicePowerCyclesWithExtraData(TestMixins.SetWithDataMixin,
                                         OptionalParameterTestFixture):
   """Send a SET DEVICE_POWER_CYCLES command with extra data."""
   PID = 'DEVICE_POWER_CYCLES'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetDevicePowerCycles(TestMixins.AllSubDevicesGetMixin,
@@ -4061,7 +4061,7 @@ class SetRealTimeClockWithExtraData(OptionalParameterTestFixture):
   """Send a SET REAL_TIME_CLOCK command with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'REAL_TIME_CLOCK'
-  DATA = 'foobarbaz'
+  DATA = b'foobarbaz'
 
   def Test(self):
     self.AddIfSetSupported([
@@ -4549,7 +4549,7 @@ class SetCapturePresetWithExtraData(TestMixins.SetWithDataMixin,
                                     OptionalParameterTestFixture):
   """Set capture preset with extra data."""
   PID = 'CAPTURE_PRESET'
-  DATA = 'foobarbaz'
+  DATA = b'foobarbaz'
 
 
 class AllSubDevicesGetCapturePreset(TestMixins.AllSubDevicesUnsupportedGetMixin,
@@ -4583,7 +4583,7 @@ class SetPresetPlaybackWithExtraData(TestMixins.SetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Send a SET PRESET_PLAYBACK command with extra data."""
   PID = 'PRESET_PLAYBACK'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class SetPresetPlayback(OptionalParameterTestFixture):
@@ -4806,7 +4806,7 @@ class SetDMXBlockAddressWithExtraData(TestMixins.SetWithDataMixin,
                                       OptionalParameterTestFixture):
   """Send a SET dmx block address with extra data."""
   PID = 'DMX_BLOCK_ADDRESS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
@@ -5468,7 +5468,7 @@ class SetLockStateWithExtraData(TestMixins.SetWithDataMixin,
                                 OptionalParameterTestFixture):
   """Send a SET LOCK_STATE command with extra data."""
   PID = 'LOCK_STATE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class SetLockState(OptionalParameterTestFixture):
@@ -5976,7 +5976,7 @@ class SetMinimumLevelWithExtraData(TestMixins.SetWithDataMixin,
                                    OptionalParameterTestFixture):
   """Send a SET MINIMUM_LEVEL command with extra data."""
   PID = 'MINIMUM_LEVEL'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # MAXIMUM_LEVEL
@@ -7401,7 +7401,7 @@ class SetDNSIPv4NameServerWithExtraData(TestMixins.SetWithDataMixin,
                                         OptionalParameterTestFixture):
   """Send a SET DNS_IPV4_NAME_SERVER command with extra data."""
   PID = 'DNS_IPV4_NAME_SERVER'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # IPV4_DEFAULT_ROUTE
@@ -7438,7 +7438,7 @@ class SetIPv4DefaultRouteWithExtraData(TestMixins.SetWithDataMixin,
                                        OptionalParameterTestFixture):
   """Send a SET IPV4_DEFAULT_ROUTE command with extra data."""
   PID = 'IPV4_DEFAULT_ROUTE'
-  DATA = 'foobarbaz'
+  DATA = b'foobarbaz'
 
 
 class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
@@ -7479,7 +7479,7 @@ class GetIPv4DHCPModeWithExtraData(TestMixins.GetWithDataMixin,
                                    OptionalParameterTestFixture):
   """GET IPV4_DHCP_MODE with more than 4 bytes of data."""
   PID = 'IPV4_DHCP_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # class SetIPv4DHCPMode(TestMixins.,
@@ -7506,7 +7506,7 @@ class SetIPv4DHCPModeWithExtraData(TestMixins.SetWithDataMixin,
                                    OptionalParameterTestFixture):
   """Send a SET IPV4_DHCP_MODE command with extra data."""
   PID = 'IPV4_DHCP_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # IPV4_ZEROCONF_MODE
@@ -7541,7 +7541,7 @@ class GetIPv4ZeroconfModeWithExtraData(TestMixins.GetWithDataMixin,
                                        OptionalParameterTestFixture):
   """GET IPV4_ZEROCONF_MODE with more than 4 bytes of data."""
   PID = 'IPV4_ZEROCONF_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # class SetIPv4ZeroconfMode(TestMixins.,
@@ -7569,7 +7569,7 @@ class SetIPv4ZeroconfModeWithExtraData(TestMixins.SetWithDataMixin,
                                        OptionalParameterTestFixture):
   """Send a SET IPV4_ZEROCONF_MODE command with extra data."""
   PID = 'IPV4_ZEROCONF_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # IPV4_CURRENT_ADDRESS
@@ -7604,7 +7604,7 @@ class GetIPv4CurrentAddressWithExtraData(TestMixins.GetWithDataMixin,
                                          OptionalParameterTestFixture):
   """GET IPV4_CURRENT_ADDRESS with more than 4 bytes of data."""
   PID = 'IPV4_CURRENT_ADDRESS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class SetIPv4CurrentAddress(TestMixins.UnsupportedSetMixin,
@@ -7651,7 +7651,7 @@ class GetIPv4StaticAddressWithExtraData(TestMixins.GetWithDataMixin,
                                         OptionalParameterTestFixture):
   """GET IPV4_STATIC_ADDRESS with more than 4 bytes of data."""
   PID = 'IPV4_STATIC_ADDRESS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # class SetIPv4StaticAddress(TestMixins.,
@@ -7680,7 +7680,7 @@ class SetIPv4StaticAddressWithExtraData(TestMixins.SetWithDataMixin,
                                         OptionalParameterTestFixture):
   """Send a SET IPV4_STATIC_ADDRESS command with extra data."""
   PID = 'IPV4_STATIC_ADDRESS'
-  DATA = 'foobarbazqux'
+  DATA = b'foobarbazqux'
 
 
 # INTERFACE_RENEW_DHCP
@@ -7727,7 +7727,7 @@ class SetInterfaceRenewDHCPWithExtraData(TestMixins.SetWithDataMixin,
                                          OptionalParameterTestFixture):
   """Send a SET INTERFACE_RENEW_DHCP command with extra data."""
   PID = 'INTERFACE_RENEW_DHCP'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # INTERFACE_RELEASE_DHCP
@@ -7774,7 +7774,7 @@ class SetInterfaceReleaseDHCPWithExtraData(TestMixins.SetWithDataMixin,
                                            OptionalParameterTestFixture):
   """Send a SET INTERFACE_RELEASE_DHCP command with extra data."""
   PID = 'INTERFACE_RELEASE_DHCP'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # INTERFACE_APPLY_CONFIGURATION
@@ -7822,7 +7822,7 @@ class SetInterfaceApplyConfigurationWithExtraData(TestMixins.SetWithDataMixin,
                                                   OptionalParameterTestFixture):
   """Send a SET INTERFACE_APPLY_CONFIGURATION command with extra data."""
   PID = 'INTERFACE_APPLY_CONFIGURATION'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # Interface label
@@ -7847,7 +7847,7 @@ class GetInterfaceLabelWithExtraData(TestMixins.GetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Get the interface label with more than 4 bytes of data."""
   PID = 'INTERFACE_LABEL'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class GetZeroInterfaceLabel(TestMixins.GetZeroUInt32Mixin,
@@ -7901,7 +7901,7 @@ class GetInterfaceHardwareAddressType1WithExtraData(
         OptionalParameterTestFixture):
   """GET INTERFACE_HARDWARE_ADDRESS_TYPE1 with more than 4 bytes of data."""
   PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class GetZeroInterfaceHardwareAddressType1(TestMixins.GetZeroUInt32Mixin,
