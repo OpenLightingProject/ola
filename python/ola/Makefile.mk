@@ -33,6 +33,7 @@ pkgpython_PYTHON = \
     python/ola/RDMAPI.py \
     python/ola/RDMConstants.py \
     python/ola/PidStore.py \
+    python/ola/StringUtils.py \
     python/ola/UID.py \
     python/ola/__init__.py
 endif

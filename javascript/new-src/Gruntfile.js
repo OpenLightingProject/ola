@@ -89,8 +89,7 @@ module.exports = function(grunt) {
         'src/filters/start_form.js'
       ],
       options: {
-        config: true,
-        verbose: true
+        config: true
       }
     },
     watch: {
