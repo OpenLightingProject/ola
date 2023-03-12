@@ -3563,6 +3563,10 @@ manufacturer {
   manufacturer_name: "Ningbo Jeg Lighting Tech Co., Ltd."
 }
 manufacturer {
+  manufacturer_id: 412
+  manufacturer_name: "Ningbo Snappy Optoelectronics Co., Ltd."
+}
+manufacturer {
   manufacturer_id: 28672
   manufacturer_name: "Nippon Ceramic Co., Ltd."
 }
@@ -3573,10 +3577,6 @@ manufacturer {
 manufacturer {
   manufacturer_id: 5966
   manufacturer_name: "Nordgas SNe-lightingsystem"
-}
-manufacturer {
-  manufacturer_id: 549
-  manufacturer_name: "Northern Lights Electronic Design, LLC"
 }
 manufacturer {
   manufacturer_id: 549
@@ -3673,10 +3673,6 @@ manufacturer {
 manufacturer {
   manufacturer_id: 2291
   manufacturer_name: "Outdoor Lasers Ltd."
-}
-manufacturer {
-  manufacturer_id: 20341
-  manufacturer_name: "Outsight Pty Ltd."
 }
 manufacturer {
   manufacturer_id: 20341
@@ -3971,15 +3967,7 @@ manufacturer {
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
-  manufacturer_id: 32760
-  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
-}
-manufacturer {
-  manufacturer_id: 32756
-  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
-}
-manufacturer {
-  manufacturer_id: 32764
+  manufacturer_id: 32753
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
@@ -3987,27 +3975,11 @@ manufacturer {
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
-  manufacturer_id: 32762
+  manufacturer_id: 32755
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
-  manufacturer_id: 32753
-  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
-}
-manufacturer {
-  manufacturer_id: 32758
-  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
-}
-manufacturer {
-  manufacturer_id: 32766
-  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
-}
-manufacturer {
-  manufacturer_id: 32753
-  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
-}
-manufacturer {
-  manufacturer_id: 32761
+  manufacturer_id: 32756
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
@@ -4015,11 +3987,23 @@ manufacturer {
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
-  manufacturer_id: 32765
+  manufacturer_id: 32758
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
-  manufacturer_id: 32755
+  manufacturer_id: 32759
+  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
+}
+manufacturer {
+  manufacturer_id: 32760
+  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
+}
+manufacturer {
+  manufacturer_id: 32761
+  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
+}
+manufacturer {
+  manufacturer_id: 32762
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
@@ -4027,7 +4011,15 @@ manufacturer {
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
-  manufacturer_id: 32759
+  manufacturer_id: 32764
+  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
+}
+manufacturer {
+  manufacturer_id: 32765
+  manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
+}
+manufacturer {
+  manufacturer_id: 32766
   manufacturer_name: "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY"
 }
 manufacturer {
@@ -4165,10 +4157,6 @@ manufacturer {
 manufacturer {
   manufacturer_id: 843
   manufacturer_name: "Rosstech Signals Inc."
-}
-manufacturer {
-  manufacturer_id: 6153
-  manufacturer_name: "Rotolight"
 }
 manufacturer {
   manufacturer_id: 6153
@@ -5451,10 +5439,6 @@ manufacturer {
   manufacturer_name: "acdc LED Ltd."
 }
 manufacturer {
-  manufacturer_id: 19676
-  manufacturer_name: "acdc LED Ltd."
-}
-manufacturer {
   manufacturer_id: 2322
   manufacturer_name: "ags - Wissenschaftliche Arbeitsgemeinschaft fur Studio- und Senderfragen"
 }
@@ -5642,4 +5626,4 @@ manufacturer {
   manufacturer_id: 32238
   manufacturer_name: "zencontrol Pty Ltd"
 }
-version: 1678125202
+version: 1678620347
