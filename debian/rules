@@ -28,4 +28,4 @@ override_dh_clean:
 	dh_clean -a
 
 override_dh_python3:
-    dh_python3 --shebang=/usr/bin/python3
+	dh_python3 --shebang=/usr/bin/python3
