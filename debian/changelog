@@ -1,5 +1,7 @@
 ola (0.10.10-1) UNRELEASED; urgency=medium
 
+  * Fix ola-rdm-tests Debian package by patching python shebangs to python3
+    with dh_python3.
   * Reorder build command line in autopkgtest; Closes: Debian #913704.
   * This change pulled from Debian by Perry Naseck <git@perrynaseck.com>
     https://salsa.debian.org/wouter/ola/-/commit/223f9ddaf9d4001dfc908734f0641315edbf9ea2
