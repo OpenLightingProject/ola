@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   distcheck:
     name: "distcheck ${{ matrix.id }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     container: debian:stable
     timeout-minutes: 360
     strategy:
