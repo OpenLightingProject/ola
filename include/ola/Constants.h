@@ -90,7 +90,7 @@ static const int DMX_BREAK_TIME_MIN = 1204;
 /**
  * @brief The maximum break time for a DMX frame is 1 second (in microseconds).
  */
-static const int DMX_BREAK_TIME_MAX = 1000000; 
+static const int DMX_BREAK_TIME_MAX = 1000000;
 
 /**
  * @brief The time a single bit needs for sending (in microseconds).

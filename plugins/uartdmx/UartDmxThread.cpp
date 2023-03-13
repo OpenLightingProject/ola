@@ -26,7 +26,7 @@
 #include "ola/Clock.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
-#include "ola/StringUtils.h
+#include "ola/StringUtils.h"
 #include "plugins/uartdmx/UartWidget.h"
 #include "plugins/uartdmx/UartDmxThread.h"
 
@@ -142,7 +142,7 @@ void UartDmxThread::WriteDMXToUART(const DmxBuffer &buffer) {
     usleep(DMX_MAB);
 
   m_widget->Write(buffer);
-  
+
   FrameSleep(ts1);
 }
 
