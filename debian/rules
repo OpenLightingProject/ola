@@ -23,9 +23,5 @@ override_dh_installinit:
 override_dh_makeshlibs:
 	dh_makeshlibs -V
 
-override_dh_clean:
-	find . -type d -name '__pycache__' -print0 | xargs -0 rm -rf
-	dh_clean -a
-
 override_dh_python3:
 	dh_python3 --shebang=/usr/bin/python3
