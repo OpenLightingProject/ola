@@ -67,6 +67,7 @@ jobs:
       fail-fast: false
       matrix:
         image_tag: [bullseye, bookworm, sid]
+        architecture: [amd64]
     container: debian:${{ matrix.image_tag }}
     steps:
       - uses: actions/checkout@master
