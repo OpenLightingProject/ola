@@ -5,12 +5,13 @@ name: debian
 on: [push, pull_request]
 jobs:
   debian-build:
-    name: 'Debian Build ${{ matrix.image_tag }} amd64'
+    name: 'Debian Build ${{ matrix.image_tag }} ${{ matrix.architecture }}'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         image_tag: [bullseye, bookworm, sid]
+        architecture: [amd64]
     container: debian:${{ matrix.image_tag }}
     steps:
       - name: Get number of CPU cores
@@ -55,10 +56,10 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: ola-built-debian-${{ matrix.image_tag }}-amd64
+          name: ola-built-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
           path: ./built
   debian-test:
-    name: 'Debian Test ${{ matrix.image_tag }} amd64'
+    name: 'Debian Test ${{ matrix.image_tag }} ${{ matrix.architecture }}'
     needs: debian-build
     if: "always()" # Run if some builds fail but ensure they all complete first
     runs-on: ubuntu-latest
@@ -72,7 +73,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: ola-built-debian-${{ matrix.image_tag }}-amd64
+          name: ola-built-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
           path: built
       - name: Display structure of artifact files
         run: ls -alR
@@ -86,5 +87,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always() # Always upload the test output, even on failed tests
         with:
-          name: ola-test-output-debian-${{ matrix.image_tag }}-amd64
+          name: ola-test-output-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
           path: test-output
