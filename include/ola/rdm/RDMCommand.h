@@ -649,6 +649,14 @@ typedef BaseRDMResponse<RDMCommand::SET_COMMAND_RESPONSE> RDMSetResponse;
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason,
                             uint8_t outstanding_messages = 0);
+
+/**
+ * @brief Make a NACK response with a reason code based on an existing
+ * RDMResponse
+ */
+RDMResponse *NackWithReason(const RDMResponse *response,
+                            rdm_nack_reason reason);
+
 /**
  * @brief Generate an ACK Response with some data
  */
