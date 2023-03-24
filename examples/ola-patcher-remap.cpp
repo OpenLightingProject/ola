@@ -275,7 +275,8 @@ int main(int argc, char *argv[]) {
         STLLookupOrInsertNew(&universe_remaps, source.Universe());
 
     DmxRemap::InChanOutUniChansMap::iterator in_chan_map_iter =
-        STLLookupOrInsertNew(in_uni_map_iter->second, source.ChannelZeroBased());
+        STLLookupOrInsertNew(in_uni_map_iter->second,
+                             source.ChannelZeroBased());
 
     vector<string> value_tokens;
     StringSplit(value, &value_tokens, ",");
