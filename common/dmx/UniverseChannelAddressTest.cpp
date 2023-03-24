@@ -25,6 +25,8 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::dmx::UniverseChannelAddress;
+using ola::dmx::UniverseChannelAddressOneBased;
+using std::ostringstream;
 using std::string;
 
 class UniverseChannelAddressTest: public CppUnit::TestFixture {
@@ -35,6 +37,7 @@ class UniverseChannelAddressTest: public CppUnit::TestFixture {
 
  public:
     void testUniverseChannelAddress();
+    void testUniverseChannelAddressToString();
     void testUniverseChannelAddressFromString();
 };
 
@@ -46,8 +49,18 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UniverseChannelAddressTest);
  */
 void UniverseChannelAddressTest::testUniverseChannelAddress() {
   UniverseChannelAddress universe_channel_address(10, 500);
-  OLA_ASSERT_EQ(static_cast<unsigned int>(10), universe_channel_address.Universe());
-  OLA_ASSERT_EQ(static_cast<uint16_t>(500), universe_channel_address.Channel());
+  OLA_ASSERT_EQ(static_cast<unsigned int>(10),
+                universe_channel_address.Universe());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(500),
+                universe_channel_address.Channel());
+
+  UniverseChannelAddressOneBased universe_channel_address_one_based(10, 501);
+  OLA_ASSERT_EQ(static_cast<unsigned int>(10),
+                universe_channel_address_one_based.Universe());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(501),
+                universe_channel_address_one_based.Channel());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(500),
+                universe_channel_address_one_based.ChannelZeroBased());
 
   // TODO(Peter): Test out of range channel values
 
@@ -73,11 +86,32 @@ void UniverseChannelAddressTest::testUniverseChannelAddress() {
   OLA_ASSERT_GT(universe_channel_address, universe_channel_address4);
   OLA_ASSERT_GT(universe_channel_address3, universe_channel_address4);
 
+  OLA_ASSERT_EQ(universe_channel_address,
+                static_cast<UniverseChannelAddress>(
+                    universe_channel_address_one_based));
+
   // test assignment & copy constructor
   UniverseChannelAddress copy_address(universe_channel_address);
   universe_channel_address4 = universe_channel_address;
   OLA_ASSERT_EQ(universe_channel_address, copy_address);
   OLA_ASSERT_EQ(universe_channel_address, universe_channel_address4);
+}
+
+/**
+ * Test that ToString() works
+ */
+void UniverseChannelAddressTest::testUniverseChannelAddressToString() {
+  UniverseChannelAddress universe_channel_address(10, 500);
+
+  OLA_ASSERT_EQ(string("10:500"), universe_channel_address.ToString());
+
+  universe_channel_address.Universe(100);
+  universe_channel_address.Channel(50);
+  OLA_ASSERT_EQ(string("100:50"), universe_channel_address.ToString());
+
+  ostringstream str;
+  str << universe_channel_address;
+  OLA_ASSERT_EQ(string("100:50"), str.str());
 }
 
 /**
@@ -87,13 +121,39 @@ void UniverseChannelAddressTest::testUniverseChannelAddressFromString() {
   UniverseChannelAddress universe_channel_address;
   OLA_ASSERT_TRUE(
       UniverseChannelAddress::FromString("127:80", &universe_channel_address));
-  OLA_ASSERT_EQ(static_cast<unsigned int>(127), universe_channel_address.Universe());
+  OLA_ASSERT_EQ(static_cast<unsigned int>(127),
+                universe_channel_address.Universe());
   OLA_ASSERT_EQ(static_cast<uint16_t>(80), universe_channel_address.Channel());
+
+  UniverseChannelAddressOneBased universe_channel_address_one_based;
+  OLA_ASSERT_TRUE(UniverseChannelAddressOneBased::FromString(
+      "127:81", &universe_channel_address_one_based));
+  OLA_ASSERT_EQ(static_cast<unsigned int>(127),
+                universe_channel_address_one_based.Universe());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(81),
+                universe_channel_address_one_based.Channel());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(80),
+                universe_channel_address_one_based.ChannelZeroBased());
 
   OLA_ASSERT_FALSE(
       UniverseChannelAddress::FromString("127", &universe_channel_address));
   OLA_ASSERT_FALSE(
       UniverseChannelAddress::FromString("foo", &universe_channel_address));
   OLA_ASSERT_FALSE(
+      UniverseChannelAddress::FromString("127:", &universe_channel_address));
+  OLA_ASSERT_FALSE(
+      UniverseChannelAddress::FromString("foo:", &universe_channel_address));
+  OLA_ASSERT_FALSE(
       UniverseChannelAddress::FromString(":80", &universe_channel_address));
+
+  OLA_ASSERT_FALSE(UniverseChannelAddressOneBased::FromString(
+      "127", &universe_channel_address_one_based));
+  OLA_ASSERT_FALSE(UniverseChannelAddressOneBased::FromString(
+      "foo", &universe_channel_address_one_based));
+  OLA_ASSERT_FALSE(UniverseChannelAddressOneBased::FromString(
+      "127:", &universe_channel_address_one_based));
+  OLA_ASSERT_FALSE(UniverseChannelAddressOneBased::FromString(
+      "foo:", &universe_channel_address_one_based));
+  OLA_ASSERT_FALSE(UniverseChannelAddressOneBased::FromString(
+      ":80", &universe_channel_address_one_based));
 }

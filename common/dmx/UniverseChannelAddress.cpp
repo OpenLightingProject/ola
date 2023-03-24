@@ -68,5 +68,38 @@ UniverseChannelAddress UniverseChannelAddress::FromStringOrDie(
   assert(FromString(address, &universe_channel_address));
   return universe_channel_address;
 }
+
+
+string UniverseChannelAddressOneBased::ToStringZeroBased() const {
+  std::ostringstream str;
+  str << Universe() << ":" << ChannelZeroBased();
+  return str.str();
+}
+
+
+/**
+ * Extract a UniverseChannelAddressOneBased from a string.
+ */
+bool UniverseChannelAddressOneBased::FromString(
+    const string &input,
+    UniverseChannelAddressOneBased *universe_channel_address_one_based) {
+  size_t pos = input.find_first_of(":");
+  if (pos == string::npos) {
+    return false;
+  }
+
+  unsigned int universe;
+  if (!StringToInt(input.substr(0, pos), &universe)) {
+    return false;
+  }
+  uint16_t channel;
+  if (!StringToInt(input.substr(pos + 1), &channel)) {
+    return false;
+  }
+  *universe_channel_address_one_based = UniverseChannelAddressOneBased(
+      universe,
+      channel);
+  return true;
+}
 }  // namespace dmx
 }  // namespace ola

@@ -56,6 +56,7 @@ class UniverseChannelAddress {
       : m_universe(universe),
         m_channel(channel) {
   }
+
   UniverseChannelAddress(const UniverseChannelAddress &other)
       : m_universe(other.m_universe),
         m_channel(other.m_channel) {
@@ -67,7 +68,7 @@ class UniverseChannelAddress {
     if (this != &other) {
       m_universe = other.m_universe;
       m_channel = other.m_channel;
-   }
+    }
     return *this;
   }
 
@@ -124,9 +125,37 @@ class UniverseChannelAddress {
     return out << address.ToString();
   }
 
- private:
+ protected:
   unsigned int m_universe;
   unsigned int m_channel;
+};
+
+/**
+ * @brief The UniverseChannelAddressOneBased class.
+ * @note The channel number here is one based, to suit how users number
+ *     channels. The universe remains zero based throughout.
+ **/
+class UniverseChannelAddressOneBased : public UniverseChannelAddress {
+ public:
+  UniverseChannelAddressOneBased()
+      : UniverseChannelAddress() {
+  }
+
+  UniverseChannelAddressOneBased(unsigned int universe, uint16_t channel)
+      : UniverseChannelAddress(universe, channel - 1) {
+  }
+
+  uint16_t Channel() const { return m_channel + 1; }
+  void Channel(uint16_t channel) { m_channel = channel - 1; }
+
+  uint16_t ChannelZeroBased() const { return m_channel; }
+  void ChannelZeroBased(uint16_t channel) { m_channel = channel; }
+
+  std::string ToStringZeroBased() const;
+
+  static bool FromString(
+      const std::string &str,
+      UniverseChannelAddressOneBased *universe_channel_address_one_based);
 };
 /**
  * @}
