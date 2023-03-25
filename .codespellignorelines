@@ -215,3 +215,5 @@ import java.nio.ByteOrder;
   manufacturer_name: "Shenzhen showho technolgy co.,ltd"
   manufacturer_name: "Interesting Products, Inc."
   manufacturer_name: "Sting Alleman"
+          dcmd mv ../*ges built/
+        run: autopkgtest --output-dir=test-output built/*ges -- null
