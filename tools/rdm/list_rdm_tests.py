@@ -23,6 +23,7 @@ import getpass
 import logging
 import sys
 import textwrap
+
 from ola import PidStore
 
 __author__ = 'Peter Newman'
@@ -152,11 +153,11 @@ def GetWithExtraData(names, pid, pid_test_base_name, get_size):
     print('  PID = \'%s\'' % (pid.name))
     dummy_data = GenerateDummyData(get_size)
     if dummy_data is None:
-      print(("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't "
+      print(("  #DATA = b'foo' # TODO(%s): Specify extra data if this isn't "
              "enough") % (getpass.getuser()))
     elif dummy_data != 'foo':
       # Doesn't match default
-      print("  DATA = '%s'" % (dummy_data))
+      print("  DATA = b'%s'" % (dummy_data))
     print('')
     print('')
 
@@ -271,11 +272,11 @@ def SetWithExtraData(names, pid, pid_test_base_name, set_size):
     print('  PID = \'%s\'' % (pid.name))
     dummy_data = GenerateDummyData(set_size)
     if dummy_data is None:
-      print(("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't "
+      print(("  #DATA = b'foo' # TODO(%s): Specify extra data if this isn't "
              "enough") % (getpass.getuser()))
     elif dummy_data != 'foo':
       # Doesn't match default
-      print("  DATA = '%s'" % (dummy_data))
+      print("  DATA = b'%s'" % (dummy_data))
     print('')
     print('')
 

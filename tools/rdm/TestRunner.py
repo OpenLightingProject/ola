@@ -19,12 +19,16 @@ import datetime
 import inspect
 import logging
 import time
-from TestState import TestState
-from TimingStats import TimingStats
-from ola import PidStore
+
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
-from ola.testing.rdm import ResponderTest
+from ola.testing.rdm.ResponderTest import (OptionalParameterTestFixture,
+                                           ParamDescriptionTestFixture,
+                                           ResponderTestFixture, TestFixture)
+from ola.testing.rdm.TestState import TestState
+from ola.testing.rdm.TimingStats import TimingStats
+
+from ola import PidStore
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
@@ -196,15 +200,18 @@ def GetTestClasses(module):
     if not inspect.isclass(cls):
       continue
     base_classes = [
-        ResponderTest.OptionalParameterTestFixture,
-        ResponderTest.ParamDescriptionTestFixture,
-        ResponderTest.ResponderTestFixture,
-        ResponderTest.TestFixture
+        OptionalParameterTestFixture,
+        ParamDescriptionTestFixture,
+        ResponderTestFixture,
+        TestFixture
     ]
 
     if cls in base_classes:
       continue
-    if issubclass(cls, ResponderTest.TestFixture):
+    # This seems to confuse Python 3 if we compare it to
+    # ResponderTest.TestFixture, some sort of diamond inheritance issue?
+    # So test for the base version of it instead
+    if issubclass(cls, TestFixture):
       classes.append(cls)
   return classes
 

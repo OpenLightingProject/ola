@@ -10,6 +10,7 @@ This plugin supports various USB DMX devices including:
 * DMXCreator 512 Basic
 * Eurolite USB-DMX512 PRO
 * Eurolite USB-DMX512 PRO MK2 (when `enable_eurolite_mk2 = true`)
+* Eurolite freeDMX Wi-Fi
 * Fadecandy
 * FX5 DMX
 * ShowJockey SJ-DMX-U1
