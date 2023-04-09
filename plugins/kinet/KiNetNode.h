@@ -68,12 +68,12 @@ class KiNetNode {
     void PopulatePacketHeader(uint16_t msg_type);
     bool InitNetwork();
 
-    static const uint16_t KINET_PORT = 6038;
-    static const uint32_t KINET_MAGIC_NUMBER = 0x0401dc4a;
-    static const uint16_t KINET_VERSION_ONE = 0x0100;
-    static const uint16_t KINET_DMX_MSG = 0x0101;
-    static const uint16_t KINET_PORTOUT_MSG = 0x0801;
-    static const uint16_t KINET_PORTOUT_MIN_BUFFER_SIZE = 24;
+    static const uint16_t KINET_PORT;
+    static const uint32_t KINET_MAGIC_NUMBER;
+    static const uint16_t KINET_VERSION_ONE;
+    static const uint16_t KINET_DMX_MSG;
+    static const uint16_t KINET_PORTOUT_MSG;
+    static const uint16_t KINET_PORTOUT_MIN_BUFFER_SIZE;
 
     DISALLOW_COPY_AND_ASSIGN(KiNetNode);
 };

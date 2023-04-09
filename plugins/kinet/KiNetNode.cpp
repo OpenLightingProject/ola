@@ -38,6 +38,13 @@ using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
 using std::auto_ptr;
 
+const uint16_t KiNetNode::KINET_PORT = 6038;
+const uint32_t KiNetNode::KINET_MAGIC_NUMBER = 0x0401dc4a;
+const uint16_t KiNetNode::KINET_VERSION_ONE = 0x0100;
+const uint16_t KiNetNode::KINET_DMX_MSG = 0x0101;
+const uint16_t KiNetNode::KINET_PORTOUT_MSG = 0x0801;
+const uint16_t KiNetNode::KINET_PORTOUT_MIN_BUFFER_SIZE = 24;
+
 /*
  * Create a new KiNet node.
  * @param ss a SelectServerInterface to use
