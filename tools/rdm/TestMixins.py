@@ -754,7 +754,7 @@ class SetDmxFailModeMixin(object):
       self.SetBroken('Failed to restore DMX_FAIL_MODE settings')
       return
 
-    for key in ('scene_number', 'hold_time', 'loss_of_signal_delay', 'level'):
+    for key in ('scene_number', 'loss_of_signal_delay', 'hold_time', 'level'):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_FAIL_MODE settings, missing %s' % key)
@@ -784,7 +784,7 @@ class SetDmxStartupModeMixin(object):
       self.SetBroken('Failed to restore DMX_STARTUP_MODE settings')
       return
 
-    for key in ('scene_number', 'hold_time', 'startup_delay', 'level'):
+    for key in ('scene_number', 'startup_delay', 'hold_time', 'level'):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_STARTUP_MODE settings, missing %s' % key)
