@@ -4815,7 +4815,7 @@ class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'DMX_BLOCK_ADDRESS'
 
 
-class AllSubDevicesGetDmxBlockAddress(TestMixins.AllSubDevicesGetMixin,
+class AllSubDevicesGetDMXBlockAddress(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Get DMX_BLOCK_ADDRESS addressed to ALL_SUB_DEVICES."""
   PID = 'DMX_BLOCK_ADDRESS'
