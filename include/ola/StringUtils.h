@@ -262,73 +262,89 @@ bool StringToBoolTolerant(const std::string &value, bool *output);
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  */
 bool StringToInt(const std::string &value,
                  unsigned int *output,
-                 bool strict = false);
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a uint16_t.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
  */
 bool StringToInt(const std::string &value,
                  uint16_t *output,
-                 bool strict = false);
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a uint8_t.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
  */
 bool StringToInt(const std::string &value,
                  uint8_t *output,
-                 bool strict = false);
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a int.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
  */
-bool StringToInt(const std::string &value, int *output, bool strict = false);
+bool StringToInt(const std::string &value,
+                 int *output,
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a int16_t.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
  */
 bool StringToInt(const std::string &value,
                  int16_t *output,
-                 bool strict = false);
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to a int8_t.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns true if the value was converted, false if the string was not an int
  * or the value was too large / small for the type.
  * @sa StringToInt.
  */
-bool StringToInt(const std::string &value, int8_t *output, bool strict = false);
+bool StringToInt(const std::string &value,
+                 int8_t *output,
+                 bool strict = false,
+                 uint8_t base = 10);
 
 /**
  * @brief Convert a string to an int type or return a default if it failed.
@@ -336,82 +352,18 @@ bool StringToInt(const std::string &value, int8_t *output, bool strict = false);
  * @param value the string to convert
  * @param alternative the default value to return if conversion failed.
  * @param[in] strict this controls if trailing characters produce an error.
+ * @param[in] base the base of the number being read
  * @returns the value if it converted successfully or the default if the string
  * was not an int or the value was too large / small for the type.
  */
 template <typename int_type>
 int_type StringToIntOrDefault(const std::string &value,
                               int_type alternative,
-                              bool strict = false) {
+                              bool strict = false,
+                              uint8_t base = 10) {
   int_type output;
-  return (StringToInt(value, &output, strict)) ? output : alternative;
+  return (StringToInt(value, &output, strict, base)) ? output : alternative;
 }
-
-/**
- * @brief Convert a hex string to a uint8_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, uint8_t *output);
-
-/**
- * @brief Convert a hex string to a uint16_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, uint16_t *output);
-
-/**
- * @brief Convert a hex string to a uint32_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, uint32_t *output);
-
-/**
- * @brief Convert a hex string to a int8_t.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- *
- * The string can contain upper or lower case hex characters.
- */
-bool HexStringToInt(const std::string &value, int8_t *output);
-
-/**
- * @brief Convert a hex string to a int16_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, int16_t *output);
-
-/**
- * @brief Convert a hex string to a int32_t.
- *
- * The string can contain upper or lower case hex characters.
- * @param[in] value the string to convert.
- * @param[out] output a pointer to the store the converted value in.
- * @returns true if the value was converted, false if the string was not an int
- * or the value was too large / small for the type.
- */
-bool HexStringToInt(const std::string &value, int32_t *output);
 
 /**
  * @brief Convert a string to lower case.
@@ -489,7 +441,7 @@ bool PrefixedHexStringToInt(const std::string &input, int_type *output) {
   if ((input.find("0x") != 0) && (input.find("0X") != 0))
     return false;
   std::string modified_input = input.substr(2);
-  return HexStringToInt(modified_input, output);
+  return StringToInt(modified_input, output, true, 16);
 }
 
 /**
