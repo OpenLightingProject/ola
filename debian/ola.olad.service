@@ -1,0 +1,14 @@
+[Unit]
+Description=Open Lighting Architecture daemon
+Documentation=man:olad(1)
+After=network.target remote-fs.target
+
+[Service]
+Environment=LOG_LEVEL=3
+Environment=CONFIG_DIR=/var/lib/ola/conf
+User=olad
+ExecStart=/usr/bin/olad --log-level $LOG_LEVEL --config-dir $CONFIG_DIR
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
