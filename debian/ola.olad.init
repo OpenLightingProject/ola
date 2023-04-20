@@ -18,15 +18,12 @@ DESC="OLA daemon"
 USER=olad
 LOG_LEVEL=3
 CONFIG_DIR="/var/lib/ola/conf"
+OLAD_OPTS=""
 
 # Reads config file (will override defaults above)
 [ -r /etc/default/ola ] && . /etc/default/ola
 
-if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
-  DAEMON_ARGS="--syslog --log-level $LOG_LEVEL --config-dir $CONFIG_DIR"
-elif [ "$1" = "start" ] || [ "$1" = "stop" ] ; then
-  echo "The init script is currently inactive;\nuse \"dpkg-reconfigure ola\" to change this." >&2
-fi
+DAEMON_ARGS="--syslog --log-level $LOG_LEVEL --config-dir $CONFIG_DIR $OLAD_OPTS"
 
 [ -x "$DAEMON" ] || exit 0
 
@@ -43,12 +40,10 @@ case "$1" in
     ;;
   stop)
     # master switch
-    if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
-      log_daemon_msg "Stopping $DESC" "$NAME"
-      /sbin/start-stop-daemon --stop --pidfile $PIDFILE --chuid $USER --exec $DAEMON --retry 10
-      /bin/rm -f $PIDFILE
-      log_end_msg $?
-    fi
+    log_daemon_msg "Stopping $DESC" "$NAME"
+    /sbin/start-stop-daemon --stop --pidfile $PIDFILE --chuid $USER --exec $DAEMON --retry 10
+    /bin/rm -f $PIDFILE
+    log_end_msg $?
     ;;
   reload|force-reload|restart)
     $0 stop && $0 start
