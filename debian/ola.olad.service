@@ -5,7 +5,7 @@ After=network.target remote-fs.target
 
 [Service]
 Environment=LOG_LEVEL=3
-Environment=CONFIG_DIR=/var/lib/ola/conf
+Environment=CONFIG_DIR=/etc/ola
 Environment=OLAD_OPTS=
 ExecStart=/usr/bin/olad --log-level $LOG_LEVEL --config-dir $CONFIG_DIR $OLAD_OPTS
 Restart=on-failure

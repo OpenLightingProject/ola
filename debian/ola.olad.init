@@ -17,7 +17,7 @@ PIDFILE=/var/run/$NAME.pid
 DESC="OLA daemon"
 USER=olad
 LOG_LEVEL=3
-CONFIG_DIR="/var/lib/ola/conf"
+CONFIG_DIR="/etc/ola"
 OLAD_OPTS=""
 
 # Reads config file (will override defaults above)
