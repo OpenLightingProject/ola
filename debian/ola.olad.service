@@ -1,7 +1,8 @@
 [Unit]
 Description=Open Lighting Architecture daemon
 Documentation=man:olad(1)
-After=network.target remote-fs.target
+After=network.target remote-fs.target network-online.target
+Wants=network-online.target
 
 [Service]
 User=olad
