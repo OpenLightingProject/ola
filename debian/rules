@@ -20,6 +20,10 @@ override_dh_installinit:
 	dh_installinit -p ola --name=olad
 	dh_installinit -p ola-rdm-tests --name=rdm_test_server
 
+override_dh_installsystemd:
+	dh_installsystemd -p ola --name=olad
+	dh_installsystemd -p ola-rdm-tests --name=rdm_test_server
+
 override_dh_makeshlibs:
 	dh_makeshlibs -V
 
