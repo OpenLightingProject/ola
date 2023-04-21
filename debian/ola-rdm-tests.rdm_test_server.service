@@ -4,9 +4,9 @@ Documentation=man:olad(1)
 After=network.target remote-fs.target olad.service
 
 [Service]
-Environment=OLA_RDM_TEST_SERVER_OPTS=
-ExecStart=/usr/bin/rdm_test_server.py --world-writable $OLA_RDM_TEST_SERVER_OPTS
-Restart=on-failure
+User=olad
+Environment=RDM_TEST_SERVER_OPTS="--world-writable"
+ExecStart=/usr/bin/rdm_test_server.py $RDM_TEST_SERVER_OPTS
 
 [Install]
 WantedBy=multi-user.target
