@@ -1,8 +1,8 @@
 name: build
 on: [push, pull_request]
 jobs:
-  distcheck:
-    name: "distcheck ${{ matrix.id }}"
+  check:
+    name: "check ${{ matrix.id }}"
     runs-on: ubuntu-20.04
     container: debian:stable
     timeout-minutes: 360
@@ -60,8 +60,8 @@ jobs:
         run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
       - name: Configure
         run: ./configure $GH_OLA_CONFIGURE_ARGS
-      - name: distcheck
-        run: make distcheck -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
+      - name: check
+        run: make check -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
       - name: Display structure of the built files
         if: always() && env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
@@ -71,8 +71,8 @@ jobs:
         # If the file does not exist when tar excludes it, then it will not
         # actually exclude it, so it must first be touched
         run: |
-          touch ola-${{ matrix.id }}-distcheck-source-tree.tar.gz
-          tar --exclude=ola-${{ matrix.id }}-distcheck-source-tree.tar.gz -cvzf ola-${{ matrix.id }}-distcheck-source-tree.tar.gz .
+          touch ola-${{ matrix.id }}-check-source-tree.tar.gz
+          tar --exclude=ola-${{ matrix.id }}-check-source-tree.tar.gz -cvzf ola-${{ matrix.id }}-check-source-tree.tar.gz .
       - name: SHA256 artifact archives
         if: always()
         run: sha256sum ola-*.tar.gz
@@ -80,15 +80,15 @@ jobs:
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: ola-${{ matrix.id }}-distcheck-source-tree
-          path: ola-${{ matrix.id }}-distcheck-source-tree.tar.gz
+          name: ola-${{ matrix.id }}-check-source-tree
+          path: ola-${{ matrix.id }}-check-source-tree.tar.gz
       - name: Upload built artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ola-${{ matrix.id }}-distcheck
+          name: ola-${{ matrix.id }}-check
           path: |
             ola-*.tar.gz
-            !ola-${{ matrix.id }}-distcheck-source-tree.tar.gz
+            !ola-${{ matrix.id }}-check-source-tree.tar.gz
       - name: Install dependencies to verify trees
         run: apt-get install -y python-is-python3
       - name: Verify trees
