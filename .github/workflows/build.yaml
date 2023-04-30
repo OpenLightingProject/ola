@@ -4,7 +4,9 @@ jobs:
   build:
     name: "${{ matrix.id }}"
     runs-on: ubuntu-20.04
-    container: debian:stable
+    container:
+      image: debian:stable
+      options: --user 1000 # cannot run CredentialsTest as root
     timeout-minutes: 360
     strategy:
       fail-fast: false
