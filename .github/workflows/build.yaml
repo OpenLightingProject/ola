@@ -49,10 +49,8 @@ jobs:
       - name: Autoreconf
         run: autoreconf -i
       - name: Set configure arguments
-        # usbdmx may cause GH action build to hang and fail
-        # TODO(Perry): re-renable ja-rule, usbdmx, and usbpro
         run: |
-          echo "GH_OLA_CONFIGURE_ARGS=--enable-rdm-tests --enable-java-libs --enable-e133 --disable-usbdmx --disable-usbpro" >> $GITHUB_ENV
+          echo "GH_OLA_CONFIGURE_ARGS=--enable-rdm-tests --enable-java-libs --enable-ja-rule --enable-e133" >> $GITHUB_ENV
       - name: Set additional Linux configure arguments
         if: runner.os == 'Linux'
         # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
@@ -63,7 +61,9 @@ jobs:
       - name: Configure
         run: ./configure $GH_OLA_CONFIGURE_ARGS
       - name: check
-        run: make check -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
+        # TODO(Perry): Parallelization causes GH Actions to hang
+        # run: make check -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
+        run: make check -j1 VERBOSE=1
       - name: Display structure of the built files
         if: always() && env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
