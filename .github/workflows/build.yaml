@@ -1,8 +1,8 @@
 name: build
 on: [push, pull_request]
 jobs:
-  check:
-    name: "check ${{ matrix.id }}"
+  build:
+    name: "${{ matrix.id }}"
     runs-on: ubuntu-20.04
     container: debian:stable
     timeout-minutes: 360
@@ -10,8 +10,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { id: "debian-stable-amd64-gcc",   compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
-          - { id: "debian-stable-amd64-clang", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
+          - { id: "check-debian-stable-amd64-gcc",       task: "check",     compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
+          - { id: "check-debian-stable-amd64-clang",     task: "check",     compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
+          - { id: "distcheck-debian-stable-amd64-gcc",   task: "distcheck", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
+          - { id: "distcheck-debian-stable-amd64-clang", task: "distcheck", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
     env:
       CC: "${{ matrix.compiler.CC }}"
       CXX: "${{ matrix.compiler.CXX }}"
@@ -61,9 +63,8 @@ jobs:
       - name: Configure
         run: ./configure $GH_OLA_CONFIGURE_ARGS
       - name: check
-        # TODO(Perry): Parallelization causes GH Actions to hang
-        # run: make check -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
-        run: make check -j1 VERBOSE=1
+        # TODO(Perry): Parallelization causes GH Actions to hang -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
+        run: make {{ matrix.task }} -j1 VERBOSE=1
       - name: Display structure of the built files
         if: always() && env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
