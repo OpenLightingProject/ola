@@ -4,9 +4,7 @@ jobs:
   build:
     name: "${{ matrix.id }}"
     runs-on: ubuntu-20.04
-    container:
-      image: debian:stable
-      options: --user 1000 # cannot run CredentialsTest as root
+    container: debian:stable
     timeout-minutes: 360
     strategy:
       fail-fast: false
@@ -30,13 +28,13 @@ jobs:
       # create a .git folder or .git.config. The Problem Matcher looks for
       # .git/config to find where the root of the repo is, so it must be
       # present.
-      - name: Install Git
+      - name: Install Git and adduser
         run: apt-get -y install git
       - uses: actions/checkout@v3
       - name: Install build tools
         shell: bash
         run: |
-          apt-get -y install pkg-config libtool autoconf \
+          apt-get -y install adduser pkg-config libtool autoconf \
             automake g++ bison flex make bash-completion dh-autoreconf \
             debhelper devscripts wget python3-pip
       - name: Install build dependencies
@@ -50,8 +48,13 @@ jobs:
       - name: Install compiler
         shell: bash
         run: apt-get -y install ${{ matrix.compiler.pkg }}
+      - name: Set up build user
+        run: |
+          adduser --disabled-password --gecos "" builduser
+          chown -R builduser:builduser .
+          chown builduser:builduser ..
       - name: Autoreconf
-        run: autoreconf -i
+        run: sudo -u builduser autoreconf -i
       - name: Set configure arguments
         run: |
           echo "GH_OLA_CONFIGURE_ARGS=--enable-rdm-tests --enable-java-libs --enable-ja-rule --enable-e133" >> $GITHUB_ENV
@@ -63,10 +66,10 @@ jobs:
       - name: Print configure command
         run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
       - name: Configure
-        run: ./configure $GH_OLA_CONFIGURE_ARGS
+        run: sudo -u builduser ./configure $GH_OLA_CONFIGURE_ARGS
       - name: ${{ matrix.task }}
         # TODO(Perry): Parallelization causes GH Actions to hang -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
-        run: make ${{ matrix.task }} -j1 VERBOSE=1
+        run: sudo -u builduser make ${{ matrix.task }} -j1 VERBOSE=1
       - name: Display structure of the built files
         if: always() && env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
