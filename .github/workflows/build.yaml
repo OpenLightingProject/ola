@@ -64,7 +64,7 @@ jobs:
         run: ./configure $GH_OLA_CONFIGURE_ARGS
       - name: check
         # TODO(Perry): Parallelization causes GH Actions to hang -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
-        run: make {{ matrix.task }} -j1 VERBOSE=1
+        run: make ${{ matrix.task }} -j1 VERBOSE=1
       - name: Display structure of the built files
         if: always() && env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
