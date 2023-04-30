@@ -28,13 +28,13 @@ jobs:
       # create a .git folder or .git.config. The Problem Matcher looks for
       # .git/config to find where the root of the repo is, so it must be
       # present.
-      - name: Install Git and adduser
+      - name: Install Git
         run: apt-get -y install git
       - uses: actions/checkout@v3
       - name: Install build tools
         shell: bash
         run: |
-          apt-get -y install adduser pkg-config libtool autoconf \
+          apt-get -y install adduser sudo pkg-config libtool autoconf \
             automake g++ bison flex make bash-completion dh-autoreconf \
             debhelper devscripts wget python3-pip
       - name: Install build dependencies
@@ -48,7 +48,7 @@ jobs:
       - name: Install compiler
         shell: bash
         run: apt-get -y install ${{ matrix.compiler.pkg }}
-      - name: Set up build user
+      - name: Set up build user # CredentialsTest cannot run as root
         run: |
           adduser --disabled-password --gecos "" builduser
           chown -R builduser:builduser .
