@@ -62,7 +62,7 @@ jobs:
         run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
       - name: Configure
         run: ./configure $GH_OLA_CONFIGURE_ARGS
-      - name: check
+      - name: ${{ matrix.task }}
         # TODO(Perry): Parallelization causes GH Actions to hang -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
         run: make ${{ matrix.task }} -j1 VERBOSE=1
       - name: Display structure of the built files
@@ -74,8 +74,8 @@ jobs:
         # If the file does not exist when tar excludes it, then it will not
         # actually exclude it, so it must first be touched
         run: |
-          touch ola-${{ matrix.id }}-check-source-tree.tar.gz
-          tar --exclude=ola-${{ matrix.id }}-check-source-tree.tar.gz -cvzf ola-${{ matrix.id }}-check-source-tree.tar.gz .
+          touch ola-${{ matrix.id }}-source-tree.tar.gz
+          tar --exclude=ola-${{ matrix.id }}-source-tree.tar.gz -cvzf ola-${{ matrix.id }}-source-tree.tar.gz .
       - name: SHA256 artifact archives
         if: always()
         run: sha256sum ola-*.tar.gz
@@ -83,15 +83,15 @@ jobs:
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: ola-${{ matrix.id }}-check-source-tree
-          path: ola-${{ matrix.id }}-check-source-tree.tar.gz
+          name: ola-${{ matrix.id }}-source-tree
+          path: ola-${{ matrix.id }}-source-tree.tar.gz
       - name: Upload built artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ola-${{ matrix.id }}-check
+          name: ola-${{ matrix.id }}
           path: |
             ola-*.tar.gz
-            !ola-${{ matrix.id }}-check-source-tree.tar.gz
+            !ola-${{ matrix.id }}-source-tree.tar.gz
       - name: Install dependencies to verify trees
         run: apt-get install -y python-is-python3
       - name: Verify trees
