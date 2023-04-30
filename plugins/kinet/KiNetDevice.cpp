@@ -60,12 +60,13 @@ KiNetDevice::KiNetDevice(
     PluginAdaptor *plugin_adaptor,
     KiNetNode *node,
     Preferences *preferences)
-    // TODO(Peter): Override this name properly
     : Device(owner, KINET_DEVICE_NAME),
       m_power_supply(power_supply),
       m_plugin_adaptor(plugin_adaptor),
       m_node(node),
       m_preferences(preferences) {
+  // set up some per-device default configuration if not already set
+  SetDefaults();
 }
 
 
@@ -85,14 +86,23 @@ string KiNetDevice::ModeKey() const {
 
 
 void KiNetDevice::SetDefaults() {
+  if (!m_preferences) {
+    return;
+  }
+
+  bool save = false;
+
   // Set device options
   set<string> valid_modes;
   valid_modes.insert(DMXOUT_MODE);
   valid_modes.insert(PORTOUT_MODE);
-  m_preferences->SetDefaultValue(ModeKey(),
-                                 SetValidator<string>(valid_modes),
-                                 DMXOUT_MODE);
-  m_preferences->Save();
+  save |= m_preferences->SetDefaultValue(ModeKey(),
+                                         SetValidator<string>(valid_modes),
+                                         DMXOUT_MODE);
+
+  if (save) {
+    m_preferences->Save();
+  }
 }
 
 const char KiNetPortOutDevice::KINET_PORT_OUT_DEVICE_NAME[] =
@@ -112,6 +122,9 @@ KiNetPortOutDevice::KiNetPortOutDevice(
                   plugin_adaptor,
                   node,
                   preferences) {
+  // set up some Port Out specific per-device default configuration if not
+  // already set
+  SetDefaults();
 }
 
 
@@ -124,8 +137,6 @@ bool KiNetPortOutDevice::StartHook() {
   str << KINET_PORT_OUT_DEVICE_NAME << " [Power Supply "
       << m_power_supply.ToString() << "]";
   SetName(str.str());
-
-  SetDefaults();
 
   uint8_t port_count;
   if (!StringToInt(m_preferences->GetValue(PortCountKey()), &port_count)) {
@@ -147,14 +158,21 @@ string KiNetPortOutDevice::PortCountKey() const {
 
 
 void KiNetPortOutDevice::SetDefaults() {
-  // Set the base device defaults
-  KiNetDevice::SetDefaults();
-  // Set device options
-  m_preferences->SetDefaultValue(
+  // Set port out specific device options
+  if (!m_preferences) {
+    return;
+  }
+
+  bool save = false;
+
+  save |= m_preferences->SetDefaultValue(
       PortCountKey(),
       UIntValidator(1, KINET_PORTOUT_MAX_PORT_COUNT),
       KINET_PORTOUT_MAX_PORT_COUNT);
-  m_preferences->Save();
+
+  if (save) {
+    m_preferences->Save();
+  }
 }
 
 
@@ -190,12 +208,6 @@ bool KiNetDmxOutDevice::StartHook() {
 
   AddPort(new KiNetDmxOutOutputPort(this, m_power_supply, m_node));
   return true;
-}
-
-
-void KiNetDmxOutDevice::SetDefaults() {
-  // Set the base device defaults
-  KiNetDevice::SetDefaults();
 }
 }  // namespace kinet
 }  // namespace plugin

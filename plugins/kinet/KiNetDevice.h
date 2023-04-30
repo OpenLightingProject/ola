@@ -44,8 +44,7 @@ class KiNetDevice: public ola::Device {
   std::string ModeKey() const;
   void SetDefaults();
 
-  // We can stream the same universe to multiple IPs
-  // TODO(Peter): Remove this when we have a device per IP
+  // We can stream the same universe to multiple IPs or ports on an IP
   bool AllowMultiPortPatching() const { return true; }
 
   static const char DMXOUT_MODE[];
@@ -86,8 +85,6 @@ class KiNetDmxOutDevice: public KiNetDevice {
                     class PluginAdaptor *plugin_adaptor,
                     class KiNetNode *node,
                     class Preferences *preferences);
-
-  void SetDefaults();
 
  protected:
   bool StartHook();

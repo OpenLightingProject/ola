@@ -73,7 +73,7 @@ bool KiNetPlugin::StartHook() {
     IPV4Address target;
     if (IPV4Address::FromString(*iter, &target)) {
       string mode = m_preferences->GetValue(KiNetDevice::ModeKey(target));
-      OLA_DEBUG << "Got mode " << mode;
+      OLA_DEBUG << "Got mode " << mode << " for " << target;
       KiNetDevice *device = NULL;
       if (mode.compare(KiNetDevice::PORTOUT_MODE) == 0) {
         device = new KiNetPortOutDevice(this,
@@ -100,7 +100,7 @@ bool KiNetPlugin::StartHook() {
       m_devices.push_back(device);
       m_plugin_adaptor->RegisterDevice(device);
     } else {
-      OLA_WARN << "Invalid power supply IP address : " << *iter;
+      OLA_WARN << "Invalid power supply IP address: " << *iter;
     }
   }
   return true;
