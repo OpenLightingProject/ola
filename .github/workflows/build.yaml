@@ -4,16 +4,16 @@ jobs:
   build:
     name: "${{ matrix.id }}"
     runs-on: ubuntu-20.04
-    container: debian:stable
+    container: ${{ matrix.container }}
     timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { id: "check-debian-stable-amd64-gcc",       task: "check",     compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
-          - { id: "check-debian-stable-amd64-clang",     task: "check",     compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
-          - { id: "distcheck-debian-stable-amd64-gcc",   task: "distcheck", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
-          - { id: "distcheck-debian-stable-amd64-clang", task: "distcheck", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
+          - { id: "check-debian-stable-amd64-gcc",       task: "check",     container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
+          - { id: "check-debian-stable-amd64-clang",     task: "check",     container: "debian:stable", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
+          - { id: "distcheck-debian-stable-amd64-gcc",   task: "distcheck", container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
+          - { id: "distcheck-debian-stable-amd64-clang", task: "distcheck", container: "debian:stable", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
     env:
       CC: "${{ matrix.compiler.CC }}"
       CXX: "${{ matrix.compiler.CXX }}"
@@ -98,11 +98,14 @@ jobs:
             ola-*.tar.gz
             !ola-${{ matrix.id }}-source-tree.tar.gz
       - name: Install dependencies to verify trees
+        if: ${{ matrix.task }} == "distcheck"
         run: apt-get install -y python-is-python3
       - name: Verify trees
+        if: ${{ matrix.task }} == "distcheck
         shell: bash
+        # Use second-most-recently-created file; first is the source tree
         run: |
-          tarball=$(ls -Ut ola*.tar.gz | head -1)
+          tarball=$(ls --time=birth ola*.tar.gz | sed -n '2 p')
           tar -zxf $tarball;
           tarball_root=$(echo $tarball | sed 's/.tar.gz$//')
           ./scripts/verify_trees.py ./ $tarball_root
