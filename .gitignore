@@ -250,3 +250,9 @@ javascript/new-src/node_modules
 .autotools
 .cproject
 .settings
+coverage.txt
+coverage.csv
+coverage.json
+coverage.xml
+coverage.html
+coverage.coveralls.json
