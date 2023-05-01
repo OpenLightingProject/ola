@@ -98,10 +98,10 @@ jobs:
             ola-*.tar.gz
             !ola-${{ matrix.id }}-source-tree.tar.gz
       - name: Install dependencies to verify trees
-        if: ${{ matrix.task == "distcheck" }}
+        if: matrix.task == 'distcheck'
         run: apt-get install -y python-is-python3
       - name: Verify trees
-        if: ${{ matrix.task == "distcheck" }}
+        if: matrix.task == 'distcheck'
         shell: bash
         # Use second-most-recently-created file; first is the source tree
         run: |
