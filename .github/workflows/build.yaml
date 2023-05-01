@@ -97,15 +97,44 @@ jobs:
           path: |
             ola-*.tar.gz
             !ola-${{ matrix.id }}-source-tree.tar.gz
+  verify-trees:
+    name: 'Verify trees for ${{ matrix.id }}'
+    needs: build
+    if: "always()" # Run if some builds fail but ensure they all complete first
+    container: debian:stable
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: "distcheck-debian-stable-amd64-gcc"   }
+          - { id: "distcheck-debian-stable-amd64-clang" }
+    steps:
+      - uses: actions/checkout@master
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-${{ matrix.id }}-source-tree
+          path: built
+      - name: Display structure of artifact files
+        if: always() && env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+        working-directory: built
+      - name: Update package database
+        run: apt-get update -y
       - name: Install dependencies to verify trees
-        if: matrix.task == 'distcheck'
         run: apt-get install -y python-is-python3
-      - name: Verify trees
-        if: matrix.task == 'distcheck'
-        shell: bash
-        # Use second-most-recently-created file; first is the source tree
+      - name: Find dist build tarball
         run: |
-          tarball=$(ls --time=birth ola*.tar.gz | sed -n '2 p')
-          tar -zxf $tarball;
-          tarball_root=$(echo $tarball | sed 's/.tar.gz$//')
-          ./scripts/verify_trees.py ./ $tarball_root
+          echo "GH_OLA_VERIFY_TREES_TARBALL=$(ls --time=birth ola*.tar.gz| head -1)" >> $GITHUB_ENV
+        working-directory: built
+      - name: Print dist build tarball name
+        run: echo "$GH_OLA_VERIFY_TREES_TARBALL"
+        working-directory: built
+      - name: Extract dist build
+        run: tar -zxvf $GH_OLA_VERIFY_TREES_TARBALL
+        working-directory: built
+      - name: Verify trees
+        shell: bash
+        run: ./scripts/verify_trees.py ./ $(echo $GH_OLA_VERIFY_TREES_TARBALL | sed 's/.tar.gz$//')
+        working-directory: built
