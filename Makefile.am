@@ -263,3 +263,27 @@ if FOUND_CPPLINT
 else
 	$(error cpplint not found. Install the forked cpplint (e.g. via pip for the latest version) and re-run configure.)
 endif
+
+# coverage
+COVERAGE_OUTPUTS = --txt coverage.txt \
+	--csv coverage.csv \
+	--json coverage.json \
+	--xml coverage.xml \
+	--html coverage.html --html-self-contained \
+	--coveralls coverage.coveralls.json
+COVERAGE_GCOV_EXE=--gcov-executable /usr/bin/gcov
+COVERAGE_FILTERS=-e '.*Test\.cpp$$' \
+	-e '.*\.pb\.cc$$' \
+	-e '.*\.pb\.cpp$$' \
+	-e '.*\.pb\.h$$' \
+	-e '.*\.yy\.cpp$$' \
+	-e '.*\.tab\.cpp$$' \
+	-e '.*\.tab\.h$$' \
+	-e '.*/doxygen/examples.*$$'
+.PHONY : coverage
+coverage: Makefile.am
+if FOUND_GCOVR
+	gcovr --print-summary $(COVERAGE_OUTPUTS) $(COVERAGE_GCOV_EXE) --root . $(COVERAGE_FILTERS)
+else
+	$(error gcovr not found. Install gcovr (e.g. via pip for the latest version) and re-run configure.)
+endif

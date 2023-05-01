@@ -962,6 +962,10 @@ AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
 AC_CHECK_PROG([cpplint],[cpplint],[yes],[no])
 AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
 
+# Coverage
+AC_CHECK_PROG([gcovr],[gcovr],[yes],[no])
+AM_CONDITIONAL([FOUND_GCOVR], [test "x$gcovr" = xyes])
+
 # Output
 #####################################################
 # Hack alert!
@@ -1036,4 +1040,5 @@ Now type 'make @<:@<target>@:>@'
     check        - run the tests
     doxygen-doc  - generate the HTML documentation
     lint         - run the linters
+    coverage     - generate coverage post --enable-gcov
 -------------------------------------------------------"

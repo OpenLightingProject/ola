@@ -36,6 +36,8 @@ jobs:
           apt-get -y install adduser sudo pkg-config libtool autoconf \
             automake g++ bison flex make bash-completion dh-autoreconf \
             debhelper devscripts wget python3-pip
+      - name: Install Python build tools
+        run: python3 -m pip install --no-input gcovr
       - name: Install build dependencies
         shell: bash
         run: |
@@ -126,13 +128,20 @@ jobs:
       - name: Update package database
         run: apt-get update -y
       - name: Install coverage tools
-        run: apt-get -y install curl gcc python3-pip libcppunit-dev
+        run: apt-get -y install curl gcc python3-pip
       - name: Install Python coverage tools
         run: python3 -m pip install --no-input gcovr
-      - name: Run gcovr
+      - name: Install build dependencies
         shell: bash
         run: |
-          python3 -m gcovr --print-summary --txt coverage.txt --csv coverage.csv --json coverage.json --xml coverage.xml --html coverage.html --html-self-contained --coveralls coverage.coveralls.json --gcov-executable /usr/bin/gcov --root . -e '.*Test\.cpp$' -e '.*\.pb\.cc$' -e '.*\.pb\.cpp$' -e '.*\.pb\.h$' -e '.*\.yy\.cpp$' -e '.*\.tab\.cpp$' -e '.*\.tab\.h$' -e '.*/doxygen/examples.*$'
+          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
+            libmicrohttpd-dev protobuf-compiler python3-protobuf \
+            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
+            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy \
+            default-jdk-headless maven
+      - name: Generate coverage
+        shell: bash
+        run: make coverage VERBOSE=1
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2
         with:
