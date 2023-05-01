@@ -49,6 +49,7 @@ config.h.in~
 config.log
 config.status
 configure
+coverage/
 cpplint.py
 doxygen_entrydb_*.tmp
 doxygen_objdb_*.tmp
@@ -250,9 +251,3 @@ javascript/new-src/node_modules
 .autotools
 .cproject
 .settings
-coverage.txt
-coverage.csv
-coverage.json
-coverage.xml
-coverage.html
-coverage.coveralls.json

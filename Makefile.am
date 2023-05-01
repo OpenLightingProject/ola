@@ -265,12 +265,12 @@ else
 endif
 
 # coverage
-COVERAGE_OUTPUTS = --txt coverage.txt \
-	--csv coverage.csv \
-	--json coverage.json \
-	--xml coverage.xml \
-	--html coverage.html --html-self-contained \
-	--coveralls coverage.coveralls.json
+COVERAGE_OUTPUTS = --txt coverage/coverage.txt \
+	--csv coverage/coverage.csv \
+	--json coverage/coverage.json \
+	--xml coverage/coverage.xml \
+	--html-details coverage/details.html/coverage.details.html \
+	--coveralls coverage/coverage.coveralls.json
 COVERAGE_GCOV_EXE=--gcov-executable /usr/bin/gcov
 COVERAGE_FILTERS=-e '.*Test\.cpp$$' \
 	-e '.*\.pb\.cc$$' \
@@ -283,6 +283,7 @@ COVERAGE_FILTERS=-e '.*Test\.cpp$$' \
 .PHONY : coverage
 coverage: Makefile.am
 if FOUND_GCOVR
+	mkdir -p coverage/details.html/
 	gcovr --print-summary $(COVERAGE_OUTPUTS) $(COVERAGE_GCOV_EXE) --root . $(COVERAGE_FILTERS)
 else
 	$(error gcovr not found. Install gcovr (e.g. via pip for the latest version) and re-run configure.)

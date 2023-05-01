@@ -149,7 +149,7 @@ jobs:
           # Coveralls GitHub action does not support its own format
           # see: https://github.com/coverallsapp/github-action/issues/104
           # file: coverage.coveralls.json
-          file: coverage.txt
+          file: coverage/coverage.xml
           format: gcov
           flag-name: ${{ matrix.id }}
       - name: Upload coverage artifacts
@@ -157,13 +157,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ola-${{ matrix.id }}-coverage
-          path: |
-            coverage.txt
-            coverage.csv
-            coverage.json
-            coverage.xml
-            coverage.html
-            coverage.coveralls.json
+          path: coverage/
   verify-trees:
     name: 'Verify trees for ${{ matrix.id }}'
     needs: build
