@@ -96,13 +96,45 @@ jobs:
           path: |
             ola-*.tar.gz
             !ola-${{ matrix.id }}-source-tree.tar.gz
-      - name: Install curl
-        if: always() && contains(matrix.configure-args, '--enable-gcov')
-        run: apt-get -y install curl
+  coverage:
+    name: 'Coverage for ${{ matrix.id }}'
+    needs: build
+    if: "always()" # Run if some builds fail but ensure they all complete first
+    container: debian:stable
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: "coverage-debian-stable-amd64-gcc" }
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-${{ matrix.id }}-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-${{ matrix.id }}-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-${{ matrix.id }}-source-tree.tar.gz .
+          rm ola-${{ matrix.id }}-source-tree.tar.gz
+      - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install coverage dependencies
+        run: apt-get -y install curl gcov-10
+      - name: Run gcov
+        shell: bash
+        run: |
+          /usr/bin/gcov-10 --long-file-names --preserve-paths --root . -e '.*Test\.cpp$' -e '.*\.pb\.cc$' -e '.*\.pb\.cpp$' -e '.*\.pb\.h$' -e '.*\.yy\.cpp$' -e '.*\.tab\.cpp$' -e '.*\.tab\.h$' -e '.*/doxygen/examples.*$'
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2
-        if: always() && contains(matrix.configure-args, '--enable-gcov')
         with:
+          format: gcov
           flag-name: ${{ matrix.id }}
   verify-trees:
     name: 'Verify trees for ${{ matrix.id }}'
@@ -127,7 +159,7 @@ jobs:
       - name: Unarchive artifacts and delete archive
         shell: bash
         run: |
-          tar -xvzfola-${{ matrix.id }}-source-tree.tar.gz .
+          tar -xvzf ola-${{ matrix.id }}-source-tree.tar.gz .
           rm ola-${{ matrix.id }}-source-tree.tar.gz
       - name: Display structure of extracted files
         if: env.ACTIONS_STEP_DEBUG == 'true'
