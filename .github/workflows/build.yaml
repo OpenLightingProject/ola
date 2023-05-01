@@ -126,7 +126,7 @@ jobs:
       - name: Update package database
         run: apt-get update -y
       - name: Install coverage tools
-        run: apt-get -y install curl gcov-10 python3-pip
+        run: apt-get -y install curl gcc-10 python3-pip
       - name: Install Python coverage tools
         run: python3 -m pip install --no-input gcovr
       - name: Run gcovr
