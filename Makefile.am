@@ -268,7 +268,7 @@ endif
 COVERAGE_OUTPUTS = --txt coverage/coverage.txt \
 	--csv coverage/coverage.csv \
 	--json coverage/coverage.json \
-	--xml coverage/coverage.xml \
+	--cobertura coverage/coverage.cobertura.xml \
 	--html-details coverage/details.html/coverage.details.html \
 	--coveralls coverage/coverage.coveralls.json
 COVERAGE_GCOV_EXE=--gcov-executable /usr/bin/gcov

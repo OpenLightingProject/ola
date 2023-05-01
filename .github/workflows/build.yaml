@@ -149,8 +149,8 @@ jobs:
           # Coveralls GitHub action does not support its own format
           # see: https://github.com/coverallsapp/github-action/issues/104
           # file: coverage.coveralls.json
-          file: coverage/coverage.xml
-          format: gcov
+          file: coverage/coverage.cobertura.xml
+          format: cobertura
           flag-name: ${{ matrix.id }}
       - name: Upload coverage artifacts
         if: always()
