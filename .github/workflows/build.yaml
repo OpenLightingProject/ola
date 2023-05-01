@@ -126,13 +126,13 @@ jobs:
       - name: Update package database
         run: apt-get update -y
       - name: Install coverage tools
-        run: apt-get -y install curl gcc-10 python3-pip
+        run: apt-get -y install curl gcc python3-pip libcppunit-dev
       - name: Install Python coverage tools
         run: python3 -m pip install --no-input gcovr
       - name: Run gcovr
         shell: bash
         run: |
-          python3 -m gcovr --print-summary --txt coverage.txt --csv coverage.csv --json coverage.json --xml coverage.xml --html coverage.html --html-self-contained --coveralls coverage.coveralls.json --gcov-executable /usr/bin/gcov-10 --root . -e '.*Test\.cpp$' -e '.*\.pb\.cc$' -e '.*\.pb\.cpp$' -e '.*\.pb\.h$' -e '.*\.yy\.cpp$' -e '.*\.tab\.cpp$' -e '.*\.tab\.h$' -e '.*/doxygen/examples.*$'
+          python3 -m gcovr --print-summary --txt coverage.txt --csv coverage.csv --json coverage.json --xml coverage.xml --html coverage.html --html-self-contained --coveralls coverage.coveralls.json --gcov-executable /usr/bin/gcov --root . -e '.*Test\.cpp$' -e '.*\.pb\.cc$' -e '.*\.pb\.cpp$' -e '.*\.pb\.h$' -e '.*\.yy\.cpp$' -e '.*\.tab\.cpp$' -e '.*\.tab\.h$' -e '.*/doxygen/examples.*$'
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2
         with:
