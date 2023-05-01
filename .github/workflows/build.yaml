@@ -119,11 +119,14 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ola-${{ matrix.id }}-source-tree
-          path: built
+          path: artifact
       - name: Display structure of artifact files
-        if: always() && env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
-        working-directory: built
+        working-directory: download
+      - name: Extract the source tree
+        shell: bash
+        run: tar -xvzf ola-${{ matrix.id }}-source-tree.tar.gz
+        working-directory: artifact
       - name: Update package database
         run: apt-get update -y
       - name: Install dependencies to verify trees
@@ -131,14 +134,14 @@ jobs:
       - name: Find dist build tarball
         run: |
           echo "GH_OLA_VERIFY_TREES_TARBALL=$(ls --time=birth ola*.tar.gz| head -1)" >> $GITHUB_ENV
-        working-directory: built
+        working-directory: artifact/ola-${{ matrix.id }}-source-tree
       - name: Print dist build tarball name
         run: echo "$GH_OLA_VERIFY_TREES_TARBALL"
-        working-directory: built
+        working-directory: artifact/ola-${{ matrix.id }}-source-tree
       - name: Extract dist build
-        run: tar -zxvf $GH_OLA_VERIFY_TREES_TARBALL
-        working-directory: built
+        run: tar -xvzf $GH_OLA_VERIFY_TREES_TARBALL
+        working-directory: artifact/ola-${{ matrix.id }}-source-tree
       - name: Verify trees
         shell: bash
         run: ./scripts/verify_trees.py ./ $(echo $GH_OLA_VERIFY_TREES_TARBALL | sed 's/.tar.gz$//')
-        working-directory: built
+        working-directory: artifact/ola-${{ matrix.id }}-source-tree
