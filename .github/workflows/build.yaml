@@ -96,6 +96,9 @@ jobs:
           path: |
             ola-*.tar.gz
             !ola-${{ matrix.id }}-source-tree.tar.gz
+      - name: Install curl
+        if: always() && contains(matrix.configure-args, '--enable-gcov')
+        run: apt-get -y install curl
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2
         if: always() && contains(matrix.configure-args, '--enable-gcov')
