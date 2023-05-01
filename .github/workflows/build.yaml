@@ -95,7 +95,7 @@ jobs:
         if: matrix.task == 'distcheck' || matrix.task == 'dist'
         uses: actions/upload-artifact@v3
         with:
-          name: ola-${{ matrix.id }}
+          name: ola-${{ matrix.id }}-dist
           path: |
             ola-*.tar.gz
             !ola-${{ matrix.id }}-source-tree.tar.gz
