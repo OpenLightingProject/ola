@@ -10,10 +10,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { id: "check-debian-stable-amd64-gcc",       task: "check",     container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
-          - { id: "check-debian-stable-amd64-clang",     task: "check",     container: "debian:stable", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
-          - { id: "distcheck-debian-stable-amd64-gcc",   task: "distcheck", container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
-          - { id: "distcheck-debian-stable-amd64-clang", task: "distcheck", container: "debian:stable", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
+          - { id: "check-debian-stable-amd64-gcc",       task: "check",     configure-args: "--enable-ja-rule --enable-e133 --enable-gcov",                         container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
+          - { id: "check-debian-stable-amd64-clang",     task: "check",     configure-args: "--enable-ja-rule --enable-e133 --enable-gcov",                         container: "debian:stable", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
+          - { id: "distcheck-debian-stable-amd64-gcc",   task: "distcheck", configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs", container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
+          - { id: "distcheck-debian-stable-amd64-clang", task: "distcheck", configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs", container: "debian:stable", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
     env:
       CC: "${{ matrix.compiler.CC }}"
       CXX: "${{ matrix.compiler.CXX }}"
@@ -57,7 +57,7 @@ jobs:
         run: sudo -u builduser autoreconf -i
       - name: Set configure arguments
         run: |
-          echo "GH_OLA_CONFIGURE_ARGS=--enable-rdm-tests --enable-java-libs --enable-ja-rule --enable-e133" >> $GITHUB_ENV
+          echo "GH_OLA_CONFIGURE_ARGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
       - name: Set additional Linux configure arguments
         if: runner.os == 'Linux'
         # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
