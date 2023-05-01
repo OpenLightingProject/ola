@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { id: "coverage-debian-stable-amd64-gcc",    task: "coverage",  configure-args: "--enable-ja-rule --enable-e133 --enable-gcov",                         container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
+          - { id: "coverage-debian-stable-amd64-gcc",    task: "check",     configure-args: "--enable-ja-rule --enable-e133 --enable-gcov",                         container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
           - { id: "distcheck-debian-stable-amd64-gcc",   task: "distcheck", configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs", container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
           - { id: "distcheck-debian-stable-amd64-clang", task: "distcheck", configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs", container: "debian:stable", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
     env:
@@ -98,7 +98,7 @@ jobs:
             !ola-${{ matrix.id }}-source-tree.tar.gz
       - name: Upload built artifact
         uses: coverallsapp/github-action@v2
-        if: always() && matrix.id == 'coverage'
+        if: always() && contains(matrix.configure-args, '--enable-gcov')
         with:
           flag-name: ${{ matrix.id }}
   verify-trees:
