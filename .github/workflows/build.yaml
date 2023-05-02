@@ -10,9 +10,30 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { id: "coverage-debian-stable-amd64-gcc",    task: "check",     configure-args: "--enable-ja-rule --enable-e133 --enable-gcov",                         container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
-          - { id: "distcheck-debian-stable-amd64-gcc",   task: "distcheck", configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs", container: "debian:stable", compiler: { CC: "/usr/bin/gcc",   CXX: "/usr/bin/g++",     pkg: "gcc g++" } }
-          - { id: "distcheck-debian-stable-amd64-clang", task: "distcheck", configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs", container: "debian:stable", compiler: { CC: "/usr/bin/clang", CXX: "/usr/bin/clang++", pkg: "clang"   } }
+          - id: "coverage-debian-stable-amd64-gcc"
+            task: "check"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-gcov"
+            container: "debian:stable"
+            compiler: 
+              CC: "/usr/bin/gcc"
+              CXX: "/usr/bin/g++"
+              pkg: "gcc g++"
+          - id: "distcheck-debian-stable-amd64-gcc"
+            task: "distcheck"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs"
+            container: "debian:stable"
+            compiler:
+              CC: "/usr/bin/gcc"
+              CXX: "/usr/bin/g++"
+              pkg: "gcc g++"
+          - id: "distcheck-debian-stable-amd64-clang"
+            task: "distcheck"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs"
+            container: "debian:stable"
+            compiler:
+              CC: "/usr/bin/clang"
+              CXX: "/usr/bin/clang++"
+              pkg: "clang"
     env:
       CC: "${{ matrix.compiler.CC }}"
       CXX: "${{ matrix.compiler.CXX }}"
@@ -109,7 +130,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { id: "coverage-debian-stable-amd64-gcc" }
+          - id: "coverage-debian-stable-amd64-gcc"
     steps:
       - name: Download built source tree archive
         uses: actions/download-artifact@v3
@@ -168,8 +189,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { id: "distcheck-debian-stable-amd64-gcc"   }
-          - { id: "distcheck-debian-stable-amd64-clang" }
+          - id: "distcheck-debian-stable-amd64-gcc"
+          - id: "distcheck-debian-stable-amd64-clang"
     steps:
       - name: Download built source tree archive
         uses: actions/download-artifact@v3
