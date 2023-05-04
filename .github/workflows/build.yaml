@@ -121,10 +121,10 @@ jobs:
             ola-*.tar.gz
             !ola-${{ matrix.id }}-source-tree.tar.gz
       - name: Install coverage tools
-        if: contains(matrix.configure-args, '--enable-gcov')
+        if: matrix.task == 'coverage'
         run: apt-get -y install curl
       - name: Upload coverage to Coveralls
-        if: contains(matrix.configure-args, '--enable-gcov')
+        if: matrix.task == 'coverage'
         uses: coverallsapp/github-action@v2
         with:
           # Coveralls GitHub action does not support its own format
@@ -134,7 +134,7 @@ jobs:
           format: cobertura
           flag-name: ${{ matrix.id }}
       - name: Upload coverage artifacts
-        if: always() && contains(matrix.configure-args, '--enable-gcov')
+        if: always() && matrix.task == 'coverage'
         uses: actions/upload-artifact@v3
         with:
           name: ola-${{ matrix.id }}-coverage
