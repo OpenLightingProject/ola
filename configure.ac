@@ -608,6 +608,7 @@ AS_IF([test "x$enable_gcov" = xyes],
       [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
        CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
        LIBS="$LIBS -lgcov"])
+AM_CONDITIONAL([BUILD_GCOV], [test "x$enable_gcov" = xyes])
 
 # Enable HTTP support. This requires libmicrohttpd.
 AC_ARG_ENABLE(
@@ -1038,7 +1039,7 @@ Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
     all          - build everything
     check        - run the tests
+    coverage     - build and generate coverage
     doxygen-doc  - generate the HTML documentation
     lint         - run the linters
-    coverage     - generate coverage post --enable-gcov
 -------------------------------------------------------"

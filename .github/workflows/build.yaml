@@ -11,8 +11,8 @@ jobs:
       matrix:
         include:
           - id: "coverage-debian-stable-amd64-gcc"
-            task: "check"
-            configure-args: "--enable-ja-rule --enable-e133 --enable-gcov"
+            task: "coverage"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-unittests --enable-gcov"
             container: "debian:stable"
             compiler: 
               CC: "/usr/bin/gcc"
@@ -120,51 +120,11 @@ jobs:
           path: |
             ola-*.tar.gz
             !ola-${{ matrix.id }}-source-tree.tar.gz
-  coverage:
-    name: 'Coverage for ${{ matrix.id }}'
-    needs: build
-    if: "always()" # Run if some builds fail but ensure they all complete first
-    container: debian:stable
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - id: "coverage-debian-stable-amd64-gcc"
-    steps:
-      - name: Download built source tree archive
-        uses: actions/download-artifact@v3
-        with:
-          name: ola-${{ matrix.id }}-source-tree
-          path: .
-      - name: SHA256 artifact archive
-        run: sha256sum ola-${{ matrix.id }}-source-tree.tar.gz
-      - name: Unarchive artifacts and delete archive
-        shell: bash
-        run: |
-          tar -xvzf ola-${{ matrix.id }}-source-tree.tar.gz .
-          rm ola-${{ matrix.id }}-source-tree.tar.gz
-      - name: Display structure of extracted files
-        if: env.ACTIONS_STEP_DEBUG == 'true'
-        run: ls -alR
-      - name: Update package database
-        run: apt-get update -y
       - name: Install coverage tools
-        run: apt-get -y install curl gcc python3-pip
-      - name: Install Python coverage tools
-        run: python3 -m pip install --no-input gcovr
-      - name: Install build dependencies
-        shell: bash
-        run: |
-          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
-            libmicrohttpd-dev protobuf-compiler python3-protobuf \
-            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
-            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy \
-            default-jdk-headless maven
-      - name: Generate coverage
-        shell: bash
-        run: make coverage VERBOSE=1
+        if: contains(matrix.configure-args, '--enable-gcov')
+        run: apt-get -y install curl
       - name: Upload coverage to Coveralls
+        if: contains(matrix.configure-args, '--enable-gcov')
         uses: coverallsapp/github-action@v2
         with:
           # Coveralls GitHub action does not support its own format
@@ -174,7 +134,7 @@ jobs:
           format: cobertura
           flag-name: ${{ matrix.id }}
       - name: Upload coverage artifacts
-        if: always()
+        if: always() && contains(matrix.configure-args, '--enable-gcov')
         uses: actions/upload-artifact@v3
         with:
           name: ola-${{ matrix.id }}-coverage

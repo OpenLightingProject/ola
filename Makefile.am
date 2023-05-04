@@ -281,10 +281,14 @@ COVERAGE_FILTERS=-e '.*Test\.cpp$$' \
 	-e '.*\.tab\.h$$' \
 	-e '.*/doxygen/examples.*$$'
 .PHONY : coverage
-coverage: Makefile.am
+coverage: all
+if !BUILD_GCOV
+	$(error Generating coverage requires configuring with --enable-gcov)
+else
 if FOUND_GCOVR
 	mkdir -p coverage/details.html/
 	gcovr --print-summary $(COVERAGE_OUTPUTS) $(COVERAGE_GCOV_EXE) --root . $(COVERAGE_FILTERS)
 else
 	$(error gcovr not found. Install gcovr (e.g. via pip for the latest version) and re-run configure.)
+endif
 endif
