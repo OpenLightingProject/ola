@@ -281,7 +281,7 @@ COVERAGE_FILTERS=-e '.*Test\.cpp$$' \
 	-e '.*\.tab\.h$$' \
 	-e '.*/doxygen/examples.*$$'
 .PHONY : coverage
-coverage: all
+coverage: Makefile.am check
 if !BUILD_GCOV
 	$(error Generating coverage requires configuring with --enable-gcov)
 else

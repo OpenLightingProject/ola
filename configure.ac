@@ -1039,7 +1039,7 @@ Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
     all          - build everything
     check        - run the tests
-    coverage     - build and generate coverage
+    coverage     - build tests and generate coverage
     doxygen-doc  - generate the HTML documentation
     lint         - run the linters
 -------------------------------------------------------"
