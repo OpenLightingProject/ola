@@ -1,2 +1,2 @@
-usr/lib/python*/dist-packages/ola/*.py
-usr/lib/python*/dist-packages/ola/rpc/*.py
+usr/lib/python*/*-packages/ola/*.py
+usr/lib/python*/*-packages/ola/rpc/*.py

@@ -29,6 +29,7 @@ from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
                               RDM_MAX_DOMAIN_NAME_LENGTH,
                               RDM_MAX_HOSTNAME_LENGTH, RDM_MIN_HOSTNAME_LENGTH,
                               RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
+from ola.StringUtils import StringEscape
 from ola.testing.rdm import TestMixins
 from ola.testing.rdm.ExpectedResults import (RDM_GET, RDM_SET, AckGetResult,
                                              BroadcastResult, InvalidResponse,
@@ -96,7 +97,7 @@ class MuteDeviceWithData(ResponderTestFixture):
       TimeoutResult(),
       UnsupportedResult()
     ])
-    self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid, b'x')
 
 
 class UnMuteDevice(ResponderTestFixture):
@@ -135,7 +136,7 @@ class UnMuteDeviceWithData(ResponderTestFixture):
       TimeoutResult(),
       UnsupportedResult()
     ])
-    self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid, b'x')
 
 
 class RequestsWhileUnmuted(ResponderTestFixture):
@@ -586,7 +587,7 @@ class GetDeviceInfoWithData(DeviceInfoTest, ResponderTestFixture):
         field_values=self.FIELD_VALUES,
         warning='Get %s with data returned an ack' % self.pid.name)
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'x')
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'x')
 
   def VerifyResult(self, response, fields):
     self.SetProperty('supports_over_sized_pdl', True)
@@ -613,7 +614,7 @@ class GetMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
     ])
     # Incrementing list, so we can find out which bit we have where in memory
     # if it overflows
-    data = ''
+    data = b''
     for i in range(0, self.MAX_PDL):
       data += chr(i)
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
@@ -653,7 +654,7 @@ class DetermineMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
       InvalidResponse(action=self.GetFailed),
       TimeoutResult(action=self.GetFailed),
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self._current)
+    self.SendRawGet(ROOT_DEVICE, self.pid, b'x' * self._current)
 
   def GetPassed(self):
     self._lower = self._current
@@ -921,7 +922,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
                     'IDENTIFY_DEVICE']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._params = {}
     self._GetSupportedParams()
@@ -1213,7 +1214,7 @@ class GetParameterDescription(ParamDescriptionTestFixture):
     if ContainsUnprintable(fields['description']):
       self.AddAdvisory(
           'Description field in %s contains unprintable characters, was %s' %
-          (self.pid.name, fields['description'].encode('string-escape')))
+          (self.pid.name, StringEscape(fields['description'])))
 
 
 class GetParameterDescriptionForNonManufacturerPid(ParamDescriptionTestFixture):
@@ -1602,13 +1603,15 @@ class SetFullSizeDeviceLabel(TestMixins.SetLabelMixin,
     return self.Property('device_label')
 
 
-class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
-                             OptionalParameterTestFixture):
-  """SET the device label to something that contains non-ascii data."""
+class SetNonPrintableAsciiDeviceLabel(TestMixins.SetLabelMixin,
+                                      OptionalParameterTestFixture):
+  """SET the device label to something that contains non-printable ASCII
+     characters.
+  """
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   REQUIRES = ['device_label']
-  TEST_LABEL = 'string with\x0d non ascii\xc0'
+  TEST_LABEL = 'str w\x0d non\x1bprint ASCII\x7f'
 
   def ExpectedResults(self):
     return [
@@ -1620,6 +1623,38 @@ class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
 
   def OldValue(self):
     return self.Property('device_label')
+
+
+# TODO(Peter): Get this test to work where we just compare the returned string
+# as bytes so we don't try and fail to decode it as ASCII/UTF-8
+# class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
+#                              OptionalParameterTestFixture):
+#   """SET the device label to something that contains non-ASCII data."""
+#   CATEGORY = TestCategory.PRODUCT_INFORMATION
+#   PID = 'DEVICE_LABEL'
+#   REQUIRES = ['device_label']
+#   # Store directly as bytes so we don't try and decode as UTF-8
+#   TEST_LABEL = b'string with\x0d non ASCII\xc0'
+#
+#   def ExpectedResults(self):
+#     return [
+#       self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+#       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+#       self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+#       self.AckSetResult(action=self.VerifySet)
+#     ]
+#
+#   def OldValue(self):
+#     return self.Property('device_label')
+#
+#   def Test(self):
+#     # We have to override test here as this has to be raw as we can't encode
+#     # it
+#     # on Python 3 as it turns it to UTF-8 or escapes it
+#     # It's also technically out of spec for E1.20 unless it's sent as UTF-8
+#     self._test_state = self.SET
+#     self.AddIfSetSupported(self.ExpectedResults())
+#     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.TEST_LABEL)
 
 
 class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
@@ -1676,8 +1711,8 @@ class GetLanguageCapabilities(OptionalParameterTestFixture):
       language_set.add(language)
       if ContainsUnprintable(language):
         self.AddAdvisory(
-            'Language name in languague capabilities contains unprintable '
-            'characters, was %s' % language.encode('string-escape'))
+            'Language name in language capabilities contains unprintable '
+            'characters, was %s' % StringEscape(language))
 
     self.SetProperty('languages_capabilities', language_set)
 
@@ -1760,14 +1795,48 @@ class SetLanguage(OptionalParameterTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
-class SetNonAsciiLanguage(OptionalParameterTestFixture):
-  """Try to set the language to non-ascii characters."""
+class SetNumericLanguage(OptionalParameterTestFixture):
+  """Try to set the language to ASCII numeric characters."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'LANGUAGE'
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(ROOT_DEVICE, self.pid, ['\x0d\xc0'])
+    self.SendSet(ROOT_DEVICE, self.pid, ['01'])
+
+
+class SetNullLanguage(OptionalParameterTestFixture):
+  """Try to set the language to two null ASCII characters."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, ['\x00\x00'])
+
+
+class SetNonPrintableAsciiLanguage(OptionalParameterTestFixture):
+  """Try to set the language to non-printable ASCII characters."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, ['\x1b\x7f'])
+
+
+class SetNonAsciiLanguage(OptionalParameterTestFixture):
+  """Try to set the language to non-ASCII characters."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    # This has to be raw as we can't encode it on Python 3 as it turns it to
+    # UTF-8 and too many characters
+    # It's also technically out of spec for E1.20 unless it's sent as UTF-8 at
+    # which point we're back at square one
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'\x0d\xc0')
 
 
 class SetUnsupportedLanguage(OptionalParameterTestFixture):
@@ -1850,7 +1919,7 @@ class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
   REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._GetSoftwareVersion()
 
@@ -2154,7 +2223,7 @@ class GetDMXPersonalityDescription(OptionalParameterTestFixture):
     if ContainsUnprintable(fields['name']):
       self.AddAdvisory(
           'Name field in %s contains unprintable characters, was %s' %
-          (self.pid.name, fields['name'].encode('string-escape')))
+          (self.pid.name, StringEscape(fields['name'])))
 
     # TODO(Peter): Advisory if name is 0 length
 
@@ -2200,7 +2269,7 @@ class GetDMXPersonalityDescriptions(OptionalParameterTestFixture):
       if ContainsUnprintable(fields['name']):
         self.AddAdvisory(
             'Name field in %s contains unprintable characters, was %s' %
-            (self.pid.name, fields['name'].encode('string-escape')))
+            (self.pid.name, StringEscape(fields['name'])))
 
     # TODO(Peter): Advisory if name is 0 length
 
@@ -2873,7 +2942,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
       self.AddAdvisory(
           'Name field in sensor definition for sensor %d  contains unprintable'
           ' characters, was %s' % (self._current_index,
-                                   fields['name'].encode('string-escape')))
+                                   StringEscape(fields['name'])))
 
   def CheckCondition(self, sensor_number, fields, lhs, predicate_str, rhs):
     """Check for a condition and add a warning if it isn't true."""
@@ -2940,7 +3009,7 @@ class GetSensorValues(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -3083,7 +3152,7 @@ class ResetSensorValue(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -3213,7 +3282,7 @@ class RecordSensorValues(OptionalParameterTestFixture):
 
   def Test(self):
     # The head of the list is the current sensor we're querying
-    self._sensors = self.Property('sensor_definitions').values()
+    self._sensors = list(self.Property('sensor_definitions').values())
     self._sensor_values = []
 
     if self._sensors:
@@ -3340,14 +3409,14 @@ class SetDeviceHoursWithNoData(TestMixins.SetWithNoDataMixin,
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetDeviceHoursWithExtraData(TestMixins.SetWithDataMixin,
                                   OptionalParameterTestFixture):
   """Send a SET DEVICE_HOURS command with extra data."""
   PID = 'DEVICE_HOURS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetDeviceHours(TestMixins.AllSubDevicesGetMixin,
@@ -3404,14 +3473,14 @@ class SetLampHoursWithNoData(TestMixins.SetWithNoDataMixin,
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetLampHoursWithExtraData(TestMixins.SetWithDataMixin,
                                 OptionalParameterTestFixture):
   """Send a SET LAMP_HOURS command with extra data."""
   PID = 'LAMP_HOURS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetLampHours(TestMixins.AllSubDevicesGetMixin,
@@ -3467,14 +3536,14 @@ class SetLampStrikesWithNoData(TestMixins.SetWithNoDataMixin,
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetLampStrikesWithExtraData(TestMixins.SetWithDataMixin,
                                   OptionalParameterTestFixture):
   """Send a SET LAMP_STRIKES command with extra data."""
   PID = 'LAMP_STRIKES'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetLampStrikes(TestMixins.AllSubDevicesGetMixin,
@@ -3662,14 +3731,14 @@ class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetDevicePowerCyclesWithExtraData(TestMixins.SetWithDataMixin,
                                         OptionalParameterTestFixture):
   """Send a SET DEVICE_POWER_CYCLES command with extra data."""
   PID = 'DEVICE_POWER_CYCLES'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetDevicePowerCycles(TestMixins.AllSubDevicesGetMixin,
@@ -3938,7 +4007,8 @@ class GetRealTimeClock(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(
-      self.AckGetResult(field_names=self.ALLOWED_RANGES.keys() + ['second']))
+      self.AckGetResult(field_names=list(self.ALLOWED_RANGES.keys()) +
+                        ['second']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
@@ -3984,14 +4054,14 @@ class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
         self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
     ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetRealTimeClockWithExtraData(OptionalParameterTestFixture):
   """Send a SET REAL_TIME_CLOCK command with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'REAL_TIME_CLOCK'
-  DATA = 'foobarbaz'
+  DATA = b'foobarbaz'
 
   def Test(self):
     self.AddIfSetSupported([
@@ -4120,7 +4190,7 @@ class SetIdentifyDeviceWithNoData(ResponderTestFixture):
 
   def Test(self):
     self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
   def ResetState(self):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('identify_state')])
@@ -4155,7 +4225,7 @@ class GetSubDeviceIdentifyDevice(ResponderTestFixture):
   REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_addresses').keys()
+    self._sub_devices = list(self.Property('sub_device_addresses').keys())
     self._sub_devices.reverse()
     self._GetIdentifyDevice()
 
@@ -4302,7 +4372,7 @@ class GetSelfTestDescription(OptionalParameterTestFixture):
       self.AddAdvisory(
           'Description field in self test description for test number %d '
           'contains unprintable characters, was %s' %
-          (1, fields['description'].encode('string-escape')))
+          (1, StringEscape(fields['description'])))
 
 
 class GetSelfTestDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
@@ -4360,8 +4430,7 @@ class FindSelfTests(OptionalParameterTestFixture):
         self.AddAdvisory(
             'Description field in self test description for test number %d '
             'contains unprintable characters, was %s' %
-            (fields['test_number'],
-             fields['description'].encode('string-escape')))
+            (fields['test_number'], StringEscape(fields['description'])))
 
 
 class SetSelfTestDescription(TestMixins.UnsupportedSetMixin,
@@ -4480,7 +4549,7 @@ class SetCapturePresetWithExtraData(TestMixins.SetWithDataMixin,
                                     OptionalParameterTestFixture):
   """Set capture preset with extra data."""
   PID = 'CAPTURE_PRESET'
-  DATA = 'foobarbaz'
+  DATA = b'foobarbaz'
 
 
 class AllSubDevicesGetCapturePreset(TestMixins.AllSubDevicesUnsupportedGetMixin,
@@ -4514,7 +4583,7 @@ class SetPresetPlaybackWithExtraData(TestMixins.SetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Send a SET PRESET_PLAYBACK command with extra data."""
   PID = 'PRESET_PLAYBACK'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class SetPresetPlayback(OptionalParameterTestFixture):
@@ -4737,7 +4806,7 @@ class SetDMXBlockAddressWithExtraData(TestMixins.SetWithDataMixin,
                                       OptionalParameterTestFixture):
   """Send a SET dmx block address with extra data."""
   PID = 'DMX_BLOCK_ADDRESS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
@@ -4746,7 +4815,7 @@ class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'DMX_BLOCK_ADDRESS'
 
 
-class AllSubDevicesGetDmxBlockAddress(TestMixins.AllSubDevicesGetMixin,
+class AllSubDevicesGetDMXBlockAddress(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Get DMX_BLOCK_ADDRESS addressed to ALL_SUB_DEVICES."""
   PID = 'DMX_BLOCK_ADDRESS'
@@ -4793,8 +4862,8 @@ class SetDMXFailMode(OptionalParameterTestFixture):
     self.SendSet(
         ROOT_DEVICE, self.pid,
         [settings.get('scene_number', 0),
-         settings.get('hold_time', 0),
          settings.get('loss_of_signal_delay', 0),
+         settings.get('hold_time', 0),
          settings.get('level', 0)]
     )
 
@@ -5054,7 +5123,7 @@ class GetDMXStartupModeWithData(TestMixins.GetWithDataMixin,
 class SetDMXStartupMode(OptionalParameterTestFixture):
   """Set DMX_STARTUP_MODE without changing the settings."""
   CATEGORY = TestCategory.DMX_SETUP
-  PID = 'DMX_FAIL_MODE'
+  PID = 'DMX_STARTUP_MODE'
   PROVIDES = ['set_dmx_startup_mode_supported']
   REQUIRES = ['dmx_startup_settings']
 
@@ -5068,8 +5137,8 @@ class SetDMXStartupMode(OptionalParameterTestFixture):
     self.SendSet(
         ROOT_DEVICE, self.pid,
         [settings.get('scene_number', 0),
-         settings.get('hold_time', 0),
          settings.get('startup_delay', 0),
+         settings.get('hold_time', 0),
          settings.get('level', 0)]
     )
 
@@ -5399,7 +5468,7 @@ class SetLockStateWithExtraData(TestMixins.SetWithDataMixin,
                                 OptionalParameterTestFixture):
   """Send a SET LOCK_STATE command with extra data."""
   PID = 'LOCK_STATE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class SetLockState(OptionalParameterTestFixture):
@@ -5907,7 +5976,7 @@ class SetMinimumLevelWithExtraData(TestMixins.SetWithDataMixin,
                                    OptionalParameterTestFixture):
   """Send a SET MINIMUM_LEVEL command with extra data."""
   PID = 'MINIMUM_LEVEL'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # MAXIMUM_LEVEL
@@ -7332,7 +7401,7 @@ class SetDNSIPv4NameServerWithExtraData(TestMixins.SetWithDataMixin,
                                         OptionalParameterTestFixture):
   """Send a SET DNS_IPV4_NAME_SERVER command with extra data."""
   PID = 'DNS_IPV4_NAME_SERVER'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # IPV4_DEFAULT_ROUTE
@@ -7369,7 +7438,7 @@ class SetIPv4DefaultRouteWithExtraData(TestMixins.SetWithDataMixin,
                                        OptionalParameterTestFixture):
   """Send a SET IPV4_DEFAULT_ROUTE command with extra data."""
   PID = 'IPV4_DEFAULT_ROUTE'
-  DATA = 'foobarbaz'
+  DATA = b'foobarbaz'
 
 
 class AllSubDevicesGetIPv4DefaultRoute(TestMixins.AllSubDevicesGetMixin,
@@ -7410,7 +7479,7 @@ class GetIPv4DHCPModeWithExtraData(TestMixins.GetWithDataMixin,
                                    OptionalParameterTestFixture):
   """GET IPV4_DHCP_MODE with more than 4 bytes of data."""
   PID = 'IPV4_DHCP_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # class SetIPv4DHCPMode(TestMixins.,
@@ -7437,7 +7506,7 @@ class SetIPv4DHCPModeWithExtraData(TestMixins.SetWithDataMixin,
                                    OptionalParameterTestFixture):
   """Send a SET IPV4_DHCP_MODE command with extra data."""
   PID = 'IPV4_DHCP_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # IPV4_ZEROCONF_MODE
@@ -7472,7 +7541,7 @@ class GetIPv4ZeroconfModeWithExtraData(TestMixins.GetWithDataMixin,
                                        OptionalParameterTestFixture):
   """GET IPV4_ZEROCONF_MODE with more than 4 bytes of data."""
   PID = 'IPV4_ZEROCONF_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # class SetIPv4ZeroconfMode(TestMixins.,
@@ -7500,7 +7569,7 @@ class SetIPv4ZeroconfModeWithExtraData(TestMixins.SetWithDataMixin,
                                        OptionalParameterTestFixture):
   """Send a SET IPV4_ZEROCONF_MODE command with extra data."""
   PID = 'IPV4_ZEROCONF_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # IPV4_CURRENT_ADDRESS
@@ -7535,7 +7604,7 @@ class GetIPv4CurrentAddressWithExtraData(TestMixins.GetWithDataMixin,
                                          OptionalParameterTestFixture):
   """GET IPV4_CURRENT_ADDRESS with more than 4 bytes of data."""
   PID = 'IPV4_CURRENT_ADDRESS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class SetIPv4CurrentAddress(TestMixins.UnsupportedSetMixin,
@@ -7582,7 +7651,7 @@ class GetIPv4StaticAddressWithExtraData(TestMixins.GetWithDataMixin,
                                         OptionalParameterTestFixture):
   """GET IPV4_STATIC_ADDRESS with more than 4 bytes of data."""
   PID = 'IPV4_STATIC_ADDRESS'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # class SetIPv4StaticAddress(TestMixins.,
@@ -7611,7 +7680,7 @@ class SetIPv4StaticAddressWithExtraData(TestMixins.SetWithDataMixin,
                                         OptionalParameterTestFixture):
   """Send a SET IPV4_STATIC_ADDRESS command with extra data."""
   PID = 'IPV4_STATIC_ADDRESS'
-  DATA = 'foobarbazqux'
+  DATA = b'foobarbazqux'
 
 
 # INTERFACE_RENEW_DHCP
@@ -7658,7 +7727,7 @@ class SetInterfaceRenewDHCPWithExtraData(TestMixins.SetWithDataMixin,
                                          OptionalParameterTestFixture):
   """Send a SET INTERFACE_RENEW_DHCP command with extra data."""
   PID = 'INTERFACE_RENEW_DHCP'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # INTERFACE_RELEASE_DHCP
@@ -7705,7 +7774,7 @@ class SetInterfaceReleaseDHCPWithExtraData(TestMixins.SetWithDataMixin,
                                            OptionalParameterTestFixture):
   """Send a SET INTERFACE_RELEASE_DHCP command with extra data."""
   PID = 'INTERFACE_RELEASE_DHCP'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # INTERFACE_APPLY_CONFIGURATION
@@ -7753,7 +7822,7 @@ class SetInterfaceApplyConfigurationWithExtraData(TestMixins.SetWithDataMixin,
                                                   OptionalParameterTestFixture):
   """Send a SET INTERFACE_APPLY_CONFIGURATION command with extra data."""
   PID = 'INTERFACE_APPLY_CONFIGURATION'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 # Interface label
@@ -7778,7 +7847,7 @@ class GetInterfaceLabelWithExtraData(TestMixins.GetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Get the interface label with more than 4 bytes of data."""
   PID = 'INTERFACE_LABEL'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class GetZeroInterfaceLabel(TestMixins.GetZeroUInt32Mixin,
@@ -7832,7 +7901,7 @@ class GetInterfaceHardwareAddressType1WithExtraData(
         OptionalParameterTestFixture):
   """GET INTERFACE_HARDWARE_ADDRESS_TYPE1 with more than 4 bytes of data."""
   PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class GetZeroInterfaceHardwareAddressType1(TestMixins.GetZeroUInt32Mixin,

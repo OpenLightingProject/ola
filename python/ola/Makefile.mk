@@ -33,6 +33,7 @@ pkgpython_PYTHON = \
     python/ola/RDMAPI.py \
     python/ola/RDMConstants.py \
     python/ola/PidStore.py \
+    python/ola/StringUtils.py \
     python/ola/UID.py \
     python/ola/__init__.py
 endif
@@ -85,6 +86,7 @@ dist_check_SCRIPTS += \
     python/ola/OlaClientTest.py \
     python/ola/PidStoreTest.py \
     python/ola/RDMTest.py \
+    python/ola/StringUtilsTest.py \
     python/ola/TestUtils.py \
     python/ola/UIDTest.py
 
@@ -96,6 +98,7 @@ test_scripts += \
     python/ola/OlaClientTest.sh \
     python/ola/PidStoreTest.sh \
     python/ola/RDMTest.sh \
+    python/ola/StringUtilsTest.py \
     python/ola/UIDTest.py
 endif
 
