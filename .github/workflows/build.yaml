@@ -13,7 +13,8 @@ jobs:
           - id: "coverage-debian-stable-amd64-gcc"
             task: "coverage"
             configure-args: "--enable-ja-rule --enable-e133 --enable-unittests --enable-gcov"
-            container: "debian:stable"
+            # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
+            container: "debian:11"
             compiler: 
               CC: "/usr/bin/gcc"
               CXX: "/usr/bin/g++"
@@ -21,7 +22,8 @@ jobs:
           - id: "distcheck-debian-stable-amd64-gcc"
             task: "distcheck"
             configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs"
-            container: "debian:stable"
+            # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
+            container: "debian:11"
             compiler:
               CC: "/usr/bin/gcc"
               CXX: "/usr/bin/g++"
@@ -29,7 +31,8 @@ jobs:
           - id: "distcheck-debian-stable-amd64-clang"
             task: "distcheck"
             configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs"
-            container: "debian:stable"
+            # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
+            container: "debian:11"
             compiler:
               CC: "/usr/bin/clang"
               CXX: "/usr/bin/clang++"
