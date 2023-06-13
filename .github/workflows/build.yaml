@@ -3,7 +3,7 @@ on: [push, pull_request]
 jobs:
   build:
     name: "${{ matrix.id }}"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     container: ${{ matrix.container }}
     timeout-minutes: 360
     strategy:
