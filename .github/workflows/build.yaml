@@ -101,7 +101,7 @@ jobs:
       - name: Configure
         run: sudo --preserve-env -u builduser env "PATH=$PATH" ./configure $GH_OLA_CONFIGURE_ARGS
       - name: ${{ matrix.task }}
-        run: sudo --preserve-env -u builduser env "PATH=$PATH" make ${{ matrix.task }} -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
+        run: sudo --preserve-env -u builduser env "PATH=$PATH" make ${{ matrix.task }} -j1 VERBOSE=1
       - name: Display structure of the built files
         if: always() && env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
