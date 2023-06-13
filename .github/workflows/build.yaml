@@ -84,7 +84,7 @@ jobs:
           chown -R builduser:builduser .
           chown builduser:builduser ..
       - name: Autoreconf
-        run: sudo -u builduser autoreconf -i
+        run: sudo --preserve-env -u builduser env "PATH=$PATH" autoreconf -i
       - name: Set configure arguments
         run: |
           echo "GH_OLA_CONFIGURE_ARGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
@@ -96,9 +96,9 @@ jobs:
       - name: Print configure command
         run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
       - name: Configure
-        run: sudo -u builduser ./configure $GH_OLA_CONFIGURE_ARGS
+        run: sudo --preserve-env -u builduser env "PATH=$PATH" ./configure $GH_OLA_CONFIGURE_ARGS
       - name: ${{ matrix.task }}
-        run: sudo -u builduser make ${{ matrix.task }} -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
+        run: sudo --preserve-env -u builduser env "PATH=$PATH" make ${{ matrix.task }} -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
       - name: Display structure of the built files
         if: always() && env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
