@@ -58,7 +58,13 @@ jobs:
         run: |
           apt-get -y install adduser sudo pkg-config libtool autoconf \
             automake g++ bison flex make bash-completion dh-autoreconf \
-            debhelper devscripts wget python3-pip
+            debhelper devscripts wget python3-full python3-pip
+      - name: Setup Python venv
+        shell: bash
+        run: |
+          python3 -m venv ../venv
+          source ../venv/bin/activate
+          echo "PATH=$PATH" >> $GITHUB_ENV
       - name: Install Python build tools
         run: python3 -m pip install --no-input gcovr
       - name: Install build dependencies
