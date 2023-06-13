@@ -42,6 +42,7 @@ jobs:
       CXX: "${{ matrix.compiler.CXX }}"
     steps:
       - name: Get number of CPU cores
+        id: num-cpu-cores
         # TODO(Perry): Parallelization causes GH Actions to hang -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
         # run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
         run: echo "NUM_CPU_CORES=1" >> $GITHUB_OUTPUT
@@ -101,7 +102,7 @@ jobs:
       - name: Configure
         run: sudo --preserve-env -u builduser env "PATH=$PATH" ./configure $GH_OLA_CONFIGURE_ARGS
       - name: ${{ matrix.task }}
-        run: sudo --preserve-env -u builduser env "PATH=$PATH" make ${{ matrix.task }} -j1 VERBOSE=1
+        run: sudo --preserve-env -u builduser env "PATH=$PATH" make ${{ matrix.task }} -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
       - name: Display structure of the built files
         if: always() && env.ACTIONS_STEP_DEBUG == 'true'
         run: ls -alR
