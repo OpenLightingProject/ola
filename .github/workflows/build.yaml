@@ -62,7 +62,7 @@ jobs:
       - name: Setup Python venv
         shell: bash
         run: |
-          python3 -m venv ../venv
+          python3 -m venv --system-site-packages ../venv
           source ../venv/bin/activate
           echo "PATH=$PATH" >> $GITHUB_ENV
       - name: Install Python build tools
