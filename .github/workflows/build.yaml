@@ -183,6 +183,6 @@ jobs:
         run: tar -xvzf $GH_OLA_VERIFY_TREES_TARBALL
       - name: Verify trees
         shell: bash
-        # Always succeed for now until verify trees is fixed
+        # TODO(Perry): Always succeed for now until verify trees is fixed
         # run: ./scripts/verify_trees.py ./ $(echo $GH_OLA_VERIFY_TREES_TARBALL | sed 's/.tar.gz$//')
         run: "./scripts/verify_trees.py ./ $(echo $GH_OLA_VERIFY_TREES_TARBALL | sed 's/.tar.gz$//') || true"
