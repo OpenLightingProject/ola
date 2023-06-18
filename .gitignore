@@ -50,6 +50,7 @@ config.h.in~
 config.log
 config.status
 configure
+coverage/
 cpplint.py
 doxygen_entrydb_*.tmp
 doxygen_objdb_*.tmp
