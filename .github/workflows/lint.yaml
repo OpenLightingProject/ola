@@ -285,9 +285,9 @@ jobs:
           curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
       - name: Install lint tools
         run: apt-get install -y nodejs
-      - name: Install Node.js lint tools
+      - name: Install Node.js lint tools and dependencies
         run: npm ci
         working-directory: ./javascript/new-src
-      - name: Run NPM tests
+      - name: Run weblint
         run: npm test
         working-directory: ./javascript/new-src
