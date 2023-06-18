@@ -138,7 +138,7 @@ which isn't listed there please consider submitting the formatting
 configuration files.
 
 Please run the cpplint.py script on all files before requesting a review,
-alternatively it will be run automatically by Travis CI on pull requests.
+alternatively it will be run automatically by GitHub CI on pull requests.
 
 cpplint.py can be downloaded here:
   https://github.com/google/styleguide/tree/gh-pages/cpplint
