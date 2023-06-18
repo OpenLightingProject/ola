@@ -608,6 +608,7 @@ AS_IF([test "x$enable_gcov" = xyes],
       [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
        CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
        LIBS="$LIBS -lgcov"])
+AM_CONDITIONAL([BUILD_GCOV], [test "x$enable_gcov" = xyes])
 
 # Enable HTTP support. This requires libmicrohttpd.
 AC_ARG_ENABLE(
@@ -962,6 +963,10 @@ AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
 AC_CHECK_PROG([cpplint],[cpplint],[yes],[no])
 AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
 
+# Coverage
+AC_CHECK_PROG([gcovr],[gcovr],[yes],[no])
+AM_CONDITIONAL([FOUND_GCOVR], [test "x$gcovr" = xyes])
+
 # Output
 #####################################################
 # Hack alert!
@@ -1034,6 +1039,7 @@ Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
     all          - build everything
     check        - run the tests
+    coverage     - build tests and generate coverage
     doxygen-doc  - generate the HTML documentation
     lint         - run the linters
 -------------------------------------------------------"
