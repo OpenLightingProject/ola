@@ -280,7 +280,9 @@ jobs:
             debian_stable-lint-weblint-
       - name: Setup Node.js APT repo
         shell: bash
-        run: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+        run: |
+          apt-get -y install curl
+          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
       - name: Install lint tools
         run: apt-get install -y nodejs
       - name: Install Node.js lint tools
