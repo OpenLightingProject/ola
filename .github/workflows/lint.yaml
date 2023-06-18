@@ -256,3 +256,36 @@ jobs:
         uses: codespell-project/codespell-problem-matcher@v1
       - name: codespell
         run: ./scripts/spelling.sh codespell
+  weblint:
+    name: weblint
+    runs-on: ubuntu-latest
+    container: debian:stable
+    steps:
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install Git
+        run: apt-get -y install git
+      - uses: actions/checkout@v3
+      - name: Cache NPM
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-npm
+        with:
+          # This is the correct directory to cache
+          # See https://docs.npmjs.com/cli/v8/commands/npm-ci
+          path: ~/.npm
+          key:  debian_stable-lint-weblint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            debian_stable-lint-weblint-${{ env.cache-name }}-
+            debian_stable-lint-weblint-
+      - name: Setup Node.js APT repo
+        shell: bash
+        run: curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+      - name: Install lint tools
+        run: apt-get install -y nodejs
+      - name: Install Node.js lint tools
+        run: npm ci
+        working-directory: ./javascript/new-src
+      - name: Run NPM tests
+        run: npm test
+        working-directory: ./javascript/new-src
