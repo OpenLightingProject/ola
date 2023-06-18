@@ -14,7 +14,6 @@ EXTRA_DIST += \
     debian/ola-rdm-tests.rdm_test_server.init \
     debian/ola-rdm-tests.rdm_test_server.service \
     debian/ola.bash-completion \
-    debian/ola.config \
     debian/ola.dirs \
     debian/ola.docs \
     debian/ola.install \
