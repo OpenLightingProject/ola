@@ -182,7 +182,7 @@ jobs:
         run: apt-get update -y
       - name: Install Python
         run: apt-get -y install python3 python-is-python3
-      # Disable problem matcher for now until verify trees is fixed
+      # TODO(Perry): Disable problem matcher for now until verify trees is fixed
       # - name: Enable Problem Matcher for GitHub annotations
       #   run: echo "::add-matcher::.github/problem-matcher-build-verify-trees.json"
       - name: Find dist build tarball
