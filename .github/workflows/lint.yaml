@@ -266,25 +266,11 @@ jobs:
       - name: Install Git
         run: apt-get -y install git
       - uses: actions/checkout@v3
-      - name: Cache NPM
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-npm
+      - name: Setup Node.js v18
+        uses: actions/setup-node@v3
         with:
-          # This is the correct directory to cache
-          # See https://docs.npmjs.com/cli/v8/commands/npm-ci
-          path: ~/.npm
-          key:  debian_stable-lint-weblint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            debian_stable-lint-weblint-${{ env.cache-name }}-
-            debian_stable-lint-weblint-
-      - name: Setup Node.js APT repo
-        shell: bash
-        run: |
-          apt-get -y install curl
-          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-      - name: Install lint tools
-        run: apt-get install -y nodejs
+          node-version: 18 # LTS
+          cache: 'npm'
       - name: Install Node.js lint tools and dependencies
         run: npm ci
         working-directory: ./javascript/new-src
