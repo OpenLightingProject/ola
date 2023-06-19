@@ -271,6 +271,7 @@ jobs:
         with:
           node-version: 18 # LTS
           cache: 'npm'
+          cache-dependency-path: './javascript/new-src/package-lock.json'
       - name: Install Node.js lint tools and dependencies
         run: npm ci
         working-directory: ./javascript/new-src
