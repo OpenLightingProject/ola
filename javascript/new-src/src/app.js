@@ -20,6 +20,15 @@
 /* global angular */
 var ola = angular.module('olaApp', ['ngRoute']);
 
+// AngularJS 1.6 now uses an '!' as the default hashPrefix, breaking
+// our routes. Following lines revert the default to the previous empty
+// string.
+// See https://docs.angularjs.org/guide/migration#commit-aa077e8
+ola.config(['$locationProvider', function($locationProvider) {
+  'use strict';
+  $locationProvider.hashPrefix('');
+}]);
+
 ola.config(['$routeProvider',
   function($routeProvider) {
     'use strict';

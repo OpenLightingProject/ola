@@ -61,7 +61,10 @@ tools/rdm/ExpectedResultsTest.sh: tools/rdm/Makefile.mk
 	chmod +x $(top_builddir)/tools/rdm/ExpectedResultsTest.sh
 
 tools/rdm/ResponderTestTest.sh: tools/rdm/Makefile.mk
-	mkdir -p $(top_builddir)/python/ola
+	mkdir -p $(top_builddir)/python/ola/testing
+	touch $(top_builddir)/python/ola/testing/__init__.py
+        # This link is relative within the builddir
+	$(LN_S) -f ../../../tools/rdm $(top_builddir)/python/ola/testing/rdm
 	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/ResponderTestTest.py; exit \$$?" > $(top_builddir)/tools/rdm/ResponderTestTest.sh
 	chmod +x $(top_builddir)/tools/rdm/ResponderTestTest.sh
 
@@ -69,6 +72,14 @@ tools/rdm/TestHelpersTest.sh: tools/rdm/Makefile.mk
 	mkdir -p $(top_builddir)/python/ola
 	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/TestHelpersTest.py; exit \$$?" > $(top_builddir)/tools/rdm/TestHelpersTest.sh
 	chmod +x $(top_builddir)/tools/rdm/TestHelpersTest.sh
+
+tools/rdm/TestRunnerTest.sh: tools/rdm/Makefile.mk
+	mkdir -p $(top_builddir)/python/ola/testing
+	touch $(top_builddir)/python/ola/testing/__init__.py
+        # This link is relative within the builddir
+	$(LN_S) -f ../../../tools/rdm $(top_builddir)/python/ola/testing/rdm
+	echo "PYTHONPATH=${top_builddir}/python $(PYTHON) ${srcdir}/tools/rdm/TestRunnerTest.py; exit \$$?" > $(top_builddir)/tools/rdm/TestRunnerTest.sh
+	chmod +x $(top_builddir)/tools/rdm/TestRunnerTest.sh
 
 tools/rdm/TestStateTest.sh: tools/rdm/Makefile.mk
 	mkdir -p $(top_builddir)/python/ola
@@ -79,6 +90,7 @@ dist_check_SCRIPTS += \
    tools/rdm/ExpectedResultsTest.py \
    tools/rdm/ResponderTestTest.py \
    tools/rdm/TestHelpersTest.py \
+   tools/rdm/TestRunnerTest.py \
    tools/rdm/TestStateTest.py
 
 if BUILD_PYTHON_LIBS
@@ -86,14 +98,19 @@ test_scripts += \
    tools/rdm/ExpectedResultsTest.sh \
    tools/rdm/ResponderTestTest.sh \
    tools/rdm/TestHelpersTest.sh \
+   tools/rdm/TestRunnerTest.sh \
    tools/rdm/TestStateTest.sh
 endif
 
 CLEANFILES += \
+    python/ola/testing/*.pyc \
+    python/ola/testing/__pycache__/* \
+    python/ola/testing/__init__.py \
     tools/rdm/*.pyc \
     tools/rdm/ExpectedResultsTest.sh \
     tools/rdm/ResponderTestTest.sh \
     tools/rdm/TestHelpersTest.sh \
+    tools/rdm/TestRunnerTest.sh \
     tools/rdm/TestStateTest.sh \
     tools/rdm/__pycache__/*
 
