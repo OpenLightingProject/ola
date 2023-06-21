@@ -11,5 +11,8 @@
     "grunt-contrib-watch": "^1.1.0",
     "grunt-jscs": "^3.0.1",
     "olp-javascript-style": "OpenLightingProject/javascript-style"
+  },
+  "scripts": {
+    "test": "grunt -v -d --stack test"
   }
 }

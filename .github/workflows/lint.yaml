@@ -261,3 +261,20 @@ jobs:
         uses: codespell-project/codespell-problem-matcher@v1
       - name: codespell
         run: ./scripts/spelling.sh codespell
+  weblint:
+    name: weblint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js v18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # LTS
+          cache: 'npm'
+          cache-dependency-path: './javascript/new-src/package-lock.json'
+      - name: Install npm dependencies
+        run: npm ci
+        working-directory: ./javascript/new-src
+      - name: Run weblint
+        run: npm test
+        working-directory: ./javascript/new-src
