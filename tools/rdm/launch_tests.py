@@ -17,10 +17,9 @@
 # Copyright (C) 2012 Simon Newton
 
 from __future__ import print_function
-from optparse import OptionParser
+
 import logging
 import os
-import setup_patch  # The Port Autopatcher
 import shutil
 import signal
 import subprocess
@@ -28,6 +27,9 @@ import sys
 import tempfile
 import textwrap
 import time
+from optparse import OptionParser
+
+import setup_patch  # The Port Autopatcher
 
 """
 Launch the OLA RDM test environment.

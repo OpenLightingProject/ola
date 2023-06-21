@@ -104,13 +104,13 @@ void UIDTest::testUID() {
   OLA_ASSERT_TRUE(uid.Pack(buffer, buffer_size));
 
   uint8_t expected[] = {0, 1, 0, 0, 0, 2};
-  OLA_ASSERT_EQ(0, memcmp(expected, buffer, buffer_size));
+  OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), buffer, buffer_size);
   UID unpacked_uid1(buffer);
   OLA_ASSERT_EQ(uid, unpacked_uid1);
 
   OLA_ASSERT_TRUE(uid3.Pack(buffer, buffer_size));
   uint8_t expected2[] = {0, 2, 0, 0, 0, 0x0a};
-  OLA_ASSERT_EQ(0, memcmp(expected2, buffer, buffer_size));
+  OLA_ASSERT_DATA_EQUALS(expected2, sizeof(expected2), buffer, buffer_size);
   UID unpacked_uid2(buffer);
   OLA_ASSERT_EQ(uid3, unpacked_uid2);
 
@@ -233,6 +233,60 @@ void UIDTest::testUIDSet() {
 
   difference = set3.SetDifference(set1);
   OLA_ASSERT_EQ(0u, difference.Size());
+
+  // now test the packing & unpacking
+  UID uid3(3, 4);
+  UIDSet set4(set1);
+  set4.AddUID(uid3);
+  unsigned int buffer_size = UID::UID_SIZE * 3;
+  uint8_t *buffer = new uint8_t[buffer_size];
+  OLA_ASSERT_TRUE(set4.Pack(buffer, buffer_size));
+
+  uint8_t expected[] = {0, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 10, 0, 3, 0, 0, 0, 4};
+  OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), buffer, buffer_size);
+
+  // Creating UIDSets from binary data
+  uint8_t empty[] = {};
+  unsigned int data_size = sizeof(empty);
+  UIDSet set5(empty, &data_size);
+  UIDSet empty_set = UIDSet();
+  OLA_ASSERT_EQ(set5, empty_set);
+
+  uint8_t raw_short[] = {0, 1};
+  data_size = sizeof(raw_short);
+  UIDSet set6(raw_short, &data_size);
+  OLA_ASSERT_EQ(set6, empty_set);
+
+  UIDSet set7;
+  set7.AddUID(UID(1, 2));
+  uint8_t raw_one[] = {0, 1, 0, 0, 0, 2};
+  data_size = sizeof(raw_one);
+  UIDSet set8(raw_one, &data_size);
+  OLA_ASSERT_EQ(6u, data_size);
+  OLA_ASSERT_EQ(set7, set8);
+
+  uint8_t raw_one_extra[] = {0, 1, 0, 0, 0, 2, 3, 4};
+  data_size = sizeof(raw_one_extra);
+  UIDSet set9(raw_one_extra, &data_size);
+  OLA_ASSERT_EQ(6u, data_size);
+  OLA_ASSERT_EQ(set7, set9);
+
+  set7.AddUID(UID(2, 10));
+  set7.AddUID(UID(3, 4));
+
+  uint8_t raw_three[] =
+      {0, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 10, 0, 3, 0, 0, 0, 4};
+  data_size = sizeof(raw_three);
+  UIDSet set10(raw_three, &data_size);
+  OLA_ASSERT_EQ(18u, data_size);
+  OLA_ASSERT_EQ(set7, set10);
+
+  uint8_t raw_three_extra[] =
+      {0, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 10, 0, 3, 0, 0, 0, 4, 5, 6};
+  data_size = sizeof(raw_three_extra);
+  UIDSet set11(raw_three_extra, &data_size);
+  OLA_ASSERT_EQ(18u, data_size);
+  OLA_ASSERT_EQ(set7, set11);
 }
 
 

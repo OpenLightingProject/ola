@@ -241,13 +241,12 @@ lint: flake8 cpplint
 .PHONY : flake8
 flake8: Makefile.am
 if FOUND_FLAKE8
-	flake8
+	flake8 --statistics --count
 else
 	$(error flake8 not found. Install flake8 and re-run configure.)
 endif
 
 # cpplint linter
-CPP_LINT_URL = "https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py"
 CPP_LINT_FILTER = "-legal/copyright,-readability/streams,-runtime/arrays"
 CPP_LINT_FILES = $(shell find . \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
         -wholename "./common/protocol/Ola.pb.*" -or \
@@ -259,16 +258,38 @@ CPP_LINT_FILES = $(shell find . \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
         -wholename "./tools/ola_trigger/config.tab.*" -or \
         -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
 .PHONY : cpplint
-if FOUND_CPPLINT
 cpplint: Makefile.am
-	cpplint.py --filter=$(CPP_LINT_FILTER) $(CPP_LINT_FILES)
+if FOUND_CPPLINT
+	cpplint --filter=$(CPP_LINT_FILTER) $(CPP_LINT_FILES)
 else
-cpplint: Makefile.am cpplint.py
-	./cpplint.py --filter=$(CPP_LINT_FILTER) $(CPP_LINT_FILES)
+	$(error cpplint not found. Install the forked cpplint (e.g. via pip for the latest version) and re-run configure.)
 endif
 
-if !FOUND_CPPLINT
-cpplint.py:
-	wget -O cpplint.py $(CPP_LINT_URL)
-	chmod u+x cpplint.py
+# coverage
+COVERAGE_OUTPUTS = --txt coverage/coverage.txt \
+	--csv coverage/coverage.csv \
+	--json coverage/coverage.json \
+	--cobertura coverage/coverage.cobertura.xml \
+	--html-details coverage/details.html/coverage.details.html \
+	--coveralls coverage/coverage.coveralls.json
+COVERAGE_GCOV_EXE=--gcov-executable /usr/bin/gcov
+COVERAGE_FILTERS=-e '.*Test\.cpp$$' \
+	-e '.*\.pb\.cc$$' \
+	-e '.*\.pb\.cpp$$' \
+	-e '.*\.pb\.h$$' \
+	-e '.*\.yy\.cpp$$' \
+	-e '.*\.tab\.cpp$$' \
+	-e '.*\.tab\.h$$' \
+	-e '.*/doxygen/examples.*$$'
+.PHONY : coverage
+coverage: Makefile.am check
+if !BUILD_GCOV
+	$(error Generating coverage requires configuring with --enable-gcov)
+else
+if FOUND_GCOVR
+	mkdir -p coverage/details.html/
+	gcovr --print-summary $(COVERAGE_OUTPUTS) $(COVERAGE_GCOV_EXE) --root . $(COVERAGE_FILTERS)
+else
+	$(error gcovr not found. Install gcovr (e.g. via pip for the latest version) and re-run configure.)
+endif
 endif

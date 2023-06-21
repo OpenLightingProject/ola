@@ -19,8 +19,9 @@
 import binascii
 import os
 import unittest
+
 import ola.PidStore as PidStore
-from ola.TestUtils import allNotEqual, allHashNotEqual
+from ola.TestUtils import allHashNotEqual, allNotEqual
 
 """Test cases for the PidStore class.
    Relies on the PID data from RDM tests in the directory
@@ -221,6 +222,22 @@ class PidStoreTest(unittest.TestCase):
     self.assertEqual(decoded['slots_required'], 7)
     self.assertEqual(decoded['name'], "UnpackTest")
 
+    # Test null handling, trailing null should be truncated on the way back in
+    args = ["42", "7", "Foo\0"]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    # Not truncated here
+    self.assertEqual(blob, binascii.unhexlify("2a0007466f6f00"))
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    self.assertEqual(decoded['personality'], 42)
+    self.assertEqual(decoded['slots_required'], 7)
+    self.assertEqual(decoded['name'], "Foo")
+
+    # Confirm we raise an error if we try and unpack a non-ASCII, non-UTF-8
+    # containing packet (0xc0)
+    with self.assertRaises(PidStore.UnpackException):
+      blob = binascii.unhexlify("2a0007556e7061636bc054657374")
+      decoded = pid.Unpack(blob, PidStore.RDM_GET)
+
   def testPackRanges(self):
     store = PidStore.PidStore()
     store.Load([os.path.join(path, "test_pids.proto")])
@@ -277,6 +294,28 @@ class PidStoreTest(unittest.TestCase):
     with self.assertRaises(PidStore.ArgsValidationError):
       args = ["enx"]
       blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+
+    # test packing some non-printable characters
+    args = ["\x0d\x7f"]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertEqual(blob, binascii.unhexlify("0d7f"))
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    self.assertEqual(decoded, {'languages': [{'language': '\x0d\x7f'}]})
+
+    # test packing some non-ascii characters, as the
+    # LATIN CAPITAL LETTER A WITH GRAVE, unicode U+00C0 gets encoded as two
+    # bytes (\xc3\x80) the total length is three bytes and it doesn't fit!
+    with self.assertRaises(PidStore.ArgsValidationError):
+      args = [u"\x0d\xc0"]
+      blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+
+    # It works on it's own as it's short enough...
+    args = [u"\u00c0"]
+    blob = pid._responses.get(PidStore.RDM_GET).Pack(args)[0]
+    self.assertEqual(blob, binascii.unhexlify("c380"))
+    decoded = pid.Unpack(blob, PidStore.RDM_GET)
+    # This is the unicode code point for it
+    self.assertEqual(decoded, {'languages': [{'language': u'\u00c0'}]})
 
     # valid empty string
     pid = store.GetName("STATUS_ID_DESCRIPTION")

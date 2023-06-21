@@ -21,12 +21,14 @@ import os
 import socket
 # import timeout_decorator
 import unittest
-from ola import PidStore
+
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import RDMNack
 from ola.RDMAPI import RDMAPI
+from ola.TestUtils import handleRPCByteOrder
 from ola.UID import UID
 
+from ola import PidStore
 
 """Test cases for RDM device commands."""
 
@@ -57,18 +59,18 @@ class RDMTest(unittest.TestCase):
       # against olad dummy plugin
       # enable logging in rpc/StreamRpcChannel.py
       data = sockets[1].recv(4096)
-      expected = binascii.unhexlify(
+      expected = handleRPCByteOrder(binascii.unhexlify(
         "29000010080110001a0a52444d436f6d6d616e6422170801120908f0f4011500"
-        "ffffff180020602a0030003800")
+        "ffffff180020602a0030003800"))
       self.assertEqual(data, expected,
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
       results.got_request = True
-      response = binascii.unhexlify(
+      response = handleRPCByteOrder(binascii.unhexlify(
         "3f0000100802100022390800100018002213010000017fff0000000300050204"
         "00010000032860300038004a0908f0f4011500ffffff520908f0f40115ac1100"
-        "02580a")
+        "02580a"))
       sent_bytes = sockets[1].send(response)
       self.assertEqual(sent_bytes, len(response))
 
@@ -124,18 +126,18 @@ class RDMTest(unittest.TestCase):
       # against olad dummy plugin
       # enable logging in rpc/StreamRpcChannel.py
       data = sockets[1].recv(4096)
-      expected = binascii.unhexlify(
+      expected = handleRPCByteOrder(binascii.unhexlify(
         "2b000010080110001a0a52444d436f6d6d616e6422190801120908f0f4011500"
-        "ffffff180020e1012a010230003800")
+        "ffffff180020e1012a010230003800"))
       self.assertEqual(data, expected,
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
       results.got_request = True
-      response = binascii.unhexlify(
+      response = handleRPCByteOrder(binascii.unhexlify(
         "3d0000100802100022370800100018002210020005506572736f6e616c697479"
         "203228e101300038004a0908f0f4011500ffffff520908f0f40115ac107de058"
-        "29")
+        "29"))
       sent_bytes = sockets[1].send(response)
       self.assertEqual(sent_bytes, len(response))
 
@@ -184,17 +186,17 @@ class RDMTest(unittest.TestCase):
       # against olad dummy plugin
       # enable logging in rpc/StreamRpcChannel.py
       data = sockets[1].recv(4096)
-      expected = binascii.unhexlify(
+      expected = handleRPCByteOrder(binascii.unhexlify(
         "2b000010080110001a0a52444d436f6d6d616e6422190801120908f0f401150"
-        "0ffffff180020e0012a010a30013800")
+        "0ffffff180020e0012a010a30013800"))
       self.assertEqual(data, expected,
                        msg="Regression check failed. If protocol change "
                        "was intended set expected to: " +
                        str(binascii.hexlify(data)))
       results.got_request = True
-      response = binascii.unhexlify(
+      response = handleRPCByteOrder(binascii.unhexlify(
         "2f0000100802100022290800100218002202000628e001300138004a0908f0f"
-        "4011500ffffff520908f0f40115ac107de05831")
+        "4011500ffffff520908f0f40115ac107de05831"))
       sent_bytes = sockets[1].send(response)
       self.assertEqual(sent_bytes, len(response))
 

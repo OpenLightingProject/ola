@@ -19,17 +19,20 @@
 '''Get a PID from a UID.'''
 
 from __future__ import print_function
+
 import cmd
 import getopt
 import os.path
 import readline
 import sys
 import textwrap
-from ola import PidStore
+
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
+
+from ola import PidStore
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
