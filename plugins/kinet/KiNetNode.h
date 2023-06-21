@@ -31,10 +31,13 @@
 #include "ola/network/Interface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
+#include "ola/util/SequenceNumber.h"
 
 namespace ola {
 namespace plugin {
 namespace kinet {
+
+static const uint8_t KINET_PORTOUT_MAX_PORT_COUNT = 16;
 
 class KiNetNode {
  public:
@@ -48,9 +51,13 @@ class KiNetNode {
     // The following apply to Input Ports (those which send data)
     bool SendDMX(const ola::network::IPV4Address &target,
                  const ola::DmxBuffer &buffer);
+    bool SendPortOut(const ola::network::IPV4Address &target,
+                     const uint8_t port,
+                     const ola::DmxBuffer &buffer);
 
  private:
     bool m_running;
+    ola::SequenceNumber<uint32_t> m_transaction_number;
     ola::io::SelectServerInterface *m_ss;
     ola::io::IOQueue m_output_queue;
     ola::io::BigEndianOutputStream m_output_stream;
@@ -61,10 +68,12 @@ class KiNetNode {
     void PopulatePacketHeader(uint16_t msg_type);
     bool InitNetwork();
 
-    static const uint16_t KINET_PORT = 6038;
-    static const uint32_t KINET_MAGIC_NUMBER = 0x0401dc4a;
-    static const uint16_t KINET_VERSION_ONE = 0x0100;
-    static const uint16_t KINET_DMX_MSG = 0x0101;
+    static const uint16_t KINET_PORT;
+    static const uint32_t KINET_MAGIC_NUMBER;
+    static const uint16_t KINET_VERSION_ONE;
+    static const uint16_t KINET_DMX_MSG;
+    static const uint16_t KINET_PORTOUT_MSG;
+    static const uint16_t KINET_PORTOUT_MIN_BUFFER_SIZE;
 
     DISALLOW_COPY_AND_ASSIGN(KiNetNode);
 };
