@@ -23,6 +23,14 @@ AC_SUBST([ola_revision_version])
 OLA_REVISION_VERSION=ola_revision_version
 AC_SUBST(OLA_REVISION_VERSION)
 
+# Build name is separate because AC_CHECK_PROG must come after AC_INIT
+AC_CHECK_PROG([git],[git],[yes],[no])
+AM_CONDITIONAL([FOUND_GIT], [test "x$git" = xyes])
+AC_SUBST(OLA_BUILD_NAME)
+AM_COND_IF([FOUND_GIT],
+      [OLA_BUILD_NAME="$(./scripts/build_name.sh)"],
+      [OLA_BUILD_NAME="unknown"])
+
 # Checks for programs.
 AC_LANG([C++])
 AC_PROG_CXX
@@ -1025,6 +1033,7 @@ echo \
 "-------------------------------------------------------
 ${PACKAGE_NAME} Version ${PACKAGE_VERSION}
 
+Build Name: ${OLA_BUILD_NAME}
 Prefix: '${prefix}'
 Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
 Linker: '${LD} ${AM_LDFLAGS} ${LIBS}'
