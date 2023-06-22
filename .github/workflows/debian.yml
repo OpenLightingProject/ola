@@ -37,6 +37,7 @@ jobs:
           echo "OLA_DEBIAN_BUILD_VERSION=$OLA_DEBIAN_BUILD_VERSION" >> $GITHUB_OUTPUT
           echo "Build name: $OLA_BUILD_NAME"
           echo "Debian Build Version: $OLA_DEBIAN_BUILD_VERSION"
+          git describe --abbrev=7 --dirty --always --tags
         id: generate-build-name
       - name: Install build tools
         run: apt-get -y install devscripts adduser fakeroot sudo
