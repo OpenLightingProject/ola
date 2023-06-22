@@ -28,6 +28,13 @@ jobs:
       - name: Install Git
         run: apt-get -y install git
       - uses: actions/checkout@v3
+      - name: Generate build name
+        shell: bash
+        run: |
+          head -n 1 debian/changelog | sed -E "s/ola \((.+)-([0-9]+)\).*/\1~git`./scripts/build_name.sh`-\2/" >> $BUILD_NAME
+          echo "Build name: $BUILD_NAME"
+          echo "BUILD_NAME=$BUILD_NAME`" >> $GITHUB_OUTPUT
+        id: generate-build-name
       - name: Install build tools
         run: apt-get -y install devscripts adduser fakeroot sudo
       - name: Install build dependencies
@@ -38,7 +45,7 @@ jobs:
           chown -R builduser:builduser .
           chown builduser:builduser ..
       - name: Build
-        run: sudo -u builduser dpkg-buildpackage -b -rfakeroot -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
+        run: sudo -u builduser dpkg-buildpackage -v${{ steps.generate-build-name.BUILD_NAME }} -b -rfakeroot -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
       - name: Move built files
         if: always()
         run: |
