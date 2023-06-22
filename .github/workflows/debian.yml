@@ -45,7 +45,7 @@ jobs:
           chown -R builduser:builduser .
           chown builduser:builduser ..
       - name: Build
-        run: sudo -u builduser dpkg-buildpackage -v${{ steps.generate-build-name.BUILD_NAME }} -b -rfakeroot -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
+        run: sudo -u builduser dpkg-buildpackage -v${{ steps.generate-build-name.outputs.BUILD_NAME }} -b -rfakeroot -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
       - name: Move built files
         if: always()
         run: |
