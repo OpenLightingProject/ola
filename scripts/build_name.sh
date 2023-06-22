@@ -16,4 +16,8 @@
 # build_name.sh
 # Copyright (C) 2023 Perry Naseck
 
-git describe --abbrev=7 --dirty --always --tags 2> /dev/null || echo 'unknown-out-of-tree'
+if command -v git &> /dev/null; then
+  git describe --abbrev=7 --dirty --always --tags 2> /dev/null || echo 'unknown-out-of-tree'
+else
+  echo 'unknown'
+fi

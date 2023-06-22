@@ -24,12 +24,12 @@ OLA_REVISION_VERSION=ola_revision_version
 AC_SUBST(OLA_REVISION_VERSION)
 
 # Build name is separate because AC_CHECK_PROG must come after AC_INIT
+# build_name.sh also checks for Git, but this allows that check to show
+# up in ./configure for troubleshooting
 AC_CHECK_PROG([git],[git],[yes],[no])
 AM_CONDITIONAL([FOUND_GIT], [test "x$git" = xyes])
 AC_SUBST(OLA_BUILD_NAME)
-AM_COND_IF([FOUND_GIT],
-      [OLA_BUILD_NAME="$(./scripts/build_name.sh)"],
-      [OLA_BUILD_NAME="unknown"])
+OLA_BUILD_NAME="$(./scripts/build_name.sh)"
 
 # Checks for programs.
 AC_LANG([C++])
