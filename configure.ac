@@ -29,7 +29,10 @@ AC_SUBST(OLA_REVISION_VERSION)
 AC_CHECK_PROG([git],[git],[yes],[no])
 AM_CONDITIONAL([FOUND_GIT], [test "x$git" = xyes])
 AC_SUBST(OLA_BUILD_NAME)
-OLA_BUILD_NAME="$(./scripts/build_name.sh)"
+AC_ARG_VAR([OLA_BUILD_NAME], [Override the build name])
+AS_IF([test "x$OLA_BUILD_NAME" = x], [
+  OLA_BUILD_NAME="$(./scripts/build_name.sh)"
+])
 
 # Checks for programs.
 AC_LANG([C++])
