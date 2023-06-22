@@ -46,7 +46,7 @@ jobs:
         shell: bash
         run: |
           DEBFULLNAME="GitHub Actions" DEBEMAIL=actions@github.com \
-          debchange --allow-lower-version \
+          debchange --force-bad-version \
           --newversion ${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }} \
           "GitHub Actions Build \
           ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
