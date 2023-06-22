@@ -35,12 +35,21 @@ jobs:
           export OLA_BUILD_NAME=$(./scripts/build_name.sh)
           export OLA_DEBIAN_BUILD_VERSION=$(head -n 1 debian/changelog | sed -E "s/ola \((.+)-([0-9]+)\).*/\1~git-$OLA_BUILD_NAME-\2/")
           echo "OLA_BUILD_NAME=$OLA_BUILD_NAME" >> $GITHUB_OUTPUT
+          echo "OLA_BUILD_NAME=$OLA_BUILD_NAME" >> $GITHUB_ENV # Set build name globally so that modifications don't cause -dirty
           echo "OLA_DEBIAN_BUILD_VERSION=$OLA_DEBIAN_BUILD_VERSION" >> $GITHUB_OUTPUT
           echo "Build name: $OLA_BUILD_NAME"
           echo "Debian Build Version: $OLA_DEBIAN_BUILD_VERSION"
         id: generate-build-name
       - name: Install build tools
         run: apt-get -y install devscripts adduser fakeroot sudo
+      - name: Create Debian version for build
+        shell: bash
+        run: |
+          DEBFULLNAME="GitHub Actions" DEBEMAIL=actions@github.com \
+          debchange --allow-lower-version \
+          --newversion ${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }} \
+          "GitHub Actions Build \
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
       - name: Install build dependencies
         run: mk-build-deps -t "apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends" -i -r
       - name: Set up build user
