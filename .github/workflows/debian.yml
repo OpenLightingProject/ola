@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           export BUILD_NAME=$(head -n 1 debian/changelog | sed -E "s/ola \((.+)-([0-9]+)\).*/\1~git`./scripts/build_name.sh`-\2/")
-          echo "BUILD_NAME=$BUILD_NAME`" >> $GITHUB_OUTPUT
+          echo "BUILD_NAME=$BUILD_NAME" >> $GITHUB_OUTPUT
           echo "Build name: $BUILD_NAME"
         id: generate-build-name
       - name: Install build tools
