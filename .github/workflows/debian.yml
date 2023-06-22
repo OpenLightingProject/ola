@@ -31,6 +31,7 @@ jobs:
       - name: Generate build name
         shell: bash
         run: |
+          chown root:root . # workaround Git security precaution, see https://github.com/actions/runner-images/issues/6775
           export OLA_BUILD_NAME=$(./scripts/build_name.sh)
           export OLA_DEBIAN_BUILD_VERSION=$(head -n 1 debian/changelog | sed -E "s/ola \((.+)-([0-9]+)\).*/\1~git$OLA_BUILD_NAME-\2/")
           echo "OLA_BUILD_NAME=$OLA_BUILD_NAME" >> $GITHUB_OUTPUT
