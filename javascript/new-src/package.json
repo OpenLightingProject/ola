@@ -15,5 +15,8 @@
     "olp-javascript-style": "OpenLightingProject/javascript-style",
     "stylelint": "^13.8.0",
     "stylelint-config-recommended": "^5.0.0"
+  },
+  "scripts": {
+    "test": "grunt -v -d --stack test"
   }
 }
