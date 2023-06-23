@@ -25,8 +25,8 @@ jobs:
       # create a .git folder or .git.config. The Problem Matcher looks for
       # .git/config to find where the root of the repo is, so it must be
       # present.
-      - name: Install Git
-        run: apt-get -y install git
+      - name: Install Git and lsb-release
+        run: apt-get -y install git lsb-release
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0 # Fetch all tags for generating OLA_BUILD_NAME
@@ -35,10 +35,13 @@ jobs:
         run: |
           chown root:root . # workaround Git security precaution, see https://github.com/actions/runner-images/issues/6775
           export OLA_BUILD_NAME=$(./scripts/build_name.sh)
-          export OLA_DEBIAN_BUILD_VERSION=$(head -n 1 debian/changelog | sed -E "s/ola \((.+)-([0-9]+)\).*/\1~git-$OLA_BUILD_NAME-\2/")
+          # No docker number tag for testing, so must use lsb_release
+          export OLA_DEBIAN_BUILD_VERSION=$(./scripts/build_name.sh --debian)+deb$(lsb_release --short --release)
+
           echo "OLA_BUILD_NAME=$OLA_BUILD_NAME" >> $GITHUB_OUTPUT
           echo "OLA_BUILD_NAME=$OLA_BUILD_NAME" >> $GITHUB_ENV # Set build name globally so that modifications don't cause -dirty
           echo "OLA_DEBIAN_BUILD_VERSION=$OLA_DEBIAN_BUILD_VERSION" >> $GITHUB_OUTPUT
+
           echo "Build name: $OLA_BUILD_NAME"
           echo "Debian Build Version: $OLA_DEBIAN_BUILD_VERSION"
         id: generate-build-name
@@ -78,7 +81,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: ola-built-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
+          name: ola-built-debian-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
           path: ./built
   debian-test:
     name: 'Debian Test ${{ matrix.image_tag }} ${{ matrix.architecture }}'
@@ -92,11 +95,24 @@ jobs:
         architecture: [amd64]
     container: debian:${{ matrix.image_tag }}
     steps:
-      - uses: actions/checkout@master
+      - name: Install Git and lsb-release
+        run: apt-get -y install git lsb-release
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all tags for generating OLA_DEBIAN_BUILD_VERSION
+      - name: Generate build name # Job step outputs can't be passed between builds for matrix jobs, so we re-generate
+        shell: bash
+        run: |
+          chown root:root . # workaround Git security precaution, see https://github.com/actions/runner-images/issues/6775
+          # No docker number tag for testing, so must use lsb_release
+          export OLA_DEBIAN_BUILD_VERSION=$(./scripts/build_name.sh --debian)+deb$(lsb_release --short --release)
+          echo "OLA_DEBIAN_BUILD_VERSION=$OLA_DEBIAN_BUILD_VERSION" >> $GITHUB_OUTPUT
+          echo "Debian Build Version: $OLA_DEBIAN_BUILD_VERSION"
+        id: generate-build-name
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: ola-built-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
+          name: ola-built-debian-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
           path: built
       - name: Display structure of artifact files
         run: ls -alR
@@ -110,5 +126,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always() # Always upload the test output, even on failed tests
         with:
-          name: ola-test-output-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
+          name: ola-test-output-debian-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
           path: test-output

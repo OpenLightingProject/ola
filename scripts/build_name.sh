@@ -17,7 +17,13 @@
 # Copyright (C) 2023 Perry Naseck
 
 if command -v git &> /dev/null; then
-  git describe --abbrev=7 --dirty --always --tags 2> /dev/null || echo 'unknown-out-of-tree'
+  OLA_BUILD_NAME=$(git describe --abbrev=7$dirty_flag --always --tags 2> /dev/null || echo 'unknown-out-of-tree')
 else
-  echo 'unknown'
+  OLA_BUILD_NAME='unknown'
+fi
+
+if [ "$1" = "--debian" ]; then
+  head -n 1 debian/changelog | sed -E "s/ola \((.+)-([0-9]+)\).*/\1~git-$OLA_BUILD_NAME-\2/"
+else
+  echo $OLA_BUILD_NAME
 fi
