@@ -28,6 +28,8 @@ jobs:
       - name: Install Git
         run: apt-get -y install git
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Fetch all tags for generating OLA_BUILD_NAME
       - name: Generate build name
         shell: bash
         run: |
