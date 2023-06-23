@@ -81,7 +81,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: ola-built-debian-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
+          name: ola-built-debian-${{ matrix.image_tag }}-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
           path: ./built
   debian-test:
     name: 'Debian Test ${{ matrix.image_tag }} ${{ matrix.architecture }}'
@@ -112,7 +112,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: ola-built-debian-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
+          name: ola-built-debian-${{ matrix.image_tag }}-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
           path: built
       - name: Display structure of artifact files
         run: ls -alR
@@ -126,5 +126,5 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always() # Always upload the test output, even on failed tests
         with:
-          name: ola-test-output-debian-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
+          name: ola-test-output-debian-${{ matrix.image_tag }}-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
           path: test-output
