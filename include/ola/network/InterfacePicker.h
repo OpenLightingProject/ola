@@ -60,9 +60,17 @@ class InterfacePicker {
      */
     bool specific_only;
 
+    /**
+     * If False do not return an interface if it is down on posix or has no
+     * address configured on windows.
+     */
+    bool include_down;
+
+
     Options()
       : include_loopback(false),
-        specific_only(false) {
+        specific_only(false),
+        include_down(false) {
     }
   };
 
@@ -86,7 +94,8 @@ class InterfacePicker {
       int32_t index,
       const Options &options = Options()) const;
 
-  virtual std::vector<Interface> GetInterfaces(bool include_loopback) const = 0;
+  virtual std::vector<Interface> GetInterfaces(bool include_loopback,
+                                               bool include_down) const = 0;
 
   static InterfacePicker *NewPicker();
 };
