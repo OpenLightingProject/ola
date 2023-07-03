@@ -44,7 +44,7 @@ LLRPProbeReplyInflator::LLRPProbeReplyInflator()
 /**
  * Set an LLRPProbeReplyHandler to run when receiving an LLRP Probe Reply
  * message.
- * @param handler the callback to invoke when there is and LLRP Probe Reply.
+ * @param handler the callback to invoke when there is an LLRP Probe Reply.
  */
 void LLRPProbeReplyInflator::SetLLRPProbeReplyHandler(
     LLRPProbeReplyHandler *handler) {
