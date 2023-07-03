@@ -48,8 +48,6 @@ class MessageBuilder {
 
     void BuildNullTCPPacket(IOStack *packet);
 
-    void BuildBrokerFetchClientListTCPPacket(IOStack *packet);
-
     void BuildBrokerNullTCPPacket(IOStack *packet);
 
     void BuildTCPE133StatusPDU(IOStack *packet,
