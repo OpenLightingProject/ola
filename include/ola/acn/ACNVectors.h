@@ -235,6 +235,17 @@ enum BrokerVector {
   VECTOR_BROKER_NULL = 0x000F,  /**< Broker Client Null */
 };
 
+// Table A-21, Client Protocol Codes
+// These aren't fully named as vectors in the standard, but are used as such so
+// we put them in here
+/**
+ * @brief Vectors used at the E1.33 Broker Client Entry layer.
+ */
+enum ClientProtocolCode {
+  CLIENT_PROTOCOL_RPT = 0x00000005,  /**< Broker RPT Client Entry */
+  CLIENT_PROTOCOL_EPT = 0x0000000b,  /**< Broker EPT Client Entry */
+};
+
 /**
  * @}
  */
