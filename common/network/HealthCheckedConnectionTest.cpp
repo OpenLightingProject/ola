@@ -60,7 +60,9 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
                                 const ola::TimeInterval timeout_interval,
                                 const Options &options,
                                 MockClock *clock)
-        : HealthCheckedConnection(scheduler, heartbeat_interval, timeout_interval),
+        : HealthCheckedConnection(scheduler,
+                                  heartbeat_interval,
+                                  timeout_interval),
           m_descriptor(descriptor),
           m_ss(scheduler),
           m_options(options),
