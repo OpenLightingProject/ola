@@ -96,6 +96,11 @@ enum E133DisconnectStatusCode {
 enum {
   MAX_E133_STATUS_STRING_SIZE = 64
 };
+
+// The E1.33 version..
+enum {
+  E133_VERSION = 1
+};
 }  // namespace e133
 }  // namespace ola
 #endif  // INCLUDE_OLA_E133_E133ENUMS_H_
