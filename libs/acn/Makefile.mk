@@ -31,11 +31,16 @@ noinst_LTLIBRARIES += libs/acn/libolae131core.la
 libs_acn_libolae131core_la_SOURCES = \
     libs/acn/BaseInflator.cpp \
     libs/acn/BaseInflator.h \
+    libs/acn/BrokerClientAddInflator.h \
+    libs/acn/BrokerClientEntryChangeInflator.h \
     libs/acn/BrokerClientEntryHeader.h \
     libs/acn/BrokerClientEntryPDU.cpp \
     libs/acn/BrokerClientEntryPDU.h \
+    libs/acn/BrokerClientRemoveInflator.h \
     libs/acn/BrokerConnectPDU.cpp \
     libs/acn/BrokerConnectPDU.h \
+    libs/acn/BrokerInflator.h \
+    libs/acn/BrokerNullInflator.h \
     libs/acn/BrokerNullPDU.cpp \
     libs/acn/BrokerNullPDU.h \
     libs/acn/BrokerPDU.cpp \
