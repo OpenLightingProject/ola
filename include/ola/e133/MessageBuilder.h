@@ -48,6 +48,10 @@ class MessageBuilder {
 
     void BuildNullTCPPacket(IOStack *packet);
 
+    void BuildBrokerFetchClientListTCPPacket(IOStack *packet);
+
+    void BuildBrokerNullTCPPacket(IOStack *packet);
+
     void BuildTCPE133StatusPDU(IOStack *packet,
                                uint32_t sequence_number, uint16_t endpoint_id,
                                ola::e133::E133StatusCode status_code,

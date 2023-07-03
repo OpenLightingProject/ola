@@ -25,6 +25,7 @@
 #include "ola/e133/MessageBuilder.h"
 #include "ola/io/IOStack.h"
 
+#include "libs/acn/BrokerPDU.h"
 #include "libs/acn/E133PDU.h"
 #include "libs/acn/RDMPDU.h"
 #include "libs/acn/RootPDU.h"
@@ -36,6 +37,7 @@ namespace e133 {
 
 using ola::acn::CID;
 using ola::io::IOStack;
+using ola::acn::BrokerPDU;
 using ola::acn::E133PDU;
 using ola::acn::PreamblePacker;
 using ola::acn::RootPDU;
@@ -63,6 +65,16 @@ void MessageBuilder::PrependRDMHeader(IOStack *packet) {
  */
 void MessageBuilder::BuildNullTCPPacket(IOStack *packet) {
   RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_NULL, m_cid);
+  PreamblePacker::AddTCPPreamble(packet);
+}
+
+
+/**
+ * Build a Broker NULL TCP packet. These packets can be used for broker heartbeats.
+ */
+void MessageBuilder::BuildBrokerNullTCPPacket(IOStack *packet) {
+  BrokerPDU::PrependPDU(packet, ola::acn::VECTOR_BROKER_NULL);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_BROKER, m_cid, true);
   PreamblePacker::AddTCPPreamble(packet);
 }
 
