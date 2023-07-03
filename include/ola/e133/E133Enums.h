@@ -53,9 +53,20 @@ enum E133StatusCode {
   SC_E133_BROADCAST_COMPLETE = 0x0009,
 };
 
+// Table A-22 E1.33 RPT Client Type Codes
+enum E133RPTClientTypeCode {
+  RPT_CLIENT_TYPE_DEVICE = 0x00,
+  RPT_CLIENT_TYPE_CONTROLLER = 0x01,
+};
+
 // The max size of an E1.33 Status string.
 enum {
   MAX_E133_STATUS_STRING_SIZE = 64
+};
+
+// The E1.33 version..
+enum {
+  E133_VERSION = 1
 };
 }  // namespace e133
 }  // namespace ola
