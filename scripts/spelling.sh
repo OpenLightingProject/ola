@@ -64,6 +64,7 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./configure" -or \
       -wholename "./java/Makefile" -or \
       -wholename "./java/Makefile.in" -or \
+      -wholename "./javascript/new-src/package-lock.json" -or \
       -wholename "./libtool" -or \
       -wholename "./olad/www/mobile.js" -or \
       -wholename "./olad/www/new/js/app.min.js" -or \
