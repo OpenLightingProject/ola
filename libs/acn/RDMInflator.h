@@ -46,6 +46,8 @@ class RDMInflator: public BaseInflator {
                            const std::string&  // rdm data
                           > GenericRDMMessageHandler;
 
+    // TODO(Peter): Set a better default vector for RDM use (possibly the RPT
+    // one)
     RDMInflator(unsigned int vector = ola::acn::VECTOR_FRAMING_RDMNET);
     ~RDMInflator() {}
 
@@ -53,8 +55,6 @@ class RDMInflator: public BaseInflator {
 
     void SetRDMHandler(RDMMessageHandler *handler);
     void SetGenericRDMHandler(GenericRDMMessageHandler *handler);
-
-    static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
 
  protected:
     bool DecodeHeader(HeaderSet *headers,
