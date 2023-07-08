@@ -104,6 +104,11 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/RootPDU.h \
     libs/acn/RootSender.cpp \
     libs/acn/RootSender.h \
+    libs/acn/RPTHeader.h \
+    libs/acn/RPTInflator.cpp \
+    libs/acn/RPTInflator.h \
+    libs/acn/RPTNotificationInflator.h \
+    libs/acn/RPTRequestInflator.h \
     libs/acn/TCPTransport.cpp \
     libs/acn/TCPTransport.h \
     libs/acn/Transport.h \
