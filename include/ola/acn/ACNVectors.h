@@ -120,6 +120,55 @@ enum BrokerVector {
   VECTOR_BROKER_NULL = 0x000F,  /**< Broker Client Null */
 };
 
+// Table A-8, RPT PDU Vector
+/**
+ * @brief Vectors used at the E1.33 RPT layer.
+ */
+enum RPTVector {
+  VECTOR_RPT_REQUEST = 1,  /**< RPT Request */
+  VECTOR_RPT_STATUS = 2,  /**< RPT Status */
+  VECTOR_RPT_NOTIFICATION = 3,  /**< RPT Notification */
+};
+
+// Table A-9, RPT Request PDU Vector
+/**
+ * @brief Vectors used at the E1.33 RPT Request layer.
+ */
+enum RPTRequestVector {
+  VECTOR_REQUEST_RDM_CMD = 1,  /**< RPT Request RDM Command */
+};
+
+// Table A-10, RPT Status PDU Vector
+/**
+ * @brief Vectors used at the E1.33 RPT Status layer.
+ */
+enum RPTStatusVector {
+  VECTOR_RPT_STATUS_UNKNOWN_RPT_UID = 0x0001,  /**< RPT Status Unknown RPT UID */
+  VECTOR_RPT_STATUS_RDM_TIMEOUT = 0x0002,  /**< RPT Status RDM Timeout */
+  VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE = 0x0003,  /**< RPT Status RDM Invalid Response */
+  VECTOR_RPT_STATUS_UNKNOWN_RDM_UID = 0x0004,  /**< RPT Status Unknown RDM UID */
+  VECTOR_RPT_STATUS_UNKNOWN_ENDPOINT = 0x0005,  /**< RPT Status Unknown Endpoint */
+  VECTOR_RPT_STATUS_BROADCAST_COMPLETE = 0x0006,  /**< RPT Status Broadcast Complete */
+  VECTOR_RPT_STATUS_UNKNOWN_VECTOR = 0x0007,  /**< RPT Status Unknown Vector */
+  VECTOR_RPT_STATUS_INVALID_MESSAGE = 0x0008,  /**< RPT Status Invalid Message */
+  VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS = 0x0009,  /**< RPT Status Invalid Command Class */
+};
+
+// Table A-11, RPT Notification PDU Vector
+/**
+ * @brief Vectors used at the E1.33 RPT Notification layer.
+ */
+enum RPTNotificationVector {
+  VECTOR_NOTIFICATION_RDM_CMD = 1,  /**< RPT Notification RDM Command */
+};
+
+/**
+ * @brief Vectors used at the E1.33 RDM Command layer.
+ */
+enum RDMCommandVector {
+  VECTOR_RDM_CMD_RDM_DATA = 0xCC,  /**< E1.33 RDM Command */
+};
+
 // Table A-21, Client Protocol Codes
 // These aren't fully named as vectors in the standard, but are used as such so
 // we put them in here
@@ -128,7 +177,7 @@ enum BrokerVector {
  */
 enum ClientProtocolCode {
   CLIENT_PROTOCOL_RPT = 0x00000005,  /**< Broker RPT Client Entry */
-  CLIENT_PROTOCOL_EPT = 0x0000000b,  /**< Broker EPT Client Entry */
+  CLIENT_PROTOCOL_EPT = 0x0000000B,  /**< Broker EPT Client Entry */
 };
 
 /**
