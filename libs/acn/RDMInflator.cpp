@@ -74,13 +74,13 @@ bool RDMInflator::DecodeHeader(HeaderSet *,
 
 
 /*
- * Handle a DMP PDU for E1.33.
+ * Handle an RDM PDU for E1.33.
  */
 bool RDMInflator::HandlePDUData(uint32_t vector,
                                 const HeaderSet &headers,
                                 const uint8_t *data,
                                 unsigned int pdu_len) {
-  if (vector != VECTOR_RDMNET_DATA) {
+  if (vector != VECTOR_RDM_CMD_RDM_DATA) {
     OLA_INFO << "Not a RDM message, vector was " << vector;
     return true;
   }
