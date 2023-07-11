@@ -17,7 +17,7 @@
 # Copyright (C) 2023 Perry Naseck
 
 if command -v git &> /dev/null; then
-  OLA_BUILD_NAME=$(git describe --abbrev=7$dirty_flag --always --tags 2> /dev/null || echo 'unknown-out-of-tree')
+  OLA_BUILD_NAME=$(git describe --abbrev=7 --dirty --always --tags 2> /dev/null || echo 'unknown-out-of-tree')
 else
   OLA_BUILD_NAME='unknown'
 fi
