@@ -23,7 +23,7 @@
  * @addtogroup json
  * @{
  * @file JsonTypes.h
- * @brief Enums used to identfy JSON types.
+ * @brief Enums used to identify JSON types.
  * @}
  */
 
