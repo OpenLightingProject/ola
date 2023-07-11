@@ -207,7 +207,7 @@ void IOStackTest::testAppendToQueue() {
 }
 
 /**
- * Confirm we re-use blocks
+ * Confirm we reuse blocks
  */
 void IOStackTest::testBlockReuse() {
   MemoryBlockPool pool(4);
