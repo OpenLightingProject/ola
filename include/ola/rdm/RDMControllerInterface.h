@@ -79,12 +79,12 @@ class RDMControllerInterface {
    * @param request the RDMRequest, ownership is transferred.
    * @param on_complete The callback to run when the request completes.
    *
-   * Implementors much ensure that the callback is always run at some point.
+   * Implementers much ensure that the callback is always run at some point.
    * In other words, there must be no way that a request can be dropped in such
    * a way that the callback is never run. Doing so will either block all
    * subsequent requests, or leak memory depending on the implementation.
    *
-   * Also the implementor of this class may want to  re-write the transaction #,
+   * Also the implementer of this class may want to  re-write the transaction #,
    * and possibly the UID (changing src UIDs isn't addressed by the RDM
    * spec).
    *
