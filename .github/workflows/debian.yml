@@ -36,8 +36,7 @@ jobs:
           chown root:root . # workaround Git security precaution, see https://github.com/actions/runner-images/issues/6775
           export OLA_BUILD_NAME=$(./scripts/build_name.sh)
           # No docker number tag for testing, so must use lsb_release
-          OLA_DEBIAN_BUILD_VERSION_SUFFIX_VER=$(lsb_release --short --release)
-          export OLA_DEBIAN_BUILD_VERSION=$(./scripts/build_name.sh --debian)$([[ "$OLA_DEBIAN_BUILD_VERSION_SUFFIX_VER" != "n/a" ]] && printf "+deb$OLA_DEBIAN_BUILD_VERSION_SUFFIX_VER")
+          export OLA_DEBIAN_BUILD_VERSION=$(./scripts/build_name.sh --debian)
 
           echo "OLA_BUILD_NAME=$OLA_BUILD_NAME" >> $GITHUB_OUTPUT
           echo "OLA_BUILD_NAME=$OLA_BUILD_NAME" >> $GITHUB_ENV # Set build name globally so that modifications don't cause -dirty
@@ -108,7 +107,7 @@ jobs:
         run: |
           chown root:root . # workaround Git security precaution, see https://github.com/actions/runner-images/issues/6775
           # No docker number tag for testing, so must use lsb_release
-          export OLA_DEBIAN_BUILD_VERSION=$(./scripts/build_name.sh --debian)+deb$(lsb_release --short --release)
+          export OLA_DEBIAN_BUILD_VERSION=$(./scripts/build_name.sh --debian)
           echo "OLA_DEBIAN_BUILD_VERSION=$OLA_DEBIAN_BUILD_VERSION" >> $GITHUB_OUTPUT
           echo "Debian Build Version: $OLA_DEBIAN_BUILD_VERSION"
         id: generate-build-name

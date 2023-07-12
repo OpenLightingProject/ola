@@ -23,7 +23,9 @@ else
 fi
 
 if [ "$1" = "--debian" ]; then
-  head -n 1 debian/changelog | sed -E "s/ola \((.+)-([0-9]+)\).*/\1~git-$OLA_BUILD_NAME-\2/"
+  OLA_DEBIAN_BUILD_VERSION_SUFFIX_VER=$(lsb_release --short --release)
+  OLA_DEBIAN_BUILD_VERSION_SUFFIX=$([[ "$OLA_DEBIAN_BUILD_VERSION_SUFFIX_VER" != "n/a" ]] && printf "+deb$OLA_DEBIAN_BUILD_VERSION_SUFFIX_VER")
+  head -n 1 debian/changelog | sed -E "s/ola \((.+)-([0-9]+)\).*/\1~git-$OLA_BUILD_NAME-\2$OLA_DEBIAN_BUILD_VERSION_SUFFIX/"
 else
   echo $OLA_BUILD_NAME
 fi
