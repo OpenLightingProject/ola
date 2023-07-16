@@ -128,9 +128,9 @@ jobs:
       run: sudo apt-get -y install ${{ matrix.compiler.pkg }}
     - name: Set up build user # CredentialsTest cannot run as root
       run: |
-         adduser --disabled-password --gecos "" builduser
-         chown -R builduser:builduser .
-         chown builduser:builduser ..
+         sudo adduser --disabled-password --gecos "" builduser
+         sudo chown -R builduser:builduser .
+         sudo chown builduser:builduser ..
     - name: Autoreconf
       run: sudo --preserve-env -u builduser env "PATH=$PATH" autoreconf -i
     - name: Set configure arguments
