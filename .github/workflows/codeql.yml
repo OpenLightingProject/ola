@@ -99,12 +99,12 @@ jobs:
      # .git/config to find where the root of the repo is, so it must be
      # present.
     - name: Install Git
-      run: apt-get -y install git
+      run: sudo apt-get -y install git
     - uses: actions/checkout@v3
     - name: Install build tools
       shell: bash
       run: |
-        apt-get -y install adduser sudo pkg-config libtool autoconf \
+        sudo apt-get -y install adduser sudo pkg-config libtool autoconf \
           automake g++ bison flex make bash-completion dh-autoreconf \
           debhelper devscripts wget python3-full python3-pip
     - name: Setup Python venv
@@ -118,14 +118,14 @@ jobs:
     - name: Install build dependencies
       shell: bash
       run: |
-        apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
+        sudo apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
           libmicrohttpd-dev protobuf-compiler python3-protobuf \
           libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
           libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy \
           default-jdk-headless maven
     - name: Install compiler
       shell: bash
-      run: apt-get -y install ${{ matrix.compiler.pkg }}
+      run: sudo apt-get -y install ${{ matrix.compiler.pkg }}
     - name: Set up build user # CredentialsTest cannot run as root
       run: |
          adduser --disabled-password --gecos "" builduser
