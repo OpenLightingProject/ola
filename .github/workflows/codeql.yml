@@ -25,7 +25,8 @@ jobs:
     #   - https://gh.io/supported-runners-and-hardware-resources
     #   - https://gh.io/using-larger-runners
     # Consider using larger runners for possible analysis time improvements.
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    runs-on: 'ubuntu-latest'
+    container: "debian:stable"
     timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
     permissions:
       actions: read
@@ -65,8 +66,22 @@ jobs:
       CXX: "${{ matrix.compiler.CXX }}"
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - name: Get number of CPU cores
+      id: num-cpu-cores
+      # TODO(Perry): Parallelization causes GH Actions to hang -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
+      # run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
+      run: echo "NUM_CPU_CORES=1" >> $GITHUB_OUTPUT
+    - name: Update package database
+      run: apt-get update -y
+     # See comments beginning at
+     # https://github.com/actions/runner/issues/763#issuecomment-1435474884
+     # Without Git, actions/checkout@v3 will resort to REST and will not
+     # create a .git folder or .git.config. The Problem Matcher looks for
+     # .git/config to find where the root of the repo is, so it must be
+     # present.
+    - name: Install Git
+      run: apt-get -y install git
+    - uses: actions/checkout@v3
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
@@ -85,26 +100,10 @@ jobs:
     #- name: Autobuild
     #  uses: github/codeql-action/autobuild@v2
 
-    - name: Get number of CPU cores
-      id: num-cpu-cores
-      # TODO(Perry): Parallelization causes GH Actions to hang -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
-      # run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
-      run: echo "NUM_CPU_CORES=1" >> $GITHUB_OUTPUT
-    - name: Update package database
-      run: sudo apt-get update -y
-     # See comments beginning at
-     # https://github.com/actions/runner/issues/763#issuecomment-1435474884
-     # Without Git, actions/checkout@v3 will resort to REST and will not
-     # create a .git folder or .git.config. The Problem Matcher looks for
-     # .git/config to find where the root of the repo is, so it must be
-     # present.
-    - name: Install Git
-      run: sudo apt-get -y install git
-    - uses: actions/checkout@v3
     - name: Install build tools
       shell: bash
       run: |
-        sudo apt-get -y install adduser sudo pkg-config libtool autoconf \
+        apt-get -y install adduser sudo pkg-config libtool autoconf \
           automake g++ bison flex make bash-completion dh-autoreconf \
           debhelper devscripts wget python3-full python3-pip
     - name: Setup Python venv
@@ -125,12 +124,12 @@ jobs:
           default-jdk-headless maven
     - name: Install compiler
       shell: bash
-      run: sudo apt-get -y install ${{ matrix.compiler.pkg }}
+      run: apt-get -y install ${{ matrix.compiler.pkg }}
     - name: Set up build user # CredentialsTest cannot run as root
       run: |
-         sudo adduser --disabled-password --gecos "" builduser
-         sudo chown -R builduser:builduser .
-         sudo chown builduser:builduser ..
+         adduser --disabled-password --gecos "" builduser
+         chown -R builduser:builduser .
+         chown builduser:builduser ..
     - name: Autoreconf
       run: sudo --preserve-env -u builduser env "PATH=$PATH" autoreconf -i
     - name: Set configure arguments
