@@ -91,7 +91,7 @@ jobs:
       # run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
       run: echo "NUM_CPU_CORES=1" >> $GITHUB_OUTPUT
     - name: Update package database
-      run: apt-get update -y
+      run: sudo apt-get update -y
      # See comments beginning at
      # https://github.com/actions/runner/issues/763#issuecomment-1435474884
      # Without Git, actions/checkout@v3 will resort to REST and will not
