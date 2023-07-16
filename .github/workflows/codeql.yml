@@ -35,16 +35,34 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'cpp', 'java', 'javascript', 'python' ]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby', 'swift' ]
-        # Use only 'java' to analyze code written in Java, Kotlin or both
-        # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both
-        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
-        configure-args: "--enable-ja-rule --enable-e133 --enable-unittests"
-        compiler: 
-          CC: "/usr/bin/gcc"
-          CXX: "/usr/bin/g++"
-          pkg: "gcc g++"
+        include:
+          - language: "cpp"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-unittests"
+            compiler: 
+              CC: "/usr/bin/gcc"
+              CXX: "/usr/bin/g++"
+              pkg: "gcc g++"
+          - language: "java"
+            configure-args: "--enable-unittests --enable-java-libs"
+            compiler: 
+              CC: "/usr/bin/gcc"
+              CXX: "/usr/bin/g++"
+              pkg: "gcc g++"
+          - language: "javascript"
+            configure-args: "--enable-unittests"
+            compiler: 
+              CC: "/usr/bin/gcc"
+              CXX: "/usr/bin/g++"
+              pkg: "gcc g++"
+          - language: "python"
+            configure-args: "--enable-unittests --enable-rdm-tests"
+            compiler: 
+              CC: "/usr/bin/gcc"
+              CXX: "/usr/bin/g++"
+              pkg: "gcc g++"
+    env:
+      CC: "${{ matrix.compiler.CC }}"
+      CXX: "${{ matrix.compiler.CXX }}"
 
     steps:
     - name: Checkout repository
