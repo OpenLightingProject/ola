@@ -4,10 +4,6 @@
 # You may wish to alter this file to override the set of languages analyzed,
 # or to provide custom queries or build logic.
 #
-# ******** NOTE ********
-# We have attempted to detect the languages in your repository. Please check
-# the `language` matrix defined below to confirm you have the correct set of
-# supported CodeQL languages.
 #
 name: "CodeQL"
 
@@ -44,6 +40,11 @@ jobs:
         # Use only 'java' to analyze code written in Java, Kotlin or both
         # Use only 'javascript' to analyze code written in JavaScript, TypeScript or both
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
+        configure-args: "--enable-ja-rule --enable-e133 --enable-unittests"
+        compiler: 
+          CC: "/usr/bin/gcc"
+          CXX: "/usr/bin/g++"
+          pkg: "gcc g++"
 
     steps:
     - name: Checkout repository
@@ -61,21 +62,76 @@ jobs:
         # For more details on CodeQL's query packs, refer to: https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
 
-
     # Autobuild attempts to build any compiled languages (C/C++, C#, Go, Java, or Swift).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
+    #- name: Autobuild
+    #  uses: github/codeql-action/autobuild@v2
 
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-
-    #   If the Autobuild fails above, remove it and uncomment the following three lines.
-    #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
-
-    # - run: |
-    #     echo "Run, Build Application using script"
-    #     ./location_of_script_within_repo/buildscript.sh
+    - name: Get number of CPU cores
+      id: num-cpu-cores
+      # TODO(Perry): Parallelization causes GH Actions to hang -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
+      # run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
+      run: echo "NUM_CPU_CORES=1" >> $GITHUB_OUTPUT
+    - name: Update package database
+      run: apt-get update -y
+     # See comments beginning at
+     # https://github.com/actions/runner/issues/763#issuecomment-1435474884
+     # Without Git, actions/checkout@v3 will resort to REST and will not
+     # create a .git folder or .git.config. The Problem Matcher looks for
+     # .git/config to find where the root of the repo is, so it must be
+     # present.
+    - name: Install Git
+      run: apt-get -y install git
+    - uses: actions/checkout@v3
+    - name: Install build tools
+      shell: bash
+      run: |
+        apt-get -y install adduser sudo pkg-config libtool autoconf \
+          automake g++ bison flex make bash-completion dh-autoreconf \
+          debhelper devscripts wget python3-full python3-pip
+    - name: Setup Python venv
+      shell: bash
+      run: |
+        python3 -m venv --system-site-packages ../venv
+        source ../venv/bin/activate
+        echo "PATH=$PATH" >> $GITHUB_ENV
+    - name: Install Python build tools
+      run: python3 -m pip install --no-input gcovr
+    - name: Install build dependencies
+      shell: bash
+      run: |
+        apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
+          libmicrohttpd-dev protobuf-compiler python3-protobuf \
+          libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
+          libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy \
+          default-jdk-headless maven
+    - name: Install compiler
+      shell: bash
+      run: apt-get -y install ${{ matrix.compiler.pkg }}
+    - name: Set up build user # CredentialsTest cannot run as root
+      run: |
+         adduser --disabled-password --gecos "" builduser
+         chown -R builduser:builduser .
+         chown builduser:builduser ..
+    - name: Autoreconf
+      run: sudo --preserve-env -u builduser env "PATH=$PATH" autoreconf -i
+    - name: Set configure arguments
+      run: |
+        echo "GH_OLA_CONFIGURE_ARGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
+    - name: Set additional Linux configure arguments
+      if: runner.os == 'Linux'
+      # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
+      run: |
+        echo "GH_OLA_CONFIGURE_ARGS=$GH_OLA_CONFIGURE_ARGS CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
+    - name: Print configure command
+      run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
+    - name: Configure
+      run: sudo --preserve-env -u builduser env "PATH=$PATH" ./configure $GH_OLA_CONFIGURE_ARGS
+    - name: Make
+      run: sudo --preserve-env -u builduser env "PATH=$PATH" make -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
+    - name: Display structure of the built files
+      if: always() && env.ACTIONS_STEP_DEBUG == 'true'
+      run: ls -alR
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
