@@ -608,6 +608,7 @@ AS_IF([test "x$enable_gcov" = xyes],
       [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
        CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
        LIBS="$LIBS -lgcov"])
+AM_CONDITIONAL([BUILD_GCOV], [test "x$enable_gcov" = xyes])
 
 # Enable HTTP support. This requires libmicrohttpd.
 AC_ARG_ENABLE(
@@ -962,6 +963,10 @@ AM_CONDITIONAL([FOUND_FLAKE8], [test "x$flake8" = xyes])
 AC_CHECK_PROG([cpplint],[cpplint],[yes],[no])
 AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
 
+# Coverage
+AC_CHECK_PROG([gcovr],[gcovr],[yes],[no])
+AM_CONDITIONAL([FOUND_GCOVR], [test "x$gcovr" = xyes])
+
 # Output
 #####################################################
 # Hack alert!
@@ -973,18 +978,27 @@ AM_CONDITIONAL([FOUND_CPPLINT], [test "x$cpplint" = xyes])
 # srcdir and set PYTHONPATH=${top_builddir}/python in data/rdm/Makefile.am
 AC_CONFIG_LINKS([python/ola/__init__.py:python/ola/__init__.py
                  python/ola/ClientWrapper.py:python/ola/ClientWrapper.py
+                 python/ola/DMXConstants.py:python/ola/DMXConstants.py
+                 python/ola/DUBDecoder.py:python/ola/DUBDecoder.py
                  python/ola/MACAddress.py:python/ola/MACAddress.py
                  python/ola/OlaClient.py:python/ola/OlaClient.py
                  python/ola/PidStore.py:python/ola/PidStore.py
                  python/ola/RDMAPI.py:python/ola/RDMAPI.py
                  python/ola/RDMConstants.py:python/ola/RDMConstants.py
+                 python/ola/StringUtils.py:python/ola/StringUtils.py
                  python/ola/TestUtils.py:python/ola/TestUtils.py
                  python/ola/UID.py:python/ola/UID.py
                  python/ola/rpc/__init__.py:python/ola/rpc/__init__.py
                  python/ola/rpc/SimpleRpcController.py:python/ola/rpc/SimpleRpcController.py
                  python/ola/rpc/StreamRpcChannel.py:python/ola/rpc/StreamRpcChannel.py
+                 tools/rdm/__init__.py:tools/rdm/__init__.py
                  tools/rdm/ExpectedResults.py:tools/rdm/ExpectedResults.py
+                 tools/rdm/ResponderTest.py:tools/rdm/ResponderTest.py
                  tools/rdm/TestCategory.py:tools/rdm/TestCategory.py
+                 tools/rdm/TestDefinitions.py:tools/rdm/TestDefinitions.py
+                 tools/rdm/TestHelpers.py:tools/rdm/TestHelpers.py
+                 tools/rdm/TestMixins.py:tools/rdm/TestMixins.py
+                 tools/rdm/TestRunner.py:tools/rdm/TestRunner.py
                  tools/rdm/TestState.py:tools/rdm/TestState.py
                  tools/rdm/TimingStats.py:tools/rdm/TimingStats.py])
 
@@ -1025,6 +1039,7 @@ Now type 'make @<:@<target>@:>@'
   where the optional <target> is:
     all          - build everything
     check        - run the tests
+    coverage     - build tests and generate coverage
     doxygen-doc  - generate the HTML documentation
     lint         - run the linters
 -------------------------------------------------------"
