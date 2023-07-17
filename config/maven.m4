@@ -27,7 +27,7 @@ if test -z "$MAVEN" ; then
 elif test -n "$1" ; then
   AC_MSG_CHECKING([mvn version])
   set -x
-  [maven_version=`$MAVEN --version 2>/dev/null | head -n 1 | sed 's/.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/g'`]
+  [maven_version=`$MAVEN --version 2>/dev/null | grep -i 'Maven' | head -n 1 | sed 's/.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/g'`]
   [required=$1]
   [required_major=`echo $required | sed 's/[^0-9].*//'`]
   [required_minor=`echo $required | sed 's/[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*/\1/'`]
