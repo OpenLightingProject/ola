@@ -92,11 +92,19 @@ jobs:
       - name: Set configure arguments
         run: |
           echo "GH_OLA_CONFIGURE_ARGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
+      - name: Set distcheck configure arguments
+        if: matrix.task == 'distcheck'
+        run: |
+          echo "DISTCHECK_CONFIGURE_FLAGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
       - name: Set additional Linux configure arguments
         if: runner.os == 'Linux'
         # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
         run: |
           echo "GH_OLA_CONFIGURE_ARGS=$GH_OLA_CONFIGURE_ARGS CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
+      - name: Set additional Linux distcheck configure arguments
+        if: matrix.task == 'distcheck'
+        run: |
+          echo "DISTCHECK_CONFIGURE_FLAGS=${{ matrix.configure-args }} CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
       - name: Print configure command
         run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
       - name: Configure
