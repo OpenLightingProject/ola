@@ -26,8 +26,6 @@ jobs:
     #   - https://gh.io/using-larger-runners
     # Consider using larger runners for possible analysis time improvements.
     runs-on: 'ubuntu-latest'
-    container:
-      image: debian:stable
     timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
     permissions:
       actions: read
@@ -73,7 +71,7 @@ jobs:
       # run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
       run: echo "NUM_CPU_CORES=1" >> $GITHUB_OUTPUT
     - name: Update package database
-      run: apt-get update -y
+      run: sudo apt-get update -y
      # See comments beginning at
      # https://github.com/actions/runner/issues/763#issuecomment-1435474884
      # Without Git, actions/checkout@v3 will resort to REST and will not
@@ -81,7 +79,7 @@ jobs:
      # .git/config to find where the root of the repo is, so it must be
      # present.
     - name: Install Git
-      run: apt-get -y install git
+      run: sudo apt-get -y install git
     - uses: actions/checkout@v3
 
     # Initializes the CodeQL tools for scanning.
@@ -104,7 +102,7 @@ jobs:
     - name: Install build tools
       shell: bash
       run: |
-        apt-get -y install adduser sudo pkg-config libtool autoconf \
+        sudo apt-get -y install adduser sudo pkg-config libtool autoconf \
           automake g++ bison flex make bash-completion dh-autoreconf \
           debhelper devscripts wget python3-full python3-pip
     - name: Setup Python venv
@@ -125,14 +123,9 @@ jobs:
           default-jdk-headless maven
     - name: Install compiler
       shell: bash
-      run: apt-get -y install ${{ matrix.compiler.pkg }}
-    - name: Set up build user # CredentialsTest cannot run as root
-      run: |
-         adduser --disabled-password --gecos "" builduser
-         chown -R builduser:builduser .
-         chown builduser:builduser ..
+      run: sudo apt-get -y install ${{ matrix.compiler.pkg }}
     - name: Autoreconf
-      run: sudo --preserve-env -u builduser env "PATH=$PATH" autoreconf -i
+      run: PATH=$PATH autoreconf -i
     - name: Set configure arguments
       run: |
         echo "GH_OLA_CONFIGURE_ARGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
@@ -144,9 +137,9 @@ jobs:
     - name: Print configure command
       run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
     - name: Configure
-      run: sudo --preserve-env -u builduser env "PATH=$PATH" ./configure $GH_OLA_CONFIGURE_ARGS
+      run: PATH=$PATH ./configure $GH_OLA_CONFIGURE_ARGS
     - name: Make
-      run: sudo --preserve-env -u builduser env "PATH=$PATH" make -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
+      run: PATH=$PATH make -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
     - name: Display structure of the built files
       if: always() && env.ACTIONS_STEP_DEBUG == 'true'
       run: ls -alR
