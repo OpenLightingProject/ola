@@ -98,10 +98,6 @@ jobs:
         # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
         run: |
           echo "DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
-      - name: Set additional Linux distcheck configure arguments
-        if: matrix.task == 'distcheck'
-        run: |
-          echo "DISTCHECK_CONFIGURE_FLAGS=${{ matrix.configure-args }} CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
       - name: Print configure command
         run: echo "./configure $DISTCHECK_CONFIGURE_FLAGS"
       - name: Configure
