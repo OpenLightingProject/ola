@@ -21,7 +21,7 @@ jobs:
               pkg: "gcc g++"
           - id: "distcheck-debian-stable-amd64-gcc"
             task: "distcheck"
-            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests"
             # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
             container: "debian:stable"
             compiler:
@@ -30,7 +30,7 @@ jobs:
               pkg: "gcc g++"
           - id: "distcheck-debian-stable-amd64-clang"
             task: "distcheck"
-            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests"
             # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
             container: "debian:stable"
             compiler:
