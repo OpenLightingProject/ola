@@ -38,7 +38,12 @@ using ola::usb::LibUsbAdaptor;
 namespace {
 
 static const uint8_t ENDPOINT = 2;
-static const unsigned int TIMEOUT = 50; // 50ms is ok
+// SIUDI-6 blocks USB transfers during an ongoing DMX TX.
+// One package needs about 32 ms to be sent.
+// Wait 30 ms between two USB bulk transfers and expect 2 ms USB response delay.
+static const unsigned int BULK_TIMEOUT = 10;
+static const unsigned int BULK_DELAY = (30 * 1000);
+static const unsigned int CONTROL_TIMEOUT = 500;
 
 }  // namespace
 
@@ -82,7 +87,7 @@ bool SiudiThreadedSender::Start() {
   uint8_t buf[64];
   int ret = libusb_control_transfer(m_usb_handle,
                                 LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_ENDPOINT_IN,
-                                0x3f, 0x00c4, 1, buf, 64, 500);
+                                0x3f, 0x00c4, 1, buf, 64, CONTROL_TIMEOUT);
   if (ret != 64) {
     OLA_WARN << "Failed to read SIUDI information: "
             << (ret < 0 ? LibUsbAdaptor::ErrorCodeToString(ret) : "Short read");
@@ -96,7 +101,7 @@ bool SiudiThreadedSender::Start() {
             << (ret < 0 ? LibUsbAdaptor::ErrorCodeToString(ret) : "Unknown");
     return false;
   }
-  usleep(10000);
+  usleep(BULK_DELAY);  // Might receive errors if writing too early.
 
   return true;
 }
@@ -109,7 +114,7 @@ bool SiudiThreadedSender::TransmitBuffer(libusb_device_handle *handle,
     // As we are sending, we can cast the const buffer to a writeable pointer.
     r = m_adaptor->BulkTransfer(
       handle, ENDPOINT, (unsigned char*)buffer.GetRaw(),
-      ola::DMX_UNIVERSE_SIZE, &transferred, TIMEOUT);
+      ola::DMX_UNIVERSE_SIZE, &transferred, BULK_TIMEOUT);
   } else {
     unsigned char buf[buf_size];
     unsigned int buf_get_size = ola::DMX_UNIVERSE_SIZE;
@@ -118,13 +123,13 @@ bool SiudiThreadedSender::TransmitBuffer(libusb_device_handle *handle,
       memset(&buf[buf_get_size], 0x00, ola::DMX_UNIVERSE_SIZE - buf_get_size);
     }
     r = m_adaptor->BulkTransfer(
-      handle, ENDPOINT, buf, ola::DMX_UNIVERSE_SIZE, &transferred, TIMEOUT);
+      handle, ENDPOINT, buf, ola::DMX_UNIVERSE_SIZE, &transferred, BULK_TIMEOUT);
   }
   if (transferred != ola::DMX_UNIVERSE_SIZE) {
     // not sure if this is fatal or not
     OLA_WARN << "SIUDI driver failed to transfer all data";
   }
-  usleep(20000);
+  usleep(BULK_DELAY);
   return r == 0;
 }
 
