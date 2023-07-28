@@ -117,14 +117,13 @@ bool SiudiThreadedSender::Start() {
 bool SiudiThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                            const DmxBuffer &buffer) {
   int transferred, r;
-  unsigned int buf_size = buffer.Size();
-  if (buf_size == ola::DMX_UNIVERSE_SIZE) {
+  if (buffer.Size() == ola::DMX_UNIVERSE_SIZE) {
     // As we are sending, we can cast the const buffer to a writeable pointer.
     r = m_adaptor->BulkTransfer(
       handle, ENDPOINT, (unsigned char*)buffer.GetRaw(),
       ola::DMX_UNIVERSE_SIZE, &transferred, BULK_TIMEOUT);
   } else {
-    unsigned char buf[buf_size];
+    unsigned char buf[ola::DMX_UNIVERSE_SIZE];
     unsigned int buf_get_size = ola::DMX_UNIVERSE_SIZE;
     buffer.GetRange(0, buf, &buf_get_size);
     if (buf_get_size < ola::DMX_UNIVERSE_SIZE) {
