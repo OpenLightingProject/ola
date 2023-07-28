@@ -29,17 +29,34 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-const uint16_t SiudiFactory::VENDOR_ID = 0x6244;
-const uint16_t SiudiFactory::COLD_PRODUCT_ID = 0x0300;
-const uint16_t SiudiFactory::HOT_PRODUCT_ID = 0x0301;
+const uint16_t SiudiFactory::NICOLAUDIE_ID = 0x6244;
+const uint16_t SiudiFactory::SIUDI6_COLD_ID = 0x0300;
+const uint16_t SiudiFactory::SIUDI6C_HOT_ID = 0x301;
+const uint16_t SiudiFactory::SIUDI6A_HOT_ID = 0x302;
+const uint16_t SiudiFactory::SIUDI6D_HOT_ID = 0x303;
 
 bool SiudiFactory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor == VENDOR_ID &&
-      descriptor.idProduct == HOT_PRODUCT_ID) {
-    OLA_INFO << "Found a new Nicoleaudie SIUDI-6 device";
+  if (descriptor.idVendor != NICOLAUDIE_ID) {
+    return false;
+  }
+  if (descriptor.idProduct == SIUDI6_COLD_ID) {
+    OLA_WARN << "Found a Nicoleaudie SIUDI-6 device in cold state. "
+                "Firmware download is currently not supported.";
+    return false;
+  }
+  if (descriptor.idProduct == SIUDI6C_HOT_ID ||
+      descriptor.idProduct == SIUDI6A_HOT_ID ||
+      descriptor.idProduct == SIUDI6D_HOT_ID) {
+    if (descriptor.idProduct == SIUDI6C_HOT_ID) {
+      OLA_INFO << "Found a new Nicoleaudie SIUDI-6C device";
+    } else if (descriptor.idProduct == SIUDI6A_HOT_ID) {
+      OLA_INFO << "Found a new Nicoleaudie SIUDI-6A device";
+    } else if (descriptor.idProduct == SIUDI6A_HOT_ID) {
+      OLA_INFO << "Found a new Nicoleaudie SIUDI-6D device";
+    }
     Siudi *widget = NULL;
     widget = new SynchronousSiudi(m_adaptor, usb_device);
     return AddWidget(observer, widget);

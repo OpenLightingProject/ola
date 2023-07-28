@@ -48,11 +48,13 @@ class SiudiFactory : public BaseWidgetFactory<Siudi> {
  private:
   ola::usb::LibUsbAdaptor* const m_adaptor;
 
+  static const uint16_t NICOLAUDIE_ID;
   // The product ID for widgets that are missing their firmware.
-  static const uint16_t COLD_PRODUCT_ID;
+  static const uint16_t SIUDI6_COLD_ID;
   // The product ID for widgets with the firmware.
-  static const uint16_t HOT_PRODUCT_ID;
-  static const uint16_t VENDOR_ID;
+  static const uint16_t SIUDI6C_HOT_ID;
+  static const uint16_t SIUDI6A_HOT_ID;
+  static const uint16_t SIUDI6D_HOT_ID;
 
   DISALLOW_COPY_AND_ASSIGN(SiudiFactory);
 };
