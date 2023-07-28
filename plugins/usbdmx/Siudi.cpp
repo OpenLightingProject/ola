@@ -44,6 +44,8 @@ static const uint8_t ENDPOINT = 2;
 static const unsigned int BULK_TIMEOUT = 10;
 static const unsigned int BULK_DELAY = (30 * 1000);
 static const unsigned int CONTROL_TIMEOUT = 500;
+static const unsigned int DEVINFO_REQUEST = 0x3f;
+static const unsigned int DEVINFO_SIZE = 64;
 
 }  // namespace
 
@@ -84,11 +86,11 @@ bool SiudiThreadedSender::Start() {
 
   // Read device info. This call takes about 270 ms.
   // Discard the buffer as the format is currently unknown.
-  uint8_t buf[64];
+  uint8_t buf[DEVINFO_SIZE];
   int ret = libusb_control_transfer(m_usb_handle,
-                                LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_ENDPOINT_IN,
-                                0x3f, 0x00c4, 1, buf, 64, CONTROL_TIMEOUT);
-  if (ret != 64) {
+      LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_ENDPOINT_IN,
+      DEVINFO_REQUEST, 0x0000, 1, buf, DEVINFO_SIZE, CONTROL_TIMEOUT);
+  if (ret != DEVINFO_SIZE) {
     OLA_WARN << "Failed to read SIUDI information: "
             << (ret < 0 ? LibUsbAdaptor::ErrorCodeToString(ret) : "Short read");
     return false;
