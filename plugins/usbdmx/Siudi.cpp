@@ -26,6 +26,7 @@
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/strings/Format.h"
 #include "plugins/usbdmx/AsyncUsbSender.h"
 #include "plugins/usbdmx/ThreadedUsbSender.h"
 
@@ -94,6 +95,11 @@ bool SiudiThreadedSender::Start() {
     OLA_WARN << "Failed to read SIUDI information: "
             << (ret < 0 ? LibUsbAdaptor::ErrorCodeToString(ret) : "Short read");
     return false;
+  }
+  if (ola::OLA_LOG_DEBUG <= ola::LogLevel()) {
+    ola::LogLine(__FILE__, __LINE__, ola::OLA_LOG_DEBUG).stream() << "SIUDI device info:";
+    ola::strings::FormatData(&std::cout, buf, DEVINFO_SIZE, 4);
+    ola::LogLine(__FILE__, __LINE__, ola::OLA_LOG_DEBUG).stream() << "If you know how to interprete this, please let us know.";
   }
 
   // Unstall the endpoint. The original software seems to call this regularly.
