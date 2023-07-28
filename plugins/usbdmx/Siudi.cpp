@@ -39,7 +39,6 @@ namespace {
 
 static const uint8_t ENDPOINT = 2;
 static const unsigned int TIMEOUT = 50; // 50ms is ok
-enum {SIUDI_PACKET_SIZE = 512};
 
 }  // namespace
 
@@ -59,7 +58,6 @@ class SiudiThreadedSender: public ThreadedUsbSender {
 
 private:
   LibUsbAdaptor* const m_adaptor;
-  uint8_t m_packet[SIUDI_PACKET_SIZE];
   libusb_device_handle* const m_usb_handle;
 
   bool TransmitBuffer(libusb_device_handle *handle,
@@ -72,7 +70,6 @@ SiudiThreadedSender::SiudiThreadedSender(
     libusb_device_handle *usb_handle)
     : ThreadedUsbSender(usb_device, usb_handle),
       m_adaptor(adaptor), m_usb_handle(usb_handle) {
-  memset(m_packet, 0x00, SIUDI_PACKET_SIZE);
 }
 
 bool SiudiThreadedSender::Start() {
@@ -106,14 +103,24 @@ bool SiudiThreadedSender::Start() {
 
 bool SiudiThreadedSender::TransmitBuffer(libusb_device_handle *handle,
                                            const DmxBuffer &buffer) {
-  for (unsigned int i = 0; i < buffer.Size(); i++) {
-    m_packet[i] = buffer.Get(i);
+  int transferred, r;
+  unsigned int buf_size = buffer.Size();
+  if (buf_size == ola::DMX_UNIVERSE_SIZE) {
+    // As we are sending, we can cast the const buffer to a writeable pointer.
+    r = m_adaptor->BulkTransfer(
+      handle, ENDPOINT, (unsigned char*)buffer.GetRaw(),
+      ola::DMX_UNIVERSE_SIZE, &transferred, TIMEOUT);
+  } else {
+    unsigned char buf[buf_size];
+    unsigned int buf_get_size = ola::DMX_UNIVERSE_SIZE;
+    buffer.GetRange(0, buf, &buf_get_size);
+    if (buf_get_size < ola::DMX_UNIVERSE_SIZE) {
+      memset(&buf[buf_get_size], 0x00, ola::DMX_UNIVERSE_SIZE - buf_get_size);
+    }
+    r = m_adaptor->BulkTransfer(
+      handle, ENDPOINT, buf, ola::DMX_UNIVERSE_SIZE, &transferred, TIMEOUT);
   }
-  int transferred;
-  int r = m_adaptor->BulkTransfer(
-    handle, ENDPOINT, (unsigned char*) m_packet,
-    SIUDI_PACKET_SIZE, &transferred, TIMEOUT);
-  if (transferred != SIUDI_PACKET_SIZE) {
+  if (transferred != ola::DMX_UNIVERSE_SIZE) {
     // not sure if this is fatal or not
     OLA_WARN << "SIUDI driver failed to transfer all data";
   }
