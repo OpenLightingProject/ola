@@ -54,7 +54,7 @@ bool SiudiFactory::DeviceAdded(
       OLA_INFO << "Found a new Nicoleaudie SIUDI-6C device";
     } else if (descriptor.idProduct == SIUDI6A_HOT_ID) {
       OLA_INFO << "Found a new Nicoleaudie SIUDI-6A device";
-    } else if (descriptor.idProduct == SIUDI6A_HOT_ID) {
+    } else if (descriptor.idProduct == SIUDI6D_HOT_ID) {
       OLA_INFO << "Found a new Nicoleaudie SIUDI-6D device";
     }
     Siudi *widget = NULL;
