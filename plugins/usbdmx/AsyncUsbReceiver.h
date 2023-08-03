@@ -127,7 +127,7 @@ class AsyncUsbReceiver: public AsyncUsbTransceiverBase {
   bool m_inited_with_handle;
 
   DmxBuffer m_rx_buffer;  // GUARDED_BY(m_mutex);
-  std::auto_ptr<Callback0<void> > m_receive_callback;
+  std::unique_ptr<Callback0<void> > m_receive_callback;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncUsbReceiver);
 };

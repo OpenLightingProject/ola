@@ -89,7 +89,7 @@ class SynchronousScanlimeFadecandy: public ScanlimeFadecandy {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class FadecandyThreadedSender> m_sender;
+  std::unique_ptr<class FadecandyThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousScanlimeFadecandy);
 };
@@ -114,7 +114,7 @@ class AsynchronousScanlimeFadecandy : public ScanlimeFadecandy {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class FadecandyAsyncUsbSender> m_sender;
+  std::unique_ptr<class FadecandyAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousScanlimeFadecandy);
 };

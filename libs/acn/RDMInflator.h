@@ -20,6 +20,7 @@
 #ifndef LIBS_ACN_RDMINFLATOR_H_
 #define LIBS_ACN_RDMINFLATOR_H_
 
+#include <memory>
 #include <string>
 #include "ola/Callback.h"
 #include "ola/acn/ACNVectors.h"
@@ -64,7 +65,7 @@ class RDMInflator: public BaseInflator {
                                unsigned int pdu_len);
 
  private:
-    std::auto_ptr<RDMMessageHandler> m_rdm_handler;
+    std::unique_ptr<RDMMessageHandler> m_rdm_handler;
 };
 }  // namespace acn
 }  // namespace ola

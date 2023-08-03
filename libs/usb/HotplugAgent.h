@@ -132,13 +132,13 @@ class HotplugAgent {
  private:
   typedef std::map<USBDeviceID, struct libusb_device*> DeviceMap;
 
-  std::auto_ptr<NotificationCallback> const m_notification_cb;
+  std::unique_ptr<NotificationCallback> const m_notification_cb;
   const int m_debug_level;
   bool m_use_hotplug;
   libusb_context *m_context;
-  std::auto_ptr<ola::usb::LibUsbThread> m_usb_thread;
-  std::auto_ptr<ola::usb::AsynchronousLibUsbAdaptor> m_usb_adaptor;
-  std::auto_ptr<ola::thread::PeriodicThread> m_scanner_thread;
+  std::unique_ptr<ola::usb::LibUsbThread> m_usb_thread;
+  std::unique_ptr<ola::usb::AsynchronousLibUsbAdaptor> m_usb_adaptor;
+  std::unique_ptr<ola::thread::PeriodicThread> m_scanner_thread;
 
   ola::thread::Mutex m_mutex;
   bool m_suppress_hotplug_events;  // GUARDED_BY(m_mutex);

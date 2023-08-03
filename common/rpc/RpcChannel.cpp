@@ -43,7 +43,7 @@ namespace rpc {
 using google::protobuf::Message;
 using google::protobuf::MethodDescriptor;
 using google::protobuf::ServiceDescriptor;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 const char RpcChannel::K_RPC_RECEIVED_TYPE_VAR[] = "rpc-received-type";
@@ -244,7 +244,7 @@ void RpcChannel::CallMethod(const MethodDescriptor *method,
   OutstandingResponse *response = new OutstandingResponse(
       message.id(), controller, done, reply);
 
-  auto_ptr<OutstandingResponse> old_response(
+  unique_ptr<OutstandingResponse> old_response(
       STLReplacePtr(&m_responses, message.id(), response));
 
   if (old_response.get()) {
@@ -569,7 +569,7 @@ void RpcChannel::DeleteOutstandingRequest(OutstandingRequest *request) {
  * Handle a RPC response by invoking the callback.
  */
 void RpcChannel::HandleResponse(RpcMessage *msg) {
-  auto_ptr<OutstandingResponse> response(
+  unique_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
   if (response.get()) {
     if (!response->reply->ParseFromString(msg->buffer())) {
@@ -585,7 +585,7 @@ void RpcChannel::HandleResponse(RpcMessage *msg) {
  * Handle a RPC response by invoking the callback.
  */
 void RpcChannel::HandleFailedResponse(RpcMessage *msg) {
-  auto_ptr<OutstandingResponse> response(
+  unique_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
   if (response.get()) {
     response->controller->SetFailed(msg->buffer());
@@ -599,7 +599,7 @@ void RpcChannel::HandleFailedResponse(RpcMessage *msg) {
  */
 void RpcChannel::HandleCanceledResponse(RpcMessage *msg) {
   OLA_INFO << "Received a canceled response";
-  auto_ptr<OutstandingResponse> response(
+  unique_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
   if (response.get()) {
     response->controller->SetFailed(msg->buffer());
@@ -613,7 +613,7 @@ void RpcChannel::HandleCanceledResponse(RpcMessage *msg) {
  */
 void RpcChannel::HandleNotImplemented(RpcMessage *msg) {
   OLA_INFO << "Received a non-implemented response";
-  auto_ptr<OutstandingResponse> response(
+  unique_ptr<OutstandingResponse> response(
       STLLookupAndRemovePtr(&m_responses, msg->id()));
   if (response.get()) {
     response->controller->SetFailed("Not Implemented");

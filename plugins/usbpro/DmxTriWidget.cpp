@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/Constants.h"
 #include "ola/Logging.h"
@@ -54,7 +55,7 @@ using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::strings::ToHex;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::map;
 using std::string;
 using std::vector;
@@ -75,7 +76,7 @@ DmxTriWidgetImpl::DmxTriWidgetImpl(
       m_discovery_callback(NULL),
       m_discovery_state(NO_DISCOVERY_ACTION),
       m_rdm_request_callback(NULL),
-      m_pending_rdm_request(NULL),
+      m_pending_rdm_request(),
       m_transaction_number(0),
       m_last_command(RESERVED_COMMAND_ID),
       m_expected_command(RESERVED_COMMAND_ID) {
@@ -135,7 +136,7 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
  */
 void DmxTriWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
                                       ola::rdm::RDMCallback *on_complete) {
-  auto_ptr<RDMRequest> request(request_ptr);
+  unique_ptr<RDMRequest> request(request_ptr);
 
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND &&
       !m_use_raw_rdm) {
@@ -649,9 +650,8 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
   OLA_INFO << "got raw RDM response with code: " << ToHex(return_code)
            << ", length: " << length;
 
-  auto_ptr<ola::rdm::RDMRequest> request(m_pending_rdm_request);
+  unique_ptr<ola::rdm::RDMRequest> request(std::move(m_pending_rdm_request));
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
-  m_pending_rdm_request.reset();
   m_rdm_request_callback = NULL;
 
   if (callback == NULL || request.get() == NULL) {
@@ -676,7 +676,7 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
     } else if (return_code == EC_NO_ERROR ||
                return_code == EC_RESPONSE_DISCOVERY) {
       rdm::RDMFrame frame(data, length);
-      auto_ptr<RDMReply> reply(RDMReply::DUBReply(frame));
+      unique_ptr<RDMReply> reply(RDMReply::DUBReply(frame));
       callback->Run(reply.get());
     } else {
       OLA_WARN << "Un-handled DUB response " << ToHex(return_code);
@@ -702,7 +702,7 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
 
   rdm::RDMFrame::Options options;
   options.prepend_start_code = true;
-  auto_ptr<RDMReply> reply(RDMReply::FromFrame(
+  unique_ptr<RDMReply> reply(RDMReply::FromFrame(
         rdm::RDMFrame(data, length, options)));
   callback->Run(reply.get());
 }
@@ -766,7 +766,8 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
                                                 uint16_t pid,
                                                 const uint8_t *data,
                                                 unsigned int length) {
-  auto_ptr<const ola::rdm::RDMRequest> request(m_pending_rdm_request.release());
+  unique_ptr<const ola::rdm::RDMRequest> request(
+    std::move(m_pending_rdm_request));
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
 

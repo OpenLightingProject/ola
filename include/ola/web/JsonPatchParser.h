@@ -118,7 +118,7 @@ class JsonPatchParser : public JsonParserInterface {
   std::string m_op;
   OptionalItem<std::string> m_path;
   OptionalItem<std::string> m_from;
-  std::auto_ptr<JsonValue> m_value;
+  std::unique_ptr<JsonValue> m_value;
 
   template <typename T>
   void HandleNumber(const T &value);

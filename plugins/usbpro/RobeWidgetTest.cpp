@@ -49,7 +49,7 @@ using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -79,7 +79,7 @@ class RobeWidgetTest: public CommonWidgetTest {
     void testReceive();
 
  private:
-    auto_ptr<ola::plugin::usbpro::RobeWidget> m_widget;
+    unique_ptr<ola::plugin::usbpro::RobeWidget> m_widget;
     uint8_t m_transaction_number;
     ola::rdm::RDMStatusCode m_received_code;
     bool m_new_dmx_data;
@@ -208,7 +208,7 @@ void RobeWidgetTest::ValidateResponse(RDMReply *reply) {
   const RDMFrames &frames = reply->Frames();
   OLA_ASSERT_EQ((size_t) 1, frames.size());
   ola::rdm::RDMStatusCode raw_code;
-  auto_ptr<ola::rdm::RDMResponse> raw_response(
+  unique_ptr<ola::rdm::RDMResponse> raw_response(
     ola::rdm::RDMResponse::InflateFromData(frames[0].data.data() + 1,
                                            frames[0].data.size() - 1,
                                            &raw_code));
@@ -309,7 +309,7 @@ void RobeWidgetTest::testSendRDMRequest() {
       &expected_request_frame_size);
 
   // response
-  auto_ptr<const RDMResponse> response(
+  unique_ptr<const RDMResponse> response(
     GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
   unsigned int response_size;
   uint8_t *response_frame = PackRDMResponse(response.get(), &response_size);
@@ -385,7 +385,7 @@ void RobeWidgetTest::testSendRDMMute() {
 
   // response
   // to keep things simple here we return the TEST_RDM_DATA.
-  auto_ptr<const RDMResponse> response(
+  unique_ptr<const RDMResponse> response(
     GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
   unsigned int response_size;
   uint8_t *response_frame = PackRDMResponse(response.get(), &response_size);
@@ -503,7 +503,7 @@ void RobeWidgetTest::testSendRDMDUB() {
  */
 void RobeWidgetTest::testMuteDevice() {
   // first test when a device doesn't respond
-  auto_ptr<RDMRequest> mute_request(
+  unique_ptr<RDMRequest> mute_request(
       ola::rdm::NewMuteRequest(SOURCE, DESTINATION, m_transaction_number++));
   unsigned int expected_request_frame_size;
   uint8_t *expected_request_frame = PackRDMRequest(
@@ -533,7 +533,7 @@ void RobeWidgetTest::testMuteDevice() {
   delete[] expected_request_frame;
 
   // now try an actual mute response
-  auto_ptr<RDMRequest> mute_request2(
+  unique_ptr<RDMRequest> mute_request2(
       ola::rdm::NewMuteRequest(SOURCE, DESTINATION, m_transaction_number++));
   expected_request_frame = PackRDMRequest(
       mute_request2.get(),
@@ -567,7 +567,7 @@ void RobeWidgetTest::testMuteDevice() {
  * Test the unmute all request works
  */
 void RobeWidgetTest::testUnMuteAll() {
-  auto_ptr<RDMRequest> unmute_request(
+  unique_ptr<RDMRequest> unmute_request(
       ola::rdm::NewUnMuteRequest(SOURCE,
                                  UID::AllDevices(),
                                  m_transaction_number++));
@@ -603,7 +603,7 @@ void RobeWidgetTest::testUnMuteAll() {
  */
 void RobeWidgetTest::testBranch() {
   // first test when no devices respond
-  auto_ptr<RDMRequest> discovery_request(
+  unique_ptr<RDMRequest> discovery_request(
       ola::rdm::NewDiscoveryUniqueBranchRequest(
           SOURCE,
           UID(0, 0),
@@ -640,7 +640,7 @@ void RobeWidgetTest::testBranch() {
 
   // now try an actual response, the data doesn't actually have to be valid
   // because it's just passed straight to the callback.
-  auto_ptr<RDMRequest> discovery_request2(
+  unique_ptr<RDMRequest> discovery_request2(
       ola::rdm::NewDiscoveryUniqueBranchRequest(
           SOURCE,
           UID(0, 0),

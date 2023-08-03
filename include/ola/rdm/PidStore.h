@@ -169,7 +169,7 @@ class RootPidStore {
   static const std::string DataLocation();
 
  private:
-  std::auto_ptr<const PidStore> m_esta_store;
+  std::unique_ptr<const PidStore> m_esta_store;
   ManufacturerMap m_manufacturer_store;
   uint64_t m_version;
 
