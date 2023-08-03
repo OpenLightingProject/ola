@@ -28,8 +28,9 @@
 #include "plugins/usbdmx/ShowJockeyDMXU1.h"
 
 #include <string.h>
-#include <string>
 #include <algorithm>
+#include <string>
+#include <utility>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Constants.h"
@@ -248,7 +249,7 @@ bool SynchronousShowJockeyDMXU1::Init() {
     return false;
   }
 
-  m_sender.reset(sender.release());
+  m_sender = std::move(sender);
   return true;
 }
 
@@ -353,7 +354,7 @@ bool AsynchronousShowJockeyDMXU1::Init() {
                                         endpoint,
                                         max_packet_size,
                                         usb_handle));
-  m_sender.reset(sender.release());
+  m_sender = std::move(sender);
   return true;
 }
 

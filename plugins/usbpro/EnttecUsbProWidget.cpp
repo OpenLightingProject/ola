@@ -23,6 +23,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/Callback.h"
 #include "ola/Constants.h"
@@ -242,7 +243,7 @@ void EnttecPortImpl::SendRDMRequest(RDMRequest *request_ptr,
   request->SetTransactionNumber(m_transaction_number++);
   request->SetPortId(PORT_ID);
 
-  m_pending_request.reset(request.release());
+  m_pending_request = std::move(request);
   m_rdm_request_callback = on_complete;
 
   bool ok = PackAndSendRDMRequest(
@@ -485,7 +486,8 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
   } else if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    unique_ptr<const ola::rdm::RDMRequest> request(m_pending_request.release());
+    unique_ptr<const ola::rdm::RDMRequest> request(
+      std::move(m_pending_request));
     unique_ptr<RDMReply> reply;
     if (waiting_for_dub_response) {
       reply.reset(RDMReply::DUBReply(rdm::RDMFrame(data, length)));

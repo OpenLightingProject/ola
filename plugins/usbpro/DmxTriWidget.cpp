@@ -151,7 +151,7 @@ void DmxTriWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
   }
 
   // store pointers
-  m_pending_rdm_request.reset(request.release());
+  m_pending_rdm_request = std::move(request);
   m_rdm_request_callback = on_complete;
   MaybeSendNextRequest();
 }

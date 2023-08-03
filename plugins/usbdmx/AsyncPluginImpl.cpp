@@ -141,7 +141,7 @@ bool AsyncPluginImpl::Start() {
     return false;
   }
 
-  m_agent.reset(agent.release());
+  m_agent = std::move(agent);
   return true;
 }
 

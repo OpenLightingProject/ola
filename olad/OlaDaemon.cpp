@@ -32,6 +32,7 @@
 #include <Shlobj.h>
 #endif  // _WIN32
 #include <string>
+#include <utility>
 
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
@@ -136,8 +137,8 @@ bool OlaDaemon::Init() {
   bool ok = server->Init();
   if (ok) {
     // Set the members
-    m_preferences_factory.reset(preferences_factory.release());
-    m_server.reset(server.release());
+    m_preferences_factory = std::move(preferences_factory);
+    m_server = std::move(server);
   } else {
     STLDeleteElements(&m_plugin_loaders);
   }

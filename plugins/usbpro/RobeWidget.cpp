@@ -21,6 +21,7 @@
 #include <string.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/Constants.h"
 #include "ola/Logging.h"
@@ -135,7 +136,7 @@ void RobeWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
             << this_transaction_number;
 
   m_rdm_request_callback = on_complete;
-  m_pending_request.reset(request.release());
+  m_pending_request = std::move(request);
 
   const uint8_t label = m_pending_request->IsDUB() ?
       RDM_DISCOVERY : RDM_REQUEST;
@@ -296,7 +297,7 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   }
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
-  unique_ptr<const RDMRequest> request(m_pending_request.release());
+  unique_ptr<const RDMRequest> request(std::move(m_pending_request));
 
   // this was a broadcast request
   if (request->DestinationUID().IsBroadcast()) {
@@ -333,7 +334,7 @@ void RobeWidgetImpl::HandleDiscoveryResponse(const uint8_t *data,
   } else if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    unique_ptr<const RDMRequest> request(m_pending_request.release());
+    unique_ptr<const RDMRequest> request(std::move(m_pending_request));
 
     if (length <= RDM_PADDING_BYTES) {
       // this indicates that no request was received
