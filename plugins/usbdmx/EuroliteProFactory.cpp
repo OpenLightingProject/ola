@@ -20,11 +20,11 @@
 
 #include "plugins/usbdmx/EuroliteProFactory.h"
 
+#include <algorithm>
+
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
-
-#include <algorithm>
 
 DECLARE_bool(use_async_libusb);
 
@@ -56,7 +56,8 @@ EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
   : BaseWidgetFactory<class EurolitePro>("EuroliteProFactory"),
     m_adaptor(adaptor),
     m_enable_eurolite_mk2(IsEuroliteMk2Enabled(preferences)) {
-  StringSplit(preferences->GetValue(EUROLITE_SERIALS_KEY), m_expected_eurolite_serials, ",");
+  StringSplit(preferences->GetValue(EUROLITE_SERIALS_KEY),
+              m_expected_eurolite_serials, ",");
 }
 
 bool EuroliteProFactory::IsEuroliteMk2Enabled(Preferences *preferences) {
@@ -93,16 +94,18 @@ bool EuroliteProFactory::DeviceAdded(
   // Eurolite USB-DMX512-PRO MK2?
   } else if (descriptor.idVendor == VENDOR_ID_MK2 &&
              descriptor.idProduct == PRODUCT_ID_MK2) {
-    
     LibUsbAdaptor::DeviceInformation info;
     if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
       return false;
     }
-    
-    const bool serial_matches = std::find(m_expected_eurolite_serials.begin(), m_expected_eurolite_serials.end(), info.serial) != m_expected_eurolite_serials.end();
-  
+
+    const bool serial_matches = std::find(m_expected_eurolite_serials.begin(),
+      m_expected_eurolite_serials.end(), info.serial) !=
+      m_expected_eurolite_serials.end();
+
     if (m_enable_eurolite_mk2 || serial_matches) {
-      OLA_INFO << "Found a possible new Eurolite USB-DMX512-PRO MK2 device with serial " << info.serial;
+      OLA_INFO << "Found a possible new Eurolite USB-DMX512-PRO MK2 device "
+                  "with serial " << info.serial;
 
       if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER_MK2, info)) {
         return false;

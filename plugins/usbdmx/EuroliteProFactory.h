@@ -21,6 +21,9 @@
 #ifndef PLUGINS_USBDMX_EUROLITEPROFACTORY_H_
 #define PLUGINS_USBDMX_EUROLITEPROFACTORY_H_
 
+#include <string>
+#include <vector>
+
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
 #include "olad/Preferences.h"
