@@ -24,6 +24,8 @@
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
 
+#include <algorithm>
+
 DECLARE_bool(use_async_libusb);
 
 namespace ola {
@@ -46,12 +48,15 @@ const uint16_t EuroliteProFactory::VENDOR_ID_MK2 = 0x0403;
 
 const char EuroliteProFactory::ENABLE_EUROLITE_MK2_KEY[] =
     "enable_eurolite_mk2";
+const char EuroliteProFactory::EUROLITE_SERIALS_KEY[] =
+    "eurolite_serials";
 
 EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
                                        Preferences *preferences)
   : BaseWidgetFactory<class EurolitePro>("EuroliteProFactory"),
     m_adaptor(adaptor),
     m_enable_eurolite_mk2(IsEuroliteMk2Enabled(preferences)) {
+  StringSplit(preferences->GetValue(EUROLITE_SERIALS_KEY), m_expected_eurolite_serials, ",");
 }
 
 bool EuroliteProFactory::IsEuroliteMk2Enabled(Preferences *preferences) {
@@ -88,12 +93,16 @@ bool EuroliteProFactory::DeviceAdded(
   // Eurolite USB-DMX512-PRO MK2?
   } else if (descriptor.idVendor == VENDOR_ID_MK2 &&
              descriptor.idProduct == PRODUCT_ID_MK2) {
-    if (m_enable_eurolite_mk2) {
-      OLA_INFO << "Found a possible new Eurolite USB-DMX512-PRO MK2 device";
-      LibUsbAdaptor::DeviceInformation info;
-      if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
-        return false;
-      }
+    
+    LibUsbAdaptor::DeviceInformation info;
+    if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
+      return false;
+    }
+    
+    const bool serial_matches = std::find(m_expected_eurolite_serials.begin(), m_expected_eurolite_serials.end(), info.serial) != m_expected_eurolite_serials.end();
+  
+    if (m_enable_eurolite_mk2 || serial_matches) {
+      OLA_INFO << "Found a possible new Eurolite USB-DMX512-PRO MK2 device with serial " << info.serial;
 
       if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER_MK2, info)) {
         return false;
@@ -104,9 +113,12 @@ bool EuroliteProFactory::DeviceAdded(
       }
       is_mk2 = true;
     } else {
-      OLA_INFO << "Connected FTDI device could be a Eurolite "
-               << "USB-DMX512-PRO MK2 but was ignored, because "
-               << ENABLE_EUROLITE_MK2_KEY << " was false.";
+      OLA_INFO << "Connected FTDI device with serial " << info.serial
+               << " could be a Eurolite USB-DMX512-PRO MK2 but was "
+               << "ignored, because "
+               << ENABLE_EUROLITE_MK2_KEY << " was false and "
+               << "its serial number was not in the "
+               << "configuration.";
       return false;
     }
   } else {
