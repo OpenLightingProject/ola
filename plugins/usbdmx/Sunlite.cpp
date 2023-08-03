@@ -21,6 +21,7 @@
 #include "plugins/usbdmx/Sunlite.h"
 
 #include <string.h>
+#include <utility>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Constants.h"
@@ -154,7 +155,7 @@ bool SynchronousSunlite::Init() {
   if (!sender->Start()) {
     return false;
   }
-  m_sender.reset(sender.release());
+  m_sender = std::move(sender);
   return true;
 }
 

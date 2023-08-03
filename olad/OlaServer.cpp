@@ -270,7 +270,7 @@ bool OlaServer::Init() {
 
   // Initializing the web server causes a call to NewClient. We need to have
   // the broker in place for the call, otherwise we'll segfault.
-  m_broker.reset(broker.release());
+  m_broker = std::move(broker);
 
 #ifdef HAVE_LIBMICROHTTPD
   if (m_options.http_enable) {
@@ -296,15 +296,15 @@ bool OlaServer::Init() {
 
   // Ok, we've created and initialized everything correctly by this point. Now
   // we save all the pointers and schedule the last of the callbacks.
-  m_device_manager.reset(device_manager.release());
-  m_discovery_agent.reset(discovery_agent.release());
-  m_plugin_adaptor.reset(plugin_adaptor.release());
-  m_plugin_manager.reset(plugin_manager.release());
-  m_port_broker.reset(port_broker.release());
-  m_port_manager.reset(port_manager.release());
-  m_rpc_server.reset(rpc_server.release());
-  m_service_impl.reset(service_impl.release());
-  m_universe_store.reset(universe_store.release());
+  m_device_manager = std::move(device_manager);
+  m_discovery_agent = std::move(discovery_agent);
+  m_plugin_adaptor = std::move(plugin_adaptor);
+  m_plugin_manager = std::move(plugin_manager);
+  m_port_broker = std::move(port_broker);
+  m_port_manager = std::move(port_manager);
+  m_rpc_server = std::move(rpc_server);
+  m_service_impl = std::move(service_impl);
+  m_universe_store = std::move(universe_store);
 
   UpdatePidStore(pid_store.release());
 
@@ -434,7 +434,7 @@ bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
     httpd->Start();
     // register the pipe descriptor as a client
     InternalNewConnection(server, pipe_descriptor.release());
-    m_httpd.reset(httpd.release());
+    m_httpd = std::move(httpd);
     return true;
   } else {
     pipe_descriptor->Close();

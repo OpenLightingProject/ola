@@ -25,6 +25,7 @@
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocket.h>
 #include <ola/rpc/RpcSessionHandler.h>
+#include <utility>
 #include "common/rpc/RpcChannel.h"
 #include "common/rpc/RpcSession.h"
 
@@ -114,7 +115,7 @@ bool RpcServer::Init() {
     return false;
   }
 
-  m_accepting_socket.reset(accepting_socket.release());
+  m_accepting_socket = std::move(accepting_socket);
   return true;
 }
 

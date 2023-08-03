@@ -98,7 +98,7 @@ bool OlaServerThread::Setup() {
   // pick an unused port
   unique_ptr<OlaDaemon> olad(new OlaDaemon(ola_options, NULL));
   if (olad->Init()) {
-    m_olad.reset(olad.release());
+    m_olad = std::move(olad);
     return true;
   } else {
     return false;

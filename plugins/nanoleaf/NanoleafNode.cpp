@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "ola/Constants.h"
@@ -157,7 +158,7 @@ void NanoleafNode::SocketReady() {
  * Setup the networking components.
  */
 bool NanoleafNode::InitNetwork() {
-  std::unique_ptr<ola::network::UDPSocketInterface> socket(m_socket.release());
+  std::unique_ptr<ola::network::UDPSocketInterface> socket(std::move(m_socket));
 
   if (!socket.get()) {
     socket.reset(new UDPSocket());
@@ -176,7 +177,7 @@ bool NanoleafNode::InitNetwork() {
   // Do we need to call this if we don't bind?
   socket->SetOnData(NewCallback(this, &NanoleafNode::SocketReady));
   m_ss->AddReadDescriptor(socket.get());
-  m_socket.reset(socket.release());
+  m_socket = std::move(socket);
   return true;
 }
 }  // namespace nanoleaf

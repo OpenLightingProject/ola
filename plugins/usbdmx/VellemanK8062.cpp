@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
@@ -316,7 +317,7 @@ bool SynchronousVellemanK8062::Init() {
   if (!sender->Start()) {
     return false;
   }
-  m_sender.reset(sender.release());
+  m_sender = std::move(sender);
   return true;
 }
 

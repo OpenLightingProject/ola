@@ -223,9 +223,9 @@ void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
     return;
   }
 
-  device_state->health_checked_connection.reset(
-    health_checked_connection.release());
-  device_state->socket.reset(socket.release());
+  device_state->health_checked_connection = std::move(
+    health_checked_connection);
+  device_state->socket = std::move(socket);
 
   m_ss.AddReadDescriptor(socket_ptr);
 

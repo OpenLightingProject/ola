@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "ola/Logging.h"
 #include "ola/Constants.h"
@@ -288,7 +289,7 @@ bool SynchronousDMXCProjectsNodleU1::Init() {
     if (!sender->Start()) {
       return false;
     }
-    m_sender.reset(sender.release());
+    m_sender = std::move(sender);
   }
 
   if (m_mode & INPUT_ENABLE_MASK) {  // input port active
@@ -298,7 +299,7 @@ bool SynchronousDMXCProjectsNodleU1::Init() {
     if (!receiver->Start()) {
       return false;
     }
-    m_receiver.reset(receiver.release());
+    m_receiver = std::move(receiver);
   }
 
   return true;

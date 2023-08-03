@@ -34,6 +34,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "libs/acn/E133HealthCheckedConnection.h"
@@ -240,7 +241,7 @@ void DeviceManagerImpl::OnTCPConnect(TCPSocket *socket_ptr) {
 
   // setup the incoming transport, we don't need to setup the outgoing one
   // until we've got confirmation that we're the designated controller.
-  device_state->socket.reset(socket.release());
+  device_state->socket = std::move(socket);
   device_state->in_transport.reset(new IncomingTCPTransport(&m_root_inflator,
                                                             socket_ptr));
 

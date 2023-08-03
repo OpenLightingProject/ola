@@ -21,6 +21,7 @@
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 
 #include <string>
+#include <utility>
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
@@ -74,7 +75,7 @@ bool UsbDmxPlugin::StartHook() {
   }
 
   if (impl->Start()) {
-    m_impl.reset(impl.release());
+    m_impl = std::move(impl);
     return true;
   } else {
     return false;

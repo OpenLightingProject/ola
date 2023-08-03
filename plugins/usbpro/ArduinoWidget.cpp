@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/io/ByteString.h"
 #include "ola/Constants.h"
@@ -122,7 +123,7 @@ void ArduinoWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
   }
 
   m_rdm_request_callback = on_complete;
-  m_pending_request.reset(request.release());
+  m_pending_request = std::move(request);
   if (SendMessage(RDM_REQUEST_LABEL, data.data(), data.size())) {
     return;
   }
@@ -161,7 +162,7 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
   std::unique_ptr<const ola::rdm::RDMRequest> request(
-      m_pending_request.release());
+       std::move(m_pending_request));
 
   if (length == 0) {
     // invalid response
