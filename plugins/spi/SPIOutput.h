@@ -118,10 +118,10 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   std::string m_device_label;
   uint16_t m_start_address;  // starts from 1
   bool m_identify_mode;
-  std::auto_ptr<ola::rdm::PersonalityCollection> m_personality_collection;
-  std::auto_ptr<ola::rdm::PersonalityManager> m_personality_manager;
+  std::unique_ptr<ola::rdm::PersonalityCollection> m_personality_collection;
+  std::unique_ptr<ola::rdm::PersonalityManager> m_personality_manager;
   ola::rdm::Sensors m_sensors;
-  std::auto_ptr<ola::rdm::NetworkManagerInterface> m_network_manager;
+  std::unique_ptr<ola::rdm::NetworkManagerInterface> m_network_manager;
 
   // DMX methods
   bool InternalWriteDMX(const DmxBuffer &buffer);

@@ -45,7 +45,7 @@ using ola::io::SelectServer;
 using ola::network::TCPConnector;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 // used to set a timeout which aborts the tests

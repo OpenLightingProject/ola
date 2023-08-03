@@ -45,7 +45,7 @@ using ola::usb::JaRuleWidget;
 using ola::usb::LibUsbAdaptor;
 using ola::usb::USBDeviceID;
 using ola::usb::HotplugAgent;
-using std::auto_ptr;
+using std::unique_ptr;
 
 static const uint16_t kProductId = 0xaced;
 static const uint16_t kVendorId = 0x1209;
@@ -143,7 +143,7 @@ void USBDeviceManager::HotPlugEvent(HotplugAgent::EventType event,
       return;
     }
 
-    auto_ptr<JaRuleWidget> widget(
+    unique_ptr<JaRuleWidget> widget(
         new JaRuleWidget(m_ss, m_hotplug_agent->GetUSBAdaptor(), usb_device));
     if (!widget->Init()) {
       m_widgets.erase(iter);

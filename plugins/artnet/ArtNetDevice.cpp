@@ -51,7 +51,7 @@ using ola::StringToInt;
 using ola::network::IPV4Address;
 using ola::plugin::artnet::Reply;
 using ola::plugin::artnet::Request;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::ostringstream;
 using std::string;
 using std::vector;
@@ -88,7 +88,7 @@ bool ArtNetDevice::StartHook() {
       m_preferences->GetValue(K_NET_KEY), K_ARTNET_NET);
 
   ola::network::Interface iface;
-  auto_ptr<ola::network::InterfacePicker> picker(
+  unique_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
   ola::network::InterfacePicker::Options options;
   options.include_loopback = m_preferences->GetValueAsBool(K_LOOPBACK_KEY);

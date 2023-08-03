@@ -31,7 +31,7 @@
 namespace ola {
 namespace rpc {
 
-using std::auto_ptr;
+using std::unique_ptr;
 using ola::io::ConnectedDescriptor;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
@@ -88,7 +88,7 @@ bool RpcServer::Init() {
     return false;
   }
 
-  auto_ptr<TCPAcceptingSocket> accepting_socket;
+  unique_ptr<TCPAcceptingSocket> accepting_socket;
 
   if (m_options.listen_socket) {
     accepting_socket.reset(m_options.listen_socket);

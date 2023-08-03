@@ -86,9 +86,9 @@ class RobeWidgetImpl: public BaseRobeWidget,
     UnMuteDeviceCallback *m_unmute_callback;
     BranchCallback *m_branch_callback;
     ola::rdm::DiscoveryAgent m_discovery_agent;
-    std::auto_ptr<Callback0<void> > m_dmx_callback;
+    std::unique_ptr<Callback0<void> > m_dmx_callback;
     DmxBuffer m_buffer;
-    std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
+    std::unique_ptr<const ola::rdm::RDMRequest> m_pending_request;
     const ola::rdm::UID m_uid;
     uint8_t m_transaction_number;
 

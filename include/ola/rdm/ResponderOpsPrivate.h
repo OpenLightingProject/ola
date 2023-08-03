@@ -71,7 +71,7 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
                                             const RDMRequest *raw_request,
                                             RDMCallback *on_complete) {
   // Take ownership of the request object, so the targets don't have to.
-  std::auto_ptr<const RDMRequest> request(raw_request);
+  std::unique_ptr<const RDMRequest> request(raw_request);
 
   if (!on_complete) {
     OLA_WARN << "Null callback passed!";

@@ -310,7 +310,7 @@ bool SynchronousVellemanK8062::Init() {
     return false;
   }
 
-  std::auto_ptr<VellemanThreadedSender> sender(
+  std::unique_ptr<VellemanThreadedSender> sender(
       new VellemanThreadedSender(m_adaptor, m_usb_device, usb_handle,
                                  chunk_size));
   if (!sender->Start()) {

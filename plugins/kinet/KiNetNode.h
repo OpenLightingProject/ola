@@ -62,7 +62,7 @@ class KiNetNode {
     ola::io::IOQueue m_output_queue;
     ola::io::BigEndianOutputStream m_output_stream;
     ola::network::Interface m_interface;
-    std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
+    std::unique_ptr<ola::network::UDPSocketInterface> m_socket;
 
     void SocketReady();
     void PopulatePacketHeader(uint16_t msg_type);

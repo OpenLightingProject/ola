@@ -33,7 +33,7 @@
 
 using ola::web::JsonObject;
 using ola::web::JsonSchema;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::ostringstream;
 using std::string;
 using std::vector;
@@ -197,11 +197,11 @@ void JsonSchemaParserTest::ReadTestCases(const string& filename,
 void JsonSchemaParserTest::ParseSchemaAndConvertToJson(const string &input,
                                                        const string &expected) {
   string error;
-  auto_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
+  unique_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
   OLA_ASSERT_EQ(string(""), error);
   OLA_ASSERT_NOT_NULL(schema.get());
 
-  auto_ptr<const JsonObject> schema_json(schema->AsJson());
+  unique_ptr<const JsonObject> schema_json(schema->AsJson());
   string actual = ola::web::JsonWriter::AsString(*schema_json);
   actual.push_back('\n');
   OLA_ASSERT_EQ(expected, actual);
@@ -212,7 +212,7 @@ void JsonSchemaParserTest::ParseSchemaAndConvertToJson(const string &input,
  */
 void JsonSchemaParserTest::VerifyFailure(const string &input) {
   string error;
-  auto_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
+  unique_ptr<JsonSchema> schema(JsonSchema::FromString(input, &error));
   bool failed = !error.empty();
   if (!failed) {
     ostringstream str;
@@ -241,7 +241,7 @@ void JsonSchemaParserTest::RunTestsInFile(const string &test_file) {
 
 void JsonSchemaParserTest::testPrimitiveTypes() {
   string error;
-  auto_ptr<JsonSchema> schema(JsonSchema::FromString("null", &error));
+  unique_ptr<JsonSchema> schema(JsonSchema::FromString("null", &error));
   OLA_ASSERT_NULL(schema.get());
   OLA_ASSERT_FALSE(error.empty());
 
@@ -272,12 +272,12 @@ void JsonSchemaParserTest::testPrimitiveTypes() {
 
 void JsonSchemaParserTest::testEmptySchema() {
   string error;
-  auto_ptr<JsonSchema> schema(JsonSchema::FromString("{}", &error));
+  unique_ptr<JsonSchema> schema(JsonSchema::FromString("{}", &error));
 
   OLA_ASSERT_NOT_NULL(schema.get());
   OLA_ASSERT_TRUE(error.empty());
 
-  auto_ptr<const JsonObject> value(schema->AsJson());
+  unique_ptr<const JsonObject> value(schema->AsJson());
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(string("{}"), ola::web::JsonWriter::AsString(*value));
 }

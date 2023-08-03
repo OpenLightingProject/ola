@@ -74,7 +74,7 @@ class BonjourDiscoveryAgent : public DiscoveryAgentInterface {
   typedef std::vector<ServiceRef> ServiceRefs;
 
   ola::io::SelectServer m_ss;
-  std::auto_ptr<thread::CallbackThread> m_thread;
+  std::unique_ptr<thread::CallbackThread> m_thread;
   ServiceRefs m_refs;
 
   void InternalRegisterService(RegisterArgs *args);

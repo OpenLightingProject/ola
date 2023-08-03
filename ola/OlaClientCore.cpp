@@ -49,7 +49,7 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::rpc::RpcChannel;
 using ola::rpc::RpcController;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -653,8 +653,8 @@ void OlaClientCore::ChannelClosed(ClosedCallback *callback,
 void OlaClientCore::HandlePluginList(RpcController *controller_ptr,
                                      ola::proto::PluginListReply *reply_ptr,
                                      PluginListCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::PluginListReply> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::PluginListReply> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -682,8 +682,8 @@ void OlaClientCore::HandlePluginDescription(
     RpcController *controller_ptr,
     ola::proto::PluginDescriptionReply *reply_ptr,
     PluginDescriptionCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::PluginDescriptionReply> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::PluginDescriptionReply> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -706,8 +706,8 @@ void OlaClientCore::HandlePluginState(
     RpcController *controller_ptr,
     ola::proto::PluginStateReply *reply_ptr,
     PluginStateCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::PluginStateReply> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::PluginStateReply> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -738,8 +738,8 @@ void OlaClientCore::HandlePluginState(
 void OlaClientCore::HandleDeviceInfo(RpcController *controller_ptr,
                                      ola::proto::DeviceInfoReply *reply_ptr,
                                      DeviceInfoCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::DeviceInfoReply> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::DeviceInfoReply> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -762,8 +762,8 @@ void OlaClientCore::HandleDeviceInfo(RpcController *controller_ptr,
 void OlaClientCore::HandleDeviceConfig(RpcController *controller_ptr,
                                        ola::proto::DeviceConfigReply *reply_ptr,
                                        ConfigureDeviceCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::DeviceConfigReply> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::DeviceConfigReply> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -781,8 +781,8 @@ void OlaClientCore::HandleDeviceConfig(RpcController *controller_ptr,
 void OlaClientCore::HandleAck(RpcController *controller_ptr,
                               ola::proto::Ack *reply_ptr,
                               SetCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::Ack> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::Ack> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -795,8 +795,8 @@ void OlaClientCore::HandleAck(RpcController *controller_ptr,
 void OlaClientCore::HandleGeneralAck(RpcController *controller_ptr,
                                      ola::proto::Ack *reply_ptr,
                                      GeneralSetCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::Ack> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::Ack> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -809,8 +809,8 @@ void OlaClientCore::HandleGeneralAck(RpcController *controller_ptr,
 void OlaClientCore::HandleUniverseList(RpcController *controller_ptr,
                                        ola::proto::UniverseInfoReply *reply_ptr,
                                        UniverseListCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::UniverseInfoReply> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::UniverseInfoReply> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -832,8 +832,8 @@ void OlaClientCore::HandleUniverseList(RpcController *controller_ptr,
 void OlaClientCore::HandleUniverseInfo(RpcController *controller_ptr,
                                        ola::proto::UniverseInfoReply *reply_ptr,
                                        UniverseInfoCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::UniverseInfoReply> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::UniverseInfoReply> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -867,8 +867,8 @@ void OlaClientCore::HandleUniverseInfo(RpcController *controller_ptr,
 void OlaClientCore::HandleGetDmx(RpcController *controller_ptr,
                                  ola::proto::DmxData *reply_ptr,
                                  DMXCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::DmxData> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::DmxData> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -889,8 +889,8 @@ void OlaClientCore::HandleGetDmx(RpcController *controller_ptr,
 void OlaClientCore::HandleUIDList(RpcController *controller_ptr,
                                   ola::proto::UIDListReply *reply_ptr,
                                   DiscoveryCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::UIDListReply> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::UIDListReply> reply(reply_ptr);
 
   if (!callback) {
     return;
@@ -912,8 +912,8 @@ void OlaClientCore::HandleUIDList(RpcController *controller_ptr,
 void OlaClientCore::HandleRDM(RpcController *controller_ptr,
                    ola::proto::RDMResponse *reply_ptr,
                    RDMCallback *callback) {
-  auto_ptr<RpcController> controller(controller_ptr);
-  auto_ptr<ola::proto::RDMResponse> reply(reply_ptr);
+  unique_ptr<RpcController> controller(controller_ptr);
+  unique_ptr<ola::proto::RDMResponse> reply(reply_ptr);
 
   if (!callback) {
     return;

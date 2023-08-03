@@ -46,7 +46,7 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::acn::TransportHeader;
 using ola::rdm::RDMResponse;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 
@@ -71,7 +71,7 @@ class OutstandingMessage {
  private:
     uint16_t m_endpoint;
     bool m_message_sent;
-    auto_ptr<const RDMResponse> m_rdm_response;
+    unique_ptr<const RDMResponse> m_rdm_response;
 
     DISALLOW_COPY_AND_ASSIGN(OutstandingMessage);
 };
@@ -150,7 +150,7 @@ bool DesignatedControllerConnection::Init() {
 bool DesignatedControllerConnection::SendStatusMessage(
     uint16_t endpoint,
     const RDMResponse *raw_response) {
-  auto_ptr<const RDMResponse> response(raw_response);
+  unique_ptr<const RDMResponse> response(raw_response);
 
   if (m_unacked_messages.size() == m_max_queue_size) {
     OLA_WARN << "NonBlockingSender limit reached, no further messages will "
@@ -197,7 +197,7 @@ bool DesignatedControllerConnection::CloseTCPConnection() {
  */
 void DesignatedControllerConnection::NewTCPConnection(
     ola::network::TCPSocket *socket_ptr) {
-  auto_ptr<ola::network::TCPSocket> socket(socket_ptr);
+  unique_ptr<ola::network::TCPSocket> socket(socket_ptr);
   ola::network::GenericSocketAddress addr = socket->GetPeerAddress();
   if (addr.Family() != AF_INET) {
     OLA_WARN << "New TCP connection but failed to determine peer address";

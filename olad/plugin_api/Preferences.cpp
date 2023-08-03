@@ -72,8 +72,8 @@ namespace {
 void SavePreferencesToFile(
     const string *filename_ptr,
     const FilePreferenceSaverThread::PreferencesMap *pref_map_ptr) {
-  std::auto_ptr<const string> filename(filename_ptr);
-  std::auto_ptr<const FilePreferenceSaverThread::PreferencesMap> pref_map(
+  std::unique_ptr<const string> filename(filename_ptr);
+  std::unique_ptr<const FilePreferenceSaverThread::PreferencesMap> pref_map(
       pref_map_ptr);
 
   FilePreferenceSaverThread::PreferencesMap::const_iterator iter;

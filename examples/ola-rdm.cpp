@@ -48,7 +48,7 @@ using ola::network::NetworkToHost;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::PidDescriptor;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -465,7 +465,7 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
   }
 
   // attempt to build the message
-  auto_ptr<const ola::messaging::Message> message(m_pid_helper.BuildMessage(
+  unique_ptr<const ola::messaging::Message> message(m_pid_helper.BuildMessage(
       descriptor,
       inputs));
 
@@ -574,7 +574,7 @@ void RDMController::HandleAckResponse(uint16_t manufacturer_id,
     return;
   }
 
-  auto_ptr<const ola::messaging::Message> message(
+  unique_ptr<const ola::messaging::Message> message(
       m_pid_helper.DeserializeMessage(descriptor, data, length));
 
   if (!message.get()) {

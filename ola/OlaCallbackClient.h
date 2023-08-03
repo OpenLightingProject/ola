@@ -247,9 +247,9 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
                       const ola::timecode::TimeCode &timecode);
 
  private:
-    std::auto_ptr<client::OlaClientCore> m_core;
-    std::auto_ptr<DMXCallback> m_dmx_callback;
-    std::auto_ptr<DMXCallbackWithPriority> m_priority_dmx_callback;
+    std::unique_ptr<client::OlaClientCore> m_core;
+    std::unique_ptr<DMXCallback> m_dmx_callback;
+    std::unique_ptr<DMXCallbackWithPriority> m_priority_dmx_callback;
 
     void HandlePluginList(
         SingleUseCallback2<void, const std::vector<OlaPlugin>&,

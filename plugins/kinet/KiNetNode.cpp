@@ -36,7 +36,7 @@ using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
-using std::auto_ptr;
+using std::unique_ptr;
 
 const uint16_t KiNetNode::KINET_PORT = 6038;
 const uint32_t KiNetNode::KINET_MAGIC_NUMBER = 0x0401dc4a;
@@ -208,7 +208,7 @@ void KiNetNode::PopulatePacketHeader(uint16_t msg_type) {
  * Setup the networking components.
  */
 bool KiNetNode::InitNetwork() {
-  std::auto_ptr<ola::network::UDPSocketInterface> socket(m_socket.release());
+  std::unique_ptr<ola::network::UDPSocketInterface> socket(m_socket.release());
 
   if (!socket.get())
     socket.reset(new UDPSocket());

@@ -45,7 +45,7 @@ using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 
 void UpdateChecksum(uint8_t *expected, unsigned int expected_length) {
   unsigned int checksum = ola::rdm::START_CODE;
@@ -263,7 +263,7 @@ void RDMCommandSerializerTest::testDUB() {
   UID lower(0x0102, 0x0304);
   UID upper(0x0506, 0x0708);
 
-  auto_ptr<RDMDiscoveryRequest> request(
+  unique_ptr<RDMDiscoveryRequest> request(
       NewDiscoveryUniqueBranchRequest(m_source, lower, upper, 1));
 
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
@@ -290,7 +290,7 @@ void RDMCommandSerializerTest::testDUB() {
 }
 
 void RDMCommandSerializerTest::testMuteRequest() {
-  auto_ptr<RDMDiscoveryRequest> request(
+  unique_ptr<RDMDiscoveryRequest> request(
       NewMuteRequest(m_source, m_destination, 1));
 
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
@@ -313,7 +313,7 @@ void RDMCommandSerializerTest::testMuteRequest() {
 }
 
 void RDMCommandSerializerTest::testUnMuteRequest() {
-  auto_ptr<RDMDiscoveryRequest> request(
+  unique_ptr<RDMDiscoveryRequest> request(
       NewUnMuteRequest(m_source, m_destination, 1));
 
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
@@ -351,7 +351,7 @@ void RDMCommandSerializerTest::testPackAndInflate() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(get_command, data, &length));
 
-  auto_ptr<RDMRequest> command(RDMRequest::InflateFromData(data, length));
+  unique_ptr<RDMRequest> command(RDMRequest::InflateFromData(data, length));
   OLA_ASSERT_NOT_NULL(command.get());
 
   OLA_ASSERT_EQ(m_source, command->SourceUID());

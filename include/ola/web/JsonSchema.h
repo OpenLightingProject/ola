@@ -221,7 +221,7 @@ class BaseValidator : public ValidatorInterface {
   std::string m_id;
   std::string m_title;
   std::string m_description;
-  std::auto_ptr<const JsonValue> m_default_value;
+  std::unique_ptr<const JsonValue> m_default_value;
   std::vector<const JsonValue*> m_enums;
 
   bool CheckEnums(const JsonValue &value);
@@ -378,7 +378,7 @@ class MultipleOfConstraint : public NumberConstraint {
   }
 
  private:
-  std::auto_ptr<const JsonNumber> m_multiple_of;
+  std::unique_ptr<const JsonNumber> m_multiple_of;
 };
 
 /**
@@ -420,7 +420,7 @@ class MaximumConstraint : public NumberConstraint {
   }
 
  private:
-  std::auto_ptr<const JsonNumber> m_limit;
+  std::unique_ptr<const JsonNumber> m_limit;
   bool m_has_exclusive, m_is_exclusive;
 };
 
@@ -463,7 +463,7 @@ class MinimumConstraint : public NumberConstraint {
   }
 
  private:
-  std::auto_ptr<const JsonNumber> m_limit;
+  std::unique_ptr<const JsonNumber> m_limit;
   bool m_has_exclusive, m_is_exclusive;
 };
 
@@ -606,7 +606,7 @@ class ObjectValidator : public BaseValidator, JsonObjectPropertyVisitor {
   const Options m_options;
 
   PropertyValidators m_property_validators;
-  std::auto_ptr<ValidatorInterface> m_additional_property_validator;
+  std::unique_ptr<ValidatorInterface> m_additional_property_validator;
   PropertyDependencies m_property_dependencies;
   SchemaDependencies m_schema_dependencies;
 
@@ -633,7 +633,7 @@ class ArrayValidator : public BaseValidator {
     }
 
     explicit Items(ValidatorList *validators)
-      : m_validator(NULL),
+      : m_validator(),
         m_validator_list(*validators) {
     }
 
@@ -645,7 +645,7 @@ class ArrayValidator : public BaseValidator {
     const ValidatorList& Validators() const { return m_validator_list; }
 
    private:
-    std::auto_ptr<ValidatorInterface> m_validator;
+    std::unique_ptr<ValidatorInterface> m_validator;
     ValidatorList m_validator_list;
 
     DISALLOW_COPY_AND_ASSIGN(Items);
@@ -658,7 +658,7 @@ class ArrayValidator : public BaseValidator {
    public:
     explicit AdditionalItems(bool allow_additional)
         : m_allowed(allow_additional),
-          m_validator(NULL) {
+          m_validator() {
     }
 
     explicit AdditionalItems(ValidatorInterface *validator)
@@ -671,7 +671,7 @@ class ArrayValidator : public BaseValidator {
 
    private:
     bool m_allowed;
-    std::auto_ptr<ValidatorInterface> m_validator;
+    std::unique_ptr<ValidatorInterface> m_validator;
 
     DISALLOW_COPY_AND_ASSIGN(AdditionalItems);
   };
@@ -705,12 +705,12 @@ class ArrayValidator : public BaseValidator {
  private:
   typedef std::deque<ValidatorInterface*> ValidatorQueue;
 
-  const std::auto_ptr<Items> m_items;
-  const std::auto_ptr<AdditionalItems> m_additional_items;
+  const std::unique_ptr<Items> m_items;
+  const std::unique_ptr<AdditionalItems> m_additional_items;
   const Options m_options;
 
   // This is used if items is missing, or if additionalItems is true.
-  std::auto_ptr<WildcardValidator> m_wildcard_validator;
+  std::unique_ptr<WildcardValidator> m_wildcard_validator;
 
   class ArrayElementValidator : public BaseValidator {
    public:
@@ -934,7 +934,7 @@ class NotValidator : public BaseValidator {
   }
 
  private:
-  std::auto_ptr<ValidatorInterface> m_validator;
+  std::unique_ptr<ValidatorInterface> m_validator;
 
   void Validate(const JsonValue &value);
 
@@ -995,8 +995,8 @@ class JsonSchema {
 
  private:
   std::string m_schema_uri;
-  std::auto_ptr<ValidatorInterface> m_root_validator;
-  std::auto_ptr<SchemaDefinitions> m_schema_defs;
+  std::unique_ptr<ValidatorInterface> m_root_validator;
+  std::unique_ptr<SchemaDefinitions> m_schema_defs;
 
   JsonSchema(const std::string &schema_url,
              ValidatorInterface *root_validator,

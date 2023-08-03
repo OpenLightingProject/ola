@@ -74,7 +74,7 @@ bool UartDmxPlugin::StartHook() {
 
     // can open device, so shut the temporary file descriptor
     close(fd);
-    std::auto_ptr<UartDmxDevice> device(new UartDmxDevice(
+    std::unique_ptr<UartDmxDevice> device(new UartDmxDevice(
         this, m_preferences, PLUGIN_NAME, *iter));
 
     // got a device, now lets see if we can configure it before we announce

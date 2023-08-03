@@ -28,7 +28,7 @@
 
 using ola::rdm::UID;
 using ola::rdm::UIDAllocator;
-using std::auto_ptr;
+using std::unique_ptr;
 
 class UIDAllocatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UIDAllocatorTest);
@@ -50,7 +50,7 @@ void UIDAllocatorTest::testAllocator() {
   UIDAllocator allocator(uid);
 
   for (unsigned int i = 0xffffff00; i < 0xffffffff; i++) {
-    auto_ptr<UID> uid(allocator.AllocateNext());
+    unique_ptr<UID> uid(allocator.AllocateNext());
     OLA_ASSERT_NOT_NULL(uid.get());
     OLA_ASSERT_EQ(i, uid->DeviceId());
   }
@@ -62,7 +62,7 @@ void UIDAllocatorTest::testAllocator() {
   // try another allocator that has a custom upper bound
   UIDAllocator bounded_allocator(uid, 0xffffff10);
   for (unsigned int i = 0xffffff00; i <= 0xffffff10; i++) {
-    auto_ptr<UID> uid(bounded_allocator.AllocateNext());
+    unique_ptr<UID> uid(bounded_allocator.AllocateNext());
     OLA_ASSERT_NOT_NULL(uid.get());
     OLA_ASSERT_EQ(i, uid->DeviceId());
   }
@@ -74,7 +74,7 @@ void UIDAllocatorTest::testAllocator() {
   UID uid2(1, 0xfffffff0);
   UIDAllocator bounded_allocator2(uid2, 0xffffffff);
   for (unsigned int i = 0xfffffff0; i < 0xffffffff; i++) {
-    auto_ptr<UID> uid(bounded_allocator2.AllocateNext());
+    unique_ptr<UID> uid(bounded_allocator2.AllocateNext());
     OLA_ASSERT_NOT_NULL(uid.get());
     OLA_ASSERT_EQ(i, uid->DeviceId());
   }

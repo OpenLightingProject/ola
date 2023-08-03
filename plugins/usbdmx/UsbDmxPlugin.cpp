@@ -63,7 +63,7 @@ bool UsbDmxPlugin::StartHook() {
     debug_level = LIBUSB_DEFAULT_DEBUG_LEVEL;
   }
 
-  std::auto_ptr<PluginImplInterface> impl;
+  std::unique_ptr<PluginImplInterface> impl;
   if (FLAGS_use_async_libusb) {
     impl.reset(
         new AsyncPluginImpl(m_plugin_adaptor, this, debug_level,
