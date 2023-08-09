@@ -690,7 +690,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
     OLA_ASSERT_FALSE(node.SendDMX(4, dmx));
   }
 
-  {  // attempt to send an empty fram
+  {  // attempt to send an empty frame
     SocketVerifier verifier(m_socket);
     DmxBuffer empty_buffer;
     OLA_ASSERT(node.SendDMX(m_port_id, empty_buffer));
