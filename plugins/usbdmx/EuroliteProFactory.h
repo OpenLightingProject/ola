@@ -21,8 +21,8 @@
 #ifndef PLUGINS_USBDMX_EUROLITEPROFACTORY_H_
 #define PLUGINS_USBDMX_EUROLITEPROFACTORY_H_
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Macro.h"
@@ -49,12 +49,12 @@ class EuroliteProFactory : public BaseWidgetFactory<class EurolitePro> {
   static bool IsEuroliteMk2Enabled(Preferences *preferences);
 
   static const char ENABLE_EUROLITE_MK2_KEY[];
-  static const char EUROLITE_SERIALS_KEY[];
+  static const char EUROLITE_MK2_SERIAL_KEY[];
 
  private:
   ola::usb::LibUsbAdaptor *m_adaptor;
   bool m_enable_eurolite_mk2;
-  std::vector<std::string> m_expected_eurolite_serials;
+  std::set<std::string> m_expected_eurolite_mk2_serials;
 
   static const uint16_t PRODUCT_ID;
   static const uint16_t VENDOR_ID;

@@ -21,6 +21,7 @@
 #include "plugins/usbdmx/EuroliteProFactory.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
@@ -48,16 +49,27 @@ const uint16_t EuroliteProFactory::VENDOR_ID_MK2 = 0x0403;
 
 const char EuroliteProFactory::ENABLE_EUROLITE_MK2_KEY[] =
     "enable_eurolite_mk2";
-const char EuroliteProFactory::EUROLITE_SERIALS_KEY[] =
-    "eurolite_serials";
+const char EuroliteProFactory::EUROLITE_MK2_SERIAL_KEY[] =
+    "eurolite_mk2_serial";
 
 EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
                                        Preferences *preferences)
   : BaseWidgetFactory<class EurolitePro>("EuroliteProFactory"),
     m_adaptor(adaptor),
     m_enable_eurolite_mk2(IsEuroliteMk2Enabled(preferences)) {
-  StringSplit(preferences->GetValue(EUROLITE_SERIALS_KEY),
-              m_expected_eurolite_serials, ",");
+  const std::vector<std::string> serials =
+    preferences->GetMultipleValue(EUROLITE_MK2_SERIAL_KEY);
+  for (const std::string& serial : serials) {
+    if (serial.empty()) {
+      OLA_WARN << EUROLITE_MK2_SERIAL_KEY
+               << " requires a serial key string, but is empty.\n";
+    } else if (STLContains(m_expected_eurolite_mk2_serials, serial)) {
+      OLA_WARN << EUROLITE_MK2_SERIAL_KEY << " lists serial "
+               << serial << " more than once.\n";
+    } else {
+      m_expected_eurolite_mk2_serials.insert(serial);
+    }
+  }
 }
 
 bool EuroliteProFactory::IsEuroliteMk2Enabled(Preferences *preferences) {
@@ -99,9 +111,8 @@ bool EuroliteProFactory::DeviceAdded(
       return false;
     }
 
-    const bool serial_matches = std::find(m_expected_eurolite_serials.begin(),
-      m_expected_eurolite_serials.end(), info.serial) !=
-      m_expected_eurolite_serials.end();
+    const bool serial_matches =
+      STLContains(m_expected_eurolite_mk2_serials, info.serial);
 
     if (m_enable_eurolite_mk2 || serial_matches) {
       OLA_INFO << "Found a possible new Eurolite USB-DMX512-PRO MK2 device "
@@ -120,8 +131,8 @@ bool EuroliteProFactory::DeviceAdded(
                << " could be a Eurolite USB-DMX512-PRO MK2 but was "
                << "ignored, because "
                << ENABLE_EUROLITE_MK2_KEY << " was false and "
-               << "its serial number was not in the "
-               << "configuration.";
+               << "its serial number was not specifically listed using "
+               << EUROLITE_MK2_SERIAL_KEY;
       return false;
     }
   } else {
