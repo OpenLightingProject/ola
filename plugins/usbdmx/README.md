@@ -30,7 +30,7 @@ Default = `false`. This device is indistinguishable from other devices
 with an FTDI chip, and is therefore disabled by default. When enabled,
 this plugin will conflict with the usbserial, StageProfi and FTDI USB DMX
 plugins. If this is undesirable, the `eurolite_mk2_serial` key can be
-used instead, which manually associates a usb device as Eurolite USB-DMX512
+used instead, which manually associates a specific USB device as a Eurolite USB-DMX512
 PRO MK2.
 
 `eurolite_mk2_serial = <serial>`
