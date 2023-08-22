@@ -57,7 +57,7 @@ EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
     m_adaptor(adaptor),
     m_enable_eurolite_mk2(IsEuroliteMk2Enabled(preferences)) {
   const std::vector<std::string> serials =
-    preferences->GetMultipleValue(EUROLITE_MK2_SERIAL_KEY);
+      preferences->GetMultipleValue(EUROLITE_MK2_SERIAL_KEY);
   for (const std::string& serial : serials) {
     if (serial.empty()) {
       OLA_WARN << EUROLITE_MK2_SERIAL_KEY
