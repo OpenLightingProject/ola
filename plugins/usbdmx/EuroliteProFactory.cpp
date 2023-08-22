@@ -61,7 +61,7 @@ EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
   for (const std::string& serial : serials) {
     if (serial.empty()) {
       OLA_WARN << EUROLITE_MK2_SERIAL_KEY
-               << " requires a serial key string, but is empty.\n";
+               << " requires a serial key string, but it is empty.\n";
     } else if (STLContains(m_expected_eurolite_mk2_serials, serial)) {
       OLA_WARN << EUROLITE_MK2_SERIAL_KEY << " lists serial "
                << serial << " more than once.\n";
