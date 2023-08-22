@@ -34,7 +34,7 @@ used instead, which manually associates a usb device as Eurolite USB-DMX512
 PRO MK2.
 
 `eurolite_mk2_serial = <serial>`
-Claim the usb device with the given serial number as a Eurolite USB-DMX512
+Claim the USB device with the given serial number as a Eurolite USB-DMX512
 PRO MK2 even when `enable_eurolite_mk2 = false`. This makes it possible
 to use the Eurolite USB-DMX512 PRO MK2 together with other devices that
 can not be distinguished otherwise. This key has no effect when
