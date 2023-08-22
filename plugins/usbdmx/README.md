@@ -37,9 +37,10 @@ PRO MK2.
 Claim the USB device with the given serial number as a Eurolite USB-DMX512
 PRO MK2 even when `enable_eurolite_mk2 = false`. This makes it possible
 to use the Eurolite USB-DMX512 PRO MK2 together with other devices that
-can not be distinguished otherwise. This key has no effect when
-`enable_eurolite_mk2 = true` or no device is connected with the given
-serial. The key may be specified multiple times to use multiple Eurolite
+can not be distinguished otherwise. This setting has no effect when
+can not be distinguished otherwise. This setting has no effect when
+`enable_eurolite_mk2 = true` or if no device is connected with the given
+serial. The setting may be specified multiple times to use multiple Eurolite
 USB-DMX512 PRO MK2 devices.
 
 `nodle-<serial>-mode = {0,1,2,3,4,5,6,7}`
