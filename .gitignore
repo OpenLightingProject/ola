@@ -50,6 +50,7 @@ config.h.in~
 config.log
 config.status
 configure
+coverage/
 cpplint.py
 doxygen_entrydb_*.tmp
 doxygen_objdb_*.tmp
@@ -194,6 +195,8 @@ olad/ola-output.conf
 olad/testdata/ola-output.conf
 plugins/artnet/artnet_loadtest
 plugins/artnet/artnet_loadtest.exe
+plugins/kinet/kinet
+plugins/kinet/kinet.exe
 plugins/*/*PluginDescription.h
 protoc/ola_protoc
 protoc/ola_protoc.exe

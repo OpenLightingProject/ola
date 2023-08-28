@@ -4815,7 +4815,7 @@ class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'DMX_BLOCK_ADDRESS'
 
 
-class AllSubDevicesGetDmxBlockAddress(TestMixins.AllSubDevicesGetMixin,
+class AllSubDevicesGetDMXBlockAddress(TestMixins.AllSubDevicesGetMixin,
                                       OptionalParameterTestFixture):
   """Get DMX_BLOCK_ADDRESS addressed to ALL_SUB_DEVICES."""
   PID = 'DMX_BLOCK_ADDRESS'
@@ -4862,8 +4862,8 @@ class SetDMXFailMode(OptionalParameterTestFixture):
     self.SendSet(
         ROOT_DEVICE, self.pid,
         [settings.get('scene_number', 0),
-         settings.get('hold_time', 0),
          settings.get('loss_of_signal_delay', 0),
+         settings.get('hold_time', 0),
          settings.get('level', 0)]
     )
 
@@ -5123,7 +5123,7 @@ class GetDMXStartupModeWithData(TestMixins.GetWithDataMixin,
 class SetDMXStartupMode(OptionalParameterTestFixture):
   """Set DMX_STARTUP_MODE without changing the settings."""
   CATEGORY = TestCategory.DMX_SETUP
-  PID = 'DMX_FAIL_MODE'
+  PID = 'DMX_STARTUP_MODE'
   PROVIDES = ['set_dmx_startup_mode_supported']
   REQUIRES = ['dmx_startup_settings']
 
@@ -5137,8 +5137,8 @@ class SetDMXStartupMode(OptionalParameterTestFixture):
     self.SendSet(
         ROOT_DEVICE, self.pid,
         [settings.get('scene_number', 0),
-         settings.get('hold_time', 0),
          settings.get('startup_delay', 0),
+         settings.get('hold_time', 0),
          settings.get('level', 0)]
     )
 

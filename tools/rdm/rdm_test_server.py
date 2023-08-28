@@ -846,7 +846,7 @@ class RunTestsHandler(OLAServerRequestHandler):
       request: the HTTPRequest object.
 
     Returns:
-      The santitized universe id.
+      The sanitized universe id.
 
     Raises:
       ServerException if the universe isn't valid or doesn't exist.
