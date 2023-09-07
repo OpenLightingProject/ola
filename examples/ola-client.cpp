@@ -873,7 +873,7 @@ int SendDmx(OlaClientWrapper *wrapper, const options &opts) {
   }
 
   // A dmx string and blackout are mutually exclusive
-  if (opts.uni < 0 || !status || (opts.blackout && !opts.dmx.empty) ||
+  if (opts.uni < 0 || !status || (opts.blackout && !opts.dmx.empty()) ||
       buffer.Size() == 0) {
     DisplaySetDmxHelp(opts);
     exit(1);
