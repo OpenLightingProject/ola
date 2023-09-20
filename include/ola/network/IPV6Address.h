@@ -146,7 +146,9 @@ class IPV6Address {
    * @note The address is copied in network byte order.
    */
   void Get(uint8_t ptr[LENGTH]) const {
-    memcpy(ptr, reinterpret_cast<const uint8_t*>(&m_address.s6_addr[0]), LENGTH);
+    memcpy(ptr,
+           reinterpret_cast<const uint8_t*>(&m_address.s6_addr[0]),
+           LENGTH);
   }
 
   /**
