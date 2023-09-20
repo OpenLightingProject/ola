@@ -71,18 +71,21 @@ void IPV6AddressTest::testIPV6Address() {
 //  OLA_ASSERT_EQ(HostToNetwork(0xc0a80101), static_cast<uint32_t>(ip_as_int));
   OLA_ASSERT_EQ(string("::ffff:192.168.1.1"), address1.ToString());
 
-  IPV6Address address2 = IPV6Address::FromStringOrDie("2001:db8:1234:5678:90ab:cdef:feed:face");
+  IPV6Address address2 = IPV6Address::FromStringOrDie(
+      "2001:db8:1234:5678:90ab:cdef:feed:face");
 //  int ip_as_int = address2.AsInt();
   OLA_ASSERT_NE(wildcard_address, address2);
 //  OLA_ASSERT_NE(HostToNetwork(0xc0a811), ip_as_int);
 //  OLA_ASSERT_EQ(HostToNetwork(0xc0a80101), static_cast<uint32_t>(ip_as_int));
 
-  const uint8_t big_endian_address_data[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 10, 0, 0, 1};
+  const uint8_t big_endian_address_data[] =
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 10, 0, 0, 1};
   IPV6Address binary_address(big_endian_address_data);
   OLA_ASSERT_EQ(string("::ffff:10.0.0.1"), binary_address.ToString());
 
   // Test Get()
-  uint8_t address_data[] = {32, 1, 13, 184, 18, 52, 86, 120, 144, 171, 205, 239, 254, 237, 250, 206};
+  uint8_t address_data[] = {32, 1, 13, 184, 18, 52, 86, 120,
+                            144, 171, 205, 239, 254, 237, 250, 206};
   uint8_t addr[IPV6Address::LENGTH];
   address2.Get(addr);
   OLA_ASSERT_DATA_EQUALS(addr,
@@ -103,7 +106,8 @@ void IPV6AddressTest::testIPV6Address() {
   OLA_ASSERT_EQ(string("::ffff:192.168.1.1"), str.str());
 
   // test from string
-  auto_ptr<IPV6Address> string_address(IPV6Address::FromString("::ffff:10.0.0.1"));
+  auto_ptr<IPV6Address> string_address(
+      IPV6Address::FromString("::ffff:10.0.0.1"));
   OLA_ASSERT_NOT_NULL(string_address.get());
   OLA_ASSERT_EQ(string("::ffff:10.0.0.1"), string_address->ToString());
 
@@ -112,18 +116,23 @@ void IPV6AddressTest::testIPV6Address() {
 
   // and the second form
   IPV6Address string_address3;
-  OLA_ASSERT_TRUE(IPV6Address::FromString("::ffff:172.16.4.1", &string_address3));
+  OLA_ASSERT_TRUE(IPV6Address::FromString(
+      "::ffff:172.16.4.1", &string_address3));
   OLA_ASSERT_EQ(string("::ffff:172.16.4.1"), string_address3.ToString());
 
   IPV6Address string_address4;
   // Add the leading zero to the second group
-  OLA_ASSERT_TRUE(IPV6Address::FromString("2001:0db8:1234:5678:90ab:cdef:feed:face", &string_address4));
+  OLA_ASSERT_TRUE(IPV6Address::FromString(
+      "2001:0db8:1234:5678:90ab:cdef:feed:face", &string_address4));
   // Confirm it's not rendered when we convert to a string
-  OLA_ASSERT_EQ(string("2001:db8:1234:5678:90ab:cdef:feed:face"), string_address4.ToString());
+  OLA_ASSERT_EQ(string("2001:db8:1234:5678:90ab:cdef:feed:face"),
+                string_address4.ToString());
 
   IPV6Address string_address5;
-  OLA_ASSERT_TRUE(IPV6Address::FromString("2001:db8:dead:beef:dead:beef:dead:beef", &string_address5));
-  OLA_ASSERT_EQ(string("2001:db8:dead:beef:dead:beef:dead:beef"), string_address5.ToString());
+  OLA_ASSERT_TRUE(IPV6Address::FromString(
+      "2001:db8:dead:beef:dead:beef:dead:beef", &string_address5));
+  OLA_ASSERT_EQ(string("2001:db8:dead:beef:dead:beef:dead:beef"),
+                string_address5.ToString());
 
   IPV6Address string_address6;
   OLA_ASSERT_FALSE(IPV6Address::FromString("", &string_address6));
@@ -141,8 +150,10 @@ void IPV6AddressTest::testIPV6Address() {
   OLA_ASSERT_EQ(string("::ffff:10.0.0.1"), addresses[0].ToString());
   OLA_ASSERT_EQ(string("::ffff:172.16.4.1"), addresses[1].ToString());
   OLA_ASSERT_EQ(string("::ffff:192.168.1.1"), addresses[2].ToString());
-  OLA_ASSERT_EQ(string("2001:db8:1234:5678:90ab:cdef:feed:face"), addresses[3].ToString());
-  OLA_ASSERT_EQ(string("2001:db8:dead:beef:dead:beef:dead:beef"), addresses[4].ToString());
+  OLA_ASSERT_EQ(string("2001:db8:1234:5678:90ab:cdef:feed:face"),
+                addresses[3].ToString());
+  OLA_ASSERT_EQ(string("2001:db8:dead:beef:dead:beef:dead:beef"),
+                addresses[4].ToString());
 
 /*  uint8_t mask = 255;  // UINT8_MAX;
   OLA_ASSERT_TRUE(

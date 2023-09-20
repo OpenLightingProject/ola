@@ -49,20 +49,24 @@ namespace network {
 using std::string;
 
 IPV6Address::IPV6Address(const uint8_t *address) {
-  // TODO(Peter): Deal with network byte order?
+  // TODO(Peter): Deal with any network byte order conversion?
   memcpy(&m_address.s6_addr[0], address, sizeof (struct in6_addr));
 }
 
 bool IPV6Address::operator<(const IPV6Address &other) const {
-  // TODO(Peter): Deal with network byte order?
+  // TODO(Peter): Deal with any network byte order conversion?
   // Stored in network byte order, so convert to sort appropriately
-  return (memcmp(&m_address.s6_addr[0], &other.m_address.s6_addr[0], sizeof (struct in6_addr)) < 0);
+  return (memcmp(&m_address.s6_addr[0],
+          &other.m_address.s6_addr[0],
+          sizeof (struct in6_addr)) < 0);
 }
 
 bool IPV6Address::operator>(const IPV6Address &other) const {
-  // TODO(Peter): Deal with network byte order?
+  // TODO(Peter): Deal with any network byte order conversion?
   // Stored in network byte order, so convert to sort appropriately
-  return (memcmp(&m_address.s6_addr[0], &other.m_address.s6_addr[0], sizeof (struct in6_addr)) > 0);
+  return (memcmp(&m_address.s6_addr[0],
+          &other.m_address.s6_addr[0],
+          sizeof (struct in6_addr)) > 0);
 }
 
 bool IPV6StringToAddress(const string &address, struct in6_addr *addr) {
@@ -154,14 +158,14 @@ IPV6Address IPV6Address::FromStringOrDie(const string &address) {
 
 IPV6Address IPV6Address::WildCard() {
   in6_addr wildCard = IN6ADDR_ANY_INIT;
-  // TODO(Peter): Deal with host to network conversion...
+  // TODO(Peter): Deal with any host to network conversion...
   return IPV6Address(wildCard);
 }
 
 IPV6Address IPV6Address::Loopback() {
   in6_addr loopback = IN6ADDR_LOOPBACK_INIT;
-  // TODO(Peter): Deal with host to network conversion...
-  //return IPV6Address(HostToNetwork(IN6ADDR_LOOPBACK_INIT));
+  // TODO(Peter): Deal with any host to network conversion...
+  // return IPV6Address(HostToNetwork(IN6ADDR_LOOPBACK_INIT));
   return IPV6Address(loopback);
 }
 }  // namespace network
