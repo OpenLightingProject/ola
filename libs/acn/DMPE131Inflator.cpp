@@ -159,8 +159,9 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
       // HTP Merge
       universe_iter->second.buffer->Reset();
       std::vector<dmx_source>::const_iterator source_iter =
-        universe_iter->second.sources.begin();
-      for (; source_iter != universe_iter->second.sources.end(); ++source_iter) {
+          universe_iter->second.sources.begin();
+      for (; source_iter != universe_iter->second.sources.end();
+           ++source_iter) {
         universe_iter->second.buffer->HTPMerge(source_iter->buffer);
       }
       universe_iter->second.closure->Run();
