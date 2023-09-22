@@ -31,6 +31,7 @@
 #include <olad/PortConstants.h>
 
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -70,6 +71,17 @@ typedef enum {
   SET_PORT_PRIORITY,
 } mode;
 
+static const int CONSOLE_TAB_WIDTH = 8;
+
+static const int PLUGIN_ID_WIDTH = 5;
+
+static const int UNI_ID_WIDTH = 5;
+static const int UNI_NAME_WIDTH = 30;
+
+static const char UNI_MERGE_MODE[] = "Merge Mode";
+static const char UNI_INPUT_PORTS[] = "Input Ports";
+static const char UNI_OUTPUT_PORTS[] = "Output Ports";
+static const char UNI_RDM_DEVICES[] = "RDM Devices";
 
 typedef struct {
   mode m;          // mode
@@ -83,7 +95,9 @@ typedef struct {
   OlaUniverse::merge_mode merge_mode;  // the merge mode
   string cmd;      // argv[0]
   string uni_name;  // universe name
+  bool blackout;
   string dmx;      // DMX string
+  bool extended;
   ola::port_priority_mode priority_mode;  // port priority mode
   uint8_t priority_value;  // port priority value
   bool list_plugin_ids;
@@ -139,13 +153,24 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
 }
 
 
+int OutputColumnTitle(const string title,
+                      const size_t width_override,
+                      const int overall_width) {
+  int width = std::max(width_override, title.length());
+  cout << "\t" << setw(width) << title;
+  return width + (CONSOLE_TAB_WIDTH - (overall_width % CONSOLE_TAB_WIDTH));
+}
+
+
 /*
  * This is called when we receive universe results from the client
  * @param list_ids_only show ids only
+ * @param extended show extended info about each universe
  * @param universes a vector of OlaUniverses
  */
 void DisplayUniverses(SelectServer *ss,
                       bool list_ids_only,
+                      bool extended,
                       const Result &result,
                       const vector <OlaUniverse> &universes) {
   vector<OlaUniverse>::const_iterator iter;
@@ -161,20 +186,48 @@ void DisplayUniverses(SelectServer *ss,
       cout << iter->Id() << endl;
     }
   } else {
-    cout << setw(5) << "Id" << "\t" << setw(30) << "Name" << "\t\tMerge Mode"
-         << endl;
-    cout << "----------------------------------------------------------"
-         << endl;
+    // Pre-set the first title
+    int divider_width = UNI_ID_WIDTH;
+    cout << setw(UNI_ID_WIDTH) << "Id";
+    divider_width += OutputColumnTitle("Name", UNI_NAME_WIDTH, divider_width);
+    if (!extended) {
+      // By default keep the double tab for backwards compatibility of anyone
+      // parsing the shell, not that we'd recommend that
+      // Output an empty title to cover this
+      divider_width += OutputColumnTitle("", 0, divider_width);
+    }
+    divider_width += OutputColumnTitle(UNI_MERGE_MODE, 0, divider_width);
+    if (extended) {
+      divider_width += OutputColumnTitle(UNI_INPUT_PORTS, 0, divider_width);
+      divider_width += OutputColumnTitle(UNI_OUTPUT_PORTS, 0, divider_width);
+      divider_width += OutputColumnTitle(UNI_RDM_DEVICES, 0, divider_width);
+    }
+    cout << endl;
+    string divider = string(divider_width, '-');
+    cout << divider << endl;
 
     for (iter = universes.begin(); iter != universes.end(); ++iter) {
-      cout << setw(5) << iter->Id() << "\t" << setw(30) << iter->Name()
-           << "\t\t"
-           << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP")
-           << endl;
+      cout << setw(UNI_ID_WIDTH) << iter->Id()
+           << "\t" << setw(UNI_NAME_WIDTH) << iter->Name();
+      if (!extended) {
+        // By default keep the double tab for backwards compatibility of anyone
+        // parsing the shell, not that we'd recommend that
+        cout << "\t";
+      }
+      cout << "\t" << setw(strlen(UNI_MERGE_MODE))
+           << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP");
+      if (extended) {
+        cout << "\t" << setw(strlen(UNI_INPUT_PORTS))
+             << iter->InputPortCount()
+             << "\t" << setw(strlen(UNI_OUTPUT_PORTS))
+             << iter->OutputPortCount()
+             << "\t" << setw(strlen(UNI_RDM_DEVICES))
+             << iter->RDMDeviceCount();
+      }
+      cout << endl;
     }
 
-    cout << "----------------------------------------------------------" <<
-      endl;
+    cout << divider << endl;
   }
 
   ss->Terminate();
@@ -202,11 +255,15 @@ void DisplayPlugins(SelectServer *ss,
       cout << iter->Id() << endl;
     }
   } else {
-    cout << setw(5) << "Id" << "\tPlugin Name" << endl;
+    // Leave for backwards compatibility (in case anyone is parsing the shell,
+    // not that we'd recommend that), but this could use OutputColumnTitle with
+    // a setw of 30 on the plugin name
+    cout << setw(PLUGIN_ID_WIDTH) << "Id" << "\tPlugin Name" << endl;
     cout << "--------------------------------------" << endl;
 
     for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-      cout << setw(5) << iter->Id() << "\t" << iter->Name() << endl;
+      cout << setw(PLUGIN_ID_WIDTH) << iter->Id()
+           << "\t" << iter->Name() << endl;
     }
 
     cout << "--------------------------------------" << endl;
@@ -297,6 +354,8 @@ void InitOptions(options *opts) {
   opts->uni = INVALID_VALUE;
   opts->plugin_id = ola::OLA_PLUGIN_ALL;
   opts->help = false;
+  opts->blackout = false;
+  opts->extended = false;
   opts->list_plugin_ids = false;
   opts->list_universe_ids = false;
   opts->patch_action = ola::client::PATCH;
@@ -357,15 +416,17 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   };
 
   static struct option long_options[] = {
+      {"blackout", no_argument, 0, 'b'},
       {"dmx", required_argument, 0, 'd'},
+      {"extended", no_argument, 0, 'e'},
       {"help", no_argument, 0, 'h'},
       {"ltp", no_argument, 0, 'l'},
       {"name", required_argument, 0, 'n'},
       {"plugin-id", required_argument, 0, 'p'},
       {"state", required_argument, 0, 's'},
+      {"universe", required_argument, 0, 'u'},
       {"list-plugin-ids", no_argument, 0, LIST_PLUGIN_IDS_OPTION},
       {"list-universe-ids", no_argument, 0, LIST_UNIVERSE_IDS_OPTION},
-      {"universe", required_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
 
@@ -373,7 +434,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "ld:n:u:p:s:hv", long_options, &option_index);
+    c = getopt_long(argc, argv, "ld:bn:u:p:s:hv", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -381,8 +442,14 @@ void ParseOptions(int argc, char *argv[], options *opts) {
     switch (c) {
       case 0:
         break;
+      case 'b':
+        opts->blackout = true;
+        break;
       case 'd':
         opts->dmx = optarg;
+        break;
+      case 'e':
+        opts->extended = true;
         break;
       case 'h':
         opts->help = true;
@@ -614,6 +681,7 @@ void DisplayUniverseInfoHelp(const options &opts) {
           "Shows info on the active universes in use.\n"
           "\n"
           "  -h, --help          Display this help message and exit.\n"
+          "  --extended          Show port counts and RDM devices too.\n"
           "  --list-universe-ids List universe Ids only.\n"
        << endl;
 }
@@ -656,7 +724,8 @@ void DisplayUniverseMergeHelp(const options &opts) {
  * Help message for set dmx
  */
 void DisplaySetDmxHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd << " --universe <universe> --dmx <values>\n"
+  cout << "Usage: " << opts.cmd << " --universe <universe> [ --dmx <values> ] "
+          "[ --blackout ]\n"
           "\n"
           "Sets the DMX values for a universe.\n"
           "\n"
@@ -665,6 +734,7 @@ void DisplaySetDmxHelp(const options &opts) {
           "  -d, --dmx <values>        Comma separated DMX values, e.g. "
           "0,255,128 sets first channel to 0, second channel to 255"
           " and third channel to 128.\n"
+          "  -b, --blackout            Send a universe to blackout instead.\n"
        << endl;
 }
 
@@ -728,8 +798,8 @@ void DisplayHelpAndExit(const options &opts) {
 
 /*
  * Send a fetch device info request
- * @param client  the ola client
- * @param opts  the const options
+ * @param client the ola client
+ * @param opts the const options
  */
 int FetchDeviceInfo(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
@@ -809,11 +879,32 @@ int FetchPluginState(OlaClientWrapper *wrapper, const options &opts) {
 }
 
 
+/*
+ * Send a fetch universe info request
+ * @param client the ola client
+ * @param opts the const options
+ */
+int FetchUniverseInfo(OlaClientWrapper *wrapper, const options &opts) {
+  SelectServer *ss = wrapper->GetSelectServer();
+  OlaClient *client = wrapper->GetClient();
+  if (opts.extended && opts.list_universe_ids) {
+    // These are mutually exclusive
+    DisplayUniverseInfoHelp(opts);
+    exit(1);
+  }
+
+  client->FetchUniverseList(NewSingleCallback(&DisplayUniverses,
+                                              ss,
+                                              opts.list_universe_ids,
+                                              opts.extended));
+  return 0;
+}
+
 
 /*
  * send a set name request
  * @param client the ola client
- * @param opts  the const options
+ * @param opts the const options
  */
 int SetUniverseName(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
@@ -831,7 +922,7 @@ int SetUniverseName(OlaClientWrapper *wrapper, const options &opts) {
 /*
  * send a set name request
  * @param client the ola client
- * @param opts  the const options
+ * @param opts the const options
  */
 int SetUniverseMergeMode(OlaClientWrapper *wrapper,
                          const options &opts) {
@@ -857,9 +948,16 @@ int SendDmx(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
   OlaClient *client = wrapper->GetClient();
   ola::DmxBuffer buffer;
-  bool status = buffer.SetFromString(opts.dmx);
+  bool status = false;
+  if (opts.blackout) {
+    status = buffer.Blackout();
+  } else {
+    status = buffer.SetFromString(opts.dmx);
+  }
 
-  if (opts.uni < 0 || !status || buffer.Size() == 0) {
+  // A dmx string and blackout are mutually exclusive
+  if (opts.uni < 0 || !status || (opts.blackout && !opts.dmx.empty()) ||
+      buffer.Size() == 0) {
     DisplaySetDmxHelp(opts);
     exit(1);
   }
@@ -945,9 +1043,7 @@ int main(int argc, char *argv[]) {
       FetchPluginState(&ola_client, opts);
       break;
     case UNIVERSE_INFO:
-      ola_client.GetClient()->FetchUniverseList(
-          NewSingleCallback(&DisplayUniverses,
-          ola_client.GetSelectServer(), opts.list_universe_ids));
+      FetchUniverseInfo(&ola_client, opts);
       break;
     case UNIVERSE_NAME:
       SetUniverseName(&ola_client, opts);
