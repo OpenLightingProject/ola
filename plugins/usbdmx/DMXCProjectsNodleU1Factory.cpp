@@ -33,21 +33,43 @@ namespace usbdmx {
 const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID = 0x16d0;
 const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID = 0x0830;
 
+// Those IDs are not officially registered or "free for everyone"
+// but there seems to be one clone using them.
+// See also: https://github.com/mcallegari/qlcplus/blob/3b69452d0679333c6e60ff0928c20f2107ccc81f/plugins/hid/hiddmxdevice.h#L34
+const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID_FX5 = 0x16c0;
+const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID_FX5 = 0x088b;
+
 bool DMXCProjectsNodleU1Factory::DeviceAdded(
     WidgetObserver *observer,
     libusb_device *usb_device,
     const struct libusb_device_descriptor &descriptor) {
-  if (descriptor.idVendor != VENDOR_ID || descriptor.idProduct != PRODUCT_ID) {
+  OLA_DEBUG << "Factory, DeviceAdded";
+  if (
+    ((descriptor.idVendor != VENDOR_ID) &&
+    (descriptor.idVendor != VENDOR_ID_FX5)) ||
+    ((descriptor.idProduct != PRODUCT_ID) &&
+    (descriptor.idProduct != PRODUCT_ID_FX5))
+    ) {
     return false;
   }
 
-  OLA_INFO << "Found a new Nodle U1 device";
+  OLA_INFO << "Found a new Nodle U1 or clone device";
   ola::usb::LibUsbAdaptor::DeviceInformation info;
   if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
     return false;
   }
 
   OLA_INFO << "Nodle U1 serial: " << info.serial;
+
+  // Check if it's a rp2040-dongle that supports multiple universes
+  unsigned int ins = 1;   // Input universes
+  unsigned int outs = 1;  // Output universes
+  if (info.serial.find('RP2040_') != std::string::npos) {
+    // The rp2040-dongle supports at most 8 inputs or 16 outputs
+    // However, inputs are not yet implemented
+    ins = 0;
+    outs = 16;
+  }
 
   if (m_preferences->SetDefaultValue(
       "nodle-" + info.serial + "-mode",
@@ -68,12 +90,12 @@ bool DMXCProjectsNodleU1Factory::DeviceAdded(
   DMXCProjectsNodleU1 *widget = NULL;
   if (FLAGS_use_async_libusb) {
     widget = new AsynchronousDMXCProjectsNodleU1(m_adaptor, usb_device,
-                                                 m_plugin_adaptor, info.serial,
-                                                 mode);
+                                                 m_plugin_adaptor, info.serial, 
+                                                 mode, ins, outs);
   } else {
     widget = new SynchronousDMXCProjectsNodleU1(m_adaptor, usb_device,
                                                 m_plugin_adaptor, info.serial,
-                                                mode);
+                                                mode, ins, outs);
   }
   return AddWidget(observer, widget);
 }

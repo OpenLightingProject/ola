@@ -59,6 +59,8 @@ class DMXCProjectsNodleU1Factory :
 
   static const uint16_t VENDOR_ID;
   static const uint16_t PRODUCT_ID;
+  static const uint16_t VENDOR_ID_FX5;
+  static const uint16_t PRODUCT_ID_FX5;
 
   DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1Factory);
 };
