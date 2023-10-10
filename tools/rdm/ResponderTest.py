@@ -612,15 +612,15 @@ class ResponderTestFixture(TestFixture):
     return True
 
   def _EscapeData(self, data):
-    if type(data) == list:
+    if isinstance(data, list):
       return [self._EscapeData(i) for i in data]
-    elif type(data) == dict:
+    elif isinstance(data, dict):
       d = {}
       for k, v in data.items():
         # We can't escape the key as then it may become a new key
         d[k] = self._EscapeData(v)
       return d
-    elif type(data) == str or type(data) == unicode:
+    elif isinstance(data, str) or isinstance(data, unicode):
       return StringEscape(data)
     else:
       return data
