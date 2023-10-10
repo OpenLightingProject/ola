@@ -22,7 +22,7 @@
  * @addtogroup rdm_helpers
  * @{
  * @file include/ola/rdm/StringMessageBuilder.h
- * @brief Builds a Messagse object from a list of strings and a Descriptor.
+ * @brief Builds a Message object from a list of strings and a Descriptor.
  * @}
  */
 

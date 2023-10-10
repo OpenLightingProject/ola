@@ -10,13 +10,13 @@ jobs:
         run: apt-get update -y
       # See comments beginning at
       # https://github.com/actions/runner/issues/763#issuecomment-1435474884
-      # Without Git, actions/checkout@v3 will resort to REST and will not
+      # Without Git, actions/checkout@v4 will resort to REST and will not
       # create a .git folder or .git.config. The Problem Matcher looks for
       # .git/config to find where the root of the repo is, so it must be
       # present.
       - name: Install Git
         run: apt-get -y install git
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install build tools
         shell: bash
         run: |
@@ -260,7 +260,7 @@ jobs:
     name: weblint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Node.js v18
         uses: actions/setup-node@v3
         with:

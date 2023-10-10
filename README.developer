@@ -55,7 +55,7 @@ The release lifecycle is:
 - New feature work occurs on the master branch.
 - Once the new features are considered stable or enough time has passed, a new
   minor release branch will be created, e.g. 0.10.
-- The minor release branch will be stablized with bugfixes, these bug fixes
+- The minor release branch will be stabilized with bugfixes, these bug fixes
   will also be merged back into master.
 - Once declared stable, a new patch branch 0 will be created e.g. 0.10.0
 - Release specific changes like the version number, debian files etc. will be

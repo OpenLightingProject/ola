@@ -21,7 +21,7 @@ jobs:
               pkg: "gcc g++"
           - id: "distcheck-debian-stable-amd64-gcc"
             task: "distcheck"
-            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests"
             # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
             container: "debian:stable"
             compiler:
@@ -30,7 +30,7 @@ jobs:
               pkg: "gcc g++"
           - id: "distcheck-debian-stable-amd64-clang"
             task: "distcheck"
-            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests --enable-java-libs"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests"
             # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
             container: "debian:stable"
             compiler:
@@ -50,13 +50,13 @@ jobs:
         run: apt-get update -y
       # See comments beginning at
       # https://github.com/actions/runner/issues/763#issuecomment-1435474884
-      # Without Git, actions/checkout@v3 will resort to REST and will not
+      # Without Git, actions/checkout@v4 will resort to REST and will not
       # create a .git folder or .git.config. The Problem Matcher looks for
       # .git/config to find where the root of the repo is, so it must be
       # present.
       - name: Install Git
         run: apt-get -y install git
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install build tools
         shell: bash
         run: |
@@ -90,17 +90,18 @@ jobs:
       - name: Autoreconf
         run: sudo --preserve-env -u builduser env "PATH=$PATH" autoreconf -i
       - name: Set configure arguments
+        # Env var name DISTCHECK_CONFIGURE_FLAGS must be used, see #1881 and #1883
         run: |
-          echo "GH_OLA_CONFIGURE_ARGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
+          echo "DISTCHECK_CONFIGURE_FLAGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
       - name: Set additional Linux configure arguments
         if: runner.os == 'Linux'
         # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
         run: |
-          echo "GH_OLA_CONFIGURE_ARGS=$GH_OLA_CONFIGURE_ARGS CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
+          echo "DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
       - name: Print configure command
-        run: echo "./configure $GH_OLA_CONFIGURE_ARGS"
+        run: echo "./configure $DISTCHECK_CONFIGURE_FLAGS"
       - name: Configure
-        run: sudo --preserve-env -u builduser env "PATH=$PATH" ./configure $GH_OLA_CONFIGURE_ARGS
+        run: sudo --preserve-env -u builduser env "PATH=$PATH" ./configure $DISTCHECK_CONFIGURE_FLAGS
       - name: ${{ matrix.task }}
         run: sudo --preserve-env -u builduser env "PATH=$PATH" make ${{ matrix.task }} -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
       - name: Display structure of the built files
