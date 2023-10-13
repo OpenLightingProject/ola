@@ -15,6 +15,7 @@ This plugin supports various USB DMX devices including:
 * FX5 DMX
 * ShowJockey SJ-DMX-U1
 * Sunlite USBDMX2
+* USBDMX.com (when `enable_usbdmxcom = true`)
 * Velleman K8062.
 
 
@@ -29,7 +30,15 @@ Whether to enable detection of the Eurolite USB-DMX512 PRO MK2.
 Default = false. This device is indistinguishable from other devices
 with an FTDI chip, and is therefore disabled by default. When enabled,
 this plugin will conflict with the usbserial, StageProfi and FTDI USB DMX
-plugins.
+plugins. You can't use this and the USBDMX.com at the same time.
+
+`enable_usbdmxcom = {false,true}`
+Whether to enable detection of the USBDMX.com.
+Default = false. This device is indistinguishable from other devices
+with an FTDI chip, and is therefore disabled by default. When enabled,
+this plugin will conflict with the usbserial, StageProfi and FTDI USB DMX
+plugins. You can't use this and the Eurolite USB-DMX512 PRO MK2 at the
+same time.
 
 `nodle-<serial>-mode = {0,1,2,3,4,5,6,7}`  
 The mode for the Nodle U1 interface with serial number `<serial>` to operate

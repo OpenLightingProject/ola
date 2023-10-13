@@ -80,6 +80,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   bool NewWidget(class ScanlimeFadecandy *widget);
   bool NewWidget(class ShowJockeyDMXU1 *widget);
   bool NewWidget(class Sunlite *widget);
+  bool NewWidget(class USBDMXCom *widget);
   bool NewWidget(class VellemanK8062 *widget);
 
   void WidgetRemoved(OLA_UNUSED class AnymauDMX *widget) {}
@@ -91,6 +92,7 @@ class SyncPluginImpl: public PluginImplInterface,  public WidgetObserver {
   void WidgetRemoved(OLA_UNUSED class ScanlimeFadecandy *widget) {}
   void WidgetRemoved(OLA_UNUSED class ShowJockeyDMXU1 *widget) {}
   void WidgetRemoved(OLA_UNUSED class Sunlite *widget) {}
+  void WidgetRemoved(OLA_UNUSED class USBDMXCom *widget) {}
   void WidgetRemoved(OLA_UNUSED class VellemanK8062 *widget) {}
 
  private:

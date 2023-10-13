@@ -83,6 +83,10 @@ class SynchronizedWidgetObserver : public WidgetObserver {
     return DispatchNewWidget(widget);
   }
 
+  bool NewWidget(class USBDMXCom *widget) {
+    return DispatchNewWidget(widget);
+  }
+
   bool NewWidget(class VellemanK8062 *widget) {
     return DispatchNewWidget(widget);
   }

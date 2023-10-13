@@ -44,6 +44,7 @@ namespace usbdmx {
  *   - Eurolite DMX USB Pro MK2.
  *   - Scanlime's Fadecandy.
  *   - Sunlite.
+ *   - USBDMX.com.
  *   - Velleman K8062.
  */
 class UsbDmxPlugin: public ola::Plugin {

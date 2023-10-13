@@ -50,17 +50,18 @@ class MilInstWidget {
   std::string GetPath() { return m_path; }
   virtual std::string Type() = 0;
 
-  std::string Description() {
+  // Virtual so we can override it locally if desired
+  virtual std::string Description() {
     std::ostringstream str;
     str << GetPath() << ", " << Type();
     return str.str();
   }
 
-  virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
+  virtual bool SendDmx(const DmxBuffer &buffer) = 0;
   virtual bool DetectDevice() = 0;
 
  protected:
-  virtual int SetChannel(unsigned int chan, uint8_t val) const = 0;
+  virtual int SetChannel(unsigned int chan, uint8_t val) = 0;
 
   // instance variables
   bool m_enabled;

@@ -132,6 +132,15 @@ class WidgetObserver {
   virtual bool NewWidget(class Sunlite *widget) = 0;
 
   /**
+   * @brief Called when a new USBDMXCom is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
+   *   ignored.
+   */
+  virtual bool NewWidget(class USBDMXCom *widget) = 0;
+
+  /**
    * @brief Called when a new VellemanK8062 is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.

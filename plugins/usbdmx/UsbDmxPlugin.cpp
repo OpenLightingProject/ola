@@ -29,6 +29,7 @@
 #include "plugins/usbdmx/EuroliteProFactory.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SyncPluginImpl.h"
+#include "plugins/usbdmx/USBDMXComFactory.h"
 #include "plugins/usbdmx/UsbDmxPluginDescription.h"
 
 DECLARE_bool(use_async_libusb);
@@ -107,6 +108,14 @@ bool UsbDmxPlugin::SetDefaultPreferences() {
       BoolValidator(),
       false);
 
+  save |= m_preferences->SetDefaultValue(
+      USBDMXComFactory::ENABLE_USBDMXCOM_KEY,
+      BoolValidator(),
+      false);
+
+  // TODO(Someone): Validate if the Eurolite and USBDMX.com prefs clash, maybe
+  // not in here?
+
   if (save) {
     m_preferences->Save();
   }
@@ -116,7 +125,8 @@ bool UsbDmxPlugin::SetDefaultPreferences() {
 
 void UsbDmxPlugin::ConflictsWith(
     std::set<ola_plugin_id>* conflicting_plugins) const {
-  if (EuroliteProFactory::IsEuroliteMk2Enabled(m_preferences)) {
+  if (EuroliteProFactory::IsEuroliteMk2Enabled(m_preferences) ||
+      USBDMXComFactory::IsUSBDMXComEnabled(m_preferences)) {
     conflicting_plugins->insert(OLA_PLUGIN_FTDIDMX);
     conflicting_plugins->insert(OLA_PLUGIN_STAGEPROFI);
     conflicting_plugins->insert(OLA_PLUGIN_USBPRO);
