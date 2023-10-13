@@ -27,6 +27,7 @@
 #include "ola/Constants.h"
 #include "ola/Logging.h"
 #include "ola/network/SocketAddress.h"
+#include "ola/util/Utils.h"
 #include "plugins/nanoleaf/NanoleafNode.h"
 
 namespace ola {
@@ -35,6 +36,7 @@ namespace nanoleaf {
 
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
+using ola::utils::TruncateUInt16Low;
 using std::auto_ptr;
 using std::vector;
 
@@ -44,11 +46,13 @@ using std::vector;
  * @param socket a UDPSocket or Null. Ownership is transferred.
  */
 NanoleafNode::NanoleafNode(ola::io::SelectServerInterface *ss,
-                           std::vector<uint8_t> panels,
-                           ola::network::UDPSocketInterface *socket)
+                           std::vector<uint16_t> panels,
+                           ola::network::UDPSocketInterface *socket,
+                           NanoleafVersion version)
     : m_running(false),
       m_ss(ss),
       m_panels(panels),
+      m_version(version),
       m_output_stream(&m_output_queue),
       m_socket(socket) {
 }
@@ -107,17 +111,42 @@ bool NanoleafNode::SendDMX(const IPV4SocketAddress &target,
              << ", got " << buffer.Size();
   }
 
-  uint8_t panel_count = std::min(
-      static_cast<uint8_t>(m_panels.size()),
-      static_cast<uint8_t>(floor(buffer.Size() / NANOLEAF_SLOTS_PER_PANEL)));
+  // Although the field is now a uint16_t in some cases, we're still limited to
+  // 170 panels in one DMX universe unless we added the opportunity to address
+  // them so they overlapped
+  uint16_t panel_count = std::min(
+      static_cast<uint16_t>(m_panels.size()),
+      static_cast<uint16_t>(floor(buffer.Size() / NANOLEAF_SLOTS_PER_PANEL)));
 
   m_output_queue.Clear();
-  m_output_stream << panel_count;
-  for (uint8_t i = 0; i < panel_count; i++) {
-    m_output_stream << m_panels[i] << NANOLEAF_FRAME_COUNT;
-    m_output_stream.Write(buffer.GetRaw() + (i * NANOLEAF_SLOTS_PER_PANEL),
-                          NANOLEAF_SLOTS_PER_PANEL);
-    m_output_stream << NANOLEAF_WHITE_LEVEL << NANOLEAF_TRANSITION_TIME;
+  if (m_version == VERSION_V1) {
+    // This needs truncating as v1 only supports up to 255 panels but we use a
+    // uint16_t so we can use the same setup for v2
+    m_output_stream << TruncateUInt16Low(panel_count);
+    for (uint16_t i = 0; i < panel_count; i++) {
+      // This needs truncating as v1 only supports panel IDs up to 255 but we
+      // use a uint16_t so we can use the same setup for v2
+      m_output_stream << TruncateUInt16Low(m_panels[i])
+                      << NANOLEAF_FRAME_COUNT_V1;
+      m_output_stream.Write(buffer.GetRaw() + (i * NANOLEAF_SLOTS_PER_PANEL),
+                            NANOLEAF_SLOTS_PER_PANEL);
+      m_output_stream << NANOLEAF_WHITE_LEVEL << NANOLEAF_TRANSITION_TIME_V1;
+    }
+  } else if (m_version == VERSION_V2) {
+    // This is just 16 bit in v2
+    m_output_stream << panel_count;
+    for (uint16_t i = 0; i < panel_count; i++) {
+      // This is just 16 bit in v2
+      m_output_stream << m_panels[i];
+      // No frame count in v2
+      // TODO(Peter): Check this doesn't flip the bytes)
+      m_output_stream.Write(buffer.GetRaw() + (i * NANOLEAF_SLOTS_PER_PANEL),
+                            NANOLEAF_SLOTS_PER_PANEL);
+      // Transition time is a uint16_t in v2
+      m_output_stream << NANOLEAF_WHITE_LEVEL << NANOLEAF_TRANSITION_TIME_V2;
+    }
+  } else {
+    OLA_WARN << "Unknown Nanoleaf protocol version " << m_version;
   }
 
   // m_output_queue.Dump(&std::cerr);
