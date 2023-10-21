@@ -37,6 +37,7 @@
 #include "plugins/usbpro/UsbProWidgetDetector.h"
 #include "plugins/usbpro/SerialWidgetInterface.h"
 #include "plugins/usbpro/WidgetDetectorInterface.h"
+#include "plugins/usbpro/UsbProExtWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -64,6 +65,8 @@ class NewWidgetHandler {
     virtual void NewWidget(class RobeWidget *widget,
                            const RobeWidgetInformation &information) = 0;
     virtual void NewWidget(class UltraDMXProWidget *widget,
+                           const UsbProWidgetInformation &information) = 0;
+    virtual void NewWidget(class UsbProExtWidget *widget,
                            const UsbProWidgetInformation &information) = 0;
 };
 
@@ -183,6 +186,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
     static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
     static const uint16_t GODDARD_ESTA_ID = 0x4744;
     static const uint16_t JESE_ESTA_ID = 0x6864;
+    static const uint16_t ESTA_ID_EXPERIMENTAL = 0x7FF7;
 };
 }  // namespace usbpro
 }  // namespace plugin

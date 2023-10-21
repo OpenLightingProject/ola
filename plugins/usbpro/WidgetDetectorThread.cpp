@@ -42,6 +42,7 @@
 #include "plugins/usbpro/UltraDMXProWidget.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
 #include "plugins/usbpro/WidgetDetectorThread.h"
+#include "plugins/usbpro/UsbProExtWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -310,6 +311,12 @@ void WidgetDetectorThread::UsbProWidgetReady(
         return;
       }
       break;
+    case ESTA_ID_EXPERIMENTAL:
+		DispatchWidget(
+			new UsbProExtWidget(descriptor),
+			information);
+		return;
+    break;
   }
   OLA_WARN << "Defaulting to a Usb Pro device";
   if (information->dual_port) {

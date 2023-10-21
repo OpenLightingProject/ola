@@ -41,6 +41,8 @@
 #include "plugins/usbpro/UsbProDevice.h"
 #include "plugins/usbpro/UsbSerialPlugin.h"
 #include "plugins/usbpro/UsbSerialPluginDescription.h"
+#include "plugins/usbpro/UsbProExtDevice.h"
+#include "plugins/usbpro/UsbProExtWidget.h"
 
 
 namespace ola {
@@ -201,6 +203,22 @@ void UsbSerialPlugin::NewWidget(UltraDMXProWidget *widget,
       GetUltraDMXProFrameLimit()));
 }
 
+/**
+ * New UsbPro Extended Widget
+ */
+void UsbSerialPlugin::NewWidget(UsbProExtWidget *widget,
+                                const UsbProWidgetInformation &information) {
+  AddDevice(new UsbProExtDevice(
+      m_plugin_adaptor,
+      this,
+      GetDeviceName(information),
+      widget,
+      information.esta_id,
+      information.device_id,
+      information.serial,
+      information.firmware_version,
+      GetUltraDMXProFrameLimit()));
+}
 
 /*
  * Add a new device to the list
