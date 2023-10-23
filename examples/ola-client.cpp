@@ -84,6 +84,7 @@ typedef struct {
   string cmd;      // argv[0]
   string uni_name;  // universe name
   string dmx;      // DMX string
+  bool blackout;
   ola::port_priority_mode priority_mode;  // port priority mode
   uint8_t priority_value;  // port priority value
   bool list_plugin_ids;
@@ -304,6 +305,7 @@ void InitOptions(options *opts) {
   opts->port_direction = ola::client::OUTPUT_PORT;
   opts->device_id = INVALID_VALUE;
   opts->merge_mode = OlaUniverse::MERGE_HTP;
+  opts->blackout = false;
   opts->priority_mode = ola::PRIORITY_MODE_INHERIT;
   opts->priority_value = 0;
 }
@@ -358,6 +360,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
 
   static struct option long_options[] = {
       {"dmx", required_argument, 0, 'd'},
+      {"blackout", no_argument, 0, 'b'},
       {"help", no_argument, 0, 'h'},
       {"ltp", no_argument, 0, 'l'},
       {"name", required_argument, 0, 'n'},
@@ -373,7 +376,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "ld:n:u:p:s:hv", long_options, &option_index);
+    c = getopt_long(argc, argv, "ld:bn:u:p:s:hv", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -383,6 +386,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'd':
         opts->dmx = optarg;
+        break;
+      case 'b':
+        opts->blackout = true;
         break;
       case 'h':
         opts->help = true;
@@ -656,7 +662,8 @@ void DisplayUniverseMergeHelp(const options &opts) {
  * Help message for set dmx
  */
 void DisplaySetDmxHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd << " --universe <universe> --dmx <values>\n"
+  cout << "Usage: " << opts.cmd << " --universe <universe> [ --dmx <values> ] "
+          "[ --blackout ]\n"
           "\n"
           "Sets the DMX values for a universe.\n"
           "\n"
@@ -665,6 +672,7 @@ void DisplaySetDmxHelp(const options &opts) {
           "  -d, --dmx <values>        Comma separated DMX values, e.g. "
           "0,255,128 sets first channel to 0, second channel to 255"
           " and third channel to 128.\n"
+          "  -b, --blackout            Send a universe to blackout instead.\n"
        << endl;
 }
 
@@ -857,9 +865,16 @@ int SendDmx(OlaClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
   OlaClient *client = wrapper->GetClient();
   ola::DmxBuffer buffer;
-  bool status = buffer.SetFromString(opts.dmx);
+  bool status = false;
+  if (opts.blackout) {
+    status = buffer.Blackout();
+  } else {
+    status = buffer.SetFromString(opts.dmx);
+  }
 
-  if (opts.uni < 0 || !status || buffer.Size() == 0) {
+  // A dmx string and blackout are mutually exclusive
+  if (opts.uni < 0 || !status || (opts.blackout && !opts.dmx.empty()) ||
+      buffer.Size() == 0) {
     DisplaySetDmxHelp(opts);
     exit(1);
   }
