@@ -71,8 +71,9 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
     return true;
   }
 
-  if (universe_iter == m_handlers.end())
+  if (universe_iter == m_handlers.end()) {
     return true;
+  }
 
   DMPHeader dmp_header = headers.GetDMPHeader();
 
@@ -104,16 +105,17 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
 
   if (address->Increment() != 1) {
     OLA_INFO << "E1.31 DMP packet with increment " << address->Increment()
-      << ", disarding";
+             << ", disarding";
     return true;
   }
 
   unsigned int length_remaining = pdu_len - available_length;
   int start_code = -1;
-  if (e131_header.UsingRev2())
+  if (e131_header.UsingRev2()) {
     start_code = static_cast<int>(address->Start());
-  else if (length_remaining && address->Number())
+  } else if (length_remaining && address->Number()) {
     start_code = *(data + available_length);
+  }
 
   // The only time we want to continue processing a non-0 start code is if it
   // contains a Terminate message.
@@ -132,14 +134,16 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   // Reaching here means that we actually have new data and we should merge.
   if (target_buffer && start_code == 0) {
     unsigned int channels = std::min(length_remaining, address->Number());
-    if (e131_header.UsingRev2())
+    if (e131_header.UsingRev2()) {
       target_buffer->Set(data + available_length, channels);
-    else
-     target_buffer->Set(data + available_length + 1, channels - 1);
+    } else {
+      target_buffer->Set(data + available_length + 1, channels - 1);
+    }
   }
 
-  if (universe_iter->second.priority)
+  if (universe_iter->second.priority) {
     *universe_iter->second.priority = universe_iter->second.active_priority;
+  }
 
   // merge the sources
   switch (universe_iter->second.sources.size()) {
@@ -155,9 +159,11 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
       // HTP Merge
       universe_iter->second.buffer->Reset();
       std::vector<dmx_source>::const_iterator source_iter =
-        universe_iter->second.sources.begin();
-      for (; source_iter != universe_iter->second.sources.end(); ++source_iter)
+          universe_iter->second.sources.begin();
+      for (; source_iter != universe_iter->second.sources.end();
+           ++source_iter) {
         universe_iter->second.buffer->HTPMerge(source_iter->buffer);
+      }
       universe_iter->second.closure->Run();
   }
   return true;
@@ -175,8 +181,9 @@ bool DMPE131Inflator::SetHandler(uint16_t universe,
                                  ola::DmxBuffer *buffer,
                                  uint8_t *priority,
                                  ola::Callback0<void> *closure) {
-  if (!closure || !buffer)
+  if (!closure || !buffer) {
     return false;
+  }
 
   UniverseHandlers::iterator iter = m_handlers.find(universe);
 
@@ -265,38 +272,41 @@ bool DMPE131Inflator::TrackSourceIfRequired(
     iter++;
   }
 
-  if (sources.empty())
+  if (sources.empty()) {
     universe_data->active_priority = 0;
+  }
 
   for (iter = sources.begin(); iter != sources.end(); ++iter) {
-    if (iter->cid == headers.GetRootHeader().GetCid())
+    if (iter->cid == headers.GetRootHeader().GetCid()) {
       break;
+    }
   }
 
   if (iter == sources.end()) {
     // This is an untracked source
     if (e131_header.StreamTerminated() ||
-        priority < universe_data->active_priority)
+        priority < universe_data->active_priority) {
       return false;
+    }
 
     if (priority > universe_data->active_priority) {
-      OLA_INFO << "Raising priority for universe " <<
-        e131_header.Universe() << " from " <<
-        static_cast<int>(universe_data->active_priority) << " to " <<
-        static_cast<int>(priority);
+      OLA_INFO << "Raising priority for universe " << e131_header.Universe()
+               << " from " << static_cast<int>(universe_data->active_priority)
+               << " to " << static_cast<int>(priority);
       sources.clear();
       universe_data->active_priority = priority;
     }
 
     if (sources.size() == MAX_MERGE_SOURCES) {
       // TODO(simon): flag this in the export map
-      OLA_WARN << "Max merge sources reached for universe " <<
-        e131_header.Universe() << ", " <<
-        headers.GetRootHeader().GetCid().ToString() << " won't be tracked";
+      OLA_WARN << "Max merge sources reached for universe "
+               << e131_header.Universe() << ", "
+               << headers.GetRootHeader().GetCid().ToString()
+               << " won't be tracked";
         return false;
     } else {
-      OLA_INFO << "Added new E1.31 source: " <<
-        headers.GetRootHeader().GetCid().ToString();
+      OLA_INFO << "Added new E1.31 source: "
+               << headers.GetRootHeader().GetCid().ToString();
       dmx_source new_source;
       new_source.cid = headers.GetRootHeader().GetCid();
       new_source.sequence = e131_header.Sequence();
@@ -311,19 +321,21 @@ bool DMPE131Inflator::TrackSourceIfRequired(
     int8_t seq_diff = static_cast<int8_t>(e131_header.Sequence() -
                                           iter->sequence);
     if (seq_diff <= 0 && seq_diff > SEQUENCE_DIFF_THRESHOLD) {
-      OLA_INFO << "Old packet received, ignoring, this # " <<
-        static_cast<int>(e131_header.Sequence()) << ", last " <<
-        static_cast<int>(iter->sequence);
+      OLA_INFO << "Old packet received, ignoring, this # "
+               << static_cast<int>(e131_header.Sequence()) << ", last "
+               << static_cast<int>(iter->sequence);
       return false;
     }
     iter->sequence = e131_header.Sequence();
 
     if (e131_header.StreamTerminated()) {
-      OLA_INFO << "CID " << headers.GetRootHeader().GetCid().ToString() <<
-        " sent a termination for universe " << e131_header.Universe();
+      OLA_INFO << "CID " << headers.GetRootHeader().GetCid().ToString()
+               << " sent a termination for universe "
+               << e131_header.Universe();
       sources.erase(iter);
-      if (sources.empty())
+      if (sources.empty()) {
         universe_data->active_priority = 0;
+      }
       // We need to trigger a merge here else the buffer will be stale, we keep
       // the buffer as NULL though so we don't use the data.
       return true;
