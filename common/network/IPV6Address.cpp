@@ -55,7 +55,6 @@ IPV6Address::IPV6Address(const uint8_t *address) {
 
 bool IPV6Address::operator<(const IPV6Address &other) const {
   // TODO(Peter): Deal with any network byte order conversion?
-  // Stored in network byte order, so convert to sort appropriately
   return (memcmp(&m_address.s6_addr[0],
           &other.m_address.s6_addr[0],
           sizeof (struct in6_addr)) < 0);
@@ -63,7 +62,6 @@ bool IPV6Address::operator<(const IPV6Address &other) const {
 
 bool IPV6Address::operator>(const IPV6Address &other) const {
   // TODO(Peter): Deal with any network byte order conversion?
-  // Stored in network byte order, so convert to sort appropriately
   return (memcmp(&m_address.s6_addr[0],
           &other.m_address.s6_addr[0],
           sizeof (struct in6_addr)) > 0);
