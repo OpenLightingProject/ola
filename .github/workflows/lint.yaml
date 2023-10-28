@@ -10,19 +10,25 @@ jobs:
         run: apt-get update -y
       # See comments beginning at
       # https://github.com/actions/runner/issues/763#issuecomment-1435474884
-      # Without Git, actions/checkout@v3 will resort to REST and will not
+      # Without Git, actions/checkout@v4 will resort to REST and will not
       # create a .git folder or .git.config. The Problem Matcher looks for
       # .git/config to find where the root of the repo is, so it must be
       # present.
       - name: Install Git
         run: apt-get -y install git
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install build tools
         shell: bash
         run: |
           apt-get -y install pkg-config libtool autoconf \
             automake g++ bison flex make bash-completion dh-autoreconf \
-            debhelper devscripts wget python3-pip
+            debhelper devscripts wget python3-full python3-pip
+      - name: Setup Python venv
+        shell: bash
+        run: |
+          python3 -m venv --system-site-packages ../venv
+          source ../venv/bin/activate
+          echo "PATH=$PATH" >> $GITHUB_ENV
       - name: Install Python lint tools
         run: python3 -m pip install --no-input cpplint flake8
       - name: Install build dependencies
@@ -134,9 +140,13 @@ jobs:
       - name: Update package database
         run: apt-get update -y
       - name: Install build tools
+        run: apt-get -y install make python3-full python3-pip
+      - name: Setup Python venv
         shell: bash
         run: |
-          apt-get -y install make python3-pip
+          python3 -m venv --system-site-packages ../venv
+          source ../venv/bin/activate
+          echo "PATH=$PATH" >> $GITHUB_ENV
       - name: Install Python lint tools
         run: python3 -m pip install --no-input cpplint
       - name: Enable Problem Matcher for GitHub annotations
@@ -167,9 +177,13 @@ jobs:
       - name: Update package database
         run: apt-get update -y
       - name: Install build tools
+        run: apt-get -y install make python3-full python3-pip
+      - name: Setup Python venv
         shell: bash
         run: |
-          apt-get -y install make python3-pip
+          python3 -m venv --system-site-packages ../venv
+          source ../venv/bin/activate
+          echo "PATH=$PATH" >> $GITHUB_ENV
       - name: Install Python lint tools
         run: python3 -m pip install --no-input flake8
       - name: Setup flake8 annotations
@@ -229,10 +243,33 @@ jobs:
       - name: Update package database
         run: apt-get update -y
       - name: Install lint tools
-        run: apt-get -y install python3-pip git moreutils
+        run: apt-get -y install python3-full python3-pip git moreutils
+      - name: Setup Python venv
+        shell: bash
+        run: |
+          python3 -m venv --system-site-packages ../venv
+          source ../venv/bin/activate
+          echo "PATH=$PATH" >> $GITHUB_ENV
       - name: Install Python lint tools
         run: python3 -m pip install --no-input git+https://github.com/codespell-project/codespell.git
       - name: Setup codespell annotations
         uses: codespell-project/codespell-problem-matcher@v1
       - name: codespell
         run: ./scripts/spelling.sh codespell
+  weblint:
+    name: weblint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js v18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # LTS
+          cache: 'npm'
+          cache-dependency-path: './javascript/new-src/package-lock.json'
+      - name: Install npm dependencies
+        run: npm ci
+        working-directory: ./javascript/new-src
+      - name: Run weblint
+        run: npm test
+        working-directory: ./javascript/new-src

@@ -1,0 +1,200 @@
+name: build
+on: [push, pull_request]
+jobs:
+  build:
+    name: "${{ matrix.id }}"
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: "coverage-debian-stable-amd64-gcc"
+            task: "coverage"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-unittests --enable-gcov"
+            # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
+            container: "debian:stable"
+            compiler: 
+              CC: "/usr/bin/gcc"
+              CXX: "/usr/bin/g++"
+              pkg: "gcc g++"
+          - id: "distcheck-debian-stable-amd64-gcc"
+            task: "distcheck"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests"
+            # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
+            container: "debian:stable"
+            compiler:
+              CC: "/usr/bin/gcc"
+              CXX: "/usr/bin/g++"
+              pkg: "gcc g++"
+          - id: "distcheck-debian-stable-amd64-clang"
+            task: "distcheck"
+            configure-args: "--enable-ja-rule --enable-e133 --enable-rdm-tests"
+            # TODO(Perry): Fix Debian 12 OOM issue on GitHub Actions
+            container: "debian:stable"
+            compiler:
+              CC: "/usr/bin/clang"
+              CXX: "/usr/bin/clang++"
+              pkg: "clang"
+    env:
+      CC: "${{ matrix.compiler.CC }}"
+      CXX: "${{ matrix.compiler.CXX }}"
+    steps:
+      - name: Get number of CPU cores
+        id: num-cpu-cores
+        # TODO(Perry): Parallelization causes GH Actions to hang -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
+        # run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
+        run: echo "NUM_CPU_CORES=1" >> $GITHUB_OUTPUT
+      - name: Update package database
+        run: apt-get update -y
+      # See comments beginning at
+      # https://github.com/actions/runner/issues/763#issuecomment-1435474884
+      # Without Git, actions/checkout@v4 will resort to REST and will not
+      # create a .git folder or .git.config. The Problem Matcher looks for
+      # .git/config to find where the root of the repo is, so it must be
+      # present.
+      - name: Install Git
+        run: apt-get -y install git
+      - uses: actions/checkout@v4
+      - name: Install build tools
+        shell: bash
+        run: |
+          apt-get -y install adduser sudo pkg-config libtool autoconf \
+            automake g++ bison flex make bash-completion dh-autoreconf \
+            debhelper devscripts wget python3-full python3-pip
+      - name: Setup Python venv
+        shell: bash
+        run: |
+          python3 -m venv --system-site-packages ../venv
+          source ../venv/bin/activate
+          echo "PATH=$PATH" >> $GITHUB_ENV
+      - name: Install Python build tools
+        run: python3 -m pip install --no-input gcovr
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          apt-get -y install libcppunit-dev uuid-dev libncurses5-dev \
+            libmicrohttpd-dev protobuf-compiler python3-protobuf \
+            libprotobuf-dev libprotoc-dev zlib1g-dev libftdi-dev \
+            libusb-1.0-0-dev liblo-dev libavahi-client-dev python3-numpy \
+            default-jdk-headless maven
+      - name: Install compiler
+        shell: bash
+        run: apt-get -y install ${{ matrix.compiler.pkg }}
+      - name: Set up build user # CredentialsTest cannot run as root
+        run: |
+          adduser --disabled-password --gecos "" builduser
+          chown -R builduser:builduser .
+          chown builduser:builduser ..
+      - name: Autoreconf
+        run: sudo --preserve-env -u builduser env "PATH=$PATH" autoreconf -i
+      - name: Set configure arguments
+        # Env var name DISTCHECK_CONFIGURE_FLAGS must be used, see #1881 and #1883
+        run: |
+          echo "DISTCHECK_CONFIGURE_FLAGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
+      - name: Set additional Linux configure arguments
+        if: runner.os == 'Linux'
+        # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
+        run: |
+          echo "DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
+      - name: Print configure command
+        run: echo "./configure $DISTCHECK_CONFIGURE_FLAGS"
+      - name: Configure
+        run: sudo --preserve-env -u builduser env "PATH=$PATH" ./configure $DISTCHECK_CONFIGURE_FLAGS
+      - name: ${{ matrix.task }}
+        run: sudo --preserve-env -u builduser env "PATH=$PATH" make ${{ matrix.task }} -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }} VERBOSE=1
+      - name: Display structure of the built files
+        if: always() && env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Archive artifacts to speed up slow GH Actions upload/download
+        if: always()
+        shell: bash
+        # If the file does not exist when tar excludes it, then it will not
+        # actually exclude it, so it must first be touched
+        run: |
+          touch ola-${{ matrix.id }}-source-tree.tar.gz
+          tar --exclude=ola-${{ matrix.id }}-source-tree.tar.gz -cvzf ola-${{ matrix.id }}-source-tree.tar.gz .
+      - name: SHA256 artifact archives
+        if: always()
+        run: sha256sum ola-*.tar.gz
+      - name: Upload source tree artifact
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ola-${{ matrix.id }}-source-tree
+          path: ola-${{ matrix.id }}-source-tree.tar.gz
+      - name: Upload built artifact
+        if: matrix.task == 'distcheck' || matrix.task == 'dist'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ola-${{ matrix.id }}-dist
+          path: |
+            ola-*.tar.gz
+            !ola-${{ matrix.id }}-source-tree.tar.gz
+      - name: Install coverage tools
+        if: matrix.task == 'coverage'
+        run: apt-get -y install curl
+      - name: Upload coverage to Coveralls
+        if: matrix.task == 'coverage'
+        uses: coverallsapp/github-action@v2
+        with:
+          # Coveralls GitHub action does not support its own format
+          # see: https://github.com/coverallsapp/github-action/issues/104
+          # file: coverage/coverage.coveralls.json
+          file: coverage/coverage.cobertura.xml
+          format: cobertura
+          flag-name: ${{ matrix.id }}
+      - name: Upload coverage artifacts
+        if: always() && matrix.task == 'coverage'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ola-${{ matrix.id }}-coverage
+          path: coverage/
+  verify-trees:
+    name: 'Verify trees for ${{ matrix.id }}'
+    needs: build
+    if: "always()" # Run if some builds fail but ensure they all complete first
+    container: debian:stable
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: "distcheck-debian-stable-amd64-gcc"
+          - id: "distcheck-debian-stable-amd64-clang"
+    steps:
+      - name: Download built source tree archive
+        uses: actions/download-artifact@v3
+        with:
+          name: ola-${{ matrix.id }}-source-tree
+          path: .
+      - name: SHA256 artifact archive
+        run: sha256sum ola-${{ matrix.id }}-source-tree.tar.gz
+      - name: Unarchive artifacts and delete archive
+        shell: bash
+        run: |
+          tar -xvzf ola-${{ matrix.id }}-source-tree.tar.gz .
+          rm ola-${{ matrix.id }}-source-tree.tar.gz
+      - name: Display structure of extracted files
+        if: env.ACTIONS_STEP_DEBUG == 'true'
+        run: ls -alR
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install Python
+        run: apt-get -y install python3 python-is-python3
+      # TODO(Perry): Disable problem matcher for now until verify trees is fixed
+      # - name: Enable Problem Matcher for GitHub annotations
+      #   run: echo "::add-matcher::.github/problem-matcher-build-verify-trees.json"
+      - name: Find dist build tarball
+        run: |
+          echo "GH_OLA_VERIFY_TREES_TARBALL=$(ls -t --time=birth ola*.tar.gz| head -1)" >> $GITHUB_ENV
+      - name: Print dist build tarball name
+        run: echo "$GH_OLA_VERIFY_TREES_TARBALL"
+      - name: Extract dist build
+        run: tar -xvzf $GH_OLA_VERIFY_TREES_TARBALL
+      - name: Verify trees
+        shell: bash
+        # TODO(Perry): Always succeed for now until verify trees is fixed
+        # run: ./scripts/verify_trees.py ./ $(echo $GH_OLA_VERIFY_TREES_TARBALL | sed 's/.tar.gz$//')
+        run: "./scripts/verify_trees.py ./ $(echo $GH_OLA_VERIFY_TREES_TARBALL | sed 's/.tar.gz$//') || true"

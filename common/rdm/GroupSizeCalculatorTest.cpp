@@ -37,6 +37,7 @@ using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
+using ola::messaging::MACFieldDescriptor;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
@@ -83,6 +84,7 @@ void GroupSizeCalculatorTest::testSimpleCases() {
   fields.push_back(new Int8FieldDescriptor("int8"));
   fields.push_back(new Int16FieldDescriptor("int16"));
   fields.push_back(new Int32FieldDescriptor("int32"));
+  fields.push_back(new MACFieldDescriptor("mac"));
   fields.push_back(new StringFieldDescriptor("string", 0, 32));
   fields.push_back(new IPV4FieldDescriptor("address"));
   fields.push_back(new UIDFieldDescriptor("uid"));
@@ -91,7 +93,8 @@ void GroupSizeCalculatorTest::testSimpleCases() {
   unsigned int token_count, group_repeat_count;
   OLA_ASSERT_TRUE(
       m_static_calculator.CalculateTokensRequired(&descriptor, &token_count));
-  OLA_ASSERT_EQ(10u, token_count);
+  OLA_ASSERT_EQ(11u, token_count);  // Actual token count
+
 
   OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
@@ -103,21 +106,21 @@ void GroupSizeCalculatorTest::testSimpleCases() {
   OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
-        9,
+        10,  // Actual token count - 1
         &descriptor,
         &group_repeat_count));
 
   OLA_ASSERT_EQ(
       GroupSizeCalculator::NO_VARIABLE_GROUPS,
       m_calculator.CalculateGroupSize(
-        10,
+        11,  // Actual token count
         &descriptor,
         &group_repeat_count));
 
   OLA_ASSERT_EQ(
       GroupSizeCalculator::EXTRA_TOKENS,
       m_calculator.CalculateGroupSize(
-        11,
+        12,  // Actual token count + 1
         &descriptor,
         &group_repeat_count));
 }
