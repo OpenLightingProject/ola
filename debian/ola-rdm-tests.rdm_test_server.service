@@ -7,6 +7,7 @@ Wants=olad.service
 [Service]
 User=olad
 Environment=RDM_TEST_SERVER_OPTS="--world-writable"
+EnvironmentFile=-/etc/default/ola-rdm-tests
 ExecStart=/usr/bin/rdm_test_server.py $RDM_TEST_SERVER_OPTS
 
 [Install]
