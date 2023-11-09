@@ -142,6 +142,22 @@ class IPv4Validator: public Validator {
 
 
 /*
+ * Check an IPv6 address is valid
+ */
+class IPv6Validator: public Validator {
+ public:
+  explicit IPv6Validator(bool empty_ok = true):
+    m_empty_ok(empty_ok) {}
+
+  bool IsValid(const std::string &value) const;
+ private:
+  bool m_empty_ok;
+
+  DISALLOW_COPY_AND_ASSIGN(IPv6Validator);
+};
+
+
+/*
  * The abstract Preferences class
  */
 class Preferences {

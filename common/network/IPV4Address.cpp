@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IPV4Address.cpp
- * A IPV4 address
+ * An IPV4 address
  * Copyright (C) 2011 Simon Newton
  */
 
