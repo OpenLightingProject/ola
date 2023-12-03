@@ -23,6 +23,7 @@
 
 #include <ola/messaging/DescriptorVisitor.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/IPV6Address.h>
 #include <ola/network/MACAddress.h>
 #include <ola/rdm/UID.h>
 #include <map>
@@ -109,6 +110,25 @@ class IPV4FieldDescriptor: public FieldDescriptor {
     bool FixedSize() const { return true; }
     bool LimitedSize() const { return true; }
     unsigned int MaxSize() const { return ola::network::IPV4Address::LENGTH; }
+
+    void Accept(FieldDescriptorVisitor *visitor) const {
+      visitor->Visit(this);
+    }
+};
+
+
+/**
+ * A FieldDescriptor that represents a IPv6 Address
+ */
+class IPV6FieldDescriptor: public FieldDescriptor {
+ public:
+    explicit IPV6FieldDescriptor(const std::string &name)
+        : FieldDescriptor(name) {
+    }
+
+    bool FixedSize() const { return true; }
+    bool LimitedSize() const { return true; }
+    unsigned int MaxSize() const { return ola::network::IPV6Address::LENGTH; }
 
     void Accept(FieldDescriptorVisitor *visitor) const {
       visitor->Visit(this);

@@ -58,6 +58,13 @@ void GenericMessagePrinter::Visit(const IPV4MessageField *message) {
 }
 
 
+void GenericMessagePrinter::Visit(const IPV6MessageField *message) {
+  Stream() << string(m_indent, ' ') <<
+    TransformLabel(message->GetDescriptor()->Name()) << ": "
+    << message->Value() << endl;
+}
+
+
 void GenericMessagePrinter::Visit(const MACMessageField *message) {
   Stream() << string(m_indent, ' ') <<
     TransformLabel(message->GetDescriptor()->Name()) << ": "

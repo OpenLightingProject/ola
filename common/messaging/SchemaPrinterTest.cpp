@@ -33,6 +33,7 @@ using std::vector;
 
 using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::IPV6FieldDescriptor;
 using ola::messaging::MACFieldDescriptor;
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
@@ -85,6 +86,8 @@ void SchemaPrinterTest::testPrinter() {
       "Count", false, 10);
   IPV4FieldDescriptor *ipv4_descriptor = new IPV4FieldDescriptor(
       "Address");
+  IPV6FieldDescriptor *ipv6_descriptor = new IPV6FieldDescriptor(
+      "v6 Address");
   MACFieldDescriptor *mac_descriptor = new MACFieldDescriptor(
       "MAC Address");
   UIDFieldDescriptor *uid_descriptor = new UIDFieldDescriptor("Device");
@@ -95,6 +98,7 @@ void SchemaPrinterTest::testPrinter() {
   fields.push_back(string_descriptor);
   fields.push_back(uint8_descriptor);
   fields.push_back(ipv4_descriptor);
+  fields.push_back(ipv6_descriptor);
   fields.push_back(mac_descriptor);
   fields.push_back(uid_descriptor);
 
@@ -104,7 +108,7 @@ void SchemaPrinterTest::testPrinter() {
 
   string expected = (
       "On/Off: bool\nName: string [0, 32]\nCount: uint8\n"
-      "Address: IPv4 address\nMAC Address: MAC\nDevice: UID\n");
+      "Address: IPv4 address\nv6 Address: IPv6 address\nMAC Address: MAC\nDevice: UID\n");
   OLA_ASSERT_EQ(expected, printer.AsString());
 }
 

@@ -57,6 +57,7 @@ class MessageDeserializer: public ola::messaging::FieldDescriptorVisitor {
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);
     void Visit(const ola::messaging::IPV4FieldDescriptor*);
+    void Visit(const ola::messaging::IPV6FieldDescriptor*);
     void Visit(const ola::messaging::MACFieldDescriptor*);
     void Visit(const ola::messaging::UIDFieldDescriptor*);
     void Visit(const ola::messaging::StringFieldDescriptor*);
