@@ -45,44 +45,44 @@ string MessagePrinter::AsString(const Message *message) {
 
 
 void GenericMessagePrinter::Visit(const BoolMessageField *message) {
-  Stream() << string(m_indent, ' ') <<
-    TransformLabel(message->GetDescriptor()->Name()) << ": "
-    << (message->Value() ? "true" : "false") << endl;
+  Stream() << string(m_indent, ' ')
+           << TransformLabel(message->GetDescriptor()->Name()) << ": "
+           << (message->Value() ? "true" : "false") << endl;
 }
 
 
 void GenericMessagePrinter::Visit(const IPV4MessageField *message) {
-  Stream() << string(m_indent, ' ') <<
-    TransformLabel(message->GetDescriptor()->Name()) << ": "
-    << message->Value() << endl;
+  Stream() << string(m_indent, ' ')
+           << TransformLabel(message->GetDescriptor()->Name()) << ": "
+           << message->Value() << endl;
 }
 
 
 void GenericMessagePrinter::Visit(const IPV6MessageField *message) {
-  Stream() << string(m_indent, ' ') <<
-    TransformLabel(message->GetDescriptor()->Name()) << ": "
-    << message->Value() << endl;
+  Stream() << string(m_indent, ' ')
+           << TransformLabel(message->GetDescriptor()->Name()) << ": "
+           << message->Value() << endl;
 }
 
 
 void GenericMessagePrinter::Visit(const MACMessageField *message) {
-  Stream() << string(m_indent, ' ') <<
-    TransformLabel(message->GetDescriptor()->Name()) << ": "
-    << message->Value().ToString() << endl;
+  Stream() << string(m_indent, ' ')
+           << TransformLabel(message->GetDescriptor()->Name()) << ": "
+           << message->Value().ToString() << endl;
 }
 
 
 void GenericMessagePrinter::Visit(const UIDMessageField *message) {
-  Stream() << string(m_indent, ' ') <<
-    TransformLabel(message->GetDescriptor()->Name()) << ": "
-    << message->Value().ToString() << endl;
+  Stream() << string(m_indent, ' ')
+           << TransformLabel(message->GetDescriptor()->Name()) << ": "
+           << message->Value().ToString() << endl;
 }
 
 
 void GenericMessagePrinter::Visit(const StringMessageField *message) {
-  Stream() << string(m_indent, ' ') <<
-    TransformLabel(message->GetDescriptor()->Name()) << ": "
-    << EncodeString(message->Value()) << endl;
+  Stream() << string(m_indent, ' ')
+           << TransformLabel(message->GetDescriptor()->Name()) << ": "
+           << EncodeString(message->Value()) << endl;
 }
 
 
@@ -141,8 +141,8 @@ void GenericMessagePrinter::Visit(const BasicMessageField<int32_t> *message) {
 
 
 void GenericMessagePrinter::Visit(const GroupMessageField *message) {
-  Stream() << string(m_indent, ' ') <<
-    TransformLabel(message->GetDescriptor()->Name()) << " {" << endl;
+  Stream() << string(m_indent, ' ')
+           << TransformLabel(message->GetDescriptor()->Name()) << " {" << endl;
   m_indent += m_indent_size;
 }
 
@@ -185,8 +185,9 @@ void GenericMessagePrinter::AppendInt(const string &name,
 
 
 void GenericMessagePrinter::AppendMultiplier(int8_t multiplier) {
-  if (multiplier)
+  if (multiplier) {
     Stream() << " x 10 ^ " << static_cast<int>(multiplier);
+  }
 }
 }  // namespace messaging
 }  // namespace ola
