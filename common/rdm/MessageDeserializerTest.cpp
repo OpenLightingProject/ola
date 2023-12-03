@@ -258,7 +258,8 @@ void MessageDeserializerTest::testIPV6() {
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the data
-  const uint8_t big_endian_data[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 10, 0, 0, 1};
+  const uint8_t big_endian_data[] = {0, 0, 0, 0, 0, 0, 0, 0,
+                                     0, 0, 255, 255, 10, 0, 0, 1};
 
   // now the correct amount & verify
   auto_ptr<const Message> message(m_deserializer.InflateMessage(

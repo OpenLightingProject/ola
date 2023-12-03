@@ -108,7 +108,8 @@ void SchemaPrinterTest::testPrinter() {
 
   string expected = (
       "On/Off: bool\nName: string [0, 32]\nCount: uint8\n"
-      "Address: IPv4 address\nv6 Address: IPv6 address\nMAC Address: MAC\nDevice: UID\n");
+      "Address: IPv4 address\nv6 Address: IPv6 address\nMAC Address: MAC\n"
+      "Device: UID\n");
   OLA_ASSERT_EQ(expected, printer.AsString());
 }
 
