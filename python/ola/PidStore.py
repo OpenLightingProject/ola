@@ -556,7 +556,7 @@ class IPV6Atom(FixedSizeAtom):
 
   def Unpack(self, data):
     try:
-      return socket.inet_ntop(AF_INET6, data)
+      return socket.inet_ntop(socket.AF_INET6, data)
     except socket.error as e:
       raise ArgsValidationError("Can't unpack data: %s" % e)
 
@@ -565,7 +565,8 @@ class IPV6Atom(FixedSizeAtom):
     # inet_pton, we may want to restrict that in future
     format_string = self._FormatString()
     try:
-      data = struct.pack(format_string, socket.inet_pton(AF_INET6, args[0]))
+      data = struct.pack(format_string,
+                         socket.inet_pton(socket.AF_INET6, args[0]))
     except socket.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data, 1
