@@ -165,7 +165,7 @@ jobs:
           - id: "distcheck-debian-stable-amd64-clang"
     steps:
       - name: Download built source tree archive
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ola-${{ matrix.id }}-source-tree
           path: .

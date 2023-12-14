@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ola-built-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
           path: built
