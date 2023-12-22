@@ -39,7 +39,7 @@ else
   AC_PATH_PROG([PROTOC],[protoc])
 fi
 
-
+set -x
 if test -z "$PROTOC" ; then
   AC_MSG_ERROR([cannot find 'protoc' program]);
 elif test -n "$1" ; then
@@ -74,6 +74,7 @@ elif test -n "$1" ; then
     AC_MSG_ERROR([protoc version too old $protoc_version < $required]);
   fi
 fi
+set +x
 
 AC_ARG_WITH([ola-protoc-plugin],
   [AS_HELP_STRING([--with-ola-protoc-plugin=COMMAND],
