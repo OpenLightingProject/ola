@@ -40,6 +40,7 @@ using ola::Preferences;
 using ola::SetValidator;
 using ola::StringValidator;
 using ola::IPv4Validator;
+using ola::IPv6Validator;
 using std::string;
 using std::vector;
 
@@ -131,6 +132,41 @@ void PreferencesTest::testValidators() {
 
   IPv4Validator ipv4_validator2(false);  // empty not ok
   OLA_ASSERT_FALSE(ipv4_validator2.IsValid(""));
+  OLA_ASSERT(ipv4_validator2.IsValid("1.2.3.4"));
+  OLA_ASSERT(ipv4_validator2.IsValid("10.0.255.1"));
+  OLA_ASSERT_FALSE(ipv4_validator2.IsValid("foo"));
+  OLA_ASSERT_FALSE(ipv4_validator2.IsValid("1.2.3"));
+  OLA_ASSERT_FALSE(ipv4_validator2.IsValid("1.2.3.4.5"));
+  OLA_ASSERT_FALSE(ipv4_validator2.IsValid("1.f00.3.4"));
+
+  IPv6Validator ipv6_validator;  // empty ok
+  OLA_ASSERT(ipv6_validator.IsValid(""));
+  OLA_ASSERT(ipv6_validator.IsValid("2001:db8:1234:5678:90ab:cdef:feed:face"));
+  OLA_ASSERT(ipv6_validator.IsValid("::ffff:1.2.3.4"));
+  OLA_ASSERT(ipv6_validator.IsValid("::ffff:10.0.255.1"));
+  OLA_ASSERT_FALSE(ipv6_validator.IsValid("foo"));
+  OLA_ASSERT_FALSE(ipv6_validator.IsValid(
+      "2001:db8:1234:5678:90ab:cdef:feed:face:0000"));
+  OLA_ASSERT_FALSE(ipv6_validator.IsValid(
+      "2001:db8:1234:5678:90ab:cdef:feed:gggg"));
+  OLA_ASSERT_FALSE(ipv6_validator.IsValid("::ffff:1.2.3"));
+  OLA_ASSERT_FALSE(ipv6_validator.IsValid("::ffff:1.2.3.4.5"));
+  OLA_ASSERT_FALSE(ipv6_validator.IsValid("::ffff:1.f00.3.4"));
+
+  IPv6Validator ipv6_validator2(false);  // empty not ok
+  OLA_ASSERT_FALSE(ipv6_validator2.IsValid(""));
+  OLA_ASSERT(ipv6_validator2.IsValid(
+      "2001:db8:1234:5678:90ab:cdef:feed:face"));
+  OLA_ASSERT(ipv6_validator2.IsValid("::ffff:1.2.3.4"));
+  OLA_ASSERT(ipv6_validator2.IsValid("::ffff:10.0.255.1"));
+  OLA_ASSERT_FALSE(ipv6_validator2.IsValid("foo"));
+  OLA_ASSERT_FALSE(ipv6_validator2.IsValid(
+      "2001:db8:1234:5678:90ab:cdef:feed:face:0000"));
+  OLA_ASSERT_FALSE(ipv6_validator2.IsValid(
+      "2001:db8:1234:5678:90ab:cdef:feed:gggg"));
+  OLA_ASSERT_FALSE(ipv6_validator2.IsValid("::ffff:1.2.3"));
+  OLA_ASSERT_FALSE(ipv6_validator2.IsValid("::ffff:1.2.3.4.5"));
+  OLA_ASSERT_FALSE(ipv6_validator2.IsValid("::ffff:1.f00.3.4"));
 }
 
 

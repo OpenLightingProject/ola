@@ -1345,7 +1345,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       request.universe = universe
 
     try:
-      # GetCandidatePorts works very much like GetDeviceInfo, so we can re-use
+      # GetCandidatePorts works very much like GetDeviceInfo, so we can reuse
       # its complete method.
       self._stub.GetCandidatePorts(
           controller, request,

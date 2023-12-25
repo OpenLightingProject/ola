@@ -51,7 +51,7 @@ namespace io {
  * reentrant. Calling any of the read / write / close actions may in turn add /
  * remove descriptors, including the descriptor the method was itself called
  * on. There are tests in SelectServerTest.cpp to exercise some of these cases
- * but implementors need to be careful.
+ * but implementers need to be careful.
  *
  * @warning
  * For example, if Poll() iterates over a set of Descriptors and calls

@@ -325,7 +325,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
     case RC_NACK_FORMAT_ERROR:
     case RC_NACK_HARDWARE_FAULT:
     case RC_NACK_PROXY_REJECT:
-    case RC_NACK_WRITE_PROECT:
+    case RC_NACK_WRITE_PROTECT:
     case RC_NACK_COMMAND_CLASS:
     case RC_NACK_DATA_RANGE:
     case RC_NACK_BUFFER_FULL:
