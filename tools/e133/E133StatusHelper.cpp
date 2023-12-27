@@ -96,5 +96,51 @@ string StatusCodeToString(E133StatusCode status_code) {
   }
   return "Unknown E1.33 Status Code";
 }
+
+
+bool IntToConnectStatusCode(uint16_t input,
+                            E133ConnectStatusCode *connect_status_code) {
+  switch (input) {
+    case ola::e133::CONNECT_OK:
+      *connect_status_code = ola::e133::CONNECT_OK;
+      return true;
+    case ola::e133::CONNECT_SCOPE_MISMATCH:
+      *connect_status_code = ola::e133::CONNECT_SCOPE_MISMATCH;
+      return true;
+    case ola::e133::CONNECT_CAPACITY_EXCEEDED:
+      *connect_status_code = ola::e133::CONNECT_CAPACITY_EXCEEDED;
+      return true;
+    case ola::e133::CONNECT_DUPLICATE_UID:
+      *connect_status_code = ola::e133::CONNECT_DUPLICATE_UID;
+      return true;
+    case ola::e133::CONNECT_INVALID_CLIENT_ENTRY:
+      *connect_status_code = ola::e133::CONNECT_INVALID_CLIENT_ENTRY;
+      return true;
+    case ola::e133::CONNECT_INVALID_UID:
+      *connect_status_code = ola::e133::CONNECT_INVALID_UID;
+      return true;
+    default:
+      return false;
+  }
+}
+
+
+string ConnectStatusCodeToString(E133ConnectStatusCode connect_status_code) {
+  switch (connect_status_code) {
+    case ola::e133::CONNECT_OK:
+     return "Ok";
+    case ola::e133::CONNECT_SCOPE_MISMATCH:
+     return "Scope mismatch";
+    case ola::e133::CONNECT_CAPACITY_EXCEEDED:
+     return "Capacity exceeded";
+    case ola::e133::CONNECT_DUPLICATE_UID:
+     return "Duplicate UID";
+    case ola::e133::CONNECT_INVALID_CLIENT_ENTRY:
+     return "Invalid client entry";
+    case ola::e133::CONNECT_INVALID_UID:
+     return "Invalid UID";
+  }
+  return "Unknown E1.33 Connect Status Code";
+}
 }  // namespace e133
 }  // namespace ola
