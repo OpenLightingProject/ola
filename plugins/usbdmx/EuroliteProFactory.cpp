@@ -126,7 +126,7 @@ bool EuroliteProFactory::DeviceAdded(
                  << "with matching serial " << info.serial;
       } else {
         OLA_INFO << "Found a possible new Eurolite USB-DMX512-PRO MK2 device "
-                    "with serial " << info.serial;
+                 << "with serial " << info.serial;
       }
       if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER_MK2, info)) {
         return false;
