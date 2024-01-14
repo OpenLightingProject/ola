@@ -141,7 +141,7 @@ bool EuroliteProFactory::DeviceAdded(
                << " could be a Eurolite USB-DMX512-PRO MK2 but was "
                << "ignored, because "
                << ENABLE_EUROLITE_MK2_KEY << " was false and "
-               << "its serial number was not specifically specified with "
+               << "its serial number was not listed specifically with "
                << EUROLITE_MK2_SERIAL_KEY;
       return false;
     }
