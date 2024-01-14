@@ -34,6 +34,7 @@ using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::MACFieldDescriptor;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
@@ -75,6 +76,13 @@ void DescriptorTest::testFieldDescriptors() {
   OLA_ASSERT_TRUE(ipv4_descriptor.FixedSize());
   OLA_ASSERT_TRUE(ipv4_descriptor.LimitedSize());
   OLA_ASSERT_EQ(4u, ipv4_descriptor.MaxSize());
+
+  // MAC address
+  MACFieldDescriptor mac_descriptor("mac");
+  OLA_ASSERT_EQ(string("mac"), mac_descriptor.Name());
+  OLA_ASSERT_TRUE(mac_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(mac_descriptor.LimitedSize());
+  OLA_ASSERT_EQ(6u, mac_descriptor.MaxSize());
 
   // UID
   UIDFieldDescriptor uid_descriptor("uid");
