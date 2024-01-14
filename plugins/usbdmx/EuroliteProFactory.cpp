@@ -118,7 +118,7 @@ bool EuroliteProFactory::DeviceAdded(
     }
 
     const bool serial_matches =
-      STLContains(m_expected_eurolite_mk2_serials, info.serial);
+        STLContains(m_expected_eurolite_mk2_serials, info.serial);
 
     if (m_enable_eurolite_mk2 || serial_matches) {
       if (serial_matches) {
