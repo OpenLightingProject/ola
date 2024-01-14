@@ -123,7 +123,7 @@ bool EuroliteProFactory::DeviceAdded(
     if (m_enable_eurolite_mk2 || serial_matches) {
       if (serial_matches) {
         OLA_INFO << "Enabling new Eurolite USB-DMX512-PRO MK2 device "
-                    "with matching serial " << info.serial;
+                 << "with matching serial " << info.serial;
       } else {
         OLA_INFO << "Found a possible new Eurolite USB-DMX512-PRO MK2 device "
                     "with serial " << info.serial;
