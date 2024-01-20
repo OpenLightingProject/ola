@@ -338,7 +338,6 @@ class VellemanAsyncUsbSender : public AsyncUsbSender {
   }
 
   ~VellemanAsyncUsbSender() {
-    CancelTransfer();
     if (m_packet) {
       delete[] m_packet;
     }
