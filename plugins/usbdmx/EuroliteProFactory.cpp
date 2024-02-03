@@ -67,7 +67,7 @@ EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
          iter != serials.end(); ++iter) {
       if (iter->empty()) {
         OLA_WARN << EUROLITE_MK2_SERIAL_KEY
-                 << " requires a serial key string, but it is empty.";
+                 << " requires a serial number, but it is empty.";
       } else if (STLContains(m_expected_eurolite_mk2_serials, *iter)) {
         OLA_WARN << EUROLITE_MK2_SERIAL_KEY << " lists serial "
                  << *iter << " more than once.";
@@ -141,7 +141,7 @@ bool EuroliteProFactory::DeviceAdded(
                << " could be a Eurolite USB-DMX512-PRO MK2 but was "
                << "ignored, because "
                << ENABLE_EUROLITE_MK2_KEY << " was false and "
-               << "its serial number was not listed specifically with "
+               << "its serial number was not listed specifically in "
                << EUROLITE_MK2_SERIAL_KEY;
       return false;
     }
