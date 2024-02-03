@@ -20,6 +20,8 @@
 
 #include "plugins/usbdmx/EuroliteProFactory.h"
 
+#include <vector>
+
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
@@ -46,12 +48,34 @@ const uint16_t EuroliteProFactory::VENDOR_ID_MK2 = 0x0403;
 
 const char EuroliteProFactory::ENABLE_EUROLITE_MK2_KEY[] =
     "enable_eurolite_mk2";
+const char EuroliteProFactory::EUROLITE_MK2_SERIAL_KEY[] =
+    "eurolite_mk2_serial";
 
 EuroliteProFactory::EuroliteProFactory(ola::usb::LibUsbAdaptor *adaptor,
                                        Preferences *preferences)
   : BaseWidgetFactory<class EurolitePro>("EuroliteProFactory"),
     m_adaptor(adaptor),
     m_enable_eurolite_mk2(IsEuroliteMk2Enabled(preferences)) {
+  const std::vector<std::string> serials =
+      preferences->GetMultipleValue(EUROLITE_MK2_SERIAL_KEY);
+  // A single empty string is considered the same as specifying
+  // no serial numbers. This is useful as a default value.
+  const bool has_default_value =
+      serials.size() == 1 && serials[0].empty();
+  if (!has_default_value) {
+    for (std::vector<std::string>::const_iterator iter = serials.begin();
+         iter != serials.end(); ++iter) {
+      if (iter->empty()) {
+        OLA_WARN << EUROLITE_MK2_SERIAL_KEY
+                 << " requires a serial number, but it is empty.";
+      } else if (STLContains(m_expected_eurolite_mk2_serials, *iter)) {
+        OLA_WARN << EUROLITE_MK2_SERIAL_KEY << " lists serial "
+                 << *iter << " more than once.";
+      } else {
+        m_expected_eurolite_mk2_serials.insert(*iter);
+      }
+    }
+  }
 }
 
 bool EuroliteProFactory::IsEuroliteMk2Enabled(Preferences *preferences) {
@@ -88,13 +112,22 @@ bool EuroliteProFactory::DeviceAdded(
   // Eurolite USB-DMX512-PRO MK2?
   } else if (descriptor.idVendor == VENDOR_ID_MK2 &&
              descriptor.idProduct == PRODUCT_ID_MK2) {
-    if (m_enable_eurolite_mk2) {
-      OLA_INFO << "Found a possible new Eurolite USB-DMX512-PRO MK2 device";
-      LibUsbAdaptor::DeviceInformation info;
-      if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
-        return false;
-      }
+    LibUsbAdaptor::DeviceInformation info;
+    if (!m_adaptor->GetDeviceInfo(usb_device, descriptor, &info)) {
+      return false;
+    }
 
+    const bool serial_matches =
+        STLContains(m_expected_eurolite_mk2_serials, info.serial);
+
+    if (m_enable_eurolite_mk2 || serial_matches) {
+      if (serial_matches) {
+        OLA_INFO << "Found a probable new Eurolite USB-DMX512-PRO MK2 device "
+                 << "with matching serial " << info.serial;
+      } else {
+        OLA_INFO << "Found a probable new Eurolite USB-DMX512-PRO MK2 device "
+                 << "with serial " << info.serial;
+      }
       if (!m_adaptor->CheckManufacturer(EXPECTED_MANUFACTURER_MK2, info)) {
         return false;
       }
@@ -104,9 +137,12 @@ bool EuroliteProFactory::DeviceAdded(
       }
       is_mk2 = true;
     } else {
-      OLA_INFO << "Connected FTDI device could be a Eurolite "
-               << "USB-DMX512-PRO MK2 but was ignored, because "
-               << ENABLE_EUROLITE_MK2_KEY << " was false.";
+      OLA_INFO << "Connected FTDI device with serial " << info.serial
+               << " could be a Eurolite USB-DMX512-PRO MK2 but was "
+               << "ignored, because "
+               << ENABLE_EUROLITE_MK2_KEY << " was false and "
+               << "its serial number was not listed specifically in "
+               << EUROLITE_MK2_SERIAL_KEY;
       return false;
     }
   } else {
