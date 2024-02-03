@@ -150,17 +150,21 @@ bool EuroliteProFactory::DeviceAdded(
     return false;
   }
 
-  // The Eurolite doesn't have a serial number, so instead we use the device &
-  // bus number.
+  // The original Eurolite doesn't have a serial number, so instead we use the
+  // device & bus number. The MK2 does, so we use that where available.
   // TODO(simon): check if this supports the SERIAL NUMBER label and use that
   // instead.
 
-  // There is no Serialnumber--> work around: bus+device number
-  int bus_number = libusb_get_bus_number(usb_device);
-  int device_address = libusb_get_device_address(usb_device);
-
   std::ostringstream serial_str;
-  serial_str << bus_number << "-" << device_address;
+  if (is_mk2 && !info.serial.empty()) {
+    serial_str << info.serial;
+  } else {
+    // Original, there is no Serialnumber--> work around: bus+device number
+    int bus_number = libusb_get_bus_number(usb_device);
+    int device_address = libusb_get_device_address(usb_device);
+
+    serial_str << bus_number << "-" << device_address;
+  }
 
   EurolitePro *widget = NULL;
   if (FLAGS_use_async_libusb) {
