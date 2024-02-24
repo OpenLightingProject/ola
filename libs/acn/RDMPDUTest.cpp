@@ -161,7 +161,7 @@ void RDMPDUTest::testPrepend() {
   uint8_t *buffer = new uint8_t[length];
   OLA_ASSERT(stack.Read(buffer, length));
 
-  const uint8_t expected_data[] = {0x70, 3, TEST_VECTOR};
+  const uint8_t expected_data[] = {0xf0, 0, 4, TEST_VECTOR};
   OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
   delete[] buffer;
 }
