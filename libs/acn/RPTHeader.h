@@ -60,6 +60,7 @@ class RPTHeader {
   uint16_t SourceEndpoint() const { return m_source_endpoint; }
   ola::rdm::UID DestinationUID() const { return m_destination_uid; }
   uint16_t DestinationEndpoint() const { return m_destination_endpoint; }
+  // TODO(Peter): Should this be SequenceNumber?
   // TODO(Peter): Should the sequence number really be part of the header?
   uint32_t Sequence() const { return m_sequence; }
 
@@ -73,6 +74,7 @@ class RPTHeader {
 
   PACK(
   struct rpt_pdu_header_s {
+    rpt_pdu_header_s() : reserved(0) {}
     uint8_t source_uid[ola::rdm::UID::LENGTH];
     uint16_t source_endpoint;
     uint8_t destination_uid[ola::rdm::UID::LENGTH];
