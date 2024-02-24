@@ -47,7 +47,7 @@ void RDMPDU::PackData(ola::io::OutputStream *stream) const {
 void RDMPDU::PrependPDU(ola::io::IOStack *stack) {
   uint8_t vector = HostToNetwork(ola::rdm::START_CODE);
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
-  PrependFlagsAndLength(stack);
+  PrependFlagsAndLength(stack, VFLAG_MASK | HFLAG_MASK | DFLAG_MASK, true);
 }
 }  // namespace acn
 }  // namespace ola
