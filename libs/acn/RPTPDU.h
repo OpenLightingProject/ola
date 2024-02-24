@@ -32,33 +32,33 @@ namespace acn {
 
 class RPTPDU: public PDU {
  public:
-    RPTPDU(unsigned int vector,
-           const RPTHeader &header,
-           const PDU *pdu):
-      PDU(vector, FOUR_BYTES, true),
-      m_header(header),
-      m_pdu(pdu) {}
-    ~RPTPDU() {}
+  RPTPDU(unsigned int vector,
+         const RPTHeader &header,
+         const PDU *pdu):
+    PDU(vector, FOUR_BYTES, true),
+    m_header(header),
+    m_pdu(pdu) {}
+  ~RPTPDU() {}
 
-    unsigned int HeaderSize() const;
-    unsigned int DataSize() const;
-    bool PackHeader(uint8_t *data, unsigned int *length) const;
-    bool PackData(uint8_t *data, unsigned int *length) const;
+  unsigned int HeaderSize() const;
+  unsigned int DataSize() const;
+  bool PackHeader(uint8_t *data, unsigned int *length) const;
+  bool PackData(uint8_t *data, unsigned int *length) const;
 
-    void PackHeader(ola::io::OutputStream *stream) const;
-    void PackData(ola::io::OutputStream *stream) const;
+  void PackHeader(ola::io::OutputStream *stream) const;
+  void PackData(ola::io::OutputStream *stream) const;
 
-    static void PrependPDU(ola::io::IOStack *stack,
-                           uint32_t vector,
-                           const ola::rdm::UID &source_uid,
-                           uint16_t source_endpoint,
-                           const ola::rdm::UID &destination_uid,
-                           uint16_t destination_endpoint,
-                           uint32_t sequence_number);
+  static void PrependPDU(ola::io::IOStack *stack,
+                         uint32_t vector,
+                         const ola::rdm::UID &source_uid,
+                         uint16_t source_endpoint,
+                         const ola::rdm::UID &destination_uid,
+                         uint16_t destination_endpoint,
+                         uint32_t sequence_number);
 
  private:
-    RPTHeader m_header;
-    const PDU *m_pdu;
+  RPTHeader m_header;
+  const PDU *m_pdu;
 };
 }  // namespace acn
 }  // namespace ola
