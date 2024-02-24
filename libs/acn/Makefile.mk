@@ -108,7 +108,11 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/RPTInflator.cpp \
     libs/acn/RPTInflator.h \
     libs/acn/RPTNotificationInflator.h \
+    libs/acn/RPTPDU.cpp \
+    libs/acn/RPTPDU.h \
     libs/acn/RPTRequestInflator.h \
+    libs/acn/RPTRequestPDU.cpp \
+    libs/acn/RPTRequestPDU.h \
     libs/acn/TCPTransport.cpp \
     libs/acn/TCPTransport.h \
     libs/acn/Transport.h \
@@ -171,7 +175,10 @@ libs_acn_E133Tester_SOURCES = \
     libs/acn/BrokerPDUTest.cpp \
     libs/acn/E133InflatorTest.cpp \
     libs/acn/E133PDUTest.cpp \
-    libs/acn/RDMPDUTest.cpp
+    libs/acn/RDMPDUTest.cpp \
+    libs/acn/RPTInflatorTest.cpp \
+    libs/acn/RPTPDUTest.cpp \
+    libs/acn/RPTRequestPDUTest.cpp
 libs_acn_E133Tester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 libs_acn_E133Tester_LDADD = \
     libs/acn/libolae131core.la \
