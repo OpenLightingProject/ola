@@ -55,6 +55,9 @@ bool DMXCreator512BasicFactory::DeviceAdded(
   // vendor and product ids. Also, since DMXCreator 512 Basic devices don't have
   // serial numbers and there is no other good way to uniquely identify a USB
   // device, we only support one of these types of devices per host.
+  // TODO(Peter): We could instead use the device & bus number (like the
+  // Eurolite plugin). You could use more than one device, but the patch
+  // wouldn't follow if you plugged it into a different port
   if (info.serial.empty()) {
     if (m_missing_serial_number) {
       OLA_WARN << "We can only support one device without a serial number.";
