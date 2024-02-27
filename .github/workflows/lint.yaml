@@ -56,7 +56,7 @@ jobs:
           tar --exclude=ola-debian-stable-built-source-tree.tar.gz -cvzf ola-debian-stable-built-source-tree.tar.gz .
       - name: SHA256 artifact archive
         run: sha256sum ola-debian-stable-built-source-tree.tar.gz
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ola-debian-stable-built-source-tree
           path: ola-debian-stable-built-source-tree.tar.gz
