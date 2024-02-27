@@ -119,14 +119,14 @@ jobs:
         if: always()
         run: sha256sum ola-*.tar.gz
       - name: Upload source tree artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ola-${{ matrix.id }}-source-tree
           path: ola-${{ matrix.id }}-source-tree.tar.gz
       - name: Upload built artifact
         if: matrix.task == 'distcheck' || matrix.task == 'dist'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ola-${{ matrix.id }}-dist
           path: |
@@ -147,7 +147,7 @@ jobs:
           flag-name: ${{ matrix.id }}
       - name: Upload coverage artifacts
         if: always() && matrix.task == 'coverage'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ola-${{ matrix.id }}-coverage
           path: coverage/
