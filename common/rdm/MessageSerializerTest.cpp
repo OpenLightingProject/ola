@@ -41,6 +41,7 @@ using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::IPV6FieldDescriptor;
 using ola::messaging::MACFieldDescriptor;
 using ola::messaging::Message;
 using ola::messaging::StringFieldDescriptor;
@@ -111,6 +112,7 @@ void MessageSerializerTest::testSimple() {
   fields.push_back(new UInt32FieldDescriptor("uint32"));
   fields.push_back(new Int32FieldDescriptor("int32"));
   fields.push_back(new IPV4FieldDescriptor("ip"));
+  fields.push_back(new IPV6FieldDescriptor("ipv6"));
   fields.push_back(new MACFieldDescriptor("mac"));
   fields.push_back(new StringFieldDescriptor("string", 0, 32));
   Descriptor descriptor("Test Descriptor", fields);
@@ -125,6 +127,7 @@ void MessageSerializerTest::testSimple() {
   inputs.push_back("66000");
   inputs.push_back("-66000");
   inputs.push_back("10.0.0.1");
+  inputs.push_back("::ffff:192.168.0.1");
   inputs.push_back("01:23:45:67:89:ab");
   inputs.push_back("foo");
 
@@ -137,12 +140,13 @@ void MessageSerializerTest::testSimple() {
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
   OLA_ASSERT_NOT_NULL(data);
-  OLA_ASSERT_EQ(28u, packed_length);
+  OLA_ASSERT_EQ(44u, packed_length);
 
   uint8_t expected[] = {
     1, 1, 253, 1, 44, 254, 112,
     0, 1, 1, 208, 255, 254, 254, 48,
     10, 0, 0, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 192, 168, 0, 1,
     1, 35, 69, 103, 137, 171,
     'f', 'o', 'o'};
 

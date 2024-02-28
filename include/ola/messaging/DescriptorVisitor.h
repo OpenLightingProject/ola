@@ -30,6 +30,7 @@ namespace messaging {
 class BoolFieldDescriptor;
 class FieldDescriptorGroup;
 class IPV4FieldDescriptor;
+class IPV6FieldDescriptor;
 class MACFieldDescriptor;
 class StringFieldDescriptor;
 class UIDFieldDescriptor;
@@ -49,6 +50,7 @@ class FieldDescriptorVisitor {
 
     virtual void Visit(const BoolFieldDescriptor*) = 0;
     virtual void Visit(const IPV4FieldDescriptor*) = 0;
+    virtual void Visit(const IPV6FieldDescriptor*) = 0;
     virtual void Visit(const MACFieldDescriptor*) = 0;
     virtual void Visit(const UIDFieldDescriptor*) = 0;
     virtual void Visit(const StringFieldDescriptor*) = 0;

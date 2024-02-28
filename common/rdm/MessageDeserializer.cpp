@@ -114,7 +114,7 @@ void MessageDeserializer::Visit(
   }
 
   m_message_stack.top().push_back(
-    new ola::messaging::BoolMessageField(descriptor, m_data[m_offset++]));
+      new ola::messaging::BoolMessageField(descriptor, m_data[m_offset++]));
 }
 
 
@@ -128,9 +128,22 @@ void MessageDeserializer::Visit(
   memcpy(&data, m_data + m_offset, sizeof(data));
   m_offset += sizeof(data);
   m_message_stack.top().push_back(
-    new ola::messaging::IPV4MessageField(
-      descriptor,
-      ola::network::IPV4Address(data)));
+      new ola::messaging::IPV4MessageField(
+          descriptor,
+          ola::network::IPV4Address(data)));
+}
+
+
+void MessageDeserializer::Visit(
+    const ola::messaging::IPV6FieldDescriptor *descriptor) {
+  if (!CheckForData(descriptor->MaxSize())) {
+    return;
+  }
+
+  ola::network::IPV6Address ipv6_address(m_data + m_offset);
+  m_offset += descriptor->MaxSize();
+  m_message_stack.top().push_back(
+      new ola::messaging::IPV6MessageField(descriptor, ipv6_address));
 }
 
 
@@ -143,7 +156,7 @@ void MessageDeserializer::Visit(
   ola::network::MACAddress mac_address(m_data + m_offset);
   m_offset += descriptor->MaxSize();
   m_message_stack.top().push_back(
-    new ola::messaging::MACMessageField(descriptor, mac_address));
+      new ola::messaging::MACMessageField(descriptor, mac_address));
 }
 
 
@@ -156,7 +169,7 @@ void MessageDeserializer::Visit(
   ola::rdm::UID uid(m_data + m_offset);
   m_offset += descriptor->MaxSize();
   m_message_stack.top().push_back(
-    new ola::messaging::UIDMessageField(descriptor, uid));
+      new ola::messaging::UIDMessageField(descriptor, uid));
 }
 
 
@@ -179,7 +192,7 @@ void MessageDeserializer::Visit(
   ShortenString(&value);
   m_offset += string_size;
   m_message_stack.top().push_back(
-    new ola::messaging::StringMessageField(descriptor, value));
+      new ola::messaging::StringMessageField(descriptor, value));
 }
 
 
@@ -226,7 +239,7 @@ void MessageDeserializer::Visit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
 
   unsigned int iterations = descriptor->FixedSize() ? descriptor->MinBlocks() :
-    m_variable_field_size;
+      m_variable_field_size;
 
   for (unsigned int i = 0; i < iterations; ++i) {
     vector<const MessageFieldInterface*> fields;
@@ -298,7 +311,7 @@ void MessageDeserializer::IntVisit(
   }
 
   m_message_stack.top().push_back(
-    new ola::messaging::BasicMessageField<int_type>(descriptor, value));
+      new ola::messaging::BasicMessageField<int_type>(descriptor, value));
 }
 }  // namespace rdm
 }  // namespace ola
