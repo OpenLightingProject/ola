@@ -24,6 +24,7 @@
 #include <ola/messaging/Descriptor.h>
 #include <ola/messaging/MessageVisitor.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/IPV6Address.h>
 #include <ola/network/MACAddress.h>
 #include <ola/rdm/UID.h>
 #include <string>
@@ -122,6 +123,32 @@ class IPV4MessageField: public MessageFieldInterface {
  private:
     const IPV4FieldDescriptor *m_descriptor;
     ola::network::IPV4Address m_value;
+};
+
+
+/**
+ * A MessageField that represents a IPv6 Address
+ */
+class IPV6MessageField: public MessageFieldInterface {
+ public:
+    IPV6MessageField(const IPV6FieldDescriptor *descriptor,
+                     const ola::network::IPV6Address &value)
+        : m_descriptor(descriptor),
+          m_value(value) {
+    }
+
+    const IPV6FieldDescriptor *GetDescriptor() const {
+      return m_descriptor;
+    }
+    const ola::network::IPV6Address& Value() const { return m_value; }
+
+    void Accept(MessageVisitor *visitor) const {
+      visitor->Visit(this);
+    }
+
+ private:
+    const IPV6FieldDescriptor *m_descriptor;
+    ola::network::IPV6Address m_value;
 };
 
 
