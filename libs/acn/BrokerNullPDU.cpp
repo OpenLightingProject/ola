@@ -26,10 +26,7 @@
 namespace ola {
 namespace acn {
 
-using ola::io::OutputStream;
 using ola::network::HostToNetwork;
-using std::min;
-using std::string;
 
 void BrokerNullPDU::PrependPDU(ola::io::IOStack *stack) {
   uint16_t vector = HostToNetwork(static_cast<uint16_t>(VECTOR_BROKER_NULL));
