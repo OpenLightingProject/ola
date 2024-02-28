@@ -39,6 +39,8 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/BrokerClientRemoveInflator.h \
     libs/acn/BrokerConnectPDU.cpp \
     libs/acn/BrokerConnectPDU.h \
+    libs/acn/BrokerFetchClientListPDU.cpp \
+    libs/acn/BrokerFetchClientListPDU.h \
     libs/acn/BrokerInflator.h \
     libs/acn/BrokerNullInflator.h \
     libs/acn/BrokerNullPDU.cpp \
@@ -171,6 +173,7 @@ libs_acn_E131Tester_LDADD = \
 libs_acn_E133Tester_SOURCES = \
     libs/acn/BrokerClientEntryPDUTest.cpp \
     libs/acn/BrokerConnectPDUTest.cpp \
+    libs/acn/BrokerFetchClientListPDUTest.cpp \
     libs/acn/BrokerNullPDUTest.cpp \
     libs/acn/BrokerPDUTest.cpp \
     libs/acn/E133InflatorTest.cpp \
