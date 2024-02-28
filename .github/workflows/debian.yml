@@ -53,7 +53,7 @@ jobs:
         shell: bash
         run: find . -type f -exec sha256sum {} \;
         working-directory: built
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ola-built-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ola-built-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
           path: built
@@ -85,7 +85,7 @@ jobs:
         run: apt-get -y install autopkgtest
       - name: Test
         run: autopkgtest --output-dir=test-output built/*ges -- null
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always() # Always upload the test output, even on failed tests
         with:
           name: ola-test-output-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
