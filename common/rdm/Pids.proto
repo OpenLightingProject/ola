@@ -42,6 +42,7 @@ enum FieldType {
   IPV4 = 10;
   UID = 11;
   MAC = 12;
+  IPV6 = 13;
 }
 
 // A value which has a label applied

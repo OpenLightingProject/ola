@@ -32,8 +32,9 @@
 
 using std::string;
 using std::vector;
-using ola::rdm::UID;
+using ola::network::IPV6Address;
 using ola::network::MACAddress;
+using ola::rdm::UID;
 
 
 using ola::messaging::BoolFieldDescriptor;
@@ -42,14 +43,16 @@ using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::GenericMessagePrinter;
 using ola::messaging::GroupMessageField;
+using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::IPV4MessageField;
+using ola::messaging::IPV6FieldDescriptor;
+using ola::messaging::IPV6MessageField;
+using ola::messaging::MACFieldDescriptor;
+using ola::messaging::MACMessageField;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int16MessageField;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::Int8MessageField;
-using ola::messaging::IPV4FieldDescriptor;
-using ola::messaging::IPV4MessageField;
-using ola::messaging::MACFieldDescriptor;
-using ola::messaging::MACMessageField;
 using ola::messaging::Message;
 using ola::messaging::MessageFieldInterface;
 using ola::messaging::StringFieldDescriptor;
@@ -90,6 +93,7 @@ void GenericMessagePrinterTest::testSimplePrinter() {
   // setup some fields
   BoolFieldDescriptor bool_descriptor("On/Off");
   IPV4FieldDescriptor ipv4_descriptor("ip");
+  IPV6FieldDescriptor ipv6_descriptor("ipv6");
   MACFieldDescriptor mac_descriptor("mac");
   UIDFieldDescriptor uid_descriptor("uid");
   StringFieldDescriptor string_descriptor("Name", 0, 32);
@@ -105,6 +109,9 @@ void GenericMessagePrinterTest::testSimplePrinter() {
       new IPV4MessageField(&ipv4_descriptor,
                            ola::network::HostToNetwork(0x0a000001)));
   fields.push_back(
+      new IPV6MessageField(&ipv6_descriptor,
+                           IPV6Address::FromStringOrDie("::ffff:192.168.0.1")));
+  fields.push_back(
       new MACMessageField(&mac_descriptor,
                           MACAddress::FromStringOrDie("01:23:45:67:89:ab")));
   fields.push_back(new UIDMessageField(&uid_descriptor, UID(0x7a70, 1)));
@@ -116,9 +123,9 @@ void GenericMessagePrinterTest::testSimplePrinter() {
 
   Message message(fields);
   string expected = (
-      "On/Off: false\nip: 10.0.0.1\nmac: 01:23:45:67:89:ab\n"
-      "uid: 7a70:00000001\nName: foobar\nId: 42\nCount: 4 x 10 ^ -3\n"
-      "Delta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n");
+      "On/Off: false\nip: 10.0.0.1\nipv6: ::ffff:192.168.0.1\n"
+      "mac: 01:23:45:67:89:ab\nuid: 7a70:00000001\nName: foobar\nId: 42\n"
+      "Count: 4 x 10 ^ -3\nDelta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n");
   OLA_ASSERT_EQ(expected, m_printer.AsString(&message));
 }
 

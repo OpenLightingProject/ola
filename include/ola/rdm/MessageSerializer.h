@@ -48,6 +48,7 @@ class MessageSerializer: public ola::messaging::MessageVisitor {
 
     void Visit(const ola::messaging::BoolMessageField*);
     void Visit(const ola::messaging::IPV4MessageField*);
+    void Visit(const ola::messaging::IPV6MessageField*);
     void Visit(const ola::messaging::MACMessageField*);
     void Visit(const ola::messaging::UIDMessageField*);
     void Visit(const ola::messaging::StringMessageField*);
