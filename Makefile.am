@@ -272,9 +272,9 @@ COVERAGE_OUTPUTS = --txt coverage/coverage.txt \
 	--html-details coverage/details.html/coverage.details.html \
 	--coveralls coverage/coverage.coveralls.json
 # See https://gcovr.com/en/stable/guide/gcov_parser.html#negative-hit-counts
-COVERAGE_FLAGS=--gcov-ignore-parse-errors=negative_hits.warn_once_per_file
-COVERAGE_GCOV_EXE=--gcov-executable /usr/bin/gcov
-COVERAGE_FILTERS=-e '.*Test\.cpp$$' \
+COVERAGE_FLAGS = --gcov-ignore-parse-errors=negative_hits.warn_once_per_file
+COVERAGE_GCOV_EXE = --gcov-executable /usr/bin/gcov
+COVERAGE_FILTERS = -e '.*Test\.cpp$$' \
 	-e '.*\.pb\.cc$$' \
 	-e '.*\.pb\.cpp$$' \
 	-e '.*\.pb\.h$$' \
