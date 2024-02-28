@@ -34,7 +34,6 @@
 
 
 using ola::messaging::BoolFieldDescriptor;
-using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
@@ -42,6 +41,7 @@ using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::IPV6FieldDescriptor;
 using ola::messaging::MACFieldDescriptor;
 using ola::messaging::Message;
 using ola::messaging::GenericMessagePrinter;
@@ -62,6 +62,7 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSimpleBigEndian);
   CPPUNIT_TEST(testSimpleLittleEndian);
   CPPUNIT_TEST(testIPV4);
+  CPPUNIT_TEST(testIPV6);
   CPPUNIT_TEST(testMAC);
   CPPUNIT_TEST(testString);
   CPPUNIT_TEST(testUID);
@@ -75,6 +76,7 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
     void testSimpleBigEndian();
     void testSimpleLittleEndian();
     void testIPV4();
+    void testIPV6();
     void testMAC();
     void testString();
     void testUID();
@@ -242,6 +244,32 @@ void MessageDeserializerTest::testIPV4() {
   OLA_ASSERT_EQ(1u, message->FieldCount());
 
   const string expected = "Address: 10.0.0.1\n";
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
+}
+
+
+/**
+ * Test IPV6 inflation.
+ */
+void MessageDeserializerTest::testIPV6() {
+  // build the descriptor
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new IPV6FieldDescriptor("Addressv6"));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // now setup the data
+  const uint8_t big_endian_data[] = {0, 0, 0, 0, 0, 0, 0, 0,
+                                     0, 0, 255, 255, 10, 0, 0, 1};
+
+  // now the correct amount & verify
+  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+      &descriptor,
+      big_endian_data,
+      sizeof(big_endian_data)));
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(1u, message->FieldCount());
+
+  const string expected = "Addressv6: ::ffff:10.0.0.1\n";
   OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 

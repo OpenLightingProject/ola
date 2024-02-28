@@ -43,6 +43,12 @@ void SchemaPrinter::Visit(const IPV4FieldDescriptor *descriptor) {
 }
 
 
+void SchemaPrinter::Visit(const IPV6FieldDescriptor *descriptor) {
+  m_str << string(m_indent, ' ') << descriptor->Name() << ": IPv6 address"
+        << endl;
+}
+
+
 void SchemaPrinter::Visit(const MACFieldDescriptor *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": MAC" << endl;
 }

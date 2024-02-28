@@ -132,6 +132,12 @@ void GroupSizeCalculator::Visit(
 
 
 void GroupSizeCalculator::Visit(
+    const ola::messaging::IPV6FieldDescriptor *descriptor) {
+  m_non_groups.push_back(descriptor);
+}
+
+
+void GroupSizeCalculator::Visit(
     const ola::messaging::MACFieldDescriptor *descriptor) {
   m_non_groups.push_back(descriptor);
 }
@@ -242,6 +248,12 @@ void StaticGroupTokenCalculator::Visit(
 
 void StaticGroupTokenCalculator::Visit(
     OLA_UNUSED const ola::messaging::IPV4FieldDescriptor *descriptor) {
+  m_token_count.top()++;
+}
+
+
+void StaticGroupTokenCalculator::Visit(
+    OLA_UNUSED const ola::messaging::IPV6FieldDescriptor *descriptor) {
   m_token_count.top()++;
 }
 

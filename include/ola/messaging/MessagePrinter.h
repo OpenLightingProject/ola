@@ -40,6 +40,7 @@ class MessagePrinter: public MessageVisitor {
 
     virtual void Visit(const BoolMessageField*) {}
     virtual void Visit(const IPV4MessageField*) {}
+    virtual void Visit(const IPV6MessageField*) {}
     virtual void Visit(const MACMessageField*) {}
     virtual void Visit(const UIDMessageField*) {}
     virtual void Visit(const StringMessageField*) {}
@@ -78,6 +79,7 @@ class GenericMessagePrinter: public MessagePrinter {
 
     virtual void Visit(const BoolMessageField*);
     virtual void Visit(const IPV4MessageField*);
+    virtual void Visit(const IPV6MessageField*);
     virtual void Visit(const MACMessageField*);
     virtual void Visit(const UIDMessageField*);
     virtual void Visit(const StringMessageField*);
