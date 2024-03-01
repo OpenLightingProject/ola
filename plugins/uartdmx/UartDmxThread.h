@@ -24,6 +24,7 @@
 
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
+#include "ola/Clock.h"
 
 namespace ola {
 namespace plugin {
@@ -49,10 +50,22 @@ class UartDmxThread : public ola::thread::Thread {
   DmxBuffer m_buffer;
   ola::thread::Mutex m_term_mutex;
   ola::thread::Mutex m_buffer_mutex;
+  unsigned int m_frame_time;
 
   void CheckTimeGranularity();
 
+  void FrameSleep(const TimeStamp &ts1);
+  void WriteDMXToUART(const DmxBuffer &buffer);
+
   static const uint32_t DMX_MAB = 16;
+
+  /**
+   * If the difference between the time interval actually slept and
+   * the intended one exceeds this limit, don't trust the function usleep
+   * for this frame. See if we can recover on the next loop.
+   * The limit is in microseconds.
+   */
+  static const uint32_t BAD_GRANULARITY_LIMIT = 3;
 
   DISALLOW_COPY_AND_ASSIGN(UartDmxThread);
 };
