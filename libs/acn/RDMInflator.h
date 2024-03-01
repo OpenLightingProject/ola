@@ -41,12 +41,18 @@ class RDMInflator: public BaseInflator {
                            const std::string&  // rdm data
                           > RDMMessageHandler;
 
-    RDMInflator();
+    typedef ola::Callback2<void,
+                           const HeaderSet*,  // the HeaderSet
+                           const std::string&  // rdm data
+                          > GenericRDMMessageHandler;
+
+    RDMInflator(unsigned int vector = ola::acn::VECTOR_FRAMING_RDMNET);
     ~RDMInflator() {}
 
-    uint32_t Id() const { return ola::acn::VECTOR_FRAMING_RDMNET; }
+    uint32_t Id() const { return m_vector; }
 
     void SetRDMHandler(RDMMessageHandler *handler);
+    void SetGenericRDMHandler(GenericRDMMessageHandler *handler);
 
     static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
 
@@ -65,6 +71,8 @@ class RDMInflator: public BaseInflator {
 
  private:
     std::auto_ptr<RDMMessageHandler> m_rdm_handler;
+    std::auto_ptr<GenericRDMMessageHandler> m_generic_rdm_handler;
+    unsigned int m_vector;
 };
 }  // namespace acn
 }  // namespace ola

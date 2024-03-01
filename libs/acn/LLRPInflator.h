@@ -13,32 +13,32 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * E133Inflator.h
- * Interface for the E133Inflator class.
- * Copyright (C) 2011 Simon Newton
+ * LLRPInflator.h
+ * Interface for the LLRPInflator class.
+ * Copyright (C) 2020 Peter Newman
  */
 
-#ifndef LIBS_ACN_E133INFLATOR_H_
-#define LIBS_ACN_E133INFLATOR_H_
+#ifndef LIBS_ACN_LLRPINFLATOR_H_
+#define LIBS_ACN_LLRPINFLATOR_H_
 
 #include "ola/acn/ACNVectors.h"
 #include "libs/acn/BaseInflator.h"
-#include "libs/acn/E133Header.h"
+#include "libs/acn/LLRPHeader.h"
 
 namespace ola {
 namespace acn {
 
-class E133Inflator: public BaseInflator {
-  friend class E133InflatorTest;
+class LLRPInflator: public BaseInflator {
+  friend class LLRPInflatorTest;
 
  public:
-    E133Inflator()
+    LLRPInflator()
         : BaseInflator(),
           m_last_header_valid(false) {
     }
-    ~E133Inflator() {}
+    ~LLRPInflator() {}
 
-    uint32_t Id() const { return ola::acn::VECTOR_ROOT_RPT; }
+    uint32_t Id() const { return ola::acn::VECTOR_ROOT_LLRP; }
 
  protected:
     bool DecodeHeader(HeaderSet *headers,
@@ -50,9 +50,9 @@ class E133Inflator: public BaseInflator {
       m_last_header_valid = false;
     }
  private:
-    E133Header m_last_header;
+    LLRPHeader m_last_header;
     bool m_last_header_valid;
 };
 }  // namespace acn
 }  // namespace ola
-#endif  // LIBS_ACN_E133INFLATOR_H_
+#endif  // LIBS_ACN_LLRPINFLATOR_H_

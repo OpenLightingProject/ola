@@ -26,6 +26,7 @@
 #include "libs/acn/DMPHeader.h"
 #include "libs/acn/E131Header.h"
 #include "libs/acn/E133Header.h"
+#include "libs/acn/LLRPHeader.h"
 #include "libs/acn/RootHeader.h"
 #include "libs/acn/TransportHeader.h"
 
@@ -56,13 +57,17 @@ class HeaderSet {
     const DMPHeader &GetDMPHeader() const { return m_dmp_header; }
     void SetDMPHeader(const DMPHeader &header) { m_dmp_header = header; }
 
+    const LLRPHeader &GetLLRPHeader() const { return m_llrp_header; }
+    void SetLLRPHeader(const LLRPHeader &header) { m_llrp_header = header; }
+
     bool operator==(const HeaderSet &other) const {
       return (
           m_transport_header == other.m_transport_header &&
           m_root_header == other.m_root_header  &&
           m_e131_header == other.m_e131_header &&
           m_e133_header == other.m_e133_header &&
-          m_dmp_header == other.m_dmp_header);
+          m_dmp_header == other.m_dmp_header &&
+          m_llrp_header == other.m_llrp_header);
     }
 
  private:
@@ -71,6 +76,7 @@ class HeaderSet {
     E131Header m_e131_header;
     E133Header m_e133_header;
     DMPHeader m_dmp_header;
+    LLRPHeader m_llrp_header;
 };
 }  // namespace acn
 }  // namespace ola

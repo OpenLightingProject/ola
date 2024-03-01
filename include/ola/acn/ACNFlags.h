@@ -13,33 +13,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * ACNPort.h
- * Contains the UDP ports for ACN
- * Copyright (C) 2011 Simon Newton
+ * ACNFlags.h
+ * Flags used in ACN PDUs
+ * Copyright (C) 2020 Peter Newman
  */
 
-/**
- * @defgroup acn ACN
- * @brief Architecture for Control Networks
- *
- * ACN is a suite of ANSI Standard protocols for transporting lighting control
- * data. See
- * [ACN on
- * wikipedia](http://en.wikipedia.org/wiki/Architecture_for_Control_Networks).
- *
- * This covers code for E1.31 (Streaming ACN) and E1.33 (RDMNet).
- */
+#ifndef INCLUDE_OLA_ACN_ACNFLAGS_H_
+#define INCLUDE_OLA_ACN_ACNFLAGS_H_
 
 /**
  * @addtogroup acn
  * @{
- * @file ACNPort.h
- * @brief The TCP / UDP Ports used for transporting ACN.
+ * @file ACNFlags.h
+ * @brief ACN flag values.
  * @}
  */
-
-#ifndef INCLUDE_OLA_ACN_ACNPORT_H_
-#define INCLUDE_OLA_ACN_ACNPORT_H_
 
 #include <stdint.h>
 
@@ -51,24 +39,32 @@ namespace acn {
  * @{
  */
 
+// masks for the flag fields
 /**
- * @brief The port used for E1.31 & SDT communication.
+ * @brief This indicates a 20 bit length field (default is 12 bits)
  */
-const uint16_t ACN_PORT = 5568;
+static const uint8_t LFLAG_MASK = 0x80;
 
 /**
- * @brief The port used for E1.33 communication.
+ * @brief This indicates a vector is present
  */
-const uint16_t E133_PORT = 5569;
+static const uint8_t VFLAG_MASK = 0x40;
 
 /**
- * @brief The port used for E1.33 LLRP communication.
+ * @brief This indicates a header field is present
  */
-const uint16_t LLRP_PORT = 5569;
+static const uint8_t HFLAG_MASK = 0x20;
+
+/**
+ * @brief This indicates a data field is present
+ */
+static const uint8_t DFLAG_MASK = 0x10;
 
 /**
  * @}
  */
+
 }  // namespace acn
 }  // namespace ola
-#endif  // INCLUDE_OLA_ACN_ACNPORT_H_
+
+#endif  // INCLUDE_OLA_ACN_ACNFLAGS_H_
