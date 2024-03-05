@@ -159,7 +159,7 @@ string SPIPlugin::Description() const {
 "If the software backend is used, this defines the number of ports which\n"
 "will be created.\n"
 "\n"
-"<device>-sync-ports = <int>\n"
+"<device>-sync-port = <int>\n"
 "Controls which port triggers a flush (write) of the SPI data. If set to -1\n"
 "the SPI data is written when any port changes. This can result in a lot of\n"
 "data writes (slow) and partial frames. If set to -2, the last port is used.\n"
