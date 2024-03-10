@@ -225,6 +225,7 @@ libs_acn_E133Tester_SOURCES = \
 libs_acn_E133Tester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 libs_acn_E133Tester_LDADD = \
     libs/acn/libolae131core.la \
+    libs/acn/libolae133core.la \
     $(COMMON_TESTING_LIBS)
 
 libs_acn_LLRPTester_SOURCES = \
