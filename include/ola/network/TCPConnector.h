@@ -98,7 +98,7 @@ class TCPConnector {
   /**
    * @brief Return the number of pending connections
    */
-  unsigned int ConnectionsPending() const { return m_connections.size(); }
+  unsigned int ConnectionsPending() const { return static_cast<unsigned int>(m_connections.size()); }
 
   /**
    * @brief Called when the TCP socket connects.
