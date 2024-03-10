@@ -36,13 +36,13 @@
 #include <string>
 #include <vector>
 
+#include "libs/acn/E133HealthCheckedConnection.h"
 #include "libs/acn/E133Inflator.h"
 #include "libs/acn/E133StatusPDU.h"
 #include "libs/acn/TCPTransport.h"
 
 #include "tools/e133/DeviceManagerImpl.h"
 #include "tools/e133/E133Endpoint.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
 
 namespace ola {
 namespace e133 {
