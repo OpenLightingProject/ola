@@ -29,8 +29,8 @@
  * heartbeat messages of ROOT_VECTOR_NULL via SendHeartbeat instead.
  */
 
-#ifndef TOOLS_E133_E133HEALTHCHECKEDCONNECTION_H_
-#define TOOLS_E133_E133HEALTHCHECKEDCONNECTION_H_
+#ifndef LIBS_ACN_E133HEALTHCHECKEDCONNECTION_H_
+#define LIBS_ACN_E133HEALTHCHECKEDCONNECTION_H_
 
 #include <ola/Callback.h>
 #include <ola/Clock.h>
@@ -73,4 +73,4 @@ class E133HealthCheckedConnection
     // The default interval in seconds before timing out.
     static const unsigned int E133_HEARTBEAT_TIMEOUT = 45;
 };
-#endif  // TOOLS_E133_E133HEALTHCHECKEDCONNECTION_H_
+#endif  // LIBS_ACN_E133HEALTHCHECKEDCONNECTION_H_
