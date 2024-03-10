@@ -39,9 +39,9 @@
 #include <memory>
 #include <string>
 
+#include "libs/acn/E133HealthCheckedConnection.h"
 #include "libs/acn/RootInflator.h"
 #include "libs/acn/TCPTransport.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
 
 DEFINE_string(controller_ip, "", "The IP Address of the Controller");
 DEFINE_uint16(controller_port, 5569, "The port on the controller");

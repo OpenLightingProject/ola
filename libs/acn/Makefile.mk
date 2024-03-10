@@ -1,4 +1,5 @@
 COMMON_E131_CXXFLAGS = $(COMMON_CXXFLAGS) -Wconversion
+COMMON_E133_CXXFLAGS = $(COMMON_CXXFLAGS) -Wconversion
 
 # pkg-config
 ##################################################
@@ -13,6 +14,12 @@ if INSTALL_ACN
   lib_LTLIBRARIES += libs/acn/libolaacn.la
 else
   noinst_LTLIBRARIES += libs/acn/libolaacn.la
+endif
+
+if INSTALL_E133
+  lib_LTLIBRARIES += libs/acn/libolae133core.la
+else
+  noinst_LTLIBRARIES += libs/acn/libolae133core.la
 endif
 
 # libolaacn.la
@@ -31,22 +38,6 @@ noinst_LTLIBRARIES += libs/acn/libolae131core.la
 libs_acn_libolae131core_la_SOURCES = \
     libs/acn/BaseInflator.cpp \
     libs/acn/BaseInflator.h \
-    libs/acn/BrokerClientAddInflator.h \
-    libs/acn/BrokerClientEntryChangeInflator.h \
-    libs/acn/BrokerClientEntryHeader.h \
-    libs/acn/BrokerClientEntryPDU.cpp \
-    libs/acn/BrokerClientEntryPDU.h \
-    libs/acn/BrokerClientRemoveInflator.h \
-    libs/acn/BrokerConnectPDU.cpp \
-    libs/acn/BrokerConnectPDU.h \
-    libs/acn/BrokerFetchClientListPDU.cpp \
-    libs/acn/BrokerFetchClientListPDU.h \
-    libs/acn/BrokerInflator.h \
-    libs/acn/BrokerNullInflator.h \
-    libs/acn/BrokerNullPDU.cpp \
-    libs/acn/BrokerNullPDU.h \
-    libs/acn/BrokerPDU.cpp \
-    libs/acn/BrokerPDU.h \
     libs/acn/DMPAddress.cpp \
     libs/acn/DMPAddress.h \
     libs/acn/DMPE131Inflator.cpp \
@@ -67,15 +58,6 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/E131PDU.h \
     libs/acn/E131Sender.cpp \
     libs/acn/E131Sender.h \
-    libs/acn/E133Header.h \
-    libs/acn/E133Inflator.cpp \
-    libs/acn/E133Inflator.h \
-    libs/acn/E133PDU.cpp \
-    libs/acn/E133PDU.h \
-    libs/acn/E133StatusInflator.cpp \
-    libs/acn/E133StatusInflator.h \
-    libs/acn/E133StatusPDU.cpp \
-    libs/acn/E133StatusPDU.h \
     libs/acn/HeaderSet.h \
     libs/acn/LLRPHeader.h \
     libs/acn/LLRPInflator.cpp \
@@ -128,6 +110,61 @@ libs_acn_libolae131core_la_LIBADD = $(uuid_LIBS) \
                                     common/libolacommon.la \
                                     libs/acn/libolaacn.la
 
+# libolae133core.la
+# This needs to be after libolaacn.la and libolae131core.la since it depends on
+# them. Otherwise it breaks the freeBSD build
+libs_acn_libolae133core_la_SOURCES = \
+    libs/acn/BrokerClientAddInflator.h \
+    libs/acn/BrokerClientEntryChangeInflator.h \
+    libs/acn/BrokerClientEntryHeader.h \
+    libs/acn/BrokerClientEntryPDU.cpp \
+    libs/acn/BrokerClientEntryPDU.h \
+    libs/acn/BrokerClientEntryRPTPDU.cpp \
+    libs/acn/BrokerClientEntryRPTPDU.h \
+    libs/acn/BrokerClientEntryRPTInflator.cpp \
+    libs/acn/BrokerClientEntryRPTInflator.h \
+    libs/acn/BrokerClientEntryUpdateInflator.h \
+    libs/acn/BrokerClientRemoveInflator.h \
+    libs/acn/BrokerConnectedClientListInflator.cpp \
+    libs/acn/BrokerConnectedClientListInflator.h \
+    libs/acn/BrokerConnectPDU.cpp \
+    libs/acn/BrokerConnectPDU.h \
+    libs/acn/BrokerConnectReplyInflator.cpp \
+    libs/acn/BrokerConnectReplyInflator.h \
+    libs/acn/BrokerFetchClientListPDU.cpp \
+    libs/acn/BrokerFetchClientListPDU.h \
+    libs/acn/BrokerHeader.h \
+    libs/acn/BrokerInflator.h \
+    libs/acn/BrokerManager.cpp \
+    libs/acn/BrokerManagerImpl.cpp \
+    libs/acn/BrokerManagerImpl.h \
+    libs/acn/BrokerNullInflator.h \
+    libs/acn/BrokerNullPDU.cpp \
+    libs/acn/BrokerNullPDU.h \
+    libs/acn/BrokerPDU.cpp \
+    libs/acn/BrokerPDU.h \
+    libs/acn/E133Header.h \
+    libs/acn/E133HealthCheckedConnection.cpp \
+    libs/acn/E133HealthCheckedConnection.h \
+    libs/acn/E133Helper.cpp \
+    libs/acn/E133Inflator.cpp \
+    libs/acn/E133Inflator.h \
+    libs/acn/E133PDU.cpp \
+    libs/acn/E133PDU.h \
+    libs/acn/E133StatusHelper.cpp \
+    libs/acn/E133StatusInflator.cpp \
+    libs/acn/E133StatusInflator.h \
+    libs/acn/E133StatusPDU.cpp \
+    libs/acn/E133StatusPDU.h \
+    libs/acn/MessageBuilder.cpp
+
+libs_acn_libolae133core_la_CXXFLAGS = \
+    $(COMMON_E133_CXXFLAGS) $(uuid_CFLAGS)
+libs_acn_libolae133core_la_LIBADD = $(uuid_LIBS) \
+                                    common/libolacommon.la \
+                                    libs/acn/libolaacn.la \
+                                    libs/acn/libolae131core.la
+
 # PROGRAMS
 ##################################################
 noinst_PROGRAMS += libs/acn/e131_transmit_test \
@@ -170,10 +207,13 @@ libs_acn_E131Tester_LDADD = \
     libs/acn/libolae131core.la \
     $(COMMON_TESTING_LIBS)
 
+#    libs/acn/BrokerInflatorTest.cpp
 libs_acn_E133Tester_SOURCES = \
     libs/acn/BrokerClientEntryPDUTest.cpp \
+    libs/acn/BrokerClientEntryRPTPDUTest.cpp \
     libs/acn/BrokerConnectPDUTest.cpp \
     libs/acn/BrokerFetchClientListPDUTest.cpp \
+    libs/acn/BrokerNullInflatorTest.cpp \
     libs/acn/BrokerNullPDUTest.cpp \
     libs/acn/BrokerPDUTest.cpp \
     libs/acn/E133InflatorTest.cpp \
