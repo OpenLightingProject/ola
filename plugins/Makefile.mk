@@ -23,6 +23,7 @@ if !USING_WIN32
 include plugins/usbpro/Makefile.mk
 include plugins/dmx4linux/Makefile.mk
 include plugins/e131/Makefile.mk
+include plugins/e133/Makefile.mk
 include plugins/uartdmx/Makefile.mk
 endif
 
