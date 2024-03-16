@@ -39,7 +39,7 @@ namespace rdm {
 
 using ola::messaging::MessageFieldInterface;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -240,7 +240,7 @@ void StringMessageBuilder::Visit(
   }
 
   string token = m_inputs[m_offset++];
-  auto_ptr<UID> uid(UID::FromString(token));
+  unique_ptr<UID> uid(UID::FromString(token));
 
   if (!uid.get()) {
     SetError(descriptor->Name());

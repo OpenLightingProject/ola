@@ -32,6 +32,7 @@
 #include <Shlobj.h>
 #endif  // _WIN32
 #include <string>
+#include <utility>
 
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
@@ -58,7 +59,7 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::thread::MutexLocker;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";
@@ -122,13 +123,13 @@ bool OlaDaemon::Init() {
   if (m_export_map) {
     m_export_map->GetStringVar(CONFIG_DIR_KEY)->Set(config_dir);
   }
-  auto_ptr<PreferencesFactory> preferences_factory(
+  unique_ptr<PreferencesFactory> preferences_factory(
       new FileBackedPreferencesFactory(config_dir));
 
   // Order is important here as we won't load the same plugin twice.
   m_plugin_loaders.push_back(new DynamicPluginLoader());
 
-  auto_ptr<OlaServer> server(
+  unique_ptr<OlaServer> server(
       new OlaServer(m_plugin_loaders,
                     preferences_factory.get(), &m_ss, m_options,
                     NULL, m_export_map));
@@ -136,8 +137,8 @@ bool OlaDaemon::Init() {
   bool ok = server->Init();
   if (ok) {
     // Set the members
-    m_preferences_factory.reset(preferences_factory.release());
-    m_server.reset(server.release());
+    m_preferences_factory = std::move(preferences_factory);
+    m_server = std::move(server);
   } else {
     STLDeleteElements(&m_plugin_loaders);
   }

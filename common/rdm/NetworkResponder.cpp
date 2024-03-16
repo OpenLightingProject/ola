@@ -49,7 +49,7 @@ using ola::network::MACAddress;
 using ola::network::NetworkToHost;
 using std::string;
 using std::vector;
-using std::auto_ptr;
+using std::unique_ptr;
 
 NetworkResponder::RDMOps *NetworkResponder::RDMOps::instance = NULL;
 

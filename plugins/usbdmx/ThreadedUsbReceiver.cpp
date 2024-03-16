@@ -36,7 +36,7 @@ ThreadedUsbReceiver::ThreadedUsbReceiver(libusb_device *usb_device,
       m_usb_handle(usb_handle),
       m_interface_number(interface_number),
       m_plugin_adaptor(plugin_adaptor),
-      m_receive_callback(NULL) {
+      m_receive_callback() {
   libusb_ref_device(usb_device);
 }
 

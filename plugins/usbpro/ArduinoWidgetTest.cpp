@@ -43,7 +43,7 @@ using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -64,7 +64,7 @@ class ArduinoWidgetTest: public CommonWidgetTest {
     void testErrorConditions();
 
  private:
-    auto_ptr<ola::plugin::usbpro::ArduinoWidget> m_arduino;
+    unique_ptr<ola::plugin::usbpro::ArduinoWidget> m_arduino;
     unsigned int m_tod_counter;
     uint8_t m_transaction_number;
 
@@ -146,7 +146,7 @@ void ArduinoWidgetTest::ValidateResponse(RDMReply *reply) {
   const ola::rdm::RDMFrame frame = reply->Frames()[0];
 
   ola::rdm::RDMStatusCode raw_code;
-  auto_ptr<ola::rdm::RDMResponse> raw_response(
+  unique_ptr<ola::rdm::RDMResponse> raw_response(
     ola::rdm::RDMResponse::InflateFromData(frame.data.data() + 1,
       frame.data.size() - 1, &raw_code));
   OLA_ASSERT_TRUE(*raw_response.get() == *response);
@@ -275,7 +275,7 @@ void ArduinoWidgetTest::testSendRDMRequest() {
       &expected_request_frame_size);
 
   // response
-  auto_ptr<const RDMResponse> response(
+  unique_ptr<const RDMResponse> response(
     GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
   unsigned int response_size;
   uint8_t *response_frame = PackRDMResponse(response.get(), &response_size);
@@ -343,7 +343,7 @@ void ArduinoWidgetTest::testErrorCodes() {
       &expected_request_frame_size);
 
   // response
-  auto_ptr<const RDMResponse> response(GetResponseFromData(rdm_request));
+  unique_ptr<const RDMResponse> response(GetResponseFromData(rdm_request));
   unsigned int response_size;
   uint8_t *response_frame = PackRDMResponse(response.get(), &response_size);
 
