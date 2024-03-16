@@ -45,8 +45,11 @@ namespace acn {
 enum RootVector {
   VECTOR_ROOT_E131_REV2 = 3,  /**< Draft E1.31, used by some old gear. */
   VECTOR_ROOT_E131 = 4,  /**< E1.31 (sACN) */
-  VECTOR_ROOT_E133 = 5,  /**< E1.33 (RDNNet) */
+  VECTOR_ROOT_RPT = 5,  /**< E1.33 (RPT) */
   VECTOR_ROOT_NULL = 6,  /**< NULL (empty) root */
+  VECTOR_ROOT_BROKER = 9,  /**< E1.33 (Broker) */
+  VECTOR_ROOT_LLRP = 0x0A,  /**< E1.33 (LLRP) */
+  VECTOR_ROOT_EPT = 0x0B,  /**< E1.33 (EPT) */
 };
 
 /**
@@ -85,6 +88,15 @@ enum E133ControllerVector {
   VECTOR_CONTROLLER_DEVICE_ACQUIRED = 3,  /**< Device acquired message */
   VECTOR_CONTROLLER_DEVICE_RELEASED = 4,  /**< Device released message */
   VECTOR_CONTROLLER_EXPECT_MASTER = 5,  /**< Expect master message */
+};
+
+/**
+ * @brief Vectors used at the E1.33 LLRP layer.
+ */
+enum LLRPVector {
+  VECTOR_LLRP_PROBE_REQUEST = 1,  /**< LLRP Probe Request */
+  VECTOR_LLRP_PROBE_REPLY = 1,  /**< LLRP Probe Reply */
+  VECTOR_LLRP_RDM_CMD = 1,  /**< LLRP RDM Command */
 };
 
 /**
