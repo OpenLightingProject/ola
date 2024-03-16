@@ -59,8 +59,10 @@ class RootPDU: public PDU {
   const ola::acn::CID &Cid(const ola::acn::CID &cid) { return m_cid = cid; }
   void SetBlock(const PDUBlock<PDU> *block);
 
-  static void PrependPDU(ola::io::IOStack *stack, uint32_t vector,
-                         const ola::acn::CID &cid, bool force_length_flag = false);
+  static void PrependPDU(ola::io::IOStack *stack,
+                         uint32_t vector,
+                         const ola::acn::CID &cid,
+                         bool force_length_flag = false);
 
  private:
   ola::acn::CID m_cid;
