@@ -238,6 +238,14 @@ libs_acn_LLRPTester_LDADD = \
     libs/acn/libolae131core.la \
     $(COMMON_TESTING_LIBS)
 
+libs_acn_LLRPTester_SOURCES = \
+    libs/acn/LLRPInflatorTest.cpp \
+    libs/acn/LLRPPDUTest.cpp
+libs_acn_LLRPTester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
+libs_acn_LLRPTester_LDADD = \
+    libs/acn/libolae131core.la \
+    $(COMMON_TESTING_LIBS)
+
 libs_acn_TransportTester_SOURCES = \
     libs/acn/TCPTransportTest.cpp \
     libs/acn/UDPTransportTest.cpp

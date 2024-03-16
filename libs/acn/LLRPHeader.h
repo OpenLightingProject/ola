@@ -51,8 +51,8 @@ class LLRPHeader {
     uint32_t TransactionNumber() const { return m_transaction_number; }
 
     bool operator==(const LLRPHeader &other) const {
-      return m_destination_cid == other.m_destination_cid &&
-        m_transaction_number == other.m_transaction_number;
+      return ((m_destination_cid == other.m_destination_cid) &&
+        (m_transaction_number == other.m_transaction_number));
     }
 
     PACK(
