@@ -84,7 +84,9 @@ class AdvancedTCPConnector {
   /**
    * @brief Return the number of connections tracked by this connector.
    */
-  unsigned int EndpointCount() const { return static_cast<unsigned int>(m_connections.size()); }
+  unsigned int EndpointCount() const {
+    return static_cast<unsigned int>(m_connections.size());
+  }
 
   /**
    * @brief The state of a connection.
