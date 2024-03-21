@@ -67,6 +67,9 @@ bool UIntToSpeedT(uint32_t value, speed_t *output);
  * @returns true if the open succeeded, false otherwise.
  *
  * This fails-fast, it we can't get the lock immediately, we'll return false.
+ *
+ * @deprecated Use the more general AcquireLockAndOpenSerialPort() instead (19 Feb 2022).
+ * @see ReleaseUUCPLock()
  */
 bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd);
 
@@ -75,8 +78,43 @@ bool AcquireUUCPLockAndOpen(const std::string &path, int oflag, int *fd);
  * @param path The path to unlock.
  *
  * The lock is only removed if the PID matches.
+ *
+ * @deprecated Use the more general ReleaseSerialPortLock() instead (19 Feb 2022).
+ * @see AcquireUUCPLockAndOpen()
  */
 void ReleaseUUCPLock(const std::string &path);
+
+/**
+ * @brief Try to open the path and obtain a lock to control access
+ * @param path the path to open
+ * @param oflag flags passed to open
+ * @param[out] fd a pointer to the fd which is returned.
+ * @returns true if the open succeeded, false otherwise.
+ *
+ * Depending on the compile-time configuration, this will use as many as
+ * possible out of the flock() system call, UUCP lockfiles and the TIOCEXCL
+ * ioctl.  UUCP lockfiles are disabled by default, unless flock() is
+ * unavailable.  See: ./configure --enable-uucp-locking.
+ *
+ * This fails-fast, it we can't get the lock immediately, we'll return false.
+ *
+ * @see ReleaseSerialPortLock()
+ */
+bool AcquireLockAndOpenSerialPort(const std::string &path, int oflag, int *fd);
+
+/**
+ * @brief Release a lock for the serial port
+ * @param path The path to unlock.
+ *
+ * If UUCP locking was used (see AcquireLockAndOpenSerialPort()), and the PID
+ * in the lockfile matches our own, the lockfile will be removed.  Otherwise,
+ * this call does nothing because the other locking methods do not require an
+ * explicit unlock.
+ *
+ * @see AcquireLockAndOpenSerialPort()
+ */
+void ReleaseSerialPortLock(const std::string &path);
+
 }  // namespace io
 }  // namespace ola
 #endif  // INCLUDE_OLA_IO_SERIAL_H_
