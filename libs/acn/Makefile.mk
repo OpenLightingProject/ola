@@ -240,7 +240,9 @@ libs_acn_LLRPTester_LDADD = \
 
 libs_acn_LLRPTester_SOURCES = \
     libs/acn/LLRPInflatorTest.cpp \
-    libs/acn/LLRPPDUTest.cpp
+    libs/acn/LLRPPDUTest.cpp \
+    libs/acn/LLRPProbeReplyPDUTest.cpp \
+    libs/acn/LLRPProbeRequestPDUTest.cpp
 libs_acn_LLRPTester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 libs_acn_LLRPTester_LDADD = \
     libs/acn/libolae131core.la \
