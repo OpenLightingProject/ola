@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * E133StatusHelper.h
- * Functions for dealing with E1.33 Status Codes.
- * Copyright (C) 2013 Simon Newton
+ * E133Helper.h
+ * Various misc E1.33 functions.
+ * Copyright (C) 2024 Peter Newman
  */
 
-#ifndef INCLUDE_OLA_E133_E133STATUSHELPER_H_
-#define INCLUDE_OLA_E133_E133STATUSHELPER_H_
+#ifndef INCLUDE_OLA_E133_E133HELPER_H_
+#define INCLUDE_OLA_E133_E133HELPER_H_
 
 #include <stdint.h>
 #include <ola/e133/E133Enums.h>
@@ -28,16 +28,9 @@
 namespace ola {
 namespace e133 {
 
-using std::string;
-using ola::e133::E133StatusCode;
-using ola::e133::E133ConnectStatusCode;
-
-bool IntToStatusCode(uint16_t input, E133StatusCode *status_code);
-string StatusCodeToString(E133StatusCode status_code);
-
-bool IntToConnectStatusCode(uint16_t input,
-                            E133ConnectStatusCode *connect_status_code);
-string ConnectStatusCodeToString(E133ConnectStatusCode connect_status_code);
+bool IntToRPTClientType(uint8_t input,
+                        ola::e133::E133RPTClientTypeCode *client_type);
+std::string RPTClientTypeToString(uint8_t type);
 }  // namespace e133
 }  // namespace ola
-#endif  // INCLUDE_OLA_E133_E133STATUSHELPER_H_
+#endif  // INCLUDE_OLA_E133_E133HELPER_H_

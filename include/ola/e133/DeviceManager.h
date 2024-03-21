@@ -53,7 +53,7 @@ class DeviceManager {
      * @returns true if the data should be acknowledged, false otherwise.
      */
     typedef ola::Callback3<bool, const IPV4Address&, uint16_t,
-                           const string&> RDMMesssageCallback;
+                           const string&> RDMMessageCallback;
 
     // Run when we acquire designated controller status for a device.
     typedef ola::Callback1<void, const IPV4Address&> AcquireDeviceCallback;
@@ -66,7 +66,7 @@ class DeviceManager {
     ~DeviceManager();
 
     // Ownership of the callbacks is transferred.
-    void SetRDMMessageCallback(RDMMesssageCallback *callback);
+    void SetRDMMessageCallback(RDMMessageCallback *callback);
     void SetAcquireDeviceCallback(AcquireDeviceCallback *callback);
     void SetReleaseDeviceCallback(ReleaseDeviceCallback *callback);
 
