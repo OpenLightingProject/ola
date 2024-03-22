@@ -20,8 +20,8 @@
 
 #include "libs/acn/RDMPDU.h"
 
-#include <ola/network/NetworkUtils.h>
-#include <ola/rdm/RDMPacket.h>
+#include "ola/network/NetworkUtils.h"
+#include "ola/rdm/RDMPacket.h"
 
 namespace ola {
 namespace acn {
