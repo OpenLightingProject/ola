@@ -18,12 +18,13 @@
  * Copyright (C) 2023 Peter Newman
  */
 
-#include <algorithm>
-
 #include "libs/acn/BrokerConnectPDU.h"
 
-#include <ola/network/NetworkUtils.h>
-#include <ola/acn/ACNVectors.h>
+#include <algorithm>
+#include <string>
+
+#include "ola/acn/ACNVectors.h"
+#include "ola/network/NetworkUtils.h"
 
 namespace ola {
 namespace acn {
@@ -34,22 +35,24 @@ using std::min;
 using std::string;
 
 unsigned int BrokerConnectPDU::DataSize() const {
-  //broker_connect_pdu_data data;
   return static_cast<unsigned int>(sizeof(broker_connect_pdu_data));
 }
 
 bool BrokerConnectPDU::PackData(uint8_t *data, unsigned int *length) const {
   broker_connect_pdu_data pdu_data;
 
-  size_t client_scope_str_len = min(m_client_scope.size(), sizeof(pdu_data.client_scope));
+  size_t client_scope_str_len = min(m_client_scope.size(),
+                                    sizeof(pdu_data.client_scope));
   strncpy(pdu_data.client_scope, m_client_scope.c_str(), client_scope_str_len);
   memset(pdu_data.client_scope + client_scope_str_len, 0,
          (sizeof(pdu_data.client_scope) - client_scope_str_len));
 
   pdu_data.e133_version = HostToNetwork(m_e133_version);
 
-  size_t search_domain_str_len = min(m_search_domain.size(), sizeof(pdu_data.search_domain));
-  strncpy(pdu_data.search_domain, m_search_domain.c_str(), search_domain_str_len);
+  size_t search_domain_str_len = min(m_search_domain.size(),
+                                     sizeof(pdu_data.search_domain));
+  strncpy(pdu_data.search_domain, m_search_domain.c_str(),
+          search_domain_str_len);
   memset(pdu_data.search_domain + search_domain_str_len, 0,
          (sizeof(pdu_data.search_domain) - search_domain_str_len));
 
@@ -67,15 +70,18 @@ bool BrokerConnectPDU::PackData(uint8_t *data, unsigned int *length) const {
 void BrokerConnectPDU::PackData(ola::io::OutputStream *stream) const {
   broker_connect_pdu_data pdu_data;
 
-  size_t client_scope_str_len = min(m_client_scope.size(), sizeof(pdu_data.client_scope));
+  size_t client_scope_str_len = min(m_client_scope.size(),
+                                    sizeof(pdu_data.client_scope));
   strncpy(pdu_data.client_scope, m_client_scope.c_str(), client_scope_str_len);
   memset(pdu_data.client_scope + client_scope_str_len, 0,
          (sizeof(pdu_data.client_scope) - client_scope_str_len));
 
   pdu_data.e133_version = HostToNetwork(m_e133_version);
 
-  size_t search_domain_str_len = min(m_search_domain.size(), sizeof(pdu_data.search_domain));
-  strncpy(pdu_data.search_domain, m_search_domain.c_str(), search_domain_str_len);
+  size_t search_domain_str_len = min(m_search_domain.size(),
+                                     sizeof(pdu_data.search_domain));
+  strncpy(pdu_data.search_domain, m_search_domain.c_str(),
+          search_domain_str_len);
   memset(pdu_data.search_domain + search_domain_str_len, 0,
          (sizeof(pdu_data.search_domain) - search_domain_str_len));
 
@@ -96,15 +102,18 @@ void BrokerConnectPDU::PrependPDU(ola::io::IOStack *stack,
                                   bool incremental_updates) {
   broker_connect_pdu_data pdu_data;
 
-  size_t client_scope_str_len = min(client_scope.size(), sizeof(pdu_data.client_scope));
+  size_t client_scope_str_len = min(client_scope.size(),
+                                    sizeof(pdu_data.client_scope));
   strncpy(pdu_data.client_scope, client_scope.c_str(), client_scope_str_len);
   memset(pdu_data.client_scope + client_scope_str_len, 0,
          (sizeof(pdu_data.client_scope) - client_scope_str_len));
 
   pdu_data.e133_version = HostToNetwork(e133_version);
 
-  size_t search_domain_str_len = min(search_domain.size(), sizeof(pdu_data.search_domain));
-  strncpy(pdu_data.search_domain, search_domain.c_str(), search_domain_str_len);
+  size_t search_domain_str_len = min(search_domain.size(),
+                                     sizeof(pdu_data.search_domain));
+  strncpy(pdu_data.search_domain, search_domain.c_str(),
+          search_domain_str_len);
   memset(pdu_data.search_domain + search_domain_str_len, 0,
          (sizeof(pdu_data.search_domain) - search_domain_str_len));
 
@@ -115,7 +124,8 @@ void BrokerConnectPDU::PrependPDU(ola::io::IOStack *stack,
   pdu_data.connection = HostToNetwork(connection);
   stack->Write(reinterpret_cast<uint8_t*>(&pdu_data),
                static_cast<unsigned int>(sizeof(broker_connect_pdu_data)));
-  uint16_t vector = HostToNetwork(static_cast<uint16_t>(VECTOR_BROKER_CONNECT));
+  uint16_t vector = HostToNetwork(
+      static_cast<uint16_t>(VECTOR_BROKER_CONNECT));
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
   PrependFlagsAndLength(stack, VFLAG_MASK | HFLAG_MASK | DFLAG_MASK, true);
 }
