@@ -37,7 +37,6 @@ unsigned int LLRPProbeRequestPDU::DataSize() const {
   return static_cast<unsigned int>(sizeof(llrp_probe_request_pdu_data) -
                                    sizeof(data.known_uids) +
                                    (m_known_uids.Size() * UID::LENGTH));
-
 }
 
 bool LLRPProbeRequestPDU::PackData(uint8_t *data, unsigned int *length) const {
