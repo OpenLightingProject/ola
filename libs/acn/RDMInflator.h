@@ -34,45 +34,45 @@ class RDMInflator: public BaseInflator {
   friend class RDMInflatorTest;
 
  public:
-    // These are pointers so the callers don't have to pull in all the headers.
-    typedef ola::Callback3<void,
-                           const TransportHeader*,  // src ip & port
-                           const E133Header*,  // the E1.33 header
-                           const std::string&  // rdm data
-                          > RDMMessageHandler;
+  // These are pointers so the callers don't have to pull in all the headers.
+  typedef ola::Callback3<void,
+                         const TransportHeader*,  // src ip & port
+                         const E133Header*,  // the E1.33 header
+                         const std::string&  // rdm data
+                        > RDMMessageHandler;
 
-    typedef ola::Callback2<void,
-                           const HeaderSet*,  // the HeaderSet
-                           const std::string&  // rdm data
-                          > GenericRDMMessageHandler;
+  typedef ola::Callback2<void,
+                         const HeaderSet*,  // the HeaderSet
+                         const std::string&  // rdm data
+                        > GenericRDMMessageHandler;
 
-    RDMInflator(unsigned int vector = ola::acn::VECTOR_FRAMING_RDMNET);
-    ~RDMInflator() {}
+  explicit RDMInflator(unsigned int vector = ola::acn::VECTOR_FRAMING_RDMNET);
+  ~RDMInflator() {}
 
-    uint32_t Id() const { return m_vector; }
+  uint32_t Id() const { return m_vector; }
 
-    void SetRDMHandler(RDMMessageHandler *handler);
-    void SetGenericRDMHandler(GenericRDMMessageHandler *handler);
+  void SetRDMHandler(RDMMessageHandler *handler);
+  void SetGenericRDMHandler(GenericRDMMessageHandler *handler);
 
-    static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
+  static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
 
  protected:
-    bool DecodeHeader(HeaderSet *headers,
-                      const uint8_t *data,
-                      unsigned int len,
-                      unsigned int *bytes_used);
+  bool DecodeHeader(HeaderSet *headers,
+                    const uint8_t *data,
+                    unsigned int len,
+                    unsigned int *bytes_used);
 
-    void ResetHeaderField() {}  // namespace noop
+  void ResetHeaderField() {}  // namespace noop
 
-    virtual bool HandlePDUData(uint32_t vector,
-                               const HeaderSet &headers,
-                               const uint8_t *data,
-                               unsigned int pdu_len);
+  virtual bool HandlePDUData(uint32_t vector,
+                             const HeaderSet &headers,
+                             const uint8_t *data,
+                             unsigned int pdu_len);
 
  private:
-    std::auto_ptr<RDMMessageHandler> m_rdm_handler;
-    std::auto_ptr<GenericRDMMessageHandler> m_generic_rdm_handler;
-    unsigned int m_vector;
+  std::auto_ptr<RDMMessageHandler> m_rdm_handler;
+  std::auto_ptr<GenericRDMMessageHandler> m_generic_rdm_handler;
+  unsigned int m_vector;
 };
 }  // namespace acn
 }  // namespace ola
