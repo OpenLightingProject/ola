@@ -59,7 +59,8 @@ class BrokerClientEntryPDUTest: public CppUnit::TestFixture {
   static const uint8_t TEST_DATA[];
 };
 
-const uint8_t BrokerClientEntryPDUTest::TEST_DATA[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+const uint8_t BrokerClientEntryPDUTest::TEST_DATA[] = {0, 1, 2, 3, 4, 5,
+                                                       6, 7, 8, 9, 10, 11,
                                                        12, 13, 14, 15};
 
 CPPUNIT_TEST_SUITE_REGISTRATION(BrokerClientEntryPDUTest);

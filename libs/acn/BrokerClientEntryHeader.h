@@ -36,27 +36,28 @@ namespace acn {
  */
 class BrokerClientEntryHeader {
  public:
-    BrokerClientEntryHeader() {}
+  BrokerClientEntryHeader() {}
 
-    BrokerClientEntryHeader(const ola::acn::CID &client_cid)
-        : m_client_cid(client_cid) {
-    }
-    ~BrokerClientEntryHeader() {}
+  explicit BrokerClientEntryHeader(const ola::acn::CID &client_cid)
+      : m_client_cid(client_cid) {
+  }
+  ~BrokerClientEntryHeader() {}
 
-    const ola::acn::CID ClientCid() const { return m_client_cid; }
+  const ola::acn::CID ClientCid() const { return m_client_cid; }
 
-    bool operator==(const BrokerClientEntryHeader &other) const {
-      return m_client_cid == other.m_client_cid;
-    }
+  bool operator==(const BrokerClientEntryHeader &other) const {
+    return m_client_cid == other.m_client_cid;
+  }
 
-    PACK(
-    struct broker_client_entry_pdu_header_s {
-      uint8_t client_cid[CID::CID_LENGTH];
-    });
-    typedef struct broker_client_entry_pdu_header_s broker_client_entry_pdu_header;
+  PACK(
+  struct broker_client_entry_pdu_header_s {
+    uint8_t client_cid[CID::CID_LENGTH];
+  });
+  typedef struct broker_client_entry_pdu_header_s
+      broker_client_entry_pdu_header;
 
  private:
-    ola::acn::CID m_client_cid;
+  ola::acn::CID m_client_cid;
 };
 }  // namespace acn
 }  // namespace ola
