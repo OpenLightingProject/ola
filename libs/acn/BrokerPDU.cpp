@@ -42,8 +42,9 @@ unsigned int BrokerPDU::DataSize() const {
  * Pack the data portion.
  */
 bool BrokerPDU::PackData(uint8_t *data, unsigned int *length) const {
-  if (m_pdu)
+  if (m_pdu) {
     return m_pdu->Pack(data, length);
+  }
   *length = 0;
   return true;
 }
@@ -53,8 +54,9 @@ bool BrokerPDU::PackData(uint8_t *data, unsigned int *length) const {
  * Pack the data into a buffer
  */
 void BrokerPDU::PackData(OutputStream *stream) const {
-  if (m_pdu)
+  if (m_pdu) {
     m_pdu->Write(stream);
+  }
 }
 
 
