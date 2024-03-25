@@ -39,8 +39,8 @@ class LLRPProbeRequestInflator: public BaseInflator {
                          const HeaderSet*,  // the HeaderSet
                          const ola::rdm::UID&,  // lower UID
                          const ola::rdm::UID&  // upper UID
-//,
-//                         const ola::rdm::UIDSet,  // known UIDs
+// TODO(Peter): Should we add the filter and known UIDs to the callback too?
+//,                         const ola::rdm::UIDSet,  // known UIDs
                         > LLRPProbeRequestHandler;
 
   LLRPProbeRequestInflator();

@@ -103,14 +103,12 @@ bool LLRPProbeRequestInflator::HandlePDUData(uint32_t vector,
   OLA_DEBUG << "Probe from " << UID(pdu_data.lower_uid) << " to "
             << UID(pdu_data.upper_uid);
 
-//  string rdm_message(reinterpret_cast<const char*>(&data[0]), pdu_len);
-
   if (m_llrp_probe_request_handler.get()) {
     m_llrp_probe_request_handler->Run(&headers,
                                       UID(pdu_data.lower_uid),
                                       UID(pdu_data.upper_uid)
-//,
-//                                      UIDSet()
+// TODO(Peter): Should we add the filter and known UIDs to the callback too?
+//,                                      UIDSet()
 );
   } else {
     OLA_WARN << "No LLRP Probe Request handler defined!";
