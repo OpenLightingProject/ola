@@ -49,12 +49,13 @@ unsigned int BrokerClientEntryPDU::DataSize() const {
 /*
  * Pack the header portion.
  */
-bool BrokerClientEntryPDU::PackHeader(uint8_t *data, unsigned int *length) const {
+bool BrokerClientEntryPDU::PackHeader(uint8_t *data,
+                                      unsigned int *length) const {
   unsigned int header_size = HeaderSize();
 
   if (*length < header_size) {
-    OLA_WARN << "BrokerClientEntryPDU::PackHeader: buffer too small, got " << *length
-             << " required " << header_size;
+    OLA_WARN << "BrokerClientEntryPDU::PackHeader: buffer too small, got "
+             << *length << " required " << header_size;
     *length = 0;
     return false;
   }
@@ -70,7 +71,8 @@ bool BrokerClientEntryPDU::PackHeader(uint8_t *data, unsigned int *length) const
 /*
  * Pack the data portion.
  */
-bool BrokerClientEntryPDU::PackData(uint8_t *data, unsigned int *length) const {
+bool BrokerClientEntryPDU::PackData(uint8_t *data,
+                                    unsigned int *length) const {
   if (m_pdu)
     return m_pdu->Pack(data, length);
   *length = 0;
@@ -84,8 +86,9 @@ bool BrokerClientEntryPDU::PackData(uint8_t *data, unsigned int *length) const {
 void BrokerClientEntryPDU::PackHeader(OutputStream *stream) const {
   BrokerClientEntryHeader::broker_client_entry_pdu_header header;
   m_header.ClientCid().Pack(header.client_cid);
-  stream->Write(reinterpret_cast<uint8_t*>(&header),
-                sizeof(BrokerClientEntryHeader::broker_client_entry_pdu_header));
+  stream->Write(
+      reinterpret_cast<uint8_t*>(&header),
+      sizeof(BrokerClientEntryHeader::broker_client_entry_pdu_header));
 }
 
 
@@ -103,8 +106,9 @@ void BrokerClientEntryPDU::PrependPDU(ola::io::IOStack *stack,
                                       const ola::acn::CID &client_cid) {
   BrokerClientEntryHeader::broker_client_entry_pdu_header header;
   client_cid.Pack(header.client_cid);
-  stack->Write(reinterpret_cast<uint8_t*>(&header),
-               sizeof(BrokerClientEntryHeader::broker_client_entry_pdu_header));
+  stack->Write(
+      reinterpret_cast<uint8_t*>(&header),
+      sizeof(BrokerClientEntryHeader::broker_client_entry_pdu_header));
 
   vector = HostToNetwork(vector);
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));

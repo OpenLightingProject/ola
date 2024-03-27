@@ -21,10 +21,11 @@
 #ifndef LIBS_ACN_BROKERCONNECTPDU_H_
 #define LIBS_ACN_BROKERCONNECTPDU_H_
 
-#include <ola/io/IOStack.h>
-#include <ola/rdm/RDMEnums.h>
+#include <string>
 
 #include "libs/acn/PDU.h"
+#include "ola/io/IOStack.h"
+#include "ola/rdm/RDMEnums.h"
 
 namespace ola {
 namespace acn {

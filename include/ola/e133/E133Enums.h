@@ -97,7 +97,7 @@ enum {
   MAX_E133_STATUS_STRING_SIZE = 64
 };
 
-// The E1.33 version..
+// The E1.33 version.
 enum {
   E133_VERSION = 1
 };

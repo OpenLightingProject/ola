@@ -36,7 +36,7 @@ class LLRPProbeReplyInflator: public BaseInflator {
 
  public:
   struct LLRPProbeReply {
-    LLRPProbeReply(const ola::rdm::UID &_uid)
+    explicit LLRPProbeReply(const ola::rdm::UID &_uid)
        : uid(_uid) {
     }
     ola::rdm::UID uid;

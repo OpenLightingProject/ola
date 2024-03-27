@@ -47,7 +47,7 @@ class BrokerNullPDU : public PDU {
     *length = 0;
     return true;
   }
-  void PackData(OLA_UNUSED ola::io::OutputStream *stream) const {};
+  void PackData(OLA_UNUSED ola::io::OutputStream *stream) const {}
 
   static void PrependPDU(ola::io::IOStack *stack);
 };

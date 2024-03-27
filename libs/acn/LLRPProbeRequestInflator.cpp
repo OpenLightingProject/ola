@@ -93,17 +93,22 @@ bool LLRPProbeRequestInflator::HandlePDUData(uint32_t vector,
       pdu_len - (sizeof(pdu_data) -
       sizeof(pdu_data.known_uids)));
   if (known_uids_size % UID::UID_SIZE != 0) {
-    OLA_WARN << "Got a partial known UID, received " << known_uids_size << " bytes";
+    OLA_WARN << "Got a partial known UID, received " << known_uids_size
+             << " bytes";
     return false;
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&pdu_data), data, sizeof(pdu_data));
 
-  OLA_DEBUG << "Probe from " << UID(pdu_data.lower_uid) << " to " << UID(pdu_data.upper_uid);
+  OLA_DEBUG << "Probe from " << UID(pdu_data.lower_uid) << " to "
+            << UID(pdu_data.upper_uid);
 
   LLRPProbeRequest request(UID(pdu_data.lower_uid), UID(pdu_data.upper_uid));
-  request.client_tcp_connection_inactive = (pdu_data.filter & LLRPProbeRequestPDU::FILTER_CLIENT_TCP_CONNECTION_INACTIVE);
-  request.brokers_only = (pdu_data.filter & LLRPProbeRequestPDU::FILTER_BROKERS_ONLY);
+  request.client_tcp_connection_inactive =
+      (pdu_data.filter &
+       LLRPProbeRequestPDU::FILTER_CLIENT_TCP_CONNECTION_INACTIVE);
+  request.brokers_only = (pdu_data.filter &
+                          LLRPProbeRequestPDU::FILTER_BROKERS_ONLY);
   unsigned int known_uids_used_size = known_uids_size;
   request.known_uids = UIDSet(pdu_data.known_uids, &known_uids_used_size);
 

@@ -22,11 +22,11 @@
 #define LIBS_ACN_RDMPDU_H_
 
 #include <string>
-#include <ola/io/ByteString.h>
-#include <ola/io/IOStack.h>
-#include <ola/rdm/RDMPacket.h>
 
 #include "libs/acn/PDU.h"
+#include "ola/io/ByteString.h"
+#include "ola/io/IOStack.h"
+#include "ola/rdm/RDMPacket.h"
 
 namespace ola {
 namespace acn {

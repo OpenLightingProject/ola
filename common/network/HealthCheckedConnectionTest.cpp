@@ -260,7 +260,8 @@ void HealthCheckedConnectionTest::testChannelWithHeavyPacketLoss() {
  * Check the channel works when 2 of every 3 heartbeats are lost but the
  * timeout interval is 3 * heartbeat_interval rather than the default
  */
-void HealthCheckedConnectionTest::testChannelWithHeavyPacketLossLongerTimeout() {
+void HealthCheckedConnectionTest::
+    testChannelWithHeavyPacketLossLongerTimeout() {
   options.send_every = 3;
   MockHealthCheckedConnection connection(&socket,
                                          &m_ss,
@@ -284,7 +285,8 @@ void HealthCheckedConnectionTest::testChannelWithHeavyPacketLossLongerTimeout() 
  * Check the channel fails when 3 of every 4 heartbeats are lost even though
  * the timeout interval is 3 * heartbeat_interval
  */
-void HealthCheckedConnectionTest::testChannelWithVeryHeavyPacketLossLongerTimeout() {
+void HealthCheckedConnectionTest::
+    testChannelWithVeryHeavyPacketLossLongerTimeout() {
   options.send_every = 4;
   options.abort_on_failure = false;
   MockHealthCheckedConnection connection(&socket,
