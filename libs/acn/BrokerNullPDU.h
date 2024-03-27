@@ -13,29 +13,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * RDMPDU.h
- * The RDMPDU class
- * Copyright (C) 2012 Simon Newton
+ * BrokerNullPDU.h
+ * The BrokerNullPDU class
+ * Copyright (C) 2023 Peter Newman
  */
 
-#ifndef LIBS_ACN_RDMPDU_H_
-#define LIBS_ACN_RDMPDU_H_
+#ifndef LIBS_ACN_BROKERNULLPDU_H_
+#define LIBS_ACN_BROKERNULLPDU_H_
 
-#include <string>
+#include <ola/io/IOStack.h>
 
 #include "libs/acn/PDU.h"
-#include "ola/io/ByteString.h"
-#include "ola/io/IOStack.h"
-#include "ola/rdm/RDMPacket.h"
 
 namespace ola {
 namespace acn {
 
-class RDMPDU : public PDU {
+class BrokerNullPDU : public PDU {
  public:
-  explicit RDMPDU(const ola::io::ByteString &command):
-    PDU(ola::rdm::START_CODE, ONE_BYTE, true),
-    m_command(command) {}
+  explicit BrokerNullPDU(unsigned int vector):
+    PDU(vector, TWO_BYTES, true) {}
 
   unsigned int HeaderSize() const { return 0; }
   bool PackHeader(OLA_UNUSED uint8_t *data,
@@ -45,15 +41,16 @@ class RDMPDU : public PDU {
   }
   void PackHeader(OLA_UNUSED ola::io::OutputStream *stream) const {}
 
-  unsigned int DataSize() const;
-  bool PackData(uint8_t *data, unsigned int *length) const;
-  void PackData(ola::io::OutputStream *stream) const;
+  unsigned int DataSize() const { return 0; }
+  bool PackData(OLA_UNUSED uint8_t *data,
+                unsigned int *length) const {
+    *length = 0;
+    return true;
+  }
+  void PackData(OLA_UNUSED ola::io::OutputStream *stream) const {}
 
   static void PrependPDU(ola::io::IOStack *stack);
-
- private:
-  const ola::io::ByteString m_command;
 };
 }  // namespace acn
 }  // namespace ola
-#endif  // LIBS_ACN_RDMPDU_H_
+#endif  // LIBS_ACN_BROKERNULLPDU_H_

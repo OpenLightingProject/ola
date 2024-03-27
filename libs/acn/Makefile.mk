@@ -31,6 +31,20 @@ noinst_LTLIBRARIES += libs/acn/libolae131core.la
 libs_acn_libolae131core_la_SOURCES = \
     libs/acn/BaseInflator.cpp \
     libs/acn/BaseInflator.h \
+    libs/acn/BrokerClientAddInflator.h \
+    libs/acn/BrokerClientEntryChangeInflator.h \
+    libs/acn/BrokerClientEntryHeader.h \
+    libs/acn/BrokerClientEntryPDU.cpp \
+    libs/acn/BrokerClientEntryPDU.h \
+    libs/acn/BrokerClientRemoveInflator.h \
+    libs/acn/BrokerConnectPDU.cpp \
+    libs/acn/BrokerConnectPDU.h \
+    libs/acn/BrokerInflator.h \
+    libs/acn/BrokerNullInflator.h \
+    libs/acn/BrokerNullPDU.cpp \
+    libs/acn/BrokerNullPDU.h \
+    libs/acn/BrokerPDU.cpp \
+    libs/acn/BrokerPDU.h \
     libs/acn/DMPAddress.cpp \
     libs/acn/DMPAddress.h \
     libs/acn/DMPE131Inflator.cpp \
@@ -64,8 +78,12 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/LLRPHeader.h \
     libs/acn/LLRPInflator.cpp \
     libs/acn/LLRPInflator.h \
+    libs/acn/LLRPProbeReplyInflator.cpp \
+    libs/acn/LLRPProbeReplyInflator.h \
     libs/acn/LLRPProbeReplyPDU.cpp \
     libs/acn/LLRPProbeReplyPDU.h \
+    libs/acn/LLRPProbeRequestInflator.cpp \
+    libs/acn/LLRPProbeRequestInflator.h \
     libs/acn/LLRPProbeRequestPDU.cpp \
     libs/acn/LLRPProbeRequestPDU.h \
     libs/acn/LLRPPDU.cpp \
@@ -142,6 +160,10 @@ libs_acn_E131Tester_LDADD = \
     $(COMMON_TESTING_LIBS)
 
 libs_acn_E133Tester_SOURCES = \
+    libs/acn/BrokerClientEntryPDUTest.cpp \
+    libs/acn/BrokerConnectPDUTest.cpp \
+    libs/acn/BrokerNullPDUTest.cpp \
+    libs/acn/BrokerPDUTest.cpp \
     libs/acn/E133InflatorTest.cpp \
     libs/acn/E133PDUTest.cpp \
     libs/acn/RDMPDUTest.cpp

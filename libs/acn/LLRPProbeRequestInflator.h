@@ -13,48 +13,42 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * RDMInflator.h
- * Copyright (C) 2011 Simon Newton
+ * LLRPProbeRequestInflator.h
+ * Copyright (C) 2020 Peter Newman
  */
 
-#ifndef LIBS_ACN_RDMINFLATOR_H_
-#define LIBS_ACN_RDMINFLATOR_H_
+#ifndef LIBS_ACN_LLRPPROBEREQUESTINFLATOR_H_
+#define LIBS_ACN_LLRPPROBEREQUESTINFLATOR_H_
 
-#include <string>
 #include "ola/Callback.h"
 #include "ola/acn/ACNVectors.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/UIDSet.h"
 #include "libs/acn/BaseInflator.h"
-#include "libs/acn/TransportHeader.h"
-#include "libs/acn/E133Header.h"
+#include "libs/acn/HeaderSet.h"
 
 namespace ola {
 namespace acn {
 
-class RDMInflator: public BaseInflator {
-  friend class RDMInflatorTest;
+class LLRPProbeRequestInflator: public BaseInflator {
+  friend class LLRPProbeRequestInflatorTest;
 
  public:
   // These are pointers so the callers don't have to pull in all the headers.
   typedef ola::Callback3<void,
-                         const TransportHeader*,  // src ip & port
-                         const E133Header*,  // the E1.33 header
-                         const std::string&  // rdm data
-                        > RDMMessageHandler;
-
-  typedef ola::Callback2<void,
                          const HeaderSet*,  // the HeaderSet
-                         const std::string&  // rdm data
-                        > GenericRDMMessageHandler;
+                         const ola::rdm::UID&,  // lower UID
+                         const ola::rdm::UID&  // upper UID
+// TODO(Peter): Should we add the filter and known UIDs to the callback too?
+//,                         const ola::rdm::UIDSet,  // known UIDs
+                        > LLRPProbeRequestHandler;
 
-  explicit RDMInflator(unsigned int vector = ola::acn::VECTOR_FRAMING_RDMNET);
-  ~RDMInflator() {}
+  LLRPProbeRequestInflator();
+  ~LLRPProbeRequestInflator() {}
 
-  uint32_t Id() const { return m_vector; }
+  uint32_t Id() const { return ola::acn::VECTOR_LLRP_PROBE_REQUEST; }
 
-  void SetRDMHandler(RDMMessageHandler *handler);
-  void SetGenericRDMHandler(GenericRDMMessageHandler *handler);
-
-  static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
+  void SetLLRPProbeRequestHandler(LLRPProbeRequestHandler *handler);
 
  protected:
   bool DecodeHeader(HeaderSet *headers,
@@ -70,10 +64,8 @@ class RDMInflator: public BaseInflator {
                              unsigned int pdu_len);
 
  private:
-  std::auto_ptr<RDMMessageHandler> m_rdm_handler;
-  std::auto_ptr<GenericRDMMessageHandler> m_generic_rdm_handler;
-  unsigned int m_vector;
+  std::auto_ptr<LLRPProbeRequestHandler> m_llrp_probe_request_handler;
 };
 }  // namespace acn
 }  // namespace ola
-#endif  // LIBS_ACN_RDMINFLATOR_H_
+#endif  // LIBS_ACN_LLRPPROBEREQUESTINFLATOR_H_

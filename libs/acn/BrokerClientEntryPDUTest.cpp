@@ -13,82 +13,72 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * RDMPDUTest.cpp
- * Test fixture for the RDMPDU class
- * Copyright (C) 2012 Simon Newton
+ * BrokerClientEntryPDUTest.cpp
+ * Test fixture for the BrokerClientEntryPDU class
+ * Copyright (C) 2023 Peter Newman
  */
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <string.h>
-#include <string>
 
 #include "ola/Logging.h"
-#include "ola/io/ByteString.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/IOStack.h"
+#include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
+#include "libs/acn/BrokerClientEntryPDU.h"
 #include "libs/acn/PDUTestCommon.h"
-#include "libs/acn/RDMPDU.h"
+
 
 namespace ola {
 namespace acn {
 
-using ola::io::ByteString;
 using ola::io::IOQueue;
 using ola::io::IOStack;
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 
-class RDMPDUTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(RDMPDUTest);
-  CPPUNIT_TEST(testSimpleRDMPDU);
-  CPPUNIT_TEST(testSimpleRDMPDUToOutputStream);
+class BrokerClientEntryPDUTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(BrokerClientEntryPDUTest);
+  CPPUNIT_TEST(testSimpleBrokerClientEntryPDU);
+  CPPUNIT_TEST(testSimpleBrokerClientEntryPDUToOutputStream);
   CPPUNIT_TEST(testPrepend);
   CPPUNIT_TEST_SUITE_END();
 
  public:
-  void testSimpleRDMPDU();
-  void testSimpleRDMPDUToOutputStream();
+  void testSimpleBrokerClientEntryPDU();
+  void testSimpleBrokerClientEntryPDUToOutputStream();
   void testPrepend();
+
+  void setUp() {
+    ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
+  }
 
  private:
   static const unsigned int TEST_VECTOR;
-  static const uint8_t EXPECTED_GET_RESPONSE_BUFFER[];
+  static const uint8_t TEST_DATA[];
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(RDMPDUTest);
+const uint8_t BrokerClientEntryPDUTest::TEST_DATA[] = {0, 1, 2, 3, 4, 5,
+                                                       6, 7, 8, 9, 10, 11,
+                                                       12, 13, 14, 15};
 
-const unsigned int RDMPDUTest::TEST_VECTOR = 0xcc;
+CPPUNIT_TEST_SUITE_REGISTRATION(BrokerClientEntryPDUTest);
 
-const uint8_t RDMPDUTest::EXPECTED_GET_RESPONSE_BUFFER[] = {
-  1, 28,  // sub code & length
-  0, 3, 0, 0, 0, 4,   // dst uid
-  0, 1, 0, 0, 0, 2,   // src uid
-  0, 0, 0, 0, 10,  // transaction, port id, msg count & sub device
-  0x21, 1, 40, 4,  // command, param id, param data length
-  0x5a, 0x5a, 0x5a, 0x5a,  // param data
-  0x02, 0xb3  // checksum
-};
+const unsigned int BrokerClientEntryPDUTest::TEST_VECTOR = 39;
+
 
 /*
- * Test that packing an RDMPDU works.
+ * Test that packing a BrokerClientEntryPDU without data works.
  */
-void RDMPDUTest::testSimpleRDMPDU() {
-  ByteString empty;
-  RDMPDU empty_pdu(empty);
+void BrokerClientEntryPDUTest::testSimpleBrokerClientEntryPDU() {
+  const CID client_cid = CID::FromData(TEST_DATA);
+  BrokerClientEntryHeader header(client_cid);
+  BrokerClientEntryPDU pdu(TEST_VECTOR, header, NULL);
 
-  OLA_ASSERT_EQ(0u, empty_pdu.HeaderSize());
-  OLA_ASSERT_EQ(0u, empty_pdu.DataSize());
-  OLA_ASSERT_EQ(4u, empty_pdu.Size());
-
-  ByteString response(EXPECTED_GET_RESPONSE_BUFFER,
-                      sizeof(EXPECTED_GET_RESPONSE_BUFFER));
-  RDMPDU pdu(response);
-
-  OLA_ASSERT_EQ(0u, pdu.HeaderSize());
-  OLA_ASSERT_EQ(29u, pdu.DataSize());
-  OLA_ASSERT_EQ(33u, pdu.Size());
+  OLA_ASSERT_EQ(16u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(0u, pdu.DataSize());
+  OLA_ASSERT_EQ(23u, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
@@ -100,7 +90,13 @@ void RDMPDUTest::testSimpleRDMPDU() {
   OLA_ASSERT_EQ((uint8_t) 0xf0, data[0]);
   // bytes_used is technically data[1] and data[2] if > 255
   OLA_ASSERT_EQ((uint8_t) bytes_used, data[2]);
-  OLA_ASSERT_EQ(HostToNetwork((uint8_t) TEST_VECTOR), data[3]);
+  unsigned int actual_value;
+  memcpy(&actual_value, data + 3, sizeof(actual_value));
+  OLA_ASSERT_EQ(HostToNetwork(TEST_VECTOR), actual_value);
+
+  uint8_t buffer[CID::CID_LENGTH];
+  client_cid.Pack(buffer);
+  OLA_ASSERT_DATA_EQUALS(&data[7], CID::CID_LENGTH, buffer, sizeof(buffer));
 
   // test undersized buffer
   bytes_used = size - 1;
@@ -118,34 +114,29 @@ void RDMPDUTest::testSimpleRDMPDU() {
 /*
  * Test that writing to an output stream works.
  */
-void RDMPDUTest::testSimpleRDMPDUToOutputStream() {
-  ByteString response(EXPECTED_GET_RESPONSE_BUFFER,
-                      sizeof(EXPECTED_GET_RESPONSE_BUFFER));
-  RDMPDU pdu(response);
+void BrokerClientEntryPDUTest::testSimpleBrokerClientEntryPDUToOutputStream() {
+  const ola::acn::CID client_cid = CID::FromData(TEST_DATA);
+  BrokerClientEntryHeader header(client_cid);
+  BrokerClientEntryPDU pdu(TEST_VECTOR, header, NULL);
 
-  OLA_ASSERT_EQ(0u, pdu.HeaderSize());
-  OLA_ASSERT_EQ(29u, pdu.DataSize());
-  OLA_ASSERT_EQ(33u, pdu.Size());
+  OLA_ASSERT_EQ(16u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(0u, pdu.DataSize());
+  OLA_ASSERT_EQ(23u, pdu.Size());
 
   IOQueue output;
   OutputStream stream(&output);
   pdu.Write(&stream);
-  OLA_ASSERT_EQ(33u, output.Size());
+  OLA_ASSERT_EQ(23u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
   unsigned int pdu_size = output.Peek(pdu_data, output.Size());
   OLA_ASSERT_EQ(output.Size(), pdu_size);
 
   uint8_t EXPECTED[] = {
-    0xf0, 0x00, 0x21,
-    0xcc,
-    1, 28,  // sub code & length
-    0, 3, 0, 0, 0, 4,   // dst uid
-    0, 1, 0, 0, 0, 2,   // src uid
-    0, 0, 0, 0, 10,  // transaction, port id, msg count & sub device
-    0x21, 1, 40, 4,  // command, param id, param data length
-    0x5a, 0x5a, 0x5a, 0x5a,  // param data
-    0x02, 0xb3  // checksum
+    0xf0, 0x00, 0x17,
+    0, 0, 0, 39,
+    0, 1, 2, 3, 4, 5, 6, 7,
+    8, 9, 10, 11, 12, 13, 14, 15
   };
   OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), pdu_data, pdu_size);
   output.Pop(output.Size());
@@ -153,15 +144,23 @@ void RDMPDUTest::testSimpleRDMPDUToOutputStream() {
 }
 
 
-void RDMPDUTest::testPrepend() {
+void BrokerClientEntryPDUTest::testPrepend() {
+  const ola::acn::CID client_cid = CID::FromData(TEST_DATA);
   IOStack stack;
-  RDMPDU::PrependPDU(&stack);
+  BrokerClientEntryPDU::PrependPDU(&stack,
+                                   TEST_VECTOR,
+                                   client_cid);
 
   unsigned int length = stack.Size();
   uint8_t *buffer = new uint8_t[length];
   OLA_ASSERT(stack.Read(buffer, length));
 
-  const uint8_t expected_data[] = {0x70, 3, TEST_VECTOR};
+  const uint8_t expected_data[] = {
+    0xf0, 0x00, 0x17,
+    0, 0, 0, 39,
+    0, 1, 2, 3, 4, 5, 6, 7,
+    8, 9, 10, 11, 12, 13, 14, 15
+  };
   OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
   delete[] buffer;
 }

@@ -13,15 +13,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * RDMPDU.cpp
- * The RDMPDU
- * Copyright (C) 2012 Simon Newton
+ * BrokerPDU.cpp
+ * The BrokerPDU
+ * Copyright (C) 2023 Peter Newman
  */
 
-#include "libs/acn/RDMPDU.h"
 
+#include "ola/Logging.h"
+#include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/rdm/RDMPacket.h"
+#include "libs/acn/BrokerPDU.h"
 
 namespace ola {
 namespace acn {
@@ -29,25 +30,41 @@ namespace acn {
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 
-unsigned int RDMPDU::DataSize() const {
-  return static_cast<unsigned int>(m_command.size());
+/*
+ * Size of the data portion
+ */
+unsigned int BrokerPDU::DataSize() const {
+  return m_pdu ? m_pdu->Size() : 0;
 }
 
-bool RDMPDU::PackData(uint8_t *data, unsigned int *length) const {
-  *length = static_cast<unsigned int>(m_command.size());
-  memcpy(data, reinterpret_cast<const uint8_t*>(m_command.data()), *length);
+
+/*
+ * Pack the data portion.
+ */
+bool BrokerPDU::PackData(uint8_t *data, unsigned int *length) const {
+  if (m_pdu) {
+    return m_pdu->Pack(data, length);
+  }
+  *length = 0;
   return true;
 }
 
-void RDMPDU::PackData(ola::io::OutputStream *stream) const {
-  stream->Write(reinterpret_cast<const uint8_t*>(m_command.data()),
-                static_cast<unsigned int>(m_command.size()));
+
+/*
+ * Pack the data into a buffer
+ */
+void BrokerPDU::PackData(OutputStream *stream) const {
+  if (m_pdu) {
+    m_pdu->Write(stream);
+  }
 }
 
-void RDMPDU::PrependPDU(ola::io::IOStack *stack) {
-  uint8_t vector = HostToNetwork(ola::rdm::START_CODE);
+
+void BrokerPDU::PrependPDU(ola::io::IOStack *stack,
+                           uint16_t vector) {
+  vector = HostToNetwork(vector);
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
-  PrependFlagsAndLength(stack);
+  PrependFlagsAndLength(stack, VFLAG_MASK | HFLAG_MASK | DFLAG_MASK, true);
 }
 }  // namespace acn
 }  // namespace ola
