@@ -280,7 +280,7 @@ def SetWithExtraData(names, pid, pid_test_base_name, set_size):
     dummy_data = GenerateDummyData(set_size)
     if dummy_data is None:
       print(("  # DATA = b'foo'  # TODO(%s): Specify extra data if this isn't "
-             "enough.") % (dummy_data, getpass.getuser()))
+             "enough.") % (getpass.getuser()))
       print("  # Ensure the first %d bytes are sane/valid." % (set_size))
     elif dummy_data != 'foo':
       # Doesn't match default, explicitly set value
