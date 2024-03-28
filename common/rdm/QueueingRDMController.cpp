@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * QueueingRDMController.cpp
- * The Jese DMX TRI device.
+ * An RDM Controller that sends a single message at a time.
  * Copyright (C) 2010 Simon Newton
  */
 

@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * QueueingRDMControllerTest.cpp
- * Test fixture for the UID classes
+ * Test fixture for the QueueingRDMController
  * Copyright (C) 2005 Simon Newton
  */
 
