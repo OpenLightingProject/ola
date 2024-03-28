@@ -1,0 +1,14 @@
+[Unit]
+Description=Open Lighting Architecture RDM Test Server
+Documentation=man:olad(1)
+After=network.target remote-fs.target olad.service
+Wants=olad.service
+
+[Service]
+User=olad
+Environment=RDM_TEST_SERVER_OPTS="--world-writable"
+EnvironmentFile=-/etc/default/ola-rdm-tests
+ExecStart=/usr/bin/rdm_test_server.py $RDM_TEST_SERVER_OPTS
+
+[Install]
+WantedBy=multi-user.target

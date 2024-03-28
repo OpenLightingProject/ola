@@ -95,7 +95,8 @@ int main(int argc, char *argv[]) {
   ola::ParseFlags(&argc, argv);
 
   ola::InitLoggingFromFlags();
-  OLA_INFO << "OLA Daemon version " << ola::base::Version::GetVersion();
+  OLA_INFO << "OLA Daemon version " << ola::base::Version::GetVersion()
+           << " build " << ola::base::Version::GetBuildName();
 
   #ifndef OLAD_SKIP_ROOT_CHECK
   uid_t uid;
