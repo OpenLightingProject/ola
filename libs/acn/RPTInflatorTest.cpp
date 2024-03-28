@@ -60,7 +60,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RPTInflatorTest);
  */
 void RPTInflatorTest::testDecodeHeader() {
   RPTHeader::rpt_pdu_header header;
-  memset(&header, 0, sizeof(header));
+  // Need to cast the header before we memset as it's got a constructor to
+  // ensure the reserved value is set to zero by default
+  memset(reinterpret_cast<uint8_t*>(&header), 0, sizeof(header));
   RPTInflator inflator;
   HeaderSet header_set, header_set2;
   unsigned int bytes_used;
