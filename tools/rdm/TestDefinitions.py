@@ -8441,60 +8441,60 @@ class SetEndpointToUniverseWithExtraData(TestMixins.SetWithDataMixin,
   DATA = b'foobar'
 
 
-class AllSubDevicesGetRdmTrafficEnable(TestMixins.AllSubDevicesGetMixin,
+class AllSubDevicesGetRDMTrafficEnable(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a get RDM_TRAFFIC_ENABLE to ALL_SUB_DEVICES."""
   PID = 'RDM_TRAFFIC_ENABLE'
   DATA = [0x0001]
 
 
-# class GetRdmTrafficEnable(TestMixins.,
+# class GetRDMTrafficEnable(TestMixins.,
 #                           OptionalParameterTestFixture):
 #   CATEGORY = TestCategory.
 #   PID = 'RDM_TRAFFIC_ENABLE'
 # TODO(peter): Test get
 
 
-class GetZeroRdmTrafficEnable(TestMixins.GetZeroUInt16Mixin,
+class GetZeroRDMTrafficEnable(TestMixins.GetZeroUInt16Mixin,
                               OptionalParameterTestFixture):
   """GET RDM_TRAFFIC_ENABLE for endpoint id 0."""
   PID = 'RDM_TRAFFIC_ENABLE'
   OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
-class GetRdmTrafficEnableWithNoData(TestMixins.GetWithNoDataMixin,
+class GetRDMTrafficEnableWithNoData(TestMixins.GetWithNoDataMixin,
                                     OptionalParameterTestFixture):
   """GET RDM_TRAFFIC_ENABLE with no argument given."""
   PID = 'RDM_TRAFFIC_ENABLE'
 
 
-class GetRdmTrafficEnableWithExtraData(TestMixins.GetWithDataMixin,
+class GetRDMTrafficEnableWithExtraData(TestMixins.GetWithDataMixin,
                                        OptionalParameterTestFixture):
   """GET RDM_TRAFFIC_ENABLE with more than 2 bytes of data."""
   PID = 'RDM_TRAFFIC_ENABLE'
 
 
-# class SetRdmTrafficEnable(TestMixins.,
+# class SetRDMTrafficEnable(TestMixins.,
 #                           OptionalParameterTestFixture):
 #   CATEGORY = TestCategory.
 #   PID = 'RDM_TRAFFIC_ENABLE'
 # TODO(peter): Test set
 
 
-# class SetZeroRdmTrafficEnable(TestMixins.SetZero,
+# class SetZeroRDMTrafficEnable(TestMixins.SetZero,
 #                               OptionalParameterTestFixture):
 #   """SET RDM_TRAFFIC_ENABLE for endpoint id 0."""
 #   PID = 'RDM_TRAFFIC_ENABLE'
 # TODO(peter): Test set zero
 
 
-class SetRdmTrafficEnableWithNoData(TestMixins.SetWithNoDataMixin,
+class SetRDMTrafficEnableWithNoData(TestMixins.SetWithNoDataMixin,
                                     OptionalParameterTestFixture):
   """Set RDM_TRAFFIC_ENABLE command with no data."""
   PID = 'RDM_TRAFFIC_ENABLE'
 
 
-class SetRdmTrafficEnableWithExtraData(TestMixins.SetWithDataMixin,
+class SetRDMTrafficEnableWithExtraData(TestMixins.SetWithDataMixin,
                                        OptionalParameterTestFixture):
   """Send a SET RDM_TRAFFIC_ENABLE command with extra data."""
   PID = 'RDM_TRAFFIC_ENABLE'
