@@ -8059,7 +8059,7 @@ class SetEndpointModeWithExtraData(TestMixins.SetWithDataMixin,
                                    OptionalParameterTestFixture):
   """Send a SET ENDPOINT_MODE command with extra data."""
   PID = 'ENDPOINT_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetEndpointLabel(TestMixins.AllSubDevicesGetMixin,
@@ -8178,7 +8178,7 @@ class SetEndpointTimingWithExtraData(TestMixins.SetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Send a SET ENDPOINT_TIMING command with extra data."""
   PID = 'ENDPOINT_TIMING'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetEndpointTimingDescription(
@@ -8438,7 +8438,7 @@ class SetEndpointToUniverseWithExtraData(TestMixins.SetWithDataMixin,
                                          OptionalParameterTestFixture):
   """Send a SET ENDPOINT_TO_UNIVERSE command with extra data."""
   PID = 'ENDPOINT_TO_UNIVERSE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetRdmTrafficEnable(TestMixins.AllSubDevicesGetMixin,
@@ -8498,7 +8498,7 @@ class SetRdmTrafficEnableWithExtraData(TestMixins.SetWithDataMixin,
                                        OptionalParameterTestFixture):
   """Send a SET RDM_TRAFFIC_ENABLE command with extra data."""
   PID = 'RDM_TRAFFIC_ENABLE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetDiscoveryState(TestMixins.AllSubDevicesGetMixin,
@@ -8558,7 +8558,7 @@ class SetDiscoveryStateWithExtraData(TestMixins.SetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Send a SET DISCOVERY_STATE command with extra data."""
   PID = 'DISCOVERY_STATE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetBackgroundDiscovery(TestMixins.AllSubDevicesGetMixin,
@@ -8618,7 +8618,7 @@ class SetBackgroundDiscoveryWithExtraData(TestMixins.SetWithDataMixin,
                                           OptionalParameterTestFixture):
   """Send a SET BACKGROUND_DISCOVERY command with extra data."""
   PID = 'BACKGROUND_DISCOVERY'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetBackgroundQueuedStatusPolicy(
