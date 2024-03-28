@@ -21,9 +21,12 @@
  * same health checking logic (and agree on heartbeat intervals) for this to
  * work correctly.
  *
- * Even though this is called a E1.33 Health Checked Connection, it doesn't
- * actually rely on E1.33 at all. You can use it with any ACN based protocol
- * since it just sends PDUs with a ROOT_VECTOR_NULL as heartbeat messages.
+ * This is a E1.33 Health Checked Connection as it sends E1.33 Broker NULL PDUs
+ * using VECTOR_BROKER_NULL, but it also accepts any ACN root layer PDUs as a
+ * positive indication the connection is healthy.
+ *
+ * You could use it with any ACN based protocol by subclassing it and sending
+ * heartbeat messages of ROOT_VECTOR_NULL via SendHeartbeat instead.
  */
 
 #ifndef TOOLS_E133_E133HEALTHCHECKEDCONNECTION_H_
@@ -52,7 +55,9 @@ class E133HealthCheckedConnection
         ola::SingleUseCallback0<void> *on_timeout,
         ola::thread::SchedulingExecutorInterface *scheduler,
         const ola::TimeInterval heartbeat_interval =
-          ola::TimeInterval(E133_TCP_HEARTBEAT_INTERVAL, 0));
+          ola::TimeInterval(E133_TCP_HEARTBEAT_INTERVAL, 0),
+        const ola::TimeInterval timeout_interval =
+          ola::TimeInterval(E133_HEARTBEAT_TIMEOUT, 0));
 
     void SendHeartbeat();
     void HeartbeatTimeout();
@@ -64,6 +69,8 @@ class E133HealthCheckedConnection
     ola::thread::SchedulingExecutorInterface *m_executor;
 
     // The default interval in seconds for sending heartbeat messages.
-    static const unsigned int E133_TCP_HEARTBEAT_INTERVAL = 5;
+    static const unsigned int E133_TCP_HEARTBEAT_INTERVAL = 15;
+    // The default interval in seconds before timing out.
+    static const unsigned int E133_HEARTBEAT_TIMEOUT = 45;
 };
 #endif  // TOOLS_E133_E133HEALTHCHECKEDCONNECTION_H_
