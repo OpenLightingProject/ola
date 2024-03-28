@@ -19,8 +19,6 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <string.h>
-#include <string>
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
@@ -51,6 +49,10 @@ class BrokerNullPDUTest: public CppUnit::TestFixture {
   void testSimpleBrokerNullPDU();
   void testSimpleBrokerNullPDUToOutputStream();
   void testPrepend();
+
+  void setUp() {
+    ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
+  }
 
  private:
   static const uint16_t TEST_VECTOR;
