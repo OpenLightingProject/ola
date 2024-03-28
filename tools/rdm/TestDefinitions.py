@@ -8654,8 +8654,9 @@ class SetBackgroundQueuedStatusPolicyWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
 
 
-class SetBackgroundQueuedStatusPolicyWithExtraData(TestMixins.SetWithDataMixin,
-                                                   OptionalParameterTestFixture):
+class SetBackgroundQueuedStatusPolicyWithExtraData(
+        TestMixins.SetWithDataMixin,
+        OptionalParameterTestFixture):
   """Send a SET BACKGROUND_QUEUED_STATUS_POLICY command with extra data."""
   PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
 
@@ -8663,13 +8664,16 @@ class SetBackgroundQueuedStatusPolicyWithExtraData(TestMixins.SetWithDataMixin,
 class AllSubDevicesGetBackgroundQueuedStatusPolicyDescription(
         TestMixins.AllSubDevicesGetMixin,
         OptionalParameterTestFixture):
-  """Send a get BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION to ALL_SUB_DEVICES."""
+  """Send a get BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION to
+     ALL_SUB_DEVICES.
+  """
   PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
   DATA = [0x00]
 
 
-# class GetBackgroundQueuedStatusPolicyDescription(TestMixins.,
-#                                                  OptionalParameterTestFixture):
+# class GetBackgroundQueuedStatusPolicyDescription(
+#         TestMixins.,
+#         OptionalParameterTestFixture):
 #   CATEGORY = TestCategory.
 #   PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
 # TODO(peter): Test get
@@ -8685,7 +8689,9 @@ class GetBackgroundQueuedStatusPolicyDescriptionWithNoData(
 class GetBackgroundQueuedStatusPolicyDescriptionWithExtraData(
         TestMixins.GetWithDataMixin,
         OptionalParameterTestFixture):
-  """GET BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION with more than 1 byte of data."""
+  """GET BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION with more than 1 byte of
+     data.
+  """
   PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
 
 

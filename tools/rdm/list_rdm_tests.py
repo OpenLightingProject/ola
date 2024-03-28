@@ -154,14 +154,17 @@ def GetWithExtraData(names, pid, pid_test_base_name, get_size):
     dummy_data = GenerateDummyData(get_size)
     if dummy_data is None:
       print(("  #DATA = b'foo' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") % (getpass.getuser(), get_size))
+             "enough. Ensure the first %d bytes are sane/valid.") %
+             (getpass.getuser(), get_size))
     elif dummy_data != 'foo':
       # Doesn't match default, explicitly set value
       print(("  DATA = b'%s' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") % (dummy_data, getpass.getuser(), get_size))
+             "enough. Ensure the first %d bytes are sane/valid.") %
+             (dummy_data, getpass.getuser(), get_size))
     else:
       print(("  #DATA = b'%s' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") % (dummy_data, getpass.getuser(), get_size))
+             "enough. Ensure the first %d bytes are sane/valid.") %
+             (dummy_data, getpass.getuser(), get_size))
     print('')
     print('')
 
@@ -277,14 +280,17 @@ def SetWithExtraData(names, pid, pid_test_base_name, set_size):
     dummy_data = GenerateDummyData(set_size)
     if dummy_data is None:
       print(("  #DATA = b'foo' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") % (getpass.getuser(), set_size))
+             "enough. Ensure the first %d bytes are sane/valid.") %
+             (getpass.getuser(), set_size))
     elif dummy_data != 'foo':
       # Doesn't match default, explicitly set value
       print(("  DATA = b'%s' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") % (dummy_data, getpass.getuser(), set_size))
+             "enough. Ensure the first %d bytes are sane/valid.") %
+             (dummy_data, getpass.getuser(), set_size))
     else:
       print(("  #DATA = b'%s' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") % (dummy_data, getpass.getuser(), set_size))
+             "enough. Ensure the first %d bytes are sane/valid.") %
+             (dummy_data, getpass.getuser(), set_size))
     print('')
     print('')
 
@@ -353,7 +359,7 @@ def main():
         (pid.GetRequest(PidStore.RDM_GET).HasAtoms())):
       for atom in pid.GetRequest(PidStore.RDM_GET).GetAtoms():
         get_size += atom.size
-      #TODO(Peter): Should we just print this total all the time?
+      # TODO(Peter): Should we just print this total all the time?
       if get_size != pid.GetRequest(PidStore.RDM_GET).GetAtoms()[0].size:
         print('# Get requires %d bytes' % (get_size))
 
