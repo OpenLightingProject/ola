@@ -30,7 +30,7 @@
 namespace ola {
 namespace acn {
 
-class LLRPProbeReplyPDU : private PDU {
+class LLRPProbeReplyPDU : public PDU {
  public:
   typedef enum {
     LLRP_COMPONENT_TYPE_RPT_DEVICE = 0,  /**< Device */
@@ -38,6 +38,27 @@ class LLRPProbeReplyPDU : private PDU {
     LLRP_COMPONENT_TYPE_BROKER = 2,  /**< Broker */
     LLRP_COMPONENT_TYPE_NON_RDMNET = 0xff,  /**< Non-RDMnet */
   } LLRPComponentType;
+
+  explicit LLRPProbeReplyPDU(unsigned int vector,
+                             const ola::rdm::UID &target_uid,
+                             const ola::network::MACAddress &hardware_address,
+                             const LLRPComponentType type):
+    PDU(vector, ONE_BYTE, true),
+    m_target_uid(target_uid),
+    m_hardware_address(hardware_address),
+    m_type(type) {}
+
+  unsigned int HeaderSize() const { return 0; }
+  bool PackHeader(OLA_UNUSED uint8_t *data,
+                  unsigned int *length) const {
+    *length = 0;
+    return true;
+  }
+  void PackHeader(OLA_UNUSED ola::io::OutputStream *stream) const {}
+
+  unsigned int DataSize() const { return sizeof(llrp_probe_reply_pdu_data); }
+  bool PackData(uint8_t *data, unsigned int *length) const;
+  void PackData(ola::io::OutputStream *stream) const;
 
   static void PrependPDU(ola::io::IOStack *stack,
                          const ola::rdm::UID &target_uid,
@@ -53,6 +74,11 @@ class LLRPProbeReplyPDU : private PDU {
     uint8_t type;
   });
   typedef struct llrp_probe_reply_pdu_data_s llrp_probe_reply_pdu_data;
+
+ private:
+  const ola::rdm::UID m_target_uid;
+  const ola::network::MACAddress m_hardware_address;
+  const LLRPComponentType m_type;
 };
 }  // namespace acn
 }  // namespace ola

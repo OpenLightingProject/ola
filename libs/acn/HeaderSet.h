@@ -28,6 +28,7 @@
 #include "libs/acn/E133Header.h"
 #include "libs/acn/LLRPHeader.h"
 #include "libs/acn/RootHeader.h"
+#include "libs/acn/RPTHeader.h"
 #include "libs/acn/TransportHeader.h"
 
 namespace ola {
@@ -60,6 +61,9 @@ class HeaderSet {
     const LLRPHeader &GetLLRPHeader() const { return m_llrp_header; }
     void SetLLRPHeader(const LLRPHeader &header) { m_llrp_header = header; }
 
+    const RPTHeader &GetRPTHeader() const { return m_rpt_header; }
+    void SetRPTHeader(const RPTHeader &header) { m_rpt_header = header; }
+
     bool operator==(const HeaderSet &other) const {
       return (
           m_transport_header == other.m_transport_header &&
@@ -67,7 +71,8 @@ class HeaderSet {
           m_e131_header == other.m_e131_header &&
           m_e133_header == other.m_e133_header &&
           m_dmp_header == other.m_dmp_header &&
-          m_llrp_header == other.m_llrp_header);
+          m_llrp_header == other.m_llrp_header &&
+          m_rpt_header == other.m_rpt_header);
     }
 
  private:
@@ -77,6 +82,7 @@ class HeaderSet {
     E133Header m_e133_header;
     DMPHeader m_dmp_header;
     LLRPHeader m_llrp_header;
+    RPTHeader m_rpt_header;
 };
 }  // namespace acn
 }  // namespace ola

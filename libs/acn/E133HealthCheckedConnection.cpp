@@ -21,8 +21,8 @@
 #include <ola/io/IOStack.h>
 #include <ola/io/NonBlockingSender.h>
 
+#include "libs/acn/E133HealthCheckedConnection.h"
 #include "libs/acn/RootSender.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
 
 using ola::io::IOStack;
 
@@ -39,8 +39,9 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
   ola::io::NonBlockingSender *message_queue,
   ola::SingleUseCallback0<void> *on_timeout,
   ola::thread::SchedulingExecutorInterface *scheduler,
-  const ola::TimeInterval heartbeat_interval)
-    : HealthCheckedConnection(scheduler, heartbeat_interval),
+  const ola::TimeInterval heartbeat_interval,
+  const ola::TimeInterval timeout_interval)
+    : HealthCheckedConnection(scheduler, heartbeat_interval, timeout_interval),
       m_message_builder(message_builder),
       m_message_queue(message_queue),
       m_on_timeout(on_timeout),
@@ -52,8 +53,9 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
  * Send a E1.33 heartbeat
  */
 void E133HealthCheckedConnection::SendHeartbeat() {
+  OLA_DEBUG << "Sending heartbeat";
   IOStack packet(m_message_builder->pool());
-  m_message_builder->BuildNullTCPPacket(&packet);
+  m_message_builder->BuildBrokerNullTCPPacket(&packet);
   m_message_queue->SendMessage(&packet);
 }
 

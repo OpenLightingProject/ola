@@ -27,6 +27,7 @@
 #include <ola/e133/E133Enums.h>
 #include <ola/io/IOStack.h>
 #include <ola/io/MemoryBlockPool.h>
+#include <ola/rdm/RDMCommand.h>
 #include <string>
 
 namespace ola {
@@ -46,7 +47,17 @@ class MessageBuilder {
 
     void PrependRDMHeader(IOStack *packet);
 
+    void BuildTCPRDMCommandPDU(IOStack *packet,
+                               ola::rdm::RDMRequest *request,
+                               uint16_t source_endpoint_id,
+                               uint16_t destination_endpoint_id,
+                               uint32_t sequence_number);
+
     void BuildNullTCPPacket(IOStack *packet);
+
+    void BuildBrokerFetchClientListTCPPacket(IOStack *packet);
+
+    void BuildBrokerNullTCPPacket(IOStack *packet);
 
     void BuildTCPE133StatusPDU(IOStack *packet,
                                uint32_t sequence_number, uint16_t endpoint_id,

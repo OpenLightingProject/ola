@@ -1025,16 +1025,27 @@ class SetMinimumLevelMixin(ResponderTestFixture):
 
 
 class GetZeroMixin(ResponderTestFixture):
-  """Send a get to index 0, expect NR_DATA_OUT_OF_RANGE"""
+  """Send a get to index 0, normally expect NR_DATA_OUT_OF_RANGE
+
+    If OVERRIDE_NACKS is non-empty, this overrides NR_DATA_OUT_OF_RANGE and adds
+    a custom NackGetResult to the list of allowed results for each entry.
+  """
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = None
+  OVERRIDE_NACKS = []
 
   def Test(self):
     if self.DATA is None:
       self.SetBroken('No DATA given for %s' % self.__class__.__name__)
       return
 
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    results = []
+    if self.OVERRIDE_NACKS:
+      for nack in self.OVERRIDE_NACKS:
+        results.append(self.NackGetResult(nack))
+    else:
+      results.append(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.AddIfGetSupported(results)
     self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
 
