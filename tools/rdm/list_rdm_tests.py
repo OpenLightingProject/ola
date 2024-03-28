@@ -101,7 +101,7 @@ def AllSubDevicesGet(names, pid, pid_test_base_name, get_size):
             (pid.name))
     print('  PID = \'%s\'' % (pid.name))
     if get_size > 0:
-      print('  #DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' %
+      print('  # DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' %
             (getpass.getuser(), get_size, 's' if get_size > 1 else ''))
     print('')
     print('')
@@ -153,18 +153,18 @@ def GetWithExtraData(names, pid, pid_test_base_name, get_size):
     print('  PID = \'%s\'' % (pid.name))
     dummy_data = GenerateDummyData(get_size)
     if dummy_data is None:
-      print(("  #DATA = b'foo' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") %
-             (getpass.getuser(), get_size))
+      print(("  # DATA = b'foo'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (get_size))
     elif dummy_data != 'foo':
       # Doesn't match default, explicitly set value
-      print(("  DATA = b'%s' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") %
-             (dummy_data, getpass.getuser(), get_size))
+      print(("  DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (get_size))
     else:
-      print(("  #DATA = b'%s' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") %
-             (dummy_data, getpass.getuser(), get_size))
+      print(("  # DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (get_size))
     print('')
     print('')
 
@@ -279,18 +279,18 @@ def SetWithExtraData(names, pid, pid_test_base_name, set_size):
     print('  PID = \'%s\'' % (pid.name))
     dummy_data = GenerateDummyData(set_size)
     if dummy_data is None:
-      print(("  #DATA = b'foo' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") %
-             (getpass.getuser(), set_size))
+      print(("  # DATA = b'foo'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (set_size))
     elif dummy_data != 'foo':
       # Doesn't match default, explicitly set value
-      print(("  DATA = b'%s' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") %
-             (dummy_data, getpass.getuser(), set_size))
+      print(("  DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (set_size))
     else:
-      print(("  #DATA = b'%s' # TODO(%s): Specify extra data if this isn't "
-             "enough. Ensure the first %d bytes are sane/valid.") %
-             (dummy_data, getpass.getuser(), set_size))
+      print(("  # DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (set_size))
     print('')
     print('')
 
