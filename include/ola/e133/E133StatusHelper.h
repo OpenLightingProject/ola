@@ -22,15 +22,19 @@
 #define INCLUDE_OLA_E133_E133STATUSHELPER_H_
 
 #include <stdint.h>
+#include <ola/acn/ACNVectors.h>
 #include <ola/e133/E133Enums.h>
+#include <ola/rdm/RDMResponseCodes.h>
 #include <string>
 
 namespace ola {
 namespace e133 {
 
 using std::string;
+using ola::acn::RPTStatusVector;
 using ola::e133::E133StatusCode;
 using ola::e133::E133ConnectStatusCode;
+using ola::rdm::RDMStatusCode;
 
 bool IntToStatusCode(uint16_t input, E133StatusCode *status_code);
 string StatusCodeToString(E133StatusCode status_code);
@@ -38,6 +42,12 @@ string StatusCodeToString(E133StatusCode status_code);
 bool IntToConnectStatusCode(uint16_t input,
                             E133ConnectStatusCode *connect_status_code);
 string ConnectStatusCodeToString(E133ConnectStatusCode connect_status_code);
+
+bool IntToRPTStatusCode(uint16_t input,
+                        RPTStatusVector *rpt_status_code);
+string RPTStatusCodeToString(RPTStatusVector rpt_status_code);
+bool RPTStatusCodeToRDMStatusCode(RPTStatusVector rpt_status_code,
+                                  RDMStatusCode *rdm_status_code);
 }  // namespace e133
 }  // namespace ola
 #endif  // INCLUDE_OLA_E133_E133STATUSHELPER_H_
