@@ -78,7 +78,7 @@ enum PluginIds {
 }
 
 /**
- * If you add more here be sure to update ResponseCodeToString in RDMHelper.cpp
+ * If you add more here be sure to update StatusCodeToString in RDMHelper.cpp
  */
 enum RDMResponseCode {
   // The request/response completed correctly
