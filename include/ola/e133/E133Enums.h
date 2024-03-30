@@ -24,6 +24,12 @@
 namespace ola {
 namespace e133 {
 
+// Appendix A - Endpoints and Table 3-1: Endpoint ID Allocation
+static const uint16_t NULL_ENDPOINT = 0x0000;
+static const uint16_t MIN_DEVICE_ENDPOINT = 0x0001;
+static const uint16_t MAX_DEVICE_ENDPOINT = 0xF9FF;
+static const uint16_t BROADCAST_ENDPOINT = 0xFFFF;
+
 // Table A-6, Discovery Stats
 enum DiscoveryState {
   DISCOVERY_INCOMPLETE = 0,
