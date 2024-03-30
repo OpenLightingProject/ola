@@ -59,28 +59,11 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/E131Sender.cpp \
     libs/acn/E131Sender.h \
     libs/acn/HeaderSet.h \
-    libs/acn/LLRPHeader.h \
-    libs/acn/LLRPInflator.cpp \
-    libs/acn/LLRPInflator.h \
-    libs/acn/LLRPProbeReplyInflator.cpp \
-    libs/acn/LLRPProbeReplyInflator.h \
-    libs/acn/LLRPProbeReplyPDU.cpp \
-    libs/acn/LLRPProbeReplyPDU.h \
-    libs/acn/LLRPProbeRequestInflator.cpp \
-    libs/acn/LLRPProbeRequestInflator.h \
-    libs/acn/LLRPProbeRequestPDU.cpp \
-    libs/acn/LLRPProbeRequestPDU.h \
-    libs/acn/LLRPPDU.cpp \
-    libs/acn/LLRPPDU.h \
     libs/acn/PDU.cpp \
     libs/acn/PDU.h \
     libs/acn/PDUTestCommon.h \
     libs/acn/PreamblePacker.cpp \
     libs/acn/PreamblePacker.h \
-    libs/acn/RDMInflator.cpp \
-    libs/acn/RDMInflator.h \
-    libs/acn/RDMPDU.cpp \
-    libs/acn/RDMPDU.h \
     libs/acn/RootHeader.h \
     libs/acn/RootInflator.cpp \
     libs/acn/RootInflator.h \
@@ -88,15 +71,6 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/RootPDU.h \
     libs/acn/RootSender.cpp \
     libs/acn/RootSender.h \
-    libs/acn/RPTHeader.h \
-    libs/acn/RPTInflator.cpp \
-    libs/acn/RPTInflator.h \
-    libs/acn/RPTNotificationInflator.h \
-    libs/acn/RPTPDU.cpp \
-    libs/acn/RPTPDU.h \
-    libs/acn/RPTRequestInflator.h \
-    libs/acn/RPTRequestPDU.cpp \
-    libs/acn/RPTRequestPDU.h \
     libs/acn/TCPTransport.cpp \
     libs/acn/TCPTransport.h \
     libs/acn/Transport.h \
@@ -156,7 +130,35 @@ libs_acn_libolae133core_la_SOURCES = \
     libs/acn/E133StatusInflator.h \
     libs/acn/E133StatusPDU.cpp \
     libs/acn/E133StatusPDU.h \
-    libs/acn/MessageBuilder.cpp
+    libs/acn/LLRPHeader.h \
+    libs/acn/LLRPInflator.cpp \
+    libs/acn/LLRPInflator.h \
+    libs/acn/LLRPProbeReplyInflator.cpp \
+    libs/acn/LLRPProbeReplyInflator.h \
+    libs/acn/LLRPProbeReplyPDU.cpp \
+    libs/acn/LLRPProbeReplyPDU.h \
+    libs/acn/LLRPProbeRequestInflator.cpp \
+    libs/acn/LLRPProbeRequestInflator.h \
+    libs/acn/LLRPProbeRequestPDU.cpp \
+    libs/acn/LLRPProbeRequestPDU.h \
+    libs/acn/LLRPPDU.cpp \
+    libs/acn/LLRPPDU.h \
+    libs/acn/MessageBuilder.cpp \
+    libs/acn/RDMInflator.cpp \
+    libs/acn/RDMInflator.h \
+    libs/acn/RDMPDU.cpp \
+    libs/acn/RDMPDU.h \
+    libs/acn/RPTHeader.h \
+    libs/acn/RPTInflator.cpp \
+    libs/acn/RPTInflator.h \
+    libs/acn/RPTNotificationInflator.h \
+    libs/acn/RPTPDU.cpp \
+    libs/acn/RPTPDU.h \
+    libs/acn/RPTRequestInflator.h \
+    libs/acn/RPTRequestPDU.cpp \
+    libs/acn/RPTRequestPDU.h \
+    libs/acn/RPTStatusInflator.cpp \
+    libs/acn/RPTStatusInflator.h
 
 libs_acn_libolae133core_la_CXXFLAGS = \
     $(COMMON_E133_CXXFLAGS) $(uuid_CFLAGS)
@@ -208,6 +210,7 @@ libs_acn_E131Tester_LDADD = \
     $(COMMON_TESTING_LIBS)
 
 #    libs/acn/BrokerInflatorTest.cpp
+#    libs/acn/BrokerClientEntryRPTInflatorTest.cpp
 libs_acn_E133Tester_SOURCES = \
     libs/acn/BrokerClientEntryPDUTest.cpp \
     libs/acn/BrokerClientEntryRPTPDUTest.cpp \
@@ -236,16 +239,7 @@ libs_acn_LLRPTester_SOURCES = \
 libs_acn_LLRPTester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 libs_acn_LLRPTester_LDADD = \
     libs/acn/libolae131core.la \
-    $(COMMON_TESTING_LIBS)
-
-libs_acn_LLRPTester_SOURCES = \
-    libs/acn/LLRPInflatorTest.cpp \
-    libs/acn/LLRPPDUTest.cpp \
-    libs/acn/LLRPProbeReplyPDUTest.cpp \
-    libs/acn/LLRPProbeRequestPDUTest.cpp
-libs_acn_LLRPTester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
-libs_acn_LLRPTester_LDADD = \
-    libs/acn/libolae131core.la \
+    libs/acn/libolae133core.la \
     $(COMMON_TESTING_LIBS)
 
 libs_acn_TransportTester_SOURCES = \
