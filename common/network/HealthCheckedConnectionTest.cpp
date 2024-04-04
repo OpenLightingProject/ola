@@ -56,10 +56,28 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
 
     MockHealthCheckedConnection(ola::io::ConnectedDescriptor *descriptor,
                                 SelectServer *scheduler,
+                                const ola::TimeInterval heartbeat_interval,
                                 const ola::TimeInterval timeout_interval,
                                 const Options &options,
                                 MockClock *clock)
-        : HealthCheckedConnection(scheduler, timeout_interval),
+        : HealthCheckedConnection(scheduler,
+                                  heartbeat_interval,
+                                  timeout_interval),
+          m_descriptor(descriptor),
+          m_ss(scheduler),
+          m_options(options),
+          m_next_heartbeat(0),
+          m_expected_heartbeat(0),
+          m_channel_ok(true),
+          m_clock(clock) {
+    }
+
+    MockHealthCheckedConnection(ola::io::ConnectedDescriptor *descriptor,
+                                SelectServer *scheduler,
+                                const ola::TimeInterval heartbeat_interval,
+                                const Options &options,
+                                MockClock *clock)
+        : HealthCheckedConnection(scheduler, heartbeat_interval),
           m_descriptor(descriptor),
           m_ss(scheduler),
           m_options(options),
@@ -70,8 +88,10 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
     }
 
     void SendHeartbeat() {
+      OLA_DEBUG << "Maybe send heartbeat";
       if (m_options.send_every == 0 ||
           m_next_heartbeat % m_options.send_every == 0) {
+        OLA_DEBUG << "Sending heartbeat";
         m_descriptor->Send(&m_next_heartbeat, sizeof(m_next_heartbeat));
       }
       m_clock->AdvanceTime(0, 180000);
@@ -115,13 +135,18 @@ class HealthCheckedConnectionTest: public CppUnit::TestFixture {
     HealthCheckedConnectionTest()
         : CppUnit::TestFixture(),
           m_ss(NULL, &m_clock),
-          heartbeat_interval(0, 200000) {
+          heartbeat_interval(0, 200000),
+          // Allow a little bit of wiggle room so we don't hit timing issues
+          // when running the tests
+          timeout_interval(0, 650000) {
     }
 
   CPPUNIT_TEST_SUITE(HealthCheckedConnectionTest);
   CPPUNIT_TEST(testSimpleChannel);
   CPPUNIT_TEST(testChannelWithPacketLoss);
   CPPUNIT_TEST(testChannelWithHeavyPacketLoss);
+  CPPUNIT_TEST(testChannelWithHeavyPacketLossLongerTimeout);
+  CPPUNIT_TEST(testChannelWithVeryHeavyPacketLossLongerTimeout);
   CPPUNIT_TEST(testPauseAndResume);
   CPPUNIT_TEST_SUITE_END();
 
@@ -131,6 +156,8 @@ class HealthCheckedConnectionTest: public CppUnit::TestFixture {
     void testSimpleChannel();
     void testChannelWithPacketLoss();
     void testChannelWithHeavyPacketLoss();
+    void testChannelWithHeavyPacketLossLongerTimeout();
+    void testChannelWithVeryHeavyPacketLossLongerTimeout();
     void testPauseAndResume();
 
     void PauseReading(MockHealthCheckedConnection *connection) {
@@ -148,6 +175,7 @@ class HealthCheckedConnectionTest: public CppUnit::TestFixture {
     SelectServer m_ss;
     LoopbackDescriptor socket;
     TimeInterval heartbeat_interval;
+    TimeInterval timeout_interval;
     MockHealthCheckedConnection::Options options;
 };
 
@@ -206,7 +234,7 @@ void HealthCheckedConnectionTest::testChannelWithPacketLoss() {
 
 
 /**
- * Check the channel works when every 2nd heartbeat is lost
+ * Check the channel fails when 2 of every 3 heartbeats are lost
  */
 void HealthCheckedConnectionTest::testChannelWithHeavyPacketLoss() {
   options.send_every = 3;
@@ -214,6 +242,57 @@ void HealthCheckedConnectionTest::testChannelWithHeavyPacketLoss() {
   MockHealthCheckedConnection connection(&socket,
                                          &m_ss,
                                          heartbeat_interval,
+                                         options,
+                                         &m_clock);
+
+  socket.SetOnData(
+      NewCallback(&connection, &MockHealthCheckedConnection::ReadData));
+  connection.Setup();
+  m_ss.AddReadDescriptor(&socket);
+  connection.Setup();
+
+  m_ss.Run();
+  OLA_ASSERT_FALSE(connection.ChannelOk());
+}
+
+
+/**
+ * Check the channel works when 2 of every 3 heartbeats are lost but the
+ * timeout interval is 3 * heartbeat_interval rather than the default
+ */
+void HealthCheckedConnectionTest::
+    testChannelWithHeavyPacketLossLongerTimeout() {
+  options.send_every = 3;
+  MockHealthCheckedConnection connection(&socket,
+                                         &m_ss,
+                                         heartbeat_interval,
+                                         timeout_interval,
+                                         options,
+                                         &m_clock);
+
+  socket.SetOnData(
+      NewCallback(&connection, &MockHealthCheckedConnection::ReadData));
+  connection.Setup();
+  m_ss.AddReadDescriptor(&socket);
+  connection.Setup();
+
+  m_ss.Run();
+  OLA_ASSERT_TRUE(connection.ChannelOk());
+}
+
+
+/**
+ * Check the channel fails when 3 of every 4 heartbeats are lost even though
+ * the timeout interval is 3 * heartbeat_interval
+ */
+void HealthCheckedConnectionTest::
+    testChannelWithVeryHeavyPacketLossLongerTimeout() {
+  options.send_every = 4;
+  options.abort_on_failure = false;
+  MockHealthCheckedConnection connection(&socket,
+                                         &m_ss,
+                                         heartbeat_interval,
+                                         timeout_interval,
                                          options,
                                          &m_clock);
 

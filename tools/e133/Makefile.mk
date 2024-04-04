@@ -24,6 +24,7 @@ endif
 tools_e133_libolae133common_la_SOURCES = \
     tools/e133/E133HealthCheckedConnection.cpp \
     tools/e133/E133HealthCheckedConnection.h \
+    tools/e133/E133Helper.cpp \
     tools/e133/E133Receiver.cpp \
     tools/e133/E133StatusHelper.cpp \
     tools/e133/MessageBuilder.cpp

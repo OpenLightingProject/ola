@@ -50,6 +50,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
 
     void Visit(const BoolFieldDescriptor*);
     void Visit(const IPV4FieldDescriptor*);
+    void Visit(const IPV6FieldDescriptor*);
     void Visit(const MACFieldDescriptor*);
     void Visit(const UIDFieldDescriptor*);
     void Visit(const StringFieldDescriptor*);

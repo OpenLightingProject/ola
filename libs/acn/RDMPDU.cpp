@@ -20,14 +20,29 @@
 
 #include "libs/acn/RDMPDU.h"
 
-#include <ola/network/NetworkUtils.h>
-#include <ola/rdm/RDMPacket.h>
+#include "ola/network/NetworkUtils.h"
+#include "ola/rdm/RDMPacket.h"
 
 namespace ola {
 namespace acn {
 
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
+
+unsigned int RDMPDU::DataSize() const {
+  return static_cast<unsigned int>(m_command.size());
+}
+
+bool RDMPDU::PackData(uint8_t *data, unsigned int *length) const {
+  *length = static_cast<unsigned int>(m_command.size());
+  memcpy(data, reinterpret_cast<const uint8_t*>(m_command.data()), *length);
+  return true;
+}
+
+void RDMPDU::PackData(ola::io::OutputStream *stream) const {
+  stream->Write(reinterpret_cast<const uint8_t*>(m_command.data()),
+                static_cast<unsigned int>(m_command.size()));
+}
 
 void RDMPDU::PrependPDU(ola::io::IOStack *stack) {
   uint8_t vector = HostToNetwork(ola::rdm::START_CODE);

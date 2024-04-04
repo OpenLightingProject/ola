@@ -33,8 +33,8 @@ namespace acn {
 
 class RootPDU: public PDU {
  public:
-  explicit RootPDU(unsigned int vector):
-    PDU(vector),
+  explicit RootPDU(unsigned int vector, bool force_length_flag = false):
+    PDU(vector, FOUR_BYTES, force_length_flag),
     m_block(NULL),
     m_block_size(0) {}
   RootPDU(unsigned int vector,
@@ -59,8 +59,10 @@ class RootPDU: public PDU {
   const ola::acn::CID &Cid(const ola::acn::CID &cid) { return m_cid = cid; }
   void SetBlock(const PDUBlock<PDU> *block);
 
-  static void PrependPDU(ola::io::IOStack *stack, uint32_t vector,
-                         const ola::acn::CID &cid);
+  static void PrependPDU(ola::io::IOStack *stack,
+                         uint32_t vector,
+                         const ola::acn::CID &cid,
+                         bool force_length_flag = false);
 
  private:
   ola::acn::CID m_cid;
