@@ -50,6 +50,16 @@ unsigned int PDU::Size() const {
  * @return false on error, true otherwise
  */
 bool PDU::Pack(uint8_t *buffer, unsigned int *length) const {
+  if (!buffer) {
+    OLA_WARN << "PDU::Pack: missing buffer";
+    return false;
+  }
+
+  if (!length) {
+    OLA_WARN << "PDU::Pack: missing length";
+    return false;
+  }
+
   unsigned int size = Size();
   unsigned int offset = 0;
 
