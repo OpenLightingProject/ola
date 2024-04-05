@@ -76,8 +76,9 @@ bool RPTPDU::PackHeader(uint8_t *data, unsigned int *length) const {
  * Pack the data portion.
  */
 bool RPTPDU::PackData(uint8_t *data, unsigned int *length) const {
-  if (m_pdu)
+  if (m_pdu) {
     return m_pdu->Pack(data, length);
+  }
   *length = 0;
   return true;
 }
@@ -103,8 +104,9 @@ void RPTPDU::PackHeader(OutputStream *stream) const {
  * Pack the data into a buffer
  */
 void RPTPDU::PackData(OutputStream *stream) const {
-  if (m_pdu)
+  if (m_pdu) {
     m_pdu->Write(stream);
+  }
 }
 
 
