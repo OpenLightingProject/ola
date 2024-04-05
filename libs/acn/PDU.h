@@ -22,6 +22,7 @@
 #define LIBS_ACN_PDU_H_
 
 #include <stdint.h>
+#include <ola/Logging.h>
 #include <ola/acn/ACNFlags.h>
 #include <ola/io/OutputStream.h>
 #include <ola/io/OutputBuffer.h>
@@ -160,6 +161,16 @@ class PDUBlock {
  */
 template <class C>
 bool PDUBlock<C>::Pack(uint8_t *data, unsigned int *length) const {
+  if (!data) {
+    OLA_WARN << "PDUBlock::Pack: missing buffer";
+    return false;
+  }
+
+  if (!length) {
+    OLA_WARN << "PDUBock::Pack: missing length";
+    return false;
+  }
+
   bool status = true;
   unsigned int i = 0;
   typename std::vector<const C*>::const_iterator iter;
