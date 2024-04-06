@@ -37,12 +37,14 @@ class PDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PDUTest);
   CPPUNIT_TEST(testPDU);
   CPPUNIT_TEST(testPDUBlock);
+  CPPUNIT_TEST(testPDUToOutputStream);
   CPPUNIT_TEST(testBlockToOutputStream);
   CPPUNIT_TEST_SUITE_END();
 
  public:
     void testPDU();
     void testPDUBlock();
+    void testPDUToOutputStream();
     void testBlockToOutputStream();
 
     void setUp() {
@@ -137,6 +139,36 @@ void PDUTest::testPDUBlock() {
 
 
 /*
+ * Test that writing a PDU to an OutputStream works.
+ */
+void PDUTest::testPDUToOutputStream() {
+  MockPDU pdu(0x1234, 0x2468);
+
+  IOQueue output;
+  OutputStream stream(&output);
+  pdu.Write(&stream);
+  OLA_ASSERT_EQ(14u, output.Size());
+
+  uint8_t *data = new uint8_t[output.Size()];
+  unsigned int data_size = output.Peek(data, output.Size());
+  OLA_ASSERT_EQ(output.Size(), data_size);
+
+  uint8_t EXPECTED[] = {
+    0x70, 0x0e, 0, 0,
+    0, 0x2b,
+    0x34, 0x12, 0, 0,
+    0x68, 0x24, 0, 0
+  };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), data, data_size);
+  output.Pop(output.Size());
+
+  // test null stream
+  pdu.Write(NULL);
+  delete[] data;
+}
+
+
+/*
  * Test that writing to an OutputStream works.
  */
 void PDUTest::testBlockToOutputStream() {
@@ -164,6 +196,9 @@ void PDUTest::testBlockToOutputStream() {
   };
   OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), block_data, block_size);
   output.Pop(output.Size());
+
+  // test null stream
+  block.Write(NULL);
   delete[] block_data;
 }
 }  // namespace acn
