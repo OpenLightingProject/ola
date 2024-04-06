@@ -192,6 +192,11 @@ bool PDUBlock<C>::Pack(uint8_t *data, unsigned int *length) const {
  */
 template <class C>
 void PDUBlock<C>::Write(ola::io::OutputStream *stream) const {
+  if (!stream) {
+    OLA_WARN << "PDUBlock::Write: missing stream";
+    return;
+  }
+
   typename std::vector<const C*>::const_iterator iter;
   for (iter = m_pdus.begin(); iter != m_pdus.end(); ++iter) {
     // TODO(simon): optimize repeated headers & vectors here
