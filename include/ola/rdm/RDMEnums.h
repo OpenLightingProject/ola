@@ -718,6 +718,9 @@ static const uint8_t MAX_RDM_HOSTNAME_LENGTH = 63;
 static const uint8_t MAX_RDM_DOMAIN_NAME_LENGTH = 231;
 
 static const uint8_t DNS_NAME_SERVER_MAX_INDEX = 2;
+
+// Excluding the mandatory NULL terminator
+static const uint8_t MAX_RDM_SCOPE_STRING_LENGTH = 62;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_

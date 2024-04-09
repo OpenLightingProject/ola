@@ -24,6 +24,7 @@
 #include <ola/messaging/Descriptor.h>
 #include <ola/messaging/Message.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/IPV6Address.h>
 #include <ola/network/MACAddress.h>
 #include <ola/rdm/StringMessageBuilder.h>
 #include <ola/rdm/UID.h>
@@ -127,8 +128,9 @@ const ola::messaging::Message *StringMessageBuilder::GetMessage(
  */
 void StringMessageBuilder::Visit(
     const ola::messaging::BoolFieldDescriptor *descriptor) {
-  if (StopParsing())
+  if (StopParsing()) {
     return;
+  }
 
   bool value = false;
   bool valid = false;
@@ -170,8 +172,9 @@ void StringMessageBuilder::Visit(
  */
 void StringMessageBuilder::Visit(
     const ola::messaging::IPV4FieldDescriptor *descriptor) {
-  if (StopParsing())
+  if (StopParsing()) {
     return;
+  }
 
   string token = m_inputs[m_offset++];
   ola::network::IPV4Address ip_address;
@@ -186,12 +189,34 @@ void StringMessageBuilder::Visit(
 
 
 /**
+ * IPV6 Addresses
+ */
+void StringMessageBuilder::Visit(
+    const ola::messaging::IPV6FieldDescriptor *descriptor) {
+  if (StopParsing()) {
+    return;
+  }
+
+  string token = m_inputs[m_offset++];
+  ola::network::IPV6Address ipv6_address;
+  if (!ola::network::IPV6Address::FromString(token, &ipv6_address)) {
+    SetError(descriptor->Name());
+    return;
+  }
+
+  m_groups.top().push_back(
+      new ola::messaging::IPV6MessageField(descriptor, ipv6_address));
+}
+
+
+/**
  * MAC Addresses
  */
 void StringMessageBuilder::Visit(
     const ola::messaging::MACFieldDescriptor *descriptor) {
-  if (StopParsing())
+  if (StopParsing()) {
     return;
+  }
 
   string token = m_inputs[m_offset++];
   ola::network::MACAddress mac_address;
@@ -210,8 +235,9 @@ void StringMessageBuilder::Visit(
  */
 void StringMessageBuilder::Visit(
     const ola::messaging::UIDFieldDescriptor *descriptor) {
-  if (StopParsing())
+  if (StopParsing()) {
     return;
+  }
 
   string token = m_inputs[m_offset++];
   auto_ptr<UID> uid(UID::FromString(token));
@@ -231,8 +257,9 @@ void StringMessageBuilder::Visit(
  */
 void StringMessageBuilder::Visit(
     const ola::messaging::StringFieldDescriptor *descriptor) {
-  if (StopParsing())
+  if (StopParsing()) {
     return;
+  }
 
   const string &token = m_inputs[m_offset++];
   if (descriptor->MaxSize() != 0 &&
@@ -335,8 +362,9 @@ void StringMessageBuilder::SetError(const string &error) {
 template<typename type>
 void StringMessageBuilder::VisitInt(
     const ola::messaging::IntegerFieldDescriptor<type> *descriptor) {
-  if (StopParsing())
+  if (StopParsing()) {
     return;
+  }
 
   type int_value;
   string input = m_inputs[m_offset++];

@@ -201,6 +201,8 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
       EC_INVALID_IPV6_ADDRESS = 0x32,  // this is a guess
       EC_INVALID_PORT = 0x33  // this is a guess
     } dmx_tri_error_codes;
+    // The RDM NACK code is currently bitwise or-ed with 0x20 to generate the
+    // error code
     // TODO(Peter): try and test the guessed values
 
     static const unsigned int DATA_OFFSET = 2;  // first two bytes are CI & RC

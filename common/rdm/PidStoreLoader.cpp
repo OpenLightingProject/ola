@@ -478,6 +478,9 @@ const FieldDescriptor *PidStoreLoader::FieldToFieldDescriptor(
     case ola::rdm::pid::UID:
       descriptor = new ola::messaging::UIDFieldDescriptor(field.name());
       break;
+    case ola::rdm::pid::IPV6:
+      descriptor = new ola::messaging::IPV6FieldDescriptor(field.name());
+      break;
     default:
       OLA_WARN << "Unknown field type: " << field.type();
   }

@@ -38,7 +38,7 @@ class E133Inflator: public BaseInflator {
     }
     ~E133Inflator() {}
 
-    uint32_t Id() const { return ola::acn::VECTOR_ROOT_E133; }
+    uint32_t Id() const { return ola::acn::VECTOR_ROOT_RPT; }
 
  protected:
     bool DecodeHeader(HeaderSet *headers,

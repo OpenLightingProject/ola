@@ -78,7 +78,7 @@ jobs:
         shell: bash
         run: find . -type f -exec sha256sum {} \;
         working-directory: built
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ola-built-debian-${{ matrix.image_tag }}-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
@@ -112,7 +112,7 @@ jobs:
           echo "Debian Build Version: $OLA_DEBIAN_BUILD_VERSION"
         id: generate-build-name
       - name: Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ola-built-debian-${{ matrix.image_tag }}-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
           path: built
@@ -125,7 +125,7 @@ jobs:
         run: apt-get -y install autopkgtest
       - name: Test
         run: autopkgtest --output-dir=test-output built/*ges -- null
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always() # Always upload the test output, even on failed tests
         with:
           name: ola-test-output-debian-${{ matrix.image_tag }}-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}

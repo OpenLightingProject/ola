@@ -549,6 +549,29 @@ class IPV4(IntAtom):
     return super(IntAtom, self).Pack(value)
 
 
+class IPV6Atom(FixedSizeAtom):
+  """A sixteen-byte IPV6 address."""
+  def __init__(self, name, **kwargs):
+    super(IPV6Atom, self).__init__(name, 'BBBBBBBBBBBBBBBB')
+
+  def Unpack(self, data):
+    try:
+      return socket.inet_ntop(socket.AF_INET6, data)
+    except socket.error as e:
+      raise ArgsValidationError("Can't unpack data: %s" % e)
+
+  def Pack(self, args):
+    # TODO(Peter): This currently allows some rather quirky values as per
+    # inet_pton, we may want to restrict that in future
+    format_string = self._FormatString()
+    try:
+      data = struct.pack(format_string,
+                         socket.inet_pton(socket.AF_INET6, args[0]))
+    except socket.error as e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return data, 1
+
+
 class MACAtom(FixedSizeAtom):
   """A MAC address."""
   def __init__(self, name, **kwargs):
@@ -1271,6 +1294,8 @@ class PidStore(object):
       return UInt32(field_name, **args)
     elif field.type == Pids_pb2.IPV4:
       return IPV4(field_name, **args)
+    elif field.type == Pids_pb2.IPV6:
+      return IPV6Atom(field_name, **args)
     elif field.type == Pids_pb2.MAC:
       return MACAtom(field_name, **args)
     elif field.type == Pids_pb2.UID:

@@ -101,7 +101,7 @@ def AllSubDevicesGet(names, pid, pid_test_base_name, get_size):
             (pid.name))
     print('  PID = \'%s\'' % (pid.name))
     if get_size > 0:
-      print('  #DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' %
+      print('  # DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' %
             (getpass.getuser(), get_size, 's' if get_size > 1 else ''))
     print('')
     print('')
@@ -153,11 +153,18 @@ def GetWithExtraData(names, pid, pid_test_base_name, get_size):
     print('  PID = \'%s\'' % (pid.name))
     dummy_data = GenerateDummyData(get_size)
     if dummy_data is None:
-      print(("  #DATA = b'foo' # TODO(%s): Specify extra data if this isn't "
-             "enough") % (getpass.getuser()))
+      print(("  # DATA = b'foo'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (get_size))
     elif dummy_data != 'foo':
-      # Doesn't match default
-      print("  DATA = b'%s'" % (dummy_data))
+      # Doesn't match default, explicitly set value
+      print(("  DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (get_size))
+    else:
+      print(("  # DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (get_size))
     print('')
     print('')
 
@@ -272,11 +279,18 @@ def SetWithExtraData(names, pid, pid_test_base_name, set_size):
     print('  PID = \'%s\'' % (pid.name))
     dummy_data = GenerateDummyData(set_size)
     if dummy_data is None:
-      print(("  #DATA = b'foo' # TODO(%s): Specify extra data if this isn't "
-             "enough") % (getpass.getuser()))
+      print(("  # DATA = b'foo'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (set_size))
     elif dummy_data != 'foo':
-      # Doesn't match default
-      print("  DATA = b'%s'" % (dummy_data))
+      # Doesn't match default, explicitly set value
+      print(("  DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (set_size))
+    else:
+      print(("  # DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (set_size))
     print('')
     print('')
 
@@ -343,8 +357,11 @@ def main():
     get_size = 0
     if ((pid.RequestSupported(PidStore.RDM_GET)) and
         (pid.GetRequest(PidStore.RDM_GET).HasAtoms())):
-      get_size = pid.GetRequest(PidStore.RDM_GET).GetAtoms()[0].size
-      # print('# Get requires %d bytes' % (get_size))
+      for atom in pid.GetRequest(PidStore.RDM_GET).GetAtoms():
+        get_size += atom.size
+      # TODO(Peter): Should we just print this total all the time?
+      if get_size != pid.GetRequest(PidStore.RDM_GET).GetAtoms()[0].size:
+        print('# Get requires %d bytes' % (get_size))
 
     AllSubDevicesGet(names, pid, pid_test_base_name, get_size)
 
@@ -382,7 +399,8 @@ def main():
            first_atom.ValidateRawValueInRange(1))):
         SetZero(names, pid, pid_test_base_name, first_atom)
 
-      SetWithNoData(names, pid, pid_test_base_name)
+      if set_size > 0:
+        SetWithNoData(names, pid, pid_test_base_name)
 
       SetWithExtraData(names, pid, pid_test_base_name, set_size)
     else:
