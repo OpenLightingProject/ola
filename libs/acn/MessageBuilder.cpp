@@ -25,6 +25,7 @@
 #include "ola/e133/MessageBuilder.h"
 #include "ola/io/IOStack.h"
 #include "ola/rdm/RDMCommandSerializer.h"
+#include "ola/rdm/UID.h"
 
 #include "libs/acn/BrokerPDU.h"
 #include "libs/acn/E133PDU.h"
@@ -72,12 +73,27 @@ void MessageBuilder::BuildTCPRDMCommandPDU(IOStack *packet,
                                            uint16_t source_endpoint_id,
                                            uint16_t destination_endpoint_id,
                                            uint32_t sequence_number) {
+  // TODO(Peter): Potentially need some future way to handle controller
+  // messages here
+  ola::rdm::UID rpt_destination_uid = request->DestinationUID();
+  if (rpt_destination_uid.IsBroadcast()) {
+    if (rpt_destination_uid.IsVendorcast()) {
+      rpt_destination_uid = ola::rdm::UID::RPTVendorcastAddressDevices(
+          rpt_destination_uid);
+    } else {
+      rpt_destination_uid = ola::rdm::UID::RPTAllDevices();
+    }
+    if (destination_endpoint_id != NULL_ENDPOINT) {
+      // TODO(Peter): Should we handle the reserved endpoints now?
+      destination_endpoint_id = BROADCAST_ENDPOINT;
+    }
+  }
   ola::rdm::RDMCommandSerializer::Write(*request, packet);
   ola::acn::RDMPDU::PrependPDU(packet);
   ola::acn::RPTRequestPDU::PrependPDU(packet);
   RPTPDU::PrependPDU(packet, ola::acn::VECTOR_RPT_REQUEST,
                      request->SourceUID(), source_endpoint_id,
-                     request->DestinationUID(), destination_endpoint_id,
+                     rpt_destination_uid, destination_endpoint_id,
                      sequence_number);
   RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_RPT, m_cid, true);
   PreamblePacker::AddTCPPreamble(packet);
