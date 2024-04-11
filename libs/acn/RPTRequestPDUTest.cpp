@@ -139,6 +139,10 @@ void RPTRequestPDUTest::testPrepend() {
     0, 0, 0, 0x01
   };
   OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
+
+  // test null stack
+  RPTRequestPDU::PrependPDU(NULL);
+
   delete[] buffer;
 }
 }  // namespace acn
