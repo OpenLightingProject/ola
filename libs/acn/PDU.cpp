@@ -50,6 +50,16 @@ unsigned int PDU::Size() const {
  * @return false on error, true otherwise
  */
 bool PDU::Pack(uint8_t *buffer, unsigned int *length) const {
+  if (!buffer) {
+    OLA_WARN << "PDU::Pack: missing buffer";
+    return false;
+  }
+
+  if (!length) {
+    OLA_WARN << "PDU::Pack: missing length";
+    return false;
+  }
+
   unsigned int size = Size();
   unsigned int offset = 0;
 
@@ -121,6 +131,11 @@ bool PDU::Pack(uint8_t *buffer, unsigned int *length) const {
  * Write this PDU to an OutputStream.
  */
 void PDU::Write(OutputStream *stream) const {
+  if (!stream) {
+    OLA_WARN << "PDU::Write: missing stream";
+    return;
+  }
+
   unsigned int size = Size();
 
   if (size <= TWOB_LENGTH_LIMIT && !m_force_length_flag) {
@@ -163,6 +178,11 @@ void PDU::Write(OutputStream *stream) const {
 void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
                                 uint8_t flags,
                                 bool force_length_flag) {
+  if (!output) {
+    OLA_WARN << "PDU::PrependFlagsAndLength: missing output";
+    return;
+  }
+
   PrependFlagsAndLength(output, output->Size(), flags, force_length_flag);
 }
 
@@ -174,6 +194,11 @@ void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
                                 unsigned int size,
                                 uint8_t flags,
                                 bool force_length_flag) {
+  if (!output) {
+    OLA_WARN << "PDU::PrependFlagsAndLength: missing output";
+    return;
+  }
+
   if (size + 2 <= TWOB_LENGTH_LIMIT && !force_length_flag) {
     size += 2;
     uint16_t flags_and_length = static_cast<uint16_t>(size);

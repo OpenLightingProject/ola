@@ -13,39 +13,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * RDMPDU.cpp
- * The RDMPDU
- * Copyright (C) 2012 Simon Newton
+ * BrokerFetchClientListPDU.cpp
+ * The BrokerFetchClientListPDU
+ * Copyright (C) 2023 Peter Newman
  */
 
-#include "libs/acn/RDMPDU.h"
+#include "libs/acn/BrokerFetchClientListPDU.h"
 
-#include "ola/network/NetworkUtils.h"
-#include "ola/rdm/RDMPacket.h"
+#include <ola/network/NetworkUtils.h>
+#include <ola/acn/ACNVectors.h>
 
 namespace ola {
 namespace acn {
 
-using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 
-unsigned int RDMPDU::DataSize() const {
-  return static_cast<unsigned int>(m_command.size());
-}
-
-bool RDMPDU::PackData(uint8_t *data, unsigned int *length) const {
-  *length = static_cast<unsigned int>(m_command.size());
-  memcpy(data, reinterpret_cast<const uint8_t*>(m_command.data()), *length);
-  return true;
-}
-
-void RDMPDU::PackData(ola::io::OutputStream *stream) const {
-  stream->Write(reinterpret_cast<const uint8_t*>(m_command.data()),
-                static_cast<unsigned int>(m_command.size()));
-}
-
-void RDMPDU::PrependPDU(ola::io::IOStack *stack) {
-  uint8_t vector = HostToNetwork(ola::rdm::START_CODE);
+void BrokerFetchClientListPDU::PrependPDU(ola::io::IOStack *stack) {
+  uint16_t vector = HostToNetwork(static_cast<uint16_t>(
+      VECTOR_BROKER_FETCH_CLIENT_LIST));
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
   PrependFlagsAndLength(stack, VFLAG_MASK | HFLAG_MASK | DFLAG_MASK, true);
 }

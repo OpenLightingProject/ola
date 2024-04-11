@@ -24,10 +24,14 @@
 #include "ola/acn/CID.h"
 #include "ola/e133/MessageBuilder.h"
 #include "ola/io/IOStack.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 
+#include "libs/acn/BrokerPDU.h"
 #include "libs/acn/E133PDU.h"
 #include "libs/acn/RDMPDU.h"
 #include "libs/acn/RootPDU.h"
+#include "libs/acn/RPTPDU.h"
+#include "libs/acn/RPTRequestPDU.h"
 #include "libs/acn/E133StatusPDU.h"
 #include "libs/acn/PreamblePacker.h"
 
@@ -36,9 +40,11 @@ namespace e133 {
 
 using ola::acn::CID;
 using ola::io::IOStack;
+using ola::acn::BrokerPDU;
 using ola::acn::E133PDU;
 using ola::acn::PreamblePacker;
 using ola::acn::RootPDU;
+using ola::acn::RPTPDU;
 
 
 MessageBuilder::MessageBuilder(const CID &cid, const string &source_name)
@@ -59,10 +65,50 @@ void MessageBuilder::PrependRDMHeader(IOStack *packet) {
 
 
 /**
+ * Build a TCP E1.33 RDM Command PDU response.
+ */
+void MessageBuilder::BuildTCPRDMCommandPDU(IOStack *packet,
+                                           ola::rdm::RDMRequest *request,
+                                           uint16_t source_endpoint_id,
+                                           uint16_t destination_endpoint_id,
+                                           uint32_t sequence_number) {
+  ola::rdm::RDMCommandSerializer::Write(*request, packet);
+  ola::acn::RDMPDU::PrependPDU(packet);
+  ola::acn::RPTRequestPDU::PrependPDU(packet);
+  RPTPDU::PrependPDU(packet, ola::acn::VECTOR_RPT_REQUEST,
+                     request->SourceUID(), source_endpoint_id,
+                     request->DestinationUID(), destination_endpoint_id,
+                     sequence_number);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_RPT, m_cid, true);
+  PreamblePacker::AddTCPPreamble(packet);
+}
+
+
+/**
  * Build a NULL TCP packet. These packets can be used for heartbeats.
  */
 void MessageBuilder::BuildNullTCPPacket(IOStack *packet) {
   RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_NULL, m_cid);
+  PreamblePacker::AddTCPPreamble(packet);
+}
+
+
+/**
+ * Build a Broker Fetch Client List TCP packet.
+ */
+void MessageBuilder::BuildBrokerFetchClientListTCPPacket(IOStack *packet) {
+  BrokerPDU::PrependPDU(packet, ola::acn::VECTOR_BROKER_FETCH_CLIENT_LIST);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_BROKER, m_cid, true);
+  PreamblePacker::AddTCPPreamble(packet);
+}
+
+
+/**
+ * Build a Broker NULL TCP packet. These packets can be used for broker heartbeats.
+ */
+void MessageBuilder::BuildBrokerNullTCPPacket(IOStack *packet) {
+  BrokerPDU::PrependPDU(packet, ola::acn::VECTOR_BROKER_NULL);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_BROKER, m_cid, true);
   PreamblePacker::AddTCPPreamble(packet);
 }
 

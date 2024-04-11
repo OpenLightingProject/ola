@@ -25,6 +25,7 @@
 #include "ola/acn/CID.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/UID.h"
 #include "libs/acn/HeaderSet.h"
 #include "ola/testing/TestUtils.h"
 
@@ -36,11 +37,14 @@ using ola::acn::E131Rev2Header;
 using ola::acn::E133Header;
 using ola::acn::FOUR_BYTES;
 using ola::acn::HeaderSet;
+using ola::acn::LLRPHeader;
 using ola::acn::NON_RANGE;
 using ola::acn::ONE_BYTES;
 using ola::acn::RANGE_EQUAL;
 using ola::acn::RootHeader;
+using ola::acn::RPTHeader;
 using ola::acn::TransportHeader;
+using ola::rdm::UID;
 
 class HeaderSetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(HeaderSetTest);
@@ -49,6 +53,8 @@ class HeaderSetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testE131Header);
   CPPUNIT_TEST(testE133Header);
   CPPUNIT_TEST(testDMPHeader);
+  CPPUNIT_TEST(testLLRPHeader);
+  CPPUNIT_TEST(testRPTHeader);
   CPPUNIT_TEST(testHeaderSet);
   CPPUNIT_TEST_SUITE_END();
 
@@ -58,6 +64,8 @@ class HeaderSetTest: public CppUnit::TestFixture {
     void testE131Header();
     void testE133Header();
     void testDMPHeader();
+    void testLLRPHeader();
+    void testRPTHeader();
     void testHeaderSet();
 };
 
@@ -214,6 +222,59 @@ void HeaderSetTest::testDMPHeader() {
 
 
 /*
+ * test the E1.33 LLRP Header
+ */
+void HeaderSetTest::testLLRPHeader() {
+  CID cid = CID::Generate();
+
+  LLRPHeader header(cid, 9840);
+  OLA_ASSERT(cid == header.DestinationCid());
+  OLA_ASSERT_EQ((uint32_t) 9840, header.TransactionNumber());
+
+  // test copy and assign
+  LLRPHeader header2 = header;
+  OLA_ASSERT(header.DestinationCid() == header2.DestinationCid());
+  OLA_ASSERT_EQ(header.TransactionNumber(), header2.TransactionNumber());
+
+  LLRPHeader header3(header);
+  OLA_ASSERT(header.DestinationCid() == header3.DestinationCid());
+  OLA_ASSERT_EQ(header.TransactionNumber(), header3.TransactionNumber());
+  OLA_ASSERT(header == header3);
+}
+
+
+/*
+ * test the RPT Header
+ */
+void HeaderSetTest::testRPTHeader() {
+  UID src(1, 2);
+  UID dest(4, 10);
+  RPTHeader header(src, 3, dest, 5, 9840);
+  OLA_ASSERT(src == header.SourceUID());
+  OLA_ASSERT_EQ((uint16_t) 3, header.SourceEndpoint());
+  OLA_ASSERT(dest == header.DestinationUID());
+  OLA_ASSERT_EQ((uint16_t) 5, header.DestinationEndpoint());
+  OLA_ASSERT_EQ((uint32_t) 9840, header.Sequence());
+
+  // test copy and assign
+  RPTHeader header2 = header;
+  OLA_ASSERT(header.SourceUID() == header2.SourceUID());
+  OLA_ASSERT_EQ(header.SourceEndpoint(), header2.SourceEndpoint());
+  OLA_ASSERT(header.DestinationUID() == header2.DestinationUID());
+  OLA_ASSERT_EQ(header.DestinationEndpoint(), header2.DestinationEndpoint());
+  OLA_ASSERT_EQ(header.Sequence(), header2.Sequence());
+
+  RPTHeader header3(header);
+  OLA_ASSERT(header.SourceUID() == header3.SourceUID());
+  OLA_ASSERT_EQ(header.SourceEndpoint(), header3.SourceEndpoint());
+  OLA_ASSERT(header.DestinationUID() == header3.DestinationUID());
+  OLA_ASSERT_EQ(header.DestinationEndpoint(), header3.DestinationEndpoint());
+  OLA_ASSERT_EQ(header.Sequence(), header3.Sequence());
+  OLA_ASSERT(header == header3);
+}
+
+
+/*
  * Check that the header set works
  */
 void HeaderSetTest::testHeaderSet() {
@@ -222,6 +283,9 @@ void HeaderSetTest::testHeaderSet() {
   E131Header e131_header("e131", 1, 2, 6001);
   E133Header e133_header("foo", 1, 2050);
   DMPHeader dmp_header(false, false, NON_RANGE, ONE_BYTES);
+  CID destination_cid = CID::Generate();
+  LLRPHeader llrp_header(destination_cid, 9840);
+  RPTHeader rpt_header(UID(1, 2), 3, UID(4, 10), 5, 9840);
 
   // test the root header component
   CID cid = CID::Generate();
@@ -241,12 +305,22 @@ void HeaderSetTest::testHeaderSet() {
   headers.SetDMPHeader(dmp_header);
   OLA_ASSERT(dmp_header == headers.GetDMPHeader());
 
+  // test the LLRP headers component
+  headers.SetLLRPHeader(llrp_header);
+  OLA_ASSERT(llrp_header == headers.GetLLRPHeader());
+
+  // test the RPT headers component
+  headers.SetRPTHeader(rpt_header);
+  OLA_ASSERT(rpt_header == headers.GetRPTHeader());
+
   // test assign
   HeaderSet headers2 = headers;
   OLA_ASSERT(root_header == headers2.GetRootHeader());
   OLA_ASSERT(e131_header == headers2.GetE131Header());
   OLA_ASSERT(e133_header == headers2.GetE133Header());
   OLA_ASSERT(dmp_header == headers2.GetDMPHeader());
+  OLA_ASSERT(llrp_header == headers2.GetLLRPHeader());
+  OLA_ASSERT(rpt_header == headers2.GetRPTHeader());
   OLA_ASSERT(headers2 == headers);
 
   // test copy
@@ -255,5 +329,7 @@ void HeaderSetTest::testHeaderSet() {
   OLA_ASSERT(e131_header == headers3.GetE131Header());
   OLA_ASSERT(e133_header == headers3.GetE133Header());
   OLA_ASSERT(dmp_header == headers3.GetDMPHeader());
+  OLA_ASSERT(llrp_header == headers3.GetLLRPHeader());
+  OLA_ASSERT(rpt_header == headers3.GetRPTHeader());
   OLA_ASSERT(headers3 == headers);
 }
