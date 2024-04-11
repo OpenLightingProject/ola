@@ -117,6 +117,11 @@ void RPTPDU::PrependPDU(ola::io::IOStack *stack,
                         const ola::rdm::UID &destination_uid,
                         uint16_t destination_endpoint,
                         uint32_t sequence_number) {
+  if (!stack) {
+    OLA_WARN << "RPTPDU::PrependPDU: missing stack";
+    return;
+  }
+
   RPTHeader::rpt_pdu_header header;
   source_uid.Pack(header.source_uid, sizeof(header.source_uid));
   header.source_endpoint = HostToNetwork(source_endpoint);

@@ -22,6 +22,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/IOStack.h"
 #include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/UID.h"
@@ -34,6 +35,7 @@ namespace ola {
 namespace acn {
 
 using ola::io::IOQueue;
+using ola::io::IOStack;
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::rdm::UID;
@@ -42,11 +44,13 @@ class RPTPDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RPTPDUTest);
   CPPUNIT_TEST(testSimpleRPTPDU);
   CPPUNIT_TEST(testSimpleRPTPDUToOutputStream);
+  CPPUNIT_TEST(testPrepend);
   CPPUNIT_TEST_SUITE_END();
 
  public:
   void testSimpleRPTPDU();
   void testSimpleRPTPDUToOutputStream();
+  void testPrepend();
 
   void setUp() {
     ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
@@ -147,6 +151,41 @@ void RPTPDUTest::testSimpleRPTPDUToOutputStream() {
   OLA_ASSERT_DATA_EQUALS(EXPECTED, sizeof(EXPECTED), pdu_data, pdu_size);
   output.Pop(output.Size());
   delete[] pdu_data;
+}
+
+
+void RPTPDUTest::testPrepend() {
+  IOStack stack;
+  RPTPDU::PrependPDU(&stack,
+                     TEST_VECTOR,
+                     UID(0x0102, 0x03040506), 3456,
+                     UID(0x4050, 0x60708090), 7890,
+                     2370);
+
+  unsigned int length = stack.Size();
+  uint8_t *buffer = new uint8_t[length];
+  OLA_ASSERT(stack.Read(buffer, length));
+
+  const uint8_t expected_data[] = {
+    0xf0, 0x00, 0x1c,
+    0, 0, 0, 39,
+    1, 2, 3, 4, 5, 6,  // source UID
+    13, 128,  // source endpoint
+    64, 80, 96, 112, 128, 144,  // dest UID
+    30, 210,  // dest endpoint
+    0, 0, 9, 66,  // sequence number
+    0  // reserved
+  };
+  OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
+
+  // test null stack
+  RPTPDU::PrependPDU(NULL,
+                     TEST_VECTOR,
+                     UID(0x0102, 0x03040506), 3456,
+                     UID(0x4050, 0x60708090), 7890,
+                     2370);
+
+  delete[] buffer;
 }
 }  // namespace acn
 }  // namespace ola
