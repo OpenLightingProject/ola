@@ -8059,7 +8059,7 @@ class SetEndpointModeWithExtraData(TestMixins.SetWithDataMixin,
                                    OptionalParameterTestFixture):
   """Send a SET ENDPOINT_MODE command with extra data."""
   PID = 'ENDPOINT_MODE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetEndpointLabel(TestMixins.AllSubDevicesGetMixin,
@@ -8178,7 +8178,7 @@ class SetEndpointTimingWithExtraData(TestMixins.SetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Send a SET ENDPOINT_TIMING command with extra data."""
   PID = 'ENDPOINT_TIMING'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetEndpointTimingDescription(
@@ -8438,67 +8438,67 @@ class SetEndpointToUniverseWithExtraData(TestMixins.SetWithDataMixin,
                                          OptionalParameterTestFixture):
   """Send a SET ENDPOINT_TO_UNIVERSE command with extra data."""
   PID = 'ENDPOINT_TO_UNIVERSE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
-class AllSubDevicesGetRdmTrafficEnable(TestMixins.AllSubDevicesGetMixin,
+class AllSubDevicesGetRDMTrafficEnable(TestMixins.AllSubDevicesGetMixin,
                                        OptionalParameterTestFixture):
   """Send a get RDM_TRAFFIC_ENABLE to ALL_SUB_DEVICES."""
   PID = 'RDM_TRAFFIC_ENABLE'
   DATA = [0x0001]
 
 
-# class GetRdmTrafficEnable(TestMixins.,
+# class GetRDMTrafficEnable(TestMixins.,
 #                           OptionalParameterTestFixture):
 #   CATEGORY = TestCategory.
 #   PID = 'RDM_TRAFFIC_ENABLE'
 # TODO(peter): Test get
 
 
-class GetZeroRdmTrafficEnable(TestMixins.GetZeroUInt16Mixin,
+class GetZeroRDMTrafficEnable(TestMixins.GetZeroUInt16Mixin,
                               OptionalParameterTestFixture):
   """GET RDM_TRAFFIC_ENABLE for endpoint id 0."""
   PID = 'RDM_TRAFFIC_ENABLE'
   OVERRIDE_NACKS = [RDMNack.NR_ENDPOINT_NUMBER_INVALID]
 
 
-class GetRdmTrafficEnableWithNoData(TestMixins.GetWithNoDataMixin,
+class GetRDMTrafficEnableWithNoData(TestMixins.GetWithNoDataMixin,
                                     OptionalParameterTestFixture):
   """GET RDM_TRAFFIC_ENABLE with no argument given."""
   PID = 'RDM_TRAFFIC_ENABLE'
 
 
-class GetRdmTrafficEnableWithExtraData(TestMixins.GetWithDataMixin,
+class GetRDMTrafficEnableWithExtraData(TestMixins.GetWithDataMixin,
                                        OptionalParameterTestFixture):
   """GET RDM_TRAFFIC_ENABLE with more than 2 bytes of data."""
   PID = 'RDM_TRAFFIC_ENABLE'
 
 
-# class SetRdmTrafficEnable(TestMixins.,
+# class SetRDMTrafficEnable(TestMixins.,
 #                           OptionalParameterTestFixture):
 #   CATEGORY = TestCategory.
 #   PID = 'RDM_TRAFFIC_ENABLE'
 # TODO(peter): Test set
 
 
-# class SetZeroRdmTrafficEnable(TestMixins.SetZero,
+# class SetZeroRDMTrafficEnable(TestMixins.SetZero,
 #                               OptionalParameterTestFixture):
 #   """SET RDM_TRAFFIC_ENABLE for endpoint id 0."""
 #   PID = 'RDM_TRAFFIC_ENABLE'
 # TODO(peter): Test set zero
 
 
-class SetRdmTrafficEnableWithNoData(TestMixins.SetWithNoDataMixin,
+class SetRDMTrafficEnableWithNoData(TestMixins.SetWithNoDataMixin,
                                     OptionalParameterTestFixture):
   """Set RDM_TRAFFIC_ENABLE command with no data."""
   PID = 'RDM_TRAFFIC_ENABLE'
 
 
-class SetRdmTrafficEnableWithExtraData(TestMixins.SetWithDataMixin,
+class SetRDMTrafficEnableWithExtraData(TestMixins.SetWithDataMixin,
                                        OptionalParameterTestFixture):
   """Send a SET RDM_TRAFFIC_ENABLE command with extra data."""
   PID = 'RDM_TRAFFIC_ENABLE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetDiscoveryState(TestMixins.AllSubDevicesGetMixin,
@@ -8558,7 +8558,7 @@ class SetDiscoveryStateWithExtraData(TestMixins.SetWithDataMixin,
                                      OptionalParameterTestFixture):
   """Send a SET DISCOVERY_STATE command with extra data."""
   PID = 'DISCOVERY_STATE'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetBackgroundDiscovery(TestMixins.AllSubDevicesGetMixin,
@@ -8618,7 +8618,7 @@ class SetBackgroundDiscoveryWithExtraData(TestMixins.SetWithDataMixin,
                                           OptionalParameterTestFixture):
   """Send a SET BACKGROUND_DISCOVERY command with extra data."""
   PID = 'BACKGROUND_DISCOVERY'
-  DATA = 'foobar'
+  DATA = b'foobar'
 
 
 class AllSubDevicesGetBackgroundQueuedStatusPolicy(
@@ -8654,8 +8654,9 @@ class SetBackgroundQueuedStatusPolicyWithNoData(TestMixins.SetWithNoDataMixin,
   PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
 
 
-class SetBackgroundQueuedStatusPolicyWithExtraData(TestMixins.SetWithDataMixin,
-                                                   OptionalParameterTestFixture):
+class SetBackgroundQueuedStatusPolicyWithExtraData(
+        TestMixins.SetWithDataMixin,
+        OptionalParameterTestFixture):
   """Send a SET BACKGROUND_QUEUED_STATUS_POLICY command with extra data."""
   PID = 'BACKGROUND_QUEUED_STATUS_POLICY'
 
@@ -8663,13 +8664,16 @@ class SetBackgroundQueuedStatusPolicyWithExtraData(TestMixins.SetWithDataMixin,
 class AllSubDevicesGetBackgroundQueuedStatusPolicyDescription(
         TestMixins.AllSubDevicesGetMixin,
         OptionalParameterTestFixture):
-  """Send a get BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION to ALL_SUB_DEVICES."""
+  """Send a get BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION to
+     ALL_SUB_DEVICES.
+  """
   PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
   DATA = [0x00]
 
 
-# class GetBackgroundQueuedStatusPolicyDescription(TestMixins.,
-#                                                  OptionalParameterTestFixture):
+# class GetBackgroundQueuedStatusPolicyDescription(
+#         TestMixins.,
+#         OptionalParameterTestFixture):
 #   CATEGORY = TestCategory.
 #   PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
 # TODO(peter): Test get
@@ -8685,7 +8689,9 @@ class GetBackgroundQueuedStatusPolicyDescriptionWithNoData(
 class GetBackgroundQueuedStatusPolicyDescriptionWithExtraData(
         TestMixins.GetWithDataMixin,
         OptionalParameterTestFixture):
-  """GET BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION with more than 1 byte of data."""
+  """GET BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION with more than 1 byte of
+     data.
+  """
   PID = 'BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION'
 
 

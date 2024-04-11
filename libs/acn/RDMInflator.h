@@ -56,8 +56,6 @@ class RDMInflator: public BaseInflator {
   void SetRDMHandler(RDMMessageHandler *handler);
   void SetGenericRDMHandler(GenericRDMMessageHandler *handler);
 
-  static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
-
  protected:
   bool DecodeHeader(HeaderSet *headers,
                     const uint8_t *data,
