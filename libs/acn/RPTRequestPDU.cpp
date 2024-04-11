@@ -30,6 +30,11 @@ using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 
 void RPTRequestPDU::PrependPDU(ola::io::IOStack *stack) {
+  if (!stack) {
+    OLA_WARN << "RPTRequestPDU::PrependPDU: missing stack";
+    return;
+  }
+
   uint32_t vector = HostToNetwork(
       static_cast<uint32_t>(VECTOR_REQUEST_RDM_CMD));
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
