@@ -142,5 +142,104 @@ string ConnectStatusCodeToString(E133ConnectStatusCode connect_status_code) {
   }
   return "Unknown E1.33 Connect Status Code";
 }
+
+
+bool IntToRPTStatusCode(uint16_t input,
+                        RPTStatusVector *rpt_status_code) {
+  switch (input) {
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RDM_UID:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RDM_UID;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_ENDPOINT:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_UNKNOWN_ENDPOINT;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_BROADCAST_COMPLETE:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_BROADCAST_COMPLETE;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_VECTOR:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_UNKNOWN_VECTOR;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_MESSAGE:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_INVALID_MESSAGE;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS;
+      return true;
+    default:
+      return false;
+  }
+}
+
+
+string RPTStatusCodeToString(RPTStatusVector rpt_status_code) {
+  switch (rpt_status_code) {
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID:
+     return "Unknown RPT UID";
+    case ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT:
+     return "RDM Timeout";
+    case ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE:
+     return "RDM Invalid Response";
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RDM_UID:
+     return "Unknown RDM UID";
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_ENDPOINT:
+     return "Unknown Endpoint";
+    case ola::acn::VECTOR_RPT_STATUS_BROADCAST_COMPLETE:
+     return "Broadcast Complete";
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_VECTOR:
+     return "Unknown Vector";
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_MESSAGE:
+     return "Invalid Message";
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS:
+     return "Invalid Command Class";
+  }
+  return "Unknown E1.33 RPT Status Code";
+}
+
+
+bool RPTStatusCodeToRDMStatusCode(RPTStatusVector rpt_status_code,
+                                  RDMStatusCode *rdm_status_code) {
+  // TODO(Peter): Fill in the gaps, possibly adding additional RDMStatusCodes
+  // if required
+  switch (rpt_status_code) {
+//    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID:
+//      *rdm_status_code = ola::rdm::;
+//      return true;
+    case ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT:
+      *rdm_status_code = ola::rdm::RDM_TIMEOUT;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE:
+      *rdm_status_code = ola::rdm::RDM_INVALID_RESPONSE;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RDM_UID:
+      *rdm_status_code = ola::rdm::RDM_UNKNOWN_UID;
+      return true;
+//    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_ENDPOINT:
+//      *rdm_status_code = ola::rdm::;
+//      return true;
+    case ola::acn::VECTOR_RPT_STATUS_BROADCAST_COMPLETE:
+      *rdm_status_code = ola::rdm::RDM_WAS_BROADCAST;
+      return true;
+//    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_VECTOR:
+//      *rdm_status_code = ola::rdm::;
+//      return true;
+//    case ola::acn::VECTOR_RPT_STATUS_INVALID_MESSAGE:
+//      *rdm_status_code = ola::rdm::;
+//      return true;
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS:
+      *rdm_status_code = ola::rdm::RDM_INVALID_COMMAND_CLASS;
+      return true;
+    default:
+      return false;
+  }
+}
 }  // namespace e133
 }  // namespace ola
