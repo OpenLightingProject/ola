@@ -93,10 +93,10 @@ libs_acn_libolae133core_la_SOURCES = \
     libs/acn/BrokerClientEntryHeader.h \
     libs/acn/BrokerClientEntryPDU.cpp \
     libs/acn/BrokerClientEntryPDU.h \
-    libs/acn/BrokerClientEntryRPTPDU.cpp \
-    libs/acn/BrokerClientEntryRPTPDU.h \
     libs/acn/BrokerClientEntryRPTInflator.cpp \
     libs/acn/BrokerClientEntryRPTInflator.h \
+    libs/acn/BrokerClientEntryRPTPDU.cpp \
+    libs/acn/BrokerClientEntryRPTPDU.h \
     libs/acn/BrokerClientEntryUpdateInflator.h \
     libs/acn/BrokerClientRemoveInflator.h \
     libs/acn/BrokerConnectedClientListInflator.cpp \
