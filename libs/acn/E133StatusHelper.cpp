@@ -208,7 +208,8 @@ string RPTStatusCodeToString(RPTStatusVector rpt_status_code) {
 
 bool RPTStatusCodeToRDMStatusCode(RPTStatusVector rpt_status_code,
                                   RDMStatusCode *rdm_status_code) {
-  // TODO(Peter): Fill in the gaps, possibly adding other RDMStatusCodes if required
+  // TODO(Peter): Fill in the gaps, possibly adding additional RDMStatusCodes
+  // if required
   switch (rpt_status_code) {
 //    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID:
 //      *rdm_status_code = ola::rdm::;
