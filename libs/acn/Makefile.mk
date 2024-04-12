@@ -113,6 +113,12 @@ libs_acn_libolae131core_la_LIBADD = $(uuid_LIBS) \
 # libolae133core.la
 # This needs to be after libolaacn.la and libolae131core.la since it depends on
 # them. Otherwise it breaks the freeBSD build
+# TODO(Peter): Re-add these classes
+#    libs/acn/BrokerConnectedClientListInflator.cpp
+#    libs/acn/BrokerConnectedClientListInflator.h
+#    libs/acn/BrokerManager.cpp
+#    libs/acn/BrokerManagerImpl.cpp
+#    libs/acn/BrokerManagerImpl.h
 libs_acn_libolae133core_la_SOURCES = \
     libs/acn/BrokerClientAddInflator.h \
     libs/acn/BrokerClientEntryChangeInflator.h \
@@ -125,8 +131,6 @@ libs_acn_libolae133core_la_SOURCES = \
     libs/acn/BrokerClientEntryRPTInflator.h \
     libs/acn/BrokerClientEntryUpdateInflator.h \
     libs/acn/BrokerClientRemoveInflator.h \
-    libs/acn/BrokerConnectedClientListInflator.cpp \
-    libs/acn/BrokerConnectedClientListInflator.h \
     libs/acn/BrokerConnectPDU.cpp \
     libs/acn/BrokerConnectPDU.h \
     libs/acn/BrokerConnectReplyInflator.cpp \
@@ -135,9 +139,6 @@ libs_acn_libolae133core_la_SOURCES = \
     libs/acn/BrokerFetchClientListPDU.h \
     libs/acn/BrokerHeader.h \
     libs/acn/BrokerInflator.h \
-    libs/acn/BrokerManager.cpp \
-    libs/acn/BrokerManagerImpl.cpp \
-    libs/acn/BrokerManagerImpl.h \
     libs/acn/BrokerNullInflator.h \
     libs/acn/BrokerNullPDU.cpp \
     libs/acn/BrokerNullPDU.h \
