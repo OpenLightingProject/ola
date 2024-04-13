@@ -65,8 +65,7 @@ unsigned int BrokerConnectReplyInflator::InflatePDUBlock(HeaderSet *headers,
                            UID(pdu_data.client_uid));
 
   if (m_broker_connect_reply_handler.get()) {
-    m_broker_connect_reply_handler->Run(headers,
-                                        reply);
+    m_broker_connect_reply_handler->Run(headers, reply);
   } else {
     OLA_WARN << "No Broker Connect Reply handler defined!";
   }
