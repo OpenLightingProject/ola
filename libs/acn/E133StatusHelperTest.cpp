@@ -1,17 +1,17 @@
 /*
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E133StatusHelperTest.cpp
  * Test fixture for the E133 Status Helper code
@@ -62,7 +62,8 @@ void E133StatusHelperTest::testIntToStatusCode() {
   OLA_ASSERT_TRUE(IntToStatusCode(9, &value));
   OLA_ASSERT_EQ(value, ola::e133::SC_E133_BROADCAST_COMPLETE);
   // Update this if additional entries are added to the enum
-  OLA_ASSERT_FALSE(IntToStatusCode((ola::e133::SC_E133_BROADCAST_COMPLETE + 1), &value));
+  OLA_ASSERT_FALSE(IntToStatusCode((ola::e133::SC_E133_BROADCAST_COMPLETE + 1),
+                                   &value));
   // test null status code
   OLA_ASSERT_FALSE(IntToStatusCode(0, NULL));
 }
@@ -80,7 +81,8 @@ void E133StatusHelperTest::testIntToConnectStatusCode() {
   OLA_ASSERT_TRUE(IntToConnectStatusCode(5, &value));
   OLA_ASSERT_EQ(value, ola::e133::CONNECT_INVALID_UID);
   // Update this if additional entries are added to the enum
-  OLA_ASSERT_FALSE(IntToConnectStatusCode((ola::e133::CONNECT_INVALID_UID + 1), &value));
+  OLA_ASSERT_FALSE(IntToConnectStatusCode((ola::e133::CONNECT_INVALID_UID + 1),
+                                          &value));
   // test null status code
   OLA_ASSERT_FALSE(IntToConnectStatusCode(0, NULL));
 }
@@ -98,7 +100,8 @@ void E133StatusHelperTest::testIntToRPTStatusCode() {
   OLA_ASSERT_TRUE(IntToRPTStatusCode(9, &value));
   OLA_ASSERT_EQ(value, ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS);
   // Update this if additional entries are added to the enum
-  OLA_ASSERT_FALSE(IntToRPTStatusCode((ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS + 1), &value));
+  OLA_ASSERT_FALSE(IntToRPTStatusCode(
+      (ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS + 1), &value));
   // test null status code
   OLA_ASSERT_FALSE(IntToRPTStatusCode(1, NULL));
 }
@@ -110,15 +113,21 @@ void E133StatusHelperTest::testIntToRPTStatusCode() {
 void E133StatusHelperTest::testRPTStatusCodeToRDMStatusCode() {
   ola::rdm::RDMStatusCode value;
   // Update this if earlier entries are added to the conversion
-  OLA_ASSERT_TRUE(RPTStatusCodeToRDMStatusCode(ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT, &value));
+  OLA_ASSERT_TRUE(RPTStatusCodeToRDMStatusCode(
+      ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT, &value));
   OLA_ASSERT_EQ(value, ola::rdm::RDM_TIMEOUT);
-  OLA_ASSERT_TRUE(RPTStatusCodeToRDMStatusCode(ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE, &value));
+  OLA_ASSERT_TRUE(RPTStatusCodeToRDMStatusCode(
+      ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE, &value));
   OLA_ASSERT_EQ(value, ola::rdm::RDM_INVALID_RESPONSE);
-  OLA_ASSERT_TRUE(RPTStatusCodeToRDMStatusCode(ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS, &value));
+  OLA_ASSERT_TRUE(RPTStatusCodeToRDMStatusCode(
+      ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS, &value));
   OLA_ASSERT_EQ(value, ola::rdm::RDM_INVALID_COMMAND_CLASS);
-  // Because the function accepts an enum as input, the compile traps any out of range source entry
+  // Because the function accepts an enum as input, the compile traps any out
+  // of range source entry
   // Remove this once we provide suitable mapping for all statuses
-  OLA_ASSERT_FALSE(RPTStatusCodeToRDMStatusCode(ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID, &value));
+  OLA_ASSERT_FALSE(RPTStatusCodeToRDMStatusCode(
+      ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID, &value));
   // test null status code
-  OLA_ASSERT_FALSE(RPTStatusCodeToRDMStatusCode(ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT, NULL));
+  OLA_ASSERT_FALSE(RPTStatusCodeToRDMStatusCode(
+      ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT, NULL));
 }
