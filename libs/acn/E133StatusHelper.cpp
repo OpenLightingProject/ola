@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include <string>
+#include "ola/Logging.h"
 #include "ola/e133/E133StatusHelper.h"
 
 namespace ola {
@@ -31,6 +32,11 @@ using std::string;
  * Verify that the int is a valid E1.33 Status Code.
  */
 bool IntToStatusCode(uint16_t input, E133StatusCode *status_code) {
+  if (!status_code) {
+    OLA_WARN << "ola:e133::IntToStatusCode: missing status_code";
+    return false;
+  }
+
   switch (input) {
     case ola::e133::SC_E133_ACK:
       *status_code = ola::e133::SC_E133_ACK;
@@ -100,6 +106,12 @@ string StatusCodeToString(E133StatusCode status_code) {
 
 bool IntToConnectStatusCode(uint16_t input,
                             E133ConnectStatusCode *connect_status_code) {
+  if (!connect_status_code) {
+    OLA_WARN << "ola:e133::IntToConnectStatusCode: missing "
+             << "connect_status_code";
+    return false;
+  }
+
   switch (input) {
     case ola::e133::CONNECT_OK:
       *connect_status_code = ola::e133::CONNECT_OK;
@@ -146,6 +158,11 @@ string ConnectStatusCodeToString(E133ConnectStatusCode connect_status_code) {
 
 bool IntToRPTStatusCode(uint16_t input,
                         RPTStatusVector *rpt_status_code) {
+  if (!rpt_status_code) {
+    OLA_WARN << "ola:e133::IntToRPTStatusCode: missing rpt_status_code";
+    return false;
+  }
+
   switch (input) {
     case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID:
       *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID;
@@ -207,6 +224,12 @@ string RPTStatusCodeToString(RPTStatusVector rpt_status_code) {
 
 bool RPTStatusCodeToRDMStatusCode(RPTStatusVector rpt_status_code,
                                   RDMStatusCode *rdm_status_code) {
+  if (!rdm_status_code) {
+    OLA_WARN << "ola:e133::RPTStatusCodeToRDMStatusCode: missing "
+             << "rdm_status_code";
+    return false;
+  }
+
   // TODO(Peter): Fill in the gaps, possibly adding additional RDMStatusCodes
   // if required
   switch (rpt_status_code) {

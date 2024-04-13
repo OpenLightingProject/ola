@@ -217,6 +217,7 @@ libs_acn_E133Tester_SOURCES = \
     libs/acn/BrokerNullInflatorTest.cpp \
     libs/acn/BrokerNullPDUTest.cpp \
     libs/acn/BrokerPDUTest.cpp \
+    libs/acn/E133StatusHelperTest.cpp \
     libs/acn/E133InflatorTest.cpp \
     libs/acn/E133PDUTest.cpp \
     libs/acn/RDMPDUTest.cpp \
