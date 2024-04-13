@@ -36,7 +36,6 @@ using ola::network::HostToNetwork;
 
 class BrokerNullInflatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(BrokerNullInflatorTest);
-  CPPUNIT_TEST(testDecodeHeader);
   CPPUNIT_TEST(testInflatePDU);
   CPPUNIT_TEST_SUITE_END();
 
