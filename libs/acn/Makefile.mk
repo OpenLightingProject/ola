@@ -116,6 +116,7 @@ libs_acn_libolae131core_la_LIBADD = $(uuid_LIBS) \
 # TODO(Peter): Re-add these classes
 #    libs/acn/BrokerConnectedClientListInflator.cpp
 #    libs/acn/BrokerConnectedClientListInflator.h
+#    libs/acn/BrokerHeader.h
 #    libs/acn/BrokerManager.cpp
 #    libs/acn/BrokerManagerImpl.cpp
 #    libs/acn/BrokerManagerImpl.h
@@ -137,7 +138,6 @@ libs_acn_libolae133core_la_SOURCES = \
     libs/acn/BrokerConnectReplyInflator.h \
     libs/acn/BrokerFetchClientListPDU.cpp \
     libs/acn/BrokerFetchClientListPDU.h \
-    libs/acn/BrokerHeader.h \
     libs/acn/BrokerInflator.h \
     libs/acn/BrokerNullInflator.h \
     libs/acn/BrokerNullPDU.cpp \
