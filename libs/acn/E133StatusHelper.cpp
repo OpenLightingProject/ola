@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 #include <string>
+#include "ola/Logging.h"
 #include "ola/e133/E133StatusHelper.h"
 
 namespace ola {
@@ -31,6 +32,11 @@ using std::string;
  * Verify that the int is a valid E1.33 Status Code.
  */
 bool IntToStatusCode(uint16_t input, E133StatusCode *status_code) {
+  if (!status_code) {
+    OLA_WARN << "ola:e133::IntToStatusCode: missing status_code";
+    return false;
+  }
+
   switch (input) {
     case ola::e133::SC_E133_ACK:
       *status_code = ola::e133::SC_E133_ACK;
@@ -100,6 +106,12 @@ string StatusCodeToString(E133StatusCode status_code) {
 
 bool IntToConnectStatusCode(uint16_t input,
                             E133ConnectStatusCode *connect_status_code) {
+  if (!connect_status_code) {
+    OLA_WARN << "ola:e133::IntToConnectStatusCode: missing "
+             << "connect_status_code";
+    return false;
+  }
+
   switch (input) {
     case ola::e133::CONNECT_OK:
       *connect_status_code = ola::e133::CONNECT_OK;
@@ -141,6 +153,116 @@ string ConnectStatusCodeToString(E133ConnectStatusCode connect_status_code) {
      return "Invalid UID";
   }
   return "Unknown E1.33 Connect Status Code";
+}
+
+
+bool IntToRPTStatusCode(uint16_t input,
+                        RPTStatusVector *rpt_status_code) {
+  if (!rpt_status_code) {
+    OLA_WARN << "ola:e133::IntToRPTStatusCode: missing rpt_status_code";
+    return false;
+  }
+
+  switch (input) {
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RDM_UID:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RDM_UID;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_ENDPOINT:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_UNKNOWN_ENDPOINT;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_BROADCAST_COMPLETE:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_BROADCAST_COMPLETE;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_VECTOR:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_UNKNOWN_VECTOR;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_MESSAGE:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_INVALID_MESSAGE;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS:
+      *rpt_status_code = ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS;
+      return true;
+    default:
+      return false;
+  }
+}
+
+
+string RPTStatusCodeToString(RPTStatusVector rpt_status_code) {
+  switch (rpt_status_code) {
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID:
+     return "Unknown RPT UID";
+    case ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT:
+     return "RDM Timeout";
+    case ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE:
+     return "RDM Invalid Response";
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RDM_UID:
+     return "Unknown RDM UID";
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_ENDPOINT:
+     return "Unknown Endpoint";
+    case ola::acn::VECTOR_RPT_STATUS_BROADCAST_COMPLETE:
+     return "Broadcast Complete";
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_VECTOR:
+     return "Unknown Vector";
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_MESSAGE:
+     return "Invalid Message";
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS:
+     return "Invalid Command Class";
+  }
+  return "Unknown E1.33 RPT Status Code";
+}
+
+
+bool RPTStatusCodeToRDMStatusCode(RPTStatusVector rpt_status_code,
+                                  RDMStatusCode *rdm_status_code) {
+  if (!rdm_status_code) {
+    OLA_WARN << "ola:e133::RPTStatusCodeToRDMStatusCode: missing "
+             << "rdm_status_code";
+    return false;
+  }
+
+  // TODO(Peter): Fill in the gaps, possibly adding additional RDMStatusCodes
+  // if required
+  switch (rpt_status_code) {
+//    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RPT_UID:
+//      *rdm_status_code = ola::rdm::;
+//      return true;
+    case ola::acn::VECTOR_RPT_STATUS_RDM_TIMEOUT:
+      *rdm_status_code = ola::rdm::RDM_TIMEOUT;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_RDM_INVALID_RESPONSE:
+      *rdm_status_code = ola::rdm::RDM_INVALID_RESPONSE;
+      return true;
+    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_RDM_UID:
+      *rdm_status_code = ola::rdm::RDM_UNKNOWN_UID;
+      return true;
+//    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_ENDPOINT:
+//      *rdm_status_code = ola::rdm::;
+//      return true;
+    case ola::acn::VECTOR_RPT_STATUS_BROADCAST_COMPLETE:
+      *rdm_status_code = ola::rdm::RDM_WAS_BROADCAST;
+      return true;
+//    case ola::acn::VECTOR_RPT_STATUS_UNKNOWN_VECTOR:
+//      *rdm_status_code = ola::rdm::;
+//      return true;
+//    case ola::acn::VECTOR_RPT_STATUS_INVALID_MESSAGE:
+//      *rdm_status_code = ola::rdm::;
+//      return true;
+    case ola::acn::VECTOR_RPT_STATUS_INVALID_COMMAND_CLASS:
+      *rdm_status_code = ola::rdm::RDM_INVALID_COMMAND_CLASS;
+      return true;
+    default:
+      return false;
+  }
 }
 }  // namespace e133
 }  // namespace ola

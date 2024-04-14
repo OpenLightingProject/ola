@@ -96,7 +96,7 @@ class E133EndpointInterface
 
 /**
  * An E133Endpoint which wraps another RDM controller. This just passes
- * everything through the to controller.
+ * everything through to the controller.
  */
 class E133Endpoint: public E133EndpointInterface {
  public:
