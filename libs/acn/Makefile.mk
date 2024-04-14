@@ -209,8 +209,8 @@ libs_acn_E131Tester_LDADD = \
     libs/acn/libolae131core.la \
     $(COMMON_TESTING_LIBS)
 
-#    libs/acn/BrokerInflatorTest.cpp
 #    libs/acn/BrokerClientEntryRPTInflatorTest.cpp
+#    libs/acn/BrokerInflatorTest.cpp
 libs_acn_E133Tester_SOURCES = \
     libs/acn/BrokerClientEntryPDUTest.cpp \
     libs/acn/BrokerClientEntryRPTPDUTest.cpp \

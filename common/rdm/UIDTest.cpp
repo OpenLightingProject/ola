@@ -164,15 +164,15 @@ void UIDTest::testRPTUID() {
                 static_cast<uint16_t>(0xfffd));
   OLA_ASSERT_EQ(rpt_manufacturer_devices2.DeviceId(),
                 static_cast<uint32_t>(0x0001ffff));
+  // TODO(Peter): Handle the more complicated RPT vendorcast tests
   OLA_ASSERT_TRUE(rpt_all_controllers.IsBroadcast());
   OLA_ASSERT_FALSE(rpt_all_controllers.IsVendorcast());
   OLA_ASSERT_TRUE(rpt_all_devices.IsBroadcast());
   OLA_ASSERT_FALSE(rpt_all_devices.IsVendorcast());
-  // TODO(Peter): Handle the more complicated RPT vendorcast tests
-  // OLA_ASSERT_TRUE(rpt_manufacturer_devices.IsBroadcast());
-  // OLA_ASSERT_TRUE(rpt_manufacturer_devices.IsVendorcast());
-  // OLA_ASSERT_TRUE(rpt_manufacturer_devices2.IsBroadcast());
-  // OLA_ASSERT_TRUE(rpt_manufacturer_devices2.IsVendorcast());
+  OLA_ASSERT_TRUE(rpt_manufacturer_devices.IsBroadcast());
+  OLA_ASSERT_TRUE(rpt_manufacturer_devices.IsVendorcast());
+  OLA_ASSERT_TRUE(rpt_manufacturer_devices2.IsBroadcast());
+  OLA_ASSERT_TRUE(rpt_manufacturer_devices2.IsVendorcast());
 }
 
 

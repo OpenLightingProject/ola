@@ -21,6 +21,8 @@
 #ifndef INCLUDE_OLA_E133_E133ENUMS_H_
 #define INCLUDE_OLA_E133_E133ENUMS_H_
 
+#include <stdint.h>
+
 namespace ola {
 namespace e133 {
 
