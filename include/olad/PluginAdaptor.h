@@ -143,7 +143,7 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
   class PreferencesFactory *m_preferences_factory;
   class PortBrokerInterface *m_port_broker;
   const std::string *m_instance_name;
-  const ola::rdm::UID *m_uid;
+  const ola::rdm::UID *m_default_uid;
 
   DISALLOW_COPY_AND_ASSIGN(PluginAdaptor);
 };
