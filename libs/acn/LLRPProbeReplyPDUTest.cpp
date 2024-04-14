@@ -99,7 +99,8 @@ void LLRPProbeReplyPDUTest::testSimpleLLRPProbeReplyPDU() {
   OLA_ASSERT_DATA_EQUALS(&data[4], UID::LENGTH, buffer, sizeof(buffer));
   uint8_t buffer2[MACAddress::LENGTH];
   hardware_address.Pack(buffer2, sizeof(buffer2));
-  OLA_ASSERT_DATA_EQUALS(&data[10], MACAddress::LENGTH, buffer2, sizeof(buffer2));
+  OLA_ASSERT_DATA_EQUALS(&data[10], MACAddress::LENGTH,
+                         buffer2, sizeof(buffer2));
 
   // test undersized buffer
   bytes_used = size - 1;

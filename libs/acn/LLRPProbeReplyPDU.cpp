@@ -35,7 +35,8 @@ using ola::rdm::UID;
 bool LLRPProbeReplyPDU::PackData(uint8_t *data, unsigned int *length) const {
   llrp_probe_reply_pdu_data pdu_data;
   m_target_uid.Pack(pdu_data.target_uid, sizeof(pdu_data.target_uid));
-  m_hardware_address.Pack(pdu_data.hardware_address, sizeof(pdu_data.hardware_address));
+  m_hardware_address.Pack(pdu_data.hardware_address,
+                          sizeof(pdu_data.hardware_address));
   pdu_data.type = HostToNetwork(static_cast<uint8_t>(m_type));
 
   *length = sizeof(llrp_probe_reply_pdu_data);
