@@ -81,56 +81,6 @@ void LLRPProbeRequestPDU::PackData(ola::io::OutputStream *stream) const {
                                           (m_known_uids.Size() * UID::LENGTH)));
 }
 
-unsigned int LLRPProbeRequestPDU::DataSize() const {
-  llrp_probe_request_pdu_data data;
-  return static_cast<unsigned int>(sizeof(llrp_probe_request_pdu_data) -
-                                   sizeof(data.known_uids) +
-                                   (m_known_uids.Size() * UID::LENGTH));
-
-}
-
-bool LLRPProbeRequestPDU::PackData(uint8_t *data, unsigned int *length) const {
-  llrp_probe_request_pdu_data pdu_data;
-  m_lower_uid.Pack(pdu_data.lower_uid, sizeof(pdu_data.lower_uid));
-  m_upper_uid.Pack(pdu_data.upper_uid, sizeof(pdu_data.upper_uid));
-  uint16_t filter = 0;
-  if (m_client_tcp_connection_inactive) {
-    filter |= FILTER_CLIENT_TCP_CONNECTION_INACTIVE;
-  }
-  if (m_brokers_only) {
-    filter |= FILTER_BROKERS_ONLY;
-  }
-  pdu_data.filter = HostToNetwork(filter);
-  // TODO(Peter): We need to check we've got <= 200 UIDs here
-  m_known_uids.Pack(pdu_data.known_uids, sizeof(pdu_data.known_uids));
-  *length = static_cast<unsigned int>(sizeof(llrp_probe_request_pdu_data) -
-                                      sizeof(pdu_data.known_uids) +
-                                      (m_known_uids.Size() * UID::LENGTH));
-
-  memcpy(data, &pdu_data, *length);
-  return true;
-}
-
-void LLRPProbeRequestPDU::PackData(ola::io::OutputStream *stream) const {
-  llrp_probe_request_pdu_data data;
-  m_lower_uid.Pack(data.lower_uid, sizeof(data.lower_uid));
-  m_upper_uid.Pack(data.upper_uid, sizeof(data.upper_uid));
-  uint16_t filter = 0;
-  if (m_client_tcp_connection_inactive) {
-    filter |= FILTER_CLIENT_TCP_CONNECTION_INACTIVE;
-  }
-  if (m_brokers_only) {
-    filter |= FILTER_BROKERS_ONLY;
-  }
-  data.filter = HostToNetwork(filter);
-  // TODO(Peter): We need to check we've got <= 200 UIDs here
-  m_known_uids.Pack(data.known_uids, sizeof(data.known_uids));
-  stream->Write(reinterpret_cast<uint8_t*>(&data),
-                static_cast<unsigned int>(sizeof(llrp_probe_request_pdu_data) -
-                                          sizeof(data.known_uids) +
-                                          (m_known_uids.Size() * UID::LENGTH)));
-}
-
 void LLRPProbeRequestPDU::PrependPDU(ola::io::IOStack *stack,
                                      const UID &lower_uid,
                                      const UID &upper_uid,
