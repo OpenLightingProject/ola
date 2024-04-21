@@ -32,6 +32,27 @@ using ola::network::HostToNetwork;
 using ola::network::MACAddress;
 using ola::rdm::UID;
 
+bool LLRPProbeReplyPDU::PackData(uint8_t *data, unsigned int *length) const {
+  llrp_probe_reply_pdu_data pdu_data;
+  m_target_uid.Pack(pdu_data.target_uid, sizeof(pdu_data.target_uid));
+  m_hardware_address.Pack(pdu_data.hardware_address,
+                          sizeof(pdu_data.hardware_address));
+  pdu_data.type = HostToNetwork(static_cast<uint8_t>(m_type));
+
+  *length = sizeof(llrp_probe_reply_pdu_data);
+  memcpy(data, &pdu_data, *length);
+  return true;
+}
+
+void LLRPProbeReplyPDU::PackData(ola::io::OutputStream *stream) const {
+  llrp_probe_reply_pdu_data data;
+  m_target_uid.Pack(data.target_uid, sizeof(data.target_uid));
+  m_hardware_address.Pack(data.hardware_address, sizeof(data.hardware_address));
+  data.type = HostToNetwork(static_cast<uint8_t>(m_type));
+  stream->Write(reinterpret_cast<uint8_t*>(&data),
+                static_cast<unsigned int>(sizeof(llrp_probe_reply_pdu_data)));
+}
+
 void LLRPProbeReplyPDU::PrependPDU(ola::io::IOStack *stack,
                                    const UID &target_uid,
                                    const MACAddress &hardware_address,
