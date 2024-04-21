@@ -49,7 +49,7 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
    * @param preferences_factory pointer to the PreferencesFactory object
    * @param port_broker pointer to the PortBroker object
    * @param instance_name the instance name of this OlaServer
-   * @param uid the ola::rdm::UID of this OlaServer
+   * @param uid the default ola::rdm::UID of this OlaServer
    */
   PluginAdaptor(class DeviceManager *device_manager,
                 ola::io::SelectServerInterface *select_server,
