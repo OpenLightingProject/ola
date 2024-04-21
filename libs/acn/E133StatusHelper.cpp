@@ -27,6 +27,10 @@ namespace ola {
 namespace e133 {
 
 using std::string;
+using ola::acn::RPTStatusVector;
+using ola::e133::E133StatusCode;
+using ola::e133::E133ConnectStatusCode;
+using ola::rdm::RDMStatusCode;
 
 /**
  * Verify that the int is a valid E1.33 Status Code.

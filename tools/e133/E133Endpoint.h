@@ -81,11 +81,11 @@ class E133EndpointInterface
 
     // ENDPOINT_TIMING_DESCRIPTION
 
-    // ENDPOINT_DEVICE_LIST_CHANGE
-    virtual uint32_t device_list_change() const = 0;
+    // ENDPOINT_RESPONDER_LIST_CHANGE
+    virtual uint32_t responder_list_change() const = 0;
 
-    // ENDPOINT_DEVICES
-    virtual void EndpointDevices(UIDSet *uids) const = 0;
+    // ENDPOINT_RESPONDERS
+    virtual void EndpointResponders(UIDSet *uids) const = 0;
 
     // BINDING_AND_CONTROL_FIELDS
 
@@ -141,8 +141,8 @@ class E133Endpoint: public E133EndpointInterface {
       m_endpoint_label = endpoint_label;
     }
 
-    uint32_t device_list_change() const { return m_device_list_change; }
-    void EndpointDevices(UIDSet *uids) const { *uids = m_uids; }
+    uint32_t responder_list_change() const { return m_responder_list_change; }
+    void EndpointResponders(UIDSet *uids) const { *uids = m_uids; }
 
     virtual void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     virtual void RunIncrementalDiscovery(
@@ -156,7 +156,7 @@ class E133Endpoint: public E133EndpointInterface {
     const bool m_is_physical;
     uint16_t m_universe;
     string m_endpoint_label;
-    uint32_t m_device_list_change;
+    uint32_t m_responder_list_change;
     UIDSet m_uids;
     DiscoverableRDMControllerInterface *m_controller;
 };
