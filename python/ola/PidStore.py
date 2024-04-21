@@ -1067,7 +1067,7 @@ class PidStore(object):
       if validate:
         if ((pid_pb.value >= RDMConstants.RDM_MANUFACTURER_PID_MIN) and
             (pid_pb.value <= RDMConstants.RDM_MANUFACTURER_PID_MAX)):
-          raise InvalidPidFormat('%0x04hx between %0x04hx and %0x04hx in %s' %
+          raise InvalidPidFormat('0x%04hx between 0x%04hx and 0x%04hx in %s' %
                                  (pid_pb.value,
                                   RDMConstants.RDM_MANUFACTURER_PID_MIN,
                                   RDMConstants.RDM_MANUFACTURER_PID_MAX,
@@ -1103,7 +1103,7 @@ class PidStore(object):
           if ((pid_pb.value < RDMConstants.RDM_MANUFACTURER_PID_MIN) or
               (pid_pb.value > RDMConstants.RDM_MANUFACTURER_PID_MAX)):
             raise InvalidPidFormat(
-              'Manufacturer pid 0x%04hx not between %0x04hx and %0x04hx' %
+              'Manufacturer pid 0x%04hx not between 0x%04hx and 0x%04hx' %
               (pid_pb.value,
                RDMConstants.RDM_MANUFACTURER_PID_MIN,
                RDMConstants.RDM_MANUFACTURER_PID_MAX))
