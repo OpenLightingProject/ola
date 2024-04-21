@@ -44,7 +44,7 @@ E133Endpoint::E133Endpoint(DiscoverableRDMControllerInterface *controller,
       m_is_physical(properties.is_physical),
       m_universe(UNPATCHED_UNIVERSE),
       m_endpoint_label(""),
-      m_device_list_change(0),
+      m_responder_list_change(0),
       m_controller(controller) {
 }
 
