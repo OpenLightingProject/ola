@@ -87,6 +87,11 @@ void LLRPProbeRequestPDU::PrependPDU(ola::io::IOStack *stack,
                                      bool client_tcp_connection_inactive,
                                      bool brokers_only,
                                      const ola::rdm::UIDSet &known_uids) {
+  if (!stack) {
+    OLA_WARN << "LLRPProbeRequestPDU::PrependPDU: missing stack";
+    return;
+  }
+
   llrp_probe_request_pdu_data data;
   lower_uid.Pack(data.lower_uid, sizeof(data.lower_uid));
   upper_uid.Pack(data.upper_uid, sizeof(data.upper_uid));
