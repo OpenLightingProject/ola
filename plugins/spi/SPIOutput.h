@@ -73,7 +73,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
 
  private:
   /**
-   * The RDM Operations for the MovingLightResponder.
+   * The RDM Operations for the SPIOutput.
    */
   class RDMOps : public ola::rdm::ResponderOps<SPIOutput> {
    public:
