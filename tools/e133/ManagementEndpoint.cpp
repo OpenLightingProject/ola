@@ -350,7 +350,8 @@ RDMResponse *ManagementEndpoint::GetEndpointResponderListChange(
 /**
  * Handle PID_ENDPOINT_RESPONDERS
  */
-RDMResponse *ManagementEndpoint::GetEndpointResponders(const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::GetEndpointResponders(
+    const RDMRequest *request) {
   uint16_t endpoint_id;
   if (!ResponderHelper::ExtractUInt16(request, &endpoint_id)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -382,8 +383,8 @@ RDMResponse *ManagementEndpoint::GetEndpointResponders(const RDMRequest *request
   // many responders!
   unsigned int param_data_size = 2 + 4 + uids.Size() * UID::UID_SIZE;
   uint8_t *raw_data = new uint8_t[param_data_size];
-  ResponderListParamData *param_data = reinterpret_cast<ResponderListParamData*>(
-      raw_data);
+  ResponderListParamData *param_data =
+      reinterpret_cast<ResponderListParamData*>(raw_data);
 
   // TODO(simon): fix this to track changes.
   param_data->endpoint = HostToNetwork(endpoint_id);
