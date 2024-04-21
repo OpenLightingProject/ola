@@ -176,6 +176,14 @@ void LLRPProbeReplyPDUTest::testPrepend() {
     0xff
   };
   OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
+
+  // test null stack
+  LLRPProbeReplyPDU::PrependPDU(
+      NULL,
+      target_uid,
+      hardware_address,
+      LLRPProbeReplyPDU::LLRP_COMPONENT_TYPE_NON_RDMNET);
+
   delete[] buffer;
 }
 }  // namespace acn

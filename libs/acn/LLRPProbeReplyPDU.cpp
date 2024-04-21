@@ -57,6 +57,11 @@ void LLRPProbeReplyPDU::PrependPDU(ola::io::IOStack *stack,
                                    const UID &target_uid,
                                    const MACAddress &hardware_address,
                                    const LLRPComponentType type) {
+  if (!stack) {
+    OLA_WARN << "LLRPProbeReplyPDU::PrependPDU: missing stack";
+    return;
+  }
+
   llrp_probe_reply_pdu_data data;
   target_uid.Pack(data.target_uid, sizeof(data.target_uid));
   hardware_address.Pack(data.hardware_address, sizeof(data.hardware_address));

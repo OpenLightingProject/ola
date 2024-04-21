@@ -32,6 +32,7 @@
 #include <ola/ExportMap.h>
 #include <ola/base/Macro.h>
 #include <ola/io/SelectServerInterface.h>
+#include <ola/rdm/UID.h>
 #include <olad/OlaServer.h>
 
 #include <string>
@@ -48,13 +49,15 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
    * @param preferences_factory pointer to the PreferencesFactory object
    * @param port_broker pointer to the PortBroker object
    * @param instance_name the instance name of this OlaServer
+   * @param uid the default ola::rdm::UID of this OlaServer
    */
   PluginAdaptor(class DeviceManager *device_manager,
                 ola::io::SelectServerInterface *select_server,
                 ExportMap *export_map,
                 class PreferencesFactory *preferences_factory,
                 class PortBrokerInterface *port_broker,
-                const std::string *instance_name);
+                const std::string *instance_name,
+                const ola::rdm::UID *default_uid);
 
   // The following methods are part of the SelectServerInterface
   bool AddReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
@@ -98,6 +101,12 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
    */
   const std::string InstanceName() const;
 
+  /**
+   * @brief Return the default UID for the OLA server
+   * @return an ola::rdm::UID which is the UID for the server
+   */
+  const ola::rdm::UID DefaultUID() const;
+
   ExportMap *GetExportMap() const {
     return m_export_map;
   }
@@ -134,6 +143,7 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
   class PreferencesFactory *m_preferences_factory;
   class PortBrokerInterface *m_port_broker;
   const std::string *m_instance_name;
+  const ola::rdm::UID *m_default_uid;
 
   DISALLOW_COPY_AND_ASSIGN(PluginAdaptor);
 };

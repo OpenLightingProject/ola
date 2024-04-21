@@ -103,7 +103,7 @@ class MockLoader: public ola::PluginLoader {
  */
 void PluginManagerTest::testPluginManager() {
   ola::MemoryPreferencesFactory factory;
-  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL, NULL);
+  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL, NULL, NULL);
 
   TestMockPlugin plugin1(&adaptor, ola::OLA_PLUGIN_ARTNET);
   TestMockPlugin plugin2(&adaptor, ola::OLA_PLUGIN_ESPNET, false);
@@ -133,7 +133,7 @@ void PluginManagerTest::testPluginManager() {
  */
 void PluginManagerTest::testConflictingPlugins() {
   ola::MemoryPreferencesFactory factory;
-  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL, NULL);
+  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL, NULL, NULL);
 
   set<ola::ola_plugin_id> conflict_set1, conflict_set2, conflict_set3;
   conflict_set1.insert(ola::OLA_PLUGIN_ARTNET);
