@@ -40,7 +40,7 @@ std::string ConnectStatusCodeToString(
     E133ConnectStatusCode connect_status_code);
 
 bool IntToRPTStatusCode(uint16_t input,
-                        ala::acn::RPTStatusVector *rpt_status_code);
+                        ola::acn::RPTStatusVector *rpt_status_code);
 std::string RPTStatusCodeToString(ola::acn::RPTStatusVector rpt_status_code);
 bool RPTStatusCodeToRDMStatusCode(ola::acn::RPTStatusVector rpt_status_code,
                                   ola::rdm::RDMStatusCode *rdm_status_code);
