@@ -58,6 +58,7 @@ class E131Node {
        : use_rev2(false),
          ignore_preview(true),
          enable_draft_discovery(false),
+         force_interface(false),
          dscp(0),
          port(ola::acn::ACN_PORT),
          source_name(ola::OLA_DEFAULT_INSTANCE_NAME) {
@@ -66,6 +67,7 @@ class E131Node {
     bool use_rev2;  /**< Use Revision 0.2 of the 2009 draft */
     bool ignore_preview;  /**< Ignore preview data */
     bool enable_draft_discovery;  /**< Enable 2014 draft discovery */
+    bool force_interface;
     uint8_t dscp;  /**< The DSCP value to tag packets with */
     uint16_t port; /**< The UDP port to use, defaults to ACN_PORT */
     std::string source_name; /**< The source name to use */

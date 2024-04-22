@@ -70,7 +70,8 @@ using std::vector;
  * Return a vector of interfaces on the system.
  */
 vector<Interface> PosixInterfacePicker::GetInterfaces(
-    bool include_loopback) const {
+    bool include_loopback,
+    bool include_down) const {
   vector<Interface> interfaces;
 
 #ifdef HAVE_SOCKADDR_DL_STRUCT
@@ -152,7 +153,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       continue;
     }
 
-    if (!(ifrcopy.ifr_flags & IFF_UP)) {
+    if (!(ifrcopy.ifr_flags & IFF_UP) && !include_down) {
       OLA_DEBUG << "Skipping " << iface->ifr_name
                 << " because it's down";
       continue;
