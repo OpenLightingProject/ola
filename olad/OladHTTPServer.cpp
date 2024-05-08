@@ -462,6 +462,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   json.Add("hw_address", m_interface.hw_address.ToString());
 #endif  // OLA_SCREENSHOT_MODE
   json.Add("version", ola::base::Version::GetVersion());
+  json.Add("build", ola::base::Version::GetBuildName());
   json.Add("up_since", start_time_str);
   json.Add("quit_enabled", m_enable_quit);
 
