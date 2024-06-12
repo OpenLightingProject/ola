@@ -18,6 +18,7 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+#include <ola/Clock.h>
 #include <ola/DmxBuffer.h>
 #include <ola/client/ClientWrapper.h>
 
@@ -89,6 +90,9 @@ class ShowPlayer {
   uint64_t m_run_time;
   std::map<unsigned int, uint64_t> m_frame_count;
   bool m_simulate;
+  ola::Clock m_clock;
+  ola::TimeStamp m_start_ts;
+  uint64_t m_start_playback_pos;
 
   /** Used for tracking simulation progress */
   typedef enum {
