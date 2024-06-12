@@ -2,7 +2,12 @@
 # https://salsa.debian.org/wouter/ola/-/blob/a38a396f6994b2b1af8efec9e208aee4e67f77aa/.gitlab-ci.yml
 
 name: debian
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'
+
 jobs:
   debian-build:
     name: 'Debian Build ${{ matrix.image_tag }} ${{ matrix.architecture }}'
