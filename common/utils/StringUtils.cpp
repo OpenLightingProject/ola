@@ -152,60 +152,16 @@ bool StringToBoolTolerant(const string &value, bool *output) {
   return false;
 }
 
-bool StringToInt(const string &value, unsigned int *output, bool strict) {
+bool StringToInt(const string &value,
+                 uint32_t *output,
+                 bool strict,
+                 uint8_t base) {
   if (value.empty()) {
     return false;
   }
   char *end_ptr;
   errno = 0;
-  long long l = strtoll(value.data(), &end_ptr, 10);  // NOLINT(runtime/int)
-  if (l < 0 || (l == 0 && errno != 0)) {
-    return false;
-  }
-  if (value == end_ptr) {
-    return false;
-  }
-  if (strict && *end_ptr != 0) {
-    return false;
-  }
-  if (l > static_cast<long long>(UINT32_MAX)) {  // NOLINT(runtime/int)
-    return false;
-  }
-  *output = static_cast<unsigned int>(l);
-  return true;
-}
-
-bool StringToInt(const string &value, uint16_t *output, bool strict) {
-  unsigned int v;
-  if (!StringToInt(value, &v, strict)) {
-    return false;
-  }
-  if (v > UINT16_MAX) {
-    return false;
-  }
-  *output = static_cast<uint16_t>(v);
-  return true;
-}
-
-bool StringToInt(const string &value, uint8_t *output, bool strict) {
-  unsigned int v;
-  if (!StringToInt(value, &v, strict)) {
-    return false;
-  }
-  if (v > UINT8_MAX) {
-    return false;
-  }
-  *output = static_cast<uint8_t>(v);
-  return true;
-}
-
-bool StringToInt(const string &value, int *output, bool strict) {
-  if (value.empty()) {
-    return false;
-  }
-  char *end_ptr;
-  errno = 0;
-  long long l = strtoll(value.data(), &end_ptr, 10);  // NOLINT(runtime/int)
+  unsigned long l = strtoul(value.data(), &end_ptr, base);  // NOLINT(runtime/int)
   if (l == 0 && errno != 0) {
     return false;
   }
@@ -215,34 +171,128 @@ bool StringToInt(const string &value, int *output, bool strict) {
   if (strict && *end_ptr != 0) {
     return false;
   }
-  if (l < INT32_MIN || l > INT32_MAX) {
+  if (l != static_cast<uint32_t>(l)) {  // NOLINT(runtime/int)
     return false;
   }
-  *output = static_cast<unsigned int>(l);
+  *output = static_cast<uint32_t>(l);
   return true;
 }
 
-bool StringToInt(const string &value, int16_t *output, bool strict) {
-  int v;
-  if (!StringToInt(value, &v, strict)) {
+bool StringToInt(const string &value,
+                 uint16_t *output,
+                 bool strict,
+                 uint8_t base) {
+  uint32_t v;
+  if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
-  if (v < INT16_MIN || v > INT16_MAX) {
+  if (v != static_cast<uint16_t>(v)) {
     return false;
   }
-  *output = static_cast<int16_t>(v);
+  *output = static_cast<uint16_t>(v);
   return true;
 }
 
-bool StringToInt(const string &value, int8_t *output, bool strict) {
-  int v;
-  if (!StringToInt(value, &v, strict)) {
+bool StringToInt(const string &value,
+                 uint8_t *output,
+                 bool strict,
+                 uint8_t base) {
+  uint32_t v;
+  if (!StringToInt(value, &v, strict, base)) {
     return false;
   }
-  if (v < INT8_MIN || v > INT8_MAX) {
+  if (v != static_cast<uint8_t>(v)) {
     return false;
   }
-  *output = static_cast<int8_t>(v);
+  *output = static_cast<uint8_t>(v);
+  return true;
+}
+
+bool StringToInt(const string &value,
+                 int32_t *output,
+                 bool strict,
+                 uint8_t base) {
+  if (value.empty()) {
+    return false;
+  }
+  char *end_ptr;
+  errno = 0;
+
+  long l = strtol(value.data(), &end_ptr, base);  // NOLINT(runtime/int)
+  int32_t i = static_cast<int32_t>(l);
+
+  if (l == 0 && errno != 0) {
+    return false;
+  }
+  if (value == end_ptr) {
+    return false;
+  }
+  if (strict && *end_ptr != 0) {
+    return false;
+  }
+  if (i < 0 && base != 10) {
+    if (l > 0 && l != static_cast<uint32_t>(l)) {
+      return false;
+    } else if(l < 0 && i != l) {
+      return false;
+    }
+  } else if (l != static_cast<int32_t>(l)) {
+    return false;
+  }
+
+  *output = static_cast<int32_t>(l);
+  return true;
+}
+
+bool StringToInt(const string &value,
+                 int16_t *output,
+                 bool strict,
+                 uint8_t base) {
+  int32_t v;
+  int16_t i;
+
+  if (!StringToInt(value, &v, strict, base)) {
+    return false;
+  }
+  i = static_cast<int16_t>(v);
+
+  if (i < 0 && base != 10) {
+    if (v > 0 && v != static_cast<uint16_t>(v)) {
+      return false;
+    } else if(v < 0 && i != v) {
+      return false;
+    }
+  } else if (v != i) {
+    return false;
+  }
+
+  *output = i;
+  return true;
+}
+
+bool StringToInt(const string &value,
+                 int8_t *output,
+                 bool strict,
+                 uint8_t base) {
+  int32_t v;
+  int8_t i;
+
+  if (!StringToInt(value, &v, strict, base)) {
+    return false;
+  }
+  i = static_cast<int8_t>(v);
+
+  if (i < 0 && base != 10) {
+    if (v > 0 && v != static_cast<uint8_t>(v)) {
+      return false;
+    } else if(v < 0 && i != v) {
+      return false;
+    }
+  } else if (v != i) {
+    return false;
+  }
+
+  *output = i;
   return true;
 }
 
@@ -325,80 +375,6 @@ void ReplaceAll(string *original, const string &find, const string &replace) {
     // Move to the end of the replaced section
     start += ((replace.length() > find.length()) ? replace.length() : 0);
   }
-}
-
-bool HexStringToInt(const string &value, uint8_t *output) {
-  uint32_t temp;
-  if (!HexStringToInt(value, &temp)) {
-    return false;
-  }
-  if (temp > UINT8_MAX) {
-    return false;
-  }
-  *output = static_cast<uint8_t>(temp);
-  return true;
-}
-
-bool HexStringToInt(const string &value, uint16_t *output) {
-  uint32_t temp;
-  if (!HexStringToInt(value, &temp)) {
-    return false;
-  }
-  if (temp > UINT16_MAX) {
-    return false;
-  }
-  *output = static_cast<uint16_t>(temp);
-  return true;
-}
-
-bool HexStringToInt(const string &value, uint32_t *output) {
-  if (value.empty()) {
-    return false;
-  }
-
-  size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
-  if (found != string::npos) {
-    return false;
-  }
-  *output = strtoul(value.data(), NULL, 16);
-  return true;
-}
-
-bool HexStringToInt(const string &value, int8_t *output) {
-  int32_t temp;
-  if (!HexStringToInt(value, &temp)) {
-    return false;
-  }
-  if (temp < 0 || temp > static_cast<int32_t>(UINT8_MAX)) {
-    return false;
-  }
-  *output = static_cast<int8_t>(temp);
-  return true;
-}
-
-bool HexStringToInt(const string &value, int16_t *output) {
-  int32_t temp;
-  if (!HexStringToInt(value, &temp)) {
-    return false;
-  }
-  if (temp < 0 || temp > static_cast<int32_t>(UINT16_MAX)) {
-    return false;
-  }
-  *output = static_cast<int16_t>(temp);
-  return true;
-}
-
-bool HexStringToInt(const string &value, int32_t *output) {
-  if (value.empty()) {
-    return false;
-  }
-
-  size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
-  if (found != string::npos) {
-    return false;
-  }
-  *output = strtoll(value.data(), NULL, 16);
-  return true;
 }
 
 void ToLower(string *s) {
