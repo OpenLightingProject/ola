@@ -81,6 +81,12 @@ class _Event(object):
   def __hash__(self):
     return hash((self._run_at, self._callback))
 
+  def __lt__(self, other):
+    return (self._run_at < other._run_at)
+
+  def __gt__(self, other):
+    return (self._run_at > other._run_at)
+
   def TimeLeft(self, now):
     """Get the time remaining before this event triggers.
 
