@@ -225,7 +225,7 @@ bool OlaServer::Init() {
   auto_ptr<PluginAdaptor> plugin_adaptor(
       new PluginAdaptor(device_manager.get(), m_ss, m_export_map,
                         m_preferences_factory, port_broker.get(),
-                        &m_instance_name));
+                        &m_instance_name, &m_default_uid));
 
   auto_ptr<PluginManager> plugin_manager(
     new PluginManager(m_plugin_loaders, plugin_adaptor.get()));

@@ -191,6 +191,15 @@ void LLRPProbeRequestPDUTest::testPrepend() {
     0x56, 0x78, 0, 0, 0, 2,
   };
   OLA_ASSERT_DATA_EQUALS(expected_data, sizeof(expected_data), buffer, length);
+
+  // test null stack
+  LLRPProbeRequestPDU::PrependPDU(NULL,
+                                  UID(0x0000, 0x00000000),
+                                  UID(0xffff, 0xffffffff),
+                                  false,
+                                  false,
+                                  known_uids);
+
   delete[] buffer;
 }
 }  // namespace acn

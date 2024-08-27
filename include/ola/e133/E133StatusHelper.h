@@ -30,24 +30,20 @@
 namespace ola {
 namespace e133 {
 
-using std::string;
-using ola::acn::RPTStatusVector;
-using ola::e133::E133StatusCode;
-using ola::e133::E133ConnectStatusCode;
-using ola::rdm::RDMStatusCode;
+bool IntToStatusCode(uint16_t input, ola::e133::E133StatusCode *status_code);
+std::string StatusCodeToString(ola::e133::E133StatusCode status_code);
 
-bool IntToStatusCode(uint16_t input, E133StatusCode *status_code);
-string StatusCodeToString(E133StatusCode status_code);
-
-bool IntToConnectStatusCode(uint16_t input,
-                            E133ConnectStatusCode *connect_status_code);
-string ConnectStatusCodeToString(E133ConnectStatusCode connect_status_code);
+bool IntToConnectStatusCode(
+    uint16_t input,
+    ola::e133::E133ConnectStatusCode *connect_status_code);
+std::string ConnectStatusCodeToString(
+    E133ConnectStatusCode connect_status_code);
 
 bool IntToRPTStatusCode(uint16_t input,
-                        RPTStatusVector *rpt_status_code);
-string RPTStatusCodeToString(RPTStatusVector rpt_status_code);
-bool RPTStatusCodeToRDMStatusCode(RPTStatusVector rpt_status_code,
-                                  RDMStatusCode *rdm_status_code);
+                        ola::acn::RPTStatusVector *rpt_status_code);
+std::string RPTStatusCodeToString(ola::acn::RPTStatusVector rpt_status_code);
+bool RPTStatusCodeToRDMStatusCode(ola::acn::RPTStatusVector rpt_status_code,
+                                  ola::rdm::RDMStatusCode *rdm_status_code);
 }  // namespace e133
 }  // namespace ola
 #endif  // INCLUDE_OLA_E133_E133STATUSHELPER_H_

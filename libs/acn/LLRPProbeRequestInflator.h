@@ -34,13 +34,23 @@ class LLRPProbeRequestInflator: public BaseInflator {
   friend class LLRPProbeRequestInflatorTest;
 
  public:
+  struct LLRPProbeRequest {
+    LLRPProbeRequest(const ola::rdm::UID &_lower, const ola::rdm::UID &_upper)
+       : lower(_lower),
+         upper(_upper) {
+    }
+    ola::rdm::UID lower;
+    ola::rdm::UID upper;
+    bool client_tcp_connection_inactive;
+    bool brokers_only;
+    ola::rdm::UIDSet known_uids;
+  };
+
+
   // These are pointers so the callers don't have to pull in all the headers.
-  typedef ola::Callback3<void,
+  typedef ola::Callback2<void,
                          const HeaderSet*,  // the HeaderSet
-                         const ola::rdm::UID&,  // lower UID
-                         const ola::rdm::UID&  // upper UID
-// TODO(Peter): Should we add the filter and known UIDs to the callback too?
-//,                         const ola::rdm::UIDSet,  // known UIDs
+                         const LLRPProbeRequest&  // Probe Request Data
                         > LLRPProbeRequestHandler;
 
   LLRPProbeRequestInflator();
