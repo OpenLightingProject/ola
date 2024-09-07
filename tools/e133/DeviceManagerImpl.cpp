@@ -70,10 +70,10 @@ using std::string;
 class DeviceState {
  public:
     DeviceState()
-      : socket(NULL),
-        message_queue(NULL),
-        health_checked_connection(NULL),
-        in_transport(NULL),
+      : socket(nullptr),
+        message_queue(nullptr),
+        health_checked_connection(nullptr),
+        in_transport(nullptr),
         am_designated_controller(false) {
     }
 

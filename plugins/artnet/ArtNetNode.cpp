@@ -93,7 +93,7 @@ class ArtNetNodeImpl::InputPort {
         pending_request(NULL),
         rdm_send_timeout(ola::thread::INVALID_TIMEOUT),
         m_port_address(0),
-        m_tod_callback(NULL) {
+        m_tod_callback(nullptr) {
   }
   ~InputPort() {}
 

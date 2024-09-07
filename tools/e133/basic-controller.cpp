@@ -77,10 +77,10 @@ class SimpleE133Controller *controller = NULL;
 class DeviceState {
  public:
   DeviceState()
-    : socket(NULL),
-      message_queue(NULL),
-      health_checked_connection(NULL),
-      in_transport(NULL) {
+    : socket(nullptr),
+      message_queue(nullptr),
+      health_checked_connection(nullptr),
+      in_transport(nullptr) {
   }
 
   // The following may be NULL.

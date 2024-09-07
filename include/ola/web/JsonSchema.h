@@ -633,7 +633,7 @@ class ArrayValidator : public BaseValidator {
     }
 
     explicit Items(ValidatorList *validators)
-      : m_validator(NULL),
+      : m_validator(nullptr),
         m_validator_list(*validators) {
     }
 
@@ -658,7 +658,7 @@ class ArrayValidator : public BaseValidator {
    public:
     explicit AdditionalItems(bool allow_additional)
         : m_allowed(allow_additional),
-          m_validator(NULL) {
+          m_validator(nullptr) {
     }
 
     explicit AdditionalItems(ValidatorInterface *validator)

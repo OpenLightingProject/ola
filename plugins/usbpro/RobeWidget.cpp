@@ -60,8 +60,8 @@ RobeWidgetImpl::RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
       m_unmute_callback(NULL),
       m_branch_callback(NULL),
       m_discovery_agent(this),
-      m_dmx_callback(NULL),
-      m_pending_request(NULL),
+      m_dmx_callback(nullptr),
+      m_pending_request(nullptr),
       m_uid(uid),
       m_transaction_number(0) {
 }

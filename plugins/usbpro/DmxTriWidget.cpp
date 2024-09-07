@@ -75,7 +75,7 @@ DmxTriWidgetImpl::DmxTriWidgetImpl(
       m_discovery_callback(NULL),
       m_discovery_state(NO_DISCOVERY_ACTION),
       m_rdm_request_callback(NULL),
-      m_pending_rdm_request(NULL),
+      m_pending_rdm_request(nullptr),
       m_transaction_number(0),
       m_last_command(RESERVED_COMMAND_ID),
       m_expected_command(RESERVED_COMMAND_ID) {
