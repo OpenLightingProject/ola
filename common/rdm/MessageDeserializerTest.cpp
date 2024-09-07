@@ -51,7 +51,7 @@ using ola::messaging::UInt32FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::MessageDeserializer;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -100,7 +100,7 @@ void MessageDeserializerTest::testEmpty() {
   vector<const FieldDescriptor*> fields;
   Descriptor descriptor("Empty Descriptor", fields);
 
-  auto_ptr<const Message> empty_message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> empty_message(m_deserializer.InflateMessage(
       &descriptor,
       NULL,
       0));
@@ -156,7 +156,7 @@ void MessageDeserializerTest::testSimpleBigEndian() {
       sizeof(big_endian_data) + 1));
 
   // now the correct amount & verify
-  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data)));
@@ -209,7 +209,7 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
       sizeof(little_endian_data) + 1));
 
   // now the correct amount & verify
-  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       little_endian_data,
       sizeof(little_endian_data)));
@@ -236,7 +236,7 @@ void MessageDeserializerTest::testIPV4() {
   const uint8_t big_endian_data[] = {10, 0, 0, 1};
 
   // now the correct amount & verify
-  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data)));
@@ -262,7 +262,7 @@ void MessageDeserializerTest::testIPV6() {
                                      0, 0, 255, 255, 10, 0, 0, 1};
 
   // now the correct amount & verify
-  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data)));
@@ -287,7 +287,7 @@ void MessageDeserializerTest::testMAC() {
   const uint8_t big_endian_data[] = {1, 35, 69, 103, 137, 171};
 
   // now the correct amount & verify
-  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data)));
@@ -328,7 +328,7 @@ void MessageDeserializerTest::testString() {
       43));
 
   // now to the right amount
-  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       data,
       sizeof(data)));
@@ -340,7 +340,7 @@ void MessageDeserializerTest::testString() {
   OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 
   // now try with different sizes
-  auto_ptr<const Message> message2(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message2(m_deserializer.InflateMessage(
       &descriptor,
       data,
       19));
@@ -366,7 +366,7 @@ void MessageDeserializerTest::testUID() {
   const uint8_t big_endian_data[] = {0x70, 0x7a, 0, 0, 0, 1};
 
   // now the correct amount & verify
-  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data)));
@@ -395,7 +395,7 @@ void MessageDeserializerTest::testWithGroups() {
   const uint8_t data[] = {0, 10, 1, 3, 0, 20, 1, 40};
 
   // an empty message
-  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       data,
       0));
@@ -409,7 +409,7 @@ void MessageDeserializerTest::testWithGroups() {
       1));
 
   // a single instance of a group
-  auto_ptr<const Message> message2(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message2(m_deserializer.InflateMessage(
       &descriptor,
       data,
       2));
@@ -427,7 +427,7 @@ void MessageDeserializerTest::testWithGroups() {
       3));
 
   // two instances of the group
-  auto_ptr<const Message> message3(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message3(m_deserializer.InflateMessage(
       &descriptor,
       data,
       4));
@@ -440,7 +440,7 @@ void MessageDeserializerTest::testWithGroups() {
   OLA_ASSERT_EQ(expected2, m_printer.AsString(message3.get()));
 
   // trhee instances of the group
-  auto_ptr<const Message> message4(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message4(m_deserializer.InflateMessage(
       &descriptor,
       data,
       6));
@@ -477,7 +477,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
   const uint8_t data[] = {0, 0, 0, 1, 0, 1, 2, 1, 0, 3, 1, 1};
 
   // an empty message
-  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       data,
       0));
@@ -495,7 +495,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       2));
 
   // a single instance of a group
-  auto_ptr<const Message> message2(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message2(m_deserializer.InflateMessage(
       &descriptor,
       data,
       3));
@@ -508,7 +508,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
   OLA_ASSERT_EQ(expected, m_printer.AsString(message2.get()));
 
   // four instances
-  auto_ptr<const Message> message3(m_deserializer.InflateMessage(
+  unique_ptr<const Message> message3(m_deserializer.InflateMessage(
       &descriptor,
       data,
       sizeof(data)));

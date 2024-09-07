@@ -43,7 +43,7 @@ using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;
 using std::cerr;
 using std::string;
-using std::auto_ptr;
+using std::unique_ptr;
 
 namespace {
 
@@ -160,7 +160,7 @@ void JaRuleWidgetPort::CancelAll() {
   }
 
   while (!queued_commands.empty()) {
-    auto_ptr<PendingCommand> command(queued_commands.front());
+    unique_ptr<PendingCommand> command(queued_commands.front());
     if (command->callback) {
       command->callback->Run(COMMAND_RESULT_CANCELLED, RC_UNKNOWN, 0,
                              ByteString());
@@ -224,7 +224,7 @@ void JaRuleWidgetPort::SendCommand(
     payload.push_back(0);
   }
 
-  auto_ptr<PendingCommand> command(new PendingCommand(
+  unique_ptr<PendingCommand> command(new PendingCommand(
       command_class, callback, payload));
 
   OLA_INFO << "Adding new command " << ToHex(command_class);

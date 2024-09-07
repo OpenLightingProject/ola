@@ -54,7 +54,7 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::strings::IntToString;
 using ola::strings::ToHex;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -230,7 +230,7 @@ bool EnttecPortImpl::SetParameters(uint8_t break_time,
  */
 void EnttecPortImpl::SendRDMRequest(RDMRequest *request_ptr,
                                     ola::rdm::RDMCallback *on_complete) {
-  auto_ptr<RDMRequest> request(request_ptr);
+  unique_ptr<RDMRequest> request(request_ptr);
 
   if (m_rdm_request_callback) {
     OLA_WARN << "Previous request hasn't completed yet, dropping request";
@@ -289,7 +289,7 @@ void EnttecPortImpl::MuteDevice(const ola::rdm::UID &target,
                                 MuteDeviceCallback *mute_complete) {
   OLA_INFO << "Muting " << target << ", TN: "
            << static_cast<int>(m_transaction_number);
-  auto_ptr<RDMRequest> mute_request(
+  unique_ptr<RDMRequest> mute_request(
       ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number++));
   if (PackAndSendRDMRequest(m_ops.send_rdm, mute_request.get())) {
     m_mute_callback = mute_complete;
@@ -307,7 +307,7 @@ void EnttecPortImpl::MuteDevice(const ola::rdm::UID &target,
 void EnttecPortImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
   OLA_INFO << "Un-muting all devices, TN: "
            << static_cast<int>(m_transaction_number);
-  auto_ptr<RDMRequest> unmute_request(
+  unique_ptr<RDMRequest> unmute_request(
       ola::rdm::NewUnMuteRequest(m_uid, ola::rdm::UID::AllDevices(),
                                  m_transaction_number++));
   if (PackAndSendRDMRequest(m_ops.send_rdm, unmute_request.get())) {
@@ -325,7 +325,7 @@ void EnttecPortImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
 void EnttecPortImpl::Branch(const ola::rdm::UID &lower,
                             const ola::rdm::UID &upper,
                             BranchCallback *callback) {
-  auto_ptr<RDMRequest> branch_request(
+  unique_ptr<RDMRequest> branch_request(
       ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower, upper,
                                                 m_transaction_number++));
   OLA_INFO << "Sending DUB packet: " << lower << " - " << upper;
@@ -485,8 +485,8 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
   } else if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    auto_ptr<const ola::rdm::RDMRequest> request(m_pending_request.release());
-    auto_ptr<RDMReply> reply;
+    unique_ptr<const ola::rdm::RDMRequest> request(m_pending_request.release());
+    unique_ptr<RDMReply> reply;
     if (waiting_for_dub_response) {
       reply.reset(RDMReply::DUBReply(rdm::RDMFrame(data, length)));
     } else {
@@ -749,7 +749,7 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
 
     vector<EnttecPort*> m_ports;
     vector<EnttecPortImpl*> m_port_impls;
-    auto_ptr<EnttecPortImpl::SendCallback> m_send_cb;
+    unique_ptr<EnttecPortImpl::SendCallback> m_send_cb;
     UID m_uid;
     PortAssignmentCallbacks m_port_assignment_callbacks;
 

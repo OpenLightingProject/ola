@@ -41,7 +41,7 @@ using ola::acn::CID;
 using ola::io::IOQueue;
 using ola::io::IOStack;
 using ola::network::IPV4SocketAddress;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 class TCPTransportTest: public CppUnit::TestFixture {
@@ -75,12 +75,12 @@ class TCPTransportTest: public CppUnit::TestFixture {
     unsigned int m_pdus_received;
     bool m_stream_ok;
     ola::network::IPV4SocketAddress m_localhost;
-    auto_ptr<ola::io::SelectServer> m_ss;
+    unique_ptr<ola::io::SelectServer> m_ss;
     ola::io::LoopbackDescriptor m_loopback;
     CID m_cid;
-    auto_ptr<Callback0<void> > m_rx_callback;
-    auto_ptr<MockInflator> m_inflator;
-    auto_ptr<IncomingStreamTransport> m_transport;
+    unique_ptr<Callback0<void> > m_rx_callback;
+    unique_ptr<MockInflator> m_inflator;
+    unique_ptr<IncomingStreamTransport> m_transport;
 
     void SendEmptyPDUBLock(const ola::testing::SourceLine &source_line);
     void SendPDU(const ola::testing::SourceLine &source_line);

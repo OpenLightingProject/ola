@@ -94,9 +94,9 @@ class OPCClient {
   ola::io::MemoryBlockPool m_pool;
   ola::network::TCPSocketFactory m_socket_factory;
   ola::network::AdvancedTCPConnector m_tcp_connector;
-  std::auto_ptr<ola::network::TCPSocket> m_client_socket;
-  std::auto_ptr<ola::io::NonBlockingSender> m_sender;
-  std::auto_ptr<SocketEventCallback> m_socket_callback;
+  std::unique_ptr<ola::network::TCPSocket> m_client_socket;
+  std::unique_ptr<ola::io::NonBlockingSender> m_sender;
+  std::unique_ptr<SocketEventCallback> m_socket_callback;
 
   void SocketConnected(ola::network::TCPSocket *socket);
   void NewData();

@@ -53,7 +53,7 @@ using ola::io::SelectServer;
 using ola::io::UnixSocket;
 using ola::io::WriteFileDescriptor;
 using ola::network::UDPSocket;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::set;
 
 /*
@@ -543,7 +543,7 @@ void SelectServerTest::testReadWriteInteraction() {
   m_ss->RemoveWriteDescriptor(&socket);
 
   // now the Write end closes
-  auto_ptr<UnixSocket> other_end(socket.OppositeEnd());
+  unique_ptr<UnixSocket> other_end(socket.OppositeEnd());
   other_end->CloseClient();
 
   m_ss->RegisterSingleTimeout(

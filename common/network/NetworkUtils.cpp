@@ -586,7 +586,7 @@ static bool GetDefaultRouteWithNetlink(int32_t *if_index,
     return false;
   }
 
-  std::auto_ptr<NetlinkCallback> cb(
+  std::unique_ptr<NetlinkCallback> cb(
       ola::NewCallback(MessageHandler, if_index, default_gateway));
   if (!ReadNetlinkSocket(sd, msg, BUFSIZE, nl_msg->nlmsg_seq, cb.get())) {
     return false;

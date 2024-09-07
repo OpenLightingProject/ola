@@ -58,7 +58,7 @@ struct positive<T, false>{
 };
 }  // namespace
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::pair;
 using std::set;
 using std::string;
@@ -153,7 +153,7 @@ ValidatorInterface* SchemaParseContext::GetValidator(
   }
 
   BaseValidator *validator = NULL;
-  auto_ptr<IntegerValidator> int_validator;
+  unique_ptr<IntegerValidator> int_validator;
   switch (m_type) {
     case JSON_UNDEFINED:
       break;
@@ -592,8 +592,8 @@ BaseValidator* SchemaParseContext::BuildArrayValidator(
     options.unique_items = m_unique_items.Value();
   }
 
-  auto_ptr<ArrayValidator::Items> items;
-  auto_ptr<ArrayValidator::AdditionalItems> additional_items;
+  unique_ptr<ArrayValidator::Items> items;
+  unique_ptr<ArrayValidator::AdditionalItems> additional_items;
 
   // items
   if (m_items_single_context.get() && m_items_context_array.get()) {

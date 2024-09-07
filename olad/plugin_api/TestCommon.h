@@ -163,7 +163,7 @@ class TestMockRDMOutputPort: public TestMockOutputPort {
 
  private:
   ola::rdm::UIDSet *m_uids;
-  std::auto_ptr<RDMRequestHandler> m_rdm_handler;
+  std::unique_ptr<RDMRequestHandler> m_rdm_handler;
 };
 
 

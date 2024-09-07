@@ -94,7 +94,7 @@ class JsonData {
   const ValidatorInterface* GetSchema() const { return m_schema; }
 
  private:
-  std::auto_ptr<const JsonValue> m_value;
+  std::unique_ptr<const JsonValue> m_value;
   ValidatorInterface *m_schema;
 
   bool IsValid(const JsonValue *value);

@@ -40,7 +40,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -108,7 +108,7 @@ void DmxterWidgetImpl::Stop() {
  */
 void DmxterWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
                                       ola::rdm::RDMCallback *on_complete) {
-  auto_ptr<RDMRequest> request(request_ptr);
+  unique_ptr<RDMRequest> request(request_ptr);
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
     RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
@@ -250,7 +250,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
 
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
-  auto_ptr<const ola::rdm::RDMRequest> request(m_pending_request.release());
+  unique_ptr<const ola::rdm::RDMRequest> request(m_pending_request.release());
 
   if (length < sizeof(ResponseHeader)) {
     OLA_WARN << "Invalid RDM response from the widget";
@@ -368,7 +368,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
   data += sizeof(ResponseHeader);
   length -= sizeof(ResponseHeader);
 
-  auto_ptr<RDMReply> reply;
+  unique_ptr<RDMReply> reply;
   if (status_code == ola::rdm::RDM_COMPLETED_OK) {
     rdm::RDMFrame frame(data, length);
     reply.reset(RDMReply::FromFrame(frame, request.get()));

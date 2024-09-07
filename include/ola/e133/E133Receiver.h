@@ -31,7 +31,7 @@
 #include <string>
 
 using std::string;
-using std::auto_ptr;
+using std::unique_ptr;
 using ola::network::IPV4Address;
 
 namespace ola {
@@ -125,11 +125,11 @@ class E133Receiver {
     StatusCallback *m_status_callback;
     RDMCallback *m_rdm_callback;
 
-    auto_ptr<ola::acn::RootInflator> m_root_inflator;
-    auto_ptr<ola::acn::E133Inflator> m_e133_inflator;
-    auto_ptr<ola::acn::RDMInflator> m_rdm_inflator;
-    auto_ptr<ola::acn::E133StatusInflator> m_e133_status_inflator;
-    auto_ptr<ola::acn::IncomingUDPTransport> m_incoming_udp_transport;
+    unique_ptr<ola::acn::RootInflator> m_root_inflator;
+    unique_ptr<ola::acn::E133Inflator> m_e133_inflator;
+    unique_ptr<ola::acn::RDMInflator> m_rdm_inflator;
+    unique_ptr<ola::acn::E133StatusInflator> m_e133_status_inflator;
+    unique_ptr<ola::acn::IncomingUDPTransport> m_incoming_udp_transport;
 
     void HandleStatusMessage(
         const ola::acn::TransportHeader *transport_header,

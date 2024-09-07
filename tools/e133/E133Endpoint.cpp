@@ -29,7 +29,7 @@
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -91,7 +91,7 @@ void E133Endpoint::SendRDMRequest(RDMRequest *request_ptr,
     m_controller->SendRDMRequest(request_ptr, on_complete);
     return;
   } else {
-    auto_ptr<const RDMRequest> request(request_ptr);
+    unique_ptr<const RDMRequest> request(request_ptr);
     OLA_WARN << "Endpoint " << m_endpoint_label
              << " has no controller attached";
     ola::rdm::RunRDMCallback(on_complete, ola::rdm::RDM_UNKNOWN_UID);

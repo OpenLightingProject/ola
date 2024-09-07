@@ -29,7 +29,7 @@
 #include "plugins/usbpro/CommonWidgetTest.h"
 
 
-using std::auto_ptr;
+using std::unique_ptr;
 using ola::DmxBuffer;
 
 
@@ -45,7 +45,7 @@ class UltraDMXProWidgetTest: public CommonWidgetTest {
     void testSecondarySendDMX();
 
  private:
-    auto_ptr<ola::plugin::usbpro::UltraDMXProWidget> m_widget;
+    unique_ptr<ola::plugin::usbpro::UltraDMXProWidget> m_widget;
 
     void Terminate() { m_ss.Terminate(); }
 

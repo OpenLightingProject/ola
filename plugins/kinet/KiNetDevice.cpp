@@ -41,7 +41,7 @@ namespace plugin {
 namespace kinet {
 
 using ola::network::IPV4Address;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::ostringstream;
 using std::set;
 using std::string;
