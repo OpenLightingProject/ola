@@ -409,7 +409,7 @@ void DmxTriWidgetImpl::SendRawRDMRequest() {
  * Send the next RDM request, this assumes that SetFilter has been called
  */
 void DmxTriWidgetImpl::DispatchRequest() {
-  const ola::rdm::RDMRequest *request = m_pending_rdm_request.get();
+  const RDMRequest *request = m_pending_rdm_request.get();
   if (request->ParamId() == ola::rdm::PID_QUEUED_MESSAGE &&
       request->CommandClass() == RDMCommand::GET_COMMAND) {
     // these are special
@@ -649,7 +649,7 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
   OLA_INFO << "got raw RDM response with code: " << ToHex(return_code)
            << ", length: " << length;
 
-  auto_ptr<ola::rdm::RDMRequest> request(m_pending_rdm_request);
+  auto_ptr<RDMRequest> request(m_pending_rdm_request.get());
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_pending_rdm_request.reset();
   m_rdm_request_callback = NULL;
@@ -766,7 +766,7 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
                                                 uint16_t pid,
                                                 const uint8_t *data,
                                                 unsigned int length) {
-  auto_ptr<const ola::rdm::RDMRequest> request(m_pending_rdm_request.release());
+  auto_ptr<const RDMRequest> request(m_pending_rdm_request.release());
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
 
