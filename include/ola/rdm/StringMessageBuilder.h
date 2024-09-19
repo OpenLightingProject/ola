@@ -69,9 +69,11 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     void Visit(const ola::messaging::UInt8FieldDescriptor*);
     void Visit(const ola::messaging::UInt16FieldDescriptor*);
     void Visit(const ola::messaging::UInt32FieldDescriptor*);
+    void Visit(const ola::messaging::UInt64FieldDescriptor*);
     void Visit(const ola::messaging::Int8FieldDescriptor*);
     void Visit(const ola::messaging::Int16FieldDescriptor*);
     void Visit(const ola::messaging::Int32FieldDescriptor*);
+    void Visit(const ola::messaging::Int64FieldDescriptor*);
     void Visit(const ola::messaging::FieldDescriptorGroup*);
     void PostVisit(const ola::messaging::FieldDescriptorGroup*);
 

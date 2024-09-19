@@ -64,9 +64,11 @@ class MessageDeserializer: public ola::messaging::FieldDescriptorVisitor {
     void Visit(const ola::messaging::IntegerFieldDescriptor<uint8_t>*);
     void Visit(const ola::messaging::IntegerFieldDescriptor<uint16_t>*);
     void Visit(const ola::messaging::IntegerFieldDescriptor<uint32_t>*);
+    void Visit(const ola::messaging::IntegerFieldDescriptor<uint64_t>*);
     void Visit(const ola::messaging::IntegerFieldDescriptor<int8_t>*);
     void Visit(const ola::messaging::IntegerFieldDescriptor<int16_t>*);
     void Visit(const ola::messaging::IntegerFieldDescriptor<int32_t>*);
+    void Visit(const ola::messaging::IntegerFieldDescriptor<int64_t>*);
     void Visit(const ola::messaging::FieldDescriptorGroup*);
     void PostVisit(const ola::messaging::FieldDescriptorGroup*) {}
 

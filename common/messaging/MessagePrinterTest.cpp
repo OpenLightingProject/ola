@@ -61,6 +61,8 @@ using ola::messaging::UIDFieldDescriptor;
 using ola::messaging::UIDMessageField;
 using ola::messaging::UInt32FieldDescriptor;
 using ola::messaging::UInt32MessageField;
+using ola::messaging::UInt64FieldDescriptor;
+using ola::messaging::UInt64MessageField;
 using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::UInt8MessageField;
 
@@ -101,6 +103,7 @@ void GenericMessagePrinterTest::testSimplePrinter() {
   UInt8FieldDescriptor uint8_descriptor("Count", false, -3);
   Int8FieldDescriptor int8_descriptor("Delta", false, 1);
   Int16FieldDescriptor int16_descriptor("Rate", false, -1);
+  UInt64FieldDescriptor uint64_descriptor("Data");
 
   // try a simple print first
   vector<const ola::messaging::MessageFieldInterface*> fields;
@@ -120,12 +123,14 @@ void GenericMessagePrinterTest::testSimplePrinter() {
   fields.push_back(new UInt8MessageField(&uint8_descriptor, 4));
   fields.push_back(new Int8MessageField(&int8_descriptor, 10));
   fields.push_back(new Int16MessageField(&int16_descriptor, 10));
+  fields.push_back(new UInt64MessageField(&uint64_descriptor, 424242424242));
 
   Message message(fields);
   string expected = (
       "On/Off: false\nip: 10.0.0.1\nipv6: ::ffff:192.168.0.1\n"
       "mac: 01:23:45:67:89:ab\nuid: 7a70:00000001\nName: foobar\nId: 42\n"
-      "Count: 4 x 10 ^ -3\nDelta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n");
+      "Count: 4 x 10 ^ -3\nDelta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n"
+      "Data: 424242424242\n");
   OLA_ASSERT_EQ(expected, m_printer.AsString(&message));
 }
 

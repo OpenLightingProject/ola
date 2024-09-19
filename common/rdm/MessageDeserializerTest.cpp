@@ -39,6 +39,7 @@ using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
+using ola::messaging::Int64FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::IPV6FieldDescriptor;
@@ -48,6 +49,7 @@ using ola::messaging::GenericMessagePrinter;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
+using ola::messaging::UInt64FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::MessageDeserializer;
@@ -130,12 +132,17 @@ void MessageDeserializerTest::testSimpleBigEndian() {
   fields.push_back(new Int16FieldDescriptor("int16"));
   fields.push_back(new UInt32FieldDescriptor("uint32"));
   fields.push_back(new Int32FieldDescriptor("int32"));
+  fields.push_back(new UInt64FieldDescriptor("uint64"));
+  fields.push_back(new Int64FieldDescriptor("int64"));
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the data
   const uint8_t big_endian_data[] = {
     0, 10, 246, 1, 0x2c, 0xfe, 10,
-    1, 2, 3, 4, 0xfe, 6, 7, 8};
+    1, 2, 3, 4, 0xfe, 6, 7, 8,
+    0, 0, 0, 17, 237, 142, 194, 0,
+    255, 255, 255, 238, 18, 113, 62, 0
+};
 
   // try to inflate with no data
   OLA_ASSERT_NULL(m_deserializer.InflateMessage(
@@ -161,11 +168,12 @@ void MessageDeserializerTest::testSimpleBigEndian() {
       big_endian_data,
       sizeof(big_endian_data)));
   OLA_ASSERT_NOT_NULL(message.get());
-  OLA_ASSERT_EQ(7u, message->FieldCount());
+  OLA_ASSERT_EQ(9u, message->FieldCount());
 
   const string expected = (
       "bool: false\nuint8: 10\nint8: -10\nuint16: 300\nint16: -502\n"
-      "uint32: 16909060\nint32: -33159416\n");
+      "uint32: 16909060\nint32: -33159416\n"
+      "uint64: 77000000000\nint64: -77000000000\n");
   OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 
@@ -183,12 +191,17 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
   fields.push_back(new Int16FieldDescriptor("int16", true));
   fields.push_back(new UInt32FieldDescriptor("uint32", true));
   fields.push_back(new Int32FieldDescriptor("int32", true));
+  fields.push_back(new UInt64FieldDescriptor("uint64", true));
+  fields.push_back(new Int64FieldDescriptor("int64", true));
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the data
   const uint8_t little_endian_data[] = {
     1, 10, 246, 0x2c, 1, 10, 0xfe,
-    4, 3, 2, 1, 8, 7, 6, 0xfe};
+    4, 3, 2, 1, 8, 7, 6, 0xfe,
+    0, 194, 142, 237, 17, 0, 0, 0,
+    0, 62, 113, 18, 238, 255, 255, 255
+};
 
   // try to inflate with no data
   OLA_ASSERT_NULL(m_deserializer.InflateMessage(
@@ -214,11 +227,12 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
       little_endian_data,
       sizeof(little_endian_data)));
   OLA_ASSERT_NOT_NULL(message.get());
-  OLA_ASSERT_EQ(7u, message->FieldCount());
+  OLA_ASSERT_EQ(9u, message->FieldCount());
 
   const string expected = (
       "bool: true\nuint8: 10\nint8: -10\nuint16: 300\nint16: -502\n"
-      "uint32: 16909060\nint32: -33159416\n");
+      "uint32: 16909060\nint32: -33159416\n"
+      "uint64: 77000000000\nint64: -77000000000\n");
   OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 

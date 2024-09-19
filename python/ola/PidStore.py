@@ -528,6 +528,18 @@ class UInt32(IntAtom):
     super(UInt32, self).__init__(name, 'I', 0xffffffff, **kwargs)
 
 
+class Int64(IntAtom):
+  """An eight-byte signed field."""
+  def __init__(self, name, **kwargs):
+    super(Int64, self).__init__(name, 'q', 0xffffffffffffffff, **kwargs)
+
+
+class UInt64(IntAtom):
+  """An eight-byte unsigned field."""
+  def __init__(self, name, **kwargs):
+    super(UInt64, self).__init__(name, 'Q', 0xffffffffffffffff, **kwargs)
+
+
 class IPV4(IntAtom):
   """A four-byte IPV4 address."""
   def __init__(self, name, **kwargs):
@@ -1292,6 +1304,10 @@ class PidStore(object):
       return Int32(field_name, **args)
     elif field.type == Pids_pb2.UINT32:
       return UInt32(field_name, **args)
+    elif field.type == Pids_pb2.INT64:
+      return Int64(field_name, **args)
+    elif field.type == Pids_pb2.UINT64:
+      return UInt64(field_name, **args)
     elif field.type == Pids_pb2.IPV4:
       return IPV4(field_name, **args)
     elif field.type == Pids_pb2.IPV6:

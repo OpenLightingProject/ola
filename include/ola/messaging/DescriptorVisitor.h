@@ -57,9 +57,11 @@ class FieldDescriptorVisitor {
     virtual void Visit(const IntegerFieldDescriptor<uint8_t>*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<uint16_t>*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<uint32_t>*) = 0;
+    virtual void Visit(const IntegerFieldDescriptor<uint64_t>*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<int8_t>*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<int16_t>*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<int32_t>*) = 0;
+    virtual void Visit(const IntegerFieldDescriptor<int64_t>*) = 0;
     virtual void Visit(const FieldDescriptorGroup*) = 0;
     virtual void PostVisit(const FieldDescriptorGroup*) = 0;
 };

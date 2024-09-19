@@ -448,6 +448,11 @@ const FieldDescriptor *PidStoreLoader::FieldToFieldDescriptor(
         IntegerFieldToFieldDescriptor<ola::messaging::UInt32FieldDescriptor>(
             field);
       break;
+    case ola::rdm::pid::UINT64:
+      descriptor =
+        IntegerFieldToFieldDescriptor<ola::messaging::UInt64FieldDescriptor>(
+            field);
+      break;
     case ola::rdm::pid::INT8:
       descriptor =
         IntegerFieldToFieldDescriptor<ola::messaging::Int8FieldDescriptor>(
@@ -461,6 +466,11 @@ const FieldDescriptor *PidStoreLoader::FieldToFieldDescriptor(
     case ola::rdm::pid::INT32:
       descriptor =
         IntegerFieldToFieldDescriptor<ola::messaging::Int32FieldDescriptor>(
+            field);
+      break;
+    case ola::rdm::pid::INT64:
+      descriptor =
+        IntegerFieldToFieldDescriptor<ola::messaging::Int64FieldDescriptor>(
             field);
       break;
     case ola::rdm::pid::STRING:
