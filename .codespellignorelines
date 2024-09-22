@@ -65,6 +65,7 @@ const uint8_t BaseRobeWidget::SOM;
   manufacturer_name: "Guangzhou Litewise Lighting Equipments Co., Ltd. dba \"EK Lights\""
   manufacturer_name: "Guangzhou VAS Lighting Co., Ltd."
   manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
+  manufacturer_name: "MEDIAM Ltd. (Modus brand)"
   manufacturer_name: "SRM Technik GmbH"
   manufacturer_name: "medien technik cords"
   manufacturer_name: "TBE Srl"
