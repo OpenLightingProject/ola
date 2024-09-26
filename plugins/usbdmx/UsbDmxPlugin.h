@@ -65,7 +65,7 @@ class UsbDmxPlugin: public ola::Plugin {
       std::set<ola_plugin_id>* conflicting_plugins) const;
 
  private:
-  std::auto_ptr<class PluginImplInterface> m_impl;
+  std::unique_ptr<class PluginImplInterface> m_impl;
 
   bool StartHook();
   bool StopHook();

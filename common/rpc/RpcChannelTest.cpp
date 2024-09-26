@@ -45,7 +45,7 @@ using ola::rpc::STREAMING_NO_RESPONSE;
 using ola::rpc::RpcController;
 using ola::rpc::TestService;
 using ola::rpc::TestService_Stub;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 class RpcChannelTest: public CppUnit::TestFixture {
@@ -70,10 +70,10 @@ class RpcChannelTest: public CppUnit::TestFixture {
   EchoReply m_reply;
   SelectServer m_ss;
 
-  auto_ptr<TestServiceImpl> m_service;
-  auto_ptr<RpcChannel> m_channel;
-  auto_ptr<TestService_Stub> m_stub;
-  auto_ptr<LoopbackDescriptor> m_socket;
+  unique_ptr<TestServiceImpl> m_service;
+  unique_ptr<RpcChannel> m_channel;
+  unique_ptr<TestService_Stub> m_stub;
+  unique_ptr<LoopbackDescriptor> m_socket;
 };
 
 

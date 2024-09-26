@@ -60,7 +60,7 @@ using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
 using ola::acn::IncomingTCPTransport;
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 
@@ -70,20 +70,20 @@ using std::string;
 class DeviceState {
  public:
     DeviceState()
-      : socket(NULL),
-        message_queue(NULL),
-        health_checked_connection(NULL),
-        in_transport(NULL),
+      : socket(nullptr),
+        message_queue(nullptr),
+        health_checked_connection(nullptr),
+        in_transport(nullptr),
         am_designated_controller(false) {
     }
 
     // The following may be NULL.
     // The socket connected to the E1.33 device
-    auto_ptr<TCPSocket> socket;
-    auto_ptr<NonBlockingSender> message_queue;
+    unique_ptr<TCPSocket> socket;
+    unique_ptr<NonBlockingSender> message_queue;
     // The Health Checked connection
-    auto_ptr<E133HealthCheckedConnection> health_checked_connection;
-    auto_ptr<IncomingTCPTransport> in_transport;
+    unique_ptr<E133HealthCheckedConnection> health_checked_connection;
+    unique_ptr<IncomingTCPTransport> in_transport;
 
     // True if we're the designated controller.
     bool am_designated_controller;
@@ -224,7 +224,7 @@ void DeviceManagerImpl::ListManagedDevices(vector<IPV4Address> *devices) const {
  * connection.
  */
 void DeviceManagerImpl::OnTCPConnect(TCPSocket *socket_ptr) {
-  auto_ptr<TCPSocket> socket(socket_ptr);
+  unique_ptr<TCPSocket> socket(socket_ptr);
   GenericSocketAddress address = socket->GetPeerAddress();
   if (address.Family() != AF_INET) {
     OLA_WARN << "Non IPv4 socket " << address;

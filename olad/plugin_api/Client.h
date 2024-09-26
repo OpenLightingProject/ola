@@ -99,7 +99,7 @@ class Client {
   void SendDMXCallback(ola::rpc::RpcController *controller,
                        ola::proto::Ack *ack);
 
-  std::auto_ptr<class ola::proto::OlaClientService_Stub> m_client_stub;
+  std::unique_ptr<class ola::proto::OlaClientService_Stub> m_client_stub;
   std::map<unsigned int, DmxSource> m_data_map;
   ola::rdm::UID m_uid;
 

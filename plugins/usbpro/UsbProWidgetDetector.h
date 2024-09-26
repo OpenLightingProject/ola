@@ -126,8 +126,8 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
   };
 
   ola::thread::SchedulingExecutorInterface *m_scheduler;
-  const std::auto_ptr<SuccessHandler> m_callback;
-  const std::auto_ptr<FailureHandler> m_failure_callback;
+  const std::unique_ptr<SuccessHandler> m_callback;
+  const std::unique_ptr<FailureHandler> m_failure_callback;
 
   typedef std::map<DispatchingUsbProWidget*, DiscoveryState> WidgetStateMap;
   WidgetStateMap m_widgets;

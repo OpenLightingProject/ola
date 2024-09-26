@@ -35,7 +35,7 @@ namespace ola {
 
 using ola::network::HostToNetwork;
 using ola::thread::Thread;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 static void RegisterCallback(OLA_UNUSED DNSServiceRef service,
@@ -124,7 +124,7 @@ void BonjourDiscoveryAgent::RegisterService(const string &service_name,
 
 
 void BonjourDiscoveryAgent::InternalRegisterService(RegisterArgs *args_ptr) {
-  auto_ptr<RegisterArgs> args(args_ptr);
+  unique_ptr<RegisterArgs> args(args_ptr);
 
   OLA_INFO << "Adding " << args->service_name << ", " << args->type;
 

@@ -60,7 +60,7 @@ class GPIOOutputPort: public BasicOutputPort {
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
  private:
-  std::auto_ptr<GPIODriver> m_driver;
+  std::unique_ptr<GPIODriver> m_driver;
 
   DISALLOW_COPY_AND_ASSIGN(GPIOOutputPort);
 };

@@ -90,7 +90,7 @@ void OPCPlugin::AddDevices(const std::string &key) {
       continue;
     }
 
-    std::auto_ptr<DeviceClass> device(new DeviceClass(
+    std::unique_ptr<DeviceClass> device(new DeviceClass(
         this, m_plugin_adaptor, m_preferences, target));
 
     if (!device->Start()) {
