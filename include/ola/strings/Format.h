@@ -43,14 +43,22 @@ namespace strings {
  * @param i the int to convert
  * @return the string representation of the int
  */
-std::string IntToString(int i);
+std::string IntToString(int64_t i);
 
 /**
  * @brief Convert an unsigned int to a string.
  * @param i the unsigned int to convert
  * @return The string representation of the unsigned int
  */
-std::string IntToString(unsigned int i);
+std::string IntToString(uint64_t i);
+
+inline std::string IntToString(int i) {
+  return ola::strings::IntToString(static_cast<int64_t>(i));
+}
+
+inline std::string IntToString(unsigned int i) {
+  return ola::strings::IntToString(static_cast<uint64_t>(i));
+}
 
 /**
  * @brief Convert a value to a hex string.

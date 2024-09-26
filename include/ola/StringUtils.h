@@ -183,6 +183,8 @@ inline std::string IntToHexString(uint32_t i) {
   return str.str();
 }
 
+// Deliberately no IntToHexString(uint64_t) as its deprecated
+
 /**
  * @brief Escape a string with \\ .
  *
@@ -258,6 +260,18 @@ bool StringToBool(const std::string &value, bool *output);
 bool StringToBoolTolerant(const std::string &value, bool *output);
 
 /**
+ * @brief Convert a string to a uint64_t.
+ * @param[in] value the string to convert
+ * @param[out] output a pointer where the value will be stored.
+ * @param[in] strict this controls if trailing characters produce an error.
+ * @returns true if the value was converted, false if the string was not an int
+ * or the value was too large / small for the type.
+ */
+bool StringToInt(const std::string &value,
+                 uint64_t *output,
+                 bool strict = false);
+
+/**
  * @brief Convert a string to a unsigned int.
  * @param[in] value the string to convert
  * @param[out] output a pointer where the value will be stored.
@@ -293,6 +307,19 @@ bool StringToInt(const std::string &value,
  */
 bool StringToInt(const std::string &value,
                  uint8_t *output,
+                 bool strict = false);
+
+/**
+ * @brief Convert a string to a int64_t.
+ * @param[in] value the string to convert
+ * @param[out] output a pointer where the value will be stored.
+ * @param[in] strict this controls if trailing characters produce an error.
+ * @returns true if the value was converted, false if the string was not an int
+ * or the value was too large / small for the type.
+ * @sa StringToInt.
+ */
+bool StringToInt(const std::string &value,
+                 int64_t *output,
                  bool strict = false);
 
 /**
@@ -381,6 +408,17 @@ bool HexStringToInt(const std::string &value, uint16_t *output);
 bool HexStringToInt(const std::string &value, uint32_t *output);
 
 /**
+ * @brief Convert a hex string to a uint64_t.
+ *
+ * The string can contain upper or lower case hex characters.
+ * @param[in] value the string to convert.
+ * @param[out] output a pointer to the store the converted value in.
+ * @returns true if the value was converted, false if the string was not an int
+ * or the value was too large / small for the type.
+ */
+bool HexStringToInt(const std::string &value, uint64_t *output);
+
+/**
  * @brief Convert a hex string to a int8_t.
  * @param[in] value the string to convert.
  * @param[out] output a pointer to the store the converted value in.
@@ -412,6 +450,17 @@ bool HexStringToInt(const std::string &value, int16_t *output);
  * or the value was too large / small for the type.
  */
 bool HexStringToInt(const std::string &value, int32_t *output);
+
+/**
+ * @brief Convert a hex string to a int64_t.
+ *
+ * The string can contain upper or lower case hex characters.
+ * @param[in] value the string to convert.
+ * @param[out] output a pointer to the store the converted value in.
+ * @returns true if the value was converted, false if the string was not an int
+ * or the value was too large / small for the type.
+ */
+bool HexStringToInt(const std::string &value, int64_t *output);
 
 /**
  * @brief Convert a string to lower case.

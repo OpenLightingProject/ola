@@ -39,6 +39,7 @@ using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
+using ola::messaging::Int64FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::IPV6FieldDescriptor;
@@ -47,6 +48,7 @@ using ola::messaging::Message;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
+using ola::messaging::UInt64FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::StringMessageBuilder;
@@ -111,6 +113,8 @@ void MessageSerializerTest::testSimple() {
   fields.push_back(new Int16FieldDescriptor("int16"));
   fields.push_back(new UInt32FieldDescriptor("uint32"));
   fields.push_back(new Int32FieldDescriptor("int32"));
+  fields.push_back(new UInt64FieldDescriptor("uint64"));
+  fields.push_back(new Int64FieldDescriptor("int64"));
   fields.push_back(new IPV4FieldDescriptor("ip"));
   fields.push_back(new IPV6FieldDescriptor("ipv6"));
   fields.push_back(new MACFieldDescriptor("mac"));
@@ -126,6 +130,8 @@ void MessageSerializerTest::testSimple() {
   inputs.push_back("-400");
   inputs.push_back("66000");
   inputs.push_back("-66000");
+  inputs.push_back("77000000000");
+  inputs.push_back("-77000000000");
   inputs.push_back("10.0.0.1");
   inputs.push_back("::ffff:192.168.0.1");
   inputs.push_back("01:23:45:67:89:ab");
@@ -140,11 +146,13 @@ void MessageSerializerTest::testSimple() {
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
   OLA_ASSERT_NOT_NULL(data);
-  OLA_ASSERT_EQ(44u, packed_length);
+  OLA_ASSERT_EQ(60u, packed_length);
 
   uint8_t expected[] = {
     1, 1, 253, 1, 44, 254, 112,
     0, 1, 1, 208, 255, 254, 254, 48,
+    0, 0, 0, 17, 237, 142, 194, 0,
+    255, 255, 255, 238, 18, 113, 62, 0,
     10, 0, 0, 1,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 192, 168, 0, 1,
     1, 35, 69, 103, 137, 171,
@@ -227,6 +235,8 @@ void MessageSerializerTest::testLittleEndian() {
   fields.push_back(new Int16FieldDescriptor("int16", true));
   fields.push_back(new UInt32FieldDescriptor("uint32", true));
   fields.push_back(new Int32FieldDescriptor("int32", true));
+  fields.push_back(new UInt64FieldDescriptor("uint64", true));
+  fields.push_back(new Int64FieldDescriptor("int64", true));
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the inputs
@@ -237,6 +247,8 @@ void MessageSerializerTest::testLittleEndian() {
   inputs.push_back("-400");
   inputs.push_back("66000");
   inputs.push_back("-66000");
+  inputs.push_back("77000000000");
+  inputs.push_back("-77000000000");
 
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
@@ -247,11 +259,14 @@ void MessageSerializerTest::testLittleEndian() {
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
   OLA_ASSERT_NOT_NULL(data);
-  OLA_ASSERT_EQ(14u, packed_length);
+  OLA_ASSERT_EQ(30u, packed_length);
 
   uint8_t expected[] = {
     1, 253, 44, 1, 112, 254,
-    208, 1, 1, 0, 48, 254, 254, 255};
+    208, 1, 1, 0, 48, 254, 254, 255,
+    0, 194, 142, 237, 17, 0, 0, 0,
+    0, 62, 113, 18, 238, 255, 255, 255
+};
   OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), data, packed_length);
 }
 
