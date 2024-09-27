@@ -193,7 +193,8 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
             std::string::npos != v.find("JMS") ||
             std::string::npos != v.find("KMTRONIC") ||
             std::string::npos != v.find("KWMATIK") ||
-            std::string::npos != v.find("WWW.SOH.CZ")) {
+            std::string::npos != v.find("WWW.SOH.CZ") ||
+            std::string::npos != v.find("NORTLE")) {
           widgets->push_back(FtdiWidgetInfo(sname,
                                             sserial,
                                             i,
