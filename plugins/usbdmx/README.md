@@ -6,6 +6,7 @@ This plugin supports various USB DMX devices including:
 * Anyma uDMX
 * AVLdiy D512
 * Digital Enlightenment USB-DMX
+* DMXControl Projects e.V. Nodle R4S
 * DMXControl Projects e.V. Nodle U1
 * DMXCreator 512 Basic
 * Eurolite USB-DMX512 PRO
