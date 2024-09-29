@@ -18,6 +18,9 @@ SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="10cf", ATTRS{idPro
 # udev rules for the ShowJockey-DMX-U1 device
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="57fe", GROUP="plugdev"
 
+# udev rules for the DMXControl Projects e.V. Nodle R4S
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0833", GROUP="plugdev", TAG+="uaccess"
+
 # udev rules for the DMXControl Projects e.V. Nodle U1
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0830", GROUP="plugdev", TAG+="uaccess"
 

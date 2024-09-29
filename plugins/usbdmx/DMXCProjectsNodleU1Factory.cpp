@@ -32,6 +32,7 @@ namespace usbdmx {
 
 const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID_DMXC_PROJECTS = 0x16d0;
 const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID_DMXC_P_NODLE_U1 = 0x0830;
+const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID_DMXC_P_NODLE_R4S = 0x0833;
 
 const uint16_t DMXCProjectsNodleU1Factory::VENDOR_ID_DE = 0x4b4;
 const uint16_t DMXCProjectsNodleU1Factory::PRODUCT_ID_DE_USB_DMX = 0xf1f;
@@ -45,6 +46,8 @@ bool DMXCProjectsNodleU1Factory::DeviceAdded(
     const struct libusb_device_descriptor &descriptor) {
   if (!((descriptor.idVendor == VENDOR_ID_DMXC_PROJECTS &&
          descriptor.idProduct == PRODUCT_ID_DMXC_P_NODLE_U1) ||
+        (descriptor.idVendor == VENDOR_ID_DMXC_PROJECTS &&
+         descriptor.idProduct == PRODUCT_ID_DMXC_P_NODLE_R4S) ||
         (descriptor.idVendor == VENDOR_ID_DE &&
          descriptor.idProduct == PRODUCT_ID_DE_USB_DMX) ||
         (descriptor.idVendor == VENDOR_ID_FX5 &&
