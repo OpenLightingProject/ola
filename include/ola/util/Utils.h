@@ -72,6 +72,27 @@ inline uint32_t JoinUInt8(uint8_t byte0, uint8_t byte1, uint8_t byte2,
              (std::numeric_limits<uint8_t>::digits))
           | byte3);
 }
+
+
+/**
+ * @brief Truncate a uint16_t keeping the high byte
+ * @param[in] input the uint16_t to truncate
+ * @return the high byte
+ */
+inline uint8_t TruncateUInt16High(uint16_t input) {
+  return static_cast<uint8_t>((input >> std::numeric_limits<uint8_t>::digits) &
+      std::numeric_limits<uint8_t>::max());
+}
+
+
+/**
+ * @brief Truncate a uint16_t keeping the low byte
+ * @param[in] input the uint16_t to truncate
+ * @return the low byte
+ */
+inline uint8_t TruncateUInt16Low(uint16_t input) {
+  return static_cast<uint8_t>(input & std::numeric_limits<uint8_t>::max());
+}
 }  // namespace utils
 }  // namespace ola
 #endif  // INCLUDE_OLA_UTIL_UTILS_H_
