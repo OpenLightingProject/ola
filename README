@@ -74,6 +74,10 @@ python/examples.
 There is an experimental Java library which can be built by running configure
 with --enable-java-libs.
 
+## Build it yourself
+
+There are some instructions on how to build Debian packages in the [README.debian](README.debian)
+
 ## Credits
 
 The AUTHORS files contains a list of code contributors. A [full list of
