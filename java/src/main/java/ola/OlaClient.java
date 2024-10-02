@@ -120,7 +120,7 @@ public class OlaClient {
     /**
      * Reload the plugins.
      *
-     * @return The list of plugings.
+     * @return Acknowledgement.
      */
     public Ack reloadPlugins() {
         return (Ack) callRpcMethod("ReloadPlugins", PluginReloadRequest.newBuilder().build());
@@ -131,7 +131,7 @@ public class OlaClient {
      * Get a plugin description from olad.
      *
      * @param pluginId number of the plugin for which to receive the description
-     * @return The list of plugings.
+     * @return The description of the plugin.
      */
     public PluginDescriptionReply getPluginDescription(int pluginId) {
         PluginDescriptionRequest request = PluginDescriptionRequest.newBuilder()
@@ -162,7 +162,7 @@ public class OlaClient {
      *
      * @param pluginId number of the plugin for which to change the state
      * @param enabled  whether the plugin should be enabled or not
-     * @return The list of plugings.
+     * @return Acknowledgement.
      */
     public Ack setPluginState(int pluginId, boolean enabled) {
         PluginStateChangeRequest request = Ola.PluginStateChangeRequest.newBuilder()
