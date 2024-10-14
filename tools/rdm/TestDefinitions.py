@@ -7225,9 +7225,11 @@ class GetListInterfaces(TestMixins.GetMixin,
       return
 
     interfaces = []
+    count_by_interface = {}
 
     for interface in fields['interfaces']:
       interface_id = interface['interface_identifier']
+      count_by_interface[interface_id] = count_by_interface.get(interface_id, 0) + 1
       if (interface_id < RDM_INTERFACE_INDEX_MIN or
           interface_id > RDM_INTERFACE_INDEX_MAX):
         self.AddWarning('Interface index %d is outside allowed range (%d to '
@@ -7241,6 +7243,12 @@ class GetListInterfaces(TestMixins.GetMixin,
         self.AddAdvisory('Possible error, found unusual hardware type %d for '
                          'interface %d' %
                          (interface['interface_hardware_type'], interface_id))
+
+    # Check for duplicate interfaces
+    for interface, count in count_by_interface.items():
+      if count > 1:
+        self.AddAdvisory('Interface %s listed %d times in list interfaces' %
+                         (interface, count))
 
     self.SetProperty(self.PROVIDES[0], interfaces)
 
