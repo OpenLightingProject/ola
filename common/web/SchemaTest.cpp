@@ -59,7 +59,7 @@ using ola::web::SchemaDefinitions;
 using ola::web::StringValidator;
 using ola::web::WildcardValidator;
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::set;
 using std::string;
 using std::vector;
@@ -100,15 +100,15 @@ class JsonSchemaTest: public CppUnit::TestFixture {
   void testEnums();
 
  private:
-  auto_ptr<JsonBool> m_bool_value;
-  auto_ptr<JsonValue> m_empty_array;
-  auto_ptr<JsonValue> m_empty_object;
-  auto_ptr<JsonInt> m_int_value;
-  auto_ptr<JsonString> m_long_string_value;
-  auto_ptr<JsonNull> m_null_value;
-  auto_ptr<JsonDouble> m_number_value;
-  auto_ptr<JsonString> m_string_value;
-  auto_ptr<JsonUInt> m_uint_value;
+  unique_ptr<JsonBool> m_bool_value;
+  unique_ptr<JsonValue> m_empty_array;
+  unique_ptr<JsonValue> m_empty_object;
+  unique_ptr<JsonInt> m_int_value;
+  unique_ptr<JsonString> m_long_string_value;
+  unique_ptr<JsonNull> m_null_value;
+  unique_ptr<JsonDouble> m_number_value;
+  unique_ptr<JsonString> m_string_value;
+  unique_ptr<JsonUInt> m_uint_value;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonSchemaTest);
@@ -292,10 +292,10 @@ void JsonSchemaTest::testIntegerValidator() {
   exclusive_max_int_validator.AddConstraint(new MaximumConstraint(
       new JsonInt(4), true));
 
-  auto_ptr<JsonInt> int_value1(new JsonInt(3));
-  auto_ptr<JsonInt> int_value2(new JsonInt(-11));
-  auto_ptr<JsonInt> int_value3(new JsonInt(-13));
-  auto_ptr<JsonInt> uint_value1(new JsonInt(5));
+  unique_ptr<JsonInt> int_value1(new JsonInt(3));
+  unique_ptr<JsonInt> int_value2(new JsonInt(-11));
+  unique_ptr<JsonInt> int_value3(new JsonInt(-13));
+  unique_ptr<JsonInt> uint_value1(new JsonInt(5));
 
   // closed maximum
   int_value1->Accept(&max_int_validator);
@@ -374,9 +374,9 @@ void JsonSchemaTest::testIntegerValidator() {
   m_uint_value->Accept(&multiple_of_validator);
   OLA_ASSERT_TRUE(multiple_of_validator.IsValid());
 
-  auto_ptr<JsonInt> int_value4(new JsonInt(4));
-  auto_ptr<JsonInt> int_value5(new JsonInt(8));
-  auto_ptr<JsonInt> int_value6(new JsonInt(-4));
+  unique_ptr<JsonInt> int_value4(new JsonInt(4));
+  unique_ptr<JsonInt> int_value5(new JsonInt(8));
+  unique_ptr<JsonInt> int_value6(new JsonInt(-4));
 
   int_value4->Accept(&multiple_of_validator);
   OLA_ASSERT_TRUE(multiple_of_validator.IsValid());
@@ -430,14 +430,14 @@ void JsonSchemaTest::testObjectValidator() {
   OLA_ASSERT_FALSE(object_validator.IsValid());
 
   string error;
-  auto_ptr<JsonValue> object1(JsonParser::Parse("{\"a\": 1}", &error));
-  auto_ptr<JsonValue> object2(
+  unique_ptr<JsonValue> object1(JsonParser::Parse("{\"a\": 1}", &error));
+  unique_ptr<JsonValue> object2(
       JsonParser::Parse("{\"a\": 1, \"b\": 2}", &error));
-  auto_ptr<JsonValue> object3(
+  unique_ptr<JsonValue> object3(
       JsonParser::Parse("{\"a\": 1, \"b\": 2, \"c\": 3}", &error));
-  auto_ptr<JsonValue> object4(
+  unique_ptr<JsonValue> object4(
       JsonParser::Parse("{\"a\": 1, \"b\": true, \"c\": 3}", &error));
-  auto_ptr<JsonValue> object5(
+  unique_ptr<JsonValue> object5(
       JsonParser::Parse("{\"a\": 1, \"b\": 2, \"c\": false}", &error));
 
   // test maxProperties
@@ -618,10 +618,10 @@ void JsonSchemaTest::testArrayValidator() {
   OLA_ASSERT_FALSE(array_validator.IsValid());
 
   string error;
-  auto_ptr<JsonValue> small_array(JsonParser::Parse("[1]", &error));
-  auto_ptr<JsonValue> medium_array(JsonParser::Parse("[1, 2]", &error));
-  auto_ptr<JsonValue> large_array(JsonParser::Parse("[1, 2, 3]", &error));
-  auto_ptr<JsonValue> duplicate_items_array(
+  unique_ptr<JsonValue> small_array(JsonParser::Parse("[1]", &error));
+  unique_ptr<JsonValue> medium_array(JsonParser::Parse("[1, 2]", &error));
+  unique_ptr<JsonValue> large_array(JsonParser::Parse("[1, 2, 3]", &error));
+  unique_ptr<JsonValue> duplicate_items_array(
       JsonParser::Parse("[1, 2, 1]", &error));
 
   // test maxItems
@@ -780,9 +780,9 @@ void JsonSchemaTest::testOneOfValidator() {
   m_uint_value->Accept(&one_of_validator);
   OLA_ASSERT_FALSE(one_of_validator.IsValid());
 
-  auto_ptr<JsonInt> int_value1(new JsonInt(3));
-  auto_ptr<JsonInt> int_value2(new JsonInt(5));
-  auto_ptr<JsonInt> int_value3(new JsonInt(6));
+  unique_ptr<JsonInt> int_value1(new JsonInt(3));
+  unique_ptr<JsonInt> int_value2(new JsonInt(5));
+  unique_ptr<JsonInt> int_value3(new JsonInt(6));
 
   int_value1->Accept(&one_of_validator);
   OLA_ASSERT_TRUE(one_of_validator.IsValid());

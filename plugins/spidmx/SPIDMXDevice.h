@@ -55,8 +55,8 @@ class SPIDMXDevice : public Device {
   void SetDefaults();
 
 
-  std::auto_ptr<SPIDMXWidget> m_widget;
-  std::auto_ptr<SPIDMXThread> m_thread;
+  std::unique_ptr<SPIDMXWidget> m_widget;
+  std::unique_ptr<SPIDMXThread> m_thread;
   class Preferences *m_preferences;
   PluginAdaptor *m_plugin_adaptor;
   const std::string m_name;

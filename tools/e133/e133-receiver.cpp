@@ -66,7 +66,7 @@ using ola::DmxBuffer;
 using ola::acn::CID;
 using ola::network::IPV4Address;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 using ola::plugin::usbpro::DmxTriWidget;
@@ -110,7 +110,7 @@ void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *output) {
 int main(int argc, char *argv[]) {
   ola::AppInit(&argc, argv, "[options]", "Run a very simple E1.33 Responder.");
 
-  auto_ptr<UID> uid(UID::FromString(FLAGS_uid));
+  unique_ptr<UID> uid(UID::FromString(FLAGS_uid));
   if (!uid.get()) {
     OLA_WARN << "Invalid UID: " << FLAGS_uid;
     ola::DisplayUsage();
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
   ola::network::Interface interface;
 
   {
-    auto_ptr<const ola::network::InterfacePicker> picker(
+    unique_ptr<const ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
     if (!picker->ChooseInterface(&interface, FLAGS_listen_ip)) {
       OLA_INFO << "Failed to find an interface";
@@ -137,19 +137,19 @@ int main(int argc, char *argv[]) {
 
   // Optionally attach some other endpoints.
   vector<E133Endpoint*> endpoints;
-  auto_ptr<ola::rdm::DummyResponder> dummy_responder;
-  auto_ptr<ola::rdm::DiscoverableRDMControllerAdaptor>
+  unique_ptr<ola::rdm::DummyResponder> dummy_responder;
+  unique_ptr<ola::rdm::DiscoverableRDMControllerAdaptor>
       discoverable_dummy_responder;
-  auto_ptr<DmxTriWidget> tri_widget;
+  unique_ptr<DmxTriWidget> tri_widget;
 
   ola::rdm::UIDAllocator uid_allocator(*uid);
   // The first uid is used for the management endpoint so we burn a UID here.
   {
-    auto_ptr<UID> dummy_uid(uid_allocator.AllocateNext());
+    unique_ptr<UID> dummy_uid(uid_allocator.AllocateNext());
   }
 
   // Setup E1.31 if required.
-  auto_ptr<ola::acn::E131Node> e131_node;
+  unique_ptr<ola::acn::E131Node> e131_node;
   if (FLAGS_e131) {
     e131_node.reset(new ola::acn::E131Node(
                     node.SelectServer(), FLAGS_listen_ip,
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (FLAGS_dummy) {
-    auto_ptr<UID> dummy_uid(uid_allocator.AllocateNext());
+    unique_ptr<UID> dummy_uid(uid_allocator.AllocateNext());
     OLA_INFO << "Dummy UID is " << *dummy_uid;
     if (!dummy_uid.get()) {
       OLA_WARN << "Failed to allocate a UID for the DummyResponder.";
@@ -207,13 +207,13 @@ int main(int argc, char *argv[]) {
   // uber hack for now.
   // TODO(simon): fix this
 #ifdef USE_SPI
-  auto_ptr<SPIWriter> spi_writer;
-  auto_ptr<SoftwareBackend> spi_backend;
-  auto_ptr<SPIOutput> spi_output;
+  unique_ptr<SPIWriter> spi_writer;
+  unique_ptr<SoftwareBackend> spi_backend;
+  unique_ptr<SPIOutput> spi_output;
   DmxBuffer spi_buffer;
 
   if (FLAGS_spi_device.present() && !FLAGS_spi_device.str().empty()) {
-    auto_ptr<UID> spi_uid(uid_allocator.AllocateNext());
+    unique_ptr<UID> spi_uid(uid_allocator.AllocateNext());
     if (!spi_uid.get()) {
       OLA_WARN << "Failed to allocate a UID for the SPI device.";
       exit(ola::EXIT_USAGE);

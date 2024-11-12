@@ -89,7 +89,7 @@ class FutureImpl {
   bool m_is_set;
   T m_value;
 
-  DISALLOW_COPY_AND_ASSIGN(FutureImpl<T>);
+  DISALLOW_COPY_AND_ASSIGN(FutureImpl);
 };
 
 /**
@@ -152,7 +152,7 @@ class FutureImpl<void> {
   unsigned int m_ref_count;
   bool m_is_set;
 
-  DISALLOW_COPY_AND_ASSIGN(FutureImpl<void>);
+  DISALLOW_COPY_AND_ASSIGN(FutureImpl);
 };
 
 }  // namespace thread

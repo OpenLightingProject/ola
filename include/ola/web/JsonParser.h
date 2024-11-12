@@ -111,7 +111,7 @@ class JsonParser : public JsonParserInterface {
   };
 
   std::string m_error;
-  std::auto_ptr<JsonValue> m_root;
+  std::unique_ptr<JsonValue> m_root;
   std::string m_key;
   std::stack<ContainerType> m_container_stack;
 

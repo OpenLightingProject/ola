@@ -40,7 +40,7 @@
 
 using ola::network::IPV4Address;
 using ola::network::HostToNetwork;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -97,11 +97,11 @@ void IPAddressTest::testIPV4Address() {
   OLA_ASSERT_EQ(string("192.168.1.1"), str.str());
 
   // test from string
-  auto_ptr<IPV4Address> string_address(IPV4Address::FromString("10.0.0.1"));
+  unique_ptr<IPV4Address> string_address(IPV4Address::FromString("10.0.0.1"));
   OLA_ASSERT_NOT_NULL(string_address.get());
   OLA_ASSERT_EQ(string("10.0.0.1"), string_address->ToString());
 
-  auto_ptr<IPV4Address> string_address2(IPV4Address::FromString("foo"));
+  unique_ptr<IPV4Address> string_address2(IPV4Address::FromString("foo"));
   OLA_ASSERT_NULL(string_address2.get());
 
   // and the second form

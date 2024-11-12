@@ -45,7 +45,7 @@ using ola::web::JsonPatchTestOp;
 using ola::web::JsonData;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 class JsonPatchParserTest: public CppUnit::TestFixture {
@@ -78,7 +78,7 @@ class JsonPatchParserTest: public CppUnit::TestFixture {
 void JsonPatchParserTest::CheckValuesMatch(const std::string &input,
                                            const JsonValue *actual) {
   string error;
-  auto_ptr<const JsonValue> expected_value(JsonParser::Parse(input, &error));
+  unique_ptr<const JsonValue> expected_value(JsonParser::Parse(input, &error));
   if (expected_value.get()) {
     if (*actual != *expected_value.get()) {
       OLA_ASSERT_EQ(JsonWriter::AsString(*(expected_value.get())),
@@ -90,7 +90,7 @@ void JsonPatchParserTest::CheckValuesMatch(const std::string &input,
 }
 
 void JsonPatchParserTest::BuildSampleText(JsonData *text) {
-  auto_ptr<JsonObject> object(new JsonObject());
+  unique_ptr<JsonObject> object(new JsonObject());
   object->Add("foo", "bar");
   object->Add("baz", false);
 
