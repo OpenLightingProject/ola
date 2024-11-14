@@ -130,7 +130,12 @@ void ServiceGenerator::GenerateInterface(Printer* printer) {
   printer->Print(vars_,
     "\n"
     " private:\n"
+#if GOOGLE_PROTOBUF_VERSION < 4022000
     "  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS($classname$);\n"
+#else
+    "  $classname$(const $classname$&) = delete;\n"
+    "  $classname$& operator=(const $classname$&) = delete;\n"
+#endif
     "};\n"
     "\n");
 }
@@ -178,7 +183,12 @@ void ServiceGenerator::GenerateStubDefinition(Printer* printer) {
     " private:\n"
     "  ola::rpc::RpcChannel* channel_;\n"
     "  bool owns_channel_;\n"
+#if GOOGLE_PROTOBUF_VERSION < 4022000
     "  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS($classname$_Stub);\n"
+#else
+    "  $classname$_Stub(const $classname$_Stub&) = delete;\n"
+    "  $classname$_Stub& operator=(const $classname$_Stub&) = delete;\n"
+#endif
     "};\n"
     "\n");
 }
@@ -291,7 +301,11 @@ void ServiceGenerator::GenerateCallMethod(Printer* printer) {
     "    const ::google::protobuf::Message* request,\n"
     "    ::google::protobuf::Message* response,\n"
     "    ola::rpc::RpcService::CompletionCallback* done) {\n"
+#if GOOGLE_PROTOBUF_VERSION < 4022000
     "  GOOGLE_DCHECK_EQ(method->service(), $classname$_descriptor_);\n"
+#else
+    "  ABSL_DCHECK_EQ(method->service(), $classname$_descriptor_);\n"
+#endif
     "  switch (method->index()) {\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
@@ -308,17 +322,28 @@ void ServiceGenerator::GenerateCallMethod(Printer* printer) {
       "    case $index$:\n"
       "      $name$(\n"
       "          controller,\n"
+#if GOOGLE_PROTOBUF_VERSION < 4022000
       "          ::google::protobuf::down_cast<\n"
       "              const $input_type$*>(request),\n"
       "          ::google::protobuf::down_cast<\n"
       "              $output_type$*>(response),\n"
+#else
+      "          ::google::protobuf::internal::DownCast<\n"
+      "              const $input_type$*>(request),\n"
+      "          ::google::protobuf::internal::DownCast<\n"
+      "              $output_type$*>(response),\n"
+#endif
       "          done);\n"
       "      break;\n");
   }
 
   printer->Print(vars_,
     "    default:\n"
+#if GOOGLE_PROTOBUF_VERSION < 4022000
     "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never "
+#else
+    "      ABSL_LOG(FATAL) << \"Bad method index; this should never "
+#endif
     "happen.\";\n"
     "      break;\n"
     "  }\n"
@@ -339,7 +364,11 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 
   printer->Print(vars_,
     "    const ::google::protobuf::MethodDescriptor* method) const {\n"
+#if GOOGLE_PROTOBUF_VERSION < 4022000
     "  GOOGLE_DCHECK_EQ(method->service(), descriptor());\n"
+#else
+    "  ABSL_DCHECK_EQ(method->service(), descriptor());\n"
+#endif
     "  switch (method->index()) {\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
@@ -358,7 +387,11 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 
   printer->Print(vars_,
     "    default:\n"
+#if GOOGLE_PROTOBUF_VERSION < 4022000
     "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never happen."
+#else
+    "      ABSL_LOG(FATAL) << \"Bad method index; this should never happen."
+#endif
     "\";\n"
     "      return *static_cast< ::google::protobuf::Message*>(NULL);\n"
     "  }\n"
