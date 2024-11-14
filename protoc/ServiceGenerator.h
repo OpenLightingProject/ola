@@ -114,7 +114,12 @@ class ServiceGenerator {
   const ServiceDescriptor* descriptor_;
   std::map<string, string> vars_;
 
+#if GOOGLE_PROTOBUF_VERSION < 4022000
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ServiceGenerator);
+#else
+  ServiceGenerator(const ServiceGenerator&) = delete;
+  ServiceGenerator& operator=(const ServiceGenerator&) = delete;
+#endif
 };
 
 }  // namespace ola

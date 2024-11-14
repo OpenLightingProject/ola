@@ -56,6 +56,14 @@
 #include <google/protobuf/stubs/stl_util.h>
 #endif  // HAVE_GOOGLE_PROTOBUF_STUBS_STL_UTIL_H
 
+#if GOOGLE_PROTOBUF_VERSION >= 4022000
+#include <absl/log/absl_check.h>
+#include <absl/log/absl_log.h>
+#define GOOGLE_CHECK ABSL_CHECK
+#define GOOGLE_DCHECK_LT ABSL_CHECK_LT
+#define GOOGLE_LOG_IF(LEVEL, VECTOR) ABSL_LOG_IF(LEVEL, VECTOR)
+#endif
+
 #ifdef _WIN32
 // MSVC has only _snprintf, not snprintf.
 //
