@@ -134,7 +134,7 @@ string OSCPlugin::Description() const {
 "--------------------------------\n"
 "\n"
 "This plugin allows OLA to send and receive OSC\n"
-"( http://www.opensoundcontrol.org/ ) messages.\n"
+"( https://opensoundcontrol.stanford.edu/ ) messages.\n"
 "\n"
 "OLA uses the blob type for transporting DMX data.\n"
 "\n"
