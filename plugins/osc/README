@@ -14,9 +14,9 @@ Before we begin you should do the following:
  * Have an understanding of the map & vector classes from the STL -
    http://www.sgi.com/tech/stl/ or http://www.cplusplus.com/reference/stl/ .
  * Know something about the OSC specification:
-   http://opensoundcontrol.org/spec-1_0 . You don't need to know the wire format
-   for the OSC messages. but you should at least recognize OSC addresses and
-   know the different data types in a message.
+   https://opensoundcontrol.stanford.edu/spec-1_0.html . You don't need to know
+   the wire format for the OSC messages. but you should at least recognize OSC
+   addresses and know the different data types in a message.
  * Look at the liblo site (http://liblo.sourceforge.net/ ) and read the
    examples.
  * Get familiar with the string class
