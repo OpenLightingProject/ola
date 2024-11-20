@@ -500,6 +500,7 @@ void CustomCapitalizeLabel(string *s) {
     "pid",
     "rdm",
     "uid",
+    "url",
     NULL
   };
   const size_t size = s->size();

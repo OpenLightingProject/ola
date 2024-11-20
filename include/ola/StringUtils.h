@@ -500,6 +500,7 @@ void CapitalizeLabel(std::string *s);
  *   - mdmx
  *   - rdm
  *   - uid
+ *   - url
  */
 void CustomCapitalizeLabel(std::string *s);
 
