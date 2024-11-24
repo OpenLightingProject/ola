@@ -63,7 +63,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
  */
 void InterfacePickerTest::testGetInterfaces() {
   auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
-  vector<Interface> interfaces = picker->GetInterfaces(true);
+  vector<Interface> interfaces = picker->GetInterfaces(true, true);
 #ifndef _WIN32
   // If a Windows box is not on a network, and doesn't have it's loopback, there
   // may be zero interfaces present so we skip this check
@@ -87,7 +87,7 @@ void InterfacePickerTest::testGetInterfaces() {
  */
 void InterfacePickerTest::testGetLoopbackInterfaces() {
   auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
-  vector<Interface> interfaces = picker->GetInterfaces(true);
+  vector<Interface> interfaces = picker->GetInterfaces(true, true);
 #ifndef _WIN32
   // If a Windows box is not on a network, and doesn't have it's loopback, there
   // may be zero interfaces present so we skip this check
