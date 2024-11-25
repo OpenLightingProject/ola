@@ -490,6 +490,7 @@ void CapitalizeLabel(std::string *s);
  *
  * @param s a string to transform.
  * The following are capitalized:
+ *   - asc
  *   - dhcp
  *   - dmx
  *   - dns
@@ -499,6 +500,7 @@ void CapitalizeLabel(std::string *s);
  *   - json
  *   - led
  *   - mdmx
+ *   - nsc
  *   - rdm
  *   - uid
  *   - url

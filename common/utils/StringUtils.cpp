@@ -488,6 +488,7 @@ void CapitalizeLabel(string *s) {
 void CustomCapitalizeLabel(string *s) {
   // Remember to update the Doxygen in include/ola/StringUtils.h too
   static const char* const transforms[] = {
+    "asc",
     "dhcp",
     "dmx",
     "dns",
@@ -497,6 +498,7 @@ void CustomCapitalizeLabel(string *s) {
     "json",
     "led",
     "mdmx",  // City Theatrical, should really be mDMX, but better than nothing
+    "nsc",
     "pdl",
     "pid",
     "rdm",
