@@ -1706,7 +1706,7 @@ pid {
 }
 pid {
   name: "MANUFACTURER_URL"
-  value: 209
+  value: 208
   get_request {
   }
   get_response {
