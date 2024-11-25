@@ -23,5 +23,6 @@ namespace ola {
 namespace rdm {
 
 const char OLA_MANUFACTURER_LABEL[] = "Open Lighting Project";
+const char OLA_MANUFACTURER_URL[] = "https://openlighting.org/";
 }  // namespace rdm
 }  // namespace ola

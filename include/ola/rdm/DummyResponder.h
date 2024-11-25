@@ -130,6 +130,9 @@ class DummyResponder: public RDMControllerInterface {
   RDMResponse *GetDNSHostname(const RDMRequest *request);
   RDMResponse *GetDNSDomainName(const RDMRequest *request);
   RDMResponse *GetDNSNameServer(const RDMRequest *request);
+  RDMResponse *GetManufacturerURL(const RDMRequest *request);
+  RDMResponse *GetProductURL(const RDMRequest *request);
+  RDMResponse *GetFirmwareURL(const RDMRequest *request);
 
   static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
   static const uint8_t DEFAULT_PERSONALITY = 2;
