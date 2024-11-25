@@ -767,6 +767,7 @@ pid {
     field {
       type: STRING
       name: "json"
+      max_size: 4294967295
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -781,6 +782,7 @@ pid {
       type: STRING
       name: "url"
       min_size: 2
+      max_size: 4294967295
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -1700,6 +1702,7 @@ pid {
       type: STRING
       name: "url"
       min_size: 2
+      max_size: 4294967295
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -1714,6 +1717,7 @@ pid {
       type: STRING
       name: "url"
       min_size: 2
+      max_size: 4294967295
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -1728,6 +1732,7 @@ pid {
       type: STRING
       name: "url"
       min_size: 2
+      max_size: 4294967295
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -4297,6 +4302,7 @@ pid {
     field {
       type: STRING
       name: "tags"
+      max_size: 4294967295
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
