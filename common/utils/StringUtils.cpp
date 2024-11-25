@@ -494,6 +494,7 @@ void CustomCapitalizeLabel(string *s) {
     "ip",
     "ipv4",  // Should really be IPv4 probably, but better than nothing
     "ipv6",  // Should really be IPv6 probably, but better than nothing
+    "json",
     "led",
     "mdmx",  // City Theatrical, should really be mDMX, but better than nothing
     "pdl",

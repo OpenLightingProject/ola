@@ -496,6 +496,7 @@ void CapitalizeLabel(std::string *s);
  *   - ip
  *   - ipv4
  *   - ipv6
+ *   - json
  *   - led
  *   - mdmx
  *   - rdm
