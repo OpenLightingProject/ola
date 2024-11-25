@@ -1135,7 +1135,7 @@ class PidStore(object):
     self._pid_store.Clear()
 
   def Pids(self):
-    """Returns a list of all PIDs. Manufacturer PIDs aren't included.
+    """Returns a list of all ESTA PIDs. Manufacturer PIDs aren't included.
 
     Returns:
       A list of Pid objects.
