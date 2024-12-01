@@ -730,6 +730,7 @@ class GetSupportedParameters(ResponderTestFixture):
       ('DMX_PERSONALITY', 'DMX_PERSONALITY_DESCRIPTION'),
       ('SENSOR_DEFINITION', 'SENSOR_VALUE'),
       ('SELF_TEST_DESCRIPTION', 'PERFORM_SELFTEST'),
+      ('LIST_TAGS', 'ADD_TAG', 'REMOVE_TAG', 'CHECK_TAG', 'CLEAR_TAGS'),
   ]
 
   # If the first PID is supported, the PIDs in the group must be.
@@ -7921,6 +7922,142 @@ class SetInterfaceHardwareAddressType1WithData(
         OptionalParameterTestFixture):
   """Attempt to SET INTERFACE_HARDWARE_ADDRESS_TYPE1 with data."""
   PID = 'INTERFACE_HARDWARE_ADDRESS_TYPE1'
+
+
+# E1.37-5 PIDS
+# =============================================================================
+
+class AllSubDevicesGetManufacturerURL(TestMixins.AllSubDevicesGetMixin,
+                                      OptionalParameterTestFixture):
+  """Send a get MANUFACTURER_URL to ALL_SUB_DEVICES."""
+  PID = 'MANUFACTURER_URL'
+
+
+class GetManufacturerURL(TestMixins.GetURLMixin,
+                         OptionalParameterTestFixture):
+  """GET the manufacturer URL."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'MANUFACTURER_URL'
+  EXPECTED_FIELDS = ['url']
+#  PROVIDES = ['manufacturer_url']
+
+
+class GetManufacturerURLWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """GET MANUFACTURER_URL with data."""
+  PID = 'MANUFACTURER_URL'
+
+
+class SetManufacturerURL(TestMixins.UnsupportedSetMixin,
+                         OptionalParameterTestFixture):
+  """Attempt to SET MANUFACTURER_URL."""
+  PID = 'MANUFACTURER_URL'
+
+
+class SetManufacturerURLWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Attempt to SET MANUFACTURER_URL with data."""
+  PID = 'MANUFACTURER_URL'
+
+
+class AllSubDevicesGetProductURL(TestMixins.AllSubDevicesGetMixin,
+                                 OptionalParameterTestFixture):
+  """Send a get PRODUCT_URL to ALL_SUB_DEVICES."""
+  PID = 'PRODUCT_URL'
+
+
+class GetProductURL(TestMixins.GetURLMixin,
+                    OptionalParameterTestFixture):
+  """GET the product URL."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'PRODUCT_URL'
+  EXPECTED_FIELDS = ['url']
+
+
+class GetProductURLWithData(TestMixins.GetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """GET PRODUCT_URL with data."""
+  PID = 'PRODUCT_URL'
+
+
+class SetProductURL(TestMixins.UnsupportedSetMixin,
+                    OptionalParameterTestFixture):
+  """Attempt to SET PRODUCT_URL."""
+  PID = 'PRODUCT_URL'
+
+
+class SetProductURLWithData(TestMixins.UnsupportedSetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """Attempt to SET PRODUCT_URL with data."""
+  PID = 'PRODUCT_URL'
+
+
+class AllSubDevicesGetFirmwareURL(TestMixins.AllSubDevicesGetMixin,
+                                  OptionalParameterTestFixture):
+  """Send a get FIRMWARE_URL to ALL_SUB_DEVICES."""
+  PID = 'FIRMWARE_URL'
+
+
+class GetFirmwareURL(TestMixins.GetURLMixin,
+                     OptionalParameterTestFixture):
+  """GET the firmware URL."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'FIRMWARE_URL'
+  EXPECTED_FIELDS = ['url']
+  # Extend the existing allowed schemas
+  ALLOWED_SCHEMAS = ['http', 'https', 'ftp']
+
+
+class GetFirmwareURLWithData(TestMixins.GetWithDataMixin,
+                             OptionalParameterTestFixture):
+  """GET FIRMWARE_URL with data."""
+  PID = 'FIRMWARE_URL'
+
+
+class SetFirmwareURL(TestMixins.UnsupportedSetMixin,
+                     OptionalParameterTestFixture):
+  """Attempt to SET FIRMWARE_URL."""
+  PID = 'FIRMWARE_URL'
+
+
+class SetFirmwareURLWithData(TestMixins.UnsupportedSetWithDataMixin,
+                             OptionalParameterTestFixture):
+  """Attempt to SET FIRMWARE_URL with data."""
+  PID = 'FIRMWARE_URL'
+
+
+class AllSubDevicesGetMetadataJSONURL(TestMixins.AllSubDevicesGetMixin,
+                                      OptionalParameterTestFixture):
+  """Send a get METADATA_JSON_URL to ALL_SUB_DEVICES."""
+  PID = 'METADATA_JSON_URL'
+
+
+class GetMetadataJSONURL(TestMixins.GetURLMixin,
+                         OptionalParameterTestFixture):
+  """GET the metadata JSON URL."""
+  CATEGORY = TestCategory.RDM_INFORMATION
+  PID = 'METADATA_JSON_URL'
+  EXPECTED_FIELDS = ['url']
+  # Extend the existing allowed schemas
+  ALLOWED_SCHEMAS = ['http', 'https', 'ftp']
+
+
+class GetMetadataJSONURLWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """GET METADATA_JSON_URL with data."""
+  PID = 'METADATA_JSON_URL'
+
+
+class SetMetadataJSONURL(TestMixins.UnsupportedSetMixin,
+                         OptionalParameterTestFixture):
+  """Attempt to SET METADATA_JSON_URL."""
+  PID = 'METADATA_JSON_URL'
+
+
+class SetMetadataJSONURLWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Attempt to SET METADATA_JSON_URL with data."""
+  PID = 'METADATA_JSON_URL'
 
 
 # E1.33/E1.37-7 PIDS
