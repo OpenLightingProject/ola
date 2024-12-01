@@ -26,7 +26,7 @@ import webbrowser
 
 from ola.UID import UID
 
-'''Compare the RDM configurations saves with rdm_snapshot.py'''
+'''Compare the RDM configurations saved with rdm_snapshot.py'''
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
