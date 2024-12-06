@@ -41,7 +41,8 @@ using std::endl;
 const char ShowSaver::OLA_SHOW_HEADER[] = "OLA Show";
 
 ShowSaver::ShowSaver(const string &filename)
-    : m_filename(filename) {
+    : m_filename(filename),
+      m_saved_elapsed_ms(0) {
 }
 
 
@@ -84,13 +85,17 @@ bool ShowSaver::NewFrame(const ola::TimeStamp &arrival_time,
                          unsigned int universe,
                          const ola::DmxBuffer &data) {
   // TODO(simon): add much better error handling here
-  if (m_last_frame.IsSet()) {
-    // this is not the first frame so write the delay in ms
-    const ola::TimeInterval delta = arrival_time - m_last_frame;
+  if (m_first_frame.IsSet()) {
+    const ola::TimeInterval delta = arrival_time - m_first_frame;
+    int64_t saved_delta_ms = (delta.InMilliSeconds() - m_saved_elapsed_ms);
+    m_saved_elapsed_ms += saved_delta_ms;
 
-    m_show_file << delta.InMilliSeconds() << endl;
+    m_show_file << saved_delta_ms << endl;
+  } else {
+    m_first_frame = arrival_time;
   }
-  m_last_frame = arrival_time;
+
   m_show_file << universe << " " << data.ToString() << endl;
+
   return true;
 }
