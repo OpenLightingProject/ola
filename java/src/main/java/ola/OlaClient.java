@@ -120,10 +120,10 @@ public class OlaClient {
     /**
      * Reload the plugins.
      *
-     * @return Acknowledgement.
+     * @return true when succeeded.
      */
-    public Ack reloadPlugins() {
-        return (Ack) callRpcMethod("ReloadPlugins", PluginReloadRequest.newBuilder().build());
+    public boolean reloadPlugins() {
+        return callRpcMethod("ReloadPlugins", PluginReloadRequest.newBuilder().build()) != null;
     }
 
 
@@ -162,15 +162,15 @@ public class OlaClient {
      *
      * @param pluginId number of the plugin for which to change the state
      * @param enabled  whether the plugin should be enabled or not
-     * @return Acknowledgement.
+     * @return true when succeeded.
      */
-    public Ack setPluginState(int pluginId, boolean enabled) {
+    public boolean setPluginState(int pluginId, boolean enabled) {
         PluginStateChangeRequest request = Ola.PluginStateChangeRequest.newBuilder()
                 .setPluginId(pluginId)
                 .setEnabled(enabled)
                 .build();
 
-        return (Ack) callRpcMethod("SetPluginState", request);
+        return callRpcMethod("SetPluginState", request) != null;
     }
 
 
