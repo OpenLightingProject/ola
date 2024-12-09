@@ -158,7 +158,7 @@ public class OlaClient {
 
 
     /**
-     * Change the state of plugins.
+     * Set the state of a plugin.
      *
      * @param pluginId number of the plugin for which to change the state
      * @param enabled  whether the plugin should be enabled or not
