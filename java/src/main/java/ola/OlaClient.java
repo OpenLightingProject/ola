@@ -73,6 +73,7 @@ public class OlaClient {
 
 
     public OlaClient() throws Exception {
+
         channel = new StreamRpcChannel();
         controller = new SimpleRpcController();
         serverService = OlaServerService.Stub.newStub(channel);
@@ -82,11 +83,12 @@ public class OlaClient {
     /**
      * Generic method for making Rpc Calls.
      *
-     * @param method       Name of the Rpc Method to call
+     * @param method Name of the Rpc Method to call
      * @param inputMessage Input RpcMessage
      * @return Message result message or null if the call failed.
      */
     private Message callRpcMethod(String method, Message inputMessage) {
+
         final Message[] outputMessage = new Message[1];
         controller.reset();
 
@@ -105,6 +107,7 @@ public class OlaClient {
 
         return outputMessage[0];
     }
+
 
 
     /**
@@ -199,7 +202,7 @@ public class OlaClient {
      * Configure device.
      *
      * @param device the id of the device to configure.
-     * @param data   device configuration data.
+     * @param data device configuration data.
      * @return
      */
     public DeviceConfigReply configureDevice(int device, short[] data) {
@@ -265,7 +268,6 @@ public class OlaClient {
 
     /**
      * Retrieve dmx data from universe.
-     *
      * @param universe the id of the universe
      * @return
      */
@@ -277,13 +279,14 @@ public class OlaClient {
     /**
      * Patch a port.
      *
-     * @param device   number
-     * @param port     number
-     * @param action   PachAction.PATCH or PatchAction.UNPATCH
+     * @param device number
+     * @param port number
+     * @param action PachAction.PATCH or PatchAction.UNPATCH
      * @param universe number
      * @return true when succeeded.
      */
     public boolean patchPort(int device, int port, PatchAction action, int universe) {
+
         PatchPortRequest patchRequest = PatchPortRequest.newBuilder()
                 .setPortId(port)
                 .setAction(action)
@@ -300,10 +303,11 @@ public class OlaClient {
      * Send dmx data to olad.
      *
      * @param universe number
-     * @param values   array of dmx data values
+     * @param values array of dmx data values
      * @return true when succeeded.
      */
     public boolean sendDmx(int universe, short[] values) {
+
         DmxData dmxData = DmxData.newBuilder()
                 .setUniverse(universe)
                 .setData(convertToUnsigned(values))
@@ -320,12 +324,12 @@ public class OlaClient {
      */
     public boolean setPortPriority(int device, int port, int priority, int mode, boolean output) {
         PortPriorityRequest request = PortPriorityRequest.newBuilder()
-                .setDeviceAlias(device)
-                .setPortId(port)
-                .setPriority(priority)
-                .setPriorityMode(mode)
-                .setIsOutput(output)
-                .build();
+            .setDeviceAlias(device)
+            .setPortId(port)
+            .setPriority(priority)
+            .setPriorityMode(mode)
+            .setIsOutput(output)
+            .build();
 
         return callRpcMethod("SetPortPriority", request) != null;
     }
@@ -335,7 +339,7 @@ public class OlaClient {
      * Set universe name.
      *
      * @param universe id of universe for which to set the name.
-     * @param name     The name to set.
+     * @param name The name to set.
      * @return true if the call succeeded.
      */
     public boolean setUniverseName(int universe, String name) {
@@ -351,7 +355,7 @@ public class OlaClient {
      * Define merge mode for a universe.
      *
      * @param universe The id of the universe
-     * @param mode,    merge mode to use
+     * @param mode, merge mode to use
      * @return true if call succeeded.
      */
     public boolean setMergeMode(int universe, MergeMode mode) {
@@ -367,7 +371,7 @@ public class OlaClient {
      * Register for dmx
      *
      * @param universe
-     * @param action   RegisterAction
+     * @param action RegisterAction
      * @return true if call succeeded.
      */
     public boolean registerForDmx(int universe, RegisterAction action) {
@@ -381,7 +385,6 @@ public class OlaClient {
 
     /**
      * Set source UID for device.
-     *
      * @param device The id of the device
      * @param estaId the UID to set.
      * @return true if call succeeded.
@@ -398,8 +401,8 @@ public class OlaClient {
     /**
      * Send TimeCode.
      *
-     * @param type    TimeCodeType
-     * @param frames  number of frames
+     * @param type TimeCodeType
+     * @param frames number of frames
      * @param hours
      * @param minutes
      * @param seconds
@@ -447,9 +450,10 @@ public class OlaClient {
      * Send dmx data, but don't wait for response.
      *
      * @param universe the id of the universe
-     * @param values   dmx data
+     * @param values dmx data
      */
     public void streamDmx(int universe, short[] values) {
+
         DmxData dmxData = DmxData.newBuilder()
                 .setUniverse(universe)
                 .setData(convertToUnsigned(values))
