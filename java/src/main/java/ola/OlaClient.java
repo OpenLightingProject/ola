@@ -143,7 +143,7 @@ public class OlaClient {
 
 
     /**
-     * Return the state for a plugin.
+     * Return the state of a plugin.
      *
      * @param pluginId number of the plugin to fetch the state of
      * @return The state of the plugin.
