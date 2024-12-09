@@ -146,7 +146,7 @@ public class OlaClient {
      * Return the state for a plugin.
      *
      * @param pluginId number of the plugin for which to receive the state
-     * @return The list of plugings.
+     * @return The state of the plugin.
      */
     public PluginStateReply getPluginState(int pluginId) {
         PluginStateRequest request = Ola.PluginStateRequest.newBuilder()
