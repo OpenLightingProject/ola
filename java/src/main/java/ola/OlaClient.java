@@ -276,6 +276,7 @@ public class OlaClient {
     }
 
 
+
     /**
      * Patch a port.
      *
@@ -369,7 +370,6 @@ public class OlaClient {
 
     /**
      * Register for dmx
-     *
      * @param universe
      * @param action RegisterAction
      * @return true if call succeeded.
