@@ -1,5 +1,5 @@
 02/10/2024 Moritz Vieli <moritz.vieli@gmail.com>
- * v0.0.23
+ * v0.2.0
   - Add OlaClient.reloadPlugins()
   - Add OlaClient.getPluginState()
   - Add OlaClient.setPluginState()
