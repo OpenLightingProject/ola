@@ -145,7 +145,7 @@ public class OlaClient {
     /**
      * Return the state for a plugin.
      *
-     * @param pluginId number of the plugin for which to receive the state
+     * @param pluginId number of the plugin to fetch the state of
      * @return The state of the plugin.
      */
     public PluginStateReply getPluginState(int pluginId) {
