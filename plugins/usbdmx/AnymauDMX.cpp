@@ -100,7 +100,7 @@ bool SynchronousAnymauDMX::Init() {
     return false;
   }
 
-  std::auto_ptr<AnymaThreadedSender> sender(
+  std::unique_ptr<AnymaThreadedSender> sender(
       new AnymaThreadedSender(m_adaptor, m_usb_device, usb_handle));
   if (!sender->Start()) {
     return false;

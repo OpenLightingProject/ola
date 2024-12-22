@@ -56,8 +56,8 @@ class SPIDevice: public ola::Device {
  private:
   typedef std::vector<class SPIOutputPort*> SPIPorts;
 
-  std::auto_ptr<SPIWriterInterface> m_writer;
-  std::auto_ptr<SPIBackendInterface> m_backend;
+  std::unique_ptr<SPIWriterInterface> m_writer;
+  std::unique_ptr<SPIBackendInterface> m_backend;
   class Preferences *m_preferences;
   class PluginAdaptor *m_plugin_adaptor;
   SPIPorts m_spi_ports;

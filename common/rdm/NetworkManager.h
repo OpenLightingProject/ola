@@ -58,7 +58,7 @@ class NetworkManager : public NetworkManagerInterface {
       std::vector<ola::network::IPV4Address> *name_servers) const;
 
  private:
-  std::auto_ptr<ola::network::InterfacePicker> m_interface_picker;
+  std::unique_ptr<ola::network::InterfacePicker> m_interface_picker;
 };
 }  // namespace rdm
 }  // namespace ola

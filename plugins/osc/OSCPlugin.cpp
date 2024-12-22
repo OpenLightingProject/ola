@@ -102,7 +102,7 @@ bool OSCPlugin::StartHook() {
   }
 
   // Finally create the new OSCDevice, start it and register the device.
-  std::auto_ptr<OSCDevice> device(
+  std::unique_ptr<OSCDevice> device(
     new OSCDevice(this, m_plugin_adaptor, udp_port, port_addresses,
                   port_configs));
   if (!device->Start()) {

@@ -77,7 +77,7 @@ void UDPTransportTest::Stop() {
  */
 void UDPTransportTest::testUDPTransport() {
   CID cid;
-  std::auto_ptr<Callback0<void> > stop_closure(
+  std::unique_ptr<Callback0<void> > stop_closure(
       NewCallback(this, &UDPTransportTest::Stop));
   MockInflator inflator(cid, stop_closure.get());
 

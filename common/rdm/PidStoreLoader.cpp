@@ -42,7 +42,7 @@ namespace rdm {
 
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::map;
 using std::ostringstream;
 using std::set;
@@ -193,7 +193,7 @@ const RootPidStore *PidStoreLoader::BuildStore(
 
   // Now we need to convert the data structure into a format that the PidStore
   // understands.
-  auto_ptr<const PidStore> esta_store;
+  unique_ptr<const PidStore> esta_store;
   RootPidStore::ManufacturerMap manufacturer_map;
 
   ManufacturerMap::iterator iter = pid_data.begin();
