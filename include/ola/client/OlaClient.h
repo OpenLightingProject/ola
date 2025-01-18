@@ -317,7 +317,7 @@ class OlaClient {
                     SetCallback *callback);
 
  private:
-  std::auto_ptr<class OlaClientCore> m_core;
+  std::unique_ptr<class OlaClientCore> m_core;
 
   DISALLOW_COPY_AND_ASSIGN(OlaClient);
 };

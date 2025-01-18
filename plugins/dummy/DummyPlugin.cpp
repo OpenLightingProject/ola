@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <memory>
 #include <string>
 
 #include "ola/StringUtils.h"
@@ -100,7 +101,7 @@ bool DummyPlugin::StartHook() {
     options.number_of_network_responders = DEFAULT_DEVICE_COUNT;
   }
 
-  std::auto_ptr<DummyDevice> device(
+  std::unique_ptr<DummyDevice> device(
       new DummyDevice(this, DEVICE_NAME, options));
   if (!device->Start()) {
     return false;

@@ -148,7 +148,7 @@ class OSCNode {
     explicit OSCInputGroup(DMXCallback *callback) : callback(callback) {}
 
     DmxBuffer dmx;
-    std::auto_ptr<DMXCallback> callback;
+    std::unique_ptr<DMXCallback> callback;
   };
 
   typedef std::map<unsigned int, OSCOutputGroup*> OutputGroupMap;
@@ -161,7 +161,7 @@ class OSCNode {
 
   ola::io::SelectServerInterface *m_ss;
   const uint16_t m_listen_port;
-  std::auto_ptr<ola::io::UnmanagedFileDescriptor> m_descriptor;
+  std::unique_ptr<ola::io::UnmanagedFileDescriptor> m_descriptor;
   lo_server m_osc_server;
   OutputGroupMap m_output_map;
   InputUniverseMap m_input_map;

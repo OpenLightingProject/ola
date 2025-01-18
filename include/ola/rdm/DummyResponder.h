@@ -92,7 +92,7 @@ class DummyResponder: public RDMControllerInterface {
   uint32_t m_lamp_strikes;
   PersonalityManager m_personality_manager;
   Sensors m_sensors;
-  std::auto_ptr<NetworkManagerInterface> m_network_manager;
+  std::unique_ptr<NetworkManagerInterface> m_network_manager;
 
   RDMResponse *GetParamDescription(const RDMRequest *request);
   RDMResponse *GetDeviceInfo(const RDMRequest *request);

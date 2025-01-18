@@ -52,7 +52,7 @@ using ola::network::HealthCheckedConnection;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::acn::RDMPDU;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 

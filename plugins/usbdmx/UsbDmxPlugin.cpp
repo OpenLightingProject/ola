@@ -21,6 +21,7 @@
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 
 #include <string>
+#include <utility>
 
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
@@ -63,7 +64,7 @@ bool UsbDmxPlugin::StartHook() {
     debug_level = LIBUSB_DEFAULT_DEBUG_LEVEL;
   }
 
-  std::auto_ptr<PluginImplInterface> impl;
+  std::unique_ptr<PluginImplInterface> impl;
   if (FLAGS_use_async_libusb) {
     impl.reset(
         new AsyncPluginImpl(m_plugin_adaptor, this, debug_level,
@@ -74,7 +75,7 @@ bool UsbDmxPlugin::StartHook() {
   }
 
   if (impl->Start()) {
-    m_impl.reset(impl.release());
+    m_impl = std::move(impl);
     return true;
   } else {
     return false;
