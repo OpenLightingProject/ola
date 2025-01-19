@@ -90,7 +90,7 @@ class FutureImpl {
   T m_value;
 
   FutureImpl(const FutureImpl<T>&) = delete;
-  FutureImpl<T> operator=(const FutureImpl<T>&) = delete;
+  FutureImpl<T>& operator=(const FutureImpl<T>&) = delete;
 };
 
 /**
@@ -154,7 +154,7 @@ class FutureImpl<void> {
   bool m_is_set;
 
   FutureImpl(const FutureImpl<void>&) = delete;
-  FutureImpl<void> operator=(const FutureImpl<void>&) = delete;
+  FutureImpl<void>& operator=(const FutureImpl<void>&) = delete;
 };
 
 }  // namespace thread
