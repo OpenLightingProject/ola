@@ -18,10 +18,10 @@
 
 from __future__ import print_function
 
-import os
 import fnmatch
-import textwrap
+import os
 import sys
+import textwrap
 
 # File & directory patterns that differ between what's in the git repo and
 # what's in the tarball.

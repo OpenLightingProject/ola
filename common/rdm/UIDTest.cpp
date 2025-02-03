@@ -34,6 +34,7 @@ using ola::rdm::UIDSet;
 class UIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UIDTest);
   CPPUNIT_TEST(testUID);
+  CPPUNIT_TEST(testRPTUID);
   CPPUNIT_TEST(testUIDInequalities);
   CPPUNIT_TEST(testUIDSet);
   CPPUNIT_TEST(testUIDSetUnion);
@@ -43,6 +44,7 @@ class UIDTest: public CppUnit::TestFixture {
 
  public:
     void testUID();
+    void testRPTUID();
     void testUIDInequalities();
     void testUIDSet();
     void testUIDSetUnion();
@@ -58,6 +60,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UIDTest);
  */
 void UIDTest::testUID() {
   UID uid(1, 2);
+  OLA_ASSERT_FALSE(uid.IsBroadcast());
+  OLA_ASSERT_FALSE(uid.IsVendorcast());
   UID uid2 = uid;
   OLA_ASSERT_EQ(uid, uid2);
   OLA_ASSERT_FALSE(uid != uid2);
@@ -84,9 +88,12 @@ void UIDTest::testUID() {
 
   UID all_devices = UID::AllDevices();
   UID manufacturer_devices = UID::VendorcastAddress(0x52);
+  UID manufacturer_devices2 = UID::VendorcastAddress(uid);
   OLA_ASSERT_EQ(string("ffff:ffffffff"), all_devices.ToString());
   OLA_ASSERT_EQ(string("0052:ffffffff"),
                 manufacturer_devices.ToString());
+  OLA_ASSERT_EQ(string("0001:ffffffff"),
+                manufacturer_devices2.ToString());
   OLA_ASSERT_EQ(all_devices.ManufacturerId(),
                 static_cast<uint16_t>(0xffff));
   OLA_ASSERT_EQ(all_devices.DeviceId(),
@@ -95,8 +102,16 @@ void UIDTest::testUID() {
                 static_cast<uint16_t>(0x0052));
   OLA_ASSERT_EQ(manufacturer_devices.DeviceId(),
                 static_cast<uint32_t>(0xffffffff));
+  OLA_ASSERT_EQ(manufacturer_devices2.ManufacturerId(),
+                static_cast<uint16_t>(0x0001));
+  OLA_ASSERT_EQ(manufacturer_devices2.DeviceId(),
+                static_cast<uint32_t>(0xffffffff));
   OLA_ASSERT_TRUE(all_devices.IsBroadcast());
+  OLA_ASSERT_FALSE(all_devices.IsVendorcast());
   OLA_ASSERT_TRUE(manufacturer_devices.IsBroadcast());
+  OLA_ASSERT_TRUE(manufacturer_devices.IsVendorcast());
+  OLA_ASSERT_TRUE(manufacturer_devices2.IsBroadcast());
+  OLA_ASSERT_TRUE(manufacturer_devices2.IsVendorcast());
 
   // now test the packing & unpacking
   unsigned int buffer_size = UID::UID_SIZE;
@@ -104,17 +119,60 @@ void UIDTest::testUID() {
   OLA_ASSERT_TRUE(uid.Pack(buffer, buffer_size));
 
   uint8_t expected[] = {0, 1, 0, 0, 0, 2};
-  OLA_ASSERT_EQ(0, memcmp(expected, buffer, buffer_size));
+  OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), buffer, buffer_size);
   UID unpacked_uid1(buffer);
   OLA_ASSERT_EQ(uid, unpacked_uid1);
 
   OLA_ASSERT_TRUE(uid3.Pack(buffer, buffer_size));
   uint8_t expected2[] = {0, 2, 0, 0, 0, 0x0a};
-  OLA_ASSERT_EQ(0, memcmp(expected2, buffer, buffer_size));
+  OLA_ASSERT_DATA_EQUALS(expected2, sizeof(expected2), buffer, buffer_size);
   UID unpacked_uid2(buffer);
   OLA_ASSERT_EQ(uid3, unpacked_uid2);
 
   delete[] buffer;
+}
+
+
+/*
+ * Test the RPT UIDs work.
+ */
+void UIDTest::testRPTUID() {
+  UID uid(1, 2);
+  UID rpt_all_controllers = UID::RPTAllControllers();
+  UID rpt_all_devices = UID::RPTAllDevices();
+  UID rpt_manufacturer_devices = UID::RPTVendorcastAddressDevices(0x52);
+  UID rpt_manufacturer_devices2 = UID::RPTVendorcastAddressDevices(uid);
+  OLA_ASSERT_EQ(string("fffc:ffffffff"), rpt_all_controllers.ToString());
+  OLA_ASSERT_EQ(string("fffd:ffffffff"), rpt_all_devices.ToString());
+  OLA_ASSERT_EQ(string("fffd:0052ffff"),
+                rpt_manufacturer_devices.ToString());
+  OLA_ASSERT_EQ(string("fffd:0001ffff"),
+                rpt_manufacturer_devices2.ToString());
+  OLA_ASSERT_EQ(rpt_all_controllers.ManufacturerId(),
+                static_cast<uint16_t>(0xfffc));
+  OLA_ASSERT_EQ(rpt_all_controllers.DeviceId(),
+                static_cast<uint32_t>(0xffffffff));
+  OLA_ASSERT_EQ(rpt_all_devices.ManufacturerId(),
+                static_cast<uint16_t>(0xfffd));
+  OLA_ASSERT_EQ(rpt_all_devices.DeviceId(),
+                static_cast<uint32_t>(0xffffffff));
+  OLA_ASSERT_EQ(rpt_manufacturer_devices.ManufacturerId(),
+                static_cast<uint16_t>(0xfffd));
+  OLA_ASSERT_EQ(rpt_manufacturer_devices.DeviceId(),
+                static_cast<uint32_t>(0x0052ffff));
+  OLA_ASSERT_EQ(rpt_manufacturer_devices2.ManufacturerId(),
+                static_cast<uint16_t>(0xfffd));
+  OLA_ASSERT_EQ(rpt_manufacturer_devices2.DeviceId(),
+                static_cast<uint32_t>(0x0001ffff));
+  // TODO(Peter): Handle the more complicated RPT vendorcast tests
+  OLA_ASSERT_TRUE(rpt_all_controllers.IsBroadcast());
+  // OLA_ASSERT_FALSE(rpt_all_controllers.IsVendorcast());
+  OLA_ASSERT_TRUE(rpt_all_devices.IsBroadcast());
+  // OLA_ASSERT_FALSE(rpt_all_devices.IsVendorcast());
+  // OLA_ASSERT_TRUE(rpt_manufacturer_devices.IsBroadcast());
+  // OLA_ASSERT_TRUE(rpt_manufacturer_devices.IsVendorcast());
+  // OLA_ASSERT_TRUE(rpt_manufacturer_devices2.IsBroadcast());
+  // OLA_ASSERT_TRUE(rpt_manufacturer_devices2.IsVendorcast());
 }
 
 
@@ -233,6 +291,60 @@ void UIDTest::testUIDSet() {
 
   difference = set3.SetDifference(set1);
   OLA_ASSERT_EQ(0u, difference.Size());
+
+  // now test the packing & unpacking
+  UID uid3(3, 4);
+  UIDSet set4(set1);
+  set4.AddUID(uid3);
+  unsigned int buffer_size = UID::UID_SIZE * 3;
+  uint8_t *buffer = new uint8_t[buffer_size];
+  OLA_ASSERT_TRUE(set4.Pack(buffer, buffer_size));
+
+  uint8_t expected[] = {0, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 10, 0, 3, 0, 0, 0, 4};
+  OLA_ASSERT_DATA_EQUALS(expected, sizeof(expected), buffer, buffer_size);
+
+  // Creating UIDSets from binary data
+  uint8_t empty[] = {};
+  unsigned int data_size = sizeof(empty);
+  UIDSet set5(empty, &data_size);
+  UIDSet empty_set = UIDSet();
+  OLA_ASSERT_EQ(set5, empty_set);
+
+  uint8_t raw_short[] = {0, 1};
+  data_size = sizeof(raw_short);
+  UIDSet set6(raw_short, &data_size);
+  OLA_ASSERT_EQ(set6, empty_set);
+
+  UIDSet set7;
+  set7.AddUID(UID(1, 2));
+  uint8_t raw_one[] = {0, 1, 0, 0, 0, 2};
+  data_size = sizeof(raw_one);
+  UIDSet set8(raw_one, &data_size);
+  OLA_ASSERT_EQ(6u, data_size);
+  OLA_ASSERT_EQ(set7, set8);
+
+  uint8_t raw_one_extra[] = {0, 1, 0, 0, 0, 2, 3, 4};
+  data_size = sizeof(raw_one_extra);
+  UIDSet set9(raw_one_extra, &data_size);
+  OLA_ASSERT_EQ(6u, data_size);
+  OLA_ASSERT_EQ(set7, set9);
+
+  set7.AddUID(UID(2, 10));
+  set7.AddUID(UID(3, 4));
+
+  uint8_t raw_three[] =
+      {0, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 10, 0, 3, 0, 0, 0, 4};
+  data_size = sizeof(raw_three);
+  UIDSet set10(raw_three, &data_size);
+  OLA_ASSERT_EQ(18u, data_size);
+  OLA_ASSERT_EQ(set7, set10);
+
+  uint8_t raw_three_extra[] =
+      {0, 1, 0, 0, 0, 2, 0, 2, 0, 0, 0, 10, 0, 3, 0, 0, 0, 4, 5, 6};
+  data_size = sizeof(raw_three_extra);
+  UIDSet set11(raw_three_extra, &data_size);
+  OLA_ASSERT_EQ(18u, data_size);
+  OLA_ASSERT_EQ(set7, set11);
 }
 
 

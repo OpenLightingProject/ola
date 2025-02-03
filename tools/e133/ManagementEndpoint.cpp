@@ -59,9 +59,9 @@ const ola::rdm::ResponderOps<ManagementEndpoint>::ParamHandler
   { ola::rdm::PID_ENDPOINT_LIST_CHANGE,
     &ManagementEndpoint::GetEndpointListChange,
     NULL},
-  { ola::rdm::PID_ENDPOINT_IDENTIFY,
-    &ManagementEndpoint::GetEndpointIdentify,
-    &ManagementEndpoint::SetEndpointIdentify},
+  { ola::rdm::PID_IDENTIFY_ENDPOINT,
+    &ManagementEndpoint::GetIdentifyEndpoint,
+    &ManagementEndpoint::SetIdentifyEndpoint},
   { ola::rdm::PID_ENDPOINT_TO_UNIVERSE,
     &ManagementEndpoint::GetEndpointToUniverse,
     &ManagementEndpoint::SetEndpointToUniverse},
@@ -76,11 +76,11 @@ const ola::rdm::ResponderOps<ManagementEndpoint>::ParamHandler
   // PID_BACKGROUND_DISCOVERY
   // PID_ENDPOINT_TIMING
   // PID_ENDPOINT_TIMING_DESCRIPTION
-  { ola::rdm::PID_ENDPOINT_LIST_CHANGE,
-    &ManagementEndpoint::GetEndpointDeviceListChange,
+  { ola::rdm::PID_ENDPOINT_RESPONDER_LIST_CHANGE,
+    &ManagementEndpoint::GetEndpointResponderListChange,
     NULL},
-  { ola::rdm::PID_ENDPOINT_DEVICES,
-    &ManagementEndpoint::GetEndpointDevices,
+  { ola::rdm::PID_ENDPOINT_RESPONDERS,
+    &ManagementEndpoint::GetEndpointResponders,
     NULL},
   // PID_BINDING_AND_CONTROL_FIELDS
   { ola::rdm::PID_TCP_COMMS_STATUS,
@@ -222,9 +222,9 @@ RDMResponse *ManagementEndpoint::GetEndpointListChange(
 
 
 /**
- * Handle PID_ENDPOINT_IDENTIFY
+ * Handle PID_IDENTIFY_ENDPOINT
  */
-RDMResponse *ManagementEndpoint::GetEndpointIdentify(
+RDMResponse *ManagementEndpoint::GetIdentifyEndpoint(
     const RDMRequest *request) {
   uint16_t endpoint_id;
   if (!ResponderHelper::ExtractUInt16(request, &endpoint_id)) {
@@ -243,41 +243,41 @@ RDMResponse *ManagementEndpoint::GetEndpointIdentify(
     uint16_t endpoint_number;
     uint8_t identify_mode;
   });
-  IdentifyEndpointParamData endpoint_identify_message = {
+  IdentifyEndpointParamData identify_endpoint_message = {
     HostToNetwork(endpoint_id), endpoint->identify_mode()
   };
 
   return GetResponseFromData(
       request,
-      reinterpret_cast<uint8_t*>(&endpoint_identify_message),
-      sizeof(endpoint_identify_message));
+      reinterpret_cast<uint8_t*>(&identify_endpoint_message),
+      sizeof(identify_endpoint_message));
 }
 
-RDMResponse *ManagementEndpoint::SetEndpointIdentify(
+RDMResponse *ManagementEndpoint::SetIdentifyEndpoint(
     const RDMRequest *request) {
   PACK(
   struct IdentifyEndpointParamData {
     uint16_t endpoint_number;
     uint8_t identify_mode;
   });
-  IdentifyEndpointParamData endpoint_identify_message;
+  IdentifyEndpointParamData identify_endpoint_message;
 
-  if (request->ParamDataSize() != sizeof(endpoint_identify_message)) {
+  if (request->ParamDataSize() != sizeof(identify_endpoint_message)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  memcpy(reinterpret_cast<uint8_t*>(&endpoint_identify_message),
+  memcpy(reinterpret_cast<uint8_t*>(&identify_endpoint_message),
          request->ParamData(),
-         sizeof(endpoint_identify_message));
+         sizeof(identify_endpoint_message));
 
   E133Endpoint *endpoint = m_endpoint_manager->GetEndpoint(
-    ola::network::NetworkToHost(endpoint_identify_message.endpoint_number));
+    ola::network::NetworkToHost(identify_endpoint_message.endpoint_number));
   // endpoint not found
   if (!endpoint) {
     return NackWithReason(request, ola::rdm::NR_ENDPOINT_NUMBER_INVALID);
   }
 
-  endpoint->set_identify_mode(endpoint_identify_message.identify_mode);
+  endpoint->set_identify_mode(identify_endpoint_message.identify_mode);
   return GetResponseFromData(request, NULL, 0);
 }
 
@@ -324,9 +324,9 @@ RDMResponse *ManagementEndpoint::SetEndpointLabel(const RDMRequest *request) {
 }
 
 /**
- * Handle PID_ENDPOINT_DEVICE_LIST_CHANGE
+ * Handle PID_ENDPOINT_RESPONDER_LIST_CHANGE
  */
-RDMResponse *ManagementEndpoint::GetEndpointDeviceListChange(
+RDMResponse *ManagementEndpoint::GetEndpointResponderListChange(
     const RDMRequest *request) {
   uint16_t endpoint_id;
   if (!ResponderHelper::ExtractUInt16(request, &endpoint_id)) {
@@ -340,7 +340,7 @@ RDMResponse *ManagementEndpoint::GetEndpointDeviceListChange(
     return NackWithReason(request, ola::rdm::NR_ENDPOINT_NUMBER_INVALID);
   }
 
-  uint32_t list_change_id = HostToNetwork(endpoint->device_list_change());
+  uint32_t list_change_id = HostToNetwork(endpoint->responder_list_change());
   return GetResponseFromData(
       request,
       reinterpret_cast<uint8_t*>(&list_change_id),
@@ -348,9 +348,10 @@ RDMResponse *ManagementEndpoint::GetEndpointDeviceListChange(
 }
 
 /**
- * Handle PID_ENDPOINT_DEVICES
+ * Handle PID_ENDPOINT_RESPONDERS
  */
-RDMResponse *ManagementEndpoint::GetEndpointDevices(const RDMRequest *request) {
+RDMResponse *ManagementEndpoint::GetEndpointResponders(
+    const RDMRequest *request) {
   uint16_t endpoint_id;
   if (!ResponderHelper::ExtractUInt16(request, &endpoint_id)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -369,21 +370,21 @@ RDMResponse *ManagementEndpoint::GetEndpointDevices(const RDMRequest *request) {
   }
 
   UIDSet uids;
-  uint32_t list_change_id = HostToNetwork(endpoint->device_list_change());
-  endpoint->EndpointDevices(&uids);
+  uint32_t list_change_id = HostToNetwork(endpoint->responder_list_change());
+  endpoint->EndpointResponders(&uids);
 
-  struct DeviceListParamData {
+  struct ResponderListParamData {
     uint16_t endpoint;
     uint32_t list_change;
     uint8_t data[0];
   };
 
   // TODO(simon): fix this - we can overflow an RDM packet if there are too
-  // many devices!
+  // many responders!
   unsigned int param_data_size = 2 + 4 + uids.Size() * UID::UID_SIZE;
   uint8_t *raw_data = new uint8_t[param_data_size];
-  DeviceListParamData *param_data = reinterpret_cast<DeviceListParamData*>(
-      raw_data);
+  ResponderListParamData *param_data =
+      reinterpret_cast<ResponderListParamData*>(raw_data);
 
   // TODO(simon): fix this to track changes.
   param_data->endpoint = HostToNetwork(endpoint_id);

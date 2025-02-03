@@ -36,13 +36,13 @@
 #include <string>
 #include <vector>
 
+#include "libs/acn/E133HealthCheckedConnection.h"
 #include "libs/acn/E133Inflator.h"
 #include "libs/acn/E133StatusPDU.h"
 #include "libs/acn/TCPTransport.h"
 
 #include "tools/e133/DeviceManagerImpl.h"
 #include "tools/e133/E133Endpoint.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
 
 namespace ola {
 namespace e133 {
@@ -132,9 +132,9 @@ DeviceManagerImpl::~DeviceManagerImpl() {
 
 /**
  * Set the callback to be run when RDMNet data is received from a device.
- * @param callback the RDMMesssageCallback to run when data is received.
+ * @param callback the RDMMessageCallback to run when data is received.
  */
-void DeviceManagerImpl::SetRDMMessageCallback(RDMMesssageCallback *callback) {
+void DeviceManagerImpl::SetRDMMessageCallback(RDMMessageCallback *callback) {
   m_rdm_callback.reset(callback);
 }
 

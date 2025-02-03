@@ -22,7 +22,7 @@
  * @addtogroup rdm_helpers
  * @{
  * @file include/ola/rdm/StringMessageBuilder.h
- * @brief Builds a Messagse object from a list of strings and a Descriptor.
+ * @brief Builds a Message object from a list of strings and a Descriptor.
  * @}
  */
 
@@ -62,15 +62,18 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);
     void Visit(const ola::messaging::IPV4FieldDescriptor*);
+    void Visit(const ola::messaging::IPV6FieldDescriptor*);
     void Visit(const ola::messaging::MACFieldDescriptor*);
     void Visit(const ola::messaging::UIDFieldDescriptor*);
     void Visit(const ola::messaging::StringFieldDescriptor*);
     void Visit(const ola::messaging::UInt8FieldDescriptor*);
     void Visit(const ola::messaging::UInt16FieldDescriptor*);
     void Visit(const ola::messaging::UInt32FieldDescriptor*);
+    void Visit(const ola::messaging::UInt64FieldDescriptor*);
     void Visit(const ola::messaging::Int8FieldDescriptor*);
     void Visit(const ola::messaging::Int16FieldDescriptor*);
     void Visit(const ola::messaging::Int32FieldDescriptor*);
+    void Visit(const ola::messaging::Int64FieldDescriptor*);
     void Visit(const ola::messaging::FieldDescriptorGroup*);
     void PostVisit(const ola::messaging::FieldDescriptorGroup*);
 

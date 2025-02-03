@@ -50,7 +50,7 @@ const uint8_t DmxterWidgetImpl::TOD_LABEL = 0x82;
 const uint8_t DmxterWidgetImpl::DISCOVERY_BRANCH_LABEL = 0x83;
 const uint8_t DmxterWidgetImpl::FULL_DISCOVERY_LABEL = 0x84;
 const uint8_t DmxterWidgetImpl::INCREMENTAL_DISCOVERY_LABEL = 0x85;
-const uint8_t DmxterWidgetImpl::SHUTDOWN_LABAEL = 0xf0;
+const uint8_t DmxterWidgetImpl::SHUTDOWN_LABEL = 0xf0;
 
 
 /*
@@ -195,7 +195,7 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
     case RDM_BCAST_REQUEST_LABEL:
       HandleBroadcastRDMResponse(data, length);
       break;
-    case SHUTDOWN_LABAEL:
+    case SHUTDOWN_LABEL:
       HandleShutdown(data, length);
       break;
     default:
@@ -325,7 +325,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
     case RC_NACK_FORMAT_ERROR:
     case RC_NACK_HARDWARE_FAULT:
     case RC_NACK_PROXY_REJECT:
-    case RC_NACK_WRITE_PROECT:
+    case RC_NACK_WRITE_PROTECT:
     case RC_NACK_COMMAND_CLASS:
     case RC_NACK_DATA_RANGE:
     case RC_NACK_BUFFER_FULL:

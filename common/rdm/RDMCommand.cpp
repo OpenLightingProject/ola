@@ -208,7 +208,7 @@ RDMStatusCode RDMCommand::VerifyData(const uint8_t *data,
          sizeof(*command_header));
 
   if (command_header->sub_start_code != SUB_START_CODE) {
-    OLA_WARN << "Sub start code mis match, was "
+    OLA_WARN << "Sub start code mismatch, was "
              << ToHex(command_header->sub_start_code) << ", required "
              << ToHex(SUB_START_CODE);
     return RDM_WRONG_SUB_START_CODE;
@@ -590,6 +590,22 @@ RDMResponse *NackWithReason(const RDMRequest *request,
                              sizeof(reason),
                              RDM_NACK_REASON,
                              outstanding_messages);
+}
+
+RDMResponse *NackWithReason(const RDMResponse *response,
+                            rdm_nack_reason reason_enum) {
+  uint16_t reason = ola::network::HostToNetwork(
+      static_cast<uint16_t>(reason_enum));
+  return new RDMResponse(response->SourceUID(),
+                         response->DestinationUID(),
+                         response->TransactionNumber(),
+                         RDM_NACK_REASON,
+                         response->MessageCount(),
+                         response->SubDevice(),
+                         response->CommandClass(),
+                         response->ParamId(),
+                         reinterpret_cast<uint8_t*>(&reason),
+                         sizeof(reason));
 }
 
 RDMResponse *GetResponseFromData(const RDMRequest *request,

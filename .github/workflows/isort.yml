@@ -1,0 +1,12 @@
+name: isort
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  isort:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: isort/isort-action@v1

@@ -69,7 +69,7 @@ VariableFieldSizeCalculator::calculator_state
     return data_size > m_fixed_size_sum ? TOO_LARGE : FIXED_SIZE;
 
   // we know there is only one, now we need to work out the number of
-  // repeatitions or length if it's a string
+  // repetitions or length if it's a string
   unsigned int bytes_remaining = data_size - m_fixed_size_sum;
   if (variable_string_field_count) {
     // variable string
@@ -125,6 +125,12 @@ void VariableFieldSizeCalculator::Visit(
 
 
 void VariableFieldSizeCalculator::Visit(
+    const ola::messaging::IPV6FieldDescriptor *descriptor) {
+  m_fixed_size_sum += descriptor->MaxSize();
+}
+
+
+void VariableFieldSizeCalculator::Visit(
     const ola::messaging::MACFieldDescriptor *descriptor) {
   m_fixed_size_sum += descriptor->MaxSize();
 }
@@ -164,6 +170,12 @@ void VariableFieldSizeCalculator::Visit(
 
 
 void VariableFieldSizeCalculator::Visit(
+    const ola::messaging::UInt64FieldDescriptor *descriptor) {
+  m_fixed_size_sum += descriptor->MaxSize();
+}
+
+
+void VariableFieldSizeCalculator::Visit(
     const ola::messaging::Int8FieldDescriptor *descriptor) {
   m_fixed_size_sum += descriptor->MaxSize();
 }
@@ -177,6 +189,12 @@ void VariableFieldSizeCalculator::Visit(
 
 void VariableFieldSizeCalculator::Visit(
     const ola::messaging::Int32FieldDescriptor *descriptor) {
+  m_fixed_size_sum += descriptor->MaxSize();
+}
+
+
+void VariableFieldSizeCalculator::Visit(
+    const ola::messaging::Int64FieldDescriptor *descriptor) {
   m_fixed_size_sum += descriptor->MaxSize();
 }
 

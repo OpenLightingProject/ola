@@ -17,14 +17,17 @@
 # Copyright (C) 2011 Simon Newton
 
 from __future__ import print_function
+
 import getopt
 import logging
 import pprint
 import sys
 import textwrap
-from ola import PidStore
-from ola.testing.rdm.ModelCollector import ModelCollector
+
 from ola.ClientWrapper import ClientWrapper
+from ola.testing.rdm.ModelCollector import ModelCollector
+
+from ola import PidStore
 
 '''Quick script to collect information about responders.'''
 

@@ -11,10 +11,10 @@
 export VERBOSE=1
 
 %:
-	dh $@ --parallel --with autotools_dev,autoreconf,bash_completion,python2
+	dh $@ --parallel --with autotools_dev,autoreconf,bash_completion,python3
 
 override_dh_auto_configure:
-	dh_auto_configure -- --enable-python-libs --enable-rdm-tests
+	dh_auto_configure -- --enable-python-libs --enable-rdm-tests CXXFLAGS='-Wno-error=deprecated-declarations -Wno-error=unused-parameter' pythondir='/usr/lib/python3/dist-packages'
 
 override_dh_installinit:
 	dh_installinit -p ola --name=olad
@@ -22,3 +22,6 @@ override_dh_installinit:
 
 override_dh_makeshlibs:
 	dh_makeshlibs -V
+
+override_dh_python3:
+	dh_python3 --shebang=/usr/bin/python3

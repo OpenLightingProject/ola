@@ -40,15 +40,18 @@ class MessagePrinter: public MessageVisitor {
 
     virtual void Visit(const BoolMessageField*) {}
     virtual void Visit(const IPV4MessageField*) {}
+    virtual void Visit(const IPV6MessageField*) {}
     virtual void Visit(const MACMessageField*) {}
     virtual void Visit(const UIDMessageField*) {}
     virtual void Visit(const StringMessageField*) {}
     virtual void Visit(const BasicMessageField<uint8_t>*) {}
     virtual void Visit(const BasicMessageField<uint16_t>*) {}
     virtual void Visit(const BasicMessageField<uint32_t>*) {}
+    virtual void Visit(const BasicMessageField<uint64_t>*) {}
     virtual void Visit(const BasicMessageField<int8_t>*) {}
     virtual void Visit(const BasicMessageField<int16_t>*) {}
     virtual void Visit(const BasicMessageField<int32_t>*) {}
+    virtual void Visit(const BasicMessageField<int64_t>*) {}
     virtual void Visit(const GroupMessageField*) {}
     virtual void PostVisit(const GroupMessageField*) {}
 
@@ -78,15 +81,18 @@ class GenericMessagePrinter: public MessagePrinter {
 
     virtual void Visit(const BoolMessageField*);
     virtual void Visit(const IPV4MessageField*);
+    virtual void Visit(const IPV6MessageField*);
     virtual void Visit(const MACMessageField*);
     virtual void Visit(const UIDMessageField*);
     virtual void Visit(const StringMessageField*);
     virtual void Visit(const BasicMessageField<uint8_t>*);
     virtual void Visit(const BasicMessageField<uint16_t>*);
     virtual void Visit(const BasicMessageField<uint32_t>*);
+    virtual void Visit(const BasicMessageField<uint64_t>*);
     virtual void Visit(const BasicMessageField<int8_t>*);
     virtual void Visit(const BasicMessageField<int16_t>*);
     virtual void Visit(const BasicMessageField<int32_t>*);
+    virtual void Visit(const BasicMessageField<int64_t>*);
     virtual void Visit(const GroupMessageField*);
     virtual void PostVisit(const GroupMessageField*);
 
@@ -96,11 +102,11 @@ class GenericMessagePrinter: public MessagePrinter {
     unsigned int m_indent, m_indent_size;
 
     void AppendUInt(const std::string &name,
-                    unsigned int value,
+                    uint64_t value,
                     const std::string &label,
                     int8_t multiplier);
     void AppendInt(const std::string &name,
-                   int value,
+                   int64_t value,
                    const std::string &label,
                    int8_t multiplier);
     void AppendMultiplier(int8_t multiplier);
