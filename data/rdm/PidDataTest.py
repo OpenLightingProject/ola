@@ -36,11 +36,20 @@ class PidDataTest(unittest.TestCase):
 
   def testLoad(self):
     store = PidStore.GetStore(os.environ['PIDDATA'])
+
     self.assertIsNotNone(store)
 
     pids = store.Pids()
     self.assertNotEqual(0, len(pids))
 
+    names = store.ManufacturerNames()
+    self.assertNotEqual(0, len(names))
+
+    self.assertEqual(store.ManufacturerIdToName(0x7a70), "Open Lighting")
+
+    # Check a manufacturer that doesn't exist in manufacturer_pids.proto too
+    self.assertEqual(store.ManufacturerIdToName(32767),
+                     "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY")
 
 if __name__ == '__main__':
   unittest.main()
