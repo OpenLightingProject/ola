@@ -22,6 +22,8 @@
 #define PLUGINS_USBDMX_ASYNCUSBTRANSCEIVERBASE_H_
 
 #include <libusb.h>
+#include <queue>
+#include <set>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/DmxBuffer.h"
@@ -42,9 +44,11 @@ class AsyncUsbTransceiverBase {
    * @brief Create a new AsyncUsbTransceiverBase.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param num_transfers maximum number of inflight transfers.
    */
   AsyncUsbTransceiverBase(ola::usb::LibUsbAdaptor* const adaptor,
-                          libusb_device *usb_device);
+                          libusb_device *usb_device,
+                          unsigned int num_transfers);
 
   /**
    * @brief Destructor
@@ -97,7 +101,7 @@ class AsyncUsbTransceiverBase {
   virtual void PostTransferHook() {}
 
   /**
-   * @brief Cancel any pending transfers.
+   * @brief Cancel any pending transfers and wait for them to complete.
    */
   void CancelTransfer();
 
@@ -126,20 +130,28 @@ class AsyncUsbTransceiverBase {
    */
   int SubmitTransfer();
 
-  enum TransferState {
-    IDLE,
-    IN_PROGRESS,
-    DISCONNECTED,
-  };
-
   libusb_device_handle *m_usb_handle;
   bool m_suppress_continuation;
-  struct libusb_transfer *m_transfer;
+  bool m_device_disconnected;
 
-  TransferState m_transfer_state;  // GUARDED_BY(m_mutex);
+  typedef std::set<struct libusb_transfer*> inflight_set;
+  inflight_set m_inflight;  // GUARDED_BY(m_mutex);
+  std::queue<struct libusb_transfer*> m_idle;  // GUARDED_BY(m_mutex);
+
   ola::thread::Mutex m_mutex;
+  ola::thread::ConditionVariable m_cond;
 
  private:
+  /**
+   * @brief Called from the libusb callback when the asynchronous transfer
+   *   completes.
+   * @param transfer the completed transfer.
+   */
+  void TransferCompleteInternal(struct libusb_transfer *transfer);
+  friend void AsyncTransferCallback(struct libusb_transfer *transfer);
+
+  struct libusb_transfer *CurrentTransfer();
+
   DISALLOW_COPY_AND_ASSIGN(AsyncUsbTransceiverBase);
 };
 }  // namespace usbdmx
