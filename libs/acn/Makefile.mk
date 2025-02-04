@@ -59,28 +59,11 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/E131Sender.cpp \
     libs/acn/E131Sender.h \
     libs/acn/HeaderSet.h \
-    libs/acn/LLRPHeader.h \
-    libs/acn/LLRPInflator.cpp \
-    libs/acn/LLRPInflator.h \
-    libs/acn/LLRPProbeReplyInflator.cpp \
-    libs/acn/LLRPProbeReplyInflator.h \
-    libs/acn/LLRPProbeReplyPDU.cpp \
-    libs/acn/LLRPProbeReplyPDU.h \
-    libs/acn/LLRPProbeRequestInflator.cpp \
-    libs/acn/LLRPProbeRequestInflator.h \
-    libs/acn/LLRPProbeRequestPDU.cpp \
-    libs/acn/LLRPProbeRequestPDU.h \
-    libs/acn/LLRPPDU.cpp \
-    libs/acn/LLRPPDU.h \
     libs/acn/PDU.cpp \
     libs/acn/PDU.h \
     libs/acn/PDUTestCommon.h \
     libs/acn/PreamblePacker.cpp \
     libs/acn/PreamblePacker.h \
-    libs/acn/RDMInflator.cpp \
-    libs/acn/RDMInflator.h \
-    libs/acn/RDMPDU.cpp \
-    libs/acn/RDMPDU.h \
     libs/acn/RootHeader.h \
     libs/acn/RootInflator.cpp \
     libs/acn/RootInflator.h \
@@ -88,15 +71,6 @@ libs_acn_libolae131core_la_SOURCES = \
     libs/acn/RootPDU.h \
     libs/acn/RootSender.cpp \
     libs/acn/RootSender.h \
-    libs/acn/RPTHeader.h \
-    libs/acn/RPTInflator.cpp \
-    libs/acn/RPTInflator.h \
-    libs/acn/RPTNotificationInflator.h \
-    libs/acn/RPTPDU.cpp \
-    libs/acn/RPTPDU.h \
-    libs/acn/RPTRequestInflator.h \
-    libs/acn/RPTRequestPDU.cpp \
-    libs/acn/RPTRequestPDU.h \
     libs/acn/TCPTransport.cpp \
     libs/acn/TCPTransport.h \
     libs/acn/Transport.h \
@@ -113,32 +87,31 @@ libs_acn_libolae131core_la_LIBADD = $(uuid_LIBS) \
 # libolae133core.la
 # This needs to be after libolaacn.la and libolae131core.la since it depends on
 # them. Otherwise it breaks the freeBSD build
-# TODO(Peter): Re-add these classes
-#    libs/acn/BrokerConnectedClientListInflator.cpp
-#    libs/acn/BrokerConnectedClientListInflator.h
-#    libs/acn/BrokerHeader.h
-#    libs/acn/BrokerManager.cpp
-#    libs/acn/BrokerManagerImpl.cpp
-#    libs/acn/BrokerManagerImpl.h
 libs_acn_libolae133core_la_SOURCES = \
     libs/acn/BrokerClientAddInflator.h \
     libs/acn/BrokerClientEntryChangeInflator.h \
     libs/acn/BrokerClientEntryHeader.h \
     libs/acn/BrokerClientEntryPDU.cpp \
     libs/acn/BrokerClientEntryPDU.h \
-    libs/acn/BrokerClientEntryRPTPDU.cpp \
-    libs/acn/BrokerClientEntryRPTPDU.h \
     libs/acn/BrokerClientEntryRPTInflator.cpp \
     libs/acn/BrokerClientEntryRPTInflator.h \
+    libs/acn/BrokerClientEntryRPTPDU.cpp \
+    libs/acn/BrokerClientEntryRPTPDU.h \
     libs/acn/BrokerClientEntryUpdateInflator.h \
     libs/acn/BrokerClientRemoveInflator.h \
+    libs/acn/BrokerConnectedClientListInflator.cpp \
+    libs/acn/BrokerConnectedClientListInflator.h \
     libs/acn/BrokerConnectPDU.cpp \
     libs/acn/BrokerConnectPDU.h \
     libs/acn/BrokerConnectReplyInflator.cpp \
     libs/acn/BrokerConnectReplyInflator.h \
     libs/acn/BrokerFetchClientListPDU.cpp \
     libs/acn/BrokerFetchClientListPDU.h \
+    libs/acn/BrokerHeader.h \
     libs/acn/BrokerInflator.h \
+    libs/acn/BrokerManager.cpp \
+    libs/acn/BrokerManagerImpl.cpp \
+    libs/acn/BrokerManagerImpl.h \
     libs/acn/BrokerNullInflator.h \
     libs/acn/BrokerNullPDU.cpp \
     libs/acn/BrokerNullPDU.h \
@@ -157,7 +130,35 @@ libs_acn_libolae133core_la_SOURCES = \
     libs/acn/E133StatusInflator.h \
     libs/acn/E133StatusPDU.cpp \
     libs/acn/E133StatusPDU.h \
-    libs/acn/MessageBuilder.cpp
+    libs/acn/LLRPHeader.h \
+    libs/acn/LLRPInflator.cpp \
+    libs/acn/LLRPInflator.h \
+    libs/acn/LLRPProbeReplyInflator.cpp \
+    libs/acn/LLRPProbeReplyInflator.h \
+    libs/acn/LLRPProbeReplyPDU.cpp \
+    libs/acn/LLRPProbeReplyPDU.h \
+    libs/acn/LLRPProbeRequestInflator.cpp \
+    libs/acn/LLRPProbeRequestInflator.h \
+    libs/acn/LLRPProbeRequestPDU.cpp \
+    libs/acn/LLRPProbeRequestPDU.h \
+    libs/acn/LLRPPDU.cpp \
+    libs/acn/LLRPPDU.h \
+    libs/acn/MessageBuilder.cpp \
+    libs/acn/RDMInflator.cpp \
+    libs/acn/RDMInflator.h \
+    libs/acn/RDMPDU.cpp \
+    libs/acn/RDMPDU.h \
+    libs/acn/RPTHeader.h \
+    libs/acn/RPTInflator.cpp \
+    libs/acn/RPTInflator.h \
+    libs/acn/RPTNotificationInflator.h \
+    libs/acn/RPTPDU.cpp \
+    libs/acn/RPTPDU.h \
+    libs/acn/RPTRequestInflator.h \
+    libs/acn/RPTRequestPDU.cpp \
+    libs/acn/RPTRequestPDU.h \
+    libs/acn/RPTStatusInflator.cpp \
+    libs/acn/RPTStatusInflator.h
 
 libs_acn_libolae133core_la_CXXFLAGS = \
     $(COMMON_E133_CXXFLAGS) $(uuid_CFLAGS)
@@ -208,6 +209,7 @@ libs_acn_E131Tester_LDADD = \
     libs/acn/libolae131core.la \
     $(COMMON_TESTING_LIBS)
 
+#    libs/acn/BrokerClientEntryRPTInflatorTest.cpp
 #    libs/acn/BrokerInflatorTest.cpp
 libs_acn_E133Tester_SOURCES = \
     libs/acn/BrokerClientEntryPDUTest.cpp \
@@ -238,6 +240,7 @@ libs_acn_LLRPTester_SOURCES = \
 libs_acn_LLRPTester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 libs_acn_LLRPTester_LDADD = \
     libs/acn/libolae131core.la \
+    libs/acn/libolae133core.la \
     $(COMMON_TESTING_LIBS)
 
 libs_acn_TransportTester_SOURCES = \
