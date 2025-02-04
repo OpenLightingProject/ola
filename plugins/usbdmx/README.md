@@ -16,6 +16,7 @@ This plugin supports various USB DMX devices including:
 * FX5 DMX
 * ShowJockey SJ-DMX-U1
 * Sunlite USBDMX2
+* Nicoleaudie Sunlite intelligent USB DMX interface (SIUDI) (also ADJ MyDMX)
 * Velleman K8062.
 
 
