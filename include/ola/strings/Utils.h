@@ -62,7 +62,8 @@ inline void StrNCopy(char (&output)[size], const char* input) {
  * @param input The input string.
  * @param max_length The max length to search, unless a NULL is found
  *   before this.
- * @returns The string length, total, or to the first NULL; at most max_length
+ * @returns The string length, total, or to the first NULL; at most max_length.
+ * @note max_length must be less than or equal to the input string's length.
  */
 inline size_t StrNLength(const char* input, size_t max_length) {
   char test[max_length + 1];
@@ -77,7 +78,8 @@ inline size_t StrNLength(const char* input, size_t max_length) {
  * @param input The input string.
  * @param max_length The max length to search, unless a NULL is found
  *   before this.
- * @returns The string length, total, or to the first NULL; at most max_length
+ * @returns The string length, total, or to the first NULL; at most max_length.
+ * @note max_length must be less than or equal to the input string's length.
  */
 inline size_t StrNLength(const std::string input, size_t max_length) {
   return StrNLength(input.c_str(), max_length);
