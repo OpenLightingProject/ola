@@ -2512,6 +2512,7 @@ class GetSlotInfo(OptionalParameterTestFixture):
   """Get SLOT_INFO."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'SLOT_INFO'
+  REQUIRES = ['dmx_footprint']
   PROVIDES = ['defined_slots', 'undefined_definition_slots',
               'undefined_type_sec_slots']
 
@@ -2526,12 +2527,31 @@ class GetSlotInfo(OptionalParameterTestFixture):
       self.SetProperty('undefined_type_sec_slots', [])
       return
 
-    slots = [d['slot_offset'] for d in fields['slots']]
-    self.SetProperty('defined_slots', set(slots))
+    slots = {}
+    # check for duplicates
+    for d in fields['slots']:
+      if d['slot_offset'] in slots:
+        self.AddWarning('SLOT_INFO contained slot %d more than once' %
+                        (d['slot_offset']))
+      else:
+        slots[d['slot_offset']] = d
+
+    self.SetProperty('defined_slots', set(slots.keys()))
     undefined_definition_slots = []
     undefined_type_sec_slots = []
 
+    # do more thorough checking of each (non-duplicate) slot
     for slot in fields['slots']:
+      if slot['slot_offset'] > TestMixins.MAX_DMX_ADDRESS:
+        self.AddWarning(
+            "SLOT_INFO slot %d has an offset more than %d"
+            % (slot['slot_offset'], TestMixins.MAX_DMX_ADDRESS))
+      # footprint is 1 based, offset is 0 based
+      if slot['slot_offset'] >= self.Property('dmx_footprint'):
+        self.AddWarning(
+            "SLOT_INFO slot %d has an offset greater than or equal to the "
+            "personality's defined footprint (%d)"
+            % (slot['slot_offset'], self.Property('dmx_footprint')))
       if slot['slot_type'] not in RDMConstants.SLOT_TYPE_TO_NAME:
         self.AddWarning('Unknown slot type %d for slot %d' %
                         (slot['slot_type'], slot['slot_offset']))
@@ -2549,10 +2569,26 @@ class GetSlotInfo(OptionalParameterTestFixture):
           undefined_definition_slots.append(slot['slot_offset'])
       else:
         # slot_label_id must reference a defined slot
+        # we've already validated the offset of the parent slot, so we don't
+        # need to check it again here
         if slot['slot_label_id'] not in slots:
           self.AddWarning(
               'Slot %d is of type secondary and references an unknown slot %d'
               % (slot['slot_offset'], slot['slot_label_id']))
+        else:
+          # the defined slot must be a primary slot
+          # slot exists, so find it
+          primary_slot = slots.get(slot['slot_label_id'], None)
+          # check the type of the parent slot
+          if primary_slot is None:
+            self.SetBroken('Failed to find primary slot for %d (%d)'
+                           % (slot['slot_offset'], slot['slot_label_id']))
+          elif (primary_slot['slot_type'] !=
+                RDMConstants.SLOT_TYPES['ST_PRIMARY']):
+            self.AddWarning(
+                "Slot %d is of type secondary and references slot %d which "
+                "isn't a primary slot"
+                % (slot['slot_offset'], slot['slot_label_id']))
         if slot['slot_type'] == RDMConstants.SLOT_TYPES['ST_SEC_UNDEFINED']:
           undefined_type_sec_slots.append(slot['slot_offset'])
 
@@ -2732,7 +2768,7 @@ class GetDefaultSlotValues(OptionalParameterTestFixture):
   """Get DEFAULT_SLOT_VALUE."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DEFAULT_SLOT_VALUE'
-  REQUIRES = ['defined_slots']
+  REQUIRES = ['dmx_footprint', 'defined_slots']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -2746,17 +2782,31 @@ class GetDefaultSlotValues(OptionalParameterTestFixture):
     default_slots = set()
 
     for slot in fields['slot_values']:
+      if slot['slot_offset'] > TestMixins.MAX_DMX_ADDRESS:
+        self.AddWarning(
+            "DEFAULT_SLOT_VALUE slot %d has an offset more than %d"
+            % (slot['slot_offset'], TestMixins.MAX_DMX_ADDRESS))
+      # footprint is 1 based, offset is 0 based
+      if slot['slot_offset'] >= self.Property('dmx_footprint'):
+        self.AddWarning(
+            "SLOT_INFO slot %d has an offset greater than or equal to the "
+            "personality's defined footprint (%d)"
+            % (slot['slot_offset'], self.Property('dmx_footprint')))
+      if slot['slot_offset'] in default_slots:
+        self.AddWarning(
+            "DEFAULT_SLOT_VALUE contained slot %d more than once" %
+            slot['slot_offset'])
       if slot['slot_offset'] not in defined_slots:
         self.AddWarning(
-          "DEFAULT_SLOT_VALUE contained slot %d, which wasn't in SLOT_INFO" %
-          slot['slot_offset'])
+            "DEFAULT_SLOT_VALUE contained slot %d, which wasn't in SLOT_INFO" %
+            slot['slot_offset'])
       default_slots.add(slot['slot_offset'])
 
     for slot_offset in defined_slots:
       if slot_offset not in default_slots:
         self.AddAdvisory(
-          "SLOT_INFO contained slot %d, which wasn't in DEFAULT_SLOT_VALUE" %
-          slot_offset)
+            "SLOT_INFO contained slot %d, which wasn't in DEFAULT_SLOT_VALUE" %
+            slot_offset)
 
 
 class GetDefaultSlotValueWithData(TestMixins.GetWithDataMixin,
