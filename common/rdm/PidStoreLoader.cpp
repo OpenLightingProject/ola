@@ -514,7 +514,7 @@ const FieldDescriptor *PidStoreLoader::IntegerFieldToFieldDescriptor(
     intervals.push_back(interval);
   }
 
-  // if not intervals were specified, we automatically add all the labels
+  // if no intervals were specified, we automatically add all the labels
   bool intervals_empty = intervals.empty();
 
   for (int i = 0; i < field.label_size(); ++i) {
