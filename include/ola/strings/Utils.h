@@ -55,6 +55,33 @@ inline void StrNCopy(char (&output)[size], const char* input) {
   strncpy(output, input, size);
   output[size - 1] = 0;
 }
+
+/**
+ * @brief A safe version of strlen that handles input strings without NULL
+ *   termination.
+ * @param input The input string.
+ * @param max_length The max length to search, unless a NULL is found
+ *   before this.
+ * @returns The string length, total, or to the first NULL; at most max_length
+ */
+inline size_t StrNLength(const char* input, size_t max_length) {
+  char test[max_length + 1];
+  strncpy(test, input, max_length);
+  test[max_length] = 0;
+  return strlen(test);
+}
+
+/**
+ * @brief A safe version of strlen that handles input strings without NULL
+ *   termination.
+ * @param input The input string.
+ * @param max_length The max length to search, unless a NULL is found
+ *   before this.
+ * @returns The string length, total, or to the first NULL; at most max_length
+ */
+inline size_t StrNLength(const std::string input, size_t max_length) {
+  return StrNLength(input.c_str(), max_length);
+}
 }  // namespace strings
 }  // namespace ola
 #endif  // INCLUDE_OLA_STRINGS_UTILS_H_
