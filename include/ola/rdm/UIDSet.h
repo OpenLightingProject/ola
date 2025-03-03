@@ -161,7 +161,7 @@ class UIDSet {
     }
 
     /**
-     * @brief Return an Iterator to one-pass-the-last member of the set.
+     * @brief Return an Iterator to one-past-the-last member of the set.
      */
     Iterator End() const {
       return m_uids.end();
