@@ -514,7 +514,7 @@ const FieldDescriptor *PidStoreLoader::IntegerFieldToFieldDescriptor(
     intervals.push_back(interval);
   }
 
-  // if not intervals were specified, we automatically add all the labels
+  // if no intervals were specified, we automatically add all the labels
   bool intervals_empty = intervals.empty();
 
   for (int i = 0; i < field.label_size(); ++i) {
@@ -550,7 +550,8 @@ const FieldDescriptor *PidStoreLoader::StringFieldToFieldDescriptor(
     min = field.min_size();
 
   if (!field.has_max_size()) {
-    OLA_WARN << "String field failed to specify max size";
+    OLA_WARN << "String field " << field.name()
+             << " failed to specify max size";
     return NULL;
   }
   return new ola::messaging::StringFieldDescriptor(
