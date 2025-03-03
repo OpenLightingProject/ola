@@ -27,8 +27,9 @@ from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
                               RDM_MANUFACTURER_PID_MIN,
                               RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
                               RDM_MAX_DOMAIN_NAME_LENGTH,
-                              RDM_MAX_HOSTNAME_LENGTH, RDM_MIN_HOSTNAME_LENGTH,
+                              RDM_MAX_HOSTNAME_LENGTH,
                               RDM_MAX_SERIAL_NUMBER_LENGTH,
+                              RDM_MIN_HOSTNAME_LENGTH,
                               RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
 from ola.StringUtils import StringEscape
 from ola.testing.rdm import TestMixins

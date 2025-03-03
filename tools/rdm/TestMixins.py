@@ -201,7 +201,8 @@ class GetURLMixin(GetMixin):
 
     if self.MAX_LENGTH and len(url_field) > self.MAX_LENGTH:
       self.AddAdvisory(
-          '%s field in %s was %d, will ACK Overflow after %d, could you make a shorter URL?' %
+          '%s field in %s was %d, will ACK Overflow after %d, could you make '
+          'a shorter URL?' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(url_field), self.MAX_LENGTH))
 
@@ -214,7 +215,8 @@ class GetURLMixin(GetMixin):
             (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, url_field))
       else:
         # Advisory if not HTTP(S) and maybe FTP for firmware...
-        if self.ALLOWED_SCHEMAS and url_result.scheme not in self.ALLOWED_SCHEMAS:
+        if (self.ALLOWED_SCHEMAS and
+            (url_result.scheme not in self.ALLOWED_SCHEMAS)):
           self.AddAdvisory(
               '%s field in %s had schema %s, expected one of %s' %
               (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
@@ -227,13 +229,16 @@ class GetURLMixin(GetMixin):
               (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name))
         # else:
           # TODO(Peter): Check for a dot in the netloc
-          # TODO(Peter): Check the netloc domain isn't a prohibited internal only one
+          # TODO(Peter): Check the netloc domain isn't a prohibited internal
+          # only one
 
-        # TODO(Peter): Optionally expect at least one other section (product/firmware)
+        # TODO(Peter): Optionally expect at least one other section
+        # (product/firmware)
     except ValueError as err:
       self.SetFailed(
           '%s field in %s didn\'t parse as a URL due to %s, was %s' %
-          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, str(err), url_field))
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, str(err),
+           url_field))
 
 
 class GetRequiredMixin(ResponderTestFixture):

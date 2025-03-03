@@ -51,5 +51,6 @@ class PidDataTest(unittest.TestCase):
     self.assertEqual(store.ManufacturerIdToName(32767),
                      "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY")
 
+
 if __name__ == '__main__':
   unittest.main()
