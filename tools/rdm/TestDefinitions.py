@@ -28,6 +28,7 @@ from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
                               RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
                               RDM_MAX_DOMAIN_NAME_LENGTH,
                               RDM_MAX_HOSTNAME_LENGTH, RDM_MIN_HOSTNAME_LENGTH,
+                              RDM_MAX_SERIAL_NUMBER_LENGTH,
                               RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
 from ola.StringUtils import StringEscape
 from ola.testing.rdm import TestMixins
@@ -7939,7 +7940,6 @@ class GetManufacturerURL(TestMixins.GetURLMixin,
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'MANUFACTURER_URL'
   EXPECTED_FIELDS = ['url']
-#  PROVIDES = ['manufacturer_url']
 
 
 class GetManufacturerURLWithData(TestMixins.GetWithDataMixin,
@@ -8058,6 +8058,270 @@ class SetMetadataJSONURLWithData(TestMixins.UnsupportedSetWithDataMixin,
                                  OptionalParameterTestFixture):
   """Attempt to SET METADATA_JSON_URL with data."""
   PID = 'METADATA_JSON_URL'
+
+
+class AllSubDevicesGetShippingLock(TestMixins.AllSubDevicesGetMixin,
+                                   OptionalParameterTestFixture):
+  """Send a get SHIPPING_LOCK to ALL_SUB_DEVICES."""
+  PID = 'SHIPPING_LOCK'
+
+
+class GetShippingLock(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """GET the shipping lock state."""
+  CATEGORY = TestCategory.CONFIGURATION
+  PID = 'SHIPPING_LOCK'
+  EXPECTED_FIELDS = ['shipping_lock_state']
+  PROVIDES = ['shipping_lock_state']
+
+
+class GetShippingLockWithData(TestMixins.GetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """GET SHIPPING_LOCK with data."""
+  PID = 'SHIPPING_LOCK'
+
+
+class SetShippingLock(TestMixins.SetBoolMixin, OptionalParameterTestFixture):
+  """Attempt to SET the shipping lock."""
+  CATEGORY = TestCategory.CONFIGURATION
+  PID = 'SHIPPING_LOCK'
+  EXPECTED_FIELDS = ['shipping_lock_state']
+  REQUIRES = ['shipping_lock_state']
+
+  def OldValue(self):
+    # We use a bool here as partially locked isn't allowed for set,
+    # so we toggle between off and on
+    return bool(self.Property('shipping_lock_state'))
+
+
+class SetShippingLockWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set SHIPPING_LOCK command with no data."""
+  PID = 'SHIPPING_LOCK'
+
+
+class SetShippingLockWithExtraData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Send a SET SHIPPING_LOCK command with extra data."""
+  PID = 'SHIPPING_LOCK'
+  # TODO(peter): Ensure the first 1 bytes are sane/valid.
+
+
+class AllSubDevicesGetSerialNumber(TestMixins.AllSubDevicesGetMixin,
+                                   OptionalParameterTestFixture):
+  """Send a get SERIAL_NUMBER to ALL_SUB_DEVICES."""
+  PID = 'SERIAL_NUMBER'
+
+
+class GetSerialNumber(TestMixins.GetStringMixin,
+                      OptionalParameterTestFixture):
+  """GET the serial number."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'SERIAL_NUMBER'
+# TODO(peter): Flag an advisory if length is zero
+#  MIN_LENGTH = 0
+  MAX_LENGTH = RDM_MAX_SERIAL_NUMBER_LENGTH
+  EXPECTED_FIELDS = ['serial']
+  PROVIDES = ['serial_number']
+
+
+class GetSerialNumberWithData(TestMixins.GetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """GET SERIAL_NUMBER with data."""
+  PID = 'SERIAL_NUMBER'
+
+
+class SetSerialNumber(TestMixins.UnsupportedSetMixin,
+                      OptionalParameterTestFixture):
+  """Attempt to SET SERIAL_NUMBER."""
+  PID = 'SERIAL_NUMBER'
+
+
+class SetSerialNumberWithData(TestMixins.UnsupportedSetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """Attempt to SET SERIAL_NUMBER with data."""
+  PID = 'SERIAL_NUMBER'
+
+
+class AllSubDevicesGetListTags(TestMixins.AllSubDevicesGetMixin,
+                               OptionalParameterTestFixture):
+  """Send a get LIST_TAGS to ALL_SUB_DEVICES."""
+  PID = 'LIST_TAGS'
+
+
+class GetListTagsWithData(TestMixins.GetWithDataMixin,
+                          OptionalParameterTestFixture):
+  """GET LIST_TAGS with data."""
+  PID = 'LIST_TAGS'
+
+
+class SetListTags(TestMixins.UnsupportedSetMixin,
+                  OptionalParameterTestFixture):
+  """Attempt to SET LIST_TAGS."""
+  PID = 'LIST_TAGS'
+
+
+class SetListTagsWithData(TestMixins.UnsupportedSetWithDataMixin,
+                          OptionalParameterTestFixture):
+  """Attempt to SET LIST_TAGS with data."""
+  PID = 'LIST_TAGS'
+
+
+class AllSubDevicesGetAddTag(TestMixins.AllSubDevicesUnsupportedGetMixin,
+                             OptionalParameterTestFixture):
+  """Attempt to send a get ADD_TAG to ALL_SUB_DEVICES."""
+  PID = 'ADD_TAG'
+
+
+class GetAddTag(TestMixins.UnsupportedGetMixin,
+                OptionalParameterTestFixture):
+  """Attempt to GET ADD_TAG."""
+  PID = 'ADD_TAG'
+
+
+class GetAddTagWithData(TestMixins.UnsupportedGetWithDataMixin,
+                        OptionalParameterTestFixture):
+  """GET ADD_TAG with data."""
+  PID = 'ADD_TAG'
+
+
+class SetAddTagWithExtraData(TestMixins.SetWithDataMixin,
+                             OptionalParameterTestFixture):
+  """Send a SET ADD_TAG command with extra data."""
+  PID = 'ADD_TAG'
+  DATA = b'this is a tag with 33 characters!'
+
+
+class AllSubDevicesGetRemoveTag(TestMixins.AllSubDevicesUnsupportedGetMixin,
+                                OptionalParameterTestFixture):
+  """Attempt to send a get REMOVE_TAG to ALL_SUB_DEVICES."""
+  PID = 'REMOVE_TAG'
+
+
+class GetRemoveTag(TestMixins.UnsupportedGetMixin,
+                   OptionalParameterTestFixture):
+  """Attempt to GET REMOVE_TAG."""
+  PID = 'REMOVE_TAG'
+
+
+class GetRemoveTagWithData(TestMixins.UnsupportedGetWithDataMixin,
+                           OptionalParameterTestFixture):
+  """GET REMOVE_TAG with data."""
+  PID = 'REMOVE_TAG'
+
+
+class SetRemoveTagWithExtraData(TestMixins.SetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Send a SET REMOVE_TAG command with extra data."""
+  PID = 'REMOVE_TAG'
+  DATA = b'this tag has 33 characters as well'
+
+
+class AllSubDevicesGetCheckTag(TestMixins.AllSubDevicesGetMixin,
+                               OptionalParameterTestFixture):
+  """Send a get CHECK_TAG to ALL_SUB_DEVICES."""
+  PID = 'CHECK_TAG'
+
+
+class GetCheckTagWithNoData(TestMixins.GetWithNoDataMixin,
+                            OptionalParameterTestFixture):
+  """GET CHECK_TAG with no argument given."""
+  PID = 'CHECK_TAG'
+
+
+class GetCheckTagWithExtraData(TestMixins.GetWithDataMixin,
+                               OptionalParameterTestFixture):
+  """GET CHECK_TAG with more than 32 bytes of data."""
+  PID = 'CHECK_TAG'
+  DATA = b'this tag is also 33 characters too'
+
+
+class SetCheckTag(TestMixins.UnsupportedSetMixin,
+                  OptionalParameterTestFixture):
+  """Attempt to SET CHECK_TAG."""
+  PID = 'CHECK_TAG'
+
+
+class SetCheckTagWithData(TestMixins.UnsupportedSetWithDataMixin,
+                          OptionalParameterTestFixture):
+  """Attempt to SET CHECK_TAG with data."""
+  PID = 'CHECK_TAG'
+
+
+class AllSubDevicesGetClearTags(TestMixins.AllSubDevicesUnsupportedGetMixin,
+                                OptionalParameterTestFixture):
+  """Attempt to send a get CLEAR_TAGS to ALL_SUB_DEVICES."""
+  PID = 'CLEAR_TAGS'
+
+
+class GetClearTags(TestMixins.UnsupportedGetMixin,
+                   OptionalParameterTestFixture):
+  """Attempt to GET CLEAR_TAGS."""
+  PID = 'CLEAR_TAGS'
+
+
+class GetClearTagsWithData(TestMixins.UnsupportedGetWithDataMixin,
+                           OptionalParameterTestFixture):
+  """GET CLEAR_TAGS with data."""
+  PID = 'CLEAR_TAGS'
+
+
+class SetClearTagsWithData(TestMixins.SetWithDataMixin,
+                           OptionalParameterTestFixture):
+  """Send a SET CLEAR_TAGS command with unnecessary data."""
+  PID = 'CLEAR_TAGS'
+
+
+class AllSubDevicesGetDeviceUnitNumber(TestMixins.AllSubDevicesGetMixin,
+                                       OptionalParameterTestFixture):
+  """Send a get DEVICE_UNIT_NUMBER to ALL_SUB_DEVICES."""
+  PID = 'DEVICE_UNIT_NUMBER'
+
+
+class GetDeviceUnitNumber(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """GET DEVICE_UNIT_NUMBER."""
+  CATEGORY = TestCategory.CONFIGURATION
+  PID = 'DEVICE_UNIT_NUMBER'
+  EXPECTED_FIELDS = ['device_unit_number']
+  PROVIDES = ['device_unit_number']
+
+
+class GetDeviceUnitNumberWithData(TestMixins.GetWithDataMixin,
+                                  OptionalParameterTestFixture):
+  """GET DEVICE_UNIT_NUMBER with data."""
+  PID = 'DEVICE_UNIT_NUMBER'
+
+
+class SetDeviceUnitNumber(TestMixins.SetUInt32Mixin,
+                          OptionalParameterTestFixture):
+  """Attempt to SET the device unit number."""
+  CATEGORY = TestCategory.CONFIGURATION
+  PID = 'DEVICE_UNIT_NUMBER'
+  EXPECTED_FIELDS = ['device_unit_number']
+  PROVIDES = ['set_device_unit_number_supported']
+  REQUIRES = ['device_unit_number']
+
+  def OldValue(self):
+    return self.Property('device_unit_number')
+
+  def VerifyResult(self, response, fields):
+    if response.command_class == PidStore.RDM_SET:
+      set_supported = (
+          response.WasAcked() or
+          response.nack_reason != RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+      self.SetProperty('set_device_unit_number_supported', set_supported)
+
+
+class SetDeviceUnitNumberWithNoData(TestMixins.SetWithNoDataMixin,
+                                    OptionalParameterTestFixture):
+  """Set DEVICE_UNIT_NUMBER command with no data."""
+  PID = 'DEVICE_UNIT_NUMBER'
+
+
+class SetDeviceUnitNumberWithExtraData(TestMixins.SetWithDataMixin,
+                                       OptionalParameterTestFixture):
+  """Send a SET DEVICE_UNIT_NUMBER command with extra data."""
+  PID = 'DEVICE_UNIT_NUMBER'
+  DATA = b'foobar'
 
 
 # E1.33/E1.37-7 PIDS
