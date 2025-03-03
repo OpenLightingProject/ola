@@ -115,7 +115,7 @@ def Get(names, pid, pid_test_base_name):
       GenerateClassHeader(True, 'Get', pid_test_base_name, '',
                           ['TestMixins.',
                            'OptionalParameterTestFixture'])
-      print('  """GET %s."""' % (pid.name))
+      print('#   """GET %s."""' % (pid.name))
       print('#   CATEGORY = TestCategory.')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test get' % (getpass.getuser()))
@@ -219,7 +219,7 @@ def Set(names, pid, pid_test_base_name):
     if pid.RequestSupported(PidStore.RDM_SET):
       GenerateClassHeader(True, 'Set', pid_test_base_name, '',
                           ['TestMixins.', 'OptionalParameterTestFixture'])
-      print('  """SET %s."""' % (pid.name))
+      print('#   """SET %s."""' % (pid.name))
       print('#   CATEGORY = TestCategory.')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test set' % (getpass.getuser()))
