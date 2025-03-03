@@ -47,6 +47,7 @@ using ola::network::InterfacePicker;
 using ola::network::IPV4Address;
 using ola::network::MACAddress;
 using ola::network::NetworkToHost;
+using ola::strings::StrNLength;
 using std::min;
 using std::string;
 using std::vector;
@@ -77,6 +78,24 @@ bool ResponderHelper::ExtractUInt16(const RDMRequest *request,
 bool ResponderHelper::ExtractUInt32(const RDMRequest *request,
                                     uint32_t *output) {
   return GenericExtractValue(request, output);
+}
+
+bool ResponderHelper::ExtractString(const RDMRequest *request,
+                                    std::string *output,
+                                    uint8_t max_length) {
+  if (request->ParamDataSize() > max_length) {
+    return false;
+  }
+
+  size_t len = (size_t) request->ParamDataSize();
+  if (request->ParamData() != NULL) {
+    // StrNLength ensures we stop on the first null we hit
+    len = StrNLength(reinterpret_cast<const char*>(request->ParamData()),
+                     min(len, (size_t) max_length));
+  }
+  const string value(reinterpret_cast<const char*>(request->ParamData()), len);
+  *output = value;
+  return true;
 }
 
 
@@ -1051,6 +1070,79 @@ RDMResponse *ResponderHelper::GetIPV4Address(
                         // already
                         NetworkToHost(value.AsInt()),
                         queued_message_count);
+}
+
+RDMResponse *ResponderHelper::GetListTags(
+    const RDMRequest *request,
+    const TagSet *tag_set,
+    uint8_t queued_message_count) {
+  uint8_t tags[(MAX_RDM_STRING_LENGTH + 1) * tag_set->Size()];
+  unsigned int pdl = sizeof(tags);
+
+  tag_set->Pack(tags, &pdl);
+
+  return GetResponseFromData(request, tags, pdl,
+                             RDM_ACK, queued_message_count);
+}
+
+RDMResponse *ResponderHelper::SetAddTag(
+    const RDMRequest *request,
+    TagSet *tag_set,
+    uint8_t queued_message_count) {
+  string tag;
+  if (!ResponderHelper::ExtractString(request, &tag)) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  tag_set->AddTag(tag);
+
+  return ResponderHelper::EmptySetResponse(request, queued_message_count);
+}
+
+RDMResponse *ResponderHelper::SetRemoveTag(
+    const RDMRequest *request,
+    TagSet *tag_set,
+    uint8_t queued_message_count) {
+  string tag;
+  if (!ResponderHelper::ExtractString(request, &tag)) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  if (tag_set->Contains(tag)) {
+    tag_set->RemoveTag(tag);
+
+    return ResponderHelper::EmptySetResponse(request, queued_message_count);
+  } else {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  }
+}
+
+RDMResponse *ResponderHelper::GetCheckTag(
+    const RDMRequest *request,
+    const TagSet *tag_set,
+    uint8_t queued_message_count) {
+  string tag;
+  if (!ResponderHelper::ExtractString(request, &tag)) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  uint8_t param = tag_set->Contains(tag) ? 1 : 0;
+
+  return GetResponseFromData(request, &param, sizeof(param),
+                             RDM_ACK, queued_message_count);
+}
+
+RDMResponse *ResponderHelper::SetClearTags(
+    const RDMRequest *request,
+    TagSet *tag_set,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  tag_set->Clear();
+
+  return ResponderHelper::EmptySetResponse(request, queued_message_count);
 }
 
 /**
