@@ -1076,6 +1076,10 @@ RDMResponse *ResponderHelper::GetListTags(
     const RDMRequest *request,
     const TagSet *tag_set,
     uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
   uint8_t tags[(MAX_RDM_STRING_LENGTH + 1) * tag_set->Size()];
   unsigned int pdl = sizeof(tags);
 
