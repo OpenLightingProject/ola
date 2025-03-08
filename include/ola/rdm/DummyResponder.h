@@ -133,6 +133,8 @@ class DummyResponder: public RDMControllerInterface {
   RDMResponse *GetManufacturerURL(const RDMRequest *request);
   RDMResponse *GetProductURL(const RDMRequest *request);
   RDMResponse *GetFirmwareURL(const RDMRequest *request);
+  RDMResponse *GetTestData(const RDMRequest *request);
+  RDMResponse *SetTestData(const RDMRequest *request);
 
   static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
   static const uint8_t DEFAULT_PERSONALITY = 2;
