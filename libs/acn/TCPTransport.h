@@ -137,7 +137,7 @@ class IncomingTCPTransport {
     bool Receive() { return m_transport->Receive(); }
 
  private:
-    std::auto_ptr<IncomingStreamTransport> m_transport;
+    std::unique_ptr<IncomingStreamTransport> m_transport;
 };
 }  // namespace acn
 }  // namespace ola

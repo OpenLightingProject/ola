@@ -33,7 +33,7 @@
 
 
 using ola::DmxBuffer;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::queue;
 
 
@@ -52,7 +52,7 @@ class BaseRobeWidgetTest: public CommonWidgetTest {
     void testRemove();
 
  private:
-    auto_ptr<ola::plugin::usbpro::DispatchingRobeWidget> m_widget;
+    unique_ptr<ola::plugin::usbpro::DispatchingRobeWidget> m_widget;
     bool m_removed;
 
     typedef struct {

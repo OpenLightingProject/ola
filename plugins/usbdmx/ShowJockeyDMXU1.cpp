@@ -238,7 +238,7 @@ bool SynchronousShowJockeyDMXU1::Init() {
     return false;
   }
 
-  std::auto_ptr<ShowJockeyDMXU1ThreadedSender> sender(
+  std::unique_ptr<ShowJockeyDMXU1ThreadedSender> sender(
       new ShowJockeyDMXU1ThreadedSender(m_adaptor,
                                         m_usb_device,
                                         usb_handle,
@@ -347,7 +347,7 @@ bool AsynchronousShowJockeyDMXU1::Init() {
     return false;
   }
 
-  std::auto_ptr<ShowJockeyDMXU1AsyncUsbSender> sender(
+  std::unique_ptr<ShowJockeyDMXU1AsyncUsbSender> sender(
       new ShowJockeyDMXU1AsyncUsbSender(m_adaptor,
                                         m_usb_device,
                                         endpoint,

@@ -111,7 +111,7 @@ class ThreadedUsbReceiver: private ola::thread::Thread {
   libusb_device_handle* const m_usb_handle;
   int const m_interface_number;
   PluginAdaptor* const m_plugin_adaptor;
-  std::auto_ptr<Callback0<void> > m_receive_callback;
+  std::unique_ptr<Callback0<void> > m_receive_callback;
   DmxBuffer m_buffer;
   ola::thread::Mutex m_data_mutex;
   ola::thread::Mutex m_term_mutex;
