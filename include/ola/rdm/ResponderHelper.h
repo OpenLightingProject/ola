@@ -218,6 +218,14 @@ class ResponderHelper {
         uint8_t queued_message_count = 0);
 
     // E1.37-5 Helpers
+    static RDMResponse *GetTestData(
+        const RDMRequest *request,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *SetTestData(
+        const RDMRequest *request,
+        uint8_t queued_message_count = 0);
+
     static RDMResponse *GetListTags(
         const RDMRequest *request,
         const TagSet *tag_set,

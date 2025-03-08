@@ -759,12 +759,16 @@ static const uint8_t MAX_RDM_DOMAIN_NAME_LENGTH = 231;
 static const uint8_t DNS_NAME_SERVER_MAX_INDEX = 2;
 
 // Consts for E1.37-5
+static const uint16_t MAX_RDM_TEST_DATA_PATTERN_LENGTH = 4096;
+
 // The shipping lock states
 typedef enum {
   SHIPPING_LOCK_STATE_UNLOCKED = 0x00,
   SHIPPING_LOCK_STATE_LOCKED = 0x01,
   SHIPPING_LOCK_STATE_PARTIALLY_LOCKED = 0x02,
 } rdm_shipping_lock_state;
+
+static const uint8_t MAX_RDM_SERIAL_NUMBER_LENGTH = 231;
 
 // Excluding the mandatory NULL terminator
 static const uint8_t MAX_RDM_SCOPE_STRING_LENGTH = 62;

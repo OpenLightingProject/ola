@@ -356,6 +356,7 @@ def main():
   for pid in pid_store.Pids():
     pid_test_base_name = pid.name.lower().title().replace('_', '')
 
+    # TODO(Peter): Need to do min and max size as some PIDs are variable length
     get_size = 0
     if ((pid.RequestSupported(PidStore.RDM_GET)) and
         (pid.GetRequest(PidStore.RDM_GET).HasAtoms())):

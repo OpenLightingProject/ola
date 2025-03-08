@@ -1072,6 +1072,44 @@ RDMResponse *ResponderHelper::GetIPV4Address(
                         queued_message_count);
 }
 
+RDMResponse *ResponderHelper::GetTestData(
+    const RDMRequest *request,
+    uint8_t queued_message_count) {
+  uint16_t pattern_length;
+  if (!ExtractUInt16(request, &pattern_length)) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  if (pattern_length > MAX_RDM_TEST_DATA_PATTERN_LENGTH) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  }
+
+  uint8_t pattern_data[pattern_length];
+
+  for (unsigned int i = 0; i < pattern_length; i++) {
+    // Need to return values 0-255, 0... etc
+    pattern_data[i] = i % (UINT8_MAX + 1);
+  }
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&pattern_data),
+      sizeof(pattern_data),
+      RDM_ACK,
+      queued_message_count);
+}
+
+RDMResponse *ResponderHelper::SetTestData(
+    const RDMRequest *request,
+    uint8_t queued_message_count) {
+  return GetResponseFromData(
+      request,
+      request->ParamData(),
+      request->ParamDataSize(),
+      RDM_ACK,
+      queued_message_count);
+}
+
 RDMResponse *ResponderHelper::GetListTags(
     const RDMRequest *request,
     const TagSet *tag_set,

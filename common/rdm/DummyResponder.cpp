@@ -169,6 +169,9 @@ const ResponderOps<DummyResponder>::ParamHandler
   { PID_FIRMWARE_URL,
     &DummyResponder::GetFirmwareURL,
     NULL},
+  { PID_TEST_DATA,
+    &DummyResponder::GetTestData,
+    &DummyResponder::SetTestData},
   { OLA_MANUFACTURER_PID_CODE_VERSION,
     &DummyResponder::GetOlaCodeVersion,
     NULL},
@@ -467,6 +470,14 @@ RDMResponse *DummyResponder::GetFirmwareURL(
       "https://github.com/OpenLightingProject/ola",
       0,
       UINT8_MAX); // TODO(Peter): This field's length isn't limited in the spec
+}
+
+RDMResponse *DummyResponder::GetTestData(const RDMRequest *request) {
+  return ResponderHelper::GetTestData(request);
+}
+
+RDMResponse *DummyResponder::SetTestData(const RDMRequest *request) {
+  return ResponderHelper::SetTestData(request);
 }
 
 RDMResponse *DummyResponder::GetOlaCodeVersion(

@@ -29,6 +29,7 @@ from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
                               RDM_MAX_DOMAIN_NAME_LENGTH,
                               RDM_MAX_HOSTNAME_LENGTH,
                               RDM_MAX_SERIAL_NUMBER_LENGTH,
+                              RDM_MAX_TEST_DATA_PATTERN_LENGTH,
                               RDM_MIN_HOSTNAME_LENGTH,
                               RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
 from ola.StringUtils import StringEscape
@@ -8141,6 +8142,38 @@ class SetSerialNumberWithData(TestMixins.UnsupportedSetWithDataMixin,
                               OptionalParameterTestFixture):
   """Attempt to SET SERIAL_NUMBER with data."""
   PID = 'SERIAL_NUMBER'
+
+
+class AllSubDevicesGetTestData(TestMixins.AllSubDevicesGetMixin,
+                               OptionalParameterTestFixture):
+  """Send a get TEST_DATA to ALL_SUB_DEVICES."""
+  PID = 'TEST_DATA'
+  DATA = [1]
+
+
+class GetTestDataWithNoData(TestMixins.GetWithNoDataMixin,
+                            OptionalParameterTestFixture):
+  """GET TEST_DATA with no argument given."""
+  PID = 'TEST_DATA'
+
+
+class GetTestDataWithExtraData(TestMixins.GetWithDataMixin,
+                               OptionalParameterTestFixture):
+  """GET TEST_DATA with more than 2 bytes of data."""
+  PID = 'TEST_DATA'
+  DATA = b'foo'
+  # TODO(peter): Ensure the first 2 bytes are sane/valid.
+
+
+class GetOutOfRangeTestData(OptionalParameterTestFixture):
+  """Get TEST_DATA with a pattern length of 4096 + 1."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'TEST_DATA'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!H', (RDM_MAX_TEST_DATA_PATTERN_LENGTH + 1))
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
 
 class AllSubDevicesGetListTags(TestMixins.AllSubDevicesGetMixin,
