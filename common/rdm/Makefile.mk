@@ -86,6 +86,8 @@ test_programs += \
     common/rdm/RDMHelperTester \
     common/rdm/RDMMessageTester \
     common/rdm/RDMReplyTester \
+    common/rdm/ResponderHelperTester \
+    common/rdm/ResponderTagSetTester \
     common/rdm/UIDAllocatorTester \
     common/rdm/UIDTester
 
@@ -141,6 +143,15 @@ common_rdm_RDMCommandSerializerTester_SOURCES = \
     common/rdm/TestHelper.h
 common_rdm_RDMCommandSerializerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 common_rdm_RDMCommandSerializerTester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_rdm_ResponderHelperTester_SOURCES = common/rdm/ResponderHelperTest.cpp
+common_rdm_ResponderHelperTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_ResponderHelperTester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_rdm_ResponderTagSetTester_SOURCES = \
+    common/rdm/ResponderTagSetTest.cpp
+common_rdm_ResponderTagSetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_rdm_ResponderTagSetTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_rdm_QueueingRDMControllerTester_SOURCES = \
     common/rdm/QueueingRDMControllerTest.cpp \

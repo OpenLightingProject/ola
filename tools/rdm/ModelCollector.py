@@ -56,7 +56,10 @@ class ModelCollector(object):
    LANGUAGES,
    SLOT_INFO,
    SLOT_DEFAULT_VALUE,
-   SLOT_DESCRIPTION) = range(14)
+   SLOT_DESCRIPTION,
+   MANUFACTURER_URL,
+   PRODUCT_URL,
+   FIRMWARE_URL) = range(18)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -199,6 +202,12 @@ class ModelCollector(object):
       self._HandleSlotDefaultValue(unpacked_data)
     elif self.work_state == self.SLOT_DESCRIPTION:
       self._HandleSlotDescription(unpacked_data)
+    elif self.work_state == self.MANUFACTURER_URL:
+      self._HandleManufacturerURL(unpacked_data)
+    elif self.work_state == self.PRODUCT_URL:
+      self._HandleProductURL(unpacked_data)
+    elif self.work_state == self.FIRMWARE_URL:
+      self._HandleFirmwareURL(unpacked_data)
 
   def _HandleDeviceInfo(self, data):
     """Called when we get a DEVICE_INFO response."""
@@ -378,6 +387,24 @@ class ModelCollector(object):
                                               ] = data['name']
     self._FetchNextSlotDescription()
 
+  def _HandleManufacturerURL(self, data):
+    """Called when we get a MANUFACTURER_URL response."""
+    this_device = self._GetDevice()
+    this_device['manufacturer_url'] = data['url']
+    self._NextState()
+
+  def _HandleProductURL(self, data):
+    """Called when we get a PRODUCT_URL response."""
+    this_device = self._GetDevice()
+    this_device['product_url'] = data['url']
+    self._NextState()
+
+  def _HandleFirmwareURL(self, data):
+    """Called when we get a FIRMWARE_URL response."""
+    this_device = self._GetDevice()
+    this_device['firmware_url'] = data['url']
+    self._NextState()
+
   def _NextState(self):
     """Move to the next state of information fetching."""
     if self.work_state == self.EMPTYING_QUEUE:
@@ -468,6 +495,36 @@ class ModelCollector(object):
       pid = self.pid_store.GetName('SLOT_DESCRIPTION')
       if self._CheckPidSupported(pid):
         self._FetchNextSlotDescription()
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
+    elif self.work_state == self.SLOT_DESCRIPTION:
+      # fetch manufacturer URL
+      self.work_state = self.MANUFACTURER_URL
+      pid = self.pid_store.GetName('MANUFACTURER_URL')
+      if self._CheckPidSupported(pid):
+        self._GetPid(pid)
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
+    elif self.work_state == self.MANUFACTURER_URL:
+      # fetch product URL
+      self.work_state = self.PRODUCT_URL
+      pid = self.pid_store.GetName('PRODUCT_URL')
+      if self._CheckPidSupported(pid):
+        self._GetPid(pid)
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
+    elif self.work_state == self.PRODUCT_URL:
+      # fetch firmware URL
+      self.work_state = self.FIRMWARE_URL
+      pid = self.pid_store.GetName('FIRMWARE_URL')
+      if self._CheckPidSupported(pid):
+        self._GetPid(pid)
       else:
         logging.debug("Skipping pid %s as it's not supported on this device" %
                       pid)

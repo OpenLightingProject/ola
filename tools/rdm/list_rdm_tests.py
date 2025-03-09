@@ -115,6 +115,7 @@ def Get(names, pid, pid_test_base_name):
       GenerateClassHeader(True, 'Get', pid_test_base_name, '',
                           ['TestMixins.',
                            'OptionalParameterTestFixture'])
+      print('#   """GET %s."""' % (pid.name))
       print('#   CATEGORY = TestCategory.')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test get' % (getpass.getuser()))
@@ -218,6 +219,7 @@ def Set(names, pid, pid_test_base_name):
     if pid.RequestSupported(PidStore.RDM_SET):
       GenerateClassHeader(True, 'Set', pid_test_base_name, '',
                           ['TestMixins.', 'OptionalParameterTestFixture'])
+      print('#   """SET %s."""' % (pid.name))
       print('#   CATEGORY = TestCategory.')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test set' % (getpass.getuser()))
@@ -354,6 +356,7 @@ def main():
   for pid in pid_store.Pids():
     pid_test_base_name = pid.name.lower().title().replace('_', '')
 
+    # TODO(Peter): Need to do min and max size as some PIDs are variable length
     get_size = 0
     if ((pid.RequestSupported(PidStore.RDM_GET)) and
         (pid.GetRequest(PidStore.RDM_GET).HasAtoms())):

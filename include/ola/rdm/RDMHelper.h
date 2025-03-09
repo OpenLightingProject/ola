@@ -65,6 +65,8 @@ std::string StatusMessageIdToString(uint16_t message_id,
                                     int16_t data2);
 std::string StatusTypeToString(uint8_t status_type);
 std::string UnitToString(uint8_t unit);
+std::string ShippingLockStateToString(uint8_t shipping_lock_state);
+bool UIntToShippingLockState(uint8_t state, rdm_shipping_lock_state *shipping_lock_state);
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMHELPER_H_
