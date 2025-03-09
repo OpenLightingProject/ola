@@ -65,9 +65,12 @@ void TagSetTest::testTagSet() {
   OLA_ASSERT_EQ(string("foo"), set1.ToString());
   OLA_ASSERT_TRUE(set1.Contains(tag));
   OLA_ASSERT_FALSE(set1.Contains(tag2));
+  // Add the same tag again (shouldn't change anything)
   set1.AddTag(tag);
-  OLA_ASSERT_TRUE(set1.Contains(tag));
   OLA_ASSERT_EQ(1u, set1.Size());
+  OLA_ASSERT_EQ(string("foo"), set1.ToString());
+  OLA_ASSERT_TRUE(set1.Contains(tag));
+  OLA_ASSERT_FALSE(set1.Contains(tag2));
 
   // now test the packing
   unsigned int buffer_size2 = 32 + 1;

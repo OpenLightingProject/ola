@@ -206,8 +206,9 @@ class UIDSet {
       std::ostringstream str;
       std::set<UID>::const_iterator iter;
       for (iter = m_uids.begin(); iter != m_uids.end(); ++iter) {
-        if (iter != m_uids.begin())
+        if (iter != m_uids.begin()) {
           str << ",";
+        }
         str << *iter;
       }
       return str.str();

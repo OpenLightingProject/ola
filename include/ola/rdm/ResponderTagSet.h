@@ -164,8 +164,9 @@ class TagSet {
       std::ostringstream str;
       std::set<std::string>::const_iterator iter;
       for (iter = m_tags.begin(); iter != m_tags.end(); ++iter) {
-        if (iter != m_tags.begin())
+        if (iter != m_tags.begin()) {
           str << ",";
+        }
         str << *iter;
       }
       return str.str();
