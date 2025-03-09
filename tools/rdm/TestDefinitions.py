@@ -8228,7 +8228,7 @@ class GetTestDataPatternLengthMaxPDL(TestMixins.GetTestDataMixin,
 
 
 class GetTestDataPatternLengthMaxPatternLength(TestMixins.GetTestDataMixin,
-                                     OptionalParameterTestFixture):
+                                               OptionalParameterTestFixture):
   """GET TEST_DATA with a pattern length of the max pattern length."""
   PATTERN_LENGTH = RDM_MAX_TEST_DATA_PATTERN_LENGTH
 
