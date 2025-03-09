@@ -241,6 +241,33 @@ class GetURLMixin(GetMixin):
            url_field))
 
 
+class GetTestDataMixin(ResponderTestFixture):
+  """GET TEST_DATA PID with a given pattern length.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
+  """
+  PID = 'TEST_DATA'
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PATTERN_LENGTH = 1
+  ALLOWED_NACKS = []
+  EXPECTED_FIELDS = ['pattern_data']
+
+  def Test(self):
+    expected_value = []
+    for i in range(0, self.PATTERN_LENGTH):
+      expected_value.append({'data': (i % (255 + 1))})
+    results = [
+      self.AckGetResult(
+          field_names=self.EXPECTED_FIELDS,
+          field_values={self.EXPECTED_FIELDS[0]: expected_value})
+    ]
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackGetResult(nack))
+    self.AddIfGetSupported(results)
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.PATTERN_LENGTH])
+
+
 class GetRequiredMixin(ResponderTestFixture):
   """GET Mixin for a required PID. Verify EXPECTED_FIELDS is in the response.
 

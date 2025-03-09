@@ -29,6 +29,7 @@ from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
                               RDM_MAX_DOMAIN_NAME_LENGTH,
                               RDM_MAX_HOSTNAME_LENGTH,
                               RDM_MAX_SERIAL_NUMBER_LENGTH,
+                              RDM_MAX_STRING_LENGTH,
                               RDM_MAX_TEST_DATA_PATTERN_LENGTH,
                               RDM_MIN_HOSTNAME_LENGTH,
                               RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
@@ -8149,6 +8150,37 @@ class AllSubDevicesGetTestData(TestMixins.AllSubDevicesGetMixin,
   """Send a get TEST_DATA to ALL_SUB_DEVICES."""
   PID = 'TEST_DATA'
   DATA = [1]
+
+
+class GetTestDataPatternLengthZero(TestMixins.GetTestDataMixin,
+                                   OptionalParameterTestFixture):
+  """GET TEST_DATA with a pattern length of 0."""
+  PATTERN_LENGTH = 0
+
+
+class GetTestDataPatternLengthOne(TestMixins.GetTestDataMixin,
+                                  OptionalParameterTestFixture):
+  """GET TEST_DATA with a pattern length of 1."""
+  PATTERN_LENGTH = 1
+
+
+class GetTestDataPatternLengthMaxStringLength(TestMixins.GetTestDataMixin,
+                                              OptionalParameterTestFixture):
+  """GET TEST_DATA with a pattern length of the max string length."""
+  PATTERN_LENGTH = RDM_MAX_STRING_LENGTH
+
+
+class GetTestDataPatternLengthMaxPDL(TestMixins.GetTestDataMixin,
+                                     OptionalParameterTestFixture):
+  """GET TEST_DATA with a pattern length of the max PDL."""
+  # TODO(Peter): Make this a constant
+  PATTERN_LENGTH = 231
+
+
+class GetTestDataPatternLengthMaxPatternLength(TestMixins.GetTestDataMixin,
+                                     OptionalParameterTestFixture):
+  """GET TEST_DATA with a pattern length of the max pattern length."""
+  PATTERN_LENGTH = RDM_MAX_TEST_DATA_PATTERN_LENGTH
 
 
 class GetTestDataWithNoData(TestMixins.GetWithNoDataMixin,
