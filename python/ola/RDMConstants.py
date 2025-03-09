@@ -43,6 +43,7 @@ RDM_MAX_SERIAL_NUMBER_LENGTH = 231
 
 RDM_MAX_TEST_DATA_PATTERN_LENGTH = 4096
 
+
 def _ReverseDict(input):
   output = {}
   for key, value in input.items():
