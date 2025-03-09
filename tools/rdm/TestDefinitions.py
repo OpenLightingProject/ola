@@ -619,7 +619,7 @@ class GetMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
     # if it overflows
     data = b''
     for i in range(0, self.MAX_PDL):
-      data += chr(i)
+      data += b'%c' % i
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
   def VerifyResult(self, response, fields):
@@ -2480,7 +2480,7 @@ class SetDMXStartAddressWithNoData(TestMixins.SetWithNoDataMixin,
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
           self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
       ])
-    self.SendRawSet(ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'')
 
 
 class SetDMXStartAddressWithExtraData(TestMixins.SetWithDataMixin,
@@ -4209,7 +4209,7 @@ class SetIdentifyDeviceWithExtraData(ResponderTestFixture):
 
   def Test(self):
     self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawSet(ROOT_DEVICE, self.pid, b'foo')
 
   def ResetState(self):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('identify_state')])
