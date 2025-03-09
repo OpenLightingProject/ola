@@ -274,6 +274,10 @@ class Atom(object):
     return str(self)
 
   @staticmethod
+  def HasLabels():
+    return False
+
+  @staticmethod
   def HasRanges():
     return False
 
@@ -437,6 +441,9 @@ class IntAtom(FixedSizeAtom):
     This takes into account any multipliers set for the field.
     """
     return self._AccountForMultiplierPack(value)
+
+  def HasLabels(self):
+    return (len(self._labels) > 0)
 
   def HasRanges(self):
     return (len(self._ranges) > 0)

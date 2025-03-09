@@ -1771,6 +1771,10 @@ pid {
         label: "Root"
       }
       range {
+        min: 0
+        max: 0
+      }
+      range {
         min: 1
         max: 512
       }
@@ -1781,6 +1785,10 @@ pid {
       label {
         value: 0
         label: "Root Device"
+      }
+      range {
+        min: 0
+        max: 0
       }
       range {
         min: 1
@@ -4385,6 +4393,10 @@ pid {
       label {
         value: 0
         label: "Un-set"
+      }
+      range {
+        min: 0
+        max: 0
       }
       range {
         min: 1
