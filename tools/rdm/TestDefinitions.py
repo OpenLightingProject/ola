@@ -22,6 +22,7 @@ import struct
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
+                              RDM_ESTA_PID_MAX, RDM_ESTA_PID_MIN,
                               RDM_INTERFACE_INDEX_MAX, RDM_INTERFACE_INDEX_MIN,
                               RDM_MANUFACTURER_PID_MAX,
                               RDM_MANUFACTURER_PID_MIN,
@@ -709,8 +710,8 @@ class GetSupportedParameters(ResponderTestFixture):
   """GET supported parameters."""
   CATEGORY = TestCategory.CORE
   PID = 'SUPPORTED_PARAMETERS'
-  PROVIDES = ['manufacturer_parameters', 'supported_parameters',
-              'acks_supported_parameters']
+  PROVIDES = ['esta_parameters', 'manufacturer_parameters',
+              'supported_parameters', 'acks_supported_parameters']
 
   # Declaring support for any of these is a warning:
   MANDATORY_PIDS = ['SUPPORTED_PARAMETERS',
@@ -769,6 +770,7 @@ class GetSupportedParameters(ResponderTestFixture):
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
+      self.SetProperty('esta_parameters', [])
       self.SetProperty('manufacturer_parameters', [])
       self.SetProperty('supported_parameters', [])
       self.SetProperty('acks_supported_parameters', False)
@@ -786,6 +788,7 @@ class GetSupportedParameters(ResponderTestFixture):
       banned_pids[pid.value] = pid
 
     supported_parameters = []
+    esta_parameters = []
     manufacturer_parameters = []
     count_by_pid = {}
 
@@ -803,9 +806,23 @@ class GetSupportedParameters(ResponderTestFixture):
         continue
 
       supported_parameters.append(param_id)
-      if (param_id >= RDM_MANUFACTURER_PID_MIN and
-          param_id <= RDM_MANUFACTURER_PID_MAX):
+      if (param_id >= RDM_ESTA_PID_MIN and
+          param_id <= RDM_ESTA_PID_MAX):
+        esta_parameters.append(param_id)
+
+        pid = self.LookupPidValue(param_id)
+        if pid is None:
+          self.AddAdvisory(
+            'PID 0x%04hx listed in supported parameters but not in the OLA PID '
+            'data. Either OLA is out of date or PID isn\'t a valid ESTA PID' %
+            param_id)
+      elif (param_id >= RDM_MANUFACTURER_PID_MIN and
+               param_id <= RDM_MANUFACTURER_PID_MAX):
         manufacturer_parameters.append(param_id)
+      else:
+        self.AddWarning('PID 0x%04hx listed in supported parameters but not '
+                        'within the valid ESTA or manufacturer PID ranges' %
+                        param_id)
 
     # Check for duplicate PIDs
     for pid, count in count_by_pid.items():
@@ -815,9 +832,11 @@ class GetSupportedParameters(ResponderTestFixture):
           self.AddAdvisory('%s listed %d times in supported parameters' %
                            (pid_obj, count))
         else:
-          self.AddAdvisory('PID 0x%hx listed %d times in supported parameters' %
-                           (pid, count))
+          self.AddAdvisory(
+            'PID 0x%04hx listed %d times in supported parameters' %
+            (pid, count))
 
+    self.SetProperty('esta_parameters', esta_parameters)
     self.SetProperty('manufacturer_parameters', manufacturer_parameters)
     self.SetProperty('supported_parameters', supported_parameters)
 
@@ -1209,7 +1228,7 @@ class GetParameterDescription(ParamDescriptionTestFixture):
       return
 
     if self.current_param != fields['pid']:
-      self.SetFailed('Request for pid 0x%hx returned pid 0x%hx' %
+      self.SetFailed('Request for pid 0x%04hx returned pid 0x%04hx' %
                      (self.current_param, fields['pid']))
 
     if fields['type'] != 0:
