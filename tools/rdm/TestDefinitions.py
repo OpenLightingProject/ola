@@ -8258,6 +8258,32 @@ class GetOutOfRangeTestData(OptionalParameterTestFixture):
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
 
+class SetTestDataLoopbackDataLengthZero(TestMixins.SetTestDataMixin,
+                                        OptionalParameterTestFixture):
+  """SET TEST_DATA with loopback data with a length of 0."""
+  LOOPBACK_DATA_LENGTH = 0
+
+
+class SetTestDataLoopbackDataLengthOne(TestMixins.SetTestDataMixin,
+                                       OptionalParameterTestFixture):
+  """SET TEST_DATA with loopback data with a length of 1."""
+  LOOPBACK_DATA_LENGTH = 1
+
+
+class SetTestDataLoopbackDataLengthMaxStringLength(
+        TestMixins.SetTestDataMixin,
+        OptionalParameterTestFixture):
+  """SET TEST_DATA with loopback data with the max string length."""
+  LOOPBACK_DATA_LENGTH = RDM_MAX_STRING_LENGTH
+
+
+class SetTestDataLoopbackDataLengthMaxPDL(TestMixins.SetTestDataMixin,
+                                          OptionalParameterTestFixture):
+  """SET TEST_DATA with loopback data with a length of the max PDL."""
+  # TODO(Peter): Make this a constant
+  LOOPBACK_DATA_LENGTH = 231
+
+
 class AllSubDevicesGetListTags(TestMixins.AllSubDevicesGetMixin,
                                OptionalParameterTestFixture):
   """Send a get LIST_TAGS to ALL_SUB_DEVICES."""
