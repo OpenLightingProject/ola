@@ -26,15 +26,18 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::strings::CopyToFixedLengthBuffer;
+using ola::strings::StrNLength;
 using std::string;
 
 class UtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UtilsTest);
   CPPUNIT_TEST(testCopyToFixedLengthBuffer);
+  CPPUNIT_TEST(testStrNLength);
   CPPUNIT_TEST_SUITE_END();
 
  public:
     void testCopyToFixedLengthBuffer();
+    void testStrNLength();
 };
 
 
@@ -63,4 +66,31 @@ void UtilsTest::testCopyToFixedLengthBuffer() {
   CopyToFixedLengthBuffer(oversized_input, buffer, arraysize(buffer));
   OLA_ASSERT_DATA_EQUALS(oversized_output, arraysize(oversized_output),
                          buffer, arraysize(buffer));
+}
+
+/*
+ * Test the StrNLength function
+ */
+void UtilsTest::testStrNLength() {
+  const string short_input("foo");
+  const string input("foobar");
+  const string oversized_input("foobarbaz");
+  const string terminated_input("foo\0bar");
+
+  OLA_ASSERT_EQ((size_t) 3, StrNLength(short_input.c_str(), 6));
+  OLA_ASSERT_EQ((size_t) 6, StrNLength(input.c_str(), 6));
+  OLA_ASSERT_EQ((size_t) 6, StrNLength(oversized_input.c_str(), 6));
+  OLA_ASSERT_EQ((size_t) 3, StrNLength(terminated_input.c_str(), 6));
+
+  OLA_ASSERT_EQ((size_t) 3, StrNLength(short_input, 6));
+  OLA_ASSERT_EQ((size_t) 6, StrNLength(input, 6));
+  OLA_ASSERT_EQ((size_t) 6, StrNLength(oversized_input, 6));
+  OLA_ASSERT_EQ((size_t) 3, StrNLength(terminated_input, 6));
+
+  const char short_input_array[] = {'f', 'o', 'o', 0, 0, 0};
+  OLA_ASSERT_EQ((size_t) 3, StrNLength(short_input_array, 6));
+
+  const char oversized_input_array[] = {'f', 'o', 'o', 'b', 'a', 'r',
+                                        'b', 'a', 'z'};
+  OLA_ASSERT_EQ((size_t) 6, StrNLength(oversized_input_array, 6));
 }

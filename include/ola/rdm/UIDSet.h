@@ -161,7 +161,7 @@ class UIDSet {
     }
 
     /**
-     * @brief Return an Iterator to one-pass-the-last member of the set.
+     * @brief Return an Iterator to one-past-the-last member of the set.
      */
     Iterator End() const {
       return m_uids.end();
@@ -206,8 +206,9 @@ class UIDSet {
       std::ostringstream str;
       std::set<UID>::const_iterator iter;
       for (iter = m_uids.begin(); iter != m_uids.end(); ++iter) {
-        if (iter != m_uids.begin())
+        if (iter != m_uids.begin()) {
           str << ",";
+        }
         str << *iter;
       }
       return str.str();

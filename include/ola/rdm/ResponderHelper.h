@@ -34,6 +34,7 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/ResponderPersonality.h>
 #include <ola/rdm/ResponderSensor.h>
+#include <ola/rdm/ResponderTagSet.h>
 
 #include <string>
 #include <vector>
@@ -51,6 +52,10 @@ class ResponderHelper {
     static bool ExtractUInt8(const RDMRequest *request, uint8_t *output);
     static bool ExtractUInt16(const RDMRequest *request, uint16_t *output);
     static bool ExtractUInt32(const RDMRequest *request, uint32_t *output);
+    static bool ExtractString(
+        const RDMRequest *request,
+        std::string *output,
+        uint8_t max_length = MAX_RDM_STRING_LENGTH);
 
     // Response Generation methods
     // E1.20 Helpers
@@ -210,6 +215,40 @@ class ResponderHelper {
     static RDMResponse *GetIPV4Address(
         const RDMRequest *request,
         const ola::network::IPV4Address &value,
+        uint8_t queued_message_count = 0);
+
+    // E1.37-5 Helpers
+    static RDMResponse *GetTestData(
+        const RDMRequest *request,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *SetTestData(
+        const RDMRequest *request,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *GetListTags(
+        const RDMRequest *request,
+        const TagSet *tag_set,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *SetAddTag(
+        const RDMRequest *request,
+        TagSet *tag_set,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *SetRemoveTag(
+        const RDMRequest *request,
+        TagSet *tag_set,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *GetCheckTag(
+        const RDMRequest *request,
+        const TagSet *tag_set,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *SetClearTags(
+        const RDMRequest *request,
+        TagSet *tag_set,
         uint8_t queued_message_count = 0);
 
     // Generic Helpers.
