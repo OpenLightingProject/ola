@@ -31,7 +31,7 @@
  *
  * This class provides a high level C++ RDM API for PIDS defined in E1.20. It
  * includes error checking for out-of-range arguments. Each RDM method takes a
- * pointer to a string, which will be populated with an english error message
+ * pointer to a string, which will be populated with an English error message
  * if the command fails.
  * @}
  *
