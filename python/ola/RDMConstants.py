@@ -20,6 +20,8 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
+RDM_MAX_PARAM_DATA_LENGTH = 231
+
 RDM_ZERO_FOOTPRINT_DMX_ADDRESS = 0xFFFF
 
 RDM_MANUFACTURER_PID_MIN = 0x8000

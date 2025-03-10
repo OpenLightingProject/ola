@@ -28,6 +28,7 @@ from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
                               RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
                               RDM_MAX_DOMAIN_NAME_LENGTH,
                               RDM_MAX_HOSTNAME_LENGTH,
+                              RDM_MAX_PARAM_DATA_LENGTH,
                               RDM_MAX_SERIAL_NUMBER_LENGTH,
                               RDM_MAX_STRING_LENGTH,
                               RDM_MAX_TEST_DATA_PATTERN_LENGTH,
@@ -600,7 +601,6 @@ class GetDeviceInfoWithData(DeviceInfoTest, ResponderTestFixture):
 class GetMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
   """Check if the responder can handle a packet of the maximum size."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  MAX_PDL = 231
   PROVIDES = ['supports_max_sized_pdl']
 
   def Test(self):
@@ -610,16 +610,16 @@ class GetMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
       self.AckGetResult(),  # Some crazy devices continue to ack
       InvalidResponse(
           advisory='Responder returned an invalid response to a command with '
-                   'PDL of %d' % self.MAX_PDL
+                   'PDL of %d' % RDM_MAX_PARAM_DATA_LENGTH
       ),
       TimeoutResult(
           advisory='Responder timed out to a command with PDL of %d' %
-                   self.MAX_PDL),
+                   RDM_MAX_PARAM_DATA_LENGTH),
     ])
     # Incrementing list, so we can find out which bit we have where in memory
     # if it overflows
     data = b''
-    for i in range(0, self.MAX_PDL):
+    for i in range(0, RDM_MAX_PARAM_DATA_LENGTH):
       data += b'%c' % i
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
@@ -641,13 +641,13 @@ class DetermineMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
       return
 
     self._lower = 1
-    self._upper = GetMaxPacketSize.MAX_PDL
+    self._upper = RDM_MAX_PARAM_DATA_LENGTH
     self.SendPacket()
 
   def SendPacket(self):
     if self._lower + 1 == self._upper:
       self.AddWarning('Max PDL supported is < %d, was %d' %
-                      (GetMaxPacketSize.MAX_PDL, self._lower))
+                      (RDM_MAX_PARAM_DATA_LENGTH, self._lower))
       self.Stop()
       return
 
@@ -8223,8 +8223,7 @@ class GetTestDataPatternLengthMaxStringLength(TestMixins.GetTestDataMixin,
 class GetTestDataPatternLengthMaxPDL(TestMixins.GetTestDataMixin,
                                      OptionalParameterTestFixture):
   """GET TEST_DATA with a pattern length of the max PDL."""
-  # TODO(Peter): Make this a constant
-  PATTERN_LENGTH = 231
+  PATTERN_LENGTH = RDM_MAX_PARAM_DATA_LENGTH
 
 
 class GetTestDataPatternLengthMaxPatternLength(TestMixins.GetTestDataMixin,
@@ -8280,8 +8279,7 @@ class SetTestDataLoopbackDataLengthMaxStringLength(
 class SetTestDataLoopbackDataLengthMaxPDL(TestMixins.SetTestDataMixin,
                                           OptionalParameterTestFixture):
   """SET TEST_DATA with loopback data with a length of the max PDL."""
-  # TODO(Peter): Make this a constant
-  LOOPBACK_DATA_LENGTH = 231
+  LOOPBACK_DATA_LENGTH = RDM_MAX_PARAM_DATA_LENGTH
 
 
 class AllSubDevicesGetListTags(TestMixins.AllSubDevicesGetMixin,
