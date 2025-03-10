@@ -826,6 +826,11 @@ class GetSupportedParameters(ResponderTestFixture):
       unsupported_pids = []
       for pid_name in pid_names:
         pid = self.LookupPid(pid_name)
+
+        if pid is None:
+          self.SetBroken('Failed to lookup info for PID %s' % pid_name)
+          return
+
         if pid.value in supported_parameters:
           supported_pids.append(pid.name)
         else:
