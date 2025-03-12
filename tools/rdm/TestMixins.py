@@ -16,6 +16,15 @@
 # Copyright (C) 2010 Simon Newton
 
 import struct
+import sys
+
+if sys.version_info >= (3, 0):
+  try:
+    from urllib.parse import urlparse
+  except ImportError:
+    from urlparse import urlparse
+else:
+  from urlparse import urlparse
 
 from ola.DMXConstants import DMX_UNIVERSE_SIZE
 from ola.DUBDecoder import DecodeResponse
@@ -155,6 +164,108 @@ class GetStringMixin(GetMixin):
           '%s field in %s was longer than expected, was %d, expected %d' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
            len(string_field), self.MAX_LENGTH))
+
+
+class GetURLMixin(GetMixin):
+  """GET Mixin for an optional URL PID. Verify EXPECTED_FIELDS are in the
+    response.
+
+    This mixin also sets a property if PROVIDES is defined.  The target class
+    needs to defined EXPECTED_FIELDS and optionally PROVIDES.
+  """
+  MIN_LENGTH = 2
+  # TODO(Peter): Make this a constant
+  MAX_LENGTH = 231
+  ALLOWED_SCHEMAS = ['http', 'https']
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    url_field = fields[self.EXPECTED_FIELDS[0]]
+
+    if self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], url_field)
+
+    if ContainsUnprintable(url_field):
+      self.AddAdvisory(
+          '%s field in %s contains unprintable characters, was %s' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+           StringEscape(url_field)))
+
+    if self.MIN_LENGTH and len(url_field) < self.MIN_LENGTH:
+      self.SetFailed(
+          '%s field in %s was shorter than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+           len(url_field), self.MIN_LENGTH))
+
+    if self.MAX_LENGTH and len(url_field) > self.MAX_LENGTH:
+      self.AddAdvisory(
+          '%s field in %s was %d, will ACK Overflow after %d, could you make '
+          'a shorter URL?' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+           len(url_field), self.MAX_LENGTH))
+
+    try:
+      url_result = urlparse(url_field)
+      self.LogDebug(' Parsed URL: %s' % str(url_result))
+      if not url_result:
+        self.SetFailed(
+            '%s field in %s didn\'t parse as a URL, was %s' %
+            (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, url_field))
+      else:
+        # Advisory if not HTTP(S) and maybe FTP for firmware...
+        if (self.ALLOWED_SCHEMAS and
+            (url_result.scheme not in self.ALLOWED_SCHEMAS)):
+          self.AddAdvisory(
+              '%s field in %s had schema %s, expected one of %s' %
+              (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+               url_result.scheme, ', '.join(self.ALLOWED_SCHEMAS)))
+
+        # TODO(Peter): Possibly check for ValueError locally here too...
+        if url_result.netloc is None or not url_result.netloc:
+          self.AddAdvisory(
+              '%s field in %s had no netloc' %
+              (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name))
+        # else:
+          # TODO(Peter): Check for a dot in the netloc
+          # TODO(Peter): Check the netloc domain isn't a prohibited internal
+          # only one
+
+        # TODO(Peter): Optionally expect at least one other section
+        # (product/firmware)
+    except ValueError as err:
+      self.SetFailed(
+          '%s field in %s didn\'t parse as a URL due to %s, was %s' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, str(err),
+           url_field))
+
+
+class GetTestDataMixin(ResponderTestFixture):
+  """GET TEST_DATA PID with a given pattern length.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
+  """
+  PID = 'TEST_DATA'
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PATTERN_LENGTH = 1
+  ALLOWED_NACKS = []
+  EXPECTED_FIELDS = ['pattern_data']
+
+  def Test(self):
+    expected_value = []
+    for i in range(0, self.PATTERN_LENGTH):
+      expected_value.append({'data': (i % (255 + 1))})
+    results = [
+      self.AckGetResult(
+          field_names=self.EXPECTED_FIELDS,
+          field_values={self.EXPECTED_FIELDS[0]: expected_value})
+    ]
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackGetResult(nack))
+    self.AddIfGetSupported(results)
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.PATTERN_LENGTH])
 
 
 class GetRequiredMixin(ResponderTestFixture):
@@ -898,7 +1009,7 @@ class SetDMXFailModeMixin(ResponderTestFixture):
       self.SetBroken('Failed to restore DMX_FAIL_MODE settings')
       return
 
-    for key in ('scene_number', 'hold_time', 'loss_of_signal_delay', 'level'):
+    for key in ('scene_number', 'loss_of_signal_delay', 'hold_time', 'level'):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_FAIL_MODE settings, missing %s' % key)
@@ -928,7 +1039,7 @@ class SetDMXStartupModeMixin(ResponderTestFixture):
       self.SetBroken('Failed to restore DMX_STARTUP_MODE settings')
       return
 
-    for key in ('scene_number', 'hold_time', 'startup_delay', 'level'):
+    for key in ('scene_number', 'startup_delay', 'hold_time', 'level'):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_STARTUP_MODE settings, missing %s' % key)
@@ -1025,16 +1136,27 @@ class SetMinimumLevelMixin(ResponderTestFixture):
 
 
 class GetZeroMixin(ResponderTestFixture):
-  """Send a get to index 0, expect NR_DATA_OUT_OF_RANGE"""
+  """Send a get to index 0, normally expect NR_DATA_OUT_OF_RANGE
+
+    If OVERRIDE_NACKS is non-empty, this overrides NR_DATA_OUT_OF_RANGE and adds
+    a custom NackGetResult to the list of allowed results for each entry.
+  """
   CATEGORY = TestCategory.ERROR_CONDITIONS
   DATA = None
+  OVERRIDE_NACKS = []
 
   def Test(self):
     if self.DATA is None:
       self.SetBroken('No DATA given for %s' % self.__class__.__name__)
       return
 
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    results = []
+    if self.OVERRIDE_NACKS:
+      for nack in self.OVERRIDE_NACKS:
+        results.append(self.NackGetResult(nack))
+    else:
+      results.append(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.AddIfGetSupported(results)
     self.SendRawGet(ROOT_DEVICE, self.pid, self.DATA)
 
 

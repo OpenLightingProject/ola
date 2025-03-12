@@ -175,6 +175,16 @@ class UID {
     bool IsBroadcast() const { return m_uid.device_id == ALL_DEVICES; }
 
     /**
+     * @brief Check if this UID is a vendorcast UID.
+     * @returns true if the manufacturer id is not 0xffff and the device id is
+     * 0xffffffff.
+     */
+    bool IsVendorcast() const {
+      return ((m_uid.esta_id != ALL_MANUFACTURERS) &&
+              (m_uid.device_id == ALL_DEVICES));
+    }
+
+    /**
      * @brief Check if this UID matches against another.
      * @param uid the UID to check against
      * @returns true if the UIDs are equal or if this UID is a broadcast UID
@@ -260,7 +270,7 @@ class UID {
 
     /**
      * @brief Returns a UID that matches all devices for a particular
-     * manufacturer.
+     *     manufacturer.
      * @param esta_id the manufacturer id of the devices to match.
      * @returns a UID(X, 0xffffffff).
      */
@@ -276,6 +286,44 @@ class UID {
      */
     static UID VendorcastAddress(UID uid) {
       return UID(uid.ManufacturerId(), ALL_DEVICES);
+    }
+
+    /**
+     * @brief Returns a UID that matches all RPT controllers (fffc:ffffffff).
+     * @returns a UID(0xfffc, 0xffffffff).
+     */
+    static UID RPTAllControllers() {
+      return UID(RPT_ALL_CONTROLLERS_MANUFACTURER, ALL_DEVICES);
+    }
+
+    /**
+     * @brief Returns a UID that matches all RPT devices (fffd:ffffffff).
+     * @returns a UID(0xfffd, 0xffffffff).
+     */
+    static UID RPTAllDevices() {
+      return UID(RPT_ALL_DEVICES_MANUFACTURER, ALL_DEVICES);
+    }
+
+    /**
+     * @brief Returns a UID that matches all RPT devices for a particular
+     *     manufacturer.
+     * @param esta_id the manufacturer id of the devices to match.
+     * @returns a UID(0xfffd, 0xXXXXffff).
+     */
+    static UID RPTVendorcastAddressDevices(uint16_t esta_id) {
+      return UID(RPT_ALL_DEVICES_MANUFACTURER,
+                 RPTVendorcastDevicesDeviceId(esta_id));
+    }
+
+    /**
+     * @brief Returns a UID that matches all RPT devices for a particular
+     *     manufacturer.
+     * @param uid a UID whose manufacturer id you want to match.
+     * @returns a UID(0xfffd, 0xXXXXffff).
+     */
+    static UID RPTVendorcastAddressDevices(UID uid) {
+      return UID(RPT_ALL_DEVICES_MANUFACTURER,
+                 RPTVendorcastDevicesDeviceId(uid.ManufacturerId()));
     }
 
     /**
@@ -300,8 +348,20 @@ class UID {
 
     /**
      * @brief The value for the 'all devices' id.
+     *
+     * This is also the value for RPT all controllers and all devices.
      */
     static const uint32_t ALL_DEVICES = 0xffffffff;
+
+    /**
+     * @brief The value for the RPT 'all controllers' manufacturer.
+     */
+    static const uint16_t RPT_ALL_CONTROLLERS_MANUFACTURER = 0xfffc;
+
+    /**
+     * @brief The value for the RPT 'all devices' manufacturer.
+     */
+    static const uint16_t RPT_ALL_DEVICES_MANUFACTURER = 0xfffd;
 
  private:
     struct rdm_uid {
@@ -323,6 +383,10 @@ class UID {
         return 0;
       }
       return a < b ? -1 : 1;
+    }
+
+    static uint32_t RPTVendorcastDevicesDeviceId(uint16_t esta_id) {
+      return ((static_cast<uint32_t>(esta_id) << 16) | 0xffff);
     }
 };
 }  // namespace rdm

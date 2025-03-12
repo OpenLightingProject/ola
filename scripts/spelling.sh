@@ -64,16 +64,20 @@ SPELLINGBLACKLIST=$(cat <<-BLACKLIST
       -wholename "./configure" -or \
       -wholename "./java/Makefile" -or \
       -wholename "./java/Makefile.in" -or \
+      -wholename "./javascript/new-src/package-lock.json" -or \
       -wholename "./libtool" -or \
       -wholename "./olad/www/mobile.js" -or \
       -wholename "./olad/www/new/js/app.min.js" -or \
       -wholename "./olad/www/new/js/app.min.js.map" -or \
       -wholename "./olad/www/new/libs/angular/js/angular.min.js" -or \
+      -wholename "./olad/www/new/libs/bootstrap/js/bootstrap.min.js" -or \
+      -wholename "./olad/www/new/libs/jquery/js/jquery.min.js" -or \
       -wholename "./olad/www/new/libs/marked/js/marked.min.js" -or \
       -wholename "./olad/www/ola.js" -or \
       -wholename "./plugins/artnet/messages/ArtNetConfigMessages.pb.*" -or \
       -wholename "./tools/ola_trigger/config.tab.*" -or \
-      -wholename "./tools/ola_trigger/lex.yy.cpp"
+      -wholename "./tools/ola_trigger/lex.yy.cpp" -or \
+      -wholename "./tools/rdm/static/jquery-1.7.2.min.js"
 BLACKLIST
 )
 

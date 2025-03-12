@@ -33,11 +33,18 @@ using std::vector;
 using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
+using ola::messaging::Int16FieldDescriptor;
+using ola::messaging::Int32FieldDescriptor;
+using ola::messaging::Int64FieldDescriptor;
+using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::IPV6FieldDescriptor;
+using ola::messaging::MACFieldDescriptor;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
+using ola::messaging::UInt64FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
 
 class DescriptorTest: public CppUnit::TestFixture {
@@ -76,6 +83,20 @@ void DescriptorTest::testFieldDescriptors() {
   OLA_ASSERT_TRUE(ipv4_descriptor.LimitedSize());
   OLA_ASSERT_EQ(4u, ipv4_descriptor.MaxSize());
 
+  // IPv6 address
+  IPV6FieldDescriptor ipv6_descriptor("ipv6");
+  OLA_ASSERT_EQ(string("ipv6"), ipv6_descriptor.Name());
+  OLA_ASSERT_TRUE(ipv6_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(ipv6_descriptor.LimitedSize());
+  OLA_ASSERT_EQ(16u, ipv6_descriptor.MaxSize());
+
+  // MAC address
+  MACFieldDescriptor mac_descriptor("mac");
+  OLA_ASSERT_EQ(string("mac"), mac_descriptor.Name());
+  OLA_ASSERT_TRUE(mac_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(mac_descriptor.LimitedSize());
+  OLA_ASSERT_EQ(6u, mac_descriptor.MaxSize());
+
   // UID
   UIDFieldDescriptor uid_descriptor("uid");
   OLA_ASSERT_EQ(string("uid"), uid_descriptor.Name());
@@ -97,7 +118,7 @@ void DescriptorTest::testFieldDescriptors() {
   OLA_ASSERT_EQ(1u, uint8_descriptor.MaxSize());
   OLA_ASSERT_FALSE(uint8_descriptor.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(10),
-                       uint8_descriptor.Multiplier());
+                uint8_descriptor.Multiplier());
   OLA_ASSERT_TRUE(uint8_descriptor.FixedSize());
   OLA_ASSERT_TRUE(uint8_descriptor.LimitedSize());
 
@@ -106,7 +127,7 @@ void DescriptorTest::testFieldDescriptors() {
   OLA_ASSERT_EQ(1u, uint8_descriptor2.MaxSize());
   OLA_ASSERT_TRUE(uint8_descriptor2.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(-1),
-                       uint8_descriptor2.Multiplier());
+                uint8_descriptor2.Multiplier());
   OLA_ASSERT_TRUE(uint8_descriptor2.FixedSize());
   OLA_ASSERT_TRUE(uint8_descriptor2.LimitedSize());
 
@@ -116,7 +137,7 @@ void DescriptorTest::testFieldDescriptors() {
   OLA_ASSERT_EQ(2u, uint16_descriptor.MaxSize());
   OLA_ASSERT_FALSE(uint16_descriptor.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(10),
-                       uint16_descriptor.Multiplier());
+                uint16_descriptor.Multiplier());
   OLA_ASSERT_TRUE(uint16_descriptor.FixedSize());
   OLA_ASSERT_TRUE(uint16_descriptor.LimitedSize());
 
@@ -125,7 +146,7 @@ void DescriptorTest::testFieldDescriptors() {
   OLA_ASSERT_EQ(2u, uint16_descriptor2.MaxSize());
   OLA_ASSERT_TRUE(uint16_descriptor2.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(-1),
-                       uint16_descriptor2.Multiplier());
+                uint16_descriptor2.Multiplier());
   OLA_ASSERT_TRUE(uint16_descriptor2.FixedSize());
   OLA_ASSERT_TRUE(uint16_descriptor2.LimitedSize());
 
@@ -135,7 +156,7 @@ void DescriptorTest::testFieldDescriptors() {
   OLA_ASSERT_EQ(4u, uint32_descriptor.MaxSize());
   OLA_ASSERT_FALSE(uint32_descriptor.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(10),
-                       uint32_descriptor.Multiplier());
+                uint32_descriptor.Multiplier());
   OLA_ASSERT_TRUE(uint32_descriptor.FixedSize());
   OLA_ASSERT_TRUE(uint32_descriptor.LimitedSize());
 
@@ -144,9 +165,28 @@ void DescriptorTest::testFieldDescriptors() {
   OLA_ASSERT_EQ(4u, uint32_descriptor2.MaxSize());
   OLA_ASSERT_TRUE(uint32_descriptor2.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(-1),
-                       uint32_descriptor2.Multiplier());
+                uint32_descriptor2.Multiplier());
   OLA_ASSERT_TRUE(uint32_descriptor2.FixedSize());
   OLA_ASSERT_TRUE(uint32_descriptor2.LimitedSize());
+
+  // uint64_t
+  UInt64FieldDescriptor uint64_descriptor("uint64", false, 10);
+  OLA_ASSERT_EQ(string("uint64"), uint64_descriptor.Name());
+  OLA_ASSERT_EQ(8u, uint64_descriptor.MaxSize());
+  OLA_ASSERT_FALSE(uint64_descriptor.IsLittleEndian());
+  OLA_ASSERT_EQ(static_cast<int8_t>(10),
+                uint64_descriptor.Multiplier());
+  OLA_ASSERT_TRUE(uint64_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(uint64_descriptor.LimitedSize());
+
+  UInt64FieldDescriptor uint64_descriptor2("uint64", true, -1);
+  OLA_ASSERT_EQ(string("uint64"), uint64_descriptor2.Name());
+  OLA_ASSERT_EQ(8u, uint64_descriptor2.MaxSize());
+  OLA_ASSERT_TRUE(uint64_descriptor2.IsLittleEndian());
+  OLA_ASSERT_EQ(static_cast<int8_t>(-1),
+                uint64_descriptor2.Multiplier());
+  OLA_ASSERT_TRUE(uint64_descriptor2.FixedSize());
+  OLA_ASSERT_TRUE(uint64_descriptor2.LimitedSize());
 }
 
 

@@ -47,6 +47,11 @@ uint16_t NetworkToHost(uint16_t value);
 uint32_t NetworkToHost(uint32_t value);
 
 /**
+ * @brief 64-bit unsigned network to host conversion.
+ */
+uint64_t NetworkToHost(uint64_t value);
+
+/**
  * @brief 8-bit signed network to host conversion.
  */
 inline int8_t NetworkToHost(int8_t value) { return value; }
@@ -60,6 +65,11 @@ int16_t NetworkToHost(int16_t value);
  * @brief 32-bit signed network to host conversion.
  */
 int32_t NetworkToHost(int32_t value);
+
+/**
+ * @brief 64-bit signed network to host conversion.
+ */
+int64_t NetworkToHost(int64_t value);
 
 /**
  * @brief 8-bit unsigned host to network conversion.
@@ -77,6 +87,11 @@ uint16_t HostToNetwork(uint16_t value);
 uint32_t HostToNetwork(uint32_t value);
 
 /**
+ * @brief 64-bit unsigned host to network conversion.
+ */
+uint64_t HostToNetwork(uint64_t value);
+
+/**
  * @brief 8-bit signed host to network conversion.
  */
 inline int8_t HostToNetwork(int8_t value) { return value; }
@@ -90,6 +105,11 @@ int16_t HostToNetwork(int16_t value);
  * @brief 32-bit signed host to network conversion.
  */
 int32_t HostToNetwork(int32_t value);
+
+/**
+ * @brief 64-bit signed host to network conversion.
+ */
+int64_t HostToNetwork(int64_t value);
 
 /**
  * @brief 8-bit unsigned host to little endian conversion.
@@ -107,6 +127,11 @@ uint16_t HostToLittleEndian(uint16_t value);
 uint32_t HostToLittleEndian(uint32_t value);
 
 /**
+ * @brief 64-bit unsigned host to little endian conversion.
+ */
+uint64_t HostToLittleEndian(uint64_t value);
+
+/**
  * @brief 8-bit signed host to little endian conversion.
  */
 inline int8_t HostToLittleEndian(int8_t value) { return value; }
@@ -120,6 +145,11 @@ int16_t HostToLittleEndian(int16_t value);
  * @brief 32-bit signed host to little endian conversion.
  */
 int32_t HostToLittleEndian(int32_t value);
+
+/**
+ * @brief 64-bit signed host to little endian conversion.
+ */
+int64_t HostToLittleEndian(int64_t value);
 
 /**
  * @brief 8-bit unsigned little endian to host conversion.
@@ -137,6 +167,11 @@ uint16_t LittleEndianToHost(uint16_t value);
 uint32_t LittleEndianToHost(uint32_t value);
 
 /**
+ * @brief 64-bit unsigned little endian to host conversion.
+ */
+uint64_t LittleEndianToHost(uint64_t value);
+
+/**
  * @brief 8-bit signed little endian to host conversion.
  */
 inline int8_t LittleEndianToHost(int8_t value) { return value; }
@@ -150,6 +185,11 @@ int16_t LittleEndianToHost(int16_t value);
  * @brief 32-bit signed little endian to host conversion.
  */
 int32_t LittleEndianToHost(int32_t value);
+
+/**
+ * @brief 64-bit signed little endian to host conversion.
+ */
+int64_t LittleEndianToHost(int64_t value);
 
 /**
  * Convert a FQDN to a hostname

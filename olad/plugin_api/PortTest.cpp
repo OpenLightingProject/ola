@@ -91,7 +91,7 @@ void PortTest::testInputPortPriorities() {
   MockDevice device(NULL, "foo");
   TimeStamp time_stamp;
   MockSelectServer ss(&time_stamp);
-  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL, NULL);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL, NULL, NULL, NULL);
   // This port operates in static priority mode
   TestMockInputPort input_port(&device, 1, &plugin_adaptor);
   port_manager.PatchPort(&input_port, universe_id);

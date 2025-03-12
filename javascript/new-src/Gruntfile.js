@@ -104,8 +104,7 @@ module.exports = function(grunt) {
     jscs: {
       src: targets.linting,
       options: {
-        config: true,
-        verbose: true
+        config: true
       }
     },
     stylelint: {

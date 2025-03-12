@@ -61,6 +61,7 @@ class DMXCProjectsNodleU1Factory :
   static const uint16_t VENDOR_ID_DE;
   static const uint16_t VENDOR_ID_FX5;
   static const uint16_t PRODUCT_ID_DMXC_P_NODLE_U1;
+  static const uint16_t PRODUCT_ID_DMXC_P_NODLE_R4S;
   static const uint16_t PRODUCT_ID_DE_USB_DMX;
   static const uint16_t PRODUCT_ID_FX5_DMX;
 

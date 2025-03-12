@@ -37,13 +37,15 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
                              ExportMap *export_map,
                              PreferencesFactory *preferences_factory,
                              PortBrokerInterface *port_broker,
-                             const std::string *instance_name):
+                             const std::string *instance_name,
+                             const ola::rdm::UID *default_uid):
   m_device_manager(device_manager),
   m_ss(select_server),
   m_export_map(export_map),
   m_preferences_factory(preferences_factory),
   m_port_broker(port_broker),
-  m_instance_name(instance_name) {
+  m_instance_name(instance_name),
+  m_default_uid(default_uid) {
 }
 
 bool PluginAdaptor::AddReadDescriptor(
@@ -134,6 +136,14 @@ const std::string PluginAdaptor::InstanceName() const {
     return *m_instance_name;
   } else {
     return "";
+  }
+}
+
+const ola::rdm::UID PluginAdaptor::DefaultUID() const {
+  if (m_default_uid) {
+    return *m_default_uid;
+  } else {
+    return ola::rdm::UID(0, 0);
   }
 }
 }  // namespace ola

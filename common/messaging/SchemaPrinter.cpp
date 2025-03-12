@@ -43,6 +43,12 @@ void SchemaPrinter::Visit(const IPV4FieldDescriptor *descriptor) {
 }
 
 
+void SchemaPrinter::Visit(const IPV6FieldDescriptor *descriptor) {
+  m_str << string(m_indent, ' ') << descriptor->Name() << ": IPv6 address"
+        << endl;
+}
+
+
 void SchemaPrinter::Visit(const MACFieldDescriptor *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": MAC" << endl;
 }
@@ -83,6 +89,14 @@ void SchemaPrinter::Visit(const UInt32FieldDescriptor *descriptor) {
 }
 
 
+void SchemaPrinter::Visit(const UInt64FieldDescriptor *descriptor) {
+  AppendHeading(descriptor->Name(), "uint64");
+  MaybeAppendIntervals(descriptor->Intervals());
+  MaybeAppendLabels(descriptor->Labels());
+  m_str << endl;
+}
+
+
 void SchemaPrinter::Visit(const Int8FieldDescriptor *descriptor) {
   AppendHeading(descriptor->Name(), "int8");
   MaybeAppendIntervals(descriptor->Intervals());
@@ -105,6 +119,15 @@ void SchemaPrinter::Visit(const Int32FieldDescriptor *descriptor) {
   MaybeAppendLabels(descriptor->Labels());
   m_str << endl;
 }
+
+
+void SchemaPrinter::Visit(const Int64FieldDescriptor *descriptor) {
+  AppendHeading(descriptor->Name(), "int64");
+  MaybeAppendIntervals(descriptor->Intervals());
+  MaybeAppendLabels(descriptor->Labels());
+  m_str << endl;
+}
+
 
 void SchemaPrinter::Visit(const FieldDescriptorGroup *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << " {" << endl;
