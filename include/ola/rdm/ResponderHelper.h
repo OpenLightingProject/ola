@@ -32,6 +32,7 @@
 #include <ola/network/Interface.h>
 #include <ola/rdm/NetworkManagerInterface.h>
 #include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/ResponderNSCStatus.h>
 #include <ola/rdm/ResponderPersonality.h>
 #include <ola/rdm/ResponderSensor.h>
 #include <ola/rdm/ResponderTagSet.h>
@@ -224,6 +225,16 @@ class ResponderHelper {
 
     static RDMResponse *SetTestData(
         const RDMRequest *request,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *GetCommsStatusNSC(
+        const RDMRequest *request,
+        const NSCStatus *status,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *SetCommsStatusNSC(
+        const RDMRequest *request,
+        NSCStatus *status,
         uint8_t queued_message_count = 0);
 
     static RDMResponse *GetListTags(
