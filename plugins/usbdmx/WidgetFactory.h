@@ -123,6 +123,15 @@ class WidgetObserver {
   virtual bool NewWidget(class ScanlimeFadecandy *widget) = 0;
 
   /**
+   * @brief Called when a new SIUDI device is added.
+   * @param widget the new Widget, ownership is not transferred but the object
+   *   may be used until the corresponding WidgetRemoved() call is made.
+   * @returns true if the widget has been claimed, false if the widget was
+   *   ignored.
+   */
+  virtual bool NewWidget(class Siudi *widget) = 0;
+
+  /**
    * @brief Called when a new Sunlite is added.
    * @param widget the new Widget, ownership is not transferred but the object
    *   may be used until the corresponding WidgetRemoved() call is made.
