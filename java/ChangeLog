@@ -1,3 +1,9 @@
+02/10/2024 Moritz Vieli <moritz.vieli@gmail.com>
+ * v0.2.0
+  - Add OlaClient.reloadPlugins()
+  - Add OlaClient.getPluginState()
+  - Add OlaClient.setPluginState()
+
 04/22/2017 Erez Makavy <hepi.yellow@gmail.com>
  * v0.0.2 
   - Add OlaClient.getUniverseList()
