@@ -27,18 +27,24 @@
 using ola::SequenceNumber;
 using ola::utils::SplitUInt16;
 using ola::utils::JoinUInt8;
+using ola::utils::TruncateUInt16High;
+using ola::utils::TruncateUInt16Low;
 
 class UtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UtilsTest);
   CPPUNIT_TEST(testSequenceNumber);
   CPPUNIT_TEST(testSplitUInt16);
   CPPUNIT_TEST(testJoinUInt8);
+  CPPUNIT_TEST(testTruncateUInt16High);
+  CPPUNIT_TEST(testTruncateUInt16Low);
   CPPUNIT_TEST_SUITE_END();
 
  public:
     void testSequenceNumber();
     void testSplitUInt16();
     void testJoinUInt8();
+    void testTruncateUInt16High();
+    void testTruncateUInt16Low();
 };
 
 
@@ -126,4 +132,38 @@ void UtilsTest::testJoinUInt8() {
   high = 0x00;
   low = 0x01;
   OLA_ASSERT_EQ(JoinUInt8(high, low), static_cast<uint16_t>(0x0001));
+}
+
+/*
+ * Test the TruncateUInt16High function
+ */
+void UtilsTest::testTruncateUInt16High() {
+  uint16_t input = 0xabcd;
+  OLA_ASSERT_EQ(TruncateUInt16High(input), static_cast<uint8_t>(0xab));
+
+  input = 0x0000;
+  OLA_ASSERT_EQ(TruncateUInt16High(input), static_cast<uint8_t>(0x00));
+
+  input = 0xffff;
+  OLA_ASSERT_EQ(TruncateUInt16High(input), static_cast<uint8_t>(0xff));
+
+  input = 0x0001;
+  OLA_ASSERT_EQ(TruncateUInt16High(input), static_cast<uint8_t>(0x00));
+}
+
+/*
+ * Test the TruncateUInt16Low function
+ */
+void UtilsTest::testTruncateUInt16Low() {
+  uint16_t input = 0xabcd;
+  OLA_ASSERT_EQ(TruncateUInt16Low(input), static_cast<uint8_t>(0xcd));
+
+  input = 0x0000;
+  OLA_ASSERT_EQ(TruncateUInt16Low(input), static_cast<uint8_t>(0x00));
+
+  input = 0xffff;
+  OLA_ASSERT_EQ(TruncateUInt16Low(input), static_cast<uint8_t>(0xff));
+
+  input = 0x0001;
+  OLA_ASSERT_EQ(TruncateUInt16Low(input), static_cast<uint8_t>(0x01));
 }
