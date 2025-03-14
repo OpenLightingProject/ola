@@ -47,6 +47,7 @@ test_programs += \
     common/io/MemoryBlockTester \
     common/io/SelectServerTester \
     common/io/StreamTester \
+    common/io/SerialLockTester \
     common/io/TimeoutManagerTester
 
 common_io_IOQueueTester_SOURCES = common/io/IOQueueTest.cpp
@@ -78,3 +79,7 @@ common_io_StreamTester_SOURCES = common/io/InputStreamTest.cpp \
                                  common/io/OutputStreamTest.cpp
 common_io_StreamTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 common_io_StreamTester_LDADD = $(COMMON_TESTING_LIBS)
+
+common_io_SerialLockTester_SOURCES = common/io/SerialLockTester.cpp
+common_io_SerialLockTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+common_io_SerialLockTester_LDADD = $(COMMON_TESTING_LIBS)
