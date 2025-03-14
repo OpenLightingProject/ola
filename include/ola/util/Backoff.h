@@ -136,7 +136,7 @@ class BackoffGenerator {
     }
 
  private:
-    std::auto_ptr<const BackOffPolicy> m_policy;
+    std::unique_ptr<const BackOffPolicy> m_policy;
     unsigned int m_failures;
 };
 }  // namespace ola

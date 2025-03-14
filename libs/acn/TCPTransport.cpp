@@ -316,7 +316,7 @@ void IncomingStreamTransport::EnterWaitingForPDU() {
  */
 IncomingTCPTransport::IncomingTCPTransport(BaseInflator *inflator,
                                            ola::network::TCPSocket *socket)
-    : m_transport(NULL) {
+    : m_transport() {
   ola::network::GenericSocketAddress address = socket->GetPeerAddress();
   if (address.Family() == AF_INET) {
     ola::network::IPV4SocketAddress v4_addr = address.V4Addr();

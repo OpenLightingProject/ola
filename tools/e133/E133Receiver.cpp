@@ -40,7 +40,7 @@ using ola::NewCallback;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::rdm::RDMResponse;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 

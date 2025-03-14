@@ -39,7 +39,7 @@ using ola::messaging::Message;
 using ola::rdm::PidDescriptor;
 using ola::rdm::PidStore;
 using ola::rdm::StringMessageBuilder;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -68,7 +68,7 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
     }
 
  private:
-    std::auto_ptr<const ola::rdm::RootPidStore> m_store;
+    std::unique_ptr<const ola::rdm::RootPidStore> m_store;
     const ola::rdm::PidStore *m_esta_store;
     ola::rdm::StringMessageBuilder m_builder;
     ola::messaging::GenericMessagePrinter m_printer;
@@ -97,7 +97,7 @@ void RDMMessageInterationTest::testProxiedDevices() {
   inputs.push_back("21324");  // manufacturer ID
   inputs.push_back("1");  // device id
 
-  auto_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
+  unique_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
   OLA_ASSERT_TRUE(message.get());
 
   unsigned int data_length;
@@ -106,7 +106,7 @@ void RDMMessageInterationTest::testProxiedDevices() {
   OLA_ASSERT_TRUE(data);
   OLA_ASSERT_EQ(18u, data_length);
 
-  auto_ptr<const Message> inflated_message(
+  unique_ptr<const Message> inflated_message(
       m_deserializer.InflateMessage(descriptor, data, data_length));
   OLA_ASSERT_TRUE(inflated_message.get());
 
@@ -145,7 +145,7 @@ void RDMMessageInterationTest::testDeviceInfoRequest() {
   inputs.push_back("0");  // sub device count
   inputs.push_back("6");  // sensor count
 
-  auto_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
+  unique_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
   OLA_ASSERT_TRUE(message.get());
 
   unsigned int data_length;
@@ -154,7 +154,7 @@ void RDMMessageInterationTest::testDeviceInfoRequest() {
   OLA_ASSERT_TRUE(data);
   OLA_ASSERT_EQ(19u, data_length);
 
-  auto_ptr<const Message> inflated_message(
+  unique_ptr<const Message> inflated_message(
       m_deserializer.InflateMessage(descriptor, data, data_length));
   OLA_ASSERT_TRUE(inflated_message.get());
 
@@ -184,7 +184,7 @@ void RDMMessageInterationTest::testDeviceModelDescription() {
   vector<string> inputs;
   inputs.push_back("wigglelight 2000");  // description
 
-  auto_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
+  unique_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
   OLA_ASSERT_TRUE(message.get());
 
   unsigned int data_length;
@@ -193,7 +193,7 @@ void RDMMessageInterationTest::testDeviceModelDescription() {
   OLA_ASSERT_TRUE(data);
   OLA_ASSERT_EQ(16u, data_length);
 
-  auto_ptr<const Message> inflated_message(
+  unique_ptr<const Message> inflated_message(
       m_deserializer.InflateMessage(descriptor, data, data_length));
   OLA_ASSERT_TRUE(inflated_message.get());
 
@@ -229,7 +229,7 @@ void RDMMessageInterationTest::testParameterDescription() {
   inputs.push_back("0");  // default value
   inputs.push_back("room temp");  // description
 
-  auto_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
+  unique_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
   OLA_ASSERT_TRUE(message.get());
 
   unsigned int data_length;
@@ -238,7 +238,7 @@ void RDMMessageInterationTest::testParameterDescription() {
   OLA_ASSERT_TRUE(data);
   OLA_ASSERT_EQ(29u, data_length);
 
-  auto_ptr<const Message> inflated_message(
+  unique_ptr<const Message> inflated_message(
       m_deserializer.InflateMessage(descriptor, data, data_length));
   OLA_ASSERT_TRUE(inflated_message.get());
 
