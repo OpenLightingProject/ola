@@ -8483,19 +8483,48 @@ class SetCommsStatusNSC(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid)
 
   def VerifySet(self):
-    # TODO(Peter): Deal with disabled values and the fact there may have been a
-    # NSC packet in between set and get
-    self.AddIfGetSupported(
-        self.AckGetResult(field_values={
-            'supported_fields': self.Property('nsc_supported_fields'),
-            # 'additive_checksum_of_most_recent_nsc_packet': 0,
-            # 'nsc_packet_count': 0,
-            # 'nsc_most_recent_slot_count': 0,
-            # 'nsc_minimum_slot_count': 0,
-            # 'nsc_maximum_slot_count': 0,
-            # 'nsc_error_count': 0
-        }))
+    expected_fields = {
+        'supported_fields': self.Property('nsc_supported_fields'),
+    }
+
+    self.AddExpectedField(expected_fields,
+                          'additive_checksum_of_most_recent_nsc_packet',
+                          RDM_NSC_STATUS_ADDITIVE_CHECKSUM_SUPPORTED_VALUE,
+                          RDM_NSC_STATUS_ADDITIVE_CHECKSUM_UNSUPPORTED)
+    self.AddExpectedField(expected_fields,
+                          'nsc_packet_count',
+                          RDM_NSC_STATUS_PACKET_COUNT_SUPPORTED_VALUE,
+                          RDM_NSC_STATUS_PACKET_COUNT_UNSUPPORTED)
+    self.AddExpectedField(expected_fields,
+                          'nsc_most_recent_slot_count',
+                          RDM_NSC_STATUS_MOST_RECENT_SLOT_COUNT_SUPPORTED_VALUE,
+                          RDM_NSC_STATUS_MOST_RECENT_SLOT_COUNT_UNSUPPORTED)
+    self.AddExpectedField(expected_fields,
+                          'nsc_minimum_slot_count',
+                          RDM_NSC_STATUS_MIN_SLOT_COUNT_SUPPORTED_VALUE,
+                          RDM_NSC_STATUS_MIN_SLOT_COUNT_UNSUPPORTED)
+    self.AddExpectedField(expected_fields,
+                          'nsc_maximum_slot_count',
+                          RDM_NSC_STATUS_MAX_SLOT_COUNT_SUPPORTED_VALUE,
+                          RDM_NSC_STATUS_MAX_SLOT_COUNT_UNSUPPORTED)
+    self.AddExpectedField(expected_fields,
+                          'nsc_error_count',
+                          RDM_NSC_STATUS_PACKET_ERROR_COUNT_SUPPORTED_VALUE,
+                          RDM_NSC_STATUS_PACKET_ERROR_COUNT_UNSUPPORTED)
+
+    self.AddIfGetSupported(self.AckGetResult(field_values=expected_fields))
     self.SendGet(ROOT_DEVICE, self.pid)
+
+  def AddExpectedField(self, fields, field, bit, value):
+    """Add expected field value depending on if it's supported."""
+    if not self.Property('nsc_supported_fields') & bit:
+      # If not supported, expect the blank value
+      fields[field] = value
+    else:
+      # TODO(Peter): Deal with the fact there may have been a NSC packet in
+      # between set and get (advisory with a descriptive message is probably
+      # better)
+      fields[field] = 0
 
 
 class SetCommsStatusNSCWithData(TestMixins.SetWithDataMixin,
