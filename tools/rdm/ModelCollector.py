@@ -59,7 +59,7 @@ class ModelCollector(object):
    SLOT_DESCRIPTION,
    MANUFACTURER_URL,
    PRODUCT_URL,
-   FIRMWARE_URL) = range(18)
+   FIRMWARE_URL) = range(17)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper

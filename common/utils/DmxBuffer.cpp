@@ -110,6 +110,15 @@ bool DmxBuffer::operator!=(const DmxBuffer &other) const {
 }
 
 
+unsigned int DmxBuffer::AdditiveChecksum() const {
+  unsigned int checksum = 0;
+  for (unsigned int i = 0; i < Size(); i++) {
+    checksum += m_data[i];
+  }
+  return checksum;
+}
+
+
 bool DmxBuffer::HTPMerge(const DmxBuffer &other) {
   if (!m_data) {
     if (!Init())

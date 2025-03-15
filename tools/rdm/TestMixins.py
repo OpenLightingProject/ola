@@ -268,6 +268,38 @@ class GetTestDataMixin(ResponderTestFixture):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.PATTERN_LENGTH])
 
 
+class SetTestDataMixin(ResponderTestFixture):
+  """SET TEST_DATA PID with a given pattern length.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
+  """
+  PID = 'TEST_DATA'
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  LOOPBACK_DATA_LENGTH = 1
+  ALLOWED_NACKS = []
+  EXPECTED_FIELDS = ['loopback_data']
+
+  def Test(self):
+    expected_value = []
+    for i in reversed(range(0, self.LOOPBACK_DATA_LENGTH)):
+      expected_value.append({'data': (i % (255 + 1))})
+    results = [
+      self.AckSetResult(
+          field_names=self.EXPECTED_FIELDS,
+          field_values={self.EXPECTED_FIELDS[0]: expected_value})
+    ]
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackSetResult(nack))
+    self.AddIfSetSupported(results)
+    data = b''
+    # Descending data to differentiate from GET TEST_DATA
+    for i in reversed(range(0, self.LOOPBACK_DATA_LENGTH)):
+      data += b'%c' % i
+    # TODO(Peter): using SendRawSet until we fix packing of groups in Python
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, data)
+
+
 class GetRequiredMixin(ResponderTestFixture):
   """GET Mixin for a required PID. Verify EXPECTED_FIELDS is in the response.
 

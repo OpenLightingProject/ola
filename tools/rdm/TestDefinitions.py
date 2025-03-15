@@ -21,18 +21,32 @@ import struct
 
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
-from ola.RDMConstants import (INTERFACE_HARDWARE_TYPE_ETHERNET,
-                              RDM_INTERFACE_INDEX_MAX, RDM_INTERFACE_INDEX_MIN,
-                              RDM_MANUFACTURER_PID_MAX,
-                              RDM_MANUFACTURER_PID_MIN,
-                              RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
-                              RDM_MAX_DOMAIN_NAME_LENGTH,
-                              RDM_MAX_HOSTNAME_LENGTH,
-                              RDM_MAX_SERIAL_NUMBER_LENGTH,
-                              RDM_MAX_STRING_LENGTH,
-                              RDM_MAX_TEST_DATA_PATTERN_LENGTH,
-                              RDM_MIN_HOSTNAME_LENGTH,
-                              RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
+from ola.RDMConstants import (
+    INTERFACE_HARDWARE_TYPE_ETHERNET,
+    RDM_ESTA_PID_MAX, RDM_ESTA_PID_MIN,
+    RDM_INTERFACE_INDEX_MAX, RDM_INTERFACE_INDEX_MIN,
+    RDM_MANUFACTURER_PID_MAX, RDM_MANUFACTURER_PID_MIN,
+    RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
+    RDM_MAX_DOMAIN_NAME_LENGTH,
+    RDM_MAX_HOSTNAME_LENGTH,
+    RDM_MAX_PARAM_DATA_LENGTH,
+    RDM_MAX_SERIAL_NUMBER_LENGTH,
+    RDM_MAX_STRING_LENGTH,
+    RDM_MAX_TEST_DATA_PATTERN_LENGTH,
+    RDM_MIN_HOSTNAME_LENGTH,
+    RDM_NSC_STATUS_ADDITIVE_CHECKSUM_SUPPORTED_VALUE,
+    RDM_NSC_STATUS_ADDITIVE_CHECKSUM_UNSUPPORTED,
+    RDM_NSC_STATUS_PACKET_COUNT_SUPPORTED_VALUE,
+    RDM_NSC_STATUS_PACKET_COUNT_UNSUPPORTED,
+    RDM_NSC_STATUS_MOST_RECENT_SLOT_COUNT_SUPPORTED_VALUE,
+    RDM_NSC_STATUS_MOST_RECENT_SLOT_COUNT_UNSUPPORTED,
+    RDM_NSC_STATUS_MIN_SLOT_COUNT_SUPPORTED_VALUE,
+    RDM_NSC_STATUS_MIN_SLOT_COUNT_UNSUPPORTED,
+    RDM_NSC_STATUS_MAX_SLOT_COUNT_SUPPORTED_VALUE,
+    RDM_NSC_STATUS_MAX_SLOT_COUNT_UNSUPPORTED,
+    RDM_NSC_STATUS_PACKET_ERROR_COUNT_SUPPORTED_VALUE,
+    RDM_NSC_STATUS_PACKET_ERROR_COUNT_UNSUPPORTED,
+    RDM_ZERO_FOOTPRINT_DMX_ADDRESS)
 from ola.StringUtils import StringEscape
 from ola.testing.rdm import TestMixins
 from ola.testing.rdm.ExpectedResults import (RDM_GET, RDM_SET, AckGetResult,
@@ -600,7 +614,6 @@ class GetDeviceInfoWithData(DeviceInfoTest, ResponderTestFixture):
 class GetMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
   """Check if the responder can handle a packet of the maximum size."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
-  MAX_PDL = 231
   PROVIDES = ['supports_max_sized_pdl']
 
   def Test(self):
@@ -610,16 +623,16 @@ class GetMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
       self.AckGetResult(),  # Some crazy devices continue to ack
       InvalidResponse(
           advisory='Responder returned an invalid response to a command with '
-                   'PDL of %d' % self.MAX_PDL
+                   'PDL of %d' % RDM_MAX_PARAM_DATA_LENGTH
       ),
       TimeoutResult(
           advisory='Responder timed out to a command with PDL of %d' %
-                   self.MAX_PDL),
+                   RDM_MAX_PARAM_DATA_LENGTH),
     ])
     # Incrementing list, so we can find out which bit we have where in memory
     # if it overflows
     data = b''
-    for i in range(0, self.MAX_PDL):
+    for i in range(0, RDM_MAX_PARAM_DATA_LENGTH):
       data += b'%c' % i
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
@@ -641,13 +654,13 @@ class DetermineMaxPacketSize(DeviceInfoTest, ResponderTestFixture):
       return
 
     self._lower = 1
-    self._upper = GetMaxPacketSize.MAX_PDL
+    self._upper = RDM_MAX_PARAM_DATA_LENGTH
     self.SendPacket()
 
   def SendPacket(self):
     if self._lower + 1 == self._upper:
       self.AddWarning('Max PDL supported is < %d, was %d' %
-                      (GetMaxPacketSize.MAX_PDL, self._lower))
+                      (RDM_MAX_PARAM_DATA_LENGTH, self._lower))
       self.Stop()
       return
 
@@ -709,8 +722,8 @@ class GetSupportedParameters(ResponderTestFixture):
   """GET supported parameters."""
   CATEGORY = TestCategory.CORE
   PID = 'SUPPORTED_PARAMETERS'
-  PROVIDES = ['manufacturer_parameters', 'supported_parameters',
-              'acks_supported_parameters']
+  PROVIDES = ['esta_parameters', 'manufacturer_parameters',
+              'supported_parameters', 'acks_supported_parameters']
 
   # Declaring support for any of these is a warning:
   MANDATORY_PIDS = ['SUPPORTED_PARAMETERS',
@@ -769,6 +782,7 @@ class GetSupportedParameters(ResponderTestFixture):
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
+      self.SetProperty('esta_parameters', [])
       self.SetProperty('manufacturer_parameters', [])
       self.SetProperty('supported_parameters', [])
       self.SetProperty('acks_supported_parameters', False)
@@ -786,6 +800,7 @@ class GetSupportedParameters(ResponderTestFixture):
       banned_pids[pid.value] = pid
 
     supported_parameters = []
+    esta_parameters = []
     manufacturer_parameters = []
     count_by_pid = {}
 
@@ -803,9 +818,23 @@ class GetSupportedParameters(ResponderTestFixture):
         continue
 
       supported_parameters.append(param_id)
-      if (param_id >= RDM_MANUFACTURER_PID_MIN and
-          param_id <= RDM_MANUFACTURER_PID_MAX):
+      if (param_id >= RDM_ESTA_PID_MIN and
+          param_id <= RDM_ESTA_PID_MAX):
+        esta_parameters.append(param_id)
+
+        pid = self.LookupPidValue(param_id)
+        if pid is None:
+          self.AddAdvisory(
+            'PID 0x%04hx listed in supported parameters but not in the OLA PID '
+            'data. Either OLA is out of date or PID isn\'t a valid ESTA PID' %
+            param_id)
+      elif (param_id >= RDM_MANUFACTURER_PID_MIN and
+               param_id <= RDM_MANUFACTURER_PID_MAX):
         manufacturer_parameters.append(param_id)
+      else:
+        self.AddWarning('PID 0x%04hx listed in supported parameters but not '
+                        'within the valid ESTA or manufacturer PID ranges' %
+                        param_id)
 
     # Check for duplicate PIDs
     for pid, count in count_by_pid.items():
@@ -815,9 +844,11 @@ class GetSupportedParameters(ResponderTestFixture):
           self.AddAdvisory('%s listed %d times in supported parameters' %
                            (pid_obj, count))
         else:
-          self.AddAdvisory('PID 0x%hx listed %d times in supported parameters' %
-                           (pid, count))
+          self.AddAdvisory(
+            'PID 0x%04hx listed %d times in supported parameters' %
+            (pid, count))
 
+    self.SetProperty('esta_parameters', esta_parameters)
     self.SetProperty('manufacturer_parameters', manufacturer_parameters)
     self.SetProperty('supported_parameters', supported_parameters)
 
@@ -826,6 +857,11 @@ class GetSupportedParameters(ResponderTestFixture):
       unsupported_pids = []
       for pid_name in pid_names:
         pid = self.LookupPid(pid_name)
+
+        if pid is None:
+          self.SetBroken('Failed to lookup info for PID %s' % pid_name)
+          return
+
         if pid.value in supported_parameters:
           supported_pids.append(pid.name)
         else:
@@ -1204,7 +1240,7 @@ class GetParameterDescription(ParamDescriptionTestFixture):
       return
 
     if self.current_param != fields['pid']:
-      self.SetFailed('Request for pid 0x%hx returned pid 0x%hx' %
+      self.SetFailed('Request for pid 0x%04hx returned pid 0x%04hx' %
                      (self.current_param, fields['pid']))
 
     if fields['type'] != 0:
@@ -3000,7 +3036,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
                                    StringEscape(fields['name'])))
 
   def CheckCondition(self, sensor_number, fields, lhs, predicate_str, rhs):
-    """Check for a condition and add a warning if it isn't true."""
+    """Check for a condition and add an advisory if it isn't true."""
     predicate = self.PREDICATE_DICT[predicate_str]
     if predicate(fields[lhs], fields[rhs]):
       self.AddAdvisory(
@@ -8223,8 +8259,7 @@ class GetTestDataPatternLengthMaxStringLength(TestMixins.GetTestDataMixin,
 class GetTestDataPatternLengthMaxPDL(TestMixins.GetTestDataMixin,
                                      OptionalParameterTestFixture):
   """GET TEST_DATA with a pattern length of the max PDL."""
-  # TODO(Peter): Make this a constant
-  PATTERN_LENGTH = 231
+  PATTERN_LENGTH = RDM_MAX_PARAM_DATA_LENGTH
 
 
 class GetTestDataPatternLengthMaxPatternLength(TestMixins.GetTestDataMixin,
@@ -8256,6 +8291,217 @@ class GetOutOfRangeTestData(OptionalParameterTestFixture):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     data = struct.pack('!H', (RDM_MAX_TEST_DATA_PATTERN_LENGTH + 1))
     self.SendRawGet(ROOT_DEVICE, self.pid, data)
+
+
+class SetTestDataLoopbackDataLengthZero(TestMixins.SetTestDataMixin,
+                                        OptionalParameterTestFixture):
+  """SET TEST_DATA with loopback data with a length of 0."""
+  LOOPBACK_DATA_LENGTH = 0
+
+
+class SetTestDataLoopbackDataLengthOne(TestMixins.SetTestDataMixin,
+                                       OptionalParameterTestFixture):
+  """SET TEST_DATA with loopback data with a length of 1."""
+  LOOPBACK_DATA_LENGTH = 1
+
+
+class SetTestDataLoopbackDataLengthMaxStringLength(
+        TestMixins.SetTestDataMixin,
+        OptionalParameterTestFixture):
+  """SET TEST_DATA with loopback data with the max string length."""
+  LOOPBACK_DATA_LENGTH = RDM_MAX_STRING_LENGTH
+
+
+class SetTestDataLoopbackDataLengthMaxPDL(TestMixins.SetTestDataMixin,
+                                          OptionalParameterTestFixture):
+  """SET TEST_DATA with loopback data with a length of the max PDL."""
+  LOOPBACK_DATA_LENGTH = RDM_MAX_PARAM_DATA_LENGTH
+
+
+class AllSubDevicesGetCommsStatusNSC(TestMixins.AllSubDevicesGetMixin,
+                                     OptionalParameterTestFixture):
+  """Send a get COMMS_STATUS_NSC to ALL_SUB_DEVICES."""
+  PID = 'COMMS_STATUS_NSC'
+
+
+class GetCommsStatusNSC(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """GET COMMS_STATUS_NSC."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'COMMS_STATUS_NSC'
+  EXPECTED_FIELDS = ['supported_fields',
+                     'additive_checksum_of_most_recent_nsc_packet',
+                     'nsc_packet_count',
+                     'nsc_most_recent_slot_count',
+                     'nsc_minimum_slot_count',
+                     'nsc_maximum_slot_count',
+                     'nsc_error_count']
+  PROVIDES = ['nsc_supported_fields']
+
+  PREDICATE_DICT = {
+      '==': operator.eq,
+      '<': operator.lt,
+      '>': operator.gt,
+  }
+
+  def VerifyResult(self, response, fields):
+    # Call super to set provides etc
+    super(GetCommsStatusNSC, self).VerifyResult(response, fields)
+    if not response.WasAcked():
+      return
+
+    if self.CheckFieldSupport(fields,
+                              RDM_NSC_STATUS_MIN_SLOT_COUNT_SUPPORTED_VALUE
+                              ) and (
+        self.CheckFieldSupport(fields,
+                               RDM_NSC_STATUS_MAX_SLOT_COUNT_SUPPORTED_VALUE)):
+      self.CheckCondition(fields,
+                          'nsc_minimum_slot_count',
+                          '>',
+                          'nsc_maximum_slot_count')
+
+    if self.CheckFieldSupport(
+        fields,
+        RDM_NSC_STATUS_MOST_RECENT_SLOT_COUNT_SUPPORTED_VALUE) and (
+        self.CheckFieldSupport(fields,
+                               RDM_NSC_STATUS_MIN_SLOT_COUNT_SUPPORTED_VALUE)):
+      self.CheckCondition(fields,
+                          'nsc_most_recent_slot_count',
+                          '<',
+                          'nsc_minimum_slot_count')
+    if self.CheckFieldSupport(
+        fields,
+        RDM_NSC_STATUS_MOST_RECENT_SLOT_COUNT_SUPPORTED_VALUE) and (
+        self.CheckFieldSupport(fields,
+                               RDM_NSC_STATUS_MAX_SLOT_COUNT_SUPPORTED_VALUE)):
+      self.CheckCondition(fields,
+                          'nsc_most_recent_slot_count',
+                          '>',
+                          'nsc_maximum_slot_count')
+
+    self.CheckFieldBlanking(fields,
+                            'additive_checksum_of_most_recent_nsc_packet',
+                            RDM_NSC_STATUS_ADDITIVE_CHECKSUM_SUPPORTED_VALUE,
+                            RDM_NSC_STATUS_ADDITIVE_CHECKSUM_UNSUPPORTED)
+    self.CheckFieldBlanking(fields,
+                            'nsc_packet_count',
+                            RDM_NSC_STATUS_PACKET_COUNT_SUPPORTED_VALUE,
+                            RDM_NSC_STATUS_PACKET_COUNT_UNSUPPORTED)
+    self.CheckFieldBlanking(
+        fields,
+        'nsc_most_recent_slot_count',
+        RDM_NSC_STATUS_MOST_RECENT_SLOT_COUNT_SUPPORTED_VALUE,
+        RDM_NSC_STATUS_MOST_RECENT_SLOT_COUNT_UNSUPPORTED)
+    self.CheckFieldBlanking(fields,
+                            'nsc_minimum_slot_count',
+                            RDM_NSC_STATUS_MIN_SLOT_COUNT_SUPPORTED_VALUE,
+                            RDM_NSC_STATUS_MIN_SLOT_COUNT_UNSUPPORTED)
+    self.CheckFieldBlanking(fields,
+                            'nsc_maximum_slot_count',
+                            RDM_NSC_STATUS_MAX_SLOT_COUNT_SUPPORTED_VALUE,
+                            RDM_NSC_STATUS_MAX_SLOT_COUNT_UNSUPPORTED)
+    self.CheckFieldBlanking(fields,
+                            'nsc_error_count',
+                            RDM_NSC_STATUS_PACKET_ERROR_COUNT_SUPPORTED_VALUE,
+                            RDM_NSC_STATUS_PACKET_ERROR_COUNT_UNSUPPORTED)
+
+    self.CheckPacketCount(
+        fields,
+        'nsc_most_recent_slot_count',
+        RDM_NSC_STATUS_MOST_RECENT_SLOT_COUNT_SUPPORTED_VALUE)
+    self.CheckPacketCount(
+        fields,
+        'nsc_minimum_slot_count',
+        RDM_NSC_STATUS_MIN_SLOT_COUNT_SUPPORTED_VALUE)
+    self.CheckPacketCount(
+        fields,
+        'nsc_maximum_slot_count',
+        RDM_NSC_STATUS_MAX_SLOT_COUNT_SUPPORTED_VALUE)
+
+    if fields['supported_fields'] & 0xc0:
+      self.AddWarning('Bits 7-6 in the supported fields are set')
+
+  def CheckFieldSupport(self, fields, bit):
+    return fields['supported_fields'] & bit
+
+  def CheckFieldBlanking(self, fields, field, bit, value):
+    """Check supported fields behaviour."""
+    if self.CheckFieldSupport(fields, bit):
+      if fields[field] == value:
+        self.AddAdvisory(
+            'Field %s set as supported, but value is the unsupported value '
+            '0x%hx' %
+            (field, value))
+    else:
+      if fields[field] != value:
+        self.AddAdvisory(
+            'Field %s set as not supported, but value isn\'t the unsupported '
+            'value 0x%hx (got 0x%hx)' %
+            (field, value, fields[field]))
+
+  def CheckPacketCount(self, fields, field, bit):
+    """Check packet count versus slot count behaviour."""
+    if self.CheckFieldSupport(
+        fields,
+        RDM_NSC_STATUS_PACKET_COUNT_SUPPORTED_VALUE
+       ) and self.CheckFieldSupport(
+           fields,
+           bit):
+      if fields['nsc_packet_count'] == 0:
+        if fields[field] > 0:
+          self.AddAdvisory(
+              'Field %s > 0 (got %d) despite packet count being zero' %
+              (field, fields[field]))
+      else:
+        if fields[field] == 0:
+          self.AddAdvisory(
+              'Field %s is 0 despite packet count being non-zero (got %d)' %
+              (field, fields['nsc_packet_count']))
+
+  def CheckCondition(self, fields, lhs, predicate_str, rhs):
+    """Check for a condition and add an advisory if it isn't true."""
+    predicate = self.PREDICATE_DICT[predicate_str]
+    if predicate(fields[lhs], fields[rhs]):
+      self.AddAdvisory(
+          '%s (%d) %s %s (%d)' %
+          (lhs, fields[lhs], predicate_str, rhs, fields[rhs]))
+
+
+class GetCommsStatusNSCWithData(TestMixins.GetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """GET COMMS_STATUS_NSC with data."""
+  PID = 'COMMS_STATUS_NSC'
+
+
+class SetCommsStatusNSC(OptionalParameterTestFixture):
+  """SET COMMS_STATUS_NSC to reset the counters."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'COMMS_STATUS_NSC'
+  REQUIRES = ['nsc_supported_fields']
+
+  def Test(self):
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.SendSet(ROOT_DEVICE, self.pid)
+
+  def VerifySet(self):
+    # TODO(Peter): Deal with disabled values and the fact there may have been a
+    # NSC packet in between set and get
+    self.AddIfGetSupported(
+        self.AckGetResult(field_values={
+            'supported_fields': self.Property('nsc_supported_fields'),
+            # 'additive_checksum_of_most_recent_nsc_packet': 0,
+            # 'nsc_packet_count': 0,
+            # 'nsc_most_recent_slot_count': 0,
+            # 'nsc_minimum_slot_count': 0,
+            # 'nsc_maximum_slot_count': 0,
+            # 'nsc_error_count': 0
+        }))
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+
+class SetCommsStatusNSCWithData(TestMixins.SetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Send a SET COMMS_STATUS_NSC command with unnecessary data."""
+  PID = 'COMMS_STATUS_NSC'
 
 
 class AllSubDevicesGetListTags(TestMixins.AllSubDevicesGetMixin,

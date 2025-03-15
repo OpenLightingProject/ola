@@ -1110,6 +1110,65 @@ RDMResponse *ResponderHelper::SetTestData(
       queued_message_count);
 }
 
+/**
+ * Get NSC comms status
+ */
+RDMResponse *ResponderHelper::GetCommsStatusNSC(
+    const RDMRequest *request,
+    const NSCStatus *status,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  PACK(
+  struct comms_status_nsc_s {
+    uint8_t supported_fields;
+    uint32_t additive_checksum;
+    uint32_t packet_count;
+    uint16_t most_recent_slot_count;
+    uint16_t min_slot_count;
+    uint16_t max_slot_count;
+    uint32_t packet_error_count;
+  });
+  STATIC_ASSERT(sizeof(comms_status_nsc_s) == 19);
+
+  struct comms_status_nsc_s comms_status_nsc;
+  comms_status_nsc.supported_fields = status->SupportedFieldsBitMask();
+  comms_status_nsc.additive_checksum = HostToNetwork(
+      status->AdditiveChecksum());
+  comms_status_nsc.packet_count = HostToNetwork(status->PacketCount());
+  comms_status_nsc.most_recent_slot_count = HostToNetwork(
+      status->MostRecentSlotCount());
+  comms_status_nsc.min_slot_count = HostToNetwork(status->MinSlotCount());
+  comms_status_nsc.max_slot_count = HostToNetwork(status->MaxSlotCount());
+  comms_status_nsc.packet_error_count = HostToNetwork(
+      status->PacketErrorCount());
+  return GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(&comms_status_nsc),
+    sizeof(comms_status_nsc),
+    RDM_ACK,
+    queued_message_count);
+}
+
+/**
+ * Set NSC comms status
+ */
+RDMResponse *ResponderHelper::SetCommsStatusNSC(
+    const RDMRequest *request,
+    NSCStatus *status,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  // Reset the counts...
+  status->Reset();
+
+  return GetResponseFromData(request, NULL, queued_message_count);
+}
+
 RDMResponse *ResponderHelper::GetListTags(
     const RDMRequest *request,
     const TagSet *tag_set,
