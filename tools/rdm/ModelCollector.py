@@ -59,7 +59,8 @@ class ModelCollector(object):
    SLOT_DESCRIPTION,
    MANUFACTURER_URL,
    PRODUCT_URL,
-   FIRMWARE_URL) = range(17)
+   FIRMWARE_URL,
+   METADATA_JSON_URL) = range(18)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -208,6 +209,8 @@ class ModelCollector(object):
       self._HandleProductURL(unpacked_data)
     elif self.work_state == self.FIRMWARE_URL:
       self._HandleFirmwareURL(unpacked_data)
+    elif self.work_state == self.METADATA_JSON_URL:
+      self._HandleMetadataJSONURL(unpacked_data)
 
   def _HandleDeviceInfo(self, data):
     """Called when we get a DEVICE_INFO response."""
@@ -405,6 +408,12 @@ class ModelCollector(object):
     this_device['firmware_url'] = data['url']
     self._NextState()
 
+  def _HandleMetadataJSONURL(self, data):
+    """Called when we get a METADATA_JSON_URL response."""
+    this_device = self._GetDevice()
+    this_device['metadata_json_url'] = data['url']
+    self._NextState()
+
   def _NextState(self):
     """Move to the next state of information fetching."""
     if self.work_state == self.EMPTYING_QUEUE:
@@ -523,6 +532,16 @@ class ModelCollector(object):
       # fetch firmware URL
       self.work_state = self.FIRMWARE_URL
       pid = self.pid_store.GetName('FIRMWARE_URL')
+      if self._CheckPidSupported(pid):
+        self._GetPid(pid)
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
+    elif self.work_state == self.FIRMWARE_URL:
+      # fetch metadata JSON URL
+      self.work_state = self.METADATA_JSON_URL
+      pid = self.pid_store.GetName('METADATA_JSON_URL')
       if self._CheckPidSupported(pid):
         self._GetPid(pid)
       else:
