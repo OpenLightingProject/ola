@@ -8115,40 +8115,6 @@ class SetFirmwareURLWithData(TestMixins.UnsupportedSetWithDataMixin,
   PID = 'FIRMWARE_URL'
 
 
-class AllSubDevicesGetMetadataJSONURL(TestMixins.AllSubDevicesGetMixin,
-                                      OptionalParameterTestFixture):
-  """Send a get METADATA_JSON_URL to ALL_SUB_DEVICES."""
-  PID = 'METADATA_JSON_URL'
-
-
-class GetMetadataJSONURL(TestMixins.GetURLMixin,
-                         OptionalParameterTestFixture):
-  """GET the metadata JSON URL."""
-  CATEGORY = TestCategory.RDM_INFORMATION
-  PID = 'METADATA_JSON_URL'
-  EXPECTED_FIELDS = ['url']
-  # Extend the existing allowed schemas
-  ALLOWED_SCHEMAS = ['http', 'https', 'ftp']
-
-
-class GetMetadataJSONURLWithData(TestMixins.GetWithDataMixin,
-                                 OptionalParameterTestFixture):
-  """GET METADATA_JSON_URL with data."""
-  PID = 'METADATA_JSON_URL'
-
-
-class SetMetadataJSONURL(TestMixins.UnsupportedSetMixin,
-                         OptionalParameterTestFixture):
-  """Attempt to SET METADATA_JSON_URL."""
-  PID = 'METADATA_JSON_URL'
-
-
-class SetMetadataJSONURLWithData(TestMixins.UnsupportedSetWithDataMixin,
-                                 OptionalParameterTestFixture):
-  """Attempt to SET METADATA_JSON_URL with data."""
-  PID = 'METADATA_JSON_URL'
-
-
 class AllSubDevicesGetShippingLock(TestMixins.AllSubDevicesGetMixin,
                                    OptionalParameterTestFixture):
   """Send a get SHIPPING_LOCK to ALL_SUB_DEVICES."""
@@ -8714,6 +8680,121 @@ class SetDeviceUnitNumberWithExtraData(TestMixins.SetWithDataMixin,
   """Send a SET DEVICE_UNIT_NUMBER command with extra data."""
   PID = 'DEVICE_UNIT_NUMBER'
   DATA = b'foobar'
+
+
+class AllSubDevicesGetMetadataParameterVersion(TestMixins.AllSubDevicesGetMixin,
+                                               OptionalParameterTestFixture):
+  """Send a get METADATA_PARAMETER_VERSION to ALL_SUB_DEVICES."""
+  PID = 'METADATA_PARAMETER_VERSION'
+  DATA = [0x8001]
+
+
+# class GetMetadataParameterVersion(TestMixins.,
+#                                   OptionalParameterTestFixture):
+#   """GET METADATA_PARAMETER_VERSION."""
+#   CATEGORY = TestCategory.RDM_INFORMATION
+#   PID = 'METADATA_PARAMETER_VERSION'
+# TODO(peter): Test get
+
+
+class GetMetadataParameterVersionWithNoData(TestMixins.GetWithNoDataMixin,
+                                            OptionalParameterTestFixture):
+  """GET METADATA_PARAMETER_VERSION with no argument given."""
+  PID = 'METADATA_PARAMETER_VERSION'
+
+
+class GetMetadataParameterVersionWithExtraData(TestMixins.GetWithDataMixin,
+                                               OptionalParameterTestFixture):
+  """GET METADATA_PARAMETER_VERSION with more than 2 bytes of data."""
+  PID = 'METADATA_PARAMETER_VERSION'
+  DATA = b'foo'  # TODO(peter): Ensure the first 2 bytes are sane/valid.
+
+
+class SetMetadataParameterVersion(TestMixins.UnsupportedSetMixin,
+                                  OptionalParameterTestFixture):
+  """Attempt to SET METADATA_PARAMETER_VERSION."""
+  PID = 'METADATA_PARAMETER_VERSION'
+
+
+class SetMetadataParameterVersionWithData(
+        TestMixins.UnsupportedSetWithDataMixin,
+        OptionalParameterTestFixture):
+  """Attempt to SET METADATA_PARAMETER_VERSION with data."""
+  PID = 'METADATA_PARAMETER_VERSION'
+
+
+class AllSubDevicesGetMetadataJSON(TestMixins.AllSubDevicesGetMixin,
+                                   OptionalParameterTestFixture):
+  """Send a get METADATA_JSON to ALL_SUB_DEVICES."""
+  PID = 'METADATA_JSON'
+  DATA = [0x8001]
+
+
+# class GetMetadataJSON(TestMixins.,
+#                       OptionalParameterTestFixture):
+#   """GET METADATA_JSON."""
+#   CATEGORY = TestCategory.RDM_INFORMATION
+#   PID = 'METADATA_JSON'
+# TODO(peter): Test get
+
+
+class GetMetadataJSONWithNoData(TestMixins.GetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """GET METADATA_JSON with no argument given."""
+  PID = 'METADATA_JSON'
+
+
+class GetMetadataJSONWithExtraData(TestMixins.GetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """GET METADATA_JSON with more than 2 bytes of data."""
+  PID = 'METADATA_JSON'
+  DATA = b'foo'  # TODO(peter): Ensure the first 2 bytes are sane/valid.
+
+
+class SetMetadataJSON(TestMixins.UnsupportedSetMixin,
+                      OptionalParameterTestFixture):
+  """Attempt to SET METADATA_JSON."""
+  PID = 'METADATA_JSON'
+
+
+class SetMetadataJSONWithData(TestMixins.UnsupportedSetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """Attempt to SET METADATA_JSON with data."""
+  PID = 'METADATA_JSON'
+
+
+class AllSubDevicesGetMetadataJSONURL(TestMixins.AllSubDevicesGetMixin,
+                                      OptionalParameterTestFixture):
+  """Send a get METADATA_JSON_URL to ALL_SUB_DEVICES."""
+  PID = 'METADATA_JSON_URL'
+
+
+class GetMetadataJSONURL(TestMixins.GetURLMixin,
+                         OptionalParameterTestFixture):
+  """GET the metadata JSON URL."""
+  CATEGORY = TestCategory.RDM_INFORMATION
+  PID = 'METADATA_JSON_URL'
+  EXPECTED_FIELDS = ['url']
+  # Extend the existing allowed schemas
+  ALLOWED_SCHEMAS = ['http', 'https', 'ftp']
+
+
+class GetMetadataJSONURLWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """GET METADATA_JSON_URL with data."""
+  PID = 'METADATA_JSON_URL'
+
+
+class SetMetadataJSONURL(TestMixins.UnsupportedSetMixin,
+                         OptionalParameterTestFixture):
+  """Attempt to SET METADATA_JSON_URL."""
+  PID = 'METADATA_JSON_URL'
+
+
+class SetMetadataJSONURLWithData(TestMixins.UnsupportedSetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Attempt to SET METADATA_JSON_URL with data."""
+  PID = 'METADATA_JSON_URL'
 
 
 # E1.33/E1.37-7 PIDS
