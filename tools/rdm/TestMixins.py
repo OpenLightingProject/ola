@@ -177,6 +177,12 @@ class GetURLMixin(GetMixin):
   # TODO(Peter): Make this a constant
   MAX_LENGTH = 231
   ALLOWED_SCHEMAS = ['http', 'https']
+  # TODO(Peter): Add non-English ones from https://en.wikipedia.org/wiki/.test
+  # From RFC 2606 and RFC 6762
+  DENIED_TLDS = ['test', 'example', 'internal', 'invalid', 'local',
+                 'localhost']
+  # From RFC 2606
+  DENIED_DOMAINS = ['example.com', 'example.net', 'example.org']
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
@@ -225,12 +231,38 @@ class GetURLMixin(GetMixin):
         # TODO(Peter): Possibly check for ValueError locally here too...
         if url_result.netloc is None or not url_result.netloc:
           self.AddAdvisory(
-              '%s field in %s had no netloc' %
-              (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name))
-        # else:
-          # TODO(Peter): Check for a dot in the netloc
-          # TODO(Peter): Check the netloc domain isn't a prohibited internal
-          # only one
+              '%s field in %s had no netloc, was %s' %
+              (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, url_field))
+        else:
+          if url_result.hostname is None or not url_result.hostname:
+            self.AddAdvisory(
+                '%s field in %s had no hostname, was %s' %
+                (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+                 url_field))
+          else:
+            if '.' not in url_result.hostname:
+              self.AddAdvisory(
+                '%s field in %s had hostname without a dot, expecting an '
+                'FQDN, was %s' %
+                (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+                 url_result.hostname))
+
+            for tld in self.DENIED_TLDS:
+              tld_with_dot = "." + tld
+              if url_result.hostname.endswith(tld_with_dot):
+                self.AddAdvisory(
+                  '%s field in %s had hostname ending with denied TLD %s' %
+                  (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+                   tld_with_dot))
+
+            for domain in self.DENIED_DOMAINS:
+              domain_with_dot = "." + domain
+              if (url_result.hostname is domain or
+                  url_result.hostname.endswith(domain_with_dot)):
+                self.AddAdvisory(
+                    '%s field in %s had hostname ending with denied domain %s' %
+                    (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+                     domain))
 
         # TODO(Peter): Optionally expect at least one other section
         # (product/firmware)
