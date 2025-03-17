@@ -15,6 +15,7 @@
 # TestMixins.py
 # Copyright (C) 2010 Simon Newton
 
+import json
 import struct
 import sys
 
@@ -271,6 +272,57 @@ class GetURLMixin(GetMixin):
           '%s field in %s didn\'t parse as a URL due to %s, was %s' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, str(err),
            url_field))
+
+
+class GetJSONMixin(GetMixin):
+  """GET Mixin for an optional JSON PID. Verify EXPECTED_FIELDS are in the
+    response.
+
+    This mixin also sets a property if PROVIDES is defined.  The target class
+    needs to defined EXPECTED_FIELDS and optionally PROVIDES.
+  """
+  # Min length is based on simplest empty JSON of {}
+  MIN_LENGTH = 2
+  # TODO(Peter): Max length is unlimited?
+  MAX_LENGTH = 255
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    json_field = fields[self.EXPECTED_FIELDS[0]]
+
+    if self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], json_field)
+
+    if ContainsUnprintable(json_field):
+      self.AddAdvisory(
+          '%s field in %s contains unprintable characters, was %s' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+           StringEscape(json_field)))
+
+    if self.MIN_LENGTH and len(json_field) < self.MIN_LENGTH:
+      self.SetFailed(
+          '%s field in %s was shorter than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+           len(json_field), self.MIN_LENGTH))
+
+    if self.MAX_LENGTH and len(json_field) > self.MAX_LENGTH:
+      self.SetFailed(
+          '%s field in %s was longer than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+           len(json_field), self.MAX_LENGTH))
+
+    # TODO(Peter): Do basic JSON validation
+    try:
+      parse_json = json.loads(json_field)
+
+      # TODO(Peter): Add the option to do test-specific validation
+    except ValueError as err:
+      self.SetFailed(
+          '%s field in %s didn\'t parse as valid JSON due to %s, was %s' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, str(err),
+           json_field))
 
 
 class GetTestDataMixin(ResponderTestFixture):

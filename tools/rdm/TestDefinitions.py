@@ -8689,12 +8689,62 @@ class AllSubDevicesGetMetadataParameterVersion(TestMixins.AllSubDevicesGetMixin,
   DATA = [0x8001]
 
 
-# class GetMetadataParameterVersion(TestMixins.,
-#                                   OptionalParameterTestFixture):
-#   """GET METADATA_PARAMETER_VERSION."""
-#   CATEGORY = TestCategory.RDM_INFORMATION
-#   PID = 'METADATA_PARAMETER_VERSION'
-# TODO(peter): Test get
+class GetMetadataParameterVersion(OptionalParameterTestFixture):
+  """Check that GET METADATA_PARAMETER_VERSION works for any manufacturer
+     params.
+  """
+  CATEGORY = TestCategory.RDM_INFORMATION
+  PID = 'METADATA_PARAMETER_VERSION'
+  REQUIRES = ['manufacturer_parameters']
+
+  def Test(self):
+    self.params = self.Property('manufacturer_parameters')[:]
+    if len(self.params) == 0:
+      self.SetNotRun('No manufacturer params found')
+      # This case is tested in GetMetadataParameterVersionForNonManufacturerPid
+      return
+    self._GetParam()
+
+  def _GetParam(self):
+    if len(self.params) == 0:
+      self.Stop()
+      return
+
+    self.AddExpectedResults(
+      self.AckGetResult(action=self._GetParam))
+    self.current_param = self.params.pop()
+    self.SendGet(ROOT_DEVICE, self.pid, [self.current_param])
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    if self.current_param != fields['pid']:
+      self.SetFailed('Request for pid 0x%04hx returned pid 0x%04hx' %
+                     (self.current_param, fields['pid']))
+
+
+class GetMetadataParameterVersionForNonManufacturerPid(
+        OptionalParameterTestFixture):
+  """GET METADATA_PARAMETER_VERSION for a non-manufacturer pid."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'METADATA_PARAMETER_VERSION'
+  REQUIRES = ['manufacturer_parameters']
+
+  def Test(self):
+    device_info_pid = self.LookupPid('DEVICE_INFO')
+    results = [
+      self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+      self.NackGetResult(
+          RDMNack.NR_DATA_OUT_OF_RANGE,
+          advisory='Metadata Parameter Version appears to be supported but no '
+                   'manufacturer PIDs were declared'),
+    ]
+    if self.Property('manufacturer_parameters'):
+      results = self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+
+    self.AddExpectedResults(results)
+    self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
 class GetMetadataParameterVersionWithNoData(TestMixins.GetWithNoDataMixin,
@@ -8730,12 +8780,63 @@ class AllSubDevicesGetMetadataJSON(TestMixins.AllSubDevicesGetMixin,
   DATA = [0x8001]
 
 
-# class GetMetadataJSON(TestMixins.,
-#                       OptionalParameterTestFixture):
-#   """GET METADATA_JSON."""
-#   CATEGORY = TestCategory.RDM_INFORMATION
-#   PID = 'METADATA_JSON'
-# TODO(peter): Test get
+class GetMetadataJSON(TestMixins.GetJSONMixin,
+                       OptionalParameterTestFixture):
+  """Check that GET METADATA_JSON works for any manufacturer params."""
+  CATEGORY = TestCategory.RDM_INFORMATION
+  PID = 'METADATA_JSON'
+  REQUIRES = ['manufacturer_parameters']
+  # JSON first, as it's the field we want to do JSON validation on
+  EXPECTED_FIELDS = ['json', 'pid']
+
+  def Test(self):
+    self.params = self.Property('manufacturer_parameters')[:]
+    if len(self.params) == 0:
+      self.SetNotRun('No manufacturer params found')
+      # This case is tested in GetMetadataJSONForNonManufacturerPid
+      return
+    self._GetParam()
+
+  def _GetParam(self):
+    if len(self.params) == 0:
+      self.Stop()
+      return
+
+    self.AddExpectedResults(
+      self.AckGetResult(action=self._GetParam))
+    self.current_param = self.params.pop()
+    self.SendGet(ROOT_DEVICE, self.pid, [self.current_param])
+
+  def VerifyResult(self, response, fields):
+    super(TestMixins.GetJSONMixin, self).VerifyResult(response, fields)
+
+    if self.current_param != fields['pid']:
+      self.SetFailed('Request for pid 0x%04hx returned pid 0x%04hx' %
+                     (self.current_param, fields['pid']))
+
+    # TODO(Peter): Validate JSON PID field too
+
+
+class GetMetadataJSONForNonManufacturerPid(OptionalParameterTestFixture):
+  """GET METADATA_JSON for a non-manufacturer pid."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'METADATA_JSON'
+  REQUIRES = ['manufacturer_parameters']
+
+  def Test(self):
+    device_info_pid = self.LookupPid('DEVICE_INFO')
+    results = [
+      self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+      self.NackGetResult(
+          RDMNack.NR_DATA_OUT_OF_RANGE,
+          advisory='Metadata JSON appears to be supported but no '
+                   'manufacturer PIDs were declared'),
+    ]
+    if self.Property('manufacturer_parameters'):
+      results = self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+
+    self.AddExpectedResults(results)
+    self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
 class GetMetadataJSONWithNoData(TestMixins.GetWithNoDataMixin,
