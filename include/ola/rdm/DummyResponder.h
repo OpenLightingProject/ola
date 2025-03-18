@@ -135,6 +135,9 @@ class DummyResponder: public RDMControllerInterface {
   RDMResponse *GetFirmwareURL(const RDMRequest *request);
   RDMResponse *GetTestData(const RDMRequest *request);
   RDMResponse *SetTestData(const RDMRequest *request);
+  RDMResponse *GetMetadataParameterVersion(const RDMRequest *request);
+  RDMResponse *GetMetadataJSON(const RDMRequest *request);
+  RDMResponse *GetMetadataJSONURL(const RDMRequest *request);
 
   static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
   static const uint8_t DEFAULT_PERSONALITY = 2;

@@ -965,7 +965,7 @@ RDMResponse *ResponderHelper::GetParamDescription(
     uint32_t min_value,
     uint32_t default_value,
     uint32_t max_value,
-    string description,
+    const string description,
     uint8_t queued_message_count) {
   PACK(
   struct parameter_description_s {
@@ -1019,7 +1019,7 @@ RDMResponse *ResponderHelper::GetASCIIParamDescription(
         const RDMRequest *request,
         uint16_t pid,
         rdm_command_class command_class,
-        string description,
+        const string description,
         uint8_t queued_message_count) {
   return GetParamDescription(
       request,
@@ -1041,7 +1041,7 @@ RDMResponse *ResponderHelper::GetBitFieldParamDescription(
         uint16_t pid,
         uint8_t pdl_size,
         rdm_command_class command_class,
-        string description,
+        const string description,
         uint8_t queued_message_count) {
   return GetParamDescription(
       request,
@@ -1245,6 +1245,63 @@ RDMResponse *ResponderHelper::SetClearTags(
 
   return ResponderHelper::EmptySetResponse(request, queued_message_count);
 }
+
+RDMResponse *ResponderHelper::GetMetadataParameterVersion(
+    const RDMRequest *request,
+    uint16_t pid,
+    uint16_t version,
+    uint8_t queued_message_count) {
+  PACK(
+  struct metadata_parameter_version_s {
+    uint16_t pid;
+    uint16_t version;
+  });
+  STATIC_ASSERT(sizeof(metadata_parameter_version_s) == 4);
+
+  struct metadata_parameter_version_s metadata_param_version;
+  metadata_param_version.pid = HostToNetwork(pid);
+  metadata_param_version.version = HostToNetwork(version);
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&metadata_param_version),
+      sizeof(metadata_parameter_version_s),
+      RDM_ACK,
+      queued_message_count);
+}
+
+RDMResponse *ResponderHelper::GetMetadataJSON(
+    const RDMRequest *request,
+    uint16_t pid,
+    const string json,
+    uint8_t queued_message_count) {
+  PACK(
+  struct metadata_json_s {
+    uint16_t pid;
+    // TODO(Peter): This should effectively be unlimited...?
+    char json[(UINT8_MAX - 2)];
+  });
+  STATIC_ASSERT(sizeof(metadata_json_s) == UINT8_MAX);
+
+  struct metadata_json_s metadata_json;
+  metadata_json.pid = HostToNetwork(pid);
+
+  size_t str_len = min(json.size(),
+                       sizeof(metadata_json.json));
+  strncpy(metadata_json.json, json.c_str(), str_len);
+
+  unsigned int param_data_size = (
+      sizeof(metadata_json) -
+      sizeof(metadata_json.json) + str_len);
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&metadata_json),
+      param_data_size,
+      RDM_ACK,
+      queued_message_count);
+}
+
 
 /**
  * @brief Handle a request that returns a string

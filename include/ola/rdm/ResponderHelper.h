@@ -152,20 +152,20 @@ class ResponderHelper {
         uint32_t min_value,
         uint32_t default_value,
         uint32_t max_value,
-        std::string description,
+        const std::string description,
         uint8_t queued_message_count = 0);
     static RDMResponse *GetASCIIParamDescription(
         const RDMRequest *request,
         uint16_t pid,
         rdm_command_class command_class,
-        std::string description,
+        const std::string description,
         uint8_t queued_message_count = 0);
     static RDMResponse *GetBitFieldParamDescription(
         const RDMRequest *request,
         uint16_t pid,
         uint8_t pdl_size,
         rdm_command_class command_class,
-        std::string description,
+        const std::string description,
         uint8_t queued_message_count = 0);
 
     static RDMResponse *GetRealTimeClock(
@@ -260,6 +260,18 @@ class ResponderHelper {
     static RDMResponse *SetClearTags(
         const RDMRequest *request,
         TagSet *tag_set,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *GetMetadataParameterVersion(
+        const RDMRequest *request,
+        uint16_t pid,
+        uint16_t version,
+        uint8_t queued_message_count = 0);
+
+    static RDMResponse *GetMetadataJSON(
+        const RDMRequest *request,
+        uint16_t pid,
+        const std::string json,
         uint8_t queued_message_count = 0);
 
     // Generic Helpers.
