@@ -761,6 +761,29 @@ static const uint8_t DNS_NAME_SERVER_MAX_INDEX = 2;
 // Consts for E1.37-5
 static const uint16_t MAX_RDM_TEST_DATA_PATTERN_LENGTH = 4096;
 
+// bit masks for NSC status
+static const uint8_t NSC_STATUS_ADDITIVE_CHECKSUM_SUPPORTED_VALUE = 0x01;
+static const uint8_t NSC_STATUS_PACKET_COUNT_SUPPORTED_VALUE = 0x02;
+static const uint8_t NSC_STATUS_MOST_RECENT_SLOT_COUNT_SUPPORTED_VALUE = 0x04;
+static const uint8_t NSC_STATUS_MIN_SLOT_COUNT_SUPPORTED_VALUE = 0x08;
+static const uint8_t NSC_STATUS_MAX_SLOT_COUNT_SUPPORTED_VALUE = 0x10;
+static const uint8_t NSC_STATUS_PACKET_ERROR_COUNT_SUPPORTED_VALUE = 0x20;
+
+// Consts for NSC status when unsupported
+static const uint32_t NSC_STATUS_ADDITIVE_CHECKSUM_UNSUPPORTED = 0xFFFFFFFF;
+static const uint32_t NSC_STATUS_PACKET_COUNT_UNSUPPORTED = 0xFFFFFFFF;
+static const uint16_t NSC_STATUS_MOST_RECENT_SLOT_COUNT_UNSUPPORTED = 0xFFFF;
+static const uint16_t NSC_STATUS_MIN_SLOT_COUNT_UNSUPPORTED = 0xFFFF;
+static const uint16_t NSC_STATUS_MAX_SLOT_COUNT_UNSUPPORTED = 0xFFFF;
+static const uint32_t NSC_STATUS_PACKET_ERROR_COUNT_UNSUPPORTED = 0xFFFFFFFF;
+
+// Consts for NSC status max range
+static const uint32_t NSC_STATUS_PACKET_COUNT_MAX = 0xFFFFFFFE;
+static const uint16_t NSC_STATUS_MOST_RECENT_SLOT_COUNT_MAX = 0xFFFE;
+static const uint16_t NSC_STATUS_MIN_SLOT_COUNT_MAX = 0xFFFE;
+static const uint16_t NSC_STATUS_MAX_SLOT_COUNT_MAX = 0xFFFE;
+static const uint32_t NSC_STATUS_PACKET_ERROR_COUNT_MAX = 0xFFFFFFFE;
+
 // The shipping lock states
 typedef enum {
   SHIPPING_LOCK_STATE_UNLOCKED = 0x00,

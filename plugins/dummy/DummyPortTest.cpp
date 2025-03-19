@@ -242,6 +242,9 @@ void DummyPortTest::testSupportedParams() {
 
   uint16_t supported_params[] = {
     ola::rdm::PID_TEST_DATA,
+    ola::rdm::PID_METADATA_PARAMETER_VERSION,
+    ola::rdm::PID_METADATA_JSON,
+    ola::rdm::PID_METADATA_JSON_URL,
     ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
     ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
     ola::rdm::PID_MANUFACTURER_LABEL,

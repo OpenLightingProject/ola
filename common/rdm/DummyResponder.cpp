@@ -172,6 +172,15 @@ const ResponderOps<DummyResponder>::ParamHandler
   { PID_TEST_DATA,
     &DummyResponder::GetTestData,
     &DummyResponder::SetTestData},
+  { PID_METADATA_PARAMETER_VERSION,
+    &DummyResponder::GetMetadataParameterVersion,
+    NULL},
+  { PID_METADATA_JSON,
+    &DummyResponder::GetMetadataJSON,
+    NULL},
+  { PID_METADATA_JSON_URL,
+    &DummyResponder::GetMetadataJSONURL,
+    NULL},
   { OLA_MANUFACTURER_PID_CODE_VERSION,
     &DummyResponder::GetOlaCodeVersion,
     NULL},
@@ -460,7 +469,7 @@ RDMResponse *DummyResponder::GetProductURL(
       request,
       "https://openlighting.org/rdm-tools/dummy-responders/",
       0,
-      UINT8_MAX); // TODO(Peter): This field's length isn't limited in the spec
+      UINT8_MAX);  // TODO(Peter): This field's length isn't limited in the spec
 }
 
 RDMResponse *DummyResponder::GetFirmwareURL(
@@ -469,7 +478,7 @@ RDMResponse *DummyResponder::GetFirmwareURL(
       request,
       "https://github.com/OpenLightingProject/ola",
       0,
-      UINT8_MAX); // TODO(Peter): This field's length isn't limited in the spec
+      UINT8_MAX);  // TODO(Peter): This field's length isn't limited in the spec
 }
 
 RDMResponse *DummyResponder::GetTestData(const RDMRequest *request) {
@@ -478,6 +487,58 @@ RDMResponse *DummyResponder::GetTestData(const RDMRequest *request) {
 
 RDMResponse *DummyResponder::SetTestData(const RDMRequest *request) {
   return ResponderHelper::SetTestData(request);
+}
+
+RDMResponse *DummyResponder::GetMetadataParameterVersion(
+    const RDMRequest *request) {
+  // Check that it's OLA_MANUFACTURER_PID_CODE_VERSION being requested
+  uint16_t parameter_id;
+  if (!ResponderHelper::ExtractUInt16(request, &parameter_id)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (parameter_id != OLA_MANUFACTURER_PID_CODE_VERSION) {
+    OLA_WARN << "Dummy responder received metadata parameter version request "
+             << "with unknown PID, expected "
+             << OLA_MANUFACTURER_PID_CODE_VERSION << ", got " << parameter_id;
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  } else {
+    return ResponderHelper::GetMetadataParameterVersion(
+        request,
+        OLA_MANUFACTURER_PID_CODE_VERSION,
+        OLA_MANUFACTURER_PID_JSON_VERSION_CODE_VERSION);
+  }
+}
+
+RDMResponse *DummyResponder::GetMetadataJSON(
+    const RDMRequest *request) {
+  // Check that it's OLA_MANUFACTURER_PID_CODE_VERSION being requested
+  uint16_t parameter_id;
+  if (!ResponderHelper::ExtractUInt16(request, &parameter_id)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (parameter_id != OLA_MANUFACTURER_PID_CODE_VERSION) {
+    OLA_WARN << "Dummy responder received metadata JSON request with unknown "
+             << "PID, expected "
+             << OLA_MANUFACTURER_PID_CODE_VERSION << ", got " << parameter_id;
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  } else {
+    return ResponderHelper::GetMetadataJSON(
+        request,
+        OLA_MANUFACTURER_PID_CODE_VERSION,
+        OLA_MANUFACTURER_PID_JSON_CODE_VERSION);
+  }
+}
+
+RDMResponse *DummyResponder::GetMetadataJSONURL(
+    const RDMRequest *request) {
+  return ResponderHelper::GetString(
+      request,
+      // TODO(Peter): Consider what this should actually be permanently
+      "https://docs.openlighting.org/ola/json/latest/metadata/0x0001.json",
+      0,
+      UINT8_MAX);  // TODO(Peter): This field's length isn't limited in the spec
 }
 
 RDMResponse *DummyResponder::GetOlaCodeVersion(
