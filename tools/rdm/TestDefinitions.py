@@ -8577,7 +8577,7 @@ class AllSubDevicesGetCheckTag(TestMixins.AllSubDevicesGetMixin,
                                OptionalParameterTestFixture):
   """Send a get CHECK_TAG to ALL_SUB_DEVICES."""
   PID = 'CHECK_TAG'
-  DATA = [b'foo']
+  DATA = ['foo']
 
 
 class GetCheckTagWithNoData(TestMixins.GetWithNoDataMixin,
