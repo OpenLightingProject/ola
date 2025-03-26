@@ -53,7 +53,8 @@ bool InterfacePicker::ChooseInterface(
     const string &ip_or_name,
     const Options &options) const {
   bool found = false;
-  vector<Interface> interfaces = GetInterfaces(options.include_loopback);
+  vector<Interface> interfaces = GetInterfaces(options.include_loopback,
+                                               options.include_down);
 
   if (interfaces.empty()) {
     OLA_INFO << "No interfaces found";
@@ -110,7 +111,8 @@ bool InterfacePicker::ChooseInterface(
     int32_t index,
     const Options &options) const {
   bool found = false;
-  vector<Interface> interfaces = GetInterfaces(options.include_loopback);
+  vector<Interface> interfaces = GetInterfaces(options.include_loopback,
+                                               options.include_down);
 
   if (interfaces.empty()) {
     OLA_INFO << "No interfaces found";

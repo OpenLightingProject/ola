@@ -661,7 +661,7 @@ RDMResponse *ResponderHelper::GetListInterfaces(
   }
 
   vector<Interface> interfaces =
-      network_manager->GetInterfacePicker()->GetInterfaces(false);
+      network_manager->GetInterfacePicker()->GetInterfaces(false, false);
 
   if (interfaces.size() == 0) {
     return EmptyGetResponse(request, queued_message_count);

@@ -38,7 +38,8 @@ using std::vector;
  * Return a vector of interfaces on the system.
  */
 vector<Interface> WindowsInterfacePicker::GetInterfaces(
-    bool include_loopback) const {
+    bool include_loopback,
+    bool include_down) const {
   vector<Interface> interfaces;
 
   PIP_ADAPTER_INFO pAdapter = NULL;
@@ -94,22 +95,23 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces(
       net = inet_addr(ipAddress->IpAddress.String);
       // Windows doesn't seem to have the notion of an interface being 'up'
       // so we check if this interface has an address assigned.
-      if (net) {
-        Interface iface;
-        iface.name = pAdapter->AdapterName;  // IFNAME_SIZE
-        iface.index = pAdapter->Index;
-        uint8_t macaddr[MACAddress::LENGTH];
-        memcpy(macaddr, pAdapter->Address, MACAddress::LENGTH);
-        iface.hw_address = MACAddress(macaddr);
-        iface.ip_address = IPV4Address(net);
+      if(!net && !include_down)
+        continue;
 
-        mask = inet_addr(ipAddress->IpMask.String);
-        iface.subnet_mask = IPV4Address(mask);
-        iface.bcast_address = IPV4Address((iface.ip_address.AsInt() & mask) |
-                                          (0xFFFFFFFF ^ mask));
+      Interface iface;
+      iface.name = pAdapter->AdapterName;  // IFNAME_SIZE
+      iface.index = pAdapter->Index;
+      uint8_t macaddr[MACAddress::LENGTH];
+      memcpy(macaddr, pAdapter->Address, MACAddress::LENGTH);
+      iface.hw_address = MACAddress(macaddr);
+      iface.ip_address = IPV4Address(net);
 
-        interfaces.push_back(iface);
-      }
+      mask = inet_addr(ipAddress->IpMask.String);
+      iface.subnet_mask = IPV4Address(mask);
+      iface.bcast_address = IPV4Address((iface.ip_address.AsInt() & mask) |
+                                        (0xFFFFFFFF ^ mask));
+
+      interfaces.push_back(iface);
     }
   }
   delete[] pAdapterInfo;
