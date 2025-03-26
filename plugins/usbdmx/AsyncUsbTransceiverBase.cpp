@@ -57,8 +57,9 @@ AsyncUsbTransceiverBase::AsyncUsbTransceiverBase(LibUsbAdaptor *adaptor,
 
 AsyncUsbTransceiverBase::~AsyncUsbTransceiverBase() {
   CancelTransfer();
-  m_adaptor->UnrefDevice(m_usb_device);
+  // Free the transfer first to avoid segfaults in libusb >= 1.0.25
   m_adaptor->FreeTransfer(m_transfer);
+  m_adaptor->UnrefDevice(m_usb_device);
 }
 
 bool AsyncUsbTransceiverBase::Init() {
