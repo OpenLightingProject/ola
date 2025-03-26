@@ -57,6 +57,8 @@ jobs:
       - name: Install Git
         run: apt-get -y install git
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all tags for generating OLA_BUILD_NAME
       - name: Install build tools
         shell: bash
         run: |
