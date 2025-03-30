@@ -109,6 +109,26 @@ string DataTypeToString(uint8_t type) {
       return "uint32";
     case DS_SIGNED_DWORD:
       return "int32";
+    case DS_UINT64:
+      return "uint64";
+    case DS_INT64:
+      return "int64";
+    case DS_GROUP:
+      return "Group";
+    case DS_UID:
+      return "UID";
+    case DS_BOOLEAN:
+      return "Boolean";
+    case DS_URL:
+      return "URL";
+    case DS_MAC:
+      return "MAC";
+    case DS_IPV4:
+      return "IPv4";
+    case DS_IPV6:
+      return "IPv6";
+    case DS_ENUMERATION:
+      return "Enumeration";
     default:
       ostringstream str;
       str << "Unknown, was " << static_cast<int>(type);
@@ -211,6 +231,20 @@ string NackReasonToString(uint16_t reason) {
       return "Invalid IPv6 address";
     case NR_INVALID_PORT:
       return "Invalid port";
+    case NR_DEVICE_ABSENT:
+      return "Device absent";
+    case NR_SENSOR_OUT_OF_RANGE:
+      return "Sensor out of range";
+    case NR_SENSOR_FAULT:
+      return "Sensor faulty";
+    case NR_PACKING_NOT_SUPPORTED:
+      return "Packing not supported";
+    case NR_ERROR_IN_PACKED_LIST_TRANSACTION:
+      return "Error actioning packed list";
+    case NR_PROXY_DROP:
+      return "Proxy drop";
+    case NR_ALL_CALL_SET_FAIL:
+      return "Set all sub devices failed";
     default:
       ostringstream str;
       str << "Unknown, was " << reason;
@@ -621,6 +655,10 @@ string ProductDetailToString(uint16_t detail) {
       return "Battery";
     case PRODUCT_DETAIL_CONTROLLABLE_BREAKER:
       return "Controllable Breaker";
+    case PRODUCT_DETAIL_INPUT_DEVICE:
+      return "Input Device";
+    case PRODUCT_DETAIL_SENSOR_INPUT:
+      return "Sensor Input";
     case PRODUCT_DETAIL_OTHER:
       return "Other Device";
     default:
@@ -738,6 +776,22 @@ string SensorTypeToString(uint8_t type) {
       return "Humidity";
     case SENSOR_COUNTER_16BIT:
       return "16 bit counter";
+    case SENSOR_CPU_LOAD:
+      return "CPU load";
+    case SENSOR_BANDWIDTH:
+      return "Bandwidth";
+    case SENSOR_CONCENTRATION:
+      return "Concentration";
+    case SENSOR_SOUND_PRESSURE_LEVEL:
+      return "Sound pressure level";
+    case SENSOR_SOLID_ANGLE:
+      return "Solid angle";
+    case SENSOR_LOG_RATIO:
+      return "Log ratio";
+    case SENSOR_LOG_RATIO_VOLTS:
+      return "Log ratio volts";
+    case SENSOR_LOG_RATIO_WATTS:
+      return "Log ratio watts";
     case SENSOR_OTHER:
       return "Other";
     default:
@@ -799,6 +853,18 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, color correction";
       case SD_COLOR_SCROLL:
         return "Primary, scroll";
+      case SD_COLOR_ADD_LIME:
+        return "Primary, additive lime";
+      case SD_COLOR_ADD_INDIGO:
+        return "Primary, additive indigo";
+      case SD_COLOR_ADD_CYAN:
+        return "Primary, additive cyan";
+      case SD_COLOR_ADD_DEEP_RED:
+        return "Primary, additive deep red";
+      case SD_COLOR_ADD_DEEP_BLUE:
+        return "Primary, additive deep blue";
+      case SD_COLOR_ADD_NATURAL_WHITE:
+        return "Primary, additive natural white";
       case SD_COLOR_SEMAPHORE:
         return "Primary, color semaphore";
       case SD_COLOR_ADD_AMBER:
@@ -815,6 +881,8 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, hue";
       case SD_COLOR_SATURATION:
         return "Primary, saturation";
+      case SD_COLOR_ADD_UV:
+        return "Primary, additive UV";
       case SD_STATIC_GOBO_WHEEL:
         return "Primary, static gobo wheel";
       case SD_ROTO_GOBO_WHEEL:
@@ -1140,6 +1208,22 @@ string UnitToString(uint8_t unit) {
       return "ire";
     case UNITS_BYTE:
       return "bytes";
+    case UNITS_DECIBEL:
+      return "dB";
+    case UNITS_DECIBEL_VOLT:
+      return "dB(V)";
+    case UNITS_DECIBEL_WATT:
+      return "dB(W)";
+    case UNITS_DECIBEL_METER:
+      return "dB meter";
+    case UNITS_PERCENT:
+      return "%";
+    case UNITS_MOLES_PER_METER_CUBED:
+      return "mol/m^3";
+    case UNITS_RPM:
+      return "RPM";
+    case UNITS_BYTE_PER_SECOND:
+      return "bps";
     default:
       ostringstream str;
       str << "Unknown, was " << static_cast<int>(unit);

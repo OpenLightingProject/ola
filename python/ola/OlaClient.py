@@ -458,6 +458,13 @@ class RDMNack(object):
     'NR_INVALID_IPV4_ADDRESS': (17, 'Invalid IPv4 address'),
     'NR_INVALID_IPV6_ADDRESS': (18, 'Invalid IPv6 address'),
     'NR_INVALID_PORT': (19, 'Invalid port'),
+    'NR_DEVICE_ABSENT': (20, 'Device absent'),
+    'NR_SENSOR_OUT_OF_RANGE': (21, 'Sensor out of range'),
+    'NR_SENSOR_FAULT': (22, 'Sensor faulty'),
+    'NR_PACKING_NOT_SUPPORTED': (23, 'Packing not supported'),
+    'NR_ERROR_IN_PACKED_LIST_TRANSACTION': (24, 'Error actioning packed list'),
+    'NR_PROXY_DROP': (25, 'Proxy drop'),
+    'NR_ALL_CALL_SET_FAIL': (26, 'Set all sub devices failed'),
   }
 
   # this is populated below
