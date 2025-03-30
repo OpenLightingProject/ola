@@ -274,6 +274,10 @@ class Atom(object):
     return str(self)
 
   @staticmethod
+  def HasLabels():
+    return False
+
+  @staticmethod
   def HasRanges():
     return False
 
@@ -437,6 +441,9 @@ class IntAtom(FixedSizeAtom):
     This takes into account any multipliers set for the field.
     """
     return self._AccountForMultiplierPack(value)
+
+  def HasLabels(self):
+    return (len(self._labels) > 0)
 
   def HasRanges(self):
     return (len(self._ranges) > 0)
@@ -1047,17 +1054,21 @@ class PidStore(object):
     raw_list = pid_files
     pid_files = []
     override_file = None
+    names_file = None
 
     for f in raw_list:
       if os.path.basename(f) == OVERRIDE_FILE_NAME:
         override_file = f
         continue
       if os.path.basename(f) == MANUFACTURER_NAMES_FILE_NAME:
+        names_file = f
         continue
       pid_files.append(f)
 
     for pid_file in pid_files:
       self.LoadFile(pid_file, validate)
+    if names_file is not None:
+      self.LoadFile(names_file, validate)
     if override_file is not None:
       self.LoadFile(override_file, validate, True)
 
@@ -1135,7 +1146,7 @@ class PidStore(object):
     self._pid_store.Clear()
 
   def Pids(self):
-    """Returns a list of all PIDs. Manufacturer PIDs aren't included.
+    """Returns a list of all ESTA PIDs. Manufacturer PIDs aren't included.
 
     Returns:
       A list of Pid objects.
@@ -1199,6 +1210,15 @@ class PidStore(object):
     if pid:
       return pid.value
     return pid
+
+  def ManufacturerNames(self):
+    """Return a dict of all Manufacturer Names stored by their ESTA ID.
+
+    Returns:
+      A dict of ESTA IDs to manufacturer names.
+    """
+    # TODO(Peter): Stop people changing this...
+    return self._manufacturer_id_to_name
 
   def ManufacturerIdToName(self, esta_id):
     """A helper method to convert a manufacturer ID to a name

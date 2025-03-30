@@ -1146,5 +1146,45 @@ string UnitToString(uint8_t unit) {
       return str.str();
   }
 }
+
+
+/**
+ * Convert a uint8_t representing a shipping lock state to a human-readable string.
+ * @param shipping_lock_state the shipping lock state value
+ */
+string ShippingLockStateToString(uint8_t shipping_lock_state) {
+  switch (shipping_lock_state) {
+    case SHIPPING_LOCK_STATE_UNLOCKED:
+      return "Unlocked";
+    case SHIPPING_LOCK_STATE_LOCKED:
+      return "Locked";
+    case SHIPPING_LOCK_STATE_PARTIALLY_LOCKED:
+      return "Partially locked";
+    default:
+      ostringstream str;
+      str << "Unknown, was " << static_cast<int>(shipping_lock_state);
+      return str.str();
+  }
+}
+
+
+/**
+ * Safely convert a uint8_t to a rdm_shipping_lock_state
+ */
+bool UIntToShippingLockState(uint8_t state, rdm_shipping_lock_state *shipping_lock_state) {
+  switch (state) {
+    case SHIPPING_LOCK_STATE_UNLOCKED:
+      *shipping_lock_state = SHIPPING_LOCK_STATE_UNLOCKED;
+      return true;
+    case SHIPPING_LOCK_STATE_LOCKED:
+      *shipping_lock_state = SHIPPING_LOCK_STATE_LOCKED;
+      return true;
+    case SHIPPING_LOCK_STATE_PARTIALLY_LOCKED:
+      *shipping_lock_state = SHIPPING_LOCK_STATE_PARTIALLY_LOCKED;
+      return true;
+    default:
+      return false;
+  }
+}
 }  // namespace rdm
 }  // namespace  ola

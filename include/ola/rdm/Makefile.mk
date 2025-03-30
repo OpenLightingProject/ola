@@ -40,6 +40,7 @@ olardminclude_HEADERS = \
     include/ola/rdm/ResponderSensor.h \
     include/ola/rdm/ResponderSettings.h \
     include/ola/rdm/ResponderSlotData.h \
+    include/ola/rdm/ResponderTagSet.h \
     include/ola/rdm/SensorResponder.h \
     include/ola/rdm/StringMessageBuilder.h \
     include/ola/rdm/SubDeviceDispatcher.h \
