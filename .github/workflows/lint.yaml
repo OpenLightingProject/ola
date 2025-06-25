@@ -1,5 +1,9 @@
 name: lint
 on: [push, pull_request]
+
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build for Lint Tasks
@@ -17,6 +21,8 @@ jobs:
       - name: Install Git
         run: apt-get -y install git
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install build tools
         shell: bash
         run: |
@@ -53,7 +59,8 @@ jobs:
         # actually exclude it, so it must first be touched
         run: |
           touch ola-debian-stable-built-source-tree.tar.gz
-          tar --exclude=ola-debian-stable-built-source-tree.tar.gz -cvzf ola-debian-stable-built-source-tree.tar.gz .
+          touch .git
+          tar --exclude=ola-debian-stable-built-source-tree.tar.gz --exclude=.git -cvzf ola-debian-stable-built-source-tree.tar.gz .
       - name: SHA256 artifact archive
         run: sha256sum ola-debian-stable-built-source-tree.tar.gz
       - uses: actions/upload-artifact@v4
@@ -261,6 +268,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Setup Node.js v18
         uses: actions/setup-node@v3
         with:
