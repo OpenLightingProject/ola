@@ -1,5 +1,9 @@
 name: lint
 on: [push, pull_request]
+
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build for Lint Tasks
@@ -17,6 +21,8 @@ jobs:
       - name: Install Git
         run: apt-get -y install git
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install build tools
         shell: bash
         run: |
@@ -261,6 +267,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Setup Node.js v18
         uses: actions/setup-node@v3
         with:
