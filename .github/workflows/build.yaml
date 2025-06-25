@@ -120,7 +120,8 @@ jobs:
         # actually exclude it, so it must first be touched
         run: |
           touch ola-${{ matrix.id }}-source-tree.tar.gz
-          tar --exclude=ola-${{ matrix.id }}-source-tree.tar.gz -cvzf ola-${{ matrix.id }}-source-tree.tar.gz .
+          touch .git
+          tar --exclude=ola-${{ matrix.id }}-source-tree.tar.gz --exclude=.git -cvzf ola-${{ matrix.id }}-source-tree.tar.gz .
       - name: SHA256 artifact archives
         if: always()
         run: sha256sum ola-*.tar.gz

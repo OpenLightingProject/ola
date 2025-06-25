@@ -59,7 +59,8 @@ jobs:
         # actually exclude it, so it must first be touched
         run: |
           touch ola-debian-stable-built-source-tree.tar.gz
-          tar --exclude=ola-debian-stable-built-source-tree.tar.gz -cvzf ola-debian-stable-built-source-tree.tar.gz .
+          touch .git
+          tar --exclude=ola-debian-stable-built-source-tree.tar.gz --exclude=.git -cvzf ola-debian-stable-built-source-tree.tar.gz .
       - name: SHA256 artifact archive
         run: sha256sum ola-debian-stable-built-source-tree.tar.gz
       - uses: actions/upload-artifact@v4
