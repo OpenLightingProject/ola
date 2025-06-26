@@ -37,6 +37,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringGetSet);
   CPPUNIT_TEST(testAssign);
   CPPUNIT_TEST(testCopy);
+  CPPUNIT_TEST(testAdditiveChecksum);
   CPPUNIT_TEST(testMerge);
   CPPUNIT_TEST(testStringToDmx);
   CPPUNIT_TEST(testCopyOnWrite);
@@ -52,6 +53,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
     void testAssign();
     void testStringGetSet();
     void testCopy();
+    void testAdditiveChecksum();
     void testMerge();
     void testStringToDmx();
     void testCopyOnWrite();
@@ -258,6 +260,21 @@ void DmxBufferTest::testCopy() {
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), result_length);
   OLA_ASSERT_EQ(0, memcmp(TEST_DATA2, result, result_length));
   delete[] result;
+}
+
+
+/*
+ * Check that the additive checksum works
+ */
+void DmxBufferTest::testAdditiveChecksum() {
+  DmxBuffer buffer1(TEST_DATA, sizeof(TEST_DATA));
+  OLA_ASSERT_EQ(15u, buffer1.AdditiveChecksum());
+
+  DmxBuffer buffer2(TEST_DATA2, sizeof(TEST_DATA2));
+  OLA_ASSERT_EQ(45u, buffer2.AdditiveChecksum());
+
+  DmxBuffer buffer3(TEST_DATA3, sizeof(TEST_DATA3));
+  OLA_ASSERT_EQ(33u, buffer3.AdditiveChecksum());
 }
 
 
