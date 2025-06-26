@@ -53,7 +53,7 @@ using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::StringMessageBuilder;
 using ola::rdm::MessageSerializer;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -137,7 +137,7 @@ void MessageSerializerTest::testSimple() {
   inputs.push_back("01:23:45:67:89:ab");
   inputs.push_back("foo");
 
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
   OLA_ASSERT_NOT_NULL(message.get());
@@ -176,7 +176,7 @@ void MessageSerializerTest::testString() {
   inputs.push_back("foo bar");  // this is shorter than the min size
   inputs.push_back("long long foo bar baz");
 
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
   OLA_ASSERT_NOT_NULL(message.get());
@@ -207,7 +207,7 @@ void MessageSerializerTest::testUID() {
   vector<string> inputs;
   inputs.push_back("7a70:00000001");
 
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
   OLA_ASSERT_NOT_NULL(message.get());
@@ -250,7 +250,7 @@ void MessageSerializerTest::testLittleEndian() {
   inputs.push_back("77000000000");
   inputs.push_back("-77000000000");
 
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
   OLA_ASSERT_NOT_NULL(message.get());
@@ -289,7 +289,7 @@ void MessageSerializerTest::testWithGroups() {
   inputs.push_back("true");
   inputs.push_back("10");
 
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
   OLA_ASSERT_NOT_NULL(message.get());
@@ -312,7 +312,7 @@ void MessageSerializerTest::testWithGroups() {
   inputs2.push_back("false");
   inputs2.push_back("240");
 
-  auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
+  unique_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
   data = serializer.SerializeMessage(message2.get(), &packed_length);
   OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(6u, packed_length);
@@ -345,7 +345,7 @@ void MessageSerializerTest::testWithNestedGroups() {
   inputs.push_back("true");
   inputs.push_back("false");
 
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
   OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
 

@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
   options.network_interface = FLAGS_interface.str();
   options.pid_data_dir = FLAGS_pid_location.str();
 
-  std::auto_ptr<OlaDaemon> olad(new OlaDaemon(options, &export_map));
+  std::unique_ptr<OlaDaemon> olad(new OlaDaemon(options, &export_map));
   if (!olad.get()) {
     return ola::EXIT_UNAVAILABLE;
   }

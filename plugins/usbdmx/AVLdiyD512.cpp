@@ -22,6 +22,7 @@
 
 #include <unistd.h>
 #include <string>
+#include <utility>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
@@ -100,12 +101,12 @@ bool SynchronousAVLdiyD512::Init() {
     return false;
   }
 
-  std::auto_ptr<AVLdiyThreadedSender> sender(
+  std::unique_ptr<AVLdiyThreadedSender> sender(
       new AVLdiyThreadedSender(m_adaptor, m_usb_device, usb_handle));
   if (!sender->Start()) {
     return false;
   }
-  m_sender.reset(sender.release());
+  m_sender = std::move(sender);
   return true;
 }
 

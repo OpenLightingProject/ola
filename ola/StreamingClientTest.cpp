@@ -40,7 +40,7 @@ using ola::StreamingClient;
 using ola::network::GenericSocketAddress;
 using ola::thread::ConditionVariable;
 using ola::thread::Mutex;
-using std::auto_ptr;
+using std::unique_ptr;
 
 class StreamingClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StreamingClientTest);
@@ -77,7 +77,7 @@ class OlaServerThread: public ola::thread::Thread {
     GenericSocketAddress RPCAddress() const;
 
  private:
-    auto_ptr<OlaDaemon> m_olad;
+    unique_ptr<OlaDaemon> m_olad;
     bool m_is_running;
     Mutex m_mutex;
     ConditionVariable m_condition;
@@ -96,9 +96,9 @@ bool OlaServerThread::Setup() {
   ola_options.http_data_dir = "";
 
   // pick an unused port
-  auto_ptr<OlaDaemon> olad(new OlaDaemon(ola_options, NULL));
+  unique_ptr<OlaDaemon> olad(new OlaDaemon(ola_options, NULL));
   if (olad->Init()) {
-    m_olad.reset(olad.release());
+    m_olad = std::move(olad);
     return true;
   } else {
     return false;

@@ -31,7 +31,7 @@
 using ola::io::IOQueue;
 using ola::io::IOVec;
 using ola::io::MemoryBlockPool;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 
@@ -59,7 +59,7 @@ class IOQueueTest: public CppUnit::TestFixture {
     void testStringRead();
 
  private:
-    auto_ptr<IOQueue> m_buffer;
+    unique_ptr<IOQueue> m_buffer;
 
     unsigned int SumLengthOfIOVec(const struct IOVec *iov, int iocnt);
 };

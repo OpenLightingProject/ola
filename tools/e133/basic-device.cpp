@@ -58,7 +58,7 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
 using ola::acn::IncomingTCPTransport;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 /**
@@ -93,11 +93,11 @@ class SimpleE133Device {
   ola::acn::RootInflator m_root_inflator;
 
   // Once we have a connection these are filled in.
-  auto_ptr<TCPSocket> m_socket;
-  auto_ptr<NonBlockingSender> m_message_queue;
+  unique_ptr<TCPSocket> m_socket;
+  unique_ptr<NonBlockingSender> m_message_queue;
   // The Health Checked connection
-  auto_ptr<E133HealthCheckedConnection> m_health_checked_connection;
-  auto_ptr<IncomingTCPTransport> m_in_transport;
+  unique_ptr<E133HealthCheckedConnection> m_health_checked_connection;
+  unique_ptr<IncomingTCPTransport> m_in_transport;
 
   void OnTCPConnect(TCPSocket *socket);
   void ReceiveTCPData();
