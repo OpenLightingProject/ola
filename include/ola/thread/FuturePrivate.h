@@ -89,7 +89,8 @@ class FutureImpl {
   bool m_is_set;
   T m_value;
 
-  DISALLOW_COPY_AND_ASSIGN(FutureImpl<T>);
+  FutureImpl(const FutureImpl<T>&) = delete;
+  FutureImpl<T>& operator=(const FutureImpl<T>&) = delete;
 };
 
 /**
@@ -152,7 +153,8 @@ class FutureImpl<void> {
   unsigned int m_ref_count;
   bool m_is_set;
 
-  DISALLOW_COPY_AND_ASSIGN(FutureImpl<void>);
+  FutureImpl(const FutureImpl<void>&) = delete;
+  FutureImpl<void>& operator=(const FutureImpl<void>&) = delete;
 };
 
 }  // namespace thread
