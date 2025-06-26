@@ -41,7 +41,7 @@
 #include "tools/e133/TCPConnectionStats.h"
 
 using std::string;
-using std::auto_ptr;
+using std::unique_ptr;
 
 /**
  * This encapulates the functionality of an E1.33 Device.
@@ -68,7 +68,7 @@ class E133Device {
     const ola::network::IPV4Address m_ip_address;
     ola::e133::MessageBuilder m_message_builder;
     TCPConnectionStats m_tcp_stats;
-    auto_ptr<DesignatedControllerConnection> m_controller_connection;
+    unique_ptr<DesignatedControllerConnection> m_controller_connection;
 
     class EndpointManager *m_endpoint_manager;
     E133EndpointInterface *m_root_endpoint;

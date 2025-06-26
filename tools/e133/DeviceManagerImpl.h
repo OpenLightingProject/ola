@@ -54,7 +54,7 @@ using ola::network::TCPSocket;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -98,9 +98,9 @@ class DeviceManagerImpl {
       DeviceMap;
 
     DeviceMap m_device_map;
-    auto_ptr<RDMMessageCallback> m_rdm_callback;
-    auto_ptr<AcquireDeviceCallback> m_acquire_device_cb_;
-    auto_ptr<ReleaseDeviceCallback> m_release_device_cb_;
+    unique_ptr<RDMMessageCallback> m_rdm_callback;
+    unique_ptr<AcquireDeviceCallback> m_acquire_device_cb_;
+    unique_ptr<ReleaseDeviceCallback> m_release_device_cb_;
 
     ola::io::SelectServerInterface *m_ss;
 

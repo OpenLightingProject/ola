@@ -61,7 +61,7 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::rdm::RDMStatusCode;
 using ola::strings::ToHex;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::vector;
 
 JaRulePortHandleImpl::JaRulePortHandleImpl(JaRuleWidgetPort *parent_port,
@@ -120,7 +120,7 @@ void JaRulePortHandleImpl::SendRDMRequest(RDMRequest *request,
 
 void JaRulePortHandleImpl::MuteDevice(const UID &target,
                                       MuteDeviceCallback *mute_complete) {
-  auto_ptr<RDMRequest> request(
+  unique_ptr<RDMRequest> request(
       ola::rdm::NewMuteRequest(m_uid, target,
                                m_transaction_number.Next(),
                                m_physical_port + 1));
@@ -134,7 +134,7 @@ void JaRulePortHandleImpl::MuteDevice(const UID &target,
 }
 
 void JaRulePortHandleImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
-  auto_ptr<RDMRequest> request(
+  unique_ptr<RDMRequest> request(
       ola::rdm::NewUnMuteRequest(m_uid, UID::AllDevices(),
                                  m_transaction_number.Next(),
                                  m_physical_port + 1));
@@ -150,7 +150,7 @@ void JaRulePortHandleImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
 void JaRulePortHandleImpl::Branch(const UID &lower,
                                   const UID &upper,
                                   BranchCallback *branch_complete) {
-  auto_ptr<RDMRequest> request(
+  unique_ptr<RDMRequest> request(
       ola::rdm::NewDiscoveryUniqueBranchRequest(m_uid, lower, upper,
                                                 m_transaction_number.Next()));
 
@@ -219,7 +219,7 @@ void JaRulePortHandleImpl::MuteDeviceComplete(
       payload.size() > sizeof(GetSetTiming)) {
     // Skip the timing data & the start code.
     ola::rdm::RDMStatusCode status_code = rdm::RDM_INVALID_RESPONSE;
-    auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
+    unique_ptr<RDMResponse> response(RDMResponse::InflateFromData(
           payload.substr(sizeof(GetSetTiming) + 1), &status_code));
 
     // TODO(simon): I guess we could ack timer the MUTE. Handle this case
@@ -275,7 +275,7 @@ void JaRulePortHandleImpl::RDMComplete(const ola::rdm::RDMRequest *request_ptr,
                                        uint8_t status_flags,
                                        const ola::io::ByteString &payload) {
   CheckStatusFlags(status_flags);
-  auto_ptr<const RDMRequest> request(request_ptr);
+  unique_ptr<const RDMRequest> request(request_ptr);
   ola::rdm::RDMFrames frames;
 
   if (result != COMMAND_RESULT_OK) {

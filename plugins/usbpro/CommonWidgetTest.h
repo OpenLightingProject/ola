@@ -38,8 +38,8 @@ class CommonWidgetTest: public CppUnit::TestFixture {
  protected:
     ola::io::SelectServer m_ss;
     ola::io::PipeDescriptor m_descriptor;
-    std::auto_ptr<ola::io::PipeDescriptor> m_other_end;
-    std::auto_ptr<MockEndpoint> m_endpoint;
+    std::unique_ptr<ola::io::PipeDescriptor> m_other_end;
+    std::unique_ptr<MockEndpoint> m_endpoint;
 
     void Terminate() { m_ss.Terminate(); }
 

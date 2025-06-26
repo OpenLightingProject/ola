@@ -43,7 +43,7 @@ using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -70,7 +70,7 @@ class DmxterWidgetTest: public CommonWidgetTest {
   void testShutdown();
 
  private:
-  auto_ptr<ola::plugin::usbpro::DmxterWidget> m_widget;
+  unique_ptr<ola::plugin::usbpro::DmxterWidget> m_widget;
   unsigned int m_tod_counter;
 
   void Terminate() {
@@ -144,7 +144,7 @@ void DmxterWidgetTest::ValidateResponse(RDMReply *reply) {
   OLA_ASSERT_EQ((size_t) 1, frames.size());
 
   ola::rdm::RDMStatusCode raw_code;
-  auto_ptr<ola::rdm::RDMResponse> raw_response(
+  unique_ptr<ola::rdm::RDMResponse> raw_response(
       ola::rdm::RDMResponse::InflateFromData(
           frames[0].data.substr(1), &raw_code));
   OLA_ASSERT_TRUE(*raw_response == *response);
@@ -336,7 +336,7 @@ void DmxterWidgetTest::testSendRDMMute() {
 
   // response
   // to keep things simple here we return the TEST_RDM_DATA.
-  auto_ptr<const RDMResponse> response(
+  unique_ptr<const RDMResponse> response(
     GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
 
   unsigned int response_size = RDMCommandSerializer::RequiredSize(
