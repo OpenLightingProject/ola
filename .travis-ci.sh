@@ -232,6 +232,7 @@ elif [[ $TASK = 'flake8' ]]; then
   make flake8
 else
   # Otherwise compile and check as normal
+  # Env var name DISTCHECK_CONFIGURE_FLAGS must be used, see #1881 and #1883
   if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
     # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
     export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-ja-rule --enable-e133 CPPFLAGS=-Wno-deprecated-declarations'

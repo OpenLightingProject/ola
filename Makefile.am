@@ -246,7 +246,7 @@ else
 endif
 
 # cpplint linter
-CPP_LINT_FILTER = "-legal/copyright,-readability/streams,-runtime/arrays"
+CPP_LINT_FILTER = "-legal/copyright,-readability/streams,-runtime/arrays,-whitespace/indent_namespace"
 CPP_LINT_FILES = $(shell find . \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
         -wholename "./common/protocol/Ola.pb.*" -or \
         -wholename "./common/rpc/Rpc.pb.*" -or \
@@ -271,8 +271,10 @@ COVERAGE_OUTPUTS = --txt coverage/coverage.txt \
 	--cobertura coverage/coverage.cobertura.xml \
 	--html-details coverage/details.html/coverage.details.html \
 	--coveralls coverage/coverage.coveralls.json
-COVERAGE_GCOV_EXE=--gcov-executable /usr/bin/gcov
-COVERAGE_FILTERS=-e '.*Test\.cpp$$' \
+# See https://gcovr.com/en/stable/guide/gcov_parser.html#negative-hit-counts
+COVERAGE_FLAGS = --gcov-ignore-parse-errors=negative_hits.warn_once_per_file
+COVERAGE_GCOV_EXE = --gcov-executable /usr/bin/gcov
+COVERAGE_FILTERS = -e '.*Test\.cpp$$' \
 	-e '.*\.pb\.cc$$' \
 	-e '.*\.pb\.cpp$$' \
 	-e '.*\.pb\.h$$' \
@@ -287,7 +289,7 @@ if !BUILD_GCOV
 else
 if FOUND_GCOVR
 	mkdir -p coverage/details.html/
-	gcovr --print-summary $(COVERAGE_OUTPUTS) $(COVERAGE_GCOV_EXE) --root . $(COVERAGE_FILTERS)
+	gcovr $(COVERAGE_FLAGS) --print-summary $(COVERAGE_OUTPUTS) $(COVERAGE_GCOV_EXE) --root . $(COVERAGE_FILTERS)
 else
 	$(error gcovr not found. Install gcovr (e.g. via pip for the latest version) and re-run configure.)
 endif

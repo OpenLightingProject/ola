@@ -141,7 +141,7 @@ bool ExtractSlotValueFromPair(const string &type, lo_arg **argv,
  * @param user_data a pointer to the OSCNode object.
  */
 int OSCDataHandler(const char *osc_address, const char *types, lo_arg **argv,
-                   int argc, void *, void *user_data) {
+                   int argc, lo_message, void *user_data) {
   OLA_DEBUG << "Got OSC message for " << osc_address << ", types are " << types;
 
   OSCNode *node = reinterpret_cast<OSCNode*>(user_data);
@@ -150,7 +150,7 @@ int OSCDataHandler(const char *osc_address, const char *types, lo_arg **argv,
 
   if (argc == 1) {
     if (type == "b") {
-      lo_blob blob = argv[0];
+      lo_blob blob = (lo_blob)argv[0];
       unsigned int size = min(static_cast<uint32_t>(DMX_UNIVERSE_SIZE),
                               lo_blob_datasize(blob));
       node->SetUniverse(

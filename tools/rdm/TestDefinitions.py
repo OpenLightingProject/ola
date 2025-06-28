@@ -269,7 +269,6 @@ class DUBSingleLowerUID(TestMixins.DiscoveryMixin,
                         ResponderTestFixture):
   """DUB from <UID> - 1 to <UID> - 1."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
@@ -285,7 +284,6 @@ class DUBSingleLowerUID(TestMixins.DiscoveryMixin,
 class DUBSingleUpperUID(TestMixins.DiscoveryMixin,
                         ResponderTestFixture):
   """DUB from <UID> + 1 to <UID> + 1."""
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
