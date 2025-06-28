@@ -62,7 +62,7 @@ const uint8_t BaseRobeWidget::SOM;
         /^(?:([0-9]{1,3})(?:\s(THRU)\s(?:([0-9]{1,3}))?)?(?:\s(@)\s(?:([0-9]{1,3}|FULL))?)?)/;
             $scope.input(' THRU ');
   manufacturer_name: "ALS Stanislaw Binkiewicz"
-  manufacturer_name: "Guangzhou Litewise Lighting Equipments Co., Ltd. dba \"EK Lights\""
+  manufacturer_name: "EK INC (formerly Guangzhou Litewise Lighting Equipments Co., Ltd.)"
   manufacturer_name: "Guangzhou VAS Lighting Co., Ltd."
   manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
   manufacturer_name: "MEDIAM Ltd. (Modus brand)"

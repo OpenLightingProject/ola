@@ -21,6 +21,7 @@
 #include <ola/client/ClientWrapper.h>
 #include <ola/Callback.h>
 
+#include <iostream>
 #include <vector>
 
 using std::cout;
