@@ -199,7 +199,14 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
       EC_INVALID_STATIC_CONFIG_TYPE = 0x30,  // this is a guess
       EC_INVALID_IPV4_ADDRESS = 0x31,  // this is a guess
       EC_INVALID_IPV6_ADDRESS = 0x32,  // this is a guess
-      EC_INVALID_PORT = 0x33  // this is a guess
+      EC_INVALID_PORT = 0x33,  // this is a guess
+      EC_DEVICE_ABSENT = 0x34,  // this is a guess
+      EC_SENSOR_OUT_OF_RANGE = 0x35,  // this is a guess
+      EC_SENSOR_FAULT = 0x36,  // this is a guess
+      EC_PACKING_NOT_SUPPORTED = 0x37,  // this is a guess
+      EC_ERROR_IN_PACKED_LIST_TRANSACTION = 0x38,  // this is a guess
+      EC_PROXY_DROP = 0x39,  // this is a guess
+      EC_ALL_CALL_SET_FAIL = 0x3a  // this is a guess
     } dmx_tri_error_codes;
     // The RDM NACK code is currently bitwise or-ed with 0x20 to generate the
     // error code
