@@ -18,6 +18,8 @@ package ola;
 
 import java.util.logging.Logger;
 
+import ola.proto.Ola;
+import ola.proto.Ola.Ack;
 import ola.proto.Ola.DeviceConfigReply;
 import ola.proto.Ola.DeviceConfigRequest;
 import ola.proto.Ola.DeviceInfoReply;
@@ -30,10 +32,14 @@ import ola.proto.Ola.OlaServerService;
 import ola.proto.Ola.OptionalUniverseRequest;
 import ola.proto.Ola.PatchAction;
 import ola.proto.Ola.PatchPortRequest;
+import ola.proto.Ola.PluginReloadRequest;
 import ola.proto.Ola.PluginDescriptionReply;
 import ola.proto.Ola.PluginDescriptionRequest;
 import ola.proto.Ola.PluginListReply;
 import ola.proto.Ola.PluginListRequest;
+import ola.proto.Ola.PluginStateRequest;
+import ola.proto.Ola.PluginStateReply;
+import ola.proto.Ola.PluginStateChangeRequest;
 import ola.proto.Ola.PortPriorityRequest;
 import ola.proto.Ola.RDMRequest;
 import ola.proto.Ola.RDMResponse;
@@ -115,18 +121,59 @@ public class OlaClient {
 
 
     /**
+     * Reload the plugins.
+     *
+     * @return true when succeeded.
+     */
+    public boolean reloadPlugins() {
+        return callRpcMethod("ReloadPlugins", PluginReloadRequest.newBuilder().build()) != null;
+    }
+
+
+    /**
      * Get a plugin description from olad.
      *
      * @param pluginId number of the plugin for which to receive the description
-     * @return The list of plugings.
+     * @return The description of the plugin.
      */
     public PluginDescriptionReply getPluginDescription(int pluginId) {
-
         PluginDescriptionRequest request = PluginDescriptionRequest.newBuilder()
                 .setPluginId(pluginId)
                 .build();
 
         return (PluginDescriptionReply) callRpcMethod("GetPluginDescription", request);
+    }
+
+
+    /**
+     * Return the state of a plugin.
+     *
+     * @param pluginId number of the plugin to fetch the state of
+     * @return The state of the plugin.
+     */
+    public PluginStateReply getPluginState(int pluginId) {
+        PluginStateRequest request = Ola.PluginStateRequest.newBuilder()
+                .setPluginId(pluginId)
+                .build();
+
+        return (PluginStateReply) callRpcMethod("GetPluginState", request);
+    }
+
+
+    /**
+     * Set the state of a plugin.
+     *
+     * @param pluginId number of the plugin for which to change the state
+     * @param enabled  whether the plugin should be enabled or not
+     * @return true when succeeded.
+     */
+    public boolean setPluginState(int pluginId, boolean enabled) {
+        PluginStateChangeRequest request = Ola.PluginStateChangeRequest.newBuilder()
+                .setPluginId(pluginId)
+                .setEnabled(enabled)
+                .build();
+
+        return callRpcMethod("SetPluginState", request) != null;
     }
 
 
