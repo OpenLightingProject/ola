@@ -60,11 +60,10 @@ typedef uint32_t in_addr_t;
 
 #ifdef HAVE_ENDIAN_H
 #include <endian.h>
-#elif defined(__APPLE__)
-#include <libkern/OSByteOrder.h>
-#define be64toh(x) OSSwapBigToHostInt64(x)
-#define htobe64(x) OSSwapHostToBigInt64(x)
 #endif  // HAVE_ENDIAN_H
+#ifdef HAVE_LIBKERN_OSBYTEORDER_H
+#include <libkern/OSByteOrder.h>
+#endif  // HAVE_LIBKERN_OSBYTEORDER_H
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -164,11 +163,13 @@ uint32_t NetworkToHost(uint32_t value) {
 }
 
 uint64_t NetworkToHost(uint64_t value) {
-#if defined(HAVE_ENDIAN_H) || defined(__APPLE__)
+#ifdef HAVE_ENDIAN_H
   return be64toh(value);
+#elif defined(HAVE_LIBKERN_OSBYTEORDER_H)
+  return OSSwapBigToHostInt64(value);
 #else
-#error "No be64toh for NetworkToHost, please report this."
-#endif  // defined(HAVE_ENDIAN_H) || defined(__APPLE__)
+#error "No big endian 64 bit to host for NetworkToHost, please report this."
+#endif  // HAVE_ENDIAN_H
 }
 
 int16_t NetworkToHost(int16_t value) {
@@ -180,11 +181,13 @@ int32_t NetworkToHost(int32_t value) {
 }
 
 int64_t NetworkToHost(int64_t value) {
-#if defined(HAVE_ENDIAN_H) || defined(__APPLE__)
+#ifdef HAVE_ENDIAN_H
   return be64toh(value);
+#elif defined(HAVE_LIBKERN_OSBYTEORDER_H)
+  return OSSwapBigToHostInt64(value);
 #else
-#error "No be64toh for NetworkToHost, please report this."
-#endif  // defined(HAVE_ENDIAN_H) || defined(__APPLE__)
+#error "No big endian 64 bit to host for NetworkToHost, please report this."
+#endif  // HAVE_ENDIAN_H
 }
 
 uint16_t HostToNetwork(uint16_t value) {
@@ -204,19 +207,23 @@ int32_t HostToNetwork(int32_t value) {
 }
 
 uint64_t HostToNetwork(uint64_t value) {
-#if defined(HAVE_ENDIAN_H) || defined(__APPLE__)
+#ifdef HAVE_ENDIAN_H
   return htobe64(value);
+#elif defined(HAVE_LIBKERN_OSBYTEORDER_H)
+  return OSSwapHostToBigInt64(value);
 #else
-#error "No htobe64 for HostToNetwork, please report this."
-#endif  // defined(HAVE_ENDIAN_H) || defined(__APPLE__)
+#error "No host to big endian 64 bit for HostToNetwork, please report this."
+#endif  // HAVE_ENDIAN_H
 }
 
 int64_t HostToNetwork(int64_t value) {
-#if defined(HAVE_ENDIAN_H) || defined(__APPLE__)
+#ifdef HAVE_ENDIAN_H
   return htobe64(value);
+#elif defined(HAVE_LIBKERN_OSBYTEORDER_H)
+  return OSSwapHostToBigInt64(value);
 #else
-#error "No htobe64 for HostToNetwork, please report this."
-#endif  // defined(HAVE_ENDIAN_H) || defined(__APPLE__)
+#error "No host to big endian 64 bit for HostToNetwork, please report this."
+#endif  // HAVE_ENDIAN_H
 }
 
 uint16_t HostToLittleEndian(uint16_t value) {
