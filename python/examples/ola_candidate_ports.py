@@ -19,11 +19,15 @@
 """List candidate ports for patching."""
 
 from __future__ import print_function
-from ola.ClientWrapper import ClientWrapper
+
 import argparse
 import sys
 
+from ola.ClientWrapper import ClientWrapper
+
 __author__ = 'simon.marchi@polymtl.ca (Simon Marchi)'
+
+wrapper = None
 
 
 def ParseArgs():
@@ -52,11 +56,21 @@ def GetCandidatePortsCallback(status, devices):
   else:
     print('Error: %s' % status.message, file=sys.stderr)
 
+  global wrapper
+  if wrapper:
+    wrapper.Stop()
 
-args = ParseArgs()
-universe = args.universe
 
-wrapper = ClientWrapper()
-client = wrapper.Client()
-client.GetCandidatePorts(GetCandidatePortsCallback, universe)
-wrapper.Run()
+def main():
+  args = ParseArgs()
+  universe = args.universe
+
+  global wrapper
+  wrapper = ClientWrapper()
+  client = wrapper.Client()
+  client.GetCandidatePorts(GetCandidatePortsCallback, universe)
+  wrapper.Run()
+
+
+if __name__ == '__main__':
+  main()

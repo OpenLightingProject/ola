@@ -17,21 +17,30 @@
 # Copyright (C) 2010 Simon Newton
 
 from __future__ import print_function
-from ola.testing.rdm import TestDefinitions, TestRunner
-from ola.testing.rdm.DMXSender import DMXSender
-from ola.testing.rdm.TestState import TestState
-from ola.testing.rdm.TimingStats import TimingStats
+
 import datetime
 import logging
 import re
 import sys
 import textwrap
 import time
-from ola import PidStore
-from ola import Version
-from ola.ClientWrapper import ClientWrapper
-from ola.UID import UID
 from optparse import OptionParser
+
+from ola.ClientWrapper import ClientWrapper
+from ola.StringUtils import StringEscape
+from ola.testing.rdm import TestDefinitions, TestRunner
+from ola.testing.rdm.DMXSender import DMXSender
+from ola.testing.rdm.TestState import TestState
+from ola.testing.rdm.TimingStats import TimingStats
+from ola.UID import UID
+
+from ola import PidStore, Version
+
+if sys.version_info >= (3, 0):
+  try:
+    raw_input
+  except NameError:
+    raw_input = input
 
 '''Automated testing for RDM responders.'''
 
@@ -194,13 +203,11 @@ def DisplaySummary(options, runner, tests, device):
 
   manufacturer_label = getattr(device, 'manufacturer_label', None)
   if manufacturer_label:
-    logging.info('Manufacturer: %s' %
-                 manufacturer_label.encode('string-escape'))
+    logging.info('Manufacturer: %s' % StringEscape(manufacturer_label))
 
   model_description = getattr(device, 'model_description', None)
   if model_description:
-    logging.info('Model Description: %s' %
-                 model_description.encode('string-escape'))
+    logging.info('Model Description: %s' % StringEscape(model_description))
 
   software_version = getattr(device, 'software_version', None)
   if software_version:
@@ -220,7 +227,7 @@ def DisplaySummary(options, runner, tests, device):
 
   logging.info('------------------ By Category ------------------')
 
-  for category, counts in by_category.iteritems():
+  for category, counts in by_category.items():
     passed = counts.get(TestState.PASSED, 0)
     total_run = (passed + counts.get(TestState.FAILED, 0))
     if total_run == 0:
@@ -242,6 +249,9 @@ def main():
   options = ParseOptions()
 
   test_classes = TestRunner.GetTestClasses(TestDefinitions)
+  if len(test_classes) <= 0:
+    print('Failed to find any tests to run')
+    sys.exit(2)
   if options.list_tests:
     for test_name in sorted(c.__name__ for c in test_classes):
       print(test_name)

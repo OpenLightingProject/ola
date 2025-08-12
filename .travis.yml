@@ -103,12 +103,14 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
-      env: TASK='check-licences'
+      env:
+        - TASK='check-licences'
+        - PYTHON='python3'
       addons:
         apt:
           packages:
            - *core_build
-           - *bionic_build_extras_python2
+           - *bionic_build_extras_python3
     - os: linux
       dist: bionic
       arch: arm64
@@ -131,8 +133,8 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
-      env:
-        - TASK='flake8'
+      env: TASK='flake8'
+      python: '2.7'
       addons:
         apt:
           packages:
@@ -194,6 +196,30 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
+      compiler: gcc
+      env: TASK='compile'
+      python: '2.7'
+      addons:
+        apt:
+          packages:
+           - *core_build_gpp_latest
+           - *bionic_build_extras_python2
+          sources:
+           - ubuntu-toolchain-r-test
+    - os: linux
+      dist: bionic
+      arch: s390x
+      compiler: clang
+      env: TASK='compile'
+      python: '2.7'
+      addons:
+        apt:
+          packages:
+           - *core_build_clang_recent
+           - *bionic_build_extras_python2
+    - os: linux
+      dist: bionic
+      arch: s390x
       compiler: gcc
       env: TASK='compile'
       python: '2.7'
@@ -408,12 +434,6 @@ jobs:
     - os: linux
       dist: bionic
       arch: arm64
-      env:
-      - TASK='flake8'
-      - PYTHON='python3'
-    - os: linux
-      dist: bionic
-      arch: arm64
       compiler: gcc
       env: TASK='coverage'
     - os: linux
@@ -469,6 +489,8 @@ before_install:
  - if [ "$PYTHON" == "python3" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then pyenv global 3.8.1; fi
 #On arm64 (at least) pip is now pip3, so symlink it to pip2 unless we're using python3.
  - if [ "$PYTHON" != "python3" ]; then sudo rm /usr/local/bin/pip && sudo ln -s /usr/local/bin/pip2 /usr/local/bin/pip; fi
+#Switch node to version 16 LTS, as newer LTS ones don't work with Ubuntu 18.04 and some older ones are too old
+ - if [ "$TASK" = "jshint" ]; then nvm install 16 && nvm use 16; fi
 #Fix permissions for unbound (and possibly others)
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
 #Add a missing gnupg folder
@@ -481,19 +503,28 @@ before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall --ignore-dependencies gnupg; fi
 #Fix a broken homebrew python upgrade - see https://github.com/Homebrew/homebrew-core/issues/26358
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python || true; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [ ! -d /usr/local/sbin ]; then sudo mkdir -p /usr/local/sbin && sudo chown -R $(whoami) /usr/local/sbin; fi; fi
- - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
+#Uninstall some homebrew packages which aren't required so we don't end up updating and rebuilding them. Force so it doesn't reinstall
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall --ignore-dependencies --force cgal liblwgeom libspatialite mercurial postgis postgres sfcgal; fi
+#Having fixed everything up, update to the bleeding edge
+#Skip updating for now as it seems to be breaking the build, also now done via the addon
+# - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
  # This is no longer allowed, so build all Mac builds as protobuf latest
  #- if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb; fi # install protobuf 3.1 as that's the latest we support everywhere
  #- if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew link -f https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.1/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # While protobuf is not on the latest release
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew install protobuf@3.6; fi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$PROTOBUF" != "latest" ]; then brew link -f protobuf@3.6; export PKG_CONFIG_PATH=/usr/local/opt/protobuf@3.6/lib/pkgconfig; brew install --build-from-source --ignore-dependencies --env=std protobuf-c; fi # When protobuf is not on the latest release
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir -p ${HOME}/Library/Python/2.7/lib/python/site-packages; echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ${HOME}/Library/Python/2.7/lib/python/site-packages/homebrew.pth; fi
+ - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi # Use ccache on Mac too
+#Put back the old pip numpy we need to work
+ - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install --upgrade --no-deps --force-reinstall --user numpy; fi
 #Coverity doesn't work with g++ 5 or 6, so only upgrade to g++ 4.9 for that
  - if [ "$TRAVIS_OS_NAME" == "linux" -a \( "$TASK" = "compile" -o "$TASK" = "coverage" -o "$TASK" = "doxygen" \) -a "$CXX" = "g++" ]; then export CXX="ccache g++-10" CC="ccache gcc-10"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
-#Use the latest clang if we're compiling with clang, except on arm64 where it's not available
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" != "arm64" ]; then export CXX="clang++-11" CC="clang-11"; fi
-#Use a recent clang if we're compiling with clang on arm64 as the latest isn't available
- - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" == "arm64" ]; then export CXX="clang++-10" CC="clang-10"; fi
+#Use the latest clang if we're compiling with clang, except on arm64 and s390x where it's not available
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a "$TRAVIS_CPU_ARCH" != "arm64" -a "$TRAVIS_CPU_ARCH" != "s390x" ]; then export CXX="clang++-11" CC="clang-11"; fi
+#Use a recent clang if we're compiling with clang on arm64 or s390x as the latest isn't available
+ - if [ "$TRAVIS_OS_NAME" == "linux" -a "$CXX" = "clang++" -a \( "$TRAVIS_CPU_ARCH" == "arm64" -o "$TRAVIS_CPU_ARCH" == "s390x" \) ]; then export CXX="clang++-10" CC="clang-10"; fi
 #Report the compiler version
  - $CXX --version
 
@@ -509,14 +540,13 @@ install:
   - if [ "$TRAVIS_DIST" != "bionic" -o "$PYTHON" == "python3" ]; then pip install --user numpy; fi
   - if [ "$TASK" = "coverage" ]; then pip install --user cpp-coveralls; fi
   - if [ "$TASK" = "flake8" ]; then pip install --user flake8; fi
-  - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
-  - if [ "$TASK" = "jshint" ]; then npm install -g grunt-cli; fi
+  - if [ "$TASK" = "codespell" ]; then pip3 install --user codespell==2.2.1; fi
+  - if [ "$TASK" = "jshint" ]; then npm --verbose install -g grunt-cli; fi
+  - if [ "$TASK" = "jshint" ]; then grunt --version --verbose; fi
 # Installing via the addon isn't currently working so do it the old fashioned way
   - if [ "$TRAVIS_OS_NAME" == "osx" -a "$CPPUNIT" != "1.14" ]; then brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e43cf6a3%5E/Formula/cppunit.rb; fi # install a slightly older cppunit, as latest needs C++11 support
 
 after_failure:
-  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/test-suite.log; fi
-  - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/test-suite.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/config.log ]; then cat ${TRAVIS_BUILD_DIR}/config.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/config.log; fi
   - if [ -f ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log ]; then cat ${TRAVIS_BUILD_DIR}/ola-*/_build/sub/config.log; fi

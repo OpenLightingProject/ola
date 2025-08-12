@@ -172,7 +172,7 @@ class BaseWidgetFactory : public WidgetFactory {
  private:
   const std::string m_name;
 
-  DISALLOW_COPY_AND_ASSIGN(BaseWidgetFactory<WidgetType>);
+  DISALLOW_COPY_AND_ASSIGN(BaseWidgetFactory);
 };
 
 template <typename WidgetType>

@@ -164,7 +164,7 @@ class BigEndianOutputStreamAdaptor: public BigEndianOutputStreamInterface {
 
 
 /**
- * A Big Endian Input stream that wraps an OutputBufferInterface
+ * A Big Endian Output stream that wraps an OutputBufferInterface
  */
 class BigEndianOutputStream: public BigEndianOutputStreamInterface {
  public:

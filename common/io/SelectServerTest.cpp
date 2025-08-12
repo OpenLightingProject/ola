@@ -122,7 +122,9 @@ class SelectServerTest: public CppUnit::TestFixture {
 
   void Terminate() {
     OLA_DEBUG << "Terminate called";
-    if (m_ss) { m_ss->Terminate(); }
+    if (m_ss) {
+      m_ss->Terminate();
+    }
   }
 
   void SingleIncrementTimeout() {
@@ -147,8 +149,9 @@ class SelectServerTest: public CppUnit::TestFixture {
   void NullHandler() {}
 
   bool IncrementTimeout() {
-    if (m_ss && m_ss->IsRunning())
+    if (m_ss && m_ss->IsRunning()) {
       m_timeout_counter++;
+    }
     return true;
   }
 

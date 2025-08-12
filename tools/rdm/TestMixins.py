@@ -16,19 +16,23 @@
 # Copyright (C) 2010 Simon Newton
 
 import struct
-from ExpectedResults import (AckGetResult, AckDiscoveryResult, BroadcastResult,
-                             DUBResult, NackSetResult, TimeoutResult,
-                             UnsupportedResult)
-from ResponderTest import ResponderTestFixture
-from TestCategory import TestCategory
-from TestHelpers import ContainsUnprintable
-from ola import PidStore
+
 from ola.DMXConstants import DMX_UNIVERSE_SIZE
 from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import RDM_MAX_STRING_LENGTH
+from ola.StringUtils import StringEscape
+from ola.testing.rdm.ExpectedResults import (AckDiscoveryResult, AckGetResult,
+                                             BroadcastResult, DUBResult,
+                                             NackSetResult, TimeoutResult,
+                                             UnsupportedResult)
+from ola.testing.rdm.ResponderTest import ResponderTestFixture
+from ola.testing.rdm.TestCategory import TestCategory
+from ola.testing.rdm.TestHelpers import ContainsUnprintable
 from ola.UID import UID
+
+from ola import PidStore
 
 '''Mixins used by the test definitions.
 
@@ -81,7 +85,7 @@ class GetMixin(object):
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+      for i in range(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 
@@ -108,7 +112,7 @@ class GetStringMixin(GetMixin):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
-           string_field.encode('string-escape')))
+           StringEscape(string_field)))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
@@ -136,7 +140,7 @@ class GetRequiredMixin(object):
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
-      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+      for i in range(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
 
@@ -157,14 +161,14 @@ class GetRequiredStringMixin(GetRequiredMixin):
     string_field = fields[self.EXPECTED_FIELDS[0]]
 
     if self.PROVIDES:
-      for i in xrange(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
+      for i in range(0, min(len(self.PROVIDES), len(self.EXPECTED_FIELDS))):
         self.SetProperty(self.PROVIDES[i], fields[self.EXPECTED_FIELDS[i]])
 
     if ContainsUnprintable(string_field):
       self.AddAdvisory(
           '%s field in %s contains unprintable characters, was %s' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.PID,
-           string_field.encode('string-escape')))
+           StringEscape(string_field)))
 
     if self.MIN_LENGTH and len(string_field) < self.MIN_LENGTH:
       self.SetFailed(
@@ -185,7 +189,7 @@ class GetWithDataMixin(object):
     If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
     of allowed results for each entry.
   """
-  DATA = 'foo'
+  DATA = b'foo'
   ALLOWED_NACKS = []
 
   def Test(self):
@@ -202,7 +206,7 @@ class GetWithDataMixin(object):
 
 class GetMandatoryPIDWithDataMixin(object):
   """GET a mandatory PID with junk param data."""
-  DATA = 'foo'
+  DATA = b'foo'
 
   def Test(self):
     # PID must return something as this PID is required (can't return
@@ -248,7 +252,7 @@ class UnsupportedSetMixin(object):
 
 class SetWithDataMixin(ResponderTestFixture):
   """SET a PID with random param data."""
-  DATA = 'foo'
+  DATA = b'foo'
 
   def Test(self):
     self.AddIfSetSupported([
@@ -263,7 +267,7 @@ class SetWithNoDataMixin(object):
   """Attempt a set with no data."""
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, b'')
 
   # TODO(simon): add a method to check this didn't change the value
 
@@ -281,7 +285,7 @@ class SetLabelMixin(object):
   TEST_LABEL = 'test label'
   PROVIDES = []
 
-  SET, VERIFY, RESET = xrange(3)
+  SET, VERIFY, RESET = range(3)
 
   def ExpectedResults(self):
     return [
@@ -317,8 +321,8 @@ class SetLabelMixin(object):
                        (self.pid, len(new_label)))
     else:
       self.SetFailed('Labels didn\'t match, expected "%s", got "%s"' %
-                     (self.TEST_LABEL.encode('string-escape'),
-                      new_label.encode('string-escape')))
+                     (StringEscape(self.TEST_LABEL),
+                      StringEscape(new_label)))
 
   def ResetState(self):
     if not self.OldValue():
@@ -345,7 +349,7 @@ class NonUnicastSetLabelMixin(SetLabelMixin):
 
 class SetOversizedLabelMixin(object):
   """Send an over-sized SET label command."""
-  LONG_STRING = 'this is a string which is more than 32 characters'
+  LONG_STRING = b'this is a string which is more than 32 characters'
 
   def Test(self):
     self.verify_result = False
@@ -473,7 +477,7 @@ class SetUInt32Mixin(SetMixin):
 # -----------------------------------------------------------------------------
 class SetStartAddressMixin(object):
   """Set the dmx start address."""
-  SET, VERIFY, RESET = xrange(3)
+  SET, VERIFY, RESET = range(3)
 
   def CalculateNewAddress(self, current_address, footprint):
     if footprint == MAX_DMX_ADDRESS:
@@ -596,7 +600,7 @@ class SetUndefinedSensorValues(object):
   def Test(self):
     sensors = self.Property('sensor_definitions')
     self._missing_sensors = []
-    for i in xrange(0, 0xff):
+    for i in range(0, 0xff):
       if i not in sensors:
         self._missing_sensors.append(i)
 
@@ -750,7 +754,7 @@ class SetDmxFailModeMixin(object):
       self.SetBroken('Failed to restore DMX_FAIL_MODE settings')
       return
 
-    for key in ('scene_number', 'hold_time', 'loss_of_signal_delay', 'level'):
+    for key in ('scene_number', 'loss_of_signal_delay', 'hold_time', 'level'):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_FAIL_MODE settings, missing %s' % key)
@@ -780,7 +784,7 @@ class SetDmxStartupModeMixin(object):
       self.SetBroken('Failed to restore DMX_STARTUP_MODE settings')
       return
 
-    for key in ('scene_number', 'hold_time', 'startup_delay', 'level'):
+    for key in ('scene_number', 'startup_delay', 'hold_time', 'level'):
       if key not in settings:
         self.SetBroken(
             'Failed to restore DMX_STARTUP_MODE settings, missing %s' % key)
@@ -1023,7 +1027,7 @@ class GetSettingDescriptionsMixin(object):
            self.PID,
            self.DESCRIPTION_FIELD,
            self.current_item,
-           fields[self.DESCRIPTION_FIELD].encode('string-escape')))
+           StringEscape(fields[self.DESCRIPTION_FIELD])))
 
 
 class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
@@ -1042,8 +1046,8 @@ class GetSettingDescriptionsRangeMixin(GetSettingDescriptionsMixin):
     if self.NumberOfSettings() is None:
         return []
     else:
-      return range(self.FIRST_INDEX_OFFSET,
-                   self.NumberOfSettings() + self.FIRST_INDEX_OFFSET)
+      return list(range(self.FIRST_INDEX_OFFSET,
+                        self.NumberOfSettings() + self.FIRST_INDEX_OFFSET))
 
 
 class GetSettingDescriptionsListMixin(GetSettingDescriptionsMixin):

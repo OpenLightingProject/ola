@@ -25,6 +25,7 @@ import select
 import termios
 import threading
 import traceback
+
 from ola.OlaClient import OlaClient
 
 """A simple client wrapper for the OlaClient."""
@@ -267,7 +268,7 @@ class SelectServer(object):
       runnable()
 
   def _GetThreadID(self):
-    return threading.currentThread().ident
+    return threading.current_thread().ident
 
   def _Stop(self):
     self._quit = True

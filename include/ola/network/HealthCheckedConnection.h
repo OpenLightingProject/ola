@@ -75,7 +75,7 @@ class HealthCheckedConnection {
 
     /**
      * Call this when a heartbeat is piggybacked on another message. This
-     * prevents sending heatbeats unless necessary.
+     * prevents sending heartbeats unless necessary.
      */
     void HeartbeatSent();
 

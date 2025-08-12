@@ -1,0 +1,17 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "lint-cpplint",
+            "severity": "error",
+            "pattern": [
+                {
+                    "regexp": "^(.+):(\\d+):\\s+((.+)\\s+\\[(.*)\\]\\s\\[(.*)\\])$",
+                    "file": 1,
+                    "line": 2,
+                    "message": 3,
+                    "code": 5
+                }
+            ]
+        }
+    ]
+}

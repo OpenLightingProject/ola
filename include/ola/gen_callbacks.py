@@ -18,15 +18,8 @@
 
 
 from __future__ import print_function
-import sys
+
 import textwrap
-
-
-if sys.version_info >= (3, 0):
-  try:
-    xrange
-  except NameError:
-    xrange = range
 
 
 def PrintLongLine(line):
@@ -171,11 +164,11 @@ def GenerateBase(number_of_args):
   if number_of_args > 0:
     optional_comma = ', '
 
-  typenames = ', '.join('typename Arg%d' % i for i in xrange(number_of_args))
-  arg_list = ', '.join('Arg%d arg%d' % (i, i) for i in xrange(number_of_args))
-  args = ', '.join('arg%d' % i for i in xrange(number_of_args))
+  typenames = ', '.join('typename Arg%d' % i for i in range(number_of_args))
+  arg_list = ', '.join('Arg%d arg%d' % (i, i) for i in range(number_of_args))
+  args = ', '.join('arg%d' % i for i in range(number_of_args))
 
-  arg_types = ', '.join('Arg%d' % i for i in xrange(number_of_args))
+  arg_types = ', '.join('Arg%d' % i for i in range(number_of_args))
 
   # generate the base callback class
   print(textwrap.dedent("""\
@@ -272,10 +265,10 @@ def GenerateHelperFunction(bind_count,
   if bind_count > 0 or exec_count > 0:
     optional_comma = ', '
 
-  typenames = (['typename A%d' % i for i in xrange(bind_count)] +
-               ['typename Arg%d' % i for i in xrange(exec_count)])
-  bind_types = ['A%d' % i for i in xrange(bind_count)]
-  exec_types = ['Arg%d' % i for i in xrange(exec_count)]
+  typenames = (['typename A%d' % i for i in range(bind_count)] +
+               ['typename Arg%d' % i for i in range(exec_count)])
+  bind_types = ['A%d' % i for i in range(bind_count)]
+  exec_types = ['Arg%d' % i for i in range(exec_count)]
   method_types = ', '.join(bind_types + exec_types)
   if exec_count > 0:
     exec_types = [''] + exec_types
@@ -294,9 +287,9 @@ def GenerateHelperFunction(bind_count,
   if is_method:
     print(" * @tparam Class the class with the member function.")
   print(" * @tparam ReturnType the return type of the callback.")
-  for i in xrange(bind_count):
+  for i in range(bind_count):
     print(" * @tparam A%d a create-time argument type." % i)
-  for i in xrange(exec_count):
+  for i in range(exec_count):
     print(" * @tparam Arg%d an exec-time argument type." % i)
   if is_method:
     print(" * @param object the object to call the member function on.")
@@ -305,7 +298,7 @@ def GenerateHelperFunction(bind_count,
   else:
     print(" * @param callback the function pointer to use when executing the "
           "callback.")
-  for i in xrange(bind_count):
+  for i in range(bind_count):
     print(" * @param a%d a create-time argument." % i)
   if is_method:
     print(" * @returns The same return value as the member function.")
@@ -320,7 +313,7 @@ def GenerateHelperFunction(bind_count,
     print('  Class* object,')
   if bind_count:
     print('  ReturnType (%s)(%s),' % (signature, method_types))
-    for i in xrange(bind_count):
+    for i in range(bind_count):
       suffix = ','
       if i == bind_count - 1:
         suffix = ') {'
@@ -340,13 +333,13 @@ def GenerateHelperFunction(bind_count,
     print('                               %sReturnType,' % padding)
   else:
     print('                               %sReturnType>(' % padding)
-  for i in xrange(bind_count):
+  for i in range(bind_count):
     if i == bind_count - 1 and exec_count == 0:
       suffix = '>('
     else:
       suffix = ','
     print('                               %sA%d%s' % (padding, i, suffix))
-  for i in xrange(exec_count):
+  for i in range(exec_count):
     suffix = ','
     if i == exec_count - 1:
       suffix = '>('
@@ -357,7 +350,7 @@ def GenerateHelperFunction(bind_count,
     print('      %s,' % ptr_name)
   else:
     print('      %s);' % ptr_name)
-  for i in xrange(bind_count):
+  for i in range(bind_count):
     suffix = ','
     if i == bind_count - 1:
       suffix = ');'
@@ -380,18 +373,18 @@ def GenerateMethodCallback(bind_count,
   if bind_count > 0 or exec_count > 0:
     optional_comma = ', '
 
-  typenames = (['typename A%d' % i for i in xrange(bind_count)] +
-               ['typename Arg%d' % i for i in xrange(exec_count)])
+  typenames = (['typename A%d' % i for i in range(bind_count)] +
+               ['typename Arg%d' % i for i in range(exec_count)])
 
-  bind_types = ['A%d' % i for i in xrange(bind_count)]
-  exec_types = ['Arg%d' % i for i in xrange(exec_count)]
+  bind_types = ['A%d' % i for i in range(bind_count)]
+  exec_types = ['Arg%d' % i for i in range(exec_count)]
 
   method_types = ', '.join(bind_types + exec_types)
-  method_args = (['m_a%d' % i for i in xrange(bind_count)] +
-                  ['arg%d' % i for i in xrange(exec_count)])
+  method_args = (['m_a%d' % i for i in range(bind_count)] +
+                  ['arg%d' % i for i in range(exec_count)])
 
-  exec_args = ', '.join(['Arg%d arg%d' % (i, i) for i in xrange(exec_count)])
-  bind_args = ', '.join(['A%d a%d' % (i, i) for i in xrange(bind_count)])
+  exec_args = ', '.join(['Arg%d arg%d' % (i, i) for i in range(exec_count)])
+  bind_args = ', '.join(['A%d a%d' % (i, i) for i in range(bind_count)])
 
   optional_class, method_or_function, class_name = (
       '', 'Function', 'FunctionCallback')
@@ -431,7 +424,7 @@ def GenerateMethodCallback(bind_count,
     print('    m_object(object),')
   if bind_count:
     print('    m_callback(callback),')
-    for i in xrange(bind_count):
+    for i in range(bind_count):
       suffix = ','
       if i == bind_count - 1:
         suffix = ' {}'
@@ -450,7 +443,7 @@ def GenerateMethodCallback(bind_count,
   if is_method:
     print('  Class *m_object;')
   print('  %s m_callback;' % method_or_function)
-  for i in xrange(bind_count):
+  for i in range(bind_count):
     print('  A%d m_a%d;' % (i, i))
   print('};')
   print('')
