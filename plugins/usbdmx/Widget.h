@@ -54,7 +54,7 @@ class WidgetInterface {
    * @param buffer The DmxBuffer containing the data to send.
    * @returns true if the data was sent, false otherwise.
    */
-  virtual bool SendDMX(const DmxBuffer &buffer) = 0;
+  virtual bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0) = 0;
 };
 
 /**

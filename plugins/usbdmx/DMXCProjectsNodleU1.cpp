@@ -54,6 +54,7 @@ static const int CONFIGURATION = 1;
 static const int INTERFACE = 0;
 
 static const unsigned int DATABLOCK_SIZE = 33;
+static const unsigned int DATABLOCK_MAX_SIZE = 64;
 
 /*
  * @brief Send chosen mode to the DMX device
@@ -104,13 +105,31 @@ libusb_device_handle *OpenDMXCProjectsNodleU1Widget(
     return NULL;
   }
 
-  // this device only has one configuration
-  ret_code = adaptor->SetConfiguration(usb_handle, CONFIGURATION);
-  if (ret_code) {
-    OLA_WARN << "Nodle set config failed, with libusb error code "
-             << adaptor->ErrorCodeToString(ret_code);
-    adaptor->Close(usb_handle);
-    return NULL;
+  // If we are connected to a RP2040-based device, we cannot
+  // "Set the configuration", because the additional CDC ACM interface might
+  // be running that would block changing the USB device's config
+  bool rp2040 = false;
+
+  libusb_device_descriptor descriptor;
+  ola::usb::LibUsbAdaptor::DeviceInformation info;
+  if (!(adaptor->GetDeviceDescriptor(usb_device, &descriptor)) &&
+      (adaptor->GetDeviceInfo(usb_device, descriptor, &info)) &&
+      (info.serial.find("RP2040_", 0) != std::string::npos))
+  {
+    OLA_INFO << "Found a RP2040-based device, "
+             << "will skip (re) setting the USB configuration";
+    rp2040 = true;
+  }
+
+  if (!rp2040) {
+    // this device only has one configuration
+    ret_code = adaptor->SetConfiguration(usb_handle, CONFIGURATION);
+    if (ret_code) {
+      OLA_WARN << "Nodle set config failed, with libusb error code "
+               << adaptor->ErrorCodeToString(ret_code);
+      adaptor->Close(usb_handle);
+      return NULL;
+    }
   }
 
   if (adaptor->ClaimInterface(usb_handle, INTERFACE)) {
@@ -263,12 +282,19 @@ SynchronousDMXCProjectsNodleU1::SynchronousDMXCProjectsNodleU1(
     libusb_device *usb_device,
     PluginAdaptor *plugin_adaptor,
     const string &serial,
-    unsigned int mode)
-    : DMXCProjectsNodleU1(adaptor, usb_device, plugin_adaptor, serial, mode),
+    unsigned int mode,
+    unsigned int ins,
+    unsigned int outs)
+    : DMXCProjectsNodleU1(adaptor, usb_device, plugin_adaptor, serial, mode, 
+      ins, outs),
       m_usb_device(usb_device) {
+  OLA_DEBUG << "SynchronousDMXCProjectsNodleU1 CTOR";
 }
 
 bool SynchronousDMXCProjectsNodleU1::Init() {
+
+  OLA_DEBUG << "SynchronousDMXCProjectsNodleU1 INIT";
+
   libusb_device_handle *usb_handle = OpenDMXCProjectsNodleU1Widget(
       m_adaptor, m_usb_device);
 
@@ -301,7 +327,8 @@ bool SynchronousDMXCProjectsNodleU1::Init() {
   return true;
 }
 
-bool SynchronousDMXCProjectsNodleU1::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousDMXCProjectsNodleU1::SendDMX(const DmxBuffer &buffer,
+                                             unsigned int portId) {
   if (m_sender.get()) {
     return m_sender->SendDMX(buffer);
   } else {
@@ -402,7 +429,7 @@ class DMXCProjectsNodleU1AsyncUsbSender : public AsyncUsbSender {
     return handle;
   }
 
-  bool PerformTransfer(const DmxBuffer &buffer);
+  bool PerformTransfer(const DmxBuffer &buffer, unsigned int portId = 0);
 
   void PostTransferHook();
 
@@ -412,15 +439,16 @@ class DMXCProjectsNodleU1AsyncUsbSender : public AsyncUsbSender {
   // This tracks where we are in m_tx_buffer. A value of 0 means we're at the
   // start of a DMX frame.
   unsigned int m_buffer_offset;
-  uint8_t m_packet[DATABLOCK_SIZE];
+  unsigned int m_portId;
+  uint8_t m_packet[DATABLOCK_MAX_SIZE];
 
   bool ContinueTransfer();
 
   bool SendInitialChunk(const DmxBuffer &buffer);
 
-  bool SendChunk() {
+  bool SendChunk(unsigned int size) {
     FillInterruptTransfer(WRITE_ENDPOINT, m_packet,
-                          DATABLOCK_SIZE, URB_TIMEOUT_MS);
+                          size, URB_TIMEOUT_MS);
     return (SubmitTransfer() == 0);
   }
 
@@ -428,8 +456,9 @@ class DMXCProjectsNodleU1AsyncUsbSender : public AsyncUsbSender {
 };
 
 bool DMXCProjectsNodleU1AsyncUsbSender::PerformTransfer(
-    const DmxBuffer &buffer) {
+    const DmxBuffer &buffer, unsigned int portId) {
   if (m_buffer_offset == 0) {
+    m_portId = portId;
     return SendInitialChunk(buffer);
   }
   // Otherwise we're part way through a transfer, do nothing.
@@ -452,32 +481,61 @@ void DMXCProjectsNodleU1AsyncUsbSender::PostTransferHook() {
 }
 
 bool DMXCProjectsNodleU1AsyncUsbSender::ContinueTransfer() {
-  unsigned int length = 32;
+  if (!m_portId) {
+    unsigned int length = 32;
 
-  m_packet[0] = m_buffer_offset / 32;
+    m_packet[0] = m_buffer_offset / 32;
 
-  m_tx_buffer.GetRange(m_buffer_offset, m_packet + 1, &length);
-  memset(m_packet + 1 + length, 0, 32 - length);
-  m_buffer_offset += length;
-  return (SendChunk() == 0);
+    m_tx_buffer.GetRange(m_buffer_offset, m_packet + 1, &length);
+    memset(m_packet + 1 + length, 0, 32 - length);
+    m_buffer_offset += length;
+    return (SendChunk(DATABLOCK_SIZE) == 0);
+  } else {
+    unsigned int length = 60;
+
+    m_packet[0] = 32;
+    m_packet[1] = ((m_portId << 4) & 0xF0) | ((m_buffer_offset / 60) & 0x0F);
+
+    m_tx_buffer.GetRange(m_buffer_offset, m_packet + 2, &length);
+    m_buffer_offset += length;
+    return (SendChunk(length + 2) == 0);
+  }
 }
 
 bool DMXCProjectsNodleU1AsyncUsbSender::SendInitialChunk(
     const DmxBuffer &buffer) {
-  unsigned int length = 32;
 
+  OLA_DEBUG << "SendInitialChunk for portId " << m_portId;
+
+  // Copy the incoming buffer to our m_tx_buffer
   m_tx_buffer.SetRange(0, buffer.GetRaw(), buffer.Size());
 
-  m_packet[0] = 0;
-  m_tx_buffer.GetRange(0, m_packet + 1, &length);
-  memset(m_packet + 1 + length, 0, 32 - length);
+  if (!m_portId) {
+    unsigned int length = 32;
 
-  unsigned int slots_sent = length;
-  if (slots_sent < m_tx_buffer.Size()) {
-    // There are more frames to send.
-    m_buffer_offset = slots_sent;
+    m_packet[0] = 0;
+    m_tx_buffer.GetRange(0, m_packet + 1, &length);
+    memset(m_packet + 1 + length, 0, 32 - length);
+
+    unsigned int slots_sent = length;
+    if (slots_sent < m_tx_buffer.Size()) {
+      // There are more frames to send.
+      m_buffer_offset = slots_sent;
+    }
+    return (SendChunk(DATABLOCK_SIZE) == 0);
+  } else {
+    unsigned int length = 60;
+    m_packet[0] = 32; // Command code for advanced data (universe1-15)
+    m_packet[1] = m_portId << 4 & 0xF0; // Universe are the first 4 bits, offset the remaining 4
+    m_tx_buffer.GetRange(0, m_packet + 2, &length);
+
+    unsigned int slots_sent = length;
+    if (slots_sent < m_tx_buffer.Size()) {
+      // There are more frames to send.
+      m_buffer_offset = slots_sent;
+    }
+    return (SendChunk(slots_sent + 2) == 0);
   }
-  return (SendChunk() == 0);
 }
 
 // AsynchronousDMXCProjectsNodleU1
@@ -488,8 +546,13 @@ AsynchronousDMXCProjectsNodleU1::AsynchronousDMXCProjectsNodleU1(
     libusb_device *usb_device,
     PluginAdaptor *plugin_adaptor,
     const string &serial,
-    unsigned int mode)
-    : DMXCProjectsNodleU1(adaptor, usb_device, plugin_adaptor, serial, mode) {
+    unsigned int mode,
+    unsigned int ins,
+    unsigned int outs)
+    : DMXCProjectsNodleU1(adaptor, usb_device, plugin_adaptor, serial, mode,
+    ins, outs) {
+  OLA_DEBUG << "AsynchronousDMXCProjectsNodleU1 CTOR";
+
   if (mode & OUTPUT_ENABLE_MASK) {  // output port active
     m_sender.reset(new DMXCProjectsNodleU1AsyncUsbSender(m_adaptor,
                                                          usb_device, mode));
@@ -505,6 +568,9 @@ AsynchronousDMXCProjectsNodleU1::AsynchronousDMXCProjectsNodleU1(
 
 bool AsynchronousDMXCProjectsNodleU1::Init() {
   bool ok = true;
+
+  OLA_DEBUG << "AsynchronousDMXCProjectsNodleU1 INIT";
+
   if (m_sender.get()) {
     ok &= m_sender->Init();
   }
@@ -522,8 +588,9 @@ bool AsynchronousDMXCProjectsNodleU1::Init() {
   return ok;
 }
 
-bool AsynchronousDMXCProjectsNodleU1::SendDMX(const DmxBuffer &buffer) {
-  return m_sender.get() ? m_sender->SendDMX(buffer) : false;
+bool AsynchronousDMXCProjectsNodleU1::SendDMX(const DmxBuffer &buffer,
+                                              unsigned int portId) {
+  return m_sender.get() ? m_sender->SendDMX(buffer, portId) : false;
 }
 
 void AsynchronousDMXCProjectsNodleU1::SetDmxCallback(

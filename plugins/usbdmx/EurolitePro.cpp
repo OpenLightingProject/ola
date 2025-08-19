@@ -184,7 +184,8 @@ bool SynchronousEurolitePro::Init() {
   return true;
 }
 
-bool SynchronousEurolitePro::SendDMX(const DmxBuffer &buffer) {
+bool SynchronousEurolitePro::SendDMX(const DmxBuffer &buffer,
+                                     unsigned int portId) {
   return m_sender.get() ? m_sender->SendDMX(buffer) : false;
 }
 
@@ -213,7 +214,7 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
     return ok ? usb_handle : NULL;
   }
 
-  bool PerformTransfer(const DmxBuffer &buffer) {
+  bool PerformTransfer(const DmxBuffer &buffer, unsigned int port) {
     CreateFrame(buffer, m_tx_frame);
     FillBulkTransfer(ENDPOINT, m_tx_frame, EUROLITE_PRO_FRAME_SIZE,
                      URB_TIMEOUT_MS);
@@ -241,7 +242,8 @@ bool AsynchronousEurolitePro::Init() {
   return m_sender->Init();
 }
 
-bool AsynchronousEurolitePro::SendDMX(const DmxBuffer &buffer) {
+bool AsynchronousEurolitePro::SendDMX(const DmxBuffer &buffer,
+                                      unsigned int portId) {
   return m_sender->SendDMX(buffer);
 }
 }  // namespace usbdmx

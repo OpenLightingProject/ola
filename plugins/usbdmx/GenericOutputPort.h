@@ -51,10 +51,11 @@ class GenericOutputPort: public BasicOutputPort {
 
   bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-  std::string Description() const { return ""; }
+  std::string Description() const { return m_description; }
 
  private:
   class WidgetInterface* const m_widget;
+  std::string m_description;
 
   DISALLOW_COPY_AND_ASSIGN(GenericOutputPort);
 };

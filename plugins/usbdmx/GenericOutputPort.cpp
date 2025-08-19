@@ -33,11 +33,13 @@ GenericOutputPort::GenericOutputPort(Device *parent,
                                      WidgetInterface *widget)
     : BasicOutputPort(parent, id),
       m_widget(widget) {
+  OLA_DEBUG << "NEW GENERICOUTPUTPORT ID: " << id;
+  m_description = "Output " + std::to_string(id);
 }
 
 bool GenericOutputPort::WriteDMX(const DmxBuffer &buffer,
                                  OLA_UNUSED uint8_t priority) {
-  m_widget->SendDMX(buffer);
+  m_widget->SendDMX(buffer, this->PortId());
   return true;
 }
 }  // namespace usbdmx

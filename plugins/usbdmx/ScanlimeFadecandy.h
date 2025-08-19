@@ -86,7 +86,7 @@ class SynchronousScanlimeFadecandy: public ScanlimeFadecandy {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class FadecandyThreadedSender> m_sender;
@@ -111,7 +111,7 @@ class AsynchronousScanlimeFadecandy : public ScanlimeFadecandy {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class FadecandyAsyncUsbSender> m_sender;

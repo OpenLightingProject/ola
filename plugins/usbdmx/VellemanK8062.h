@@ -63,7 +63,7 @@ class SynchronousVellemanK8062: public VellemanK8062 {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class VellemanThreadedSender> m_sender;
@@ -86,7 +86,7 @@ class AsynchronousVellemanK8062 : public VellemanK8062 {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class VellemanAsyncUsbSender> m_sender;
