@@ -88,7 +88,7 @@ class SynchronousAVLdiyD512: public AVLdiyD512 {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class AVLdiyThreadedSender> m_sender;
+  std::unique_ptr<class AVLdiyThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousAVLdiyD512);
 };
@@ -113,7 +113,7 @@ class AsynchronousAVLdiyD512 : public AVLdiyD512 {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class AVLdiyAsyncUsbSender> m_sender;
+  std::unique_ptr<class AVLdiyAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousAVLdiyD512);
 };

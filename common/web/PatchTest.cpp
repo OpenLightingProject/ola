@@ -48,7 +48,7 @@ using ola::web::JsonString;
 using ola::web::JsonData;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 class JsonPatchTest: public CppUnit::TestFixture {
@@ -79,7 +79,7 @@ class JsonPatchTest: public CppUnit::TestFixture {
 void JsonPatchTest::CheckValuesMatch(const std::string &input,
                                      const JsonValue *actual) {
   string error;
-  auto_ptr<const JsonValue> expected_value(JsonParser::Parse(input, &error));
+  unique_ptr<const JsonValue> expected_value(JsonParser::Parse(input, &error));
   if (expected_value.get()) {
     if (*actual != *expected_value.get()) {
       OLA_ASSERT_EQ(JsonWriter::AsString(*(expected_value.get())),
@@ -91,7 +91,7 @@ void JsonPatchTest::CheckValuesMatch(const std::string &input,
 }
 
 void JsonPatchTest::BuildSampleText(JsonData *text) {
-  auto_ptr<JsonObject> object(new JsonObject());
+  unique_ptr<JsonObject> object(new JsonObject());
   object->Add("foo", "bar");
   object->Add("baz", false);
 
@@ -859,12 +859,12 @@ void JsonPatchTest::testCopyOp() {
 }
 
 void JsonPatchTest::testTestOp() {
-  auto_ptr<JsonObject> object(new JsonObject());
+  unique_ptr<JsonObject> object(new JsonObject());
   object->Add("foo", "bar");
   object->Add("baz", true);
   object->Add("bat", false);
 
-  auto_ptr<JsonValue> original_object(object->Clone());
+  unique_ptr<JsonValue> original_object(object->Clone());
   JsonData text(object.release());
 
   JsonPointer pointer1("");

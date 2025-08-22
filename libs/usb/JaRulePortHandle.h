@@ -70,7 +70,7 @@ class JaRulePortHandle : public ola::rdm::DiscoverableRDMControllerInterface {
 
  private:
   // Order of destruction is important.
-  std::auto_ptr<class JaRulePortHandleImpl> m_impl;
+  std::unique_ptr<class JaRulePortHandleImpl> m_impl;
   ola::rdm::DiscoverableQueueingRDMController m_queueing_controller;
 
   static const unsigned int RDM_QUEUE_SIZE = 50;

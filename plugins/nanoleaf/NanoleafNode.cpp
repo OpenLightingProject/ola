@@ -35,7 +35,7 @@ namespace nanoleaf {
 
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::vector;
 
 /*
@@ -157,7 +157,7 @@ void NanoleafNode::SocketReady() {
  * Setup the networking components.
  */
 bool NanoleafNode::InitNetwork() {
-  std::auto_ptr<ola::network::UDPSocketInterface> socket(m_socket.release());
+  std::unique_ptr<ola::network::UDPSocketInterface> socket(m_socket.release());
 
   if (!socket.get()) {
     socket.reset(new UDPSocket());

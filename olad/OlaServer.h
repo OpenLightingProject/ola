@@ -178,27 +178,27 @@ class OlaServer : public ola::rpc::RpcSessionHandlerInterface {
   ola::network::TCPAcceptingSocket *m_accepting_socket;
   class ExportMap *m_export_map;
 
-  std::auto_ptr<class ExportMap> m_our_export_map;
+  std::unique_ptr<class ExportMap> m_our_export_map;
   ola::rdm::UID m_default_uid;
 
   // These are all populated in Init.
-  std::auto_ptr<class DeviceManager> m_device_manager;
-  std::auto_ptr<class PluginManager> m_plugin_manager;
-  std::auto_ptr<class PluginAdaptor> m_plugin_adaptor;
-  std::auto_ptr<class UniverseStore> m_universe_store;
-  std::auto_ptr<class PortManager> m_port_manager;
-  std::auto_ptr<class OlaServerServiceImpl> m_service_impl;
-  std::auto_ptr<class ClientBroker> m_broker;
-  std::auto_ptr<class PortBroker> m_port_broker;
-  std::auto_ptr<const ola::rdm::RootPidStore> m_pid_store;
-  std::auto_ptr<class DiscoveryAgentInterface> m_discovery_agent;
-  std::auto_ptr<ola::rpc::RpcServer> m_rpc_server;
+  std::unique_ptr<class DeviceManager> m_device_manager;
+  std::unique_ptr<class PluginManager> m_plugin_manager;
+  std::unique_ptr<class PluginAdaptor> m_plugin_adaptor;
+  std::unique_ptr<class UniverseStore> m_universe_store;
+  std::unique_ptr<class PortManager> m_port_manager;
+  std::unique_ptr<class OlaServerServiceImpl> m_service_impl;
+  std::unique_ptr<class ClientBroker> m_broker;
+  std::unique_ptr<class PortBroker> m_port_broker;
+  std::unique_ptr<const ola::rdm::RootPidStore> m_pid_store;
+  std::unique_ptr<class DiscoveryAgentInterface> m_discovery_agent;
+  std::unique_ptr<ola::rpc::RpcServer> m_rpc_server;
   class Preferences *m_server_preferences;
   class Preferences *m_universe_preferences;
   std::string m_instance_name;
 
   ola::thread::timeout_id m_housekeeping_timeout;
-  std::auto_ptr<OladHTTPServer_t> m_httpd;
+  std::unique_ptr<OladHTTPServer_t> m_httpd;
 
   bool RunHousekeeping();
 

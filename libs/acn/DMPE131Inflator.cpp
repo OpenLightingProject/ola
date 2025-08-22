@@ -92,7 +92,7 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   }
 
   unsigned int available_length = pdu_len;
-  std::auto_ptr<const BaseDMPAddress> address(
+  std::unique_ptr<const BaseDMPAddress> address(
       DecodeAddress(dmp_header.Size(),
                     dmp_header.Type(),
                     data,

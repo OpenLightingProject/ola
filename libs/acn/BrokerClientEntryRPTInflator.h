@@ -93,7 +93,7 @@ class BrokerClientEntryRPTInflator: public BaseInflator {
                                unsigned int len);
 
  private:
-  std::auto_ptr<BrokerClientEntryRPTHandler> m_broker_client_entry_rpt_handler;
+  std::unique_ptr<BrokerClientEntryRPTHandler> m_broker_client_entry_rpt_handler;
 };
 }  // namespace acn
 }  // namespace ola

@@ -31,7 +31,7 @@
 
 namespace ola {
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -94,7 +94,7 @@ void BasicInputPort::DmxChanged() {
 
 void BasicInputPort::HandleRDMRequest(ola::rdm::RDMRequest *request_ptr,
                                       ola::rdm::RDMCallback *callback) {
-  auto_ptr<ola::rdm::RDMRequest> request(request_ptr);
+  unique_ptr<ola::rdm::RDMRequest> request(request_ptr);
   if (m_universe) {
     m_plugin_adaptor->GetPortBroker()->SendRDMRequest(
         this,
@@ -167,7 +167,7 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
 
 void BasicOutputPort::SendRDMRequest(ola::rdm::RDMRequest *request_ptr,
                                      ola::rdm::RDMCallback *callback) {
-  auto_ptr<ola::rdm::RDMRequest> request(request_ptr);
+  unique_ptr<ola::rdm::RDMRequest> request(request_ptr);
 
   // broadcasts go to every port
   if (request->DestinationUID().IsBroadcast()) {

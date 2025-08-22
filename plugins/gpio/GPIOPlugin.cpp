@@ -34,7 +34,7 @@ namespace ola {
 namespace plugin {
 namespace gpio {
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -91,7 +91,7 @@ bool GPIOPlugin::StartHook() {
     return true;
   }
 
-  std::auto_ptr<GPIODevice> device(new GPIODevice(this, options));
+  std::unique_ptr<GPIODevice> device(new GPIODevice(this, options));
   if (!device->Start()) {
     return false;
   }

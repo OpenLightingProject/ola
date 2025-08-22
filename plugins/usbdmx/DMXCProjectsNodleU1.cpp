@@ -282,7 +282,7 @@ bool SynchronousDMXCProjectsNodleU1::Init() {
   SetInterfaceMode(m_adaptor, usb_handle, m_mode);
 
   if (m_mode & OUTPUT_ENABLE_MASK) {  // output port active
-    std::auto_ptr<DMXCProjectsNodleU1ThreadedSender> sender(
+    std::unique_ptr<DMXCProjectsNodleU1ThreadedSender> sender(
         new DMXCProjectsNodleU1ThreadedSender(m_adaptor, m_usb_device,
                                               usb_handle));
     if (!sender->Start()) {
@@ -292,7 +292,7 @@ bool SynchronousDMXCProjectsNodleU1::Init() {
   }
 
   if (m_mode & INPUT_ENABLE_MASK) {  // input port active
-    std::auto_ptr<DMXCProjectsNodleU1ThreadedReceiver> receiver(
+    std::unique_ptr<DMXCProjectsNodleU1ThreadedReceiver> receiver(
         new DMXCProjectsNodleU1ThreadedReceiver(m_adaptor, m_usb_device,
                                                 usb_handle, m_plugin_adaptor));
     if (!receiver->Start()) {

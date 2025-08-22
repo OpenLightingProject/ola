@@ -93,8 +93,8 @@ class OlaDaemon {
   std::vector<class PluginLoader*> m_plugin_loaders;
 
   // Populated in Init()
-  std::auto_ptr<class PreferencesFactory> m_preferences_factory;
-  std::auto_ptr<OlaServer> m_server;
+  std::unique_ptr<class PreferencesFactory> m_preferences_factory;
+  std::unique_ptr<OlaServer> m_server;
 
   std::string DefaultConfigDir();
   bool InitConfigDir(const std::string &path);

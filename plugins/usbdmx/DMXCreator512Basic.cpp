@@ -166,7 +166,7 @@ bool SynchronousDMXCreator512Basic::Init() {
     return false;
   }
 
-  std::auto_ptr<DMXCreator512BasicThreadedSender> sender(
+  std::unique_ptr<DMXCreator512BasicThreadedSender> sender(
       new DMXCreator512BasicThreadedSender(m_adaptor, m_usb_device,
                                            usb_handle));
   if (!sender->Start()) {

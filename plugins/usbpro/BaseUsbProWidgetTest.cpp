@@ -34,7 +34,7 @@
 
 
 using ola::DmxBuffer;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::queue;
 
 
@@ -55,7 +55,7 @@ class BaseUsbProWidgetTest: public CommonWidgetTest {
     void testRemove();
 
  private:
-    auto_ptr<ola::plugin::usbpro::DispatchingUsbProWidget> m_widget;
+    unique_ptr<ola::plugin::usbpro::DispatchingUsbProWidget> m_widget;
     bool m_removed;
 
     typedef struct {

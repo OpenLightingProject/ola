@@ -57,7 +57,7 @@ class StageProfiDetector {
   typedef std::map<std::string, ola::io::ConnectedDescriptor*> DescriptorMap;
 
   ola::io::SelectServerInterface *m_ss;
-  std::auto_ptr<WidgetCallback> m_callback;
+  std::unique_ptr<WidgetCallback> m_callback;
   ola::thread::timeout_id m_timeout_id;
   DescriptorMap m_usb_widgets;
   DescriptorMap m_tcp_widgets;

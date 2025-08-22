@@ -66,7 +66,7 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::strings::CopyToFixedLengthBuffer;
 using ola::strings::ToHex;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::map;
 using std::pair;
 using std::set;
@@ -93,7 +93,7 @@ class ArtNetNodeImpl::InputPort {
         pending_request(NULL),
         rdm_send_timeout(ola::thread::INVALID_TIMEOUT),
         m_port_address(0),
-        m_tod_callback(NULL) {
+        m_tod_callback(nullptr) {
   }
   ~InputPort() {}
 
@@ -180,7 +180,7 @@ class ArtNetNodeImpl::InputPort {
   uint8_t m_port_address;
   // The callback to run if we receive an TOD and the discovery process
   // isn't running
-  auto_ptr<RDMDiscoveryCallback> m_tod_callback;
+  unique_ptr<RDMDiscoveryCallback> m_tod_callback;
 
   void RunRDMCallbackWithUIDs(const uid_map &uids,
                               RDMDiscoveryCallback *callback) {
@@ -659,7 +659,7 @@ void ArtNetNodeImpl::RunIncrementalDiscovery(
 void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
                                     RDMRequest *request_ptr,
                                     RDMCallback *on_complete) {
-  auto_ptr<RDMRequest> request(request_ptr);
+  unique_ptr<RDMRequest> request(request_ptr);
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
     RunRDMCallback(on_complete, ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED);
     return;
@@ -1353,7 +1353,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(
 void ArtNetNodeImpl::HandleRDMResponse(InputPort *port,
                                        const RDMFrame &frame,
                                        const IPV4Address &source_address) {
-  auto_ptr<RDMReply> reply(ola::rdm::RDMReply::FromFrame(frame));
+  unique_ptr<RDMReply> reply(ola::rdm::RDMReply::FromFrame(frame));
 
   // Without a valid response, we don't know which request this matches. This
   // makes Art-Net rather useless for RDM regression testing

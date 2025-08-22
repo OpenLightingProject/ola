@@ -72,7 +72,7 @@ class LLRPProbeReplyInflator: public BaseInflator {
                              unsigned int pdu_len);
 
  private:
-  std::auto_ptr<LLRPProbeReplyHandler> m_llrp_probe_reply_handler;
+  std::unique_ptr<LLRPProbeReplyHandler> m_llrp_probe_reply_handler;
 };
 }  // namespace acn
 }  // namespace ola

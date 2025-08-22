@@ -46,7 +46,7 @@ using ola::rdm::RDMResponse;
 using ola::rdm::RDM_ACK;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -589,7 +589,7 @@ void QueueingRDMControllerTest::testPauseAndResume() {
  */
 void QueueingRDMControllerTest::testQueueOverflow() {
   MockRDMController mock_controller;
-  auto_ptr<ola::rdm::QueueingRDMController> controller(
+  unique_ptr<ola::rdm::QueueingRDMController> controller(
       new ola::rdm::QueueingRDMController(&mock_controller, 1));
   controller->Pause();
 
@@ -621,7 +621,7 @@ void QueueingRDMControllerTest::testQueueOverflow() {
  */
 void QueueingRDMControllerTest::testDiscovery() {
   MockRDMController mock_controller;
-  auto_ptr<ola::rdm::DiscoverableQueueingRDMController> controller(
+  unique_ptr<ola::rdm::DiscoverableQueueingRDMController> controller(
       new ola::rdm::DiscoverableQueueingRDMController(&mock_controller, 1));
 
   UIDSet uids, uids2;
@@ -695,7 +695,7 @@ void QueueingRDMControllerTest::testDiscovery() {
  */
 void QueueingRDMControllerTest::testMultipleDiscovery() {
   MockRDMController mock_controller;
-  auto_ptr<ola::rdm::DiscoverableQueueingRDMController> controller(
+  unique_ptr<ola::rdm::DiscoverableQueueingRDMController> controller(
       new ola::rdm::DiscoverableQueueingRDMController(&mock_controller, 1));
 
   UIDSet uids, uids2;
@@ -754,7 +754,7 @@ void QueueingRDMControllerTest::testMultipleDiscovery() {
  */
 void QueueingRDMControllerTest::testReentrantDiscovery() {
   MockRDMController mock_controller;
-  auto_ptr<ola::rdm::DiscoverableQueueingRDMController> controller(
+  unique_ptr<ola::rdm::DiscoverableQueueingRDMController> controller(
       new ola::rdm::DiscoverableQueueingRDMController(&mock_controller, 1));
 
   UIDSet uids;
@@ -793,7 +793,7 @@ void QueueingRDMControllerTest::testReentrantDiscovery() {
  */
 void QueueingRDMControllerTest::testRequestAndDiscovery() {
   MockRDMController mock_controller;
-  auto_ptr<ola::rdm::DiscoverableQueueingRDMController> controller(
+  unique_ptr<ola::rdm::DiscoverableQueueingRDMController> controller(
       new ola::rdm::DiscoverableQueueingRDMController(&mock_controller, 1));
 
   UIDSet uids;

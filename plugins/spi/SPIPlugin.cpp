@@ -38,7 +38,7 @@ namespace plugin {
 namespace spi {
 
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -55,7 +55,7 @@ const char SPIPlugin::SPI_DEVICE_PREFIX_KEY[] = "device_prefix";
  */
 bool SPIPlugin::StartHook() {
   const string uid_str = m_preferences->GetValue(SPI_BASE_UID_KEY);
-  auto_ptr<UID> base_uid(UID::FromString(uid_str));
+  unique_ptr<UID> base_uid(UID::FromString(uid_str));
   if (!base_uid.get()) {
     OLA_WARN << "Invalid UID " << uid_str << ", defaulting to "
              << DEFAULT_BASE_UID;

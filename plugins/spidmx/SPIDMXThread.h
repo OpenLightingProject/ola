@@ -67,7 +67,7 @@ class SPIDMXThread : public ola::thread::Thread {
   std::vector<uint8_t> m_spi_tx_buffer;
 
   /** called when a new m_dmx_rx_buffer is ready */
-  std::auto_ptr<Callback0<void> > m_receive_callback;
+  std::unique_ptr<Callback0<void> > m_receive_callback;
 
   ola::thread::Mutex m_term_mutex;
   ola::thread::Mutex m_buffer_mutex;
