@@ -18,6 +18,8 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+syntax = "proto2";
+
 package ola.proto;
 
 option cc_generic_services = false;
