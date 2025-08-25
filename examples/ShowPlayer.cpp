@@ -31,6 +31,7 @@
 #include <ola/base/SysExits.h>
 #include <ola/client/ClientWrapper.h>
 #include <ola/client/OlaClient.h>
+#include <climits>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -216,7 +217,10 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
       break;
     }
   }
+  uint64_t timeout = playhead_time - seek_time;
   m_playback_pos = playhead_time;
+  m_clock.CurrentMonotonicTime(&m_start_ts);
+  m_start_playback_pos = m_playback_pos - timeout;
 
   // Send data in the state it would be in at the given time
   map<unsigned int, ShowEntry>::iterator entry_it;
@@ -224,7 +228,7 @@ ShowLoader::State ShowPlayer::SeekTo(uint64_t seek_time) {
     SendFrame(entry_it->second);
   }
   // Adjust the timeout to handle landing in the middle of the entry's timeout
-  RegisterNextTimeout(playhead_time-seek_time);
+  RegisterNextTimeout(timeout);
 
   return ShowLoader::OK;
 }
@@ -270,8 +274,35 @@ void ShowPlayer::SendEntry(const ShowEntry &entry) {
   SendFrame(entry);
   m_playback_pos += entry.next_wait;
 
+  unsigned int timeout = entry.next_wait;
+  if (!m_simulate) {
+    // Using int64_t for target_delta here because we have to lose 1 bit anyway
+    // as InMilliSeconds() returns a signed 64-bit integer.
+    ola::TimeStamp now;
+    m_clock.CurrentMonotonicTime(&now);
+    int64_t target_delta = m_playback_pos - m_start_playback_pos;
+    int64_t current_delta = (now - m_start_ts).InMilliSeconds();
+    int64_t delay = target_delta - current_delta;
+    if (delay < 0) {
+      OLA_WARN << "Frame at line " << m_loader.GetCurrentLineNumber()
+               << " was meant to have completed " << -delay << " ms ago."
+               << " System too slow?";
+      delay = 0;
+    }
+
+#if UINT_MAX < INT64_MAX
+    if (delay > UINT_MAX) {
+      OLA_WARN << "Calculated delay of " << delay << " ms"
+               << " exceeded maximum delay of " << UINT_MAX << " ms."
+               << " Clamping to maximum.";
+      delay = UINT_MAX;
+    }
+#endif
+
+    timeout = delay;
+  }
   // Set when next to send data
-  RegisterNextTimeout(entry.next_wait);
+  RegisterNextTimeout(timeout);
 }
 
 
