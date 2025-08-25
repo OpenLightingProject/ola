@@ -29,7 +29,7 @@
 using ola::rdm::UIDSet;
 using std::string;
 
-
+// TODO(Peter): Can this become NULL_ENDPOINT?
 static const uint16_t ROOT_E133_ENDPOINT = 0;
 
 /**
