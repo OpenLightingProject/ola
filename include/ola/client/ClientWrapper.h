@@ -92,11 +92,11 @@ class BaseClientWrapper {
   void SocketClosed();
 
  protected:
-  std::auto_ptr<ola::network::TCPSocket> m_socket;
+  std::unique_ptr<ola::network::TCPSocket> m_socket;
 
  private:
   ola::io::SelectServer m_ss;
-  std::auto_ptr<CloseCallback> m_close_callback;
+  std::unique_ptr<CloseCallback> m_close_callback;
 
   virtual void CreateClient() = 0;
   virtual bool StartupClient() = 0;
@@ -122,7 +122,7 @@ class GenericClientWrapper: public BaseClientWrapper {
   ClientClass *GetClient() const { return m_client.get(); }
 
  private:
-  std::auto_ptr<ClientClass> m_client;
+  std::unique_ptr<ClientClass> m_client;
   bool m_auto_start;
 
   void CreateClient() {

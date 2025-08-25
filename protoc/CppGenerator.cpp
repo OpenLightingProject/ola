@@ -36,7 +36,7 @@ using google::protobuf::FileDescriptor;
 using google::protobuf::ServiceDescriptor;
 using google::protobuf::compiler::OutputDirectory;
 using google::protobuf::io::Printer;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 bool CppGenerator::Generate(const FileDescriptor *file,
@@ -49,12 +49,12 @@ bool CppGenerator::Generate(const FileDescriptor *file,
   string code_name = basename + ".pb.cpp";
   FileGenerator file_generator(file, basename);
 
-  auto_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output(
+  unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output(
     generator_context->Open(header_name));
   Printer header_printer(header_output.get(), '$');
   file_generator.GenerateHeader(&header_printer);
 
-  auto_ptr<google::protobuf::io::ZeroCopyOutputStream> code_output(
+  unique_ptr<google::protobuf::io::ZeroCopyOutputStream> code_output(
     generator_context->Open(code_name));
   Printer code_printer(code_output.get(), '$');
   file_generator.GenerateImplementation(&code_printer);

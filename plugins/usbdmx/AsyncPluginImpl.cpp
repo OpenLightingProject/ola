@@ -65,7 +65,7 @@ using ola::usb::HotplugAgent;
 using ola::usb::JaRuleWidget;
 using ola::usb::USBDeviceID;
 using ola::NewSingleCallback;
-using std::auto_ptr;
+using std::unique_ptr;
 using ola::thread::Future;
 
 class DeviceState {
@@ -109,7 +109,7 @@ AsyncPluginImpl::~AsyncPluginImpl() {
 }
 
 bool AsyncPluginImpl::Start() {
-  auto_ptr<HotplugAgent> agent(new HotplugAgent(
+  unique_ptr<HotplugAgent> agent(new HotplugAgent(
       NewCallback(this, &AsyncPluginImpl::DeviceEvent), m_debug_level));
 
   if (!agent->Init()) {
@@ -141,7 +141,7 @@ bool AsyncPluginImpl::Start() {
     return false;
   }
 
-  m_agent.reset(agent.release());
+  m_agent = std::move(agent);
   return true;
 }
 

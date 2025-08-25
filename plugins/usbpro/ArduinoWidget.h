@@ -62,7 +62,7 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
  private:
     uint8_t m_transaction_id;
     ola::rdm::UID m_uid;
-    std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
+    std::unique_ptr<const ola::rdm::RDMRequest> m_pending_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
 
     void HandleMessage(uint8_t label,

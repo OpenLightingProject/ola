@@ -47,7 +47,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 

@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Logging.h"
@@ -310,13 +311,13 @@ bool SynchronousVellemanK8062::Init() {
     return false;
   }
 
-  std::auto_ptr<VellemanThreadedSender> sender(
+  std::unique_ptr<VellemanThreadedSender> sender(
       new VellemanThreadedSender(m_adaptor, m_usb_device, usb_handle,
                                  chunk_size));
   if (!sender->Start()) {
     return false;
   }
-  m_sender.reset(sender.release());
+  m_sender = std::move(sender);
   return true;
 }
 

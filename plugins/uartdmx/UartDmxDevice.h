@@ -54,7 +54,7 @@ class UartDmxDevice : public Device {
   std::string DeviceMalfKey() const;
   void SetDefaults();
 
-  std::auto_ptr<UartWidget> m_widget;
+  std::unique_ptr<UartWidget> m_widget;
   class Preferences *m_preferences;
   const std::string m_name;
   const std::string m_path;

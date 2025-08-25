@@ -88,7 +88,7 @@ class SynchronousAnymauDMX: public AnymauDMX {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class AnymaThreadedSender> m_sender;
+  std::unique_ptr<class AnymaThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousAnymauDMX);
 };
@@ -113,7 +113,7 @@ class AsynchronousAnymauDMX : public AnymauDMX {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class AnymaAsyncUsbSender> m_sender;
+  std::unique_ptr<class AnymaAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousAnymauDMX);
 };

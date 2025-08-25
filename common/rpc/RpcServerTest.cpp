@@ -31,7 +31,7 @@
 using ola::io::SelectServer;
 using ola::rpc::RpcSession;
 using ola::rpc::RpcServer;
-using std::auto_ptr;
+using std::unique_ptr;
 
 class RpcServerTest: public CppUnit::TestFixture,
                      public ola::rpc::RpcSessionHandlerInterface {
@@ -53,9 +53,9 @@ class RpcServerTest: public CppUnit::TestFixture,
 
  private:
   SelectServer m_ss;
-  auto_ptr<TestServiceImpl> m_service;
-  auto_ptr<RpcServer> m_server;
-  auto_ptr<TestClient> m_client;
+  unique_ptr<TestServiceImpl> m_service;
+  unique_ptr<RpcServer> m_server;
+  unique_ptr<TestClient> m_client;
 
   uint8_t ptr_data;
 };

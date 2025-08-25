@@ -56,7 +56,7 @@ StateManager::StateManager(const std::vector<TestState*> &states,
       m_node1(NULL),
       m_node2(NULL),
       m_ss(NULL),
-      m_stdin_handler(NULL),
+      m_stdin_handler(),
       m_states(states) {
 }
 

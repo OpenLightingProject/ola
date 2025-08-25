@@ -75,7 +75,7 @@ using ola::rdm::RootPidStore;
 using ola::rpc::RpcChannel;
 using ola::rpc::RpcSession;
 using ola::rpc::RpcServer;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::pair;
 using std::vector;
 
@@ -167,7 +167,7 @@ bool OlaServer::Init() {
     return false;
   }
 
-  auto_ptr<const RootPidStore> pid_store(
+  unique_ptr<const RootPidStore> pid_store(
       RootPidStore::LoadFromDirectory(m_options.pid_data_dir));
   if (!pid_store.get()) {
     OLA_WARN << "No PID definitions loaded";
@@ -180,7 +180,7 @@ bool OlaServer::Init() {
   // fetch the interface info
   ola::network::Interface iface;
   {
-    auto_ptr<ola::network::InterfacePicker> picker(
+    unique_ptr<ola::network::InterfacePicker> picker(
         ola::network::InterfacePicker::NewPicker());
     if (!picker->ChooseInterface(&iface, m_options.network_interface)) {
       OLA_WARN << "No network interface found";
@@ -209,28 +209,28 @@ bool OlaServer::Init() {
       UNIVERSE_PREFERENCES);
   universe_preferences->Load();
 
-  auto_ptr<UniverseStore> universe_store(
+  unique_ptr<UniverseStore> universe_store(
       new UniverseStore(universe_preferences, m_export_map));
 
-  auto_ptr<PortBroker> port_broker(new PortBroker());
+  unique_ptr<PortBroker> port_broker(new PortBroker());
 
-  auto_ptr<PortManager> port_manager(
+  unique_ptr<PortManager> port_manager(
       new PortManager(universe_store.get(), port_broker.get()));
 
-  auto_ptr<ClientBroker> broker(new ClientBroker());
+  unique_ptr<ClientBroker> broker(new ClientBroker());
 
-  auto_ptr<DeviceManager> device_manager(
+  unique_ptr<DeviceManager> device_manager(
       new DeviceManager(m_preferences_factory, port_manager.get()));
 
-  auto_ptr<PluginAdaptor> plugin_adaptor(
+  unique_ptr<PluginAdaptor> plugin_adaptor(
       new PluginAdaptor(device_manager.get(), m_ss, m_export_map,
                         m_preferences_factory, port_broker.get(),
                         &m_instance_name, &m_default_uid));
 
-  auto_ptr<PluginManager> plugin_manager(
+  unique_ptr<PluginManager> plugin_manager(
     new PluginManager(m_plugin_loaders, plugin_adaptor.get()));
 
-  auto_ptr<OlaServerServiceImpl> service_impl(new OlaServerServiceImpl(
+  unique_ptr<OlaServerServiceImpl> service_impl(new OlaServerServiceImpl(
       universe_store.get(),
       device_manager.get(),
       plugin_manager.get(),
@@ -245,7 +245,7 @@ bool OlaServer::Init() {
   rpc_options.listen_port = FLAGS_rpc_port;
   rpc_options.export_map = m_export_map;
 
-  auto_ptr<ola::rpc::RpcServer> rpc_server(
+  unique_ptr<ola::rpc::RpcServer> rpc_server(
       new RpcServer(m_ss, service_impl.get(), this, rpc_options));
 
   if (!rpc_server->Init()) {
@@ -254,7 +254,7 @@ bool OlaServer::Init() {
   }
 
   // Discovery
-  auto_ptr<DiscoveryAgentInterface> discovery_agent;
+  unique_ptr<DiscoveryAgentInterface> discovery_agent;
   if (FLAGS_register_with_dns_sd) {
     DiscoveryAgentFactory discovery_agent_factory;
     discovery_agent.reset(discovery_agent_factory.New());
@@ -270,7 +270,7 @@ bool OlaServer::Init() {
 
   // Initializing the web server causes a call to NewClient. We need to have
   // the broker in place for the call, otherwise we'll segfault.
-  m_broker.reset(broker.release());
+  m_broker = std::move(broker);
 
 #ifdef HAVE_LIBMICROHTTPD
   if (m_options.http_enable) {
@@ -296,15 +296,15 @@ bool OlaServer::Init() {
 
   // Ok, we've created and initialized everything correctly by this point. Now
   // we save all the pointers and schedule the last of the callbacks.
-  m_device_manager.reset(device_manager.release());
-  m_discovery_agent.reset(discovery_agent.release());
-  m_plugin_adaptor.reset(plugin_adaptor.release());
-  m_plugin_manager.reset(plugin_manager.release());
-  m_port_broker.reset(port_broker.release());
-  m_port_manager.reset(port_manager.release());
-  m_rpc_server.reset(rpc_server.release());
-  m_service_impl.reset(service_impl.release());
-  m_universe_store.reset(universe_store.release());
+  m_device_manager = std::move(device_manager);
+  m_discovery_agent = std::move(discovery_agent);
+  m_plugin_adaptor = std::move(plugin_adaptor);
+  m_plugin_manager = std::move(plugin_manager);
+  m_port_broker = std::move(port_broker);
+  m_port_manager = std::move(port_manager);
+  m_rpc_server = std::move(rpc_server);
+  m_service_impl = std::move(service_impl);
+  m_universe_store = std::move(universe_store);
 
   UpdatePidStore(pid_store.release());
 
@@ -362,7 +362,7 @@ void OlaServer::NewClient(RpcSession *session) {
 }
 
 void OlaServer::ClientRemoved(RpcSession *session) {
-  auto_ptr<Client> client(reinterpret_cast<Client*>(session->GetData()));
+  unique_ptr<Client> client(reinterpret_cast<Client*>(session->GetData()));
   session->SetData(NULL);
 
   m_broker->RemoveClient(client.get());
@@ -412,7 +412,7 @@ bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
 
   // create a pipe for the HTTP server to communicate with the main
   // server on.
-  auto_ptr<ola::io::PipeDescriptor> pipe_descriptor(
+  unique_ptr<ola::io::PipeDescriptor> pipe_descriptor(
       new ola::io::PipeDescriptor());
   if (!pipe_descriptor->Init()) {
     return false;
@@ -425,7 +425,7 @@ bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
                       m_options.http_data_dir);
   options.enable_quit = m_options.http_enable_quit;
 
-  auto_ptr<OladHTTPServer> httpd(
+  unique_ptr<OladHTTPServer> httpd(
       new OladHTTPServer(m_export_map, options,
                          pipe_descriptor->OppositeEnd(),
                          this, iface));
@@ -434,7 +434,7 @@ bool OlaServer::StartHttpServer(ola::rpc::RpcServer *server,
     httpd->Start();
     // register the pipe descriptor as a client
     InternalNewConnection(server, pipe_descriptor.release());
-    m_httpd.reset(httpd.release());
+    m_httpd = std::move(httpd);
     return true;
   } else {
     pipe_descriptor->Close();

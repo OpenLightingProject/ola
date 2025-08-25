@@ -21,6 +21,7 @@
 #include "plugins/openpixelcontrol/OPCServer.h"
 
 #include <string>
+#include <utility>
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
@@ -82,13 +83,13 @@ OPCServer::~OPCServer() {
 }
 
 bool OPCServer::Init() {
-  std::auto_ptr<TCPAcceptingSocket> listening_socket(
+  std::unique_ptr<TCPAcceptingSocket> listening_socket(
       new TCPAcceptingSocket(&m_tcp_socket_factory));
   if (!listening_socket->Listen(m_listen_addr)) {
     return false;
   }
   m_ss->AddReadDescriptor(listening_socket.get());
-  m_listening_socket.reset(listening_socket.release());
+  m_listening_socket = std::move(listening_socket);
   return true;
 }
 

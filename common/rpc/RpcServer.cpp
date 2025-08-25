@@ -25,13 +25,14 @@
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocket.h>
 #include <ola/rpc/RpcSessionHandler.h>
+#include <utility>
 #include "common/rpc/RpcChannel.h"
 #include "common/rpc/RpcSession.h"
 
 namespace ola {
 namespace rpc {
 
-using std::auto_ptr;
+using std::unique_ptr;
 using ola::io::ConnectedDescriptor;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
@@ -88,7 +89,7 @@ bool RpcServer::Init() {
     return false;
   }
 
-  auto_ptr<TCPAcceptingSocket> accepting_socket;
+  unique_ptr<TCPAcceptingSocket> accepting_socket;
 
   if (m_options.listen_socket) {
     accepting_socket.reset(m_options.listen_socket);
@@ -114,7 +115,7 @@ bool RpcServer::Init() {
     return false;
   }
 
-  m_accepting_socket.reset(accepting_socket.release());
+  m_accepting_socket = std::move(accepting_socket);
   return true;
 }
 

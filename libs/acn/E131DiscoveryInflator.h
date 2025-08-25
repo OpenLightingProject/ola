@@ -59,7 +59,7 @@ class E131DiscoveryInflator: public InflatorInterface {
 
 
  private:
-  std::auto_ptr<PageCallback> m_page_callback;
+  std::unique_ptr<PageCallback> m_page_callback;
 };
 }  // namespace acn
 }  // namespace ola

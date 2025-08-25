@@ -139,9 +139,9 @@ class RpcChannel {
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<int, class OutstandingResponse*>
       ResponseMap;
 
-    std::auto_ptr<RpcSession> m_session;
+    std::unique_ptr<RpcSession> m_session;
     RpcService *m_service;  // service to dispatch requests to
-    std::auto_ptr<CloseCallback> m_on_close;
+    std::unique_ptr<CloseCallback> m_on_close;
     // the descriptor to read/write to.
     class ola::io::ConnectedDescriptor *m_descriptor;
     SequenceNumber<uint32_t> m_sequence;

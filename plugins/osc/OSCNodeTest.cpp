@@ -41,7 +41,7 @@ using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
 using ola::plugin::osc::OSCNode;
 using ola::plugin::osc::OSCTarget;
-using std::auto_ptr;
+using std::unique_ptr;
 
 
 /**
@@ -79,7 +79,7 @@ class OSCNodeTest: public CppUnit::TestFixture {
 
  private:
     ola::io::SelectServer m_ss;
-    auto_ptr<OSCNode> m_osc_node;
+    unique_ptr<OSCNode> m_osc_node;
     UDPSocket m_udp_socket;
     ola::thread::timeout_id m_timeout_id;
     DmxBuffer m_dmx_data;
