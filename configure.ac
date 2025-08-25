@@ -789,6 +789,23 @@ AC_ARG_ENABLE(
   [AS_HELP_STRING([--disable-doxygen-version],
   [Substitute the Doxygen version with latest, for the website])])
 
+# Use UUCP locking?
+AC_ARG_ENABLE(
+  [uucp-locking],
+  [AS_HELP_STRING([--enable-uucp-locking],
+  [Use UUCP locking instead of flock()])])
+
+AC_CHECK_FUNC([flock], [AC_DEFINE([HAVE_FLOCK], [1],
+                                  [Define if flock() is available])
+                        have_flock=yes], [])
+
+UUCP_LOCKING="no"
+AS_IF([test "x$enable_uucp_locking" = xyes || test "x$have_flock" != xyes],
+      [AC_DEFINE([UUCP_LOCKING], [1],
+                 [Define if UUCP locking should be used])
+       UUCP_LOCKING=yes],
+      [])
+
 # UUCP Lock directory
 AC_ARG_WITH([uucp-lock],
             [AS_HELP_STRING([--with-uucp-lock],
@@ -1037,6 +1054,7 @@ Enable HTTP Server: ${have_microhttpd}
 RDM Responder Tests: ${enable_rdm_tests}
 Ja Rule: ${BUILDING_JA_RULE}
 Enabled Plugins:${PLUGINS}
+UUCP Locking: $UUCP_LOCKING
 UUCP Lock Directory: $UUCPLOCK
 
 Now type 'make @<:@<target>@:>@'
