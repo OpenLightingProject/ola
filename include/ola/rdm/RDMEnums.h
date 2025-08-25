@@ -77,9 +77,15 @@ typedef enum {
   PID_STATUS_ID_DESCRIPTION = 0x0031,
   PID_CLEAR_STATUS_ID = 0x0032,
   PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD = 0x0033,
+  PID_QUEUED_MESSAGE_SENSOR_SUBSCRIBE = 0x0034,
   // RDM information
   PID_SUPPORTED_PARAMETERS = 0x0050,
   PID_PARAMETER_DESCRIPTION = 0x0051,
+  PID_SUPPORTED_PARAMETERS_ENHANCED = 0x0055,
+  PID_CONTROLLER_FLAG_SUPPORT = 0x0056,
+  PID_NACK_DESCRIPTION = 0x0057,
+  PID_PACKED_PID_SUB = 0x0058,
+  PID_PACKED_PID_INDEX = 0x0059,
   // production information
   PID_DEVICE_INFO = 0x0060,
   PID_PRODUCT_DETAIL_ID_LIST = 0x0070,
@@ -250,6 +256,9 @@ typedef enum {
 } rdm_status_type;
 
 
+// Remember to update the other places when adding new sensor types:
+// common/rdm/RDMHelper.cpp
+// python/ola/RDMConstants.py
 typedef enum {
   SENSOR_TEMPERATURE = 0x00,
   SENSOR_VOLTAGE = 0x01,
@@ -284,9 +293,20 @@ typedef enum {
   SENSOR_ITEMS = 0x1E,
   SENSOR_HUMIDITY = 0x1F,
   SENSOR_COUNTER_16BIT = 0x20,
+  SENSOR_CPU_LOAD = 0x21,
+  SENSOR_BANDWIDTH = 0x22,
+  SENSOR_CONCENTRATION = 0x23,
+  SENSOR_SOUND_PRESSURE_LEVEL = 0x24,
+  SENSOR_SOLID_ANGLE = 0x25,
+  SENSOR_LOG_RATIO = 0x26,
+  SENSOR_LOG_RATIO_VOLTS = 0x27,
+  SENSOR_LOG_RATIO_WATTS = 0x28,
   SENSOR_OTHER = 0x7F,
 } rdm_sensor_type;
 
+// Remember to update the other places when adding new sensor units:
+// common/rdm/RDMHelper.cpp
+// python/ola/RDMConstants.py
 typedef enum {
   UNITS_NONE = 0x00,
   UNITS_CENTIGRADE = 0x01,
@@ -317,6 +337,14 @@ typedef enum {
   UNITS_LUX = 0x1A,
   UNITS_IRE = 0x1B,
   UNITS_BYTE = 0x1C,
+  UNITS_DECIBEL = 0x1D,
+  UNITS_DECIBEL_VOLT = 0x1E,
+  UNITS_DECIBEL_WATT = 0x1F,
+  UNITS_DECIBEL_METER = 0x20,
+  UNITS_PERCENT = 0x21,
+  UNITS_MOLES_PER_METER_CUBED = 0x22,
+  UNITS_RPM = 0x23,
+  UNITS_BYTE_PER_SECOND = 0x24,
 } rdm_pid_unit;
 
 
@@ -362,6 +390,16 @@ typedef enum {
   DS_SIGNED_WORD = 0x06,
   DS_UNSIGNED_DWORD = 0x07,
   DS_SIGNED_DWORD = 0x08,
+  DS_UINT64 = 0x09,
+  DS_INT64 = 0x0a,
+  DS_GROUP = 0x0b,
+  DS_UID = 0x0c,
+  DS_BOOLEAN = 0x0d,
+  DS_URL = 0x0e,
+  DS_MAC = 0x0f,
+  DS_IPV4 = 0x10,
+  DS_IPV6 = 0x11,
+  DS_ENUMERATION = 0x12,
 } rdm_data_type;
 
 
@@ -390,7 +428,14 @@ typedef enum {
   NR_INVALID_STATIC_CONFIG_TYPE = 0x0010,
   NR_INVALID_IPV4_ADDRESS = 0x0011,
   NR_INVALID_IPV6_ADDRESS = 0x0012,
-  NR_INVALID_PORT = 0x0013
+  NR_INVALID_PORT = 0x0013,
+  NR_DEVICE_ABSENT = 0x0014,
+  NR_SENSOR_OUT_OF_RANGE = 0x0015,
+  NR_SENSOR_FAULT = 0x0016,
+  NR_PACKING_NOT_SUPPORTED = 0x0017,
+  NR_ERROR_IN_PACKED_LIST_TRANSACTION = 0x0018,
+  NR_PROXY_DROP = 0x0019,
+  NR_ALL_CALL_SET_FAIL = 0x0020
 } rdm_nack_reason;
 
 
@@ -460,6 +505,9 @@ typedef enum {
 
 
 // product details
+// Remember to update the other places when adding new product detail:
+// common/rdm/RDMHelper.cpp
+// python/ola/RDMConstants.py
 typedef enum {
   PRODUCT_DETAIL_NOT_DECLARED = 0x0000,
   PRODUCT_DETAIL_ARC = 0x0001,
@@ -540,6 +588,8 @@ typedef enum {
   PRODUCT_DETAIL_GFI_RCD = 0x0A00,
   PRODUCT_DETAIL_BATTERY = 0x0A01,
   PRODUCT_DETAIL_CONTROLLABLE_BREAKER = 0x0A02,
+  PRODUCT_DETAIL_INPUT_DEVICE = 0x0B00,
+  PRODUCT_DETAIL_SENSOR_INPUT = 0x0B01,
   PRODUCT_DETAIL_OTHER = 0x7FFF,
 } rdm_product_detail;
 
@@ -560,6 +610,9 @@ typedef enum {
 } rdm_slot_type;
 
 
+// Remember to update the other places when adding new slot definitions:
+// common/rdm/RDMHelper.cpp
+// python/ola/RDMConstants.py
 /**
  * @brief The RDM slot definitions, from table C-2 of the standard.
  */
@@ -577,6 +630,12 @@ typedef enum {
   SD_COLOR_ADD_BLUE = 0x0207,
   SD_COLOR_CORRECTION = 0x0208,
   SD_COLOR_SCROLL = 0x0209,
+  SD_COLOR_ADD_LIME = 0x020A,
+  SD_COLOR_ADD_INDIGO = 0x020B,
+  SD_COLOR_ADD_CYAN = 0x020C,
+  SD_COLOR_ADD_DEEP_RED = 0x020D,
+  SD_COLOR_ADD_DEEP_BLUE = 0x020E,
+  SD_COLOR_ADD_NATURAL_WHITE = 0x020F,
   SD_COLOR_SEMAPHORE = 0x0210,
   SD_COLOR_ADD_AMBER = 0x0211,
   SD_COLOR_ADD_WHITE = 0x0212,
@@ -585,6 +644,7 @@ typedef enum {
   SD_COLOR_SUB_UV = 0x0215,
   SD_COLOR_HUE = 0x0216,
   SD_COLOR_SATURATION = 0x0217,
+  SD_COLOR_ADD_UV = 0x0218,
   SD_STATIC_GOBO_WHEEL = 0x0301,
   SD_ROTO_GOBO_WHEEL = 0x0302,
   SD_PRISM_WHEEL = 0x0303,
