@@ -15,6 +15,7 @@
 # TestMixins.py
 # Copyright (C) 2010 Simon Newton
 
+import json
 import struct
 import sys
 
@@ -177,6 +178,12 @@ class GetURLMixin(GetMixin):
   # TODO(Peter): Make this a constant
   MAX_LENGTH = 231
   ALLOWED_SCHEMAS = ['http', 'https']
+  # TODO(Peter): Add non-English ones from https://en.wikipedia.org/wiki/.test
+  # From RFC 2606 and RFC 6762
+  DENIED_TLDS = ['test', 'example', 'internal', 'invalid', 'local',
+                 'localhost']
+  # From RFC 2606
+  DENIED_DOMAINS = ['example.com', 'example.net', 'example.org']
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
@@ -225,12 +232,38 @@ class GetURLMixin(GetMixin):
         # TODO(Peter): Possibly check for ValueError locally here too...
         if url_result.netloc is None or not url_result.netloc:
           self.AddAdvisory(
-              '%s field in %s had no netloc' %
-              (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name))
-        # else:
-          # TODO(Peter): Check for a dot in the netloc
-          # TODO(Peter): Check the netloc domain isn't a prohibited internal
-          # only one
+              '%s field in %s had no netloc, was %s' %
+              (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, url_field))
+        else:
+          if url_result.hostname is None or not url_result.hostname:
+            self.AddAdvisory(
+                '%s field in %s had no hostname, was %s' %
+                (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+                 url_field))
+          else:
+            if '.' not in url_result.hostname:
+              self.AddAdvisory(
+                '%s field in %s had hostname without a dot, expecting an '
+                'FQDN, was %s' %
+                (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+                 url_result.hostname))
+
+            for tld in self.DENIED_TLDS:
+              tld_with_dot = "." + tld
+              if url_result.hostname.endswith(tld_with_dot):
+                self.AddAdvisory(
+                  '%s field in %s had hostname ending with denied TLD %s' %
+                  (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+                   tld_with_dot))
+
+            for domain in self.DENIED_DOMAINS:
+              domain_with_dot = "." + domain
+              if (url_result.hostname is domain or
+                  url_result.hostname.endswith(domain_with_dot)):
+                self.AddAdvisory(
+                    '%s field in %s had hostname ending with denied domain %s' %
+                    (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+                     domain))
 
         # TODO(Peter): Optionally expect at least one other section
         # (product/firmware)
@@ -239,6 +272,57 @@ class GetURLMixin(GetMixin):
           '%s field in %s didn\'t parse as a URL due to %s, was %s' %
           (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, str(err),
            url_field))
+
+
+class GetJSONMixin(GetMixin):
+  """GET Mixin for an optional JSON PID. Verify EXPECTED_FIELDS are in the
+    response.
+
+    This mixin also sets a property if PROVIDES is defined.  The target class
+    needs to defined EXPECTED_FIELDS and optionally PROVIDES.
+  """
+  # Min length is based on simplest empty JSON of {}
+  MIN_LENGTH = 2
+  # TODO(Peter): Max length is unlimited?
+  MAX_LENGTH = 255
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    json_field = fields[self.EXPECTED_FIELDS[0]]
+
+    if self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], json_field)
+
+    if ContainsUnprintable(json_field):
+      self.AddAdvisory(
+          '%s field in %s contains unprintable characters, was %s' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+           StringEscape(json_field)))
+
+    if self.MIN_LENGTH and len(json_field) < self.MIN_LENGTH:
+      self.SetFailed(
+          '%s field in %s was shorter than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+           len(json_field), self.MIN_LENGTH))
+
+    if self.MAX_LENGTH and len(json_field) > self.MAX_LENGTH:
+      self.SetFailed(
+          '%s field in %s was longer than expected, was %d, expected %d' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name,
+           len(json_field), self.MAX_LENGTH))
+
+    # TODO(Peter): Do basic JSON validation
+    try:
+      parse_json = json.loads(json_field)
+
+      # TODO(Peter): Add the option to do test-specific validation
+    except ValueError as err:
+      self.SetFailed(
+          '%s field in %s didn\'t parse as valid JSON due to %s, was %s' %
+          (self.EXPECTED_FIELDS[0].capitalize(), self.pid.name, str(err),
+           json_field))
 
 
 class GetTestDataMixin(ResponderTestFixture):
@@ -266,6 +350,38 @@ class GetTestDataMixin(ResponderTestFixture):
       results.append(self.NackGetResult(nack))
     self.AddIfGetSupported(results)
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.PATTERN_LENGTH])
+
+
+class SetTestDataMixin(ResponderTestFixture):
+  """SET TEST_DATA PID with a given pattern length.
+
+    If ALLOWED_NACKS is non-empty, this adds a custom NackGetResult to the list
+    of allowed results for each entry.
+  """
+  PID = 'TEST_DATA'
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  LOOPBACK_DATA_LENGTH = 1
+  ALLOWED_NACKS = []
+  EXPECTED_FIELDS = ['loopback_data']
+
+  def Test(self):
+    expected_value = []
+    for i in reversed(range(0, self.LOOPBACK_DATA_LENGTH)):
+      expected_value.append({'data': (i % (255 + 1))})
+    results = [
+      self.AckSetResult(
+          field_names=self.EXPECTED_FIELDS,
+          field_values={self.EXPECTED_FIELDS[0]: expected_value})
+    ]
+    for nack in self.ALLOWED_NACKS:
+      results.append(self.NackSetResult(nack))
+    self.AddIfSetSupported(results)
+    data = b''
+    # Descending data to differentiate from GET TEST_DATA
+    for i in reversed(range(0, self.LOOPBACK_DATA_LENGTH)):
+      data += b'%c' % i
+    # TODO(Peter): using SendRawSet until we fix packing of groups in Python
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, data)
 
 
 class GetRequiredMixin(ResponderTestFixture):

@@ -965,7 +965,7 @@ RDMResponse *ResponderHelper::GetParamDescription(
     uint32_t min_value,
     uint32_t default_value,
     uint32_t max_value,
-    string description,
+    const string description,
     uint8_t queued_message_count) {
   PACK(
   struct parameter_description_s {
@@ -1019,7 +1019,7 @@ RDMResponse *ResponderHelper::GetASCIIParamDescription(
         const RDMRequest *request,
         uint16_t pid,
         rdm_command_class command_class,
-        string description,
+        const string description,
         uint8_t queued_message_count) {
   return GetParamDescription(
       request,
@@ -1041,7 +1041,7 @@ RDMResponse *ResponderHelper::GetBitFieldParamDescription(
         uint16_t pid,
         uint8_t pdl_size,
         rdm_command_class command_class,
-        string description,
+        const string description,
         uint8_t queued_message_count) {
   return GetParamDescription(
       request,
@@ -1108,6 +1108,65 @@ RDMResponse *ResponderHelper::SetTestData(
       request->ParamDataSize(),
       RDM_ACK,
       queued_message_count);
+}
+
+/**
+ * Get NSC comms status
+ */
+RDMResponse *ResponderHelper::GetCommsStatusNSC(
+    const RDMRequest *request,
+    const NSCStatus *status,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  PACK(
+  struct comms_status_nsc_s {
+    uint8_t supported_fields;
+    uint32_t additive_checksum;
+    uint32_t packet_count;
+    uint16_t most_recent_slot_count;
+    uint16_t min_slot_count;
+    uint16_t max_slot_count;
+    uint32_t packet_error_count;
+  });
+  STATIC_ASSERT(sizeof(comms_status_nsc_s) == 19);
+
+  struct comms_status_nsc_s comms_status_nsc;
+  comms_status_nsc.supported_fields = status->SupportedFieldsBitMask();
+  comms_status_nsc.additive_checksum = HostToNetwork(
+      status->AdditiveChecksum());
+  comms_status_nsc.packet_count = HostToNetwork(status->PacketCount());
+  comms_status_nsc.most_recent_slot_count = HostToNetwork(
+      status->MostRecentSlotCount());
+  comms_status_nsc.min_slot_count = HostToNetwork(status->MinSlotCount());
+  comms_status_nsc.max_slot_count = HostToNetwork(status->MaxSlotCount());
+  comms_status_nsc.packet_error_count = HostToNetwork(
+      status->PacketErrorCount());
+  return GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(&comms_status_nsc),
+    sizeof(comms_status_nsc),
+    RDM_ACK,
+    queued_message_count);
+}
+
+/**
+ * Set NSC comms status
+ */
+RDMResponse *ResponderHelper::SetCommsStatusNSC(
+    const RDMRequest *request,
+    NSCStatus *status,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  // Reset the counts...
+  status->Reset();
+
+  return GetResponseFromData(request, NULL, queued_message_count);
 }
 
 RDMResponse *ResponderHelper::GetListTags(
@@ -1186,6 +1245,63 @@ RDMResponse *ResponderHelper::SetClearTags(
 
   return ResponderHelper::EmptySetResponse(request, queued_message_count);
 }
+
+RDMResponse *ResponderHelper::GetMetadataParameterVersion(
+    const RDMRequest *request,
+    uint16_t pid,
+    uint16_t version,
+    uint8_t queued_message_count) {
+  PACK(
+  struct metadata_parameter_version_s {
+    uint16_t pid;
+    uint16_t version;
+  });
+  STATIC_ASSERT(sizeof(metadata_parameter_version_s) == 4);
+
+  struct metadata_parameter_version_s metadata_param_version;
+  metadata_param_version.pid = HostToNetwork(pid);
+  metadata_param_version.version = HostToNetwork(version);
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&metadata_param_version),
+      sizeof(metadata_parameter_version_s),
+      RDM_ACK,
+      queued_message_count);
+}
+
+RDMResponse *ResponderHelper::GetMetadataJSON(
+    const RDMRequest *request,
+    uint16_t pid,
+    const string json,
+    uint8_t queued_message_count) {
+  PACK(
+  struct metadata_json_s {
+    uint16_t pid;
+    // TODO(Peter): This should effectively be unlimited...?
+    char json[(UINT8_MAX - 2)];
+  });
+  STATIC_ASSERT(sizeof(metadata_json_s) == UINT8_MAX);
+
+  struct metadata_json_s metadata_json;
+  metadata_json.pid = HostToNetwork(pid);
+
+  size_t str_len = min(json.size(),
+                       sizeof(metadata_json.json));
+  strncpy(metadata_json.json, json.c_str(), str_len);
+
+  unsigned int param_data_size = (
+      sizeof(metadata_json) -
+      sizeof(metadata_json.json) + str_len);
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&metadata_json),
+      param_data_size,
+      RDM_ACK,
+      queued_message_count);
+}
+
 
 /**
  * @brief Handle a request that returns a string

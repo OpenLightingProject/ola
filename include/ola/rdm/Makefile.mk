@@ -34,6 +34,7 @@ olardminclude_HEADERS = \
     include/ola/rdm/RDMReply.h \
     include/ola/rdm/ResponderHelper.h \
     include/ola/rdm/ResponderLoadSensor.h \
+    include/ola/rdm/ResponderNSCStatus.h \
     include/ola/rdm/ResponderOps.h \
     include/ola/rdm/ResponderOpsPrivate.h \
     include/ola/rdm/ResponderPersonality.h \

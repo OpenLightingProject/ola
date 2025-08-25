@@ -111,6 +111,12 @@ class DmxBuffer {
     unsigned int Size() const { return m_length; }
 
     /**
+     * @brief Additive checksum of DmxBuffer
+     * @return the additive checksum of slots in the buffer.
+     */
+    unsigned int AdditiveChecksum() const;
+
+    /**
      * @brief HTP Merge from another DmxBuffer.
      * @param other the DmxBuffer to HTP merge into this one
      * @return false if the merge failed, and true if merge was successful
