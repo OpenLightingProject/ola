@@ -160,9 +160,16 @@ E131Node::~E131Node() {
 
 
 bool E131Node::Start() {
+
+
+  ola::network::InterfacePicker::Options opts;
+  opts.include_loopback = false;
+  opts.specific_only = m_options.force_interface;
+  opts.include_down = m_options.force_interface;
+
   auto_ptr<ola::network::InterfacePicker> picker(
     ola::network::InterfacePicker::NewPicker());
-  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip, opts)) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }
@@ -181,7 +188,7 @@ bool E131Node::Start() {
   }
 
   m_socket.SetTos(m_options.dscp);
-  m_socket.SetMulticastInterface(m_interface.ip_address);
+  m_socket.SetMulticastInterface(m_interface);
 
   m_socket.SetOnData(NewCallback(&m_incoming_udp_transport,
                                  &IncomingUDPTransport::Receive));

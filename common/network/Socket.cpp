@@ -364,21 +364,34 @@ bool UDPSocket::EnableBroadcast() {
 }
 
 
-bool UDPSocket::SetMulticastInterface(const IPV4Address &iface) {
-  struct in_addr addr;
-  addr.s_addr = iface.AsInt();
+bool UDPSocket::SetMulticastInterface(const Interface &iface) {
 #ifdef _WIN32
+  struct in_addr addr;
+  addr.s_addr = htonl(iface.index());
   int ok = setsockopt(m_handle.m_handle.m_fd,
-#else
-  int ok = setsockopt(m_handle,
-#endif  // _WIN32
                       IPPROTO_IP,
                       IP_MULTICAST_IF,
                       reinterpret_cast<const char*>(&addr),
                       sizeof(addr));
+#else
+  struct ip_mreqn req = {0, 0, 0};
+  req.imr_ifindex = iface.index;
+  int ok = setsockopt(m_handle,
+                      IPPROTO_IP,
+                      IP_MULTICAST_IF,
+                      reinterpret_cast<const char*>(&req),
+                      sizeof(req));
+#endif  // _WIN32
   if (ok < 0) {
+    std::string iface_desc;
+    if(!iface.name.empty())
+      iface_desc = iface.name
+        + "(" + std::to_string(iface.index) + ")";
+    else
+      iface_desc = iface.ip_address.ToString()
+        + "(" + std::to_string(iface.index) + ")";
     OLA_WARN << "Failed to set outgoing multicast interface to " <<
-      iface << ": " << strerror(errno);
+      iface_desc << ": " << strerror(errno);
     return false;
   }
   return true;

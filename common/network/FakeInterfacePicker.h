@@ -38,7 +38,9 @@ class FakeInterfacePicker: public InterfacePicker {
         m_interfaces(interfaces) {
   }
 
-  std::vector<Interface> GetInterfaces(bool include_loopback) const {
+  std::vector<Interface> GetInterfaces(bool include_loopback,
+                                       bool include_down) const {
+    (void) include_down;
     if (include_loopback) {
       return m_interfaces;
     } else {

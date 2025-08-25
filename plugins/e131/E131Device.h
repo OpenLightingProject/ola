@@ -52,7 +52,7 @@ class E131Device: public ola::Device {
 
   E131Device(ola::Plugin *owner,
              const ola::acn::CID &cid,
-             std::string ip_addr,
+             std::string ip_or_interface,
              class PluginAdaptor *plugin_adaptor,
              const E131DeviceOptions &options);
 
@@ -74,7 +74,7 @@ class E131Device: public ola::Device {
   const E131DeviceOptions m_options;
   std::vector<E131InputPort*> m_input_ports;
   std::vector<E131OutputPort*> m_output_ports;
-  std::string m_ip_addr;
+  std::string m_ip_or_interface;
   ola::acn::CID m_cid;
 
   void HandlePreviewMode(const ola::plugin::e131::Request *request,
