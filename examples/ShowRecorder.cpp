@@ -47,10 +47,12 @@ using std::vector;
 
 
 ShowRecorder::ShowRecorder(const string &filename,
-                           const vector<unsigned int> &universes)
+                           const vector<unsigned int> &universes,
+                           const string &channeltrigger)
     : m_saver(filename),
       m_universes(universes),
-      m_frame_count(0) {
+      m_frame_count(0),
+      m_channeltrigger(channeltrigger) {
 }
 
 
@@ -82,6 +84,18 @@ int ShowRecorder::Init() {
         ola::NewSingleCallback(this, &ShowRecorder::RegisterComplete));
   }
 
+  vector<string> trigger_strs;
+  ola::StringSplit(m_channeltrigger, &trigger_strs, ",");
+  vector<string>::const_iterator itert = trigger_strs.begin();
+  for (; itert != trigger_strs.end(); ++itert) {
+    unsigned int triggerval;
+    if (!ola::StringToInt(*itert, &triggerval)) {
+      OLA_FATAL << *itert << " isn't a valid universe/channel number";
+      exit(ola::EXIT_USAGE);
+    }
+    triggervalues.push_back(triggerval);
+  }
+
   return ola::EXIT_OK;
 }
 
@@ -108,6 +122,17 @@ void ShowRecorder::Stop() {
  */
 void ShowRecorder::NewFrame(const ola::client::DMXMetadata &meta,
                             const ola::DmxBuffer &data) {
+  if (!m_channeltrigger.empty()) {
+    if (recordingStarted == false) {
+      if (meta.universe != triggervalues.at(0)) {
+        return;
+      } else if (data.Get(triggervalues.at(1)) != 255) {
+        return;
+      } else {
+        recordingStarted = true;
+      }
+    }
+  }
   ola::TimeStamp now;
   m_clock.CurrentMonotonicTime(&now);
   m_saver.NewFrame(now, meta.universe, data);

@@ -37,7 +37,8 @@
 class ShowRecorder {
  public:
   ShowRecorder(const std::string &filename,
-               const std::vector<unsigned int> &universes);
+               const std::vector<unsigned int> &universes,
+               const std::string &channeltrigger);
   ~ShowRecorder();
 
   int Init();
@@ -52,6 +53,9 @@ class ShowRecorder {
   std::vector<unsigned int> m_universes;
   ola::Clock m_clock;
   uint64_t m_frame_count;
+  std::string m_channeltrigger;
+  std::vector<unsigned int> triggervalues;
+  bool recordingStarted = false;
 
   void NewFrame(const ola::client::DMXMetadata &meta,
                 const ola::DmxBuffer &data);
