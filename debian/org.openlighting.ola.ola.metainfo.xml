@@ -36,6 +36,7 @@
     <modalias>usb:v1D50p607Ad*</modalias> <!-- Scanlime Fadecandy -->
     <modalias>usb:v109pACEDd*</modalias> <!-- Ja Rule -->
     <modalias>usb:v109pACEEd*</modalias> <!-- Ja Rule Bootloader -->
+    <modalias>usb:v6244p030*d*</modalias> <!-- Nicolaudie SIUDI -->
     <modalias>lkmodule:spidev</modalias> <!-- spidev kernel module -->
     <modalias>lkmodule:dmxi2c</modalias> <!-- dmx4linux I2C kernel module -->
     <modalias>lkmodule:okdmx</modalias> <!-- dmx4linux kernel module -->
