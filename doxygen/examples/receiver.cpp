@@ -43,8 +43,10 @@ int main() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
 
   ola::client::OlaClientWrapper wrapper;
-  if (!wrapper.Setup())
+  if (!wrapper.Setup()) {
+    std::cerr << "Setup failed" << std::endl;
     exit(1);
+  }
 
   ola::client::OlaClient *client = wrapper.GetClient();
   // Set the callback and register our interest in this universe

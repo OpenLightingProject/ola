@@ -133,6 +133,9 @@ examples/ola_latency.exe
 examples/ola_patch
 examples/ola_patch.exe
 examples/ola_ptch.exe
+examples/ola_patcher_remap
+examples/ola_patcher_remap.exe
+examples/ola_ptcher_remap.exe
 examples/ola_plugin_info
 examples/ola_plugin_info.exe
 examples/ola_plugin_state

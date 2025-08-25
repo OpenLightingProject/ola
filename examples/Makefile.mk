@@ -21,6 +21,7 @@ examples_libolaconfig_la_CXXFLAGS = $(COMMON_PROTOBUF_CXXFLAGS)
 ##################################################
 bin_PROGRAMS += \
     examples/ola_dev_info \
+    examples/ola_patcher_remap \
     examples/ola_rdm_discover \
     examples/ola_rdm_get \
     examples/ola_recorder \
@@ -60,6 +61,10 @@ endif
 
 examples_ola_dev_info_SOURCES = examples/ola-client.cpp
 examples_ola_dev_info_LDADD = $(EXAMPLE_COMMON_LIBS)
+
+examples_ola_patcher_remap_SOURCES = examples/ola-patcher-remap.cpp
+examples_ola_patcher_remap_LDADD = $(EXAMPLE_COMMON_LIBS) \
+                                   olad/plugin_api/libolaserverplugininterface.la
 
 examples_ola_streaming_client_SOURCES = examples/ola-streaming-client.cpp
 examples_ola_streaming_client_LDADD = $(EXAMPLE_COMMON_LIBS)
