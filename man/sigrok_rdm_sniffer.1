@@ -1,0 +1,47 @@
+.TH sigrok_rdm_sniffer 1 "March 2021"
+.SH NAME
+sigrok_rdm_sniffer \- Decode DMX/RDM data from logic analyzers supported by
+sigrok
+.SH SYNOPSIS
+.B sigrok_rdm_sniffer
+[ options ]
+.SH DESCRIPTION
+.B sigrok_rdm_sniffer
+Decode DMX/RDM data from logic analyzers supported by sigrok
+.SH OPTIONS
+.IP "-d, --display-dmx"
+Display DMX Frames. Defaults to false.
+.IP "-h, --help"
+Display the help message
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4.
+.IP "-r, --full-rdm"
+Unpack RDM parameter data.
+.IP "-v, --version"
+Print
+.B sigrok_rdm_sniffer
+version information.
+.IP "--display-asc"
+Display non-RDM alternate start code frames.
+.IP "--dmx-slot-limit <uint16_t>"
+Only display the first N slots of DMX data.
+.IP "--no-use-epoll"
+Disable the use of epoll(), revert to select()
+.IP "--pid-location <string>"
+The directory containing the PID definitions.
+.IP "--sample-rate <uint32_t>"
+Sample rate in Hz.
+.IP "--scheduler-policy <string>"
+The thread scheduling policy, one of {fifo, rr}.
+.IP "--scheduler-priority <uint16_t>"
+The thread priority, only used if --scheduler-policy is set.
+.IP "--sigrok-device <string>"
+Set the sigrok logic analyzer to use.
+.IP "--sigrok-log-level <uint32_t>"
+Set the sigrok logging level from 0 .. 5.
+.IP "--sigrok-samples <uint32_t>"
+Limit capture to this many samples.
+.IP "--sigrok-time <uint32_t>"
+Limit capture to this many ms.
+.IP "--syslog"
+Send to syslog rather than stderr.

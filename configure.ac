@@ -561,9 +561,29 @@ AS_IF([test "x$have_avahi" = xyes],
       [AC_DEFINE([HAVE_AVAHI], [1], [Defined to use Avahi])])
 AM_CONDITIONAL([HAVE_AVAHI], [test "x$have_avahi" = xyes])
 
-# Look for -lSaleaeDevice, if we have it we build the logic sniffer.
+# Look for -lSaleaeDevice, if we have it we build the Saleae logic sniffer.
 SALEAE_DEVICE
 
+# Look for -lsigrok, if we have it we build the sigrok logic sniffer.
+PKG_CHECK_MODULES([libsigrok], [libsigrok], [have_libsigrok="yes"], [have_libsigrok="no"])
+AM_CONDITIONAL([HAVE_LIBSIGROK],
+               [test "x$have_libsigrok" = xyes])
+
+have_libsigrok_context="no"
+AS_IF([test "x$have_libsigrok" != xno],
+      [PKG_CHECK_MODULES([libsigrok_context], [libsigrok >= 0.4.0],
+                         [have_libsigrok_context="yes"], [true])])
+AS_IF([test "x$have_libsigrok_context" = xyes],
+      [AC_DEFINE([HAVE_LIBSIGROK_CONTEXT], [1],
+                 [define if libsigrok is installed and uses it's context])])
+
+have_libsigrok_dev_inst_opaque="no"
+AS_IF([test "x$have_libsigrok" != xno],
+      [PKG_CHECK_MODULES([libsigrok_dev_inst_opaque], [libsigrok >= 0.4.0],
+                         [have_libsigrok_dev_inst_opaque="yes"], [true])])
+AS_IF([test "x$have_libsigrok_dev_inst_opaque" = xyes],
+      [AC_DEFINE([HAVE_LIBSIGROK_DEV_INST_OPAQUE], [1],
+                 [define if libsigrok is installed and the sr_dev_inst struct is opaque])])
 
 # Features
 #####################################################

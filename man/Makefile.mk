@@ -27,4 +27,5 @@ dist_man_MANS += \
     man/rdm_responder_test.py.1 \
     man/rdm_test_server.py.1 \
     man/rdmpro_sniffer.1 \
+    man/sigrok_rdm_sniffer.1 \
     man/usbpro_firmware.1

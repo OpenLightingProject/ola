@@ -1,8 +1,12 @@
-This currently only works with the original Saleae Logic and Logic 16.
-The more recent Logic 4, Logic 8, Logic Pro 8 and Logic Pro 16 are not supported by the SDK.
+The logic_rdm_sniffer only works with the original Saleae Logic and Logic 16.
+The more recent Logic 4, Logic 8, Logic Pro 8 and Logic Pro 16 are not
+supported by the SDK.
 https://support.saleae.com/saleae-api-and-sdk/other-information/device-sdk-status-for-new-products
 
-In order to compile the logic rdm sniffer, you need the SaleaeDeviceSDK, there
+However most of them are supported by sigrok, so instead check out
+tools/sigrok/README.md and the sigrok_rdm_sniffer.
+
+In order to compile the Logic RDM sniffer, you need the SaleaeDeviceSDK, there
 is a version available from:
 http://downloads.saleae.com/SDK/SaleaeDeviceSdk-1.1.14.zip
 
@@ -19,3 +23,6 @@ checking SaleaeDeviceApi.h usability... yes
 checking SaleaeDeviceApi.h presence... yes
 checking for SaleaeDeviceApi.h... yes
 ```
+
+For sniffing with other logic analysers supported by sigrok, check out
+tools/sigrok/README.md and the sigrok_rdm_sniffer.
