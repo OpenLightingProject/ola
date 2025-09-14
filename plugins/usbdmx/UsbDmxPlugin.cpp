@@ -107,6 +107,11 @@ bool UsbDmxPlugin::SetDefaultPreferences() {
       BoolValidator(),
       false);
 
+  save |= m_preferences->SetDefaultValue(
+      EuroliteProFactory::EUROLITE_MK2_SERIAL_KEY,
+      StringValidator(),
+      "");
+
   if (save) {
     m_preferences->Save();
   }

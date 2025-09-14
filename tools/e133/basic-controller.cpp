@@ -42,9 +42,9 @@
 #include <string>
 #include <utility>
 
+#include "libs/acn/E133HealthCheckedConnection.h"
 #include "libs/acn/RootInflator.h"
 #include "libs/acn/TCPTransport.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
 
 DEFINE_string(listen_ip, "", "The IP Address to listen on");
 DEFINE_uint16(listen_port, 5569, "The port to listen on");

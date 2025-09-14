@@ -24,10 +24,15 @@
 #include "ola/acn/CID.h"
 #include "ola/e133/MessageBuilder.h"
 #include "ola/io/IOStack.h"
+#include "ola/rdm/RDMCommandSerializer.h"
+#include "ola/rdm/UID.h"
 
+#include "libs/acn/BrokerPDU.h"
 #include "libs/acn/E133PDU.h"
 #include "libs/acn/RDMPDU.h"
 #include "libs/acn/RootPDU.h"
+#include "libs/acn/RPTPDU.h"
+#include "libs/acn/RPTRequestPDU.h"
 #include "libs/acn/E133StatusPDU.h"
 #include "libs/acn/PreamblePacker.h"
 
@@ -36,9 +41,11 @@ namespace e133 {
 
 using ola::acn::CID;
 using ola::io::IOStack;
+using ola::acn::BrokerPDU;
 using ola::acn::E133PDU;
 using ola::acn::PreamblePacker;
 using ola::acn::RootPDU;
+using ola::acn::RPTPDU;
 
 
 MessageBuilder::MessageBuilder(const CID &cid, const string &source_name)
@@ -59,10 +66,65 @@ void MessageBuilder::PrependRDMHeader(IOStack *packet) {
 
 
 /**
+ * Build a TCP E1.33 RDM Command PDU response.
+ */
+void MessageBuilder::BuildTCPRDMCommandPDU(IOStack *packet,
+                                           ola::rdm::RDMRequest *request,
+                                           uint16_t source_endpoint_id,
+                                           uint16_t destination_endpoint_id,
+                                           uint32_t sequence_number) {
+  // TODO(Peter): Potentially need some future way to handle controller
+  // messages here
+  ola::rdm::UID rpt_destination_uid = request->DestinationUID();
+  if (rpt_destination_uid.IsBroadcast()) {
+    if (rpt_destination_uid.IsVendorcast()) {
+      rpt_destination_uid = ola::rdm::UID::RPTVendorcastAddressDevices(
+          rpt_destination_uid);
+    } else {
+      rpt_destination_uid = ola::rdm::UID::RPTAllDevices();
+    }
+    if (destination_endpoint_id != NULL_ENDPOINT) {
+      // TODO(Peter): Should we handle the reserved endpoints now?
+      destination_endpoint_id = BROADCAST_ENDPOINT;
+    }
+  }
+  ola::rdm::RDMCommandSerializer::Write(*request, packet);
+  ola::acn::RDMPDU::PrependPDU(packet);
+  ola::acn::RPTRequestPDU::PrependPDU(packet);
+  RPTPDU::PrependPDU(packet, ola::acn::VECTOR_RPT_REQUEST,
+                     request->SourceUID(), source_endpoint_id,
+                     rpt_destination_uid, destination_endpoint_id,
+                     sequence_number);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_RPT, m_cid, true);
+  PreamblePacker::AddTCPPreamble(packet);
+}
+
+
+/**
  * Build a NULL TCP packet. These packets can be used for heartbeats.
  */
 void MessageBuilder::BuildNullTCPPacket(IOStack *packet) {
   RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_NULL, m_cid);
+  PreamblePacker::AddTCPPreamble(packet);
+}
+
+
+/**
+ * Build a Broker Fetch Client List TCP packet.
+ */
+void MessageBuilder::BuildBrokerFetchClientListTCPPacket(IOStack *packet) {
+  BrokerPDU::PrependPDU(packet, ola::acn::VECTOR_BROKER_FETCH_CLIENT_LIST);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_BROKER, m_cid, true);
+  PreamblePacker::AddTCPPreamble(packet);
+}
+
+
+/**
+ * Build a Broker NULL TCP packet. These packets can be used for broker heartbeats.
+ */
+void MessageBuilder::BuildBrokerNullTCPPacket(IOStack *packet) {
+  BrokerPDU::PrependPDU(packet, ola::acn::VECTOR_BROKER_NULL);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_BROKER, m_cid, true);
   PreamblePacker::AddTCPPreamble(packet);
 }
 
@@ -109,7 +171,7 @@ void MessageBuilder::BuildTCPRootE133(IOStack *packet,
                                       uint16_t endpoint_id) {
   E133PDU::PrependPDU(packet, vector, m_source_name, sequence_number,
                       endpoint_id);
-  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_E133, m_cid);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_RPT, m_cid);
   PreamblePacker::AddTCPPreamble(packet);
 }
 
@@ -123,7 +185,7 @@ void MessageBuilder::BuildUDPRootE133(IOStack *packet,
                                       uint16_t endpoint_id) {
   E133PDU::PrependPDU(packet, vector, m_source_name, sequence_number,
                       endpoint_id);
-  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_E133, m_cid);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_RPT, m_cid);
   PreamblePacker::AddUDPPreamble(packet);
 }
 }  // namespace e133

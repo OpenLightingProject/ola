@@ -160,6 +160,18 @@ const ResponderOps<DummyResponder>::ParamHandler
   { PID_DNS_NAME_SERVER,
     &DummyResponder::GetDNSNameServer,
     NULL},
+  { PID_MANUFACTURER_URL,
+    &DummyResponder::GetManufacturerURL,
+    NULL},
+  { PID_PRODUCT_URL,
+    &DummyResponder::GetProductURL,
+    NULL},
+  { PID_FIRMWARE_URL,
+    &DummyResponder::GetFirmwareURL,
+    NULL},
+  { PID_TEST_DATA,
+    &DummyResponder::GetTestData,
+    &DummyResponder::SetTestData},
   { OLA_MANUFACTURER_PID_CODE_VERSION,
     &DummyResponder::GetOlaCodeVersion,
     NULL},
@@ -225,7 +237,7 @@ RDMResponse *DummyResponder::GetParamDescription(
 RDMResponse *DummyResponder::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DEVICE_MODEL,
-      PRODUCT_CATEGORY_OTHER, 3,
+      PRODUCT_CATEGORY_OTHER, 4,
       &m_personality_manager,
       m_start_address,
       0, m_sensors.size());
@@ -433,6 +445,39 @@ RDMResponse *DummyResponder::GetDNSNameServer(
     const RDMRequest *request) {
   return ResponderHelper::GetDNSNameServer(request,
                                            m_network_manager.get());
+}
+
+RDMResponse *DummyResponder::GetManufacturerURL(
+    const RDMRequest *request) {
+  return ResponderHelper::GetString(
+      // TODO(Peter): This field's length isn't limited in the spec
+      request, OLA_MANUFACTURER_URL, 0, UINT8_MAX);
+}
+
+RDMResponse *DummyResponder::GetProductURL(
+    const RDMRequest *request) {
+  return ResponderHelper::GetString(
+      request,
+      "https://openlighting.org/rdm-tools/dummy-responders/",
+      0,
+      UINT8_MAX); // TODO(Peter): This field's length isn't limited in the spec
+}
+
+RDMResponse *DummyResponder::GetFirmwareURL(
+    const RDMRequest *request) {
+  return ResponderHelper::GetString(
+      request,
+      "https://github.com/OpenLightingProject/ola",
+      0,
+      UINT8_MAX); // TODO(Peter): This field's length isn't limited in the spec
+}
+
+RDMResponse *DummyResponder::GetTestData(const RDMRequest *request) {
+  return ResponderHelper::GetTestData(request);
+}
+
+RDMResponse *DummyResponder::SetTestData(const RDMRequest *request) {
+  return ResponderHelper::SetTestData(request);
 }
 
 RDMResponse *DummyResponder::GetOlaCodeVersion(

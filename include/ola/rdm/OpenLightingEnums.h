@@ -76,6 +76,7 @@ typedef enum {
 } ola_rdm_model_id;
 
 extern const char OLA_MANUFACTURER_LABEL[];
+extern const char OLA_MANUFACTURER_URL[];
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_OPENLIGHTINGENUMS_H_

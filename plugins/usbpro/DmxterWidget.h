@@ -77,7 +77,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
     static const uint8_t DISCOVERY_BRANCH_LABEL;
     static const uint8_t FULL_DISCOVERY_LABEL;
     static const uint8_t INCREMENTAL_DISCOVERY_LABEL;
-    static const uint8_t SHUTDOWN_LABAEL;
+    static const uint8_t SHUTDOWN_LABEL;
 
     typedef enum {
       RC_CHECKSUM_ERROR = 1,

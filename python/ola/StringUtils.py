@@ -32,11 +32,11 @@ def StringEscape(s):
   """Escape unprintable characters in a string."""
   # TODO(Peter): How does this interact with the E1.20 Unicode flag?
   # We don't use sys.version_info.major to support Python 2.6.
-  if sys.version_info[0] == 2 and type(s) == str:
+  if sys.version_info[0] == 2 and isinstance(s, str):
     return s.encode('string-escape')
-  elif sys.version_info[0] == 2 and type(s) == unicode:
+  elif sys.version_info[0] == 2 and isinstance(s, unicode):
     return s.encode('unicode-escape')
-  elif type(s) == str:
+  elif isinstance(s, str):
     # All strings in Python 3 are unicode
     # This encode/decode pair gets us an escaped string
     return s.encode('unicode-escape').decode(encoding="ascii",

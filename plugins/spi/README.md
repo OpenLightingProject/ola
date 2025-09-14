@@ -44,7 +44,7 @@ pin. The number of ports will be 2 ^ (# of pins).
 If the software backend is used, this defines the number of ports which will
 be created.
 
-`<device>-sync-ports = <int>`  
+`<device>-sync-port = <int>`  
 Controls which port triggers a flush (write) of the SPI data. If set to -1
 the SPI data is written when any port changes. This can result in a lot of
 data writes (slow) and partial frames. If set to -2, the last port is used.

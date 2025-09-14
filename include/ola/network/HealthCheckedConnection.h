@@ -18,16 +18,17 @@
  *
  * This class adds health checking to a connection, which ensures that the
  * connection is able to transfer data in a timely manner. The implementation
- * is pretty simple: we define a heart beat interval I, which *must* be the
+ * is pretty simple: we define a heartbeat interval I, which *must* be the
  * same at both ends of the connection. Every I seconds, both ends send a
- * heart beat message and if either end doesn't receive a heart beat in
- * 2.5 * I, the connection is deemed dead, and the connection is closed.
+ * heartbeat message and if either end doesn't receive a heartbeat within the
+ * timeout interval (which defaults to 2.5 * I if not specified), the
+ * connection is deemed dead, and the connection is closed.
  *
  * This class provides the basic health check mechanism, the sub class is left
  * to define the format of the heartbeat message.
  *
  * To use this health checked channel, subclass HealthCheckedConnection, and
- * provide the SendHeartbeat() and HeartbeatTimeout methods.
+ * provide the SendHeartbeat() and HeartbeatTimeout() methods.
  *
  * There are some additional features:
  *  - Some receivers may want to stop reading from a connection under some
@@ -57,7 +58,10 @@ namespace network {
 class HealthCheckedConnection {
  public:
     HealthCheckedConnection(ola::thread::SchedulerInterface *scheduler,
+                            const ola::TimeInterval heartbeat_interval,
                             const ola::TimeInterval timeout_interval);
+    HealthCheckedConnection(ola::thread::SchedulerInterface *scheduler,
+                            const ola::TimeInterval heartbeat_interval);
     virtual ~HealthCheckedConnection();
 
     /**
@@ -75,7 +79,7 @@ class HealthCheckedConnection {
 
     /**
      * Call this when a heartbeat is piggybacked on another message. This
-     * prevents sending heatbeats unless necessary.
+     * prevents sending heartbeats unless necessary.
      */
     void HeartbeatSent();
 
@@ -106,6 +110,7 @@ class HealthCheckedConnection {
  private:
     ola::thread::SchedulerInterface *m_scheduler;
     ola::TimeInterval m_heartbeat_interval;
+    ola::TimeInterval m_timeout_interval;
     ola::thread::timeout_id m_send_timeout_id;
     ola::thread::timeout_id m_receive_timeout_id;
 

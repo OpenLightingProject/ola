@@ -31,8 +31,8 @@ using ola::acn::CID;
  * Create a new RootSender
  * @param cid The CID to send in the Root PDU.
  */
-RootSender::RootSender(const CID &cid)
-    : m_root_pdu(0) {
+RootSender::RootSender(const CID &cid, bool force_length_flag)
+    : m_root_pdu(0, force_length_flag) {
   m_root_pdu.Cid(cid);
 }
 

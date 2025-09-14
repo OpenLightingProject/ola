@@ -5,6 +5,7 @@ common_libolacommon_la_SOURCES += \
     common/network/FakeInterfacePicker.h \
     common/network/HealthCheckedConnection.cpp \
     common/network/IPV4Address.cpp \
+    common/network/IPV6Address.cpp \
     common/network/Interface.cpp \
     common/network/InterfacePicker.cpp \
     common/network/MACAddress.cpp \
@@ -44,6 +45,7 @@ common_network_HealthCheckedConnectionTester_LDADD = $(COMMON_TESTING_LIBS)
 
 common_network_NetworkTester_SOURCES = \
     common/network/IPV4AddressTest.cpp \
+    common/network/IPV6AddressTest.cpp \
     common/network/InterfacePickerTest.cpp \
     common/network/InterfaceTest.cpp \
     common/network/MACAddressTest.cpp \

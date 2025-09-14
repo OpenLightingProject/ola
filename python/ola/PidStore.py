@@ -274,6 +274,10 @@ class Atom(object):
     return str(self)
 
   @staticmethod
+  def HasLabels():
+    return False
+
+  @staticmethod
   def HasRanges():
     return False
 
@@ -438,6 +442,9 @@ class IntAtom(FixedSizeAtom):
     """
     return self._AccountForMultiplierPack(value)
 
+  def HasLabels(self):
+    return (len(self._labels) > 0)
+
   def HasRanges(self):
     return (len(self._ranges) > 0)
 
@@ -528,6 +535,18 @@ class UInt32(IntAtom):
     super(UInt32, self).__init__(name, 'I', 0xffffffff, **kwargs)
 
 
+class Int64(IntAtom):
+  """An eight-byte signed field."""
+  def __init__(self, name, **kwargs):
+    super(Int64, self).__init__(name, 'q', 0xffffffffffffffff, **kwargs)
+
+
+class UInt64(IntAtom):
+  """An eight-byte unsigned field."""
+  def __init__(self, name, **kwargs):
+    super(UInt64, self).__init__(name, 'Q', 0xffffffffffffffff, **kwargs)
+
+
 class IPV4(IntAtom):
   """A four-byte IPV4 address."""
   def __init__(self, name, **kwargs):
@@ -547,6 +566,29 @@ class IPV4(IntAtom):
     except socket.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return super(IntAtom, self).Pack(value)
+
+
+class IPV6Atom(FixedSizeAtom):
+  """A sixteen-byte IPV6 address."""
+  def __init__(self, name, **kwargs):
+    super(IPV6Atom, self).__init__(name, 'BBBBBBBBBBBBBBBB')
+
+  def Unpack(self, data):
+    try:
+      return socket.inet_ntop(socket.AF_INET6, data)
+    except socket.error as e:
+      raise ArgsValidationError("Can't unpack data: %s" % e)
+
+  def Pack(self, args):
+    # TODO(Peter): This currently allows some rather quirky values as per
+    # inet_pton, we may want to restrict that in future
+    format_string = self._FormatString()
+    try:
+      data = struct.pack(format_string,
+                         socket.inet_pton(socket.AF_INET6, args[0]))
+    except socket.error as e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return data, 1
 
 
 class MACAtom(FixedSizeAtom):
@@ -1012,17 +1054,21 @@ class PidStore(object):
     raw_list = pid_files
     pid_files = []
     override_file = None
+    names_file = None
 
     for f in raw_list:
       if os.path.basename(f) == OVERRIDE_FILE_NAME:
         override_file = f
         continue
       if os.path.basename(f) == MANUFACTURER_NAMES_FILE_NAME:
+        names_file = f
         continue
       pid_files.append(f)
 
     for pid_file in pid_files:
       self.LoadFile(pid_file, validate)
+    if names_file is not None:
+      self.LoadFile(names_file, validate)
     if override_file is not None:
       self.LoadFile(override_file, validate, True)
 
@@ -1044,7 +1090,7 @@ class PidStore(object):
       if validate:
         if ((pid_pb.value >= RDMConstants.RDM_MANUFACTURER_PID_MIN) and
             (pid_pb.value <= RDMConstants.RDM_MANUFACTURER_PID_MAX)):
-          raise InvalidPidFormat('%0x04hx between %0x04hx and %0x04hx in %s' %
+          raise InvalidPidFormat('0x%04hx between 0x%04hx and 0x%04hx in %s' %
                                  (pid_pb.value,
                                   RDMConstants.RDM_MANUFACTURER_PID_MIN,
                                   RDMConstants.RDM_MANUFACTURER_PID_MAX,
@@ -1080,7 +1126,7 @@ class PidStore(object):
           if ((pid_pb.value < RDMConstants.RDM_MANUFACTURER_PID_MIN) or
               (pid_pb.value > RDMConstants.RDM_MANUFACTURER_PID_MAX)):
             raise InvalidPidFormat(
-              'Manufacturer pid 0x%04hx not between %0x04hx and %0x04hx' %
+              'Manufacturer pid 0x%04hx not between 0x%04hx and 0x%04hx' %
               (pid_pb.value,
                RDMConstants.RDM_MANUFACTURER_PID_MIN,
                RDMConstants.RDM_MANUFACTURER_PID_MAX))
@@ -1100,7 +1146,7 @@ class PidStore(object):
     self._pid_store.Clear()
 
   def Pids(self):
-    """Returns a list of all PIDs. Manufacturer PIDs aren't included.
+    """Returns a list of all ESTA PIDs. Manufacturer PIDs aren't included.
 
     Returns:
       A list of Pid objects.
@@ -1164,6 +1210,15 @@ class PidStore(object):
     if pid:
       return pid.value
     return pid
+
+  def ManufacturerNames(self):
+    """Return a dict of all Manufacturer Names stored by their ESTA ID.
+
+    Returns:
+      A dict of ESTA IDs to manufacturer names.
+    """
+    # TODO(Peter): Stop people changing this...
+    return self._manufacturer_id_to_name
 
   def ManufacturerIdToName(self, esta_id):
     """A helper method to convert a manufacturer ID to a name
@@ -1269,8 +1324,14 @@ class PidStore(object):
       return Int32(field_name, **args)
     elif field.type == Pids_pb2.UINT32:
       return UInt32(field_name, **args)
+    elif field.type == Pids_pb2.INT64:
+      return Int64(field_name, **args)
+    elif field.type == Pids_pb2.UINT64:
+      return UInt64(field_name, **args)
     elif field.type == Pids_pb2.IPV4:
       return IPV4(field_name, **args)
+    elif field.type == Pids_pb2.IPV6:
+      return IPV6Atom(field_name, **args)
     elif field.type == Pids_pb2.MAC:
       return MACAtom(field_name, **args)
     elif field.type == Pids_pb2.UID:

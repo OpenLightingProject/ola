@@ -53,6 +53,7 @@
 #include "ola/StringUtils.h"
 #include "ola/file/Util.h"
 #include "ola/network/IPV4Address.h"
+#include "ola/network/IPV6Address.h"
 #include "ola/stl/STLUtils.h"
 #include "ola/thread/Thread.h"
 
@@ -183,6 +184,34 @@ bool IPv4Validator::IsValid(const string &value) const {
     }
   }
   return true;
+}
+
+
+bool IPv6Validator::IsValid(const string &value) const {
+  if (value.empty()) {
+    return m_empty_ok;
+  }
+
+  /*vector<string> tokens;
+  // TODO(Peter): Deal with stuff like ::ffff:1.2.3.4
+  // Maybe just fall back to the IPv6 string parsing for now...?
+  StringSplit(value, &tokens, ":");
+  if (tokens.size() != ola::network::IPV6Address::LENGTH) {
+    return false;
+  }
+
+  for (unsigned int i = 0 ; i < 4; i++) {
+    unsigned int octet;
+    if (!StringToInt(tokens[i], &octet)) {
+      return false;
+    }
+    if (octet > UINT8_MAX) {
+      return false;
+    }
+  }
+  return true;*/
+  ola::network::IPV6Address validator_address;
+  return ola::network::IPV6Address::FromString(value, &validator_address);
 }
 
 

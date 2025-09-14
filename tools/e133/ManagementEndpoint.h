@@ -30,7 +30,7 @@ using ola::rdm::RDMResponse;
 using ola::rdm::RDMCallback;
 
 /**
- * The ManagementEndpoint handles RDMCommands directed at this E1.33 device. It
+ * The ManagementEndpoint handles RDMCommands directed at this E1.33 Component. It
  * can also pass through commands to another controller if there is one
  * supplied.
  */
@@ -50,7 +50,7 @@ class ManagementEndpoint: public E133Endpoint {
 
  private:
     /**
-     * The RDM Operations for the MovingLightResponder.
+     * The RDM Operations for the ManagementEndpoint.
      */
     class RDMOps : public ola::rdm::ResponderOps<ManagementEndpoint> {
      public:
@@ -74,16 +74,16 @@ class ManagementEndpoint: public E133Endpoint {
     // RDM PID handlers.
     RDMResponse *GetEndpointList(const RDMRequest *request);
     RDMResponse *GetEndpointListChange(const RDMRequest *request);
-    RDMResponse *GetEndpointIdentify(const RDMRequest *request);
-    RDMResponse *SetEndpointIdentify(const RDMRequest *request);
+    RDMResponse *GetIdentifyEndpoint(const RDMRequest *request);
+    RDMResponse *SetIdentifyEndpoint(const RDMRequest *request);
     RDMResponse *GetEndpointToUniverse(const RDMRequest *request);
     RDMResponse *SetEndpointToUniverse(const RDMRequest *request);
     RDMResponse *GetEndpointMode(const RDMRequest *request);
     RDMResponse *SetEndpointMode(const RDMRequest *request);
     RDMResponse *GetEndpointLabel(const RDMRequest *request);
     RDMResponse *SetEndpointLabel(const RDMRequest *request);
-    RDMResponse *GetEndpointDeviceListChange(const RDMRequest *request);
-    RDMResponse *GetEndpointDevices(const RDMRequest *request);
+    RDMResponse *GetEndpointResponderListChange(const RDMRequest *request);
+    RDMResponse *GetEndpointResponders(const RDMRequest *request);
     RDMResponse *GetTCPCommsStatus(const RDMRequest *request);
     RDMResponse *SetTCPCommsStatus(const RDMRequest *request);
 

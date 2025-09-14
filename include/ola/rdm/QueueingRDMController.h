@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * QueueingRDMController.h
- * A RDM Controller that sends a single message at a time.
+ * An RDM Controller that sends a single message at a time.
  * Copyright (C) 2010 Simon Newton
  */
 

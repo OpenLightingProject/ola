@@ -91,7 +91,7 @@ class SchemaParser : public JsonParserInterface {
   /**
    * @brief Claim the RootValidator that was created by parsing the schema.
    * @returns A new Validator, or NULL if the schema wasn't valid. Ownership of
-   *   the validtor is transferred to the caller.
+   *   the validator is transferred to the caller.
    */
   ValidatorInterface* ClaimRootValidator();
 

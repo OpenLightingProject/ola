@@ -8,13 +8,13 @@ the Port Out (V2) modes of the KiNET protocol.
 
 ## Config file: `ola-kinet.conf`
 
-`power_supply = <ip>`
+`power_supply = <ip>`  
 The IP of the power supply to send to. You can communicate with more than
 one power supply by adding multiple `power_supply =` lines.
 
 ### Per Power Supply Settings
 
-`<ip>-mode = [dmxout|portout]`
+`<ip>-mode = [dmxout|portout]`  
 The mode of KiNET to send to the power supply. DMX Out is sometimes known as
 V1 and Port Out as V2.
 
@@ -32,7 +32,7 @@ for the wildcard universe on each device. Instead, the universe for each
 device may be patched by assigning this output port to the intended universe
 in OLA.
 
-`<ip>-ports = <int>`
+`<ip>-ports = <int>`  
 The number of physical ports available on the power supply in Port Out mode.
 Each physical port will create an OLA port that may be assigned to any
 universe. This setting is ignored in DMX Out mode. The default and maximum

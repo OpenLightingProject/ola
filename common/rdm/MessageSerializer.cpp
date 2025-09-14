@@ -78,6 +78,15 @@ void MessageSerializer::Visit(
 
 
 void MessageSerializer::Visit(
+    const ola::messaging::IPV6MessageField *message) {
+  unsigned int size = message->GetDescriptor()->MaxSize();
+  CheckForFreeSpace(size);
+  message->Value().Pack(m_data + m_offset, size);
+  m_offset += size;
+}
+
+
+void MessageSerializer::Visit(
     const ola::messaging::MACMessageField *message) {
   unsigned int size = message->GetDescriptor()->MaxSize();
   CheckForFreeSpace(size);
@@ -129,6 +138,12 @@ void MessageSerializer::Visit(
 
 
 void MessageSerializer::Visit(
+    const ola::messaging::BasicMessageField<uint64_t> *message) {
+  IntVisit(message);
+}
+
+
+void MessageSerializer::Visit(
     const ola::messaging::BasicMessageField<int8_t> *message) {
   IntVisit(message);
 }
@@ -142,6 +157,12 @@ void MessageSerializer::Visit(
 
 void MessageSerializer::Visit(
     const ola::messaging::BasicMessageField<int32_t> *message) {
+  IntVisit(message);
+}
+
+
+void MessageSerializer::Visit(
+    const ola::messaging::BasicMessageField<int64_t> *message) {
   IntVisit(message);
 }
 

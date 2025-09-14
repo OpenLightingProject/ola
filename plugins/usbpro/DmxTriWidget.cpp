@@ -950,6 +950,9 @@ bool DmxTriWidgetImpl::TriToOlaReturnCode(
 
 /**
  * Convert a DMX-TRI return code to Nack reason code if appropriate
+ *
+ * On the widget, the RDM NACK code is currently bitwise or-ed with 0x20 to
+ * generate the error code
  */
 bool DmxTriWidgetImpl::ReturnCodeToNackReason(
     uint8_t return_code,

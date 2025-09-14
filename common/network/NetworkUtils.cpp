@@ -61,6 +61,9 @@ typedef uint32_t in_addr_t;
 #ifdef HAVE_ENDIAN_H
 #include <endian.h>
 #endif  // HAVE_ENDIAN_H
+#ifdef HAVE_LIBKERN_OSBYTEORDER_H
+#include <libkern/OSByteOrder.h>
+#endif  // HAVE_LIBKERN_OSBYTEORDER_H
 #include <errno.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -106,6 +109,17 @@ inline bool IsBigEndian() {
 #endif  // defined(HAVE_ENDIAN_H) && defined(__BIG_ENDIAN)
 }
 
+inline uint64_t ByteSwap64(uint64_t value) {
+  return ((value & 0x00000000000000ff) << 56) |
+         ((value & 0x000000000000ff00) << 40) |
+         ((value & 0x0000000000ff0000) << 24) |
+         ((value & 0x00000000ff000000) << 8) |
+         ((value & 0x000000ff00000000) >> 8) |
+         ((value & 0x0000ff0000000000) >> 24) |
+         ((value & 0x00ff000000000000) >> 40) |
+         ((value & 0xff00000000000000) >> 56);
+}
+
 inline uint32_t ByteSwap32(uint32_t value) {
   return ((value & 0x000000ff) << 24) |
          ((value & 0x0000ff00) << 8) |
@@ -148,12 +162,32 @@ uint32_t NetworkToHost(uint32_t value) {
   return ntohl(value);
 }
 
+uint64_t NetworkToHost(uint64_t value) {
+#ifdef HAVE_ENDIAN_H
+  return be64toh(value);
+#elif defined(HAVE_LIBKERN_OSBYTEORDER_H)
+  return OSSwapBigToHostInt64(value);
+#else
+#error "No big endian 64 bit to host for NetworkToHost, please report this."
+#endif  // HAVE_ENDIAN_H
+}
+
 int16_t NetworkToHost(int16_t value) {
   return ntohs(value);
 }
 
 int32_t NetworkToHost(int32_t value) {
   return ntohl(value);
+}
+
+int64_t NetworkToHost(int64_t value) {
+#ifdef HAVE_ENDIAN_H
+  return be64toh(value);
+#elif defined(HAVE_LIBKERN_OSBYTEORDER_H)
+  return OSSwapBigToHostInt64(value);
+#else
+#error "No big endian 64 bit to host for NetworkToHost, please report this."
+#endif  // HAVE_ENDIAN_H
 }
 
 uint16_t HostToNetwork(uint16_t value) {
@@ -170,6 +204,26 @@ uint32_t HostToNetwork(uint32_t value) {
 
 int32_t HostToNetwork(int32_t value) {
   return htonl(value);
+}
+
+uint64_t HostToNetwork(uint64_t value) {
+#ifdef HAVE_ENDIAN_H
+  return htobe64(value);
+#elif defined(HAVE_LIBKERN_OSBYTEORDER_H)
+  return OSSwapHostToBigInt64(value);
+#else
+#error "No host to big endian 64 bit for HostToNetwork, please report this."
+#endif  // HAVE_ENDIAN_H
+}
+
+int64_t HostToNetwork(int64_t value) {
+#ifdef HAVE_ENDIAN_H
+  return htobe64(value);
+#elif defined(HAVE_LIBKERN_OSBYTEORDER_H)
+  return OSSwapHostToBigInt64(value);
+#else
+#error "No host to big endian 64 bit for HostToNetwork, please report this."
+#endif  // HAVE_ENDIAN_H
 }
 
 uint16_t HostToLittleEndian(uint16_t value) {
@@ -199,6 +253,22 @@ uint32_t HostToLittleEndian(uint32_t value) {
 int32_t HostToLittleEndian(int32_t value) {
   if (IsBigEndian()) {
     return ByteSwap32(value);
+  } else {
+    return value;
+  }
+}
+
+uint64_t HostToLittleEndian(uint64_t value) {
+  if (IsBigEndian()) {
+    return ByteSwap64(value);
+  } else {
+    return value;
+  }
+}
+
+int64_t HostToLittleEndian(int64_t value) {
+  if (IsBigEndian()) {
+    return ByteSwap64(value);
   } else {
     return value;
   }
@@ -234,6 +304,24 @@ uint32_t LittleEndianToHost(uint32_t value) {
 int32_t LittleEndianToHost(int32_t value) {
   if (IsBigEndian()) {
     return ByteSwap32(value);
+  } else {
+    return value;
+  }
+}
+
+
+uint64_t LittleEndianToHost(uint64_t value) {
+  if (IsBigEndian()) {
+    return ByteSwap64(value);
+  } else {
+    return value;
+  }
+}
+
+
+int64_t LittleEndianToHost(int64_t value) {
+  if (IsBigEndian()) {
+    return ByteSwap64(value);
   } else {
     return value;
   }

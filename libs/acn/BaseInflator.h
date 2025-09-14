@@ -87,8 +87,11 @@ class BaseInflator : public InflatorInterface {
                                          unsigned int len);
 
     // masks for the flag fields
-    // This indicates a 20 bit length field (default is 12 bits)
-    static const uint8_t LFLAG_MASK = 0x80;
+    /**
+     * @brief This indicates a 20 bit length field (default is 12 bits)
+     * @deprecated Use ola::acn::LFLAG_MASK instead (4 Feb 2020).
+     */
+    static const uint8_t LFLAG_MASK = ola::acn::LFLAG_MASK;
     // This masks the first 4 bits of the length field
     static const uint8_t LENGTH_MASK = 0x0F;
 

@@ -26,13 +26,24 @@ namespace network {
 
 HealthCheckedConnection::HealthCheckedConnection(
   ola::thread::SchedulerInterface *scheduler,
+  const ola::TimeInterval heartbeat_interval,
   const ola::TimeInterval timeout_interval)
     : m_scheduler(scheduler),
-      m_heartbeat_interval(timeout_interval),
+      m_heartbeat_interval(heartbeat_interval),
+      m_timeout_interval(timeout_interval),
       m_send_timeout_id(ola::thread::INVALID_TIMEOUT),
       m_receive_timeout_id(ola::thread::INVALID_TIMEOUT) {
 }
 
+
+HealthCheckedConnection::HealthCheckedConnection(
+  ola::thread::SchedulerInterface *scheduler,
+  const ola::TimeInterval heartbeat_interval)
+    : HealthCheckedConnection(scheduler,
+                              heartbeat_interval,
+                              ola::TimeInterval(static_cast<int>(
+                                  2.5 * heartbeat_interval.AsInt()))) {
+}
 
 HealthCheckedConnection::~HealthCheckedConnection() {
   if (m_send_timeout_id != ola::thread::INVALID_TIMEOUT)
@@ -101,10 +112,8 @@ bool HealthCheckedConnection::SendNextHeartbeat() {
 
 
 void HealthCheckedConnection::UpdateReceiveTimer() {
-  TimeInterval timeout_interval(static_cast<int>(
-        2.5 * m_heartbeat_interval.AsInt()));
   m_receive_timeout_id = m_scheduler->RegisterSingleTimeout(
-    timeout_interval,
+    m_timeout_interval,
     NewSingleCallback(
       this, &HealthCheckedConnection::InternalHeartbeatTimeout));
 }

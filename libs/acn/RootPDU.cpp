@@ -86,12 +86,16 @@ void RootPDU::SetBlock(const PDUBlock<PDU> *block) {
 /*
  * Prepend a Root Layer flags, length, vector & header
  */
-void RootPDU::PrependPDU(IOStack *stack, uint32_t vector, const CID &cid) {
+void RootPDU::PrependPDU(IOStack *stack,
+                         uint32_t vector,
+                         const CID &cid,
+                         bool force_length_flag) {
   cid.Write(stack);
 
   vector = HostToNetwork(vector);
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
-  PrependFlagsAndLength(stack);
+  PrependFlagsAndLength(stack, VFLAG_MASK | HFLAG_MASK | DFLAG_MASK,
+                        force_length_flag);
 }
 }  // namespace acn
 }  // namespace ola

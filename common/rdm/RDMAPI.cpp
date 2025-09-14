@@ -33,6 +33,7 @@
 #include "ola/rdm/RDMAPIImplInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
+#include "ola/strings/Format.h"
 
 namespace ola {
 namespace rdm {
@@ -45,6 +46,7 @@ using ola::SingleUseCallback2;
 using ola::SingleUseCallback4;
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
+using ola::strings::IntToString;
 
 
 /*

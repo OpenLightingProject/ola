@@ -33,10 +33,10 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "libs/acn/E133Header.h"
+#include "libs/acn/E133HealthCheckedConnection.h"
 #include "libs/acn/E133StatusInflator.h"
 #include "libs/acn/RDMPDU.h"
 #include "tools/e133/DesignatedControllerConnection.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/TCPConnectionStats.h"
 
 using ola::NewCallback;
