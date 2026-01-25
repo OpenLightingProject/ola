@@ -327,11 +327,16 @@ void ServiceGenerator::GenerateCallMethod(Printer* printer) {
       "              const $input_type$*>(request),\n"
       "          ::google::protobuf::down_cast<\n"
       "              $output_type$*>(response),\n"
-#else
+#elif GOOGLE_PROTOBUF_VERSION < 6030000
       "          ::google::protobuf::internal::DownCast<\n"
       "              const $input_type$*>(request),\n"
       "          ::google::protobuf::internal::DownCast<\n"
       "              $output_type$*>(response),\n"
+#else
+      "          ::google::protobuf::DownCastMessage<\n"
+      "              $input_type$>(request),\n"
+      "          ::google::protobuf::DownCastMessage<\n"
+      "              $output_type$>(response),\n"
 #endif
       "          done);\n"
       "      break;\n");
