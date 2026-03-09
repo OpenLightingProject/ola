@@ -223,7 +223,8 @@ class ModelCollector(object):
         if field in data:
           this_device[field] = data[field]
         else:
-          print('Failed to get %s from device info for UID %s' % (field, self.uid))
+          print('Failed to get %s from device info for UID %s'
+                % (field, self.uid))
 
       this_device['software_versions'][data['software_version']] = {
           'languages': [],
