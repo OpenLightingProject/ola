@@ -34,6 +34,7 @@ class TestCategory(object):
     'DISPLAY_SETTINGS': 'Display Settings',
     'CONFIGURATION': 'Configuration',
     'CONTROL': 'Control',
+    'E133_MANAGEMENT': 'E1.33 (RDMnet) Management',
     # And others for things that don't quite fit
     'CORE': 'Core Functionality',
     'ERROR_CONDITIONS': 'Error Conditions',
