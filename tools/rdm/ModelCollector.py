@@ -211,7 +211,10 @@ class ModelCollector(object):
                 'sensor_count',
                 'sub_device_count']
       for field in fields:
-        this_device[field] = data[field]
+        if field in data:
+          this_device[field] = data[field]
+        else:
+          print('Failed to get %s from device info for UID %s' % (field, self.uid))
 
       this_device['software_versions'][data['software_version']] = {
           'languages': [],
