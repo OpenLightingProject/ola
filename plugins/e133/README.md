@@ -1,4 +1,4 @@
-E1.33 (RDMNet) Plugin
+E1.33 (RDMnet) Plugin
 =====================================
 
 This plugin creates a single device with a configurable number of input and
