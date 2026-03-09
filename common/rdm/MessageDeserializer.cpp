@@ -215,6 +215,12 @@ void MessageDeserializer::Visit(
 
 
 void MessageDeserializer::Visit(
+    const ola::messaging::IntegerFieldDescriptor<uint64_t> *descriptor) {
+  IntVisit(descriptor);
+}
+
+
+void MessageDeserializer::Visit(
     const ola::messaging::IntegerFieldDescriptor<int8_t> *descriptor) {
   IntVisit(descriptor);
 }
@@ -228,6 +234,12 @@ void MessageDeserializer::Visit(
 
 void MessageDeserializer::Visit(
     const ola::messaging::IntegerFieldDescriptor<int32_t> *descriptor) {
+  IntVisit(descriptor);
+}
+
+
+void MessageDeserializer::Visit(
+    const ola::messaging::IntegerFieldDescriptor<int64_t> *descriptor) {
   IntVisit(descriptor);
 }
 

@@ -55,9 +55,11 @@ class MessageSerializer: public ola::messaging::MessageVisitor {
     void Visit(const ola::messaging::BasicMessageField<uint8_t>*);
     void Visit(const ola::messaging::BasicMessageField<uint16_t>*);
     void Visit(const ola::messaging::BasicMessageField<uint32_t>*);
+    void Visit(const ola::messaging::BasicMessageField<uint64_t>*);
     void Visit(const ola::messaging::BasicMessageField<int8_t>*);
     void Visit(const ola::messaging::BasicMessageField<int16_t>*);
     void Visit(const ola::messaging::BasicMessageField<int32_t>*);
+    void Visit(const ola::messaging::BasicMessageField<int64_t>*);
     void Visit(const ola::messaging::GroupMessageField*);
     void PostVisit(const ola::messaging::GroupMessageField*);
 

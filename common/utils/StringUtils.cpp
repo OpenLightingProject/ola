@@ -152,14 +152,15 @@ bool StringToBoolTolerant(const string &value, bool *output) {
   return false;
 }
 
-bool StringToInt(const string &value, unsigned int *output, bool strict) {
+bool StringToInt(const string &value, uint64_t *output, bool strict) {
   if (value.empty()) {
     return false;
   }
   char *end_ptr;
   errno = 0;
-  long long l = strtoll(value.data(), &end_ptr, 10);  // NOLINT(runtime/int)
-  if (l < 0 || (l == 0 && errno != 0)) {
+  unsigned long long l = strtoull(  // NOLINT(runtime/int)
+      value.data(), &end_ptr, 10);
+  if (l == 0 && errno != 0) {
     return false;
   }
   if (value == end_ptr) {
@@ -168,15 +169,27 @@ bool StringToInt(const string &value, unsigned int *output, bool strict) {
   if (strict && *end_ptr != 0) {
     return false;
   }
-  if (l > static_cast<long long>(UINT32_MAX)) {  // NOLINT(runtime/int)
+  if (l > static_cast<unsigned long long>(UINT64_MAX)) {  // NOLINT(runtime/int)
     return false;
   }
-  *output = static_cast<unsigned int>(l);
+  *output = static_cast<uint64_t>(l);
+  return true;
+}
+
+bool StringToInt(const string &value, unsigned int *output, bool strict) {
+  uint64_t v;
+  if (!StringToInt(value, &v, strict)) {
+    return false;
+  }
+  if (v > UINT32_MAX) {
+    return false;
+  }
+  *output = static_cast<unsigned int>(v);
   return true;
 }
 
 bool StringToInt(const string &value, uint16_t *output, bool strict) {
-  unsigned int v;
+  uint64_t v;
   if (!StringToInt(value, &v, strict)) {
     return false;
   }
@@ -188,7 +201,7 @@ bool StringToInt(const string &value, uint16_t *output, bool strict) {
 }
 
 bool StringToInt(const string &value, uint8_t *output, bool strict) {
-  unsigned int v;
+  uint64_t v;
   if (!StringToInt(value, &v, strict)) {
     return false;
   }
@@ -199,7 +212,7 @@ bool StringToInt(const string &value, uint8_t *output, bool strict) {
   return true;
 }
 
-bool StringToInt(const string &value, int *output, bool strict) {
+bool StringToInt(const string &value, int64_t *output, bool strict) {
   if (value.empty()) {
     return false;
   }
@@ -215,15 +228,27 @@ bool StringToInt(const string &value, int *output, bool strict) {
   if (strict && *end_ptr != 0) {
     return false;
   }
-  if (l < INT32_MIN || l > INT32_MAX) {
+  if (l < INT64_MIN || l > INT64_MAX) {
     return false;
   }
-  *output = static_cast<unsigned int>(l);
+  *output = static_cast<int64_t>(l);
+  return true;
+}
+
+bool StringToInt(const string &value, int *output, bool strict) {
+  int64_t v;
+  if (!StringToInt(value, &v, strict)) {
+    return false;
+  }
+  if (v < INT32_MIN || v > INT32_MAX) {
+    return false;
+  }
+  *output = static_cast<int>(v);
   return true;
 }
 
 bool StringToInt(const string &value, int16_t *output, bool strict) {
-  int v;
+  int64_t v;
   if (!StringToInt(value, &v, strict)) {
     return false;
   }
@@ -235,7 +260,7 @@ bool StringToInt(const string &value, int16_t *output, bool strict) {
 }
 
 bool StringToInt(const string &value, int8_t *output, bool strict) {
-  int v;
+  int64_t v;
   if (!StringToInt(value, &v, strict)) {
     return false;
   }
@@ -364,6 +389,19 @@ bool HexStringToInt(const string &value, uint32_t *output) {
   return true;
 }
 
+bool HexStringToInt(const string &value, uint64_t *output) {
+  if (value.empty()) {
+    return false;
+  }
+
+  size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
+  if (found != string::npos) {
+    return false;
+  }
+  *output = strtoull(value.data(), NULL, 16);
+  return true;
+}
+
 bool HexStringToInt(const string &value, int8_t *output) {
   int32_t temp;
   if (!HexStringToInt(value, &temp)) {
@@ -389,6 +427,19 @@ bool HexStringToInt(const string &value, int16_t *output) {
 }
 
 bool HexStringToInt(const string &value, int32_t *output) {
+  if (value.empty()) {
+    return false;
+  }
+
+  size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
+  if (found != string::npos) {
+    return false;
+  }
+  *output = strtoll(value.data(), NULL, 16);
+  return true;
+}
+
+bool HexStringToInt(const string &value, int64_t *output) {
   if (value.empty()) {
     return false;
   }

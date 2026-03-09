@@ -258,9 +258,11 @@ class BasicMessageField: public MessageFieldInterface {
 typedef BasicMessageField<uint8_t> UInt8MessageField;
 typedef BasicMessageField<uint16_t> UInt16MessageField;
 typedef BasicMessageField<uint32_t> UInt32MessageField;
+typedef BasicMessageField<uint64_t> UInt64MessageField;
 typedef BasicMessageField<int8_t> Int8MessageField;
 typedef BasicMessageField<int16_t> Int16MessageField;
 typedef BasicMessageField<int32_t> Int32MessageField;
+typedef BasicMessageField<int64_t> Int64MessageField;
 
 
 /**

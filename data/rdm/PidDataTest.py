@@ -36,10 +36,44 @@ class PidDataTest(unittest.TestCase):
 
   def testLoad(self):
     store = PidStore.GetStore(os.environ['PIDDATA'])
+
     self.assertIsNotNone(store)
 
     pids = store.Pids()
     self.assertNotEqual(0, len(pids))
+
+    names = store.ManufacturerNames()
+    self.assertNotEqual(0, len(names))
+
+    self.assertEqual(store.ManufacturerIdToName(0x7a70), "Open Lighting")
+
+    # Check a manufacturer that doesn't exist in manufacturer_pids.proto too
+    self.assertEqual(store.ManufacturerIdToName(32767),
+                     "RESERVED FOR PROTOTYPING/EXPERIMENTAL USE ONLY")
+
+  def testData(self):
+    store = PidStore.GetStore(os.environ['PIDDATA'])
+
+    self.assertIsNotNone(store)
+
+    pids = store.Pids()
+
+    # For fields (atoms) with ranges, check all labeled values are correctly
+    # within a range so they can be used
+    for pid in pids:
+      for command in (PidStore.RDM_GET,
+                      PidStore.RDM_SET,
+                      PidStore.RDM_DISCOVERY):
+        if pid.RequestSupported(command):
+          for atom in pid.GetRequest(command).GetAtoms():
+            # If we've only got labels then ranges are auto-generated
+            if atom.HasRanges() and atom.HasLabels():
+              for (label) in atom._labels:
+                self.assertTrue(
+                    atom.ValidateRawValueInRange(atom._labels[label]),
+                    "Label %s (%d) of %s not in a range in PID %s (0x%04hx)" %
+                    (label, atom._labels[label], atom.name, pid.name,
+                     pid.value))
 
 
 if __name__ == '__main__':

@@ -43,6 +43,8 @@ enum FieldType {
   UID = 11;
   MAC = 12;
   IPV6 = 13;
+  UINT64 = 14;
+  INT64 = 15;
 }
 
 // A value which has a label applied

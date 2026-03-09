@@ -41,12 +41,14 @@ using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::IPV6FieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
+using ola::messaging::Int64FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::MACFieldDescriptor;
 using ola::messaging::Message;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
+using ola::messaging::UInt64FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
 using ola::rdm::StringMessageBuilder;
 using std::auto_ptr;
@@ -142,9 +144,11 @@ void StringBuilderTest::testSimpleBuilder() {
   fields.push_back(new UInt8FieldDescriptor("uint8"));
   fields.push_back(new UInt16FieldDescriptor("uint16"));
   fields.push_back(new UInt32FieldDescriptor("uint32"));
+  fields.push_back(new UInt64FieldDescriptor("uint64"));
   fields.push_back(new Int8FieldDescriptor("int8"));
   fields.push_back(new Int16FieldDescriptor("int16"));
   fields.push_back(new Int32FieldDescriptor("int32"));
+  fields.push_back(new Int64FieldDescriptor("int64"));
   fields.push_back(new StringFieldDescriptor("string", 0, 32));
   fields.push_back(new UInt16FieldDescriptor("hex uint16"));
   Descriptor descriptor("Test Descriptor", fields);
@@ -163,9 +167,11 @@ void StringBuilderTest::testSimpleBuilder() {
   inputs.push_back("255");
   inputs.push_back("300");
   inputs.push_back("66000");
+  inputs.push_back("77000000000");
   inputs.push_back("-128");
   inputs.push_back("-300");
   inputs.push_back("-66000");
+  inputs.push_back("-77000000000");
   inputs.push_back("foo");
   inputs.push_back("0x400");
 
@@ -180,8 +186,8 @@ void StringBuilderTest::testSimpleBuilder() {
       "bool1: true\nbool2: false\nbool3: true\nbool4: false\nbool5: true\n"
       "bool6: false\nip1: 10.0.0.1\nipv61: ::ffff:192.168.0.1\n"
       "mac1: 01:23:45:67:89:ab\nuint8: 255\nuint16: 300\nuint32: 66000\n"
-      "int8: -128\nint16: -300\nint32: -66000\nstring: foo\n"
-      "hex uint16: 1024\n");
+      "uint64: 77000000000\nint8: -128\nint16: -300\nint32: -66000\n"
+      "int64: -77000000000\nstring: foo\nhex uint16: 1024\n");
   OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 

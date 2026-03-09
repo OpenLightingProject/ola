@@ -3,6 +3,10 @@
 
 name: debian
 on: [push, pull_request]
+
+permissions:
+  contents: read
+
 jobs:
   debian-build:
     name: 'Debian Build ${{ matrix.image_tag }} ${{ matrix.architecture }}'
@@ -28,6 +32,8 @@ jobs:
       - name: Install Git
         run: apt-get -y install git
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install build tools
         run: apt-get -y install devscripts adduser fakeroot sudo
       - name: Install build dependencies
@@ -70,7 +76,9 @@ jobs:
         architecture: [amd64]
     container: debian:${{ matrix.image_tag }}
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:

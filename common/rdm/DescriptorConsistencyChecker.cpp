@@ -80,6 +80,11 @@ void DescriptorConsistencyChecker::Visit(
 
 
 void DescriptorConsistencyChecker::Visit(
+    const ola::messaging::UInt64FieldDescriptor*) {
+}
+
+
+void DescriptorConsistencyChecker::Visit(
     const ola::messaging::Int8FieldDescriptor*) {
 }
 
@@ -91,6 +96,11 @@ void DescriptorConsistencyChecker::Visit(
 
 void DescriptorConsistencyChecker::Visit(
     const ola::messaging::Int32FieldDescriptor*) {
+}
+
+
+void DescriptorConsistencyChecker::Visit(
+    const ola::messaging::Int64FieldDescriptor*) {
 }
 
 

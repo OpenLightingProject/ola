@@ -54,9 +54,11 @@ class MessageVisitor {
     virtual void Visit(const BasicMessageField<uint8_t>*) = 0;
     virtual void Visit(const BasicMessageField<uint16_t>*) = 0;
     virtual void Visit(const BasicMessageField<uint32_t>*) = 0;
+    virtual void Visit(const BasicMessageField<uint64_t>*) = 0;
     virtual void Visit(const BasicMessageField<int8_t>*) = 0;
     virtual void Visit(const BasicMessageField<int16_t>*) = 0;
     virtual void Visit(const BasicMessageField<int32_t>*) = 0;
+    virtual void Visit(const BasicMessageField<int64_t>*) = 0;
     virtual void Visit(const GroupMessageField*) = 0;
     virtual void PostVisit(const GroupMessageField*) = 0;
 };

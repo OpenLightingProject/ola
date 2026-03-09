@@ -287,9 +287,11 @@ class IntegerFieldDescriptor: public FieldDescriptor {
 typedef IntegerFieldDescriptor<uint8_t> UInt8FieldDescriptor;
 typedef IntegerFieldDescriptor<uint16_t> UInt16FieldDescriptor;
 typedef IntegerFieldDescriptor<uint32_t> UInt32FieldDescriptor;
+typedef IntegerFieldDescriptor<uint64_t> UInt64FieldDescriptor;
 typedef IntegerFieldDescriptor<int8_t> Int8FieldDescriptor;
 typedef IntegerFieldDescriptor<int16_t> Int16FieldDescriptor;
 typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
+typedef IntegerFieldDescriptor<int64_t> Int64FieldDescriptor;
 
 
 /**

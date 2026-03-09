@@ -247,7 +247,7 @@ else
 endif
 
 # cpplint linter
-CPP_LINT_FILTER = "-legal/copyright,-readability/streams,-runtime/arrays"
+CPP_LINT_FILTER = "-legal/copyright,-readability/streams,-runtime/arrays,-whitespace/indent_namespace"
 CPP_LINT_FILES = $(shell find . \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
         -wholename "./common/protocol/Ola.pb.*" -or \
         -wholename "./common/rpc/Rpc.pb.*" -or \

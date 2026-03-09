@@ -28,6 +28,7 @@
 #include <ola/thread/Mutex.h>
 #include <ola/util/Utils.h>
 
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>

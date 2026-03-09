@@ -176,7 +176,7 @@ class PidStoreTest(unittest.TestCase):
     g1setreq = PidStore.Group("srg", [PidStore.MACAtom("mac"),
                                       PidStore.IPV4("ipv4"),
                                       PidStore.IPV6Atom("ipv6"),
-                                      PidStore.Int8("i32")])
+                                      PidStore.Int8("i8")])
     p1b = PidStore.Pid("base", 42, None, None,
                        g1getreq, g1setreq)
 

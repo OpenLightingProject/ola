@@ -170,6 +170,12 @@ void VariableFieldSizeCalculator::Visit(
 
 
 void VariableFieldSizeCalculator::Visit(
+    const ola::messaging::UInt64FieldDescriptor *descriptor) {
+  m_fixed_size_sum += descriptor->MaxSize();
+}
+
+
+void VariableFieldSizeCalculator::Visit(
     const ola::messaging::Int8FieldDescriptor *descriptor) {
   m_fixed_size_sum += descriptor->MaxSize();
 }
@@ -183,6 +189,12 @@ void VariableFieldSizeCalculator::Visit(
 
 void VariableFieldSizeCalculator::Visit(
     const ola::messaging::Int32FieldDescriptor *descriptor) {
+  m_fixed_size_sum += descriptor->MaxSize();
+}
+
+
+void VariableFieldSizeCalculator::Visit(
+    const ola::messaging::Int64FieldDescriptor *descriptor) {
   m_fixed_size_sum += descriptor->MaxSize();
 }
 

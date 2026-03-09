@@ -62,6 +62,8 @@ inline uint16_t _HexCast(uint16_t v) { return v; }
 inline uint16_t _HexCast(int16_t v) { return static_cast<uint16_t>(v); }
 inline uint32_t _HexCast(uint32_t v) { return v; }
 inline uint32_t _HexCast(int32_t v) { return static_cast<uint32_t>(v); }
+inline uint64_t _HexCast(uint64_t v) { return v; }
+inline uint64_t _HexCast(int64_t v) { return static_cast<uint64_t>(v); }
 
 }  // namespace strings
 }  // namespace ola

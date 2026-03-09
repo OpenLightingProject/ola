@@ -295,6 +295,12 @@ void StringMessageBuilder::Visit(
 
 
 void StringMessageBuilder::Visit(
+    const ola::messaging::UInt64FieldDescriptor *descriptor) {
+  VisitInt(descriptor);
+}
+
+
+void StringMessageBuilder::Visit(
     const ola::messaging::Int8FieldDescriptor *descriptor) {
   VisitInt(descriptor);
 }
@@ -308,6 +314,12 @@ void StringMessageBuilder::Visit(
 
 void StringMessageBuilder::Visit(
     const ola::messaging::Int32FieldDescriptor *descriptor) {
+  VisitInt(descriptor);
+}
+
+
+void StringMessageBuilder::Visit(
+    const ola::messaging::Int64FieldDescriptor *descriptor) {
   VisitInt(descriptor);
 }
 

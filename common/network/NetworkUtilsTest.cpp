@@ -88,6 +88,7 @@ void NetworkUtilsTest::tearDown() {
 #endif  // _WIN32
 }
 
+
 /*
  * Check that we can convert to/from network byte order
  */
@@ -101,6 +102,9 @@ void NetworkUtilsTest::testToFromNetwork() {
 
   uint32_t v3 = 0x01020304;
   OLA_ASSERT_EQ(v3, NetworkToHost(HostToNetwork(v3)));
+
+  uint64_t v4 = 0x0102030405060708;
+  OLA_ASSERT_EQ(v4, NetworkToHost(HostToNetwork(v4)));
 }
 
 
@@ -118,15 +122,21 @@ void NetworkUtilsTest::testToFromLittleEndian() {
   uint32_t v3 = 0x01020304;
   OLA_ASSERT_EQ(v3, LittleEndianToHost(HostToLittleEndian(v3)));
 
-  int8_t v4 = -10;
-  OLA_ASSERT_EQ(v4, HostToLittleEndian(v4));
+  uint64_t v4 = 0x0102030405060708;
   OLA_ASSERT_EQ(v4, LittleEndianToHost(HostToLittleEndian(v4)));
 
-  int16_t v5 = -0x0102;
+  int8_t v5 = -10;
+  OLA_ASSERT_EQ(v5, HostToLittleEndian(v5));
   OLA_ASSERT_EQ(v5, LittleEndianToHost(HostToLittleEndian(v5)));
 
-  int32_t v6 = -0x01020304;
+  int16_t v6 = -0x0102;
   OLA_ASSERT_EQ(v6, LittleEndianToHost(HostToLittleEndian(v6)));
+
+  int32_t v7 = -0x01020304;
+  OLA_ASSERT_EQ(v7, LittleEndianToHost(HostToLittleEndian(v7)));
+
+  int64_t v8 = -0x0102030405060708;
+  OLA_ASSERT_EQ(v8, LittleEndianToHost(HostToLittleEndian(v8)));
 }
 
 

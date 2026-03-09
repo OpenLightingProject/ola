@@ -37,12 +37,14 @@ using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::IPV6FieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
+using ola::messaging::Int64FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::MACFieldDescriptor;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
+using ola::messaging::UInt64FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
 using ola::rdm::GroupSizeCalculator;
 using std::vector;
@@ -82,9 +84,11 @@ void GroupSizeCalculatorTest::testSimpleCases() {
   fields.push_back(new UInt8FieldDescriptor("uint8"));
   fields.push_back(new UInt16FieldDescriptor("uint16"));
   fields.push_back(new UInt32FieldDescriptor("uint32"));
+  fields.push_back(new UInt64FieldDescriptor("uint64"));
   fields.push_back(new Int8FieldDescriptor("int8"));
   fields.push_back(new Int16FieldDescriptor("int16"));
   fields.push_back(new Int32FieldDescriptor("int32"));
+  fields.push_back(new Int64FieldDescriptor("int64"));
   fields.push_back(new StringFieldDescriptor("string", 0, 32));
   fields.push_back(new IPV4FieldDescriptor("address"));
   fields.push_back(new IPV6FieldDescriptor("addressv6"));
@@ -95,7 +99,7 @@ void GroupSizeCalculatorTest::testSimpleCases() {
   unsigned int token_count, group_repeat_count;
   OLA_ASSERT_TRUE(
       m_static_calculator.CalculateTokensRequired(&descriptor, &token_count));
-  OLA_ASSERT_EQ(12u, token_count);  // Actual token count
+  OLA_ASSERT_EQ(14u, token_count);  // Actual token count
 
 
   OLA_ASSERT_EQ(
@@ -108,21 +112,21 @@ void GroupSizeCalculatorTest::testSimpleCases() {
   OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
-        11,  // Actual token count - 1
+        13,  // Actual token count - 1
         &descriptor,
         &group_repeat_count));
 
   OLA_ASSERT_EQ(
       GroupSizeCalculator::NO_VARIABLE_GROUPS,
       m_calculator.CalculateGroupSize(
-        12,  // Actual token count
+        14,  // Actual token count
         &descriptor,
         &group_repeat_count));
 
   OLA_ASSERT_EQ(
       GroupSizeCalculator::EXTRA_TOKENS,
       m_calculator.CalculateGroupSize(
-        13,  // Actual token count + 1
+        15,  // Actual token count + 1
         &descriptor,
         &group_repeat_count));
 }

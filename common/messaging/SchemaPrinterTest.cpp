@@ -42,9 +42,11 @@ using ola::messaging::SchemaPrinter;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
+using ola::messaging::UInt64FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
+using ola::messaging::Int64FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 
@@ -235,5 +237,8 @@ void SchemaPrinterTest::testIntervalTypes() {
   OLA_ASSERT_EQ(
       string("Count: int32: (-70000, 82560)\n"),
       GenerateIntervalString<Int32FieldDescriptor>(-70000, 82560));
+  OLA_ASSERT_EQ(
+      string("Count: int64: (-7000000000, 8256123456)\n"),
+      GenerateIntervalString<Int64FieldDescriptor>(-7000000000, 8256123456));
 }
 

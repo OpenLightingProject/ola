@@ -138,6 +138,12 @@ void MessageSerializer::Visit(
 
 
 void MessageSerializer::Visit(
+    const ola::messaging::BasicMessageField<uint64_t> *message) {
+  IntVisit(message);
+}
+
+
+void MessageSerializer::Visit(
     const ola::messaging::BasicMessageField<int8_t> *message) {
   IntVisit(message);
 }
@@ -151,6 +157,12 @@ void MessageSerializer::Visit(
 
 void MessageSerializer::Visit(
     const ola::messaging::BasicMessageField<int32_t> *message) {
+  IntVisit(message);
+}
+
+
+void MessageSerializer::Visit(
+    const ola::messaging::BasicMessageField<int64_t> *message) {
   IntVisit(message);
 }
 
