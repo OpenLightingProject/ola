@@ -24,8 +24,9 @@ import logging
 import sys
 import textwrap
 
-from ola import PidStore
 from ola.RDMConstants import RDM_MAX_PARAM_DATA_LENGTH
+
+from ola import PidStore
 
 __author__ = 'Peter Newman'
 
