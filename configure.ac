@@ -132,7 +132,6 @@ AS_IF([test "x$ac_cv_gnu_plus_plus_11" = xyes],
       ])
 AS_IF([test "x$require_gnu_plus_plus_11" = xyes],
       [CXXFLAGS="$CXXFLAGS -std=gnu++11"])
-AM_CONDITIONAL([GNU_PLUS_PLUS_11_DEPRECATIONS], [test "x$require_gnu_plus_plus_11" = xyes])
 
 # Checks for header files.
 AC_HEADER_DIRENT
