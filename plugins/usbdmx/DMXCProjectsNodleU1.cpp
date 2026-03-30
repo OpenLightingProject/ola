@@ -338,7 +338,6 @@ class DMXCProjectsNodleU1AsyncUsbReceiver : public AsyncUsbReceiver {
   }
 
   ~DMXCProjectsNodleU1AsyncUsbReceiver() {
-    CancelTransfer();
   }
 
   libusb_device_handle* SetupHandle() {
@@ -393,7 +392,6 @@ class DMXCProjectsNodleU1AsyncUsbSender : public AsyncUsbSender {
   }
 
   ~DMXCProjectsNodleU1AsyncUsbSender() {
-    CancelTransfer();
   }
 
   libusb_device_handle* SetupHandle() {

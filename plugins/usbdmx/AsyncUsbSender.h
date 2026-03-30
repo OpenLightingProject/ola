@@ -45,9 +45,11 @@ class AsyncUsbSender: public AsyncUsbTransceiverBase {
    * @brief Create a new AsyncUsbSender.
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
+   * @param num_transfers maximum number of inflight transfers.
    */
   AsyncUsbSender(ola::usb::LibUsbAdaptor* const adaptor,
-                 libusb_device *usb_device);
+                 libusb_device *usb_device,
+                 unsigned int num_transfers = 1);
 
   /**
    * @brief Destructor
