@@ -39,6 +39,10 @@
 #include "plugins/e131/E131Plugin.h"
 #endif  // USE_E131
 
+#ifdef USE_E133
+#include "plugins/e133/E133Plugin.h"
+#endif  // USE_E133
+
 #ifdef USE_ESPNET
 #include "plugins/espnet/EspNetPlugin.h"
 #endif  // USE_ESPNET
@@ -158,6 +162,10 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef USE_E131
   m_plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
 #endif  // USE_E131
+
+#ifdef USE_E133
+  m_plugins.push_back(new ola::plugin::e133::E133Plugin(m_plugin_adaptor));
+#endif  // USE_E133
 
 #ifdef USE_ESPNET
   m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));

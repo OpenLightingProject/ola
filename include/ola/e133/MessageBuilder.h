@@ -28,6 +28,7 @@
 #include <ola/io/IOStack.h>
 #include <ola/io/MemoryBlockPool.h>
 #include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/UID.h>
 #include <string>
 
 namespace ola {
@@ -48,7 +49,8 @@ class MessageBuilder {
     void PrependRDMHeader(IOStack *packet);
 
     void BuildTCPRDMCommandPDU(IOStack *packet,
-                               ola::rdm::RDMRequest *request,
+                               const ola::rdm::RDMRequest *request,
+                               const ola::rdm::UID *rpt_destination_uid,
                                uint16_t source_endpoint_id,
                                uint16_t destination_endpoint_id,
                                uint32_t sequence_number);
@@ -65,7 +67,7 @@ class MessageBuilder {
                                const string &description);
     void BuildUDPE133StatusPDU(IOStack *packet,
                                uint32_t sequence_number, uint16_t endpoint_id,
-                               ola::e133::E133StatusCode status_code,
+                               const ola::e133::E133StatusCode status_code,
                                const string &description);
 
     void BuildTCPRootE133(IOStack *packet, uint32_t vector,

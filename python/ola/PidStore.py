@@ -1126,8 +1126,12 @@ class PidStore(object):
           if ((pid_pb.value < RDMConstants.RDM_MANUFACTURER_PID_MIN) or
               (pid_pb.value > RDMConstants.RDM_MANUFACTURER_PID_MAX)):
             raise InvalidPidFormat(
-              'Manufacturer pid 0x%04hx not between 0x%04hx and 0x%04hx' %
-              (pid_pb.value,
+              'Manufacturer %s (0x%04hx) manufacturer pid 0x%04hx (%s) not '
+              'between 0x%04hx and 0x%04hx' %
+              (manufacturer.manufacturer_name,
+               manufacturer.manufacturer_id,
+               pid_pb.value,
+               pid_pb.name,
                RDMConstants.RDM_MANUFACTURER_PID_MIN,
                RDMConstants.RDM_MANUFACTURER_PID_MAX))
           if pid_pb.value in pid_dict:
