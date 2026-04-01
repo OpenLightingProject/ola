@@ -22,6 +22,29 @@
 ola.factory('$ola', ['$http', '$window', 'OLA',
   function($http, $window, OLA) {
     'use strict';
+    // holds the highest channel that was used by faders or the keypad
+    var highestChannelNumberUsed = 0;
+
+    // Search for the highest channel in the array `dmx`
+    // that having a value greater than MIN_CHANNEL_VALUE
+    // and update `highestChannelNumberUsed` if needed.
+    //
+    // Only channels higher than the current `highestChannelNumberUsed`
+    // will be checked.
+    var updateHighestChannelNumberUsed = function(dmx) {
+      for (var channel = dmx.length; channel > highestChannelNumberUsed;
+           channel--) {
+
+        var value = parseInt(dmx[channel - 1], 10);
+        if (value > OLA.MIN_CHANNEL_VALUE) {
+          // if `Math.max` changed `highestChannelNumberUsed`
+          // the for-loop will be terminated
+          highestChannelNumberUsed = $window.Math.max(
+              highestChannelNumberUsed, channel);
+        }
+      }
+    };
+
     // TODO(Dave_o): once olad supports json post data postEncode
     // can go away and the header in post requests too.
     var postEncode = function(data) {
@@ -52,20 +75,27 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
       return i;
     };
     var dmxConvert = function(dmx) {
-      var strip = true;
       var integers = [];
-      for (var i = OLA.MAX_CHANNEL_NUMBER; i >= OLA.MIN_CHANNEL_NUMBER; i--) {
-        var value = channelValueCheck(dmx[i - 1]);
+      for (var channel = OLA.MAX_CHANNEL_NUMBER;
+           channel >= OLA.MIN_CHANNEL_NUMBER;
+           channel--) {
+
+        var value = channelValueCheck(dmx[channel - 1]);
         if (value > OLA.MIN_CHANNEL_VALUE ||
-          !strip ||
-          i === OLA.MIN_CHANNEL_NUMBER) {
-          integers[i - 1] = value;
-          strip = false;
+            channel <= highestChannelNumberUsed) {
+
+          integers[channel - 1] = value;
+
+          highestChannelNumberUsed = $window.Math.max(
+              highestChannelNumberUsed, channel);
         }
       }
       return integers.join(',');
     };
     return {
+      resetHighestChannelNumberUsed: function() {
+        highestChannelNumberUsed = 0;
+      },
       get: {
         ItemList: function() {
           return $http.get('/json/universe_plugin_list')
@@ -118,6 +148,7 @@ ola.factory('$ola', ['$http', '$window', 'OLA',
             }
           })
             .then(function(response) {
+              updateHighestChannelNumberUsed(response.data.dmx);
               return response.data;
             });
         },
