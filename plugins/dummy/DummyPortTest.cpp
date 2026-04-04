@@ -885,7 +885,7 @@ void DummyPortTest::testListInterfaces() {
 
 void DummyPortTest::VerifyUIDs(const UIDSet &uids) {
   UIDSet expected_uids;
-  for (unsigned int i = 0; i < 6; i++) {
+  for (unsigned int i = 0; i < 7; i++) {
     UID uid(OPEN_LIGHTING_ESTA_CODE, 0xffffff00 + i);
     expected_uids.AddUID(uid);
   }
