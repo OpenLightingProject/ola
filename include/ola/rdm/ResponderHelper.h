@@ -32,7 +32,6 @@
 #include <ola/network/Interface.h>
 #include <ola/rdm/NetworkManagerInterface.h>
 #include <ola/rdm/RDMCommand.h>
-#include <ola/rdm/ResponderEndpointManager.h>
 #include <ola/rdm/ResponderNSCStatus.h>
 #include <ola/rdm/ResponderPersonality.h>
 #include <ola/rdm/ResponderSensor.h>
@@ -273,17 +272,6 @@ class ResponderHelper {
         const RDMRequest *request,
         uint16_t pid,
         const std::string &json,
-        uint8_t queued_message_count = 0);
-
-    // E1.37-7 Helpers
-    static RDMResponse *GetEndpointList(
-        const RDMRequest *request,
-        const ola::rdm::EndpointManager *endpoint_manager,
-        uint8_t queued_message_count = 0);
-
-    static RDMResponse *GetEndpointListChange(
-        const RDMRequest *request,
-        const ola::rdm::EndpointManager *endpoint_manager,
         uint8_t queued_message_count = 0);
 
     // Generic Helpers.

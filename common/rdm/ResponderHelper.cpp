@@ -34,7 +34,6 @@
 #include "ola/network/MACAddress.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMEnums.h"
-#include "ola/rdm/ResponderEndpointManager.h"
 #include "ola/rdm/ResponderHelper.h"
 #include "ola/rdm/ResponderSensor.h"
 #include "ola/strings/Utils.h"
@@ -1301,55 +1300,6 @@ RDMResponse *ResponderHelper::GetMetadataJSON(
       param_data_size,
       RDM_ACK,
       queued_message_count);
-}
-
-RDMResponse *ResponderHelper::GetEndpointList(
-    const RDMRequest *request,
-    const ola::rdm::EndpointManager *endpoint_manager,
-    uint8_t queued_message_count) {
-  PACK(
-  struct endpoint_info_s {
-    uint16_t endpoint_id;
-    uint8_t endpoint_type;
-  });
-  STATIC_ASSERT(sizeof(endpoint_info_s) == 3);
-
-  PACK(
-  struct endpoint_list_s {
-    uint32_t list_change_number;
-    endpoint_info_s endpoints[5];
-  });
-  STATIC_ASSERT(sizeof(endpoint_list_s) == (4 + (sizeof(endpoint_info_s) * 5)));
-
-  struct endpoint_list_s endpoint_list;
-  endpoint_list.list_change_number = HostToNetwork(endpoint_manager->list_change_number());
-
-  vector<uint16_t> endpoints;
-
-  endpoint_manager->EndpointIDs(&endpoints);
-  for (unsigned int i = 0; i < endpoints.size(); i++) {
-    endpoint_list.endpoints[i].endpoint_id = HostToNetwork(endpoints[i]);
-  }
-
-  unsigned int param_data_size = (
-      sizeof(endpoint_list) -
-      sizeof(endpoint_list.endpoints) + (sizeof(endpoint_info_s) * endpoints.size()));
-
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&endpoint_list),
-      param_data_size,
-      RDM_ACK,
-      queued_message_count);
-}
-
-RDMResponse *ResponderHelper::GetEndpointListChange(
-    const RDMRequest *request,
-    const ola::rdm::EndpointManager *endpoint_manager,
-    uint8_t queued_message_count) {
-  return GetUInt32Value(request,
-                        NetworkToHost(endpoint_manager->list_change_number()),
-                        queued_message_count);
 }
 
 
