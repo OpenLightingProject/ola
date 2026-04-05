@@ -49,6 +49,7 @@ class SPIOutputTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCombinedAPA102Control);
   CPPUNIT_TEST(testIndividualAPA102ControlPixelBrightness);
   CPPUNIT_TEST(testCombinedAPA102ControlPixelBrightness);
+  CPPUNIT_TEST(testIndividualTLC5971Control);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -69,6 +70,7 @@ class SPIOutputTest: public CppUnit::TestFixture {
   void testCombinedAPA102Control();
   void testIndividualAPA102ControlPixelBrightness();
   void testCombinedAPA102ControlPixelBrightness();
+  void testIndividualTLC5971Control();
 
  private:
   UID m_uid;
@@ -447,7 +449,6 @@ void SPIOutputTest::testCombinedP9813Control() {
  * Test DMX writes in the individual APA102 mode.
  */
 void SPIOutputTest::testIndividualAPA102Control() {
-  // personality Individual APA102
   const uint16_t this_test_personality = SPIOutput::PERS_APA102_INDIVIDUAL;
   // setup Backend
   FakeSPIBackend backend(2);
@@ -995,12 +996,12 @@ void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
   options.pixel_count = 2;
   // setup SPIOutput
   SPIOutput output(m_uid, &backend, options);
-  // set personality to 8= Combined APA102
+  // set personality
   output.SetPersonality(this_test_personality);
 
-  // simulate incoming dmx data with this buffer
+  // simulate incoming DMX data with this buffer
   DmxBuffer buffer;
-  // setup an pointer to the returned data (the fake SPI data stream)
+  // setup a pointer to the returned data (the fake SPI data stream)
   unsigned int length = 0;
   const uint8_t *data = NULL;
 
@@ -1136,6 +1137,304 @@ void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
                                 0xE0 | 15, 0, 0, 0,  // Pixel 20
                                 0, 0};
                                 // with > 16 Pixel we have two latch bytes...
+  OLA_ASSERT_DATA_EQUALS(EXPECTED8, arraysize(EXPECTED8), data, length);
+  OLA_ASSERT_EQ(5u, backend.Writes(0));
+}
+
+
+/**
+ * Test DMX writes in the individual TLC5971 mode.
+ */
+void SPIOutputTest::testIndividualTLC5971Control() {
+  // personality 9= Individual TLC5971
+  const uint16_t this_test_personality = SPIOutput::PERS_TLC5971_INDIVIDUAL;
+  // setup Backend
+  FakeSPIBackend backend(2);
+  SPIOutput::Options options(0, "Test SPI Device");
+  // setup pixel_count to 3 (enough to test all cases)
+  options.pixel_count = 3;
+  // setup SPIOutput
+  SPIOutput output(m_uid, &backend, options);
+  // set personality
+  output.SetPersonality(this_test_personality);
+
+  // simulate incoming DMX data with this buffer
+  DmxBuffer buffer;
+  // setup a pointer to the returned data (the fake SPI data stream)
+  unsigned int length = 0;
+  const uint8_t *data = NULL;
+
+  // test1
+  // basic channel to output mapping (one devices)
+  // setup some 'DMX' data
+  buffer.SetFromString("0, 1, 0, 10, 0, 100,"
+                        "1, 1, 1, 10, 1, 100,"
+                        "2, 1, 2, 10, 2, 100,"
+                        "3, 1, 3, 10, 3, 100");
+  // simulate incoming data
+  output.WriteDMX(buffer);
+  // get fake SPI data stream
+  data = backend.GetData(0, &length);
+  // this is the expected spi data stream:
+  const uint8_t EXPECTED1[] = { 0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0x00, 0x01, 0x00, 0x0A, 0x00, 0x64,   // OUT0
+                                0x01, 0x01, 0x01, 0x0A, 0x01, 0x64,   // OUT1
+                                0x02, 0x01, 0x02, 0x0A, 0x02, 0x64,   // OUT2
+                                0x03, 0x01, 0x03, 0x0A, 0x03, 0x64,   // OUT3
+                                // device2
+                                0x00, 0x00, 0x00, 0x00,               // header
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT0
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT1
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT2
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT3
+                                // device3
+                                0x00, 0x00, 0x00, 0x00,               // header
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT0
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT1
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT2
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT3
+                                };
+  // check for Equality
+  OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
+  // check if the output writes are 1
+  OLA_ASSERT_EQ(1u, backend.Writes(0));
+
+  // test2
+  // basic channel to output mapping (two devices)
+  buffer.SetFromString("0, 1, 0, 10, 0, 100,"
+                        "1, 1, 1, 10, 1, 100,"
+                        "2, 1, 2, 10, 2, 100,"
+                        "3, 1, 3, 10, 3, 100,"
+                        "160, 1, 160, 10, 160, 100,"
+                        "161, 1, 161, 10, 161, 100,"
+                        "162, 1, 162, 10, 162, 100,"
+                        "163, 1, 163, 10, 163, 100");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED2[] = { 0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0x00, 0x01, 0x00, 0x0A, 0x00, 0x64,   // OUT0
+                                0x01, 0x01, 0x01, 0x0A, 0x01, 0x64,   // OUT1
+                                0x02, 0x01, 0x02, 0x0A, 0x02, 0x64,   // OUT2
+                                0x03, 0x01, 0x03, 0x0A, 0x03, 0x64,   // OUT3
+                                // device2
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xA0, 0x01, 0xA0, 0x0A, 0xA0, 0x64,   // OUT0
+                                0xA1, 0x01, 0xA1, 0x0A, 0xA1, 0x64,   // OUT1
+                                0xA2, 0x01, 0xA2, 0x0A, 0xA2, 0x64,   // OUT2
+                                0xA3, 0x01, 0xA3, 0x0A, 0xA3, 0x64,   // OUT3
+                                // device3
+                                0x00, 0x00, 0x00, 0x00,               // header
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT0
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT1
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT2
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT3
+                                };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
+  OLA_ASSERT_EQ(2u, backend.Writes(0));
+
+  // test3
+  // test what happens when only new data for the first device is available.
+  // later data should be not modified so for device2 data set in test2 is valid
+  buffer.SetFromString("0, 1, 0, 10, 0, 240,"
+                        "1, 1, 1, 10, 1, 240,"
+                        "2, 1, 2, 10, 2, 240,"
+                        "3, 1, 3, 10, 3, 240");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED3[] = { 0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0x00, 0x01, 0x00, 0x0A, 0x00, 0xF0,   // OUT0
+                                0x01, 0x01, 0x01, 0x0A, 0x01, 0xF0,   // OUT1
+                                0x02, 0x01, 0x02, 0x0A, 0x02, 0xF0,   // OUT2
+                                0x03, 0x01, 0x03, 0x0A, 0x03, 0xF0,   // OUT3
+                                // device2
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xA0, 0x01, 0xA0, 0x0A, 0xA0, 0x64,   // OUT0
+                                0xA1, 0x01, 0xA1, 0x0A, 0xA1, 0x64,   // OUT1
+                                0xA2, 0x01, 0xA2, 0x0A, 0xA2, 0x64,   // OUT2
+                                0xA3, 0x01, 0xA3, 0x0A, 0xA3, 0x64,   // OUT3
+                                // device3
+                                0x00, 0x00, 0x00, 0x00,               // header
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT0
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT1
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT2
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT3
+                                };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED3, arraysize(EXPECTED3), data, length);
+  OLA_ASSERT_EQ(3u, backend.Writes(0));
+
+  // test4
+  // tests what happens if fewer then needed color information are received
+  buffer.SetFromString("33, 99, 33, 99, 33");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  // check that the returns are the same as test3 (nothing changed)
+  OLA_ASSERT_DATA_EQUALS(EXPECTED3, arraysize(EXPECTED3), data, length);
+  OLA_ASSERT_EQ(3u, backend.Writes(0));
+
+  // test5
+  // test with changed StartAddress
+  // set StartAddress
+  output.SetStartAddress(10);
+  // values 1 & 2 should not be visible in SPI data stream
+  buffer.SetFromString("1, 2, 3, 4, 5, 6, 7, 8, 9,"
+                        "160, 10, 160, 11, 160, 12,"
+                        "161, 10, 161, 11, 161, 12,"
+                        "162, 10, 162, 11, 162, 12,"
+                        "163, 10, 163, 11, 163, 12,"
+                        "240, 10, 240, 11, 240, 12,"
+                        "241, 10, 241, 11, 241, 12,"
+                        "242, 10, 242, 11, 242, 12,"
+                        "243, 10, 243, 11, 243, 12");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED5[] = { 0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xA0, 0x0A, 0xA0, 0x0B, 0xA0, 0x0C,   // OUT0
+                                0xA1, 0x0A, 0xA1, 0x0B, 0xA1, 0x0C,   // OUT1
+                                0xA2, 0x0A, 0xA2, 0x0B, 0xA2, 0x0C,   // OUT2
+                                0xA3, 0x0A, 0xA3, 0x0B, 0xA3, 0x0C,   // OUT3
+                                // device2
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xF0, 0x0A, 0xF0, 0x0B, 0xF0, 0x0C,   // OUT0
+                                0xF1, 0x0A, 0xF1, 0x0B, 0xF1, 0x0C,   // OUT1
+                                0xF2, 0x0A, 0xF2, 0x0B, 0xF2, 0x0C,   // OUT2
+                                0xF3, 0x0A, 0xF3, 0x0B, 0xF3, 0x0C,   // OUT3
+                                // device3
+                                0x00, 0x00, 0x00, 0x00,               // header
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT0
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT1
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT2
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // OUT3
+                                };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED5, arraysize(EXPECTED5), data, length);
+  OLA_ASSERT_EQ(4u, backend.Writes(0));
+  // change StartAddress back to default
+  output.SetStartAddress(1);
+
+  // test6
+  // Check nothing changed on the other output.
+  OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
+                backend.GetData(1, &length));
+  OLA_ASSERT_EQ(0u, backend.Writes(1));
+
+  // test7
+  // test for multiple ports
+  // StartFrame is only allowed on first port.
+  SPIOutput::Options options1(1, "second SPI Device");
+  // setup pixel_count to 2 (enough to test all cases)
+  options1.pixel_count = 2;
+  // setup SPIOutput
+  SPIOutput output1(m_uid, &backend, options1);
+  // set personality
+  output1.SetPersonality(this_test_personality);
+  // setup some 'DMX' data
+  buffer.SetFromString("160, 10, 160, 11, 160, 12,"
+                        "161, 10, 161, 11, 161, 12,"
+                        "162, 10, 162, 11, 162, 12,"
+                        "163, 10, 163, 11, 163, 12,"
+                        "240, 10, 240, 11, 240, 12,"
+                        "241, 10, 241, 11, 241, 12,"
+                        "242, 10, 242, 11, 242, 12,"
+                        "243, 10, 243, 11, 243, 12");
+  // simulate incoming data
+  output1.WriteDMX(buffer);
+  // get fake SPI data stream
+  data = backend.GetData(1, &length);
+  // this is the expected spi data stream:
+  // StartFrame is missing --> port is >0 !
+  const uint8_t EXPECTED7[] = { 0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xA0, 0x0A, 0xA0, 0x0B, 0xA0, 0x0C,   // OUT0
+                                0xA1, 0x0A, 0xA1, 0x0B, 0xA1, 0x0C,   // OUT1
+                                0xA2, 0x0A, 0xA2, 0x0B, 0xA2, 0x0C,   // OUT2
+                                0xA3, 0x0A, 0xA3, 0x0B, 0xA3, 0x0C,   // OUT3
+                                // device2
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xF0, 0x0A, 0xF0, 0x0B, 0xF0, 0x0C,   // OUT0
+                                0xF1, 0x0A, 0xF1, 0x0B, 0xF1, 0x0C,   // OUT1
+                                0xF2, 0x0A, 0xF2, 0x0B, 0xF2, 0x0C,   // OUT2
+                                0xF3, 0x0A, 0xF3, 0x0B, 0xF3, 0x0C,   // OUT3
+                                };
+  // check for Equality
+  OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
+  // check if the output writes are 1
+  OLA_ASSERT_EQ(1u, backend.Writes(1));
+
+  // test8
+  // create new output with pixel_count=16 and check data length
+  // setup pixel_count to 6
+  options.pixel_count = 6;
+  // setup SPIOutput
+  SPIOutput output2(m_uid, &backend, options);
+  // set personality
+  output2.SetPersonality(this_test_personality);
+  buffer.SetFromString(  // device 1
+                        "  0, 10,   0, 11,   0, 12,"
+                        "  1, 10,   1, 11,   1, 12,"
+                        "  2, 10,   2, 11,   2, 12,"
+                        "  3, 10,   3, 11,   3, 12,"
+                        // device 2
+                        "160, 10, 160, 11, 160, 12,"
+                        "161, 10, 161, 11, 161, 12,"
+                        "162, 10, 162, 11, 162, 12,"
+                        "163, 10, 163, 11, 163, 12,"
+                        // device 3
+                        "240, 10, 240, 11, 240, 12,"
+                        "241, 10, 241, 11, 241, 12,"
+                        "242, 10, 242, 11, 242, 12,"
+                        "243, 10, 243, 11, 243, 12,"
+                        // device 4
+                        "  0, 10,   0, 11,   0, 12,"
+                        "  1, 10,   1, 11,   1, 12,"
+                        "  2, 10,   2, 11,   2, 12,"
+                        "  3, 10,   3, 11,   3, 12,"
+                        // device 5
+                        "160, 10, 160, 11, 160, 12,"
+                        "161, 10, 161, 11, 161, 12,"
+                        "162, 10, 162, 11, 162, 12,"
+                        "163, 10, 163, 11, 163, 12,"
+                        // device 6
+                        "240, 10, 240, 11, 240, 12,"
+                        "241, 10, 241, 11, 241, 12,"
+                        "242, 10, 242, 11, 242, 12,"
+                        "243, 10, 243, 11, 243, 12");
+  output2.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED8[] = { // device 1
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0x00, 0x0A, 0x00, 0x0B, 0x00, 0x0C,   // OUT0
+                                0x01, 0x0A, 0x01, 0x0B, 0x01, 0x0C,   // OUT1
+                                0x02, 0x0A, 0x02, 0x0B, 0x02, 0x0C,   // OUT2
+                                0x03, 0x0A, 0x03, 0x0B, 0x03, 0x0C,   // OUT3
+                                // device 2
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xA0, 0x0A, 0xA0, 0x0B, 0xA0, 0x0C,   // OUT0
+                                0xA1, 0x0A, 0xA1, 0x0B, 0xA1, 0x0C,   // OUT1
+                                0xA2, 0x0A, 0xA2, 0x0B, 0xA2, 0x0C,   // OUT2
+                                0xA3, 0x0A, 0xA3, 0x0B, 0xA3, 0x0C,   // OUT3
+                                // device 3
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xF0, 0x0A, 0xF0, 0x0B, 0xF0, 0x0C,   // OUT0
+                                0xF1, 0x0A, 0xF1, 0x0B, 0xF1, 0x0C,   // OUT1
+                                0xF2, 0x0A, 0xF2, 0x0B, 0xF2, 0x0C,   // OUT2
+                                0xF3, 0x0A, 0xF3, 0x0B, 0xF3, 0x0C,   // OUT3
+                                // device 4
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0x00, 0x0A, 0x00, 0x0B, 0x00, 0x0C,   // OUT0
+                                0x01, 0x0A, 0x01, 0x0B, 0x01, 0x0C,   // OUT1
+                                0x02, 0x0A, 0x02, 0x0B, 0x02, 0x0C,   // OUT2
+                                0x03, 0x0A, 0x03, 0x0B, 0x03, 0x0C,   // OUT3
+                                // device 5
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xA0, 0x0A, 0xA0, 0x0B, 0xA0, 0x0C,   // OUT0
+                                0xA1, 0x0A, 0xA1, 0x0B, 0xA1, 0x0C,   // OUT1
+                                0xA2, 0x0A, 0xA2, 0x0B, 0xA2, 0x0C,   // OUT2
+                                0xA3, 0x0A, 0xA3, 0x0B, 0xA3, 0x0C,   // OUT3
+                                // device 6
+                                0x94, 0x5F, 0xFF, 0xFF,               // header
+                                0xF0, 0x0A, 0xF0, 0x0B, 0xF0, 0x0C,   // OUT0
+                                0xF1, 0x0A, 0xF1, 0x0B, 0xF1, 0x0C,   // OUT1
+                                0xF2, 0x0A, 0xF2, 0x0B, 0xF2, 0x0C,   // OUT2
+                                0xF3, 0x0A, 0xF3, 0x0B, 0xF3, 0x0C,   // OUT3
+                                };
   OLA_ASSERT_DATA_EQUALS(EXPECTED8, arraysize(EXPECTED8), data, length);
   OLA_ASSERT_EQ(5u, backend.Writes(0));
 }
