@@ -57,6 +57,7 @@ class E131Plugin: public ola::Plugin {
     static const char IGNORE_PREVIEW_DATA_KEY[];
     static const char INPUT_PORT_COUNT_KEY[];
     static const char IP_KEY[];
+    static const char INTERFACE_KEY[];
     static const char OUTPUT_PORT_COUNT_KEY[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];

@@ -29,6 +29,7 @@
 #include <string>
 
 #include "ola/Logging.h"
+#include "ola/network/Interface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/MockUDPSocket.h"
@@ -41,6 +42,7 @@ using ola::io::IOQueue;
 using ola::io::IOVec;
 using ola::io::IOVecInterface;
 using ola::network::HostToNetwork;
+using ola::network::Interface;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 
@@ -212,23 +214,24 @@ bool MockUDPSocket::EnableBroadcast() {
 }
 
 
-bool MockUDPSocket::SetMulticastInterface(const IPV4Address &iface) {
-  OLA_ASSERT_EQ(m_interface, iface);
+bool MockUDPSocket::SetMulticastInterface(const Interface &iface) {
+  OLA_ASSERT_EQ(m_interface.ip_address, iface.ip_address);
+  OLA_ASSERT_EQ(m_interface.index, iface.index);
   return true;
 }
 
 
-bool MockUDPSocket::JoinMulticast(const IPV4Address &iface,
+bool MockUDPSocket::JoinMulticast(const IPV4Address &ip_addr,
                                   OLA_UNUSED const IPV4Address &group,
                                   OLA_UNUSED bool loop) {
-  OLA_ASSERT_EQ(m_interface, iface);
+  OLA_ASSERT_EQ(m_interface.ip_address, ip_addr);
   return true;
 }
 
 
-bool MockUDPSocket::LeaveMulticast(const IPV4Address &iface,
+bool MockUDPSocket::LeaveMulticast(const IPV4Address &ip_addr,
                                    OLA_UNUSED const IPV4Address &group) {
-  OLA_ASSERT_EQ(m_interface, iface);
+  OLA_ASSERT_EQ(m_interface.ip_address, ip_addr);
   return true;
 }
 
@@ -318,7 +321,7 @@ bool MockUDPSocket::CheckNetworkParamsMatch(bool init_called,
 }
 
 
-void MockUDPSocket::SetInterface(const IPV4Address &iface) {
+void MockUDPSocket::SetInterface(const Interface &iface) {
   m_interface = iface;
 }
 
