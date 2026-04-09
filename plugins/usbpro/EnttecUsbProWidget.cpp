@@ -93,7 +93,7 @@ OperationLabels OperationLabels::Port2Operations() {
 }
 
 EnttecPortImpl::EnttecPortImpl(const OperationLabels &ops, const UID &uid,
-                               SendCallback *send_cb)
+                               SendCallback *send_cb, bool no_rdm_dub_timeout)
     : m_send_cb(send_cb),
       m_ops(ops),
       m_active(true),
@@ -108,7 +108,8 @@ EnttecPortImpl::EnttecPortImpl(const OperationLabels &ops, const UID &uid,
       m_unmute_callback(NULL),
       m_branch_callback(NULL),
       m_discovery_response(NULL),
-      m_discovery_response_size(0) {
+      m_discovery_response_size(0),
+      m_no_rdm_dub_timeout(no_rdm_dub_timeout) {
 }
 
 void EnttecPortImpl::Stop() {
@@ -341,6 +342,8 @@ void EnttecPortImpl::Branch(const ola::rdm::UID &lower,
  * According to the spec:
  *  The timeout message will follow the RDM discovery reply message, whether or
  *   not the reply is partial or complete.
+ *    This doesn't seem to be the case in reality for DUBs with newer firmware
+       (>=4.15)
  *  The timeout message will follow the RDM reply message (GET or SET), only
  *   when the reply is incomplete or unrecognizable.
  *
@@ -440,9 +443,9 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
     return;
   }
 
-  // It's not clear what happens if we get an overrun on an RDM response.
-  // Do we still get the timeout message or is this the only response?
-  // I need to check with Nic.
+  // TODO(Simon): It's not clear what happens if we get an overrun on an RDM
+  // response. Do we still get the timeout message or is this the only
+  // response? I need to check with Nic.
   if (data[0]) {
     OLA_WARN << "Incoming frame corrupted";
     return;
@@ -466,6 +469,12 @@ void EnttecPortImpl::HandleIncomingDataMessage(const uint8_t *data,
     memcpy(response_data, data, length);
     m_discovery_response = response_data;
     m_discovery_response_size = length;
+    if (m_no_rdm_dub_timeout) {
+      // Newer firmware doesn't send an RDM timeout message on DUBs, so we fake
+      // one to minimise changes to the code for older devices
+      OLA_DEBUG << "Dummying HandleRDMTimeout(0) as device doesn't require it";
+      HandleRDMTimeout(0);
+    }
   } else if (m_mute_callback) {
     // we take any response as a mute acknowledgment here, which isn't great,
     // but it seems to work.
@@ -751,7 +760,7 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
                      uint8_t label, const uint8_t *data, unsigned int length);
     void HandlePortAssignment(const uint8_t *data, unsigned int length);
     void AddPort(const OperationLabels &ops, unsigned int queue_size,
-                 bool enable_rdm);
+                 bool enable_rdm, bool no_rdm_dub_timeout = false);
     void EnableSecondPort();
 
     bool Watchdog();
@@ -777,11 +786,11 @@ EnttecUsbProWidgetImpl::EnttecUsbProWidgetImpl(
                               EnttecUsbProWidget::ENTTEC_ESTA_ID,
             options.serial) {
   AddPort(OperationLabels::Port1Operations(), options.queue_size,
-          options.enable_rdm);
+          options.enable_rdm, options.no_rdm_dub_timeout);
 
   if (options.dual_ports) {
     AddPort(OperationLabels::Port2Operations(), options.queue_size,
-            options.enable_rdm);
+            options.enable_rdm, options.no_rdm_dub_timeout);
     EnableSecondPort();
   }
   m_watchdog_timer_id = m_scheduler->RegisterRepeatingTimeout(
@@ -921,8 +930,12 @@ void EnttecUsbProWidgetImpl::HandlePortAssignment(const uint8_t *data,
  */
 void EnttecUsbProWidgetImpl::AddPort(const OperationLabels &ops,
                                      unsigned int queue_size,
-                                     bool enable_rdm) {
-  EnttecPortImpl *impl = new EnttecPortImpl(ops, m_uid, m_send_cb.get());
+                                     bool enable_rdm,
+                                     bool no_rdm_dub_timeout) {
+  EnttecPortImpl *impl = new EnttecPortImpl(ops,
+                                            m_uid,
+                                            m_send_cb.get(),
+                                            no_rdm_dub_timeout);
   m_port_impls.push_back(impl);
   EnttecPort *port = new EnttecPort(impl, queue_size, enable_rdm);
   m_ports.push_back(port);

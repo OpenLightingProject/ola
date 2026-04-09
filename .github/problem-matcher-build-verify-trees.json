@@ -1,0 +1,15 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "build-verify-trees",
+            "severity": "error",
+            "pattern": [
+                {
+                    "regexp": "^(Missing from tarball)(\\s+)(.+)$",
+                    "message": 1,
+                    "file": 3
+                }
+            ]
+        }
+    ]
+}

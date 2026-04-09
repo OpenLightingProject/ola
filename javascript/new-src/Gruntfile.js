@@ -104,9 +104,17 @@ module.exports = function(grunt) {
     jscs: {
       src: targets.linting,
       options: {
-        config: true,
-        verbose: true
+        config: true
       }
+    },
+    stylelint: {
+      all: [
+        'css/*.css',
+        '../../olad/www/*.html',
+        '../../tools/rdm/static/*.html',
+        '../../tools/rdm/static/common.css',
+        '../../tools/rdm/static/ui.multiselect.css'
+      ]
     },
     watch: {
       build: {
@@ -134,8 +142,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-bower-task');
   grunt.loadNpmTasks('grunt-jscs');
+  grunt.loadNpmTasks('grunt-stylelint');
+
   grunt.registerTask('dev', ['watch:build']);
-  grunt.registerTask('test', ['jshint:dev', 'jscs']);
+  grunt.registerTask('test', ['jshint:dev', 'jscs', 'stylelint']);
   grunt.registerTask('build:js', ['concat:build', 'uglify:build']);
   grunt.registerTask('build', ['test', 'build:js', 'cssmin:build']);
 };

@@ -23,6 +23,7 @@
 
 #include <ola/messaging/DescriptorVisitor.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/IPV6Address.h>
 #include <ola/network/MACAddress.h>
 #include <ola/rdm/UID.h>
 #include <map>
@@ -117,6 +118,25 @@ class IPV4FieldDescriptor: public FieldDescriptor {
 
 
 /**
+ * A FieldDescriptor that represents a IPv6 Address
+ */
+class IPV6FieldDescriptor: public FieldDescriptor {
+ public:
+    explicit IPV6FieldDescriptor(const std::string &name)
+        : FieldDescriptor(name) {
+    }
+
+    bool FixedSize() const { return true; }
+    bool LimitedSize() const { return true; }
+    unsigned int MaxSize() const { return ola::network::IPV6Address::LENGTH; }
+
+    void Accept(FieldDescriptorVisitor *visitor) const {
+      visitor->Visit(this);
+    }
+};
+
+
+/**
  * A FieldDescriptor that represents a MAC Address
  */
 class MACFieldDescriptor: public FieldDescriptor {
@@ -198,7 +218,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
                            int8_t multiplier = 0)
         : FieldDescriptor(name),
           m_little_endian(little_endian),
-          m_multipler(multiplier) {
+          m_multiplier(multiplier) {
     }
 
     IntegerFieldDescriptor(const std::string &name,
@@ -208,7 +228,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
                            int8_t multiplier = 0)
         : FieldDescriptor(name),
           m_little_endian(little_endian),
-          m_multipler(multiplier),
+          m_multiplier(multiplier),
           m_intervals(intervals),
           m_labels(labels) {
     }
@@ -216,7 +236,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
     bool FixedSize() const { return true; }
     bool LimitedSize() const { return true; }
     unsigned int MaxSize() const { return sizeof(type); }
-    int8_t Multiplier() const { return m_multipler; }
+    int8_t Multiplier() const { return m_multiplier; }
     bool IsLittleEndian() const { return m_little_endian; }
 
     const IntervalVector &Intervals() const { return m_intervals; }
@@ -258,7 +278,7 @@ class IntegerFieldDescriptor: public FieldDescriptor {
 
  private:
     bool m_little_endian;
-    int8_t m_multipler;
+    int8_t m_multiplier;
     IntervalVector m_intervals;
     LabeledValues m_labels;
 };
@@ -267,9 +287,11 @@ class IntegerFieldDescriptor: public FieldDescriptor {
 typedef IntegerFieldDescriptor<uint8_t> UInt8FieldDescriptor;
 typedef IntegerFieldDescriptor<uint16_t> UInt16FieldDescriptor;
 typedef IntegerFieldDescriptor<uint32_t> UInt32FieldDescriptor;
+typedef IntegerFieldDescriptor<uint64_t> UInt64FieldDescriptor;
 typedef IntegerFieldDescriptor<int8_t> Int8FieldDescriptor;
 typedef IntegerFieldDescriptor<int16_t> Int16FieldDescriptor;
 typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
+typedef IntegerFieldDescriptor<int64_t> Int64FieldDescriptor;
 
 
 /**

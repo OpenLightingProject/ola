@@ -46,3 +46,7 @@ built_sources += include/ola/plugin_id.h
 include/ola/plugin_id.h: include/ola/Makefile.mk include/ola/make_plugin_id.sh common/protocol/Ola.proto
 	mkdir -p $(top_builddir)/include/ola
 	sh $(top_srcdir)/include/ola/make_plugin_id.sh $(top_srcdir)/common/protocol/Ola.proto > $(top_builddir)/include/ola/plugin_id.h
+
+CLEANFILES += \
+    include/ola/*.pyc \
+    include/ola/__pycache__/*

@@ -1,5 +1,6 @@
 include tools/ja-rule/Makefile.mk
 include tools/logic/Makefile.mk
+include tools/ola_mon/Makefile.mk
 include tools/ola_trigger/Makefile.mk
 include tools/rdm/Makefile.mk
 
@@ -13,3 +14,5 @@ dist_noinst_DATA += \
     tools/ola_mon/index.html \
     tools/ola_mon/ola_mon.conf \
     tools/ola_mon/ola_mon.py
+
+PYTHON_BUILD_DIRS += tools

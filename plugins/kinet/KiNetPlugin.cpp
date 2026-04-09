@@ -26,6 +26,7 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/kinet/KiNetDevice.h"
+#include "plugins/kinet/KiNetNode.h"
 #include "plugins/kinet/KiNetPlugin.h"
 #include "plugins/kinet/KiNetPluginDescription.h"
 
@@ -52,29 +53,56 @@ KiNetPlugin::~KiNetPlugin() {}
  * Start the plugin.
  */
 bool KiNetPlugin::StartHook() {
+  m_node = new KiNetNode(m_plugin_adaptor);
+
+  if (!m_node->Start()) {
+    delete m_node;
+    m_node = NULL;
+    return false;
+  }
+
   vector<string> power_supplies_strings = m_preferences->GetMultipleValue(
       POWER_SUPPLY_KEY);
   vector<string>::const_iterator iter = power_supplies_strings.begin();
-  vector<IPV4Address> power_supplies;
 
+  // TODO(Peter): De-duplicate PSU IPs (via a set?)
   for (; iter != power_supplies_strings.end(); ++iter) {
     if (iter->empty()) {
       continue;
     }
     IPV4Address target;
     if (IPV4Address::FromString(*iter, &target)) {
-      power_supplies.push_back(target);
+      string mode = m_preferences->GetValue(KiNetDevice::ModeKey(target));
+      OLA_DEBUG << "Got mode " << mode << " for " << target;
+      KiNetDevice *device = NULL;
+      if (mode.compare(KiNetDevice::PORTOUT_MODE) == 0) {
+        device = new KiNetPortOutDevice(this,
+                                        target,
+                                        m_plugin_adaptor,
+                                        m_node,
+                                        m_preferences);
+      } else {
+        device = new KiNetDmxOutDevice(this,
+                                       target,
+                                       m_plugin_adaptor,
+                                       m_node,
+                                       m_preferences);
+      }
+
+      if (!device) {
+        continue;
+      }
+
+      if (!device->Start()) {
+        delete device;
+        continue;
+      }
+      m_devices.push_back(device);
+      m_plugin_adaptor->RegisterDevice(device);
     } else {
-      OLA_WARN << "Invalid power supply IP address : " << *iter;
+      OLA_WARN << "Invalid power supply IP address: " << *iter;
     }
   }
-  m_device.reset(new KiNetDevice(this, power_supplies, m_plugin_adaptor));
-
-  if (!m_device->Start()) {
-    m_device.reset();
-    return false;
-  }
-  m_plugin_adaptor->RegisterDevice(m_device.get());
   return true;
 }
 
@@ -84,14 +112,19 @@ bool KiNetPlugin::StartHook() {
  * @return true on success, false on failure
  */
 bool KiNetPlugin::StopHook() {
-  if (m_device.get()) {
-    // stop the device
-    m_plugin_adaptor->UnregisterDevice(m_device.get());
-    bool ret = m_device->Stop();
-    m_device.reset();
-    return ret;
+  vector<KiNetDevice*>::iterator iter = m_devices.begin();
+  bool ok = true;
+  for (; iter != m_devices.end(); ++iter) {
+    m_plugin_adaptor->UnregisterDevice(*iter);
+    ok &= (*iter)->Stop();
+    delete *iter;
   }
-  return true;
+
+  ok &= m_node->Stop();
+  delete m_node;
+  m_node = NULL;
+
+  return ok;
 }
 
 

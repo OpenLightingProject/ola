@@ -33,6 +33,7 @@ using std::vector;
 
 using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::IPV6FieldDescriptor;
 using ola::messaging::MACFieldDescriptor;
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
@@ -41,9 +42,11 @@ using ola::messaging::SchemaPrinter;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
+using ola::messaging::UInt64FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
+using ola::messaging::Int64FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 
@@ -85,6 +88,8 @@ void SchemaPrinterTest::testPrinter() {
       "Count", false, 10);
   IPV4FieldDescriptor *ipv4_descriptor = new IPV4FieldDescriptor(
       "Address");
+  IPV6FieldDescriptor *ipv6_descriptor = new IPV6FieldDescriptor(
+      "v6 Address");
   MACFieldDescriptor *mac_descriptor = new MACFieldDescriptor(
       "MAC Address");
   UIDFieldDescriptor *uid_descriptor = new UIDFieldDescriptor("Device");
@@ -95,6 +100,7 @@ void SchemaPrinterTest::testPrinter() {
   fields.push_back(string_descriptor);
   fields.push_back(uint8_descriptor);
   fields.push_back(ipv4_descriptor);
+  fields.push_back(ipv6_descriptor);
   fields.push_back(mac_descriptor);
   fields.push_back(uid_descriptor);
 
@@ -104,7 +110,8 @@ void SchemaPrinterTest::testPrinter() {
 
   string expected = (
       "On/Off: bool\nName: string [0, 32]\nCount: uint8\n"
-      "Address: IPv4 address\nMAC Address: MAC\nDevice: UID\n");
+      "Address: IPv4 address\nv6 Address: IPv6 address\nMAC Address: MAC\n"
+      "Device: UID\n");
   OLA_ASSERT_EQ(expected, printer.AsString());
 }
 
@@ -230,5 +237,8 @@ void SchemaPrinterTest::testIntervalTypes() {
   OLA_ASSERT_EQ(
       string("Count: int32: (-70000, 82560)\n"),
       GenerateIntervalString<Int32FieldDescriptor>(-70000, 82560));
+  OLA_ASSERT_EQ(
+      string("Count: int64: (-7000000000, 8256123456)\n"),
+      GenerateIntervalString<Int64FieldDescriptor>(-7000000000, 8256123456));
 }
 

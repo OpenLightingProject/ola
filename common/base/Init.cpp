@@ -50,6 +50,7 @@
 #endif  // _WIN32
 #include <unistd.h>
 
+#include <ola/Clock.h>
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
@@ -60,6 +61,7 @@
 #include <ola/thread/Utils.h>
 #include <ola/system/Limits.h>
 
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -186,6 +188,7 @@ using std::endl;
 using std::string;
 
 bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
+  ClockInit();
   ola::math::InitRandom();
   if (!InstallSEGVHandler()) {
     return false;
@@ -219,6 +222,7 @@ bool AppInit(int *argc,
              char *argv[],
              const string &first_line,
              const string &description) {
+  ClockInit();
   ola::math::InitRandom();
   SetHelpString(first_line, description);
   ParseFlags(argc, argv);
@@ -386,6 +390,19 @@ void Daemonise() {
     exit(EXIT_OSERR);
   }
 #endif  // _WIN32
+}
+
+void ClockInit() {
+  Clock clock;
+  TimeStamp now_monotonic;
+  TimeStamp now_realtime;
+#ifndef CLOCK_MONOTONIC
+  OLA_DEBUG << "Monotonic clock unavailable. Falling back to real time clock.";
+#endif
+  clock.CurrentMonotonicTime(&now_monotonic);
+  clock.CurrentRealTime(&now_realtime);
+  OLA_DEBUG << "Monotonic clock: " << std::setw(18) << now_monotonic;
+  OLA_DEBUG << "Real clock     : " << std::setw(18) << now_realtime;
 }
 /**@}*/
 }  // namespace ola

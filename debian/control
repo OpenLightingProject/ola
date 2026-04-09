@@ -2,7 +2,7 @@ Source: ola
 Priority: optional
 Maintainer: Wouter Verhelst <wouter@debian.org>
 Uploaders: RenZO <renzo@imaginux.com>
-Build-Depends: debhelper (>= 9), autotools-dev, dh-autoreconf, bash-completion, libcppunit-dev, bison, flex, pkg-config, uuid-dev, python, python-protobuf, libprotobuf-dev, protobuf-compiler, libprotoc-dev, libusb-1.0-0-dev, libftdi1-dev, liblo-dev, libmicrohttpd-dev, libncurses5-dev, libavahi-client-dev, python-numpy
+Build-Depends: debhelper (>= 13), autotools-dev, dh-autoreconf, dh-python, bash-completion, libcppunit-dev, bison, flex, pkg-config, uuid-dev, python3, python3-protobuf, libprotobuf-dev, protobuf-compiler, libprotoc-dev, libusb-1.0-0-dev, libftdi1-dev, liblo-dev, libmicrohttpd-dev, libncurses5-dev, libavahi-client-dev, python3-numpy
 Standards-Version: 3.9.8
 Section: libs
 Vcs-Git: https://github.com/OpenLightingProject/ola.git
@@ -28,7 +28,7 @@ Description: Open Lighting Architecture - development libraries
 Package: ola-python
 Section: libs
 Architecture: all
-Depends: ola (>= ${source:Version}), ola (<< ${source:Version}.~), ${python:Depends}, ${misc:Depends}, python-protobuf
+Depends: ola (>= ${source:Version}), ola (<< ${source:Version}.~), ${python3:Depends}, ${misc:Depends}, python3-protobuf
 Description: Open Lighting Architecture - Python Classes
  The DMX512 standard for Digital MultipleX is used for digital
  communication networks commonly used to control stage lighting and
@@ -42,7 +42,7 @@ Description: Open Lighting Architecture - Python Classes
 Package: ola-rdm-tests
 Section: libs
 Architecture: all
-Depends: ola (>= ${source:Version}), ola (<< ${source:Version}.~), ola-python (= ${binary:Version}), ${python:Depends}, ${misc:Depends}, python-numpy, libjs-jquery, libjs-jquery-ui, lsb-base
+Depends: ola (>= ${source:Version}), ola (<< ${source:Version}.~), ola-python (= ${binary:Version}), ${python3:Depends}, ${misc:Depends}, python3-numpy, libjs-jquery, libjs-jquery-ui, lsb-base
 Suggests: bash-completion
 Description: Open Lighting Architecture - RDM Responder Tests
  The DMX512 standard for Digital MultipleX is used for digital

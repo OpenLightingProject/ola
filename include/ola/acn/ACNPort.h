@@ -62,6 +62,11 @@ const uint16_t ACN_PORT = 5568;
 const uint16_t E133_PORT = 5569;
 
 /**
+ * @brief The port used for E1.33 LLRP communication.
+ */
+const uint16_t LLRP_PORT = 5569;
+
+/**
  * @}
  */
 }  // namespace acn

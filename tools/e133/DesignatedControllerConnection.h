@@ -33,11 +33,11 @@
 #include "ola/network/TCPSocket.h"
 #include "ola/network/TCPSocketFactory.h"
 #include "ola/util/SequenceNumber.h"
+#include "libs/acn/E133HealthCheckedConnection.h"
 #include "libs/acn/E133Inflator.h"
 #include "libs/acn/E133StatusInflator.h"
 #include "libs/acn/RootInflator.h"
 #include "libs/acn/TCPTransport.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/TCPConnectionStats.h"
 
 using std::string;

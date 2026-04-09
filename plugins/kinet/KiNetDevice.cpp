@@ -19,6 +19,8 @@
  */
 
 #include <memory>
+#include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -30,6 +32,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
+#include "olad/Preferences.h"
 #include "plugins/kinet/KiNetDevice.h"
 #include "plugins/kinet/KiNetPort.h"
 
@@ -39,19 +42,89 @@ namespace kinet {
 
 using ola::network::IPV4Address;
 using std::auto_ptr;
+using std::ostringstream;
+using std::set;
+using std::string;
 using std::vector;
+
+const char KiNetDevice::KINET_DEVICE_NAME[] = "KiNET";
+const char KiNetDevice::DMXOUT_MODE[] = "dmxout";
+const char KiNetDevice::PORTOUT_MODE[] = "portout";
 
 /*
  * Create a new KiNet Device
  */
 KiNetDevice::KiNetDevice(
     AbstractPlugin *owner,
-    const vector<ola::network::IPV4Address> &power_supplies,
-    PluginAdaptor *plugin_adaptor)
-    : Device(owner, "KiNet Device"),
-      m_power_supplies(power_supplies),
-      m_node(NULL),
-      m_plugin_adaptor(plugin_adaptor) {
+    const ola::network::IPV4Address &power_supply,
+    PluginAdaptor *plugin_adaptor,
+    KiNetNode *node,
+    Preferences *preferences)
+    : Device(owner, KINET_DEVICE_NAME),
+      m_power_supply(power_supply),
+      m_plugin_adaptor(plugin_adaptor),
+      m_node(node),
+      m_preferences(preferences) {
+  // set up some per-device default configuration if not already set
+  SetDefaults();
+}
+
+
+string KiNetDevice::DeviceId() const {
+  return m_power_supply.ToString();
+}
+
+
+string KiNetDevice::ModeKey(const ola::network::IPV4Address &power_supply) {
+  return power_supply.ToString() + "-mode";
+}
+
+
+string KiNetDevice::ModeKey() const {
+  return ModeKey(m_power_supply);
+}
+
+
+void KiNetDevice::SetDefaults() {
+  if (!m_preferences) {
+    return;
+  }
+
+  bool save = false;
+
+  // Set device options
+  set<string> valid_modes;
+  valid_modes.insert(DMXOUT_MODE);
+  valid_modes.insert(PORTOUT_MODE);
+  save |= m_preferences->SetDefaultValue(ModeKey(),
+                                         SetValidator<string>(valid_modes),
+                                         DMXOUT_MODE);
+
+  if (save) {
+    m_preferences->Save();
+  }
+}
+
+const char KiNetPortOutDevice::KINET_PORT_OUT_DEVICE_NAME[] =
+    "KiNET Port Out Mode";
+
+/*
+ * Create a new KiNET Port Out Device
+ */
+KiNetPortOutDevice::KiNetPortOutDevice(
+    AbstractPlugin *owner,
+    const ola::network::IPV4Address &power_supply,
+    PluginAdaptor *plugin_adaptor,
+    KiNetNode *node,
+    Preferences *preferences)
+    : KiNetDevice(owner,
+                  power_supply,
+                  plugin_adaptor,
+                  node,
+                  preferences) {
+  // set up some Port Out specific per-device default configuration if not
+  // already set
+  SetDefaults();
 }
 
 
@@ -59,38 +132,82 @@ KiNetDevice::KiNetDevice(
  * Start this device
  * @return true on success, false on failure
  */
-bool KiNetDevice::StartHook() {
-  m_node = new KiNetNode(m_plugin_adaptor);
+bool KiNetPortOutDevice::StartHook() {
+  ostringstream str;
+  str << KINET_PORT_OUT_DEVICE_NAME << " [Power Supply "
+      << m_power_supply.ToString() << "]";
+  SetName(str.str());
 
-  if (!m_node->Start()) {
-    delete m_node;
-    m_node = NULL;
-    return false;
+  uint8_t port_count;
+  if (!StringToInt(m_preferences->GetValue(PortCountKey()), &port_count)) {
+    port_count = KINET_PORTOUT_MAX_PORT_COUNT;
+  } else if ((port_count < 1) || (port_count > KINET_PORTOUT_MAX_PORT_COUNT)) {
+    OLA_WARN << "Invalid port count value for " << PortCountKey();
   }
 
-  vector<IPV4Address>::const_iterator iter = m_power_supplies.begin();
-  unsigned int port_id = 0;
-  for (; iter != m_power_supplies.end(); ++iter) {
-    AddPort(new KiNetOutputPort(this, *iter, m_node, port_id++));
+  for (uint8_t i = 1; i <= port_count; i++) {
+    AddPort(new KiNetPortOutOutputPort(this, m_power_supply, m_node, i));
   }
   return true;
 }
 
 
-/**
- * Stop this device. This is called before the ports are deleted
+string KiNetPortOutDevice::PortCountKey() const {
+  return m_power_supply.ToString() + "-ports";
+}
+
+
+void KiNetPortOutDevice::SetDefaults() {
+  // Set port out specific device options
+  if (!m_preferences) {
+    return;
+  }
+
+  bool save = false;
+
+  save |= m_preferences->SetDefaultValue(
+      PortCountKey(),
+      UIntValidator(1, KINET_PORTOUT_MAX_PORT_COUNT),
+      KINET_PORTOUT_MAX_PORT_COUNT);
+
+  if (save) {
+    m_preferences->Save();
+  }
+}
+
+
+const char KiNetDmxOutDevice::KINET_DMX_OUT_DEVICE_NAME[] =
+    "KiNET DMX Out Mode";
+
+/*
+ * Create a new KiNET DMX Out Device
  */
-void KiNetDevice::PrePortStop() {
-  m_node->Stop();
+KiNetDmxOutDevice::KiNetDmxOutDevice(
+    AbstractPlugin *owner,
+    const ola::network::IPV4Address &power_supply,
+    PluginAdaptor *plugin_adaptor,
+    KiNetNode *node,
+    Preferences *preferences)
+    : KiNetDevice(owner,
+                  power_supply,
+                  plugin_adaptor,
+                  node,
+                  preferences) {
 }
 
 
 /*
- * Stop this device
+ * Start this device
+ * @return true on success, false on failure
  */
-void KiNetDevice::PostPortStop() {
-  delete m_node;
-  m_node = NULL;
+bool KiNetDmxOutDevice::StartHook() {
+  ostringstream str;
+  str << KINET_DMX_OUT_DEVICE_NAME << " [Power Supply "
+      << m_power_supply.ToString() << "]";
+  SetName(str.str());
+
+  AddPort(new KiNetDmxOutOutputPort(this, m_power_supply, m_node));
+  return true;
 }
 }  // namespace kinet
 }  // namespace plugin

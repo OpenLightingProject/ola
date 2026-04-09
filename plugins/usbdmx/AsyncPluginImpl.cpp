@@ -264,16 +264,9 @@ void AsyncPluginImpl::DeviceEvent(HotplugAgent::EventType event,
     // Sunlite plugin, if we make the f/w load async we'll need to let the
     // factory cancel the load.
 
-    // Unregister & delete the device in the main thread.
-    if (state->ola_device) {
-      Future<void> f;
-      m_plugin_adaptor->Execute(
-          NewSingleCallback(this, &AsyncPluginImpl::ShutdownDevice,
-                            state->ola_device, &f));
-      f.Get();
-      state->ola_device = NULL;
-    }
-    state->DeleteWidget();
+    // Unregister & delete the device and widget in the main thread.
+    m_plugin_adaptor->Execute(
+        NewSingleCallback(this, &AsyncPluginImpl::ShutdownDeviceState, state));
   }
 }
 
@@ -353,17 +346,26 @@ bool AsyncPluginImpl::StartAndRegisterDevice(Widget *widget, Device *device) {
 
 /*
  * @brief Signal widget removal.
- * @param device_id The device id to remove.
+ * @param state The DeviceState owning the widget to be removed.
  *
- * This is run within the main thread.
+ * This must be run within the main thread. The Device destructor below may
+ * cause libusb_close() to be called, which would deadlock if the hotplug
+ * event thread were to wait for it, say in AsyncPluginImpl::DeviceEvent().
  */
-void AsyncPluginImpl::ShutdownDevice(Device *device, Future<void> *f) {
-  m_plugin_adaptor->UnregisterDevice(device);
-  device->Stop();
-  delete device;
-  if (f) {
-    f->Set();
+void AsyncPluginImpl::ShutdownDeviceState(DeviceState *state) {
+  if (state->ola_device) {
+    Device *device = state->ola_device;
+    m_plugin_adaptor->UnregisterDevice(device);
+    device->Stop();
+    delete device;
+    state->ola_device = NULL;
+  } else {
+    /* This case can be legitimate when the widget setup through the
+     * widget factory is delayed and an unplug event happens before
+     * that is completed. */
+    OLA_DEBUG << "ola_device was NULL at shutdown";
   }
+  state->DeleteWidget();
 }
 }  // namespace usbdmx
 }  // namespace plugin

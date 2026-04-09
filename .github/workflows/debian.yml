@@ -1,0 +1,100 @@
+# This action originally modeled off of the Debian build action:
+# https://salsa.debian.org/wouter/ola/-/blob/a38a396f6994b2b1af8efec9e208aee4e67f77aa/.gitlab-ci.yml
+
+name: debian
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  debian-build:
+    name: 'Debian Build ${{ matrix.image_tag }} ${{ matrix.architecture }}'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image_tag: [bullseye, bookworm, trixie, sid]
+        architecture: [amd64]
+    container: debian:${{ matrix.image_tag }}
+    steps:
+      - name: Get number of CPU cores
+        run: echo "NUM_CPU_CORES=$(grep -c processor /proc/cpuinfo)" >> $GITHUB_OUTPUT
+        id: num-cpu-cores
+      - name: Update package database
+        run: apt-get update -y
+      # See comments beginning at
+      # https://github.com/actions/runner/issues/763#issuecomment-1435474884
+      # Without Git, actions/checkout@v4 will resort to REST and will not
+      # create a .git folder or .git.config. The Problem Matcher looks for
+      # .git/config to find where the root of the repo is, so it must be
+      # present.
+      - name: Install Git
+        run: apt-get -y install git
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install build tools
+        run: apt-get -y install devscripts adduser fakeroot sudo
+      - name: Install build dependencies
+        run: mk-build-deps -t "apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends" -i -r
+      - name: Set up build user
+        run: |
+          adduser --disabled-password --gecos "" builduser
+          chown -R builduser:builduser .
+          chown builduser:builduser ..
+      - name: Build
+        run: sudo -u builduser dpkg-buildpackage -b -rfakeroot -j${{ steps.num-cpu-cores.outputs.NUM_CPU_CORES }}
+      - name: Move built files
+        if: always()
+        run: |
+          mkdir built
+          dcmd mv ../*ges built/
+      - name: Display structure of built files
+        if: always()
+        run: ls -alR
+        working-directory: built
+      - name: SHA256 built files
+        if: always()
+        shell: bash
+        run: find . -type f -exec sha256sum {} \;
+        working-directory: built
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ola-built-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
+          path: ./built
+  debian-test:
+    name: 'Debian Test ${{ matrix.image_tag }} ${{ matrix.architecture }}'
+    needs: debian-build
+    if: "always()" # Run if some builds fail but ensure they all complete first
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image_tag: [bullseye, bookworm, trixie, sid]
+        architecture: [amd64]
+    container: debian:${{ matrix.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ola-built-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
+          path: built
+      - name: Display structure of artifact files
+        run: ls -alR
+        working-directory: built
+      - name: Update package database
+        run: apt-get update -y
+      - name: Install test tools
+        run: apt-get -y install autopkgtest
+      - name: Test
+        run: autopkgtest --output-dir=test-output built/*ges -- null
+      - uses: actions/upload-artifact@v4
+        if: always() # Always upload the test output, even on failed tests
+        with:
+          name: ola-test-output-debian-${{ matrix.image_tag }}-${{ matrix.architecture }}
+          path: test-output

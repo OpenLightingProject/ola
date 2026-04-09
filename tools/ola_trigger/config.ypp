@@ -51,7 +51,7 @@ config :
 ;
 
 line :
-      NEW_LINE
+      optional_whitespace NEW_LINE
     | expression optional_whitespace NEW_LINE
 ;
 
@@ -78,7 +78,7 @@ value :
 ;
 
 optional_whitespace:
-     /* empty */
+      /* empty */
     | WHITESPACE
 ;
 
@@ -127,7 +127,7 @@ optional_falling_action:
 
 action:
       assignment { $$ = CreateAssignmentAction($1); }
-    | '`' program arguments '`' {
+    | '`' program arguments '`' optional_whitespace {
         $$ = CreateCommandAction(*$2, $3);
         delete $2;
       }

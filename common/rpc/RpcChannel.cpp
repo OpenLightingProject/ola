@@ -166,7 +166,7 @@ void RpcChannel::DescriptorReady() {
     m_buffer_size = AllocateMsgBuffer(m_expected_size);
 
     if (m_buffer_size < m_expected_size) {
-      OLA_WARN << "buffer size to small " << m_buffer_size << " < " <<
+      OLA_WARN << "buffer size too small: " << m_buffer_size << " < " <<
         m_expected_size;
       return;
     }

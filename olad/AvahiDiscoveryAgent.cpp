@@ -262,7 +262,7 @@ void AvahiDiscoveryAgent::GroupStateChanged(const string &service_key,
       break;
     case AVAHI_ENTRY_GROUP_FAILURE:
       OLA_WARN << "Failed to register " << service_key
-               << " " << avahi_strerror(avahi_client_errno(m_client));
+               << ": " << avahi_strerror(avahi_client_errno(m_client));
       break;
     case AVAHI_ENTRY_GROUP_UNCOMMITED:
     case AVAHI_ENTRY_GROUP_REGISTERING:
@@ -338,8 +338,8 @@ bool AvahiDiscoveryAgent::InternalRegisterService(ServiceEntry *service) {
           AVAHI_PROTO_INET, static_cast<AvahiPublishFlags>(0),
           service->actual_service_name.c_str(), service->type().c_str(), NULL,
           sub_type.c_str());
-      if (!r) {
-        OLA_WARN << "Failed to add " << sub_type;
+      if (r) {
+        OLA_WARN << "Failed to add " << sub_type << ": " << avahi_strerror(r);
       }
     }
   }
@@ -368,7 +368,7 @@ void AvahiDiscoveryAgent::CreateNewClient() {
     if (m_client) {
       m_backoff.Reset();
     } else {
-      OLA_WARN << "Failed to create Avahi client " << avahi_strerror(error);
+      OLA_WARN << "Failed to create Avahi client: " << avahi_strerror(error);
       SetUpReconnectTimeout();
     }
   }

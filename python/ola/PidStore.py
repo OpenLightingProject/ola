@@ -17,18 +17,19 @@
 # Holds all the information about RDM PIDs
 
 from __future__ import print_function
+
 import binascii
 import math
 import os
 import socket
 import struct
 import sys
+
 from google.protobuf import text_format
-from ola import PidStoreLocation
-from ola import Pids_pb2
 from ola.MACAddress import MACAddress
-from ola import RDMConstants
 from ola.UID import UID
+
+from ola import Pids_pb2, PidStoreLocation, RDMConstants
 
 """The PID Store."""
 
@@ -44,7 +45,7 @@ ROOT_DEVICE = 0
 MAX_VALID_SUB_DEVICE = 0x0200
 ALL_SUB_DEVICES = 0xffff
 
-# The two types of commands classes
+# The different types of commands classes
 RDM_GET, RDM_SET, RDM_DISCOVERY = range(3)
 
 
@@ -53,7 +54,7 @@ class Error(Exception):
 
 
 class InvalidPidFormat(Error):
-  "Indicates the PID data file was invalid."""
+  """Indicates the PID data file was invalid."""
 
 
 class PidStructureException(Error):
@@ -273,6 +274,10 @@ class Atom(object):
     return str(self)
 
   @staticmethod
+  def HasLabels():
+    return False
+
+  @staticmethod
   def HasRanges():
     return False
 
@@ -437,6 +442,9 @@ class IntAtom(FixedSizeAtom):
     """
     return self._AccountForMultiplierPack(value)
 
+  def HasLabels(self):
+    return (len(self._labels) > 0)
+
   def HasRanges(self):
     return (len(self._ranges) > 0)
 
@@ -471,7 +479,7 @@ class IntAtom(FixedSizeAtom):
         raise ArgsValidationError(
             'Conversion will lose data: %d -> %d' %
             (new_value, (new_value / multiplier * multiplier)))
-      new_value = new_value / multiplier
+      new_value = int(new_value / multiplier)
 
     else:
       try:
@@ -527,6 +535,18 @@ class UInt32(IntAtom):
     super(UInt32, self).__init__(name, 'I', 0xffffffff, **kwargs)
 
 
+class Int64(IntAtom):
+  """An eight-byte signed field."""
+  def __init__(self, name, **kwargs):
+    super(Int64, self).__init__(name, 'q', 0xffffffffffffffff, **kwargs)
+
+
+class UInt64(IntAtom):
+  """An eight-byte unsigned field."""
+  def __init__(self, name, **kwargs):
+    super(UInt64, self).__init__(name, 'Q', 0xffffffffffffffff, **kwargs)
+
+
 class IPV4(IntAtom):
   """A four-byte IPV4 address."""
   def __init__(self, name, **kwargs):
@@ -546,6 +566,29 @@ class IPV4(IntAtom):
     except socket.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return super(IntAtom, self).Pack(value)
+
+
+class IPV6Atom(FixedSizeAtom):
+  """A sixteen-byte IPV6 address."""
+  def __init__(self, name, **kwargs):
+    super(IPV6Atom, self).__init__(name, 'BBBBBBBBBBBBBBBB')
+
+  def Unpack(self, data):
+    try:
+      return socket.inet_ntop(socket.AF_INET6, data)
+    except socket.error as e:
+      raise ArgsValidationError("Can't unpack data: %s" % e)
+
+  def Pack(self, args):
+    # TODO(Peter): This currently allows some rather quirky values as per
+    # inet_pton, we may want to restrict that in future
+    format_string = self._FormatString()
+    try:
+      data = struct.pack(format_string,
+                         socket.inet_pton(socket.AF_INET6, args[0]))
+    except socket.error as e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return data, 1
 
 
 class MACAtom(FixedSizeAtom):
@@ -649,6 +692,12 @@ class String(Atom):
     arg = args[0]
     arg_size = len(arg)
 
+    # Handle the fact a UTF-8 character could be multi-byte
+    if sys.version_info >= (3, 2):
+      arg_size = max(arg_size, len(bytes(arg, 'utf-8')))
+    else:
+      arg_size = max(arg_size, len(arg.encode('utf-8')))
+
     if self.max is not None and arg_size > self.max:
       raise ArgsValidationError('%s can be at most %d,' %
                                 (self.name, self.max))
@@ -658,7 +707,10 @@ class String(Atom):
                                 (self.name, self.min))
 
     try:
-      data = struct.unpack('%ds' % arg_size, arg)
+      if sys.version_info >= (3, 2):
+        data = struct.unpack('%ds' % arg_size, bytes(arg, 'utf-8'))
+      else:
+        data = struct.unpack('%ds' % arg_size, arg.encode('utf-8'))
     except struct.error as e:
       raise ArgsValidationError("Can't pack data: %s" % e)
     return data[0], 1
@@ -678,7 +730,12 @@ class String(Atom):
     except struct.error as e:
       raise UnpackException(e)
 
-    return value[0].rstrip('\x00')
+    try:
+      value = value[0].rstrip(b'\x00').decode('utf-8')
+    except UnicodeDecodeError as e:
+      raise UnpackException(e)
+
+    return value
 
   def GetDescription(self, indent=0):
     indent = ' ' * indent
@@ -820,10 +877,10 @@ class Group(Atom):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
 
-      return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
     elif self._group_size == 0:
-      return '', 0
+      return b'', 0
     else:
       # this could be groups of fields, but we don't support that yet
       data = []
@@ -836,7 +893,7 @@ class Group(Atom):
       if arg_offset < len(args):
         raise ArgsValidationError('Too many arguments, expected %d, got %d' %
                                   (arg_offset, len(args)))
-      return ''.join(data), arg_offset
+      return b''.join(data), arg_offset
 
   def Unpack(self, data):
     """Unpack binary data.
@@ -884,7 +941,7 @@ class Group(Atom):
             'Too many repeated group_count for %s (%s), limit is %d, found %d' %
             (self.name, self.__str__, self.max, group_count))
 
-      if self.max is not None and group_count < self.min:
+      if self.min is not None and group_count < self.min:
         raise UnpackException(
             'Too few repeated group_count for %s (%s), limit is %d, found %d' %
             (self.name, self.__str__, self.min, group_count))
@@ -997,17 +1054,21 @@ class PidStore(object):
     raw_list = pid_files
     pid_files = []
     override_file = None
+    names_file = None
 
     for f in raw_list:
       if os.path.basename(f) == OVERRIDE_FILE_NAME:
         override_file = f
         continue
       if os.path.basename(f) == MANUFACTURER_NAMES_FILE_NAME:
+        names_file = f
         continue
       pid_files.append(f)
 
     for pid_file in pid_files:
       self.LoadFile(pid_file, validate)
+    if names_file is not None:
+      self.LoadFile(names_file, validate)
     if override_file is not None:
       self.LoadFile(override_file, validate, True)
 
@@ -1029,7 +1090,7 @@ class PidStore(object):
       if validate:
         if ((pid_pb.value >= RDMConstants.RDM_MANUFACTURER_PID_MIN) and
             (pid_pb.value <= RDMConstants.RDM_MANUFACTURER_PID_MAX)):
-          raise InvalidPidFormat('%0x04hx between %0x04hx and %0x04hx in %s' %
+          raise InvalidPidFormat('0x%04hx between 0x%04hx and 0x%04hx in %s' %
                                  (pid_pb.value,
                                   RDMConstants.RDM_MANUFACTURER_PID_MIN,
                                   RDMConstants.RDM_MANUFACTURER_PID_MAX,
@@ -1065,7 +1126,7 @@ class PidStore(object):
           if ((pid_pb.value < RDMConstants.RDM_MANUFACTURER_PID_MIN) or
               (pid_pb.value > RDMConstants.RDM_MANUFACTURER_PID_MAX)):
             raise InvalidPidFormat(
-              'Manufacturer pid 0x%04hx not between %0x04hx and %0x04hx' %
+              'Manufacturer pid 0x%04hx not between 0x%04hx and 0x%04hx' %
               (pid_pb.value,
                RDMConstants.RDM_MANUFACTURER_PID_MIN,
                RDMConstants.RDM_MANUFACTURER_PID_MAX))
@@ -1085,7 +1146,7 @@ class PidStore(object):
     self._pid_store.Clear()
 
   def Pids(self):
-    """Returns a list of all PIDs. Manufacturer PIDs aren't included.
+    """Returns a list of all ESTA PIDs. Manufacturer PIDs aren't included.
 
     Returns:
       A list of Pid objects.
@@ -1149,6 +1210,15 @@ class PidStore(object):
     if pid:
       return pid.value
     return pid
+
+  def ManufacturerNames(self):
+    """Return a dict of all Manufacturer Names stored by their ESTA ID.
+
+    Returns:
+      A dict of ESTA IDs to manufacturer names.
+    """
+    # TODO(Peter): Stop people changing this...
+    return self._manufacturer_id_to_name
 
   def ManufacturerIdToName(self, esta_id):
     """A helper method to convert a manufacturer ID to a name
@@ -1254,8 +1324,14 @@ class PidStore(object):
       return Int32(field_name, **args)
     elif field.type == Pids_pb2.UINT32:
       return UInt32(field_name, **args)
+    elif field.type == Pids_pb2.INT64:
+      return Int64(field_name, **args)
+    elif field.type == Pids_pb2.UINT64:
+      return UInt64(field_name, **args)
     elif field.type == Pids_pb2.IPV4:
       return IPV4(field_name, **args)
+    elif field.type == Pids_pb2.IPV6:
+      return IPV6Atom(field_name, **args)
     elif field.type == Pids_pb2.MAC:
       return MACAtom(field_name, **args)
     elif field.type == Pids_pb2.UID:

@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 
-#include "ola/StringUtils.h"
 #include "ola/base/Macro.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMAPI.h"

@@ -366,14 +366,14 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   DmxBuffer dmx_data2("different data hmm");
 
   // Update a universe that doesn't exist
-  m_clock.CurrentTime(&time1);
+  m_clock.CurrentMonotonicTime(&time1);
   CallUpdateDmxData(&service, &client1, universe_id, dmx_data,
                     &missing_universe_check);
   Universe *universe = store.GetUniverse(universe_id);
   OLA_ASSERT_FALSE(universe);
 
   // Update a universe that exists
-  m_clock.CurrentTime(&time1);
+  m_clock.CurrentMonotonicTime(&time1);
   universe = store.GetUniverseOrCreate(universe_id);
   CallUpdateDmxData(&service, &client1, universe_id, dmx_data, &ack_check);
   OLA_ASSERT_EQ(dmx_data, universe->GetDMX());
@@ -388,7 +388,7 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   OLA_ASSERT_EQ(dmx_data, universe->GetDMX());
 
   // Now send a new update
-  m_clock.CurrentTime(&time1);
+  m_clock.CurrentMonotonicTime(&time1);
   CallUpdateDmxData(&service, &client2, universe_id, dmx_data2, &ack_check);
   OLA_ASSERT_EQ(dmx_data2, universe->GetDMX());
 }

@@ -2,6 +2,7 @@ EXTRA_DIST += \
     javascript/README \
     javascript/new-src/.jscsrc \
     javascript/new-src/.jshintrc \
+    javascript/new-src/.stylelintrc.json \
     javascript/new-src/Gruntfile.js \
     javascript/new-src/README.md \
     javascript/new-src/bower.json \

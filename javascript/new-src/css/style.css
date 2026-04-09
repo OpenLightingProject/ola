@@ -233,12 +233,6 @@ div.checkbox-tr {
  vertical-align: middle;
 }
 
-table.info > tbody > tr > td {
- border-bottom: solid grey 1px;
- padding-left: 5px;
- padding-right: 5px;
-}
-
 table.table > tbody > tr > td.left-table {
  text-align: left;
 }
@@ -257,7 +251,7 @@ input.priority {
 
 select.priority {
  width: 90px;
- display: inline;
+ display: inline-block;
 }
 
 .caption-overview {
@@ -305,6 +299,7 @@ div#header-universe > div {
  border-radius: 4px;
  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+ transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
 .table-condensed>tbody>tr>td,
@@ -314,6 +309,12 @@ div#header-universe > div {
 .table-condensed>thead>tr>td,
 .table-condensed>thead>tr>th {
  padding: 3px;
+}
+
+table.info > tbody > tr > td {
+ border-bottom: solid grey 1px;
+ padding-left: 5px;
+ padding-right: 5px;
 }
 
 .number {
@@ -376,12 +377,6 @@ label.fake-check {
 .nav-tabs::-webkit-scrollbar {
  -webkit-appearance: none;
 }
-.nav-tabs::-webkit-scrollbar:vertical {
- width: 12px;
-}
-.nav-tabs::-webkit-scrollbar:horizontal {
- height: 12px;
-}
 .nav-tabs::-webkit-scrollbar-thumb {
  background-color: rgba(0, 0, 0, .5);
  border-radius: 10px;
@@ -390,4 +385,10 @@ label.fake-check {
 .nav-tabs::-webkit-scrollbar-track {
  border-radius: 10px;
  background-color: #ffffff;
+}
+.nav-tabs::-webkit-scrollbar:vertical {
+ width: 12px;
+}
+.nav-tabs::-webkit-scrollbar:horizontal {
+ height: 12px;
 }

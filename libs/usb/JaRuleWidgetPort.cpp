@@ -28,6 +28,7 @@
 #include <ola/thread/Mutex.h>
 #include <ola/util/Utils.h>
 
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -273,7 +274,7 @@ void JaRuleWidgetPort::_InTransferComplete() {
 
   PendingCommandMap::iterator iter = m_pending_commands.begin();
   TimeStamp time_limit;
-  m_clock.CurrentTime(&time_limit);
+  m_clock.CurrentMonotonicTime(&time_limit);
   time_limit -= TimeInterval(1, 0);
   while (iter != m_pending_commands.end()) {
     PendingCommand *command = iter->second;
@@ -320,7 +321,7 @@ void JaRuleWidgetPort::MaybeSendCommand() {
     return;
   }
 
-  m_clock.CurrentTime(&command->out_time);
+  m_clock.CurrentMonotonicTime(&command->out_time);
   std::pair<PendingCommandMap::iterator, bool> p = m_pending_commands.insert(
       PendingCommandMap::value_type(token, command));
   if (!p.second) {

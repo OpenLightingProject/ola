@@ -31,13 +31,13 @@ using std::endl;
 using std::ostringstream;
 using std::string;
 
-string IntToString(int i) {
+string IntToString(int64_t i) {
   ostringstream str;
   str << i;
   return str.str();
 }
 
-string IntToString(unsigned int i) {
+string IntToString(uint64_t i) {
   ostringstream str;
   str << i;
   return str.str();

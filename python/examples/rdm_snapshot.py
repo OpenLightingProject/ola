@@ -22,11 +22,13 @@ import pickle
 import pprint
 import sys
 import textwrap
-from ola import PidStore
+
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
+
+from ola import PidStore
 
 '''Quick script to collect the settings from a rig.'''
 

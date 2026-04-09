@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * MultiCallback.h
- * A callback which can be exectuted multiple times. When a pre-defined limit
+ * A callback which can be executed multiple times. When a pre-defined limit
  * is reached, then the underlying callback is executed.
  * Copyright (C) 2011 Simon Newton
  */
@@ -66,7 +66,7 @@ namespace ola {
  *
  * @note MultiCallback is <b>NOT</b> thread safe.
  *
- * @note If limit is 0, the callback is exectuted immediately.
+ * @note If limit is 0, the callback is executed immediately.
  */
 class MultiCallback: public BaseCallback0<void> {
  public:

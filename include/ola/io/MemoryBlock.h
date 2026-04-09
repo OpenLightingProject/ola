@@ -63,7 +63,7 @@ class MemoryBlock {
 
     /**
      * @brief Move the insertation point to the end of the block.
-     * This is useful if you want to use the block in pre-pend mode.
+     * This is useful if you want to use the block in prepend mode.
      */
     void SeekBack() {
       m_first = m_data_end;

@@ -1,6 +1,6 @@
 usr/bin/*.py
-usr/lib/python*/dist-packages/ola/testing/*.py
-usr/lib/python*/dist-packages/ola/testing/rdm/*.py
+usr/lib/python*/*-packages/ola/testing/*.py
+usr/lib/python*/*-packages/ola/testing/rdm/*.py
 usr/share/man/man1/rdm_*
 usr/share/ola/rdm-server/*
 usr/share/ola/rdm-server/images/*

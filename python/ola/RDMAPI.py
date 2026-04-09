@@ -16,8 +16,11 @@
 # Copyright (C) 2010 Simon Newton
 
 from __future__ import print_function
+
 import sys
+
 from ola.OlaClient import OlaClient
+
 from ola import PidStore
 
 """The Python RDM API."""

@@ -17,6 +17,7 @@
 # Copyright (C) Simon Newton
 
 import unittest
+
 from ola.DUBDecoder import DecodeResponse
 
 """Test cases for the DUBDecoder class."""

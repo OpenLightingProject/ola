@@ -950,6 +950,9 @@ bool DmxTriWidgetImpl::TriToOlaReturnCode(
 
 /**
  * Convert a DMX-TRI return code to Nack reason code if appropriate
+ *
+ * On the widget, the RDM NACK code is currently bitwise or-ed with 0x20 to
+ * generate the error code
  */
 bool DmxTriWidgetImpl::ReturnCodeToNackReason(
     uint8_t return_code,
@@ -1014,6 +1017,27 @@ bool DmxTriWidgetImpl::ReturnCodeToNackReason(
       break;
     case EC_INVALID_PORT:
       *reason = ola::rdm::NR_INVALID_PORT;
+      break;
+    case EC_DEVICE_ABSENT:
+      *reason = ola::rdm::NR_DEVICE_ABSENT;
+      break;
+    case EC_SENSOR_OUT_OF_RANGE:
+      *reason = ola::rdm::NR_SENSOR_OUT_OF_RANGE;
+      break;
+    case EC_SENSOR_FAULT:
+      *reason = ola::rdm::NR_SENSOR_FAULT;
+      break;
+    case EC_PACKING_NOT_SUPPORTED:
+      *reason = ola::rdm::NR_PACKING_NOT_SUPPORTED;
+      break;
+    case EC_ERROR_IN_PACKED_LIST_TRANSACTION:
+      *reason = ola::rdm::NR_ERROR_IN_PACKED_LIST_TRANSACTION;
+      break;
+    case EC_PROXY_DROP:
+      *reason = ola::rdm::NR_PROXY_DROP;
+      break;
+    case EC_ALL_CALL_SET_FAIL:
+      *reason = ola::rdm::NR_ALL_CALL_SET_FAIL;
       break;
     default:
       return false;

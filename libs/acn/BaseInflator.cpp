@@ -163,7 +163,7 @@ bool BaseInflator::DecodeLength(const uint8_t *data,
 bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
                                 unsigned int length, uint32_t *vector,
                                 unsigned int *bytes_used) {
-  if (flags & PDU::VFLAG_MASK) {
+  if (flags & ola::acn::VFLAG_MASK) {
     if ((unsigned int) m_vector_size > length) {
       *vector = 0;
       *bytes_used = 0;
@@ -223,7 +223,7 @@ bool BaseInflator::InflatePDU(HeaderSet *headers,
     return false;
   }
 
-  if (flags & PDU::HFLAG_MASK) {
+  if (flags & ola::acn::HFLAG_MASK) {
     result = DecodeHeader(headers, data + data_offset,
                           pdu_len - data_offset,
                           &header_bytes_used);

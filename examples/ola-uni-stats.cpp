@@ -124,7 +124,7 @@ UniverseTracker::UniverseTracker(OlaCallbackClientWrapper *wrapper,
 
 
 bool UniverseTracker::Run() {
-  m_clock.CurrentTime(&m_start_time);
+  m_clock.CurrentMonotonicTime(&m_start_time);
   m_wrapper->GetSelectServer()->Run();
   return true;
 }
@@ -133,7 +133,7 @@ bool UniverseTracker::Run() {
 void UniverseTracker::PrintStats() {
   UniverseStatsMap::iterator iter = m_stats.begin();
   TimeStamp now;
-  m_clock.CurrentTime(&now);
+  m_clock.CurrentMonotonicTime(&now);
 
   TimeInterval interval = now - m_start_time;
   OLA_INFO << "Time delta was " << interval;
@@ -166,7 +166,7 @@ void UniverseTracker::PrintStats() {
 
 
 void UniverseTracker::ResetStats() {
-  m_clock.CurrentTime(&m_start_time);
+  m_clock.CurrentMonotonicTime(&m_start_time);
 
   UniverseStatsMap::iterator iter = m_stats.begin();
   for (; iter != m_stats.end(); ++iter) {

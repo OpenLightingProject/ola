@@ -173,6 +173,10 @@ class GenericSocketAddress: public SocketAddress {
       memset(reinterpret_cast<uint8_t*>(&m_addr), 0, sizeof(m_addr));
     }
 
+    GenericSocketAddress(const GenericSocketAddress& other) {
+      memcpy(&m_addr, &(other.m_addr), sizeof(m_addr));
+    }
+
     bool IsValid() const;
 
     uint16_t Family() const {

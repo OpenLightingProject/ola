@@ -19,9 +19,11 @@
 '''Show the UIDs for a universe.'''
 
 from __future__ import print_function
+
 import getopt
-import textwrap
 import sys
+import textwrap
+
 from ola.ClientWrapper import ClientWrapper
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'

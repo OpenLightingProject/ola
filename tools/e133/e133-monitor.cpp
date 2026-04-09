@@ -16,7 +16,7 @@
  * e133-monitor.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * This opens a TCP connection to each device in --targets.
+ * This opens a TCP connection to each device in \--targets.
  *
  * It then waits to receive E1.33 messages on the TCP connections.
  */

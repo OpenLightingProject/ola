@@ -22,6 +22,7 @@
 #include <ola/thread/Thread.h>
 #include <ola/Callback.h>
 
+#include <iostream>
 #include <vector>
 
 #ifdef _WIN32

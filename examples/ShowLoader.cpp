@@ -155,12 +155,12 @@ ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
  */
 ShowLoader::State ShowLoader::NextEntry(ShowEntry *entry) {
   State state = NextFrame(&entry->universe, &entry->buffer);
-  if (state != State::OK) {
+  if (state != OK) {
     return state;
   }
 
   state = NextTimeout(&entry->next_wait);
-  if (state == State::END_OF_FILE) {
+  if (state == END_OF_FILE) {
     // Ensure the entry is whole before sending.
     entry->next_wait = 0;
   }

@@ -49,7 +49,14 @@ if test -z "$PROTOC" ; then
   AC_MSG_ERROR([cannot find 'protoc' program]);
 elif test -n "$1" ; then
   AC_MSG_CHECKING([protoc version])
-  [protoc_version=`$PROTOC --version 2>&1 | grep 'libprotoc' | sed 's/.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/g'`]
+  # Since v20.x we only get effectively the minor and patch versions out of protoc.
+  # Treat them as major and minor and everything should keep working indefinitely.
+  # See https://protobuf.dev/support/version-support/
+  # So we've got either of these:
+  # libprotoc 2.4.1
+  # libprotoc 23.3
+  # The first sed ensures all versions have major, minor, patch, by adding a .0 on the end of ones missing it
+  [protoc_version=`$PROTOC --version 2>&1 | grep 'libprotoc' | sed 's/\([^\.0-9][0-9][0-9]*\.[0-9][0-9]*\)$/\1\.0/g' | sed 's/[^0-9]*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/g'`]
   [required=$1]
   [required_major=`echo $required | sed 's/[^0-9].*//'`]
   [required_minor=`echo $required | sed 's/[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*/\1/'`]
@@ -98,7 +105,7 @@ else
   LIBS=$SAVED_LIBS
 fi
 AC_SUBST([OLA_PROTOC])
-AM_CONDITIONAL(BUILD_OLA_PROTOC_PLUGIN, test "${with_ola_protoc_plugin}" == "no")
+AM_CONDITIONAL(BUILD_OLA_PROTOC_PLUGIN, test "${with_ola_protoc_plugin}" = "no")
 ])
 
 
@@ -149,7 +156,7 @@ AC_DEFUN([PLUGIN_SUPPORT],
   fi
 
   # If dependencies are not met...
-  if test "$3" == "no"; then
+  if test "$3" = "no"; then
     # ...and the user has explicitly requested this plugin to be enabled,
     # error out.
     if test "${enable_plugin}" = "yes"; then

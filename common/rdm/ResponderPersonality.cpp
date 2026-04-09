@@ -47,6 +47,11 @@ Personality::Personality(uint16_t footprint, const string &description,
     : m_footprint(footprint),
       m_description(description),
       m_slot_data(slot_data) {
+  if (m_slot_data.SlotCount() > m_footprint) {
+    OLA_WARN << "Provided slot count of " << m_slot_data.SlotCount()
+             << " for personality \"" << description
+             << "\" is greater than it's footprint of " << m_footprint;
+  }
 }
 
 /**
@@ -90,8 +95,13 @@ uint8_t PersonalityManager::PersonalityCount() const {
 }
 
 bool PersonalityManager::SetActivePersonality(uint8_t personality) {
-  if (personality == 0 || personality > m_personalities->PersonalityCount())
+  if (personality == 0 || personality > m_personalities->PersonalityCount()) {
+    OLA_WARN << "Tried to set to invalid personality "
+             << static_cast<int>(personality) << ", only 1 to "
+             << static_cast<int>(m_personalities->PersonalityCount())
+             << " are valid";
     return false;
+  }
   m_active_personality = personality;
   return true;
 }

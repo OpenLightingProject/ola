@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * IPV4Address.h
- * Represents a IPv4 Address
+ * Represents an IPv4 Address
  * Copyright (C) 2011 Simon Newton
  */
 

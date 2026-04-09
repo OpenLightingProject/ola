@@ -211,7 +211,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
 
   // This sends a tod data so 7s70:00000000 is insert into the tod
   void PopulateTod() {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t art_tod[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x81,
@@ -646,7 +646,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
   m_socket->SetDiscardMode(false);
 
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t DMX_MESSAGE[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -666,7 +666,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
 
   // send an odd sized dmx frame, we should pad this to a multiple of two
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t DMX_MESSAGE2[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -684,14 +684,14 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
   }
 
   {  // attempt to send on a invalid port
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     DmxBuffer dmx;
     dmx.SetFromString("0,1,2,3,4");
     OLA_ASSERT_FALSE(node.SendDMX(4, dmx));
   }
 
   {  // attempt to send an empty frame
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     DmxBuffer empty_buffer;
     OLA_ASSERT(node.SendDMX(m_port_id, empty_buffer));
   }
@@ -717,7 +717,7 @@ void ArtNetNodeTest::testBroadcastSendDMXZeroUniverse() {
   m_socket->SetDiscardMode(false);
 
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t DMX_MESSAGE[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -781,7 +781,7 @@ void ArtNetNodeTest::testBroadcastSendDMXZeroUniverse() {
   }
 
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t DMX_MESSAGE[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -818,7 +818,7 @@ void ArtNetNodeTest::testLimitedBroadcastDMX() {
   m_socket->SetDiscardMode(false);
 
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t DMX_MESSAGE[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -861,7 +861,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   vector<IPV4Address> node_addresses;
 
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t poll_reply_message[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x21,
@@ -926,7 +926,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
 
   // add another peer
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t poll_reply_message2[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x21,
@@ -980,7 +980,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
 
   // send another DMX frame, this should get unicast twice
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t DMX_MESSAGE2[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -999,7 +999,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
 
   // adjust the broadcast threshold
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     node.SetBroadcastThreshold(2);
 
     // send another DMX frame, this should get broadcast
@@ -1050,7 +1050,7 @@ void ArtNetNodeTest::testReceiveDMX() {
 
   // 'receive' a DMX message
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     OLA_ASSERT_FALSE(m_got_dmx);
     ReceiveFromPeer(DMX_MESSAGE, sizeof(DMX_MESSAGE), peer_ip);
     OLA_ASSERT(m_got_dmx);
@@ -1059,7 +1059,7 @@ void ArtNetNodeTest::testReceiveDMX() {
 
   // send a second frame
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t DMX_MESSAGE2[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1079,7 +1079,7 @@ void ArtNetNodeTest::testReceiveDMX() {
 
   // advance the clock by more than the merge timeout (10s)
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_clock.AdvanceTime(11, 0);
 
     // send another message, but first update the seq #
@@ -1128,7 +1128,7 @@ void ArtNetNodeTest::testReceiveDMXZeroUniverse() {
       0, 6,  // dmx length
       0, 1, 2, 3, 4, 5
     };
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     OLA_ASSERT_FALSE(m_got_dmx);
     ReceiveFromPeer(DMX_MESSAGE, sizeof(DMX_MESSAGE), peer_ip);
     OLA_ASSERT(m_got_dmx);
@@ -1158,7 +1158,7 @@ void ArtNetNodeTest::testReceiveDMXZeroUniverse() {
       0, 4,  // dmx length
       10, 11, 12, 13
     };
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     OLA_ASSERT_FALSE(m_got_dmx);
     ReceiveFromPeer(DMX_MESSAGE, sizeof(DMX_MESSAGE), peer_ip);
     OLA_ASSERT(m_got_dmx);
@@ -1186,7 +1186,7 @@ void ArtNetNodeTest::testHTPMerge() {
 
   // 'receive' a DMX message from the first peer
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t source1_message1[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1206,7 +1206,7 @@ void ArtNetNodeTest::testHTPMerge() {
 
   // receive a message from a second peer
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t source2_message1[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1267,7 +1267,7 @@ void ArtNetNodeTest::testHTPMerge() {
 
   // send a packet from a third source, this shouldn't result in any new dmx
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t source3_message1[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1287,7 +1287,7 @@ void ArtNetNodeTest::testHTPMerge() {
 
   // send another packet from the first source
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t source1_message2[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1312,7 +1312,7 @@ void ArtNetNodeTest::testHTPMerge() {
 
   // send another packet from the first source
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t source1_message3[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1337,7 +1337,7 @@ void ArtNetNodeTest::testHTPMerge() {
 
   // send another packet from the first source
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t source1_message4[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1379,7 +1379,7 @@ void ArtNetNodeTest::testLTPMerge() {
 
   // switch to LTP merge mode, this will trigger an art poll reply
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t poll_reply_message[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x21,
@@ -1422,7 +1422,7 @@ void ArtNetNodeTest::testLTPMerge() {
 
   // 'receive' a DMX message from the first peer
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t source1_message1[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1442,7 +1442,7 @@ void ArtNetNodeTest::testLTPMerge() {
 
   // receive a message from a second peer
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t source2_message1[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1506,7 +1506,7 @@ void ArtNetNodeTest::testLTPMerge() {
 
   // send another packet from the first source
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     uint8_t source1_message2[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x50,
@@ -1547,7 +1547,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
 
   // send a tod control
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     ExpectedBroadcast(TOD_CONTROL, sizeof(TOD_CONTROL));
     node.RunFullDiscovery(
         m_port_id,
@@ -1557,7 +1557,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
 
   // advance the clock and run the select server
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
     ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
@@ -1568,7 +1568,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
 
   // run discovery again, this time returning a ArtTod from a peer
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_discovery_done = false;
     ExpectedBroadcast(TOD_CONTROL, sizeof(TOD_CONTROL));
 
@@ -1602,7 +1602,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
 
   // advance the clock and run the select server
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
     ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
@@ -1617,7 +1617,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   // run discovery again, removing one UID, and moving another from peer1
   // to peer2
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_discovery_done = false;
 
     ExpectedBroadcast(TOD_CONTROL, sizeof(TOD_CONTROL));
@@ -1668,7 +1668,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
 
   // advance the clock and run the select server
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
     ss.RunOnce();  // update the wake up time
     OLA_ASSERT(m_discovery_done);
@@ -1681,7 +1681,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
 
   // try running discovery for a invalid port id
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_discovery_done = false;
     node.RunFullDiscovery(
         4,
@@ -1708,7 +1708,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
 
   // send a tod request
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t tod_request[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x80,
@@ -1733,7 +1733,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
 
   // respond with a tod
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t art_tod1[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x81,
@@ -1766,7 +1766,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
 
   // try running discovery for a invalid port id
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_discovery_done = false;
     node.RunIncrementalDiscovery(
         4,
@@ -1797,7 +1797,7 @@ void ArtNetNodeTest::testUnsolicitedTod() {
 
   // receive a tod
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     OLA_ASSERT_FALSE(m_discovery_done);
 
     // receive a ArtTod
@@ -1848,7 +1848,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
 
   // receive a tod request
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t tod_request[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x80,
@@ -1870,7 +1870,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
 
   // respond with a Tod
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t art_tod1[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x81,
@@ -1897,7 +1897,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
 
   // try a tod request a universe that doesn't match ours
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_tod_request = false;
     const uint8_t tod_request2[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -1920,7 +1920,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
 
   // check TodControl
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     OLA_ASSERT_FALSE(m_tod_flush);
 
     const uint8_t tod_control[] = {
@@ -1940,7 +1940,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
 
   // try a tod control a universe that doesn't match ours
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     m_tod_flush = false;
     OLA_ASSERT_FALSE(m_tod_flush);
     const uint8_t tod_control2[] = {
@@ -1980,7 +1980,7 @@ void ArtNetNodeTest::testRDMResponder() {
       ola::NewCallback(this, &ArtNetNodeTest::HandleRDM)));
 
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t rdm_request[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x83,
@@ -2026,7 +2026,7 @@ void ArtNetNodeTest::testRDMResponder() {
 
   // run the RDM callback, triggering the response
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t rdm_response[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x83,
@@ -2079,7 +2079,7 @@ void ArtNetNodeTest::testRDMRequest() {
 
   // create a new RDM request
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     SendRDMRequest(
         &node,
         ola::NewSingleCallback(this, &ArtNetNodeTest::FinalizeRDM));
@@ -2087,7 +2087,7 @@ void ArtNetNodeTest::testRDMRequest() {
 
   // send a response
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t rdm_response[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x83,
@@ -2133,7 +2133,7 @@ void ArtNetNodeTest::testRDMRequestTimeout() {
 
   // create a new RDM request
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     SendRDMRequest(
         &node,
         ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
@@ -2163,7 +2163,7 @@ void ArtNetNodeTest::testRDMRequestIPMismatch() {
 
   // create a new RDM request
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     SendRDMRequest(
         &node,
         ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
@@ -2171,7 +2171,7 @@ void ArtNetNodeTest::testRDMRequestIPMismatch() {
 
   // send a response from a different IP
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t rdm_response[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x83,
@@ -2220,7 +2220,7 @@ void ArtNetNodeTest::testRDMRequestUIDMismatch() {
 
   // create a new RDM request
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     SendRDMRequest(
         &node,
         ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
@@ -2228,7 +2228,7 @@ void ArtNetNodeTest::testRDMRequestUIDMismatch() {
 
   // send a response from a different IP
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t rdm_response[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x83,
@@ -2273,7 +2273,7 @@ void ArtNetNodeTest::testTimeCode() {
   m_socket->SetDiscardMode(false);
 
   {
-    SocketVerifier verifer(m_socket);
+    SocketVerifier verifier(m_socket);
     const uint8_t timecode_message[] = {
       'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
       0x00, 0x97,

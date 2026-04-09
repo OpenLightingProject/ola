@@ -37,7 +37,6 @@
 #include "libs/usb/HotplugAgent.h"
 
 #include "ola/base/Macro.h"
-#include "ola/thread/Future.h"
 #include "olad/Preferences.h"
 #include "plugins/usbdmx/PluginImplInterface.h"
 #include "plugins/usbdmx/SynchronizedWidgetObserver.h"
@@ -111,7 +110,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   template <typename Widget>
   bool StartAndRegisterDevice(Widget *widget, Device *device);
 
-  void ShutdownDevice(Device *device, ola::thread::Future<void> *f);
+  void ShutdownDeviceState(DeviceState *state);
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPluginImpl);
 };

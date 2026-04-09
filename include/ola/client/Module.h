@@ -24,7 +24,7 @@
  * Sometimes it's useful for client applications to avoid linking against
  * libola, say for instance if they install separately from OLA. By deferring
  * the linking and using libola as a plugin, clients can use OLA if it's
- * installed on the system or if not, take some other action like displaing a
+ * installed on the system or if not, take some other action like displaying a
  * message or using another output mechanism.
  *
  * This file provides plugin interfaces so that a client code can load

@@ -102,6 +102,16 @@ bool UsbDmxPlugin::SetDefaultPreferences() {
       UIntValidator(LIBUSB_DEFAULT_DEBUG_LEVEL, LIBUSB_MAX_DEBUG_LEVEL),
       LIBUSB_DEFAULT_DEBUG_LEVEL);
 
+  save |= m_preferences->SetDefaultValue(
+      EuroliteProFactory::ENABLE_EUROLITE_MK2_KEY,
+      BoolValidator(),
+      false);
+
+  save |= m_preferences->SetDefaultValue(
+      EuroliteProFactory::EUROLITE_MK2_SERIAL_KEY,
+      StringValidator(),
+      "");
+
   if (save) {
     m_preferences->Save();
   }

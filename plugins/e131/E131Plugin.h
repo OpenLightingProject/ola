@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * E131Plugin.h
- * Interface for the E1.131 plugin class
+ * Interface for the E1.31 plugin class
  * Copyright (C) 2007 Simon Newton
  */
 

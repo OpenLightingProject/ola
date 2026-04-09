@@ -93,7 +93,7 @@ bool E131Plugin::StartHook() {
 
   if (!StringToInt(m_preferences->GetValue(OUTPUT_PORT_COUNT_KEY),
                    &options.output_ports)) {
-    OLA_WARN << "Invalid value for input_ports";
+    OLA_WARN << "Invalid value for output_ports";
   }
 
   m_device = new E131Device(this, cid, ip_addr, m_plugin_adaptor, options);

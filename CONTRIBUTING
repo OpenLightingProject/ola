@@ -8,8 +8,8 @@ If you’d like to contribute code (such as a new plugin, extending an existing
 feature or adding a brand new one), our preferred method is by forking us on
 GitHub, committing your code to there, then opening a pull request. We can then
 review and comment on your code if necessary and merge it in. It will also get
-checked automatically by Travis Continuous Integration (you will see a message
-within the pull request showing the status of the Travis tests); hence why we
+checked automatically by GitHub Actions (you will see a message
+within the pull request showing the status of the GitHub tests); hence why we
 prefer pull requests to other methods such as patch submissions.
 
 When writing code, please read the README.developer file which covers coding

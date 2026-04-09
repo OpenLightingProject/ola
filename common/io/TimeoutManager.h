@@ -108,7 +108,7 @@ class TimeoutManager {
     explicit Event(const TimeInterval &interval, const Clock *clock)
         : m_interval(interval) {
       TimeStamp now;
-      clock->CurrentTime(&now);
+      clock->CurrentMonotonicTime(&now);
       m_next = now + m_interval;
     }
     virtual ~Event() {}

@@ -77,7 +77,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
     static const uint8_t DISCOVERY_BRANCH_LABEL;
     static const uint8_t FULL_DISCOVERY_LABEL;
     static const uint8_t INCREMENTAL_DISCOVERY_LABEL;
-    static const uint8_t SHUTDOWN_LABAEL;
+    static const uint8_t SHUTDOWN_LABEL;
 
     typedef enum {
       RC_CHECKSUM_ERROR = 1,
@@ -107,7 +107,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
       RC_NACK_FORMAT_ERROR = 25,
       RC_NACK_HARDWARE_FAULT = 26,
       RC_NACK_PROXY_REJECT = 27,
-      RC_NACK_WRITE_PROECT = 28,
+      RC_NACK_WRITE_PROTECT = 28,
       RC_NACK_COMMAND_CLASS = 29,
       RC_NACK_DATA_RANGE = 30,
       RC_NACK_BUFFER_FULL = 31,

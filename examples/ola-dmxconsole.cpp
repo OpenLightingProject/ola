@@ -56,6 +56,7 @@
 #include <ola/client/OlaClient.h>
 #include <ola/io/SelectServer.h>
 
+#include <iostream>
 #include <string>
 
 using ola::client::OlaClient;

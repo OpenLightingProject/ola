@@ -82,7 +82,7 @@ void EndpointManager::EndpointIDs(vector<uint16_t> *id_list) const {
  * @param callback the Callback to run. Ownership is not transferred.
  */
 void EndpointManager::RegisterNotification(
-    EndpointNoticationEvent event_type,
+    EndpointNotificationEvent event_type,
     EndpointNotificationCallback *callback) {
   // if this callback already exists update it
   vector<EndpointNotification>::iterator iter = m_callbacks.begin();
@@ -121,7 +121,7 @@ bool EndpointManager::UnRegisterNotification(
  * @param event_type the type of notifications to trigger.
  */
 void EndpointManager::RunNotifications(uint16_t endpoint_id,
-                                       EndpointNoticationEvent event_type) {
+                                       EndpointNotificationEvent event_type) {
   vector<EndpointNotification>::iterator iter = m_callbacks.begin();
   for (; iter != m_callbacks.end(); ++iter) {
     if (iter->event_type == event_type || event_type == BOTH)

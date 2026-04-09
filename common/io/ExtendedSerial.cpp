@@ -32,10 +32,26 @@
 #ifdef HAVE_STROPTS_H
 // this provides ioctl() definition without conflicting with asm/termios.h
 #include <stropts.h>
+#else
+// otherwise use the sys/ioctl.h version for newer Linux which has dropped the
+// stropts.h version
+// N.B. This will pull in the kernel definition of struct termios, which may
+// conflict with the libc version, so we wouldn't be able to use both in the
+// same file
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif  // HAVE_SYS_IOCTL_H
+#ifdef HAVE_ASM_TERMBITS_H
+#include <asm/termbits.h>
+#endif  // HAVE_ASM_TERMBITS_H
 #endif  // HAVE_STROPTS_H
 
-#ifdef HAVE_ASM_TERMIOS_H
-// use this not standard termios for custom baud rates
+#if defined(HAVE_STROPTS_H) && defined(HAVE_ASM_TERMIOS_H)
+// use this non-standard termios for custom baud rates
+//
+// On newer Linux, this duplicates winsize and termio as they're also defined
+// in bits/ioctl-types.h, so only include this header if we also have the
+// stropts.h sourced version of ioctl()
 //
 // On mips architectures, <asm/termios.h> sets some cpp macros which cause
 // <cerrno> (included by <ostream>, used by <ola/Logging.h>) to not define
@@ -52,12 +68,15 @@ namespace ola {
 namespace io {
 
 bool LinuxHelper::SetDmxBaud(int fd) {
-#if defined(HAVE_STROPTS_H) && defined(HAVE_TERMIOS2)
+#if (defined(HAVE_STROPTS_H) || \
+     (defined(HAVE_SYS_IOCTL_H) && defined(HAVE_ASM_TERMBITS_H))) && \
+    defined(HAVE_TERMIOS2)
   static const int rate = 250000;
 
   struct termios2 tio;  // linux-specific terminal stuff
 
   if (ioctl(fd, TCGETS2, &tio) < 0) {
+    OLA_INFO << "Failed to get current serial port settings";
     return false;
   }
 
@@ -66,6 +85,7 @@ bool LinuxHelper::SetDmxBaud(int fd) {
   tio.c_ispeed = rate;
   tio.c_ospeed = rate;  // set custom speed directly
   if (ioctl(fd, TCSETS2, &tio) < 0) {
+    OLA_INFO << "Failed to update serial port settings";
     return false;
   }
 
@@ -79,9 +99,19 @@ bool LinuxHelper::SetDmxBaud(int fd) {
   }
   return true;
 #else
+  OLA_INFO << "Failed to set baud rate, due to missing "
+#if !defined(HAVE_STROPTS_H)
+           << "stropts.h or "
+#endif
+#if !(defined(HAVE_SYS_IOCTL_H) && defined(HAVE_ASM_TERMBITS_H))
+           << "sys/ioctl.h or asm/termbits.h or "
+#endif
+           << "termios2";
   return false;
   (void) fd;
-#endif  // defined(HAVE_STROPTS_H) && defined(HAVE_TERMIOS2)
+#endif  // (defined(HAVE_STROPTS_H) ||
+//  (defined(HAVE_SYS_IOCTL_H) && defined(HAVE_ASM_TERMBITS_H))) &&
+// defined(HAVE_TERMIOS2)
 }
 }  // namespace io
 }  // namespace ola

@@ -226,7 +226,7 @@ bool EspNetNode::SendPoll(bool full_poll) {
  * Send some DMX data
  * @param universe the id of the universe to send
  * @param buffer the DMX data
- * @return true if it was send successfully, false otherwise
+ * @return true if it was sent successfully, false otherwise
  */
 bool EspNetNode::SendDMX(uint8_t universe, const ola::DmxBuffer &buffer) {
   if (!m_running) {

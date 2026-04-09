@@ -22,6 +22,8 @@
 #include <ola/client/ClientWrapper.h>
 #include <ola/Callback.h>
 
+#include <iostream>
+
 using std::cout;
 using std::endl;
 

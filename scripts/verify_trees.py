@@ -18,10 +18,10 @@
 
 from __future__ import print_function
 
-import os
 import fnmatch
-import textwrap
+import os
 import sys
+import textwrap
 
 # File & directory patterns that differ between what's in the git repo and
 # what's in the tarball.
@@ -69,7 +69,7 @@ IGNORE_PATTERNS = [
 
 
 def Usage(arg0):
-  print (textwrap.dedent("""\
+  print(textwrap.dedent("""\
   Usage: %s <treeA> <treeB>
 
   Check for files that exist in treeA but aren't in treeB. This can be used to

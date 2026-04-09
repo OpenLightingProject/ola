@@ -19,10 +19,12 @@
 """Patch and unpatch ports."""
 
 from __future__ import print_function
-from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import OlaClient
+
 import argparse
 import sys
+
+from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import OlaClient
 
 __author__ = 'simon.marchi@polymtl.ca (Simon Marchi)'
 

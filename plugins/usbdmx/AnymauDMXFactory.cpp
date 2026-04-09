@@ -63,6 +63,9 @@ bool AnymauDMXFactory::DeviceAdded(
   // Some Anyma devices don't have serial numbers. Since there isn't another
   // good way to uniquely identify a USB device, we only support one of these
   // types of devices per host.
+  // TODO(Peter): We could instead use the device & bus number (like the
+  // Eurolite plugin). You could use more than one device, but the patch
+  // wouldn't follow if you plugged it into a different port
   if (info.serial.empty()) {
     if (m_missing_serial_number) {
       OLA_WARN << "Failed to read serial number or serial number empty. "

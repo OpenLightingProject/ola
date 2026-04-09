@@ -150,6 +150,9 @@ built_sources =
 # Test scripts are run if BUILD_TESTS is true.
 test_scripts =
 
+# directories with python code that should be test compiled during the build
+PYTHON_BUILD_DIRS =
+
 # The includes
 # -----------------------------------------------------------------------------
 
@@ -173,6 +176,7 @@ include plugins/Makefile.mk
 include olad/Makefile.mk
 include protoc/Makefile.mk
 include python/Makefile.mk
+include scripts/Makefile.mk
 include tools/Makefile.mk
 
 # -----------------------------------------------------------------------------
@@ -226,3 +230,68 @@ EXTRA_DIST += \
   config/stl_hash.m4 \
   mac_build.sh \
   ola.spec
+
+# -----------------------------------------------------------------------------
+
+# Create a linter target
+.PHONY : lint
+lint: flake8 cpplint
+
+# flake8 linter
+.PHONY : flake8
+flake8: Makefile.am
+if FOUND_FLAKE8
+	flake8 --statistics --count
+else
+	$(error flake8 not found. Install flake8 and re-run configure.)
+endif
+
+# cpplint linter
+CPP_LINT_FILTER = "-legal/copyright,-readability/streams,-runtime/arrays,-whitespace/indent_namespace"
+CPP_LINT_FILES = $(shell find . \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
+        -wholename "./common/protocol/Ola.pb.*" -or \
+        -wholename "./common/rpc/Rpc.pb.*" -or \
+        -wholename "./common/rpc/TestService.pb.*" -or \
+        -wholename "./common/rdm/Pids.pb.*" -or \
+        -wholename "./config.h" -or \
+        -wholename "./plugins/*/messages/*ConfigMessages.pb.*" -or \
+        -wholename "./tools/ola_trigger/config.tab.*" -or \
+        -wholename "./tools/ola_trigger/lex.yy.cpp" \) | xargs)
+.PHONY : cpplint
+cpplint: Makefile.am
+if FOUND_CPPLINT
+	cpplint --filter=$(CPP_LINT_FILTER) $(CPP_LINT_FILES)
+else
+	$(error cpplint not found. Install the forked cpplint (e.g. via pip for the latest version) and re-run configure.)
+endif
+
+# coverage
+COVERAGE_OUTPUTS = --txt coverage/coverage.txt \
+	--csv coverage/coverage.csv \
+	--json coverage/coverage.json \
+	--cobertura coverage/coverage.cobertura.xml \
+	--html-details coverage/details.html/coverage.details.html \
+	--coveralls coverage/coverage.coveralls.json
+# See https://gcovr.com/en/stable/guide/gcov_parser.html#negative-hit-counts
+COVERAGE_FLAGS = --gcov-ignore-parse-errors=negative_hits.warn_once_per_file
+COVERAGE_GCOV_EXE = --gcov-executable /usr/bin/gcov
+COVERAGE_FILTERS = -e '.*Test\.cpp$$' \
+	-e '.*\.pb\.cc$$' \
+	-e '.*\.pb\.cpp$$' \
+	-e '.*\.pb\.h$$' \
+	-e '.*\.yy\.cpp$$' \
+	-e '.*\.tab\.cpp$$' \
+	-e '.*\.tab\.h$$' \
+	-e '.*/doxygen/examples.*$$'
+.PHONY : coverage
+coverage: Makefile.am check
+if !BUILD_GCOV
+	$(error Generating coverage requires configuring with --enable-gcov)
+else
+if FOUND_GCOVR
+	mkdir -p coverage/details.html/
+	gcovr $(COVERAGE_FLAGS) --print-summary $(COVERAGE_OUTPUTS) $(COVERAGE_GCOV_EXE) --root . $(COVERAGE_FILTERS)
+else
+	$(error gcovr not found. Install gcovr (e.g. via pip for the latest version) and re-run configure.)
+endif
+endif

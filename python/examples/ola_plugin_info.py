@@ -19,10 +19,12 @@
 """Lists the loaded plugins."""
 
 from __future__ import print_function
-from ola.ClientWrapper import ClientWrapper
+
 import getopt
-import textwrap
 import sys
+import textwrap
+
+from ola.ClientWrapper import ClientWrapper
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
@@ -90,5 +92,5 @@ def main():
   wrapper.Run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main()

@@ -111,7 +111,7 @@ void ClientTest::testGetSetDMX() {
   Client client(NULL, m_test_uid);
 
   ola::TimeStamp timestamp;
-  m_clock.CurrentTime(&timestamp);
+  m_clock.CurrentMonotonicTime(&timestamp);
   ola::DmxSource source(buffer, timestamp, 100);
 
   // check get/set works

@@ -22,14 +22,14 @@ Enable the draft (2014) E1.31 discovery protocol.
 Ignore preview data.
 
 `input_ports = [int]`  
-The number of input ports to create up to a max of 32.
+The number of input ports to create up to an arbitrary max of 512.
 
 `ip = [a.b.c.d|<interface_name>]`  
 The IP address or interface name to bind to. If not specified it will use
 the first non-loopback interface.
 
 `output_ports = [int]`  
-The number of output ports to create up to a max of 32.
+The number of output ports to create up to an arbitrary max of 512.
 
 `prepend_hostname = [true|false]`  
 Prepend the hostname to the source name when sending packets.

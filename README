@@ -2,7 +2,7 @@
 
 [www.openlighting.org/ola](https://www.openlighting.org/ola)
 
-[![Build Status](https://travis-ci.org/OpenLightingProject/ola.svg?branch=master)](https://travis-ci.org/OpenLightingProject/ola) [![Coverity Scan Status](https://scan.coverity.com/projects/3514/badge.svg)](https://scan.coverity.com/projects/3514) [![Coverage Status](https://coveralls.io/repos/OpenLightingProject/ola/badge.svg?branch=master)](https://coveralls.io/r/OpenLightingProject/ola?branch=master)
+[![Build Status](https://github.com/OpenLightingProject/ola/actions/workflows/build.yaml/badge.svg?branch=master)](https://github.com/OpenLightingProject/ola/actions/workflows/build.yaml) [![Debian Build Status](https://github.com/OpenLightingProject/ola/actions/workflows/debian.yml/badge.svg?branch=master)](https://github.com/OpenLightingProject/ola/actions/workflows/debian.yml) [![Lint Status](https://github.com/OpenLightingProject/ola/actions/workflows/lint.yaml/badge.svg?branch=master)](https://github.com/OpenLightingProject/ola/actions/workflows/lint.yaml) [![Coverity Scan Status](https://scan.coverity.com/projects/3514/badge.svg)](https://scan.coverity.com/projects/3514) [![Coverage Status](https://coveralls.io/repos/github/OpenLightingProject/ola/badge.svg?branch=master)](https://coveralls.io/github/OpenLightingProject/ola?branch=master)
 
 The Open Lighting Architecture (OLA) is a framework for controlling
 entertainment lighting equipment. Within the entertainment lighting industry,

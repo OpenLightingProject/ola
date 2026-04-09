@@ -190,6 +190,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
                  << sname << "', Serial: '" << sserial << "'";
         ToUpper(&v);
         if (std::string::npos != v.find("FTDI") ||
+            std::string::npos != v.find("JMS") ||
             std::string::npos != v.find("KMTRONIC") ||
             std::string::npos != v.find("KWMATIK") ||
             std::string::npos != v.find("WWW.SOH.CZ")) {

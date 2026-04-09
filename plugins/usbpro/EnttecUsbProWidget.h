@@ -97,13 +97,15 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
       bool dual_ports;
       unsigned int queue_size;
       bool enable_rdm;
+      bool no_rdm_dub_timeout;
 
       EnttecUsbProWidgetOptions()
           : esta_id(0),
             serial(0),
             dual_ports(false),
             queue_size(20),
-            enable_rdm(false) {
+            enable_rdm(false),
+            no_rdm_dub_timeout(false) {
       }
 
       EnttecUsbProWidgetOptions(uint16_t esta_id, uint32_t serial)
@@ -111,7 +113,8 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
             serial(serial),
             dual_ports(false),
             queue_size(20),
-            enable_rdm(false) {
+            enable_rdm(false),
+            no_rdm_dub_timeout(false) {
       }
     };
 

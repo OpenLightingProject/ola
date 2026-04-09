@@ -23,13 +23,14 @@ import getpass
 import logging
 import sys
 import textwrap
+
 from ola import PidStore
 
 __author__ = 'Peter Newman'
 
 
 def Usage():
-  print textwrap.dedent("""\
+  print(textwrap.dedent("""\
   Usage: list_rdm_tests.py
 
   Generate RDM test names or code.
@@ -38,7 +39,7 @@ def Usage():
     -h, --help                Display this help message and exit.
     -p, --pid-location        The directory to read PID definitions from.
     --include-draft           Include draft PIDs.
-    --names                   Just output the test names.""")
+    --names                   Just output the test names."""))
 
 
 def GenerateDummyData(size):
@@ -100,7 +101,7 @@ def AllSubDevicesGet(names, pid, pid_test_base_name, get_size):
             (pid.name))
     print('  PID = \'%s\'' % (pid.name))
     if get_size > 0:
-      print('  #DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' %
+      print('  # DATA = []  # TODO(%s): Specify some suitable data, %d byte%s' %
             (getpass.getuser(), get_size, 's' if get_size > 1 else ''))
     print('')
     print('')
@@ -114,6 +115,7 @@ def Get(names, pid, pid_test_base_name):
       GenerateClassHeader(True, 'Get', pid_test_base_name, '',
                           ['TestMixins.',
                            'OptionalParameterTestFixture'])
+      print('#   """GET %s."""' % (pid.name))
       print('#   CATEGORY = TestCategory.')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test get' % (getpass.getuser()))
@@ -152,11 +154,18 @@ def GetWithExtraData(names, pid, pid_test_base_name, get_size):
     print('  PID = \'%s\'' % (pid.name))
     dummy_data = GenerateDummyData(get_size)
     if dummy_data is None:
-      print(("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't "
-             "enough") % (getpass.getuser()))
+      print(("  # DATA = b'foo'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (get_size))
     elif dummy_data != 'foo':
-      # Doesn't match default
-      print("  DATA = '%s'" % (dummy_data))
+      # Doesn't match default, explicitly set value
+      print(("  DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (get_size))
+    else:
+      print(("  # DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (get_size))
     print('')
     print('')
 
@@ -210,6 +219,7 @@ def Set(names, pid, pid_test_base_name):
     if pid.RequestSupported(PidStore.RDM_SET):
       GenerateClassHeader(True, 'Set', pid_test_base_name, '',
                           ['TestMixins.', 'OptionalParameterTestFixture'])
+      print('#   """SET %s."""' % (pid.name))
       print('#   CATEGORY = TestCategory.')
       print('#   PID = \'%s\'' % (pid.name))
       print('# TODO(%s): Test set' % (getpass.getuser()))
@@ -271,11 +281,18 @@ def SetWithExtraData(names, pid, pid_test_base_name, set_size):
     print('  PID = \'%s\'' % (pid.name))
     dummy_data = GenerateDummyData(set_size)
     if dummy_data is None:
-      print(("  #DATA = 'foo' # TODO(%s): Specify extra data if this isn't "
-             "enough") % (getpass.getuser()))
+      print(("  # DATA = b'foo'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (set_size))
     elif dummy_data != 'foo':
-      # Doesn't match default
-      print("  DATA = '%s'" % (dummy_data))
+      # Doesn't match default, explicitly set value
+      print(("  DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (set_size))
+    else:
+      print(("  # DATA = b'%s'  # TODO(%s): Specify extra data if this isn't "
+             "enough.") % (dummy_data, getpass.getuser()))
+      print("  # Ensure the first %d bytes are sane/valid." % (set_size))
     print('')
     print('')
 
@@ -305,8 +322,8 @@ def main():
         sys.argv[1:],
         'dhnp:',
         ['debug', 'help', 'names', 'pid-location=', 'include-draft'])
-  except getopt.GetoptError, err:
-    print str(err)
+  except getopt.GetoptError as err:
+    print(str(err))
     Usage()
     sys.exit(2)
 
@@ -339,11 +356,15 @@ def main():
   for pid in pid_store.Pids():
     pid_test_base_name = pid.name.lower().title().replace('_', '')
 
+    # TODO(Peter): Need to do min and max size as some PIDs are variable length
     get_size = 0
     if ((pid.RequestSupported(PidStore.RDM_GET)) and
         (pid.GetRequest(PidStore.RDM_GET).HasAtoms())):
-      get_size = pid.GetRequest(PidStore.RDM_GET).GetAtoms()[0].size
-      # print('# Get requires %d bytes' % (get_size))
+      for atom in pid.GetRequest(PidStore.RDM_GET).GetAtoms():
+        get_size += atom.size
+      # TODO(Peter): Should we just print this total all the time?
+      if get_size != pid.GetRequest(PidStore.RDM_GET).GetAtoms()[0].size:
+        print('# Get requires %d bytes' % (get_size))
 
     AllSubDevicesGet(names, pid, pid_test_base_name, get_size)
 
@@ -381,7 +402,8 @@ def main():
            first_atom.ValidateRawValueInRange(1))):
         SetZero(names, pid, pid_test_base_name, first_atom)
 
-      SetWithNoData(names, pid, pid_test_base_name)
+      if set_size > 0:
+        SetWithNoData(names, pid, pid_test_base_name)
 
       SetWithExtraData(names, pid, pid_test_base_name, set_size)
     else:

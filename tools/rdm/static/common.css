@@ -5,6 +5,8 @@
 	http://developer.yahoo.net/yui/license.txt
 	version: 2.2.0
 	*/
+	/* stylelint-disable no-duplicate-selectors */
+	/* stylelint-disable-next-line */
 	body {font:13px 'Helvetica',arial,clean,sans-serif;*font-size:small;*font:x-small;}table {font-size:inherit;font:100%;}select, input, textarea {font:99% arial,helvetica,clean,sans-serif;}pre, code {font:115% monospace;*font-size:100%;}body * {line-height:1.22em;}
 	body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal;}/*ol,ul {list-style:none;}*/caption,th {text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:'';}abbr,acronym {border:0;}
 	
@@ -32,8 +34,6 @@
 	div#header h1							{margin:0; padding:0;}
 	ul#nav										{position:absolute; top:0; right:0; list-style:none; margin:0; padding:0;}
 	ul#nav li									{display:inline; padding:0 0 0 5px;}
-	ul#nav li a								{}
-	div#content								{}
 	div#footer								{margin:40px 0 0; border-top:1px dotted; padding:10px 0 0;}
 	.left {float:left;}
 	.right {float:right;}

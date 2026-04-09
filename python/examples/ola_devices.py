@@ -19,8 +19,10 @@
 """Lists the devices / ports."""
 
 from __future__ import print_function
-from ola.ClientWrapper import ClientWrapper
+
 import sys
+
+from ola.ClientWrapper import ClientWrapper
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 

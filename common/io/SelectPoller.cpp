@@ -210,7 +210,7 @@ bool SelectPoller::Poll(TimeoutManager *timeout_manager,
   maxsd = 0;
   FD_ZERO(&r_fds);
   FD_ZERO(&w_fds);
-  m_clock->CurrentTime(&now);
+  m_clock->CurrentMonotonicTime(&now);
 
   TimeInterval next_event_in = timeout_manager->ExecuteTimeouts(&now);
   if (!next_event_in.IsZero()) {
@@ -241,7 +241,7 @@ bool SelectPoller::Poll(TimeoutManager *timeout_manager,
   switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
-      m_clock->CurrentTime(&m_wake_up_time);
+      m_clock->CurrentMonotonicTime(&m_wake_up_time);
       timeout_manager->ExecuteTimeouts(&m_wake_up_time);
 
       if (closed_descriptors) {
@@ -258,9 +258,9 @@ bool SelectPoller::Poll(TimeoutManager *timeout_manager,
       OLA_WARN << "select() error, " << strerror(errno);
       return false;
     default:
-      m_clock->CurrentTime(&m_wake_up_time);
+      m_clock->CurrentMonotonicTime(&m_wake_up_time);
       CheckDescriptors(&r_fds, &w_fds);
-      m_clock->CurrentTime(&m_wake_up_time);
+      m_clock->CurrentMonotonicTime(&m_wake_up_time);
       timeout_manager->ExecuteTimeouts(&m_wake_up_time);
   }
 

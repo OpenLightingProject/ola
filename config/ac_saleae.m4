@@ -42,7 +42,7 @@ AC_DEFUN([SALEAE_DEVICE],
     [have_saleae=yes],
     [have_saleae=no])
   LIBS=$old_libs
-  AS_IF([test "x$have_saleae" == xno],
+  AS_IF([test "x$have_saleae" = xno],
         [AC_MSG_WARN([SaleaeDevice library is not usable.])])
 
   AM_CONDITIONAL(HAVE_SALEAE_LOGIC, test "${have_saleae}" = "yes")

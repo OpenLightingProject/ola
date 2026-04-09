@@ -17,8 +17,9 @@
 # Copyright (C) 2019 Bruce Lowekamp
 
 import unittest
-from ola.OlaClient import Plugin, Device, Port, Universe, RDMNack
-from ola.TestUtils import allNotEqual, allHashNotEqual
+
+from ola.OlaClient import Device, Plugin, Port, RDMNack, Universe
+from ola.TestUtils import allHashNotEqual, allNotEqual
 
 """Test cases for data structures of OlaClient.
    SendDMX is tested with ClientWrapper."""

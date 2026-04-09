@@ -351,6 +351,7 @@ void StringUtilsTest::testIntToHexString() {
   OLA_ASSERT_EQ(string("0x0001"), IntToHexString((uint16_t)0x0001));
   OLA_ASSERT_EQ(string("0xabcd"), IntToHexString((uint16_t)0xABCD));
   OLA_ASSERT_EQ(string("0xdeadbeef"), IntToHexString((uint32_t)0xDEADBEEF));
+  // Deliberately no IntToHexString(uint64_t) or test as its deprecated
 
   unsigned int i = 0x42;
   OLA_ASSERT_EQ(string("0x00000042"), IntToHexString(i));
@@ -379,6 +380,10 @@ void StringUtilsTest::testIntToHexString() {
 
   str << ToHex((uint32_t)0xDEADBEEF);
   OLA_ASSERT_EQ(string("0xdeadbeef"), str.str());
+  str.str("");
+
+  str << ToHex((uint64_t)0xDEADBEEFFEEDFACE);
+  OLA_ASSERT_EQ(string("0xdeadbeeffeedface"), str.str());
   str.str("");
 
   str << ToHex(i);
@@ -552,6 +557,9 @@ void StringUtilsTest::testStringToUInt() {
   OLA_ASSERT_EQ(65537u, value);
   OLA_ASSERT_TRUE(StringToInt("4294967295", &value));
   OLA_ASSERT_EQ(4294967295U, value);
+  uint64_t value2;
+  OLA_ASSERT_TRUE(StringToInt("77000000000", &value2));
+  OLA_ASSERT_EQ((uint64_t) 77000000000, value2);
   OLA_ASSERT_FALSE(StringToInt("4294967296", &value));
   OLA_ASSERT_FALSE(StringToInt("foo", &value));
 
@@ -569,7 +577,9 @@ void StringUtilsTest::testStringToUIntOrDefault() {
   OLA_ASSERT_EQ(0u, StringToIntOrDefault("0", 42u));
   OLA_ASSERT_EQ(1u, StringToIntOrDefault("1", 42u));
   OLA_ASSERT_EQ(65537u, StringToIntOrDefault("65537", 42u));
-  OLA_ASSERT_EQ(4294967295U, StringToIntOrDefault("4294967295", 42u));
+  OLA_ASSERT_EQ(4294967295U, StringToIntOrDefault("4294967295", 42U));
+  OLA_ASSERT_EQ((uint64_t) 77000000000,
+                StringToIntOrDefault("77000000000", (uint64_t) 42));
   OLA_ASSERT_EQ(42u, StringToIntOrDefault("4294967296", 42u));
   OLA_ASSERT_EQ(42u, StringToIntOrDefault("foo", 42u));
 
@@ -648,63 +658,35 @@ void StringUtilsTest::testHexStringToInt() {
   OLA_ASSERT_FALSE(HexStringToInt("zfff", &value2));
   OLA_ASSERT_FALSE(HexStringToInt("0xf", &value2));
 
+  // uint64_t
+  uint64_t value3;
+  OLA_ASSERT_TRUE(HexStringToInt("11ed8ec200", &value3));
+  OLA_ASSERT_EQ((uint64_t) 77000000000, value3);
+
   // int8_t
-  int8_t value3;
-  OLA_ASSERT_FALSE(HexStringToInt("", &value3));
-  OLA_ASSERT_FALSE(HexStringToInt("-1", &value3));
-
-  OLA_ASSERT_TRUE(HexStringToInt("0", &value3));
-  OLA_ASSERT_EQ((int8_t) 0, value3);
-  OLA_ASSERT_TRUE(HexStringToInt("1", &value3));
-  OLA_ASSERT_EQ((int8_t) 1, value3);
-  OLA_ASSERT_TRUE(HexStringToInt("a", &value3));
-  OLA_ASSERT_EQ((int8_t) 10, value3);
-  OLA_ASSERT_TRUE(HexStringToInt("f", &value3));
-  OLA_ASSERT_EQ((int8_t) 15, value3);
-  OLA_ASSERT_TRUE(HexStringToInt("7f", &value3));
-  OLA_ASSERT_EQ((int8_t) 127, value3);
-  OLA_ASSERT_TRUE(HexStringToInt("a1", &value3));
-  OLA_ASSERT_EQ((int8_t) -95, value3);
-  OLA_ASSERT_TRUE(HexStringToInt("80", &value3));
-  OLA_ASSERT_EQ((int8_t) -128, value3);
-  OLA_ASSERT_TRUE(HexStringToInt("ff", &value3));
-  OLA_ASSERT_EQ((int8_t) -1, value3);
-
-  OLA_ASSERT_FALSE(HexStringToInt("ffff", &value3));
-  OLA_ASSERT_FALSE(HexStringToInt("fff0", &value3));
-  OLA_ASSERT_FALSE(HexStringToInt("ffffff", &value3));
-  OLA_ASSERT_FALSE(HexStringToInt("ffffffff", &value3));
-  OLA_ASSERT_FALSE(HexStringToInt("ef123456", &value3));
-  OLA_ASSERT_FALSE(HexStringToInt("fz", &value3));
-  OLA_ASSERT_FALSE(HexStringToInt("zfff", &value3));
-  OLA_ASSERT_FALSE(HexStringToInt("0xf", &value3));
-
-  // int16_t
-  int16_t value4;
+  int8_t value4;
   OLA_ASSERT_FALSE(HexStringToInt("", &value4));
   OLA_ASSERT_FALSE(HexStringToInt("-1", &value4));
 
   OLA_ASSERT_TRUE(HexStringToInt("0", &value4));
-  OLA_ASSERT_EQ((int16_t) 0, value4);
+  OLA_ASSERT_EQ((int8_t) 0, value4);
   OLA_ASSERT_TRUE(HexStringToInt("1", &value4));
-  OLA_ASSERT_EQ((int16_t) 1, value4);
+  OLA_ASSERT_EQ((int8_t) 1, value4);
   OLA_ASSERT_TRUE(HexStringToInt("a", &value4));
-  OLA_ASSERT_EQ((int16_t) 10, value4);
+  OLA_ASSERT_EQ((int8_t) 10, value4);
   OLA_ASSERT_TRUE(HexStringToInt("f", &value4));
-  OLA_ASSERT_EQ((int16_t) 15, value4);
+  OLA_ASSERT_EQ((int8_t) 15, value4);
+  OLA_ASSERT_TRUE(HexStringToInt("7f", &value4));
+  OLA_ASSERT_EQ((int8_t) 127, value4);
   OLA_ASSERT_TRUE(HexStringToInt("a1", &value4));
-  OLA_ASSERT_EQ((int16_t) 161, value4);
+  OLA_ASSERT_EQ((int8_t) -95, value4);
+  OLA_ASSERT_TRUE(HexStringToInt("80", &value4));
+  OLA_ASSERT_EQ((int8_t) -128, value4);
   OLA_ASSERT_TRUE(HexStringToInt("ff", &value4));
-  OLA_ASSERT_EQ((int16_t) 255, value4);
-  OLA_ASSERT_TRUE(HexStringToInt("7fff", &value4));
-  OLA_ASSERT_EQ((int16_t) 32767, value4);
-  OLA_ASSERT_TRUE(HexStringToInt("ffff", &value4));
-  OLA_ASSERT_EQ((int16_t) -1, value4);
-  OLA_ASSERT_TRUE(HexStringToInt("fff0", &value4));
-  OLA_ASSERT_EQ((int16_t) -16, value4);
-  OLA_ASSERT_TRUE(HexStringToInt("8000", &value4));
-  OLA_ASSERT_EQ((int16_t) -32768, value4);
+  OLA_ASSERT_EQ((int8_t) -1, value4);
 
+  OLA_ASSERT_FALSE(HexStringToInt("ffff", &value4));
+  OLA_ASSERT_FALSE(HexStringToInt("fff0", &value4));
   OLA_ASSERT_FALSE(HexStringToInt("ffffff", &value4));
   OLA_ASSERT_FALSE(HexStringToInt("ffffffff", &value4));
   OLA_ASSERT_FALSE(HexStringToInt("ef123456", &value4));
@@ -712,33 +694,66 @@ void StringUtilsTest::testHexStringToInt() {
   OLA_ASSERT_FALSE(HexStringToInt("zfff", &value4));
   OLA_ASSERT_FALSE(HexStringToInt("0xf", &value4));
 
-  // int32
-  int32_t value5;
+  // int16_t
+  int16_t value5;
   OLA_ASSERT_FALSE(HexStringToInt("", &value5));
   OLA_ASSERT_FALSE(HexStringToInt("-1", &value5));
 
   OLA_ASSERT_TRUE(HexStringToInt("0", &value5));
-  OLA_ASSERT_EQ((int32_t) 0, value5);
+  OLA_ASSERT_EQ((int16_t) 0, value5);
   OLA_ASSERT_TRUE(HexStringToInt("1", &value5));
-  OLA_ASSERT_EQ((int32_t) 1, value5);
+  OLA_ASSERT_EQ((int16_t) 1, value5);
   OLA_ASSERT_TRUE(HexStringToInt("a", &value5));
-  OLA_ASSERT_EQ((int32_t) 10, value5);
+  OLA_ASSERT_EQ((int16_t) 10, value5);
   OLA_ASSERT_TRUE(HexStringToInt("f", &value5));
-  OLA_ASSERT_EQ((int32_t) 15, value5);
+  OLA_ASSERT_EQ((int16_t) 15, value5);
   OLA_ASSERT_TRUE(HexStringToInt("a1", &value5));
-  OLA_ASSERT_EQ((int32_t) 161, value5);
+  OLA_ASSERT_EQ((int16_t) 161, value5);
   OLA_ASSERT_TRUE(HexStringToInt("ff", &value5));
-  OLA_ASSERT_EQ((int32_t) 255, value5);
+  OLA_ASSERT_EQ((int16_t) 255, value5);
   OLA_ASSERT_TRUE(HexStringToInt("7fff", &value5));
-  OLA_ASSERT_EQ((int32_t) 32767, value5);
+  OLA_ASSERT_EQ((int16_t) 32767, value5);
   OLA_ASSERT_TRUE(HexStringToInt("ffff", &value5));
-  OLA_ASSERT_EQ((int32_t) 65535, value5);
-  OLA_ASSERT_TRUE(HexStringToInt("ffffffff", &value5));
-  OLA_ASSERT_EQ((int32_t) -1, value5);
-  OLA_ASSERT_TRUE(HexStringToInt("fffffff0", &value5));
-  OLA_ASSERT_EQ((int32_t) -16, value5);
-  OLA_ASSERT_TRUE(HexStringToInt("80000000", &value5));
-  OLA_ASSERT_EQ((int32_t) -2147483647 - 1, value5);
+  OLA_ASSERT_EQ((int16_t) -1, value5);
+  OLA_ASSERT_TRUE(HexStringToInt("fff0", &value5));
+  OLA_ASSERT_EQ((int16_t) -16, value5);
+  OLA_ASSERT_TRUE(HexStringToInt("8000", &value5));
+  OLA_ASSERT_EQ((int16_t) -32768, value5);
+
+  OLA_ASSERT_FALSE(HexStringToInt("ffffff", &value5));
+  OLA_ASSERT_FALSE(HexStringToInt("ffffffff", &value5));
+  OLA_ASSERT_FALSE(HexStringToInt("ef123456", &value5));
+  OLA_ASSERT_FALSE(HexStringToInt("fz", &value5));
+  OLA_ASSERT_FALSE(HexStringToInt("zfff", &value5));
+  OLA_ASSERT_FALSE(HexStringToInt("0xf", &value5));
+
+  // int32
+  int32_t value6;
+  OLA_ASSERT_FALSE(HexStringToInt("", &value6));
+  OLA_ASSERT_FALSE(HexStringToInt("-1", &value6));
+
+  OLA_ASSERT_TRUE(HexStringToInt("0", &value6));
+  OLA_ASSERT_EQ((int32_t) 0, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("1", &value6));
+  OLA_ASSERT_EQ((int32_t) 1, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("a", &value6));
+  OLA_ASSERT_EQ((int32_t) 10, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("f", &value6));
+  OLA_ASSERT_EQ((int32_t) 15, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("a1", &value6));
+  OLA_ASSERT_EQ((int32_t) 161, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("ff", &value6));
+  OLA_ASSERT_EQ((int32_t) 255, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("7fff", &value6));
+  OLA_ASSERT_EQ((int32_t) 32767, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("ffff", &value6));
+  OLA_ASSERT_EQ((int32_t) 65535, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("ffffffff", &value6));
+  OLA_ASSERT_EQ((int32_t) -1, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("fffffff0", &value6));
+  OLA_ASSERT_EQ((int32_t) -16, value6);
+  OLA_ASSERT_TRUE(HexStringToInt("80000000", &value6));
+  OLA_ASSERT_EQ((int32_t) -2147483647 - 1, value6);
 }
 
 

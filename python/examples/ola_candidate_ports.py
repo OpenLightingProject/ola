@@ -19,9 +19,11 @@
 """List candidate ports for patching."""
 
 from __future__ import print_function
-from ola.ClientWrapper import ClientWrapper
+
 import argparse
 import sys
+
+from ola.ClientWrapper import ClientWrapper
 
 __author__ = 'simon.marchi@polymtl.ca (Simon Marchi)'
 

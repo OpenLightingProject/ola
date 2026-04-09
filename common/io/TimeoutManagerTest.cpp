@@ -97,19 +97,19 @@ void TimeoutManagerTest::testSingleTimeouts() {
   TimeStamp last_checked_time;
 
   clock.AdvanceTime(0, 1);  // Small offset to work around timer precision
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   TimeInterval next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_EQ(0u, GetEventCounter(1));
   OLA_ASSERT_LT(next, timeout_interval);
 
   clock.AdvanceTime(0, 500000);
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_EQ(0u, GetEventCounter(1));
   OLA_ASSERT_LT(next, TimeInterval(0, 500000));
 
   clock.AdvanceTime(0, 500000);
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_TRUE(next.IsZero());
   OLA_ASSERT_EQ(1u, GetEventCounter(1));
@@ -127,7 +127,7 @@ void TimeoutManagerTest::testSingleTimeouts() {
   timeout_manager.CancelTimeout(id2);
 
   clock.AdvanceTime(1, 0);
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_FALSE(timeout_manager.EventsPending());
   OLA_ASSERT_EQ(0u, GetEventCounter(2));
@@ -151,19 +151,19 @@ void TimeoutManagerTest::testRepeatingTimeouts() {
   TimeStamp last_checked_time;
 
   clock.AdvanceTime(0, 1);  // Small offset to work around timer precision
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   TimeInterval next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_EQ(0u, GetEventCounter(1));
   OLA_ASSERT_LT(next, timeout_interval);
 
   clock.AdvanceTime(0, 500000);
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_EQ(0u, GetEventCounter(1));
   OLA_ASSERT_LT(next, TimeInterval(0, 500000));
 
   clock.AdvanceTime(0, 500000);
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_LTE(next, timeout_interval);
   OLA_ASSERT_EQ(1u, GetEventCounter(1));
@@ -172,7 +172,7 @@ void TimeoutManagerTest::testRepeatingTimeouts() {
 
   // fire the event again
   clock.AdvanceTime(1, 0);
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_LTE(next, timeout_interval);
   OLA_ASSERT_EQ(2u, GetEventCounter(1));
@@ -180,7 +180,7 @@ void TimeoutManagerTest::testRepeatingTimeouts() {
   // cancel the event
   timeout_manager.CancelTimeout(id1);
   clock.AdvanceTime(1, 0);
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   next = timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_TRUE(next.IsZero());
   OLA_ASSERT_EQ(2u, GetEventCounter(1));
@@ -206,12 +206,12 @@ void TimeoutManagerTest::testAbortedRepeatingTimeouts() {
 
   clock.AdvanceTime(0, 1);  // Small offset to work around timer precision
   clock.AdvanceTime(1, 0);
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_EQ(1u, GetEventCounter(1));
 
   clock.AdvanceTime(1, 0);
-  clock.CurrentTime(&last_checked_time);
+  clock.CurrentMonotonicTime(&last_checked_time);
   timeout_manager.ExecuteTimeouts(&last_checked_time);
   OLA_ASSERT_EQ(2u, GetEventCounter(1));
 

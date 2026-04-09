@@ -42,9 +42,9 @@
 #include <string>
 #include <utility>
 
+#include "libs/acn/E133HealthCheckedConnection.h"
 #include "libs/acn/RootInflator.h"
 #include "libs/acn/TCPTransport.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
 
 DEFINE_string(listen_ip, "", "The IP Address to listen on");
 DEFINE_uint16(listen_port, 5569, "The port to listen on");
@@ -160,7 +160,7 @@ SimpleE133Controller::~SimpleE133Controller() {}
 
 bool SimpleE133Controller::Start() {
   ola::Clock clock;
-  clock.CurrentTime(&m_start_time);
+  clock.CurrentMonotonicTime(&m_start_time);
 
   if (!m_listen_socket.Listen(m_listen_address, FLAGS_listen_backlog)) {
     return false;
@@ -240,7 +240,7 @@ void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
   if (m_device_map.size() == FLAGS_expected_devices) {
     ola::Clock clock;
     TimeStamp now;
-    clock.CurrentTime(&now);
+    clock.CurrentMonotonicTime(&now);
     OLA_INFO << FLAGS_expected_devices << " connected in "
              << (now - m_start_time);
     if (FLAGS_stop_after_all_devices) {

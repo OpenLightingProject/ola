@@ -17,6 +17,7 @@
 # Copyright (C) 2005 Simon Newton
 
 import unittest
+
 from SimpleRpcController import SimpleRpcController
 
 """Test cases for the SimpleRpcController."""

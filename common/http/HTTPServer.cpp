@@ -381,7 +381,13 @@ void HTTPResponse::SetNoCache() {
  * @brief Set the appropriate headers so this response is accessible from any origin
  */
 void HTTPResponse::SetAccessControlAllowOriginAll() {
+#ifdef MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN
   SetHeader(MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+#else
+  // Old versions of libmicrohttpd don't have
+  // MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN so do it manually
+  SetHeader("Access-Control-Allow-Origin", "*");
+#endif  // MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN
 }
 
 /**

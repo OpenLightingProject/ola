@@ -334,6 +334,7 @@ void InitOptions(options *opts) {
   opts->port_direction = ola::client::OUTPUT_PORT;
   opts->device_id = INVALID_VALUE;
   opts->merge_mode = OlaUniverse::MERGE_HTP;
+  opts->blackout = false;
   opts->priority_mode = ola::PRIORITY_MODE_INHERIT;
   opts->priority_value = 0;
 }

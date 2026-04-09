@@ -26,6 +26,13 @@ plugins_kinet_libolakinet_la_LIBADD = \
     olad/plugin_api/libolaserverplugininterface.la \
     plugins/kinet/libolakinetnode.la
 
+# PROGRAMS
+##################################################
+noinst_PROGRAMS += plugins/kinet/kinet
+
+plugins_kinet_kinet_SOURCES = plugins/kinet/kinet.cpp
+plugins_kinet_kinet_LDADD = plugins/kinet/libolakinetnode.la
+
 # TESTS
 ##################################################
 test_programs += plugins/kinet/KiNetTester

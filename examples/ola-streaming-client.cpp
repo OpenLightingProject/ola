@@ -25,6 +25,7 @@
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/dmx/SourcePriorities.h>
 
 #include <iostream>
@@ -41,6 +42,11 @@ DEFINE_s_string(dmx, d, "", "Comma separated DMX values to send, e.g. "
 DEFINE_s_uint32(universe, u, 1, "The universe to send data for");
 DEFINE_uint8(priority, ola::dmx::SOURCE_PRIORITY_DEFAULT,
              "The source priority to send data at");
+DEFINE_s_default_bool(universe_from_stdin, s, false,
+                      "Also read the destination universe number from STDIN "
+                      "when reading DMX data from STDIN. The universe number "
+                      "must precede the channel values, and be delimited by "
+                      "whitespace, e.g. 1 0,255,128 2 0,255,127");
 
 bool terminate = false;
 
@@ -73,18 +79,37 @@ int main(int argc, char *argv[]) {
   StreamingClient ola_client;
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
-    exit(1);
+    exit(ola::EXIT_SOFTWARE);
   }
 
   if (FLAGS_dmx.str().empty()) {
     string input;
+    bool have_universe = false;
+    unsigned int universe = FLAGS_universe;
+
     while (!terminate && std::cin >> input) {
-      ola::StringTrim(&input);
-      SendDataFromString(&ola_client, FLAGS_universe, input);
+      if (!have_universe && FLAGS_universe_from_stdin) {
+        if (!ola::StringToInt(input, &universe, true)) {
+          OLA_FATAL << "Could not convert universe number, read " << input;
+          exit(ola::EXIT_DATAERR);
+        }
+
+        have_universe = true;
+        continue;
+      }
+
+      if (have_universe || !FLAGS_universe_from_stdin) {
+        SendDataFromString(&ola_client, universe, input);
+        have_universe = false;
+      }
     }
   } else {
+    if (FLAGS_universe_from_stdin) {
+      OLA_FATAL << "Not reading from STDIN. Use -u to specify universe.";
+      exit(ola::EXIT_USAGE);
+    }
     SendDataFromString(&ola_client, FLAGS_universe, FLAGS_dmx.str());
   }
   ola_client.Stop();
-  return 0;
+  return ola::EXIT_OK;
 }
