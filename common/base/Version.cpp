@@ -40,6 +40,10 @@ unsigned int Version::GetRevision() {
   return OLA_VERSION_REVISION;
 }
 
+string Version::GetBuildName() {
+  return OLA_BUILD_NAME;
+}
+
 string Version::GetVersion() {
   std::ostringstream str;
   str << GetMajor() << "." << GetMinor() << "." << GetRevision();

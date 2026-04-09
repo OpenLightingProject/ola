@@ -17,15 +17,10 @@ DAEMON=/usr/bin/$NAME
 PIDFILE=/var/run/$CMD.pid
 DESC="OLA RDM Test Server"
 USER=olad
+DAEMON_ARGS="--world-writable"
 
 # Reads config file (will override defaults above)
 [ -r /etc/default/ola-rdm-tests ] && . /etc/default/ola-rdm-tests
-
-if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
-  DAEMON_ARGS="--world-writeable"
-elif [ "$1" = "start" ] || [ "$1" = "stop" ] ; then
-  echo "The init script is currently inactive;\nuse \"dpkg-reconfigure ola-rdm-tests\" to change this." >&2
-fi
 
 [ -x "$DAEMON" ] || exit 0
 
