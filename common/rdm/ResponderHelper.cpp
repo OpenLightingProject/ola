@@ -1302,7 +1302,6 @@ RDMResponse *ResponderHelper::GetMetadataJSON(
       queued_message_count);
 }
 
-
 /**
  * @brief Handle a request that returns a string
  * @note this truncates the string to max_length
