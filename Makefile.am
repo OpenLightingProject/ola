@@ -65,19 +65,10 @@ if ! USING_WIN32
 if FATAL_WARNINGS
   COMMON_CXXFLAGS += -Werror
   COMMON_PROTOBUF_CXXFLAGS += -Werror -Wno-error=unused-parameter \
-                              -Wno-error=deprecated-declarations \
                               -Wno-error=sign-compare \
                               -Wno-error=ignored-qualifiers
   COMMON_TESTING_FLAGS += -Werror
-  COMMON_TESTING_PROTOBUF_FLAGS += -Werror -Wno-error=unused-parameter \
-                                   -Wno-error=deprecated-declarations
-
-if GNU_PLUS_PLUS_11_DEPRECATIONS
-    # We have to use gnu++11 for some reason, so stop it complaining about
-    # auto_ptr
-    COMMON_CXXFLAGS += -Wno-error=deprecated-declarations
-    COMMON_TESTING_FLAGS += -Wno-error=deprecated-declarations
-endif
+  COMMON_TESTING_PROTOBUF_FLAGS += -Werror -Wno-error=unused-parameter
 endif
 endif
 
