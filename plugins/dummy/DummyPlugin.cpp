@@ -46,6 +46,7 @@ const char DummyPlugin::DEVICE_NAME[] = "Dummy Device";
 const char DummyPlugin::DIMMER_COUNT_KEY[] = "dimmer_count";
 const char DummyPlugin::DIMMER_SUBDEVICE_COUNT_KEY[] = "dimmer_subdevice_count";
 const char DummyPlugin::DUMMY_DEVICE_COUNT_KEY[] = "dummy_device_count";
+const char DummyPlugin::GENERAL_COUNT_KEY[] = "general_device_count";
 const char DummyPlugin::MOVING_LIGHT_COUNT_KEY[] = "moving_light_count";
 const char DummyPlugin::NETWORK_COUNT_KEY[] = "network_device_count";
 const char DummyPlugin::PLUGIN_NAME[] = "Dummy";

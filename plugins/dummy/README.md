@@ -35,6 +35,9 @@ The number of sub-devices each dimmer device should have.
 `dummy_device_count = 1`  
 The number of dummy devices to create.
 
+`general_device_count = 1`  
+The number of E1.37-5 general devices to create.
+
 `moving_light_count = 1`  
 The number of moving light devices to create.
 
