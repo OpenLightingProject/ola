@@ -3,6 +3,7 @@ include tools/logic/Makefile.mk
 include tools/ola_mon/Makefile.mk
 include tools/ola_trigger/Makefile.mk
 include tools/rdm/Makefile.mk
+include tools/sigrok/Makefile.mk
 
 if !USING_WIN32
 include tools/e133/Makefile.mk
