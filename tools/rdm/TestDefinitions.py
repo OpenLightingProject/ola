@@ -8918,6 +8918,7 @@ class AllSubDevicesGetSearchDomain(TestMixins.AllSubDevicesGetMixin,
 
 class GetSearchDomain(TestMixins.GetStringMixin,
                       OptionalParameterTestFixture):
+  """Send a get SEARCH_DOMAIN."""
   CATEGORY = TestCategory.E133_MANAGEMENT
   PID = 'SEARCH_DOMAIN'
   EXPECTED_FIELDS = ['search_domain']
