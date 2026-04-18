@@ -107,7 +107,8 @@ class AbstractPlugin {
 };
 
 
-struct PluginLessThan {
+struct PluginLessThan: public std::binary_function<AbstractPlugin*,
+                                                   AbstractPlugin*, bool> {
   bool operator()(AbstractPlugin *x, AbstractPlugin *y) {
     return x->Id() < y->Id();
   }

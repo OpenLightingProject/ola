@@ -454,12 +454,12 @@ bool HexStringToInt(const string &value, int64_t *output) {
 
 void ToLower(string *s) {
   std::transform(s->begin(), s->end(), s->begin(),
-                 [](int value){return std::tolower(value);});
+                 std::ptr_fun<int, int>(std::tolower));
 }
 
 void ToUpper(string *s) {
   std::transform(s->begin(), s->end(), s->begin(),
-                 [](int value){return std::toupper(value);});
+                 std::ptr_fun<int, int>(std::toupper));
 }
 
 void CapitalizeLabel(string *s) {

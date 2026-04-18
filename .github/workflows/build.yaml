@@ -62,6 +62,7 @@ jobs:
         run: apt-get -y install git
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 0 # Fetch all tags for generating OLA_BUILD_NAME
           persist-credentials: false
       - name: Install build tools
         shell: bash
@@ -99,6 +100,11 @@ jobs:
         # Env var name DISTCHECK_CONFIGURE_FLAGS must be used, see #1881 and #1883
         run: |
           echo "DISTCHECK_CONFIGURE_FLAGS=${{ matrix.configure-args }}" >> $GITHUB_ENV
+      - name: Set additional Linux configure arguments
+        if: runner.os == 'Linux'
+        # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
+        run: |
+          echo "DISTCHECK_CONFIGURE_FLAGS=$DISTCHECK_CONFIGURE_FLAGS CPPFLAGS=-Wno-deprecated-declarations" >> $GITHUB_ENV
       - name: Print configure command
         run: echo "./configure $DISTCHECK_CONFIGURE_FLAGS"
       - name: Configure

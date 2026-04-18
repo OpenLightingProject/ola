@@ -77,7 +77,8 @@ class BaseVariable {
   std::string m_name;
 };
 
-struct VariableLessThan {
+struct VariableLessThan: public std::binary_function<BaseVariable*,
+                                                     BaseVariable*, bool> {
   bool operator()(BaseVariable *x, BaseVariable *y) {
     return x->Name() < y->Name();
   }

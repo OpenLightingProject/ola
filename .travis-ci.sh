@@ -294,7 +294,7 @@ else
   # Env var name DISTCHECK_CONFIGURE_FLAGS must be used, see #1881 and #1883
   if [[ "$TRAVIS_OS_NAME" = "linux" ]]; then
     # Silence all deprecated declarations on Linux due to auto_ptr making the build log too long
-    export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-java-libs --enable-ja-rule --enable-e133'
+    export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-java-libs --enable-ja-rule --enable-e133 CPPFLAGS=-Wno-deprecated-declarations'
   else
     export DISTCHECK_CONFIGURE_FLAGS='--enable-rdm-tests --enable-java-libs --enable-ja-rule --enable-e133'
   fi

@@ -76,6 +76,7 @@ ola.common.ServerStats.prototype.updateServerInfo_ = function(e) {
   goog.dom.$('server_mac').innerHTML = e.server_info['hw_address'];
   goog.dom.$('server_instance_name').innerHTML = e.server_info['instance_name'];
   goog.dom.$('server_version').innerHTML = e.server_info['version'];
+  goog.dom.$('server_build').innerHTML = e.server_info['build'];
   goog.dom.$('server_uptime').innerHTML = e.server_info['up_since'];
 
   if (!e.server_info['quit_enabled']) {
