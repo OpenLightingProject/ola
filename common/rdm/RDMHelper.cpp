@@ -883,6 +883,12 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, saturation";
       case SD_COLOR_ADD_UV:
         return "Primary, additive UV";
+      case SD_CIE_X:
+        return "Primary, CIE X color coordinate";
+      case SD_CIE_Y:
+        return "Primary, CIE Y color coordinate";
+      case SD_MAGENTA_GREEN_CORRECTION:
+        return "Primary, CCT magenta-green adjustment";
       case SD_STATIC_GOBO_WHEEL:
         return "Primary, static gobo wheel";
       case SD_ROTO_GOBO_WHEEL:

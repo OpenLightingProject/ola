@@ -81,7 +81,7 @@ bool ResponderHelper::ExtractUInt32(const RDMRequest *request,
 }
 
 bool ResponderHelper::ExtractString(const RDMRequest *request,
-                                    std::string *output,
+                                    string *output,
                                     uint8_t max_length) {
   if (request->ParamDataSize() > max_length) {
     return false;
@@ -965,7 +965,7 @@ RDMResponse *ResponderHelper::GetParamDescription(
     uint32_t min_value,
     uint32_t default_value,
     uint32_t max_value,
-    const string description,
+    const string &description,
     uint8_t queued_message_count) {
   PACK(
   struct parameter_description_s {
@@ -1016,11 +1016,11 @@ RDMResponse *ResponderHelper::GetParamDescription(
 }
 
 RDMResponse *ResponderHelper::GetASCIIParamDescription(
-        const RDMRequest *request,
-        uint16_t pid,
-        rdm_command_class command_class,
-        const string description,
-        uint8_t queued_message_count) {
+    const RDMRequest *request,
+    uint16_t pid,
+    rdm_command_class command_class,
+    const string &description,
+    uint8_t queued_message_count) {
   return GetParamDescription(
       request,
       pid,
@@ -1037,12 +1037,12 @@ RDMResponse *ResponderHelper::GetASCIIParamDescription(
 }
 
 RDMResponse *ResponderHelper::GetBitFieldParamDescription(
-        const RDMRequest *request,
-        uint16_t pid,
-        uint8_t pdl_size,
-        rdm_command_class command_class,
-        const string description,
-        uint8_t queued_message_count) {
+    const RDMRequest *request,
+    uint16_t pid,
+    uint8_t pdl_size,
+    rdm_command_class command_class,
+    const string &description,
+    uint8_t queued_message_count) {
   return GetParamDescription(
       request,
       pid,
@@ -1273,7 +1273,7 @@ RDMResponse *ResponderHelper::GetMetadataParameterVersion(
 RDMResponse *ResponderHelper::GetMetadataJSON(
     const RDMRequest *request,
     uint16_t pid,
-    const string json,
+    const string &json,
     uint8_t queued_message_count) {
   PACK(
   struct metadata_json_s {
@@ -1301,7 +1301,6 @@ RDMResponse *ResponderHelper::GetMetadataJSON(
       RDM_ACK,
       queued_message_count);
 }
-
 
 /**
  * @brief Handle a request that returns a string
@@ -1361,8 +1360,8 @@ RDMResponse *ResponderHelper::SetString(
 }
 
 RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,
-                                                 bool value,
-                                                 uint8_t queued_message_count) {
+                                           bool value,
+                                           uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
@@ -1373,8 +1372,8 @@ RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,
 }
 
 RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
-                                                 bool *value,
-                                                 uint8_t queued_message_count) {
+                                           bool *value,
+                                           uint8_t queued_message_count) {
   uint8_t arg;
   if (!ResponderHelper::ExtractUInt8(request, &arg)) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
@@ -1390,8 +1389,8 @@ RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
 
 template<typename T>
 static RDMResponse *GenericGetIntValue(const RDMRequest *request,
-                                             T value,
-                                             uint8_t queued_message_count = 0) {
+                                       T value,
+                                       uint8_t queued_message_count = 0) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
@@ -1427,8 +1426,8 @@ RDMResponse *ResponderHelper::GetUInt32Value(
 
 template<typename T>
 static RDMResponse *GenericSetIntValue(const RDMRequest *request,
-                                             T *value,
-                                             uint8_t queued_message_count = 0) {
+                                       T *value,
+                                       uint8_t queued_message_count = 0) {
   if (!GenericExtractValue(request, value)) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
