@@ -27,9 +27,13 @@
 namespace ola {
 namespace base {
 
+#define PRE_QUOTE(s) #s
+#define PRE_STR(s) PRE_QUOTE(s)
+
 #define OLA_VERSION_MAJOR @OLA_MAJOR_VERSION@
 #define OLA_VERSION_MINOR @OLA_MINOR_VERSION@
 #define OLA_VERSION_REVISION @OLA_REVISION_VERSION@
+#define OLA_BUILD_NAME PRE_STR(@OLA_BUILD_NAME@)
 
 /**
  * @class Version ola/base/Version.h
@@ -62,6 +66,12 @@ class Version {
    * @return the version number as a string.
    */
   static std::string GetVersion();
+
+  /**
+   * @brief the build name as a string.
+   * @return the build name as a string.
+   */
+  static std::string GetBuildName();
 
   /**
    * @brief Check the running version is newer than or equal to a specific

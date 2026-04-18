@@ -31,6 +31,7 @@
 
 #include <ola/Logging.h>
 #include <ola/strings/Utils.h>
+#include <stdint.h>
 
 #include <algorithm>
 #include <iomanip>

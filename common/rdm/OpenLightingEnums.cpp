@@ -24,5 +24,11 @@ namespace rdm {
 
 const char OLA_MANUFACTURER_LABEL[] = "Open Lighting Project";
 const char OLA_MANUFACTURER_URL[] = "https://openlighting.org/";
+
+const char OLA_MANUFACTURER_PID_JSON_CODE_VERSION[] = "{\"name\":"
+    "\"CODE_VERSION\",\"manufacturer_id\":31344,\"pid\":32769,\"version\":1,"
+    "\"get_request_subdevice_range\":[\"root\",\"subdevices\"],"
+    "\"get_request\":[],\"get_response\":[{\"name\":\"code_version\","
+    "\"type\":\"string\",""\"maxLength\":32,\"restrictToASCII\":true}]}";
 }  // namespace rdm
 }  // namespace ola

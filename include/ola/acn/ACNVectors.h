@@ -74,7 +74,7 @@ enum E131Vector {
  * @brief Vectors used at the E1.33 layer.
  */
 enum E133Vector {
-  VECTOR_FRAMING_RDMNET = 1,  /**< RDMNet data */
+  VECTOR_FRAMING_RDMNET = 1,  /**< RDMnet data */
   VECTOR_FRAMING_STATUS = 2,  /**< Status message */
   VECTOR_FRAMING_CONTROLLER = 3,  /**< Controller message */
   VECTOR_FRAMING_CHANGE_NOTIFICATION = 4,  /**< Controller change message */

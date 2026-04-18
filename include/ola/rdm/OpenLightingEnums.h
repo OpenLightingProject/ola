@@ -50,6 +50,13 @@ typedef enum {
   OLA_MANUFACTURER_PID_CODE_VERSION = 0x8001,
 } rdm_ola_manufacturer_pid;
 
+// TODO(Peter): Some sort of vector against rdm_ola_manufacturer_pid or
+// something nicer?
+typedef enum {
+  OLA_MANUFACTURER_PID_JSON_VERSION_SERIAL_NUMBER = 1,
+  OLA_MANUFACTURER_PID_JSON_VERSION_CODE_VERSION = 1,
+} rdm_ola_manufacturer_pid_json_version;
+
 /**
  * Also see the list here
  * https://wiki.openlighting.org/index.php/Open_Lighting_Allocations#RDM_Model_Numbers
@@ -77,6 +84,7 @@ typedef enum {
 
 extern const char OLA_MANUFACTURER_LABEL[];
 extern const char OLA_MANUFACTURER_URL[];
+extern const char OLA_MANUFACTURER_PID_JSON_CODE_VERSION[];
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_OPENLIGHTINGENUMS_H_

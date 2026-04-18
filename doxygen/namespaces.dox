@@ -15,7 +15,7 @@
  * @brief DMX512 related code.
  *
  * @namespace ola::e133
- * @brief E1.33 (RDMNet)
+ * @brief E1.33 (RDMnet)
  *
  * @namespace ola::file
  * @brief File helper functions.
