@@ -395,9 +395,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"name", required_argument, 0, 'n'},
       {"plugin-id", required_argument, 0, 'p'},
       {"state", required_argument, 0, 's'},
-      {"universe", required_argument, 0, 'u'},
       {"list-plugin-ids", no_argument, 0, LIST_PLUGIN_IDS_OPTION},
       {"list-universe-ids", no_argument, 0, LIST_UNIVERSE_IDS_OPTION},
+      {"universe", required_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
 
