@@ -19,6 +19,7 @@
  */
 
 #include <stdlib.h>
+#include <ola/Constants.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/client/StreamingClient.h>
@@ -47,6 +48,8 @@ DEFINE_s_default_bool(universe_from_stdin, s, false,
                       "when reading DMX data from STDIN. The universe number "
                       "must precede the channel values, and be delimited by "
                       "whitespace, e.g. 1 0,255,128 2 0,255,127");
+DEFINE_s_uint16(rpc_port, r, ola::OLA_DEFAULT_PORT,
+                "The RPC port olad is listening on.");
 
 bool terminate = false;
 
@@ -76,7 +79,9 @@ int main(int argc, char *argv[]) {
                "Send DMX512 data to OLA. If DMX512 data isn't provided, it "
                "will read from STDIN.");
 
-  StreamingClient ola_client;
+  StreamingClient::Options options;
+  options.server_port = FLAGS_rpc_port;
+  StreamingClient ola_client(options);
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
     exit(ola::EXIT_SOFTWARE);
