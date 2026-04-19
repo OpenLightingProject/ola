@@ -1262,7 +1262,8 @@ string ShippingLockStateToString(uint8_t shipping_lock_state) {
 /**
  * Safely convert a uint8_t to a rdm_shipping_lock_state
  */
-bool UIntToShippingLockState(uint8_t state, rdm_shipping_lock_state *shipping_lock_state) {
+bool UIntToShippingLockState(uint8_t state,
+                             rdm_shipping_lock_state *shipping_lock_state) {
   switch (state) {
     case SHIPPING_LOCK_STATE_UNLOCKED:
       *shipping_lock_state = SHIPPING_LOCK_STATE_UNLOCKED;
