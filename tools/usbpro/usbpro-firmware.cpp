@@ -27,6 +27,7 @@
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 
+#include <cstdio>
 #include <iostream>
 #include <fstream>
 #include <string>

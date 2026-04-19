@@ -147,23 +147,25 @@ class NSCStatus {
     // Size() + 1 to account for the start code
 
     m_additive_checksum = buffer.AdditiveChecksum();
-    m_most_recent_slot_count = std::min(NSC_STATUS_MOST_RECENT_SLOT_COUNT_MAX,
-                                        (uint16_t) (buffer.Size() + 1));
+    m_most_recent_slot_count = std::min(
+        NSC_STATUS_MOST_RECENT_SLOT_COUNT_MAX,
+        static_cast<uint16_t>(buffer.Size() + 1));
 
     if (m_packet_count == 0) {
       // We must set the buffer size explicitly here on the first packet or
       // we'd be permanently stuck at 0
       m_min_slot_count = std::min(NSC_STATUS_MIN_SLOT_COUNT_MAX,
-                                  (uint16_t) (buffer.Size() + 1));
+                                  static_cast<uint16_t>(buffer.Size() + 1));
     } else {
-      m_min_slot_count = std::min(NSC_STATUS_MIN_SLOT_COUNT_MAX,
-                                  std::min(m_min_slot_count,
-                                           (uint16_t) (buffer.Size() + 1)));
+      m_min_slot_count = std::min(
+          NSC_STATUS_MIN_SLOT_COUNT_MAX,
+          std::min(m_min_slot_count,
+                   static_cast<uint16_t>(buffer.Size() + 1)));
     }
 
-    m_max_slot_count = std::min(NSC_STATUS_MAX_SLOT_COUNT_MAX,
-                                std::max(m_max_slot_count,
-                                         (uint16_t) (buffer.Size() + 1)));
+    m_max_slot_count = std::min(
+        NSC_STATUS_MAX_SLOT_COUNT_MAX,
+        std::max(m_max_slot_count, static_cast<uint16_t>(buffer.Size() + 1)));
 
     // Update packet counter last so we can use it to track whether this is the
     // first packet or not

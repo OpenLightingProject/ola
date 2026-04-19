@@ -87,11 +87,11 @@ bool ResponderHelper::ExtractString(const RDMRequest *request,
     return false;
   }
 
-  size_t len = (size_t) request->ParamDataSize();
+  size_t len = static_cast<size_t>(request->ParamDataSize());
   if (request->ParamData() != NULL) {
     // StrNLength ensures we stop on the first null we hit
     len = StrNLength(reinterpret_cast<const char*>(request->ParamData()),
-                     min(len, (size_t) max_length));
+                     min(len, static_cast<size_t>(max_length)));
   }
   const string value(reinterpret_cast<const char*>(request->ParamData()), len);
   *output = value;

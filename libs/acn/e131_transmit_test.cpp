@@ -22,6 +22,7 @@
  */
 
 #include <getopt.h>
+#include <iostream>
 #include <string>
 #include <vector>
 #include "ola/DmxBuffer.h"

@@ -20,6 +20,7 @@
 
 #include "plugins/usbdmx/EuroliteProFactory.h"
 
+#include <string>
 #include <vector>
 
 #include "libs/usb/LibUsbAdaptor.h"

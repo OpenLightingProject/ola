@@ -163,7 +163,7 @@ void *SPIDMXThread::Run() {
       break;
     }
 
-    parser->ParseDmx(spi_rx_ptr, (uint64_t) m_blocklength);
+    parser->ParseDmx(spi_rx_ptr, static_cast<uint64_t>(m_blocklength));
   }
 
   delete parser;

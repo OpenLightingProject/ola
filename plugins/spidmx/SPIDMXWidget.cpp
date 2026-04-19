@@ -100,8 +100,8 @@ bool SPIDMXWidget::ReadWrite(uint8_t *tx_buf, uint8_t *rx_buf,
   struct spi_ioc_transfer tr;
   memset(&tr, 0, sizeof(spi_ioc_transfer));
 
-  tr.tx_buf        = (uint64_t) tx_buf;
-  tr.rx_buf        = (uint64_t) rx_buf;
+  tr.tx_buf        = static_cast<uint64_t>(tx_buf);
+  tr.rx_buf        = static_cast<uint64_t>(rx_buf);
   tr.len           = blocklength;
   tr.speed_hz      = SPI_SPEED;
   tr.delay_usecs   = SPI_DELAY;

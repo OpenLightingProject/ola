@@ -357,7 +357,7 @@ void EspNetNode::HandleData(const espnet_data_t &data,
  */
 bool EspNetNode::SendEspPoll(const IPV4Address &dst, bool full) {
   espnet_packet_union_t packet;
-  packet.poll.head = HostToNetwork((uint32_t) ESPNET_POLL);
+  packet.poll.head = HostToNetwork(static_cast<uint32_t>(ESPNET_POLL));
   packet.poll.type = full;
   return SendPacket(dst, packet, sizeof(packet.poll));
 }
@@ -370,7 +370,7 @@ bool EspNetNode::SendEspAck(const IPV4Address &dst,
                             uint8_t status,
                             uint8_t crc) {
   espnet_packet_union_t packet;
-  packet.ack.head = HostToNetwork((uint32_t) ESPNET_ACK);
+  packet.ack.head = HostToNetwork(static_cast<uint32_t>(ESPNET_ACK));
   packet.ack.status = status;
   packet.ack.crc = crc;
   return SendPacket(dst, packet, sizeof(packet.ack));
@@ -382,10 +382,10 @@ bool EspNetNode::SendEspAck(const IPV4Address &dst,
  */
 bool EspNetNode::SendEspPollReply(const IPV4Address &dst) {
   espnet_packet_union_t packet;
-  packet.reply.head = HostToNetwork((uint32_t) ESPNET_REPLY);
+  packet.reply.head = HostToNetwork(static_cast<uint32_t>(ESPNET_REPLY));
 
   m_interface.hw_address.Get(packet.reply.mac);
-  packet.reply.type = HostToNetwork((uint32_t) m_type);
+  packet.reply.type = HostToNetwork(static_cast<uint32_t>(m_type));
   packet.reply.version = FIRMWARE_VERSION;
   packet.reply.sw = SWITCH_SETTINGS;
   memcpy(packet.reply.name, m_node_name.data(), ESPNET_NAME_LENGTH);
@@ -410,13 +410,13 @@ bool EspNetNode::SendEspData(const IPV4Address &dst,
                              const DmxBuffer &buffer) {
   espnet_packet_union_t packet;
   memset(&packet.dmx, 0, sizeof(packet.dmx));
-  packet.dmx.head = HostToNetwork((uint32_t) ESPNET_DMX);
+  packet.dmx.head = HostToNetwork(static_cast<uint32_t>(ESPNET_DMX));
   packet.dmx.universe = universe;
   packet.dmx.start = START_CODE;
   packet.dmx.type = DATA_RAW;
   unsigned int size = DMX_UNIVERSE_SIZE;
   buffer.Get(packet.dmx.data, &size);
-  packet.dmx.size = HostToNetwork((uint16_t) size);
+  packet.dmx.size = HostToNetwork(static_cast<uint16_t>(size));
   return SendPacket(dst, packet, sizeof(packet.dmx));
 }
 
