@@ -41,7 +41,9 @@ using std::vector;
 
 class NanoleafNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(NanoleafNodeTest);
-  CPPUNIT_TEST(testSendDMX);
+  CPPUNIT_TEST(testSendDMXV1PanelsV1);
+  CPPUNIT_TEST(testSendDMXV1PanelsV2);
+  CPPUNIT_TEST(testSendDMXMixedPanelsV2);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -52,7 +54,9 @@ class NanoleafNodeTest: public CppUnit::TestFixture {
     }
     void setUp();
 
-    void testSendDMX();
+    void testSendDMXV1PanelsV1();
+    void testSendDMXV1PanelsV2();
+    void testSendDMXMixedPanelsV2();
 
  private:
     ola::io::SelectServer ss;
@@ -67,18 +71,18 @@ CPPUNIT_TEST_SUITE_REGISTRATION(NanoleafNodeTest);
 
 void NanoleafNodeTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  ola::network::IPV4Address::FromString("10.0.0.10", &target_ip);
+  ola::network::IPV4Address::FromString("10.0.0.11", &target_ip);
 }
 
 /**
- * Check sending DMX works.
+ * Check sending DMX works. v1 panel IDs in v1 mode
  */
-void NanoleafNodeTest::testSendDMX() {
-  vector<uint8_t> panels;
+void NanoleafNodeTest::testSendDMXV1PanelsV1() {
+  vector<uint16_t> panels;
   panels.push_back(0x10);
   panels.push_back(0x20);
 
-  NanoleafNode node(&ss, panels, m_socket);
+  NanoleafNode node(&ss, panels, m_socket, NanoleafNode::VERSION_V1);
   OLA_ASSERT_TRUE(node.Start());
 
   const uint8_t expected_data[] = {
@@ -92,6 +96,66 @@ void NanoleafNodeTest::testSendDMX() {
 
   DmxBuffer buffer;
   buffer.SetFromString("1,5,8,10,14,45");
+  OLA_ASSERT_TRUE(node.SendDMX(IPV4SocketAddress(target_ip, NANOLEAF_PORT),
+                               buffer));
+  m_socket->Verify();
+  OLA_ASSERT(node.Stop());
+}
+
+/**
+ * Check sending DMX works. v1 panel IDs in v2 mode
+ */
+void NanoleafNodeTest::testSendDMXV1PanelsV2() {
+  vector<uint16_t> panels;
+  panels.push_back(0x10);
+  panels.push_back(0x20);
+
+  NanoleafNode node(&ss, panels, m_socket, NanoleafNode::VERSION_V2);
+  OLA_ASSERT_TRUE(node.Start());
+
+  const uint8_t expected_data[] = {
+    0x00, 0x02,
+    0x00, 0x10, 1, 5, 8, 0x00, 0x00, 0x01,
+    0x00, 0x20, 10, 14, 45, 0x00, 0x00, 0x01
+  };
+
+  m_socket->AddExpectedData(expected_data, sizeof(expected_data), target_ip,
+                            NANOLEAF_PORT);
+
+  DmxBuffer buffer;
+  buffer.SetFromString("1,5,8,10,14,45");
+  OLA_ASSERT_TRUE(node.SendDMX(IPV4SocketAddress(target_ip, NANOLEAF_PORT),
+                               buffer));
+  m_socket->Verify();
+  OLA_ASSERT(node.Stop());
+}
+
+/**
+ * Check sending DMX works. mixed panel IDs in v2 mode
+ */
+void NanoleafNodeTest::testSendDMXMixedPanelsV2() {
+  vector<uint16_t> panels;
+  panels.push_back(0x10);
+  panels.push_back(0x20);
+  panels.push_back(0xf010);
+  panels.push_back(0xf020);
+
+  NanoleafNode node(&ss, panels, m_socket, NanoleafNode::VERSION_V2);
+  OLA_ASSERT_TRUE(node.Start());
+
+  const uint8_t expected_data[] = {
+    0x00, 0x04,
+    0x00, 0x10, 1, 5, 8, 0x00, 0x00, 0x01,
+    0x00, 0x20, 10, 14, 45, 0x00, 0x00, 0x01,
+    0xf0, 0x10, 21, 24, 25, 0x00, 0x00, 0x01,
+    0xf0, 0x20, 144, 145, 146, 0x00, 0x00, 0x01
+  };
+
+  m_socket->AddExpectedData(expected_data, sizeof(expected_data), target_ip,
+                            NANOLEAF_PORT);
+
+  DmxBuffer buffer;
+  buffer.SetFromString("1,5,8,10,14,45,21,24,25,144,145,146");
   OLA_ASSERT_TRUE(node.SendDMX(IPV4SocketAddress(target_ip, NANOLEAF_PORT),
                                buffer));
   m_socket->Verify();

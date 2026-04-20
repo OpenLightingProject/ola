@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * NanoleafPlugin.cpp
- * The Nanoleaf plugin for ola
+ * The Nanoleaf plugin for OLA
  * Copyright (C) 2017 Peter Newman
  */
 
