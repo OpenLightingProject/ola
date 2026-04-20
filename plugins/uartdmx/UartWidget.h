@@ -48,9 +48,9 @@ class UartWidget {
     /**
      * Construct a new UartWidget instance for one widget.
      * @param path The device file path of the serial port
+     * @param padding Minimum DMX frame slots count, padded with NULLs
      */
-    explicit UartWidget(const std::string &path);
-
+    explicit UartWidget(const std::string &path, unsigned int padding);
     /** Destructor */
     virtual ~UartWidget();
 
@@ -81,6 +81,7 @@ class UartWidget {
 
  private:
   const std::string m_path;
+  unsigned int m_padding;
 
   /**
    * variable to hold the Unix file descriptor used to open and manipulate
