@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -43,6 +44,7 @@ namespace gpio {
 const char GPIODriver::GPIO_BASE_DIR[] = "/sys/class/gpio/gpio";
 
 using ola::thread::MutexLocker;
+using std::find;
 using std::string;
 using std::vector;
 
@@ -122,7 +124,9 @@ bool GPIODriver::SetupGPIO() {
    *   echo N > /sys/class/gpio/export
    * That requires root access.
    */
-  const string direction("out");
+  const string normal_direction("low");
+  const string inverted_direction("high");
+  const string* direction = nullptr;
   bool failed = false;
   vector<uint16_t>::const_iterator iter = m_options.gpio_pins.begin();
   for (; iter != m_options.gpio_pins.end(); ++iter) {
@@ -134,7 +138,12 @@ bool GPIODriver::SetupGPIO() {
       break;
     }
 
-    GPIOPin pin = {pin_fd, UNDEFINED, false};
+    // Check if pin is in the inverted pin list
+    bool inverted = (find(m_options.gpio_inverted_pins.begin(),
+                          m_options.gpio_inverted_pins.end(),
+                          (*iter)) != m_options.gpio_inverted_pins.end());
+
+    GPIOPin pin = {pin_fd, UNDEFINED, false, inverted};
 
     // Set dir
     str.str("");
@@ -144,9 +153,19 @@ bool GPIODriver::SetupGPIO() {
       failed = true;
       break;
     }
-    if (write(fd, direction.c_str(), direction.size()) < 0) {
-      OLA_WARN << "Failed to enable output on " << str.str() << " : "
-               << strerror(errno);
+    // Assign correct initial state
+    if (inverted) {
+        direction = &inverted_direction;
+    } else {
+        direction = &normal_direction;
+    }
+
+    OLA_DEBUG << "Configuring GPIO pin " << static_cast<int>(*iter)
+              << " with " << (inverted ? "inverted" : "normal") << " logic";
+    if (write(fd, direction->c_str(), direction->size()) < 0) {
+      OLA_WARN << "Failed to enable output on " << str.str()
+               << " with " << (inverted ? "inverted" : "normal") << " logic"
+               << " : " << strerror(errno);
       failed = true;
     }
     close(fd);
@@ -191,7 +210,14 @@ bool GPIODriver::UpdateGPIOPins(const DmxBuffer &dmx) {
 
     // Change the pin state if required.
     if (action != NO_CHANGE) {
-      char data = (action == TURN_ON ? '1' : '0');
+      char data;
+      bool state = (action == TURN_ON);
+      // Handle inverted logic appropriately
+      if (m_gpio_pins[i].inverted) {
+        state = !state;
+      }
+      // Convert to char and write to sysfs
+      data = (state ? '1' : '0');
       if (write(m_gpio_pins[i].fd, &data, sizeof(data)) < 0) {
         OLA_WARN << "Failed to toggle GPIO pin " << i << ", fd "
                  << static_cast<int>(m_gpio_pins[i].fd) << ": "

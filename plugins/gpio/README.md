@@ -11,6 +11,9 @@ The offset (start address) of the GPIO pins is configurable.
 `gpio_pins = [int]`  
 The list of GPIO pins to control, each pin is mapped to a DMX512 slot.
 
+`gpio_pins_inverted = [int]`
+The list of GPIO pins listed under `gpio_pins` which use inverted logic.
+
 `gpio_slot_offset = <int>`  
 The DMX512 slot for the first pin. Slots are indexed from 1.
 

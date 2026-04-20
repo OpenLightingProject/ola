@@ -55,6 +55,7 @@ class GPIOPlugin: public ola::Plugin {
   bool SetDefaultPreferences();
 
   static const char GPIO_PINS_KEY[];
+  static const char GPIO_PINS_INVERTED_KEY[];
   static const char GPIO_SLOT_OFFSET_KEY[];
   static const char GPIO_TURN_OFF_KEY[];
   static const char GPIO_TURN_ON_KEY[];
