@@ -24,6 +24,7 @@
 #include <memory>
 #include <string>
 #include "ola/base/Macro.h"
+#include "ola/Logging.h"
 #include "olad/Device.h"
 #include "plugins/usbdmx/DMXCProjectsNodleU1.h"
 
@@ -56,13 +57,15 @@ class DMXCProjectsNodleU1Device: public Device {
     return m_device_id;
   }
 
+  bool AllowMultiPortPatching() const { return true; }
+
  protected:
   bool StartHook();
 
  private:
   const std::string m_device_id;
-  std::auto_ptr<class GenericOutputPort> m_out_port;
-  std::auto_ptr<class DMXCProjectsNodleU1InputPort> m_in_port;
+  DMXCProjectsNodleU1 *m_widget;
+  PluginAdaptor*m_plugin_adaptor;
 
   DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1Device);
 };

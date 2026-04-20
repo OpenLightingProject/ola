@@ -85,7 +85,7 @@ class SynchronousEurolitePro: public EurolitePro {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class EuroliteProThreadedSender> m_sender;
@@ -110,7 +110,7 @@ class AsynchronousEurolitePro: public EurolitePro {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class EuroliteProAsyncUsbSender> m_sender;

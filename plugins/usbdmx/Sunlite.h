@@ -63,7 +63,7 @@ class SynchronousSunlite: public Sunlite {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class SunliteThreadedSender> m_sender;
@@ -86,7 +86,7 @@ class AsynchronousSunlite: public Sunlite {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class SunliteAsyncUsbSender> m_sender;

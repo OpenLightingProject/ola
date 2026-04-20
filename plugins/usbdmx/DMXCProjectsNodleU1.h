@@ -46,10 +46,14 @@ class DMXCProjectsNodleU1: public SimpleWidget {
                                libusb_device *usb_device,
                                PluginAdaptor *plugin_adaptor,
                                const std::string &serial,
-                               unsigned int mode)
+                               unsigned int mode,
+                               unsigned int ins,
+                               unsigned int outs)
       : SimpleWidget(adaptor, usb_device),
         m_serial(serial),
         m_mode(mode),
+        m_ins(ins),
+        m_outs(outs),
         m_plugin_adaptor(plugin_adaptor) {
   }
 
@@ -69,6 +73,22 @@ class DMXCProjectsNodleU1: public SimpleWidget {
     return m_mode;
   }
 
+   /**
+   * @brief Get the number of inputs suppported by this widget.
+   * @returns The number of inputs.
+   */
+  unsigned int Ins() const {
+    return m_ins;
+  }
+
+  /**
+   * @brief Get the number of outouts suppported by this widget.
+   * @returns The number of outouts.
+   */
+  unsigned int Outs() const {
+    return m_outs;
+  }
+
   virtual void SetDmxCallback(Callback0<void> *callback) = 0;
   virtual const DmxBuffer &GetDmxInBuffer() = 0;
 
@@ -81,9 +101,12 @@ class DMXCProjectsNodleU1: public SimpleWidget {
 
  private:
   std::string m_serial;
+  std::string m_product;
 
  protected:
   unsigned int m_mode;
+  unsigned int m_ins;
+  unsigned int m_outs;
   PluginAdaptor *m_plugin_adaptor;
 };
 
@@ -99,6 +122,7 @@ class SynchronousDMXCProjectsNodleU1: public DMXCProjectsNodleU1 {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param plugin_adaptor the PluginAdaptor used to execute callbacks
+   * @param product the product name of this widget
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */
@@ -106,11 +130,13 @@ class SynchronousDMXCProjectsNodleU1: public DMXCProjectsNodleU1 {
                                  libusb_device *usb_device,
                                  PluginAdaptor *plugin_adaptor,
                                  const std::string &serial,
-                                 unsigned int mode);
+                                 unsigned int mode,
+                                 unsigned int ins,
+                                 unsigned int outs);
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
   void SetDmxCallback(Callback0<void> *callback);
   const DmxBuffer &GetDmxInBuffer();
@@ -133,6 +159,7 @@ class AsynchronousDMXCProjectsNodleU1 : public DMXCProjectsNodleU1 {
    * @param adaptor the LibUsbAdaptor to use.
    * @param usb_device the libusb_device to use for the widget.
    * @param plugin_adaptor the PluginAdaptor used to execute callbacks
+   * @param product the product name of this widget
    * @param serial the serial number of this widget
    * @param mode the send/receive mode to be used by the widget.
    */
@@ -140,11 +167,13 @@ class AsynchronousDMXCProjectsNodleU1 : public DMXCProjectsNodleU1 {
                                   libusb_device *usb_device,
                                   PluginAdaptor *plugin_adaptor,
                                   const std::string &serial,
+                                  unsigned int ins,
+                                  unsigned int outs,
                                   unsigned int mode);
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
   void SetDmxCallback(Callback0<void> *callback);
   const DmxBuffer &GetDmxInBuffer();
