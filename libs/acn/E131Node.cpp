@@ -21,6 +21,7 @@
 #include <string.h>
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -39,7 +40,7 @@ using ola::DmxBuffer;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::HostToNetwork;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::map;
 using std::string;
 using std::set;
@@ -160,7 +161,7 @@ E131Node::~E131Node() {
 
 
 bool E131Node::Start() {
-  auto_ptr<ola::network::InterfacePicker> picker(
+  unique_ptr<ola::network::InterfacePicker> picker(
     ola::network::InterfacePicker::NewPicker());
   if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
     OLA_INFO << "Failed to find an interface";

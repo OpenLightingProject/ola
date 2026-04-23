@@ -81,7 +81,7 @@ class JsonPatchAddOp : public JsonPatchOp {
 
  private:
   JsonPointer m_pointer;
-  std::auto_ptr<const JsonValue> m_value;
+  std::unique_ptr<const JsonValue> m_value;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPatchAddOp);
 };
@@ -126,7 +126,7 @@ class JsonPatchReplaceOp : public JsonPatchOp {
 
  private:
   const JsonPointer m_pointer;
-  std::auto_ptr<const JsonValue> m_value;
+  std::unique_ptr<const JsonValue> m_value;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPatchReplaceOp);
 };
@@ -193,7 +193,7 @@ class JsonPatchTestOp : public JsonPatchOp {
 
  private:
   JsonPointer m_pointer;
-  std::auto_ptr<const JsonValue> m_value;
+  std::unique_ptr<const JsonValue> m_value;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPatchTestOp);
 };

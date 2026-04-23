@@ -95,7 +95,7 @@ class AsyncPluginImpl: public PluginImplInterface, public WidgetObserver {
   PluginAdaptor* const m_plugin_adaptor;
   Plugin* const m_plugin;
   const unsigned int m_debug_level;
-  std::auto_ptr<ola::usb::HotplugAgent> m_agent;
+  std::unique_ptr<ola::usb::HotplugAgent> m_agent;
   Preferences* const m_preferences;
 
   SynchronizedWidgetObserver m_widget_observer;

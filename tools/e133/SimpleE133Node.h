@@ -43,7 +43,7 @@
 using ola::acn::CID;
 using ola::network::IPV4Address;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 
 /**
  * A very simple E1.33 node that responds to messages.

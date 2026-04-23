@@ -58,7 +58,7 @@ class NanoleafNode {
     ola::io::IOQueue m_output_queue;
     ola::io::OutputStream m_output_stream;
     ola::network::Interface m_interface;
-    std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
+    std::unique_ptr<ola::network::UDPSocketInterface> m_socket;
 
     void SocketReady();
     bool InitNetwork();

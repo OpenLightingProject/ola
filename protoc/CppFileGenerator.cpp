@@ -51,7 +51,7 @@ namespace ola {
 using google::protobuf::FileDescriptor;
 using google::protobuf::ServiceDescriptor;
 using google::protobuf::io::Printer;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 

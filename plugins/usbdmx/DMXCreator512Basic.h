@@ -88,7 +88,7 @@ class SynchronousDMXCreator512Basic: public DMXCreator512Basic {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class DMXCreator512BasicThreadedSender> m_sender;
+  std::unique_ptr<class DMXCreator512BasicThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousDMXCreator512Basic);
 };
@@ -113,7 +113,7 @@ class AsynchronousDMXCreator512Basic : public DMXCreator512Basic {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class DMXCreator512BasicAsyncUsbSender> m_sender;
+  std::unique_ptr<class DMXCreator512BasicAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousDMXCreator512Basic);
 };

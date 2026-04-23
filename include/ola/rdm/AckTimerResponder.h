@@ -35,6 +35,7 @@
 #include <ola/rdm/ResponderPersonality.h>
 #include <ola/rdm/UID.h>
 
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
@@ -99,7 +100,7 @@ class AckTimerResponder: public RDMControllerInterface {
 
   ResponseQueue m_queued_messages;
   PendingResponses m_upcoming_queued_messages;
-  std::auto_ptr<class QueuedResponse> m_last_queued_message;
+  std::unique_ptr<class QueuedResponse> m_last_queued_message;
   ola::Clock m_clock;
 
   uint16_t Footprint() const {

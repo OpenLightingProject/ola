@@ -50,7 +50,7 @@ class MilInstDevice: public ola::Device {
  private:
   std::string m_path;
   class Preferences *m_preferences;
-  std::auto_ptr<class MilInstWidget> m_widget;
+  std::unique_ptr<class MilInstWidget> m_widget;
 
   static const char MILINST_DEVICE_NAME[];
 

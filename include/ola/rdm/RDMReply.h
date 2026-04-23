@@ -144,7 +144,7 @@ struct RDMReply {
 
  private:
   RDMStatusCode m_status_code;
-  std::auto_ptr<RDMResponse> m_response;
+  std::unique_ptr<RDMResponse> m_response;
   RDMFrames m_frames;
 
   DISALLOW_COPY_AND_ASSIGN(RDMReply);

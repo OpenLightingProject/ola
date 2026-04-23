@@ -42,7 +42,7 @@ using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -80,7 +80,7 @@ class DmxTriWidgetTest: public CommonWidgetTest {
     void testQueuedMessages();
 
  private:
-    auto_ptr<ola::plugin::usbpro::DmxTriWidget> m_widget;
+    unique_ptr<ola::plugin::usbpro::DmxTriWidget> m_widget;
     unsigned int m_tod_counter;
     bool m_expect_uids_in_tod;
 

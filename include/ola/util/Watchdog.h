@@ -104,7 +104,7 @@ class Watchdog {
 
  private:
   const unsigned int m_limit;
-  std::auto_ptr<Callback0<void> > m_callback;
+  std::unique_ptr<Callback0<void> > m_callback;
   ola::thread::Mutex m_mu;
   bool m_enabled;  // GUARDED_BY(m_mu);
   unsigned int m_count;  // GUARDED_BY(m_mu);

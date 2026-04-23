@@ -41,7 +41,7 @@ namespace usb {
 
 using ola::usb::AsynchronousLibUsbAdaptor;
 using ola::usb::LibUsbAdaptor;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::pair;
 
 namespace {

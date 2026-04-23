@@ -21,6 +21,7 @@
 #include <string.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/Constants.h"
 #include "ola/Logging.h"
@@ -45,7 +46,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -60,8 +61,8 @@ RobeWidgetImpl::RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
       m_unmute_callback(NULL),
       m_branch_callback(NULL),
       m_discovery_agent(this),
-      m_dmx_callback(NULL),
-      m_pending_request(NULL),
+      m_dmx_callback(),
+      m_pending_request(),
       m_uid(uid),
       m_transaction_number(0) {
 }
@@ -102,7 +103,7 @@ bool RobeWidgetImpl::SendDMX(const DmxBuffer &buffer) {
  */
 void RobeWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
                                     ola::rdm::RDMCallback *on_complete) {
-  auto_ptr<RDMRequest> request(request_ptr);
+  unique_ptr<RDMRequest> request(request_ptr);
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
     RunRDMCallback(on_complete, ola::rdm::RDM_FAILED_TO_SEND);
@@ -135,7 +136,7 @@ void RobeWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
             << this_transaction_number;
 
   m_rdm_request_callback = on_complete;
-  m_pending_request.reset(request.release());
+  m_pending_request = std::move(request);
 
   const uint8_t label = m_pending_request->IsDUB() ?
       RDM_DISCOVERY : RDM_REQUEST;
@@ -197,7 +198,7 @@ void RobeWidgetImpl::SetDmxCallback(Callback0<void> *callback) {
  */
 void RobeWidgetImpl::MuteDevice(const UID &target,
                                 MuteDeviceCallback *mute_complete) {
-  auto_ptr<RDMRequest> mute_request(
+  unique_ptr<RDMRequest> mute_request(
       ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number++));
   OLA_DEBUG << "Muting " << target;
   if (PackAndSendRDMRequest(RDM_REQUEST, mute_request.get()))
@@ -213,7 +214,7 @@ void RobeWidgetImpl::MuteDevice(const UID &target,
  * completes.
  */
 void RobeWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
-  auto_ptr<RDMRequest> unmute_request(
+  unique_ptr<RDMRequest> unmute_request(
       ola::rdm::NewUnMuteRequest(m_uid,
                                  ola::rdm::UID::AllDevices(),
                                  m_transaction_number++));
@@ -233,7 +234,7 @@ void RobeWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
 void RobeWidgetImpl::Branch(const UID &lower,
                             const UID &upper,
                             BranchCallback *callback) {
-  auto_ptr<RDMRequest> branch_request(
+  unique_ptr<RDMRequest> branch_request(
       ola::rdm::NewDiscoveryUniqueBranchRequest(
           m_uid,
           lower,
@@ -296,7 +297,7 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   }
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
-  auto_ptr<const RDMRequest> request(m_pending_request.release());
+  unique_ptr<const RDMRequest> request(std::move(m_pending_request));
 
   // this was a broadcast request
   if (request->DestinationUID().IsBroadcast()) {
@@ -312,7 +313,7 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
 
   // The widget response data doesn't contain a start code so we prepend it.
   rdm::RDMFrame frame(data, length, rdm::RDMFrame::Options(true));
-  auto_ptr<RDMReply> reply(RDMReply::FromFrame(frame, request.get()));
+  unique_ptr<RDMReply> reply(RDMReply::FromFrame(frame, request.get()));
   callback->Run(reply.get());
 }
 
@@ -333,13 +334,13 @@ void RobeWidgetImpl::HandleDiscoveryResponse(const uint8_t *data,
   } else if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
-    auto_ptr<const RDMRequest> request(m_pending_request.release());
+    unique_ptr<const RDMRequest> request(std::move(m_pending_request));
 
     if (length <= RDM_PADDING_BYTES) {
       // this indicates that no request was received
       RunRDMCallback(callback, ola::rdm::RDM_TIMEOUT);
     } else {
-      auto_ptr<RDMReply> reply(RDMReply::DUBReply(
+      unique_ptr<RDMReply> reply(RDMReply::DUBReply(
         rdm::RDMFrame(data, length - RDM_PADDING_BYTES)));
       callback->Run(reply.get());
     }

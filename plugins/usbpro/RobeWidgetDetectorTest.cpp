@@ -37,7 +37,7 @@ using ola::plugin::usbpro::RobeWidget;
 using ola::plugin::usbpro::RobeWidgetDetector;
 using ola::plugin::usbpro::RobeWidgetInformation;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 
 
 class RobeWidgetDetectorTest: public CommonWidgetTest {
@@ -61,7 +61,7 @@ class RobeWidgetDetectorTest: public CommonWidgetTest {
   void testTimeout();
 
  private:
-  auto_ptr<RobeWidgetDetector> m_detector;
+  unique_ptr<RobeWidgetDetector> m_detector;
   RobeWidgetInformation m_device_info;
   bool m_found_widget;
   bool m_failed_widget;

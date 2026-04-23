@@ -54,7 +54,7 @@ using ola::plugin::usbpro::UltraDMXProWidget;
 using ola::plugin::usbpro::UsbProWidgetInformation;
 using ola::plugin::usbpro::WidgetDetectorThread;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 
@@ -127,9 +127,9 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     } WidgetType;
 
     ola::io::SelectServer m_ss;
-    auto_ptr<MockEndpoint> m_endpoint;
-    auto_ptr<MockWidgetDetectorThread> m_thread;
-    auto_ptr<ola::io::UnixSocket> m_other_end;
+    unique_ptr<MockEndpoint> m_endpoint;
+    unique_ptr<MockWidgetDetectorThread> m_thread;
+    unique_ptr<ola::io::UnixSocket> m_other_end;
     WidgetType m_received_widget_type;
     bool m_expect_dual_port_enttec_widget;
 

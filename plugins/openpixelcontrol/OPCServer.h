@@ -112,7 +112,7 @@ class OPCServer {
   const ola::network::IPV4SocketAddress m_listen_addr;
   ola::network::TCPSocketFactory m_tcp_socket_factory;
 
-  std::auto_ptr<ola::network::TCPAcceptingSocket> m_listening_socket;
+  std::unique_ptr<ola::network::TCPAcceptingSocket> m_listening_socket;
   ClientMap m_clients;
   std::map<uint8_t, ChannelCallback*> m_callbacks;
 

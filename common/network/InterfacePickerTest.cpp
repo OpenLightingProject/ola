@@ -36,7 +36,7 @@ using ola::network::IPV4Address;
 using ola::network::Interface;
 using ola::network::InterfacePicker;
 using ola::network::MACAddress;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -62,7 +62,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
  * Check that we find at least one candidate interface.
  */
 void InterfacePickerTest::testGetInterfaces() {
-  auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
+  unique_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
   vector<Interface> interfaces = picker->GetInterfaces(true);
 #ifndef _WIN32
   // If a Windows box is not on a network, and doesn't have it's loopback, there
@@ -86,7 +86,7 @@ void InterfacePickerTest::testGetInterfaces() {
  * Check that we find a loopback interface.
  */
 void InterfacePickerTest::testGetLoopbackInterfaces() {
-  auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
+  unique_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
   vector<Interface> interfaces = picker->GetInterfaces(true);
 #ifndef _WIN32
   // If a Windows box is not on a network, and doesn't have it's loopback, there

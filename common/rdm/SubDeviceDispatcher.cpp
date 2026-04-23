@@ -102,7 +102,7 @@ void SubDeviceDispatcher::NackIfNotBroadcast(
     const RDMRequest *request_ptr,
     RDMCallback *callback,
     rdm_nack_reason nack_reason) {
-  std::auto_ptr<const RDMRequest> request(request_ptr);
+  std::unique_ptr<const RDMRequest> request(request_ptr);
   if (request->DestinationUID().IsBroadcast()) {
     RunRDMCallback(callback, RDM_WAS_BROADCAST);
   } else {

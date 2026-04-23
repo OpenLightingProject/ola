@@ -38,7 +38,7 @@ using ola::network::Interface;
 using ola::network::InterfacePicker;
 using ola::plugin::artnet::ArtNetNode;
 using ola::plugin::artnet::ArtNetNodeOptions;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::cout;
 using std::endl;
 using std::min;
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 
   Interface iface;
   {
-    auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
+    unique_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
 
     if (!picker->ChooseInterface(&iface, FLAGS_iface.str())) {
       return -1;

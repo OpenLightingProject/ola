@@ -36,7 +36,7 @@
 namespace ola {
 namespace web {
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 static bool ParseTrimmedInput(const char **input,

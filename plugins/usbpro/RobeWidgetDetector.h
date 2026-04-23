@@ -107,8 +107,8 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
 
   ola::thread::SchedulingExecutorInterface *m_scheduler;
   const unsigned int m_timeout_ms;
-  std::auto_ptr<SuccessHandler> m_callback;
-  std::auto_ptr<FailureHandler> m_failure_callback;
+  std::unique_ptr<SuccessHandler> m_callback;
+  std::unique_ptr<FailureHandler> m_failure_callback;
 
   typedef std::map<DispatchingRobeWidget*, DiscoveryState> WidgetStateMap;
   WidgetStateMap m_widgets;

@@ -159,7 +159,7 @@ class DefinitionsParseContext : public StrictTypedParseContext {
 
  private:
   SchemaDefinitions *m_schema_defs;
-  std::auto_ptr<SchemaParseContext> m_current_schema;
+  std::unique_ptr<SchemaParseContext> m_current_schema;
 
   DISALLOW_COPY_AND_ASSIGN(DefinitionsParseContext);
 };
@@ -219,9 +219,9 @@ class SchemaParseContext : public SchemaParseContextInterface {
   // 5.1 Number / integer keywords
   OptionalItem<bool> m_exclusive_maximum;
   OptionalItem<bool> m_exclusive_minimum;
-  std::auto_ptr<JsonNumber> m_maximum;
-  std::auto_ptr<JsonNumber> m_minimum;
-  std::auto_ptr<JsonNumber> m_multiple_of;
+  std::unique_ptr<JsonNumber> m_maximum;
+  std::unique_ptr<JsonNumber> m_minimum;
+  std::unique_ptr<JsonNumber> m_multiple_of;
 
   // 5.2 String keywords
   // TODO(simon): Implement pattern support?
@@ -232,11 +232,11 @@ class SchemaParseContext : public SchemaParseContextInterface {
   // 5.3 Array keywords
   // 'additionalItems' can be either a bool or a schema
   OptionalItem<bool> m_additional_items;
-  std::auto_ptr<SchemaParseContext> m_additional_items_context;
+  std::unique_ptr<SchemaParseContext> m_additional_items_context;
 
   // 'items' can be either a json schema, or an array of json schema.
-  std::auto_ptr<SchemaParseContext> m_items_single_context;
-  std::auto_ptr<ArrayOfSchemaContext> m_items_context_array;
+  std::unique_ptr<SchemaParseContext> m_items_single_context;
+  std::unique_ptr<ArrayOfSchemaContext> m_items_context_array;
 
   OptionalItem<uint64_t> m_max_items;
   OptionalItem<uint64_t> m_min_items;
@@ -245,32 +245,32 @@ class SchemaParseContext : public SchemaParseContextInterface {
   // 5.4 Object keywords
   OptionalItem<uint64_t> m_max_properties;
   OptionalItem<uint64_t> m_min_properties;
-  std::auto_ptr<ArrayOfStringsContext> m_required_items;
-  std::auto_ptr<DependencyParseContext> m_dependency_context;
+  std::unique_ptr<ArrayOfStringsContext> m_required_items;
+  std::unique_ptr<DependencyParseContext> m_dependency_context;
 
   // 5.5 Keywords for multiple instance types
   JsonType m_type;
-  std::auto_ptr<class ArrayOfJsonValuesContext> m_enum_context;
-  std::auto_ptr<class ArrayOfSchemaContext> m_allof_context;
-  std::auto_ptr<class ArrayOfSchemaContext> m_anyof_context;
-  std::auto_ptr<class ArrayOfSchemaContext> m_oneof_context;
-  std::auto_ptr<class SchemaParseContext> m_not_context;
+  std::unique_ptr<class ArrayOfJsonValuesContext> m_enum_context;
+  std::unique_ptr<class ArrayOfSchemaContext> m_allof_context;
+  std::unique_ptr<class ArrayOfSchemaContext> m_anyof_context;
+  std::unique_ptr<class ArrayOfSchemaContext> m_oneof_context;
+  std::unique_ptr<class SchemaParseContext> m_not_context;
 
   // 6. Metadata keywords
   OptionalItem<std::string> m_description;
   OptionalItem<std::string> m_title;
-  std::auto_ptr<const JsonValue> m_default_value;
-  std::auto_ptr<JsonValueContext> m_default_value_context;
+  std::unique_ptr<const JsonValue> m_default_value;
+  std::unique_ptr<JsonValueContext> m_default_value_context;
 
   OptionalItem<std::string> m_ref_schema;
 
   // TODO(simon): Implement format support?
   OptionalItem<std::string> m_format;
 
-  std::auto_ptr<DefinitionsParseContext> m_definitions_context;
-  std::auto_ptr<PropertiesParseContext> m_properties_context;
+  std::unique_ptr<DefinitionsParseContext> m_definitions_context;
+  std::unique_ptr<PropertiesParseContext> m_properties_context;
   OptionalItem<bool> m_additional_properties;
-  std::auto_ptr<SchemaParseContext> m_additional_properties_context;
+  std::unique_ptr<SchemaParseContext> m_additional_properties_context;
 
   void ProcessPositiveInt(SchemaErrorLogger *logger, uint64_t value);
 
@@ -446,7 +446,7 @@ class ArrayOfJsonValuesContext : public SchemaParseContextInterface {
 
  private:
   std::vector<const JsonValue*> m_enums;
-  std::auto_ptr<JsonValueContext> m_value_context;
+  std::unique_ptr<JsonValueContext> m_value_context;
 
   void CheckForDuplicateAndAdd(SchemaErrorLogger *logger,
                                const JsonValue *value);
@@ -482,8 +482,8 @@ class DependencyParseContext : public StrictTypedParseContext {
 
   SchemaDefinitions *m_schema_defs;
 
-  std::auto_ptr<ArrayOfStringsContext> m_property_context;
-  std::auto_ptr<SchemaParseContext> m_schema_context;
+  std::unique_ptr<ArrayOfStringsContext> m_property_context;
+  std::unique_ptr<SchemaParseContext> m_schema_context;
 
   PropertyDependencies m_property_dependencies;
   SchemaDependencies m_schema_dependencies;

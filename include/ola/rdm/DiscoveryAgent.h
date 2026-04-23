@@ -202,13 +202,13 @@ class DiscoveryAgent {
   // uids to mute during incremental discovery
   std::queue<UID> m_uids_to_mute;
   // Callbacks used by the DiscoveryTarget
-  std::auto_ptr<DiscoveryTargetInterface::UnMuteDeviceCallback>
+  std::unique_ptr<DiscoveryTargetInterface::UnMuteDeviceCallback>
       m_unmute_callback;
-  std::auto_ptr<DiscoveryTargetInterface::MuteDeviceCallback>
+  std::unique_ptr<DiscoveryTargetInterface::MuteDeviceCallback>
       m_incremental_mute_callback;
-  std::auto_ptr<DiscoveryTargetInterface::MuteDeviceCallback>
+  std::unique_ptr<DiscoveryTargetInterface::MuteDeviceCallback>
       m_branch_mute_callback;
-  std::auto_ptr<DiscoveryTargetInterface::BranchCallback> m_branch_callback;
+  std::unique_ptr<DiscoveryTargetInterface::BranchCallback> m_branch_callback;
 
   // The stack of UIDRanges
   UIDRanges m_uid_ranges;

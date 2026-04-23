@@ -48,7 +48,7 @@ class RenardDevice: public ola::Device {
     void PrePortStop();
 
  private:
-    std::auto_ptr<class RenardWidget> m_widget;
+    std::unique_ptr<class RenardWidget> m_widget;
     const std::string m_dev_path;
     class Preferences *m_preferences;
 

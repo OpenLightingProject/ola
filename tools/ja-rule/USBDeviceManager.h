@@ -110,8 +110,8 @@ class USBDeviceManager {
   typedef std::map<ola::usb::USBDeviceID, ola::usb::JaRuleWidget*> WidgetMap;
 
   ola::io::SelectServer* m_ss;
-  std::auto_ptr<NotificationCallback> const m_notification_cb;
-  std::auto_ptr<ola::usb::HotplugAgent> m_hotplug_agent;
+  std::unique_ptr<NotificationCallback> const m_notification_cb;
+  std::unique_ptr<ola::usb::HotplugAgent> m_hotplug_agent;
   ola::thread::ExecutorThread m_cleanup_thread;
   ola::thread::ThreadId m_start_thread_id;
   bool m_in_start;

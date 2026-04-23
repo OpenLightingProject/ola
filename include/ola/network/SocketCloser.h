@@ -44,7 +44,7 @@ namespace network {
  * @brief Automatically close a socket when it goes out of scope.
  *
  * This class is useful if you need to temporarily open a socket and want to
- * make sure it's cleaned up. Think of it as an auto_ptr for file descriptors.
+ * make sure it's cleaned up. Think of it as an unique_ptr for file descriptors.
  */
 class SocketCloser {
  public:

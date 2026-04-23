@@ -50,7 +50,7 @@ class StageProfiPlugin: public Plugin {
   typedef std::map<std::string, StageProfiDevice*> DeviceMap;
 
   DeviceMap m_devices;
-  std::auto_ptr<class StageProfiDetector> m_detector;
+  std::unique_ptr<class StageProfiDetector> m_detector;
 
   bool StartHook();
   bool StopHook();
