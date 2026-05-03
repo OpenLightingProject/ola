@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <string>
 #include "ola/Callback.h"

@@ -248,8 +248,9 @@ bool PathportNode::SendArpReply() {
   PopulateHeader(&packet.header, PATHPORT_STATUS_GROUP);
 
   pathport_packet_pdu *pdu = &packet.d.pdu;
-  pdu->head.type = HostToNetwork((uint16_t) PATHPORT_ARP_REPLY);
-  pdu->head.len = HostToNetwork((uint16_t) sizeof(pathport_pdu_arp_reply));
+  pdu->head.type = HostToNetwork(static_cast<uint16_t>(PATHPORT_ARP_REPLY));
+  pdu->head.len = HostToNetwork(
+      static_cast<uint16_t>(sizeof(pathport_pdu_arp_reply)));
   pdu->d.arp_reply.id = HostToNetwork(m_device_id);
   m_interface.ip_address.Get(pdu->d.arp_reply.ip);
   pdu->d.arp_reply.manufacturer_code = NODE_MANUF_ZP_TECH;
@@ -286,16 +287,17 @@ bool PathportNode::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
   PopulateHeader(&packet.header, PATHPORT_DATA_GROUP);
 
   pathport_packet_pdu *pdu = &packet.d.pdu;
-  pdu->head.type = HostToNetwork((uint16_t) PATHPORT_DATA);
+  pdu->head.type = HostToNetwork(static_cast<uint16_t>(PATHPORT_DATA));
   pdu->head.len = HostToNetwork(
-      (uint16_t) (padded_size + sizeof(pathport_pdu_data)));
+      static_cast<uint16_t>(padded_size + sizeof(pathport_pdu_data)));
 
-  pdu->d.data.type = HostToNetwork((uint16_t) XDMX_DATA_FLAT);
-  pdu->d.data.channel_count = HostToNetwork((uint16_t) buffer.Size());
+  pdu->d.data.type = HostToNetwork(static_cast<uint16_t>(XDMX_DATA_FLAT));
+  pdu->d.data.channel_count = HostToNetwork(
+      static_cast<uint16_t>(buffer.Size()));
   pdu->d.data.universe = 0;
   pdu->d.data.start_code = 0;
   pdu->d.data.offset = HostToNetwork(
-      (uint16_t) (DMX_UNIVERSE_SIZE * universe));
+      static_cast<uint16_t>(DMX_UNIVERSE_SIZE * universe));
 
   unsigned int length = padded_size;
   buffer.Get(pdu->d.data.data, &length);
@@ -404,7 +406,7 @@ void PathportNode::HandleDmxData(const pathport_pdu_data &packet,
   const uint8_t *dmx_data = packet.data;
   unsigned int data_size = std::min(
       NetworkToHost(packet.channel_count),
-      (uint16_t) (size - sizeof(pathport_pdu_data)));
+      static_cast<uint16_t>(size - sizeof(pathport_pdu_data)));
 
   while (data_size > 0 && universe <= MAX_UNIVERSES) {
     unsigned int channels_for_this_universe =
@@ -435,7 +437,8 @@ bool PathportNode::SendArpRequest(uint32_t destination) {
 
   pathport_packet_s packet;
   PopulateHeader(&packet.header, destination);
-  packet.d.pdu.head.type = HostToNetwork((uint16_t) PATHPORT_ARP_REQUEST);
+  packet.d.pdu.head.type = HostToNetwork(
+      static_cast<uint16_t>(PATHPORT_ARP_REQUEST));
   packet.d.pdu.head.len = 0;
 
   unsigned int length = sizeof(pathport_packet_header) +

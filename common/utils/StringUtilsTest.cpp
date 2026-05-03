@@ -348,9 +348,12 @@ void StringUtilsTest::testIntToHexString() {
 
   OLA_ASSERT_EQ(string("0x01"), IntToHexString((uint8_t)1));
   OLA_ASSERT_EQ(string("0x42"), IntToHexString((uint8_t)0x42));
-  OLA_ASSERT_EQ(string("0x0001"), IntToHexString((uint16_t)0x0001));
-  OLA_ASSERT_EQ(string("0xabcd"), IntToHexString((uint16_t)0xABCD));
-  OLA_ASSERT_EQ(string("0xdeadbeef"), IntToHexString((uint32_t)0xDEADBEEF));
+  OLA_ASSERT_EQ(string("0x0001"),
+                IntToHexString(static_cast<uint16_t>(0x0001)));
+  OLA_ASSERT_EQ(string("0xabcd"),
+                IntToHexString(static_cast<uint16_t>(0xABCD)));
+  OLA_ASSERT_EQ(string("0xdeadbeef"),
+                IntToHexString(static_cast<uint32_t>(0xDEADBEEF)));
   // Deliberately no IntToHexString(uint64_t) or test as its deprecated
 
   unsigned int i = 0x42;
@@ -370,19 +373,19 @@ void StringUtilsTest::testIntToHexString() {
   OLA_ASSERT_EQ(string("0x42"), str.str());
   str.str("");
 
-  str << ToHex((uint16_t)0x0001);
+  str << ToHex(static_cast<uint16_t>(0x0001));
   OLA_ASSERT_EQ(string("0x0001"), str.str());
   str.str("");
 
-  str << ToHex((uint16_t)0xABCD);
+  str << ToHex(static_cast<uint16_t>(0xABCD));
   OLA_ASSERT_EQ(string("0xabcd"), str.str());
   str.str("");
 
-  str << ToHex((uint32_t)0xDEADBEEF);
+  str << ToHex(static_cast<uint32_t>(0xDEADBEEF));
   OLA_ASSERT_EQ(string("0xdeadbeef"), str.str());
   str.str("");
 
-  str << ToHex((uint64_t)0xDEADBEEFFEEDFACE);
+  str << ToHex(static_cast<uint64_t>(0xDEADBEEFFEEDFACE));
   OLA_ASSERT_EQ(string("0xdeadbeeffeedface"), str.str());
   str.str("");
 
@@ -395,7 +398,7 @@ void StringUtilsTest::testIntToHexString() {
   OLA_ASSERT_EQ(string("42"), str.str());
   str.str("");
 
-  str << ToHex((uint16_t)0xABCD, false);
+  str << ToHex(static_cast<uint16_t>(0xABCD), false);
   OLA_ASSERT_EQ(string("abcd"), str.str());
   str.str("");
 }
@@ -578,8 +581,9 @@ void StringUtilsTest::testStringToUIntOrDefault() {
   OLA_ASSERT_EQ(1u, StringToIntOrDefault("1", 42u));
   OLA_ASSERT_EQ(65537u, StringToIntOrDefault("65537", 42u));
   OLA_ASSERT_EQ(4294967295U, StringToIntOrDefault("4294967295", 42U));
-  OLA_ASSERT_EQ((uint64_t) 77000000000,
-                StringToIntOrDefault("77000000000", (uint64_t) 42));
+  OLA_ASSERT_EQ(
+      static_cast<uint64_t>(77000000000),
+      StringToIntOrDefault("77000000000", static_cast<uint64_t>(42)));
   OLA_ASSERT_EQ(42u, StringToIntOrDefault("4294967296", 42u));
   OLA_ASSERT_EQ(42u, StringToIntOrDefault("foo", 42u));
 

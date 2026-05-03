@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <iostream>
 #include <string>
 #include <vector>
 #include "ola/acn/CID.h"

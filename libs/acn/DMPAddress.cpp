@@ -46,10 +46,11 @@ unsigned int DMPSizeToByteSize(dmp_address_size size) {
  * Create a new single address
  */
 const BaseDMPAddress *NewSingleAddress(unsigned int value) {
-  if (value > MAX_TWO_BYTE)
+  if (value > MAX_TWO_BYTE) {
     return new FourByteDMPAddress(value);
-  else if (value > MAX_ONE_BYTE)
-    return new TwoByteDMPAddress((uint16_t) value);
+  } else if (value > MAX_ONE_BYTE) {
+    return new TwoByteDMPAddress(static_cast<uint16_t>(value));
+  }
   return new OneByteDMPAddress((uint8_t) value);
 }
 
@@ -61,13 +62,14 @@ const BaseDMPAddress *NewRangeAddress(unsigned int value,
                                       unsigned int increment,
                                       unsigned int number) {
   if (value > MAX_TWO_BYTE || increment > MAX_TWO_BYTE ||
-      number > MAX_TWO_BYTE)
+      number > MAX_TWO_BYTE) {
     return new FourByteRangeDMPAddress(value, increment, number);
-  else if (value > MAX_ONE_BYTE || increment > MAX_ONE_BYTE ||
-           number > MAX_ONE_BYTE)
-    return new TwoByteRangeDMPAddress((uint16_t) value,
-                                      (uint16_t) increment,
-                                      (uint16_t) number);
+  } else if (value > MAX_ONE_BYTE || increment > MAX_ONE_BYTE ||
+             number > MAX_ONE_BYTE) {
+    return new TwoByteRangeDMPAddress(static_cast<uint16_t>(value),
+                                      static_cast<uint16_t>(increment),
+                                      static_cast<uint16_t>(number));
+  }
   return new OneByteRangeDMPAddress((uint8_t) value,
                                     (uint8_t) increment,
                                     (uint8_t) number);

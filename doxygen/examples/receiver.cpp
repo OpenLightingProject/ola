@@ -19,6 +19,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/client/ClientWrapper.h>
+#include <iostream>
 #include <string>
 
 static const unsigned int UNIVERSE = 1;
