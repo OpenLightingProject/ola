@@ -118,7 +118,7 @@ jobs:
           echo "Debian Build Version: $OLA_DEBIAN_BUILD_VERSION"
         id: generate-build-name
       - name: Download build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ola-built-debian-${{ matrix.image_tag }}-${{ steps.generate-build-name.outputs.OLA_DEBIAN_BUILD_VERSION }}_${{ matrix.architecture }}
           path: built
