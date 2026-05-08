@@ -32,7 +32,7 @@
 using ola::io::IOQueue;
 using ola::io::BigEndianOutputStream;
 using ola::network::HostToNetwork;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 

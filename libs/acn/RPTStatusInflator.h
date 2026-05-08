@@ -65,7 +65,7 @@ class RPTStatusInflator: public BaseInflator {
                              unsigned int pdu_len);
 
  private:
-  std::auto_ptr<RPTStatusHandler> m_rpt_status_handler;
+  std::unique_ptr<RPTStatusHandler> m_rpt_status_handler;
 };
 }  // namespace acn
 }  // namespace ola

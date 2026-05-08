@@ -42,7 +42,7 @@ using ola::rdm::PidDescriptor;
 using ola::rdm::PidStore;
 using ola::rdm::PidStoreLoader;
 using ola::rdm::RootPidStore;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::endl;
 using std::string;
 using std::stringstream;
@@ -223,7 +223,7 @@ void PidStoreTest::testPidStoreLoad() {
          "}" << endl <<
          "version: 1" << endl;
 
-  auto_ptr<const RootPidStore> root_store(loader.LoadFromStream(&str));
+  unique_ptr<const RootPidStore> root_store(loader.LoadFromStream(&str));
   OLA_ASSERT_TRUE(root_store.get());
 
   // check version
@@ -325,7 +325,7 @@ void PidStoreTest::testPidStoreLoad() {
 void PidStoreTest::testPidStoreFileLoad() {
   PidStoreLoader loader;
 
-  auto_ptr<const RootPidStore> root_store(
+  unique_ptr<const RootPidStore> root_store(
       loader.LoadFromFile(GetTestDataFile("test_pids.proto")));
   OLA_ASSERT_NOT_NULL(root_store.get());
   // check version
@@ -397,7 +397,7 @@ void PidStoreTest::testPidStoreFileLoad() {
 void PidStoreTest::testPidStoreDirectoryLoad() {
   PidStoreLoader loader;
 
-  auto_ptr<const RootPidStore> root_store(loader.LoadFromDirectory(
+  unique_ptr<const RootPidStore> root_store(loader.LoadFromDirectory(
       GetTestDataFile("pids")));
   OLA_ASSERT_NOT_NULL(root_store.get());
   // check version

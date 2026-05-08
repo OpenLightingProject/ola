@@ -122,7 +122,7 @@ class RpcServer {
   const Options m_options;
 
   ola::network::TCPSocketFactory m_tcp_socket_factory;
-  std::auto_ptr<ola::network::TCPAcceptingSocket> m_accepting_socket;
+  std::unique_ptr<ola::network::TCPAcceptingSocket> m_accepting_socket;
   ClientDescriptors m_connected_sockets;
 
   void NewTCPConnection(ola::network::TCPSocket *socket);

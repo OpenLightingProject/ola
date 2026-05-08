@@ -32,7 +32,7 @@
 using ola::io::ConnectedDescriptor;
 using ola::plugin::usbpro::UsbProWidgetInformation;
 using ola::plugin::usbpro::UsbProWidgetDetector;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 class UsbProWidgetDetectorTest: public CommonWidgetTest {
@@ -52,7 +52,7 @@ class UsbProWidgetDetectorTest: public CommonWidgetTest {
   void testSniffer();
 
  private:
-  auto_ptr<UsbProWidgetDetector> m_detector;
+  unique_ptr<UsbProWidgetDetector> m_detector;
   UsbProWidgetInformation m_device_info;
   bool m_found_widget;
   bool m_failed_widget;

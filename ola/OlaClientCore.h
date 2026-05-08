@@ -324,9 +324,9 @@ class OlaClientCore: public ola::proto::OlaClientService {
 
  private:
   ola::io::ConnectedDescriptor *m_descriptor;
-  std::auto_ptr<RepeatableDMXCallback> m_dmx_callback;
-  std::auto_ptr<ola::rpc::RpcChannel> m_channel;
-  std::auto_ptr<ola::proto::OlaServerService_Stub> m_stub;
+  std::unique_ptr<RepeatableDMXCallback> m_dmx_callback;
+  std::unique_ptr<ola::rpc::RpcChannel> m_channel;
+  std::unique_ptr<ola::proto::OlaServerService_Stub> m_stub;
   int m_connected;
 
   void ChannelClosed(ClosedCallback *callback, ola::rpc::RpcSession *session);

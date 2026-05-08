@@ -54,7 +54,7 @@ class DimmerResponder: public RDMControllerInterface {
 
  private:
   SubDeviceDispatcher m_dispatcher;
-  std::auto_ptr<DimmerRootDevice> m_root_device;
+  std::unique_ptr<DimmerRootDevice> m_root_device;
   std::map<uint16_t, class DimmerSubDevice*> m_sub_devices;
 };
 }  // namespace rdm

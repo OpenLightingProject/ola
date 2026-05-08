@@ -51,7 +51,7 @@ using ola::network::IPV4SocketAddress;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -144,7 +144,7 @@ bool SimpleE133Monitor::EndpointRequest(
     raw_request.data());
 
   cout << "From " << source << ":" << endpoint << endl;
-  auto_ptr<RDMCommand> command(
+  unique_ptr<RDMCommand> command(
       RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(raw_request.data()),
                           raw_request.size()));
   if (command.get()) {

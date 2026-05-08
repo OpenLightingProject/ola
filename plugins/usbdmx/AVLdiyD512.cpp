@@ -100,7 +100,7 @@ bool SynchronousAVLdiyD512::Init() {
     return false;
   }
 
-  std::auto_ptr<AVLdiyThreadedSender> sender(
+  std::unique_ptr<AVLdiyThreadedSender> sender(
       new AVLdiyThreadedSender(m_adaptor, m_usb_device, usb_handle));
   if (!sender->Start()) {
     return false;

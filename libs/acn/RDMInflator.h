@@ -70,8 +70,8 @@ class RDMInflator: public BaseInflator {
                              unsigned int pdu_len);
 
  private:
-  std::auto_ptr<RDMMessageHandler> m_rdm_handler;
-  std::auto_ptr<GenericRDMMessageHandler> m_generic_rdm_handler;
+  std::unique_ptr<RDMMessageHandler> m_rdm_handler;
+  std::unique_ptr<GenericRDMMessageHandler> m_generic_rdm_handler;
   unsigned int m_vector;
 };
 }  // namespace acn

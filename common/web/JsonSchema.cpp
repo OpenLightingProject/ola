@@ -35,7 +35,7 @@
 namespace ola {
 namespace web {
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::set;
 using std::string;
 using std::vector;
@@ -491,7 +491,7 @@ void ArrayValidator::Visit(const JsonArray &array) {
   }
 
 
-  auto_ptr<ArrayElementValidator> element_validator(
+  unique_ptr<ArrayElementValidator> element_validator(
       ConstructElementValidator());
 
   for (unsigned int i = 0; i < array.Size(); i++) {

@@ -91,7 +91,7 @@ class BrokerConnectReplyInflator: public BaseInflator {
                                unsigned int len);
 
  private:
-  std::auto_ptr<BrokerConnectReplyHandler> m_broker_connect_reply_handler;
+  std::unique_ptr<BrokerConnectReplyHandler> m_broker_connect_reply_handler;
 };
 }  // namespace acn
 }  // namespace ola

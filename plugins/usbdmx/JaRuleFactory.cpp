@@ -50,7 +50,7 @@ bool JaRuleFactory::DeviceAdded(
   }
 
   OLA_INFO << "Found a new Ja Rule device";
-  std::auto_ptr<ola::usb::JaRuleWidget> widget(
+  std::unique_ptr<ola::usb::JaRuleWidget> widget(
       new ola::usb::JaRuleWidget(m_ss, m_adaptor, usb_device));
   return AddWidget(observer, widget.release());
 }

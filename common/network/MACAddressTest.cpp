@@ -30,7 +30,7 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::network::MACAddress;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -76,17 +76,17 @@ void MACAddressTest::testMACAddress() {
   OLA_ASSERT_EQ(string("01:23:45:67:89:ab"), str.str());
 
   // test from string
-  auto_ptr<MACAddress> string_address(
+  unique_ptr<MACAddress> string_address(
       MACAddress::FromString("fe:dc:ba:98:76:54"));
   OLA_ASSERT_NOT_NULL(string_address.get());
   OLA_ASSERT_EQ(string("fe:dc:ba:98:76:54"), string_address->ToString());
 
-  auto_ptr<MACAddress> string_address2(
+  unique_ptr<MACAddress> string_address2(
       MACAddress::FromString("98.76.54.fe.dc.ba"));
   OLA_ASSERT_NOT_NULL(string_address2.get());
   OLA_ASSERT_EQ(string("98:76:54:fe:dc:ba"), string_address2->ToString());
 
-  auto_ptr<MACAddress> string_address3(MACAddress::FromString("foo"));
+  unique_ptr<MACAddress> string_address3(MACAddress::FromString("foo"));
   OLA_ASSERT_NULL(string_address3.get());
 
   // and the second form

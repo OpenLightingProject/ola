@@ -97,7 +97,7 @@ void RootSenderTest::testRootSenderWithCustomCID() {
 
 void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
                                             const CID &send_cid) {
-  std::auto_ptr<Callback0<void> > stop_closure(
+  std::unique_ptr<Callback0<void> > stop_closure(
       NewCallback(this, &RootSenderTest::Stop));
 
   // inflators

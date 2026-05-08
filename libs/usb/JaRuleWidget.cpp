@@ -43,7 +43,7 @@ namespace usb {
 
 using ola::io::ByteString;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 namespace {
@@ -226,7 +226,7 @@ bool JaRuleWidget::InternalInit() {
     return false;
   }
 
-  auto_ptr<UID> uid(UID::FromString(device_info.serial));
+  unique_ptr<UID> uid(UID::FromString(device_info.serial));
   if (!uid.get() || uid->IsBroadcast()) {
     OLA_WARN << "Invalid JaRule serial number: " << device_info.serial;
     return false;

@@ -46,7 +46,7 @@ using ola::rdm::DummyResponder;
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::map;
 using std::ostringstream;
 using std::string;
@@ -61,7 +61,7 @@ void AddResponders(map<UID, ola::rdm::RDMControllerInterface*> *responders,
                    ola::rdm::UIDAllocator *uid_allocator,
                    unsigned int count) {
   for (unsigned int i = 0; i < count; i++) {
-    auto_ptr<UID> uid(uid_allocator->AllocateNext());
+    unique_ptr<UID> uid(uid_allocator->AllocateNext());
     if (!uid.get()) {
       OLA_WARN << "Insufficient UIDs to create Dummy RDM devices";
       break;
@@ -83,7 +83,7 @@ DummyPort::DummyPort(DummyDevice *parent,
   // This can't be done via AddResponders as we need to also tell it how many
   // sub devices to add
   for (unsigned int i = 0; i < options.number_of_dimmers; i++) {
-    auto_ptr<UID> uid(allocator.AllocateNext());
+    unique_ptr<UID> uid(allocator.AllocateNext());
     if (!uid.get()) {
       OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
       break;
@@ -130,7 +130,7 @@ void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
 
 void DummyPort::SendRDMRequest(ola::rdm::RDMRequest *request_ptr,
                                ola::rdm::RDMCallback *callback) {
-  auto_ptr<ola::rdm::RDMRequest> request(request_ptr);
+  unique_ptr<ola::rdm::RDMRequest> request(request_ptr);
 
   UID dest = request->DestinationUID();
   if (dest.IsBroadcast()) {

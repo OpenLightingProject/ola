@@ -34,7 +34,7 @@
 
 using ola::network::IPV6Address;
 using ola::network::HostToNetwork;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -106,12 +106,12 @@ void IPV6AddressTest::testIPV6Address() {
   OLA_ASSERT_EQ(string("::ffff:192.168.1.1"), str.str());
 
   // test from string
-  auto_ptr<IPV6Address> string_address(
+  unique_ptr<IPV6Address> string_address(
       IPV6Address::FromString("::ffff:10.0.0.1"));
   OLA_ASSERT_NOT_NULL(string_address.get());
   OLA_ASSERT_EQ(string("::ffff:10.0.0.1"), string_address->ToString());
 
-  auto_ptr<IPV6Address> string_address2(IPV6Address::FromString("foo"));
+  unique_ptr<IPV6Address> string_address2(IPV6Address::FromString("foo"));
   OLA_ASSERT_NULL(string_address2.get());
 
   // and the second form

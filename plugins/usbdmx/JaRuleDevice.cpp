@@ -33,7 +33,7 @@ namespace plugin {
 namespace usbdmx {
 
 using std::set;
-using std::auto_ptr;
+using std::unique_ptr;
 
 JaRuleDevice::JaRuleDevice(ola::AbstractPlugin *owner,
                            ola::usb::JaRuleWidget *widget,
@@ -45,7 +45,7 @@ JaRuleDevice::JaRuleDevice(ola::AbstractPlugin *owner,
 
 bool JaRuleDevice::StartHook() {
   for (uint8_t i = 0; i < m_widget->PortCount(); i++) {
-    auto_ptr<JaRuleOutputPort> port(new JaRuleOutputPort(this, i, m_widget));
+    unique_ptr<JaRuleOutputPort> port(new JaRuleOutputPort(this, i, m_widget));
 
     if (!port->Init()) {
       continue;

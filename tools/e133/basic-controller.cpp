@@ -66,7 +66,7 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
 using ola::acn::IncomingTCPTransport;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 class SimpleE133Controller *controller = NULL;
@@ -77,19 +77,19 @@ class SimpleE133Controller *controller = NULL;
 class DeviceState {
  public:
   DeviceState()
-    : socket(NULL),
-      message_queue(NULL),
-      health_checked_connection(NULL),
-      in_transport(NULL) {
+    : socket(nullptr),
+      message_queue(nullptr),
+      health_checked_connection(nullptr),
+      in_transport(nullptr) {
   }
 
   // The following may be NULL.
   // The socket connected to the E1.33 device
-  auto_ptr<TCPSocket> socket;
-  auto_ptr<NonBlockingSender> message_queue;
+  unique_ptr<TCPSocket> socket;
+  unique_ptr<NonBlockingSender> message_queue;
   // The Health Checked connection
-  auto_ptr<E133HealthCheckedConnection> health_checked_connection;
-  auto_ptr<IncomingTCPTransport> in_transport;
+  unique_ptr<E133HealthCheckedConnection> health_checked_connection;
+  unique_ptr<IncomingTCPTransport> in_transport;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceState);
@@ -187,7 +187,7 @@ bool SimpleE133Controller::PrintStats() {
 }
 
 void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
-  auto_ptr<TCPSocket> socket(socket_ptr);
+  unique_ptr<TCPSocket> socket(socket_ptr);
 
   GenericSocketAddress generic_peer = socket->GetPeerAddress();
   if (generic_peer.Family() != AF_INET) {
@@ -198,7 +198,7 @@ void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
 
   // OLA_INFO << "Received new TCP connection from: " << peer;
 
-  auto_ptr<DeviceState> device_state(new DeviceState());
+  unique_ptr<DeviceState> device_state(new DeviceState());
   device_state->in_transport.reset(
       new IncomingTCPTransport(&m_root_inflator, socket.get()));
 
@@ -211,7 +211,7 @@ void SimpleE133Controller::OnTCPConnect(TCPSocket *socket_ptr) {
   device_state->message_queue.reset(
       new NonBlockingSender(socket.get(), &m_ss, m_message_builder.pool()));
 
-  auto_ptr<E133HealthCheckedConnection> health_checked_connection(
+  unique_ptr<E133HealthCheckedConnection> health_checked_connection(
       new E133HealthCheckedConnection(
           &m_message_builder,
           device_state->message_queue.get(),
@@ -281,7 +281,7 @@ void SimpleE133Controller::SocketUnhealthy(IPV4SocketAddress peer) {
 void SimpleE133Controller::SocketClosed(IPV4SocketAddress peer) {
   OLA_INFO << "Connection to " << peer << " was closed";
 
-  auto_ptr<DeviceState> device(ola::STLLookupAndRemovePtr(&m_device_map, peer));
+  unique_ptr<DeviceState> device(ola::STLLookupAndRemovePtr(&m_device_map, peer));
 
   if (!device.get()) {
     OLA_WARN << "Can't find device entry";

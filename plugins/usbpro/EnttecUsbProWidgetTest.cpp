@@ -49,7 +49,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 using ola::plugin::usbpro::usb_pro_parameters;
@@ -82,7 +82,7 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
     void testBranch();
 
  private:
-    auto_ptr<EnttecUsbProWidget> m_widget;
+    unique_ptr<EnttecUsbProWidget> m_widget;
     uint8_t m_transaction_number;
     ola::rdm::RDMStatusCode m_received_code;
 
@@ -217,7 +217,7 @@ void EnttecUsbProWidgetTest::ValidateResponse(RDMReply *reply) {
   const RDMFrames &frames = reply->Frames();
   OLA_ASSERT_EQ((size_t) 1, frames.size());
   ola::rdm::RDMStatusCode raw_code;
-  auto_ptr<ola::rdm::RDMResponse> raw_response(
+  unique_ptr<ola::rdm::RDMResponse> raw_response(
     ola::rdm::RDMResponse::InflateFromData(frames[0].data.data() + 1,
                                            frames[0].data.size() - 1,
                                            &raw_code));
@@ -489,7 +489,7 @@ void EnttecUsbProWidgetTest::testSendRDMRequest() {
       &expected_request_frame_size);
 
   // response
-  auto_ptr<const RDMResponse> response(
+  unique_ptr<const RDMResponse> response(
     GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
   unsigned int response_size;
   uint8_t *response_frame = PackRDMResponse(response.get(), &response_size);
@@ -569,7 +569,7 @@ void EnttecUsbProWidgetTest::testSendRDMMute() {
 
   // response
   // to keep things simple here we return the TEST_RDM_DATA.
-  auto_ptr<const RDMResponse> response(
+  unique_ptr<const RDMResponse> response(
     GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
   unsigned int response_size;
   uint8_t *response_frame = PackRDMResponse(response.get(), &response_size);
@@ -693,7 +693,7 @@ void EnttecUsbProWidgetTest::testMuteDevice() {
   OLA_ASSERT_NOT_NULL(port);
 
   // first test when a device doesn't respond
-  auto_ptr<RDMRequest> mute_request(
+  unique_ptr<RDMRequest> mute_request(
       ola::rdm::NewMuteRequest(SOURCE,
                                DESTINATION,
                                m_transaction_number++));
@@ -721,7 +721,7 @@ void EnttecUsbProWidgetTest::testMuteDevice() {
   delete[] expected_request_frame;
 
   // now try an actual mute response
-  auto_ptr<RDMRequest> mute_request2(
+  unique_ptr<RDMRequest> mute_request2(
       ola::rdm::NewMuteRequest(SOURCE,
                                DESTINATION,
                                m_transaction_number++));
@@ -763,7 +763,7 @@ void EnttecUsbProWidgetTest::testUnMuteAll() {
   EnttecPort *port = m_widget->GetPort(0);
   OLA_ASSERT_NOT_NULL(port);
 
-  auto_ptr<RDMRequest> unmute_request(
+  unique_ptr<RDMRequest> unmute_request(
       ola::rdm::NewUnMuteRequest(SOURCE,
                                  UID::AllDevices(),
                                  m_transaction_number++));
@@ -797,7 +797,7 @@ void EnttecUsbProWidgetTest::testBranch() {
   OLA_ASSERT_NOT_NULL(port);
 
   // first test when no devices respond
-  auto_ptr<RDMRequest> discovery_request(
+  unique_ptr<RDMRequest> discovery_request(
       ola::rdm::NewDiscoveryUniqueBranchRequest(
           SOURCE,
           UID(0, 0),
@@ -830,7 +830,7 @@ void EnttecUsbProWidgetTest::testBranch() {
 
   // now try an actual response, the data doesn't actually have to be valid
   // because it's just passed straight to the callback.
-  auto_ptr<RDMRequest> discovery_request2(
+  unique_ptr<RDMRequest> discovery_request2(
       ola::rdm::NewDiscoveryUniqueBranchRequest(
           SOURCE,
           UID(0, 0),

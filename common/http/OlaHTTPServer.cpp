@@ -30,7 +30,7 @@ namespace ola {
 namespace http {
 
 using ola::ExportMap;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::ostringstream;
 using std::string;
 using std::vector;
@@ -71,7 +71,7 @@ bool OlaHTTPServer::Init() {
  */
 int OlaHTTPServer::DisplayDebug(const HTTPRequest*,
                                 HTTPResponse *raw_response) {
-  auto_ptr<HTTPResponse> response(raw_response);
+  unique_ptr<HTTPResponse> response(raw_response);
   ola::TimeStamp now;
   m_clock.CurrentMonotonicTime(&now);
   ola::TimeInterval diff = now - m_start_time;
@@ -98,7 +98,7 @@ int OlaHTTPServer::DisplayDebug(const HTTPRequest*,
  */
 int OlaHTTPServer::DisplayHandlers(const HTTPRequest*,
                                    HTTPResponse *raw_response) {
-  auto_ptr<HTTPResponse> response(raw_response);
+  unique_ptr<HTTPResponse> response(raw_response);
   vector<string> handlers;
   m_server.Handlers(&handlers);
   vector<string>::const_iterator iter;

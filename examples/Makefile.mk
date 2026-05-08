@@ -117,15 +117,15 @@ endif
 
 # Many of the example programs are just symlinks to ola_dev_info
 install-exec-hook-examples:
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/$(OLA_PATCH_NAME)
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_plugin_info
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_dmx
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_priority
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_uni_info
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_uni_merge
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_uni_name
-	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_plugin_state
-	$(LN_S) -f $(bindir)/ola_rdm_get $(DESTDIR)$(bindir)/ola_rdm_set
+	$(LN_S) -f ola_dev_info $(DESTDIR)$(bindir)/$(OLA_PATCH_NAME)
+	$(LN_S) -f ola_dev_info $(DESTDIR)$(bindir)/ola_plugin_info
+	$(LN_S) -f ola_dev_info $(DESTDIR)$(bindir)/ola_set_dmx
+	$(LN_S) -f ola_dev_info $(DESTDIR)$(bindir)/ola_set_priority
+	$(LN_S) -f ola_dev_info $(DESTDIR)$(bindir)/ola_uni_info
+	$(LN_S) -f ola_dev_info $(DESTDIR)$(bindir)/ola_uni_merge
+	$(LN_S) -f ola_dev_info $(DESTDIR)$(bindir)/ola_uni_name
+	$(LN_S) -f ola_dev_info $(DESTDIR)$(bindir)/ola_plugin_state
+	$(LN_S) -f ola_rdm_get $(DESTDIR)$(bindir)/ola_rdm_set
 
 INSTALL_EXEC_HOOKS += install-exec-hook-examples
 

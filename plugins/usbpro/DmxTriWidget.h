@@ -100,7 +100,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     // This holds pointers to the RDMRequest and Callback that is queued or in
     // flight.
     ola::rdm::RDMCallback *m_rdm_request_callback;
-    std::auto_ptr<ola::rdm::RDMRequest> m_pending_rdm_request;
+    std::unique_ptr<ola::rdm::RDMRequest> m_pending_rdm_request;
     uint8_t m_transaction_number;
     // The command id that we expect to see in the response.
     uint8_t m_last_command, m_expected_command;

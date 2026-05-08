@@ -59,7 +59,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RunRDMCallback;
 using ola::rdm::UID;
 using ola::strings::ToHex;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::map;
 using std::ostringstream;
 using std::set;
@@ -455,7 +455,7 @@ void Universe::CleanStaleSourceClients() {
  */
 void Universe::SendRDMRequest(RDMRequest *request_ptr,
                               ola::rdm::RDMCallback *callback) {
-  auto_ptr<RDMRequest> request(request_ptr);
+  unique_ptr<RDMRequest> request(request_ptr);
 
   OLA_INFO << "Universe " << UniverseId() << ", RDM request to "
            << request->DestinationUID() << ", SD: " << request->SubDevice()

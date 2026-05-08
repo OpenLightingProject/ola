@@ -41,7 +41,7 @@ namespace plugin {
 namespace stageprofi {
 
 using ola::io::ConnectedDescriptor;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -115,7 +115,7 @@ void StageProfiPlugin::NewWidget(const std::string &widget_path,
     return;
   }
 
-  auto_ptr<StageProfiDevice> device(new StageProfiDevice(
+  unique_ptr<StageProfiDevice> device(new StageProfiDevice(
       this,
       new StageProfiWidget(
           m_plugin_adaptor, descriptor, widget_path,

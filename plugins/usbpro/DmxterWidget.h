@@ -58,7 +58,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
     ola::rdm::UID m_uid;
     ola::rdm::UIDSet m_uids;
     ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
-    std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
+    std::unique_ptr<const ola::rdm::RDMRequest> m_pending_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
     uint8_t m_transaction_number;
 

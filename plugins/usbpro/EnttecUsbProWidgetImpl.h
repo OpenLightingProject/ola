@@ -129,7 +129,7 @@ class EnttecPortImpl
 
   // RX DMX
   DmxBuffer m_input_buffer;
-  std::auto_ptr<ola::Callback0<void> > m_dmx_callback;
+  std::unique_ptr<ola::Callback0<void> > m_dmx_callback;
 
   // widget params
   std::deque<usb_pro_params_callback*> m_outstanding_param_callbacks;
@@ -139,7 +139,7 @@ class EnttecPortImpl
   const ola::rdm::UID m_uid;
   uint8_t m_transaction_number;
   ola::rdm::RDMCallback *m_rdm_request_callback;
-  std::auto_ptr<const ola::rdm::RDMRequest> m_pending_request;
+  std::unique_ptr<const ola::rdm::RDMRequest> m_pending_request;
 
   // RDM Discovery
   MuteDeviceCallback *m_mute_callback;
