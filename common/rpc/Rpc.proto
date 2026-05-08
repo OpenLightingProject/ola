@@ -18,6 +18,8 @@
  * Copyright (C) 2005 Simon Newton
  */
 
+syntax = "proto2";
+
 /*
  * Based on, but not guaranteed to be the same as the specification here:
  * http://protorpc.likbilen.com/Protorpcdocprotobuf.html
