@@ -69,13 +69,13 @@ string ClassName(const Descriptor* descriptor, bool qualified) {
   const Descriptor* outer = descriptor;
   while (outer->containing_type() != NULL) outer = outer->containing_type();
 
-  const string& outer_name = outer->full_name();
-  string inner_name = descriptor->full_name().substr(outer_name.size());
+  const string& outer_name = string(outer->full_name());
+  string inner_name = string(descriptor->full_name()).substr(outer_name.size());
 
   if (qualified) {
     return "::" + DotsToColons(outer_name) + DotsToUnderscores(inner_name);
   } else {
-    return outer->name() + DotsToUnderscores(inner_name);
+    return string(outer->name()) + DotsToUnderscores(inner_name);
   }
 }
 
