@@ -198,8 +198,8 @@ class SelectServer: public SelectServerInterface {
   ExportMap *m_export_map;
   bool m_terminate, m_is_running;
   TimeInterval m_poll_interval;
-  std::auto_ptr<class TimeoutManager> m_timeout_manager;
-  std::auto_ptr<class PollerInterface> m_poller;
+  std::unique_ptr<class TimeoutManager> m_timeout_manager;
+  std::unique_ptr<class PollerInterface> m_poller;
 
   Clock *m_clock;
   bool m_free_clock;

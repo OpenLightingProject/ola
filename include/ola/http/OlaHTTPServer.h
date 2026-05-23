@@ -26,6 +26,7 @@
 #include <ola/ExportMap.h>
 #include <ola/base/Macro.h>
 #include <ola/http/HTTPServer.h>
+#include <memory>
 #include <string>
 
 namespace ola {

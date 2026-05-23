@@ -69,7 +69,7 @@ class ShowNetNodeTest: public CppUnit::TestFixture {
     void SendAndReceiveForUniverse(unsigned int universe);
  private:
     int m_handler_called;
-    std::auto_ptr<ShowNetNode> m_node;
+    std::unique_ptr<ShowNetNode> m_node;
 
     static const uint8_t EXPECTED_PACKET[];
     static const uint8_t EXPECTED_PACKET2[];

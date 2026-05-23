@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/io/ByteString.h"
 #include "ola/Constants.h"
@@ -40,7 +41,7 @@ using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMReply;
 using ola::rdm::RDMRequest;
 using ola::rdm::RunRDMCallback;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::ostringstream;
 using std::string;
 using std::vector;
@@ -99,7 +100,7 @@ void ArduinoWidgetImpl::Stop() {
  */
 void ArduinoWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
                                        ola::rdm::RDMCallback *on_complete) {
-  auto_ptr<RDMRequest> request(request_ptr);
+  unique_ptr<RDMRequest> request(request_ptr);
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND) {
     RunRDMCallback(on_complete, ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED);
     return;
@@ -122,7 +123,7 @@ void ArduinoWidgetImpl::SendRDMRequest(RDMRequest *request_ptr,
   }
 
   m_rdm_request_callback = on_complete;
-  m_pending_request.reset(request.release());
+  m_pending_request = std::move(request);
   if (SendMessage(RDM_REQUEST_LABEL, data.data(), data.size())) {
     return;
   }
@@ -160,8 +161,8 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
 
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
-  std::auto_ptr<const ola::rdm::RDMRequest> request(
-      m_pending_request.release());
+  std::unique_ptr<const ola::rdm::RDMRequest> request(
+       std::move(m_pending_request));
 
   if (length == 0) {
     // invalid response
@@ -210,7 +211,7 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
   }
 
   rdm::RDMFrame frame(data + 1, length - 1);
-  auto_ptr<RDMReply> reply(RDMReply::FromFrame(frame, request.get()));
+  unique_ptr<RDMReply> reply(RDMReply::FromFrame(frame, request.get()));
   callback->Run(reply.get());
 }
 

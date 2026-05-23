@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/base/Array.h"
@@ -266,12 +267,12 @@ bool SynchronousScanlimeFadecandy::Init() {
     return false;
   }
 
-  std::auto_ptr<FadecandyThreadedSender> sender(
+  std::unique_ptr<FadecandyThreadedSender> sender(
       new FadecandyThreadedSender(m_adaptor, m_usb_device, usb_handle));
   if (!sender->Start()) {
     return false;
   }
-  m_sender.reset(sender.release());
+  m_sender = std::move(sender);
   return true;
 }
 

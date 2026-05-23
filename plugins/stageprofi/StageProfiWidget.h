@@ -68,7 +68,7 @@ class StageProfiWidget {
   enum { DMX_HEADER_SIZE = 4};
 
   ola::io::SelectServerInterface *m_ss;
-  std::auto_ptr<ola::io::ConnectedDescriptor> m_descriptor;
+  std::unique_ptr<ola::io::ConnectedDescriptor> m_descriptor;
   const std::string m_widget_path;
   DisconnectCallback *m_disconnect_cb;
   ola::thread::timeout_id m_timeout_id;

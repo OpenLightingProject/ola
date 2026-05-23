@@ -96,7 +96,7 @@ class SynchronousEurolitePro: public EurolitePro {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class EuroliteProThreadedSender> m_sender;
+  std::unique_ptr<class EuroliteProThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousEurolitePro);
 };
@@ -123,7 +123,7 @@ class AsynchronousEurolitePro: public EurolitePro {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class EuroliteProAsyncUsbSender> m_sender;
+  std::unique_ptr<class EuroliteProAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousEurolitePro);
 };

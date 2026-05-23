@@ -46,7 +46,7 @@ using ola::rdm::RDMResponse;
 using ola::rdm::ResponderHelper;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::vector;
 
 ManagementEndpoint::RDMOps *ManagementEndpoint::RDMOps::instance = NULL;

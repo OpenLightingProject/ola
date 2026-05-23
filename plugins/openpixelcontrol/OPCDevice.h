@@ -61,7 +61,7 @@ class OPCServerDevice: public ola::Device {
   PluginAdaptor* const m_plugin_adaptor;
   Preferences* const m_preferences;
   const ola::network::IPV4SocketAddress m_listen_addr;
-  std::auto_ptr<class OPCServer> m_server;
+  std::unique_ptr<class OPCServer> m_server;
 
   DISALLOW_COPY_AND_ASSIGN(OPCServerDevice);
 };
@@ -91,7 +91,7 @@ class OPCClientDevice: public ola::Device {
   PluginAdaptor* const m_plugin_adaptor;
   Preferences* const m_preferences;
   const ola::network::IPV4SocketAddress m_target;
-  std::auto_ptr<class OPCClient> m_client;
+  std::unique_ptr<class OPCClient> m_client;
 
   DISALLOW_COPY_AND_ASSIGN(OPCClientDevice);
 };

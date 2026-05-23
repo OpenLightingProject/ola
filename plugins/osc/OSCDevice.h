@@ -62,7 +62,7 @@ class OSCDevice: public Device {
     PluginAdaptor *m_plugin_adaptor;
     const std::vector<std::string> m_port_addresses;
     const PortConfigs m_port_configs;
-    std::auto_ptr<class OSCNode> m_osc_node;
+    std::unique_ptr<class OSCNode> m_osc_node;
 
     bool StartHook();
 

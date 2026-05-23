@@ -61,7 +61,7 @@ class StageProfiDevice: public Device {
 
  private:
   std::string m_path;
-  std::auto_ptr<StageProfiWidget> m_widget;
+  std::unique_ptr<StageProfiWidget> m_widget;
 };
 }  // namespace stageprofi
 }  // namespace plugin

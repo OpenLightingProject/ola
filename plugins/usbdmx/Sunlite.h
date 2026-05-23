@@ -66,7 +66,7 @@ class SynchronousSunlite: public Sunlite {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class SunliteThreadedSender> m_sender;
+  std::unique_ptr<class SunliteThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousSunlite);
 };
@@ -89,7 +89,7 @@ class AsynchronousSunlite: public Sunlite {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class SunliteAsyncUsbSender> m_sender;
+  std::unique_ptr<class SunliteAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousSunlite);
 };

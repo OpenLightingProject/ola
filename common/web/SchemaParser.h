@@ -103,10 +103,10 @@ class SchemaParser : public JsonParserInterface {
   SchemaDefinitions* ClaimSchemaDefs();
 
  private:
-  std::auto_ptr<SchemaDefinitions> m_schema_defs;
-  std::auto_ptr<SchemaParseContext> m_root_context;
+  std::unique_ptr<SchemaDefinitions> m_schema_defs;
+  std::unique_ptr<SchemaParseContext> m_root_context;
 
-  std::auto_ptr<ValidatorInterface> m_root_validator;
+  std::unique_ptr<ValidatorInterface> m_root_validator;
 
   std::stack<class SchemaParseContextInterface*> m_context_stack;
   JsonPointer m_pointer;

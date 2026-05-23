@@ -30,6 +30,7 @@
 #define INCLUDE_OLA_RDM_QUEUEINGRDMCONTROLLER_H_
 
 #include <ola/rdm/RDMControllerInterface.h>
+#include <memory>
 #include <queue>
 #include <string>
 #include <utility>
@@ -65,8 +66,8 @@ class QueueingRDMController: public RDMControllerInterface {
     std::queue<outstanding_rdm_request> m_pending_requests;
     bool m_rdm_request_pending;  // true if a request is in progress
     bool m_active;  // true if the controller is active
-    std::auto_ptr<RDMCallback> m_callback;
-    std::auto_ptr<ola::rdm::RDMResponse> m_response;
+    std::unique_ptr<RDMCallback> m_callback;
+    std::unique_ptr<ola::rdm::RDMResponse> m_response;
     std::vector<RDMFrame> m_frames;
 
     virtual void TakeNextAction();

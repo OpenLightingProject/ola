@@ -73,7 +73,7 @@ class EnttecPort
  private:
     EnttecPortImpl *m_impl;
     const bool m_enable_rdm;
-    std::auto_ptr<ola::rdm::DiscoverableQueueingRDMController> m_controller;
+    std::unique_ptr<ola::rdm::DiscoverableQueueingRDMController> m_controller;
 };
 
 

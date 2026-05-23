@@ -65,7 +65,7 @@ class E133HealthCheckedConnection
  private:
     ola::e133::MessageBuilder *m_message_builder;
     ola::io::NonBlockingSender *m_message_queue;
-    std::auto_ptr<ola::SingleUseCallback0<void> > m_on_timeout;
+    std::unique_ptr<ola::SingleUseCallback0<void> > m_on_timeout;
     ola::thread::SchedulingExecutorInterface *m_executor;
 
     // The default interval in seconds for sending heartbeat messages.

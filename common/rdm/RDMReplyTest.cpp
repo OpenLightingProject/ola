@@ -36,7 +36,7 @@ using ola::rdm::RDMGetResponse;
 using ola::rdm::RDMReply;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 
 class RDMReplyTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RDMReplyTest);
@@ -151,7 +151,7 @@ void RDMReplyTest::testFromFrameHelper() {
   frame.timing.break_time = 8000;
   frame.timing.data_time = 45000;
 
-  auto_ptr<RDMReply> reply(RDMReply::FromFrame(frame));
+  unique_ptr<RDMReply> reply(RDMReply::FromFrame(frame));
   OLA_ASSERT_NOT_NULL(reply.get());
 
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, reply->StatusCode());
@@ -183,7 +183,7 @@ void RDMReplyTest::testDUBHelper() {
   frame.timing.response_time = 10000;
   frame.timing.data_time = 45000;
 
-  auto_ptr<RDMReply> reply(RDMReply::DUBReply(frame));
+  unique_ptr<RDMReply> reply(RDMReply::DUBReply(frame));
   OLA_ASSERT_NOT_NULL(reply.get());
 
   OLA_ASSERT_EQ(ola::rdm::RDM_DUB_RESPONSE, reply->StatusCode());

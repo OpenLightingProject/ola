@@ -69,7 +69,7 @@ class E133StatusInflator: public BaseInflator {
                                unsigned int pdu_len);
 
  private:
-    std::auto_ptr<StatusMessageHandler> m_handler;
+    std::unique_ptr<StatusMessageHandler> m_handler;
 };
 }  // namespace acn
 }  // namespace ola

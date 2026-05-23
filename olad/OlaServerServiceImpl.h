@@ -296,7 +296,7 @@ class OlaServerServiceImpl : public ola::proto::OlaServerService {
   class PortManager *m_port_manager;
   class ClientBroker *m_broker;
   const class TimeStamp *m_wake_up_time;
-  std::auto_ptr<ReloadPluginsCallback> m_reload_plugins_callback;
+  std::unique_ptr<ReloadPluginsCallback> m_reload_plugins_callback;
 };
 }  // namespace ola
 #endif  // OLAD_OLASERVERSERVICEIMPL_H_

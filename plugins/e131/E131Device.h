@@ -70,7 +70,7 @@ class E131Device: public ola::Device {
 
  private:
   class PluginAdaptor *m_plugin_adaptor;
-  std::auto_ptr<ola::acn::E131Node> m_node;
+  std::unique_ptr<ola::acn::E131Node> m_node;
   const E131DeviceOptions m_options;
   std::vector<E131InputPort*> m_input_ports;
   std::vector<E131OutputPort*> m_output_ports;

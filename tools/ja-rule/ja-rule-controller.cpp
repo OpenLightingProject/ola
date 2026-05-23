@@ -49,7 +49,7 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::usb::JaRuleWidget;
 using ola::usb::JaRulePortHandle;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -168,7 +168,7 @@ class Controller {
   SelectServer* m_ss;
   JaRuleWidget *m_widget;
   JaRulePortHandle *m_port;
-  auto_ptr<StdinHandler> m_stdin_handler;
+  unique_ptr<StdinHandler> m_stdin_handler;
   UIDSet m_uids;
   Mode m_mode;
   UID m_selected_uid;

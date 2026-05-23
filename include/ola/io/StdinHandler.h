@@ -75,7 +75,7 @@ class StdinHandler {
   termios m_old_tc;
 #endif  // _WIN32
   SelectServerInterface *m_ss;
-  std::auto_ptr<InputCallback> m_callback;
+  std::unique_ptr<InputCallback> m_callback;
 
   // stdin
   void HandleData();

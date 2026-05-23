@@ -77,7 +77,7 @@ using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -283,7 +283,7 @@ void SimpleE133Controller::SendSetRequest(const UID &dst_uid,
 bool SimpleE133Controller::SendRequest(const UID &uid,
                                        uint16_t endpoint,
                                        RDMRequest *raw_request) {
-  auto_ptr<RDMRequest> request(raw_request);
+  unique_ptr<RDMRequest> request(raw_request);
 
   IPV4Address *target_address = ola::STLFind(&m_uid_to_ip, uid);
   if (!target_address) {
@@ -353,7 +353,7 @@ void SimpleE133Controller::HandlePacket(
     }
   }
 
-  auto_ptr<const ola::messaging::Message> message;
+  unique_ptr<const ola::messaging::Message> message;
   if (descriptor)
     message.reset(m_pid_helper->DeserializeMessage(descriptor,
                                                    response->ParamData(),
@@ -429,7 +429,7 @@ int main(int argc, char *argv[]) {
     exit(ola::EXIT_USAGE);
   }
 
-  auto_ptr<UID> uid(UID::FromString(FLAGS_uid));
+  unique_ptr<UID> uid(UID::FromString(FLAGS_uid));
 
   // Make sure we can load our PIDs
   if (!pid_helper.Init())
@@ -476,7 +476,7 @@ int main(int argc, char *argv[]) {
   vector<string> inputs;
   for (int i = 2; i < argc; i++)
     inputs.push_back(argv[i]);
-  auto_ptr<const ola::messaging::Message> message(
+  unique_ptr<const ola::messaging::Message> message(
       pid_helper.BuildMessage(descriptor, inputs));
 
   if (!message.get()) {

@@ -674,7 +674,7 @@ void JsonTest::testClone() {
   all_values.push_back(&array);
 
   for (unsigned int i = 0; i < all_values.size(); ++i) {
-    std::auto_ptr<JsonValue> value(all_values[i]->Clone());
+    std::unique_ptr<JsonValue> value(all_values[i]->Clone());
     OLA_ASSERT(*(value.get()) == *(all_values[i]));
   }
 }

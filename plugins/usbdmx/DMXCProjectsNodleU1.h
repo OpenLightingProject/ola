@@ -117,8 +117,8 @@ class SynchronousDMXCProjectsNodleU1: public DMXCProjectsNodleU1 {
 
  private:
   libusb_device* const m_usb_device;
-  std::auto_ptr<class DMXCProjectsNodleU1ThreadedSender> m_sender;
-  std::auto_ptr<class DMXCProjectsNodleU1ThreadedReceiver> m_receiver;
+  std::unique_ptr<class DMXCProjectsNodleU1ThreadedSender> m_sender;
+  std::unique_ptr<class DMXCProjectsNodleU1ThreadedReceiver> m_receiver;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousDMXCProjectsNodleU1);
 };
@@ -150,8 +150,8 @@ class AsynchronousDMXCProjectsNodleU1 : public DMXCProjectsNodleU1 {
   const DmxBuffer &GetDmxInBuffer();
 
  private:
-  std::auto_ptr<class DMXCProjectsNodleU1AsyncUsbSender> m_sender;
-  std::auto_ptr<class DMXCProjectsNodleU1AsyncUsbReceiver> m_receiver;
+  std::unique_ptr<class DMXCProjectsNodleU1AsyncUsbSender> m_sender;
+  std::unique_ptr<class DMXCProjectsNodleU1AsyncUsbReceiver> m_receiver;
   DmxBuffer m_buffer;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousDMXCProjectsNodleU1);

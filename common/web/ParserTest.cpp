@@ -39,7 +39,7 @@ using ola::web::JsonString;
 using ola::web::JsonUInt;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 class JsonParserTest: public CppUnit::TestFixture {
@@ -70,7 +70,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(JsonParserTest);
 
 void JsonParserTest::testParseBool() {
   string error;
-  auto_ptr<const JsonValue> value(JsonParser::Parse("  true  ", &error));
+  unique_ptr<const JsonValue> value(JsonParser::Parse("  true  ", &error));
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(string("true"), JsonWriter::AsString(*value.get()));
 
@@ -92,14 +92,14 @@ void JsonParserTest::testParseBool() {
 
 void JsonParserTest::testParseNull() {
   string error;
-  auto_ptr<const JsonValue> value(JsonParser::Parse("  null  ", &error));
+  unique_ptr<const JsonValue> value(JsonParser::Parse("  null  ", &error));
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(string("null"), JsonWriter::AsString(*value.get()));
 }
 
 void JsonParserTest::testParseString() {
   string error;
-  auto_ptr<const JsonValue> value(JsonParser::Parse("\"test\"", &error));
+  unique_ptr<const JsonValue> value(JsonParser::Parse("\"test\"", &error));
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(string("\"test\""), JsonWriter::AsString(*value.get()));
 
@@ -123,7 +123,7 @@ void JsonParserTest::testParseString() {
 
 void JsonParserTest::testParseNumber() {
   string error;
-  auto_ptr<const JsonValue> value(JsonParser::Parse(" 0", &error));
+  unique_ptr<const JsonValue> value(JsonParser::Parse(" 0", &error));
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(string("0"), JsonWriter::AsString(*value.get()));
 
@@ -281,7 +281,7 @@ void JsonParserTest::testParseNumber() {
 
 void JsonParserTest::testArray() {
   string error;
-  auto_ptr<const JsonValue> value(JsonParser::Parse(" [  ]", &error));
+  unique_ptr<const JsonValue> value(JsonParser::Parse(" [  ]", &error));
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(string("[]"), JsonWriter::AsString(*value.get()));
 
@@ -327,7 +327,7 @@ void JsonParserTest::testArray() {
 
 void JsonParserTest::testObject() {
   string error;
-  auto_ptr<const JsonValue> value(JsonParser::Parse("{}", &error));
+  unique_ptr<const JsonValue> value(JsonParser::Parse("{}", &error));
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(string("{}"), JsonWriter::AsString(*value.get()));
 
@@ -406,7 +406,7 @@ void JsonParserTest::testObject() {
 
 void JsonParserTest::testInvalidInput() {
   string error;
-  auto_ptr<const JsonValue> value(JsonParser::Parse(" ", &error));
+  unique_ptr<const JsonValue> value(JsonParser::Parse(" ", &error));
   OLA_ASSERT_NULL(value.get());
 
   value.reset(JsonParser::Parse("TRUE", &error));
@@ -425,7 +425,7 @@ void JsonParserTest::testInvalidInput() {
  */
 void JsonParserTest::testStressTests() {
   string error;
-  auto_ptr<const JsonValue> value(JsonParser::Parse("{}", &error));
+  unique_ptr<const JsonValue> value(JsonParser::Parse("{}", &error));
   OLA_ASSERT_NOT_NULL(value.get());
   OLA_ASSERT_EQ(string("{}"), JsonWriter::AsString(*value.get()));
 

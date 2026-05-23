@@ -71,7 +71,7 @@ class RootInflator: public BaseInflator {
  private :
   NullInflator m_null_inflator;
   RootHeader m_last_hdr;
-  std::auto_ptr<OnDataCallback> m_on_data;
+  std::unique_ptr<OnDataCallback> m_on_data;
 };
 }  // namespace acn
 }  // namespace ola

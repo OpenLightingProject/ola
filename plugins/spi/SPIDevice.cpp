@@ -39,7 +39,7 @@ namespace plugin {
 namespace spi {
 
 using ola::rdm::UID;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::ostringstream;
 using std::set;
 using std::string;
@@ -115,7 +115,7 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
       spi_output_options.pixel_count = pixel_count;
     }
 
-    auto_ptr<UID> uid(uid_allocator->AllocateNext());
+    unique_ptr<UID> uid(uid_allocator->AllocateNext());
     if (!uid.get()) {
       OLA_WARN << "Insufficient UIDs remaining to allocate a UID for SPI port "
                << static_cast<int>(i);

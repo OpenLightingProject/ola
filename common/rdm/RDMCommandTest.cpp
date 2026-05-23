@@ -51,7 +51,7 @@ using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
 using ola::utils::SplitUInt16;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::ostringstream;
 using std::string;
 
@@ -392,7 +392,7 @@ void RDMCommandTest::testRequestMutation() {
 void RDMCommandTest::testRequestInflation() {
   UID source(1, 2);
   UID destination(3, 4);
-  auto_ptr<RDMRequest> command(RDMRequest::InflateFromData(NULL, 10));
+  unique_ptr<RDMRequest> command(RDMRequest::InflateFromData(NULL, 10));
   OLA_ASSERT_NULL(command.get());
 
   // now try a proper command but with no length
@@ -618,7 +618,7 @@ void RDMCommandTest::testNackWithReason() {
                             NULL,  // data
                             0);  // data length
 
-  auto_ptr<RDMResponse> response(
+  unique_ptr<RDMResponse> response(
       NackWithReason(&get_command, ola::rdm::NR_UNKNOWN_PID));
   OLA_ASSERT_NOT_NULL(response.get());
   OLA_ASSERT_EQ(destination, response->SourceUID());
@@ -960,7 +960,7 @@ void RDMCommandTest::testDiscoveryCommand() {
     5, 6, 0, 0, 7, 8
   };
 
-  auto_ptr<RDMDiscoveryRequest> request(
+  unique_ptr<RDMDiscoveryRequest> request(
       NewDiscoveryUniqueBranchRequest(m_source, lower, upper, 1));
 
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
@@ -987,7 +987,7 @@ void RDMCommandTest::testDiscoveryCommand() {
  * Check the mute command
  */
 void RDMCommandTest::testMuteRequest() {
-  auto_ptr<RDMDiscoveryRequest> request(
+  unique_ptr<RDMDiscoveryRequest> request(
       NewMuteRequest(m_source, m_destination, 1));
 
   OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, request->SubStartCode());
@@ -1012,7 +1012,7 @@ void RDMCommandTest::testMuteRequest() {
  * Check the UnMute Command
  */
 void RDMCommandTest::testUnMuteRequest() {
-  auto_ptr<RDMDiscoveryRequest> request(
+  unique_ptr<RDMDiscoveryRequest> request(
       NewUnMuteRequest(m_source, m_destination, 1));
 
   OLA_ASSERT_EQ(ola::rdm::SUB_START_CODE, request->SubStartCode());
@@ -1042,7 +1042,7 @@ void RDMCommandTest::testCommandInflation() {
   const UID destination(3, 4);
   const UID lower(0x0102, 0x0304);
   const UID upper(0x0506, 0x0708);
-  auto_ptr<RDMCommand> command(RDMCommand::Inflate(NULL, 10));
+  unique_ptr<RDMCommand> command(RDMCommand::Inflate(NULL, 10));
   OLA_ASSERT_NULL(command.get());
 
   command.reset(RDMCommand::Inflate(EXPECTED_GET_BUFFER, 0));
@@ -1095,7 +1095,7 @@ void RDMCommandTest::testCommandInflation() {
   command.reset(RDMCommand::Inflate(EXPECTED_DISCOVERY_REQUEST,
                                     sizeof(EXPECTED_DISCOVERY_REQUEST)));
   OLA_ASSERT_NOT_NULL(command.get());
-  auto_ptr<RDMDiscoveryRequest> discovery_request(
+  unique_ptr<RDMDiscoveryRequest> discovery_request(
       NewDiscoveryUniqueBranchRequest(source, lower, upper, 1));
   OLA_ASSERT_TRUE(*discovery_request == *command);
 
@@ -1115,7 +1115,7 @@ void RDMCommandTest::testCommandInflation() {
 }
 
 void RDMCommandTest::testDiscoveryResponseInflation() {
-  auto_ptr<RDMCommand> command;
+  unique_ptr<RDMCommand> command;
 
   command.reset(RDMRequest::Inflate(MUTE_RESPONSE, arraysize(MUTE_RESPONSE)));
   OLA_ASSERT_NOT_NULL(command.get());

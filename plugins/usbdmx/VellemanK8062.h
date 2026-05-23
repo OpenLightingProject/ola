@@ -66,7 +66,7 @@ class SynchronousVellemanK8062: public VellemanK8062 {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class VellemanThreadedSender> m_sender;
+  std::unique_ptr<class VellemanThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousVellemanK8062);
 };
@@ -89,7 +89,7 @@ class AsynchronousVellemanK8062 : public VellemanK8062 {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class VellemanAsyncUsbSender> m_sender;
+  std::unique_ptr<class VellemanAsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousVellemanK8062);
 };

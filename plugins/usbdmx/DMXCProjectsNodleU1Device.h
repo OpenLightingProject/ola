@@ -61,8 +61,8 @@ class DMXCProjectsNodleU1Device: public Device {
 
  private:
   const std::string m_device_id;
-  std::auto_ptr<class GenericOutputPort> m_out_port;
-  std::auto_ptr<class DMXCProjectsNodleU1InputPort> m_in_port;
+  std::unique_ptr<class GenericOutputPort> m_out_port;
+  std::unique_ptr<class DMXCProjectsNodleU1InputPort> m_in_port;
 
   DISALLOW_COPY_AND_ASSIGN(DMXCProjectsNodleU1Device);
 };

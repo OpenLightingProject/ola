@@ -47,7 +47,7 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 // used to set a timeout which aborts the tests
@@ -90,7 +90,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
  private:
   ola::MockClock m_clock;
   SelectServer *m_ss;
-  auto_ptr<ola::network::TCPSocketFactory> m_tcp_socket_factory;
+  unique_ptr<ola::network::TCPSocketFactory> m_tcp_socket_factory;
   IPV4Address m_localhost;
   IPV4SocketAddress m_server_address;
   ola::thread::timeout_id m_timeout_id;

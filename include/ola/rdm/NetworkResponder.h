@@ -72,7 +72,7 @@ class NetworkResponder: public RDMControllerInterface {
 
   const UID m_uid;
   bool m_identify_mode;
-  std::auto_ptr<NetworkManagerInterface> m_network_manager;
+  std::unique_ptr<NetworkManagerInterface> m_network_manager;
 
   RDMResponse *GetDeviceInfo(const RDMRequest *request);
   RDMResponse *GetProductDetailList(const RDMRequest *request);

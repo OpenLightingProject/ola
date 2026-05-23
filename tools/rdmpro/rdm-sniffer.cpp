@@ -50,7 +50,7 @@
 
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -356,7 +356,7 @@ void RDMSniffer::DisplayAlternateFrame() {
 void RDMSniffer::DisplayRDMFrame() {
   unsigned int slot_count = m_frame.Size() - 1;
 
-  auto_ptr<RDMCommand> command(
+  unique_ptr<RDMCommand> command(
       RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(&m_frame[1]),
                           slot_count));
   if (command.get()) {

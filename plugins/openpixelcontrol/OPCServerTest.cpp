@@ -39,7 +39,7 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
 using ola::plugin::openpixelcontrol::OPCServer;
-using std::auto_ptr;
+using std::unique_ptr;
 
 class OPCServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(OPCServerTest);
@@ -63,8 +63,8 @@ class OPCServerTest: public CppUnit::TestFixture {
 
  private:
   ola::io::SelectServer m_ss;
-  auto_ptr<OPCServer> m_server;
-  auto_ptr<TCPSocket> m_client_socket;
+  unique_ptr<OPCServer> m_server;
+  unique_ptr<TCPSocket> m_client_socket;
   DmxBuffer m_received_data;
   uint8_t m_command;
 

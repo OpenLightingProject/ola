@@ -48,7 +48,7 @@ void PidDataTest::setUp() {
  * Check we can load the data.
  */
 void PidDataTest::testDataLoad() {
-  std::auto_ptr<const RootPidStore> store(
+  std::unique_ptr<const RootPidStore> store(
       RootPidStore::LoadFromDirectory(DATADIR));
   OLA_ASSERT_NOT_NULL(store.get());
 

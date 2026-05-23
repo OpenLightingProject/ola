@@ -77,8 +77,8 @@ class TestClient {
  private:
   ola::io::SelectServer *m_ss;
   const ola::network::GenericSocketAddress m_server_addr;
-  std::auto_ptr<ola::network::TCPSocket> m_socket;
-  std::auto_ptr<ola::rpc::TestService_Stub> m_stub;
-  std::auto_ptr<ola::rpc::RpcChannel> m_channel;
+  std::unique_ptr<ola::network::TCPSocket> m_socket;
+  std::unique_ptr<ola::rpc::TestService_Stub> m_stub;
+  std::unique_ptr<ola::rpc::RpcChannel> m_channel;
 };
 #endif  // COMMON_RPC_TESTSERVICE_H_

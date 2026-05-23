@@ -51,7 +51,7 @@ using ola::messaging::UInt32FieldDescriptor;
 using ola::messaging::UInt64FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
 using ola::rdm::StringMessageBuilder;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 using std::vector;
 
@@ -175,7 +175,7 @@ void StringBuilderTest::testSimpleBuilder() {
   inputs.push_back("foo");
   inputs.push_back("0x400");
 
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
   OLA_ASSERT_TRUE(message.get());
@@ -209,7 +209,7 @@ void StringBuilderTest::testBuilderWithLabels() {
   // now setup the inputs
   vector<string> inputs;
   inputs.push_back("dozen");
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
   OLA_ASSERT_NOT_NULL(message.get());
@@ -223,7 +223,7 @@ void StringBuilderTest::testBuilderWithLabels() {
   // setup the inputs
   vector<string> inputs2;
   inputs2.push_back("half_dozen");
-  auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
+  unique_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
 
   // verify
   OLA_ASSERT_NULL(message2.get());
@@ -244,7 +244,7 @@ void StringBuilderTest::testBuilderWithIntervals() {
   fields.push_back(new UInt8FieldDescriptor("uint8", intervals, labels));
   Descriptor descriptor("Test Descriptor", fields);
 
-  auto_ptr<const Message> message(BuildMessageSingleInput(descriptor, "2"));
+  unique_ptr<const Message> message(BuildMessageSingleInput(descriptor, "2"));
 
   // verify
   OLA_ASSERT_NOT_NULL(message.get());
@@ -256,7 +256,7 @@ void StringBuilderTest::testBuilderWithIntervals() {
 
 
   // Test an invalid case
-  auto_ptr<const Message> message2(BuildMessageSingleInput(descriptor,
+  unique_ptr<const Message> message2(BuildMessageSingleInput(descriptor,
                                                            "dozen"));
 
   // verify
@@ -299,7 +299,8 @@ void StringBuilderTest::testBuilderWithLabelsAndIntervals() {
   fields.push_back(new UInt8FieldDescriptor("uint8", intervals, labels));
   Descriptor descriptor("Test Descriptor", fields);
 
-  auto_ptr<const Message> message(BuildMessageSingleInput(descriptor, "dozen"));
+  unique_ptr<const Message> message(BuildMessageSingleInput(
+    descriptor, "dozen"));
 
   // verify
   OLA_ASSERT_NOT_NULL(message.get());
@@ -311,7 +312,7 @@ void StringBuilderTest::testBuilderWithLabelsAndIntervals() {
 
 
   // Test an invalid case
-  auto_ptr<const Message> message2(BuildMessageSingleInput(descriptor,
+  unique_ptr<const Message> message2(BuildMessageSingleInput(descriptor,
                                                            "half_dozen"));
 
   // verify
@@ -356,7 +357,7 @@ void StringBuilderTest::testBuilderWithGroups() {
   inputs.push_back("true");
   inputs.push_back("10");
 
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
   OLA_ASSERT_TRUE(message.get());
@@ -375,7 +376,7 @@ void StringBuilderTest::testBuilderWithGroups() {
   inputs2.push_back("false");
   inputs2.push_back("240");
 
-  auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
+  unique_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
 
   // verify
   OLA_ASSERT_NOT_NULL(message2.get());
@@ -423,7 +424,7 @@ void StringBuilderTest::testBuilderWithNestedGroups() {
   inputs.push_back("true");
   inputs.push_back("true");
 
-  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+  unique_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
   OLA_ASSERT_NOT_NULL(message.get());

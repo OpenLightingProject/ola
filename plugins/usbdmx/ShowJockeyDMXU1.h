@@ -100,7 +100,7 @@ class SynchronousShowJockeyDMXU1: public ShowJockeyDMXU1 {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class ShowJockeyDMXU1ThreadedSender> m_sender;
+  std::unique_ptr<class ShowJockeyDMXU1ThreadedSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousShowJockeyDMXU1);
 };
@@ -125,7 +125,7 @@ class AsynchronousShowJockeyDMXU1: public ShowJockeyDMXU1 {
   bool SendDMX(const DmxBuffer &buffer);
 
  private:
-  std::auto_ptr<class ShowJockeyDMXU1AsyncUsbSender> m_sender;
+  std::unique_ptr<class ShowJockeyDMXU1AsyncUsbSender> m_sender;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousShowJockeyDMXU1);
 };

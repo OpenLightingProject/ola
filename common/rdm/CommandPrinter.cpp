@@ -35,7 +35,7 @@ using ola::messaging::Descriptor;
 using ola::messaging::Message;
 using ola::network::NetworkToHost;
 using ola::strings::ToHex;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::endl;
 using std::string;
 
@@ -423,7 +423,7 @@ void CommandPrinter::DisplayParamData(
     }
 
     if (descriptor) {
-      auto_ptr<const Message> message(
+      unique_ptr<const Message> message(
         m_pid_helper->DeserializeMessage(descriptor, param_data, data_length));
 
       if (message.get()) {

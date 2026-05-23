@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <string>
+#include <utility>
 
 #include "libs/usb/LibUsbAdaptor.h"
 #include "ola/Constants.h"
@@ -199,12 +200,12 @@ bool SynchronousEurolitePro::Init() {
     }
   }
 
-  std::auto_ptr<EuroliteProThreadedSender> sender(
+  std::unique_ptr<EuroliteProThreadedSender> sender(
       new EuroliteProThreadedSender(m_adaptor, m_usb_device, usb_handle));
   if (!sender->Start()) {
     return false;
   }
-  m_sender.reset(sender.release());
+  m_sender = std::move(sender);
   return true;
 }
 

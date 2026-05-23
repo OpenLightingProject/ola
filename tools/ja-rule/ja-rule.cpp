@@ -68,7 +68,7 @@ using ola::usb::JaRuleReturnCode;
 using ola::usb::JaRuleWidget;
 using ola::utils::JoinUInt8;
 using ola::utils::SplitUInt16;
-using std::auto_ptr;
+using std::unique_ptr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -400,7 +400,7 @@ class Controller {
     if (payload[0] == ola::rdm::START_CODE) {
       RDMStatusCode status_code;
       // Skip over the start code.
-      auto_ptr<RDMResponse> response(RDMResponse::InflateFromData(
+      unique_ptr<RDMResponse> response(RDMResponse::InflateFromData(
           payload.data() + 1, payload.size() - 1, &status_code));
 
       if (!response.get()) {
@@ -523,7 +523,7 @@ class Controller {
 
   SelectServer* m_ss;
   UID m_our_uid, m_target_uid, m_lower_uid, m_upper_uid;
-  auto_ptr<StdinHandler> m_stdin_handler;
+  unique_ptr<StdinHandler> m_stdin_handler;
   JaRuleWidget* m_widget;
   unsigned int m_log_count;
   uint8_t m_dmx_slot_data;
@@ -693,7 +693,7 @@ class Controller {
       return;
     }
 
-    auto_ptr<RDMRequest> request(
+    unique_ptr<RDMRequest> request(
         ola::rdm::NewDiscoveryUniqueBranchRequest(m_our_uid, lower, upper, 0));
     unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
     uint8_t data[rdm_length];
@@ -731,7 +731,7 @@ class Controller {
       return;
     }
 
-    auto_ptr<RDMRequest> request(
+    unique_ptr<RDMRequest> request(
         ola::rdm::NewMuteRequest(m_our_uid, target, 0));
 
     CommandClass command_class = target.IsBroadcast() ?
@@ -751,7 +751,7 @@ class Controller {
       return;
     }
 
-    auto_ptr<RDMRequest> request(
+    unique_ptr<RDMRequest> request(
         ola::rdm::NewUnMuteRequest(m_our_uid, target, 0));
 
     CommandClass command_class = target.IsBroadcast() ?
@@ -819,7 +819,7 @@ class Controller {
 };
 
 void ParseUID(const string &uid_str, UID *uid) {
-  auto_ptr<UID> target_uid(UID::FromString(uid_str));
+  unique_ptr<UID> target_uid(UID::FromString(uid_str));
   if (!target_uid.get()) {
     OLA_WARN << "Invalid UID: '" << uid_str << "'";
     exit(ola::EXIT_USAGE);
