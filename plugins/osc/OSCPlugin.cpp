@@ -158,8 +158,8 @@ bool OSCPlugin::SetDefaultPreferences() {
 
   for (unsigned int i = 0; i < GetPortCount(INPUT_PORT_COUNT_KEY); i++) {
     const string key = ExpandTemplate(PORT_ADDRESS_TEMPLATE, i);
-    save |= m_preferences->SetDefaultValue(key, StringValidator(),
-                                           DEFAULT_ADDRESS_TEMPLATE);
+    const string value = ExpandTemplate(DEFAULT_ADDRESS_TEMPLATE, i);
+    save |= m_preferences->SetDefaultValue(key, StringValidator(), value);
   }
 
   set<string> valid_formats;
