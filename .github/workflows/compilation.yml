@@ -1,0 +1,45 @@
+# GitHub Action to compile and test
+name: compilation
+on: [push, pull_request]
+jobs:
+  compile:
+    runs-on: macos-13
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx: [g++, clang++]
+    steps:
+      - uses: actions/checkout@master
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install ccache
+          # This is all the bits we need to enable all options on Mac
+          brew install automake
+          brew install bison
+          brew install flex
+          # Installing via the addon isn't currently working so do it the old fashioned way below
+          # - https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb
+          brew install liblo
+          brew install libmicrohttpd
+          brew install ossp-uuid
+          # Looks like this is Python 3 only, so install via pip
+          # brew install numpy
+          brew install libusb
+          brew install pkg-config
+          # TODO(Peter): Upgrade this after #1867
+          brew install protobuf@3
+          brew install cppunit
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+      - name: Compile
+        env:
+          TASK: 'compile'
+          CXX: ${{ matrix.cxx }}
+        run: |
+          PATH=/usr/local/opt/ccache/libexec:$PATH # Use ccache on Mac too
+          export PATH="/usr/local/opt/protobuf@3/bin:$PATH"
+          export LDFLAGS="-L/usr/local/opt/protobuf@3/lib"
+          export CPPFLAGS="-I/usr/local/opt/protobuf@3/include"
+          export PKG_CONFIG_PATH="/usr/local/opt/protobuf@3/lib/pkgconfig"
+          bash -ex .travis-ci.sh
