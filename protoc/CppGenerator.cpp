@@ -43,7 +43,7 @@ bool CppGenerator::Generate(const FileDescriptor *file,
                             const string&,
                             OutputDirectory *generator_context,
                             string*) const {
-  string basename = StripProto(file->name()) + "Service";
+  string basename = StripProto(string(file->name())) + "Service";
 
   string header_name = basename + ".pb.h";
   string code_name = basename + ".pb.cpp";
