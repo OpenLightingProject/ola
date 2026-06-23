@@ -31,27 +31,29 @@ using ola::usb::LibUsbAdaptor;
 
 AsyncUsbSender::AsyncUsbSender(LibUsbAdaptor *adaptor,
                                libusb_device *usb_device)
-    : AsyncUsbTransceiverBase(adaptor, usb_device),
-      m_pending_tx(false) {
+    : AsyncUsbTransceiverBase(adaptor, usb_device) {
 }
 
 AsyncUsbSender::~AsyncUsbSender() {
   m_adaptor->Close(m_usb_handle);
 }
 
-bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer) {
+bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer, unsigned int portId) {
   if (!m_usb_handle) {
     OLA_WARN << "AsyncUsbSender hasn't been initialized";
     return false;
   }
   ola::thread::MutexLocker locker(&m_mutex);
   if (m_transfer_state == IDLE) {
-    PerformTransfer(buffer);
+    PerformTransfer(buffer, portId);
   } else {
     // Buffer incoming data so we can send it when the outstanding transfers
     // complete.
-    m_pending_tx = true;
-    m_tx_buffer.Set(buffer);
+    if (m_tx_buffers.count(portId)) {
+      m_tx_buffers[portId].Set(buffer);
+    } else {
+      m_tx_buffers.insert(std::pair<unsigned int, DmxBuffer>(portId, buffer));
+    }
   }
   return true;
 }
@@ -77,9 +79,10 @@ void AsyncUsbSender::TransferComplete(struct libusb_transfer *transfer) {
 
   PostTransferHook();
 
-  if ((m_transfer_state == IDLE) && m_pending_tx) {
-    m_pending_tx = false;
-    PerformTransfer(m_tx_buffer);
+  if ((m_transfer_state == IDLE) && m_tx_buffers.size()) {
+    std::map<unsigned int, DmxBuffer>::iterator it = m_tx_buffers.begin();
+    PerformTransfer(it->second, it->first);
+    m_tx_buffers.erase(it->first);
   }
 }
 }  // namespace usbdmx

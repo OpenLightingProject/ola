@@ -53,6 +53,10 @@ class JaRuleDevice: public Device {
     return m_device_id;
   }
 
+  bool AllowMultiPortPatching() const {
+    return true;
+  }
+
  protected:
   bool StartHook();
 

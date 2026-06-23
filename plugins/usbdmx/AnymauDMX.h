@@ -85,7 +85,7 @@ class SynchronousAnymauDMX: public AnymauDMX {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class AnymaThreadedSender> m_sender;
@@ -110,7 +110,7 @@ class AsynchronousAnymauDMX : public AnymauDMX {
 
   bool Init();
 
-  bool SendDMX(const DmxBuffer &buffer);
+  bool SendDMX(const DmxBuffer &buffer, unsigned int portId = 0);
 
  private:
   std::auto_ptr<class AnymaAsyncUsbSender> m_sender;
