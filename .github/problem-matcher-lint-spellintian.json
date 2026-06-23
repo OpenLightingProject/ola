@@ -7,7 +7,8 @@
                 {
                     "regexp": "^([^:]+):(\\s+)(.+)$",
                     "file": 1,
-                    "message": 3
+                    "message": 3,
+                    "kind": "file"
                 }
             ]
         }
