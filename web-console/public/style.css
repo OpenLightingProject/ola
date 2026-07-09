@@ -1,0 +1,106 @@
+/* Custom styles for DMX Console */
+
+body {
+    background-color: #222;
+    color: #eee;
+}
+
+.fader-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+    width: 60px;
+    background: #333;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.fader-label {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.fader-input {
+    -webkit-appearance: slider-vertical;
+    width: 20px;
+    height: 150px;
+}
+
+.fader-val {
+    margin-top: 10px;
+    font-size: 12px;
+    width: 40px;
+    text-align: center;
+    background: #111;
+    color: #0f0;
+    border: 1px solid #444;
+}
+
+.list-group-item {
+    background-color: #333;
+    color: #eee;
+    border-color: #444;
+}
+
+/* Cuelist specific styles */
+.cue-panel {
+    background-color: #1e2430; /* Dark bluish grey like the design */
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.cue-panel .card {
+    background-color: #2b3544 !important; /* Slightly lighter inner cards */
+    border: none;
+    border-radius: 8px;
+}
+
+.cue-panel .form-select,
+.cue-panel .form-control,
+.cue-panel .input-group-text {
+    background-color: #384252 !important;
+    border: none;
+    color: white;
+}
+
+.cue-panel .table-dark {
+    background-color: #2b3544;
+}
+
+.cue-panel .table-striped>tbody>tr:nth-of-type(odd)>* {
+    background-color: #323d4d;
+    color: white;
+}
+
+.cue-panel .table-striped>tbody>tr:nth-of-type(even)>* {
+    background-color: #2b3544;
+    color: white;
+}
+
+.cue-panel th {
+    color: #a0abbc;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid #444;
+}
+
+.cue-panel td {
+    vertical-align: middle;
+    border: none;
+}
+
+.btn-cue-control {
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 15px;
+    border-radius: 8px;
+    border: none;
+}
+
+.btn-cue-control.btn-success { background-color: #28a745; }
+.btn-cue-control.btn-warning { background-color: #d39e00; color: white; }
+.btn-cue-control.btn-danger { background-color: #dc3545; }
+.btn-cue-control.btn-secondary { background-color: #4a5568; }

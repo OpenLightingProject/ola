@@ -263,3 +263,6 @@ javascript/new-src/node_modules
 .cproject
 .settings
 .vscode/
+web-console/node_modules
+node_modules/
+/web-console/node_modules
