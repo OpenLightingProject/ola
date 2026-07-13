@@ -34,8 +34,10 @@ using std::string;
 
 const char UartDmxDevice::K_MALF[] = "-malf";
 const char UartDmxDevice::K_BREAK[] = "-break";
+const char UartDmxDevice::K_PADDING[] = "-padding";
 const unsigned int UartDmxDevice::DEFAULT_BREAK = 100;
 const unsigned int UartDmxDevice::DEFAULT_MALF = 100;
+const unsigned int UartDmxDevice::DEFAULT_PADDING = 0;
 
 
 UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
@@ -57,7 +59,10 @@ UartDmxDevice::UartDmxDevice(AbstractPlugin *owner,
   if (!StringToInt(m_preferences->GetValue(DeviceMalfKey()), &m_malft)) {
     m_malft = DEFAULT_MALF;
   }
-  m_widget.reset(new UartWidget(path));
+  if (!StringToInt(m_preferences->GetValue(DevicePaddingKey()), &m_paddingt)) {
+    m_paddingt = DEFAULT_PADDING;
+  }
+  m_widget.reset(new UartWidget(path, m_paddingt));
 }
 
 UartDmxDevice::~UartDmxDevice() {
@@ -77,6 +82,9 @@ string UartDmxDevice::DeviceMalfKey() const {
 string UartDmxDevice::DeviceBreakKey() const {
   return m_path + K_BREAK;
 }
+string UartDmxDevice::DevicePaddingKey() const {
+  return m_path + K_PADDING;
+}
 
 /**
  * Set the default preferences for this one Device
@@ -94,6 +102,9 @@ void UartDmxDevice::SetDefaults() {
   save |= m_preferences->SetDefaultValue(DeviceMalfKey(),
                                          UIntValidator(8, 1000000),
                                          DEFAULT_MALF);
+  save |= m_preferences->SetDefaultValue(DevicePaddingKey(),
+                                         UIntValidator(0, 512),
+                                         DEFAULT_PADDING);
   if (save) {
     m_preferences->Save();
   }
