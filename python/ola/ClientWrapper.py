@@ -292,9 +292,16 @@ class SelectServer(object):
 
 
 class ClientWrapper(object):
-  def __init__(self, socket=None):
+  def __init__(self, socket=None, close_callback=None):
+    """Create a client and event-loop wrapper.
+
+    Args:
+      socket: The socket to use for communications. If omitted, OlaClient
+        connects to the local olad instance.
+      close_callback: A callable to run if the olad socket is closed.
+    """
     self._ss = SelectServer()
-    self._client = OlaClient(socket)
+    self._client = OlaClient(socket, close_callback=close_callback)
     self._ss.AddReadDescriptor(self._client.GetSocket(),
                                self._client.SocketReady)
 
