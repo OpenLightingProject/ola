@@ -669,6 +669,13 @@ RDMResponse *ResponderHelper::GetListInterfaces(
 
   std::sort(interfaces.begin(), interfaces.end(),
             ola::network::InterfaceIndexOrdering());
+  interfaces.erase(
+      std::unique(
+          interfaces.begin(), interfaces.end(),
+          [](const Interface &a, const Interface &b) {
+            return a.index == b.index;
+          }),
+      interfaces.end());
 
   uint16_t interface_count = std::count_if(
       interfaces.begin(), interfaces.end(), IsInterfaceIndexValidInterface);
