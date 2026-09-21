@@ -188,11 +188,15 @@ void PreferencesTest::testGetSetRemove() {
   const char value7[] = "bar";
   const char value8[] = "baz";
 
+  // test keys don't exist beforehand
+  OLA_ASSERT_FALSE(preferences->HasKey(key1));
+  OLA_ASSERT_FALSE(preferences->HasKey(key2));
+
   // test get/set/has single values string
   OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
   preferences->SetValue(key1, value1);
-  OLA_ASSERT_EQ(value1, preferences->GetValue(key1));
   OLA_ASSERT(preferences->HasKey(key1));
+  OLA_ASSERT_EQ(value1, preferences->GetValue(key1));
   preferences->SetValue(key1, value2);
   OLA_ASSERT_EQ(value2, preferences->GetValue(key1));
 
@@ -203,8 +207,8 @@ void PreferencesTest::testGetSetRemove() {
   // test get/set/has single values uint
   OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
   preferences->SetValue(key1, value3);
-  OLA_ASSERT_EQ(IntToString(value3), preferences->GetValue(key1));
   OLA_ASSERT(preferences->HasKey(key1));
+  OLA_ASSERT_EQ(IntToString(value3), preferences->GetValue(key1));
   preferences->SetValue(key1, value4);
   OLA_ASSERT_EQ(IntToString(value4), preferences->GetValue(key1));
 
@@ -215,8 +219,8 @@ void PreferencesTest::testGetSetRemove() {
   // test get/set/has single values int
   OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
   preferences->SetValue(key1, value5);
-  OLA_ASSERT_EQ(IntToString(value5), preferences->GetValue(key1));
   OLA_ASSERT(preferences->HasKey(key1));
+  OLA_ASSERT_EQ(IntToString(value5), preferences->GetValue(key1));
   preferences->SetValue(key1, value6);
   OLA_ASSERT_EQ(IntToString(value6), preferences->GetValue(key1));
 
@@ -229,46 +233,70 @@ void PreferencesTest::testGetSetRemove() {
   values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 0, values.size());
   preferences->SetMultipleValue(key2, value1);
-  values = preferences->GetMultipleValue(key2);
   OLA_ASSERT(preferences->HasKey(key2));
+  values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 1, values.size());
   OLA_ASSERT_EQ(value1, values.at(0));
   preferences->SetMultipleValue(key2, value2);
+  OLA_ASSERT(preferences->HasKey(key2));
   values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 2, values.size());
   OLA_ASSERT_EQ(value1, values.at(0));
   OLA_ASSERT_EQ(value2, values.at(1));
   preferences->RemoveValue(key2);
+  OLA_ASSERT_FALSE(preferences->HasKey(key2));
+
+  // test get/set multiple value string alternative order
+  values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT_EQ((size_t) 0, values.size());
+  preferences->SetMultipleValue(key2, value2);
+  OLA_ASSERT(preferences->HasKey(key2));
+  values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT_EQ((size_t) 1, values.size());
+  OLA_ASSERT_EQ(value2, values.at(0));
+  preferences->SetMultipleValue(key2, value1);
+  OLA_ASSERT(preferences->HasKey(key2));
+  values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT_EQ((size_t) 2, values.size());
+  // Insertion order is preserved, not sort order
+  OLA_ASSERT_EQ(value2, values.at(0));
+  OLA_ASSERT_EQ(value1, values.at(1));
+  preferences->RemoveValue(key2);
+  OLA_ASSERT_FALSE(preferences->HasKey(key2));
 
   // test get/set multiple value uint
   values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 0, values.size());
   preferences->SetMultipleValue(key2, value3);
-  values = preferences->GetMultipleValue(key2);
   OLA_ASSERT(preferences->HasKey(key2));
+  values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 1, values.size());
   OLA_ASSERT_EQ(IntToString(value3), values.at(0));
   preferences->SetMultipleValue(key2, value4);
+  OLA_ASSERT(preferences->HasKey(key2));
   values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 2, values.size());
   OLA_ASSERT_EQ(IntToString(value3), values.at(0));
   OLA_ASSERT_EQ(IntToString(value4), values.at(1));
   preferences->RemoveValue(key2);
+  OLA_ASSERT_FALSE(preferences->HasKey(key2));
 
   // test get/set multiple value int
   values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 0, values.size());
   preferences->SetMultipleValue(key2, value5);
-  values = preferences->GetMultipleValue(key2);
   OLA_ASSERT(preferences->HasKey(key2));
+  values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 1, values.size());
   OLA_ASSERT_EQ(IntToString(value5), values.at(0));
   preferences->SetMultipleValue(key2, value6);
+  OLA_ASSERT(preferences->HasKey(key2));
   values = preferences->GetMultipleValue(key2);
   OLA_ASSERT_EQ((size_t) 2, values.size());
   OLA_ASSERT_EQ(IntToString(value5), values.at(0));
   OLA_ASSERT_EQ(IntToString(value6), values.at(1));
   preferences->RemoveValue(key2);
+  OLA_ASSERT_FALSE(preferences->HasKey(key2));
 
   // test SetDefaultValue String
   OLA_ASSERT(preferences->SetDefaultValue(key1, StringValidator(), value1));
