@@ -80,6 +80,9 @@ typedef enum {
   OLA_E137_DIMMER_MODEL = 8,
   // A E1.37-2 responder
   OLA_E137_2_MODEL = 9,
+  // A E1.37-5 responder
+  // TODO(Peter): Document this on the wiki!
+  OLA_E137_5_MODEL = 10,
 } ola_rdm_model_id;
 
 extern const char OLA_MANUFACTURER_LABEL[];

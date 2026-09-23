@@ -11,6 +11,7 @@ olardminclude_HEADERS = \
     include/ola/rdm/DimmerSubDevice.h \
     include/ola/rdm/DiscoveryAgent.h \
     include/ola/rdm/DummyResponder.h \
+    include/ola/rdm/GeneralResponder.h \
     include/ola/rdm/MessageDeserializer.h \
     include/ola/rdm/MessageSerializer.h \
     include/ola/rdm/MovingLightResponder.h \
