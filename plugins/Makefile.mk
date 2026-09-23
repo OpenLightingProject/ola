@@ -18,6 +18,7 @@ include plugins/spi/Makefile.mk
 include plugins/spidmx/Makefile.mk
 include plugins/stageprofi/Makefile.mk
 include plugins/usbdmx/Makefile.mk
+include plugins/ovdmx/Makefile.mk
 
 if !USING_WIN32
 include plugins/usbpro/Makefile.mk
