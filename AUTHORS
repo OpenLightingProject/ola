@@ -18,7 +18,7 @@ Contributors:
   Jannis Achstetter, compile fixes for newer dependencies and various fixes
   Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
   Lukas Erlinghagen, win32 port.
-  Johan Nilsson, Philips Hue, Osram Lightify & crelay trigger config
+  Johan Nilsson, Philips Hue, Lightify, crelay & Elgato Key Light ola_trigger configs
   Joshua Moyerman, Art-Net fixes.
   Masaki Muranaka, various patches
   Nicolas, for the win32 port of libartnet
