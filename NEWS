@@ -1,14 +1,110 @@
-x/y/2026 ola-0.10.10
+x/y/2026 ola-0.11.0
  Features:
  * Generate coverage
+ * Add favicons and manifest files to the new web UI
+ * Support unquoted numeric variables, arguments and assignment within
+   ola_trigger
+ * Move common device info to device description, rather than ports for USBPro
+   and SPI
+ * Add support for USB Pro MK II B widgets
+ * Add support for AVLdiy.cn D512 device #1073
+ * Add support for DMXCreator 512 Basic USB device
+ * Allow keyboard input for the keypad in the new web UI
+ * Convert the plugin documentation to Markdown and use marked to render it in
+   the new web UI, whilst still generating the description header files for
+   other workflows #678
+ * Some minor improvements to the new web UI
+ * Add support for ShowJockey SJ-DMX-U1 device
+ * Add an ola_trigger config to control relays using crelay
+ * Confirm existing support for LumenRadio CRMX Nova TX USB
+ * Added sensor ranges and units to RDM Model Collector
+ * Add native SPI DMX support to receive DMX input using an SPI port sampling at
+   2MHz #1285
+ * Clarified/expanded build instructions for Debian and similar distributions
+ * Add support for Nanoleaf Aurora control
+ * Add support for APA102 with pixel brightness mode #1356
+ * Increase SPI plugin's max port count to 32 #1379
+ * Add support for the Digital Enlightenment USB-DMX interface #241
+ * Add support for the FX5 DMX interface #241
+ * Avoid the use of the root logger in the Python API
+ * Use Pandoc to render the GFM config file docs as HTML on the website
+ * Add support for various dimmer parameter PIDs from E1.37-1 in the web UI and
+   HTTP API
+ * Add a screenshot mode which hides private data
+ * Collect the device label and additional basic personality info in the RDM
+   model collector
+ * Prettify the version option in the auto-generated flags man pages
+ * Add support for the Eurolite USB-DMX512 PRO MK2, disabled by default due to
+   clashes with various other FTDI based interfaces
+ * Allow all origin in HTTPServer responses (CORS)
+ * ola_rdm_get/set should only display actionable PIDs #1632
+ * Add in/out point support to ola_recorder #1602
+ * Extend ola_streaming_client to optionally read universe numbers from STDIN
+ * Add Kinet portout support #1544
+ * Document apparent existing support for the Eurolite freeDMX Wi-Fi (from its
+   manual)
+ * Update Debian Package Services and Config Directory including adding systemd
+   support
+ * Add a build name which is shown in various places
+ * Add Eurolite serial number support, so specific FTDI interfaces can be
+   claimed as Eurolite based on their serial numbers
+ * Add the ability to set a universe to blackout via ola_set_dmx
+ * Add additional E1.33 and E1.37-7 PIDs
+ * Track Eurolite MK2 by serial number where available so patching should follow
+   the device
+ * Add support for DMXControl Projects e.V. Nodle R4S interfaces
+ * Update ESTA PIDs and data to cover E1.20-2025
+ * Add ESTA PIDs and data for E1.37-5
+ * Add additional TSP slot ID definitions
+ * Add support for NORTLE FTDI interfaces #1659
+ * Update manufacturer name data to cover latest from ESTA allocations
+ * Collect the new E1.37-5 URLs and metadata via the RDM model collector
+ * Add support for a lot of the E1.37-5 PIDs to the RDM dummy responders
+ * Add additional acronyms to customise capitalization behaviour
 
  API:
- * 
+ * Add the ability to get info about all universes to the Java API
+ * Bump our POM minimum Java requirements
+ * Update JUnit in our POM
 
  RDM Tests:
  * Standardise a couple of DMX Fail Mode and Startup Mode tests
- * Fix the order of hold time and delay times for DMX_STARTUP_MODE and DMX_FAIL_MODE #1842
+ * Fix the order of hold time and delay times for DMX_STARTUP_MODE and
+   DMX_FAIL_MODE #1842
  * Correct the PID used for SetDmxStartupMode #1843
+ * Make the RDM responder test GetMaxPacketSize test data increment uniquely to
+   help with diagnostics
+ * Add more unsupported SET tests to the RDM responder tests
+ * Fix the MuteAllDevices RDM responder test for plugins that don't support
+   discovery commands
+ * Standardise some RDM responder test names to match their PID names
+ * Add a script to list expected RDM responder tests and autogenerate test code
+   for them
+ * Display manufacturer name from the PID files during RDM responder testing
+ * Fix the categorisation of some RDM responder tests
+ * Improve some RDM responder test DMX Personality Description tests
+ * Add missing no data, with data and with extra data RDM responder tests
+ * Add E1.37-2 based RDM responder tests
+ * Simplify the Get and Set Zero Mixins for the RDM responder tests
+ * Ensure we always stop the RDM responder tests when we've finished testing, so
+   they complete correctly
+ * Standardise more RDM responder test names based on their PID names
+ * Add some dimmer SET error case tests to the RDM responder tests
+ * Add additional Status Report Threshold and Status Messages RDM responder
+   tests
+ * Add extra E1.37-2 error case RDM responder tests
+ * Ensure we populate the named UIDs for the RDM responder tests in all
+   circumstances
+ * Unify the GetOutOfRange and SetOutOfRange Mixins in the RDM responder tests
+ * Fix a bug in the responder tests that happens in some scenarios with queued
+   messages
+ * Add some E1.33 RDM responder tests
+ * Check if an interface is listed multiple times in the RDM test for
+   LIST_INTERFACES
+ * Add some E1.37-5 RDM tests
+ * Flag potentially redundant RDM tests within our list_rdm_tests tool due to a
+   PID's maximum data size already being at the max PDL
+ * Add some E1.33 RDM tests
 
  Bugs:
  * Add a missing file to the Python install list
@@ -20,12 +116,88 @@ x/y/2026 ola-0.10.10
  * Update some OSC links
  * Fix the formatting of some PID values in some Python exceptions
  * Handle new OSC typing introduced in liblo 0.32 #1949
- * Correct an SPI sync port documentation bug
+ * Correct an SPI sync port documentation bug 
+ * Fix double counted line numbers in ola_trigger configs
+ * Fix a typo in the SPI output length calculation
+ * Fix a Python include path
+ * Update some PLASA references to ESTA
+ * Actually decode PID param data and correct the flag logic in the
+   logic_rdm_sniffer
+ * Force gnu++98 mode if compiler supports 98 and 11 modes so we keep
+   std::auto_ptr #1028
+ * Renamed *MiniumLevel*(sic) to *MinimumLevel* in various RDM responder test
+   names
+ * Configure now correctly mangles AM_LDFLAGS instead of LDFLAGS #1201
+ * Fix the path to the example OSC plugin walkthrough
+ * Simplify some code by using our ToHex formatting code more
+ * Fix USB PRO change-of-state packet handling to allow valid packets #1290
+ * Ensure the RDM model collector can continue after an unpack error for a
+   single PID
+ * Initialize members of SPIDMXParser class
+ * Remove Protobuf AddDescriptors() call to support newer Protobuf #1192
+ * Increment the transaction number for each RDM packet #189
+ * Renamed *syncron*(sic) to *synchron* across all our code #1331
+ * Renamed SC_E133_NONEXISTANT_ENDPOINT(sic) to SC_E133_NONEXISTENT_ENDPOINT in
+   the E133Enums
+ * Renamed sucessful(sic) to successful in various parts of usbpro_firmware
+ * Renamed StatusMessageIdToString to StatusCodeToString in the
+   E1.33 E133StatusHelper code to avoid ambiguity
+ * Rename ArtNet, Artnet, artnet, Art-net to Art-Net #1328
+ * Fix closed socket detection in Python 3
+ * Fix some minor typos
+ * Detach kernel driver to allow claiming of USB interface when using libusb
+ * Extend configure so we switch to C++11 if necessary for Protobuf 3.6 #1463
+ * Correctly handle double quotes in the README to header converter #1489
+ * Add additional acronyms to customise capitalization behaviour
+ * Fix some RDM discovery bugs around suspected muted responders continuing to
+   respond
+ * Fix a bug in how we simulate RDM responses and collisions in our discovery
+   test cases
+ * Fix some RDM discovery bugs by branching around a muted responders which
+   continues to respond
+ * Ensure int descriptors are within the valid ranges and/or labels
+ * Fix GetDimmerMaximumLevel in the RDMAPI only processing one of the two bytes
+   of the value
+ * Fix the plugin header generation script not working with newer versions of
+   sed #1592
+ * Fix CORS support in older versions of libmicrohttpd
+ * Fix make check on older compilers
+ * Fix lots of Python 3 errors
+ * Move widget deletion to main thread in usbdmx plugin to avoid potential
+   deadlock
+ * Ensure the dummy data we provide in our RDM responder tests is binary for
+   Python 3 compatibility
+ * Update RDM manufacturer names and remove duplicates #1837
+ * Fix a number of typos and grammar issues, primarily caught by codespell
+ * Fix the build for macOS where endian.h is not available
+ * Modify compiler flags to suppress variable length array error
+ * Handle a device info field being unavailable for some reason breaking the RDM
+   model collector
 
  Internal:
- * Fix lots more internal typos and grammar
- * Fix a number of flake8 errors
  * Update Grunt versions used by the new web UI and rebuild it
+ * Improve our pychecker results and cleanliness
+ * Improve our flake8 results and cleanliness
+ * Tidy some ola_trigger code and Doxygen documentation
+ * Cleanup the Grunt config on the new web UI
+ * Improve some of our Doxygen code documentation
+ * Tidy RDM Command processing
+ * Simplify dummy responder config code
+ * Improve more of our Doxygen documentation
+ * Add a new specific OLA_ASSERT_DMX_EQUALS test
+ * Switch more tests to OLA_ASSERT_EQ for better reporting on failures
+ * Deprecate a duplicate RDM Start Code constant, use ola::rdm::START_CODE from
+   now on
+ * Add Stylelint CSS linter and fix the issues it found #1610
+ * More thorough checking of SLOT_INFO and DEFAULT_SLOT_VALUE edge cases in both
+   our responder helpers and the RDM responder tests
+ * Add a helper method to convert an RDMResponse to a NACKing RDMResponse
+ * Add the ability to Pack and unpack UIDSets
+ * Add testing of MAC addresses within our RDM messaging
+ * Add some initial IPv6 classes for internal use and via the RDM messaging
+ * Add support for uint64 and int64 internally and via the RDM messaging
+ * Lots of progress towards E1.33 (RDMNet and LLRP) support, although nothing
+   particularly concrete yet
 
 26/2/2023 ola-0.10.9
  Features:

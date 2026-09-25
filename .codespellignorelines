@@ -11,6 +11,8 @@
  * Renamed RESONSE_INVALID_DESTINATION(sic) to RESPONSE_INVALID_DESTINATION in
  * Rename CircularDepdendancyException(sic) to CircularDependencyException in
  * Rename AppendMultipler(sic) to AppendMultiplier in the RDM messaging code
+ * Renamed SC_E133_NONEXISTANT_ENDPOINT(sic) to SC_E133_NONEXISTENT_ENDPOINT in
+ * Renamed sucessful(sic) to successful in various parts of usbpro_firmware
         /^(?:([0-9]{1,3})(?:\s(THRU)\s(?:([0-9]{1,3}))?)?(?:\s(@)\s(?:([0-9]{1,3}|FULL))?)?)/;
  *   channel_range ::= "ALL" | "*" | channel "THRU" channel | channel > channel
       /(?:([0-9]{1,3})(?:\s+THRU\s+([0-9]{0,3}))?)\s+@\s+([0-9]{0,3})$/);
