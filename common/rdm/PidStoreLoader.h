@@ -71,9 +71,8 @@ class PidStoreLoader {
    *   contents.
    * @returns A pointer to a new RootPidStore or NULL if loading failed.
    */
-  const RootPidStore *LoadFromStream(std::istream *data,
-                                     bool validate = true);
-
+  const RootPidStore *LoadFromStream(std::istream *data, bool validate = true);
+const RootPidStore *LoadManufacturerNames(const std::string &file);
  private:
   typedef std::map<uint16_t, const PidDescriptor*> PidMap;
   typedef std::map<uint16_t, PidMap*> ManufacturerMap;
