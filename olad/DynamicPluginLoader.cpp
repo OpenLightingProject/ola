@@ -91,6 +91,10 @@
 #include "plugins/shownet/ShowNetPlugin.h"
 #endif  // USE_SHOWNET
 
+#ifdef USE_SIGNET
+#include "plugins/signet/SigNetPlugin.h"
+#endif  // USE_SIGNET
+
 #ifdef USE_SPI
 #include "plugins/spi/SPIPlugin.h"
 #endif  // USE_SPI
@@ -215,6 +219,11 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(
       new ola::plugin::shownet::ShowNetPlugin(m_plugin_adaptor));
 #endif  // USE_SHOWNET
+
+#ifdef USE_SIGNET
+  m_plugins.push_back(
+      new ola::plugin::signet::SigNetPlugin(m_plugin_adaptor));
+#endif  // USE_SIGNET
 
 #ifdef USE_SPI
   m_plugins.push_back(

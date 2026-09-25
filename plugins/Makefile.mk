@@ -14,6 +14,7 @@ include plugins/pathport/Makefile.mk
 include plugins/renard/Makefile.mk
 include plugins/sandnet/Makefile.mk
 include plugins/shownet/Makefile.mk
+include plugins/signet/Makefile.mk
 include plugins/spi/Makefile.mk
 include plugins/spidmx/Makefile.mk
 include plugins/stageprofi/Makefile.mk

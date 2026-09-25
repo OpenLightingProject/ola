@@ -1,6 +1,7 @@
 include include/ola/acn/Makefile.mk
 include include/ola/base/Makefile.mk
 include include/ola/client/Makefile.mk
+include include/ola/crypto/Makefile.mk
 include include/ola/dmx/Makefile.mk
 include include/ola/e133/Makefile.mk
 include include/ola/file/Makefile.mk
