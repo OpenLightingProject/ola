@@ -347,6 +347,7 @@ void DescriptorTest::testIntervalsAndLabels() {
   UInt16FieldDescriptor::LabeledValues labels;
   labels["dozen"] = 12;
   labels["bakers_dozen"] = 13;
+  labels["special"] = 15;
 
   UInt16FieldDescriptor uint16_descriptor("uint16", intervals, labels);
 
@@ -360,7 +361,8 @@ void DescriptorTest::testIntervalsAndLabels() {
   OLA_ASSERT_TRUE(uint16_descriptor.IsValid(12));
   OLA_ASSERT_TRUE(uint16_descriptor.IsValid(13));
   OLA_ASSERT_TRUE(uint16_descriptor.IsValid(14));
-  OLA_ASSERT_FALSE(uint16_descriptor.IsValid(15));
+  OLA_ASSERT_TRUE(uint16_descriptor.IsValid(15));
+  OLA_ASSERT_FALSE(uint16_descriptor.IsValid(16));
   OLA_ASSERT_FALSE(uint16_descriptor.IsValid(255));
   OLA_ASSERT_FALSE(uint16_descriptor.IsValid(65535));
 
@@ -371,6 +373,8 @@ void DescriptorTest::testIntervalsAndLabels() {
   OLA_ASSERT_EQ(static_cast<uint16_t>(12), value);
   OLA_ASSERT_TRUE(uint16_descriptor.LookupLabel("bakers_dozen", &value));
   OLA_ASSERT_EQ(static_cast<uint16_t>(13), value);
+  OLA_ASSERT_TRUE(uint16_descriptor.LookupLabel("special", &value));
+  OLA_ASSERT_EQ(static_cast<uint16_t>(15), value);
   OLA_ASSERT_FALSE(uint16_descriptor.LookupLabel("twenty", &value));
 
   // check LookupValue
