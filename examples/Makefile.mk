@@ -102,9 +102,11 @@ examples_ola_dmxmonitor_LDADD = $(EXAMPLE_COMMON_LIBS) -lncurses
 endif
 endif
 
-noinst_PROGRAMS += examples/ola_throughput examples/ola_latency
+noinst_PROGRAMS += examples/ola_throughput examples/ola_throughput_multi examples/ola_latency
 examples_ola_throughput_SOURCES = examples/ola-throughput.cpp
 examples_ola_throughput_LDADD = $(EXAMPLE_COMMON_LIBS)
+examples_ola_throughput_multi_SOURCES = examples/ola-throughput-multi.cpp
+examples_ola_throughput_multi_LDADD = $(EXAMPLE_COMMON_LIBS)
 examples_ola_latency_SOURCES = examples/ola-latency.cpp
 examples_ola_latency_LDADD = $(EXAMPLE_COMMON_LIBS)
 
