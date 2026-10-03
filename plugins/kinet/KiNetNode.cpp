@@ -23,6 +23,7 @@
 
 #include "ola/Constants.h"
 #include "ola/Logging.h"
+#include "ola/io/Descriptor.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/util/SequenceNumber.h"
@@ -215,6 +216,12 @@ bool KiNetNode::InitNetwork() {
 
   if (!socket->Init()) {
     OLA_WARN << "Socket init failed";
+    return false;
+  }
+
+  if (!ola::io::ConnectedDescriptor::SetNonBlocking(
+          socket->WriteDescriptor())) {
+    OLA_WARN << "Failed to make KiNet socket non-blocking";
     return false;
   }
 
