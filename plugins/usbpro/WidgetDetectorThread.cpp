@@ -420,7 +420,7 @@ void WidgetDetectorThread::FreeDescriptor(ConnectedDescriptor *descriptor) {
   DescriptorInfo &descriptor_info = m_active_descriptors[descriptor];
 
   m_active_paths.erase(descriptor_info.first);
-  io::ReleaseUUCPLock(descriptor_info.first);
+  io::ReleaseSerialPortLock(descriptor_info.first);
   m_active_descriptors.erase(descriptor);
   delete descriptor;
 }
