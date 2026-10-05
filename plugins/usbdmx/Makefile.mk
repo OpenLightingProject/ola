@@ -49,6 +49,10 @@ plugins_usbdmx_libolausbdmxwidget_la_SOURCES = \
     plugins/usbdmx/ShowJockeyDMXU1.h \
     plugins/usbdmx/ShowJockeyDMXU1Factory.cpp \
     plugins/usbdmx/ShowJockeyDMXU1Factory.h \
+    plugins/usbdmx/Siudi.cpp \
+    plugins/usbdmx/Siudi.h \
+    plugins/usbdmx/SiudiFactory.cpp \
+    plugins/usbdmx/SiudiFactory.h \
     plugins/usbdmx/Sunlite.cpp \
     plugins/usbdmx/Sunlite.h \
     plugins/usbdmx/SunliteFactory.cpp \

@@ -46,5 +46,8 @@ SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1d50", ATTRS{idPro
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="aced", GROUP="plugdev", MODE="660", TAG+="uaccess"
 SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="acee", GROUP="plugdev", MODE="660", TAG+="uaccess"
 
+# udev rules for Nicoleaudie Intelligent USB DMX Interface (SIUDI)
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="6244", ATTRS{idProduct}=="030?", GROUP="plugdev", MODE="660", TAG+="uaccess"
+
 # udev rules for SPI
 SUBSYSTEM=="spidev", MODE="0666"
