@@ -49,6 +49,8 @@ class SPIOutputTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCombinedAPA102Control);
   CPPUNIT_TEST(testIndividualAPA102ControlPixelBrightness);
   CPPUNIT_TEST(testCombinedAPA102ControlPixelBrightness);
+  CPPUNIT_TEST(testIndividualWS2812bControl);
+  CPPUNIT_TEST(testCombinedWS2812bControl);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -69,6 +71,8 @@ class SPIOutputTest: public CppUnit::TestFixture {
   void testCombinedAPA102Control();
   void testIndividualAPA102ControlPixelBrightness();
   void testCombinedAPA102ControlPixelBrightness();
+  void testIndividualWS2812bControl();
+  void testCombinedWS2812bControl();
 
  private:
   UID m_uid;
@@ -1139,3 +1143,275 @@ void SPIOutputTest::testCombinedAPA102ControlPixelBrightness() {
   OLA_ASSERT_DATA_EQUALS(EXPECTED8, arraysize(EXPECTED8), data, length);
   OLA_ASSERT_EQ(5u, backend.Writes(0));
 }
+
+/*
+ * WS2812b unit tests
+*/
+void SPIOutputTest::testIndividualWS2812bControl() {
+  const uint16_t this_test_personality = SPIOutput::PERS_WS2812B_INDIVIDUAL;
+  // setup Backend
+  FakeSPIBackend backend(2);
+  SPIOutput::Options options(0, "Test SPI Device");
+  // setup pixel_count to 2 (enough to test all cases)
+  options.pixel_count = 2;
+  // setup SPIOutput
+  SPIOutput output(m_uid, &backend, options);
+  // set personality to Individual WS2812b
+  output.SetPersonality(this_test_personality);
+
+  // simulate incoming dmx data with this buffer
+  DmxBuffer buffer;
+  // setup an pointer to the returned data (the fake SPI data stream)
+  unsigned int length = 0;
+  const uint8_t *data = NULL;
+
+  // test1
+  // setup some 'DMX' data
+  buffer.SetFromString("1, 10, 100");
+  // simulate incoming data
+  output.WriteDMX(buffer);
+  // get fake SPI data stream
+  data = backend.GetData(0, &length);
+  // this is the expected spi data stream:
+  const uint8_t EXPECTED1[] = { 0x92, 0x4D, 0x34,   // Pixel 1 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 1 Red (1)
+                                0x9B, 0x49, 0xA4,   // Pixel 1 Blue (100)
+                                0x92, 0x49, 0x24,   // Pixel 2 Green (0)
+                                0x92, 0x49, 0x24,   // Pixel 2 Red (0)
+                                0x92, 0x49, 0x24    // Pixel 2 Blue (0)
+                              };
+  // check for Equality
+  OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
+  // check if the output writes are 1
+  OLA_ASSERT_EQ(1u, backend.Writes(0));
+
+  // test2
+  buffer.SetFromString("255,128,0,10,20,30");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED2[] = { 0xD2, 0x49, 0x24,   // Pixel 1 Green (128)
+                                0xDB, 0x6D, 0xB6,   // Pixel 1 Red (255)
+                                0x92, 0x49, 0x24,   // Pixel 1 Blue (0)
+                                0x92, 0x69, 0xA4,   // Pixel 2 Green (20)
+                                0x92, 0x4D, 0x34,   // Pixel 2 Red (10)
+                                0x92, 0x6D, 0xB4    // Pixel 2 Blue (30)
+                              };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
+  OLA_ASSERT_EQ(2u, backend.Writes(0));
+
+  // test3
+  // test what happens when only new data for the first leds is available.
+  // later data should be not modified so for pixel2 data set in test2 is valid
+  buffer.SetFromString("34,56,78");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED3[] = { 0x93, 0x6D, 0x24,   // Pixel 1 Green (56)
+                                0x93, 0x49, 0x34,   // Pixel 1 Red (34)
+                                0x9A, 0x4D, 0xB4,   // Pixel 1 Blue (78)
+                                0x92, 0x69, 0xA4,   // Pixel 2 Green (20)
+                                0x92, 0x4D, 0x34,   // Pixel 2 Red (10)
+                                0x92, 0x6D, 0xB4    // Pixel 2 Blue (30)
+                              };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED3, arraysize(EXPECTED3), data, length);
+  OLA_ASSERT_EQ(3u, backend.Writes(0));
+
+  // test4
+  // tests what happens if fewer then needed color information are received
+  buffer.SetFromString("7, 9");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  // check that the returns are the same as test3 (nothing changed)
+  OLA_ASSERT_DATA_EQUALS(EXPECTED3, arraysize(EXPECTED3), data, length);
+  OLA_ASSERT_EQ(3u, backend.Writes(0));
+
+  // test5
+  // test with changed StartAddress
+  // set StartAddress
+  output.SetStartAddress(3);
+  // values 1 & 2 should not be visible in SPI data stream
+  buffer.SetFromString("1,2,3,4,5,6,7,8");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED5[] = { 0x92, 0x49, 0xA4,   // Pixel 1 Green (4)
+                                0x92, 0x49, 0x36,   // Pixel 1 Red (3)
+                                0x92, 0x49, 0xA6,   // Pixel 1 Blue (5)
+                                0x92, 0x49, 0xB6,   // Pixel 2 Green (7)
+                                0x92, 0x49, 0xB4,   // Pixel 2 Red (6)
+                                0x92, 0x4D, 0x24    // Pixel 2 Blue (8)
+                              };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED5, arraysize(EXPECTED5), data, length);
+  OLA_ASSERT_EQ(4u, backend.Writes(0));
+  // change StartAddress back to default
+  output.SetStartAddress(1);
+
+  // test6
+  // Check nothing changed on the other output.
+  OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
+                backend.GetData(1, &length));
+  OLA_ASSERT_EQ(0u, backend.Writes(1));
+
+  // test7
+  // test for multiple ports
+  // StartFrame is only allowed on first port.
+  SPIOutput::Options option1(1, "second SPI Device");
+  // setup pixel_count to 2 (enough to test all cases)
+  option1.pixel_count = 2;
+  // setup SPIOutput
+  SPIOutput output1(m_uid, &backend, option1);
+  // set personality
+  output1.SetPersonality(this_test_personality);
+  // setup some 'DMX' data
+  buffer.SetFromString("1, 10, 100");
+  // simulate incoming data
+  output1.WriteDMX(buffer);
+  // get fake SPI data stream
+  data = backend.GetData(1, &length);
+  // this is the expected spi data stream:
+  // StartFrame is missing --> port is >0 !
+  const uint8_t EXPECTED7[] = { 0x92, 0x4D, 0x34,   // Pixel 1 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 1 Red (1)
+                                0x9B, 0x49, 0xA4,   // Pixel 1 Blue (100)
+                                0x92, 0x49, 0x24,   // Pixel 2 Green (0)
+                                0x92, 0x49, 0x24,   // Pixel 2 Red (0)
+                                0x92, 0x49, 0x24    // Pixel 2 Blue (0)
+                              };
+  // check for Equality
+  OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
+  // check if the output writes are 1
+  OLA_ASSERT_EQ(1u, backend.Writes(1));
+}
+
+void SPIOutputTest::testCombinedWS2812bControl() {
+  const uint16_t this_test_personality = SPIOutput::PERS_WS2812B_COMBINED;
+  // setup Backend
+  FakeSPIBackend backend(2);
+  SPIOutput::Options options(0, "Test SPI Device");
+  // setup pixel_count to 2 (enough to test all cases)
+  options.pixel_count = 2;
+  // setup SPIOutput
+  SPIOutput output(m_uid, &backend, options);
+  // set personality to Combined WS2812b
+  output.SetPersonality(this_test_personality);
+
+  // simulate incoming dmx data with this buffer
+  DmxBuffer buffer;
+  // setup an pointer to the returned data (the fake SPI data stream)
+  unsigned int length = 0;
+  const uint8_t *data = NULL;
+
+  // test1
+  // setup some 'DMX' data
+  buffer.SetFromString("1, 10, 100");
+  // simulate incoming data
+  output.WriteDMX(buffer);
+  // get fake SPI data stream
+  data = backend.GetData(0, &length);
+  // this is the expected spi data stream:
+  const uint8_t EXPECTED1[] = { 0x92, 0x4D, 0x34,   // Pixel 1 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 1 Red (1)
+                                0x9B, 0x49, 0xA4,   // Pixel 1 Blue (100)
+                                0x92, 0x4D, 0x34,   // Pixel 2 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 2 Red (1)
+                                0x9B, 0x49, 0xA4    // Pixel 2 Blue (100)
+                              };
+  // check for Equality
+  OLA_ASSERT_DATA_EQUALS(EXPECTED1, arraysize(EXPECTED1), data, length);
+  // check if the output writes are 1
+  OLA_ASSERT_EQ(1u, backend.Writes(0));
+
+  // test2
+  buffer.SetFromString("255,128,0,10,20,30");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED2[] = { 0xD2, 0x49, 0x24,   // Pixel 1 Green (128)
+                                0xDB, 0x6D, 0xB6,   // Pixel 1 Red (255)
+                                0x92, 0x49, 0x24,   // Pixel 1 Blue (0)
+                                0xD2, 0x49, 0x24,   // Pixel 2 Green (128)
+                                0xDB, 0x6D, 0xB6,   // Pixel 2 Red (255)
+                                0x92, 0x49, 0x24    // Pixel 2 Blue (0)
+                              };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED2, arraysize(EXPECTED2), data, length);
+  OLA_ASSERT_EQ(2u, backend.Writes(0));
+
+  // test3
+  // test what happens when only new data for the first leds is available.
+  // later data should be not modified so for pixel2 data set in test2 is valid
+  buffer.SetFromString("34,56,78");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED3[] = { 0x93, 0x6D, 0x24,   // Pixel 1 Green (56)
+                                0x93, 0x49, 0x34,   // Pixel 1 Red (34)
+                                0x9A, 0x4D, 0xB4,   // Pixel 1 Blue (78)
+                                0x93, 0x6D, 0x24,   // Pixel 2 Green (56)
+                                0x93, 0x49, 0x34,   // Pixel 2 Red (34)
+                                0x9A, 0x4D, 0xB4    // Pixel 2 Blue (78)
+                              };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED3, arraysize(EXPECTED3), data, length);
+  OLA_ASSERT_EQ(3u, backend.Writes(0));
+
+  // test4
+  // tests what happens if fewer then needed color information are received
+  buffer.SetFromString("7, 9");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  // check that the returns are the same as test3 (nothing changed)
+  OLA_ASSERT_DATA_EQUALS(EXPECTED3, arraysize(EXPECTED3), data, length);
+  OLA_ASSERT_EQ(3u, backend.Writes(0));
+
+  // test5
+  // test with changed StartAddress
+  // set StartAddress
+  output.SetStartAddress(3);
+  // values 1 & 2 should not be visible in SPI data stream
+  buffer.SetFromString("1,2,3,4,5,6,7,8");
+  output.WriteDMX(buffer);
+  data = backend.GetData(0, &length);
+  const uint8_t EXPECTED5[] = { 0x92, 0x49, 0xA4,   // Pixel 1 Green (4)
+                                0x92, 0x49, 0x36,   // Pixel 1 Red (3)
+                                0x92, 0x49, 0xA6,   // Pixel 1 Blue (5)
+                                0x92, 0x49, 0xA4,   // Pixel 2 Green (4)
+                                0x92, 0x49, 0x36,   // Pixel 2 Red (3)
+                                0x92, 0x49, 0xA6    // Pixel 2 Blue (5)
+                              };
+  OLA_ASSERT_DATA_EQUALS(EXPECTED5, arraysize(EXPECTED5), data, length);
+  OLA_ASSERT_EQ(4u, backend.Writes(0));
+  // change StartAddress back to default
+  output.SetStartAddress(1);
+
+  // test6
+  // Check nothing changed on the other output.
+  OLA_ASSERT_EQ(reinterpret_cast<const uint8_t*>(NULL),
+                backend.GetData(1, &length));
+  OLA_ASSERT_EQ(0u, backend.Writes(1));
+
+  // test7
+  // test for multiple ports
+  // StartFrame is only allowed on first port.
+  SPIOutput::Options option1(1, "second SPI Device");
+  // setup pixel_count to 2 (enough to test all cases)
+  option1.pixel_count = 2;
+  // setup SPIOutput
+  SPIOutput output1(m_uid, &backend, option1);
+  // set personality
+  output1.SetPersonality(this_test_personality);
+  // setup some 'DMX' data
+  buffer.SetFromString("1, 10, 100");
+  // simulate incoming data
+  output1.WriteDMX(buffer);
+  // get fake SPI data stream
+  data = backend.GetData(1, &length);
+  // this is the expected spi data stream:
+  // StartFrame is missing --> port is >0 !
+  const uint8_t EXPECTED7[] = { 0x92, 0x4D, 0x34,   // Pixel 1 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 1 Red (1)
+                                0x9B, 0x49, 0xA4,   // Pixel 1 Blue (100)
+                                0x92, 0x4D, 0x34,   // Pixel 2 Green (10)
+                                0x92, 0x49, 0x26,   // Pixel 2 Red (1)
+                                0x9B, 0x49, 0xA4    // Pixel 2 Blue (100)
+                              };
+  // check for Equality
+  OLA_ASSERT_DATA_EQUALS(EXPECTED7, arraysize(EXPECTED7), data, length);
+  // check if the output writes are 1
+  OLA_ASSERT_EQ(1u, backend.Writes(1));
+}
+

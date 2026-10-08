@@ -87,11 +87,13 @@ const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::P9813_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::APA102_SLOTS_PER_PIXEL = 3;
 const uint16_t SPIOutput::APA102_PB_SLOTS_PER_PIXEL = 4;
+const uint16_t SPIOutput::WS2812B_SLOTS_PER_PIXEL = 3;
 
 // Number of bytes that each pixel uses on the SPI wires
 // (if it differs from 1:1 with colors)
 const uint16_t SPIOutput::P9813_SPI_BYTES_PER_PIXEL = 4;
 const uint16_t SPIOutput::APA102_SPI_BYTES_PER_PIXEL = 4;
+const uint16_t SPIOutput::WS2812B_SPI_BYTES_PER_PIXEL = 9;
 
 const uint16_t SPIOutput::APA102_START_FRAME_BYTES = 4;
 const uint8_t SPIOutput::APA102_LEDFRAME_START_MARK = 0xE0;
@@ -243,7 +245,6 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       personalities.begin() + PERS_APA102_INDIVIDUAL - 1,
       Personality(m_pixel_count * APA102_SLOTS_PER_PIXEL,
                   "APA102 Individual Control"));
-
   personalities.insert(
       personalities.begin() + PERS_APA102_COMBINED - 1,
       Personality(APA102_SLOTS_PER_PIXEL,
@@ -254,12 +255,26 @@ SPIOutput::SPIOutput(const UID &uid, SPIBackendInterface *backend,
       personalities.begin() + PERS_APA102_PB_INDIVIDUAL - 1,
       Personality(m_pixel_count * APA102_PB_SLOTS_PER_PIXEL,
                   "APA102 Pixel Brightness Individ."));
-
   personalities.insert(
       personalities.begin() + PERS_APA102_PB_COMBINED - 1,
       Personality(APA102_PB_SLOTS_PER_PIXEL,
                   "APA102 Pixel Brightness Combined",
                   sdc_irgb_combined));
+
+  personalities.insert(
+      personalities.begin() + PERS_WS2812B_INDIVIDUAL - 1,
+      Personality(m_pixel_count * WS2812B_SLOTS_PER_PIXEL,
+                  "WS2812b Individual Control"));
+  personalities.insert(
+      personalities.begin() + PERS_WS2812B_COMBINED - 1,
+      Personality(WS2812B_SLOTS_PER_PIXEL,
+                  "WS2812b Combined Control",
+                  sdc_rgb_combined));
+
+  for (uint8_t iter = 0; iter < personalities.size(); iter++)
+    OLA_DEBUG << "Personality '" << personalities[iter].Description()
+              << "' added to list of SPI personalities with id: "
+              << (iter + 1);
 
   m_personality_collection.reset(new PersonalityCollection(personalities));
   m_personality_manager.reset(new PersonalityManager(
@@ -386,6 +401,12 @@ bool SPIOutput::InternalWriteDMX(const DmxBuffer &buffer) {
       break;
     case PERS_APA102_PB_COMBINED:
       CombinedAPA102ControlPixelBrightness(buffer);
+      break;
+    case PERS_WS2812B_INDIVIDUAL:
+      IndividualWS2812bControl(buffer);
+      break;
+    case PERS_WS2812B_COMBINED:
+      CombinedWS2812bControl(buffer);
       break;
     default:
       break;
@@ -872,6 +893,135 @@ uint8_t SPIOutput::CalculateAPA102PixelBrightness(uint8_t brightness) {
   return (brightness >> 3);
 }
 
+void SPIOutput::IndividualWS2812bControl(const DmxBuffer &buffer) {
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+  if (buffer.Size() - first_slot < WS2812B_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << WS2812B_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
+    return;
+  }
+
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  const unsigned int output_length = m_pixel_count
+        * WS2812B_SPI_BYTES_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, output_length);
+  if (!output) {
+    OLA_INFO << "Unable to create output buffer of required length: "
+             << output_length;
+    return;
+  }
+
+  const unsigned int length = m_pixel_count;
+
+  for (unsigned int i = 0; i < length; i++) {
+    // Convert RGB to GRB
+    unsigned int offset = first_slot + i * WS2812B_SLOTS_PER_PIXEL;
+
+    // Get DMX data
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
+    if (offset < buffer.Size() - 2) {
+      r = buffer.Get(offset);
+      g = buffer.Get(offset + 1);
+      b = buffer.Get(offset + 2);
+    } else if (output[i * WS2812B_SPI_BYTES_PER_PIXEL] != 0) {
+        // fill further pixel data only if the pixel data is empty
+        break;
+    }
+
+    uint8_t low = 0, mid = 0, high = 0;
+
+    WS2812bByteMapper(g, &low, &mid, &high);
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL] = high;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 1] = mid;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 2] = low;
+
+    WS2812bByteMapper(r, &low, &mid, &high);
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 3] = high;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 4] = mid;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 5] = low;
+
+    WS2812bByteMapper(b, &low, &mid, &high);
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 6] = high;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 7] = mid;
+    output[i * WS2812B_SPI_BYTES_PER_PIXEL + 8] = low;
+  }
+
+  // write output back...
+  m_backend->Commit(m_output_number);
+}
+
+void SPIOutput::CombinedWS2812bControl(const DmxBuffer &buffer) {
+  const unsigned int first_slot = m_start_address - 1;  // 0 offset
+  if (buffer.Size() - first_slot < WS2812B_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << WS2812B_SLOTS_PER_PIXEL
+             << ", got " << buffer.Size() - first_slot;
+    return;
+  }
+
+  // We always check out the entire string length, even if we only have data
+  // for part of it
+  const unsigned int output_length = m_pixel_count
+      * WS2812B_SPI_BYTES_PER_PIXEL;
+  uint8_t *output = m_backend->Checkout(m_output_number, output_length);
+  if (!output) {
+    OLA_INFO << "Unable to create output buffer of required length: "
+             << output_length;
+    return;
+  }
+
+  // Grab RGB data for conversion to GBR
+  uint8_t r = buffer.Get(first_slot);
+  uint8_t g = buffer.Get(first_slot + 1);
+  uint8_t b = buffer.Get(first_slot + 2);
+  uint8_t low = 0, mid = 0, high = 0;
+
+  // create Pixel Data
+  uint8_t pixel_data[WS2812B_SPI_BYTES_PER_PIXEL];
+
+  WS2812bByteMapper(g, &low, &mid, &high);
+  pixel_data[0] = high;
+  pixel_data[1] = mid;
+  pixel_data[2] = low;
+
+  WS2812bByteMapper(r, &low, &mid, &high);
+  pixel_data[3] = high;
+  pixel_data[4] = mid;
+  pixel_data[5] = low;
+
+  WS2812bByteMapper(b, &low, &mid, &high);
+  pixel_data[6] = high;
+  pixel_data[7] = mid;
+  pixel_data[8] = low;
+
+  // set all pixel to same value
+  for (uint16_t i = 0; i < m_pixel_count; i++) {
+    memcpy(&output[i * WS2812B_SPI_BYTES_PER_PIXEL], pixel_data,
+           WS2812B_SPI_BYTES_PER_PIXEL);
+  }
+
+  // write output back...
+  m_backend->Commit(m_output_number);
+}
+
+/*
+ * Converting to WS2811/12b format.
+ *
+ * The format sends each bit with a leading 1 and a trailing 0.
+ * This function spaces out the bits of a byte and inserts them into a
+ *  hexadecimal version (0x924924) of the octal 44444444, ending up with
+ *  three bytes of information per byte input.
+ */
+void SPIOutput::WS2812bByteMapper(uint8_t input,
+    uint8_t *low, uint8_t *mid, uint8_t *high) {
+  *low = 0x24 | ((input & 0x1) << 1) | ((input & 0x2) << 3)
+      | ((input & 0x4) << 5);
+  *mid = 0x49 | ((input & 0x8) >> 1) | ((input & 0x10) << 1);
+  *high = 0x92 | ((input & 0x20) >> 5) | ((input & 0x40) >> 3)
+      | ((input & 0x80) >> 1);
+}
 
 
 RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
