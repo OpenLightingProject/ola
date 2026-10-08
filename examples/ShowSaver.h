@@ -45,7 +45,8 @@ class ShowSaver {
  private:
   const std::string m_filename;
   std::ofstream m_show_file;
-  ola::TimeStamp m_last_frame;
+  ola::TimeStamp m_first_frame;
+  int64_t m_saved_elapsed_ms;
 
   static const char OLA_SHOW_HEADER[];
 };
