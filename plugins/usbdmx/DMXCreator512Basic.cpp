@@ -193,7 +193,6 @@ class DMXCreator512BasicAsyncUsbSender : public AsyncUsbSender {
   }
 
   ~DMXCreator512BasicAsyncUsbSender() {
-    CancelTransfer();
   }
 
   libusb_device_handle* SetupHandle() {

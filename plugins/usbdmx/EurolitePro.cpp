@@ -224,7 +224,6 @@ class EuroliteProAsyncUsbSender : public AsyncUsbSender {
   }
 
   ~EuroliteProAsyncUsbSender() {
-    CancelTransfer();
   }
 
   libusb_device_handle* SetupHandle() {

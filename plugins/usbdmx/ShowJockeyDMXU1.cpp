@@ -277,7 +277,6 @@ class ShowJockeyDMXU1AsyncUsbSender : public AsyncUsbSender {
   }
 
   ~ShowJockeyDMXU1AsyncUsbSender() {
-    CancelTransfer();
     delete[] m_tx_frame;
   }
 

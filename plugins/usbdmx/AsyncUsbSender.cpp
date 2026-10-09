@@ -30,12 +30,15 @@ namespace usbdmx {
 using ola::usb::LibUsbAdaptor;
 
 AsyncUsbSender::AsyncUsbSender(LibUsbAdaptor *adaptor,
-                               libusb_device *usb_device)
-    : AsyncUsbTransceiverBase(adaptor, usb_device),
+                               libusb_device *usb_device,
+                               unsigned int num_transfers)
+    : AsyncUsbTransceiverBase(adaptor, usb_device, num_transfers),
       m_pending_tx(false) {
 }
 
 AsyncUsbSender::~AsyncUsbSender() {
+  ola::thread::MutexLocker locker(&m_mutex);
+  CancelTransfer();
   m_adaptor->Close(m_usb_handle);
 }
 
@@ -45,7 +48,7 @@ bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer) {
     return false;
   }
   ola::thread::MutexLocker locker(&m_mutex);
-  if (m_transfer_state == IDLE) {
+  if (!m_idle.empty()) {
     PerformTransfer(buffer);
   } else {
     // Buffer incoming data so we can send it when the outstanding transfers
@@ -57,28 +60,19 @@ bool AsyncUsbSender::SendDMX(const DmxBuffer &buffer) {
 }
 
 void AsyncUsbSender::TransferComplete(struct libusb_transfer *transfer) {
-  if (transfer != m_transfer) {
-    OLA_WARN << "Mismatched libusb transfer: " << transfer << " != "
-             << m_transfer;
-    return;
-  }
-
   if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
     OLA_WARN << "Transfer returned "
              << m_adaptor->ErrorCodeToString(transfer->status);
   }
 
   ola::thread::MutexLocker locker(&m_mutex);
-  m_transfer_state = (transfer->status == LIBUSB_TRANSFER_NO_DEVICE ?
-      DISCONNECTED : IDLE);
-
   if (m_suppress_continuation) {
     return;
   }
 
   PostTransferHook();
 
-  if ((m_transfer_state == IDLE) && m_pending_tx) {
+  if (!m_device_disconnected && m_pending_tx) {
     m_pending_tx = false;
     PerformTransfer(m_tx_buffer);
   }
