@@ -360,7 +360,7 @@ uint8_t *MockEndpoint::BuildRobeMessage(uint8_t label,
   frame[0] = 0xa5;  // som
   frame[1] = label;
   frame[2] = data_size & 0xff;  // len
-  frame[3] = (data_size + 1) >> 8;  // len hi
+  frame[3] = data_size >> 8;  // len hi
 
   // header crc
   uint8_t crc = 0;
