@@ -47,9 +47,11 @@ using std::vector;
 
 
 ShowRecorder::ShowRecorder(const string &filename,
-                           const vector<unsigned int> &universes)
+                           const vector<unsigned int> &universes,
+                           const unsigned int duration)
     : m_saver(filename),
       m_universes(universes),
+      m_duration(duration),
       m_frame_count(0) {
 }
 
@@ -69,6 +71,12 @@ int ShowRecorder::Init() {
 
   if (!m_saver.Open()) {
     return ola::EXIT_CANTCREAT;
+  }
+
+  if (m_duration != 0) {
+    m_client.GetSelectServer()->RegisterSingleTimeout(
+        m_duration * 1000,
+        ola::NewSingleCallback(this, &ShowRecorder::Stop));
   }
 
   m_client.GetClient()->SetDMXCallback(
@@ -99,6 +107,8 @@ int ShowRecorder::Record() {
  * Stop recording
  */
 void ShowRecorder::Stop() {
+  // TODO(Peter): This should really write the current delay out at the end if
+  // we're looping
   m_client.GetSelectServer()->Terminate();
 }
 
