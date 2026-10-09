@@ -20,6 +20,7 @@
 
 #include "plugins/gpio/GPIOPlugin.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -35,10 +36,12 @@ namespace plugin {
 namespace gpio {
 
 using std::auto_ptr;
+using std::find;
 using std::string;
 using std::vector;
 
 const char GPIOPlugin::GPIO_PINS_KEY[] = "gpio_pins";
+const char GPIOPlugin::GPIO_PINS_INVERTED_KEY[] = "gpio_pins_inverted";
 const char GPIOPlugin::GPIO_SLOT_OFFSET_KEY[] = "gpio_slot_offset";
 const char GPIOPlugin::GPIO_TURN_OFF_KEY[] = "gpio_turn_off";
 const char GPIOPlugin::GPIO_TURN_ON_KEY[] = "gpio_turn_on";
@@ -87,6 +90,28 @@ bool GPIOPlugin::StartHook() {
     options.gpio_pins.push_back(pin);
   }
 
+  pin_list.clear();
+  StringSplit(m_preferences->GetValue(GPIO_PINS_INVERTED_KEY), &pin_list, ",");
+  iter = pin_list.begin();
+  for (; iter != pin_list.end(); ++iter) {
+    if (iter->empty()) {
+      continue;
+    }
+
+    uint16_t pin;
+    if (!StringToInt(*iter, &pin)) {
+      OLA_WARN << "Invalid value for GPIO pin to invert: " << *iter;
+      return false;
+    }
+
+    if (find(pin_list.begin(), pin_list.end(), (*iter)) == pin_list.end()) {
+      OLA_WARN << "Inverted pin " << (*iter) << " not found in GPIO pin list";
+      return false;
+    }
+
+    options.gpio_inverted_pins.push_back(pin);
+  }
+
   if (options.gpio_pins.empty()) {
     return true;
   }
@@ -122,6 +147,9 @@ bool GPIOPlugin::SetDefaultPreferences() {
     return false;
 
   save |= m_preferences->SetDefaultValue(GPIO_PINS_KEY,
+                                         StringValidator(),
+                                         "");
+  save |= m_preferences->SetDefaultValue(GPIO_PINS_INVERTED_KEY,
                                          StringValidator(),
                                          "");
   save |= m_preferences->SetDefaultValue(GPIO_SLOT_OFFSET_KEY,
