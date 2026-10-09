@@ -18,8 +18,8 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#ifndef TOOLS_LOGIC_DMXSIGNALPROCESSOR_H_
-#define TOOLS_LOGIC_DMXSIGNALPROCESSOR_H_
+#ifndef LIBS_SNIFFER_DMXSIGNALPROCESSOR_H_
+#define LIBS_SNIFFER_DMXSIGNALPROCESSOR_H_
 
 #include <ola/Callback.h>
 #include <ola/Constants.h>
@@ -42,7 +42,8 @@ class DMXSignalProcessor {
     }
 
     // Process more data.
-    void Process(uint8_t *ptr, unsigned int size, uint8_t mask = 0xff);
+    void Process(uint8_t *ptr, unsigned int size, uint8_t mask = 0xff,
+                 unsigned int width = 1);
 
  private:
     enum State {
@@ -106,4 +107,4 @@ class DMXSignalProcessor {
     static const double MIN_LAST_BIT_TIME;
     static const double MAX_MARK_BETWEEN_SLOTS;
 };
-#endif  // TOOLS_LOGIC_DMXSIGNALPROCESSOR_H_
+#endif  // LIBS_SNIFFER_DMXSIGNALPROCESSOR_H_
