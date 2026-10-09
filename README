@@ -45,6 +45,25 @@ and then to verify the release:
 
     $ git tag -v 0.9.6
 
+## Cloning the repository
+
+When cloning the OLA repository, you may need to add the `-c
+fetch.fsck.missingSpaceBeforeDate=ignore` flag to avoid an error about a bad commit (see
+[this issue](https://github.com/OpenLightingProject/ola/issues/1660) for more background):
+
+```shell
+git clone -c fetch.fsck.missingSpaceBeforeDate=ignore https://github.com/OpenLightingProject/ola.git
+
+# Or:
+git clone -c fetch.fsck.missingSpaceBeforeDate=ignore git@github.com:OpenLightingProject/ola.git
+```
+
+You can also make this the default behaviour by modifying your global Git config:
+
+```shell
+git config --global fetch.fsck.missingSpaceBeforeDate ignore
+```
+
 ## Support
 
 Support for OLA is provided via the mailing list and IRC channel. The
