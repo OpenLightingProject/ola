@@ -32,9 +32,9 @@ namespace network {
  */
 class WindowsInterfacePicker: public InterfacePicker {
  public:
-    std::vector<Interface> GetInterfaces(bool include_loopback) const;
+    std::vector<Interface> GetInterfaces(bool include_loopback,
+                                         bool include_down) const;
 };
 }  // namespace network
 }  // namespace ola
 #endif  // COMMON_NETWORK_WINDOWSINTERFACEPICKER_H_
-

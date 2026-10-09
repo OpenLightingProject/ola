@@ -340,13 +340,13 @@ bool SandNetNode::InitNetwork() {
     return false;
   }
 
-  if (!m_control_socket.SetMulticastInterface(m_interface.ip_address)) {
+  if (!m_control_socket.SetMulticastInterface(m_interface)) {
     m_data_socket.Close();
     m_control_socket.Close();
     return false;
   }
 
-  if (!m_data_socket.SetMulticastInterface(m_interface.ip_address)) {
+  if (!m_data_socket.SetMulticastInterface(m_interface)) {
     m_data_socket.Close();
     m_control_socket.Close();
     return false;

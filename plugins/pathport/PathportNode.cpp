@@ -326,7 +326,7 @@ bool PathportNode::InitNetwork() {
     return false;
   }
 
-  if (!m_socket.SetMulticastInterface(m_interface.ip_address)) {
+  if (!m_socket.SetMulticastInterface(m_interface)) {
     m_socket.Close();
     return false;
   }

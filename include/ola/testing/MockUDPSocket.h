@@ -24,6 +24,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <ola/base/Macro.h>
+#include <ola/network/Interface.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SocketAddress.h>
@@ -94,7 +95,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                 ssize_t *data_read,
                 ola::network::IPV4SocketAddress *source);
   bool EnableBroadcast();
-  bool SetMulticastInterface(const ola::network::IPV4Address &iface);
+  bool SetMulticastInterface(const ola::network::Interface &iface);
   bool JoinMulticast(const ola::network::IPV4Address &iface,
                      const ola::network::IPV4Address &group,
                      bool multicast_loop = false);
@@ -131,7 +132,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                                uint16_t port,
                                bool broadcast_set);
 
-  void SetInterface(const ola::network::IPV4Address &iface);
+  void SetInterface(const ola::network::Interface &iface);
 
  private:
   typedef struct {
@@ -154,7 +155,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
   uint8_t m_tos;
   mutable std::queue<expected_call> m_expected_calls;
   mutable std::queue<received_data> m_received_data;
-  ola::network::IPV4Address m_interface;
+  ola::network::Interface m_interface;
   bool m_discard_mode;
 
   uint8_t* IOQueueToBuffer(ola::io::IOQueue *ioqueue,

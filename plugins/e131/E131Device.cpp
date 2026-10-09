@@ -57,13 +57,13 @@ using std::vector;
  */
 E131Device::E131Device(Plugin *owner,
                        const ola::acn::CID &cid,
-                       string ip_addr,
+                       string ip_or_interface,
                        PluginAdaptor *plugin_adaptor,
                        const E131DeviceOptions &options)
     : Device(owner, DEVICE_NAME),
       m_plugin_adaptor(plugin_adaptor),
       m_options(options),
-      m_ip_addr(ip_addr),
+      m_ip_or_interface(ip_or_interface),
       m_cid(cid) {
 }
 
@@ -72,7 +72,7 @@ E131Device::E131Device(Plugin *owner,
  * Start this device
  */
 bool E131Device::StartHook() {
-  m_node.reset(new E131Node(m_plugin_adaptor, m_ip_addr, m_options, m_cid));
+  m_node.reset(new E131Node(m_plugin_adaptor, m_ip_or_interface, m_options, m_cid));
 
   if (!m_node->Start()) {
     m_node.reset();
