@@ -639,10 +639,6 @@ manufacturer {
   manufacturer_name: "Batmink Ltd."
 }
 manufacturer {
-  manufacturer_id: 2445
-  manufacturer_name: "Batmink Ltd."
-}
-manufacturer {
   manufacturer_id: 1898
   manufacturer_name: "BeamZ  (Tronios B.V.)"
 }
@@ -1137,10 +1133,6 @@ manufacturer {
 manufacturer {
   manufacturer_id: 200
   manufacturer_name: "Constell8 NV"
-}
-manufacturer {
-  manufacturer_id: 2149
-  manufacturer_name: "Contrade GmbH"
 }
 manufacturer {
   manufacturer_id: 2149
@@ -4141,10 +4133,6 @@ manufacturer {
 manufacturer {
   manufacturer_id: 10465
   manufacturer_name: "MTC maintronic GmbH"
-}
-manufacturer {
-  manufacturer_id: 23809
-  manufacturer_name: "MTS Medientechnik GmbH"
 }
 manufacturer {
   manufacturer_id: 23809
