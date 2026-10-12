@@ -4130,6 +4130,42 @@ class SetRealTimeClock(OptionalParameterTestFixture):
                  args)
 
 
+class SetRealTimeClockBadData(OptionalParameterTestFixture):
+  """Set the real time clock with invalid date and time values."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'REAL_TIME_CLOCK'
+
+  TEST_VALUES = [
+      (2002, 1, 1, 0, 0, 0),
+      (2024, 0, 1, 0, 0, 0),
+      (2024, 13, 1, 0, 0, 0),
+      (2024, 1, 0, 0, 0, 0),
+      (2024, 1, 32, 0, 0, 0),
+      (2024, 1, 1, 24, 0, 0),
+      (2024, 1, 1, 0, 60, 0),
+      (2024, 1, 1, 0, 0, 61),
+      (2024, 2, 30, 0, 0, 0),
+      (2023, 2, 29, 0, 0, 0),
+  ]
+
+  def Test(self):
+    self.test_values = self.TEST_VALUES[:]
+    self._SendBadTime()
+
+  def _SendBadTime(self):
+    if not self.test_values:
+      self.Stop()
+      return
+
+    self.AddIfSetSupported([
+        self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
+                           action=self._SendBadTime),
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ])
+    values = self.test_values.pop(0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, struct.pack('!HBBBBB', *values))
+
+
 class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
   """Set the real time clock without any data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
