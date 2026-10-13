@@ -198,6 +198,7 @@ x/y/2026 ola-0.11.0
  * Add support for uint64 and int64 internally and via the RDM messaging
  * Lots of progress towards E1.33 (RDMNet and LLRP) support, although nothing
    particularly concrete yet
+ * Add some additional tests to the Preferences test suite
 
 26/2/2023 ola-0.10.9
  Features:
