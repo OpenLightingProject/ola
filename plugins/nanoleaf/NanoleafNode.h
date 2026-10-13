@@ -39,36 +39,36 @@ namespace nanoleaf {
 
 class NanoleafNode {
  public:
-    NanoleafNode(ola::io::SelectServerInterface *ss,
-                 std::vector<uint8_t> panels,
-                 ola::network::UDPSocketInterface *socket = NULL);
-    virtual ~NanoleafNode();
+  NanoleafNode(ola::io::SelectServerInterface *ss,
+               std::vector<uint8_t> panels,
+               ola::network::UDPSocketInterface *socket = NULL);
+  virtual ~NanoleafNode();
 
-    bool Start();
-    bool Stop();
+  bool Start();
+  bool Stop();
 
-    // The following apply to Input Ports (those which send data)
-    bool SendDMX(const ola::network::IPV4SocketAddress &target,
-                 const ola::DmxBuffer &buffer);
+  // The following apply to Input Ports (those which send data)
+  bool SendDMX(const ola::network::IPV4SocketAddress &target,
+               const ola::DmxBuffer &buffer);
 
  private:
-    bool m_running;
-    ola::io::SelectServerInterface *m_ss;
-    std::vector<uint8_t> m_panels;
-    ola::io::IOQueue m_output_queue;
-    ola::io::OutputStream m_output_stream;
-    ola::network::Interface m_interface;
-    std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
+  bool m_running;
+  ola::io::SelectServerInterface *m_ss;
+  std::vector<uint8_t> m_panels;
+  ola::io::IOQueue m_output_queue;
+  ola::io::OutputStream m_output_stream;
+  ola::network::Interface m_interface;
+  std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
 
-    void SocketReady();
-    bool InitNetwork();
+  void SocketReady();
+  bool InitNetwork();
 
-    static const uint8_t NANOLEAF_FRAME_COUNT = 0x01;
-    static const uint8_t NANOLEAF_WHITE_LEVEL = 0x00;
-    static const uint8_t NANOLEAF_TRANSITION_TIME = 0x01;
-    static const uint8_t NANOLEAF_SLOTS_PER_PANEL = 3;
+  static const uint8_t NANOLEAF_FRAME_COUNT = 0x01;
+  static const uint8_t NANOLEAF_WHITE_LEVEL = 0x00;
+  static const uint8_t NANOLEAF_TRANSITION_TIME = 0x01;
+  static const uint8_t NANOLEAF_SLOTS_PER_PANEL = 3;
 
-    DISALLOW_COPY_AND_ASSIGN(NanoleafNode);
+  DISALLOW_COPY_AND_ASSIGN(NanoleafNode);
 };
 }  // namespace nanoleaf
 }  // namespace plugin

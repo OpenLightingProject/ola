@@ -22,19 +22,13 @@ import struct
 from ola.OlaClient import OlaClient, RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.RDMConstants import (
-    INTERFACE_HARDWARE_TYPE_ETHERNET,
-    RDM_ESTA_PID_MAX, RDM_ESTA_PID_MIN,
-    RDM_INTERFACE_INDEX_MAX, RDM_INTERFACE_INDEX_MIN,
-    RDM_MANUFACTURER_PID_MAX, RDM_MANUFACTURER_PID_MIN,
-    RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
-    RDM_MAX_DOMAIN_NAME_LENGTH,
-    RDM_MAX_HOSTNAME_LENGTH,
-    RDM_MAX_PARAM_DATA_LENGTH,
-    RDM_MAX_SEARCH_DOMAIN_LENGTH,
-    RDM_MAX_SERIAL_NUMBER_LENGTH,
-    RDM_MAX_STRING_LENGTH,
-    RDM_MAX_TEST_DATA_PATTERN_LENGTH,
-    RDM_MIN_HOSTNAME_LENGTH,
+    INTERFACE_HARDWARE_TYPE_ETHERNET, RDM_ESTA_PID_MAX, RDM_ESTA_PID_MIN,
+    RDM_INTERFACE_INDEX_MAX, RDM_INTERFACE_INDEX_MIN, RDM_MANUFACTURER_PID_MAX,
+    RDM_MANUFACTURER_PID_MIN, RDM_MANUFACTURER_SD_MAX, RDM_MANUFACTURER_SD_MIN,
+    RDM_MAX_DOMAIN_NAME_LENGTH, RDM_MAX_HOSTNAME_LENGTH,
+    RDM_MAX_PARAM_DATA_LENGTH, RDM_MAX_SEARCH_DOMAIN_LENGTH,
+    RDM_MAX_SERIAL_NUMBER_LENGTH, RDM_MAX_STRING_LENGTH,
+    RDM_MAX_TEST_DATA_PATTERN_LENGTH, RDM_MIN_HOSTNAME_LENGTH,
     RDM_NSC_STATUS_ADDITIVE_CHECKSUM_SUPPORTED_VALUE,
     RDM_NSC_STATUS_ADDITIVE_CHECKSUM_UNSUPPORTED,
     RDM_NSC_STATUS_MAX_SLOT_COUNT_SUPPORTED_VALUE,
@@ -7321,7 +7315,8 @@ class GetListInterfaces(TestMixins.GetMixin,
 
     for interface in fields['interfaces']:
       interface_id = interface['interface_identifier']
-      count_by_interface[interface_id] = count_by_interface.get(interface_id, 0) + 1
+      count_by_interface[interface_id] = (
+          count_by_interface.get(interface_id, 0) + 1)
       if (interface_id < RDM_INTERFACE_INDEX_MIN or
           interface_id > RDM_INTERFACE_INDEX_MAX):
         self.AddWarning('Interface index %d is outside allowed range (%d to '
@@ -8918,6 +8913,7 @@ class AllSubDevicesGetSearchDomain(TestMixins.AllSubDevicesGetMixin,
 
 class GetSearchDomain(TestMixins.GetStringMixin,
                       OptionalParameterTestFixture):
+  """Send a get SEARCH_DOMAIN."""
   CATEGORY = TestCategory.E133_MANAGEMENT
   PID = 'SEARCH_DOMAIN'
   EXPECTED_FIELDS = ['search_domain']

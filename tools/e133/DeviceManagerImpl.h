@@ -60,7 +60,7 @@ using std::vector;
 
 /**
  * This class is responsible for maintaining connections to E1.33 devices.
- * TODO(simon): Some of this code can be re-used for the controller side. See
+ * TODO(simon): Some of this code can be reused for the controller side. See
  * if we can factor it out.
  */
 class DeviceManagerImpl {

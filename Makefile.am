@@ -63,12 +63,12 @@ COMMON_TESTING_PROTOBUF_FLAGS = $(COMMON_TESTING_FLAGS)
 # disable fatal warnings on WIN32.
 if ! USING_WIN32
 if FATAL_WARNINGS
-  COMMON_CXXFLAGS += -Werror
+  COMMON_CXXFLAGS += -Werror -Wno-error=vla
   COMMON_PROTOBUF_CXXFLAGS += -Werror -Wno-error=unused-parameter \
                               -Wno-error=deprecated-declarations \
                               -Wno-error=sign-compare \
                               -Wno-error=ignored-qualifiers
-  COMMON_TESTING_FLAGS += -Werror
+  COMMON_TESTING_FLAGS += -Werror -Wno-error=vla
   COMMON_TESTING_PROTOBUF_FLAGS += -Werror -Wno-error=unused-parameter \
                                    -Wno-error=deprecated-declarations
 
@@ -195,7 +195,7 @@ install-exec-hook: $(INSTALL_EXEC_HOOKS)
 # -----------------------------------------------------------------------------
 
 # This gives us a rather hacky method to build the files normally built during
-# the build, so they are present for Doxygen to run against
+# the build, so they are present for Doxygen etc to run against
 builtfiles : Makefile.am $(built_sources)
 .PHONY : builtfiles
 
@@ -248,6 +248,7 @@ endif
 
 # cpplint linter
 CPP_LINT_FILTER = "-legal/copyright,-readability/streams,-runtime/arrays,-whitespace/indent_namespace"
+CPP_LINT_FILE_ROOT = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 CPP_LINT_FILES = $(shell find . \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
         -wholename "./common/protocol/Ola.pb.*" -or \
         -wholename "./common/rpc/Rpc.pb.*" -or \
@@ -260,7 +261,9 @@ CPP_LINT_FILES = $(shell find . \( -name "*.h" -or -name "*.cpp" \) -and ! \( \
 .PHONY : cpplint
 cpplint: Makefile.am
 if FOUND_CPPLINT
-	cpplint --filter=$(CPP_LINT_FILTER) $(CPP_LINT_FILES)
+# Pass in the repository to cpplint so stuff like header guards always have the
+# same path and it works even outside of a git checkout
+	cpplint --repository=$(CPP_LINT_FILE_ROOT) --filter=$(CPP_LINT_FILTER) $(CPP_LINT_FILES)
 else
 	$(error cpplint not found. Install the forked cpplint (e.g. via pip for the latest version) and re-run configure.)
 endif

@@ -33,24 +33,24 @@ namespace nanoleaf {
 
 class NanoleafPlugin : public Plugin {
  public:
-    explicit NanoleafPlugin(PluginAdaptor *plugin_adaptor);
-    ~NanoleafPlugin();
+  explicit NanoleafPlugin(PluginAdaptor *plugin_adaptor);
+  ~NanoleafPlugin();
 
-    std::string Name() const { return PLUGIN_NAME; }
-    ola_plugin_id Id() const { return OLA_PLUGIN_NANOLEAF; }
-    std::string Description() const;
-    std::string PluginPrefix() const { return PLUGIN_PREFIX; }
+  std::string Name() const { return PLUGIN_NAME; }
+  ola_plugin_id Id() const { return OLA_PLUGIN_NANOLEAF; }
+  std::string Description() const;
+  std::string PluginPrefix() const { return PLUGIN_PREFIX; }
 
  private:
-    std::vector<class NanoleafDevice*> m_devices;
+  std::vector<class NanoleafDevice*> m_devices;
 
-    bool StartHook();
-    bool StopHook();
-    bool SetDefaultPreferences();
+  bool StartHook();
+  bool StopHook();
+  bool SetDefaultPreferences();
 
-    static const char PLUGIN_NAME[];
-    static const char PLUGIN_PREFIX[];
-    static const char CONTROLLER_KEY[];
+  static const char PLUGIN_NAME[];
+  static const char PLUGIN_PREFIX[];
+  static const char CONTROLLER_KEY[];
 };
 }  // namespace nanoleaf
 }  // namespace plugin

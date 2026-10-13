@@ -70,9 +70,9 @@ void RPTInflatorTest::testDecodeHeader() {
   const ola::rdm::UID destination_uid = UID(TEST_DATA2);
 
   source_uid.Pack(header.source_uid, sizeof(header.source_uid));
-  header.source_endpoint = HostToNetwork((uint16_t) 1234u);
+  header.source_endpoint = HostToNetwork(static_cast<uint16_t>(1234u));
   destination_uid.Pack(header.destination_uid, sizeof(header.destination_uid));
-  header.destination_endpoint = HostToNetwork((uint16_t) 5678u);
+  header.destination_endpoint = HostToNetwork(static_cast<uint16_t>(5678u));
   header.sequence = HostToNetwork(72650u);
 
   OLA_ASSERT(inflator.DecodeHeader(&header_set,

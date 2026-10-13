@@ -122,7 +122,7 @@ ola.RDMPatcherTab.prototype.updateUidList_ = function(e) {
     return;
   }
 
-  // It would be really nice to re-used the old values so we didn't have to
+  // It would be really nice to reuse the old values so we didn't have to
   // re-fetch everything but until we have some notification mechanism we can't
   // risk caching stale data.
   this.pending_devices = new Array();

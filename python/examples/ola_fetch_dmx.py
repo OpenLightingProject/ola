@@ -38,7 +38,6 @@ def DMXData(status, universe, data):
   else:
     print('Error: %s' % status.message, file=sys.stderr)
 
-  global wrapper
   if wrapper:
     wrapper.Stop()
 
