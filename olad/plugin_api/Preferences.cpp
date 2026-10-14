@@ -346,7 +346,7 @@ vector<string> MemoryPreferences::GetMultipleValue(const string &key) const {
   vector<string> values;
   PreferencesMap::const_iterator iter;
 
-  for (iter = m_pref_map.find(key);
+  for (iter = m_pref_map.lower_bound(key);
        iter != m_pref_map.end() && iter->first == key; ++iter) {
     values.push_back(iter->second);
   }
