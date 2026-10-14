@@ -3,7 +3,7 @@ name: compilation
 on: [push, pull_request]
 jobs:
   compile:
-    runs-on: macos-13
+    runs-on: macos-15
     strategy:
       fail-fast: false
       matrix:
