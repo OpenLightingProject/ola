@@ -23,6 +23,7 @@ jobs:
           # - https://raw.githubusercontent.com/Homebrew/homebrew-core/024ca9a4730a1f26ceede43485fbf62ef6f41179%5E/Formula/protobuf@3.1.rb
           # liblo skipped for now as its causing compilation issues
           # brew install liblo
+          # brew ls -v liblo
           brew install libmicrohttpd
           brew install ossp-uuid
           # Looks like this is Python 3 only, so install via pip
@@ -31,7 +32,6 @@ jobs:
           brew install pkg-config
           # TODO(Peter): Upgrade this after #1867
           brew install protobuf@21
-          brew ls -v liblo
           brew install cppunit
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
