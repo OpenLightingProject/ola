@@ -250,6 +250,12 @@ class IntegerFieldDescriptor: public FieldDescriptor {
         if (value >= iter->first && value <= iter->second)
           return true;
       }
+
+      typename LabeledValues::const_iterator label_iter = m_labels.begin();
+      for (; label_iter != m_labels.end(); ++label_iter) {
+        if (value == label_iter->second)
+          return true;
+      }
       return false;
     }
 
