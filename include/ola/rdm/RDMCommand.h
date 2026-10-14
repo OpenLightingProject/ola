@@ -181,7 +181,7 @@ class RDMCommand {
 
   /**
    * @brief Extract a RDMCommand from raw data.
-   * @param data The data excluding the state code.
+   * @param data The data excluding the start code.
    * @param length The length of the data.
    * @returns NULL if the RDM command is invalid.
    */

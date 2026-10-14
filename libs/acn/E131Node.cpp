@@ -93,8 +93,9 @@ void TrackedSource::NewPage(uint8_t page_number, uint8_t last_page,
   uint8_t expected_page = 0;
   set<uint8_t>::const_iterator iter = received_pages.begin();
   for (; iter != received_pages.end(); ++iter) {
-    if (*iter != expected_page)
+    if (*iter != expected_page) {
       return;
+    }
 
     expected_page++;
   }
@@ -152,8 +153,9 @@ E131Node::~E131Node() {
   }
 
   Stop();
-  if (m_send_buffer)
+  if (m_send_buffer) {
     delete[] m_send_buffer;
+  }
 
   STLDeleteValues(&m_discovered_sources);
 }
@@ -276,7 +278,8 @@ bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
     dmp_data_length = data_size + 1;
   }
 
-  TwoByteRangeDMPAddress range_addr(0, 1, (uint16_t) dmp_data_length);
+  TwoByteRangeDMPAddress range_addr(0, 1,
+                                    static_cast<uint16_t>(dmp_data_length));
   DMPAddressData<TwoByteRangeDMPAddress> range_chunk(&range_addr,
                                                      dmp_data,
                                                      dmp_data_length);
@@ -295,8 +298,9 @@ bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
                     m_options.use_rev2);
 
   bool result = m_e131_sender.SendDMP(header, pdu);
-  if (result && !sequence_offset)
+  if (result && !sequence_offset) {
     settings->sequence++;
+  }
   delete pdu;
   return result;
 }
@@ -321,7 +325,7 @@ bool E131Node::SendStreamTerminated(uint16_t universe,
   buffer.Get(m_send_buffer + 1, &data_size);
   data_size++;
 
-  TwoByteRangeDMPAddress range_addr(0, 1, (uint16_t) data_size);
+  TwoByteRangeDMPAddress range_addr(0, 1, static_cast<uint16_t>(data_size));
   DMPAddressData<TwoByteRangeDMPAddress> range_chunk(
       &range_addr, m_send_buffer, data_size);
   vector<DMPAddressData<TwoByteRangeDMPAddress> > ranged_chunks;
@@ -339,8 +343,9 @@ bool E131Node::SendStreamTerminated(uint16_t universe,
 
   bool result = m_e131_sender.SendDMP(header, pdu);
   // only update if we were previously tracking this universe
-  if (result && iter != m_tx_universes.end())
+  if (result && iter != m_tx_universes.end()) {
     iter->second.sequence++;
+  }
   delete pdu;
   return result;
 }

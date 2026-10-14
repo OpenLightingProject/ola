@@ -177,7 +177,7 @@ class SelectServer: public SelectServerInterface {
 
   /**
    * @brief Execute a callback on every event loop.
-   * @param callback the Callback to execute. Ownership is transferrred to the
+   * @param callback the Callback to execute. Ownership is transferred to the
    *   SelectServer.
    *
    * Be very cautious about using this, it's almost certainly not what you

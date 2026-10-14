@@ -20,6 +20,7 @@
 
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 
+#include <set>
 #include <string>
 
 #include "ola/Logging.h"

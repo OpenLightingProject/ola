@@ -65,7 +65,6 @@ def ParseOptions():
 
 
 def SigINTHandler(signal, frame):
-  global olad_process
   if olad_process:
     olad_process.terminate()
 

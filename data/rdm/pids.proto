@@ -383,6 +383,48 @@ pid {
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
 pid {
+  name: "QUEUED_MESSAGE_SENSOR_SUBSCRIBE"
+  value: 52
+  get_request {
+  }
+  get_response {
+    field {
+      type: GROUP
+      name: "sensors"
+      field {
+        type: UINT8
+        name: "sensor_number"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_request {
+    field {
+      type: UINT8
+      name: "action"
+      label {
+        value: 0
+        label: "Remove"
+      }
+      label {
+        value: 1
+        label: "Add"
+      }
+    }
+    field {
+      type: GROUP
+      name: "sensors"
+      field {
+        type: UINT8
+        name: "sensor_number"
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
   name: "SUPPORTED_PARAMETERS"
   value: 80
   get_request {
@@ -430,7 +472,7 @@ pid {
       }
       label {
         value: 2
-        label: "ASCII"
+        label: "String"
       }
       label {
         value: 3
@@ -456,9 +498,49 @@ pid {
         value: 8
         label: "int32"
       }
+      label {
+        value: 9
+        label: "uint64"
+      }
+      label {
+        value: 10
+        label: "int64"
+      }
+      label {
+        value: 11
+        label: "Group"
+      }
+      label {
+        value: 12
+        label: "UID"
+      }
+      label {
+        value: 13
+        label: "Boolean"
+      }
+      label {
+        value: 14
+        label: "URL"
+      }
+      label {
+        value: 15
+        label: "MAC"
+      }
+      label {
+        value: 16
+        label: "IPv4"
+      }
+      label {
+        value: 17
+        label: "IPv6"
+      }
+      label {
+        value: 18
+        label: "Enumeration"
+      }
       range {
         min: 0
-        max: 8
+        max: 18
       }
       range {
         min: 128
@@ -604,9 +686,41 @@ pid {
         value: 28
         label: "Bytes"
       }
+      label {
+        value: 29
+        label: "Decibel"
+      }
+      label {
+        value: 30
+        label: "Decibel Volt"
+      }
+      label {
+        value: 31
+        label: "Decibel Watt"
+      }
+      label {
+        value: 32
+        label: "Decibel Meter"
+      }
+      label {
+        value: 33
+        label: "Percent"
+      }
+      label {
+        value: 34
+        label: "Moles per Meter Cubed"
+      }
+      label {
+        value: 35
+        label: "RPM"
+      }
+      label {
+        value: 36
+        label: "Bytes per Second"
+      }
       range {
         min: 0
-        max: 28
+        max: 36
       }
       range {
         min: 128
@@ -783,6 +897,257 @@ pid {
       name: "url"
       min_size: 2
       max_size: 4294967295
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "SUPPORTED_PARAMETERS_ENHANCED"
+  value: 85
+  get_request {
+  }
+  get_response {
+    field {
+      type: GROUP
+      name: "params"
+      field {
+        type: UINT16
+        name: "param_id"
+      }
+      field {
+        type: UINT16
+        name: "param_id_support"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "CONTROLLER_FLAG_SUPPORT"
+  value: 86
+  get_request {
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "controller_flags"
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "NACK_DESCRIPTION"
+  value: 87
+  get_request {
+    field {
+      type: UINT16
+      name: "nack_reason_code"
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "nack_reason_code"
+    }
+    field {
+      type: STRING
+      name: "description"
+      max_size: 32
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+# OLA can't handle nested variable-length groups, so skip these out for now
+#pid {
+#  name: "PACKED_PID_SUB"
+#  value: 88
+#  get_request {
+#    field {
+#      type: UINT16
+#      name: "pid"
+#    }
+#    field {
+#      type: UINT16
+#      name: "index"
+#    }
+#    field {
+#      type: UINT16
+#      name: "first_device_requested"
+#    }
+#    field {
+#      type: UINT16
+#      name: "number_of_devices_requested"
+#    }
+#  }
+#  get_response {
+#    field {
+#      type: UINT16
+#      name: "pid"
+#    }
+#    field {
+#      type: UINT16
+#      name: "index"
+#    }
+#    field {
+#      type: GROUP
+#      name: "packed_results"
+#      field {
+#        type: UINT16
+#        name: "device"
+#      }
+#      field {
+#        type: UINT8
+#        name: "pdl_size"
+#      }
+#      field {
+#        type: GROUP
+#        name: "param_data"
+#        field {
+#          type: UINT8
+#          name: "data"
+#        }
+#      }
+#    }
+#  }
+#  get_sub_device_range: ROOT_DEVICE
+#  set_request {
+#    field {
+#      type: UINT16
+#      name: "pid"
+#    }
+#    field {
+#      type: UINT16
+#      name: "index"
+#    }
+#    field {
+#      type: GROUP
+#      name: "packed_request"
+#      field {
+#        type: UINT16
+#        name: "device"
+#      }
+#      field {
+#        type: UINT8
+#        name: "pdl_size"
+#      }
+#      field {
+#        type: GROUP
+#        name: "param_data"
+#        field {
+#          type: UINT8
+#          name: "data"
+#        }
+#      }
+#    }
+#  }
+#  set_response {
+#  }
+#  set_sub_device_range: ROOT_DEVICE
+#}
+#pid {
+#  name: "PACKED_PID_INDEX"
+#  value: 89
+#  get_request {
+#    field {
+#      type: UINT16
+#      name: "pid"
+#    }
+#    field {
+#      type: UINT16
+#      name: "first_item_requested"
+#    }
+#    field {
+#      type: UINT16
+#      name: "number_of_items_requested"
+#    }
+#  }
+#  get_response {
+#    field {
+#      type: UINT16
+#      name: "pid"
+#    }
+#    field {
+#      type: GROUP
+#      name: "packed_results"
+#      field {
+#        type: UINT16
+#        name: "item"
+#      }
+#      field {
+#        type: UINT8
+#        name: "pdl_size"
+#      }
+#      field {
+#        type: GROUP
+#        name: "param_data"
+#        field {
+#          type: UINT8
+#          name: "data"
+#        }
+#      }
+#    }
+#  }
+#  get_sub_device_range: ROOT_OR_SUBDEVICE
+#  set_request {
+#    field {
+#      type: UINT16
+#      name: "pid"
+#    }
+#    field {
+#      type: GROUP
+#      name: "packed_request"
+#      field {
+#        type: UINT16
+#        name: "item"
+#      }
+#      field {
+#        type: UINT8
+#        name: "pdl_size"
+#      }
+#      field {
+#        type: GROUP
+#        name: "param_data"
+#        field {
+#          type: UINT8
+#          name: "data"
+#        }
+#      }
+#    }
+#  }
+#  set_response {
+#  }
+#  set_sub_device_range: ROOT_OR_SUBDEVICE
+#}
+pid {
+  name: "ENUM_LABEL"
+  value: 90
+  get_request {
+    field {
+      type: UINT16
+      name: "pid"
+    }
+    field {
+      type: UINT32
+      name: "enumeration_index"
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "pid"
+    }
+    field {
+      type: UINT32
+      name: "enumeration_index"
+    }
+    field {
+      type: UINT32
+      name: "max_enumeration_index"
+    }
+    field {
+      type: STRING
+      name: "description"
+      max_size: 32
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -1478,6 +1843,14 @@ pid {
           label: "Controllable Breaker"
         }
         label {
+          value: 2816
+          label: "Input Device"
+        }
+        label {
+          value: 2817
+          label: "Sensor Input"
+        }
+        label {
           value: 32767
           label: "Other Device"
         }
@@ -1524,6 +1897,10 @@ pid {
         range {
           min: 2560
           max: 2562
+        }
+        range {
+          min: 2816
+          max: 2817
         }
         range {
           min: 32767
@@ -1693,8 +2070,8 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
 }
 pid {
-  name: "PRODUCT_URL"
-  value: 209
+  name: "MANUFACTURER_URL"
+  value: 208
   get_request {
   }
   get_response {
@@ -1708,8 +2085,8 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
 }
 pid {
-  name: "MANUFACTURER_URL"
-  value: 208
+  name: "PRODUCT_URL"
+  value: 209
   get_request {
   }
   get_response {
@@ -2396,6 +2773,30 @@ pid {
           label: "Color Scroll"
         }
         label {
+          value: 522
+          label: "Additive Color Mixer - Lime"
+        }
+        label {
+          value: 523
+          label: "Additive Color Mixer - Indigo"
+        }
+        label {
+          value: 524
+          label: "Additive Color Mixer - Cyan"
+        }
+        label {
+          value: 525
+          label: "Additive Color Mixer - Deep Red"
+        }
+        label {
+          value: 526
+          label: "Additive Color Mixer - Deep Blue"
+        }
+        label {
+          value: 527
+          label: "Additive Color Mixer - Natural White"
+        }
+        label {
           value: 528
           label: "Color Semaphore"
         }
@@ -2426,6 +2827,22 @@ pid {
         label {
           value: 535
           label: "Saturation"
+        }
+        label {
+          value: 536
+          label: "Additive Color Mixer - UV"
+        }
+        label {
+          value: 537
+          label: "CIE X Color Coordinate"
+        }
+        label {
+          value: 538
+          label: "CIE Y Color Coordinate"
+        }
+        label {
+          value: 539
+          label: "CCT Magenta-Green Adjustment"
         }
         label {
           value: 769
@@ -2935,12 +3352,44 @@ pid {
         label: "16 bit counter"
       }
       label {
+        value: 33
+        label: "CPU load"
+      }
+      label {
+        value: 34
+        label: "Bandwidth"
+      }
+      label {
+        value: 35
+        label: "Concentration"
+      }
+      label {
+        value: 36
+        label: "Sound pressure level"
+      }
+      label {
+        value: 37
+        label: "Solid angle"
+      }
+      label {
+        value: 38
+        label: "Log ratio"
+      }
+      label {
+        value: 39
+        label: "Log ratio volts"
+      }
+      label {
+        value: 40
+        label: "Log ratio watts"
+      }
+      label {
         value: 127
         label: "Other"
       }
       range {
         min: 0
-        max: 32
+        max: 40
       }
       range {
         min: 127
@@ -3066,9 +3515,41 @@ pid {
         value: 28
         label: "Bytes"
       }
+      label {
+        value: 29
+        label: "Decibel"
+      }
+      label {
+        value: 30
+        label: "Decibel Volt"
+      }
+      label {
+        value: 31
+        label: "Decibel Watt"
+      }
+      label {
+        value: 32
+        label: "Decibel Meter"
+      }
+      label {
+        value: 33
+        label: "Percent"
+      }
+      label {
+        value: 34
+        label: "Moles per Meter Cubed"
+      }
+      label {
+        value: 35
+        label: "RPM"
+      }
+      label {
+        value: 36
+        label: "Bytes per Second"
+      }
       range {
         min: 0
-        max: 28
+        max: 36
       }
       range {
         min: 128
@@ -6311,6 +6792,75 @@ pid {
   get_sub_device_range: ROOT_OR_SUBDEVICE
 }
 pid {
+  name: "SELFTEST_ENHANCED"
+  value: 4130
+  get_request {
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "result_code_pid"
+      label {
+        value: 0
+        label: "Not supported"
+      }
+    }
+    field {
+      type: GROUP
+      name: "self_tests"
+      field {
+        type: UINT8
+        name: "test_number"
+        label {
+          value: 255
+          label: "All"
+        }
+      }
+      field {
+        type: UINT8
+        name: "test_status"
+        label {
+          value: 0
+          label: "Status not supported"
+        }
+        label {
+          value: 1
+          label: "Not run since last power cycle"
+        }
+        label {
+          value: 2
+          label: "Aborted/reset"
+        }
+        label {
+          value: 3
+          label: "Active/running"
+        }
+        label {
+          value: 4
+          label: "Complete - Pass"
+        }
+        label {
+          value: 5
+          label: "Complete - Fail"
+        }
+        label {
+          value: 6
+          label: "Complete - No analysis"
+        }
+        label {
+          value: 7
+          label: "Complete - Result code available"
+        }
+        label {
+          value: 255
+          label: "Other - Manufacturer specific"
+        }
+      }
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
   name: "CAPTURE_PRESET"
   value: 4144
   set_request {
@@ -6738,4 +7288,4 @@ pid {
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
 }
-version: 1732538523
+version: 1780267906

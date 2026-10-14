@@ -48,7 +48,6 @@ def Devices(status, devices):
   else:
     print('Error: %s' % status.message, file=sys.stderr)
 
-  global wrapper
   if wrapper:
     wrapper.Stop()
 

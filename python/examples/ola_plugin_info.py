@@ -48,7 +48,6 @@ def Plugins(status, plugins):
   else:
     print('Error: %s' % status.message, file=sys.stderr)
 
-  global wrapper
   if wrapper:
     wrapper.Stop()
 
@@ -59,7 +58,6 @@ def PluginDescription(status, description):
   else:
     print('Error: %s' % status.message, file=sys.stderr)
 
-  global wrapper
   if wrapper:
     wrapper.Stop()
 

@@ -86,7 +86,7 @@ void E131PDUTest::testSimpleRev2E131PDU() {
   OLA_ASSERT_EQ((uint8_t) 2,
                        data[7 + E131Rev2Header::REV2_SOURCE_NAME_LEN]);
   OLA_ASSERT_EQ(
-      HostToNetwork((uint16_t) 6000),
+      HostToNetwork(static_cast<uint16_t>(6000)),
       *(reinterpret_cast<uint16_t*>(
           data + 8 + E131Rev2Header::REV2_SOURCE_NAME_LEN)));
 
@@ -136,7 +136,7 @@ void E131PDUTest::testSimpleE131PDU() {
   uint16_t actual_universe;
   memcpy(&actual_universe, data + 11 + E131Header::SOURCE_NAME_LEN,
          sizeof(actual_universe));
-  OLA_ASSERT_EQ(HostToNetwork((uint16_t) 6000), actual_universe);
+  OLA_ASSERT_EQ(HostToNetwork(static_cast<uint16_t>(6000)), actual_universe);
 
   // test undersized buffer
   bytes_used = size - 1;
