@@ -1,18 +1,31 @@
-x/y/2024 ola-0.10.10
+x/y/2026 ola-0.10.10
  Features:
- * 
+ * Generate coverage
 
  API:
  * 
 
  RDM Tests:
- * 
+ * Standardise a couple of DMX Fail Mode and Startup Mode tests
+ * Fix the order of hold time and delay times for DMX_STARTUP_MODE and DMX_FAIL_MODE #1842
+ * Correct the PID used for SetDmxStartupMode #1843
 
  Bugs:
- * 
+ * Add a missing file to the Python install list
+ * Handle Protoc's non-semver versioning since its release v20.x
+ * Workaround gcovr parse race condition bug
+ * Fix Python dependencies for autopkgtest
+ * Fix error: template-id not allowed for constructor
+ * Fix some Doxygen errors
+ * Update some OSC links
+ * Fix the formatting of some PID values in some Python exceptions
+ * Handle new OSC typing introduced in liblo 0.32 #1949
+ * Correct an SPI sync port documentation bug
 
  Internal:
- *
+ * Fix lots more internal typos and grammar
+ * Fix a number of flake8 errors
+ * Update Grunt versions used by the new web UI and rebuild it
 
 26/2/2023 ola-0.10.9
  Features:
