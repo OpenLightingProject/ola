@@ -76,7 +76,6 @@ class ShowPlayer {
     return m_frame_count;
   }
 
-
  private:
   ola::client::OlaClientWrapper m_client;
   ShowLoader m_loader;

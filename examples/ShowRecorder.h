@@ -37,7 +37,8 @@
 class ShowRecorder {
  public:
   ShowRecorder(const std::string &filename,
-               const std::vector<unsigned int> &universes);
+               const std::vector<unsigned int> &universes,
+               const unsigned int duration);
   ~ShowRecorder();
 
   int Init();
@@ -50,6 +51,7 @@ class ShowRecorder {
   ola::client::OlaClientWrapper m_client;
   ShowSaver m_saver;
   std::vector<unsigned int> m_universes;
+  unsigned int m_duration;
   ola::Clock m_clock;
   uint64_t m_frame_count;
 
