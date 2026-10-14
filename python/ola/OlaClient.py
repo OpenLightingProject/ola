@@ -813,15 +813,21 @@ class OlaClient(Ola_pb2.OlaClientService):
 
   def _SocketClosed(self):
     """Called by the RPCChannel if the socket is closed."""
+    if self._socket is None:
+      return
+
+    our_socket = self._socket
+    self._socket = None
     try:
-      self._socket.shutdown(socket.SHUT_RDWR)
+      our_socket.shutdown(socket.SHUT_RDWR)
     except socket.error:
       pass
-    self._socket.close()
-    self._socket = None
+    our_socket.close()
 
     if self._close_callback:
-      self._close_callback()
+      close_callback = self._close_callback
+      self._close_callback = None
+      close_callback()
 
   def FetchPlugins(self, callback):
     """Fetch the list of plugins.

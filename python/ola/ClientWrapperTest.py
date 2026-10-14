@@ -127,6 +127,20 @@ class ClientWrapperTest(unittest.TestCase):
     sockets[0].close()
     sockets[1].close()
 
+  def testCloseCallback(self):
+    sockets = socket.socketpair()
+    callback_count = []
+
+    def on_close():
+      callback_count.append(1)
+
+    wrapper = ClientWrapper(sockets[0], close_callback=on_close)
+    wrapper.Client()._SocketClosed()
+    wrapper.Client()._SocketClosed()
+
+    self.assertEqual([1], callback_count)
+    sockets[1].close()
+
   # @timeout_decorator.timeout(2)
   def testEventLoop(self):
     sockets = socket.socketpair()
