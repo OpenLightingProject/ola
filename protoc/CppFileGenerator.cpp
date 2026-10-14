@@ -59,7 +59,7 @@ FileGenerator::FileGenerator(const FileDescriptor *file,
                              const string &output_name)
     : m_file(file),
       m_output_name(output_name) {
-  SplitStringUsing(file->package(), ".", &package_parts_);
+  SplitStringUsing(string(file->package()), ".", &package_parts_);
 
   ServiceGenerator::Options options;
   for (int i = 0; i < file->service_count(); i++) {
@@ -79,7 +79,7 @@ void FileGenerator::GenerateHeader(Printer *printer) {
   const string filename_identifier = FilenameIdentifier(m_output_name);
 
   std::map<string, string> var_map;
-  var_map["basename"] = StripProto(m_file->name());
+  var_map["basename"] = StripProto(string(m_file->name()));
   var_map["filename"] = m_file->name();
   var_map["filename_identifier"] = filename_identifier;
 
@@ -130,7 +130,13 @@ void FileGenerator::GenerateImplementation(Printer *printer) {
     "#include \"$file$.pb.h\"\n"
     "\n"
     "#include <google/protobuf/descriptor.h>  // NOLINT(build/include)\n"
+#if GOOGLE_PROTOBUF_VERSION < 4022000
     "#include <google/protobuf/stubs/once.h>\n"
+#else
+    "#include <absl/base/call_once.h>\n"
+    "#include <absl/log/absl_check.h>\n"
+    "#include <absl/log/absl_log.h>\n"
+#endif
     "\n"
     "#include \"common/rpc/RpcChannel.h\"\n"
     "#include \"common/rpc/RpcController.h\"\n"
@@ -215,7 +221,11 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
       "    \"$filename$\");\n"
       // Note that this GOOGLE_CHECK is necessary to prevent a warning about
       // "file" being unused when compiling an empty .proto file.
+#if GOOGLE_PROTOBUF_VERSION < 4022000
       "GOOGLE_CHECK(file != NULL);\n",
+#else
+      "ABSL_CHECK(file != NULL);\n",
+#endif
       "filename", m_file->name());
 
     for (int i = 0; i < m_file->service_count(); i++) {
@@ -248,7 +258,7 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
       "assigndescriptorsname", GlobalAssignDescriptorsName(m_output_name));
 
     printer->Print("}  // namespace\n");
-#else
+#elif GOOGLE_PROTOBUF_VERSION < 4022000
     printer->Print(
       "namespace {\n"
       "\n"
@@ -256,6 +266,17 @@ void FileGenerator::GenerateBuildDescriptors(Printer* printer) {
       "  static ::google::protobuf::internal::once_flag once;\n"
       "  ::google::protobuf::internal::call_once(once,\n"
       "    &$assigndescriptorsname$);\n"
+      "}\n"
+      "\n",
+      "assigndescriptorsname", GlobalAssignDescriptorsName(m_output_name));
+    printer->Print("}  // namespace\n");
+#else
+    printer->Print(
+      "namespace {\n"
+      "\n"
+      "inline void protobuf_AssignDescriptorsOnce() {\n"
+      "  static ::absl::once_flag once;\n"
+      "  ::absl::call_once(once, &$assigndescriptorsname$);\n"
       "}\n"
       "\n",
       "assigndescriptorsname", GlobalAssignDescriptorsName(m_output_name));
