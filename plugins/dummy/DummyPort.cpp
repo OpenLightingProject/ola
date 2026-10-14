@@ -28,6 +28,7 @@
 #include "ola/rdm/AdvancedDimmerResponder.h"
 #include "ola/rdm/DimmerResponder.h"
 #include "ola/rdm/DummyResponder.h"
+#include "ola/rdm/GeneralResponder.h"
 #include "ola/rdm/MovingLightResponder.h"
 #include "ola/rdm/NetworkResponder.h"
 #include "ola/rdm/SensorResponder.h"
@@ -103,6 +104,8 @@ DummyPort::DummyPort(DummyDevice *parent,
       &m_responders, &allocator, options.number_of_sensor_responders);
   AddResponders<ola::rdm::NetworkResponder>(
       &m_responders, &allocator, options.number_of_network_responders);
+  AddResponders<ola::rdm::GeneralResponder>(
+      &m_responders, &allocator, options.number_of_general_responders);
 }
 
 

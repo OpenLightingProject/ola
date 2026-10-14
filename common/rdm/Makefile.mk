@@ -18,6 +18,7 @@ common_libolacommon_la_SOURCES += \
     common/rdm/DummyResponder.cpp \
     common/rdm/FakeNetworkManager.cpp \
     common/rdm/FakeNetworkManager.h \
+    common/rdm/GeneralResponder.cpp \
     common/rdm/GroupSizeCalculator.cpp \
     common/rdm/GroupSizeCalculator.h \
     common/rdm/MessageDeserializer.cpp \
