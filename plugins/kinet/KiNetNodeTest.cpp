@@ -19,6 +19,9 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#ifndef _WIN32
+#include <fcntl.h>
+#endif  // _WIN32
 
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
@@ -36,6 +39,7 @@ using ola::testing::MockUDPSocket;
 
 class KiNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(KiNetNodeTest);
+  CPPUNIT_TEST(testSocketIsNonBlocking);
   CPPUNIT_TEST(testSendDMX);
   CPPUNIT_TEST(testSendPortOut);
   CPPUNIT_TEST_SUITE_END();
@@ -47,6 +51,8 @@ class KiNetNodeTest: public CppUnit::TestFixture {
           m_socket(new MockUDPSocket()) {
     }
     void setUp();
+
+    void testSocketIsNonBlocking();
 
     void testSendDMX();
 
@@ -66,6 +72,20 @@ CPPUNIT_TEST_SUITE_REGISTRATION(KiNetNodeTest);
 void KiNetNodeTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   ola::network::IPV4Address::FromString("10.0.0.11", &target_ip);
+}
+
+/**
+ * Unreachable KiNet targets must not block every other output.
+ */
+void KiNetNodeTest::testSocketIsNonBlocking() {
+  KiNetNode node(&ss, m_socket);
+  OLA_ASSERT_TRUE(node.Start());
+#ifndef _WIN32
+  int flags = fcntl(m_socket->WriteDescriptor(), F_GETFL, 0);
+  OLA_ASSERT_NE(-1, flags);
+  OLA_ASSERT_TRUE(flags & O_NONBLOCK);
+#endif  // _WIN32
+  OLA_ASSERT(node.Stop());
 }
 
 /**
