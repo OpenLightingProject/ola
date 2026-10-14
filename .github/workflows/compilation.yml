@@ -30,7 +30,7 @@ jobs:
           brew install pkg-config
           # TODO(Peter): Upgrade this after #1867
           brew install protobuf@21
-          brew ls -v protobuf@21
+          brew ls -v liblo
           brew install cppunit
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -41,10 +41,10 @@ jobs:
         run: |
           PATH=/usr/local/opt/ccache/libexec:$PATH # Use ccache on Mac too
           export PATH="/opt/homebrew/Cellar/protobuf@21/21.12_1/bin:$PATH"
-          export LDFLAGS="-L/opt/homebrew/Cellar/protobuf@21/21.12_1/lib"
-          export CPPFLAGS="-I/opt/homebrew/Cellar/protobuf@21/21.12_1/include"
+          export LDFLAGS="-L/opt/homebrew/Cellar/protobuf@21/21.12_1/lib -L/opt/homebrew/Cellar/liblo/0.36_1/lib"
+          export CPPFLAGS="-I/opt/homebrew/Cellar/protobuf@21/21.12_1/include -I/opt/homebrew/Cellar/liblo/0.36_1/include"
           export PKG_CONFIG_PATH="/opt/homebrew/Cellar/protobuf@21/21.12_1/lib/pkgconfig"
           bash -ex .travis-ci.sh
-      - name: Show config.log
-        if: always()
-        run: cat config.log
+#      - name: Show config.log
+#        if: always()
+#        run: cat config.log
