@@ -15,15 +15,18 @@
 # SimpleRpcController.py
 # Copyright (C) 2005 Simon Newton
 
-from google.protobuf import service
-
 """An implementation of the RpcController interface."""
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
-class SimpleRpcController(service.RpcController):
-  """See google.protobuf.service.RpcController for documentation."""
+class SimpleRpcController(object):
+  """Implements the protocol buffer RpcController interface.
+
+  The generic service module was removed from protobuf 6.30.  RpcController is
+  an interface, so consumers only require the methods implemented below and do
+  not require the deprecated base class.
+  """
 
   def __init__(self):
     self.Reset()

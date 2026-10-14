@@ -19,7 +19,6 @@ import binascii
 import logging
 import struct
 
-from google.protobuf import service
 from ola.rpc import Rpc_pb2
 from ola.rpc.SimpleRpcController import SimpleRpcController
 
@@ -47,8 +46,13 @@ class OutstandingResponse(object):
     self.reply_class = reply_class
 
 
-class StreamRpcChannel(service.RpcChannel):
-  """Implements a RpcChannel over a TCP socket."""
+class StreamRpcChannel(object):
+  """Implements the protocol buffer RpcChannel interface over a TCP socket.
+
+  Protocol buffer stubs call ``CallMethod`` directly.  Inheriting from the
+  deprecated generic service base class is unnecessary and prevents this
+  module from loading with protobuf 6.30 and newer.
+  """
   PROTOCOL_VERSION = 1
   VERSION_MASK = 0xf0000000
   SIZE_MASK = 0x0fffffff
