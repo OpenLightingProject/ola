@@ -68,6 +68,9 @@ enum PluginIds {
   OLA_PLUGIN_GPIO = 22;
   OLA_PLUGIN_SPIDMX = 23;
   OLA_PLUGIN_NANOLEAF = 24;
+  OLA_PLUGIN_E133 = 25;
+  OLA_PLUGIN_LLRP = 26;
+  OLA_PLUGIN_SIGNET = 27;
 
   /*
    * To obtain a new plugin ID, open a ticket at

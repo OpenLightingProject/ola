@@ -42,6 +42,10 @@ ola_server_sources += olad/HttpServerActions.cpp \
 ola_server_additional_libs += common/http/libolahttp.la
 endif
 
+if HAVE_LIBCRYPTO
+ola_server_additional_libs += common/crypto/libolacrypto.la
+endif
+
 # lib olaserver
 lib_LTLIBRARIES += olad/libolaserver.la
 

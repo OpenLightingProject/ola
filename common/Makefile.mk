@@ -13,6 +13,7 @@ common_libolacommon_la_LIBADD += -lWs2_32 -lIphlpapi
 endif
 
 include common/base/Makefile.mk
+include common/crypto/Makefile.mk
 include common/dmx/Makefile.mk
 include common/export_map/Makefile.mk
 include common/file/Makefile.mk
